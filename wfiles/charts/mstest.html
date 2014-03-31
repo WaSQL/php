@@ -1,0 +1,41 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>FusionCharts Free Test Page</title>
+<script language="JavaScript" src="FusionCharts.js"></script>
+<script type="text/javascript">
+	function renderTestCharts(){
+		/* MS Area2D */
+		var chart = new FusionCharts("FCF_MSArea2D.swf", "ChartId", "600", "350");
+		chart.setDataURL("msdata.xml");
+		chart.render("msarea2d");
+		/* MSColumn2D */
+		chart = new FusionCharts("FCF_MSColumn2D.swf", "ChartId2", "600", "350");
+		chart.setDataURL("msdata.xml");
+		chart.render("mscolumn2d");
+		/* MSColumn3D */
+		chart = new FusionCharts("FCF_MSColumn3D.swf", "ChartId2", "600", "350");
+		chart.setDataURL("msdata.xml");
+		chart.render("mscolumn3d");
+		/* MSLine */
+		chart = new FusionCharts("FCF_MSLine.swf", "ChartId2", "600", "350");
+		chart.setDataURL("msdata.xml");
+		chart.render("msline");
+		}
+	</script>
+</head>
+
+<body onLoad="renderTestCharts();">
+<div>
+	<h2>MS Area 2D</h2><br>
+	<div id="msarea2d"></div>
+	<h2>MS Column 2D</h2><br>
+	<div id="mscolumn2d"></div>
+	<h2>MS Column 3D</h2><br>
+	<div id="mscolumn3d"></div>
+	<h2>MS Line</h2><br>
+	<div id="msline"></div>
+</div>
+
+</body>
+</html>

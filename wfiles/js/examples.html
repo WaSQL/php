@@ -1,0 +1,303 @@
+<html>
+<head>
+	<link type="text/css" rel="stylesheet" href="/php/minify_css.php" />
+ 	<script type="text/javascript" src="/php/minify_js.php"></script>
+ 	<script type="text/javascript" src="/php/minify_js.php"></script>
+ 	<script type="text/javascript" src="/wfiles/tinymce/tiny_mce.js"></script>
+</head>
+<body>
+<h3>Javascript Behaviors</h3>
+<div style="height:500px;overflow:auto;">
+
+<!--Behavior: animate -->
+<div class="w_bold">Behavior: animate - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_animate'));">view sample code</a></div>
+<div id="code_animate" style="display:none;">
+<b>Example Code for animate Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div id="animate_test" style="width:400px;height:50px;border:2px solid #CCC;" _behavior="animate" max="200" min="50">
+	Mouse over me then mouse out
+</div>
+</textarea></form>
+</div>
+<div id="animate_test" style="width:400px;height:50px;border:2px solid #CCC;" _behavior="animate" max="200" min="50">
+	Mouse over me then mouse out
+</div>
+<br clear="both">
+
+<!--Behavior: ajax -->
+<div class="w_bold">Behavior: ajax - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_ajax'));">view sample code</a></div>
+<div id="code_ajax" style="display:none;">
+<b>Example Code for ajax Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div id="ajax_test" class="w_border w_round w_tip w_pad w_left" _behavior="ajax" url="/php/index.php?_serverdate=1" timer="60">
+	This should change to server time every 60 seconds
+</div>
+</textarea></form>
+</div>
+<br clear="both">
+<div id="ajax_test" class="w_border w_round w_tip w_pad w_left" _behavior="ajax" url="/php/index.php?_serverdate=1" timer="60">
+	This should change to server time every 60 seconds
+</div>
+<br clear="both">
+
+<!--Behavior: clock -->
+<div class="w_bold" style="margin-top:10px;">Behavior: clock - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_clock'));">view sample code</a></div>
+<div id="code_clock" style="display:none;">
+<b>Example Code for clock Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;">
+	<div id="clock_test" _behavior="clock"></div>
+</div>
+</textarea></form>
+</div>
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;">
+	<div id="clock_test" _behavior="clock"></div>
+</div>
+<br clear="both">
+
+<!--Behavior: countdown -->
+<div class="w_bold" style="margin-top:10px;">Behavior: countdown - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_countdown'));">view sample code</a></div>
+<div id="code_countdown" style="display:none;">
+<b>Example Code for Countdown Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;">
+	<div id="countdown_test" _behavior="countdown">8765</div>
+</div>
+</textarea></form>
+</div>
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;">
+	<div id="countdown_test" _behavior="countdown">8765</div>
+</div>
+<br clear="both">
+
+<!--Behavior: countdownDate -->
+<div class="w_bold" style="margin-top:10px;">Behavior: countdownDate - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_countdownDate'));">view sample code</a></div>
+<div id="code_countdownDate" style="display:none;">
+<b>Example Code for countdownDate Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:15px;">
+	<div style="color:#e68714;font-size:25px;" align="center">Countdown to launch</div>
+	<div id="countdownDate_test" _behavior="countdownDate" year="2012" month="10" day="5" hour="10" minute="0"></div>
+</div>
+</textarea></form>
+</div>
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:15px;">
+	<div style="color:#e68714;font-size:25px;" align="center">Countdown to launch</div>
+	<div id="countdownDate_test" _behavior="countdownDate" year="2012" month="10" day="5" hour="10" minute="0"></div>
+</div>
+<br clear="both">
+
+<!--Behavior: stopwatch -->
+<div class="w_bold" style="margin-top:10px;">Behavior: stopwatch - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_stopwatch'));">view sample code</a></div>
+<div id="code_stopwatch" style="display:none;">
+<b>Example Code for stopwatch Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<form>');?>
+	<?=encodeHtml('<input');?> type="text" value="01:21:55" _behavior="stopwatch" style="border:1px solid #000;width:60px;text-align:center" id="mywatch">
+	<?=encodeHtml('<input');?> type="button" value="Start Over" onClick="setText('mywatch','00:00:00');">
+<?=encodeHtml('</form>');?>
+</textarea></form>
+</div>
+<form>
+	<input type="text" value="00:00:00" _behavior="stopwatch" style="border:1px solid #000;width:60px;text-align:center" id="mywatch">
+	<input type="button" value="Start Over" onClick="setText('mywatch','00:00:00');">
+</form>
+<br clear="both">
+
+<!--Behavior: drag -->
+<table><tr valign="top"><td>
+<div class="w_bold">Behavior: drag - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_drag'));">view sample code</a></div>
+<div id="code_drag" style="display:none;">
+<b>Example Code for drag Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div id="drag_test" class="w_border w_pad w_lgrayback w_gradient w_round w_left" _behavior="drag" style="padding:20px;">
+drag me around
+</div>
+</textarea></form>
+</div>
+<div id="drag_test" class="w_border w_pad w_lgrayback w_gradient w_round w_left" _behavior="drag" style="padding:20px;">
+drag me around
+</div>
+</td><td>
+<div class="w_bold">drag (alternate) - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_drag2'));">view sample code</a></div>
+<div id="code_drag2" style="display:none;">
+<b>Example Code for drag (alternate) Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<div id="drag_test2" class="w_border w_left w_gradient" _behavior="drag" head="drag_test2_tbar">
+	<div id="drag_test2_tbar" style="background:#000;color:#FFF" align="center">drag me from here</div>
+	<div>This is just text and is not draggable</div>
+</div>
+</textarea></form>
+</div>
+<div id="drag_test2" class="w_border w_left w_gradient" _behavior="drag" head="drag_test2_tbar">
+	<div id="drag_test2_tbar" style="background:#000;color:#FFF" align="center">drag me from here</div>
+	<div>This is just text and is not draggable</div>
+</div>
+</td></tr></table>
+<br clear="both">
+
+<!--Behavior: csseditor -->
+<div class="w_bold" style="margin-top:10px;">Behavior: csseditor - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_csseditor'));">view sample code</a></div>
+<div id="code_csseditor" style="display:none;">
+<b>Example Code for csseditor Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:600px;height:100px;" _behavior="csseditor">
+.sample{width:300px;height:400px;}
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:600px;height:100px;" _behavior="csseditor">
+.sample{width:300px;height:400px;}
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: jseditor -->
+<div class="w_bold">Behavior: jseditor - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_jseditor'));">view sample code</a></div>
+<div id="code_jseditor" style="display:none;">
+<b>Example Code for jseditor Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:600px;height:100px;" _behavior="jseditor">
+function sample(){
+	var abc='def';
+	return false;
+}
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:600px;height:100px;" _behavior="jseditor">
+function sample(){
+	var abc='def';
+	return false;
+}
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: phpeditor -->
+<div class="w_bold">Behavior: phpeditor - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_phpeditor'));">view sample code</a></div>
+<div id="code_phpeditor" style="display:none;">
+<b>Example Code for phpeditor Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:600px;height:100px;" _behavior="phpeditor">
+	$abc='def';
+	echo $abc;
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:600px;height:100px;" _behavior="phpeditor">
+	$abc='def';
+	echo $abc;
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: sqleditor -->
+<div class="w_bold">Behavior: sqleditor - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_sqleditor'));">view sample code</a></div>
+<div id="code_sqleditor" style="display:none;">
+<b>Example Code for sqleditor Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:600px;height:100px;" _behavior="sqleditor">
+	select * from tablename
+	where
+	name='john' and age=33
+	order by name
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:600px;height:100px;" _behavior="sqleditor">
+	select * from tablename
+	where
+	name='john' and age=33
+	order by name
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: xmleditor -->
+<div class="w_bold">Behavior: xmleditor - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_xmleditor'));">view sample code</a></div>
+<div id="code_xmleditor" style="display:none;">
+<b>Example Code for xmleditor Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:600px;height:100px;" _behavior="xmleditor">
+	<xml>
+		<name>John Doe</name>
+		<age>33</age>
+	</xml>
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:600px;height:100px;" _behavior="xmleditor">
+	<xml>
+		<name>John Doe</name>
+		<age>33</age>
+	</xml>
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: tinymce -->
+<div class="w_bold">Behavior: tinymce - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_tinymce'));">view sample code</a></div>
+<div id="code_tinymce" style="display:none;">
+<b>Example Code for tinymce Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<textarea');?> style="width:300px;height:100px;" id="tinymce_test" _behavior="tinymce">
+	<b>Hello</b> World
+<?=encodeHtml('</textarea>');?>
+</textarea></form>
+</div>
+<form class="w_form"><textarea style="width:300px;height:100px;" id="tinymce_test" _behavior="tinymce">
+	<b>Hello</b> World
+</textarea></form>
+<br clear="both">
+
+<!--Behavior: @raid -->
+<div class="w_bold" style="margin-top:10px;">Behavior: @raid - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_raid'));">view sample code</a></div>
+<div id="code_raid" style="display:none;">
+<b>Example Code for raid Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<table><tr valign="top"><td>
+<?=encodeHtml('<form');?> class="w_form">
+<?=encodeHtml('<textarea');?> style="width:250px;height:100px;" id="raid_test" _behavior="@raid(raid_test_clone)">
+Type something here<hr>
+and it will apprear<br>
+to the right
+<?=encodeHtml('</textarea>');?>
+<?=encodeHtml('</form>');?>
+</td><td>
+	<div _behavior="@raid(raid_test)"></div>
+</td></tr></table>
+</textarea></form>
+</div>
+<table><tr valign="top"><td>
+<form class="w_form"><textarea style="width:250px;height:100px;" id="raid_test" _behavior="@raid(raid_test_clone)">
+Type something here<hr>
+and it will apprear<br>
+to the right
+</textarea></form>
+</td><td>
+	<div id="raid_test_clone"></div>
+</td></tr></table>
+<br clear="both">
+
+<!--Behavior: slideshow -->
+<div class="w_bold" style="margin-top:10px;">Behavior: slideshow - <a href="#" class="w_link w_dblue" onclick="return centerpopDiv(getText('code_slideshow'));">view sample code</a></div>
+<div id="code_slideshow" style="display:none;">
+<b>Example Code for slideshow Behavior:</b>
+<form class="w_form"><textarea style="width:700px;height:150px;" wrap="off">
+<?=encodeHtml('<div');?> class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;" id="slideshow_test" timer="4" _behavior="slideshow">
+	<img id="slide1" src="/wfiles/iconsets/64/briefcase.png" width="64" height="64" border="0">
+	<img id="slide2" src="/wfiles/iconsets/64/books.png" width="64" height="64" border="0">
+	<img id="slide3" src="/wfiles/iconsets/64/dashboard.png" width="64" height="64" border="0">
+	<img id="slide4" src="/wfiles/iconsets/64/dictionary.png" width="64" height="64" border="0">
+	<img id="slide5" src="/wfiles/iconsets/64/globe.png" width="64" height="64" border="0">
+<?=encodeHtml('</div>');?>
+</textarea></form>
+</div>
+<div class="w_border w_pad w_lgrayback w_gradient w_round w_left" style="padding:10px;" id="slideshow_test" timer="4" _behavior="slideshow">
+	<img id="slide1" src="/wfiles/iconsets/64/briefcase.png" width="64" height="64" border="0">
+	<img id="slide2" src="/wfiles/iconsets/64/books.png" width="64" height="64" border="0">
+	<img id="slide3" src="/wfiles/iconsets/64/dashboard.png" width="64" height="64" border="0">
+	<img id="slide4" src="/wfiles/iconsets/64/dictionary.png" width="64" height="64" border="0">
+	<img id="slide5" src="/wfiles/iconsets/64/globe.png" width="64" height="64" border="0">
+</div>
+<br clear="both">
+<p><p><p>
+</div>
+</body>
+</html>
