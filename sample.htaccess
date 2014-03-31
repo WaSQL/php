@@ -1,0 +1,25 @@
+Options +FollowSymLinks
+Options +ExecCGI
+RewriteEngine on
+
+#Define Custom Environment variables if needed
+#RewriteRule .* - [E=VARNAME:somevalue]
+
+#redirect host requests with a prefix to www
+#RewriteCond %{HTTP_HOST} ^yourdomain.com [NC]
+#RewriteRule ^(.*)$ http://www.yourdomain.com/$1 [L,R=301]
+
+#prevent hotlinking to images, js and css files from other sites
+#RewriteCond %{HTTP_REFERER} !^http://(www|stage)(\.)(domain1|domain2)\.(com|net|org)(/.*)*$ [NC]
+#RewriteCond %{HTTP_REFERER} !^$
+#RewriteRule \.(jpe?g|gif|png|js|css)$ - [F]
+
+#ignore files
+RewriteCond %{REQUEST_FILENAME} !-f
+#ignore directories
+RewriteCond %{REQUEST_FILENAME} !-d
+#ignore server-status requests
+RewriteCond %{REQUEST_URI} !=/server-status
+#pass everything else to WaSQL
+RewriteRule ^(.*)$ /php/index.php?_view=$1 [L,QSA]
+RewriteRule ^$ /php/index.php?_view=index [L,QSA]

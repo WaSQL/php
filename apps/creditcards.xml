@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="celio_store" timestamp="1276954771">
+<xmlschema name="cc">
+	<field name="_cdate" type="datetime NULL" />
+	<field name="_cuser" type="int(11) NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="cc_cvv2" type="char(5) NOT NULL" />
+	<field name="cc_expire_month" type="char(2) NOT NULL" />
+	<field name="cc_expire_year" type="char(2) NOT NULL" />
+	<field name="cc_name" type="varchar(255) NOT NULL" />
+	<field name="cc_number" type="varchar(50) NOT NULL" />
+	<field name="cc_type" type="varchar(100) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>16</_id>
+	<tablename>cc</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 10:37:33</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:10:38</_edate>
+	<_euser>1</_euser>
+	<_id>258</_id>
+	<displayname>Credit Card Expiration Month</displayname>
+	<dvals>Jan
+Feb
+Mar
+Apr
+May
+Jun
+Jul
+Aug
+Sep
+Oct
+Nov
+Dec</dvals>
+	<fieldname>cc_expire_month</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<tvals>01
+02
+03
+04
+05
+06
+07
+08
+09
+10
+11
+12</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 11:01:35</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:10:07</_edate>
+	<_euser>1</_euser>
+	<_id>259</_id>
+	<displayname>Credit Cart Type</displayname>
+	<dvals>Visa
+Mastercard
+American Express
+Discover</dvals>
+	<fieldname>cc_type</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<tvals>Visa
+Mastercard
+Amex
+Discover</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 11:05:15</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:10:22</_edate>
+	<_euser>1</_euser>
+	<_id>261</_id>
+	<displayname>Credit Card Expiration Year</displayname>
+	<dvals><?$yrs=selectYears(10,4,0);return implode("\r\n",$yrs);?></dvals>
+	<fieldname>cc_expire_year</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<tvals><?$yrs=selectYears(10,2,0);return implode("\r\n",$yrs);?></tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:27:40</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:09:57</_edate>
+	<_euser>1</_euser>
+	<_id>262</_id>
+	<displayname>Credit Card Number</displayname>
+	<fieldname>cc_number</fieldname>
+	<height>0</height>
+	<inputmax>50</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<width>250</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:30:51</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:10:48</_edate>
+	<_euser>1</_euser>
+	<_id>263</_id>
+	<displayname>Name on Credit Card</displayname>
+	<fieldname>cc_name</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<width>250</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:32:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 13:40:59</_edate>
+	<_euser>1</_euser>
+	<_id>269</_id>
+	<displayname>Credit Card Verification Code</displayname>
+	<fieldname>cc_cvv2</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>cc</tablename>
+	<width>50</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>264</_id>
+	<fieldname>_cdate</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<required>0</required>
+	<tablename>cc</tablename>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>265</_id>
+	<fieldname>_cuser</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<required>0</required>
+	<tablename>cc</tablename>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>266</_id>
+	<fieldname>_edate</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<required>0</required>
+	<tablename>cc</tablename>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>267</_id>
+	<fieldname>_euser</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<required>0</required>
+	<tablename>cc</tablename>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<_cuser>1</_cuser>
+	<_id>268</_id>
+	<fieldname>_id</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<required>0</required>
+	<tablename>cc</tablename>
+	<width>0</width>
+</xmlmeta>
+
+
+</export>

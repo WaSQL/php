@@ -1,0 +1,4201 @@
+<xmlschema name="_fielddata">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="behavior" type="varchar(255) NULL">
+	<field name="defaultval" type="varchar(255) NULL">
+	<field name="displayname" type="varchar(50) NULL">
+	<field name="dvals" type="text NULL">
+	<field name="editlist" type="tinyint(4) NULL">
+	<field name="fieldname" type="varchar(100) NOT NULL">
+	<field name="height" type="int(11) NULL">
+	<field name="help" type="varchar(255) NULL">
+	<field name="inputmax" type="int(11) NULL">
+	<field name="inputtype" type="varchar(25) NULL">
+	<field name="mask" type="varchar(255) NULL">
+	<field name="onchange" type="varchar(255) NULL">
+	<field name="required" type="tinyint(4) NULL">
+	<field name="tablename" type="varchar(100) NOT NULL">
+	<field name="tvals" type="text NULL">
+	<field name="width" type="int(11) NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>10</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>checkbox</inputtype>
+	<fieldname>editlist</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Marks this field to editable in list format.</help>
+	<_cdate>2005-01-22 21:59:36</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+	<height>0</height>
+	<displayname>Edit-in-List</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>date</inputtype>
+	<fieldname>_cdate</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>CreateDate</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>date</inputtype>
+	<fieldname>_edate</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>EditDate</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>60</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>_id</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>ID</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>325</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>defaultval</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>Default Value</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>100</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>displayname</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<mask>alphanumeric</mask>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>Displayname</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>325</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>dvals</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>Display Values</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>325</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>tvals</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2005-01-22 21:59:45</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>0</height>
+	<displayname>True Values</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>125</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>Checkbox,Color,ComboBox,Date,Date&Time,FileUpload,Formula,Hidden,MultiSelect,Password,Radio,Select,Text,Textarea,Time</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>inputtype</fieldname>
+	<_edate>2009-02-12 23:19:47</_edate>
+	<required>1</required>
+	<help>Input type defines what data is allowed and what the input field looks like and acts like.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>checkbox,color,combo,date,datetime,file,formula,hidden,multiselect,password,radio,select,text,textarea,time</tvals>
+	<height>0</height>
+	<displayname>Input Type</displayname>
+	<defaultval>text</defaultval>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>125</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>Letters Only,Letters and Numbers Only,Email Address,Hex Color,Integers,Decimals,Any Real Number,Phone Number,Time of Day,Social Security Number,Zip Code</dvals>
+	<inputtype>combo</inputtype>
+	<fieldname>mask</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Specify a mask/filter to apply to this field. Select from the list of create your own using regular expressions.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>alpha,alphanumeric,email,hexcolor,integer,decimal,number,phone,time,ssn,zipcode</tvals>
+	<height>0</height>
+	<displayname>Mask</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>125</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>&getDBTables</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>tablename</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<required>1</required>
+	<help>Table the field belongs to.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>&getDBTables</tvals>
+	<height>0</height>
+	<displayname>Table Name</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>325</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>help</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Help to show in the status bar when the field has focus and to show in this popup window.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>100</height>
+	<displayname>Help</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>40</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>inputmax</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Max number of characters to allow for input.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>20</height>
+	<displayname>Max</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>50</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>checkbox</inputtype>
+	<fieldname>required</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Is this field required.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+	<height>0</height>
+	<displayname>Required</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>125</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>fieldname</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<required>1</required>
+	<help>Exact fieldname of this field</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>20</height>
+	<displayname>Fieldname</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>40</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>width</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Width of the input field.</help>
+	<_cdate>2006-03-27 17:26:05</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>20</height>
+	<displayname>Width</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>40</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>height</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<help>Height of the input field. Defaults to 20.</help>
+	<_cdate>2006-03-27 17:26:06</_cdate>
+	<tablename>_fielddata</tablename>
+	<height>20</height>
+	<displayname>Height</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2006-04-05 22:37:56</_cdate>
+	<tablename>_fielddata</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2006-04-05 22:37:56</_cdate>
+	<tablename>_fielddata</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>95</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<dvals>Font,Size,Color,Background,Search,Resize,Drag,Slider,HTML Toolbar</dvals>
+	<inputtype>multiselect</inputtype>
+	<fieldname>behavior</fieldname>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2006-04-05 22:42:03</_cdate>
+	<tablename>_fielddata</tablename>
+	<tvals>font,size,color,background,search,resize,drag,slider,html</tvals>
+	<height>175</height>
+	<displayname>Behavior</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>325</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>onchange</fieldname>
+	<_edate>2006-06-19 17:44:49</_edate>
+	<_cdate>2006-06-19 17:42:19</_cdate>
+	<tablename>_fielddata</tablename>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>tablename,fieldname,inputtype,width,height,inputmax,editlist</listfields>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2006-06-19 17:44:12</_edate>
+	<_cdate>2006-03-27 20:58:31</_cdate>
+	<tablename>_fielddata</tablename>
+	<sortfields>tablename,fieldname,inputtype</sortfields>
+	<formfields>tablename fieldname
+displayname inputtype
+width height inputmax required editlist 
+mask behavior
+onchange
+tvals
+dvals
+defaultval
+help</formfields>
+</xmlmeta>
+
+
+<xmlschema name="_history">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="fieldname" type="varchar(255) NOT NULL">
+	<field name="fieldvalue" type="text NULL">
+	<field name="note" type="varchar(255) NULL">
+	<field name="recid" type="int(11) NULL">
+	<field name="tablename" type="varchar(255) NOT NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>125</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<inputtype>select</inputtype>
+	<fieldname>fieldname</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+	<tvals><perl>
+if(!length($input{ctable})){return "";}
+my @fields=getDBFields($input{ctable},1);
+return join(",",@fields);
+</perl></tvals>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>350</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>fieldvalue</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+	<height>200</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>50</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<fieldname>recid</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>150</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<inputtype>select</inputtype>
+	<fieldname>tablename</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<onchange>callWaSQL(0,'addedit_fieldname_container','&tablename=_history&fieldname=fieldname&noblank=1&ctable='+this.value);return false;</onchange>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+	<tvals><perl>
+my @tmp=();
+my @tmp2=getDBTables();
+foreach my $table (@tmp2){
+	if($table!~/^\_(history|fielddata|tabledata|users)/is){push(@tmp,$table);}
+	}
+@tmp=sort(@tmp);
+return join(",",@tmp);
+</perl></tvals>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>350</width>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>note</fieldname>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-19 17:15:14</_cdate>
+	<tablename>_history</tablename>
+	<height>100</height>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>_cuser,tablename,fieldname,recid,note</listfields>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2006-06-19 17:53:10</_edate>
+	<_cdate>2006-06-16 17:56:04</_cdate>
+	<tablename>_history</tablename>
+	<formfields>_cuser _cdate
+tablename fieldname recid
+fieldvalue
+note</formfields>
+</xmlmeta>
+
+
+
+
+<xmlschema name="_pages">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="body" type="text NULL">
+	<field name="description" type="varchar(255) NULL">
+	<field name="footer" type="text NULL">
+	<field name="header" type="text NULL">
+	<field name="headline" type="varchar(255) NULL">
+	<field name="meta_desc" type="varchar(255) NULL">
+	<field name="meta_key" type="varchar(255) NULL">
+	<field name="name" type="varchar(50) NOT NULL UNIQUE">
+	<field name="parent" type="int(11) NULL">
+	<field name="publish" type="varchar(100) NULL">
+	<field name="sort_order" type="int(11) NULL">
+	<field name="status" type="tinyint(4) NULL">
+	<field name="template" type="int(11) NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_adate</fieldname>
+	<_edate>2006-03-17 22:59:22</_edate>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>10</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>checkbox</inputtype>
+	<fieldname>_mod</fieldname>
+	<_edate>2006-03-17 22:59:22</_edate>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<editlist>1</editlist>
+	<tablename>_pages</tablename>
+	<tvals>1</tvals>
+	<height>0</height>
+	<displayname>Mod?</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_pdate</fieldname>
+	<_edate>2006-03-17 22:59:22</_edate>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+	<displayname>Publish Date</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>10</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>checkbox</inputtype>
+	<fieldname>status</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Check to Show Page</help>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<editlist>1</editlist>
+	<tablename>_pages</tablename>
+	<tvals>1</tvals>
+	<height>0</height>
+	<displayname>Show?</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>description</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<editlist>1</editlist>
+	<tablename>_pages</tablename>
+	<height>0</height>
+	<displayname>Description</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>footer</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>50</height>
+	<displayname>Footer</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>headline</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+	<displayname>Headline</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>meta_desc</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>50</height>
+	<displayname>MetaTag Description</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>meta_key</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<tablename>_pages</tablename>
+	<height>50</height>
+	<displayname>MetaTag Keywords</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>100</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>select name from _pages order by name,_id</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>parent</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 21:34:33</_cdate>
+	<mask>integer</mask>
+	<tablename>_pages</tablename>
+	<tvals>select _id from _pages order by name,_id</tvals>
+	<height>0</height>
+	<displayname>Parent Page</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>500</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>body</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Page content.</help>
+	<_cdate>2006-03-27 17:26:06</_cdate>
+	<mask>searchandreplace</mask>
+	<tablename>_pages</tablename>
+	<behavior>html</behavior>
+	<height>300</height>
+	<displayname>Body</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>header</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Header content.</help>
+	<_cdate>2006-03-27 17:26:06</_cdate>
+	<tablename>_pages</tablename>
+	<height>50</height>
+	<displayname>Header</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>25</width>
+	<_euser>1</_euser>
+	<inputmax>5</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>sort_order</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Used to determine the sort order of the pages.</help>
+	<_cdate>2006-03-27 17:26:07</_cdate>
+	<editlist>1</editlist>
+	<tablename>_pages</tablename>
+	<height>0</height>
+	<displayname>Order</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>name</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>1</required>
+	<help>Name of page. Must be unique.</help>
+	<_cdate>2006-03-27 17:26:07</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+	<displayname>Page Name</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>100</width>
+	<_euser>1</_euser>
+	<inputmax>150</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>combo</inputtype>
+	<fieldname>publish</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Name of page to publish to if a publish is requested (eg. /index.html or /products/test.html).</help>
+	<_cdate>2006-03-27 17:26:07</_cdate>
+	<tablename>_pages</tablename>
+	<tvals>test.html,btest.html</tvals>
+	<height>0</height>
+	<displayname>Publish As</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>100</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>select name,_id from _templates order by name,_id</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>template</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<help>Template to view this page through.</help>
+	<_cdate>2006-03-27 17:26:07</_cdate>
+	<editlist>1</editlist>
+	<tablename>_pages</tablename>
+	<tvals>select _id from _templates order by name,_id</tvals>
+	<height>0</height>
+	<displayname>Template</displayname>
+	<defaultval>2</defaultval>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2006-06-07 20:30:34</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<required>0</required>
+	<_cdate>2006-06-07 20:30:34</_cdate>
+	<tablename>_pages</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>name,status,parent,template,sort_order,publish,description</listfields>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2008-04-21 05:09:07</_edate>
+	<_cdate>2006-03-27 20:58:31</_cdate>
+	<tablename>_pages</tablename>
+	<listfields_mod>name,parent,sort_order,status</listfields_mod>
+	<formfields_mod>name,description,parent:status:sort_order,body</formfields_mod>
+	<sortfields>_cdate desc,_edate desc</sortfields>
+	<formfields>name:template,description,parent:status:sort_order:publish,body</formfields>
+</xmlmeta>
+
+
+<xmldata table="_pages">
+	<_cdate>2009-02-12 23:00:57</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-25 08:01:59</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<body><?
+/*filetype:php*/
+return phpinfo();
+?></body>
+	<description>Sample Index Page</description>
+	<name>index</name>
+	<template>2</template>
+</xmldata>
+
+
+<xmlschema name="_tabledata">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="formfields" type="text NULL">
+	<field name="formfields_mod" type="text NULL">
+	<field name="listfields" type="text NULL">
+	<field name="listfields_mod" type="text NULL">
+	<field name="sortfields" type="varchar(255) NULL">
+	<field name="sortfields_mod" type="varchar(255) NULL">
+	<field name="tablename" type="varchar(255) NOT NULL UNIQUE">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2005-10-08 20:36:33</_edate>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>formfields</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>Form Fields</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>formfields_mod</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>Form Fields for Moderators</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>listfields</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>List Fields</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>listfields_mod</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>List Fields for Moderators</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>sortfields</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>Sort Fields</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>sortfields_mod</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>0</required>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<height>0</height>
+	<displayname>Sort Fields for Moderators</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>150</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>&getDBTables</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>tablename</fieldname>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<required>1</required>
+	<help>Table the field belongs to.</help>
+	<_cdate>2006-03-27 17:26:09</_cdate>
+	<tablename>_tabledata</tablename>
+	<tvals>&getDBTables</tvals>
+	<height>0</height>
+	<displayname>Table Name</displayname>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<_cuser>1</_cuser>
+	<_edate>2005-05-24 06:48:02</_edate>
+	<_cdate>2005-05-24 06:45:28</_cdate>
+	<tablename>_tabledata</tablename>
+	<formfields>tablename,formfields,listfields,sortfields,formfields_mod,listfields_mod,sortfields_mod</formfields>
+</xmlmeta>
+
+
+<xmlschema name="_templates">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="body" type="text NULL">
+	<field name="description" type="varchar(255) NULL">
+	<field name="name" type="varchar(50) NOT NULL UNIQUE">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_adate</fieldname>
+	<_edate>2005-05-24 06:48:44</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_mod</fieldname>
+	<_edate>2005-05-24 06:48:44</_edate>
+	<required>0</required>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>description</fieldname>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+	<displayname>Description</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>200</width>
+	<inputmax>150</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>name</fieldname>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<required>1</required>
+	<help>Unique name for this template</help>
+	<_cdate>2006-03-27 17:26:10</_cdate>
+	<tablename>_templates</tablename>
+	<height>0</height>
+	<displayname>Template Name</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>body</fieldname>
+	<_edate>2006-03-18 06:00:01</_edate>
+	<help>Template content.</help>
+	<_cdate>2006-03-27 17:26:10</_cdate>
+	<mask>searchandreplace</mask>
+	<tablename>_templates</tablename>
+	<height>200</height>
+	<displayname>Body</displayname>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>name,description</listfields>
+	<_cuser>1</_cuser>
+	<_edate>2005-10-16 18:53:48</_edate>
+	<_cdate>2005-01-19 22:19:22</_cdate>
+	<tablename>_templates</tablename>
+	<listfields_mod>name,_edate,description</listfields_mod>
+	<formfields_mod>name:_edate,description,body</formfields_mod>
+	<formfields>name,description,body</formfields>
+</xmlmeta>
+
+
+<xmldata table="_templates">
+	<_cdate>2007-03-07 20:51:09</_cdate>
+	<_edate>2009-02-24 06:07:29</_edate>
+	<_id>1</_id>
+	<body><? global $PAGE;return evalPHP($PAGE['body']);?></body>
+	<name>Blank</name>
+</xmldata>
+<xmldata table="_templates">
+	<_cdate>2007-03-07 20:51:09</_cdate>
+	<_edate>2009-04-25 08:24:22</_edate>
+	<_id>2</_id>
+	<body><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link type="text/css" rel="stylesheet" href="/wfiles/min/index.php?g=w_Css" />
+	<script language="javascript" type="text/javascript" src="/wfiles/min/index.php?g=w_Js"></script>
+</head>
+
+<body>
+
+		<?global $PAGE; return evalPHP($PAGE{body});?>
+
+</body>
+</html></body>
+	<name>Main</name>
+</xmldata>
+
+
+
+
+<xmlschema name="_users">
+	<field name="_adate" type="datetime NULL">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="address" type="varchar(255) NULL">
+	<field name="city" type="varchar(50) NULL">
+	<field name="email" type="varchar(255) NULL">
+	<field name="guid" type="bigint(20) NULL">
+	<field name="hint" type="varchar(255) NULL">
+	<field name="name" type="varchar(255) NULL">
+	<field name="note" type="varchar(255) NULL">
+	<field name="password" type="varchar(25) NOT NULL">
+	<field name="phone" type="varchar(25) NULL">
+	<field name="state" type="char(2) NULL">
+	<field name="username" type="varchar(25) NOT NULL UNIQUE">
+	<field name="utype" type="varchar(25) NOT NULL">
+	<field name="zip" type="varchar(10) NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>120</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>combo</inputtype>
+	<fieldname>city</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<help>Select or enter the city where you live.</help>
+	<_cdate>2006-03-27 06:00:50</_cdate>
+	<tablename>_users</tablename>
+	<tvals>select city from _users group by city order by city</tvals>
+	<height>0</height>
+	<displayname>City</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>300</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>name</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<help>Your name</help>
+	<_cdate>2006-03-27 06:01:15</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Name</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>select name from states order by name</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>state</fieldname>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<required>1</required>
+	<help>Select the state where you live</help>
+	<_cdate>2006-03-27 06:07:09</_cdate>
+	<tablename>_users</tablename>
+	<tvals>select code from states order by name</tvals>
+	<height>0</height>
+	<displayname>State</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>300</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>address</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<help>Your current address</help>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<tablename>_users</tablename>
+	<height>50</height>
+	<displayname>Address</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>guid</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>50</width>
+	<_euser>1</_euser>
+	<inputmax>10</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>zip</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2006-03-27 06:07:20</_cdate>
+	<mask>zipcode</mask>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Zip Code</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>100</width>
+	<_euser>1</_euser>
+	<inputmax>25</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>phone</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<help>Your Phone Number</help>
+	<_cdate>2006-03-27 06:09:26</_cdate>
+	<mask>phone</mask>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Phone</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>200</width>
+	<_euser>1</_euser>
+	<inputmax>25</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>username</fieldname>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<required>1</required>
+	<help>Username</help>
+	<_cdate>2006-03-27 17:26:11</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Username</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>96</width>
+	<_euser>1</_euser>
+	<inputmax>25</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>password</inputtype>
+	<fieldname>password</fieldname>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<required>1</required>
+	<help>Password</help>
+	<_cdate>2006-03-27 17:26:11</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Password</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>Administrator,Modifier</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>utype</fieldname>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<required>1</required>
+	<help>User Type.</help>
+	<_cdate>2006-03-27 17:26:11</_cdate>
+	<editlist>1</editlist>
+	<tablename>_users</tablename>
+	<tvals>0,1</tvals>
+	<height>0</height>
+	<displayname>Type</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>200</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>hint</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<help>Password Hint to Display as a tooltip.</help>
+	<_cdate>2006-03-27 17:26:11</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Password Hint</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>300</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>email</fieldname>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<required>1</required>
+	<help>Email Address of this user</help>
+	<_cdate>2006-03-27 17:26:12</_cdate>
+	<mask>email</mask>
+	<tablename>_users</tablename>
+	<height>0</height>
+	<displayname>Email address</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2008-10-13 21:20:03</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2008-10-13 21:20:03</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_adate</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2008-10-16 05:54:52</_cdate>
+	<tablename>_users</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>300</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>textarea</inputtype>
+	<fieldname>note</fieldname>
+	<_edate>2008-10-16 22:15:20</_edate>
+	<required>0</required>
+	<_cdate>2008-10-16 05:54:52</_cdate>
+	<tablename>_users</tablename>
+	<height>100</height>
+	<displayname>Note</displayname>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>name email username</listfields>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-25 08:00:21</_edate>
+	<_cdate>2006-03-27 20:58:31</_cdate>
+	<tablename>_users</tablename>
+	<listfields_mod>name email</listfields_mod>
+	<formfields_mod>name 
+email
+note</formfields_mod>
+	<sortfields>_cdate desc,_edate desc,username</sortfields>
+	<formfields>username password
+name 
+email
+note</formfields>
+</xmlmeta>
+
+
+<xmldata table="_users">
+	<_adate>2009-04-25 08:26:44</_adate>
+	<_cdate>2006-03-27 05:59:34</_cdate>
+	<_edate>2009-04-25 08:25:00</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<email>admin@yourdomain.com</email>
+	<guid>283521660</guid>
+	<name>Default Administrator Account</name>
+	<note>This is the default admin account. It is highly recommended to change this.</note>
+	<password>admin</password>
+	<username>admin</username>
+	<utype>0</utype>
+</xmldata>
+
+
+
+
+<xmlschema name="_forms">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="email" type="varchar(255) NULL">
+	<field name="_formname" type="varchar(100) NOT NULL">
+	<field name="http_host" type="varchar(255) NULL">
+	<field name="script_url" type="varchar(255) NULL">
+	<field name="_xmldata" type="text NOT NULL">
+</xmlschema>
+
+
+<xmlmeta table="_tabledata">
+	<listfields>_formname email http_host script_url</listfields>
+	<_cuser>1</_cuser>
+	<_cdate>2009-04-25 07:52:57</_cdate>
+	<tablename>_forms</tablename>
+</xmlmeta>
+
+
+
+
+<xmlschema name="states">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="code" type="char(2) NOT NULL UNIQUE">
+	<field name="name" type="varchar(255) NOT NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>70</width>
+	<inputmax>2</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>code</fieldname>
+	<_cdate>2009-02-12 22:59:53</_cdate>
+	<tablename>states</tablename>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<_cuser>1</_cuser>
+	<_cdate>2009-02-12 23:00:06</_cdate>
+	<tablename>states</tablename>
+</xmlmeta>
+
+
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>1</_id>
+	<code>AL</code>
+	<name>Alabama</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>2</_id>
+	<code>AK</code>
+	<name>Alaska</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>3</_id>
+	<code>AZ</code>
+	<name>Arizona</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>4</_id>
+	<code>AR</code>
+	<name>Arkansas</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>5</_id>
+	<code>CA</code>
+	<name>California</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>6</_id>
+	<code>CO</code>
+	<name>Colorado</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>7</_id>
+	<code>CT</code>
+	<name>Connecticut</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>8</_id>
+	<code>DE</code>
+	<name>Delaware</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>9</_id>
+	<code>FL</code>
+	<name>Florida</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>10</_id>
+	<code>GA</code>
+	<name>Georgia</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>11</_id>
+	<code>HI</code>
+	<name>Hawaii</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:27</_cdate>
+	<_id>12</_id>
+	<code>ID</code>
+	<name>Idaho</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>13</_id>
+	<code>IL</code>
+	<name>Illinois</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>14</_id>
+	<code>IN</code>
+	<name>Indiana</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>15</_id>
+	<code>IA</code>
+	<name>Iowa</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>16</_id>
+	<code>KS</code>
+	<name>Kansas</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>17</_id>
+	<code>KY</code>
+	<name>Kentucky</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>18</_id>
+	<code>LA</code>
+	<name>Louisiana</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>19</_id>
+	<code>ME</code>
+	<name>Maine</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>20</_id>
+	<code>MD</code>
+	<name>Maryland</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>21</_id>
+	<code>MA</code>
+	<name>Massachusetts</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>22</_id>
+	<code>MI</code>
+	<name>Michigan</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>23</_id>
+	<code>MN</code>
+	<name>Minnesota</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:28</_cdate>
+	<_id>24</_id>
+	<code>MS</code>
+	<name>Mississippi</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>25</_id>
+	<code>MO</code>
+	<name>Missouri</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>26</_id>
+	<code>MT</code>
+	<name>Montana</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>27</_id>
+	<code>NE</code>
+	<name>Nebraska</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>28</_id>
+	<code>NV</code>
+	<name>Nevada</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>29</_id>
+	<code>NH</code>
+	<name>New Hampshire</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>30</_id>
+	<code>NJ</code>
+	<name>New Jersey</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>31</_id>
+	<code>NM</code>
+	<name>New Mexico</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>32</_id>
+	<code>NY</code>
+	<name>New York</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>33</_id>
+	<code>NC</code>
+	<name>North Carolina</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>34</_id>
+	<code>ND</code>
+	<name>North Dakota</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>35</_id>
+	<code>OH</code>
+	<name>Ohio</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:29</_cdate>
+	<_id>36</_id>
+	<code>OK</code>
+	<name>Oklahoma</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>37</_id>
+	<code>OR</code>
+	<name>Oregon</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>38</_id>
+	<code>PA</code>
+	<name>Pennsylvania</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>39</_id>
+	<code>RI</code>
+	<name>Rhode Island</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>40</_id>
+	<code>SC</code>
+	<name>South Carolina</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>41</_id>
+	<code>SD</code>
+	<name>South Dakota</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>42</_id>
+	<code>TN</code>
+	<name>Tennessee</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>43</_id>
+	<code>TX</code>
+	<name>Texas</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>44</_id>
+	<code>UT</code>
+	<name>Utah</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>45</_id>
+	<code>VT</code>
+	<name>Vermont</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>46</_id>
+	<code>VA</code>
+	<name>Virginia</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>47</_id>
+	<code>WA</code>
+	<name>Washington</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:30</_cdate>
+	<_id>48</_id>
+	<code>WV</code>
+	<name>West Virginia</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:31</_cdate>
+	<_id>49</_id>
+	<code>WI</code>
+	<name>Wisconsin</name>
+</xmldata>
+<xmldata table="states">
+	<_cdate>2006-03-27 06:10:31</_cdate>
+	<_id>50</_id>
+	<code>WY</code>
+	<name>Wyoming</name>
+</xmldata>
+
+<xmlschema name="cc">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="cc_cvv2" type="char(5) NOT NULL">
+	<field name="cc_expire_month" type="char(2) NOT NULL">
+	<field name="cc_expire_year" type="char(2) NOT NULL">
+	<field name="cc_name" type="varchar(255) NOT NULL">
+	<field name="cc_number" type="varchar(50) NOT NULL">
+	<field name="cc_type" type="varchar(100) NOT NULL">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>Jan
+Feb
+Mar
+Apr
+May
+Jun
+Jul
+Aug
+Sep
+Oct
+Nov
+Dec</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>cc_expire_month</fieldname>
+	<_edate>2009-04-22 11:10:38</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 10:37:33</_cdate>
+	<tablename>cc</tablename>
+	<tvals>01
+02
+03
+04
+05
+06
+07
+08
+09
+10
+11
+12</tvals>
+	<height>0</height>
+	<displayname>Credit Card Expiration Month</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>Visa
+Mastercard
+American Express
+Discover</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>cc_type</fieldname>
+	<_edate>2009-04-22 11:10:07</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 11:01:35</_cdate>
+	<tablename>cc</tablename>
+	<tvals>Visa
+Mastercard
+Amex
+Discover</tvals>
+	<height>0</height>
+	<displayname>Credit Cart Type</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<dvals>2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016</dvals>
+	<inputtype>select</inputtype>
+	<fieldname>cc_expire_year</fieldname>
+	<_edate>2009-04-22 11:10:22</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 11:05:15</_cdate>
+	<tablename>cc</tablename>
+	<tvals>09
+10
+11
+12
+13
+14
+15
+16</tvals>
+	<height>0</height>
+	<displayname>Credit Card Expiration Year</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<_euser>1</_euser>
+	<inputmax>50</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>cc_number</fieldname>
+	<_edate>2009-04-22 11:09:57</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 15:27:40</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+	<displayname>Credit Card Number</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>250</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>cc_name</fieldname>
+	<_edate>2009-04-22 11:10:48</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 15:30:51</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+	<displayname>Name on Credit Card</displayname>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>50</width>
+	<_euser>1</_euser>
+	<inputmax>5</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>cc_cvv2</fieldname>
+	<_edate>2009-04-22 13:40:59</_edate>
+	<required>1</required>
+	<_cdate>2009-04-15 15:32:55</_cdate>
+	<tablename>cc</tablename>
+	<displayname>Credit Card Verification Code</displayname>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2009-04-22 11:10:38</_edate>
+	<_cdate>2009-04-15 15:31:15</_cdate>
+	<tablename>cc</tablename>
+</xmlmeta>
+
+
+
+
+<xmlschema name="countries">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="active" type="tinyint(4) NULL Default 1">
+	<field name="code" type="char(2) NOT NULL">
+	<field name="name" type="varchar(255) NOT NULL UNIQUE">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>active</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>code</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>name</fieldname>
+	<required>0</required>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>code name</listfields>
+	<_cuser>1</_cuser>
+	<_cdate>2009-04-22 08:56:51</_cdate>
+	<tablename>countries</tablename>
+</xmlmeta>
+
+
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1</_id>
+	<active>1</active>
+	<code>AL</code>
+	<name>Albania</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>2</_id>
+	<active>1</active>
+	<code>GA</code>
+	<name>Gabon</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>3</_id>
+	<active>1</active>
+	<code>NE</code>
+	<name>Niger</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>4</_id>
+	<active>1</active>
+	<code>DZ</code>
+	<name>Algeria</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>5</_id>
+	<active>1</active>
+	<code>GM</code>
+	<name>Gambia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>6</_id>
+	<active>1</active>
+	<code>NG</code>
+	<name>Nigeria</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>7</_id>
+	<active>1</active>
+	<code>AS</code>
+	<name>American Samoa</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>8</_id>
+	<active>1</active>
+	<code>GE</code>
+	<name>Georgia, Republic of</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>9</_id>
+	<active>1</active>
+	<code>NO</code>
+	<name>Norway</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>10</_id>
+	<active>1</active>
+	<code>AD</code>
+	<name>Andorra</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>11</_id>
+	<active>1</active>
+	<code>DE</code>
+	<name>Germany</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>12</_id>
+	<active>1</active>
+	<code>OM</code>
+	<name>Oman</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>13</_id>
+	<active>1</active>
+	<code>AO</code>
+	<name>Angola</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>14</_id>
+	<active>1</active>
+	<code>GH</code>
+	<name>Ghana</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>15</_id>
+	<active>1</active>
+	<code>PK</code>
+	<name>Pakistan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>16</_id>
+	<active>1</active>
+	<code>AI</code>
+	<name>Anguilla</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>17</_id>
+	<active>1</active>
+	<code>GI</code>
+	<name>Gibraltar</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>18</_id>
+	<active>1</active>
+	<code>PW</code>
+	<name>Palau</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>19</_id>
+	<active>1</active>
+	<code>AG</code>
+	<name>Antigua</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>20</_id>
+	<active>1</active>
+	<code>GR</code>
+	<name>Greece</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>21</_id>
+	<active>1</active>
+	<code>PA</code>
+	<name>Panama</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>22</_id>
+	<active>1</active>
+	<code>AR</code>
+	<name>Argentina</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>23</_id>
+	<active>1</active>
+	<code>GL</code>
+	<name>Greenland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>24</_id>
+	<active>1</active>
+	<code>PG</code>
+	<name>Papua New Guinea</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>25</_id>
+	<active>1</active>
+	<code>AM</code>
+	<name>Armenia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>26</_id>
+	<active>1</active>
+	<code>GD</code>
+	<name>Grenada</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>27</_id>
+	<active>1</active>
+	<code>PY</code>
+	<name>Paraguay</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>28</_id>
+	<active>1</active>
+	<code>AW</code>
+	<name>Aruba</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>29</_id>
+	<active>1</active>
+	<code>GP</code>
+	<name>Guadeloupe</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>30</_id>
+	<active>1</active>
+	<code>PE</code>
+	<name>Peru</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>31</_id>
+	<active>1</active>
+	<code>AU</code>
+	<name>Australia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>32</_id>
+	<active>1</active>
+	<code>GU</code>
+	<name>Guam</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>33</_id>
+	<active>1</active>
+	<code>PH</code>
+	<name>Philippines</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>34</_id>
+	<active>1</active>
+	<code>AT</code>
+	<name>Austria</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>35</_id>
+	<active>1</active>
+	<code>GT</code>
+	<name>Guatemala</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>36</_id>
+	<active>1</active>
+	<code>PL</code>
+	<name>Poland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>37</_id>
+	<active>1</active>
+	<code>AZ</code>
+	<name>Azerbaijan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>38</_id>
+	<active>1</active>
+	<code>GN</code>
+	<name>Guinea</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>39</_id>
+	<active>1</active>
+	<code>PT</code>
+	<name>Portugal</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>40</_id>
+	<active>1</active>
+	<code>BS</code>
+	<name>Bahamas</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>41</_id>
+	<active>1</active>
+	<code>GW</code>
+	<name>Guinea-Bissau</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>42</_id>
+	<active>1</active>
+	<code>US</code>
+	<name>Puerto Rico</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>43</_id>
+	<active>1</active>
+	<code>BH</code>
+	<name>Bahrain</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>44</_id>
+	<active>1</active>
+	<code>GY</code>
+	<name>Guyana</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>45</_id>
+	<active>1</active>
+	<code>QA</code>
+	<name>Qatar</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>46</_id>
+	<active>1</active>
+	<code>BD</code>
+	<name>Bangladesh</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>47</_id>
+	<active>1</active>
+	<code>HT</code>
+	<name>Haiti</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>48</_id>
+	<active>1</active>
+	<code>RE</code>
+	<name>Reunion Island</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>49</_id>
+	<active>1</active>
+	<code>BB</code>
+	<name>Barbados</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>50</_id>
+	<active>1</active>
+	<code>HN</code>
+	<name>Honduras</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>51</_id>
+	<active>1</active>
+	<code>RO</code>
+	<name>Romania</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>52</_id>
+	<active>1</active>
+	<code>BY</code>
+	<name>Belarus</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>53</_id>
+	<active>1</active>
+	<code>HK</code>
+	<name>Hong Kong</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>54</_id>
+	<active>1</active>
+	<code>RU</code>
+	<name>Russia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>55</_id>
+	<active>1</active>
+	<code>BE</code>
+	<name>Belgium</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>56</_id>
+	<active>1</active>
+	<code>HU</code>
+	<name>Hungary</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>57</_id>
+	<active>1</active>
+	<code>RW</code>
+	<name>Rwanda</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>58</_id>
+	<active>1</active>
+	<code>BZ</code>
+	<name>Belize</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>59</_id>
+	<active>1</active>
+	<code>IS</code>
+	<name>Iceland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>60</_id>
+	<active>1</active>
+	<code>MP</code>
+	<name>Saipan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>61</_id>
+	<active>1</active>
+	<code>BJ</code>
+	<name>Benin</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>62</_id>
+	<active>1</active>
+	<code>IN</code>
+	<name>India</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>63</_id>
+	<active>1</active>
+	<code>SM</code>
+	<name>San Marino</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>64</_id>
+	<active>1</active>
+	<code>BM</code>
+	<name>Bermuda</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>65</_id>
+	<active>1</active>
+	<code>ID</code>
+	<name>Indonesia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>66</_id>
+	<active>1</active>
+	<code>SA</code>
+	<name>Saudi Arabia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>67</_id>
+	<active>1</active>
+	<code>BT</code>
+	<name>Bhutan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>68</_id>
+	<active>1</active>
+	<code>IE</code>
+	<name>Ireland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>69</_id>
+	<active>1</active>
+	<code>SN</code>
+	<name>Senegal</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>70</_id>
+	<active>1</active>
+	<code>BO</code>
+	<name>Bolivia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>71</_id>
+	<active>1</active>
+	<code>IL</code>
+	<name>Israel</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>72</_id>
+	<active>1</active>
+	<code>SC</code>
+	<name>Seychelles</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>73</_id>
+	<active>1</active>
+	<code>BW</code>
+	<name>Botswana</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>74</_id>
+	<active>1</active>
+	<code>IT</code>
+	<name>Italy</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>75</_id>
+	<active>1</active>
+	<code>SL</code>
+	<name>Sierra Leone</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>76</_id>
+	<active>1</active>
+	<code>BR</code>
+	<name>Brazil</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>77</_id>
+	<active>1</active>
+	<code>CI</code>
+	<name>Ivory Coast</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>78</_id>
+	<active>1</active>
+	<code>SG</code>
+	<name>Singapore</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>79</_id>
+	<active>1</active>
+	<code>VG</code>
+	<name>British Virgin Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>80</_id>
+	<active>1</active>
+	<code>JM</code>
+	<name>Jamaica</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>81</_id>
+	<active>1</active>
+	<code>SK</code>
+	<name>Slovak Republic</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>82</_id>
+	<active>1</active>
+	<code>BN</code>
+	<name>Brunei</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>83</_id>
+	<active>1</active>
+	<code>JP</code>
+	<name>Japan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>84</_id>
+	<active>1</active>
+	<code>SI</code>
+	<name>Slovenia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>85</_id>
+	<active>1</active>
+	<code>BG</code>
+	<name>Bulgaria</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>86</_id>
+	<active>1</active>
+	<code>JO</code>
+	<name>Jordan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>87</_id>
+	<active>1</active>
+	<code>ZA</code>
+	<name>South Africa</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>88</_id>
+	<active>1</active>
+	<code>BF</code>
+	<name>Burkino Faso</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>89</_id>
+	<active>1</active>
+	<code>KZ</code>
+	<name>Kazakhstan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>90</_id>
+	<active>1</active>
+	<code>KR</code>
+	<name>South Korea</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>91</_id>
+	<active>1</active>
+	<code>MM</code>
+	<name>Burma</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>92</_id>
+	<active>1</active>
+	<code>KE</code>
+	<name>Kenya</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>93</_id>
+	<active>1</active>
+	<code>ES</code>
+	<name>Spain</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>94</_id>
+	<active>1</active>
+	<code>BI</code>
+	<name>Burundi</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>95</_id>
+	<active>1</active>
+	<code>KW</code>
+	<name>Kuwait</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>96</_id>
+	<active>1</active>
+	<code>LK</code>
+	<name>Sri Lanka</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>97</_id>
+	<active>1</active>
+	<code>KH</code>
+	<name>Cambodia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>98</_id>
+	<active>1</active>
+	<code>KG</code>
+	<name>Kyrgyzstan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>99</_id>
+	<active>1</active>
+	<code>KN</code>
+	<name>St. Kitts & Nevis</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>100</_id>
+	<active>1</active>
+	<code>CM</code>
+	<name>Cameroon</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>101</_id>
+	<active>1</active>
+	<code>LV</code>
+	<name>Latvia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>102</_id>
+	<active>1</active>
+	<code>LC</code>
+	<name>St. Lucia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>103</_id>
+	<active>1</active>
+	<code>CA</code>
+	<name>Canada</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>104</_id>
+	<active>1</active>
+	<code>LB</code>
+	<name>Lebanon</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>105</_id>
+	<active>1</active>
+	<code>VC</code>
+	<name>St. Vincent</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>106</_id>
+	<active>1</active>
+	<code>CV</code>
+	<name>Cape Verde</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>107</_id>
+	<active>1</active>
+	<code>LS</code>
+	<name>Lesotho</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>108</_id>
+	<active>1</active>
+	<code>SR</code>
+	<name>Suriname</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>109</_id>
+	<active>1</active>
+	<code>KY</code>
+	<name>Cayman Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>110</_id>
+	<active>1</active>
+	<code>LI</code>
+	<name>Liechtenstein</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>111</_id>
+	<active>1</active>
+	<code>SZ</code>
+	<name>Swaziland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>112</_id>
+	<active>1</active>
+	<code>CF</code>
+	<name>Central African</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>113</_id>
+	<active>1</active>
+	<code>LT</code>
+	<name>Lithuania</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>114</_id>
+	<active>1</active>
+	<code>SE</code>
+	<name>Sweden</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>115</_id>
+	<active>1</active>
+	<code>TD</code>
+	<name>Chad</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>116</_id>
+	<active>1</active>
+	<code>LU</code>
+	<name>Luxembourg</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>117</_id>
+	<active>1</active>
+	<code>CH</code>
+	<name>Switzerland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>118</_id>
+	<active>1</active>
+	<code>CL</code>
+	<name>Chile</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>119</_id>
+	<active>1</active>
+	<code>MO</code>
+	<name>Macau</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>120</_id>
+	<active>1</active>
+	<code>SY</code>
+	<name>Syria</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>121</_id>
+	<active>1</active>
+	<code>CN</code>
+	<name>China</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>122</_id>
+	<active>1</active>
+	<code>MK</code>
+	<name>Macedonia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>123</_id>
+	<active>1</active>
+	<code>TW</code>
+	<name>Taiwan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>124</_id>
+	<active>1</active>
+	<code>CO</code>
+	<name>Colombia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>125</_id>
+	<active>1</active>
+	<code>MG</code>
+	<name>Madagascar</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>126</_id>
+	<active>1</active>
+	<code>TZ</code>
+	<name>Tanzania</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>127</_id>
+	<active>1</active>
+	<code>CG</code>
+	<name>Congo</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>128</_id>
+	<active>1</active>
+	<code>MW</code>
+	<name>Malawi</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>129</_id>
+	<active>1</active>
+	<code>TH</code>
+	<name>Thailand</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>130</_id>
+	<active>1</active>
+	<code>CD</code>
+	<name>Congo, The Republic of</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>131</_id>
+	<active>1</active>
+	<code>MY</code>
+	<name>Malaysia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>132</_id>
+	<active>1</active>
+	<code>TG</code>
+	<name>Togo</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>133</_id>
+	<active>1</active>
+	<code>CK</code>
+	<name>Cook Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>134</_id>
+	<active>1</active>
+	<code>MV</code>
+	<name>Maldives</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>135</_id>
+	<active>1</active>
+	<code>TT</code>
+	<name>Trinidad & Tobago</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>136</_id>
+	<active>1</active>
+	<code>CR</code>
+	<name>Costa Rica</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>137</_id>
+	<active>1</active>
+	<code>ML</code>
+	<name>Mali</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>138</_id>
+	<active>1</active>
+	<code>TN</code>
+	<name>Tunisia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>139</_id>
+	<active>1</active>
+	<code>CI</code>
+	<name>Cote D'Ivoire</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>140</_id>
+	<active>1</active>
+	<code>MT</code>
+	<name>Malta</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>141</_id>
+	<active>1</active>
+	<code>TR</code>
+	<name>Turkey</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>142</_id>
+	<active>1</active>
+	<code>HR</code>
+	<name>Croatia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>143</_id>
+	<active>1</active>
+	<code>MH</code>
+	<name>Marshall Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>144</_id>
+	<active>1</active>
+	<code>TM</code>
+	<name>Turkmenistan, Republic of</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>145</_id>
+	<active>1</active>
+	<code>CY</code>
+	<name>Cyprus</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>146</_id>
+	<active>1</active>
+	<code>MQ</code>
+	<name>Martinique</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>147</_id>
+	<active>1</active>
+	<code>TC</code>
+	<name>Turks & Caicos Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>148</_id>
+	<active>1</active>
+	<code>CZ</code>
+	<name>Czech Republic</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>149</_id>
+	<active>1</active>
+	<code>MR</code>
+	<name>Mauritania</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>150</_id>
+	<active>1</active>
+	<code>AE</code>
+	<name>U.A.E.</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>151</_id>
+	<active>1</active>
+	<code>DK</code>
+	<name>Denmark</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>152</_id>
+	<active>1</active>
+	<code>MU</code>
+	<name>Mauritius</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>153</_id>
+	<active>1</active>
+	<code>VI</code>
+	<name>U.S. Virgin Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>154</_id>
+	<active>1</active>
+	<code>DJ</code>
+	<name>Djibouti</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>155</_id>
+	<active>1</active>
+	<code>MX</code>
+	<name>Mexico</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>156</_id>
+	<active>1</active>
+	<code>US</code>
+	<name>United States of America</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>157</_id>
+	<active>1</active>
+	<code>DM</code>
+	<name>Dominica</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>158</_id>
+	<active>1</active>
+	<code>FM</code>
+	<name>Micronesia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>159</_id>
+	<active>1</active>
+	<code>UG</code>
+	<name>Uganda</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>160</_id>
+	<active>1</active>
+	<code>DO</code>
+	<name>Dominican Republic</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>161</_id>
+	<active>1</active>
+	<code>MD</code>
+	<name>Moldova</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>162</_id>
+	<active>1</active>
+	<code>UA</code>
+	<name>Ukraine</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>163</_id>
+	<active>1</active>
+	<code>EC</code>
+	<name>Ecuador</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>164</_id>
+	<active>1</active>
+	<code>MC</code>
+	<name>Monaco</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>165</_id>
+	<active>1</active>
+	<code>GB</code>
+	<name>United Kingdom</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>166</_id>
+	<active>1</active>
+	<code>EG</code>
+	<name>Egypt</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>167</_id>
+	<active>1</active>
+	<code>MN</code>
+	<name>Mongolia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>168</_id>
+	<active>1</active>
+	<code>UY</code>
+	<name>Uruguay</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>169</_id>
+	<active>1</active>
+	<code>SV</code>
+	<name>El Salvador</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>170</_id>
+	<active>1</active>
+	<code>MS</code>
+	<name>Montserrat</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>171</_id>
+	<active>1</active>
+	<code>UZ</code>
+	<name>Uzbekistan</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>172</_id>
+	<active>1</active>
+	<code>GQ</code>
+	<name>Equatorial Guinea</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>173</_id>
+	<active>1</active>
+	<code>MA</code>
+	<name>Morocco</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>174</_id>
+	<active>1</active>
+	<code>VU</code>
+	<name>Vanuatu</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>175</_id>
+	<active>1</active>
+	<code>ER</code>
+	<name>Eritrea</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>176</_id>
+	<active>1</active>
+	<code>MZ</code>
+	<name>Mozambique</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>177</_id>
+	<active>1</active>
+	<code>VA</code>
+	<name>Vatican City</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>178</_id>
+	<active>1</active>
+	<code>EE</code>
+	<name>Estonia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>179</_id>
+	<active>1</active>
+	<code>MM</code>
+	<name>Myanmar</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>180</_id>
+	<active>1</active>
+	<code>VE</code>
+	<name>Venezuela</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>181</_id>
+	<active>1</active>
+	<code>ET</code>
+	<name>Ethiopia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>182</_id>
+	<active>1</active>
+	<code>NA</code>
+	<name>Namibia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>183</_id>
+	<active>1</active>
+	<code>VN</code>
+	<name>Vietnam</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>184</_id>
+	<active>1</active>
+	<code>FO</code>
+	<name>Faeroe Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>185</_id>
+	<active>1</active>
+	<code>NP</code>
+	<name>Nepal</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>186</_id>
+	<active>1</active>
+	<code>WF</code>
+	<name>Wallis & Futuna Islands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>187</_id>
+	<active>1</active>
+	<code>FJ</code>
+	<name>Fiji</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>188</_id>
+	<active>1</active>
+	<code>NL</code>
+	<name>Netherlands</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>189</_id>
+	<active>1</active>
+	<code>YE</code>
+	<name>Yemen</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>190</_id>
+	<active>1</active>
+	<code>FI</code>
+	<name>Finland</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>191</_id>
+	<active>1</active>
+	<code>AN</code>
+	<name>Netherlands Antilles</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>192</_id>
+	<active>1</active>
+	<code>ZM</code>
+	<name>Zambia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>193</_id>
+	<active>1</active>
+	<code>FR</code>
+	<name>France</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>194</_id>
+	<active>1</active>
+	<code>NC</code>
+	<name>New Caledonia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>195</_id>
+	<active>1</active>
+	<code>ZW</code>
+	<name>Zimbabwe</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>196</_id>
+	<active>1</active>
+	<code>GF</code>
+	<name>French Guiana</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>197</_id>
+	<active>1</active>
+	<code>NZ</code>
+	<name>New Zealand</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>198</_id>
+	<active>1</active>
+	<code>PF</code>
+	<name>French Polynesia</name>
+</xmldata>
+<xmldata table="countries">
+	<_cdate>2009-04-22 08:56:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>199</_id>
+	<active>1</active>
+	<code>NI</code>
+	<name>Nicaragua</name>
+</xmldata>
+
+
+
+
+<xmlschema name="shipping">
+	<field name="_cdate" type="datetime NULL">
+	<field name="_cuser" type="int(11) NULL">
+	<field name="_edate" type="datetime NULL">
+	<field name="_euser" type="int(11) NULL">
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment">
+	<field name="code" type="varchar(30) NOT NULL UNIQUE">
+	<field name="description" type="varchar(255) NOT NULL UNIQUE">
+</xmlschema>
+
+
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cdate</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>0</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_cuser</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>0</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_edate</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>0</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_euser</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>0</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>0</width>
+	<_euser>1</_euser>
+	<inputmax>0</inputmax>
+	<_cuser>1</_cuser>
+	<fieldname>_id</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>0</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>120</width>
+	<_euser>1</_euser>
+	<inputmax>30</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>code</fieldname>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<required>1</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<height>0</height>
+</xmlmeta>
+<xmlmeta table="_fielddata">
+	<width>400</width>
+	<_euser>1</_euser>
+	<inputmax>255</inputmax>
+	<_cuser>1</_cuser>
+	<inputtype>text</inputtype>
+	<fieldname>description</fieldname>
+	<_edate>2008-12-19 15:23:08</_edate>
+	<required>1</required>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<editlist>1</editlist>
+	<tablename>shipping</tablename>
+</xmlmeta>
+<xmlmeta table="_tabledata">
+	<listfields>code description</listfields>
+	<_euser>1</_euser>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-17 13:49:55</_edate>
+	<_cdate>2008-12-11 13:10:33</_cdate>
+	<tablename>shipping</tablename>
+	<listfields_mod>code description</listfields_mod>
+	<formfields_mod>code
+description</formfields_mod>
+	<formfields>code 
+description</formfields>
+</xmlmeta>
+
+
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1</_id>
+	<code>FDX 01</code>
+	<description>FEDEX 1ST OVERNIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>2</_id>
+	<code>FDX 02</code>
+	<description>FEDEX FIRST OVERNIGHT LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>3</_id>
+	<code>FDX 03</code>
+	<description>FEDERAL EXPRESS PRIORITY OVERNIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>4</_id>
+	<code>FDX 03S</code>
+	<description>FEDEX PRIORITY SATURDAY DELIVERY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>5</_id>
+	<code>FDX 04</code>
+	<description>FEDEX PRIORITY OVERNIGHT LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>6</_id>
+	<code>FDX 04S</code>
+	<description>FEDEX PRIORITY LTR SATURDAY DELIVERY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>7</_id>
+	<code>FDX 05</code>
+	<description>FEDEX STANDARD OVERNIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>8</_id>
+	<code>FDX 05S</code>
+	<description>FEDEX STANDARD OVERNIGHT SATURDAY DELIVERY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>9</_id>
+	<code>FDX 06</code>
+	<description>FEDEX STANDARD OVERNIGHT LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>10</_id>
+	<code>FDX 07</code>
+	<description>FEDEX FREIGHT OVERNIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>11</_id>
+	<code>FDX 08</code>
+	<description>FEDEX ECONOMY 2 DAY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>12</_id>
+	<code>FDX 08S</code>
+	<description>FEDEX ECONOMY 2 DAT Sat Delivery</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>13</_id>
+	<code>FDX 09</code>
+	<description>FEDEX ECONOMY 2 DAY LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>14</_id>
+	<code>FDX 10</code>
+	<description>FEDEX FREIGHT 2 DAY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>15</_id>
+	<code>FDX 11</code>
+	<description>FEDEX SAVER PACKAGE</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>16</_id>
+	<code>FDX 12</code>
+	<description>FEDEX SAVER FREIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>17</_id>
+	<code>FDX 13</code>
+	<description>FEDEX 1ST LTR INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>18</_id>
+	<code>FDX 14</code>
+	<description>FEDEX 1ST INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>19</_id>
+	<code>FDX 15</code>
+	<description>FEDEX INT'L PRIORITY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>20</_id>
+	<code>FDX 16</code>
+	<description>FEDEX INT'L PRIORITY LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>21</_id>
+	<code>FDX 17</code>
+	<description>FEDEX INT'L ECONOMY</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>22</_id>
+	<code>FDX G</code>
+	<description>FEDEX GROUND</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>23</_id>
+	<code>UPS 01</code>
+	<description>UPS NEXT DAY PACKAGE</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>24</_id>
+	<code>UPS 02</code>
+	<description>UPS NEXT DAY AIR LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>25</_id>
+	<code>UPS 03</code>
+	<description>UPS NEXT DAY AIR SAVER</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:01</_edate>
+	<_euser>1</_euser>
+	<_id>26</_id>
+	<code>UPS 04</code>
+	<description>UPS NEXT DAY AIR SAVER LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:01</_edate>
+	<_euser>1</_euser>
+	<_id>27</_id>
+	<code>UPS 05</code>
+	<description>UPS EARLY AM</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>28</_id>
+	<code>UPS 06</code>
+	<description>UPS EARLY AM LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>29</_id>
+	<code>UPS 07</code>
+	<description>UPS 2ND DAY PACKAGE</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>30</_id>
+	<code>UPS 08</code>
+	<description>UPS 2ND DAY LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>31</_id>
+	<code>UPS 09</code>
+	<description>UPS 2ND DAY AM</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>32</_id>
+	<code>UPS 10</code>
+	<description>UPS 2ND DAY AM LTR</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>33</_id>
+	<code>UPS 11</code>
+	<description>UPS 3 DAY SELECT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>34</_id>
+	<code>UPS 12</code>
+	<description>UPS STANDARD SHIPMENT CANADA</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>35</_id>
+	<code>UPS 13</code>
+	<description>UPS SHIPMENT EXPRESS INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>36</_id>
+	<code>UPS 14</code>
+	<description>UPS SHIPMENT EXPEDITED INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>37</_id>
+	<code>UPS 15</code>
+	<description>UPS EXPRESS PLUS INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>38</_id>
+	<code>UPS 16</code>
+	<description>UPS EXPRESS SERVICE LTR INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>39</_id>
+	<code>UPS 17</code>
+	<description>UPS EXPRESS PLUS SERVICE LTR INT'L</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>40</_id>
+	<code>UPS 18</code>
+	<description>UPS EXPRESS INT'L 10KG BOX</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>41</_id>
+	<code>UPS 19</code>
+	<description>UPS EXPRESS INT'L 25KG BOX</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>42</_id>
+	<code>UPS 20</code>
+	<description>UPS EXPRESS PLUS INT'L 10KG BOX</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>43</_id>
+	<code>UPS 21</code>
+	<description>UPS EXPRESS PLUS INT'L 25KG BOX</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>44</_id>
+	<code>UPS 22</code>
+	<description>UPS GROUND HUNDREDWEIGHT</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>45</_id>
+	<code>UPS G</code>
+	<description>UPS GROUND</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_id>46</_id>
+	<code>USS 01</code>
+	<description>USPS PRIORITY MAIL</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:32</_edate>
+	<_euser>1</_euser>
+	<_id>47</_id>
+	<code>USS 04</code>
+	<description>USPS 1st Class Regular (up to 13 oz)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:32</_edate>
+	<_euser>1</_euser>
+	<_id>48</_id>
+	<code>USS 04D</code>
+	<description>USPS 1st Class DEL CONF (up to 13 oz with delivery confirmation)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:32</_edate>
+	<_euser>1</_euser>
+	<_id>49</_id>
+	<code>USS 05</code>
+	<description>USPS First Class Mail INTL (4lbs weight limit)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:32</_edate>
+	<_euser>1</_euser>
+	<_id>50</_id>
+	<code>USS 12</code>
+	<description>USPS Priority Mail INTL (over 4lbs)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-11 13:13:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2008-12-19 15:24:32</_edate>
+	<_euser>1</_euser>
+	<_id>51</_id>
+	<code>USS 15</code>
+	<description>USPS Media Mail (media only - cannot contain advertising)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2008-12-19 15:26:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>52</_id>
+	<code>WILL</code>
+	<description>Will Call (EVAL Orders only - pick up at IntegraCore)</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2009-01-08 12:28:33</_cdate>
+	<_cuser>1</_cuser>
+	<_id>53</_id>
+	<code>DHLP IP</code>
+	<description>DHL POWERSHIP INT'L PACKAGE EXPRESS</description>
+</xmldata>
+<xmldata table="shipping">
+	<_cdate>2009-01-08 12:29:46</_cdate>
+	<_cuser>1</_cuser>
+	<_id>54</_id>
+	<code>DHLP DD</code>
+	<description>DHL POWERSHIP DOMESTIC DOCUMENT</description>
+</xmldata>
+
+
+
+
+
+
+
+
+

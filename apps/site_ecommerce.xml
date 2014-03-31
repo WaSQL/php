@@ -1,0 +1,7169 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="localhost" timestamp="1312261941">
+<xmlschema name="_access">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="guid" type="varchar(25) NULL" />
+	<field name="http_host" type="varchar(225) NULL" />
+	<field name="http_referer" type="varchar(255) NULL" />
+	<field name="page" type="varchar(255) NOT NULL" />
+	<field name="remote_addr" type="varchar(20) NULL" />
+	<field name="remote_browser" type="varchar(125) NULL" />
+	<field name="remote_browser_version" type="varchar(125) NULL" />
+	<field name="remote_device" type="varchar(50) NULL" />
+	<field name="remote_lang" type="varchar(10) NULL" />
+	<field name="remote_os" type="varchar(50) NULL" />
+	<field name="session_id" type="varchar(50) NULL" />
+	<field name="status" type="tinyint(4) NOT NULL Default 1" />
+	<field name="xml" type="text NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:44</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<listfields>_cdate status http_host page remote_addr guid session_id remote_device remote_browser remote_os</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_access</tablename>
+</xmlmeta>
+
+
+<xmlschema name="_access_summary">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="accessdate" type="datetime NOT NULL" />
+	<field name="guid_unique" type="int(11) NOT NULL Default 1" />
+	<field name="http_host" type="varchar(225) NOT NULL" />
+	<field name="http_referer_unique" type="int(11) NOT NULL Default 1" />
+	<field name="page_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_addr_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_browser_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_browser_version_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_device_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_lang_unique" type="int(11) NOT NULL Default 1" />
+	<field name="remote_os_unique" type="int(11) NOT NULL Default 1" />
+	<field name="session_id_unique" type="int(11) NOT NULL Default 1" />
+	<field name="visits" type="int(11) NOT NULL Default 1" />
+	<field name="visits_unique" type="int(11) NOT NULL Default 1" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:44</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<listfields>accessdate http_host visits visits_unique page_unique remote_browser_unique remote_os_unique remote_device_unique session_id_unique guid_unique</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_access_summary</tablename>
+</xmlmeta>
+
+
+<xmlschema name="_chat">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="computer_domain" type="varchar(50) NULL" />
+	<field name="computer_name" type="varchar(30) NULL" />
+	<field name="computer_user" type="varchar(30) NULL" />
+	<field name="message" type="varchar(255) NOT NULL" />
+	<field name="remote_addr" type="varchar(25) NULL" />
+	<field name="user_id" type="int(11) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<formfields>_cdate user_id message
+computer_name computer_user computer_domain</formfields>
+	<listfields>_cdate user_id message computer_name computer_user computer_domain</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_chat</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>56</_id>
+	<fieldname>message</fieldname>
+	<height>100</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_chat</tablename>
+	<width>400</width>
+</xmlmeta>
+
+
+<xmlschema name="_cron">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(4) NOT NULL Default 1" />
+	<field name="begin_date" type="date NULL" />
+	<field name="cron_pid" type="int(11) NOT NULL Default 0" />
+	<field name="end_date" type="date NULL" />
+	<field name="frequency" type="int(11) NOT NULL Default 0" />
+	<field name="logfile" type="varchar(255) NULL" />
+	<field name="logfile_maxsize" type="int(11) NULL" />
+	<field name="name" type="varchar(150) NULL" />
+	<field name="run_cmd" type="varchar(255) NOT NULL UNIQUE" />
+	<field name="run_date" type="datetime NULL" />
+	<field name="run_format" type="varchar(255) NULL" />
+	<field name="run_length" type="int(11) NULL" />
+	<field name="run_log" type="tinyint(4) NOT NULL Default 1" />
+	<field name="run_result" type="text NULL" />
+	<field name="run_values" type="varchar(255) NULL" />
+	<field name="running" type="tinyint(4) NOT NULL Default 0" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<formfields>name active run_log begin_date end_date
+frequency run_format run_values
+logfile logfile_maxsize
+run_cmd
+running run_date run_length
+run_result</formfields>
+	<formfields_mod>name begin_date end_date
+frequency run_format run_values
+run_cmd
+run_date run_length
+run_result</formfields_mod>
+	<listfields>name
+cron_pid
+active
+run_log
+running
+frequency
+run_format
+run_values
+run_cmd
+run_date
+run_length
+begin_date
+end_date</listfields>
+	<listfields_mod>name
+cron_pid
+active
+running
+frequency
+run_format
+run_values
+run_cmd
+run_date
+run_length
+begin_date
+end_date</listfields_mod>
+	<sortfields>active desc
+running desc
+begin_date desc</sortfields>
+	<sortfields_mod>active desc
+running desc
+begin_date desc</sortfields_mod>
+	<tablename>_cron</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>57</_id>
+	<editlist>1</editlist>
+	<fieldname>running</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>58</_id>
+	<editlist>1</editlist>
+	<fieldname>run_log</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>59</_id>
+	<fieldname>run_length</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>100</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>60</_id>
+	<fieldname>cron_pid</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>61</_id>
+	<defaultval>1</defaultval>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>62</_id>
+	<displayname>Frequency</displayname>
+	<dvals>Every 5 minutes
+Every 10 Minutes
+Every 15 Minutes
+Every 30 Minutes
+Every Hour
+Once Every  Day
+Twice Every Day
+Once a Week
+Once a Month</dvals>
+	<fieldname>frequency</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>5
+10
+15
+30
+60
+1440
+720
+10080
+43829</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>63</_id>
+	<fieldname>run_date</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>250</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>64</_id>
+	<fieldname>run_result</fieldname>
+	<height>200</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>65</_id>
+	<fieldname>run_values</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>240</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>66</_id>
+	<fieldname>logfile</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>350</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>67</_id>
+	<displayname>Logfile Maxsize (bytes)</displayname>
+	<fieldname>logfile_maxsize</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>130</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>68</_id>
+	<fieldname>run_format</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>125</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>69</_id>
+	<fieldname>run_cmd</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_cron</tablename>
+	<width>500</width>
+</xmlmeta>
+
+
+<xmlschema name="_fielddata">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="behavior" type="varchar(255) NULL" />
+	<field name="defaultval" type="varchar(255) NULL" />
+	<field name="displayname" type="varchar(255) NULL" />
+	<field name="dvals" type="text NULL" />
+	<field name="editlist" type="tinyint(4) NULL" />
+	<field name="fieldname" type="varchar(100) NOT NULL" />
+	<field name="height" type="int(11) NULL" />
+	<field name="help" type="varchar(255) NULL" />
+	<field name="inputmax" type="int(11) NULL" />
+	<field name="inputtype" type="varchar(25) NULL" />
+	<field name="mask" type="varchar(255) NULL" />
+	<field name="onchange" type="varchar(255) NULL" />
+	<field name="related_table" type="varchar(100) NULL" />
+	<field name="required" type="tinyint(4) NULL" />
+	<field name="tablename" type="varchar(100) NOT NULL" />
+	<field name="tvals" type="text NULL" />
+	<field name="width" type="int(11) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<formfields>tablename fieldname
+displayname
+inputtype related_table behavior
+width height inputmax required editlist mask
+onchange
+tvals
+dvals
+defaultval
+help</formfields>
+	<listfields>tablename fieldname inputtype width height inputmax editlist</listfields>
+	<sortfields>tablename,fieldname,inputtype</sortfields>
+	<tablename>_fielddata</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<fieldname>displayname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<dvals>PHP Editor
+SQL Editor
+TinyMCE Editor
+Drag
+Clock
+Time
+Stopwatch</dvals>
+	<fieldname>behavior</fieldname>
+	<inputtype>combo</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>phpeditor
+sqleditor
+tinymce
+drag
+clock
+time
+stopwatch</tvals>
+	<width>150</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<fieldname>mask</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>alpha,alphanumeric,email,hexcolor,integer,decimal,number,phone,time,ssn,zipcode</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<displayname>Input Type</displayname>
+	<dvals>Checkbox,Color,ComboBox,Date,Date&amp;Time,FileUpload,Formula,Hidden,MultiSelect,Password,Radio,Select,Text,Textarea,Time</dvals>
+	<fieldname>inputtype</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<tvals>checkbox,color,combo,date,datetime,file,formula,hidden,multiselect,password,radio,select,text,textarea,time</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<fieldname>defaultval</fieldname>
+	<height>40</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<fieldname>help</fieldname>
+	<height>40</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<fieldname>dvals</fieldname>
+	<height>60</height>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<fieldname>tvals</fieldname>
+	<height>60</height>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<fieldname>editlist</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<fieldname>required</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<fieldname>width</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<fieldname>height</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>13</_id>
+	<fieldname>inputmax</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>50</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>14</_id>
+	<fieldname>fieldname</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<width>262</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>15</_id>
+	<displayname>onchange Event</displayname>
+	<fieldname>onchange</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>16</_id>
+	<dvals>&amp;getDBTables</dvals>
+	<fieldname>tablename</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<tvals>&amp;getDBTables</tvals>
+	<width>135</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>17</_id>
+	<displayname>Related Table</displayname>
+	<dvals>&amp;getDBTables</dvals>
+	<fieldname>related_table</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>&amp;getDBTables</tvals>
+	<width>135</width>
+</xmlmeta>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<fieldname>displayname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<dvals>PHP Editor
+SQL Editor
+TinyMCE Editor
+Drag
+Clock
+Time
+Stopwatch</dvals>
+	<fieldname>behavior</fieldname>
+	<inputtype>combo</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>phpeditor
+sqleditor
+tinymce
+drag
+clock
+time
+stopwatch</tvals>
+	<width>150</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<fieldname>mask</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>alpha,alphanumeric,email,hexcolor,integer,decimal,number,phone,time,ssn,zipcode</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<displayname>Input Type</displayname>
+	<dvals>Checkbox,Color,ComboBox,Date,Date&amp;Time,FileUpload,Formula,Hidden,MultiSelect,Password,Radio,Select,Text,Textarea,Time</dvals>
+	<fieldname>inputtype</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<tvals>checkbox,color,combo,date,datetime,file,formula,hidden,multiselect,password,radio,select,text,textarea,time</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<fieldname>defaultval</fieldname>
+	<height>40</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<fieldname>help</fieldname>
+	<height>40</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<fieldname>dvals</fieldname>
+	<height>60</height>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<fieldname>tvals</fieldname>
+	<height>60</height>
+	<inputtype>textarea</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<fieldname>editlist</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<fieldname>required</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<fieldname>width</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<fieldname>height</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>13</_id>
+	<fieldname>inputmax</fieldname>
+	<inputmax>5</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>14</_id>
+	<fieldname>fieldname</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<width>262</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>15</_id>
+	<displayname>onchange Event</displayname>
+	<fieldname>onchange</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>_fielddata</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>16</_id>
+	<dvals>&amp;getDBTables</dvals>
+	<fieldname>tablename</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_fielddata</tablename>
+	<tvals>&amp;getDBTables</tvals>
+	<width>135</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:43</_cdate>
+	<_cuser>0</_cuser>
+	<_id>17</_id>
+	<displayname>Related Table</displayname>
+	<dvals>&amp;getDBTables</dvals>
+	<fieldname>related_table</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>_fielddata</tablename>
+	<tvals>&amp;getDBTables</tvals>
+	<width>135</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>51</_id>
+	<fieldname>record_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>40</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>52</_id>
+	<fieldname>action</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>53</_id>
+	<fieldname>md5</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>200</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>54</_id>
+	<fieldname>page_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>40</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>55</_id>
+	<fieldname>xmldata</fieldname>
+	<height>400</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>56</_id>
+	<fieldname>message</fieldname>
+	<height>100</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_chat</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>57</_id>
+	<editlist>1</editlist>
+	<fieldname>running</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>58</_id>
+	<editlist>1</editlist>
+	<fieldname>run_log</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>59</_id>
+	<fieldname>run_length</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>100</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>60</_id>
+	<fieldname>cron_pid</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>61</_id>
+	<defaultval>1</defaultval>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>62</_id>
+	<displayname>Frequency</displayname>
+	<dvals>Every 5 minutes
+Every 10 Minutes
+Every 15 Minutes
+Every 30 Minutes
+Every Hour
+Once Every  Day
+Twice Every Day
+Once a Week
+Once a Month</dvals>
+	<fieldname>frequency</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<tvals>5
+10
+15
+30
+60
+1440
+720
+10080
+43829</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>63</_id>
+	<fieldname>run_date</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>250</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>64</_id>
+	<fieldname>run_result</fieldname>
+	<height>200</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>65</_id>
+	<fieldname>run_values</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>240</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>66</_id>
+	<fieldname>logfile</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>350</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>67</_id>
+	<displayname>Logfile Maxsize (bytes)</displayname>
+	<fieldname>logfile_maxsize</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>130</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>68</_id>
+	<fieldname>run_format</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_cron</tablename>
+	<width>125</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>69</_id>
+	<fieldname>run_cmd</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_cron</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>70</_id>
+	<fieldname>body</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>71</_id>
+	<fieldname>name</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<width>300</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>72</_id>
+	<fieldname>description</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_pages</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>73</_id>
+	<displayname>Template</displayname>
+	<dvals>select name from _templates order by name,_id</dvals>
+	<fieldname>_template</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<tvals>select _id from _templates order by name,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>74</_id>
+	<fieldname>run_length</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>75</_id>
+	<fieldname>function</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>100</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>76</_id>
+	<fieldname>page_id</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>77</_id>
+	<fieldname>fields</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>78</_id>
+	<fieldname>row_count</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>79</_id>
+	<fieldname>field_count</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>80</_id>
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_queries</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>81</_id>
+	<fieldname>query</fieldname>
+	<height>200</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_queries</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>82</_id>
+	<fieldname>body</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>83</_id>
+	<fieldname>name</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>84</_id>
+	<fieldname>description</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>85</_id>
+	<fieldname>username</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>150</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>86</_id>
+	<fieldname>password</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>password</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>100</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>87</_id>
+	<fieldname>title</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>88</_id>
+	<defaultval>1</defaultval>
+	<displayname>User Rights</displayname>
+	<dvals>Administrator
+Normal</dvals>
+	<fieldname>utype</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<tvals>0
+1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>89</_id>
+	<fieldname>address1</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>90</_id>
+	<fieldname>address2</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>91</_id>
+	<fieldname>firstname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>180</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>92</_id>
+	<fieldname>zip</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>93</_id>
+	<fieldname>phone</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>100</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>94</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>220</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>95</_id>
+	<displayname>State</displayname>
+	<dvals>select name from states order by name,_id</dvals>
+	<fieldname>state</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<tvals>select code from states order by name,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>96</_id>
+	<displayname>Country</displayname>
+	<dvals>select name from countries order by name,_id</dvals>
+	<fieldname>country</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<tvals>select code from countries order by name,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>97</_id>
+	<fieldname>bio</fieldname>
+	<height>75</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>98</_id>
+	<defaultval>/files/users</defaultval>
+	<fieldname>picture</fieldname>
+	<inputtype>file</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>99</_id>
+	<fieldname>note</fieldname>
+	<height>50</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>100</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>0</required>
+	<tablename>_forms</tablename>
+	<width>220</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>101</_id>
+	<fieldname>_formname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_forms</tablename>
+	<width>220</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>102</_id>
+	<fieldname>_xmldata</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_forms</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>103</_id>
+	<fieldname>code</fieldname>
+	<inputmax>2</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>states</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>104</_id>
+	<defaultval>US</defaultval>
+	<fieldname>code</fieldname>
+	<inputmax>2</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>countries</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:31:13</_cdate>
+	<_cuser>1</_cuser>
+	<_id>105</_id>
+	<fieldname>description</fieldname>
+	<height>80</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:31:20</_cdate>
+	<_cuser>1</_cuser>
+	<_id>106</_id>
+	<fieldname>details</fieldname>
+	<height>125</height>
+	<inputmax>2000</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:31:42</_cdate>
+	<_cuser>1</_cuser>
+	<_id>107</_id>
+	<fieldname>sku</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>75</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:32:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>108</_id>
+	<fieldname>thumbnail</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:32:34</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:32</_edate>
+	<_euser>1</_euser>
+	<_id>109</_id>
+	<fieldname>weight</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>40</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:32:51</_cdate>
+	<_cuser>1</_cuser>
+	<_id>110</_id>
+	<fieldname>price</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>70</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 22:34:24</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:15</_edate>
+	<_euser>1</_euser>
+	<_id>111</_id>
+	<fieldname>name</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>130</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 23:15:38</_cdate>
+	<_cuser>1</_cuser>
+	<_id>112</_id>
+	<behavior>autonumber</behavior>
+	<defaultval>/products</defaultval>
+	<fieldname>image</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 23:16:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:16:40</_edate>
+	<_euser>1</_euser>
+	<_id>113</_id>
+	<behavior>autonumber</behavior>
+	<defaultval>/products/thumbs</defaultval>
+	<displayname>Image Thumbnail</displayname>
+	<fieldname>image_thumb</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-12 23:39:51</_cdate>
+	<_cuser>1</_cuser>
+	<_id>114</_id>
+	<fieldname>active</fieldname>
+	<inputmax>4</inputmax>
+	<inputtype>checkbox</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_products</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:13:43</_cdate>
+	<_cuser>1</_cuser>
+	<_id>115</_id>
+	<fieldname>expire_date</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>date</inputtype>
+	<tablename>wcart_coupons</tablename>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:14:17</_cdate>
+	<_cuser>1</_cuser>
+	<_id>116</_id>
+	<defaultval>0</defaultval>
+	<fieldname>times_used</fieldname>
+	<inputmax>11</inputmax>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:15:05</_cdate>
+	<_cuser>1</_cuser>
+	<_id>117</_id>
+	<defaultval>0</defaultval>
+	<displayname>Times Valid (0 = unlimited)</displayname>
+	<fieldname>times_valid</fieldname>
+	<inputmax>11</inputmax>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:16:26</_cdate>
+	<_cuser>1</_cuser>
+	<_id>118</_id>
+	<dvals>Percent Off plus Free Shipping
+Percent Off
+Dollar Off plus Free Shipping
+Dollar Off</dvals>
+	<fieldname>type</fieldname>
+	<inputmax>15</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>wcart_coupons</tablename>
+	<tvals>pcntship
+pcnt
+dollarship
+dollar</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:16:36</_cdate>
+	<_cuser>1</_cuser>
+	<_id>119</_id>
+	<fieldname>sku</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>100</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:16:48</_cdate>
+	<_cuser>1</_cuser>
+	<_id>120</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:17:06</_cdate>
+	<_cuser>1</_cuser>
+	<_id>121</_id>
+	<fieldname>discount</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_coupons</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:17:30</_cdate>
+	<_cuser>1</_cuser>
+	<_id>122</_id>
+	<fieldname>description</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 20:17:38</_cdate>
+	<_cuser>1</_cuser>
+	<_id>123</_id>
+	<fieldname>coupon</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>75</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 23:27:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:27:13</_edate>
+	<_euser>1</_euser>
+	<_id>124</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<tablename>contacts</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 23:27:44</_cdate>
+	<_cuser>1</_cuser>
+	<_id>125</_id>
+	<displayname>Tell us what is on your mind</displayname>
+	<fieldname>details</fieldname>
+	<height>125</height>
+	<inputtype>textarea</inputtype>
+	<tablename>contacts</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 23:27:57</_cdate>
+	<_cuser>1</_cuser>
+	<_id>126</_id>
+	<displayname>Your Name</displayname>
+	<fieldname>name</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>contacts</tablename>
+	<width>200</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2011-07-14 23:28:59</_cdate>
+	<_cuser>1</_cuser>
+	<_id>127</_id>
+	<dvals>Website
+Products
+Support
+Sales
+Other</dvals>
+	<fieldname>regarding</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>contacts</tablename>
+	<tvals>website
+products
+support
+sales
+other</tvals>
+</xmldata>
+
+
+
+<xmlschema name="_forms">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_formname" type="varchar(100) NOT NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="_xmldata" type="text NOT NULL" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="http_host" type="varchar(255) NULL" />
+	<field name="script_url" type="varchar(255) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<formfields>_formname email
+http_host script_url
+_xmldata</formfields>
+	<listfields>_formname email http_host script_url _cdate</listfields>
+	<sortfields>_formname,_cdate desc</sortfields>
+	<tablename>_forms</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>100</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>0</required>
+	<tablename>_forms</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>101</_id>
+	<fieldname>_formname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_forms</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>102</_id>
+	<fieldname>_xmldata</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_forms</tablename>
+	<width>400</width>
+</xmlmeta>
+
+
+<xmlschema name="_history">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="action" type="char(5) NULL" />
+	<field name="md5" type="char(32) NOT NULL" />
+	<field name="page_id" type="int(11) NULL" />
+	<field name="record_id" type="int(11) NOT NULL" />
+	<field name="tablename" type="varchar(255) NOT NULL" />
+	<field name="xmldata" type="text NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<formfields>_cuser action page_id record_id
+tablename
+xmldata</formfields>
+	<listfields>_cuser action page_id record_id tablename</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_history</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>51</_id>
+	<fieldname>record_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>40</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>52</_id>
+	<fieldname>action</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>53</_id>
+	<fieldname>md5</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>200</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>54</_id>
+	<fieldname>page_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>40</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>55</_id>
+	<fieldname>xmldata</fieldname>
+	<height>400</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_history</tablename>
+	<width>500</width>
+</xmlmeta>
+
+
+<xmlschema name="_pages">
+	<field name="_adate" type="datetime NULL" />
+	<field name="_aip" type="char(15) NULL" />
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="_template" type="int(11) NOT NULL Default 1" />
+	<field name="body" type="mediumtext NULL" />
+	<field name="body_sha1" type="char(40) NULL" />
+	<field name="body_size" type="int(11) NOT NULL Default 0" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="functions" type="mediumtext NULL" />
+	<field name="functions_sha1" type="char(40) NULL" />
+	<field name="functions_size" type="int(11) NOT NULL Default 0" />
+	<field name="name" type="varchar(50) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<formfields>name _template
+description
+body</formfields>
+	<formfields_mod>name
+description
+body</formfields_mod>
+	<listfields>name _template description</listfields>
+	<listfields_mod>name description</listfields_mod>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_pages</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>70</_id>
+	<fieldname>body</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>71</_id>
+	<fieldname>name</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<width>300</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>72</_id>
+	<fieldname>description</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_pages</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>73</_id>
+	<displayname>Template</displayname>
+	<dvals>select name from _templates order by name,_id</dvals>
+	<fieldname>_template</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_pages</tablename>
+	<tvals>select _id from _templates order by name,_id</tvals>
+</xmlmeta>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:58</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_edate>2011-07-19 21:35:10</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+?&gt;
+
+		&lt;article id=&quot;greeting&quot;&gt;
+			&lt;h2&gt;Helping You &lt;/h2&gt;
+			&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. &lt;a href=&quot;#&quot;&gt;Duis sagittis ipsum&lt;/a&gt;. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+		&lt;p class=&quot;learnmore&quot;&gt;&lt;a href=&quot;#&quot;&gt;Learn More &amp;gt;&lt;/a&gt;&lt;/p&gt;
+		&lt;/article&gt;
+
+		&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+
+		&lt;section id=&quot;infoboxes&quot;&gt;
+	
+		&lt;article id=&quot;infoboxleft&quot;&gt;
+			&lt;h3&gt;Who We Are&lt;/h3&gt; 
+			&lt;p&gt;Eu soleat prodesset nec, ut quo kasd corpora. Mel eu errem officiis, quaeque mediocritatem cu vim, vis fugit dicit accusamus ea. Nihil vitae tantas no eos. Cum sumo brute solet te. Ne postea neglegentur pri. In vide noluisse corrumpit sea, diceret eripuit repudiandae nec ut. &lt;/p&gt;
+			&lt;p&gt;Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem.&lt;/p&gt;
+		&lt;/article&gt; 
+
+		&lt;article id=&quot;infoboxmid&quot;&gt;
+			&lt;h3&gt;How We Can Help&lt;/h3&gt; 
+			&lt;p&gt;&lt;img src=&quot;/wfiles/templates/icon1.png&quot; alt=&quot;&quot; class=&quot;alignleft&quot;/&gt;
+		&lt;strong&gt;&lt;a href=&quot;#&quot;&gt;Promotion&lt;/a&gt;&lt;/strong&gt;&lt;br /&gt;In vide noluisse corrumpit sea, diceret eripuit repudiandae  ...
+			&lt;/p&gt; 
+			&lt;p&gt;&lt;img src=&quot;/wfiles/templates/icon2.png&quot; alt=&quot;&quot; class=&quot;alignleft&quot;/&gt; 
+		&lt;strong&gt;&lt;a href=&quot;&quot;&gt;Development&lt;/a&gt;&lt;/strong&gt;&lt;br /&gt;Augue sonet vix ea, ea nec enim recusabo torquatos ...
+			&lt;/p&gt; 
+			&lt;p&gt;&lt;img src=&quot;/wfiles/templates/icon3.png&quot; alt=&quot;&quot; class=&quot;alignleft&quot;/&gt;
+		&lt;strong&gt;&lt;a href=&quot;#&quot;&gt;Consulting&lt;/a&gt;&lt;/strong&gt;&lt;br /&gt;Ex agam labore quaerendum his, at vel duis corrumpit. ...
+			&lt;/p&gt; 
+		&lt;/article&gt; 
+
+		&lt;article id=&quot;infoboxright&quot;&gt; 
+			&lt;h3&gt;What Others Say About Us&lt;/h3&gt; 
+			&lt;blockquote&gt;
+			&lt;p&gt;Sit id utroque antiopam aliquando, mazim fierent ex usu, at est latine aliquam incorrupte. Fugit utamur verterem ei vim. Utinam efficiendi at eam.  &lt;br /&gt;&lt;b&gt;John Doe - ABC Company&lt;/b&gt;&lt;/p&gt;
+			&lt;/blockquote&gt; 
+			&lt;blockquote&gt;
+			&lt;p&gt;Adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam. &lt;br /&gt;&lt;b&gt;Jane Doe - CEO, XYZ Inc.&lt;/b&gt;&lt;/p&gt;
+			&lt;/blockquote&gt; 
+		&lt;/article&gt;
+
+		&lt;/section&gt;
+
+		&lt;article id=&quot;contentsummary&quot;&gt;
+			&lt;h3&gt;Take The Tour To See How We Can Help Your Business Grow&lt;/h3&gt;
+			&lt;p&gt;Vero tractatos vix in, vel eligendi ocurreret ei. Ea vis scripta voluptatum concludaturque, vis id omnis mollis moderatius. Ius ei volumus detracto accusamus. Inermis tibique mel ne. Decore everti viderer per cu. Porro ludus soleat sea at, eum eu ridens ponderum. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+
+			&lt;p&gt;Ius ei volumus detracto accusamus. Inermis tibique mel ne. Decore everti viderer per cu. Porro ludus soleat sea at, eum eu ridens ponderum. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+		&lt;/article&gt;
+]]></body>
+	<body_sha1>fc1086dcc3460c0c389c14626c2ddaa2fa54eaf8</body_sha1>
+	<body_size>2923</body_size>
+	<description>Default Index Page</description>
+	<functions_size>0</functions_size>
+	<name>index</name>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<_template>3</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+?&gt;
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+&lt;p&gt;
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. 
+Et harum quidem rerum facilis est et expedita distinctio. 
+Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. 
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. 
+Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.
+]]></body>
+	<body_sha1>e6d4091f321d2a08d9b58c1a82fb7d67d3f2a294</body_sha1>
+	<body_size>40</body_size>
+	<description>Default Index Page for mobile devices</description>
+	<functions_size>0</functions_size>
+	<name>mobile</name>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:js*/
+header('Content-type:text/javascript');
+?&gt;
+]]></body>
+	<body_sha1>805f869251bca8e1f205212ccd2eefae4f501036</body_sha1>
+	<body_size>40</body_size>
+	<description>Javascript</description>
+	<functions_size>0</functions_size>
+	<name>js</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:58</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_edate>2011-07-14 09:11:12</_edate>
+	<_euser>1</_euser>
+	<_id>4</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type:text/css');
+?&gt;
+/* Created by http://freehtml5templates.com */
+
+/* reset */
+* {
+margin: 0;
+padding: 0;
+}
+
+/* render html5 elements as block */
+header, footer, section, aside, nav, article {
+display: block;
+}
+
+body {
+line-height: 1;
+background: #e2b542;
+color: #555;
+font-family: 'Trebuchet MS', Verdana, Arial, Helvetica, sans-serif;
+font-size: 14px;
+}
+	
+/* layout */
+
+#wrapper {
+width: 960px;
+margin: 0 auto;
+background-color: #f7f7f7;
+background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#f7f7f7), to(#8cc3f3));
+background: -moz-linear-gradient(top, #f7f7f7 0%, #8cc3f3 100%);
+border: 2px solid #333;
+/* curved border radius */
+-moz-border-radius: 5px;
+-webkit-border-radius: 5px;
+border-radius: 5px;
+padding: 10px;
+padding-top:0px;
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+#main {
+margin: 0 auto;
+color: #444;
+font-size: 16px;
+line-height: 1.2em;
+}
+
+footer {
+padding: 0 20px;
+color: #333;
+clear: both;
+margin: 40px 10px 0 10px;
+}
+
+/* basics */
+
+h1,h2,h3,h4,h5,h6 {
+font-weight: bold;
+clear: both;
+}
+
+a {
+color:#555;
+}
+
+a:hover {
+color: #555;
+}
+	
+p {
+margin-bottom: 18px;
+}
+
+li {
+padding-left: 5px;
+}
+
+hr {
+display: block;
+position: relative;
+padding: 0;
+margin: 8px auto;
+width: 100%;
+clear: both;
+border: none;
+border-top: 1px solid #555;
+border-bottom: 1px solid #555;
+font-size: 3px;
+line-height: 0;
+overflow: visible;
+}
+
+/* nav */
+
+nav .menu {
+width: 940px;
+font-size: 16px;
+font-weight: bold;
+}
+
+nav .menu ul {
+list-style: none;
+margin: 0;
+text-align: center;
+}
+
+nav .menu ul li {
+display: inline;
+position: relative;
+}
+
+nav .menu ul li a {
+border-right: 1px #555 solid;
+color: #555;
+padding: 0 15px;
+line-height: 38px;
+text-decoration: none;
+}
+
+nav .menu ul li a:hover {
+text-decoration: underline;
+}
+
+/* header */
+
+header {
+position:relative;
+}
+header img {
+	float:left;
+	margin-left:5px;
+}
+
+header h1 {
+font-size: 36px;
+margin-left: 10px;
+float: left;
+width: 500px;
+}
+
+header h1 a {
+color: #0e2992;
+font-weight: bold;
+text-decoration: none;
+text-shadow: 0px 2px 3px #777;
+}
+
+header h2 {
+float: right;
+clear: right;
+margin-right: 10px;
+color: #777;
+padding-top: 8px;
+}
+
+/* greeting */
+
+#greeting {
+padding-top: 20px;
+}
+
+#greeting h2 {
+display: inline;
+font-size: 20px;
+color: #0e2992;
+}
+
+#greeting p {
+font-size: 16px;
+}
+
+#greeting img {
+border: none;
+/* curved border radius */
+-moz-border-radius: 5px;
+-webkit-border-radius: 5px;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+.learnmore {
+display: block;
+background-color: #0e2992;
+padding: 5px 10px;
+float: left;
+/* curved border radius */
+-moz-border-radius: 5px;
+-webkit-border-radius: 5px;
+}
+
+.learnmore a {
+color: #ddd;
+font-size: 16px;
+font-weight: bold;
+text-decoration: none;
+}
+
+/* main content */
+
+#main {
+margin: 0 10px;
+}
+
+#main h1, h2, h3, h4, h5, h6 {
+color: #0e2992;
+margin: 0 0 20px 0;
+line-height: 1.5em;
+}
+
+#main h3 {
+border-bottom: 1px #555 solid;
+font-size: 20px;
+}
+
+#infoboxes {
+margin: 30px 0;
+}
+
+#infoboxleft {
+float: left;
+width: 300px;
+}
+
+#infoboxmid {
+float: left;
+width: 300px;
+margin-left: 20px;
+}
+
+#infoboxright {
+float: left;
+width: 300px;
+margin-left: 20px;
+}
+
+blockquote {
+padding-left: 40px;
+background: transparent url(/wfiles/templates/openquotes.png) no-repeat;
+font-style: italic;
+}
+
+#contentsummary {
+margin-top: 20px;
+float: left;
+width: 940px;
+}
+
+.alignleft,
+img.alignleft {
+display: inline;
+float: left;
+margin-right: 24px;
+margin-top: 4px;
+}
+
+.alignright,
+img.alignright {
+display: inline;
+float: right;
+margin-left: 24px;
+margin-top: 4px;
+}
+
+.aligncenter,
+img.aligncenter {
+clear: both;
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+img.alignleft, img.alignright, img.aligncenter {
+margin-bottom: 12px;
+}
+/*Product List*/
+.product_list{text-align:left;}
+.product_list li{
+	border:1px solid #ffffff;
+	margin:5px;
+	padding:5px;
+	display:block;
+	float:left;
+	}
+.product_list li:hover{
+	background:#FDFDFD;
+	border:1px solid #6699cc;
+	}
+.product_list li img{
+	float:left;
+	margin-right:5px;
+	margin-bottom:5px;
+	}
+.product_list div .name {
+font-size:14pt;
+font-weight:bold;
+}
+.product_list div .description {
+font-size:10pt;
+padding-left:20px;
+}
+.product_list div .details {
+font-size:12pt;
+padding-left:20px;
+}
+.product_list div .price {
+font-size:12pt;
+padding-right:5px;
+text-align:right;
+font-weight:bold;
+}
+.product_list div .cart {
+padding-top:10px;
+}
+.product_list div .cart input {
+font-size:12pt;
+text-align:right;
+}
+/*cart box*/
+#cartbox {
+    position: absolute;
+    width: 390px;
+    top:0px;
+    right:30px;
+    z-index: 9999;
+    color: #333333;
+    padding-bottom:15px;
+    background-color:#333333;
+}
+#cartbox a{
+	color:#CCCCCC;
+}
+#cartbox a:hover{
+	color:#FFFFFF;
+}
+#cartbox_topleft{
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:25px;
+	height:15px;
+	background-color:#f6f6f6;
+	border-top-right-radius:45px 15px;
+	behavior:url(border-radius.htc); /*Enables border-radius support for IE 6,7,8 */
+}
+#cartbox_topright{
+	position:absolute;
+	top:0px;
+	right:0px;
+	width:25px;
+	height:15px;
+	background-color:#f6f6f6;
+	border-top-left-radius:45px 15px;
+	behavior:url(border-radius.htc); /*Enables border-radius support for IE 6,7,8 */
+}
+#cartbox_content{
+    height: 30px;
+    background-color:#333333;
+    overflow: hidden;
+    position: absolute;
+    left:25px;
+    top:0px;
+    width:322px;
+    padding:9px;
+    color: #CCCCCC;
+    /*round bottom left corner*/
+    border-bottom-left-radius: 15px 10px;
+	/*round bottom right corner*/
+	border-bottom-right-radius: 15px 10px;
+	behavior: url(ie-css3.htc); /*Enables border-radius support for IE 6,7,8 */
+}
+#cartbox_content_top{
+	height: 40px;
+	overflow:hidden;
+	position:relative;
+	margin-bottom:5px;
+}
+#cartbox_content_bottom{
+	height: 130px;
+	padding-top:10px;
+	overflow:hidden;
+	position:relative;
+}
+
+/* footer */
+
+footer p {
+text-align: right;
+padding-right: 20px;
+}
+
+.clearall {
+clear: both;
+}
+]]></body>
+	<body_sha1>cbdf41e921a107e70363e186380cf9c1ce1016b4</body_sha1>
+	<body_size>5849</body_size>
+	<description>Style Sheet</description>
+	<functions_size>0</functions_size>
+	<name>main_css</name>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+?&gt;
+]]></body>
+	<body_sha1>83a6b04bf4f6e14d2564cea2e36c4e7de4d89a02</body_sha1>
+	<body_size>40</body_size>
+	<description>Custom PHP Functions</description>
+	<functions_size>0</functions_size>
+	<name>functions</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:58</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 21:06:56</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-05 23:07:23</_edate>
+	<_euser>1</_euser>
+	<_id>6</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type:text/css');
+?&gt;
+body {
+  color : #000000; 
+  background : #ffffff; 
+  font-family : &quot;Times New Roman&quot;, Times, serif;
+  font-size : 12pt; 
+}
+
+a { 
+  text-decoration : underline;
+  color : #0000ff; 
+}
+
+a:link:after, a:visited:after {
+content: &quot; (&quot; attr(href) &quot;) &quot;;
+font-size: 70%;
+}
+
+nav, sidebar, footer, header, aside { 
+  display : none; 
+}
+]]></body>
+	<body_sha1>2262ba0a604b3d27bacd80a5fa11b59c86428902</body_sha1>
+	<body_size>404</body_size>
+	<description>Style Sheet</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>print_css</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-06 21:26:02</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 21:08:13</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-06 21:25:59</_edate>
+	<_euser>1</_euser>
+	<_id>7</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type:text/css');
+?&gt;
+/* Created by http://freehtml5templates.com */
+
+/* reset */
+* {
+margin: 0;
+padding: 0;
+}
+
+/* render html5 elements as block */
+header, footer, section, aside, nav, article {
+display: block;
+}
+
+body {
+line-height: 1;
+background: #000;
+font-family: Verdana, Arial, Helvetica, sans-serif;
+color: #666;
+font-size: 14px;
+line-height: 18px;
+}
+	
+/* layout */
+
+#wrapper {
+width: 940px;
+margin: 0 auto;
+margin-top: 5px;
+margin-bottom: 5px;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+nav {
+width: 940px;
+height: 50px;
+margin: 0 auto;
+background: #333;
+}
+
+header {
+width: 940px;
+height: 100px;
+margin: 0 auto;
+background: #fff url(/wfiles/templates/blackfade.png) repeat-x left top;
+}
+
+#main {
+width: 940px;
+margin: 0 auto;
+padding-top: 30px;
+background: #FFF url(/wfiles/templates/colbg.png) repeat-y;
+overflow: hidden;
+}
+
+#content {
+float: right;
+width: 640px;
+margin-right: 30px;
+}
+
+#sidebar {
+float: left;
+padding-left: 20px;
+width: 220px;
+}
+
+footer {
+width: 940px;
+margin: 0 auto;
+clear: both;
+}
+
+/* basics */
+
+@font-face {
+    font-family: 'BlackRoseRegular';
+    src: url('/wfiles/wfonts/BLACKR-webfont.eot');
+    src: url('/wfiles/wfonts/BLACKR-webfont.eot?iefix') format('eot'),
+         url('/wfiles/wfonts/BLACKR-webfont.woff') format('woff'),
+         url('/wfiles/wfonts/BLACKR-webfont.ttf') format('truetype'),
+         url('/wfiles/wfonts/BLACKR-webfont.svg#webfont21KuPMyg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+h2,h3,h4,h5,h6 {
+font-weight: bold;
+clear: both;
+color: #333;
+}
+
+a:link, a:visited {
+color:#085E9B;
+}
+
+a:hover, a:active {
+color: #333;
+}
+
+p {
+margin-bottom: 18px;
+}
+
+li {
+padding-left: 5px;
+}
+
+/* nav */
+
+nav .menu {
+font-size: 16px;
+font-weight: bold;
+}
+
+nav .menu ul {
+margin: 0;
+padding: 17px 0 0 20px;
+list-style: none;
+line-height: normal;
+}
+
+nav .menu li {
+display: block;
+float: left;
+}
+
+nav .menu a {
+display: block;
+float: left;
+margin-right: 5px;
+padding: 0px 15px;
+text-decoration: none;
+color: #08B8F9;
+}
+
+nav .menu a:hover {
+text-decoration: underline;
+}
+
+/** HEADER */
+
+header h1, header h2 {
+margin: 0;
+padding: 0 0 0 30px;
+line-height: normal;
+}
+
+header h1 { 	
+float: left;
+font-family: BlackRoseRegular, Verdana, Arial, Helvetica, sans-serif;
+font-size: 50px;
+font-weight: normal;
+}
+
+header h1 a:link, header h1 a:visited {
+text-decoration: none;
+text-shadow: 0px 2px 3px #fff;
+color: #08B8F9;
+}
+
+header h2 {
+padding: 5px 0 0 60px;
+font-style: italic;
+font-size: 14px;
+color: #ddd;
+}
+
+/** ARTICLES **/
+article img {
+border: none;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+#content p, ul, ol, hr {
+margin-bottom: 24px;
+}
+
+#content ul ul, ol ol, ul ol, ol ul {
+margin-bottom: 0;
+}
+
+#content h1, h2, h3, h4, h5, h6 {
+color: #333;
+margin: 0 0 20px 0;
+line-height: 1.5em;
+}
+
+.alignleft, img.alignleft {
+display: inline;
+float: left;
+margin-right: 10px;
+}
+
+.alignright, img.alignright {
+display: inline;
+float: right;
+margin-left: 10px;
+}
+
+.aligncenter, img.aligncenter {
+clear: both;
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+/* sidebar and footer widget blocks */
+
+aside h3 {
+font-size: 18px;
+}
+
+aside ul {
+list-style: none;
+margin-bottom: 20px;
+margin-top: -15px;
+}
+
+#footer-area {
+background: #333;
+color: #FFF;
+font-size: 90%;
+padding: 18px 0;
+overflow: hidden;
+}
+
+.footer-segment {
+float: left;
+margin-right: 20px;
+margin-left: 20px;
+width: 190px;
+}
+
+footer aside h4 {
+color: #ddd;
+font-size: 16px;
+line-height: 1.5em;
+}
+
+footer a:link, footer a:visited {
+color: #08B8F9;
+}
+
+footer p {
+margin-top: -15px;
+}
+]]></body>
+	<body_sha1>af71a3c7d14fbbbe85cc450e72b987fe253623dd</body_sha1>
+	<body_size>3609</body_size>
+	<description>Style Sheet for sample1 template</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>sample1_css</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:57</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 22:58:14</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:17:59</_edate>
+	<_euser>1</_euser>
+	<_id>8</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;?php
+/*filetype:php*/
+?&gt;
+&lt;article id=&quot;greeting&quot;&gt;
+	&lt;h2&gt;About Us &lt;/h2&gt;
+	&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. &lt;a href=&quot;#&quot;&gt;Duis sagittis ipsum&lt;/a&gt;. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+&lt;/article&gt;
+&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+]]></body>
+	<body_sha1>a1231b61a1e241d19336c741bf25719bd80a7d11</body_sha1>
+	<body_size>460</body_size>
+	<description>About us</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>about</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-20 08:17:45</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 22:58:50</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:20:13</_edate>
+	<_euser>1</_euser>
+	<_id>9</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;article id=&quot;greeting&quot;&gt;
+	&lt;h2&gt;Products &lt;/h2&gt;
+	&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+&lt;/article&gt;
+&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+&lt;?php
+/*filetype:php*/
+$order=setValue(array($_REQUEST['order'],'name'));
+$recs=getDBRecords(array('-table'=&gt;&quot;wcart_products&quot;,'active'=&gt;1,'-order'=&gt;$order));
+echo '&lt;div class=&quot;product_list&quot;&gt;'.&quot;\n&quot;;
+foreach($recs as $rec){
+	echo '	&lt;li&gt;'.&quot;\n&quot;;
+	echo '		&lt;div class=&quot;w_pad&quot;&gt;'.&quot;\n&quot;;
+	if(strlen($rec['image'])){
+    	echo '			&lt;img border=&quot;0&quot; src=&quot;'.$rec['image'].'&quot; /&gt;'.&quot;\n&quot;;
+	}
+	echo '			&lt;div class=&quot;name&quot;&gt;'.$rec['name'].'&lt;/div&gt;'.&quot;\n&quot;;
+	echo '			&lt;div class=&quot;description&quot;&gt;'.$rec['description'].'&lt;/div&gt;'.&quot;\n&quot;;
+	echo '			&lt;div class=&quot;details&quot;&gt;'.$rec['details'].'&lt;/div&gt;'.&quot;\n&quot;;
+	echo '			&lt;div class=&quot;price&quot;&gt;$ '.$rec['price'].'&lt;/div&gt;'.&quot;\n&quot;;
+	echo '			&lt;div class=&quot;cart&quot;&gt;'.&quot;\n&quot;;
+	echo '				&lt;input type=&quot;text&quot; size=&quot;1&quot; id=&quot;&quot; value=&quot;1&quot;&gt;'.&quot;\n&quot;;
+	echo '				&lt;a href=&quot;#&quot; onclick=&quot;return ajaxGet(\'/php/wcart.php\',\'wcart\',\'c=add&amp;qty=1&amp;pid='.$rec['_id'].'\');&quot; class=&quot;w_button_gray&quot;&gt;Add to cart&lt;/a&gt;'.&quot;\n&quot;;
+	echo '			&lt;/div&gt;'.&quot;\n&quot;;
+	echo '		&lt;/div&gt;'.&quot;\n&quot;;
+	echo '	&lt;/li&gt;'.&quot;\n&quot;;
+}
+echo '&lt;/div&gt;'.&quot;\n&quot;;
+echo '&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;'.&quot;\n&quot;;
+echo '&lt;div id=&quot;wcart&quot; style=&quot;position:absolute;display:none;&quot; onshow=&quot;center&quot;&gt;&lt;/div&gt;'.&quot;\n&quot;;
+?&gt;
+]]></body>
+	<body_sha1>3353db996167c3f4a6262df575820c0ddeb5fc25</body_sha1>
+	<body_size>1512</body_size>
+	<description>Products Page</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>products</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:48</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 22:59:09</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:20:52</_edate>
+	<_euser>1</_euser>
+	<_id>10</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;?php
+/*filetype:php*/
+?&gt;
+&lt;article id=&quot;greeting&quot;&gt;
+	&lt;h2&gt;Services &lt;/h2&gt;
+	&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. &lt;a href=&quot;#&quot;&gt;Duis sagittis ipsum&lt;/a&gt;. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+&lt;/article&gt;
+&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+]]></body>
+	<body_sha1>3e5eec70bb9e8402f1e392eae5a9f60b0416e923</body_sha1>
+	<body_size>460</body_size>
+	<description>Services Page</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>services</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:50</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 22:59:40</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:21:17</_edate>
+	<_euser>1</_euser>
+	<_id>11</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;?php
+/*filetype:php*/
+?&gt;
+&lt;article id=&quot;greeting&quot;&gt;
+	&lt;h2&gt;Support &lt;/h2&gt;
+	&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. &lt;a href=&quot;#&quot;&gt;Duis sagittis ipsum&lt;/a&gt;. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+&lt;/article&gt;
+&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+]]></body>
+	<body_sha1>23d67493f38248e2aebec1f1ecfe0d4047a5c552</body_sha1>
+	<body_size>459</body_size>
+	<description>Support Page</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>support</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-08-01 23:07:52</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 23:00:33</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-15 17:14:55</_edate>
+	<_euser>1</_euser>
+	<_id>12</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;?php
+/*filetype:php*/
+?&gt;
+&lt;article id=&quot;greeting&quot;&gt;
+	&lt;h2&gt;Contact Us &lt;/h2&gt;
+	&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.&lt;/p&gt;
+&lt;/article&gt;
+&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+&lt;section id=&quot;infoboxes&quot;&gt;
+	&lt;article id=&quot;infoboxleft&quot; style=&quot;width:600px;&quot;&gt;
+			&lt;h3&gt;Email Us&lt;/h3&gt;
+			&lt;p&gt;
+			&lt;?
+			if(isset($_REQUEST['add_id'])){
+				echo '&lt;div class=&quot;w_bold w_big&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/smile.png&quot; border=&quot;0&quot; class=&quot;w_middle&quot;&gt; Thank You for your email!&lt;/div&gt;'.&quot;\n&quot;;
+				unset($_REQUEST);
+            }
+			echo addEditDBForm(array('-table'=&gt;&quot;contacts&quot;,'-save'=&gt;&quot;Send&quot;));
+			?&gt;
+			&lt;/p&gt;
+	&lt;/article&gt;
+
+	&lt;article id=&quot;infoboxright&quot;&gt;
+			&lt;h3&gt;Write Us&lt;/h3&gt;
+			&lt;blockquote&gt;
+			&lt;p style=&quot;font-size:16pt;&quot;&gt;ABC Company&lt;br /&gt;123 Easy Street&lt;br /&gt;Your Town, MN 12345&lt;/p&gt;
+			&lt;/blockquote&gt;
+			&lt;h3&gt;Call Us&lt;/h3&gt;
+			&lt;blockquote&gt;
+			&lt;p style=&quot;font-size:16pt;&quot;&gt;Phone: 123.123.1234&lt;/p&gt;
+			&lt;/blockquote&gt;
+	&lt;/article&gt;
+&lt;/section&gt;
+]]></body>
+	<body_sha1>d9cff55894c1e50a857aa6c2f019ff7fb4f5bc28</body_sha1>
+	<body_size>1149</body_size>
+	<description>Contact Us Page</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>contact</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-06 21:27:30</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 23:07:03</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-05 23:18:07</_edate>
+	<_euser>1</_euser>
+	<_id>13</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type:text/css');
+?&gt;
+/* Created by http://freehtml5templates.com */
+
+/* reset */
+* {
+margin: 0;
+padding: 0;
+}
+
+/* render html5 elements as block */
+header, footer, section, aside, nav, article {
+display: block;
+}
+
+body {
+line-height: 1;
+background: #BBCFE8;
+font-family: Verdana, Arial, Helvetica, sans-serif;
+color: #333;
+font-size: 14px;
+line-height: 18px;
+}
+	
+/* layout */
+
+#wrapper {
+width: 940px;
+margin: 0 auto;
+margin-top: 20px;
+margin-bottom: 20px;
+border: 3px solid #888;
+background: #fff;
+/* curved border radius */
+-moz-border-radius: 10px;
+-webkit-border-radius: 10px;
+}
+
+nav {
+width: 940px;
+height: 50px;
+margin: 0 auto;
+background: #3d6497;
+margin-top: -5px;
+}
+
+#main {
+width: 940px;
+margin: 0 auto;
+padding-top: 30px;
+background: #FFF url(/wfiles/templates/colbg.png) repeat-y;
+overflow: hidden;
+}
+
+#content {
+float: right;
+width: 640px;
+margin-right: 30px;
+}
+
+#sidebar {
+float: left;
+padding-left: 20px;
+width: 220px;
+}
+
+footer {
+width: 940px;
+margin: 0 auto;
+clear: both;
+}
+
+/* basics */
+
+h1,h2,h3,h4,h5,h6 {
+font-weight: bold;
+clear: both;
+color: #333;
+}
+
+a:link, a:visited {
+color:#004C9A;
+}
+
+a:hover, a:active {
+color: #333;
+}
+
+p {
+margin-bottom: 18px;
+}
+
+li {
+padding-left: 5px;
+}
+
+/* nav */
+
+nav .menu {
+font-size: 16px;
+font-weight: bold;
+}
+
+nav .menu ul {
+margin: 0;
+padding: 17px 0 0 20px;
+list-style: none;
+line-height: normal;
+}
+
+nav .menu li {
+display: block;
+float: left;
+}
+
+nav .menu a {
+display: block;
+float: left;
+margin-right: 5px;
+padding: 0px 15px;
+text-decoration: none;
+color: #BBCFE8;
+}
+
+nav .menu a:hover {
+text-decoration: underline;
+}
+
+/** HEADER */
+
+header {
+padding: 20px 0 0 0;
+}
+
+header&gt;h1 {
+float: left;
+margin: 0 0 18px 10px;
+width: 600px;
+font-size: 40px;
+line-height: 36px;
+}
+
+header&gt;h1 a {
+color: #333;
+font-weight: bold;
+text-decoration: none;
+}
+
+header&gt;h2 {
+color: #777;
+clear: right;
+float: right;
+font-style: italic;
+font-size: 14px;
+margin: 14px 10px 18px 0;
+}
+
+/** ARTICLES **/
+article img {
+border: none;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+#content p, ul, ol, hr {
+margin-bottom: 24px;
+}
+
+#content ul ul, ol ol, ul ol, ol ul {
+margin-bottom: 0;
+}
+
+#content h1, h2, h3, h4, h5, h6 {
+color: #333;
+margin: 0 0 20px 0;
+line-height: 1.5em;
+}
+
+.alignleft, img.alignleft {
+display: inline;
+float: left;
+margin-right: 10px;
+}
+
+.alignright, img.alignright {
+display: inline;
+float: right;
+margin-left: 10px;
+}
+
+.aligncenter, img.aligncenter {
+clear: both;
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+img.alignleft, img.alignright, img.aligncenter {
+margin-bottom: 12px;
+}
+
+/* sidebar and footer widget blocks */
+
+aside h3 {
+font-size: 18px;
+}
+
+aside ul {
+list-style: square;
+color: #bbb;
+margin: -15px 0 15px 25px;
+}
+
+#footer-area {
+background: #3d6497;
+color: #FFF;
+font-size: 90%;
+padding: 18px 0;
+overflow: hidden;
+/* curved border radius */
+-moz-border-radius-bottomright: 8px;
+-moz-border-radius-bottomleft: 8px;
+-webkit-border-bottom-left-radius: 8px;
+-webkit-border-bottom-right-radius: 8px;
+}
+
+.footer-segment {
+float: left;
+margin-right: 20px;
+margin-left: 20px;
+width: 190px;
+}
+
+footer aside h4 {
+color: #faf0e6;
+font-size: 16px;
+line-height: 1.5em;
+}
+
+footer ul {
+list-style: none;
+margin: -15px 0;
+}
+
+footer a:link, footer a:visited {
+color: #BBCFE8;
+}
+
+footer a:hover { 
+text-decoration: underline; 
+}
+
+footer p {
+margin-top: -15px;
+color: #faf0e6;
+}
+]]></body>
+	<body_sha1>965f8b7af87e82aec62df4a12363f50eec375989</body_sha1>
+	<body_size>3659</body_size>
+	<description>Style Sheet for sample2 template</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>sample2_css</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-06 13:23:15</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-05 23:19:25</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-05 23:19:34</_edate>
+	<_euser>1</_euser>
+	<_id>14</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type:text/css');
+?&gt;
+/* Created by http://freehtml5templates.com */
+
+/* reset */
+* {
+margin: 0;
+padding: 0;
+}
+
+/* render html5 elements as block */
+header, footer, section, aside, nav, article {
+display: block;
+}
+
+body {
+line-height: 1;
+background: #9F3B19;
+font-family: Verdana, Arial, Helvetica, sans-serif;
+color: #666;
+font-size: 14px;
+line-height: 18px;
+}
+	
+/* layout */
+
+#container {
+float: left;
+margin: 0 -240px 0 0;
+width: 650px;
+}
+
+#content {
+margin: 0 280px 0 20px;
+}
+
+#sidebar {
+float: right;
+overflow: hidden;
+width: 280px;
+margin-top: 20px;
+}
+
+.menu,
+#main,
+#wrapper {
+margin: 0 auto;
+width: 940px;
+}
+
+#wrapper {
+background: #F2E7D8;
+padding: 0 20px;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+.footer-segment {
+float: left;
+margin-right: 20px;
+width: 210px;
+}
+
+#fourth {
+margin-right: 0;
+}
+
+#fourth p {
+padding-right: 5px;
+}
+
+/* basics */
+
+h1,h2,h3,h4,h5,h6 {
+font-weight: bold;
+clear: both;
+color: #333;
+}
+
+a {
+color:#9F3B19;
+}
+
+a:hover {
+color: #333;
+}
+	
+p {
+margin-bottom: 18px;
+}
+
+li {
+padding-left: 5px;
+}
+
+/* header */
+
+header {
+margin-top: 20px;
+padding: 30px 0 0 0;
+}
+
+header img {
+clear: both;
+border-top: 4px solid #333;
+display: block;
+}
+
+header&gt;h1 {
+float: left;
+margin: 0 0 18px 0;
+width: 600px;
+font-size: 30px;
+line-height: 36px;
+}
+
+header&gt;h1 a {
+color: #9F3B19;
+font-weight: bold;
+text-decoration: none;
+text-shadow: 0px 3px 3px #949494;
+}
+
+header&gt;h2 {
+color: #777;
+clear: right;
+float: right;
+font-style: italic;
+font-size: 16px;
+margin: 14px 0 18px 0;
+text-shadow: 0px 2px 3px #ddd;
+}
+
+/* nav */
+
+nav {
+background: #333;
+margin: 0 auto;
+width: 940px;
+display: block;
+float: left;
+}
+
+nav .menu {
+font-size: 16px;
+font-weight: bold;
+margin-left: 12px;
+}
+
+nav .menu ul {
+list-style: none;
+margin: 0;
+}
+
+nav .menu li {
+float: left;
+position: relative;
+}
+
+nav .menu a {
+display: block;
+text-decoration: none;
+color: #FFF;
+padding: 0 20px;
+line-height: 38px;
+}
+
+nav .menu a:hover {
+color: #edab57;
+}
+
+/* nav 1-level dropdowns */
+nav .menu li ul { 
+display: none; 
+}
+
+nav .menu ul li a {
+display: block;
+text-decoration: none;
+color: #edbd7f;
+background: #333;
+margin-left: 1px;
+white-space: nowrap;
+}
+
+nav .menu ul li a:hover { 
+background: #333; 
+}
+
+nav .menu li:hover ul {
+display: block;
+position: absolute;
+}
+
+nav .menu li:hover li {
+float: none;
+font-size: 11px;
+}
+nav .menu li:hover a { 
+background: #333; 
+}
+
+nav .menu li:hover li a:hover { 
+background: #333; 
+}
+
+/* main content */
+
+#main {
+overflow: hidden;
+padding: 20px 0 0 0;
+}
+
+#content {
+width: 600px;
+margin-bottom: 36px;
+color: #444;
+font-size: 16px;
+line-height: 24px;
+border-right: 1px #9F3B19 solid;
+}
+
+article {
+padding: 10px;
+}
+
+article img {
+border: none;
+-webkit-box-shadow: 3px 3px 7px #777;
+-moz-box-shadow: 3px 3px 7px #777;
+}
+
+#content p,
+#content ul,
+#content ol,
+#content hr {
+margin-bottom: 24px;
+}
+
+#content ul ul,
+#content ol ol,
+#content ul ol,
+#content ol ul {
+margin-bottom: 0;
+}
+
+#content h1,
+#content h2,
+#content h3,
+#content h4,
+#content h5,
+#content h6 {
+color: #333;
+margin: 0 0 20px 0;
+line-height: 1.5em;
+text-shadow: 0px 2px 3px #ddd;
+}
+
+.alignleft,
+img.alignleft {
+display: inline;
+float: left;
+margin-right: 24px;
+margin-top: 4px;
+}
+
+.alignright,
+img.alignright {
+display: inline;
+float: right;
+margin-left: 24px;
+margin-top: 4px;
+}
+
+.aligncenter,
+img.aligncenter {
+clear: both;
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+img.alignleft, img.alignright, img.aligncenter {
+margin-bottom: 12px;
+}
+
+/* sidebar and footer widget blocks */
+
+aside h3 {
+font-size: 18px;
+line-height: 1.5em;
+text-shadow: 0px 2px 3px #ddd;
+}
+
+aside ul {
+list-style: square inside;
+margin-bottom: 20px;
+}
+
+footer {
+margin-bottom: 20px;
+clear:both;
+}
+
+#footer-area {
+border-top: 2px solid #9F3B19;
+margin-top: -4px;
+padding: 18px 0;
+overflow: hidden;
+}
+
+
+
+
+]]></body>
+	<body_sha1>17f8373a2c67a69c806c0a47a8a9f47be2a433cb</body_sha1>
+	<body_size>4149</body_size>
+	<description>Style Sheet for sample3 template</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>sample3_css</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-15 17:41:50</_adate>
+	<_aip>68.178.65.155</_aip>
+	<_cdate>2011-07-13 09:35:15</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-13 10:37:17</_edate>
+	<_euser>1</_euser>
+	<_id>15</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;div id=&quot;wcart&quot;&gt;
+&lt;?php
+$progpath=dirname(__FILE__);
+@include_once(&quot;{$progpath}/wcart.php&quot;);
+?&gt;
+&lt;/div&gt;
+]]></body>
+	<body_sha1>43a02dc04d8bf3a629980486a5ca81248cafcd5b</body_sha1>
+	<body_size>101</body_size>
+	<description>Checkout Page - make it secure!</description>
+	<functions_sha1>da39a3ee5e6b4b0d3255bfef95601890afd80709</functions_sha1>
+	<functions_size>0</functions_size>
+	<name>cart</name>
+</xmldata>
+<xmldata name="_pages">
+	<_adate>2011-07-25 21:43:22</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_cdate>2011-07-25 20:27:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-25 21:42:25</_edate>
+	<_euser>1</_euser>
+	<_id>16</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+//X-PAYPAL-RESPONSE-DATA-FORMAT = NV, XML, or JSON
+$post=paypalCreateAndSendInvoice(array(
+	'-userid'	=&gt; 'sandbox_api1.basgetti.com',
+	'-password'	=&gt; '9B77WNVSCVAZPLZV',
+	'-signature'=&gt; 'Akr22EWGO9no2JOCH1p5KtrKYJnPACxPQaYkGBDwI7KspU7pwCl7cDmf',
+	'-appid'	=&gt; 'APP-80W284485P519543T',
+	'-test'		=&gt; 1,
+	'send_from'	=&gt; 'sandbox@basgetti.com',
+	'send_to'	=&gt; 'steve.lloyd@gmail.com',
+	'items'		=&gt; array(
+		array(
+			'name'			=&gt; &quot;Test name 1&quot;,
+			'description'	=&gt; &quot;Test Description 1&quot;,
+			'quantity'		=&gt; 4,
+			'unitPrice'		=&gt; 23.34
+			),
+		array(
+			'name'			=&gt; &quot;Test name 2&quot;,
+			'description'	=&gt; &quot;Test Description 2&quot;,
+			'quantity'		=&gt; 13,
+			'unitPrice'		=&gt; 75
+			),
+	)
+));
+return printValue($post);
+$url='https://svcs.sandbox.paypal.com/Invoice/CreateAndSendInvoice';
+$post=postURL($url,array(
+	'-ssl'		=&gt; false,
+	'-headers'	=&gt; array(
+		&quot;X-PAYPAL-SECURITY-USERID: sandbox_api1.basgetti.com&quot;,
+		&quot;X-PAYPAL-SECURITY-PASSWORD: 9B77WNVSCVAZPLZV&quot;,
+		&quot;X-PAYPAL-SECURITY-SIGNATURE: Akr22EWGO9no2JOCH1p5KtrKYJnPACxPQaYkGBDwI7KspU7pwCl7cDmf&quot;,
+		&quot;X-PAYPAL-REQUEST-DATA-FORMAT: NV&quot;,
+		&quot;X-PAYPAL-RESPONSE-DATA-FORMAT: XML&quot;,
+		&quot;X-PAYPAL-APPLICATION-ID: APP-80W284485P519543T&quot;
+		),
+	&quot;requestEnvelope.errorLanguage&quot;	=&gt; &quot;en_US&quot;,
+	&quot;invoice.merchantEmail&quot;			=&gt; 'sandbox@basgetti.com',
+	&quot;invoice.payerEmail&quot;			=&gt; 'steve.lloyd@gmail.com',
+	&quot;invoice.currencyCode&quot;			=&gt; &quot;USD&quot;,
+	&quot;invoice.items(0).name&quot;			=&gt; 'Banana+Leaf+--+001',
+	&quot;invoice.items(0).description&quot;	=&gt; 'Banana+Leaf',
+	&quot;invoice.items(0).quantity&quot;		=&gt; 1,
+	&quot;invoice.items(0).unitPrice&quot;	=&gt; 124.45,
+	&quot;invoice.paymentTerms&quot;			=&gt; &quot;Net10&quot;
+	));
+echo printValue($post);
+
+?&gt;
+]]></body>
+	<name>test</name>
+</xmldata>
+
+
+<xmlschema name="_queries">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="field_count" type="int(11) NULL" />
+	<field name="fields" type="varchar(255) NULL" />
+	<field name="function" type="varchar(25) NULL" />
+	<field name="page_id" type="int(11) NULL" />
+	<field name="query" type="text NULL" />
+	<field name="row_count" type="int(11) NULL" />
+	<field name="run_length" type="double(8,3) NOT NULL Default 0.000" />
+	<field name="tablename" type="varchar(255) NULL" />
+	<field name="user_id" type="int(11) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<formfields>function run_length user_id page_id row_count field_count
+fields
+query</formfields>
+	<formfields_mod>function run_length user_id page_id row_count field_count
+fields
+query</formfields_mod>
+	<listfields>_cdate function run_length user_id tablename page_id row_count field_count</listfields>
+	<listfields_mod>_cdate function run_length user_id tablename page_id row_count field_count</listfields_mod>
+	<sortfields>run_length desc</sortfields>
+	<sortfields_mod>run_length desc</sortfields_mod>
+	<tablename>_queries</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>74</_id>
+	<fieldname>run_length</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>75</_id>
+	<fieldname>function</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>100</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>76</_id>
+	<fieldname>page_id</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>77</_id>
+	<fieldname>fields</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>78</_id>
+	<fieldname>row_count</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>79</_id>
+	<fieldname>field_count</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_queries</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>80</_id>
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_queries</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>81</_id>
+	<fieldname>query</fieldname>
+	<height>200</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_queries</tablename>
+	<width>500</width>
+</xmlmeta>
+
+
+<xmlschema name="_settings">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="key_name" type="varchar(25) NOT NULL" />
+	<field name="key_value" type="varchar(255) NULL" />
+	<field name="user_id" type="int(11) NOT NULL Default 0" />
+</xmlschema>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1</_id>
+	<key_name>wasql_crons</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>2</_id>
+	<key_name>wasql_queries</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>3</_id>
+	<key_name>wasql_queries_days</key_name>
+	<key_value>10</key_value>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>4</_id>
+	<key_name>wasql_queries_user</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>5</_id>
+	<key_name>wasql_access</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>6</_id>
+	<key_name>wasql_access_bot</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>7</_id>
+	<key_name>wasql_access_dbname</key_name>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:16</_cdate>
+	<_cuser>1</_cuser>
+	<_id>8</_id>
+	<key_name>wasql_synchronize</key_name>
+	<key_value>1</key_value>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:25</_cdate>
+	<_cuser>1</_cuser>
+	<_id>9</_id>
+	<key_name>wasql_synchronize_master</key_name>
+	<key_value>localhost</key_value>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:25</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-08 06:53:50</_edate>
+	<_euser>1</_euser>
+	<_id>10</_id>
+	<key_name>wasql_synchronize_slave</key_name>
+	<key_value>wasql_test2</key_value>
+	<user_id>0</user_id>
+</xmldata>
+<xmldata name="_settings">
+	<_cdate>2011-07-08 06:53:25</_cdate>
+	<_cuser>1</_cuser>
+	<_id>11</_id>
+	<key_name>wasql_synchronize_tables</key_name>
+	<key_value>_pages
+_templates</key_value>
+	<user_id>0</user_id>
+</xmldata>
+
+
+<xmlschema name="_tabledata">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="formfields" type="text NULL" />
+	<field name="formfields_mod" type="text NULL" />
+	<field name="listfields" type="text NULL" />
+	<field name="listfields_mod" type="text NULL" />
+	<field name="sortfields" type="varchar(255) NULL" />
+	<field name="sortfields_mod" type="varchar(255) NULL" />
+	<field name="tablename" type="varchar(255) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<formfields>tablename
+formfields
+listfields
+sortfields
+formfields_mod
+listfields_mod
+sortfields_mod</formfields>
+	<listfields>tablename sortfields sortfields_mod</listfields>
+	<sortfields>tablename,_cdate desc</sortfields>
+	<tablename>_tabledata</tablename>
+</xmlmeta>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:44</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<listfields>_cdate status http_host page remote_addr guid session_id remote_device remote_browser remote_os</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_access</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:44</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<listfields>accessdate http_host visits visits_unique page_unique remote_browser_unique remote_os_unique remote_device_unique session_id_unique guid_unique</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_access_summary</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<formfields>tablename fieldname
+displayname
+inputtype related_table behavior
+width height inputmax required editlist mask
+onchange
+tvals
+dvals
+defaultval
+help</formfields>
+	<listfields>tablename fieldname inputtype width height inputmax editlist</listfields>
+	<sortfields>tablename,fieldname,inputtype</sortfields>
+	<tablename>_fielddata</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<formfields>_formname email
+http_host script_url
+_xmldata</formfields>
+	<listfields>_formname email http_host script_url _cdate</listfields>
+	<sortfields>_formname,_cdate desc</sortfields>
+	<tablename>_forms</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<formfields>_cuser action page_id record_id
+tablename
+xmldata</formfields>
+	<listfields>_cuser action page_id record_id tablename</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_history</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<formfields>_cdate user_id message
+computer_name computer_user computer_domain</formfields>
+	<listfields>_cdate user_id message computer_name computer_user computer_domain</listfields>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_chat</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<formfields>name _template
+description
+body</formfields>
+	<formfields_mod>name
+description
+body</formfields_mod>
+	<listfields>name _template description</listfields>
+	<listfields_mod>name description</listfields_mod>
+	<sortfields>_cdate desc</sortfields>
+	<tablename>_pages</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<formfields>tablename
+formfields
+listfields
+sortfields
+formfields_mod
+listfields_mod
+sortfields_mod</formfields>
+	<listfields>tablename sortfields sortfields_mod</listfields>
+	<sortfields>tablename,_cdate desc</sortfields>
+	<tablename>_tabledata</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<formfields>name
+description
+body</formfields>
+	<formfields_mod>name
+description
+body</formfields_mod>
+	<listfields>name description</listfields>
+	<listfields_mod>name description</listfields_mod>
+	<sortfields>name</sortfields>
+	<tablename>_templates</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<formfields>utype
+username password
+title
+firstname lastname
+address1
+address2
+city state zip
+country email
+picture
+bio
+note</formfields>
+	<formfields_mod>username password
+title
+firstname lastname
+address1
+address2
+city state zip
+country email
+picture
+bio</formfields_mod>
+	<listfields>utype username firstname lastname email _adate</listfields>
+	<listfields_mod>username firstname lastname email</listfields_mod>
+	<sortfields>_adate desc</sortfields>
+	<sortfields_mod>lastname,firstname,username</sortfields_mod>
+	<tablename>_users</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<formfields>name active run_log begin_date end_date
+frequency run_format run_values
+logfile logfile_maxsize
+run_cmd
+running run_date run_length
+run_result</formfields>
+	<formfields_mod>name begin_date end_date
+frequency run_format run_values
+run_cmd
+run_date run_length
+run_result</formfields_mod>
+	<listfields>name
+cron_pid
+active
+run_log
+running
+frequency
+run_format
+run_values
+run_cmd
+run_date
+run_length
+begin_date
+end_date</listfields>
+	<listfields_mod>name
+cron_pid
+active
+running
+frequency
+run_format
+run_values
+run_cmd
+run_date
+run_length
+begin_date
+end_date</listfields_mod>
+	<sortfields>active desc
+running desc
+begin_date desc</sortfields>
+	<sortfields_mod>active desc
+running desc
+begin_date desc</sortfields_mod>
+	<tablename>_cron</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-05 20:45:46</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<formfields>function run_length user_id page_id row_count field_count
+fields
+query</formfields>
+	<formfields_mod>function run_length user_id page_id row_count field_count
+fields
+query</formfields_mod>
+	<listfields>_cdate function run_length user_id tablename page_id row_count field_count</listfields>
+	<listfields_mod>_cdate function run_length user_id tablename page_id row_count field_count</listfields_mod>
+	<sortfields>run_length desc</sortfields>
+	<sortfields_mod>run_length desc</sortfields_mod>
+	<tablename>_queries</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-12 22:33:29</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:02</_edate>
+	<_euser>1</_euser>
+	<_id>13</_id>
+	<formfields>active name sku price weight
+image
+image_thumb
+description
+details</formfields>
+	<listfields>active name
+sku
+price
+weight
+image
+image_thumb</listfields>
+	<tablename>wcart_products</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-14 20:18:56</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 20:19:25</_edate>
+	<_euser>1</_euser>
+	<_id>14</_id>
+	<formfields>coupon type discount 
+sku times_valid expire_date
+description</formfields>
+	<tablename>wcart_coupons</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2011-07-14 23:29:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>15</_id>
+	<formfields>name regarding
+email
+details</formfields>
+	<formfields_mod>name regarding
+email
+details</formfields_mod>
+	<listfields>name regarding
+email</listfields>
+	<listfields_mod>name regarding
+email</listfields_mod>
+	<tablename>contacts</tablename>
+</xmldata>
+
+
+<xmlschema name="_templates">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="body" type="text NULL" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="functions" type="text NULL" />
+	<field name="name" type="varchar(50) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<formfields>name
+description
+body</formfields>
+	<formfields_mod>name
+description
+body</formfields_mod>
+	<listfields>name description</listfields>
+	<listfields_mod>name description</listfields_mod>
+	<sortfields>name</sortfields>
+	<tablename>_templates</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>82</_id>
+	<fieldname>body</fieldname>
+	<height>300</height>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>83</_id>
+	<fieldname>name</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>84</_id>
+	<fieldname>description</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>_templates</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+global $PAGE;
+return evalPHP($PAGE['body']);
+?&gt;
+]]></body>
+	<description>Blank Template</description>
+	<name>Blank</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_edate>2011-07-15 17:41:26</_edate>
+	<_euser>1</_euser>
+	<_id>2</_id>
+	<body><![CDATA[
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=9&quot; /&gt;
+	&lt;title&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/title&gt;
+	&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;/wfiles/min/index.php?g=w_Css3&quot; /&gt;
+	&lt;link rel=&quot;stylesheet&quot; href=&quot;/main_css&quot; type=&quot;text/css&quot; media=&quot;screen&quot; /&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/print_css&quot; media=&quot;print&quot; /&gt;
+	&lt;script type=&quot;text/javascript&quot; src=&quot;/wfiles/min/index.php?g=w_Js3&quot;&gt;&lt;/script&gt;
+	&lt;!--[if IE]&gt;&lt;script src=&quot;/wfiles/js/html5_ie.js&quot;&gt;&lt;/script&gt;&lt;![endif]--&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;wrapper&quot;&gt;&lt;!-- #wrapper --&gt;
+	&lt;header&gt;&lt;!-- header --&gt;
+		&lt;img src=&quot;/wfiles/wasql_logo.png&quot; border=&quot;0&quot;&gt;
+		&lt;div id=&quot;cartbox&quot; &gt;
+			&lt;div id=&quot;cartbox_topleft&quot;&gt;&lt;/div&gt;
+			&lt;div id=&quot;cartbox_topright&quot;&gt;&lt;/div&gt;
+			&lt;div id=&quot;cartbox_content&quot; _behavior=&quot;animate&quot; min=&quot;30&quot; max=&quot;150&quot;&gt;
+				&lt;div id=&quot;cartbox_content_top&quot;&gt;
+					&lt;span style=&quot;font-size:40px;&quot;&gt;0&lt;/span&gt; items in cart.
+				&lt;/div&gt;
+				&lt;div id=&quot;cartbox_content_bottom&quot;&gt;
+					&lt;span style=&quot;font-size:20px;&quot;&gt;Y&lt;/span&gt;our cart is currently empty. 
+					&lt;a class=&quot;w_white&quot; href=&quot;/products&quot;&gt;&lt;span style=&quot;font-size:20px;&quot;&gt;C&lt;/span&gt;lick here&lt;/a&gt; to browse our product offering.
+					&lt;span style=&quot;font-size:20px;&quot;&gt;W&lt;/span&gt;e appreciate your business!
+				&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+		&lt;div style=&quot;position:absolute;right:50px;bottom:30px;&quot;&gt;&lt;h2&gt;Helping You Achieve the Impossible&lt;/h2&gt;&lt;/div&gt;
+		&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+		&lt;nav&gt;&lt;!-- top nav --&gt;
+		&lt;div class=&quot;menu&quot;&gt;
+				&lt;ul&gt;
+					&lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/about&quot;&gt;About&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/products&quot;&gt;Products&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/services&quot;&gt;Services&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/support&quot;&gt;Support&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/contact&quot;&gt;Contact Us&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a href=&quot;/cart?c=cart&amp;wrap=0&amp;shop=0&quot;&gt;Cart&lt;/a&gt;&lt;/li&gt;
+					&lt;li&gt;&lt;a style=&quot;border:0px;&quot; href=&quot;/admin&quot;&gt;Login&lt;/a&gt;&lt;/li&gt;
+				&lt;/ul&gt;
+			&lt;/div&gt;
+		&lt;/nav&gt;&lt;!-- end of top nav --&gt;
+		&lt;hr /&gt;
+	&lt;/header&gt;&lt;!-- end of header --&gt;
+
+		&lt;div class=&quot;clearall&quot;&gt;&lt;/div&gt;
+
+	&lt;section id=&quot;main&quot;&gt;&lt;!-- #main content --&gt;
+		&lt;?echo evalPHP(pageValue('body'));?&gt;
+
+	&lt;/section&gt;&lt;!-- end of #main content --&gt;
+
+	&lt;footer&gt;
+				&lt;br /&gt;
+				&lt;p&gt;&amp;copy; &lt;a href=&quot;http://&lt;?=$_SERVER['HTTP_HOST'];?&gt;&quot;&gt;&lt;?=$_SERVER['HTTP_HOST'];?&gt;&lt;/a&gt; - powered by &lt;a href=&quot;http://www.wasql.com&quot;&gt;wasql&lt;/a&gt;&lt;/p&gt;
+				&lt;br /&gt;
+	&lt;/footer&gt;
+
+&lt;/div&gt;&lt;!-- #wrapper --&gt;
+&lt;div style=&quot;display:none;&quot;&gt;
+&lt;?
+$progpath=dirname(__FILE__);
+@include_once(&quot;{$progpath}/wcart_functions.php&quot;);
+$guid=getGUID();
+echo wcartChange($guid);
+?&gt;
+&lt;/div&gt;
+&lt;!-- Free template created by http://freehtml5templates.com --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<description>Main Template</description>
+	<name>Main</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<body><![CDATA[
+&lt;!DOCTYPE html PUBLIC
+  &quot;-//WAPFORUM//DTD XHTML Mobile 1.2//EN&quot;
+  &quot;http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;META NAME=&quot;keywords&quot; CONTENT=&quot;&quot;&gt;
+  	&lt;META NAME=&quot;description&quot; content=&quot;&quot;&gt;
+  	&lt;META name=&quot;abstract&quot; content=&quot;&quot;&gt;
+  	&lt;META name=&quot;robots&quot; content=&quot;index,follow&quot;&gt;
+  	&lt;link rel=&quot;shortcut icon&quot; href=&quot;/favicon.ico&quot; type=&quot;image/x-icon&quot; /&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width; initial-scale=1.0; maximum-scale=4.0; user-scalable=1;&quot; /&gt;
+	&lt;meta name=&quot;apple-mobile-web-app-capable&quot; content=&quot;yes&quot; /&gt;
+	&lt;link rel=&quot;apple-touch-icon&quot; sizes=&quot;64x64&quot; href=&quot;/wfiles/iconsets/64/globe.png&quot; /&gt;
+	&lt;link rel=&quot;apple-touch-startup-image&quot; href=&quot;/wfiles/mobile_loading.png&quot; /&gt;
+	&lt;script type=&quot;text/javascript&quot; src=&quot;/wfiles/min/index.php?g=w_Js3&quot;&gt;&lt;/script&gt;
+	&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;/wfiles/css/wasql.css&quot; /&gt;
+	&lt;title&gt;&lt;?return $_SERVER['HTTP_HOST'];?&gt; - Mobile&lt;/title&gt;
+&lt;/head&gt;
+&lt;body onload=&quot;mobileHideAddressBar();&quot; class=&quot;w_mobilebody&quot;&gt;
+&lt;div class=&quot;w_mobilemenu&quot;&gt;
+	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;3&quot; border=&quot;0&quot; width=&quot;100%&quot;&gt;
+		&lt;tr valign=&quot;middle&quot;&gt;
+			&lt;td&gt;&lt;a href=&quot;#&quot; onclick=&quot;showHideMobile('sideMenu');document.sform.searchtxt.focus();return false;&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/menu.png&quot; border=&quot;0&quot; width=&quot;32&quot; height=&quot;32&quot; alt=&quot;Menu&quot; title=&quot;Menu&quot;&gt;&lt;/a&gt;&lt;/td&gt;
+			&lt;td width=&quot;100%&quot; align=&quot;center&quot;&gt;&lt;div&gt;Mobile Site Demo&lt;/div&gt;&lt;/td&gt;
+			&lt;td&gt;&lt;a href=&quot;#&quot; onclick=&quot;showHideMobile('searchForm');document.sform.searchtxt.focus();return false;&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/search.png&quot; border=&quot;0&quot; width=&quot;32&quot; height=&quot;32&quot; alt=&quot;Search&quot; title=&quot;Search&quot;&gt;&lt;/a&gt;&lt;/td&gt;
+			&lt;td&gt;&lt;img src=&quot;/wfiles/clear.gif&quot; height=&quot;38&quot; width=&quot;5&quot;&gt;&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class=&quot;w_mobilemenu&quot; id=&quot;sideMenu&quot; style=&quot;display:none;position:absolute;left:0px;background:#FFF;border:1px solid #6d84a2;padding:10px;z-index:900;&quot; align=&quot;left&quot;&gt;
+	&lt;div&gt;&lt;a href=&quot;#&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/home.png&quot; border=&quot;0&quot; width=&quot;32&quot; height=&quot;32&quot; alt=&quot;Home&quot; title=&quot;Home&quot;&gt; Home&lt;/a&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;a href=&quot;#&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/email.png&quot; border=&quot;0&quot; width=&quot;32&quot; height=&quot;32&quot; alt=&quot;Contact&quot; title=&quot;Contact&quot;&gt; Contact&lt;/a&gt;&lt;/div&gt;
+	&lt;div&gt;&lt;a href=&quot;#&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/gear.png&quot; border=&quot;0&quot; width=&quot;32&quot; height=&quot;32&quot; alt=&quot;Settings&quot; title=&quot;Settings&quot;&gt; Settings&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;searchForm&quot; style=&quot;display:none;position:absolute;right:10px;background:#FFF;border:1px solid #6d84a2;padding:10px;z-index:850;&quot; align=&quot;right&quot;&gt;
+	&lt;form name=&quot;sform&quot; action=&quot;/&quot; method=&quot;POST&quot; onsubmit=&quot;return ajaxSubmitForm(this,'mobilecontent');&quot;&gt;
+		&lt;input type=&quot;hidden&quot; name=&quot;_template&quot; value=&quot;blank&quot;&gt;
+		&lt;input type=&quot;text&quot; name=&quot;searchtxt&quot; value=&quot;&quot; /&gt;
+   	&lt;input type=&quot;submit&quot; value=&quot;Search&quot; /&gt;
+	&lt;/form&gt;
+&lt;/div&gt;
+&lt;div id=&quot;mobilecontent&quot; class=&quot;w_pad&quot;&gt;
+&lt;?
+echo evalPHP(pageValue('body'));
+?&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<description>Mobile Template</description>
+	<name>Mobile</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 21:03:23</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-06 21:23:56</_edate>
+	<_euser>1</_euser>
+	<_id>4</_id>
+	<body><![CDATA[
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=9&quot; /&gt;
+	&lt;title&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/title&gt;
+	&lt;link rel=&quot;stylesheet&quot; href=&quot;/sample1_css&quot; type=&quot;text/css&quot; media=&quot;screen&quot; /&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/print_css&quot; media=&quot;print&quot; /&gt;
+	&lt;!--[if IE]&gt;&lt;script src=&quot;http://html5shiv.googlecode.com/svn/trunk/html5.js&quot;&gt;&lt;/script&gt;&lt;![endif]--&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;wrapper&quot;&gt;&lt;!-- #wrapper --&gt;
+	&lt;header&gt;
+		&lt;table&gt;&lt;tr&gt;&lt;td width=&quot;100%&quot; nowrap&gt;
+			&lt;h1&gt;&lt;a href=&quot;/&quot;&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/a&gt;&lt;/h1&gt;
+   			&lt;h2&gt;Your interesting tag line goes here&lt;/h2&gt;
+   			&lt;/td&gt;&lt;/td&gt;
+			&lt;img src=&quot;/wfiles/templates/butterfly.png&quot; width=&quot;96&quot; height=&quot;96&quot; border=&quot;0&quot; class=&quot;alignright&quot;&gt;
+		&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+	&lt;/header&gt;
+
+	&lt;nav&gt;&lt;!-- top nav --&gt;
+		&lt;div class=&quot;menu&quot;&gt;
+			&lt;ul&gt;
+				&lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/about&quot;&gt;About&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/products&quot;&gt;Products&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/services&quot;&gt;Services&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/support&quot;&gt;Support&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/contact&quot;&gt;Contact Us&lt;/a&gt;&lt;/li&gt;
+			&lt;/ul&gt;
+		&lt;/div&gt;
+	&lt;/nav&gt;&lt;!-- end of top nav --&gt;
+
+	&lt;section id=&quot;main&quot;&gt;&lt;!-- #main content and sidebar area --&gt;
+			&lt;section id=&quot;content&quot;&gt;&lt;!-- #content --&gt;
+			
+        		&lt;?echo evalPHP(pageValue('body'));?&gt;
+
+			&lt;/section&gt;&lt;!-- end of #content --&gt;
+
+		&lt;aside id=&quot;sidebar&quot;&gt;&lt;!-- sidebar --&gt;
+				&lt;h3&gt;Things To Do&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Play Games&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Chat With Friends&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Swap Stories&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Sell Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Buy Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Trade Stuff&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+					
+				&lt;h3&gt;Sponsors&lt;/h3&gt;
+					&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;&lt;br /&gt;
+
+				&lt;h3&gt;Connect With Us&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Twitter&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Facebook&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+
+		&lt;/aside&gt;&lt;!-- end of sidebar --&gt;
+
+	&lt;/section&gt;&lt;!-- end of #main content and sidebar--&gt;
+	
+		&lt;footer&gt;
+		&lt;section id=&quot;footer-area&quot;&gt;
+
+			&lt;section id=&quot;footer-outer-block&quot;&gt;
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Friends&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #first footer segment --&gt;
+
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Awesome Stuff&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #second footer segment --&gt;
+
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Coolness&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #third footer segment --&gt;
+					
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Blahdyblah&lt;/h4&gt;
+								&lt;p&gt;© 2010 &lt;a href=&quot;#&quot;&gt;yoursite.com&lt;/a&gt; Praesent libero. Sed cursus ante dapibus diam. Sed nisi.&lt;/p&gt;
+					&lt;/aside&gt;&lt;!-- end of #fourth footer segment --&gt;
+
+			&lt;/section&gt;&lt;!-- end of footer-outer-block --&gt;
+
+		&lt;/section&gt;&lt;!-- end of footer-area --&gt;
+	&lt;/footer&gt;
+	
+&lt;/div&gt;&lt;!-- #wrapper --&gt;
+&lt;!-- Templated initially created by http://freehtml5templates.com --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<name>sample1</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 23:08:29</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-05 23:46:06</_edate>
+	<_euser>1</_euser>
+	<_id>5</_id>
+	<body><![CDATA[
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=9&quot; /&gt;
+	&lt;title&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/title&gt;
+	&lt;link rel=&quot;stylesheet&quot; href=&quot;/sample2_css&quot; type=&quot;text/css&quot; media=&quot;screen&quot; /&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/print_css&quot; media=&quot;print&quot; /&gt;
+	&lt;!--[if IE]&gt;&lt;script src=&quot;http://html5shiv.googlecode.com/svn/trunk/html5.js&quot;&gt;&lt;/script&gt;&lt;![endif]--&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;wrapper&quot;&gt;&lt;!-- #wrapper --&gt;
+	&lt;header&gt;&lt;!-- header --&gt;
+		&lt;h1&gt;&lt;a href=&quot;/&quot;&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/a&gt;&lt;/h1&gt;
+		&lt;h2&gt;Your interesting tag line goes here&lt;/h2&gt;
+		&lt;img src=&quot;/wfiles/templates/headerimg.jpg&quot; width=&quot;940&quot; height=&quot;200&quot; alt=&quot;&quot;&gt;&lt;!-- header image --&gt;
+	&lt;/header&gt;&lt;!-- end of header --&gt;
+	
+	&lt;nav&gt;&lt;!-- top nav --&gt;
+		&lt;div class=&quot;menu&quot;&gt;
+			&lt;ul&gt;
+				&lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/about&quot;&gt;About&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/products&quot;&gt;Products&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/services&quot;&gt;Services&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/support&quot;&gt;Support&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/contact&quot;&gt;Contact Us&lt;/a&gt;&lt;/li&gt;
+			&lt;/ul&gt;
+		&lt;/div&gt;
+	&lt;/nav&gt;&lt;!-- end of top nav --&gt;
+	
+	&lt;section id=&quot;main&quot;&gt;&lt;!-- #main content and sidebar area --&gt;
+			&lt;section id=&quot;content&quot;&gt;&lt;!-- #content --&gt;
+			
+        		&lt;?echo evalPHP(pageValue('body'));?&gt;
+
+			&lt;/section&gt;&lt;!-- end of #content --&gt;
+
+		&lt;aside id=&quot;sidebar&quot;&gt;&lt;!-- sidebar --&gt;
+				&lt;h3&gt;Things To Do&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Play Games&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Chat With Friends&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Swap Stories&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Sell Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Buy Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Trade Stuff&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+					
+				&lt;h3&gt;Sponsors&lt;/h3&gt;
+					&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;&lt;br /&gt;
+
+				&lt;h3&gt;Connect With Us&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Twitter&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Facebook&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+
+		&lt;/aside&gt;&lt;!-- end of sidebar --&gt;
+
+	&lt;/section&gt;&lt;!-- end of #main content and sidebar--&gt;
+	
+		&lt;footer&gt;
+		&lt;section id=&quot;footer-area&quot;&gt;
+
+			&lt;section id=&quot;footer-outer-block&quot;&gt;
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Friends&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #first footer segment --&gt;
+
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Awesome Stuff&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #second footer segment --&gt;
+
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Coolness&lt;/h4&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #third footer segment --&gt;
+					
+					&lt;aside class=&quot;footer-segment&quot;&gt;
+							&lt;h4&gt;Blahdyblah&lt;/h4&gt;
+								&lt;p&gt;© 2010 &lt;a href=&quot;#&quot;&gt;yoursite.com&lt;/a&gt; Praesent libero. Sed cursus ante dapibus diam. Sed nisi.&lt;/p&gt;
+					&lt;/aside&gt;&lt;!-- end of #fourth footer segment --&gt;
+
+			&lt;/section&gt;&lt;!-- end of footer-outer-block --&gt;
+
+		&lt;/section&gt;&lt;!-- end of footer-area --&gt;
+	&lt;/footer&gt;
+	
+&lt;/div&gt;&lt;!-- #wrapper --&gt;
+&lt;!-- Templated initially created by http://freehtml5templates.com --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<name>sample2</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2011-07-05 23:19:49</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-05 23:45:34</_edate>
+	<_euser>1</_euser>
+	<_id>6</_id>
+	<body><![CDATA[
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta charset=&quot;utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=9&quot; /&gt;
+	&lt;title&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/title&gt;
+	&lt;link rel=&quot;stylesheet&quot; href=&quot;/sample3_css&quot; type=&quot;text/css&quot; media=&quot;screen&quot; /&gt;
+	&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/print_css&quot; media=&quot;print&quot; /&gt;
+	&lt;!--[if IE]&gt;&lt;script src=&quot;http://html5shiv.googlecode.com/svn/trunk/html5.js&quot;&gt;&lt;/script&gt;&lt;![endif]--&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;wrapper&quot;&gt;&lt;!-- #wrapper --&gt;
+
+	&lt;header&gt;&lt;!-- header --&gt;
+		&lt;h1&gt;&lt;a href=&quot;#&quot;&gt;&lt;?=$_SERVER['UNIQUE_HOST'];?&gt;&lt;/a&gt;&lt;/h1&gt;
+		&lt;h2&gt;Where ever you roam you can call it home&lt;/h2&gt;
+		&lt;img src=&quot;/wfiles/templates/sample3.jpg&quot; width=&quot;940&quot; height=&quot;200&quot; alt=&quot;&quot;&gt;&lt;!-- header image --&gt;
+	&lt;/header&gt;&lt;!-- end of header --&gt;
+	
+	&lt;nav&gt;&lt;!-- top nav --&gt;
+		&lt;div class=&quot;menu&quot;&gt;
+			&lt;ul&gt;
+				&lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/about&quot;&gt;About&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/products&quot;&gt;Products&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/services&quot;&gt;Services&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/support&quot;&gt;Support&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;&lt;a href=&quot;/contact&quot;&gt;Contact Us&lt;/a&gt;&lt;/li&gt;
+			&lt;/ul&gt;
+		&lt;/div&gt;
+	&lt;/nav&gt;&lt;!-- end of top nav --&gt;
+
+
+	&lt;section id=&quot;main&quot;&gt;&lt;!-- #main content and sidebar area --&gt;
+		&lt;section id=&quot;container&quot;&gt;&lt;!-- #container --&gt;
+			&lt;section id=&quot;content&quot;&gt;&lt;!-- #content --&gt;
+			
+        		&lt;?echo evalPHP(pageValue('body'));?&gt;
+						
+			&lt;/section&gt;&lt;!-- end of #content --&gt;
+		&lt;/section&gt;&lt;!-- end of #container --&gt;
+
+		&lt;aside id=&quot;sidebar&quot;&gt;&lt;!-- sidebar --&gt;
+				&lt;h3&gt;Things To Do&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Play Games&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Chat With Friends&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Swap Stories&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Sell Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Buy Stuff&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Trade Stuff&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+					
+				&lt;h3&gt;Our Sponsors&lt;/h3&gt;
+					&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt; &lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;
+					&lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt; &lt;img src=&quot;/wfiles/templates/ad125.jpg&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;&lt;br /&gt;
+
+				&lt;h3&gt;Connect With Us&lt;/h3&gt;
+					&lt;ul&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Twitter&lt;/a&gt;&lt;/li&gt;
+						&lt;li&gt;&lt;a href=&quot;#&quot;&gt;Facebook&lt;/a&gt;&lt;/li&gt;
+					&lt;/ul&gt;
+
+		&lt;/aside&gt;&lt;!-- end of sidebar --&gt;
+
+	&lt;/section&gt;&lt;!-- end of #main content and sidebar--&gt;
+
+	&lt;footer&gt;
+		&lt;section id=&quot;footer-area&quot;&gt;
+
+			&lt;section id=&quot;footer-outer-block&quot;&gt;
+					&lt;aside id=&quot;first&quot; class=&quot;footer-segment&quot;&gt;
+							&lt;h3&gt;Blogroll&lt;/h3&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;four linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;five linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #first footer segment --&gt;
+
+					&lt;aside id=&quot;second&quot; class=&quot;footer-segment&quot;&gt;
+							&lt;h3&gt;Awesome Stuff&lt;/h3&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;four linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;five linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #second footer segment --&gt;
+
+					&lt;aside id=&quot;third&quot; class=&quot;footer-segment&quot;&gt;
+							&lt;h3&gt;Coolness&lt;/h3&gt;
+								&lt;ul&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;one linkylink&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;two linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;three linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;four linkylinks&lt;/a&gt;&lt;/li&gt;
+									&lt;li&gt;&lt;a href=&quot;#&quot;&gt;five linkylinks&lt;/a&gt;&lt;/li&gt;
+								&lt;/ul&gt;
+					&lt;/aside&gt;&lt;!-- end of #third footer segment --&gt;
+					
+					&lt;aside id=&quot;fourth&quot; class=&quot;footer-segment&quot;&gt;
+							&lt;h3&gt;Blahdyblah&lt;/h3&gt;
+								&lt;p&gt;Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum.&lt;/p&gt;
+					&lt;/aside&gt;&lt;!-- end of #fourth footer segment --&gt;
+
+			&lt;/section&gt;&lt;!-- end of #footer-outer-block --&gt;
+
+		&lt;/section&gt;&lt;!-- end of #footer-area --&gt;
+	&lt;/footer&gt;
+
+&lt;/div&gt;&lt;!-- #wrapper --&gt;
+&lt;!-- Free template created by http://freehtml5templates.com --&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<name>sample3</name>
+</xmldata>
+
+
+<xmlschema name="_users">
+	<field name="_adate" type="datetime NULL" />
+	<field name="_aip" type="char(15) NULL" />
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="address1" type="varchar(255) NULL" />
+	<field name="address2" type="varchar(255) NULL" />
+	<field name="bio" type="text NULL" />
+	<field name="city" type="varchar(50) NULL" />
+	<field name="country" type="char(2) NULL" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="firstname" type="varchar(100) NULL" />
+	<field name="guid" type="bigint(20) NULL" />
+	<field name="hint" type="varchar(255) NULL" />
+	<field name="lastname" type="varchar(150) NULL" />
+	<field name="note" type="varchar(255) NULL" />
+	<field name="password" type="varchar(255) NULL" />
+	<field name="phone" type="varchar(25) NULL" />
+	<field name="picture" type="varchar(255) NULL" />
+	<field name="state" type="char(2) NULL" />
+	<field name="title" type="varchar(255) NULL" />
+	<field name="username" type="varchar(25) NOT NULL UNIQUE" />
+	<field name="utype" type="tinyint(4) NOT NULL Default 1" />
+	<field name="zip" type="varchar(10) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-05 20:45:45</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<formfields>utype
+username password
+title
+firstname lastname
+address1
+address2
+city state zip
+country email
+picture
+bio
+note</formfields>
+	<formfields_mod>username password
+title
+firstname lastname
+address1
+address2
+city state zip
+country email
+picture
+bio</formfields_mod>
+	<listfields>utype username firstname lastname email _adate</listfields>
+	<listfields_mod>username firstname lastname email</listfields_mod>
+	<sortfields>_adate desc</sortfields>
+	<sortfields_mod>lastname,firstname,username</sortfields_mod>
+	<tablename>_users</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>85</_id>
+	<fieldname>username</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>150</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>86</_id>
+	<fieldname>password</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>password</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>100</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>87</_id>
+	<fieldname>title</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>88</_id>
+	<defaultval>1</defaultval>
+	<displayname>User Rights</displayname>
+	<dvals>Administrator
+Normal</dvals>
+	<fieldname>utype</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<tvals>0
+1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>89</_id>
+	<fieldname>address1</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>90</_id>
+	<fieldname>address2</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>91</_id>
+	<fieldname>firstname</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>180</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>92</_id>
+	<fieldname>zip</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>93</_id>
+	<fieldname>phone</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>100</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_id>94</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<tablename>_users</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>95</_id>
+	<displayname>State</displayname>
+	<dvals>select name from states order by name,_id</dvals>
+	<fieldname>state</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<tvals>select code from states order by name,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>96</_id>
+	<displayname>Country</displayname>
+	<dvals>select name from countries order by name,_id</dvals>
+	<fieldname>country</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<tvals>select code from countries order by name,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>97</_id>
+	<fieldname>bio</fieldname>
+	<height>75</height>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>98</_id>
+	<defaultval>/files/users</defaultval>
+	<fieldname>picture</fieldname>
+	<inputtype>file</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>99</_id>
+	<fieldname>note</fieldname>
+	<height>50</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<required>0</required>
+	<tablename>_users</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmldata name="_users">
+	<_adate>2011-08-01 23:12:21</_adate>
+	<_cdate>2011-07-05 20:45:47</_cdate>
+	<_cuser>0</_cuser>
+	<_edate>2011-08-01 23:12:21</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<email>admin@yoursite.com</email>
+	<firstname>Admin</firstname>
+	<guid>2333400375</guid>
+	<lastname>User</lastname>
+	<password>~!lrulvL8=^-</password>
+	<username>admin</username>
+	<utype>0</utype>
+</xmldata>
+
+
+<xmlschema name="contacts">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="details" type="text NULL" />
+	<field name="email" type="varchar(255) NOT NULL" />
+	<field name="name" type="varchar(150) NULL" />
+	<field name="regarding" type="varchar(25) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-14 23:29:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>15</_id>
+	<formfields>name regarding
+email
+details</formfields>
+	<formfields_mod>name regarding
+email
+details</formfields_mod>
+	<listfields>name regarding
+email</listfields>
+	<listfields_mod>name regarding
+email</listfields_mod>
+	<tablename>contacts</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 23:27:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:27:13</_edate>
+	<_euser>1</_euser>
+	<_id>124</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<tablename>contacts</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 23:27:44</_cdate>
+	<_cuser>1</_cuser>
+	<_id>125</_id>
+	<displayname>Tell us what is on your mind</displayname>
+	<fieldname>details</fieldname>
+	<height>125</height>
+	<inputtype>textarea</inputtype>
+	<tablename>contacts</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 23:27:57</_cdate>
+	<_cuser>1</_cuser>
+	<_id>126</_id>
+	<displayname>Your Name</displayname>
+	<fieldname>name</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>contacts</tablename>
+	<width>200</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 23:28:59</_cdate>
+	<_cuser>1</_cuser>
+	<_id>127</_id>
+	<dvals>Website
+Products
+Support
+Sales
+Other</dvals>
+	<fieldname>regarding</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>contacts</tablename>
+	<tvals>website
+products
+support
+sales
+other</tvals>
+</xmlmeta>
+
+
+<xmlschema name="countries">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="code" type="char(2) NOT NULL" />
+	<field name="name" type="varchar(50) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>104</_id>
+	<defaultval>US</defaultval>
+	<fieldname>code</fieldname>
+	<inputmax>2</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>countries</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<code>AL</code>
+	<name>Albania</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<code>GA</code>
+	<name>Gabon</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<code>NE</code>
+	<name>Niger</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<code>DZ</code>
+	<name>Algeria</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<code>GM</code>
+	<name>Gambia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<code>NG</code>
+	<name>Nigeria</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<code>AS</code>
+	<name>American Samoa</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<code>GE</code>
+	<name>&quot;Georgia, Republic of&quot;</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<code>NO</code>
+	<name>Norway</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<code>AD</code>
+	<name>Andorra</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<code>DE</code>
+	<name>Germany</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<code>OM</code>
+	<name>Oman</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>13</_id>
+	<code>AO</code>
+	<name>Angola</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>14</_id>
+	<code>GH</code>
+	<name>Ghana</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>15</_id>
+	<code>PK</code>
+	<name>Pakistan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>16</_id>
+	<code>AI</code>
+	<name>Anguilla</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>17</_id>
+	<code>GI</code>
+	<name>Gibraltar</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>18</_id>
+	<code>PW</code>
+	<name>Palau</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>19</_id>
+	<code>AG</code>
+	<name>Antigua</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>20</_id>
+	<code>GR</code>
+	<name>Greece</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>21</_id>
+	<code>PA</code>
+	<name>Panama</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>22</_id>
+	<code>AR</code>
+	<name>Argentina</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>23</_id>
+	<code>GL</code>
+	<name>Greenland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>24</_id>
+	<code>PG</code>
+	<name>Papua New Guinea</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>25</_id>
+	<code>AM</code>
+	<name>Armenia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>26</_id>
+	<code>GD</code>
+	<name>Grenada</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>27</_id>
+	<code>PY</code>
+	<name>Paraguay</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>28</_id>
+	<code>AW</code>
+	<name>Aruba</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>29</_id>
+	<code>GP</code>
+	<name>Guadeloupe</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>30</_id>
+	<code>PE</code>
+	<name>Peru</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>31</_id>
+	<code>AU</code>
+	<name>Australia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>32</_id>
+	<code>GU</code>
+	<name>Guam</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>33</_id>
+	<code>PH</code>
+	<name>Philippines</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>34</_id>
+	<code>AT</code>
+	<name>Austria</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>35</_id>
+	<code>GT</code>
+	<name>Guatemala</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>36</_id>
+	<code>PL</code>
+	<name>Poland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>37</_id>
+	<code>AZ</code>
+	<name>Azerbaijan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>38</_id>
+	<code>GN</code>
+	<name>Guinea</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>39</_id>
+	<code>PT</code>
+	<name>Portugal</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>40</_id>
+	<code>BS</code>
+	<name>Bahamas</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>41</_id>
+	<code>GW</code>
+	<name>Guinea-Bissau</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>42</_id>
+	<code>PR</code>
+	<name>Puerto Rico</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>43</_id>
+	<code>BH</code>
+	<name>Bahrain</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>44</_id>
+	<code>GY</code>
+	<name>Guyana</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>45</_id>
+	<code>QA</code>
+	<name>Qatar</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>46</_id>
+	<code>BD</code>
+	<name>Bangladesh</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>47</_id>
+	<code>HT</code>
+	<name>Haiti,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>48</_id>
+	<code>RE</code>
+	<name>Reunion Island</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>49</_id>
+	<code>BB</code>
+	<name>Barbados</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>50</_id>
+	<code>HN</code>
+	<name>Honduras</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>51</_id>
+	<code>RO</code>
+	<name>Romania</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>52</_id>
+	<code>BY</code>
+	<name>Belarus</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>53</_id>
+	<code>HK</code>
+	<name>Hong Kong</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>54</_id>
+	<code>RU</code>
+	<name>Russia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>55</_id>
+	<code>BE</code>
+	<name>Belgium</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>56</_id>
+	<code>HU</code>
+	<name>Hungary</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>57</_id>
+	<code>RW</code>
+	<name>Rwanda</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:51</_cdate>
+	<_cuser>0</_cuser>
+	<_id>58</_id>
+	<code>BZ</code>
+	<name>Belize</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>59</_id>
+	<code>IS</code>
+	<name>Iceland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>60</_id>
+	<code>MP</code>
+	<name>Saipan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>61</_id>
+	<code>BJ</code>
+	<name>Benin</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>62</_id>
+	<code>IN</code>
+	<name>India,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>63</_id>
+	<code>SM</code>
+	<name>San Marino</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>64</_id>
+	<code>BM</code>
+	<name>Bermuda,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>65</_id>
+	<code>ID</code>
+	<name>Indonesia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>66</_id>
+	<code>SA</code>
+	<name>Saudi Arabia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>67</_id>
+	<code>BT</code>
+	<name>Bhutan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>68</_id>
+	<code>IE</code>
+	<name>Ireland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>69</_id>
+	<code>SN</code>
+	<name>Senegal</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>70</_id>
+	<code>BO</code>
+	<name>Bolivia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>71</_id>
+	<code>IL</code>
+	<name>Israel</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>72</_id>
+	<code>SC</code>
+	<name>Seychelles</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>73</_id>
+	<code>BW</code>
+	<name>Botswana</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>74</_id>
+	<code>IT</code>
+	<name>Italy</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>75</_id>
+	<code>SL</code>
+	<name>Sierra Leone</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>76</_id>
+	<code>BR</code>
+	<name>Brazil</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>77</_id>
+	<code>CI</code>
+	<name>Ivory Coast</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>78</_id>
+	<code>SG</code>
+	<name>Singapore</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>79</_id>
+	<code>VG</code>
+	<name>British Virgin Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>80</_id>
+	<code>JM</code>
+	<name>Jamaica</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>81</_id>
+	<code>SK</code>
+	<name>Slovak Republic</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>82</_id>
+	<code>BN</code>
+	<name>Brunei</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>83</_id>
+	<code>JP</code>
+	<name>Japan,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>84</_id>
+	<code>SI</code>
+	<name>Slovenia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>85</_id>
+	<code>BG</code>
+	<name>Bulgaria</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>86</_id>
+	<code>JO</code>
+	<name>Jordan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>87</_id>
+	<code>ZA</code>
+	<name>South Africa</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>88</_id>
+	<code>BF</code>
+	<name>Burkino Faso</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>89</_id>
+	<code>KZ</code>
+	<name>Kazakhstan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>90</_id>
+	<code>KR</code>
+	<name>South Korea</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>91</_id>
+	<code>MM</code>
+	<name>Burma</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:52</_cdate>
+	<_cuser>0</_cuser>
+	<_id>92</_id>
+	<code>KE</code>
+	<name>Kenya</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>93</_id>
+	<code>ES</code>
+	<name>Spain</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>94</_id>
+	<code>BI</code>
+	<name>Burundi</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>95</_id>
+	<code>KW</code>
+	<name>Kuwait,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>96</_id>
+	<code>LK</code>
+	<name>Sri Lanka</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>97</_id>
+	<code>KH</code>
+	<name>Cambodia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>98</_id>
+	<code>KG</code>
+	<name>Kyrgyzstan,</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>99</_id>
+	<code>KN</code>
+	<name>St. Kitts &amp; Nevis</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>100</_id>
+	<code>CM</code>
+	<name>Cameroon</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>101</_id>
+	<code>LV</code>
+	<name>Latvia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>102</_id>
+	<code>LC</code>
+	<name>St. Lucia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>103</_id>
+	<code>CA</code>
+	<name>Canada</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>104</_id>
+	<code>LB</code>
+	<name>Lebanon</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>105</_id>
+	<code>VC</code>
+	<name>St. Vincent</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>106</_id>
+	<code>CV</code>
+	<name>Cape Verde</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>107</_id>
+	<code>LS</code>
+	<name>Lesotho</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>108</_id>
+	<code>SR</code>
+	<name>Suriname</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:53</_cdate>
+	<_cuser>0</_cuser>
+	<_id>109</_id>
+	<code>KY</code>
+	<name>Cayman Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>110</_id>
+	<code>LI</code>
+	<name>Liechtenstein</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>111</_id>
+	<code>SZ</code>
+	<name>Swaziland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>112</_id>
+	<code>CF</code>
+	<name>Central African</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>113</_id>
+	<code>LT</code>
+	<name>Lithuania</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>114</_id>
+	<code>SE</code>
+	<name>Sweden</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>115</_id>
+	<code>TD</code>
+	<name>Chad</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>116</_id>
+	<code>LU</code>
+	<name>Luxembourg</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>117</_id>
+	<code>CH</code>
+	<name>Switzerland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>118</_id>
+	<code>CL</code>
+	<name>Chile</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>119</_id>
+	<code>MO</code>
+	<name>Macau</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>120</_id>
+	<code>SY</code>
+	<name>Syria</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>121</_id>
+	<code>CN</code>
+	<name>China</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>122</_id>
+	<code>MK</code>
+	<name>Macedonia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>123</_id>
+	<code>TW</code>
+	<name>Taiwan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>124</_id>
+	<code>CO</code>
+	<name>Colombia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>125</_id>
+	<code>MG</code>
+	<name>Madagascar</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>126</_id>
+	<code>TZ</code>
+	<name>Tanzania</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>127</_id>
+	<code>CG</code>
+	<name>Congo</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>128</_id>
+	<code>MW</code>
+	<name>Malawi</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>129</_id>
+	<code>TH</code>
+	<name>Thailand</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>130</_id>
+	<code>CD</code>
+	<name>&quot;Congo, The Republic of&quot;</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>131</_id>
+	<code>MY</code>
+	<name>Malaysia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>132</_id>
+	<code>TG</code>
+	<name>Togo</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>133</_id>
+	<code>CK</code>
+	<name>Cook Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>134</_id>
+	<code>MV</code>
+	<name>Maldives</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>135</_id>
+	<code>TT</code>
+	<name>Trinidad &amp; Tobago</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>136</_id>
+	<code>CR</code>
+	<name>Costa Rica</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>137</_id>
+	<code>ML</code>
+	<name>Mali</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>138</_id>
+	<code>TN</code>
+	<name>Tunisia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>139</_id>
+	<code>CI</code>
+	<name>Cote D'Ivoire</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>140</_id>
+	<code>MT</code>
+	<name>Malta</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>141</_id>
+	<code>TR</code>
+	<name>Turkey</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>142</_id>
+	<code>HR</code>
+	<name>Croatia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:54</_cdate>
+	<_cuser>0</_cuser>
+	<_id>143</_id>
+	<code>MH</code>
+	<name>Marshall Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>144</_id>
+	<code>TM</code>
+	<name>&quot;Turkmenistan, Republic of&quot;</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>145</_id>
+	<code>CY</code>
+	<name>Cyprus</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>146</_id>
+	<code>MQ</code>
+	<name>Martinique</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>147</_id>
+	<code>TC</code>
+	<name>Turks &amp; Caicos Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>148</_id>
+	<code>CZ</code>
+	<name>Czech Republic</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>149</_id>
+	<code>MR</code>
+	<name>Mauritania</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>150</_id>
+	<code>AE</code>
+	<name>U.A.E.</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>151</_id>
+	<code>DK</code>
+	<name>Denmark</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>152</_id>
+	<code>MU</code>
+	<name>Mauritius</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>153</_id>
+	<code>VI</code>
+	<name>U.S. Virgin Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>154</_id>
+	<code>DJ</code>
+	<name>Djibouti</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>155</_id>
+	<code>MX</code>
+	<name>Mexico</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>156</_id>
+	<code>US</code>
+	<name>United States of America</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>157</_id>
+	<code>US</code>
+	<name>USA</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>158</_id>
+	<code>DM</code>
+	<name>Dominica</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>159</_id>
+	<code>FM</code>
+	<name>Micronesia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>160</_id>
+	<code>UG</code>
+	<name>Uganda</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>161</_id>
+	<code>DO</code>
+	<name>Dominican Republic</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>162</_id>
+	<code>MD</code>
+	<name>Moldova</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>163</_id>
+	<code>UA</code>
+	<name>Ukraine</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>164</_id>
+	<code>EC</code>
+	<name>Ecuador</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>165</_id>
+	<code>MC</code>
+	<name>Monaco</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>166</_id>
+	<code>GB</code>
+	<name>United Kingdom</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>167</_id>
+	<code>EG</code>
+	<name>Egypt</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>168</_id>
+	<code>MN</code>
+	<name>Mongolia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>169</_id>
+	<code>UY</code>
+	<name>Uruguay</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>170</_id>
+	<code>SV</code>
+	<name>El Salvador</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>171</_id>
+	<code>MS</code>
+	<name>Montserrat</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>172</_id>
+	<code>UZ</code>
+	<name>Uzbekistan</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>173</_id>
+	<code>GQ</code>
+	<name>Equatorial Guinea</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>174</_id>
+	<code>MA</code>
+	<name>Morocco</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>175</_id>
+	<code>VU</code>
+	<name>Vanuatu</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>176</_id>
+	<code>ER</code>
+	<name>Eritrea</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>177</_id>
+	<code>MZ</code>
+	<name>Mozambique</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:55</_cdate>
+	<_cuser>0</_cuser>
+	<_id>178</_id>
+	<code>VA</code>
+	<name>Vatican City</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>179</_id>
+	<code>EE</code>
+	<name>Estonia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>180</_id>
+	<code>MM</code>
+	<name>Myanmar</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>181</_id>
+	<code>VE</code>
+	<name>Venezuela</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>182</_id>
+	<code>ET</code>
+	<name>Ethiopia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>183</_id>
+	<code>NA</code>
+	<name>Namibia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>184</_id>
+	<code>VN</code>
+	<name>Vietnam</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>185</_id>
+	<code>FO</code>
+	<name>Faeroe Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>186</_id>
+	<code>NP</code>
+	<name>Nepal</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>187</_id>
+	<code>WF</code>
+	<name>Wallis &amp; Futuna Islands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>188</_id>
+	<code>FJ</code>
+	<name>Fiji</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>189</_id>
+	<code>NL</code>
+	<name>Netherlands</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>190</_id>
+	<code>YE</code>
+	<name>Yemen</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>191</_id>
+	<code>FI</code>
+	<name>Finland</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>192</_id>
+	<code>AN</code>
+	<name>Netherlands Antilles</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>193</_id>
+	<code>ZM</code>
+	<name>Zambia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>194</_id>
+	<code>FR</code>
+	<name>France</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>195</_id>
+	<code>NC</code>
+	<name>New Caledonia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>196</_id>
+	<code>ZW</code>
+	<name>Zimbabwe</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>197</_id>
+	<code>GF</code>
+	<name>French Guiana</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>198</_id>
+	<code>NZ</code>
+	<name>New Zealand</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>199</_id>
+	<code>PF</code>
+	<name>French Polynesia</name>
+</xmldata>
+<xmldata name="countries">
+	<_cdate>2011-07-05 20:45:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>200</_id>
+	<code>NI</code>
+	<name>Nicaragua</name>
+</xmldata>
+
+
+<xmlschema name="states">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="code" type="char(2) NOT NULL" />
+	<field name="name" type="varchar(20) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>103</_id>
+	<fieldname>code</fieldname>
+	<inputmax>2</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>states</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>1</_id>
+	<code>AL</code>
+	<name>Alabama</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<code>AK</code>
+	<name>Alaska</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>3</_id>
+	<code>AZ</code>
+	<name>Arizona</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>4</_id>
+	<code>AR</code>
+	<name>Arkansas</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>5</_id>
+	<code>CA</code>
+	<name>California</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>6</_id>
+	<code>CO</code>
+	<name>Colorado</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>7</_id>
+	<code>CT</code>
+	<name>Connecticut</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>8</_id>
+	<code>DE</code>
+	<name>Delaware</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>9</_id>
+	<code>FL</code>
+	<name>Florida</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>10</_id>
+	<code>GA</code>
+	<name>Georgia</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>11</_id>
+	<code>HI</code>
+	<name>Hawaii</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>12</_id>
+	<code>ID</code>
+	<name>Idaho</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>13</_id>
+	<code>IL</code>
+	<name>Illinois</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>14</_id>
+	<code>IN</code>
+	<name>Indiana</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>15</_id>
+	<code>IA</code>
+	<name>Iowa</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>16</_id>
+	<code>KS</code>
+	<name>Kansas</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>17</_id>
+	<code>KY</code>
+	<name>Kentucky</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>18</_id>
+	<code>LA</code>
+	<name>Louisiana</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:48</_cdate>
+	<_cuser>0</_cuser>
+	<_id>19</_id>
+	<code>ME</code>
+	<name>Maine</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>20</_id>
+	<code>MD</code>
+	<name>Maryland</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>21</_id>
+	<code>MA</code>
+	<name>Massachusetts</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>22</_id>
+	<code>MI</code>
+	<name>Michigan</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>23</_id>
+	<code>MN</code>
+	<name>Minnesota</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>24</_id>
+	<code>MS</code>
+	<name>Mississippi</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>25</_id>
+	<code>MO</code>
+	<name>Missouri</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>26</_id>
+	<code>MT</code>
+	<name>Montana</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>27</_id>
+	<code>NE</code>
+	<name>Nebraska</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>28</_id>
+	<code>NV</code>
+	<name>Nevada</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>29</_id>
+	<code>NH</code>
+	<name>New Hampshire</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>30</_id>
+	<code>NJ</code>
+	<name>New Jersey</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>31</_id>
+	<code>NM</code>
+	<name>New Mexico</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>32</_id>
+	<code>NY</code>
+	<name>New York</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>33</_id>
+	<code>NC</code>
+	<name>North Carolina</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>34</_id>
+	<code>ND</code>
+	<name>North Dakota</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>35</_id>
+	<code>OH</code>
+	<name>Ohio</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>36</_id>
+	<code>OK</code>
+	<name>Oklahoma</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>37</_id>
+	<code>OR</code>
+	<name>Oregon</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>38</_id>
+	<code>PA</code>
+	<name>Pennsylvania</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>39</_id>
+	<code>RI</code>
+	<name>Rhode Island</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>40</_id>
+	<code>SC</code>
+	<name>South Carolina</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>41</_id>
+	<code>SD</code>
+	<name>South Dakota</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>42</_id>
+	<code>TN</code>
+	<name>Tennessee</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>43</_id>
+	<code>TX</code>
+	<name>Texas</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>44</_id>
+	<code>UT</code>
+	<name>Utah</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>45</_id>
+	<code>VT</code>
+	<name>Vermont</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>46</_id>
+	<code>VA</code>
+	<name>Virginia</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>47</_id>
+	<code>WA</code>
+	<name>Washington</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:49</_cdate>
+	<_cuser>0</_cuser>
+	<_id>48</_id>
+	<code>WV</code>
+	<name>West Virginia</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>49</_id>
+	<code>WI</code>
+	<name>Wisconsin</name>
+</xmldata>
+<xmldata name="states">
+	<_cdate>2011-07-05 20:45:50</_cdate>
+	<_cuser>0</_cuser>
+	<_id>50</_id>
+	<code>WY</code>
+	<name>Wyoming</name>
+</xmldata>
+
+
+<xmlschema name="wcart">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="coupon" type="varchar(25) NULL" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="guid" type="varchar(100) NOT NULL" />
+	<field name="price" type="float(10,2) NOT NULL" />
+	<field name="product_id" type="int(11) NULL" />
+	<field name="qty" type="int(11) NOT NULL Default 1" />
+	<field name="sku" type="varchar(25) NOT NULL" />
+	<field name="thumbnail" type="varchar(255) NULL" />
+	<field name="weight" type="float(10,2) NOT NULL" />
+</xmlschema>
+
+
+<xmlschema name="wcart_coupons">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="coupon" type="varchar(25) NULL" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="discount" type="float(10,2) NOT NULL" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="expire_date" type="date NULL" />
+	<field name="sku" type="varchar(25) NULL" />
+	<field name="times_used" type="int(11) NOT NULL Default 0" />
+	<field name="times_valid" type="int(11) NOT NULL Default 0" />
+	<field name="type" type="varchar(15) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-14 20:18:56</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 20:19:25</_edate>
+	<_euser>1</_euser>
+	<_id>14</_id>
+	<formfields>coupon type discount 
+sku times_valid expire_date
+description</formfields>
+	<tablename>wcart_coupons</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:13:43</_cdate>
+	<_cuser>1</_cuser>
+	<_id>115</_id>
+	<fieldname>expire_date</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>date</inputtype>
+	<tablename>wcart_coupons</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:14:17</_cdate>
+	<_cuser>1</_cuser>
+	<_id>116</_id>
+	<defaultval>0</defaultval>
+	<fieldname>times_used</fieldname>
+	<inputmax>11</inputmax>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>50</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:15:05</_cdate>
+	<_cuser>1</_cuser>
+	<_id>117</_id>
+	<defaultval>0</defaultval>
+	<displayname>Times Valid (0 = unlimited)</displayname>
+	<fieldname>times_valid</fieldname>
+	<inputmax>11</inputmax>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>50</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:16:26</_cdate>
+	<_cuser>1</_cuser>
+	<_id>118</_id>
+	<dvals>Percent Off plus Free Shipping
+Percent Off
+Dollar Off plus Free Shipping
+Dollar Off</dvals>
+	<fieldname>type</fieldname>
+	<inputmax>15</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>wcart_coupons</tablename>
+	<tvals>pcntship
+pcnt
+dollarship
+dollar</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:16:36</_cdate>
+	<_cuser>1</_cuser>
+	<_id>119</_id>
+	<fieldname>sku</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>100</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:16:48</_cdate>
+	<_cuser>1</_cuser>
+	<_id>120</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<tablename>wcart_coupons</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:17:06</_cdate>
+	<_cuser>1</_cuser>
+	<_id>121</_id>
+	<fieldname>discount</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_coupons</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:17:30</_cdate>
+	<_cuser>1</_cuser>
+	<_id>122</_id>
+	<fieldname>description</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-14 20:17:38</_cdate>
+	<_cuser>1</_cuser>
+	<_id>123</_id>
+	<fieldname>coupon</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>wcart_coupons</tablename>
+	<width>75</width>
+</xmlmeta>
+<xmldata name="wcart_coupons">
+	<_cdate>2011-07-14 20:20:24</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-14 23:38:06</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<coupon>20POFF</coupon>
+	<description>20 Percent Off Coupon</description>
+	<discount>20.00</discount>
+	<times_used>35</times_used>
+	<times_valid>0</times_valid>
+	<type>pcnt</type>
+</xmldata>
+
+
+<xmlschema name="wcart_orders">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="cc_description" type="varchar(255) NULL" />
+	<field name="cc_name_on_card" type="varchar(255) NULL" />
+	<field name="cc_response_reason_code" type="int(11) NOT NULL" />
+	<field name="cc_response_reason_text" type="varchar(255) NOT NULL" />
+	<field name="cc_status" type="tinyint(4) NOT NULL Default 0" />
+	<field name="cc_transaction_id" type="varchar(255) NOT NULL" />
+	<field name="cc_transaction_type" type="varchar(25) NOT NULL" />
+	<field name="cc_type" type="varchar(25) NULL" />
+	<field name="comments" type="varchar(255) NULL" />
+	<field name="coupon" type="varchar(25) NULL" />
+	<field name="guid" type="bigint(20) NOT NULL" />
+	<field name="order_date" type="datetime NULL" />
+	<field name="order_discount" type="double(10,2) NULL" />
+	<field name="order_price" type="double(10,2) NULL" />
+	<field name="order_tax" type="double(10,2) NULL" />
+	<field name="shipmethod_code" type="varchar(25) NULL" />
+	<field name="shipmethod_price" type="double(10,2) NULL" />
+	<field name="shipto_address" type="varchar(255) NULL" />
+	<field name="shipto_city" type="varchar(30) NULL" />
+	<field name="shipto_company" type="varchar(100) NULL" />
+	<field name="shipto_country" type="varchar(30) NULL" />
+	<field name="shipto_email" type="varchar(255) NULL" />
+	<field name="shipto_firstname" type="varchar(150) NULL" />
+	<field name="shipto_lastname" type="varchar(150) NULL" />
+	<field name="shipto_phone" type="varchar(30) NULL" />
+	<field name="shipto_state" type="varchar(20) NULL" />
+	<field name="shipto_zip" type="varchar(10) NULL" />
+	<field name="status" type="tinyint(4) NOT NULL Default 1" />
+</xmlschema>
+
+
+<xmlschema name="wcart_orders_items">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="coupon" type="varchar(25) NULL" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="guid" type="varchar(100) NOT NULL" />
+	<field name="price" type="float(10,2) NOT NULL" />
+	<field name="product_id" type="int(11) NULL" />
+	<field name="qty" type="int(11) NOT NULL Default 1" />
+	<field name="sku" type="varchar(25) NOT NULL" />
+	<field name="thumbnail" type="varchar(255) NULL" />
+	<field name="wcart_orders_id" type="int(11) NOT NULL" />
+	<field name="weight" type="float(10,2) NOT NULL" />
+</xmlschema>
+
+
+<xmlschema name="wcart_products">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(4) NOT NULL Default 1" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="details" type="varchar(2000) NULL" />
+	<field name="image" type="varchar(255) NULL" />
+	<field name="image_thumb" type="varchar(255) NULL" />
+	<field name="name" type="varchar(150) NOT NULL" />
+	<field name="price" type="float(10,2) NOT NULL" />
+	<field name="sku" type="varchar(25) NOT NULL" />
+	<field name="weight" type="float(10,2) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2011-07-12 22:33:29</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:02</_edate>
+	<_euser>1</_euser>
+	<_id>13</_id>
+	<formfields>active name sku price weight
+image
+image_thumb
+description
+details</formfields>
+	<listfields>active name
+sku
+price
+weight
+image
+image_thumb</listfields>
+	<tablename>wcart_products</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:31:13</_cdate>
+	<_cuser>1</_cuser>
+	<_id>105</_id>
+	<fieldname>description</fieldname>
+	<height>80</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:31:20</_cdate>
+	<_cuser>1</_cuser>
+	<_id>106</_id>
+	<fieldname>details</fieldname>
+	<height>125</height>
+	<inputmax>2000</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:31:42</_cdate>
+	<_cuser>1</_cuser>
+	<_id>107</_id>
+	<fieldname>sku</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>75</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:32:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>108</_id>
+	<fieldname>thumbnail</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:32:34</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:32</_edate>
+	<_euser>1</_euser>
+	<_id>109</_id>
+	<fieldname>weight</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>40</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:32:51</_cdate>
+	<_cuser>1</_cuser>
+	<_id>110</_id>
+	<fieldname>price</fieldname>
+	<inputmax>10</inputmax>
+	<inputtype>text</inputtype>
+	<mask>number</mask>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>70</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 22:34:24</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:40:15</_edate>
+	<_euser>1</_euser>
+	<_id>111</_id>
+	<fieldname>name</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>wcart_products</tablename>
+	<width>130</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 23:15:38</_cdate>
+	<_cuser>1</_cuser>
+	<_id>112</_id>
+	<behavior>autonumber</behavior>
+	<defaultval>/products</defaultval>
+	<fieldname>image</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 23:16:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2011-07-12 23:16:40</_edate>
+	<_euser>1</_euser>
+	<_id>113</_id>
+	<behavior>autonumber</behavior>
+	<defaultval>/products/thumbs</defaultval>
+	<displayname>Image Thumbnail</displayname>
+	<fieldname>image_thumb</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>file</inputtype>
+	<tablename>wcart_products</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2011-07-12 23:39:51</_cdate>
+	<_cuser>1</_cuser>
+	<_id>114</_id>
+	<fieldname>active</fieldname>
+	<inputmax>4</inputmax>
+	<inputtype>checkbox</inputtype>
+	<mask>integer</mask>
+	<tablename>wcart_products</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="wcart_products">
+	<_cdate>2011-07-15 17:28:51</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1</_id>
+	<active>1</active>
+	<description>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. </description>
+	<details>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Duis sagittis ipsum. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.</details>
+	<image>/wfiles/iconsets/64/toys.png</image>
+	<image_thumb>/wfiles/iconsets/16/toys.png</image_thumb>
+	<name>asdff</name>
+	<price>5.66</price>
+	<sku>efef</sku>
+	<weight>0.50</weight>
+</xmldata>
+<xmldata name="wcart_products">
+	<_cdate>2011-07-15 17:31:50</_cdate>
+	<_cuser>1</_cuser>
+	<_id>2</_id>
+	<active>1</active>
+	<description>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. </description>
+	<details>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Duis sagittis ipsum. Ei est delicata philosophia, quo id evertitur temporibus. Et ullum pertinax pri, elit regione ei mel, eam at mutat lorem. Ad mea omittam mediocrem tincidunt. Quo inani possim senserit no, doctus intellegam ut quo.</details>
+	<image>/wfiles/iconsets/64/dashboard.png</image>
+	<image_thumb>/wfiles/iconsets/16/dashboard.png</image_thumb>
+	<name>asdf</name>
+	<price>8.56</price>
+	<sku>ddd</sku>
+	<weight>1.00</weight>
+</xmldata>
+
+
+</export>

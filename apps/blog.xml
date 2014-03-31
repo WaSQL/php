@@ -1,0 +1,947 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="bomtt_stage" timestamp="1356960790">
+<xmlschema name="blog_comments">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(1) NOT NULL Default 1" />
+	<field name="approved" type="tinyint(1) NOT NULL Default 0" />
+	<field name="blog_post_id" type="int(11) NOT NULL" />
+	<field name="comment" type="varchar(255) NULL" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="http_user_agent" type="varchar(255) NULL" />
+	<field name="name" type="varchar(30) NOT NULL" />
+	<field name="remote_addr" type="varchar(40) NULL" />
+	<field name="user_id" type="int(11) NOT NULL Default 0" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<formfields>name email
+comment</formfields>
+	<formfields_mod>name email
+comment</formfields_mod>
+	<listfields>active
+approved
+_cdate
+name
+email
+user_id
+remote_addr
+blog_post_id
+http_user_agent</listfields>
+	<listfields_mod>_cdate name email user_id remote_addr</listfields_mod>
+	<tablegroup>Blog</tablegroup>
+	<tablename>blog_comments</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2012-12-27 06:27:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>322</_id>
+	<defaultval>0</defaultval>
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_cuser</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_euser</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>comment</fieldname>
+	<height>80</height>
+	<inputmax>255</inputmax>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>name</fieldname>
+	<inputmax>0</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<width>180</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<width>210</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<defaultval>1</defaultval>
+	<editlist>1</editlist>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<defaultval>0</defaultval>
+	<editlist>1</editlist>
+	<fieldname>approved</fieldname>
+	<inputtype>checkbox</inputtype>
+	<synchronize>1</synchronize>
+	<tablename>blog_comments</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+
+
+<xmlschema name="blog_emails">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="blog_post_id" type="int(11) NOT NULL" />
+	<field name="email" type="varchar(255) NOT NULL" />
+	<field name="emails" type="varchar(2500) NOT NULL" />
+	<field name="errors" type="varchar(155) NULL" />
+	<field name="message" type="varchar(1000) NULL" />
+	<field name="name" type="varchar(100) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<formfields>name email
+emails
+message</formfields>
+	<listfields>name email blog_post_id errors</listfields>
+	<sortfields>_id desc</sortfields>
+	<tablegroup>Blog</tablegroup>
+	<tablename>blog_emails</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>Your Email Address</displayname>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<width>200</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_cuser</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_euser</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>Email List (comma separated)</displayname>
+	<fieldname>emails</fieldname>
+	<height>100</height>
+	<inputmax>2500</inputmax>
+	<inputtype>textarea</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>Personal Message</displayname>
+	<fieldname>message</fieldname>
+	<height>75</height>
+	<inputmax>1000</inputmax>
+	<inputtype>textarea</inputtype>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>Your Name</displayname>
+	<fieldname>name</fieldname>
+	<inputmax>0</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_emails</tablename>
+	<width>185</width>
+</xmlmeta>
+
+
+<xmlschema name="blog_posts">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(1) NOT NULL Default 1" />
+	<field name="blogdate" type="datetime NOT NULL" />
+	<field name="body" type="text NULL" />
+	<field name="guid" type="varchar(50) NULL" />
+	<field name="title" type="varchar(75) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<formfields>title blogdate
+body</formfields>
+	<formfields_mod>title blogdate
+body</formfields_mod>
+	<listfields>active
+title
+blogdate
+guid
+_cuser</listfields>
+	<listfields_mod>active title blogdate</listfields_mod>
+	<tablegroup>Blog</tablegroup>
+	<tablename>blog_posts</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>blogdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_cuser</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_euser</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<behavior>nicedit</behavior>
+	<displayname>Blog Post</displayname>
+	<fieldname>body</fieldname>
+	<height>200</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<width>600</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>title</fieldname>
+	<inputmax>75</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<width>325</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<defaultval>1</defaultval>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_posts</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+
+
+<xmlschema name="blog_subscriptions">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(1) NOT NULL Default 1" />
+	<field name="email" type="varchar(255) NOT NULL UNIQUE" />
+	<field name="frequency" type="tinyint(1) NOT NULL Default 1" />
+	<field name="name" type="varchar(50) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<tablegroup>Blog</tablegroup>
+	<tablename>blog_subscriptions</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<defaultval>1</defaultval>
+	<fieldname>frequency</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<defaultval>1</defaultval>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_cuser</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<fieldname>_euser</fieldname>
+	<inputtype>select</inputtype>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>blog_subscriptions</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+
+
+<xmldata name="_pages">
+	<_cache>0</_cache>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:default&gt;
+	&lt;view:blogger&gt;
+		&lt;div class=&quot;w_right w_pad w_pointer green&quot; onclick=&quot;ajaxGet('/blog','centerpop','_template=1&amp;func=newpost');&quot;&gt;
+			&lt;img src=&quot;/wfiles/iconsets/32/plus.png&quot; border=&quot;0&quot; class=&quot;w_middle&quot;&gt; New
+		&lt;/div&gt;
+	&lt;/view:blogger&gt;
+	&lt;br clear=&quot;both&quot; /&gt;
+	&lt;div class=&quot;blog_right&quot;&gt;
+		&lt;!-- Search Box --&gt;
+		&lt;div class=&quot;blog_box&quot;&gt;
+			&lt;div class=&quot;blog_box_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/search.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Search this blog&quot;&gt; Search Blog Entries&lt;/div&gt;
+			&lt;hr size=&quot;1&quot; align=&quot;center&quot; class=&quot;blog_line&quot;&gt;
+			&lt;form name=&quot;blogsearch&quot; class=&quot;w_form&quot; method=&quot;POST&quot; action=&quot;/blog&quot;  accept-charset=&quot;UTF-8&quot; encypte=&quot;application/x-www-form-urlencoded&quot; onSubmit=&quot;return submitForm(this);&quot;&gt;
+				&lt;input type=&quot;text&quot; name=&quot;blog_s&quot; _required=&quot;1&quot; style=&quot;width:130px;font-size:11pt;&quot; value=&quot;&lt;?=$_REQUEST['blog_s'];?&gt;&quot; /&gt;
+				&lt;input type=&quot;submit&quot; style=&quot;font-size:11pt;padding:0 3px 0 3px;border:0px;background:#d97925;color:#FFF;&quot; value=&quot;Search&quot;&gt;
+			&lt;/form&gt;
+		&lt;/div&gt;
+		&lt;!-- Subscribe Box --&gt;
+		&lt;div class=&quot;blog_box&quot;&gt;
+			&lt;div class=&quot;blog_box_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/email.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Subscribe to this blog&quot;&gt; Follow by Email&lt;/div&gt;
+			
+			&lt;form name=&quot;blogsubscribe&quot; class=&quot;w_form&quot; method=&quot;POST&quot; action=&quot;/blog&quot;  accept-charset=&quot;UTF-8&quot; encypte=&quot;application/x-www-form-urlencoded&quot; onSubmit=&quot;if(submitForm(this)){ajaxSubmitForm(this,'centerpop');this.reset();}return false;&quot;&gt;
+				&lt;input type=&quot;hidden&quot; name=&quot;func&quot; value=&quot;subscribe&quot;&gt;
+				&lt;input type=&quot;hidden&quot; name=&quot;_template&quot; value=&quot;1&quot;&gt;
+				&lt;input type=&quot;text&quot; name=&quot;email&quot; mask=&quot;email&quot; _required=&quot;1&quot; style=&quot;width:130px;font-size:11pt;&quot;&gt;
+				&lt;input type=&quot;submit&quot; style=&quot;font-size:11pt;padding:0 3px 0 3px;border:0px;background:#d97925;color:#FFF;&quot; value=&quot;Submit&quot;&gt;
+			&lt;/form&gt;
+			&lt;hr size=&quot;1&quot; align=&quot;center&quot; class=&quot;blog_line&quot;&gt;
+			&lt;a href=&quot;/blog/feed&quot; class=&quot;blog_box_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/rss.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Blog RSS feed&quot;&gt; Blog RSS Feed&lt;/a&gt;
+		&lt;/div&gt;
+		&lt;!-- Archive Box --&gt;
+		&lt;div class=&quot;blog_box&quot;&gt;
+			&lt;div class=&quot;blog_box_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/files.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Index of blog entries&quot;&gt; Blog Archive&lt;/div&gt;
+			&lt;hr size=&quot;1&quot; align=&quot;center&quot; class=&quot;blog_line&quot;&gt;
+			&lt;?=pageshowBlogArchive();?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div id=&quot;blogs&quot; class=&quot;blog_left&quot;&gt;
+		&lt;?=pageshowBlogs();?&gt;
+	&lt;/div&gt;
+	&lt;br clear=&quot;both&quot; /&gt;
+&lt;/view:default&gt;
+&lt;? global $PAGE;printValue($_REQUEST);?&gt;
+&lt;view:comment&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;Comments&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+	&lt;?=pageCommentForm($_REQUEST['blogid']);?&gt;
+	&lt;/div&gt;
+&lt;/view:comment&gt;
+&lt;view:subscribe&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/email.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot;&gt; Follow by Email&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=$message;?&gt;
+	&lt;/div&gt;
+&lt;/view:subscribe&gt;
+&lt;view:email&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/email.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot;&gt; Email This Blog Post&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=$message;?&gt;
+	&lt;/div&gt;
+&lt;/view:email&gt;
+&lt;view:newpost&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/blog.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot;&gt; New Blog Post&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=pageBlogForm();?&gt;
+	&lt;/div&gt;
+&lt;/view:newpost&gt;
+&lt;view:editpost&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/blog.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot;&gt; Edit Blog Post&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=pageBlogForm($_REQUEST['blogid']);?&gt;
+	&lt;/div&gt;
+&lt;/view:editpost&gt;
+]]></body>
+	<controller><![CDATA[
+&lt;?php
+//handle passthru urls
+if(isset($_REQUEST['passthru']) &amp;&amp; is_array($_REQUEST['passthru'])){
+	/*
+	year/month/title
+	year/month
+	/user/uid
+	*/
+	$parts=$_REQUEST['passthru'];
+	if(strlen($parts[0])==4 &amp;&amp; isNum($parts[0])){
+    	$_REQUEST['blog_y']=$parts[0];
+		if(isNum($parts[1])){$_REQUEST['blog_m']=$parts[1];}
+		if(strlen($parts[2])){$_REQUEST['blog_t']=$parts[2];}
+	}
+	elseif(strlen($parts[0]) &amp;&amp; $parts[0]=='user'){
+    	$_REQUEST['blog_u']=$parts[1];
+	}
+	elseif(strlen($parts[0]) &amp;&amp; ($parts[0]=='feed' || $parts[0]=='rss')){
+		//blog feed
+    	echo pageBlogFeed();
+    	exit;
+	}
+	elseif(strlen($parts[0]) &amp;&amp; $parts[0]=='unsubscribe'){
+		$email=decodeBase64($parts[1]);
+		$rec=getDBRecord(array('-table'=&gt;&quot;blog_subscriptions&quot;,'email'=&gt;$email));
+		if(is_array($rec)){
+			executeSQL(&quot;update blog_subscriptions set active=0 where _id={$rec['_id']}&quot;);
+			echo &quot;{$rec['email']} is no longer subscribed to this blog&quot;;
+		}
+		else{
+        	echo &quot;{$email} is not subscribed to this blog.&quot;;
+		}
+    	exit;
+	}
+}
+//follow by email
+if(isNum($_REQUEST['add_id']) &amp;&amp; isset($_REQUEST['add_table']) &amp;&amp; $_REQUEST['add_table']=='blog_posts'){
+	$ok=pageEmailBlog(array('-id'=&gt;$_REQUEST['add_id']));
+	//echo &quot;pageEmailBlog:{$ok}&lt;br&gt;\n&quot;;
+}
+setView('default',1);
+global $PAGE;
+global $USER;
+$_SESSION['w_MINIFY']['nicedit']=1;
+//For admins and users that have a blogger flag set in their profile, allow them to add blogs
+if(isAdmin() || (isset($USER['blogger']) &amp;&amp; $USER['blogger']==1)){setView('blogger');}
+//func
+if(isset($_REQUEST['func']) &amp;&amp; strlen($_REQUEST['func'])){
+	setView($_REQUEST['func'],1);
+	if($_REQUEST['func']=='subscribe' &amp;&amp; strlen($_REQUEST['email'])){
+		if(!isEmail($_REQUEST['email'])){
+        	$message=&quot;Please enter a valid email address.&quot;;
+		}
+		else{
+    		$rec=getDBRecord(array('-table'=&gt;&quot;blog_subscriptions&quot;,'email'=&gt;$_REQUEST['email']));
+    		if(is_array($rec)){
+            	$message=&quot;You are already subscribed to this blog.&quot;;
+			}
+			else{
+				$message=&quot;Thank you for subscribing to our blog!&quot;;
+				$ok=addDBRecord(array(
+					'-table'=&gt;&quot;blog_subscriptions&quot;,
+					'email'=&gt;$_REQUEST['email']
+				));
+            }
+		}
+	}
+	elseif($_REQUEST['func']=='email' &amp;&amp; isNum($_REQUEST['blogid'])){
+		$post=getDBRecord(array('-table'=&gt;&quot;blog_posts&quot;,'_id'=&gt;$_REQUEST['blogid']));
+    	if(!is_array($post)){$message=&quot;Invalid Blog Post Reference.&quot;;}
+    	elseif(!strlen($_REQUEST['emails'])){
+        	$message=addEditDBForm(array(
+				'-table'		=&gt; &quot;blog_emails&quot;,
+				'-action'		=&gt; &quot;/blog&quot;,
+				'-name'			=&gt; &quot;blogemail&quot;,
+				'-formfields'	=&gt; &quot;name:email,emails,message&quot;,
+				'blog_post_id'	=&gt; $post['_id'],
+				'blogid'		=&gt; $post['_id'],
+				'func'			=&gt; &quot;email&quot;,
+				'_template'		=&gt; 1,
+				'-save'			=&gt; &quot;Send Email&quot;,
+				'-onsubmit'		=&gt; &quot;ajaxSubmitForm(this,'centerpop');return false;&quot;,
+				'-focus'		=&gt; &quot;name&quot;
+			));
+			$message .= '&lt;div style=&quot;width:400px;&quot;&gt;'.&quot;\n&quot;;
+			$message .= '	&lt;div class=&quot;blog_title&quot;&gt;'.$post['title'].'&lt;/div&gt;'.&quot;\n&quot;;
+			$message .= '	&lt;div class=&quot;blog_content&quot; style=&quot;font-size:12pt&quot;&gt;'.$post['body'].'&lt;/div&gt;'.&quot;\n&quot;;
+			$message .= '&lt;/div&gt;'.&quot;\n&quot;;
+		}
+		else{
+        	$emails=preg_split('/[\r\n\,\;]+/',trim($_REQUEST['emails']));
+        	$to=implode(',',$emails);
+        	$from=&quot;{$_REQUEST['name']} &lt;{$_REQUEST['email']}&gt;&quot;;
+        	$subject=$post['title'];
+        	$blogy=date(&quot;Y&quot;,strtotime($post['blogdate']));
+			$blogm=date(&quot;m&quot;,strtotime($post['blogdate']));
+			$blogt=encodeURL($post['title']);
+			$url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/{$blogy}/{$blogm}/{$blogt}&quot;;
+        	$msg=nl2br(trim(removeHTML($_REQUEST['message'])));
+			$msg .= '&lt;div style=&quot;font-size:16pt;font-weight:bold;margin-top:15px;border-top:1px solid #888;&quot;&gt;&lt;a href=&quot;'.$url.'&quot;&gt;'.$post['title'].'&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+			$msg .= '&lt;div style=&quot;font-size:14pt;margin-left:10px;&quot;&gt;'.$post['body'].'&lt;/div&gt;'.&quot;\n&quot;;
+			$msg .= '&lt;div style=&quot;margin-left:300px;color:#888;&quot;&gt;Source: &lt;a style=&quot;color:#888;&quot; href=&quot;'.$url.'&quot;&gt;'.$url.'&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+			$sendopts=array(
+				'to'		=&gt; $to,
+				'from'		=&gt; $from,
+				'subject'	=&gt; $subject,
+				'message'	=&gt; $msg
+			);
+			$ok=sendMail($sendopts);
+			if(strlen($ok)){$message=$ok.printValue($sendopts);}
+			else{
+				$message=&quot;Thank you. Your message has been sent.&quot;;
+			}
+		}
+	}
+}
+?&gt;
+]]></controller>
+	<css>.blog_box{
+	border:1px solid #CCC;
+	padding:10px;
+	margin:10px;
+	background-color:#FFF;
+	[safari|chrome]-webkit-box-shadow: 0 0 10px rgba(50, 50, 50, 0.8);
+	box-shadow: 0 0 10px rgba(50, 50, 50, 0.8);
+	[msie lt 8]filter: progid:DXImageTransform.Microsoft.Shadow(color='gray', Direction=135, Strength=3);
+	[msie gte 8]-ms-filter:&quot;progid:DXImageTransform.Microsoft.Shadow(Strength=3, Direction=135, Color='gray')&quot;;
+	[safari|chrome]-webkit-border-radius: 7px;
+	-khtml-border-radius: 7px;
+	border-radius: 7px;
+}
+#blogs a{color:#d97925;}
+.blog_left{
+	float:left;
+	width:750px;
+}
+.blog_right{
+	float:right;
+	width:250px;
+}
+.blog_color{color:#d97925;}
+.blog_line{
+	margin:5px 0 10px 0;
+	padding:0px;
+	color:#3e3e3e;
+	background-color:#3e3e3e;
+}
+.blog_title{
+	font-size:16pt;
+	font-weight:bold;
+	border-bottom:1px solid #888;
+	color:#d97925;
+}
+.blog_box_title{
+	font-size:12pt;
+	font-weight:bold;
+	color:#d97925;
+}
+.blog_comment{
+	margin:3px 0 20px 15px;
+	font-size:11pt;
+	color:#3e3e3e;
+	width:380px;
+}
+.blog_comment_info{
+	font-size:10pt;
+	color:#888;
+	text-align:left;
+}
+.blog_info{
+	font-size:10pt;
+	color:#888;
+	text-align:left;
+	margin-left:50px;
+}
+.blog_content{
+	margin:15px;
+	font-size:13pt;
+	color:#3e3e3e;
+}
+.blog_content:first-letter{
+	font-size:16pt;
+}</css>
+	<description>Our Official Blog!</description>
+	<functions><![CDATA[
+&lt;?php
+function pageBlogForm($id=0){
+	global $USER;
+	$rtn='';
+	$guid=isset($USER['guid'])?$USER['guid']:$_SERVER['GUID'];
+	$opts=array(
+		'-table'=&gt;&quot;blog_posts&quot;,
+		'-action'	=&gt; &quot;/blog&quot;,
+		'-formfields'	=&gt; &quot;title:blogdate,body&quot;,
+		'-focus'		=&gt; &quot;title&quot;,
+		'guid'			=&gt; $guid,
+		'body_tools'	=&gt; &quot;wordcount&quot;
+	);
+
+	if(isNum($id) &amp;&amp; $id &gt; 0 &amp;&amp; isUser()){
+		$post=getDBRecord(array('-table'=&gt;&quot;blog_posts&quot;,'_id'=&gt;$id));
+		if(is_array($post) &amp;&amp; (isAdmin() || $USER['guid']==$post['guid'] || $USER['_id']=$post['_cuser'])){
+    		$opts['_id']=$id;
+    		$opts['-hide']=&quot;clone&quot;;
+		}
+		else{
+        	$rtn .= &quot;Invalid rights to edit that blog post.&quot;;
+		}
+	}
+	$rtn .= addEditDBForm($opts);
+	if(!isNum($id) || $id == 0){
+		$rtn .= buildOnLoad(&quot;setTimeField('addedit','blogdate');&quot;);
+	}
+	return $rtn;
+}
+function pageshowBlogArchive(){
+	$rtn='';
+	$query=&quot;
+	select count(*) as cnt,year(blogdate) as year, month(blogdate) as month,monthname(blogdate) as monthname
+	from blog_posts
+	group by year,month 
+	order by blogdate desc
+	&quot;;
+	$recs=getDBRecords(array('-query'=&gt;$query));
+	if(!is_array($recs)){return '';}
+	$groups=array();
+	foreach($recs as $rec){
+		$year=$rec['year'];
+		$groups[$year]['content'] .= '&lt;div&gt;&lt;a href=&quot;/blog/'.$year.'/'.$rec['month'].'&quot; class=&quot;w_link blog_color&quot;&gt;'.$rec['monthname'].' ('.$rec['cnt'].')&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+		$groups[$year]['cnt']+=$rec['cnt'];
+	}
+	foreach($groups as $year=&gt;$group){
+		$title=&quot;{$year} ({$groups[$year]['cnt']})&quot;;
+    	$rtn .= createExpandDiv($title,$groups[$year]['content'],'#d97925');
+	}
+	return $rtn;
+}
+function pageCommentForm($id=0){
+	$post=getDBRecord(array('-table'=&gt;&quot;blog_posts&quot;,'_id'=&gt;$id));
+	$comments=getDBRecords(array('-table'=&gt;&quot;blog_comments&quot;,'blog_post_id'=&gt;$id,'-order'=&gt;&quot;_cdate desc&quot;,'-limit'=&gt;100));
+	$rtn='&lt;div class=&quot;blog_color w_bold w_big&quot; style=&quot;margin-bottom:10px;&quot;&gt;'.$post['title'].'&lt;/div&gt;'.&quot;\n&quot;;
+	if(is_array($comments)){
+    	$rtn .= '&lt;div style=&quot;height:240px;overflow:auto;&quot;&gt;'.&quot;\n&quot;;
+		foreach($comments as $comment){
+			$rdate=date(&quot;l M j, Y&quot;,strtotime($comment['_cdate']));
+			$rtime=date(&quot;h:i A&quot;,strtotime($comment['_cdate']));
+			$rtn .= '	&lt;div class=&quot;blog_comment_info&quot;&gt;'.&quot;{$rdate} at {$rtime} by {$comment['name']}&quot;.'&lt;/div&gt;'.&quot;\n&quot;;
+			$rtn .= '	&lt;div class=&quot;blog_comment&quot;&gt;'.&quot;\n&quot;;
+			$rtn .= removeHTML($comment['comment']);
+			$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+		}
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	}
+	else{
+    	$rtn .= '	&lt;div&gt; No comments yet. &lt;/div&gt;'.&quot;\n&quot;;
+	}
+	$rtn .= '&lt;hr size=&quot;1&quot; align=&quot;center&quot; style=&quot;margin:10px 0 5px 0;padding:0px;color:#d97925;background-color:#d97925;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;div align=&quot;center&quot; class=&quot;blog_color&quot;&gt;Comment Form:&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;hr size=&quot;1&quot; align=&quot;center&quot; style=&quot;margin:5px 0 10px 0;padding:0px;color:#d97925;background-color:#d97925;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= addEditDBForm(array(
+		'-name'=&gt;&quot;blogcomment&quot;,
+		'-action'	=&gt; &quot;/blog&quot;,
+		'-focus'=&gt;&quot;name&quot;,
+		'-table'=&gt;&quot;blog_comments&quot;,
+		'-formfields'=&gt;&quot;name:email,comment&quot;,
+		'active'=&gt;1,
+		'-save'=&gt;&quot;Post Comment&quot;,
+		'approved'=&gt;0,
+		'blog_post_id'=&gt;$id
+	));
+	return $rtn;
+}
+function pageEmailBlog($params=array()){
+	unset($post);
+	if(isset($params['-rec']) &amp;&amp; is_array($params['-rec'])){
+    	$post=$params['-rec'];
+	}
+	elseif(isNum($params['-id'])){
+    	$post=getDBRecord(array('-table'=&gt;&quot;blog_posts&quot;,'_id'=&gt;$params['-id']));
+	}
+	if(!isset($post)){return &quot;NO POST&quot;;}
+	$blogy=date(&quot;Y&quot;,strtotime($post['blogdate']));
+	$blogm=date(&quot;m&quot;,strtotime($post['blogdate']));
+	$blogt=encodeURL($post['title']);
+	$url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/{$blogy}/{$blogm}/{$blogt}&quot;;
+    //from
+	if(isset($params['from'])){$from=$params['from'];}
+	else{$from='blog@'.$_SERVER['UNIQUE_HOST'];}
+	//to
+	$tos=array();
+	$subscribe=0;
+	if(isset($params['to'])){$tos=preg_split('/[\,\;]+/',$params['to']);}
+	else{
+    	//get subscription list
+    	$recs=getDBRecords(array('-table'=&gt;&quot;blog_subscriptions&quot;,'active'=&gt;1,'-index'=&gt;&quot;email&quot;));
+    	if(is_array($recs)){$tos=array_keys($recs);}
+    	$subscribe=1;
+	}
+	if(!count($tos)){return &quot;NO To&quot;;}
+	//subject
+	$subject=$post['title'];
+	//message
+	$msg='';
+	if(isset($params['message'])){$msg .= nl2br(trim(removeHTML($_REQUEST['message'])));}
+	$msg .= '&lt;div style=&quot;font-size:16pt;font-weight:bold;margin-top:15px;border-top:1px solid #888;&quot;&gt;&lt;a href=&quot;'.$url.'&quot;&gt;'.$post['title'].'&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+	$msg .= '&lt;div style=&quot;font-size:14pt;margin-left:10px;&quot;&gt;'.$post['body'].'&lt;/div&gt;'.&quot;\n&quot;;
+	$msg .= '&lt;div style=&quot;margin-top:5px;color:#888;border-top:1px dashed #888;&quot;&gt;Source: &lt;a style=&quot;color:#888;&quot; href=&quot;'.$url.'&quot;&gt;'.$url.'&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+	$sendopts=array(
+		'from'		=&gt; $from,
+		'subject'	=&gt; $subject,
+		'message'	=&gt; $msg
+	);
+	$sent=0;
+	foreach($tos as $to){
+		$copts=$sendopts;
+		$copts['to']=$to;
+		if($subscribe==1){
+			//include unsubscribe link
+			$encoded_email=encodeBase64($to);
+			$url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/unsubscribe/{$encoded_email}&quot;;
+			$copts['message'] .= '&lt;div style=&quot;margin-top:3px;&quot;&gt;'.&quot;\n&quot;;
+			$copts['message'] .= '	To unsubscribe from this blog &lt;a href=&quot;'.$url.'&quot;&gt;click here&lt;/a&gt;'.&quot;\n&quot;;
+			$copts['message'] .= '&lt;/div&gt;'.&quot;\n&quot;;
+		}
+		$ok=sendMail($copts);
+		if(!strlen($ok)){$sent++;}
+		else{return $ok;}
+		//echo printValue($copts);
+	}
+	return $sent;
+}
+function pageshowBlogs($start=0){
+	$recopts=array(
+		'-table'	=&gt; &quot;blog_posts&quot;,
+		'-order'	=&gt; &quot;blogdate desc&quot;,
+		'-limit'	=&gt; &quot;{$start},20&quot;,
+		'-relate'	=&gt; 1,
+		'-index'	=&gt; &quot;_id&quot;
+	);
+	//apply filters - by, year, month, tag, title
+	// passing blogreset will clear all filters
+	//search?
+	if(isset($_REQUEST['blog_s'])){
+		$recopts['-filter']=&quot;title like '%{$_REQUEST['blog_s']}%' or body like '%{$_REQUEST['blog_s']}%'&quot;;
+	}
+	else{
+    	$filters=array();
+		if(isset($_REQUEST['blog_u'])){$filters[]=&quot;_cuser={$_REQUEST['blog_u']}&quot;;}
+		if(isset($_REQUEST['blog_y'])){$filters[]=&quot;YEAR(blogdate)='{$_REQUEST['blog_y']}'&quot;;}
+		if(isset($_REQUEST['blog_m'])){$filters[]=&quot;MONTH(blogdate)='{$_REQUEST['blog_m']}'&quot;;}
+		if(isset($_REQUEST['blog_t'])){$filters[]=&quot;title='{$_REQUEST['blog_t']}'&quot;;}
+		if(count($filters)){
+			$recopts['-filter']=implode(' and ',$filters);
+		}
+	}
+	//echo printValue($recopts);
+	$recs=getDBRecords($recopts);
+	$rtn='';
+	if(!is_array($recs)){return '';}
+	//get comments and bundle by ids
+	$blogids=array_keys($recs);
+	$blogidstr=implode(',',$blogids);
+	$comments=getDBRecords(array('-query'=&gt;&quot;select blog_post_id,count(*) as cnt from blog_comments where active=1 group by blog_post_id&quot;,'-index'=&gt;&quot;blog_post_id&quot;));
+	//return printValue($comments);
+	foreach($recs as $id=&gt;$rec){
+		$rdate=date(&quot;l M j, Y&quot;,strtotime($rec['blogdate']));
+		$rtime=date(&quot;h:i A&quot;,strtotime($rec['blogdate']));
+		$by = &quot;{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}&quot;;
+		$blogy=date(&quot;Y&quot;,strtotime($rec['blogdate']));
+		$blogm=date(&quot;m&quot;,strtotime($rec['blogdate']));
+		$blogt=encodeURL($rec['title']);
+		$url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/{$blogy}/{$blogm}/{$blogt}&quot;;
+		$user_url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/user/{$rec['_cuser']}&quot;;
+		$rtn .= '&lt;div class=&quot;blog_box&quot;&gt;'.&quot;\n&quot;;
+    	$rtn .= '	&lt;div class=&quot;blog_title&quot;&gt;&lt;a href=&quot;'.$url.'&quot; class=&quot;blog_color&quot;&gt;'.$rec['title'].'&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+    	$rtn .= '	&lt;div class=&quot;blog_info&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= &quot;		{$rdate} at {$rtime} by &quot;.'&lt;a href=&quot;'.$user_url.'&quot; class=&quot;w_link blog_color&quot;&gt;'.$by.'&lt;/a&gt;'.&quot;\n&quot;;
+		//edit link?
+		if(isAdmin() || $USER['guid']==$post['guid'] || $USER['_id']=$rec['_cuser']){
+			$rtn .= '		&lt;a href=&quot;#edit&quot; style=&quot;margin-left:25px;&quot; onclick=&quot;return ajaxGet(\'/blog\',\'centerpop\',\'_template=1&amp;func=editpost&amp;blogid='.$id.'\');&quot; class=&quot;blog_color w_link&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/edit.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Click to edit this blog post&quot;&gt; edit&lt;/a&gt;'.&quot;\n&quot;;
+		}
+		$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+    	$rtn .= '	&lt;div class=&quot;blog_content&quot;&gt;'.&quot;\n&quot;;
+    	$rtn .= $rec['body'];
+    	$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+    	//share links and comments count
+    	if(!isset($comments[$id]['cnt'])){$comments[$id]=array('cnt'=&gt;0,'blog_post_id'=&gt;$id);}
+		$rtn .= '	&lt;div class=&quot;blog_share&quot;&gt;'.&quot;\n&quot;;
+		//email
+		$rtn .= '		&lt;a href=&quot;#email&quot; onclick=&quot;return ajaxGet(\'/blog\',\'centerpop\',\'_template=1&amp;func=email&amp;blogid='.$id.'\');&quot; class=&quot;blog_color w_link&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/email.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Click to email this blog post&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//linkedin
+		$rtn .= '		&lt;a target=&quot;_share&quot; href=&quot;http://www.linkedin.com/shareArticle?title='.$blogt.'&amp;mini=true&amp;url='.$url.'&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/linkedin.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Share this post on LinkedIn&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//twitter
+		$rtn .= '		&lt;a target=&quot;_share&quot; href=&quot;http://twitter.com/share?text='.$blogt.'&amp;url='.$url.'&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/twitter.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Share this post on twitter&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//facebook
+		$rtn .= '		&lt;a target=&quot;_share&quot; href=&quot;http://www.facebook.com/sharer.php?u='.$url.'&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/facebook.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;Share this post on Facebook&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Share this post on Facebook&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//google plus
+		$rtn .= '		&lt;a target=&quot;_share&quot; href=&quot;https://plus.google.com/share?url='.$url.'&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/googleplus.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Share this post on Google+&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//reddit
+		$rtn .= '		&lt;a target=&quot;_share&quot; href=&quot;http://www.reddit.com/submit?title='.$blogt.'&amp;url='.$url.'&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/reddit.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Share this post on reddit&quot;&gt;&lt;/a&gt;'.&quot;\n&quot;;
+		//comments
+		$rtn .= '		&lt;a href=&quot;#comments&quot; style=&quot;margin-left:25px;&quot; onclick=&quot;return ajaxGet(\'/blog\',\'centerpop\',\'_template=1&amp;func=comment&amp;blogid='.$id.'\');&quot; class=&quot;blog_color w_link&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/note.png&quot; border=&quot;0&quot; width=&quot;16&quot; height=&quot;16&quot; class=&quot;w_middle&quot; data-tooltip=&quot;att:alt&quot; data-tooltip_position=&quot;bottom&quot; alt=&quot;Click to view comments and add a comment&quot;&gt; '.$comments[$id]['cnt'].' comments&lt;/a&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;br clear=&quot;both&quot; /&gt;'.&quot;\n&quot;;
+
+	}
+	return $rtn;
+}
+function pageBlogFeed(){
+	$recopts=array(
+		'-table'	=&gt; &quot;blog_posts&quot;,
+		'-order'	=&gt; &quot;blogdate desc&quot;,
+		'-limit'	=&gt; &quot;20&quot;,
+	);
+	//echo printValue($recopts);
+	$recs=getDBRecords($recopts);
+	if(!is_array($recs)){return '';}
+	$rss=array();
+	foreach($recs as $rec){
+    	$blogy=date(&quot;Y&quot;,strtotime($rec['blogdate']));
+		$blogm=date(&quot;m&quot;,strtotime($rec['blogdate']));
+		$blogt=encodeURL($rec['title']);
+		$url=&quot;http://{$_SERVER['HTTP_HOST']}/blog/{$blogy}/{$blogm}/{$blogt}&quot;;
+		$rss[]=array(
+			'title'	=&gt; $rec['title'],
+			'link'	=&gt; $url,
+			'description'	=&gt; $rec['body'],
+			'pubdate'		=&gt; $rec['blogdate']
+		);
+	}
+	$params=array(
+		'title'			=&gt; &quot;Blog Feed for {$_SERVER['HTTP_HOST']}&quot;,
+		'link'			=&gt; &quot;http://{$_SERVER['HTTP_HOST']}/blog&quot;,
+		'rss'			=&gt; &quot;http://{$_SERVER['HTTP_HOST']}/blog/feed&quot;,
+		'description'	=&gt; &quot;Blog Feed for {$_SERVER['HTTP_HOST']}&quot;,
+		'pubdate'		=&gt; $recs[0]['blogdate']
+	);
+	return arrays2RSS($rss,$params);
+}
+?&gt;
+]]></functions>
+	<name>blog</name>
+	<page_type>1</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>Blog</title>
+</xmldata>
+</export>

@@ -1,0 +1,51 @@
+<hosts>
+	<!--
+		Valid Fields:
+			name - HTTP_HOST to base filter on
+			dbhost - Database host
+			dbname - Database name
+			dbuser - Database username
+			dbpass - Database password
+			dbtype - Database type (mysqli,mysql,sqlite,mssql,postgres)
+			showtables="all" will show all tables, including WaSQL tables
+			paging - default paging limit
+			missing_msg - Message to show if page is missing. if msg is a url it will redirect.
+			missing_template - template to use on missing pages
+			missing_page - Page to view if current page is missing (use instead of missing_msg and missing_template)
+			backup_cmd - run this command when going to backup
+			authhost - authenticate and replicate this user profile
+			load_modules - loads additional php files found in the PHP directory.. i.e load_modules="fedex,authnet"
+			access_log - 0,off,false turns logging off, any number sets the days too keep in the table.
+			minify_{NAME} - adds or replaces minify groups for css and js minify scripting
+			default_{FIELD} - default field to use when creating the default user when a database is first created
+			mobile_index - if set and client is a mobile device, use this as the homepage
+			mobile_template - if set and client is a mobile device, use this template
+			memory_limit - overrides the default memory limit set at 500M
+			codereview - setting this to 1 will require a code reviewer to also verify any synchronize changes before they are submitted
+			valid_hosts = list of valid hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.
+			valid_uhosts = list of valid unique hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.
+			invalid_host_msg[_1-9] = message to show client if invalid. Filter by regex as follows:  /^127./=localhost not allowed
+			dbname_stage = setting this on your live host to disable adding records for synchronize tables on live
+
+	-->
+	<!-- allhost sets global settings unless overridden by the host entry -->
+	<allhost
+		dbhost="localhost"
+		paging="50"
+		dbtype="mysqli"
+          dbname="wasql"
+          dbuser="wasql"
+          dbpass="ste88llo"
+        admin_secure="0"
+        missing_page="passthru"
+        minify_js="1"
+        minify_css="1"
+	/>
+	<!-- create a host entry for each domain and subdomain -->
+	<host
+		name="localhost"
+        dbname="wasql"
+        access="all"
+	/>
+</hosts>
+

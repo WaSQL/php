@@ -1,0 +1,61 @@
+<hosts>
+	<!--
+		Valid Fields:
+			name - HTTP_HOST to base filter on
+			dbhost - Database host
+			dbname - Database name
+			dbuser - Database username
+			dbpass - Database password
+			dbtype - Database type (mysqli,mysql,sqlite,mssql,postgres)
+			showtables="all" will show all tables, including WaSQL tables
+			paging - default paging limit
+			missing_msg - Message to show if page is missing. if msg is a url it will redirect.
+			missing_template - template to use on missing pages
+			missing_page - Page to view if current page is missing (use instead of missing_msg and missing_template)
+			backup_cmd - run this command when going to backup
+			authhost - authenticate and replicate this user profile
+			load_modules - loads additional php files found in the PHP directory.. i.e load_modules="fedex,authnet"
+			access_log - 0,off,false turns logging off, any number sets the days too keep in the table.
+			minify_{NAME} - adds or replaces minify groups for css and js minify scripting
+			default_{FIELD} - default field to use when creating the default user when a database is first created
+			mobile_index - if set and client is a mobile device, use this as the homepage
+			mobile_template - if set and client is a mobile device, use this template
+			memory_limit - overrides the default memory limit set at 500M
+			codereview - setting this to 1 will require a code reviewer to also verify any synchronize changes before they are submitted
+			valid_hosts = list of valid hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.
+			valid_uhosts = list of valid unique hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.
+			invalid_host_msg[_1-9] = message to show client if invalid. Filter by regex as follows:  /^127./=localhost not allowed
+			dbname_stage = setting this on your live host to disable adding records for synchronize tables on live
+			logo = path to your logo. defaults to /wfiles/iconsets/64/wasql.png
+			admin_secure = 1.  Requires SSL connection for admin access
+			session_domain string - set to root domain name to make subdomains and domians share sessions
+			sameas string - make host have all settings the same as specified host
+			minify_css boolean - use minified versions of css files when avail.  Looks for .min.css
+			minify_js boolean - use minified versions of js files when avail.  Looks for .min.js
+			markdown 0|1 - if a textarea field being edited/added has a corresponding {field}_mdml field in the table then convert the field into markdown using the markdown extra. Setting it to 1 will set strip-tags to true
+			database_sessions 0|1 - if set to 1 WaSQL will use the _sessions table for session management 
+			user_tracking 0|1 - defaults to 1. Turns off updating the _aip, _auser, _adate in the _users table - speed
+			page_tracking 0|1 - defaults to 1. Turns off updating the _amem, _aip, _auser, _adate, and _env in the _pages table - speed
+			template_tracking 0|1 - defaults to 1. Turns off updating the _apage in the _templates table - speed
+			pageview_comments 0|1 - defaults to 0. Adds comments into the HTML specifying what view was used.
+	-->
+	<!-- allhost sets global settings unless overridden by the host entry -->
+	<allhost
+		dbhost="localhost"
+		paging="50"
+		dbtype="mysqli"
+        dbname="dbnamehere"
+        dbuser="username"
+        dbpass="password"
+	/>
+	<!-- create a host entry for each domain and subdomain -->
+	<host
+		name="localhost"
+        dbname="dbnamehere"
+        minify_css="1"
+        minify_js="1"
+        markdown="1"
+        database_sessions="1"
+	/>
+</hosts>
+

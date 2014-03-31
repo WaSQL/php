@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<AccessRequest xml:lang="en-US">
+ 	<AccessLicenseNumber>Your_License</AccessLicenseNumber>
+	<UserId>Your_ID</UserId>
+	<Password>Your_Password</Password>
+</AccessRequest>
+<?xml version="1.0"?>
+<RatingServiceSelectionRequest xml:lang="en-US">
+  <Request>
+    <TransactionReference>
+      <CustomerContext>Rating and Service</CustomerContext>
+      <XpciVersion>1.0</XpciVersion>
+    </TransactionReference>
+	<RequestAction>Rate</RequestAction>
+	<RequestOption>Rate</RequestOption>
+  </Request>
+    <PickupType>
+  	<Code>07</Code>
+  	<Description>Rate</Description>
+    </PickupType>
+  <Shipment>
+    	<Description>Rate Description</Description>
+    <Shipper>
+      <Name>Name</Name>
+      <PhoneNumber>1234567890</PhoneNumber>
+      <ShipperNumber>Ship Number</ShipperNumber>
+      <Address>
+        <AddressLine1>Address Line</AddressLine1>
+        <City>City</City>
+        <StateProvinceCode>NJ</StateProvinceCode>
+        <PostalCode>07430</PostalCode>
+        <CountryCode>US</CountryCode>
+      </Address>
+    </Shipper>
+    <ShipTo>
+      <CompanyName>Company Name</CompanyName>
+      <PhoneNumber>1234567890</PhoneNumber>
+      <Address>
+        <AddressLine1>Address Line</AddressLine1>
+        <City>Corado</City>
+        <PostalCode>00646</PostalCode> 
+        <CountryCode>PR</CountryCode>
+      </Address>
+    </ShipTo>
+    <ShipFrom>
+      <CompanyName>Company Name</CompanyName>
+      <AttentionName>Attention Name</AttentionName>
+      <PhoneNumber>1234567890</PhoneNumber>
+      <FaxNumber>1234567890</FaxNumber>
+      <Address>
+        <AddressLine1>Address Line</AddressLine1>
+		<City>Boca Raton</City>
+        <StateProvinceCode>FL</StateProvinceCode>
+        <PostalCode>33434</PostalCode> 
+        <CountryCode>US</CountryCode>
+      </Address>
+    </ShipFrom>
+  	<Service>
+    		<Code>03</Code>
+  	</Service>
+  	<PaymentInformation>
+	      	<Prepaid>
+        		<BillShipper>
+          			<AccountNumber>Ship Number</AccountNumber>
+        		</BillShipper>
+      		</Prepaid>
+  	</PaymentInformation>
+  	<Package>
+      		<PackagingType>
+	        	<Code>02</Code>
+        		<Description>Customer Supplied</Description>
+      		</PackagingType>
+      		<Description>Rate</Description>
+      		<PackageWeight>
+      			<UnitOfMeasurement>
+      			  <Code>LBS</Code>
+      			</UnitOfMeasurement>
+	        	<Weight>10</Weight>
+      		</PackageWeight>   
+   	</Package>
+    <ShipmentServiceOptions>
+      <OnCallAir>
+		<Schedule> 
+			<PickupDay>02</PickupDay>
+			<Method>02</Method>
+		</Schedule>
+      </OnCallAir>
+    </ShipmentServiceOptions>
+  </Shipment>
+</RatingServiceSelectionRequest>

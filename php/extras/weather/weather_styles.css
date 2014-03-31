@@ -1,0 +1,10 @@
+/* 
+CSS styles for use with example.php bundled with the PHPWeatherLib library v1.1
+PHPWeatherLib Homepage: http://www.ebrueggeman.com/phpweatherlib
+ */
+.table_weather_widget {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	border: 1px solid #666666;
+	width: 300px;
+}

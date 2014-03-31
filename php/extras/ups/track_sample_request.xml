@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<AccessRequest xml:lang="en-US">
+  <AccessLicenseNumber>Your_License</AccessLicenseNumber>
+  <UserId>Your_id</UserId>
+  <Password>Your_pwd</Password>
+</AccessRequest>
+<?xml version="1.0"?>
+<TrackRequest xml:lang="en-US">
+  <Request>
+    <TransactionReference>
+      <CustomerContext>QAST Track</CustomerContext>
+      <XpciVersion>1.0</XpciVersion>
+    </TransactionReference>
+    <RequestAction>Track</RequestAction>
+    <RequestOption>activity</RequestOption>
+  </Request>
+  <TrackingNumber>1ZF001005991422963</TrackingNumber>
+</TrackRequest>
