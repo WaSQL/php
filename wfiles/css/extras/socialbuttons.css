@@ -1,0 +1,375 @@
+/* This is automatically included when you use the buildSocialButtons() function in WaSQL */
+/*Facebook*/
+.w_facebook{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -5px -5px;
+	}
+.w_facebook:hover{background-position: -5px -50px;}
+.w_facebook_bw{
+	width:40px;height:40px;display:inline-block;
+	background: url('/wfiles/icons/sprites_social.png') no-repeat -5px -95px;
+	}
+.w_facebook_bw:hover{background-position: -5px -140px;}
+/*Twitter*/
+.w_twitter{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -50px -5px;
+	}
+.w_twitter:hover{background-position: -50px -50px;}
+.w_twitter_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -50px -95px;
+	}
+.w_twitter_bw:hover{background-position: -50px -140px;}
+.w_twitter_bird{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -95px -5px;
+	}
+.w_twitter_bird:hover{background-position: -95px -50px;}
+.w_twitter_bird_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -95px -95px;
+	}
+.w_twitter_bird_bw:hover{background-position: -95px -140px;}
+/*YouTube*/
+.w_youtube{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -140px -5px;
+	}
+.w_youtube:hover{background-position: -140px -50px;}
+.w_youtube_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -140px -95px;
+	}
+.w_youtube_bw:hover{background-position: -140px -140px;}
+/*LinkedIn*/
+.w_linkedin{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -185px -5px;
+	}
+.w_linkedin:hover{background-position: -185px -50px;}
+.w_linkedin_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -185px -95px;
+	}
+.w_linkedin_bw:hover{background-position: -185px -140px;}
+/*Tumblr*/
+.w_tumblr{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -230px -5px;
+	}
+.w_tumblr:hover{background-position: -230px -50px;}
+.w_tumblr_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -230px -95px;
+	}
+.w_tumblr_bw:hover{background-position: -230px -140px;}
+/*Google+*/
+.w_googleplus{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -275px -5px;
+	}
+.w_googleplus:hover{background-position: -275px -50px;}
+.w_googleplus_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -275px -95px;
+	}
+.w_googleplus_bw:hover{background-position: -275px -140px;}
+/*InstaGram*/
+.w_instagram{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -320px -5px;
+	}
+.w_instagram:hover{background-position: -320px -50px;}
+.w_instagram_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -320px -95px;
+	}
+.w_instagram_bw:hover{background-position: -320px -140px;}
+/*Pinterest*/
+.w_pinterest{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -365px -5px;
+	}
+.w_pinterest:hover{background-position: -365px -50px;}
+.w_pinterest_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -365px -95px;
+	}
+.w_pinterest_bw:hover{background-position: -365px -140px;}
+/*Reddit*/
+.w_reddit{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -410px -5px;
+	}
+.w_reddit:hover{background-position: -410px -50px;}
+.w_reddit_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -410px -95px;
+	}
+.w_reddit_bw:hover {background-position: -410px -140px;}
+/*ShareThis*/
+.w_sharethis{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -455px -5px;
+	}
+.w_sharethis:hover{background-position: -455px -50px;}
+.w_sharethis_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -455px -95px;
+	}
+.w_sharethis_bw:hover{background-position: -455px -140px;}
+/*Slashdot*/
+.w_slashdot{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -500px -5px;
+	}
+.w_slashdot:hover{background-position: -500px -50px;}
+.w_slashdot_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -500px -95px;
+	}
+.w_slashdot_bw:hover {background-position: -500px -140px;}
+/*Delicious*/
+.w_delicious{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -545px -5px;
+	}
+.w_delicious:hover{background-position: -545px -50px;}
+.w_delicious_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -545px -95px;
+	}
+.w_delicious_bw:hover{background-position: -545px -140px;}
+/*Flickr*/
+.w_flickr{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -590px -5px;
+	}
+.w_flickr:hover{background-position: -590px -50px;}
+.w_flickr_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -590px -95px;
+	}
+.w_flickr_bw:hover{background-position: -590px -140px;}
+/*Digg*/
+.w_digg{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -635px -5px;
+	}
+.w_digg:hover{background-position: -635px -50px;}
+.w_digg_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -635px -95px;
+	}
+.w_digg_bw:hover{background-position: -635px -140px;}
+/*RSS*/
+.w_rss{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -680px -5px;
+	}
+.w_rss:hover{background-position: -680px -50px;}
+.w_rss_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -680px -95px;
+	}
+.w_rss_bw:hover {background-position: -680px -140px;}
+/*Tagged*/
+.w_tagged{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -725px -5px;
+	}
+.w_tagged:hover{background-position: -725px -50px;}
+.w_tagged_bw{
+	width:40px;height:40px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social.png') no-repeat -725px -95px;
+	}
+.w_tagged_bw:hover{background-position: -725px -140px;}
+
+/* small icons */
+/*Facebook*/
+.w_facebook_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -3px -3px;
+	}
+.w_facebook_small:hover{background-position: -3px -25px;}
+.w_facebook_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background: url('/wfiles/icons/sprites_social_small.png') no-repeat -2px -47px;
+	}
+.w_facebook_bw_small:hover{background-position: -2px -70px;}
+/*Twitter*/
+.w_twitter_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -25px -3px;
+	}
+.w_twitter_small:hover{background-position: -25px -25px;}
+.w_twitter_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -25px -47px;
+	}
+.w_twitter_bw_small:hover{background-position: -25px -70px;}
+.w_twitter_bird_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -48px -3px;
+	}
+.w_twitter_bird_small:hover{background-position: -48px -25px;}
+.w_twitter_bird_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -47px -47px;
+	}
+.w_twitter_bird_bw_small:hover{background-position: -47px -70px;}
+/*YouTube*/
+.w_youtube_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -70px -3px;
+	}
+.w_youtube_small:hover{background-position: -70px -25px;}
+.w_youtube_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -70px -47px;
+	}
+.w_youtube_bw_small:hover{background-position: -70px -70px;}
+/*LinkedIn*/
+.w_linkedin_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -93px -3px;
+	}
+.w_linkedin_small:hover{background-position: -93px -25px;}
+.w_linkedin_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -92px -47px;
+	}
+.w_linkedin_bw_small:hover{background-position: -92px -70px;}
+/*Tumblr*/
+.w_tumblr_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -115px -3px;
+	}
+.w_tumblr_small:hover{background-position: -115px -25px;}
+.w_tumblr_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -114px -47px;
+	}
+.w_tumblr_bw_small:hover{background-position: -114px -70px;}
+/*Google+*/
+.w_googleplus_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -138px -3px;
+	}
+.w_googleplus_small:hover{background-position: -138px -25px;}
+.w_googleplus_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -137px -47px;
+	}
+.w_googleplus_bw_small:hover{background-position: -137px -70px;}
+/*InstaGram*/
+.w_instagram_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -160px -3px;
+	}
+.w_instagram_small:hover{background-position: -160px -25px;}
+.w_instagram_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -160px -47px;
+	}
+.w_instagram_bw_small:hover{background-position: -160px -70px;}
+/*Pinterest*/
+.w_pinterest_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -183px -3px;
+	}
+.w_pinterest_small:hover{background-position: -183px -25px;}
+.w_pinterest_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -182px -47px;
+	}
+.w_pinterest_bw_small:hover{background-position: -182px -70px;}
+/*Reddit*/
+.w_reddit_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -205px -3px;
+	}
+.w_reddit_small:hover{background-position: -205px -25px;}
+.w_reddit_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -205px -47px;
+	}
+.w_reddit_bw_small:hover{background-position: -205px -70px;}
+/*ShareThis*/
+.w_sharethis_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -228px -3px;
+	}
+.w_sharethis_small:hover{background-position: -228px -25px;}
+.w_sharethis_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -227px -47px;
+	}
+.w_sharethis_bw_small:hover{background-position: -227px -70px;}
+/*Slashdot*/
+.w_slashdot_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -250px -3px;
+	}
+.w_slashdot_small:hover{background-position: -250px -25px;}
+.w_slashdot_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -250px -47px;
+	}
+.w_slashdot_bw_small:hover{background-position: -250px -69px;}
+/*Delicious*/
+.w_delicious_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -273px -3px;
+	}
+.w_delicious_small:hover{background-position: -273px -25px;}
+.w_delicious_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -272px -47px;
+	}
+.w_delicious_bw_small:hover{background-position: -272px -70px;}
+/*Flickr*/
+.w_flickr_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -295px -3px;
+	}
+.w_flickr_small:hover{background-position: -295px -25px;}
+.w_flickr_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -295px -47px;
+	}
+.w_flickr_bw_small:hover{background-position: -295px -70px;}
+/*Digg*/
+.w_digg_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -318px -3px;
+	}
+.w_digg_small:hover{background-position: -318px -25px;}
+.w_digg_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -317px -47px;
+	}
+.w_digg_bw_small:hover{background-position: -317px -70px;}
+/*RSS*/
+.w_rss_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -340px -3px;
+	}
+.w_rss_small:hover{background-position: -340px -25px;}
+.w_rss_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -339px -47px;
+	}
+.w_rss_bw_small:hover{background-position: -339px -70px;}
+/*Tagged*/
+.w_tagged_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -363px -3px;
+	}
+.w_tagged_small:hover{background-position: -362px -25px;}
+.w_tagged_bw_small{
+	width:21px;height:21px;display:inline-block;
+	background:url('/wfiles/icons/sprites_social_small.png') no-repeat -363px -48px;
+	}
+.w_tagged_bw_small:hover{background-position: -362px -70px;}

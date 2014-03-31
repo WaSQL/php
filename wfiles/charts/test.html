@@ -1,0 +1,67 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>FusionCharts Free Test Page</title>
+<script language="JavaScript" src="FusionCharts.js"></script>
+<script type="text/javascript">
+	function renderTestCharts(){
+		/* Area2D */
+		var chart = new FusionCharts("FCF_Area2D.swf", "ChartId", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("area2d");
+		/* Column2D */
+		chart = new FusionCharts("FCF_Column2D.swf", "ChartId2", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("column2d");
+		/* Column3D */
+		chart = new FusionCharts("FCF_Column3D.swf", "ChartId3", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("column3d");
+		/* Line */
+		chart = new FusionCharts("FCF_Line.swf", "ChartId4", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("line");
+		/* Pie2D */
+		chart = new FusionCharts("FCF_Pie2D.swf", "ChartId5", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("pie2d");
+		/* Pie3D */
+		chart = new FusionCharts("FCF_Pie3D.swf", "ChartId6", "600", "350");
+		chart.setDataURL("data.xml");
+		chart.render("pie3d");
+		frm.code.value=chart.getSWFHTML();
+		}
+	</script>
+</head>
+
+<body onLoad="renderTestCharts();" bgcolor="blue">
+<div>
+	<h2>Area 2D</h2><br>
+	<div id="area2d" bgcolor="blue"></div>
+	<h2>Column 2D</h2><br>
+	<div id="column2d"></div>
+	<h2>Column 3D</h2><br>
+	<div id="column3d"></div>
+	<h2>Line</h2><br>
+	<div id="line"></div>
+	<h2>Pie 2D</h2><br>
+	<div id="pie2d"></div>
+	<h2>Pie 3D</h2><br>
+	<div id="pie3d"></div>
+</div>
+<form name="frm">
+<textarea name="code" style="width:400px;height:200px;"></textarea>
+</form>
+<div>
+<object id="ChartId6" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="600" height="350">
+	<param name="movie" value="FCF_Pie3D.swf" />
+	<param name="bgcolor" value="#FFD3D3" />
+	<param name="WMode" value="Transparent" />
+	<param name="quality" value="high" />
+	<param name="allowScriptAccess" value="always" />
+	<param name="flashvars" value="chartWidth=600&chartHeight=350&debugMode=0&DOMId=ChartId6&registerWithJS=0&scaleMode=noScale&lang=EN&dataURL=data.xml" />
+	<embed type="application/x-shockwave-flash" src="FCF_Pie3D.swf" width="600" height="350"   id="ChartId6" name="ChartId6" WMode="Transparent" quality="high" allowScriptAccess="always" flashvars="chartWidth=600&chartHeight=350&debugMode=0&DOMId=ChartId6&registerWithJS=0&scaleMode=noScale&lang=EN&dataURL=data.xml"/>
+</object>
+</div>
+</body>
+</html>
