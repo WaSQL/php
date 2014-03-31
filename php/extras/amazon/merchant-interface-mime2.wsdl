@@ -1,0 +1,430 @@
+<wsdl:definitions name="waspcServer.AmzISA.MerchantInterface" targetNamespace="http://www.amazon.com/merchants/merchant-interface/" xmlns:tns="http://www.amazon.com/merchants/merchant-interface/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:sst="http://systinet.com/xsd/SchemaTypes/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+    <wsdl:types>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.amazon.com/merchants/merchant-interface/">
+            <xsd:complexType name="Merchant">
+                <xsd:sequence>
+                    <xsd:element name="merchantIdentifier" nillable="true" type="xsd:string"/>
+                    <xsd:element name="merchantName" nillable="true" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DocumentDownloadAckStatus">
+                <xsd:sequence>
+                    <xsd:element name="documentDownloadAckProcessingStatus" nillable="true" type="xsd:string"/>
+                    <xsd:element name="documentID" nillable="true" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ArrayOfDocumentDownloadAckStatus">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="DocumentDownloadAckStatus" nillable="true" type="tns:DocumentDownloadAckStatus"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DocumentSubmissionResponse">
+                <xsd:sequence>
+                    <xsd:element name="documentTransactionID" type="xsd:long"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="MerchantDocumentInfo">
+                <xsd:sequence>
+                    <xsd:element name="documentID" nillable="true" type="xsd:string"/>
+                    <xsd:element name="generatedDateTime" nillable="true" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ArrayOfMerchantDocumentInfo">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="MerchantDocumentInfo" nillable="true" type="tns:MerchantDocumentInfo"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="DocumentProcessingInfo">
+                <xsd:sequence>
+                    <xsd:element name="documentProcessingStatus" nillable="true" type="xsd:string"/>
+                    <xsd:element name="processingReport" nillable="true" type="tns:MerchantDocumentInfo"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="SummaryInfo">
+                <xsd:sequence>
+                    <xsd:element name="batchID" type="xsd:long"/>
+                    <xsd:element name="batchStatus" nillable="true" type="xsd:string"/>
+                    <xsd:element name="numberOfProcessed" type="xsd:int"/>
+                    <xsd:element name="numberOfRecordsWithErrors" type="xsd:int"/>
+                    <xsd:element name="numberOfRecordsWithWarnings" type="xsd:int"/>
+                    <xsd:element name="numberOfSuccessful" type="xsd:int"/>
+                    <xsd:element name="summaryLogFile" nillable="true" type="xsd:string"/>
+                    <xsd:element name="uploadDateTime" nillable="true" type="xsd:dateTime"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ArrayOfSummaryInfo">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="SummaryInfo" nillable="true" type="tns:SummaryInfo"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="http://systinet.com/xsd/SchemaTypes/" xmlns:tns="http://systinet.com/xsd/SchemaTypes/" xmlns:mi="http://www.amazon.com/merchants/merchant-interface/" xmlns:swj="http://systinet.com/wsdl/java/lang/">
+            <xsd:import namespace="http://systinet.com/wsdl/java/lang/"/>
+            <xsd:import namespace="http://www.amazon.com/merchants/merchant-interface/"/>
+            <xsd:element name="merchant" nillable="true" type="mi:Merchant"/>
+            <xsd:element name="documentIdentifier" nillable="true" type="xsd:string"/>
+            <xsd:element name="string_Response" nillable="true" type="xsd:string"/>
+            <xsd:element name="doc" nillable="true" type="xsd:base64Binary"/>
+            <xsd:element name="documentIdentifierArray" nillable="true" type="swj:ArrayOfstring"/>
+            <xsd:element name="ArrayOfDocumentDownloadAckStatus_Response" nillable="true" type="mi:ArrayOfDocumentDownloadAckStatus"/>
+            <xsd:element name="messageType" nillable="true" type="xsd:string"/>
+            <xsd:element name="DocumentSubmissionResponse_Response" nillable="true" type="mi:DocumentSubmissionResponse"/>
+            <xsd:element name="howMany" type="xsd:int"/>
+            <xsd:element name="ArrayOfMerchantDocumentInfo_Response" nillable="true" type="mi:ArrayOfMerchantDocumentInfo"/>
+            <xsd:element name="documentTransactionIdentifier" type="xsd:long"/>
+            <xsd:element name="DocumentProcessingInfo_Response" nillable="true" type="mi:DocumentProcessingInfo"/>
+            <xsd:element name="numberOfStatuses" type="xsd:int"/>
+            <xsd:element name="uploadType" nillable="true" type="xsd:string"/>
+            <xsd:element name="ArrayOfSummaryInfo_Response" nillable="true" type="mi:ArrayOfSummaryInfo"/>
+        </xsd:schema>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="http://systinet.com/wsdl/java/lang/" xmlns:tns="http://systinet.com/wsdl/java/lang/">
+            <xsd:complexType name="ArrayOfstring">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="string" nillable="true" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="MerchantInterface_postDocument_Response">
+        <wsdl:part name="response" element="sst:DocumentSubmissionResponse_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocument_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+        <wsdl:part name="doc" element="sst:doc"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentProcessingStatuses_Response">
+        <wsdl:part name="response" element="sst:ArrayOfSummaryInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInfoInterfaceConformance_Response">
+        <wsdl:part name="response" element="sst:ArrayOfMerchantDocumentInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentInterfaceConformance_Response">
+        <wsdl:part name="response" element="sst:DocumentSubmissionResponse_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocument_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="documentIdentifier" element="sst:documentIdentifier"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentInfo_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+        <wsdl:part name="howMany" element="sst:howMany"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentInterfaceConformance_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+        <wsdl:part name="doc" element="sst:doc"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInterfaceConformance_Response">
+        <wsdl:part name="response" element="sst:string_Response"/>
+        <wsdl:part name="doc" element="sst:doc"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocument_Response">
+        <wsdl:part name="response" element="sst:string_Response"/>
+        <wsdl:part name="doc" element="sst:doc"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getAllPendingDocumentInfo_Response">
+        <wsdl:part name="response" element="sst:ArrayOfMerchantDocumentInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInfoInterfaceConformance_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNPendingDocumentInfo_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+        <wsdl:part name="howMany" element="sst:howMany"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentDownloadAck_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="documentIdentifierArray" element="sst:documentIdentifierArray"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentProcessingStatus_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="documentTransactionIdentifier" element="sst:documentTransactionIdentifier"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNPendingDocumentInfo_Response">
+        <wsdl:part name="response" element="sst:ArrayOfMerchantDocumentInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNPendingDocumentInfo_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentProcessingStatus_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getAllPendingDocumentInfo_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="messageType" element="sst:messageType"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentProcessingStatuses_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="numberOfStatuses" element="sst:numberOfStatuses"/>
+        <wsdl:part name="uploadType" element="sst:uploadType"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentDownloadAck_Response">
+        <wsdl:part name="response" element="sst:ArrayOfDocumentDownloadAckStatus_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInterfaceConformance_1_Request">
+        <wsdl:part name="merchant" element="sst:merchant"/>
+        <wsdl:part name="documentIdentifier" element="sst:documentIdentifier"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getAllPendingDocumentInfo_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentInfo_Response">
+        <wsdl:part name="response" element="sst:ArrayOfMerchantDocumentInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocument_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentInfoInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_postDocumentDownloadAck_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentInfo_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getLastNDocumentProcessingStatuses_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocumentProcessingStatus_Response">
+        <wsdl:part name="response" element="sst:DocumentProcessingInfo_Response"/>
+    </wsdl:message>
+    <wsdl:message name="MerchantInterface_getDocument_org.idoox.wasp.SoapFaultException_Fault">
+        <wsdl:part name="idoox-java-mapping.org.idoox.wasp.SoapFaultException" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:portType name="MerchantInterface">
+        <wsdl:operation name="getDocument" parameterOrder="merchant documentIdentifier doc">
+            <wsdl:input message="tns:MerchantInterface_getDocument_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getDocument_Response"/>
+            <wsdl:fault name="getDocument_fault1" message="tns:MerchantInterface_getDocument_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentInterfaceConformance" parameterOrder="merchant documentIdentifier doc">
+            <wsdl:input message="tns:MerchantInterface_getDocumentInterfaceConformance_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getDocumentInterfaceConformance_Response"/>
+            <wsdl:fault name="getDocumentInterfaceConformance_fault1" message="tns:MerchantInterface_getDocumentInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="postDocumentDownloadAck" parameterOrder="merchant documentIdentifierArray">
+            <wsdl:input message="tns:MerchantInterface_postDocumentDownloadAck_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_postDocumentDownloadAck_Response"/>
+            <wsdl:fault name="postDocumentDownloadAck_fault1" message="tns:MerchantInterface_postDocumentDownloadAck_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="postDocument" parameterOrder="merchant messageType doc">
+            <wsdl:input message="tns:MerchantInterface_postDocument_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_postDocument_Response"/>
+            <wsdl:fault name="postDocument_fault1" message="tns:MerchantInterface_postDocument_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="postDocumentInterfaceConformance" parameterOrder="merchant messageType doc">
+            <wsdl:input message="tns:MerchantInterface_postDocumentInterfaceConformance_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_postDocumentInterfaceConformance_Response"/>
+            <wsdl:fault name="postDocumentInterfaceConformance_fault1" message="tns:MerchantInterface_postDocumentInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNDocumentInfo" parameterOrder="merchant messageType howMany">
+            <wsdl:input message="tns:MerchantInterface_getLastNDocumentInfo_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getLastNDocumentInfo_Response"/>
+            <wsdl:fault name="getLastNDocumentInfo_fault1" message="tns:MerchantInterface_getLastNDocumentInfo_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNPendingDocumentInfo" parameterOrder="merchant messageType howMany">
+            <wsdl:input message="tns:MerchantInterface_getLastNPendingDocumentInfo_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getLastNPendingDocumentInfo_Response"/>
+            <wsdl:fault name="getLastNPendingDocumentInfo_fault1" message="tns:MerchantInterface_getLastNPendingDocumentInfo_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentProcessingStatus" parameterOrder="merchant documentTransactionIdentifier">
+            <wsdl:input message="tns:MerchantInterface_getDocumentProcessingStatus_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getDocumentProcessingStatus_Response"/>
+            <wsdl:fault name="getDocumentProcessingStatus_fault1" message="tns:MerchantInterface_getDocumentProcessingStatus_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getAllPendingDocumentInfo" parameterOrder="merchant messageType">
+            <wsdl:input message="tns:MerchantInterface_getAllPendingDocumentInfo_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getAllPendingDocumentInfo_Response"/>
+            <wsdl:fault name="getAllPendingDocumentInfo_fault1" message="tns:MerchantInterface_getAllPendingDocumentInfo_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentInfoInterfaceConformance" parameterOrder="merchant messageType">
+            <wsdl:input message="tns:MerchantInterface_getDocumentInfoInterfaceConformance_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getDocumentInfoInterfaceConformance_Response"/>
+            <wsdl:fault name="getDocumentInfoInterfaceConformance_fault1" message="tns:MerchantInterface_getDocumentInfoInterfaceConformance_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNDocumentProcessingStatuses" parameterOrder="merchant numberOfStatuses uploadType">
+            <wsdl:input message="tns:MerchantInterface_getLastNDocumentProcessingStatuses_1_Request"/>
+            <wsdl:output message="tns:MerchantInterface_getLastNDocumentProcessingStatuses_Response"/>
+            <wsdl:fault name="getLastNDocumentProcessingStatuses_fault1" message="tns:MerchantInterface_getLastNDocumentProcessingStatuses_org.idoox.wasp.SoapFaultException_Fault"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="MerchantInterface" type="tns:MerchantInterface">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="getDocument">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getDocument#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7TG9yZy9pZG9veC93YXNwL3R5cGVzL1Jlc3BvbnNlTWVzc2FnZUF0dGFjaG1lbnQ7KUxqYXZhL2xhbmcvU3RyaW5nOw==" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:multipartRelated>
+                    <mime:part>
+                        <soap:body use="literal"/>
+                    </mime:part>
+                    <mime:part>
+                        <mime:content part="doc" type="application/octetstream"/>
+                    </mime:part>
+                </mime:multipartRelated>
+            </wsdl:output>
+            <wsdl:fault name="getDocument_fault1">
+                <soap:fault name="getDocument_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentInterfaceConformance">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getDocumentInterfaceConformance#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7TG9yZy9pZG9veC93YXNwL3R5cGVzL1Jlc3BvbnNlTWVzc2FnZUF0dGFjaG1lbnQ7KUxqYXZhL2xhbmcvU3RyaW5nOw==" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:multipartRelated>
+                    <mime:part>
+                        <soap:body use="literal"/>
+                    </mime:part>
+                    <mime:part>
+                        <mime:content part="doc" type="application/octetstream"/>
+                    </mime:part>
+                </mime:multipartRelated>
+            </wsdl:output>
+            <wsdl:fault name="getDocumentInterfaceConformance_fault1">
+                <soap:fault name="getDocumentInterfaceConformance_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="postDocumentDownloadAck">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#postDocumentDownloadAck#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7W0xqYXZhL2xhbmcvU3RyaW5nOylbTHdhc3BjU2VydmVyL0FteklTQS9Eb2N1bWVudERvd25sb2FkQWNrU3RhdHVzOw==" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="postDocumentDownloadAck_fault1">
+                <soap:fault name="postDocumentDownloadAck_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="postDocument">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#postDocument#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7TG9yZy9pZG9veC93YXNwL3R5cGVzL1JlcXVlc3RNZXNzYWdlQXR0YWNobWVudDspTHdhc3BjU2VydmVyL0FteklTQS9Eb2N1bWVudFN1Ym1pc3Npb25SZXNwb25zZTs=" style="document"/>
+            <wsdl:input>
+                <mime:multipartRelated>
+                    <mime:part>
+                        <soap:body use="literal"/>
+                    </mime:part>
+                    <mime:part>
+                        <mime:content part="doc" type="application/octetstream"/>
+                    </mime:part>
+                </mime:multipartRelated>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="postDocument_fault1">
+                <soap:fault name="postDocument_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="postDocumentInterfaceConformance">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#postDocumentInterfaceConformance#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7TG9yZy9pZG9veC93YXNwL3R5cGVzL1JlcXVlc3RNZXNzYWdlQXR0YWNobWVudDspTHdhc3BjU2VydmVyL0FteklTQS9Eb2N1bWVudFN1Ym1pc3Npb25SZXNwb25zZTs=" style="document"/>
+            <wsdl:input>
+                <mime:multipartRelated>
+                    <mime:part>
+                        <soap:body use="literal"/>
+                    </mime:part>
+                    <mime:part>
+                        <mime:content part="doc" type="application/octetstream"/>
+                    </mime:part>
+                </mime:multipartRelated>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="postDocumentInterfaceConformance_fault1">
+                <soap:fault name="postDocumentInterfaceConformance_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNDocumentInfo">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getLastNDocumentInfo#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7SSlbTHdhc3BjU2VydmVyL0FteklTQS9NZXJjaGFudERvY3VtZW50SW5mbzs=" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getLastNDocumentInfo_fault1">
+                <soap:fault name="getLastNDocumentInfo_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNPendingDocumentInfo">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getLastNPendingDocumentInfo#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7SSlbTHdhc3BjU2VydmVyL0FteklTQS9NZXJjaGFudERvY3VtZW50SW5mbzs=" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getLastNPendingDocumentInfo_fault1">
+                <soap:fault name="getLastNPendingDocumentInfo_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentProcessingStatus">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getDocumentProcessingStatus#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7SilMd2FzcGNTZXJ2ZXIvQW16SVNBL0RvY3VtZW50UHJvY2Vzc2luZ0luZm87" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getDocumentProcessingStatus_fault1">
+                <soap:fault name="getDocumentProcessingStatus_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getAllPendingDocumentInfo">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getAllPendingDocumentInfo#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7KVtMd2FzcGNTZXJ2ZXIvQW16SVNBL01lcmNoYW50RG9jdW1lbnRJbmZvOw==" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getAllPendingDocumentInfo_fault1">
+                <soap:fault name="getAllPendingDocumentInfo_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getDocumentInfoInterfaceConformance">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getDocumentInfoInterfaceConformance#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7TGphdmEvbGFuZy9TdHJpbmc7KVtMd2FzcGNTZXJ2ZXIvQW16SVNBL01lcmNoYW50RG9jdW1lbnRJbmZvOw==" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getDocumentInfoInterfaceConformance_fault1">
+                <soap:fault name="getDocumentInfoInterfaceConformance_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getLastNDocumentProcessingStatuses">
+            <soap:operation soapAction="http://www.amazon.com/merchants/merchant-interface/MerchantInterface#getLastNDocumentProcessingStatuses#KEx3YXNwY1NlcnZlci9BbXpJU0EvTWVyY2hhbnQ7SUxqYXZhL2xhbmcvU3RyaW5nOylbTHdhc3BjU2VydmVyL0FteklTQS9TdW1tYXJ5SW5mbzs=" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="getLastNDocumentProcessingStatuses_fault1">
+                <soap:fault name="getLastNDocumentProcessingStatuses_fault1" use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="merchant-interface-mime">
+        <wsdl:port name="MerchantInterface" binding="tns:MerchantInterface">
+            <soap:address location="https://merchant-api.amazon.co.uk:443/gateway/merchant-interface-mime"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

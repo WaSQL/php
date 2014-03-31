@@ -1,0 +1,29 @@
+/* Some hosting companies use proxy servers to establish secure connections with cURL.  Below is an example
+of establishing a secure connection using cURL with a host that uses proxy servers.  If you are not receiving any
+type of response with our AIM PHP example your hosting company may use a proxy server.  Please contact your hosting
+company to verify this.  You will also need to ask them the URL and port number for the proxy server and update the 
+code below.  This example can be used to replace the cURL specifications that are currently in our AIM PHP example
+*/
+
+<?
+
+$URL="https://www.test.authorize.net/gateway/transact.dll";
+if (isset($_GET["site"])) { $URL = $_GET["site"]; }
+$ch = curl_init();
+echo "URL = $URL <br>n";
+curl_setopt($ch, CURLOPT_VERBOSE, 1);
+curl_setopt ($ch, CURLOPT_HTTPPROXYTUNNEL, TRUE);
+curl_setopt ($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+curl_setopt ($ch, CURLOPT_PROXY,"http://proxy.yourhost.com:3128");
+curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+curl_setopt ($ch, CURLOPT_URL, $URL);
+curl_setopt ($ch, CURLOPT_TIMEOUT, 120);
+$result = curl_exec ($ch);
+echo "<hr><br>n";
+echo 'Errors: ' . curl_errno($ch) . ' ' . curl_error($ch) . '<br><br>';
+echo "<hr><br>n";
+curl_close ($ch);
+print "result - $result";
+echo "<hr><br>n";
+
+?>

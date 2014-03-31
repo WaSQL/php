@@ -1,0 +1,3157 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="support" timestamp="1274857718">
+<xmldata name="_fielddata">
+	<_cdate>2009-10-02 14:05:57</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:33</_edate>
+	<_euser>2</_euser>
+	<_id>168</_id>
+	<fieldname>question</fieldname>
+	<height>0</height>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2009-10-02 14:06:54</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:22</_edate>
+	<_euser>2</_euser>
+	<_id>169</_id>
+	<fieldname>answer</fieldname>
+	<height>200</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2009-10-02 14:07:06</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:14</_edate>
+	<_euser>2</_euser>
+	<_id>170</_id>
+	<fieldname>notes</fieldname>
+	<height>150</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 06:10:26</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2010-05-25 23:26:51</_edate>
+	<_euser>2</_euser>
+	<_id>197</_id>
+	<defaultval>/tickets_files</defaultval>
+	<fieldname>file</fieldname>
+	<inputtype>file</inputtype>
+	<required>1</required>
+	<tablename>tickets_files</tablename>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 06:10:40</_cdate>
+	<_cuser>1</_cuser>
+	<_id>198</_id>
+	<fieldname>ticket_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_files</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:28:08</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-20 23:30:30</_edate>
+	<_euser>2</_euser>
+	<_id>199</_id>
+	<defaultval>1</defaultval>
+	<dvals>Open
+Display
+Archive</dvals>
+	<fieldname>type</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets_status</tablename>
+	<tvals>1
+2
+3</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:28:49</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-20 23:30:37</_edate>
+	<_euser>2</_euser>
+	<_id>200</_id>
+	<defaultval>0</defaultval>
+	<fieldname>sort</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>tickets_status</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:29:06</_cdate>
+	<_cuser>2</_cuser>
+	<_id>201</_id>
+	<fieldname>name</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_status</tablename>
+	<width>120</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:29:06</_cdate>
+	<_cuser>2</_cuser>
+	<_id>202</_id>
+	<fieldname>name</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_ctypes</tablename>
+	<width>120</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:28:49</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-20 23:30:37</_edate>
+	<_euser>2</_euser>
+	<_id>203</_id>
+	<defaultval>0</defaultval>
+	<fieldname>sort</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>tickets_ctypes</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:28:08</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-20 23:30:30</_edate>
+	<_euser>2</_euser>
+	<_id>204</_id>
+	<defaultval>1</defaultval>
+	<dvals>Open
+Display
+Archive</dvals>
+	<fieldname>type</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets_ctypes</tablename>
+	<tvals>1
+2
+3</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:44:45</_cdate>
+	<_cuser>2</_cuser>
+	<_id>205</_id>
+	<fieldname>name</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_category</tablename>
+	<width>150</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-20 23:45:01</_cdate>
+	<_cuser>2</_cuser>
+	<_id>206</_id>
+	<defaultval>0</defaultval>
+	<fieldname>sort</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>tickets_category</tablename>
+	<width>50</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:08:58</_cdate>
+	<_cuser>2</_cuser>
+	<_id>207</_id>
+	<fieldname>xmldata</fieldname>
+	<height>300</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:09:10</_cdate>
+	<_cuser>2</_cuser>
+	<_id>208</_id>
+	<fieldname>category</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select name from tickets_category</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:09:25</_cdate>
+	<_cuser>2</_cuser>
+	<_id>209</_id>
+	<defaultval>US</defaultval>
+	<dvals>select name from countries order by name,_id</dvals>
+	<fieldname>country</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select code from countries order by name,_id</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:09:36</_cdate>
+	<_cuser>2</_cuser>
+	<_id>210</_id>
+	<dvals>select name from tickets_ctypes order by sort,_id</dvals>
+	<fieldname>customer_type</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_ctypes order by sort,_id</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:09:58</_cdate>
+	<_cuser>2</_cuser>
+	<_id>211</_id>
+	<dvals>select firstname,lastname from _users where not(_id=1) order by firstname,lastname,_id</dvals>
+	<fieldname>owner_id</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from _users where not(_id=1) order by firstname,lastname,_id</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:10:11</_cdate>
+	<_cuser>2</_cuser>
+	<_id>212</_id>
+	<dvals>Pre-sales question
+Shipping question
+Product issue</dvals>
+	<fieldname>regarding</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>sales
+ship
+product</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:10:26</_cdate>
+	<_cuser>2</_cuser>
+	<_id>213</_id>
+	<dvals>select name from states order by name,code</dvals>
+	<fieldname>state</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select code from states order by name,code</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:11:30</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:39:11</_edate>
+	<_euser>2</_euser>
+	<_id>214</_id>
+	<defaultval>1</defaultval>
+	<dvals>New / Unassigned
+Assigned
+Waiting
+Resolved
+
+</dvals>
+	<fieldname>status</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4
+</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 00:11:52</_cdate>
+	<_cuser>2</_cuser>
+	<_id>215</_id>
+	<fieldname>type</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>phone
+email
+webform</tvals>
+	<width>0</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:32:14</_cdate>
+	<_cuser>2</_cuser>
+	<_id>216</_id>
+	<displayname>Description/Details</displayname>
+	<fieldname>details</fieldname>
+	<height>250</height>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:32:52</_cdate>
+	<_cuser>2</_cuser>
+	<_id>217</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<tablename>tickets</tablename>
+	<width>300</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:34:17</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 11:11:48</_edate>
+	<_euser>2</_euser>
+	<_id>218</_id>
+	<defaultval>3</defaultval>
+	<dvals>Essential
+Need it
+Want it
+Suggestion</dvals>
+	<fieldname>importance</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:34:38</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 11:56:35</_edate>
+	<_euser>2</_euser>
+	<_id>219</_id>
+	<fieldname>name</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<width>300</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:34:57</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 09:14:57</_edate>
+	<_euser>2</_euser>
+	<_id>220</_id>
+	<fieldname>phone</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>tickets</tablename>
+	<width>145</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:37:04</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:38:02</_edate>
+	<_euser>2</_euser>
+	<_id>221</_id>
+	<defaultval>3</defaultval>
+	<dvals>Sky is falling
+Urgent
+Normal
+Anytime</dvals>
+	<fieldname>severity</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:37:23</_cdate>
+	<_cuser>2</_cuser>
+	<_id>222</_id>
+	<fieldname>stopwatch</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>tickets</tablename>
+	<width>60</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:37:44</_cdate>
+	<_cuser>2</_cuser>
+	<_id>223</_id>
+	<fieldname>summary</fieldname>
+	<inputmax>125</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:41:31</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:43:05</_edate>
+	<_euser>2</_euser>
+	<_id>224</_id>
+	<displayname>Category</displayname>
+	<dvals>select name from tickets_category where active=1 order by name,_id</dvals>
+	<fieldname>tickets_category_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_category where active=1 order by name,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:42:36</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 23:02:38</_edate>
+	<_euser>2</_euser>
+	<_id>225</_id>
+	<displayname>Department</displayname>
+	<dvals>select name from tickets_department where active=1 order by name,_id</dvals>
+	<fieldname>tickets_department_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_department where active=1 order by name,_id</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 22:44:45</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 11:22:46</_edate>
+	<_euser>2</_euser>
+	<_id>226</_id>
+	<displayname>Assigned To</displayname>
+	<dvals><![CDATA[
+select firstname,lastname from _users where active=1 and _id &gt; 1 order by firstname,lastname,_id
+]]></dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals><![CDATA[
+select _id from _users where active=1 and _id &gt; 1 order by firstname,lastname,_id
+]]></tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 23:00:59</_cdate>
+	<_cuser>2</_cuser>
+	<_id>227</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_category</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-21 23:01:35</_cdate>
+	<_cuser>2</_cuser>
+	<_id>228</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_department</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-24 11:49:45</_cdate>
+	<_cuser>2</_cuser>
+	<_id>230</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_buckets</tablename>
+	<tvals>1</tvals>
+</xmldata>
+<xmldata name="_fielddata">
+	<_cdate>2010-05-24 11:52:01</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-25 22:03:54</_edate>
+	<_euser>2</_euser>
+	<_id>231</_id>
+	<dvals>select name from tickets_buckets where active=1 order by name,_id</dvals>
+	<fieldname>tickets_bucket_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_buckets where active=1 order by name,_id</tvals>
+</xmldata>
+
+
+<xmldata name="_pages">
+	<_cdate>2009-09-23 11:14:41</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 14:51:22</_edate>
+	<_euser>0</_euser>
+	<_id>2</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:css*/
+header('Content-type: text/css');
+?&gt;
+html, body {
+	height:100%;
+	margin: 0;
+	padding: 0;
+	border: none;
+	}
+* {font-family:arial;}
+#fullheight {
+	height:100%;
+	margin: 0;
+	padding: 0;
+	border: none;
+	margin: 0 auto;
+	}
+/*Helpdesk Styles*/
+.c_red {color:#BE301D;}
+.c_redback {background-color:#BE301D;}
+.c_black {color:#0D0D0D;}
+.c_orange {color:#ff9a00;}
+.c_orangeback {background-color:#ff9a00;}
+.c_yellowback {background-color:#ffffb3;}
+.c_blackback {background-color:#0D0D0D;}
+.c_blue {color:#1c529b;}
+.c_blueback {background-color:#1c529b;}
+.c_gray {color:#888A8C;}
+.c_grayback {background-color:#888A8C;}
+.c_lgray {color:#E6E7E8;}
+.c_lgrayback {background-color:#E6E7E8;}
+.c_white {color:#FFFFFF;}
+.c_whiteback {background-color:#FFFFFF;}
+.c_pad{padding:5px;}
+.c_pad5{padding:5px;}
+.c_pad10{padding:10px;}
+.c_pad15{padding:15px;}
+.c_margin{margin:5px;}
+.c_bbot{border-bottom:1px solid #0D0D0D;}
+.c_bleft{border-left:1px solid #0D0D0D;}
+.c_bright{border-right:1px solid #0D0D0D;}
+.c_btop{border-top:1px solid #0D0D0D;}
+
+hr {color:#E6E7E8;}
+img {vertical-align:middle;}
+#topmenu img, img.button{
+	padding-bottom:1px;
+	padding-left:2px;
+	padding-right:2px;
+	padding-top:1px;
+	border:1px outset #6699CC;
+	}
+td{
+	font-family:arial;
+	font-size:10pt;
+	}
+#queue td{
+	padding-bottom:2px;
+	vertical-align:middle;
+	}
+#topmenu a:hover{
+	background:#FFFFFF;
+	}
+#popup_container {
+	margin:0;
+	padding:25px;
+	padding-top:15px;
+
+	border:10px solid #414042;
+
+	border-radius: 25px;
+	-moz-border-radius: 25px;
+    -webkit-border-radius: 25px;
+    -khtml-border-radius: 25px;
+
+	box-shadow: 0px 10px 30px #818181;
+    -webkit-box-shadow: 0px 10px 30px #818181;
+    -moz-box-shadow: 0px 10px 30px #818181;
+	-khtml-box-shadow: 0px 10px 30px #818181;
+	outline: 0;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	color:#58595B;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	}
+]]></body>
+	<name>tickets_css</name>
+	<template>1</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 11:15:02</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 18:46:36</_edate>
+	<_euser>0</_euser>
+	<_id>3</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:js*/
+header('Content-type: text/javascript');
+?&gt;
+function centerFade(t){
+	setTimeout(&quot;fadeId('centerpop',1)&quot;,t);
+	}
+function ticketsForm(id){
+	return centerPop('tickets_Form','user_id='+id);
+	}
+function ticketScripts(id){
+	return centerPop('tickets_scripts','id='+id);
+	}
+function ticketAttachments(id){
+	return centerPop('tickets_attachments','id='+id);
+	}
+function ticketsEditForm(id){
+	return centerPop('tickets_Form','id='+id);
+	}
+function ticketsUsers(id){
+	var opts='-table=_users&amp;-formfields=utype,username:password,firstname:lastname,email';
+	if(undefined != id){opts+='&amp;_id='+id;}
+	return centerPop('tickets_UsersForm',opts);
+	}
+function centerPop(page,opts,pwidth){
+	if(undefined == pwidth){pwidth=400;}
+	ajaxPopup('/'+page,opts,{id:&quot;centerpop&quot;,center:1, width:pwidth,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:&quot;padding:0px;border:0px;background:none;&quot;});
+	return false;
+	}
+function setEmailMessage(){
+	var msg=getText('email_message');
+	if(msg.length==0){
+		var newmsg=getText('answer');
+		newmsg=newmsg.replace(/&lt;br&gt;/g, '');
+		insertAtCursor('email_message',newmsg);
+		}
+	else{
+		var newmsg=getText('answer2');
+		newmsg=newmsg.replace(/&lt;br&gt;/g, '');
+		insertAtCursor('email_message',newmsg);
+        }
+	removeId('centerpop');
+	return false;
+    }
+]]></body>
+	<name>tickets_js</name>
+	<template>1</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 11:21:17</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-26 00:56:22</_edate>
+	<_euser>0</_euser>
+	<_id>4</_id>
+	<body><![CDATA[
+&lt;?
+	/*filetype:php*/
+	global $PAGE;
+	global $USER;
+	global $ticketsMap;
+	if(!isUser()){return userLoginForm();}
+	$rtn='';
+	$opts=array();
+	$opts['-order']=strlen($_REQUEST['_sort'])?$_REQUEST['_sort']:'_cdate desc';
+    $opts['-table']=&quot;tickets&quot;;
+    $opts['-relate']=1;
+	if(isset($_REQUEST['_search']) &amp;&amp; strlen(trim($_REQUEST['_search']))){
+		$search=$_REQUEST['_search'];
+		$rtn .= &quot;&lt;h2&gt;Search Results for \&quot;{$search}\&quot;&lt;/h2&gt;\n&quot;;
+		if(preg_match('/^xmlerror$/i',$search)){
+			$opts['xmlerror']=$search;
+        	}
+        else{
+		//get tickets from tickets table
+			$finfo=getDBFieldInfo('tickets');
+			$fields=array_keys($finfo);
+			$ors=array();
+			foreach($fields as $field){
+				if(preg_match('/^(http_host|script_url|email_dir|status|user_id|type)$/',$field)){continue;}
+				if(preg_match('/^\_(cdate|edate|cuser|euser|formname|xmldata)$/',$field)){continue;}
+				if(isNum($search)){
+					if($finfo[$field]['_dbtype']=='int'){array_push($ors,&quot;{$field}={$search}&quot;);}
+					else if($finfo[$field]['_dbtype']=='string'){array_push($ors,&quot;{$field} like '%{$search}%'&quot;);}
+					}
+				else{
+					if($finfo[$field]['_dbtype']=='string'){array_push($ors,&quot;{$field} like '%{$search}%'&quot;);}
+					}
+	        	}
+	        $opts['-where']=&quot;1=1&quot;;
+	        if(isset($_REQUEST['_user_id']) &amp;&amp; isNum($_REQUEST['_user_id'])){
+				$opts['-where'] .= &quot; and user_id={$_REQUEST['_user_id']}&quot;;
+				}
+			if(count($ors)){
+				$opts['-where'] .= ' and (' . implode(' or ',$ors) . ')';
+				}
+	        //$rtn .= printValue($opts);
+	        $rec_count=getDBCount($opts);
+			$paging=getDBPaging($rec_count);
+			//$rtn .= printValue($paging);
+			if(isset($paging['-limit'])){
+				$opts['-limit']=$paging['-limit'];
+				}
+			$rtn .= buildDBPaging($paging);
+			}
+	    $recs=getDBRecords($opts);
+		}
+	else{
+		if(isset($_REQUEST['_user_id']) &amp;&amp; isNum($_REQUEST['_user_id'])){
+			$opts['user_id'] = $_REQUEST['_user_id'];
+        	}
+        if(isset($_REQUEST['_status']) &amp;&amp; isNum($_REQUEST['_status'])){
+			$opts['status'] = $_REQUEST['_status'];
+			$rtn .= &quot;&lt;h2&gt;{$StatusName[$opts['status']]}&lt;/h2&gt;\n&quot;;
+			if($opts['status'] &lt; 4 &amp;&amp; $opts['-order']=='_cdate desc'){$opts['-order'] = '_cdate';}
+        	}
+        else if(!isset($_REQUEST['_user_id'])){
+			$opts['-where'] = &quot;user_id={$USER['_id']} and status in (1,2,3)&quot;;
+        	}
+        $rec_count=getDBCount($opts);
+		$paging=getDBPaging($rec_count,$USER['paging']);
+		//echo printValue($rec_count . $opts);
+		if(isset($paging['-limit'])){
+			$opts['-limit']=$paging['-limit'];
+			}
+		$rtn .= buildDBPaging($paging);
+	    $recs=getDBRecords($opts);
+		}
+	if(is_array($recs)){
+		if(count($recs)==1){
+			//only one record found - go to this records details
+			header(&quot;Location: /tickets_details?id={$recs[0]['_id']}&quot;);
+			exit;
+        	}
+	    //Build the action form 
+	    $actionDiv= '&lt;div align=&quot;left&quot;&gt;'.&quot;\n&quot;;
+		$actionDiv .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;1&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+		$actionDiv .= '	&lt;tr&gt;&lt;th align=&quot;center&quot;&gt;Assigned To&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;th&gt;Category&lt;/th&gt;&lt;th&gt;Department&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+		$actionDiv .= '	&lt;tr&gt;'.&quot;\n&quot;;
+		$actionDiv .= '		&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'message'=&gt;&quot;--No Change--&quot;,'-field'=&gt;&quot;user_id&quot;)).'&lt;/td&gt;'.&quot;\n&quot;;
+		$actionDiv .= '		&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'message'=&gt;&quot;--No Change--&quot;,'-field'=&gt;&quot;status&quot;,'required'=&gt;0)).'&lt;/td&gt;'.&quot;\n&quot;;
+		$actionDiv .= '		&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'message'=&gt;&quot;--No Change--&quot;,'-field'=&gt;&quot;tickets_category_id&quot;)).'&lt;/td&gt;'.&quot;\n&quot;;
+		$actionDiv .= '		&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'message'=&gt;&quot;--No Change--&quot;,'-field'=&gt;&quot;tickets_department_id&quot;)).'&lt;/td&gt;'.&quot;\n&quot;;
+		$actionDiv .= '		&lt;td&gt;' . buildFormSubmit(&quot;Modify Selected Tickets&quot;).'&lt;/td&gt;'.&quot;\n&quot;;
+		$actionDiv .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+		$actionDiv .= '&lt;/table&gt;'.&quot;\n&quot;;
+		$actionDiv .= '&lt;/div&gt;'.&quot;\n&quot;;
+	    //show records with paging built in
+	    $status=$_REQUEST['_status'];
+        $statusTitle=$StatusName[$status];
+		//$rtn .= '&lt;h3&gt;'.count($recs).' '.$statusTitle.' Tickets&lt;/h3&gt;'.&quot;\n&quot;;
+		$rtn .= '&lt;div align=&quot;left&quot; style=&quot;margin-left:15px;&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= buildFormBegin(&quot;/tickets&quot;,array('_nochange'=&gt;1,'_status'=&gt;$_REQUEST['_status'],'_user_id'=&gt;$_REQUEST['_user_id'],'_sort'=&gt;$_REQUEST['_sort']));
+		$rtn .= $actionDiv;
+		$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; border=&quot;1&quot; class=&quot;w_table&quot;&gt;'.&quot;\n&quot;;
+		//column headers - clickable to sort by column
+		$fields=array(
+			'_id'		=&gt; &quot;Ticket #&quot;,
+			'age'		=&gt; &quot;Age&quot;,
+			'name'		=&gt; &quot;Name&quot;,
+			'bucket'	=&gt; &quot;Bucket&quot;,
+			'category'	=&gt; &quot;Category&quot;,
+			'department'=&gt; &quot;Department&quot;,
+			'user_id'	=&gt; &quot;Assigned To&quot;,
+			'status'	=&gt; &quot;Status&quot;,
+			'summary'	=&gt; &quot;Summary&quot;
+			);
+		$rtn .= '	&lt;tr valign=&quot;bottom&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;th align=&quot;right&quot;&gt;&lt;input type=&quot;checkbox&quot; onClick=&quot;checkAllElements(\'id\',\'tbox\',this.checked);&quot;&gt;&lt;/th&gt;'.&quot;\n&quot;;
+		foreach($fields as $field=&gt;$title){
+			$sortfield=$field;
+			switch($field){
+				case 'age':
+					$sortfield='_cdate';
+					break;
+				case 'category':
+					$sortfield='tickets_category_id';
+					break;
+				case 'department':
+					$sortfield='tickets_department_id';
+					break;
+				case 'bucket':
+					$sortfield='tickets_bucket_id';
+					break;
+                }
+			$sort=(isset($_REQUEST['_sort']) &amp;&amp; $_REQUEST['_sort']==$sortfield)?$sortfield.'+desc':$sortfield;
+			$rtn .= '		&lt;th nowrap&gt;&lt;a class=&quot;c_white w_link&quot; href=&quot;/'.$PAGE['name'].'?_status='.$status.'&amp;_sort='.$sort.'&quot;&gt;'.$title.'&lt;/a&gt;&lt;/th&gt;'.&quot;\n&quot;;
+	    	}
+		$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+		$row=0;
+		foreach($recs as $rec){
+			$row++;
+			//check for attachments for this rec
+			$file_count=getDBCount(array('-table'=&gt;&quot;tickets_files&quot;,'ticket_id'=&gt;$rec['_id']));
+			$email_count=getDBCount(array('-table'=&gt;&quot;tickets_emails&quot;,'ticket_id'=&gt;$rec['_id']));
+			$note_count=getDBCount(array('-table'=&gt;&quot;tickets_notes&quot;,'ticket_id'=&gt;$rec['_id']));
+			$rtn .= '	&lt;tr'.&quot;\n&quot;;
+			if(isFactor($row,2)){$rtn .= ' bgcolor=&quot;#f3f3f3&quot;';}
+			$rtn .= '&gt;'.&quot;\n&quot;;
+			$rtn .= '		&lt;td align=&quot;right&quot; nowrap&gt;'.&quot;\n&quot;;
+			if($file_count &gt; 0){
+				$rtn .= '			&lt;img src=&quot;/wfiles/icons/misc/paperclip.gif&quot; border=&quot;0&quot; title=&quot;'.$file_count.' files attached&quot;&gt;'.&quot;\n&quot;;
+            	}
+			if($email_count &gt; 0){
+				$rtn .= '			&lt;img src=&quot;/wfiles/icons/misc/email.gif&quot; border=&quot;0&quot; title=&quot;'.$email_count.' emails attached&quot;&gt;'.&quot;\n&quot;;
+            	}
+            if($note_count &gt; 0){
+				$rtn .= '			&lt;img src=&quot;/wfiles/icons/misc/note.gif&quot; border=&quot;0&quot; title=&quot;'.$note_count.' notes attached&quot;&gt;'.&quot;\n&quot;;
+            	}
+            $rtn .= '			&lt;input type=&quot;checkbox&quot; id=&quot;tbox&quot; name=&quot;_modify[]&quot; value=&quot;'.$rec['_id'].'&quot;&gt;'.&quot;\n&quot;;
+			$rtn .= '		&lt;/th&gt;'.&quot;\n&quot;;
+			foreach($fields as $field=&gt;$title){
+				$nowrap='';
+				$val=$rec[$field];
+				switch($field){
+					case 'age':
+						$val=verboseTime((time()-$rec['_cdate_utime']),0,1);
+						$nowrap=' nowrap';
+						break;
+					case 'category':
+						$val=$rec['tickets_category_id_ex']['name'];
+						break;
+					case 'department':
+						$val=$rec['tickets_department_id_ex']['name'];
+						break;
+					case 'bucket':
+						$val=$rec['tickets_bucket_id_ex']['name'];
+						break;
+					case '_id':
+						$val=$rec['_id'];
+						while(strlen($val) &lt; 5){$val=&quot;0{$val}&quot;;}
+						$val=date('Y',$rec['_cdate_utime']) . $val;
+						break;
+					case '_cdate':
+						$val='';
+						if(isNum($rec[&quot;{$field}_utime&quot;])){
+							$val=date('m/d/Y',$rec[&quot;{$field}_utime&quot;]);
+							}
+						break;
+					case '_edate':
+						$val='';
+						if(isNum($rec[&quot;{$field}_utime&quot;])){
+							$val=date('m/d/Y',$rec[&quot;{$field}_utime&quot;]);
+							}
+						break;
+					case 'status':
+						$val=$ticketsMap['status'][$val];
+						break;
+					case 'user_id':
+						if(isNum($val)){
+							$val=&quot;{$rec['user_id_ex']['firstname']} {$rec['user_id_ex']['lastname']}&quot;;
+							}
+						else{$val='';}
+						break;
+                	}
+				$rtn .= '		&lt;td'.$nowrap.'&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;/tickets_details?id='.$rec['_id'].'&quot;&gt;'.$val.'&lt;/a&gt;&lt;/th&gt;'.&quot;\n&quot;;
+		    	}
+			$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+	    	}
+		$rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+		//if(count($recs) &gt; 10){$rtn .= $actionDiv;}
+		$rtn .= buildFormEnd();
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+		}
+	else{$rtn .= &quot;&lt;b&gt;No Tickets Found&lt;/b&gt;&quot;;}
+	//$rtn .= printValue($_REQUEST);
+	return $rtn;
+?&gt;
+]]></body>
+	<name>tickets</name>
+	<template>2</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 13:20:18</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-26 00:53:50</_edate>
+	<_euser>0</_euser>
+	<_id>5</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+$rtn='';
+includeDBOnce(array('-table'=&gt;&quot;_pages&quot;,'-field'=&gt;&quot;body&quot;,'-where'=&gt;&quot;name like 'functions'&quot;));
+if(isUser() &amp;&amp; isset($_REQUEST['id']) &amp;&amp; isNum($_REQUEST['id'])){
+	$rtn .= '&lt;div class=&quot;w_bold w_bigger c_orange&quot;&gt;Ticket #'.$_REQUEST['id'].'&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;form class=&quot;w_form&quot; name=&quot;ticket&quot; action=&quot;/tickets&quot; enctype=&quot;multipart/form-data&quot; onsubmit=&quot;return submitForm(this);&quot; method=&quot;POST&quot;&gt;'.&quot;\n&quot;;
+	$rec=getDBRecord(array('-table'=&gt;&quot;tickets&quot;,'_id'=&gt;$_REQUEST['id']));
+	if(is_array($rec)){
+		//check for xml data
+		if(strlen($rec['xmldata'])){
+			$xmldata=xmldata2Array($rec['xmldata']);
+			if(is_array($xmldata['data'])){
+				foreach($xmldata['data'] as $key=&gt;$val){
+					if(preg_match('/^u\_\_/i',$key)){continue;}
+					$_REQUEST[$key]=$val;
+                	}
+            	}
+        	}
+		foreach($rec as $key=&gt;$val){$_REQUEST[$key]=$val;}
+		$rtn .= '&lt;input type=&quot;hidden&quot; name=&quot;_action&quot; value=&quot;EDIT&quot;&gt;';
+		$rtn .= '&lt;input type=&quot;hidden&quot; name=&quot;_fields&quot; value=&quot;name,email,phone,importance,vendor,vendor_ticket,severity,user_id,tickets_department_id,tickets_category_id,summary,details&quot;&gt;';
+		$rtn .= '&lt;input type=&quot;hidden&quot; name=&quot;_id&quot; value=&quot;'.$rec['_id'].'&quot;&gt;';
+		$rtn .= '&lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;'.$rec['_id'].'&quot;&gt;'.&quot;\n&quot;;
+		}
+	}
+else{
+	$rtn .= '&lt;div class=&quot;w_bold w_bigger c_orange&quot;&gt;New Ticket&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;form class=&quot;w_form&quot; name=&quot;ticket&quot; action=&quot;/tickets&quot; enctype=&quot;multipart/form-data&quot; onsubmit=&quot;return submitForm(this);&quot; method=&quot;POST&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;input type=&quot;hidden&quot; name=&quot;_action&quot; value=&quot;ADD&quot;&gt;';
+	}
+return $rtn;
+?&gt;
+
+	&lt;input type=&quot;hidden&quot; name=&quot;_table&quot; value=&quot;tickets&quot;&gt;
+&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+
+&lt;!-- Submitter Details --&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;th colspan=&quot;2&quot; class=&quot;w_bold c_grayback c_white&quot; align=&quot;left&quot;&gt;Submitter Details&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot; class=&quot;w_red&quot;&gt;Name&lt;/td&gt;
+		&lt;td&gt;
+			&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;name&quot;,'value'=&gt;$_REQUEST['name']));?&gt;
+			Dept: &lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;tickets_department_id&quot;));?&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot;&gt;Email:&lt;/td&gt;
+		&lt;td nowrap&gt;
+			&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;email&quot;));?&gt;
+			Phone: &lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;phone&quot;));?&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;!-- Ticket Assignment --&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;th colspan=&quot;2&quot; class=&quot;w_bold c_grayback c_white&quot; align=&quot;left&quot;&gt;Ticket Assignment&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot;&gt;Importance:&lt;/td&gt;
+		&lt;td nowrap&gt;
+			&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;importance&quot;));?&gt;
+			Severity: &lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;severity&quot;));?&gt;
+			Assigned To: &lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;user_id&quot;));?&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot;&gt;Category:&lt;/td&gt;
+		&lt;td nowrap&gt;
+			&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;tickets_category_id&quot;));?&gt;
+			Bucket: &lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;tickets_bucket_id&quot;));?&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot;&gt;Vendor:&lt;/td&gt;
+		&lt;td nowrap&gt;
+			&lt;input type=&quot;text&quot; name=&quot;vendor&quot; style=&quot;width:170px;&quot; value=&quot;&lt;?return $_REQUEST['vendor'];?&gt;&quot;&gt;
+			Vendor Ticket ID: &lt;input type=&quot;text&quot; name=&quot;vendor_ticket&quot; style=&quot;width:200px;&quot; value=&quot;&lt;?return $_REQUEST['vendor_ticket'];?&gt;&quot;&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;!-- Ticket Details --&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;th colspan=&quot;2&quot; class=&quot;w_bold c_grayback c_white&quot; align=&quot;left&quot;&gt;Ticket Details&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot; class=&quot;w_red&quot;&gt;Summary&lt;/td&gt;
+		&lt;td&gt;&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;summary&quot;));?&gt;&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr valign=&quot;top&quot;&gt;
+		&lt;td align=&quot;right&quot; class=&quot;w_red&quot;&gt;Description / Details&lt;/td&gt;
+		&lt;td&gt;&lt;?return getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;details&quot;));?&gt;&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;/table&gt;
+&lt;?
+//Attachments form
+$rtn='';
+$rtn .= '&lt;div&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;div&gt;&lt;img src=&quot;/wfiles/icons/misc/paperclip.gif&quot; border=&quot;0&quot; style=&quot;vertical-align:top;&quot;&gt; &lt;b class=&quot;w_big&quot;&gt;Attachments&lt;/b&gt; (&lt;a href=&quot;#&quot; class=&quot;w_link w_bold w_lblue&quot; onclick=&quot;cloneObj(document.ticket.file.parentNode.parentNode);return false;&quot;&gt;&lt;img src=&quot;/wfiles/plus.jpg&quot; border=&quot;0&quot; style=&quot;vertical-align:middle;&quot;&gt; Click here&lt;/a&gt; to add another attachment)&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;div id=&quot;attachfile&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;tr&gt;&lt;th class=&quot;w_bold c_grayback c_white&quot;&gt;File&lt;/th&gt;&lt;th class=&quot;w_bold c_grayback c_white&quot;&gt;Description&lt;/th&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;td&gt;&lt;input type=&quot;hidden&quot; name=&quot;file_path&quot; value=&quot;/tickets_files&quot;&gt;&lt;input type=&quot;file&quot; name=&quot;file&quot; size=&quot;15&quot; maxlength=&quot;255&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;td&gt;&lt;input type=&quot;hidden&quot; name=&quot;file_autonumber&quot; value=&quot;1&quot;&gt;&lt;input type=&quot;text&quot; name=&quot;filedesc&quot; size=&quot;80&quot; maxlength=&quot;255&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+return $rtn;
+?&gt;
+&lt;div align=&quot;center&quot;&gt;&lt;input type=&quot;image&quot; src=&quot;/wfiles/icons/submit.png&quot; /&gt;&lt;/div&gt;
+&lt;/form&gt;
+&lt;?return buildOnLoad(&quot;document.ticket.name.focus();&quot;);?&gt;
+]]></body>
+	<name>tickets_form</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 13:25:59</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-25 23:03:56</_edate>
+	<_euser>0</_euser>
+	<_id>6</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+global $ticketsMap;
+$ticketsMap=array(
+	'status'	=&gt; mapDBDvalsToTvals(&quot;tickets&quot;,&quot;status&quot;),
+	'importance'=&gt; mapDBDvalsToTvals(&quot;tickets&quot;,&quot;importance&quot;),
+	'severity'	=&gt; mapDBDvalsToTvals(&quot;tickets&quot;,&quot;severity&quot;)
+	);
+executeSQL(&quot;update tickets set status=2,assigned_date=NOW() where status=1 and not(user_id is null)&quot;);
+executeSQL(&quot;update tickets set resolved_date=NOW() where status=4 and resolved_date is null&quot;);
+//-------------------------------
+function showOpenTickets(){
+	global $PAGE;
+	global $ticketsMap;
+	$rtn='';
+	unset($recs);
+	$cnt=0;
+	$recs=getDBRecords(array('-query'=&gt;&quot;select count(_id) as count,status from tickets where tickets_id=0 group by status order by status&quot;));
+	foreach($recs as $rec){
+		//do not include resolved in top count
+		if(in_array($rec['status'],array(1,2,3))){$cnt+=$rec['count'];}
+		}
+	$rtn .= '	&lt;div class=&quot;w_bold c_pad c_bbot c_orangeback c_blue&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td&gt;&lt;img src=&quot;/wfiles/icons/misc/queue.gif&quot; border=&quot;0&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td class=&quot;w_big&quot;&gt;&lt;div id=&quot;queue_count&quot;&gt;'.$cnt.'&lt;/div&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td class=&quot;w_big&quot; width=&quot;100%&quot;&gt;Open Tickets&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td align=&quot;right&quot;&gt;&lt;a href=&quot;#&quot; onClick=&quot;return ticketsForm();&quot; class=&quot;w_link&quot;&gt;&lt;img src=&quot;/wfiles/icons/misc/document_24_new.png&quot; title=&quot;New Ticket&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;div style=&quot;height:150px;overflow:auto;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+	$row=0;
+	foreach($recs as $rec){
+		$row++;
+		$rtn .= '	&lt;tr'.&quot;\n&quot;;
+		if(isFactor($row,2)){$rtn .= ' bgcolor=&quot;#f3f3f3&quot;';}
+		$rtn .= '&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;td width=&quot;100%&quot;&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;/tickets?_status='.$rec['status'].'&quot; class=&quot;w_link&quot;&gt;'.$ticketsMap['status'][$rec['status']].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;td align=&quot;right&quot;&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;/tickets?_status='.$rec['status'].'&quot; class=&quot;w_link&quot;&gt;'.$rec['count'].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+        }
+    $rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;form class=&quot;w_form&quot; method=&quot;GET&quot; action=&quot;/tickets&quot; onSubmit=&quot;return submitForm(this);&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;1&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	$value=$PAGE['name']=='tickets'?$_REQUEST['_search']:'';
+	$rtn .= '		&lt;td width=&quot;100%&quot;&gt;&lt;input type=&quot;text&quot; required=&quot;1&quot; name=&quot;_search&quot; requiredmsg=&quot;Search for what?&quot; style=&quot;width:100px;font-size:9pt&quot; value=&quot;'.$value.'&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td&gt;&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/form&gt;'.&quot;\n&quot;;
+	return $rtn;
+	}
+//-------------------------------
+function showMyTickets(){
+	global $USER;
+	global $ticketsMap;
+	$rtn='';
+	unset($recs);
+	$cnt=0;
+	$recs=getDBRecords(array('-query'=&gt;&quot;select count(_id) as count,status from tickets where tickets_id=0 and user_id={$USER['_id']} group by status order by status&quot;));
+	foreach($recs as $rec){
+		//do not include resolved in top count
+		if(in_array($rec['status'],array(1,2,3))){$cnt+=$rec['count'];}
+		}
+	$rtn .= '	&lt;div class=&quot;w_bold  c_pad c_bbot c_orangeback c_blue&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td&gt;&lt;img src=&quot;/wfiles/icons/misc/queue.gif&quot; border=&quot;0&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td class=&quot;w_big c_blue&quot;&gt;&lt;div id=&quot;queue_count&quot;&gt;'.$cnt.'&lt;/div&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td class=&quot;w_big&quot; width=&quot;100%&quot;&gt;&lt;a href=&quot;/tickets&quot; class=&quot;c_blue w_bold w_link&quot;&gt;My Tickets&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td align=&quot;right&quot;&gt;&lt;a href=&quot;#&quot; onClick=&quot;return ticketsForm('.$USER['_id'].');&quot; class=&quot;w_link&quot;&gt;&lt;img src=&quot;/wfiles/icons/misc/document_24_new.png&quot; title=&quot;New Ticket&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;div style=&quot;height:150px;overflow:auto;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+	$row=0;
+	foreach($recs as $rec){
+		$row++;
+		$rtn .= '	&lt;tr'.&quot;\n&quot;;
+		if(isFactor($row,2)){$rtn .= ' bgcolor=&quot;#f3f3f3&quot;';}
+		$rtn .= '&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;td width=&quot;100%&quot;&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;/tickets?_status='.$rec['status'].'&amp;_owner_id='.$USER['_id'].'&quot; class=&quot;w_link&quot;&gt;'.$ticketsMap['status'][$rec['status']].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;td align=&quot;right&quot;&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;/tickets?_status='.$rec['status'].'&amp;_owner_id='.$USER['_id'].'&quot; class=&quot;w_link&quot;&gt;'.$rec['count'].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+        }
+    $rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;form class=&quot;w_form&quot; method=&quot;GET&quot; action=&quot;/tickets&quot; onSubmit=&quot;return submitForm(this);&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;input type=&quot;hidden&quot; name=&quot;_user_id&quot; value=&quot;'.$USER['_id'].'&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;1&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	$value=$PAGE['name']=='tickets'?$_REQUEST['_search']:'';
+	$rtn .= '		&lt;td width=&quot;100%&quot;&gt;&lt;input type=&quot;text&quot; required=&quot;1&quot; name=&quot;_search&quot; requiredmsg=&quot;Search for what?&quot; style=&quot;width:100px;font-size:9pt&quot; value=&quot;'.$value.'&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td&gt;&lt;input type=&quot;submit&quot; value=&quot;Search&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/form&gt;'.&quot;\n&quot;;
+	return $rtn;
+	}
+//-------------------------------
+function showUsers(){
+	global $USER;
+	global $ticketsMap;
+	$rtn='';
+	unset($recs);
+	$timestamp=strtotime(&quot;3 minutes ago&quot;);
+	$recs=getDBRecords(array('-table'=&gt;&quot;_users&quot;,'-where'=&gt;&quot;not(_id=1)&quot;,'-order'=&gt;&quot;firstname,lastname,username&quot;));
+	$online=0;
+	foreach($recs as $rec){
+		if(isNum($rec['_adate_utime']) &amp;&amp; $rec['_adate_utime'] &gt; $timestamp){$online++;}
+    	}
+	$rtn .= '&lt;div class=&quot;w_bold w_big c_pad c_bbot c_orangeback c_blue&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;td&gt;&lt;img src=&quot;/wfiles/icons/users/users.png&quot; border=&quot;0&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$string=$online.'/'.count($recs);
+	$rtn .= '		&lt;td class=&quot;w_bold&quot; width=&quot;100%&quot; title=&quot;'.$USER['utype'].'&quot;&gt;Users ('.$string.')&lt;/td&gt;'.&quot;\n&quot;;
+	if(isAdmin()){
+		$rtn .= '		&lt;td align=&quot;right&quot;&gt;&lt;a href=&quot;#&quot; onClick=&quot;return ticketsUsers();&quot; class=&quot;w_link&quot;&gt;&lt;img src=&quot;/wfiles/plus.png&quot; title=&quot;New User&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		}
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;div id=&quot;stats&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;1&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;tr align=&quot;right&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;th colspan=&quot;2&quot; align=&quot;center&quot;&gt;User&lt;/th&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;th title=&quot;'.$ticketsMap['status'][2].'&quot;&gt;'.substr($ticketsMap['status'][2],0,1).'&lt;/th&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;th title=&quot;'.$ticketsMap['status'][3].'&quot;&gt;'.substr($ticketsMap['status'][3],0,1).'&lt;/th&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;th title=&quot;'.$ticketsMap['status'][4].'&quot;&gt;'.substr($ticketsMap['status'][4],0,1).'&lt;/th&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+	foreach($recs as $rec){
+		$type=$rec['utype'];
+		$info=getUserInfo($rec);
+		$rtn .= '	&lt;tr align=&quot;left&quot;&gt;'.&quot;\n&quot;;
+		if(isAdmin()){
+			$rtn .= '		&lt;td&gt;&lt;a class=&quot;w_link&quot; href=&quot;#&quot; onClick=&quot;return ticketsUsers('.$rec['_id'].');&quot; class=&quot;w_link&quot;&gt;&lt;img src=&quot;'.$info['icon'].'&quot; title=&quot;'.$info['status'].'&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+        	}
+		else{
+			$rtn .= '		&lt;td&gt;&lt;img src=&quot;'.$info['icon'].'&quot; title=&quot;'.$info['status'].'&quot; border=&quot;0&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+			}
+		$rtn .= '		&lt;td width=&quot;100%&quot; nowrap&gt;&lt;a class=&quot;w_link w_dblue&quot; href=&quot;/tickets?_owner_id='.$rec['_id'].'&quot;&gt;'.$rec['firstname'].' '.$rec['lastname'].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		//ticket status
+		$statrecs=getDBRecords(array('-query'=&gt;&quot;select count(_id) as cnt,status from tickets where user_id={$rec['_id']} group by status order by status&quot;));
+		$stats=array(2=&gt;0,3=&gt;0,4=&gt;0);
+		foreach($statrecs as $statrec){
+			if(isset($stats[$statrec['status']])){$stats[$statrec['status']]=$statrec['cnt'];}
+			}
+		foreach($stats as $status=&gt;$cnt){
+			$rtn .= '		&lt;td align=&quot;right&quot; title=&quot;'.$ticketsMap['status'][$status].'&quot;&gt;'.$cnt.'&lt;/td&gt;'.&quot;\n&quot;;
+			}
+		$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+        }
+	$rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	//add a timer to refresh every 30 seconds
+	$rtn .= '&lt;img src=&quot;/wfiles/clear.gif&quot; width=&quot;1&quot; height=&quot;1&quot; onLoad=&quot;scheduleTicketsTimer();&quot;&gt;'.&quot;\n&quot;;
+	return $rtn;
+	}
+?&gt;
+]]></body>
+	<description>PHP Functions</description>
+	<name>tickets_functions</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 21:29:39</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:15:57</_edate>
+	<_euser>2</_euser>
+	<_id>10</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+if(isset($_REQUEST['_code'])){
+	$string=decrypt($_REQUEST['_code'],encodeCRC($_SERVER['HTTP_HOST']));
+	//$rtn .= &quot;Code: [{$_REQUEST['_code']}]\n&quot;;
+	//$rtn .= &quot;String:[{$string}]\n&quot;;
+	//return $rtn;
+	list($_REQUEST['email'],$_REQUEST['ticket'])=preg_split('/\:/',$string,2);
+	}
+if(!isset($_REQUEST['ticket']) || !isNum($_REQUEST['ticket'])){return &quot;Invalid Case ID&quot;;}
+if(!isset($_REQUEST['email'])){return &quot;Invalid Case Status Request - no email&quot;;}
+$priority=array(
+	1=&gt;'&lt;span class=&quot;c_red w_bold&quot;&gt;Urgent!&lt;/span&gt;',
+	2=&gt;'&lt;span class=&quot;c_red&quot;&gt;High&lt;/span&gt;',
+	3=&gt;'&lt;span class=&quot;c_gray w_bold&quot;&gt;Normal&lt;/span&gt;',
+	4=&gt;'&lt;span class=&quot;c_gray&quot;&gt;Low&lt;/span&gt;'
+	);
+$ticket=getDBRecord(array('_id'=&gt;$_REQUEST['ticket'],'email'=&gt;$_REQUEST['email']));
+if(!is_array($ticket)){return &quot;Invalid Case&quot;;}
+$rtn='&lt;h3&gt;Details for Case #'.$ticket['_id'].'&lt;/h3&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+//Info
+$rtn .= '	&lt;tr valign=&quot;top&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td class=&quot;c_bbot&quot; nowrap&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;div class=&quot;w_bold  c_pad c_bbot c_grayback c_white&quot;&gt;From:&lt;/div&gt;'.&quot;\n&quot;;
+if(isset($ticket['firstname'])){$rtn .= &quot;		{$ticket['firstname']} {$ticket['lastname']}&lt;br&gt;\n&quot;;}
+if(isset($ticket['address1'])){$rtn .= &quot;		{$ticket['address1']}&lt;br&gt;\n&quot;;}
+if(isset($ticket['address2'])){$rtn .= &quot;		{$ticket['address2']}&lt;br&gt;\n&quot;;}
+if(isset($ticket['city'])){$rtn .= &quot;		{$ticket['city']},{$ticket['state']} {$ticket['zip']}&lt;br&gt;\n&quot;;}
+if(isset($ticket['country'])){$rtn .= '		&lt;div align=&quot;right&quot;&gt;'.$ticket['country'].'&lt;/div&gt;'.&quot;&lt;br&gt;\n&quot;;}
+if(isset($ticket['email'])){$rtn .= &quot;		{$ticket['email']}&lt;br&gt;\n&quot;;}
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td class=&quot;c_bbot&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;div class=&quot;w_bold c_pad5 c_bbot c_grayback c_white&quot;&gt;Message:&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;div class=&quot;c_pad10&quot; style=&quot;height:200px;overflow:auto;&quot;&gt;'.nl2br($ticket['details']).&quot;&lt;/div&gt;\n&quot;;
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td class=&quot;c_bbot&quot; nowrap&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;div class=&quot;w_bold c_pad5 c_bbot c_grayback c_white&quot;&gt;Info:&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;1&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Date:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('m/d/Y',$ticket['timestamp']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Time:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('g:i a',$ticket['timestamp']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Priority:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$priority[$ticket['priority']].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Type:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;&lt;img src=&quot;/icons/'.$ticket['type'].'.gif&quot; border=&quot;0&quot;&gt; '.$ticket['type'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+//Status
+if($ticket['status']==2){$status=&quot;Resolved&quot;;}
+else if(isNum($ticket['owner_id'])){$status=&quot;Assigned&quot;;}
+else if($ticket['status']==1){$status=&quot;New&quot;;}
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Status:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$status.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+//Check for ticket_emails
+
+$rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+//ksort($ticket);
+//$rtn .= printValue($ticket);
+return $rtn;
+
+?&gt;
+]]></body>
+	<name>tickets_status</name>
+	<template>2</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-23 21:32:49</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 08:25:04</_edate>
+	<_euser>0</_euser>
+	<_id>11</_id>
+	<body><![CDATA[
+&lt;h3&gt;User Form&lt;/h3&gt;
+&lt;?
+/*filetype:php*/
+return addEditDBForm($_REQUEST);
+?&gt;
+]]></body>
+	<name>tickets_UsersForm</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-24 07:11:37</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:15:57</_edate>
+	<_euser>2</_euser>
+	<_id>12</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+//return printValue($_REQUEST);
+$rtn=''; 
+if(isset($_REQUEST['dir']) &amp;&amp; is_dir($_REQUEST['dir']) &amp;&amp; isset($_REQUEST['header_subject'])){
+	//process incoming email
+	$opts=array('-table'=&gt;&quot;tickets&quot;,'type'=&gt;&quot;email&quot;);
+	$opts['email_dir']=$_REQUEST['dir'];
+	//header_from: Steven Lloyd &lt;slloyd@timequest.org&gt;
+	if(isset($_REQUEST['header_from'])){
+		unset($hmatch);
+		if(preg_match('/^(.+?)\&lt;(.+?)\&gt;$/',$_REQUEST['header_from'],$hmatch) &amp;&amp; isEmail($hmatch[2])){
+			$name=preg_replace('/\&quot;/','',$hmatch[1]);
+			list($opts['firstname'],$opts['lastname'])=preg_split('/\ /',$name,2);
+			$opts['firstname']=trim($opts['firstname']);
+			$opts['lastname']=trim($opts['lastname']);
+			//swap names if firstname ends with a comma
+			if(preg_match('/(.+?)\,$/',$opts['firstname'],$nmatch)){
+				$opts['firstname']=$opts['lastname'];
+				$opts['lastname']=$nmatch[1];
+            	}
+			$opts['email']=$hmatch[2];
+			}
+		else if(preg_match('/^\&lt;(.+?)\&gt;$/',$_REQUEST['header_from'],$hmatch) &amp;&amp; isEmail($hmatch[1])){
+			$opts['email']=$hmatch[1];
+			}
+		else if(isEmail($_REQUEST['header_from'])){$opts['email']=$_REQUEST['header_from'];}
+    	}
+    //priority?
+    if(isset($_REQUEST['header_x-priority']) &amp;&amp; preg_match('/^([1-4])/',trim($_REQUEST['header_x-priority']),$pmatch)){
+		$opts['priority']=$pmatch[1];
+    	}
+    //details
+	$_REQUEST['details']=$_REQUEST['header_subject'];
+	if(isset($_REQUEST['message'])){$_REQUEST['details'] .= &quot;\r\n\r\n&quot;.$_REQUEST['message'];}
+	$rtn .= &quot;Details:\n{$_REQUEST['details']}\n&quot;;
+	//category
+	if(!is_array($_SESSION['categories'])){getCategories();}
+	foreach($_SESSION['categories'] as $category){
+		if(stristr($_REQUEST['details'],$category)){
+			$opts['category']=$category;
+			break;
+            }
+    	}
+    //redfly_model
+	if(!is_array($_SESSION['product_models'])){loadProductModels();}
+	ksort($_SESSION['product_models']);
+	foreach($_SESSION['product_models'] as $key=&gt;$val){
+		//$rtn .= &quot;Checking Model : {$val}\n&quot;;
+		if(stristr($_REQUEST['details'],$val)){
+			$opts['redfly_model']=$key;
+			break;
+            }
+		}
+	if(!isset($opts['redfly_model'])){
+		foreach($_SESSION['product_models'] as $key=&gt;$val){
+			//$rtn .= &quot;Checking Model : {$key}\n&quot;;
+	        if(stristr($_REQUEST['details'],$key)){
+				$opts['redfly_model']=$key;
+				break;
+	            }
+	    	}
+		}
+	//phone_carrier
+	if(!is_array($_SESSION['phones'])){loadPhones();}
+	$carriers=array_keys($_SESSION['phones']);
+	foreach($carriers as $carrier){
+		$rtn .= &quot;Checking Carrier : {$carrier}\n&quot;;
+		if(stristr($_REQUEST['details'],$carrier)){
+			$opts['phone_carrier']=$carrier;
+			$rtn .= &quot; -- Found Carrier : {$carrier}\n&quot;;
+			break;
+            }
+    	}
+    //phone_model 
+    foreach($_SESSION['phones'] as $carrier=&gt;$cmodels){
+		foreach($cmodels as $cmodel){
+			$cmodel=trim($cmodel);
+			if(stristr($_REQUEST['details'],$cmodel)){
+				$opts['phone_model']=$cmodel;
+				break;
+	            }
+			}
+		}
+	//xmldata
+	unset($_REQUEST['_action']);
+	unset($_REQUEST['_botcheck']);
+	unset($_REQUEST['_dupcheck']);
+	$opts['parent_case']=0;
+
+	//get the xml data
+	$opts['xmldata']= request2XML($_REQUEST);
+	$id=addDBRecord($opts);
+	$rtn .= &quot;Record Added: {$id}\n&quot;;
+	if(isNum($id)){
+		$rec=getDBRecord(array('_id'=&gt;$id));
+		//parent_case? Subject: RE:helpdesk [2973]
+	    if(is_array($rec) &amp;&amp; preg_match('/Helpdesk Ticket \[([0-9]+?)\]/',$_REQUEST['header_subject'],$pmatch)){
+			$parent=getDBRecord(array('_id'=&gt;$pmatch[1]));
+			if(is_array($parent)){
+				$ok=editDBRecord(array('-table'=&gt;&quot;tickets&quot;,'-where'=&gt;&quot;_id={$rec['_id']}&quot;,
+					'status'=&gt;1,
+					'parent_case'=&gt;$parent['_id'],
+					'firstname'=&gt;$parent['firstname'],
+					'lastname'=&gt;$parent['lastname'],
+					'email'=&gt;$parent['email']
+					));
+				//edit the parent to
+				$ok=editDBRecord(array('-table'=&gt;&quot;tickets&quot;,'-where'=&gt;&quot;_id={$parent['_id']}&quot;,
+					'status'=&gt;2,
+					'details'=&gt;$rec['details'] . &quot;\r\n\r\n------------------------------\r\n\r\n&quot; . $parent['details']
+					));
+	        	}
+	    	}
+		}
+	}
+return $rtn;
+?&gt;
+]]></body>
+	<description>Process Pop Email</description>
+	<name>tickets_pop</name>
+	<template>1</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-24 10:14:15</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-25 22:49:25</_edate>
+	<_euser>0</_euser>
+	<_id>13</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+if($_REQUEST['ajax_amaf']){
+	$cdir=&quot;/var/www/shared/docs&quot;;
+	return attachManagerAttachFiles($cdir,array('attach_div'=&gt;&quot;attach_files&quot;));
+	}
+if(!isset($_REQUEST['id'])){return &quot;Details Error - No ID&quot;;}
+global $USER;
+global $PAGE;
+global $ticketsMap;
+unset($_SESSION['attach_files']);
+$ticket=getDBRecord(array('-table'=&gt;&quot;tickets&quot;,'_id'=&gt;$_REQUEST['id'],'-relate'=&gt;1));
+//$ticket['details']=preg_replace('/\.content(Body|Caption|Links|Head)\ \{(.+?)}/','',$ticket['details']);
+//return printValue($ticket);
+//generate case #
+$caseNumber=$ticket['_id'];
+while(strlen($caseNumber) &lt; 5){$caseNumber=&quot;0{$caseNumber}&quot;;}
+$caseNumber=date('Y',$ticket['_cdate_utime']) . $caseNumber;
+$rtn='&lt;h3&gt;Details for Case #'.$caseNumber;
+$rtn .= ' &lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;#&quot; onClick=&quot;return ticketsEditForm('.$ticket['_id'].');&quot;&gt;&lt;img src=&quot;/wfiles/edit.png&quot; border=&quot;0&quot;&gt; edit&lt;/a&gt;';
+$rtn .='&lt;/h3&gt;'.&quot;\n&quot;;
+$formopts=array('_modify'=&gt;$ticket['_id'],'_tickets_category_id'=&gt;$_REQUEST['tickets_category_id'],'_tickets_department_id'=&gt;$_REQUEST['tickets_department_id'],'_user_id'=&gt;$ticket['user_id'],'_sort'=&gt;$_REQUEST['_sort']);
+$formopts['-name']=&quot;detailform&quot;;
+$formopts['-onsubmit']=&quot;if(submitForm(this)){setText('note_data','');setText('email_data','');return true;}else{return false;}&quot;;
+$rtn .= '			' . buildFormBegin(&quot;/tickets&quot;,$formopts);
+$rtn .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+//actions
+$rtn .= '	&lt;tr valign=&quot;top&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td colspan=&quot;3&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th&gt;Assigned To&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;th&gt;Category&lt;/th&gt;&lt;th&gt;Department&lt;/th&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;user_id&quot;,'value'=&gt;$ticket['user_id'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;status&quot;,'value'=&gt;$ticket['status'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;tickets_category_id&quot;,'value'=&gt;$ticket['tickets_category_id'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td&gt;' . getDBFieldTag(array('-table'=&gt;&quot;tickets&quot;,'-field'=&gt;&quot;tickets_department_id&quot;,'value'=&gt;$ticket['tickets_department_id'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td&gt;' . buildFormSubmit(&quot;Update&quot;,'do').'&lt;/td&gt;'.&quot;\n&quot;;
+//spam button
+//$rtn .= '					&lt;td style=&quot;padding-left:40px;&quot;&gt;&lt;input type=&quot;submit&quot; onClick=&quot;document.detailform.owner_id.value=2;document.detailform.status.value=3;document.detailform.category.value=\'SPAM\';&quot; value=&quot;Mark as SPAM&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+//Info
+$rtn .= '	&lt;tr valign=&quot;top&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td class=&quot;c_bbot&quot; style=&quot;padding-left:5px;&quot; nowrap&gt;'.&quot;\n&quot;;
+//Submitter/Customer
+$rtn .= '			&lt;div class=&quot;w_bold  c_pad c_bbot c_grayback c_white&quot;&gt;Customer/Submitter&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;div class=&quot;w_bold w_big&quot;&gt;'.$ticket['name'].'&lt;/div&gt;'.&quot;\n&quot;;
+if(isset($ticket['phone'])){
+	$rtn .= '				&lt;img src=&quot;/wfiles/icons/misc/phone.png&quot; border=&quot;0&quot;&gt; '.$ticket['phone'].'&lt;br&gt;'.&quot;\n&quot;;
+	}
+if(isset($ticket['email'])){
+	$rtn .= '				&lt;img src=&quot;/wfiles/icons/misc/email.png&quot; border=&quot;0&quot;&gt; '.$ticket['email'].'&lt;br&gt;'.&quot;\n&quot;;
+	}
+//Status
+$rtn .= '				&lt;img src=&quot;/wfiles/next.gif&quot; border=&quot;0&quot;&gt; &lt;span class=&quot;c_yellowback w_bold w_big&quot;&gt;'.$ticketsMap['status'][$ticket['status']].'&lt;/span&gt;'.&quot;\n&quot;;
+
+$rtn .= '&lt;div class=&quot;w_bold  c_pad c_bbot c_grayback c_white&quot;&gt;Ticket Info&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;1&quot; border=&quot;0&quot; class=&quot;w_smaller&quot;&gt;'.&quot;\n&quot;;
+//Resolved
+if(isNum($ticket['resolved_date_utime']) &amp;&amp; $ticket['resolved_date_utime'] &gt; 0){
+	$name=&quot;{$ticket['_euser_ex']['firstname']} {$ticket['_euser_ex']['lastname']}&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Resolved by:&lt;/th&gt;&lt;td align=&quot;right&quot; class=&quot;c_yellowback w_bold&quot;&gt;'.$name.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;right&quot; nowrap&gt;Date:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('m/d/y g:i a',$ticket['assigned_date_utime']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	}
+//Assigned To
+else if(isset($ticket['user_id_ex'])){
+	$name=&quot;{$ticket['user_id_ex']['firstname']} {$ticket['user_id_ex']['lastname']}&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Assigned To:&lt;/th&gt;&lt;td align=&quot;right&quot; class=&quot;c_yellowback w_bold&quot;&gt;'.$name.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	if(isNum($ticket['assigned_date_utime']) &amp;&amp; $ticket['assigned_date_utime'] &gt; 0){
+		$rtn .= '				&lt;tr&gt;&lt;th align=&quot;right&quot; nowrap&gt;Date:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('m/d/y g:i a',$ticket['assigned_date_utime']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+		}
+	}
+//Importance
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Importance:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$ticketsMap['importance'][$ticket['importance']].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+//Severity
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Severity:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$ticketsMap['severity'][$ticket['severity']].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+//department
+if(isset($ticket['tickets_department_id_ex'])){
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Department:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$ticket['tickets_department_id_ex']['name'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	}
+//category
+if(isset($ticket['tickets_category_id_ex'])){
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Category:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$ticket['tickets_category_id_ex']['name'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	}
+$rtn .= '&lt;tr&gt;&lt;td colspan=&quot;2&quot;&gt;&lt;hr size=&quot;1&quot;&gt;&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+//Opened
+if(isset($ticket['_cuser_ex'])){
+	$name=&quot;{$ticket['_cuser_ex']['firstname']} {$ticket['_cuser_ex']['lastname']}&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Opened by:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$name.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;right&quot; nowrap&gt;Date:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('m/d/y g:i a',$ticket['_cdate_utime']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	}
+//updated
+if(isset($ticket['_euser_ex'])){
+	$name=&quot;{$ticket['_euser_ex']['firstname']} {$ticket['_euser_ex']['lastname']}&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot; nowrap&gt;Updated by:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.$name.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	$rtn .= '				&lt;tr&gt;&lt;th align=&quot;right&quot; nowrap&gt;Date:&lt;/th&gt;&lt;td align=&quot;right&quot;&gt;'.date('m/d/y g:i a',$ticket['_edate_utime']).'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	}
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+
+
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$details=nl2br($ticket['details']);
+if(isset($ticket['err']['message'])){
+	$details = '&lt;div&gt;&lt;b&gt;XML Error&lt;/b&gt; - Please assign this case to Steve Lloyd to investigate&lt;/div&gt;'.&quot;\n&quot;;
+	if($USER['username']=='slloyd'){
+		$details .= printValue($ticket['err']);
+		}
+	}
+$rtn .= '		&lt;td class=&quot;c_bbot&quot; width=&quot;100%&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;div class=&quot;w_bold c_pad5 c_bbot c_grayback c_white&quot;&gt;Ticket Details&lt;/div&gt;'.&quot;\n&quot;;
+//summary
+$rtn .= '				&lt;div class=&quot;w_bold&quot;&gt;'.$ticket['summary'].&quot;&lt;/div&gt;\n&quot;;
+//details
+$rtn .= '				&lt;div class=&quot;c_pad10&quot; style=&quot;height:200px;overflow:auto;&quot;&gt;'.$details.&quot;&lt;/div&gt;\n&quot;;
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;tr valign=&quot;top&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;td colspan=&quot;2&quot; id=&quot;tabs&quot;&gt;'.&quot;\n&quot;;
+	//tabs
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;'.&quot;\n&quot;;
+$tabs=array(
+	'note' =&gt; array(
+		'title'	=&gt; &quot;Note&quot;,
+		),
+	'note_history' =&gt; array(
+		'title'	=&gt; &quot;Previous Notes&quot;,
+		'recs'	=&gt; getDBRecords(array('-table'=&gt;&quot;tickets_notes&quot;,'-relate'=&gt;1,'ticket_id'=&gt;$ticket['_id'],'-order'=&gt;&quot;_cdate desc&quot;,'-limit'=&gt;25))
+		),
+	'email' =&gt; array(
+		'title' =&gt; &quot;Email&quot;,
+		),
+	'email_history' =&gt; array(
+		'title' =&gt; &quot;Previous Emails&quot;,
+		'recs'	=&gt; getDBRecords(array('-table'=&gt;&quot;tickets_emails&quot;,'-relate'=&gt;1,'ticket_id'=&gt;$ticket['_id'],'-order'=&gt;&quot;_cdate desc&quot;,'-limit'=&gt;25))
+		),
+	'case_history' =&gt; array(
+		'title'	=&gt; &quot;Previous Tickets&quot;,
+		'recs'	=&gt; getDBRecords(array('-table'=&gt;&quot;tickets&quot;,'-relate'=&gt;1,'email'=&gt;$ticket['email'],'-order'=&gt;&quot;_cdate desc&quot;,'-limit'=&gt;25))
+		)
+	);
+foreach($tabs as $key=&gt;$tab){
+	if(preg_match('/\_history$/',$key) &amp;&amp; !count($tab['recs'])){continue;}
+	if($key=='case_history' &amp;&amp; count($tab['recs'])==1){continue;}
+	$rtn .= '					&lt;td&gt;&lt;div class=&quot;w_bold c_pad5 c_bbot c_grayback c_white&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;c_white w_link&quot; onClick=&quot;setText(\'detail_tab\',getText(\''.$key.'_data\'));return false;&quot;&gt;';
+	if(preg_match('/\_history$/',$key)){$rtn .= count($tab['recs']).' ';}
+	$rtn .= $tab['title'].'&lt;/a&gt;&lt;/div&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	}
+$rtn .= '				&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;div id=&quot;detail_tab&quot;&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+//begin hidden div
+$rtn .= '		&lt;div style=&quot;display:none;&quot;&gt;'.&quot;\n&quot;;
+//Note tab
+$rtn .= '		&lt;div id=&quot;note_data&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;From: '.$USER['username'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;td&gt;&lt;textarea id=&quot;ticket_note&quot; name=&quot;note&quot; style=&quot;width:600px;height:125px;&quot;&gt;&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;'. buildFormSubmit(&quot;Add Note&quot;,'do').'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//Note History tab
+$rtn .= '		&lt;div id=&quot;note_history_data&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;div style=&quot;height:200px;overflow:auto;padding-right:20px;&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;img src=&quot;/wfiles/clear.gif&quot; border=&quot;0&quot; width=&quot;500&quot; height=&quot;1&quot;&gt;'.&quot;\n&quot;;
+if(!count($tabs['note_history']['recs'])){$rtn .= &quot;&lt;b&gt;No previous notes for this case.&lt;/b&gt;&quot;;}
+else{
+    foreach($tabs['note_history']['recs'] as $rec){
+		$ndate=date('m/d/y g:i a',$rec['_cdate_utime']);
+		$nowner=&quot;{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}&quot;;
+		$rtn .= '&lt;div class=&quot;c_pad&quot;&gt;&lt;div class=&quot;w_smaller c_red&quot;&gt;&lt;img src=&quot;/wfiles/icons/misc/note.gif&quot; border=&quot;0&quot; style=&quot;border-bottom:1px solid #E6E7E8;&quot;&gt; Note from '.$nowner.' on '.$ndate.'&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;div class=&quot;w_smaller&quot; style=&quot;padding-left:5px;margin-left:15px;border-left:1px solid #E6E7E8;border-bottom:1px solid #E6E7E8;&quot;&gt;'.nl2br($rec['message']).'&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+        }
+	}
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//Email tab
+$rtn .= '		&lt;div id=&quot;email_data&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;div align=&quot;right&quot; style=&quot;float:right;&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr align=&quot;center&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td class=&quot;w_smallest&quot;&gt;&lt;a href=&quot;#&quot; onclick=&quot;return ticketScripts('.$ticket['_id'].');&quot; class=&quot;c_red w_bold w_link&quot;&gt;&lt;img title=&quot;Scripts&quot; src=&quot;/wfiles/icons/misc/scripts.gif&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;br&gt;scripts&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '					&lt;td class=&quot;w_smallest&quot;&gt;&lt;a href=&quot;#&quot; onclick=&quot;return ticketAttachments('.$ticket['_id'].');&quot; class=&quot;c_red w_bold w_link&quot;&gt;&lt;img title=&quot;attachments&quot; src=&quot;/wfiles/icons/misc/attachments.png&quot; border=&quot;0&quot;&gt;&lt;/a&gt;&lt;br&gt;attach&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;From:&lt;/th&gt;&lt;td&gt;helpdesk@'.$_SERVER['UNIQUE_HOST'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;To:&lt;/th&gt;&lt;td&gt;'.$ticket['email'].'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Subject:&lt;/th&gt;&lt;td&gt;&lt;input type=&quot;text&quot; name=&quot;subject&quot; value=&quot;RE:Ticket #'.$ticket['_id'].' - '.$ticket['summary'].'&quot; style=&quot;width:300px;&quot; required=&quot;1&quot;&gt;&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$signature = &quot;Thanks,\r\n{$USER['name']}\r\n\r\n{$USER['signature']}\r\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;td colspan=&quot;2&quot;&gt;&lt;textarea id=&quot;email_message&quot; name=&quot;message&quot; style=&quot;width:600px;height:150px;&quot;&gt;'.$signature.'&lt;/textarea&gt;&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;td colspan=&quot;2&quot; align=&quot;right&quot;&gt;'. buildFormSubmit(&quot;Send Email&quot;,'do').'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '				&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Attachments:&lt;/th&gt;&lt;td&gt;&lt;div id=&quot;attach_files&quot;&gt;';
+$cdir=&quot;/var/www/shared/helpdesk/docs&quot;;
+$rtn .= attachManagerAttachFiles($cdir,array('attach_div'=&gt;&quot;attach_files&quot;));
+$rtn .= '&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//Email History tab
+$rtn .= '		&lt;div id=&quot;email_history_data&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;div style=&quot;height:200px;overflow:auto;padding-right:20px;&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;img src=&quot;/wfiles/clear.gif&quot; border=&quot;0&quot; width=&quot;500&quot; height=&quot;1&quot;&gt;'.&quot;\n&quot;;
+if(!count($tabs['email_history']['recs'])){$rtn .= &quot;&lt;b&gt;No previous emails for this case.&lt;/b&gt;&quot;;}
+else{
+    	foreach($tabs['email_history']['recs'] as $rec){
+		$ndate=date('m/d/Y',$rec['_cdate_utime']);
+		$nowner=&quot;{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}&quot;;
+		$rtn .= '&lt;div class=&quot;c_pad&quot;&gt;&lt;div class=&quot;w_smaller c_red&quot;&gt;&lt;img src=&quot;/wfiles/icons/misc/email.gif&quot; border=&quot;0&quot; style=&quot;border-bottom:1px solid #a6cff5;&quot;&gt; Email sent by '.$nowner.' on '.$ndate.'&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;div class=&quot;w_smaller&quot; style=&quot;padding-left:5px;margin-left:15px;border-left:1px solid #a6cff5;border-bottom:1px solid #a6cff5;&quot;&gt;&lt;b&gt;'.$rec['subject'].'&lt;/b&gt;&lt;br /&gt;'.nl2br($rec['message']).'&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+        	}
+	}
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//Case History tab
+$rtn .= '		&lt;div id=&quot;case_history_data&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;div style=&quot;height:200px;overflow:auto;padding-right:20px;&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '			&lt;img src=&quot;/wfiles/clear.gif&quot; border=&quot;0&quot; width=&quot;500&quot; height=&quot;1&quot;&gt;'.&quot;\n&quot;;
+if(!count($tabs['case_history']['recs'])){$rtn .= &quot;&lt;b&gt;No previous tickets for this customer.&lt;/b&gt;&quot;;}
+else{
+    	foreach($tabs['case_history']['recs'] as $rec){
+		$ndate=date('m/d/Y',$rec['_cdate_utime']);
+		$nowner=getDBUserById($rec['_cuser']);
+		$rtn .= '&lt;div class=&quot;c_pad&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;div class=&quot;w_smaller c_red&quot;&gt;&lt;a class=&quot;c_red w_bold&quot; href=&quot;/ticket_details?id='.$rec['_id'].'&quot;&gt;Case #'.$rec['_id'].'&lt;/a&gt; - '.$rec['type'].' on '.$ndate.'&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '	&lt;div class=&quot;w_smaller&quot; style=&quot;padding-left:5px;margin-left:15px;border-left:1px solid #E6E7E8;border-bottom:1px solid #E6E7E8;&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= '		&lt;b&gt;Status: &lt;/b&gt;'.$ticketsMap['status'][$rec['status']] . &quot;&lt;br&gt;\n&quot;;
+		if(isNum($rec['owner_id'])){
+			$nowner=getDBUserById($rec['owner_id']);
+			$rtn .= '		&lt;b&gt;Owner: &lt;/b&gt;'.$nowner['username'] . &quot;&lt;br&gt;\n&quot;;
+            	}
+		$rtn .= '		&lt;b&gt;Details:&lt;/b&gt;&lt;br /&gt;' . nl2br($rec['details']);
+		$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+        	}
+	}
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//end hidden div
+$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+//load the note tab on default
+$rtn .= '&lt;img src=&quot;/wfiles/clear.gif&quot; border=&quot;0&quot; onLoad=&quot;setText(\'detail_tab\',getText(\'note_data\'));&quot;&gt;'.&quot;\n&quot;;
+$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;/tr&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= buildFormEnd();
+//ksort($_REQUEST);
+#$rtn .= printValue($_REQUEST);
+//$rtn .= printValue($ticket);
+
+return $rtn;
+
+?&gt;
+]]></body>
+	<name>tickets_details</name>
+	<template>2</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-25 07:05:54</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:29:24</_edate>
+	<_euser>2</_euser>
+	<_id>15</_id>
+	<body><![CDATA[
+&lt;?
+$rtn='';
+//error_reporting(E_ALL &amp; ~E_NOTICE);
+if(isset($_REQUEST['add_result']) &amp;&amp; isNum($_REQUEST['add_id'])){
+	$rtn .= '&lt;div style=&quot;display:none&quot;&gt;'.&quot;\n&quot;;
+    $rtn .= '&lt;img src=&quot;/wfiles/clear.gif&quot; alt=&quot;thanks&quot; border=&quot;0&quot; onload=&quot;popUpDiv(getText(\'thankyou\'),{id:\'thankyoupop\',title:\'Thank you very much\',width:400,drag:1,timeout:5,fade:1,x:200,y:100});&quot;&gt;'.&quot;\n&quot;;
+    $sendto=array();
+    $form=getDBRecord(array('_id'=&gt;$_REQUEST['add_id']));
+    $rtn .= '&lt;div id=&quot;FORM&quot;&gt;'.printValue($form).'&lt;/div&gt;'.&quot;\n&quot;;
+    switch(strtolower($form['_formname'])){
+		case 'xyzxyz':
+			array_push($sendto,'helpdesk@helpdesk.com');
+			break;
+    	}
+    if(count($sendto)){
+		//send email
+
+		$message='&lt;h2&gt;'.$form['_formname'].' Submission on '.$form['http_host'].'&lt;/h2&gt;'.&quot;\n&quot;;;
+		$message .= '&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;3&quot; border=&quot;1&quot; style=&quot;border-collapse:collapse;&quot;&gt;'.&quot;\n&quot;;
+		$message .= '	&lt;tr bgcolor=&quot;#c02f1a&quot;&gt;&lt;th colspan=&quot;2&quot; style=&quot;color:#FFFFFF;&quot;&gt;'.$formname.' - Information Submitted&lt;/th&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+		ksort($form);
+		foreach($form as $key=&gt;$val){
+			if(preg_match('/^\_/',$key)){continue;}
+			$val=removeHtml((string)$val);
+			if(strlen($val)==0){continue;}
+			$val=nl2br($val);
+			$message .= '	&lt;tr valign=&quot;top&quot;&gt;&lt;td&gt;'.$key.'&lt;/td&gt;&lt;td style=&quot;font-size:10pt;&quot;&gt;'.$val.'&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+			}
+		$message .= '&lt;/table&gt;'.&quot;\n&quot;;
+		if(strtolower($form['_formname'])=='ship' &amp;&amp; isEmail($form['email'])){
+			$message .= '&lt;div&gt;&lt;a href=&quot;http://orderfly/search.htm?search='.$form['email'].'&quot;&gt;Click here to check customer order in Orderfly&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+        	}
+		$to=implode(';',$sendto);
+		$subject=$_SERVER['HTTP_HOST'] . ' - New ' . $form['_formname'] . ' Submission ' . date('l, F jS, Y g:i a');
+		$from=isEmail($form['email'])?$form['email']:'no-reply@'.$_SERVER['UNIQUE_HOST'];
+		$mail=sendSMTPMail(array(
+			'to'=&gt;$to,
+			'from'=&gt;$from,
+			'subject'=&gt;$subject,
+			'message'=&gt;$message
+			));
+    	}
+    $rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	}
+return $rtn;
+?&gt;
+]]></body>
+	<name>tickets_thankyou</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-28 14:10:06</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 09:41:56</_edate>
+	<_euser>0</_euser>
+	<_id>16</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+global $USER;
+if(!is_array($USER)){return userLoginForm();}
+$cdir=&quot;/var/www/helpdesk/docs&quot;;
+$cdir='D:\temp';
+if($USER['utype']==0){return fileManager($cdir,array('rights'=&gt;&quot;all&quot;,'height'=&gt;400));}
+return fileManager($cdir,array('rights'=&gt;&quot;readonly&quot;));
+?&gt;
+]]></body>
+	<name>tickets_docs</name>
+	<template>2</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-30 07:38:35</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:27:01</_edate>
+	<_euser>2</_euser>
+	<_id>19</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+//return printValue($_REQUEST);
+$redir=isset($_REQUEST['redir'])?$_REQUEST['redir']:$_SERVER['HTTP_REFERER'];
+if(strlen($redir)){
+	if(isset($_REQUEST['email']) &amp;&amp; isEmail($_REQUEST['email'])){
+		$recs=getDBRecords(array('-table'=&gt;&quot;tickets&quot;,'-where'=&gt;&quot;email like '{$_REQUEST['email']}' and status &gt; 1&quot;));
+		if(!is_array($recs) &amp;&amp; isNum($_REQUEST['add_id'])){
+			//This email is not registered - Set the state to pending Verify and send the email
+			$message='';
+			$message .= '&lt;p&gt;Thank you for your recent Helpdesk Ticket.'.&quot;\n&quot;;
+			$message .= 'In order to insure the higest quality of support we require that you verify the email address you submitted in valid.'.&quot;\n&quot;;
+			$message .= '&lt;p&gt;Please click the link below to validate your email address.'.&quot;\n&quot;;
+			$string=&quot;{$_REQUEST['add_id']}:{$_REQUEST['email']}&quot;;
+			$code=encrypt($string,encodeCRC($_SERVER['HTTP_HOST']));
+			$link=&quot;http://{$_SERVER['HTTP_HOST']}/verify?code={$code}&quot;;
+			$message .= '&lt;p&gt;&lt;a href=&quot;'.$link.'&quot;&gt;'.$link.'&lt;/a&gt;'.&quot;\n&quot;;
+			$to=$_REQUEST['email'];
+			$subject='RE: Recent Helpdesk Ticket on ' . date('l, F jS, Y g:i a');
+			$from='support@'.$_SERVER['UNIQUE_HOST'];
+			$mail=sendSMTPMail(array(
+				'to'=&gt;$to,
+				'from'=&gt;$from,
+				'subject'=&gt;$subject,
+				'message'=&gt;$message
+				));
+			//Change status to Confirm Pending
+			$ok=editDBRecord(array('-table'=&gt;&quot;tickets&quot;,'-where'=&gt;&quot;_id={$_REQUEST['add_id']}&quot;,'status'=&gt;1));
+			return printValue($mail);
+        	}
+		}
+	header('Location: '.$redir);
+	exit;
+	}
+else{
+	return '&lt;h1&gt;Thank You&lt;/h1&gt;';
+	}
+?&gt;
+]]></body>
+	<name>tickets_submit</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-09-30 10:54:20</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:27:01</_edate>
+	<_euser>2</_euser>
+	<_id>20</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+$StatusName=array(
+		1=&gt;'Confirm Pending',
+		2=&gt;'Submitted',
+		3=&gt;'Work in Progress',
+		4=&gt;'Waiting on Customer',
+		5=&gt;'Level 2',
+		6=&gt;'Level 2 - RMA',
+		7=&gt;'Level 3',
+		8=&gt;'Resolved',
+		9=&gt;'Resolved-RMA',
+		10=&gt;'Archive'
+		);
+$rtn='';
+if(!isset($_REQUEST['code'])){return '&lt;h3 class=&quot;w_red&quot;&gt;Invalid request&lt;/h3&gt;';}
+$string=decrypt($_REQUEST['code'],encodeCRC($_SERVER['HTTP_HOST']));
+list($id,$email)=preg_split('/\:/',$string,2);
+if(!isNum($id) || !isEmail($email)){return '&lt;h3 class=&quot;w_red&quot;&gt;Invalid code&lt;/h3&gt;';}
+$rec=getDBRecord(array('_id'=&gt;$id));
+if(!is_array($rec)){return  '&lt;h3 class=&quot;w_red&quot;&gt;No helpdesk ticket found with that code&lt;/h3&gt;';}
+if($rec['status']==1){
+	$ok=editDBRecord(array('-table'=&gt;&quot;tickets&quot;,'-where'=&gt;&quot;_id={$id}&quot;,'status'=&gt;2));
+	if(!isNum($ok)){return &quot;Error: {$ok}&quot;;}
+	$rtn .= '&lt;h2&gt;Thank You&lt;/h2&gt;We have verified your email &quot;'.$email.'&quot; and we have sent your helpdesk ticket to our technicians.';
+	}
+else{
+	$rtn .= '&lt;h2&gt;Thank You&lt;/h2&gt; This helpdesk ticket was confirmed already. Current Status is &quot;'.$StatusName[$rec['status']].'&quot;.';
+	}
+return $rtn;
+?&gt;
+]]></body>
+	<name>tickets_verify</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-10-01 14:27:21</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:27:01</_edate>
+	<_euser>2</_euser>
+	<_id>22</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+$rtn='';
+includeDBOnce(array('-table'=&gt;&quot;_pages&quot;,'-field'=&gt;&quot;body&quot;,'-where'=&gt;&quot;name like 'functions_reports'&quot;));
+switch(strtolower($_REQUEST['report'])){
+	case 'support_case_summary':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; Support Case Summary&lt;/h2&gt;'.&quot;\n&quot;;
+		//$data=getReportData(
+		break;
+	case 'support_case_percent':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; Support Tickets as % of Sales&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	case 'rma_case_summary':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; RMA Case Summary&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	case 'rma_case_percent':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; RMA Tickets as % of Sales&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	case 'tickets_category':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; Tickets by Category&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	case 'tickets_product':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; Tickets by Product Model&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	case 'tickets_phone':
+		$rtn .= '&lt;h2&gt;&lt;img src=&quot;/icons/reports.png&quot; border=&quot;0&quot;&gt; Tickets by Phone&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	default:
+		return '&lt;h2&gt;Error - Unknown Report&lt;/h2&gt;'.&quot;\n&quot;;
+		break;
+	}
+return $rtn;
+?&gt;
+]]></body>
+	<name>tickets_reports</name>
+	<template>2</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-10-02 11:04:02</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 09:38:49</_edate>
+	<_euser>0</_euser>
+	<_id>24</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+$rtn='';
+global $USER;
+if(isset($_REQUEST['id']) &amp;&amp; isNum($_REQUEST['id'])){$ticket=getDBRecord(array('-table'=&gt;&quot;tickets&quot;,'_id'=&gt;$_REQUEST['id']));}
+if(isset($_REQUEST['select']) &amp;&amp; isNum($_REQUEST['select'])){
+	//select this script
+	$script=getDBRecord(array('-table'=&gt;&quot;tickets_scripts&quot;,'_id'=&gt;$_REQUEST['select']));
+	$answer=str_replace('&lt;Customer First Name&gt;',$ticket['firstname'],$script['answer']);
+	$answer=str_replace('&lt;Agent First Name&gt;',$USER['name'],$answer);
+	$answer=str_replace('&lt;Agent Signature&gt;',$USER['signature'],$answer);
+	return $answer;
+	}
+else if(isset($_REQUEST['script']) &amp;&amp; isNum($_REQUEST['script'])){
+	$script=getDBRecord(array('-table'=&gt;&quot;tickets_scripts&quot;,'_id'=&gt;$_REQUEST['script']));
+	$rtn .= '&lt;div style=&quot;width:580px;height:400px;overflow:auto;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;tr valign=&quot;middle&quot;&gt;&lt;td colspan=&quot;2&quot; class=&quot;w_big&quot;&gt;'.&quot;\n&quot;;
+	if(preg_match('/^(0|2|3)$/',$USER['utype'])){
+		//edit script
+		$rtn .= '		&lt;div style=&quot;float:right;margin-right:5px;&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= '			&lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;#&quot; onClick=&quot;ajaxGet(\'/tickets_scripts\',\'centerpop_Body\',\'id='.$_REQUEST['id'].'&amp;edit='.$script['_id'].'\');return false;&quot;&gt;&lt;img title=&quot;Edit&quot; src=&quot;/wfiles/edit.png&quot; border=&quot;0&quot;&gt;&lt;/a&gt; '.&quot;\n&quot;;
+		$rtn .= '			&lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;#&quot; onClick=&quot;ajaxGet(\'/tickets_scripts\',\'centerpop_Body\',\'id='.$_REQUEST['id'].'&amp;add=1\');return false;&quot;&gt;&lt;img title=&quot;Add New&quot; src=&quot;/wfiles/icons/plus.png&quot; border=&quot;0&quot;&gt;&lt;/a&gt; '.&quot;\n&quot;;
+		$rtn .= '			&lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;#&quot; onClick=&quot;ajaxGet(\'/tickets_scripts\',\'centerpop_Body\',\'id='.$_REQUEST['id'].'\');return false;&quot;&gt;&lt;img title=&quot;Back to List&quot; src=&quot;/wfiles/icons/prev.png&quot; border=&quot;0&quot;&gt;&lt;/a&gt; '.&quot;\n&quot;;
+		$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+		}
+	$rtn .= '		&lt;b&gt;Question:&lt;/b&gt; '.$script['question'].&quot;\n&quot;;
+	$rtn .= '	&lt;/td&gt;&lt;/tr&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;tr valign=&quot;top&quot;&gt;'.&quot;\n&quot;;
+
+	$rtn .= '		&lt;td&gt;&lt;div class=&quot;c_bbot w_bold c_redback c_white&quot; style=&quot;padding-left:5px;&quot;&gt;Answer:&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '			&lt;div style=&quot;float:right&quot;&gt;&lt;a class=&quot;w_link c_blue&quot; href=&quot;#&quot; onClick=&quot;return setEmailMessage();&quot;&gt;&lt;img src=&quot;/wfiles/download.gif&quot; border=&quot;0&quot;&gt; Select&lt;/a&gt;&lt;/div&gt;'.&quot;\n&quot;;
+	//provide two different ones
+	$answer=str_replace('&lt;Customer First Name&gt;',$ticket['firstname'],$script['answer']);
+	$answer=str_replace('&lt;Agent First Name&gt;',$USER['name'],$answer);
+	$answer=str_replace('&lt;Agent Signature&gt;',$USER['signature'],$answer);
+	$rtn .= '			&lt;div class=&quot;c_pad&quot; id=&quot;answer&quot;&gt;'.nl2br($answer).'&lt;/div&gt;'.&quot;\n&quot;;
+	//answer2 does not have the customer firstname or signature
+	$answer2=str_replace('&lt;Customer First Name&gt;,','',$script['answer']);
+	$answer2=str_replace('&lt;Agent First Name&gt;','',$answer2);
+	$answer2=str_replace('Thanks,','',$answer2);
+	$answer2=str_replace('&lt;Agent Signature&gt;','',$answer2);
+	$answer2=trim($answer2);
+	$rtn .= '			&lt;div id=&quot;answer2&quot; style=&quot;display:none&quot;&gt;'.nl2br($answer2).'&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;/td&gt;'.&quot;\n&quot;;
+	if(strlen($script['notes'])){
+		$rtn .= '		&lt;td class=&quot;c_bleft&quot;&gt;&lt;div class=&quot;c_bbot w_bold c_grayback c_white&quot; style=&quot;padding-left:5px;&quot;&gt;Background:&lt;/div&gt;&lt;div class=&quot;c_pad&quot; id=&quot;note&quot; style=&quot;width:200px;&quot;&gt;'.nl2br($script['notes']).'&lt;/div&gt;&lt;/td&gt;'.&quot;\n&quot;;
+		}
+	$rtn .= '	&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	return $rtn;
+	}
+else if(isset($_REQUEST['edit']) &amp;&amp; isNum($_REQUEST['edit'])){
+	$script=getDBRecord(array('-table'=&gt;&quot;tickets_scripts&quot;,'_id'=&gt;$_REQUEST['edit']));
+	if(preg_match('/^(0|2|3)$/',$USER['utype'])){
+		//edit script
+		$rtn .= '		&lt;div style=&quot;float:right;margin-right:5px;&quot;&gt;'.&quot;\n&quot;;
+		$rtn .= '			&lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;#&quot; onClick=&quot;ajaxGet(\'/tickets_scripts\',\'centerpop_Body\',\'id='.$_REQUEST['id'].'&amp;script='.$script['_id'].'\');return false;&quot;&gt;&lt;img title=&quot;Back to List&quot; src=&quot;/wfiles/icons/prev.png&quot; border=&quot;0&quot;&gt;&lt;/a&gt; '.&quot;\n&quot;;
+		$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+		}
+	$rtn .= addEditDBForm(array('-table'=&gt;&quot;tickets_scripts&quot;,'-action'=&gt;&quot;/tickets_details&quot;,'_id'=&gt;$script['_id'],'id'=&gt;$_REQUEST['id']));
+	return $rtn;
+	}
+else if(isset($_REQUEST['add']) &amp;&amp; $_REQUEST['add']==1){
+	$rtn .= addEditDBForm(array('-table'=&gt;&quot;tickets_scripts&quot;,'-action'=&gt;&quot;/tickets_details&quot;,'id'=&gt;$_REQUEST['id']));
+	return $rtn;
+	}
+$opts=array('-table'=&gt;&quot;tickets_scripts&quot;,'-fields'=&gt;array('_id','question'),'question_onclick'=&gt;&quot;ajaxGet('/tickets_scripts','centerpop_Body','id={$_REQUEST['id']}&amp;script=%_id%');return false;&quot;,'-order'=&gt;&quot;question&quot;);
+$rtn .= listDBRecords($opts);
+//$rtn .= printValue($opts);
+return $rtn;
+?&gt;
+]]></body>
+	<name>tickets_scripts</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-10-06 05:37:50</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 09:42:25</_edate>
+	<_euser>0</_euser>
+	<_id>26</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+$rtn='';
+global $USER;
+if(!is_array($USER)){return userLoginForm();}
+$cdir=&quot;/var/www/shared/docs&quot;;
+$cdir='D:\temp';
+return attachManager($cdir,array('attach_div'=&gt;&quot;attach_files&quot;));
+?&gt;
+]]></body>
+	<name>tickets_attachments</name>
+	<template>3</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-10-29 07:11:14</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:19:36</_edate>
+	<_euser>2</_euser>
+	<_id>28</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+global $USER;
+if(!is_array($USER)){return 'Must me logged in';}
+$rtn='';
+//Open Tickets
+$rtn .= '	&lt;div id=&quot;refresh_opentickets&quot;&gt;'.&quot;\n&quot;;
+$rtn .= showOpenTickets();
+$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '-------------------------------------------------------------------------'.&quot;\n&quot;;
+//-------------------------------------------------------------------------
+//My Tickets
+$rtn .= '	&lt;div id=&quot;refresh_mytickets&quot;&gt;'.&quot;\n&quot;;
+$rtn .= showMyTickets();
+$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '-------------------------------------------------------------------------'.&quot;\n&quot;;
+//--------------------------------------------------------------------------
+//My Tickets
+$rtn .= '	&lt;div id=&quot;refresh_users&quot;&gt;'.&quot;\n&quot;;
+$rtn .= showUsers();
+$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+$rtn .= '-------------------------------------------------------------------------'.&quot;\n&quot;;
+
+$rtn .= buildOnLoad(&quot;setText('menu_opentickets',getText('refresh_opentickets'));setText('menu_mytickets',getText('refresh_mytickets'));setText('menu_users',getText('refresh_users'));&quot;);
+
+return $rtn;
+?&gt;
+&lt;!-- Refresh Menu Complete--&gt;
+]]></body>
+	<name>tickets_timer</name>
+	<template>1</template>
+</xmldata>
+<xmldata name="_pages">
+	<_cdate>2009-11-04 13:13:37</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:27:01</_edate>
+	<_euser>2</_euser>
+	<_id>31</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+global $PAGE;
+$rtn='';
+if(!isset($_REQUEST['start-date'])){
+	$_REQUEST['start-date']=date('m-d-Y',strtotime(&quot;7 days ago&quot;));
+	}
+if(!isset($_REQUEST['stop-date'])){
+	$_REQUEST['stop-date']=date('m-d-Y');
+	}
+$rtn .= buildFormBegin($PAGE['name'],array('do'=&gt;&quot;list&quot;));
+$rtn .= '&lt;h3&gt;Case Export (xls)&lt;/h3&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;table&gt;&lt;tr&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Stop Date&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;td&gt;'.getDBFieldTag(array(&quot;-table&quot;=&gt;&quot;tickets&quot;,&quot;-field&quot;=&gt;&quot;_cdate&quot;,'name'=&gt;'start-date','value'=&gt;$_REQUEST['start-date'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '	&lt;td&gt;'.getDBFieldTag(array(&quot;-table&quot;=&gt;&quot;tickets&quot;,&quot;-field&quot;=&gt;&quot;_cdate&quot;,'name'=&gt;'stop-date','value'=&gt;$_REQUEST['stop-date'])).'&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;td&gt;&lt;input type=&quot;submit&quot; value=&quot;Export&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+$rtn .= '&lt;/form&gt;'.&quot;\n&quot;;
+if(isset($_REQUEST['do'])){
+	$filterfield=&quot;_cdate&quot;;
+	$wheres=array();
+	if(isset($_REQUEST['start-date'])){
+		$sdate=date2Mysql($_REQUEST['start-date']);
+		$wheres[] = &quot;DATE({$filterfield}) &gt;= '{$sdate}'&quot;;
+		}
+	if(isset($_REQUEST['stop-date'])){
+		$sdate=date2Mysql($_REQUEST['stop-date']);
+		$wheres[] = &quot;DATE({$filterfield}) &lt;= '{$sdate}'&quot;;
+		}
+	$opts=array();
+	if(count($wheres)){
+		$opts['-where']=implode(' and ',$wheres);
+		}
+	$opts['-order']=&quot;_cdate desc&quot;;
+	$rtn .= printValue($opts);
+	$recs=getDBRecords($opts);
+	$reports=array();
+	$StatusName=array(
+		1=&gt;'Confirm Pending',
+		2=&gt;'Submitted',
+		3=&gt;'Work in Progress',
+		4=&gt;'Waiting on Customer',
+		5=&gt;'Level 2',
+		6=&gt;'Level 3',
+		7=&gt;'Resolved',
+		8=&gt;'RMA-Pending',
+		9=&gt;'RMA-Approved',
+		10=&gt;'RMA-Resolved',
+		11=&gt;'RMA-Rejected'
+		);
+	$CustomerType=array(
+		1=&gt;'Existing Customer',
+		2=&gt;'Prospective Customer',
+		3=&gt;'Partner',
+		4=&gt;'Reseller',
+		9=&gt;'Other'
+		);
+	foreach($recs as $rec){
+		$caseNumber=$rec['_id'];
+		while(strlen($caseNumber) &lt; 5){$caseNumber=&quot;0{$caseNumber}&quot;;}
+		$caseNumber=date('Y',$rec['_cdate_utime']) . $caseNumber;
+		if(isNum($rec['owner_id'])){
+			$owner=getDBUserById($rec['owner_id']);
+        	}
+        $notes=getDBRecords(array('-table'=&gt;&quot;ticket_notes&quot;,'ticket_id'=&gt;$rec['_id']));
+        $notetxt='';
+        foreach($notes as $note){$notetxt .= $note['message'] . ' ';}
+        $elapsed=($rec['_edate_utime']-$rec['_cdate_utime']);
+		$report=array(
+			'Create Date'	=&gt; date(&quot;m/d/Y&quot;,$rec['_cdate_utime']),
+			'Create Time' 	=&gt; date(&quot;g:i a&quot;,$rec['_cdate_utime']),
+			'Edit Date'		=&gt; isNum($rec['_edate_utime'])?date(&quot;m/d/Y&quot;,$rec['_edate_utime']):'',
+			'Edit Time'		=&gt; isNum($rec['_edate_utime'])?date(&quot;g:i a&quot;,$rec['_edate_utime']):'',
+			'Resolved Date'	=&gt; isNum($rec['resolved_utime'])?date(&quot;m/d/Y&quot;,$rec['resolved_utime']):'',
+			'Resolved Time'	=&gt; isNum($rec['resolved_utime'])?date(&quot;g:i a&quot;,$rec['resolved_utime']):'',
+//			'Start Status'	,
+			'End Status'	=&gt; $StatusName[$rec['status']],
+			'Stopwatch New'		=&gt; $rec['stopwatch'],
+			'Stopwatch Edit'	=&gt; $rec['stopwatch_edit'],
+			'Stopwatch Total'	=&gt; $rec['stopwatch_total'],
+			'Agent Login'	=&gt; $owner['username'],
+			'Contact Type'	=&gt; $rec['type'],
+			'Case Number'	=&gt; $caseNumber,
+			'Category'		=&gt; $rec['category'],
+			'RMA Category'	=&gt; $rec['category_rma'],
+			'Customer Type'	=&gt; $CustomerType[$rec['customer_type']],
+			'Last Name'		=&gt; $rec['lastname'],
+			'First Name'	=&gt; $rec['firstname'],
+			'Phone Number'	=&gt; $rec['phone_number'],
+			'Phone Alt'		=&gt; $rec['phone_alt'],
+//			'Alternate Phone',
+			'Email Address'	=&gt; $rec['email'],
+			'Company'		=&gt; $rec['company'],
+			'Address1'		=&gt; $rec['address1'],
+			'Address2'		=&gt; $rec['address2'],
+			'City'			=&gt; $rec['city'],
+			'State'			=&gt; $rec['state'],
+			'Postal Code'	=&gt; $rec['zip'],
+			'Notes'			=&gt; $notetxt
+			);
+		$reports[]=$report;
+    	}
+	$fields=array_keys($reports[0]);
+	$data=implode(',',$fields) . &quot;\r\n&quot;;
+	foreach($reports as $report){
+		$vals=array();
+		foreach($fields as $field){
+			$val=preg_replace('/[\r\n]+/',' ',$report[$field]);
+			$val=preg_replace('/\,/',' ',$val);
+			$vals[]=$val;
+			}
+		$data .= implode(',',$vals) . &quot;\r\n&quot;;
+    	}
+    //header('Content-type: text/plain');
+    //echo $data;
+    //exit;
+    return pushData($data,'csv','xmlexport.csv');
+	}
+return $rtn;
+?&gt;
+]]></body>
+	<name>tickets_xlsreport</name>
+	<template>2</template>
+</xmldata>
+
+
+<xmldata name="_tabledata">
+	<_cdate>2009-10-02 14:07:26</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:11:14</_edate>
+	<_euser>2</_euser>
+	<_id>14</_id>
+	<formfields>question
+answer
+notes</formfields>
+	<formfields_mod>question
+answer
+notes</formfields_mod>
+	<listfields>question</listfields>
+	<listfields_mod>question</listfields_mod>
+	<tablename>tickets_scripts</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-20 06:11:23</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2010-05-25 23:34:32</_edate>
+	<_euser>2</_euser>
+	<_id>15</_id>
+	<formfields>file</formfields>
+	<formfields_mod>file</formfields_mod>
+	<listfields>ticket_id file file_type file_size description</listfields>
+	<listfields_mod>ticket_id file file_type file_size</listfields_mod>
+	<tablename>tickets_files</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-20 23:29:21</_cdate>
+	<_cuser>2</_cuser>
+	<_id>16</_id>
+	<formfields>type name sort</formfields>
+	<formfields_mod>type name sort</formfields_mod>
+	<listfields>type name sort</listfields>
+	<listfields_mod>type name sort</listfields_mod>
+	<tablename>tickets_status</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-20 23:29:21</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-20 23:34:41</_edate>
+	<_euser>2</_euser>
+	<_id>17</_id>
+	<formfields>name sort</formfields>
+	<formfields_mod>name sort</formfields_mod>
+	<listfields>name sort</listfields>
+	<listfields_mod>name sort</listfields_mod>
+	<tablename>tickets_ctypes</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-20 23:45:13</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 23:01:11</_edate>
+	<_euser>2</_euser>
+	<_id>18</_id>
+	<formfields>name sort active</formfields>
+	<formfields_mod>name sort</formfields_mod>
+	<listfields>name sort active</listfields>
+	<listfields_mod>name sort</listfields_mod>
+	<tablename>tickets_category</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-21 00:12:56</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-25 22:10:36</_edate>
+	<_euser>2</_euser>
+	<_id>19</_id>
+	<formfields>name tickets_id status
+email phone
+tickets_department_id tickets_category_id
+importance severity user_id
+summary
+details
+xmldata
+</formfields>
+	<formfields_mod>name
+email phone
+tickets_department_id tickets_category_id
+importance severity user_id
+summary
+details
+</formfields_mod>
+	<listfields>name
+email phone
+tickets_department_id tickets_category_id
+importance severity
+summary</listfields>
+	<listfields_mod>name
+email phone
+tickets_department_id tickets_category_id
+importance severity
+summary</listfields_mod>
+	<tablename>tickets</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-21 23:01:47</_cdate>
+	<_cuser>2</_cuser>
+	<_id>20</_id>
+	<formfields>name active</formfields>
+	<formfields_mod>name active</formfields_mod>
+	<listfields>name active</listfields>
+	<listfields_mod>name active</listfields_mod>
+	<tablename>tickets_department</tablename>
+</xmldata>
+<xmldata name="_tabledata">
+	<_cdate>2010-05-24 11:49:37</_cdate>
+	<_cuser>2</_cuser>
+	<_id>21</_id>
+	<formfields>name active</formfields>
+	<formfields_mod>name active</formfields_mod>
+	<listfields>name active</listfields>
+	<listfields_mod>name active</listfields_mod>
+	<tablename>tickets_buckets</tablename>
+</xmldata>
+
+
+<xmldata name="_templates">
+	<_cdate>2007-03-07 20:51:09</_cdate>
+	<_edate>2010-05-26 00:59:28</_edate>
+	<_id>2</_id>
+	<body><![CDATA[
+&lt;?
+/*filetype:php*/
+?&gt;
+&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; xml:lang=&quot;en&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;title&gt;Helpdesk - &lt;?global $PAGE;return $PAGE['name'];?&gt;&lt;/title&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+	&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;/wfiles/min/index.php?g=w_Css&quot; /&gt;
+	&lt;script language=&quot;javascript&quot; type=&quot;text/javascript&quot; src=&quot;/wfiles/min/index.php?g=w_Js&quot;&gt;&lt;/script&gt;
+	&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;/tickets_css&quot; /&gt;
+	&lt;script language=&quot;javascript&quot; type=&quot;text/javascript&quot; src=&quot;/tickets_js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?
+	/*filetype:php*/
+	if(!isUser()){return userLoginForm();}
+	global $PAGE;
+	global $USER;
+	includeDBOnce(array('-table'=&gt;&quot;_pages&quot;,'-field'=&gt;&quot;body&quot;,'-where'=&gt;&quot;name like 'tickets_functions'&quot;));
+	$rtn='';
+	if(isset($_REQUEST['do']) &amp;&amp; isset($_REQUEST['_modify'])){
+		switch(strtolower($_REQUEST['do'])){
+			case 'update':
+				if(is_array($_REQUEST['_modify'])){$ids=implode(',',$_REQUEST['_modify']);}
+				else{$ids=$_REQUEST['_modify'];}
+				$opts=array();
+				$fields=getDBFields('tickets');
+				foreach($fields as $field){
+					if(preg_match('/^\_/',$field)){continue;}
+					if(isset($_REQUEST[$field])){
+						if(isset($_REQUEST['_nochange']) &amp;&amp; $_REQUEST['_nochange']==1){
+							if(!isset($_REQUEST[$field])){continue;}
+							if(!strlen($_REQUEST[$field])){continue;}
+							$val=$_REQUEST[$field];
+							$opts[$field]=$val;
+		                	}
+		                else{
+							$val=strlen($_REQUEST[$field])?$_REQUEST[$field]:'NULL';
+							$opts[$field]=$val;
+							}
+						}
+		            }
+		        if(count($opts)){
+					$opts['-table']=&quot;tickets&quot;;
+					$opts['-where']=&quot;_id in ({$ids})&quot;;
+					if(isset($opts['status']) &amp;&amp; $opts['status']==7){
+						//set resolve date
+						$opts['resolved_date']=date(&quot;Y-m-d H:i:s&quot;);
+		            	}
+					$ok=editDBRecord($opts);
+		            }
+		        break;
+		    case 'add note':
+				$ticket=getDBRecord(array('-table'=&gt;&quot;tickets&quot;,'_id'=&gt;$_REQUEST['_modify']));
+		        if(is_array($ticket) &amp;&amp; isset($_REQUEST['note'])){
+					//Add a note
+					$addopts=array(
+						'-table'=&gt;&quot;tickets_notes&quot;,
+						'ticket_id'=&gt;$ticket['_id'],
+						'message'	=&gt; removeHtml($_REQUEST['note'])
+						);
+					$ok=addDBRecord($addopts);
+		        	}
+		        break;
+		    case 'send email':
+		    	$ticket=getDBRecord(array('-table'=&gt;&quot;tickets&quot;,'_id'=&gt;$_REQUEST['_modify']));
+		        if(is_array($ticket) &amp;&amp; isset($_REQUEST['subject']) &amp;&amp; isset($_REQUEST['message']) &amp;&amp; isEmail($ticket['email'])){
+					//send and email
+		            $message=nl2br($_REQUEST['message']);
+		            //append a footer to end of message
+		            if(is_array($ticket)){
+						$message .= '&lt;hr size=&quot;1&quot;&gt;'.&quot;\n&quot;;
+						$message .= '&lt;p&gt;'.&quot;\n&quot;;
+						$message .= '	To check the status of this helpdesk ticket, click on the link below.&lt;br&gt;'.&quot;\n&quot;;
+						//encrypt the email and id into one
+						$status_code=encrypt(&quot;{$ticket['email']}:{$ticket['_id']}&quot;,encodeCRC($_SERVER['HTTP_HOST']));
+						$link='http://'.$_SERVER['HTTP_HOST'].'/ticket_status?_code='.$status_code;
+						$message .= '&lt;a href=&quot;'.$link.'&quot;&gt;'.$link.'&lt;/a&gt;'.&quot;\n&quot;;
+						$message .= '&lt;/p&gt;'.&quot;\n&quot;;
+						$message .= '&lt;p&gt;'.&quot;\n&quot;;
+						$message .= ucwords($_SERVER['UNIQUE_HOST']) . ' Helpdesk Team&lt;br&gt;'.&quot;\n&quot;;
+						$link='http://'.$_SERVER['HTTP_HOST'];
+						$message .= '&lt;a href=&quot;'.$link.'&quot;&gt;'.$link.'&lt;/a&gt;'.&quot;\n&quot;;
+						$message .= '&lt;/p&gt;'.&quot;\n&quot;;
+		            	}
+					$subject=removeHtml($_REQUEST['subject']);
+					$from='support@'.$_SERVER['UNIQUE_HOST'];
+					$sendopts=array(
+						'to'=&gt;$ticket['email'],
+						'from'=&gt;$from,
+						'subject'=&gt;$subject,
+						'message'=&gt;$message
+						);
+		
+					$addopts=array('-table'=&gt;&quot;tickets_emails&quot;,
+						'ticket_id'=&gt;$ticket['_id'],
+						'email'		=&gt; $ticket['email'],
+						'subject'	=&gt; $subject,
+						'message'	=&gt; removeHtml($_REQUEST['message'])
+						);
+					if(is_array($_SESSION['attach_files'])){
+						$sendopts['attach']=array_keys($_SESSION['attach_files']);
+						$addopts['attachments']=implode(&quot;\r\n&quot;,$_SESSION['attach_files']);
+						}
+					$mail=sendMail($sendopts);
+					if(isset($mail['error'])){$addopts['errors']=printValue($mail);}
+					$id=addDBRecord($addopts);
+					//abort(printValue($mail).printValue($sendopts).printValue($addopts).printValue($id));
+		        	}
+		        break;
+		    }
+    	}
+    //Process attachments
+    if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) &amp;&amp; is_array($_FILES) &amp;&amp; count($_FILES) &gt; 0){
+		//ksort($_REQUEST);
+		//echo printValue($_REQUEST);
+		$fields=array_keys($_FILES);
+		//process
+		processFileUploads();
+		//add records
+		foreach($fields as $field){
+			if(!isNum($_FILES[$field]['size'])){continue;}
+			if($_FILES[$field]['size']==0){continue;}
+			$name=getFilename($_REQUEST[$field]);
+			if(isset($_REQUEST['ticket_id'])){$id=$_REQUEST['ticket_id'];}
+			else if(isset($_REQUEST['add_id'])){$id=$_REQUEST['add_id'];}
+			else if(isset($_REQUEST['edit_id'])){$id=$_REQUEST['edit_id'];}
+			$addopts=array(
+				'-table'	=&gt; &quot;tickets_files&quot;,
+				'ticket_id'	=&gt; $id,
+				'file'		=&gt; $_REQUEST[$field],
+				'file_size'	=&gt; $_REQUEST[&quot;{$field}_size&quot;],
+				'file_type'	=&gt; $_REQUEST[&quot;{$field}_type&quot;],
+				'filename'	=&gt; $name
+				);
+			//width and height?
+			if(isset($_REQUEST[&quot;{$field}_width&quot;]) &amp;&amp; isNum($_REQUEST[&quot;{$field}_width&quot;])){$addopts['file_width']=$_REQUEST[&quot;{$field}_width&quot;];}
+			if(isset($_REQUEST[&quot;{$field}_height&quot;]) &amp;&amp; isNum($_REQUEST[&quot;{$field}_height&quot;])){$addopts['file_height']=$_REQUEST[&quot;{$field}_width&quot;];}
+			//description?
+			if(preg_match('/^(.+)\_([0-9]+)$/s',$field,$nmatch)){
+				$addopts['description']=$_REQUEST[&quot;{$nmatch[1]}desc_{$nmatch[2]}&quot;];
+				}
+			else{$addopts['description']=$_REQUEST[&quot;{$field}desc&quot;];}
+			//$rtn .= &quot;NEW ATTACHMENT&quot; . printValue($addopts);
+			$attach_id=addDBRecord($addopts);
+			if(!isNum($attach_id)){
+				$rtn .= $attach_id . printValue($addopts);
+				}
+	    	}
+		}
+	//left menu bar
+
+	$rtn .= '&lt;table id=&quot;fullheight&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;tr valign=&quot;top&quot; id=&quot;fullheight&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;td class=&quot;c_lgrayback c_bright&quot; nowrap&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;div style=&quot;width:175px;&quot;&gt;'.&quot;\n&quot;;
+	//--------------------------------------------------------------------------
+	//Open Tickets
+	$rtn .= '	&lt;div id=&quot;menu_opentickets&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= showOpenTickets();
+	$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+	//--------------------------------------------------------------------------
+	//My Tickets
+	$rtn .= '	&lt;div id=&quot;menu_mytickets&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= showMyTickets();
+	$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+	//--------------------------------------------------------------------------
+	//Users - only available to levels 0,2,3
+	$rtn .= '	&lt;div id=&quot;menu_users&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= showUsers();
+	$rtn .= '	&lt;/div&gt;'.&quot;\n&quot;;
+	//--------------------------------------------------------------------------
+	$rtn .= '&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;td width=&quot;100%&quot;&gt;'.&quot;\n&quot;;
+	//Log off
+	$rtn .= '		&lt;div style=&quot;float:right;margin-right:15px;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= '			&lt;table cellspacing=&quot;0&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tr valign=&quot;middle&quot;&gt;'.&quot;\n&quot;;
+	if(preg_match('/stage/',$_SERVER['HTTP_HOST'])){
+		$rtn .= '				&lt;td class=&quot;w_bold c_red&quot;&gt; -!- STAGING SITE -!- &lt;/td&gt;'.&quot;\n&quot;;
+    	}
+	$rtn .= '				&lt;td&gt;&lt;img src=&quot;/wfiles/icons/users/user.gif&quot; border=&quot;0&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '				&lt;td&gt;&lt;a class=&quot;w_link c_blue w_bold&quot; href=&quot;#&quot; onClick=&quot;ajaxPopup(\'/php/index.php\',\'_action=editform&amp;-formfields=username:password,name,email,paging,signature&amp;-table=_users&amp;_id='.$USER['_id'].'\',{id:\'popupbox\',width:350,y:\'+10\',title:\'Edit My Profile\',center:\'x\',drag:1});return false;&quot; class=&quot;w_link&quot;&gt;'.$USER['name'].'&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '				&lt;td&gt;&lt;a class=&quot;w_link c_red w_bold&quot; href=&quot;/?_logout=1&quot;&gt;Log Off&lt;/a&gt;&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '			&lt;/tr&gt;&lt;/table&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '		&lt;div style=&quot;position:relative;&quot;&gt;'.&quot;\n&quot;;
+	$rtn .= evalPHP($PAGE{body});
+	$rtn .= '		&lt;/div&gt;'.&quot;\n&quot;;
+	$rtn .= '	&lt;/td&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/tr&gt;'.&quot;\n&quot;;
+	$rtn .= '&lt;/table&gt;'.&quot;\n&quot;;
+	return $rtn;
+?&gt;
+
+
+&lt;script language=&quot;javascript&quot; type=&quot;text/javascript&quot;&gt;
+	var timer_id='';
+	function scheduleTicketsTimer(){
+		clearTimeout(timer_id);
+		timer_id = setTimeout('ticketsTimer()',60000);
+    	}
+	function ticketsTimer(){
+		ajaxGet('/tickets_timer','null');
+    	}
+	function setSelectOptions(id,fld,val){
+		var sel=getObject(id);
+		var selname=sel.getAttribute('name');
+		var opts=new Array();
+		sel.options[opts.length]=new Option('-- Please Select --','');
+		opts[0]=1;
+		var slist=GetElementsByAttribute('div', fld, val);
+		if(val.length==0){
+			slist=GetElementsByAttribute('div', 'id', 'phonelist');
+        	}
+        sel.length=0;
+		for(i=0;i&lt;slist.length;i++){
+			var cval=slist[i].getAttribute(id);
+			var fval=slist[i].getAttribute(fld);
+			if(undefined != cval &amp;&amp; cval.length ){
+				if(cval=='other' || cval=='Other'){continue;}
+				//skip if we already have this one
+				var found=0;
+				for(x=0;x&lt;opts.length;x++){
+					if(opts[x] == cval){found=1;break;}
+	            	}
+	            if(!found){
+					opts[opts.length]=cval;
+					}
+            	}
+        	}
+        opts.sort();
+        var i=0;
+        while(i&lt;opts.length){
+			if(i==0){sel.options[i]=new Option('-- Please Select --','');}
+			else{
+				sel.options[i]=new Option(opts[i],opts[i]);
+				}
+			i++;
+        	}
+        sel.options[i]=new Option('Other','other');
+        return true;
+    	}
+&lt;/script&gt;
+&lt;div style=&quot;display:none&quot;&gt;&lt;div id=&quot;null&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<name>Tickets</name>
+</xmldata>
+<xmldata name="_templates">
+	<_cdate>2009-09-23 20:09:21</_cdate>
+	<_edate>2010-05-25 22:28:35</_edate>
+	<_id>3</_id>
+	<body><![CDATA[
+&lt;div id=&quot;popup_container&quot;&gt;
+&lt;div style=&quot;position:absolute;right:-11px;top:-11px;width:32px;height:32px;cursor:pointer;z-index:900&quot; onclick=&quot;hideId('centerpop');&quot;&gt;&lt;img src=&quot;/wfiles/icons/Xbutton.png&quot; border=&quot;0&quot;&gt;&lt;/div&gt;
+&lt;?
+/*filetype:php*/
+global $PAGE;
+return evalPHP($PAGE['body']);
+?&gt;
+&lt;?return buildOnLoad(&quot;centerObject('centerpop');&quot;);?&gt;
+&lt;/div&gt;
+]]></body>
+	<name>Tickets_Popup</name>
+</xmldata>
+
+
+<xmlschema name="tickets">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="assigned_date" type="datetime NULL" />
+	<field name="details" type="text NULL" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="email_dir" type="varchar(255) NULL" />
+	<field name="http_host" type="varchar(255) NULL" />
+	<field name="importance" type="tinyint(4) NOT NULL Default 3" />
+	<field name="name" type="varchar(255) NULL" />
+	<field name="phone" type="varchar(25) NULL" />
+	<field name="remote_addr" type="varchar(30) NULL" />
+	<field name="remote_browser" type="varchar(50) NULL" />
+	<field name="remote_device" type="varchar(15) NULL" />
+	<field name="resolved_date" type="datetime NULL" />
+	<field name="severity" type="tinyint(4) NOT NULL Default 3" />
+	<field name="status" type="tinyint(4) NOT NULL Default 1" />
+	<field name="stopwatch" type="int(11) NOT NULL Default 0" />
+	<field name="summary" type="varchar(125) NOT NULL" />
+	<field name="tickets_bucket_id" type="int(11) NULL" />
+	<field name="tickets_category_id" type="int(11) NULL" />
+	<field name="tickets_department_id" type="int(11) NULL" />
+	<field name="tickets_id" type="int(11) NOT NULL Default 0" />
+	<field name="user_id" type="int(11) NULL" />
+	<field name="xmldata" type="mediumtext NULL" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:08:58</_cdate>
+	<_cuser>2</_cuser>
+	<_id>207</_id>
+	<fieldname>xmldata</fieldname>
+	<height>300</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:09:10</_cdate>
+	<_cuser>2</_cuser>
+	<_id>208</_id>
+	<fieldname>category</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select name from tickets_category</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:09:25</_cdate>
+	<_cuser>2</_cuser>
+	<_id>209</_id>
+	<defaultval>US</defaultval>
+	<dvals>select name from countries order by name,_id</dvals>
+	<fieldname>country</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select code from countries order by name,_id</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:09:36</_cdate>
+	<_cuser>2</_cuser>
+	<_id>210</_id>
+	<dvals>select name from tickets_ctypes order by sort,_id</dvals>
+	<fieldname>customer_type</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_ctypes order by sort,_id</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:09:58</_cdate>
+	<_cuser>2</_cuser>
+	<_id>211</_id>
+	<dvals>select firstname,lastname from _users where not(_id=1) order by firstname,lastname,_id</dvals>
+	<fieldname>owner_id</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from _users where not(_id=1) order by firstname,lastname,_id</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:10:11</_cdate>
+	<_cuser>2</_cuser>
+	<_id>212</_id>
+	<dvals>Pre-sales question
+Shipping question
+Product issue</dvals>
+	<fieldname>regarding</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>sales
+ship
+product</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:10:26</_cdate>
+	<_cuser>2</_cuser>
+	<_id>213</_id>
+	<dvals>select name from states order by name,code</dvals>
+	<fieldname>state</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select code from states order by name,code</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:11:30</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:39:11</_edate>
+	<_euser>2</_euser>
+	<_id>214</_id>
+	<defaultval>1</defaultval>
+	<dvals>New / Unassigned
+Assigned
+Waiting
+Resolved
+
+</dvals>
+	<fieldname>status</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4
+</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 00:11:52</_cdate>
+	<_cuser>2</_cuser>
+	<_id>215</_id>
+	<fieldname>type</fieldname>
+	<height>0</height>
+	<inputmax>0</inputmax>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>phone
+email
+webform</tvals>
+	<width>0</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:32:14</_cdate>
+	<_cuser>2</_cuser>
+	<_id>216</_id>
+	<displayname>Description/Details</displayname>
+	<fieldname>details</fieldname>
+	<height>250</height>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:32:52</_cdate>
+	<_cuser>2</_cuser>
+	<_id>217</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<tablename>tickets</tablename>
+	<width>300</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:34:17</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 11:11:48</_edate>
+	<_euser>2</_euser>
+	<_id>218</_id>
+	<defaultval>3</defaultval>
+	<dvals>Essential
+Need it
+Want it
+Suggestion</dvals>
+	<fieldname>importance</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:34:38</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-24 11:56:35</_edate>
+	<_euser>2</_euser>
+	<_id>219</_id>
+	<fieldname>name</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<width>300</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:34:57</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 09:14:57</_edate>
+	<_euser>2</_euser>
+	<_id>220</_id>
+	<fieldname>phone</fieldname>
+	<inputmax>25</inputmax>
+	<inputtype>text</inputtype>
+	<tablename>tickets</tablename>
+	<width>145</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:37:04</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:38:02</_edate>
+	<_euser>2</_euser>
+	<_id>221</_id>
+	<defaultval>3</defaultval>
+	<dvals>Sky is falling
+Urgent
+Normal
+Anytime</dvals>
+	<fieldname>severity</fieldname>
+	<inputtype>select</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<tvals>1
+2
+3
+4</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:37:23</_cdate>
+	<_cuser>2</_cuser>
+	<_id>222</_id>
+	<fieldname>stopwatch</fieldname>
+	<inputtype>text</inputtype>
+	<tablename>tickets</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:37:44</_cdate>
+	<_cuser>2</_cuser>
+	<_id>223</_id>
+	<fieldname>summary</fieldname>
+	<inputmax>125</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets</tablename>
+	<width>500</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:41:31</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 22:43:05</_edate>
+	<_euser>2</_euser>
+	<_id>224</_id>
+	<displayname>Category</displayname>
+	<dvals>select name from tickets_category where active=1 order by name,_id</dvals>
+	<fieldname>tickets_category_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_category where active=1 order by name,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:42:36</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 23:02:38</_edate>
+	<_euser>2</_euser>
+	<_id>225</_id>
+	<displayname>Department</displayname>
+	<dvals>select name from tickets_department where active=1 order by name,_id</dvals>
+	<fieldname>tickets_department_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_department where active=1 order by name,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 22:44:45</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 11:22:46</_edate>
+	<_euser>2</_euser>
+	<_id>226</_id>
+	<displayname>Assigned To</displayname>
+	<dvals><![CDATA[
+select firstname,lastname from _users where active=1 and _id &gt; 1 order by firstname,lastname,_id
+]]></dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals><![CDATA[
+select _id from _users where active=1 and _id &gt; 1 order by firstname,lastname,_id
+]]></tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-24 11:52:01</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-25 22:03:54</_edate>
+	<_euser>2</_euser>
+	<_id>231</_id>
+	<dvals>select name from tickets_buckets where active=1 order by name,_id</dvals>
+	<fieldname>tickets_bucket_id</fieldname>
+	<inputtype>select</inputtype>
+	<tablename>tickets</tablename>
+	<tvals>select _id from tickets_buckets where active=1 order by name,_id</tvals>
+</xmlmeta>
+
+
+<xmlschema name="tickets_buckets">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(4) NOT NULL Default 1" />
+	<field name="name" type="varchar(100) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2010-05-24 11:49:37</_cdate>
+	<_cuser>2</_cuser>
+	<_id>21</_id>
+	<formfields>name active</formfields>
+	<formfields_mod>name active</formfields_mod>
+	<listfields>name active</listfields>
+	<listfields_mod>name active</listfields_mod>
+	<tablename>tickets_buckets</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-24 11:49:45</_cdate>
+	<_cuser>2</_cuser>
+	<_id>230</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_buckets</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="tickets_buckets">
+	<_cdate>2010-05-24 11:49:58</_cdate>
+	<_cuser>2</_cuser>
+	<_id>1</_id>
+	<active>1</active>
+	<name>IT/Helpdesk</name>
+</xmldata>
+<xmldata name="tickets_buckets">
+	<_cdate>2010-05-24 11:50:05</_cdate>
+	<_cuser>2</_cuser>
+	<_id>2</_id>
+	<active>1</active>
+	<name>Facilities</name>
+</xmldata>
+<xmldata name="tickets_buckets">
+	<_cdate>2010-05-24 11:50:14</_cdate>
+	<_cuser>2</_cuser>
+	<_id>3</_id>
+	<active>1</active>
+	<name>Quality Control</name>
+</xmldata>
+<xmldata name="tickets_buckets">
+	<_cdate>2010-05-24 11:50:35</_cdate>
+	<_cuser>2</_cuser>
+	<_id>4</_id>
+	<active>1</active>
+	<name>Account Management</name>
+</xmldata>
+
+
+<xmlschema name="tickets_category">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(4) NOT NULL Default 1" />
+	<field name="name" type="varchar(100) NOT NULL UNIQUE" />
+	<field name="sort" type="tinyint(4) NOT NULL Default 0" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2010-05-20 23:45:13</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 23:01:11</_edate>
+	<_euser>2</_euser>
+	<_id>18</_id>
+	<formfields>name sort active</formfields>
+	<formfields_mod>name sort</formfields_mod>
+	<listfields>name sort active</listfields>
+	<listfields_mod>name sort</listfields_mod>
+	<tablename>tickets_category</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-20 23:44:45</_cdate>
+	<_cuser>2</_cuser>
+	<_id>205</_id>
+	<fieldname>name</fieldname>
+	<inputmax>100</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_category</tablename>
+	<width>150</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-20 23:45:01</_cdate>
+	<_cuser>2</_cuser>
+	<_id>206</_id>
+	<defaultval>0</defaultval>
+	<fieldname>sort</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<tablename>tickets_category</tablename>
+	<width>50</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 23:00:59</_cdate>
+	<_cuser>2</_cuser>
+	<_id>227</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_category</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="tickets_category">
+	<_cdate>2010-05-20 23:48:12</_cdate>
+	<_cuser>2</_cuser>
+	<_id>1</_id>
+	<active>1</active>
+	<name>Hardware Problem</name>
+	<sort>1</sort>
+</xmldata>
+<xmldata name="tickets_category">
+	<_cdate>2010-05-20 23:48:24</_cdate>
+	<_cuser>2</_cuser>
+	<_id>2</_id>
+	<active>1</active>
+	<name>Software Problems</name>
+	<sort>2</sort>
+</xmldata>
+<xmldata name="tickets_category">
+	<_cdate>2010-05-20 23:48:53</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-21 07:35:15</_edate>
+	<_euser>2</_euser>
+	<_id>3</_id>
+	<active>1</active>
+	<name>Reports / SQL</name>
+	<sort>3</sort>
+</xmldata>
+<xmldata name="tickets_category">
+	<_cdate>2010-05-21 07:36:14</_cdate>
+	<_cuser>2</_cuser>
+	<_id>4</_id>
+	<active>1</active>
+	<name>Process</name>
+	<sort>4</sort>
+</xmldata>
+<xmldata name="tickets_category">
+	<_cdate>2010-05-21 07:37:00</_cdate>
+	<_cuser>2</_cuser>
+	<_id>5</_id>
+	<active>1</active>
+	<name>Bandwidth/Connectivity</name>
+	<sort>5</sort>
+</xmldata>
+
+
+<xmlschema name="tickets_department">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(4) NOT NULL Default 1" />
+	<field name="name" type="varchar(100) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2010-05-21 23:01:47</_cdate>
+	<_cuser>2</_cuser>
+	<_id>20</_id>
+	<formfields>name active</formfields>
+	<formfields_mod>name active</formfields_mod>
+	<listfields>name active</listfields>
+	<listfields_mod>name active</listfields_mod>
+	<tablename>tickets_department</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-21 23:01:35</_cdate>
+	<_cuser>2</_cuser>
+	<_id>228</_id>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<tablename>tickets_department</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="tickets_department">
+	<_cdate>2010-05-21 22:55:36</_cdate>
+	<_cuser>2</_cuser>
+	<_id>1</_id>
+	<active>1</active>
+	<name>Sales</name>
+</xmldata>
+
+
+<xmlschema name="tickets_emails">
+	<field name="_cdate" type="datetime NULL" />
+	<field name="_cuser" type="int(11) NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="attachments" type="varchar(255) NULL" />
+	<field name="email" type="varchar(255) NOT NULL" />
+	<field name="errors" type="varchar(255) NULL" />
+	<field name="message" type="text NULL" />
+	<field name="subject" type="varchar(255) NOT NULL" />
+	<field name="ticket_id" type="int(11) NOT NULL" />
+</xmlschema>
+
+
+<xmlschema name="tickets_files">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="description" type="varchar(255) NULL" />
+	<field name="file" type="varchar(255) NOT NULL" />
+	<field name="file_height" type="int(11) NULL" />
+	<field name="file_size" type="int(11) NOT NULL" />
+	<field name="file_type" type="varchar(50) NOT NULL" />
+	<field name="file_width" type="int(11) NULL" />
+	<field name="ticket_id" type="int(11) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-20 06:10:40</_cdate>
+	<_cuser>1</_cuser>
+	<_id>198</_id>
+	<fieldname>ticket_id</fieldname>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_files</tablename>
+	<width>60</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2010-05-20 06:10:26</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2010-05-25 23:26:51</_edate>
+	<_euser>2</_euser>
+	<_id>197</_id>
+	<defaultval>/tickets_files</defaultval>
+	<fieldname>file</fieldname>
+	<inputtype>file</inputtype>
+	<required>1</required>
+	<tablename>tickets_files</tablename>
+</xmlmeta>
+
+
+<xmlschema name="tickets_notes">
+	<field name="_cdate" type="datetime NULL" />
+	<field name="_cuser" type="int(11) NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="file" type="varchar(255) NULL" />
+	<field name="message" type="text NULL" />
+	<field name="ticket_id" type="int(11) NOT NULL" />
+</xmlschema>
+
+
+<xmlschema name="tickets_scripts">
+	<field name="_cdate" type="datetime NULL" />
+	<field name="_cuser" type="int(11) NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="answer" type="text NULL" />
+	<field name="notes" type="text NULL" />
+	<field name="question" type="varchar(255) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-10-02 14:05:57</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:33</_edate>
+	<_euser>2</_euser>
+	<_id>168</_id>
+	<fieldname>question</fieldname>
+	<height>0</height>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<required>1</required>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-10-02 14:06:54</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:22</_edate>
+	<_euser>2</_euser>
+	<_id>169</_id>
+	<fieldname>answer</fieldname>
+	<height>200</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2009-10-02 14:07:06</_cdate>
+	<_cuser>2</_cuser>
+	<_edate>2010-05-22 07:10:14</_edate>
+	<_euser>2</_euser>
+	<_id>170</_id>
+	<fieldname>notes</fieldname>
+	<height>150</height>
+	<inputmax>0</inputmax>
+	<inputtype>textarea</inputtype>
+	<tablename>tickets_scripts</tablename>
+	<width>400</width>
+</xmlmeta>
+
+
+</export>

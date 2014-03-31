@@ -1,0 +1,827 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="wasql_blue4" timestamp="1346268781">
+
+
+<xmldata name="_pages">
+	<_adate>2012-08-29 12:43:01</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_amem>3670016</_amem>
+	<_cdate>2012-07-23 15:06:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2012-08-29 12:44:46</_edate>
+	<_env><![CDATA[
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;env&gt;
+        &lt;GUID&gt;2831587935&lt;/GUID&gt;
+        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:14.0) Gecko/20100101 Firefox/14.0.1&lt;/HTTP_USER_AGENT&gt;
+        &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
+        &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
+        &lt;REMOTE_BROWSER_VERSION&gt;14.0&lt;/REMOTE_BROWSER_VERSION&gt;
+        &lt;REMOTE_COUNTRY&gt;us&lt;/REMOTE_COUNTRY&gt;
+        &lt;REMOTE_DEVICE&gt;PC&lt;/REMOTE_DEVICE&gt;
+        &lt;REMOTE_LANG&gt;en-us&lt;/REMOTE_LANG&gt;
+        &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
+        &lt;REMOTE_PORT&gt;63152&lt;/REMOTE_PORT&gt;
+&lt;env&gt;
+
+]]></_env>
+	<_euser>1</_euser>
+	<_id>13</_id>
+	<_template>1</_template>
+	<body><![CDATA[
+&lt;view:cc&gt;
+&lt;view:cctop&gt;
+&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/cart.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; Shopping Cart&lt;/div&gt;
+&lt;div class=&quot;w_centerpop_content&quot;&gt;
+&lt;/view:cctop&gt;
+&lt;div style=&quot;padding:15px;width:800px;&quot; align=&quot;center&quot;&gt;
+&lt;view:checkout&gt;
+&lt;form method=&quot;post&quot; name=&quot;cartform&quot; class=&quot;w_form&quot; action=&quot;/cart&quot; onsubmit=&quot;ajaxSubmitForm(this,'centerpop');return false;&quot;&gt;
+&lt;input type=&quot;hidden&quot; name=&quot;func&quot; value=&quot;process&quot;&gt;
+&lt;table cellspacing=&quot;2&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+	&lt;tr&gt;
+		&lt;td valign=&quot;top&quot;&gt;
+			&lt;div class=&quot;w_gradientblue w_white w_biggest w_roundsmall_topleft w_roundsmall_botleft w_padleft&quot; style=&quot;margin:5px 0 5px 0;&quot;&gt;
+				&lt;img src=&quot;/wfiles/iconsets/32/invoice.png&quot; border=&quot;0&quot; class=&quot;w_middle w_noborder&quot; /&gt; 
+				Bill To
+			&lt;/div&gt;
+
+			&lt;table cellspacing=&quot;2&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+				&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtoname');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Address&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;
+					&lt;div&gt;&lt;?=buildFormField('orders','billtoaddress1');?&gt;&lt;/div&gt;
+					&lt;div&gt;&lt;?=buildFormField('orders','billtoaddress2');?&gt;&lt;/div&gt;
+				&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;City&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtocity');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;State&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtostate');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Zipcode&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtozipcode');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Country&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtocountry');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Email&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','billtoemail');?&gt;&lt;/td&gt;&lt;/tr&gt;
+			&lt;/table&gt;
+		&lt;/td&gt;
+		&lt;td valign=&quot;top&quot;&gt;
+			&lt;div class=&quot;w_gradientblue w_white w_biggest w_roundsmall_topright w_roundsmall_botright w_padleft&quot; style=&quot;margin:5px 0 5px 0;&quot;&gt;
+				&lt;img src=&quot;/wfiles/iconsets/32/people.png&quot; border=&quot;0&quot; class=&quot;w_middle w_noborder&quot; /&gt;
+				Ship To
+				&lt;button onclick=&quot;return ajaxGet('/cart','cartnull',{func:'sab'});&quot; style=&quot;margin:0px;padding:1px;font-size:12px;font-family:arial;&quot; class=&quot;w_middle&quot;&gt;Same as Billto&lt;/button&gt;
+			&lt;/div&gt;
+
+			&lt;table cellspacing=&quot;2&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+				&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptoname');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td valign=&quot;top&quot;&gt;Address&lt;/td&gt;&lt;td valign=&quot;top&quot;&gt;
+					&lt;div&gt;&lt;?=buildFormField('orders','shiptoaddress1');?&gt;&lt;/div&gt;
+					&lt;div&gt;&lt;?=buildFormField('orders','shiptoaddress2');?&gt;&lt;/div&gt;
+				&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;City&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptocity');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;State&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptostate');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Zipcode&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptozipcode',array('onchange'=&gt;&quot;if(this.value.length &gt; 4){showId('shipmethod_div');}else{hideId('shipmethod_div');}&quot;));?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Country&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptocountry');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Email&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','shiptoemail');?&gt;&lt;/td&gt;&lt;/tr&gt;
+			&lt;/table&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;tr&gt;
+		&lt;td valign=&quot;top&quot;&gt;
+			&lt;div class=&quot;w_gradientblue w_white w_biggest w_roundsmall_topleft w_roundsmall_botleft w_padleft&quot; style=&quot;margin:5px 0 5px 0;&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/creditcard.png&quot; border=&quot;0&quot; class=&quot;w_middle w_noborder&quot; /&gt; Payment Method&lt;/div&gt;
+			&lt;table cellspacing=&quot;2&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+				&lt;tr&gt;&lt;td&gt;Credit Card Number&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','cc_num');?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Expiration Date&lt;/td&gt;&lt;td&gt;&lt;?=buildFormField('orders','cc_month',array('message'=&gt;&quot;--month--&quot;));?&gt;/&lt;?=buildFormField('orders','cc_year',array('message'=&gt;&quot;--year--&quot;));?&gt;&lt;/td&gt;&lt;/tr&gt;
+				&lt;tr&gt;&lt;td&gt;Verification Code&lt;/td&gt;&lt;td&gt;
+					&lt;?=buildFormField('orders','cc_cvv2');?&gt;
+					&lt;div id=&quot;cvv2&quot; style=&quot;display:none;position:absolute;padding:7px;background:#FFF&quot; class=&quot;w_roundsmall w_border&quot; onclick=&quot;hideId('cvv2');&quot;&gt;&lt;div align=&quot;center&quot; class=&quot;w_bold w_big w_dblue&quot;&gt;Card Verification Code&lt;/div&gt;&lt;img src=&quot;/wfiles/icons/pymt/cvv2.gif&quot; border=&quot;0&quot; title=&quot;click on image to hide&quot; style=&quot;padding:0px;background:none;border:0px;&quot;&gt;&lt;/div&gt;
+					&lt;a href=&quot;#&quot; class=&quot;w_smaller w_link w_lblue&quot; onclick=&quot;showHide('cvv2');return false;&quot;&gt;what is this?&lt;/a&gt;
+				&lt;/td&gt;&lt;/tr&gt;
+			&lt;/table&gt;
+		&lt;/td&gt;
+		&lt;td valign=&quot;top&quot; align=&quot;left&quot;&gt;
+			&lt;div class=&quot;w_gradientblue w_white w_biggest w_roundsmall_topright w_roundsmall_botright w_padleft&quot; style=&quot;margin:5px 0 5px 0;&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/box.png&quot; border=&quot;0&quot; class=&quot;w_middle w_noborder&quot; /&gt;  Shipment Method&lt;/div&gt;
+			&lt;div id=&quot;shipmethod_div&quot; style=&quot;display:&lt;?=$shipmethod_display;?&gt;;&quot;&gt;
+			&lt;table cellspacing=&quot;2&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;
+				&lt;tr&gt;&lt;td&gt;&lt;?=buildFormField('orders','ship_method',array('onclick'=&gt;&quot;ajaxGet('/cart','cart','_template=1&amp;func=shipmethod&amp;zipcode='+document.cartform.shiptozipcode.value+'&amp;shipmethod='+this.value);&quot;));?&gt;&lt;/td&gt;&lt;/tr&gt;
+			&lt;/table&gt;
+			&lt;div id=&quot;shipmethod_price&quot;&gt;&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/td&gt;
+	&lt;tr&gt;
+		&lt;td colspan=&quot;2&quot; align=&quot;left&quot; valign=&quot;top&quot;&gt;
+&lt;/view:checkout&gt;
+&lt;view:cart&gt;
+&lt;div id=&quot;cart&quot;&gt;
+	&lt;div class=&quot;w_gradientorange w_white w_biggest w_roundsmall w_padleft&quot; style=&quot;margin:5px 0 5px 0;&quot; align=&quot;left&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/cart.png&quot; border=&quot;0&quot; class=&quot;w_middle w_noborder&quot; /&gt;  Items in your cart&lt;/div&gt;
+	&lt;table class=&quot;w_table&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; border=&quot;1&quot; width=&quot;100%&quot;&gt;
+		&lt;thead&gt;
+			&lt;tr&gt;
+				&lt;th&gt;X&lt;/th&gt;
+				&lt;th&gt;Itemid&lt;/th&gt;
+				&lt;th&gt;Description&lt;/th&gt;
+				&lt;th&gt;Quantity&lt;/th&gt;
+				&lt;th&gt;Price&lt;/th&gt;
+				&lt;th&gt;Subtotal&lt;/th&gt;
+			&lt;/tr&gt;
+		&lt;/thead&gt;
+		&lt;tbody&gt;
+			&lt;?
+			$totals=array();
+			foreach($order['items'] as $item){
+				$subtotal=$item['price']*$item['quantity'];
+				$totals['quantity']+=$item['quantity'];
+				$totals['subtotal']+=$subtotal;
+            	echo '&lt;tr&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td&gt;&lt;input type=&quot;checkbox&quot; onclick=&quot;if(confirm(\'Remove item from cart?\')){ajaxGet(\'/cart\',\'cart\',\'_template=1&amp;func=del&amp;id='.$item['_id'].'\');}return false;&quot;&gt;&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td&gt;'.$item['itemid'].'&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td&gt;'.$item['description'].'&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td align=&quot;right&quot;&gt;'.$item['quantity'].'&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td align=&quot;right&quot;&gt;'.$item['price'].'&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '	&lt;td align=&quot;right&quot;&gt;'.$subtotal.'&lt;/td&gt;'.&quot;\n&quot;;
+            	echo '&lt;/tr&gt;'.&quot;\n&quot;;
+			}
+			?&gt;
+		&lt;/tbody&gt;
+		&lt;tfoot&gt;
+		&lt;tr&gt;
+			&lt;th colspan=&quot;3&quot; align=&quot;right&quot;&gt;Totals&lt;/th&gt;
+			&lt;th align=&quot;right&quot;&gt;&lt;?=$totals['quantity'];?&gt;&lt;/th&gt;
+			&lt;th&gt;&lt;/th&gt;
+			&lt;th align=&quot;right&quot;&gt;$ &lt;?=$totals['subtotal'];?&gt;&lt;/th&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;th colspan=&quot;4&quot; align=&quot;right&quot;&gt;Shipping &amp; Handling&lt;/th&gt;
+			&lt;th align=&quot;right&quot;&gt;&lt;?=$order['ship_price'];?&gt;&lt;/th&gt;
+			&lt;th align=&quot;right&quot;&gt;$ &lt;?=$totals['subtotal']+$order['ship_price'];?&gt;&lt;/th&gt;
+		&lt;/tr&gt;
+		&lt;/tfoot&gt;
+	&lt;/table&gt;
+	&lt;view:cbutton&gt;
+		&lt;div align=&quot;right&quot;&gt;&lt;button onclick=&quot;return ajaxGet('/cart','centerpop',{func:'checkout'});&quot;&gt;Checkout&lt;/button&gt;&lt;/div&gt;
+	&lt;/view:cbutton&gt;
+&lt;/div&gt;
+&lt;/view:cart&gt;
+&lt;view:checkout&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;/table&gt;
+&lt;div align=&quot;right&quot; style=&quot;padding:10px 20px 10px 20px;&quot;&gt;&lt;input type=&quot;submit&quot; value=&quot;Submit Order&quot;&gt;&lt;/div&gt;
+&lt;/form&gt;
+&lt;/view:checkout&gt;
+&lt;div style=&quot;display:none&quot;&gt;&lt;div id=&quot;cartnull&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;view:cctop&gt;
+&lt;/div&gt;
+&lt;/view:cctop&gt;
+&lt;/view:cc&gt;
+
+&lt;view:empty&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/cart.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; Shopping Cart&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		Your cart is currently empty.
+	&lt;/div&gt;
+&lt;/view:empty&gt;
+
+&lt;view:sab&gt;
+&lt;!-- same as shipping --&gt;
+&lt;?=$sab;?&gt;
+&lt;/view:sab&gt;
+
+&lt;view:cc_success&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/cart.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; Shopping Cart&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;div&gt;&lt;img src=&quot;/wfiles/icons/thankyou.gif&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt;&lt;/div&gt;
+		Thank you so much for your order! It is now in our system and being processed.
+		&lt;?=$message;?&gt;
+	&lt;/div&gt;
+&lt;/view:cc_success&gt;
+&lt;view:cc_failure&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/16/cart.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; Shopping Cart&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		Failed to process your order!
+		&lt;?=$message;?&gt;
+	&lt;/div&gt;
+&lt;/view:cc_failure&gt;
+]]></body>
+	<controller><![CDATA[
+&lt;?
+global $CART;
+/* ------------------------------- USER DEFINED SETTINGS ---------------------------------- */
+$CART=array(
+	'merchant_type'			=&gt; &quot;auth_nmi&quot;, 	// auth_nmi or authnet,
+	'ordernumber_prefix'	=&gt; &quot;ZX&quot;,		//prefix to add to ordernumbers
+	//NMI settings -- test user=demo, pass=password, ccnum=4111111111111111, ccexp=12/12
+	'nmi_settings'			=&gt; array(
+		'username'			=&gt; &quot;demo&quot;,
+		'password'			=&gt; &quot;password&quot;,
+		'order_description'	=&gt; &quot;Purchase from {$_SERVER['HTTP_HOST']}&quot;
+	),
+	'authnet_settings'		=&gt; array(
+		'authId'			=&gt; &quot;&quot;,
+		'authKey'			=&gt; &quot;&quot;,
+		'description'		=&gt; &quot;Purchase from {$_SERVER['HTTP_HOST']}&quot;
+	),
+	//email alert settings
+	'order_alert_email_to'		=&gt; 'steve.lloyd@gmail.com',
+	'order_alert_email_from'	=&gt; 'orders@timequest.org',
+	'order_alert_email_subject'	=&gt; 'Attn: New Order from the web',
+	'order_alert_email_smtp'	=&gt; 'mail.timequest.org',
+	'order_alert_email_user'	=&gt; 'slloyd@timequest.org',
+	'order_alert_email_pass'	=&gt; 'ste88llo'
+);
+/* ---------------------------------------------------------------------------------------- */
+global $PAGE;
+global $USER;
+/*
+	verify orders table - we will add an order record even before the purchase is final.
+	Cart orders: status=cart - this means that the order is not final.
+					These orders are removed after 3 days of inactivity
+				status=approved - new order - ready to process - never removed
+				status=denied - credit card was denied - these items removed after 15 days
+				status=fulfillment - ready to fulfill
+				status=shipped - shipped
+				status=delivered - product was delivered
+*/
+//dropDBTable('orders');
+//dropDBTable('orders_items');
+//$ok=delDBRecord(array('-table'=&gt;'_fielddata','-where'=&gt;&quot;tablename='orders'&quot;));
+//debugValue(&quot;delDBRecord&quot;.$ok);
+//require_once('geonames.php');
+//$file=geonamesDownloadZip();
+//echo &quot;HEre&quot; . printValue($file);
+//exit;
+pageVerifySchema();
+pageCartCleanup();
+switch(strtolower($_REQUEST['func'])){
+	case 'del':
+		pageCartAction($_REQUEST['func']);
+		$order=pageLoadCart(1);
+		setView('cart',1);setView('cc');setView('cbutton');
+		if(!is_array($order) || !is_array($order['items']) || count($order['items'])==0){
+        	setView('empty',1);
+		}
+		break;
+	case 'add':
+		pageCartAction($_REQUEST['func']);
+		$order=pageLoadCart(1);
+		setView('cart',1);setView('cc');setView('cctop');setView('cbutton');
+		if(!is_array($order) || !is_array($order['items']) || count($order['items'])==0){
+        	setView('empty',1);
+		}
+		break;
+	case 'sab':
+		//Same as Billto - fill in the shipto fields
+		$fields=getDBFields('orders');
+		$onloads=array(&quot;showId('shipmethod_div')&quot;);
+		foreach($fields as $field){
+        	if(preg_match('/^billto(.+)$/i',$field,$m)){
+            	$onloads[]=&quot;setText('shipto{$m[1]}',getText('{$field}'))&quot;;
+			}
+		}
+		setView('sab',1);
+		$sab=buildOnLoad(implode(';',$onloads));
+		break;
+	case 'checkout':
+		$order=pageLoadCart(1);
+		//if cart is empty just show empty view
+		if(!is_array($order) || !is_array($order['items']) || count($order['items'])==0){
+        	setView('empty',1);
+        	return;
+		}
+		//set display mode of shipmethods
+		$shipmethod_display=(isset($order['shiptozipcode']) &amp;&amp; strlen($order['shiptozipcode']) &gt; 4)?'block':'none';
+		//default country to US
+		if(!isset($_REQUEST['billtocountry'])){
+			$_REQUEST['billtocountry']='US';
+			$_REQUEST['shiptocountry']='US';
+		}
+		setView('checkout',1);setView('cc');setView('cctop');setView('cart');
+		break;
+	case 'shipmethod':
+		pageSetShipmethod($_REQUEST['shipmethod']);
+		$order=pageLoadCart(1);
+		setView('cart',1);setView('cc');
+		if(!is_array($order) || !is_array($order['items']) || count($order['items'])==0){
+        	setView('empty',1);
+		}
+		break;
+	case 'process':
+		/*process the order
+			record the order billto and shipto info
+			process credit card
+			change order status based on credit card success
+			set customer message
+		*/
+		//record the order billto and shipto info
+
+		$order=pageLoadCart();
+		$ordernumber=$CART['ordernumber_prefix'].$order['_id'];
+		$fields=getDBFields('orders');
+		$editopts=array();
+		foreach($fields as $field){
+        	if(!isset($order[$field]) &amp;&amp; isset($_REQUEST[$field])){
+            	$editopts[$field]=$_REQUEST[$field];
+			}
+		}
+		if(count($editopts)){
+			$editopts['-table']=&quot;orders&quot;;
+			$editopts['-where']=&quot;_id={$order['_id']}&quot;;
+			$editopts['ordernumber']=$ordernumber;
+        	$ok=editDBRecord($editopts);
+        	$order=pageLoadCart();
+		}
+		$progpath=dirname(__FILE__);
+		$progpath=preg_replace('/\/temp$/i','',$progpath);
+		//process credit card
+		list($firstname,$lastname)=preg_split('/\s+/',$order['billtoname'],2);
+		list($shiptofirstname,$shiptolastname)=preg_split('/\s+/',$order['shiptoname'],2);
+		switch(strtolower($CART['merchant_type'])){
+			case 'auth_nmi':
+				require_once(&quot;{$progpath}/auth_nmi.php&quot;);
+				//nmi
+				$cc=array(
+					'ccnumber'	=&gt; $_REQUEST['cc_num'],
+					'ccexp'		=&gt; &quot;{$_REQUEST['cc_month']}/{$_REQUEST['cc_year']}&quot;,
+					'cvv'		=&gt; $order['cc_cvv2'],
+					'amount'	=&gt; round($order['order_total'],2),
+					'-ssl'		=&gt; $CART['nmi_settings']['username']=='demo'?false:true,
+					'shipping'	=&gt; $order['ship_price'],
+					'orderid'	=&gt; $ordernumber,
+					'method'	=&gt; &quot;creditcard&quot;,
+					//billto
+					'first_name'=&gt; $firstname,
+					'last_name'	=&gt; $lastname,
+					'address1'	=&gt; $order['billtoaddress1'],
+					'address2'	=&gt; $order['billtoaddress2'],
+					'city'		=&gt; $order['billtocity'],
+					'state'		=&gt; $order['billtostate'],
+					'zip'		=&gt; $order['billtozipcode'],
+					'country'	=&gt; $order['billtocountry'],
+					'phone'		=&gt; $order['billtotelephone'],
+					'email'		=&gt; $order['billtoemail'],
+					//shipto
+					'shipping_firstname'	=&gt;$shiptofirstname,
+					'shipping_lastname'		=&gt; $shiptolastname,
+					'shipping_address1'		=&gt; $order['shiptoaddress1'],
+					'shipping_address2'		=&gt; $order['shiptoaddress2'],
+					'shipping_city'			=&gt; $order['shiptocity'],
+					'shipping_state'		=&gt; $order['shiptostate'],
+					'shipping_zip'			=&gt; $order['shiptozipcode'],
+					'shipping_country'		=&gt; $order['shiptocountry'],
+					'shipping_phone'		=&gt; $order['shiptotelephone'],
+					'shipping_email'		=&gt; $order['shiptoemail'],
+				);
+				//additonal nmi settings defined in $CART settings
+				foreach($CART['nmi_settings'] as $key=&gt;$val){
+					$cc[$key]=$val;
+				}
+				//attempt the charge
+				$charge=nmiSale($cc);
+				break;
+			case 'authnet':
+				require_once(&quot;{$progpath}/authnet.php&quot;);
+				$cc=array(
+					'ccNumber'	=&gt; $_REQUEST['cc_num'],
+					'ccExpire'	=&gt; &quot;{$_REQUEST['cc_month']}/{$_REQUEST['cc_year']}&quot;,
+					'amount'	=&gt; round($order['order_total'],2),
+					'ccCode'	=&gt; $order['cc_cvv2'],
+					'order_id'	=&gt; $ordernumber,
+					//billto
+					'first_name'=&gt; $firstname,
+					'last_name'	=&gt; $lastname,
+					'address'	=&gt; $order['billtoaddress1'],
+					'city'		=&gt; $order['billtocity'],
+					'state'		=&gt; $order['billtostate'],
+					'zip'		=&gt; $order['billtozipcode'],
+					'country'	=&gt; $order['billtocountry'],
+					//shipto
+					'ship_first_name'=&gt;$shiptofirstname,
+					'ship_last_name'=&gt; $shiptolastname,
+					'ship_address'	=&gt; $order['shiptoaddress1'],
+					'ship_city'		=&gt; $order['shiptocity'],
+					'ship_state'	=&gt; $order['shiptostate'],
+					'ship_zip'		=&gt; $order['shiptozipcode'],
+					'ship_country'	=&gt; $order['shiptocountry'],
+					);
+				//additonal authnet settings defined in $CART settings
+				foreach($CART['authnet_settings'] as $key=&gt;$val){
+					$cc[$key]=$val;
+				}
+				//attempt the charge
+				$charge=authnetCharge($cc);
+				break;
+		}
+		//remove credit card info from order record
+		$editopts2=array(
+			'-table'=&gt;&quot;orders&quot;,
+			'-where'=&gt;&quot;_id={$order['_id']}&quot;,
+			'cc_num'=&gt;'************'.substr($order['cc_num'],-4,4),
+			'cc_month'=&gt;'',
+			'cc_year'=&gt;'',
+			'cc_result'=&gt;printValue($charge)
+			);
+        $ok=editDBRecord($editopts2);
+        //show the right view based on the response
+		if(!isset($charge['response']) || $charge['response']!=1){
+        	//failed
+        	$message=isset($charge['responsetext'])?$charge['responsetext']:'unknown error processing your card';
+        	setView('cc_failure',1);
+        	//if charge is in test mode display a test warning message
+        	if(isset($charge['mode']) &amp;&amp; preg_match('/test/i',$charge['mode'])){
+            	$message .= '&lt;div class=&quot;w_bigger w_bold w_red&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/alert.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; TEST MODE - No charge was made&lt;/div&gt;'.&quot;\n&quot;;
+			}
+		}
+		else{
+        	//success
+        	setView('cc_success',1);
+        	//change status to approved and add the authcode
+        	$editopts3=array(
+				'-table'=&gt;&quot;orders&quot;,
+				'-where'=&gt;&quot;_id={$order['_id']}&quot;,
+				'status'=&gt;'approved',
+				'cc_authcode'=&gt;$charge['authcode']
+			);
+			$ok=editDBRecord($editopts3);
+			$message='';
+			//if charge is in test mode display a test warning message
+			if(isset($charge['mode']) &amp;&amp; preg_match('/test/i',$charge['mode'])){
+            	$message .= '&lt;div class=&quot;w_bigger w_bold w_red&quot;&gt;&lt;img src=&quot;/wfiles/iconsets/32/alert.png&quot; border=&quot;0&quot; class=&quot;w_noborder w_middle&quot;&gt; TEST MODE - No charge was made&lt;/div&gt;'.&quot;\n&quot;;
+			}
+
+			//order_alert_emails
+			if(isset($CART['order_alert_email_to']) &amp;&amp; strlen($CART['order_alert_email_to'])){
+				$from=isEmail($CART['order_alert_email_from'])?$CART['order_alert_email_from']:'no-reply@'.$_SERVER['HTTP_HOST'];
+				$subject=isEmail($CART['order_alert_email_subject'])?$CART['order_alert_email_subject']:'New Order alert from '.$_SERVER['HTTP_HOST'];
+				$emailopts=array(
+            		'from'	=&gt; $from,
+					'to'	=&gt; $CART['order_alert_email_to'],
+					'subject'=&gt;$subject,
+					'message'=&gt;printValue($order)
+				);
+				if(isset($CART['order_alert_email_smtp'])){
+					$emailopts['smtp']=$CART['order_alert_email_smtp'];
+					if(isset($CART['order_alert_email_user'])){$emailopts['user']=$CART['order_alert_email_user'];}
+					if(isset($CART['order_alert_email_pass'])){$emailopts['pass']=$CART['order_alert_email_pass'];}
+					$ok=wasqlMail($emailopts);
+					}
+				else{
+					$ok=sendMail($emailopts);
+				}
+				//$message .= $ok . printValue($emailopts);
+			}
+		}
+		break;
+	default:
+		//$cartView=pageCartView($_REQUEST['func']);
+		$order=pageLoadCart(1);
+		setView('cart',1);setView('cc');setView('cbutton');
+		break;
+}
+?&gt;
+]]></controller>
+	<css>.carttable{}</css>
+	<description>Lightweight Shopping Cart to integrate into your wasql website</description>
+	<functions><![CDATA[
+&lt;?php
+function pageSetShipMethod($shipmethod,$zipcode=''){
+	if(!isNum($_SESSION['cart_id'])){return;}
+	/*if needed, you can call fedexServices, upsServices, or uspsServices
+		found in fedex.php, ups.php, or usps.php to get real time rate quotes.
+		Each of these services require an account.
+	*/
+	$opts=array(
+		'-table'=&gt;&quot;orders&quot;,
+		'-where'=&gt;&quot;_id={$_SESSION['cart_id']}&quot;
+	);
+	switch($shipmethod){
+		case 'standard':
+			$opts['ship_cost']=4.00;
+        	$opts['ship_price']=5.00;
+        	$opts['ship_method']=$shipmethod;
+        	break;
+        case '2day':
+        	$opts['ship_cost']=5.00;
+        	$opts['ship_price']=7.00;
+        	$opts['ship_method']=$shipmethod;
+        	break;
+        case '1day':
+        	$opts['ship_cost']=6.00;
+        	$opts['ship_price']=9.00;
+        	$opts['ship_method']=$shipmethod;
+        	break;
+	}
+	if(strlen($zipcode)){
+    	$opts['shiptozipcode']=$zipcode;
+	}
+    $ok=editDBRecord($opts);
+    return $ok;
+}
+function pageCartAction($action){
+	$rtn='';
+	if(!isNum($_SESSION['cart_id'])){
+		$_SESSION['cart_id']=addDBRecord(array(
+			'-table'=&gt;&quot;orders&quot;,
+			'status'=&gt;'cart',
+			'ordernumber'=&gt;&quot;---&quot;
+		));
+	}
+	if(!isNum($_SESSION['cart_id'])){
+    	debugValue(&quot;Unable to add to orders table.&quot;.$_SESSION['cart_id']);
+    	return;
+	}
+	//delete item in cart
+	if(strtolower($action)=='del' &amp;&amp; isNum($_REQUEST['id'])){
+		$delopts=array(
+    		'-table'=&gt;&quot;orders_items&quot;,
+			'-where'=&gt;&quot;orders_id={$_SESSION['cart_id']} and _id={$_REQUEST['id']}&quot;
+		);
+    	$ok=delDBRecord($delopts);
+    	return;
+	}
+	if(!isset($_REQUEST['itemid'])){
+		debugValue(&quot;No itemid.&quot;);
+		debugValue($_REQUEST);
+    	return;
+	}
+	$price=isNum($_REQUEST['price'])?$_REQUEST['price']:0;
+	$rec=getDBRecord(array('-table'=&gt;&quot;orders_items&quot;,'orders_id'=&gt;$_SESSION['cart_id'],'itemid'=&gt;$_REQUEST['itemid'],'price'=&gt;$price));
+	switch(strtolower($action)){
+    	case 'add':
+    		$qty=isNum($_REQUEST['quantity'])?$_REQUEST['quantity']:1;
+    		if(is_array($rec)){
+            	$ok=editDBRecord(array(
+					'-table'=&gt;&quot;orders_items&quot;,
+					'-where'=&gt;&quot;_id={$rec['_id']}&quot;,
+					'quantity'=&gt;$rec['quantity']+$qty
+				));
+			}
+			else{
+				$fields=getDBFields('orders_items');
+				$opts=array();
+				foreach($fields as $field){
+                	if(isset($_REQUEST[$field])){$opts[$field]=$_REQUEST[$field];}
+				}
+				$opts['-table']=&quot;orders_items&quot;;
+				$opts['quantity']=$qty;
+				$opts['orders_id']=$_SESSION['cart_id'];
+            	$ok=addDBRecord($opts);
+			}
+    		break;
+	}
+return $rtn;
+}
+function pageCartCleanup(){
+	//cleanup orders still in 'cart' status that are old
+	$days=5;
+	$delopts=array(
+		'-table'=&gt;&quot;orders_items&quot;,
+		'-where'=&gt;&quot;orders_id in (select _id from orders where status='cart' and _cdate &lt; DATE_SUB(NOW(), INTERVAL {$days} DAY))&quot;
+	);
+	$ok=delDBRecord($delopts);
+	$delopts=array(
+		'-table'=&gt;&quot;orders&quot;,
+		'-where'=&gt;&quot;status='cart' and _cdate &lt; DATE_SUB(NOW(), INTERVAL {$days} DAY)&quot;
+	);
+	$ok=delDBRecord($delopts);
+}
+function pageLoadCart($request=0){
+	if(!isNum($_SESSION['cart_id'])){return null;}
+	$order=getDBRecord(array('-table'=&gt;&quot;orders&quot;,'_id'=&gt;$_SESSION['cart_id'],'status'=&gt;&quot;cart&quot;));
+	if(!is_array($order)){
+		unset($_SESSION['cart_id']);
+		return null;
+		}
+	if($request==1){
+		//load order into the request array for form input
+		foreach($order as $key=&gt;$val){
+			$_REQUEST[$key]=$val;
+		}
+	}
+	$order['items']=getDBRecords(array('-table'=&gt;&quot;orders_items&quot;,'orders_id'=&gt;$_SESSION['cart_id']));
+	if(!is_array($order['items'])){$order['items']=array();}
+
+	//calculate subtotal, items_qty, and items_subtotal
+	for($x=0;$x&lt;count($order['items']);$x++){
+		$order['items'][$x]['subtotal']=$order['items'][$x]['price']*$order['items'][$x]['quantity'];
+		$order['items_quantity']+=$order['items'][$x]['quantity'];
+		$order['items_total']+=$order['items'][$x]['subtotal'];
+	}
+	$order['order_total']=$order['items_total']+$order['ship_price'];
+	return $order;
+}
+//---------------------------------------------------------------------------------------------------------
+function pageVerifySchema(){
+	if(!isDBTable('orders')){
+		$fields=array();
+		$fields['status']=&quot;varchar(25) NOT NULL Default 'cart'&quot;;
+		$fields['ordernumber']=&quot;varchar(15) NOT NULL Default '---'&quot;;
+		//shipto
+		$fields['shiptoname']=&quot;varchar(125) NULL&quot;;
+		$fields['shiptocontact']=&quot;varchar(125) NULL&quot;;
+		$fields['shiptoaddress1']=&quot;varchar(255) NULL&quot;;
+		$fields['shiptoaddress2']=&quot;varchar(255) NULL&quot;;
+		$fields['shiptocity']=&quot;varchar(125) NULL&quot;;
+		$fields['shiptostate']=&quot;varchar(125) NULL&quot;;
+		$fields['shiptozipcode']=&quot;varchar(15) NULL&quot;;
+		$fields['shiptocountry']=&quot;varchar(125) NULL&quot;;
+		$fields['shiptotelephone']=&quot;varchar(25) NULL&quot;;
+		$fields['shiptoemail']=&quot;varchar(255) NULL&quot;;
+		//billto
+		$fields['billtoname']=&quot;varchar(125) NULL&quot;;
+		$fields['billtocontact']=&quot;varchar(125) NULL&quot;;
+		$fields['billtoaddress1']=&quot;varchar(255) NULL&quot;;
+		$fields['billtoaddress2']=&quot;varchar(255) NULL&quot;;
+		$fields['billtocity']=&quot;varchar(125) NULL&quot;;
+		$fields['billtostate']=&quot;varchar(125) NULL&quot;;
+		$fields['billtozipcode']=&quot;varchar(15) NULL&quot;;
+		$fields['billtocountry']=&quot;varchar(125) NULL&quot;;
+		$fields['billtotelephone']=&quot;varchar(25) NULL&quot;;
+		$fields['billtoemail']=&quot;varchar(255) NULL&quot;;
+		//carrier
+		$fields['carrier']=&quot;char(5) NULL&quot;;
+		$fields['carrier_service_code']=&quot;varchar(30) NULL&quot;;
+		//shipping
+		$fields['ship_date']=&quot;datetime NULL&quot;;
+		$fields['ship_method']=&quot;varchar(25) NULL&quot;;
+		$fields['ship_cost']=&quot;float(8,2) NULL&quot;;
+		$fields['ship_price']=&quot;float(8,2) NULL&quot;;
+		$fields['tracking_number']=&quot;varchar(25) NULL&quot;;
+		//misc
+		$fields['ponumber']=&quot;varchar(25) NULL&quot;;
+		$fields['notes']=&quot;varchar(255) NULL&quot;;
+		$fields['payment_type']=&quot;varchar(25) NULL&quot;;
+		$fields['order_total']=&quot;float(10,2) NOT NULL Default 0.00&quot;;
+		$fields['items_quantity']=&quot;int NOT NULL Default 0&quot;;
+		$fields['items_total']=&quot;float(10,2) NOT NULL Default 0.00&quot;;
+		$fields['sales_rep']=&quot;varchar(25) NULL&quot;;
+		//payment fields
+		$fields['cc_num']=&quot;varchar(50) NULL&quot;;
+		$fields['cc_month']=&quot;char(2) NULL&quot;;
+		$fields['cc_year']=&quot;char(2) NULL&quot;;
+		$fields['cc_cvv2']=&quot;char(5) NULL&quot;;
+		$fields['cc_result']=&quot;text NULL&quot;;
+		$fields['cc_authcode']=&quot;varchar(100) NULL&quot;;
+		$ok = createDBTable('orders',$fields);
+		debugValue('created Orders Table:'.$ok);
+		//meta data
+		$shipbill=array('shipto','billto');
+		foreach($shipbill as $prefix){
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'name',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 1
+			));
+			//debugValue('created '.$prefix.'name record in _fielddata:'.$ok);
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'contact',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 0
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'address1',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 1
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'address2',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 0
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'city',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 1
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'state',
+				'inputtype'		=&gt; 'select',
+				'required'		=&gt; 0,
+				'displayname'	=&gt; &quot;State&quot;,
+				'tvals'			=&gt; 'select code from states order by name,code,_id',
+				'dvals'			=&gt; 'select name from states order by name,code,_id'
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'zipcode',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '60',
+				'inputmax'		=&gt; 10,
+				'required'		=&gt; 1
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'country',
+				'inputtype'		=&gt; 'select',
+				'required'		=&gt; 1,
+				'displayname'	=&gt; &quot;State&quot;,
+				'tvals'			=&gt; 'select code from countries order by name,code,_id',
+				'dvals'			=&gt; 'select name from countries order by name,code,_id',
+				'defaultval'	=&gt; 'US'
+			));
+			$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+				'tablename'		=&gt; 'orders',
+				'fieldname'		=&gt; $prefix.'email',
+				'inputtype'		=&gt; 'text',
+				'width'			=&gt; '300',
+				'mask'			=&gt; 'email',
+				'inputmax'		=&gt; 255,
+				'required'		=&gt; 1
+			));
+		}
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'ship_method',
+			'inputtype'		=&gt; 'radio',
+			'width'			=&gt; 1,
+			'tvals'			=&gt; &quot;standard\r\n2day\r\n1day&quot;,
+			'dvals'			=&gt; &quot;Standard Shipping (3-5 business days)\r\nTwo-Day Shipping (2 business days)\r\nOne-Day Shipping (1 business day)&quot;,
+			'required'		=&gt; 1
+		));
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'cc_num',
+			'inputtype'		=&gt; 'text',
+			'required'		=&gt; 1,
+			'width'			=&gt; 225,
+			'displayname'	=&gt; &quot;Credit Card Number&quot;,
+		));
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'cc_cvv2',
+			'inputtype'		=&gt; 'text',
+			'width'			=&gt; 50,
+			'required'		=&gt; 1,
+			'displayname'	=&gt; &quot;Verification Number&quot;,
+		));
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'cc_result',
+			'inputtype'		=&gt; 'textarea',
+			'width'			=&gt; 500,
+			'height'		=&gt; 100,
+			'required'		=&gt; 0,
+			'displayname'	=&gt; &quot;CC Charge Result&quot;,
+		));
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'cc_month',
+			'inputtype'		=&gt; 'select',
+			'tvals'			=&gt; &quot;1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9\r\n10\r\n11\r\n12&quot;,
+			'dvals'			=&gt; &quot;Jan\r\nFeb\r\nMar\r\nApr\r\nMay\r\nJun\r\nJul\r\nAug\r\nSep\r\nOct\r\nNov\r\nDec&quot;,
+			'required'		=&gt; 1
+		));
+		$id=addDBRecord(array('-table'=&gt;&quot;_fielddata&quot;,
+			'tablename'		=&gt; 'orders',
+			'fieldname'		=&gt; 'cc_year',
+			'inputtype'		=&gt; 'select',
+			'tvals'			=&gt; '&lt;'.'?'.'=implode(&quot;\r\n&quot;,selectYears(10,2));'.'?'.'&gt;',
+			'dvals'			=&gt; '&lt;'.'?'.'=implode(&quot;\r\n&quot;,selectYears(10,4));'.'?'.'&gt;',
+			'required'		=&gt; 1
+		));
+		$addopts=array('-table'=&gt;&quot;_tabledata&quot;,
+			'tablename'		=&gt; 'orders',
+			'formfields'	=&gt; &quot;&quot;,
+			'listfields'	=&gt; &quot;ordernumber\r\nstatus\r\ntracking_number\r\nshiptoname\r\nshiptocity\r\nshiptostate\r\nshiptozipcode\r\nshiptocountry,&quot;,
+			'sortfields'	=&gt; &quot;status,_cdate&quot;
+			);
+	}
+
+	if(!isDBTable('orders_items')){
+		$fields=array();
+		$fields['orders_id']=&quot;int NOT NULL&quot;;
+		$fields['ordernumber']=&quot;varchar(15) NULL&quot;;
+		$fields['itemid']=&quot;varchar(25) NOT NULL&quot;;
+		$fields['description']=&quot;varchar(255) NULL&quot;;
+		$fields['quantity']=&quot;int NOT NULL Default 1&quot;;
+		$fields['price']=&quot;float(10,2) NOT NULL Default 0.00&quot;;
+		$fields['discount']=&quot;float(10,2) NOT NULL Default 0.00&quot;;
+		$ok = createDBTable('orders_items',$fields);
+	}
+}
+?&gt;
+]]></functions>
+	<js>function cartAction(act,params){
+	params.action=act;
+	ajaxGet('/cart','centerpop',params);
+	return false;
+}</js>
+	<name>cart</name>
+	<page_type>4</page_type>
+	<permalink>cart</permalink>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>Shopping Cart</title>
+</xmldata>
+</export>

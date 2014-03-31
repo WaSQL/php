@@ -1,0 +1,18 @@
+<hosts>
+	<!-- create a host entry for each domain and subdomain.
+		Host attributes:
+			name - host name
+			alias - alias name to call the directory files go into
+			group - group
+			file - path to local postEditXml file to load instead of getting it from the server
+			username - username on this
+			apikey - apikey of username
+
+	-->
+	<host
+		name="localhost"
+		apikey="V2E2UUk6YWRtaW46YWRtaW4="
+		username="admin"
+	/>
+</hosts>
+
