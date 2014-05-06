@@ -558,7 +558,58 @@
 			}
 		}
 	}
-	//Check for  /page/a/b/c
+	//Check for  /page/a/b/c  /a/b/c/d/e/f
+	if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
+		$parts=preg_split('/\/+/',$view);
+		$view=includePage($CONFIG['redirect_page'],array('redirect_page'=>$parts));
+		$_REQUEST['_view']=$view;
+		$_REQUEST['passthru']=$parts;
+		$getopts=array(
+			'-table'=>'_pages',
+			'-notimestamp'=>1,
+			'-where'=>"permalink = '{$view}' or name = '{$view}'"
+		);
+		if(isNum($view)){
+	    		$getopts['-where'] = "_id={$view}";
+		}
+		$recs=getDBRecords($getopts);
+		//echo printValue($getopts).printValue($rec);
+		if(is_array($recs)){
+			if(count($recs)==1){
+				$PAGE=$recs[0];
+			}
+			else{
+	    		//permalink first, then name, then id
+	    		$found=0;
+	    		foreach($recs as $rec){
+	            	if(strlen($rec['permalink']) && strtolower($rec['permalink'])==strtolower($view)){
+	                	$PAGE=$rec;
+	                	$found=1;
+	                	break;
+					}
+				}
+				if($found==0){
+	            	foreach($recs as $rec){
+		            	if(strlen($rec['name']) && strtolower($rec['name'])==strtolower($view)){
+		                	$PAGE=$rec;
+		                	$found=1;
+		                	break;
+						}
+					}
+				}
+				if($found==0 && isNum($view)){
+	            	foreach($recs as $rec){
+		            	if($rec['_id']==$view){
+		                	$PAGE=$rec;
+		                	$found=1;
+		                	break;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if(!is_array($PAGE) && stringContains($view,'/') && isset($CONFIG['missing_page']) && $CONFIG['missing_page']=='passthru'){
 		$parts=preg_split('/\/+/',$view);
 		$view=array_shift($parts);
@@ -618,6 +669,19 @@
 			$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'name'=>$CONFIG['missing_page']));
 			}
     	}
+    if(!is_array($PAGE) && isset($CONFIG['page_404'])){
+		header("Location: /{$CONFIG['page_404']}", true, 404);
+		if(is_numeric($CONFIG['page_404'])){
+			$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'_id'=>$CONFIG['page_404']));
+		}
+		else{
+			$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'name'=>$CONFIG['page_404']));
+		}
+	}
+	if(!is_array($PAGE)){
+		header("HTTP/1.1 404 Not Found");
+    	abort('No page found');
+	}
     global $TEMPLATE;
     //GOOD TO HERE
 	if(is_array($PAGE) && $PAGE['_id'] > 0){

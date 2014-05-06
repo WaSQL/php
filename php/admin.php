@@ -74,16 +74,16 @@ if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'t
 	header("Location: https://{$_SERVER['HTTP_HOST']}/admin",true,301);
 	exit;
 }
+
 $_REQUEST['debug']=1;
 include_once("$progpath/user.php");
 include_once("$progpath/database.php");
 
 include_once("$progpath/wasql.php");
 include_once("$progpath/schema.php");
-
 if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv export'){
     //export the query to csv
-    $recs=getDBRecords(array('-query'=>$_REQUEST['sqlprompt_command']));
+    $recs=getDBRecords(array('-query'=>stripslashes($_REQUEST['sqlprompt_command'])));
     $data=arrays2CSV($recs);
     pushData($data,'csv','sqlprompt_export.csv');
     exit;
@@ -2243,7 +2243,7 @@ if(isset($_REQUEST['_menu'])){
                 	break;
 				}
 				if(isset($_REQUEST['add_result']['error'])){
-					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" border="0" class="w_middle"><b class="w_red"> Add Failed:</b> '.$_REQUEST['add_result']['error'].'</div>'."\n";
+					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" border="0" class="w_middle"><b class="w_red"> Add Failed:</b> '.printValue($_REQUEST['add_result']).'</div>'."\n";
                 	}
                 elseif(isset($_REQUEST['edit_result']['error'])){
 					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" border="0" class="w_middle"><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'."\n";
