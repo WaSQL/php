@@ -1311,9 +1311,16 @@ function addEditDBForm($params=array(),$customcode=''){
         $rtn .= '</table>'."\n";
     	}
     if(is_array($rec) && isNum($rec['_id'])){
+
 		$rtn .= '<input type="hidden" name="_id" value="'.$rec['_id'].'">'."\n";
-		$rtn .= '<input type="hidden" name="_fields" value="'.implode(',',$fieldlist).'">'."\n";
-    	}
+		if(isset($params['-editfields'])){
+        	if(is_array($params['-editfields'])){$params['-editfields']=implode(',',$params['-editfields']);}
+        	$rtn .= '<input type="hidden" name="_fields" value="'.$params['-editfields'].'">'."\n";
+		}
+		else{
+			$rtn .= '<input type="hidden" name="_fields" value="'.implode(',',$fieldlist).'">'."\n";
+		}
+    }
     //Add any other valid inputs
     $rtn .= '<div id="other_inputs" style="display:none;">'."\n";
     if(is_array($params)){
@@ -3909,7 +3916,8 @@ function getDBFieldTag($params=array()){
 			if(strlen($info[$field]['behavior'])){
             	$tag .= '<input type="hidden" name="'.$field.'_behavior" value="'.$info[$field]['behavior'].'">'."\n";
 			}
-			$tag .= '<textarea id="txtfld_'.$field.'"';
+			if(!isset($info[$field]['id'])){$info[$field]['id']="txtfld_{$field}";}
+			$tag .= '<textarea ';
 			//wrap?
 			if(isset($params['wrap'])){$info[$field]['wrap']=$params['wrap'];}
 			elseif($params['-table']=='_pages'){$info[$field]['wrap']="off";}

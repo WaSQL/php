@@ -89,17 +89,28 @@ function whoisCheckDomain($domain){
 		if(stringBeginsWith($line,';')){continue;}
 		if(stringBeginsWith($line,'%')){continue;}
 		//registrar
-		if(!isset($info['registrar']) && !preg_match('/(technical|support)/i',$line) && (preg_match('/Registrar/i',$line) || isset($info['registrar_nextline']))){
+		if(!isset($info['registrar']) && !preg_match('/(technical|support)/i',$line) && (preg_match('/(Registrar|Registration Service Provider)/i',$line) || isset($info['registrar_nextline']))){
         	$parts=preg_split('/\:/',$line,2);
         	if(strlen(trim($parts[1]))){
-        		$info['registrar']=trim($parts[1]);
+				$str=trim($parts[1]);
         		unset($info['registrar_nextline']);
         		unset($info['dns_nextline']);
+        		if(strlen($str) < 40 && !stringEndsWith($parts[0],'http')){
+	        		$info['registrar']=$str;
+				}
+			}
+			elseif(isset($info['registrar_nextline']) && strlen(trim($parts[0]))){
+				$str=trim($parts[0]);
+				unset($info['dns_nextline']);
+	        	unset($info['registrar_nextline']);
+				if(strlen($str) < 40 && !stringEndsWith($parts[0],'http')){
+	        		$info['registrar']=$str;
+				}
 			}
 			else{$info['registrar_nextline']=1;}
 		}
 		//dns
-		if(!isset($info['dns']) && (preg_match('/(dns|nsserver|name server|Name servers|nameserver|Nameservers|NAME SERVER INFORMATION)[\:\]\#]/i',$line) || isset($info['dns_nextline']))){
+		if(!isset($info['dns']) && (preg_match('/(Nombres de Dominio|Domain servers in listed order|dns|nsserver|nserver|name server|DNS Servers|Name servers|nameserver|Nameservers|NAME SERVER INFORMATION|dns_name)[\:\]\#]/i',$line) || isset($info['dns_nextline']))){
         	$parts=preg_split('/[\:\#\]]/',$line,2);
         	if(strlen(trim($parts[1]))){
         		$info['dns']=trim($parts[1]);
@@ -113,14 +124,23 @@ function whoisCheckDomain($domain){
 			}
 			else{$info['dns_nextline']=1;}
 		}
+		elseif(!isset($info['dns']) && preg_match('/^dns_name/i',$line)){
+        	$parts=preg_split('/\ +/',$line,2);
+        	if(strlen(trim($parts[1]))){
+        		$info['dns']=trim($parts[1]);
+        		unset($info['dns_nextline']);
+        		unset($info['registrar_nextline']);
+			}
+		}
 		//Owner
-		if(preg_match('/^(Owner|Owner)\ *+\:/i',$line)){
+		if(preg_match('/^(Owner|Owner)\ *+\:/i',$line) || preg_match('/Domain Name ID\:/i',$line)){
         	$info['status']='taken';
 		}
+		if(preg_match('/quota exceeded/i',$line)){
+        	$info['status']='unknown';
+		}
 		//create date
-
-		//create date
-		if(!isset($info['create_date']) && preg_match('/(Creation Date|Create Date|activated on|Created On|Created|Registered|Registration Date|Commencement Date|registration|Date de creation)[\:\#]/i',$line)){
+		if(!isset($info['create_date']) && preg_match('/(Fecha de Creacion|Creation Date|Create Date|activated on|Created On|Created|Registered|Registration Date|Commencement Date|registration|Date de creation)[\:\#]/i',$line)){
         	$parts=preg_split('/[\:\#]+/',$line,2);
         	if(isset($parts[1])){
 	        	$datestr=str_replace('.','-',$parts[1]);
@@ -128,18 +148,62 @@ function whoisCheckDomain($domain){
 	        	$info['create_date']=date('Y-m-d',strtotime($datestr));
 			}
 		}
+		elseif(!isset($info['create_date']) && preg_match('/Creation Date \(dd\/mm\/yyyy\)\:/i',$line)){
+        	$parts=preg_split('/\:/',$line,2);
+        	$dateparts=preg_split('/\//',trim($parts[1]));
+        	$info['create_date']=date('Y-m-d',strtotime("{$dateparts[2]}-{$dateparts[1]}-{$dateparts[0]}"));
+		}
+		elseif(!isset($info['create_date']) && preg_match('/Acivated.+?\:/i',$line)){
+        	$parts=preg_split('/\:/',$line,2);
+        	$info['create_date']=date('Y-m-d',strtotime(trim($parts[1])));
+		}
+		elseif(!isset($info['create_date']) && preg_match('/^Record created on(.+)$/i',$line,$m)){
+        	$parts=preg_split('/\ +/',trim($m[1]));
+        	if(strlen(trim($parts[0]))){
+        		$info['create_date']=date('Y-m-d',strtotime(str_replace('.','-',$parts[0])));
+			}
+		}
 		//update date
 		if(!isset($info['update_date']) && preg_match('/(Update Date|Last Update|Updated On|Updated|Updated Date|Changed)\)*\:/i',$line)){
         	$parts=preg_split('/\:/',$line,2);
         	$info['update_date']=date('Y-m-d',strtotime(str_replace('.','-',$parts[1])));
 		}
+		elseif(!isset($info['update_date']) && preg_match('/^Last-update/i',$line)){
+        	$parts=preg_split('/\ +/',$line,2);
+        	if(strlen(trim($parts[1]))){
+        		$info['update_date']=trim($parts[1]);
+			}
+		}
 		//expire date
-		if(!isset($info['expire_date']) && preg_match('/(Expiration Date|expires at|Expire Date|Expired|Paid\-Till|Expiry Date|Expires|renewal|Expires On)\:/i',$line)){
+		if(!isset($info['expire_date']) && preg_match('/(expire on|Expiration Date|expires at|Expire Date|Expired|Paid\-Till|Expiry Date|Expiry\ |Expires|renewal|Expires On)\:/i',$line)){
         	$parts=preg_split('/\:/',$line,2);
         	$info['expire_date']=date('Y-m-d',strtotime(str_replace('.','-',$parts[1])));
 		}
+		elseif(!isset($info['expire_date']) && preg_match('/Expiration Date \(dd\/mm\/yyyy\)\:/i',$line)){
+        	$parts=preg_split('/\:/',$line,2);
+        	$dateparts=preg_split('/\//',trim($parts[1]));
+        	$info['expire_date']=date('Y-m-d',strtotime("{$dateparts[2]}-{$dateparts[1]}-{$dateparts[0]}"));
+		}
+		elseif(!isset($info['expire_date']) && preg_match('/^Valid-date/i',$line)){
+        	$parts=preg_split('/\ +/',$line,2);
+        	if(strlen(trim($parts[1]))){
+        		$info['expire_date']=trim($parts[1]);
+			}
+		}
+		elseif(!isset($info['expire_date']) && preg_match('/^Record expires on(.+)$/i',$line,$m)){
+        	$parts=preg_split('/\ +/',trim($m[1]));
+        	if(strlen(trim($parts[0]))){
+        		$info['expire_date']=date('Y-m-d',strtotime(str_replace('.','-',$parts[0])));
+			}
+		}
 	}
-	if(isset($info['expire_date']) || isset($info['update_date']) || isset($info['create_date']) || isset($info['registrar']) || isset($info['dns'])){
+	if(
+		isset($info['expire_date']) || 
+		isset($info['update_date']) || 
+		isset($info['create_date']) || 
+		isset($info['registrar']) || 
+		isset($info['dns'])
+		){
 		$info['status']='taken';
 	}
 	$info['whois_lines']=$lines;

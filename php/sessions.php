@@ -15,6 +15,10 @@ include_once("$progpath/config.php");
 include_once("$progpath/database.php");
 if(!isDBTable('_sessions')){
 	include_once("$progpath/schema.php");
+	include_once("$progpath/user.php");
+	if(!isDBTable('_fielddata')){
+		$ok=createWasqlTables();
+	}
 	$ok=createWasqlTable('_sessions');
 }
 global $CONFIG;
@@ -68,7 +72,7 @@ function sessionRead($session_id) {
 	The serialization method used internally by PHP is specified in the session.serialize_handler ini setting.
 	The serialized session data passed to this callback should be stored against the passed session ID.
 	When retrieving this data, the read callback must return the exact value that was originally passed to the write callback.
-	This callback is invoked when PHP shuts down or explicitly when session_write_close() is called. 
+	This callback is invoked when PHP shuts down or explicitly when session_write_close() is called.
 	Note that after executing this function PHP will internally execute the close callback.
 */
 function sessionWrite($session_id, $session_data) {

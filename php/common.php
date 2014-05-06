@@ -230,7 +230,8 @@ function buildFormCalendar($name,$params=array()){
 		//echo printValue($params);exit;
 		}
 	else{$type="text";}
-    $tag = '<input name="'.$name.'" type="'.$type.'"';
+	if(!isset($params['name'])){$params['name']=$name;}
+    $tag = '<input type="'.$type.'"';
 	$tag .= setTagAttributes($params);
 	//check for value
 	$value='';
@@ -451,6 +452,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 * @param params array
 *	options are as follows
 *	- displayname. Defaults to "Please Sign Below:"
+
 *	- width. Defaults to 300
 *	- height. Defaults to 75
 * @return
@@ -1696,7 +1698,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','spellcheck','max','min','pattern','placeholder','readonly','step',
-		'data-labelmap','data-ajaxid'
+		'data-labelmap','data-ajaxid','lang','autocorrect'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
@@ -5257,10 +5259,10 @@ function includePage($val='',$params=array()){
 	ob_start();
 	//Disallow recursive calls - pages that call themselves
 	global $PAGE;
-	if(strtolower($PAGE['name'])==strtolower($val)){return "includePage '{$PAGE['name']}' Error - recursive include";}
+	if(strtolower($PAGE['name'])==strtolower($val)){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$table='_pages';
 	if($params['-dbname']){$table="{$params['-dbname']}._pages";}
-	$fields="_id,controller,body,functions";
+	$fields="_id,controller,body,functions,name";
 	$fieldname="body";
 	$opts=array(
 		'-table'=>$table,
@@ -5325,7 +5327,7 @@ function includePHPOnce($php_content,$name=''){
 	if(!strlen($name)){$name=sha1($php_content);}
 	$phpfilename=$CONFIG['dbname'] .'_' . $name . '.php';
 	$phpfilename=preg_replace('/\_+/','_',$phpfilename);
-	if(isset($CONFIG['includeDBOnce'][$phpfilename])){return;}
+	if(isset($CONFIG['includeDBOnce'][$phpfilename])){return 1;}
 	$CONFIG['includeDBOnce'][$phpfilename]=time();
 	$progpath=dirname(__FILE__);
 	buildDir("{$progpath}/temp");
@@ -6169,6 +6171,9 @@ function loadExtras($extras){
 			//for backward compatibility look for nmi, authnet, paypal - they were moved to merchants folder
 			if(preg_match('/^(nmi|authnet|paypal)$/i',$extra)){
             	$extra="merchants/{$extra}";
+			}
+			elseif(preg_match('/^(canada_post|fedex|ups|usps|npf|integracore)$/i',$extra)){
+            	$extra="shipping_methods/{$extra}";
 			}
 			//build full path to extra file
 			$phpfile="{$progpath}/extras/{$extra}.php";
@@ -7305,6 +7310,9 @@ function postURL($url,$params=array()) {
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, FALSE);
 		}
+	if(isset($params['-ssl_version'])){
+		curl_setopt($process, CURLOPT_SSLVERSION,$params['-ssl_version']);
+		}
 	//handle auth request - basic Authentication
 	if(isset($params['-auth']) && strlen($params['-auth'])){
 		//try all possible authentication methods
@@ -7906,6 +7914,8 @@ function processActions(){
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
+						//decode it if needs be
+						if($_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 						//css_min minifycode
 						if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
                         	//only call minifyCode if the css has changed
@@ -7951,7 +7961,13 @@ function processActions(){
 						if($opts['-table']=="_users" && $field=='password' && !userIsEncryptedPW($_REQUEST[$field])){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
 							}
-						else{$opts[$field]=$_REQUEST[$field];}
+						else{
+							$opts[$field]=$_REQUEST[$field];
+							if($action=='POSTEDIT'){
+								$opts[$field]=utf8_encode($opts[$field]);
+							}
+						}
+
 						unset($_REQUEST[$field]);
 						}
 					$_REQUEST['edit_opts']=$opts;

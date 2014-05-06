@@ -13,10 +13,10 @@ our $OriginalFilename="postEdit.exe";
 our $InternalName="postEdit";
 #perl2exe_info ProductName=WaSQL Edit Manager
 our $ProductName="WaSQL Edit Manager";
-#perl2exe_info ProductVersion=1.608.91
-our $ProductVersion="1.608.91";
-#perl2exe_info FileVersion=1.1402.11
-our $FileVersion="1.1402.11";
+#perl2exe_info ProductVersion=1.600.31
+our $ProductVersion="1.600.31";
+#perl2exe_info FileVersion=1.1404.26
+our $FileVersion="1.1404.26";
 #perl2exe_info LegalCopyright=Copyright 2004-2012, WaSQL.com
 our $LegalCopyright="Copyright 2004-2012, WaSQL.com";
 #################################################################
@@ -1213,6 +1213,7 @@ sub fileChanged{
 	my $afile=fixPathSlashes("$filesDir\\$table\\$file");
 	my $content='';
 	if(open(FH,$afile)){
+		binmode(FH);
 		my @lines=<FH>;
 		close(FH);
 		$content=join('',@lines);
@@ -1229,6 +1230,7 @@ sub fileChanged{
 		print "No content for $afile!!!\r\n";
 		return 0;
 		}
+	$content=encodeBase64($content);
 	#checks
 	if($file=~/\.pl$/is && $mw->{Check_perl}->Checked()){
 		setColorBox('working','Perl Syntax');
@@ -1272,14 +1274,14 @@ sub fileChanged{
     	}
     #
 	my $timestamp=$watchtable{$table}{$id}{timestamp};
-	my %postopts=(apikey=>$apikey,username=>$username,_noguid=>1,_id=>$id,timestamp=>$timestamp,_action=>'postEdit',_table=>$table,_fields=>$field,$field=>$content,_return=>'XML',_sub=>"winEvents");
+	my %postopts=(apikey=>$apikey,username=>$username,_noguid=>1,_base64=>1,_id=>$id,timestamp=>$timestamp,_action=>'postEdit',_table=>$table,_fields=>$field,$field=>$content,_return=>'XML',_sub=>"winEvents");
 	#check for alternate port
 	if($host=~/^(.+?)\:([0-9]+)$/s){
 		$postopts{_port}=$2;
 		$host=$1;
 		$url="http://$host/php/index.php";
     	}
-    #print hashValues(\%postopts);
+    print hashValues(\%postopts);
 	appendMessage("Sending changes to $url ...");
 	appendMessage("timestamp=$timestamp");
 	#print "timestamp:$timestamp\n";
@@ -1287,7 +1289,7 @@ sub fileChanged{
 	setColorBox('working','Sending Changes');
 	showBalloon($balloonMsg,"Sending Changes to Server...","warning");
 	my ($head,$body,$code)=postURL($url,%postopts);
-	#print "body:\n$body\n";
+	print "body:\n$body\n";
 	appendMessage("Return Code: $code");
 	if($code != 200){
 		$err=strip($head);
