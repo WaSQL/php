@@ -463,6 +463,7 @@ function listIconsets($params=array()){
 function debugValue($m,$name=''){
 	global $USER;
 	if(!function_exists('isDBStage')){$_SESSION['debugValue']=1;}
+	if($_SERVER['HTTP_HOST']=='localhost'){$_SESSION['debugValue']=1;}
 	//only run this function if they are on stage or have set debug to 1
 	if(!isset($_SESSION['debugValue'])){$_SESSION['debugValue']=isDBStage();}
 	if(isset($_REQUEST['debug']) && isNum($_REQUEST['debug'])){$_SESSION['debugValue']=$_REQUEST['debug'];}
@@ -497,8 +498,7 @@ function debugValue($m,$name=''){
 		echo $m;
 		echo "\r\n--------------------\r\n";
 		echo "\n</div>\n";
-		$javascript='if (typeof console != \'undefined\' && typeof console.log != \'undefined\'){console.log(document.getElementById(\''.$id.'\').innerHTML);}';
-		echo buildOnLoad($javascript);
+		echo buildOnLoad("if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('{$id}').innerHTML);}");
 	}
 	return true;
 }
@@ -546,8 +546,9 @@ function gracefulShutdown(){
 	foreach($error as $key=>$val){
 		$debug[0][$key]=$val;
     }
+    //echo "here".printValue($debug);exit;
     debugValue($debug,$error['message']);
-    return;
+    return false;
 }
 //---------- begin function apiRequest---------------------------------------
 /**
@@ -756,6 +757,11 @@ function wasqlSetMinify($backend=0){
 		http_host
 		unique_host
 	*/
+	if(isset($CONFIG['facebook_appid'])){
+		loadExtrasJs('facebook_login');
+		$_SESSION['facebook_email']=$USER['facebook_email'];
+		$_SESSION['facebook_id']=$USER['facebook_id'];
+	}
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
 		loadExtrasCss(array('nicedit','codemirror','admin','tcal','dropdown','socialbuttons'));
@@ -1313,17 +1319,18 @@ function wasqlGetCountries($d=0,$pre=array('US','CA')){
 		'-table'=>'countries',
 		'-order'=>'name,_id',
 		'-fields'=>'_id,name,code',
-		'-index'=>$d?'name':'code'
+		'-index'=>'code'
 	);
 	$recs=getDBRecords($recopts);
+	if(!is_array($recs)){return $recs;}
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
 	//build the list - placing countries found in the states table first.
-	if(!is_array($recs)){return $recs;}
+
 	$vals=$pvals=$rvals=array();
-	foreach($recs as $val=>$rec){
-		$code=$rec['code'];
+	foreach($recs as $code=>$rec){
+		$val=$d?$rec['name']:$rec['code'];
 		if(isset($codes[$code])){
         	$pvals[]=$val;
 		}

@@ -73,7 +73,7 @@ function fileUploadPost(t, e, i, a) {
     }
     for (var u = new FormData, c = "file", v = "", h = "", p = 0; p < e.attributes.length; p++) {
         var _ = e.attributes.item(p).nodeName,
-            g = e.attributes.item(p).nodeValue;
+            g = e.attributes.item(p).value;
         "_fileupload" == _ ? c = g : "_path" == _ ? v = g : "_id" == _ ? h = g : /^\_(fileupload|behavior|action|min|fields|filter|id|minmsg|max|maxmsg|path)$/.test(_) || /^(class|style)$/.test(_) || u.append(_, g)
     }
     if (v.length && u.append(c + "_path", v), h.length) {

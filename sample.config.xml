@@ -38,6 +38,7 @@
 			page_tracking 0|1 - defaults to 1. Turns off updating the _amem, _aip, _auser, _adate, and _env in the _pages table - speed
 			template_tracking 0|1 - defaults to 1. Turns off updating the _apage in the _templates table - speed
 			pageview_comments 0|1 - defaults to 0. Adds comments into the HTML specifying what view was used.
+			wpass 0|1 - turn off/On WaSQL password safe. You can add wPass to your page using wpassModule()
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost

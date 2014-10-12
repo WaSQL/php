@@ -76,6 +76,7 @@ if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'t
 }
 
 $_REQUEST['debug']=1;
+
 include_once("$progpath/user.php");
 include_once("$progpath/database.php");
 
@@ -91,6 +92,9 @@ if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv exp
 
 global $wtables;
 $wtables=getWasqlTables();
+foreach($wtables as $wtable){
+	if(!isDBTable($wtable)){$ok=createWasqlTable($wtable);}
+}
 
 //get_magic_quotes_gpc fix if it is on
 wasqlMagicQuotesFix();
@@ -99,7 +103,6 @@ global $USER;
 global $PAGE;
 global $TEMPLATE;
 global $databaseCache;
-
 //set AdminUserID to current user id - this will turn off query logging for queries on the backend
 $_SERVER['WaSQL_AdminUserID']=$USER['_id'];
 //Verify all the WaSQL internal tables are built
@@ -153,6 +156,7 @@ foreach($_REQUEST as $key=>$val){
 //check for Config Settings
 global $ConfigSettings;
 $ConfigSettings=getDBAdminSettings();
+
 //Handle ajax requests
 if(isAjax()){
 	if(!isUser()){
@@ -161,6 +165,22 @@ if(isAjax()){
 		echo 'Not logged in';
 		exit;
 	}
+	//facebook functions
+	if(isset($_REQUEST['_fbupdate'])){
+    	$str=decodeBase64($_REQUEST['_fbupdate']);
+    	list($id,$email)=preg_split('/\:/',$str,2);
+    	executeSQL("update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}");
+    	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
+    	exit;
+	}
+	elseif(isset($_REQUEST['_fblink'])){
+    	$str=decodeBase64($_REQUEST['_fblink']);
+    	list($id,$email)=preg_split('/\:/',$str,2);
+    	executeSQL("update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}");
+    	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
+    	exit;
+	}
+
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'datasync':
 			echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/database_synchronize.png" border="0" class="w_middle"> Synchronize Records in '.$_REQUEST['tablename'].'</div>'."\n";
@@ -327,6 +347,7 @@ if(isAjax()){
 				}
 				$query="SELECT count(*) as _total_, ".implode(', ',$sums)." from {$_REQUEST['table']}";
 				$srecs=getDBRecords(array('-query'=>$query));
+				//echo $query.printValue($srecs);
 				$tcnt=$srecs[0]['_total_'];
 				foreach($srecs[0] as $sfield=>$cnt){
 					if($sfield=='_total_'){continue;}
@@ -1268,9 +1289,10 @@ echo '</div>'."\n";
 echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'."\n";
 //if user has switched databases from original - show switch back link
 if(isset($_SESSION['dbhost_original'])){
-	echo '	<div class="w_pad w_border w_margin w_dblue w_tip"><table border="0"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" border="0" class="w_middle"></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
+	echo '	<div class="w_pad w_margin w_dblue "><table border="0"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" border="0" class="w_middle"></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
 }
-echo '	<div id="updatecheck" class="w_right w_big w_padright w_tip w_dblue w_roundsmall_botleft" style="border-left:1px solid #7a93df;border-bottom:1px solid #7a93df;padding:2px 5px 4px 5px;"><img src="/wfiles/iconsets/16/info.png" border="0" class="w_middle" /> '.$CONFIG['name'].' - <img src="/wfiles/iconsets/16/database.png" border="0" class="w_middle" /> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
+echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><img src="/wfiles/iconsets/16/info.png" border="0" class="w_middle" /> '.$CONFIG['name'].' - <img src="/wfiles/iconsets/16/database.png" border="0" class="w_middle" /> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
+echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
 echo '</div>'."\n";
 echo '<br clear="both" />'."\n";
 echo '<div style="clear:both;float:left;width:100%;"></div>'."\n";
@@ -1493,7 +1515,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'rebuild':
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/rebuild.png" border="0" class="w_files"> Rebuild waSQL Tables</div>'."\n";
 			if(isset($_REQUEST['_table_'])){
-            	if(dropDBTable($_REQUEST['_table_'])){
+            	if(dropDBTable($_REQUEST['_table_'],1)){
 					$ok=createWasqlTables($_REQUEST['_table_']);
 					echo printValue($ok);
 				}
@@ -2914,11 +2936,13 @@ if(isset($_REQUEST['_menu'])){
 				$ctime=time();
 				$recs[$i]['created']=verboseTime($ctime-$recs[$i]['_cdate_utime']);
 				if(isNum($recs[$i]['_cuser']) && $recs[$i]['_cuser'] > 0){
-                	$recs[$i]['created'] .= ' by '. getDBUserById($recs[$i]['_cuser'],array('username'));
+					$crec=getDBUserById($recs[$i]['_cuser'],array('username'));
+                	$recs[$i]['created'] .= " by {$crec['username']}" ;
 				}
 				$recs[$i]['edited']=verboseTime($ctime-$recs[$i]['_edate_utime']);
 				if(isNum($recs[$i]['_euser']) && $recs[$i]['_euser'] > 0){
-                	$recs[$i]['edited'] .= ' by '. getDBUserById($recs[$i]['_euser'],array('username'));
+					$erec=getDBUserById($recs[$i]['_euser'],array('username'));
+                	$recs[$i]['edited'] .= " by {$erec['username']}" ;
 				}
 				$recs[$i]['accessed']=verboseTime($ctime-$recs[$i]['_adate_utime']);
 				$recs[$i]['type']=$recs[$i]['utype']==0?'<img src="/wfiles/iconsets/16/user_admin.png" border="0">':'<img src="/wfiles/iconsets/16/user.png" border="0">';
@@ -3720,10 +3744,12 @@ function adminMenu(){
 	$rtn .= '</div>'."\n";
 	//search on right
 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;">'."\n";
-	$rtn .= '     		'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
-	$rtn .= '     			<input type="text" style="margin:1px;padding:1px;font-size:12px;width:75px;" name="_search" _required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
-	$rtn .= '     			<input type="submit" value="Search" class="w_submit" />'."\n";
-	$rtn .= '     		'.buildFormEnd()."\n";
+	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
+	$rtn .= '     			<input type="text" placeholder="help" style="margin:1px;padding:1px;font-size:12px;width:75px;" name="_search" _required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
+	$rtn .= '     			<input type="image" src="/wfiles/iconsets/16/help.png" value="Search" class="w_submit w_middle" />'."\n";
+	$rtn .= '     		'.buildFormEnd()."</div>\n";
+	//show wpass in menu?
+	if($CONFIG['wpass']){$rtn .= wpassModule();}
 	$rtn .= '	</div>'."\n";
 	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'."\n";
@@ -3970,7 +3996,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual">'.adminMenuIcon('/wfiles/iconsets/16/help.png').' Documentation</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about">'.adminMenuIcon('/wfiles/iconsets/16/info.png').' About</a><hr size="1"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit">'.adminMenuIcon('/wfiles/postedit.gif').' PostEdit Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=contentmanager">'.adminMenuIcon('/wfiles/iconsets/16/contentmanager.png').' Content Manager</a></li>'."\n";
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=contentmanager">'.adminMenuIcon('/wfiles/iconsets/16/contentmanager.png').' Content Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files">'.adminMenuIcon('/wfiles/file.gif').' File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";

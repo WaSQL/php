@@ -117,7 +117,6 @@ function tcpdfHTML($html,$params=array()){
 *			<image src="http://localhost/wfiles/iconsets/64/user.png" position="400,100" width="64" height="64" />
 *			<barcode type="code 39" font="times,bold,20" fitwidth="false" border="1" position="100,300" width="150" height="75">XY23454</barcode>
 *			<barcode type="QRCODE" font="times,bold,20" fitwidth="false" bgcolor="#efefef" position="400,300" width="100" height="100">www.wasql.com</barcode>
-*			<pagebreak orientation="L" />
 *		</pdf>
 *	';
 *	tcpdfXML($xml);
@@ -177,319 +176,299 @@ function tcpdfXML($xml){
 	if(isset($xml['@attributes'])){
 		$pdf=tcpdfApplyAttributes($pdf,$xml['@attributes']);
 	}
-	//rearrange the xml array so we can render in order it shows in the xml.  this way pagebreaks will work
-	$render=array();
 	foreach($xml as $key=>$tags){
 		if($key=='@attributes'){continue;}
 		if(isset($tags['@value']) || isset($tags['@attributes'])){
         	$tags=array($tags);
 		}
-		foreach($tags as $i=>$tag){
-        	$render[$i][$key]=$tag;
-		}
-	}
-	foreach($render as $i=>$keys){
-		foreach($keys as $key=>$tags){
-			if($key=='@attributes'){continue;}
-			if(isset($tags['@value']) || isset($tags['@attributes'])){
-	        	$tags=array($tags);
-			}
-			$pdf->SetXY(0,0);
-			switch(strtolower($key)){
-				case 'box':
-				case 'html':
-					//MultiCell(float w, float h, string txt [, mixed border [, string align [, boolean fill]]])
-					//$w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, 
-					//$stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false
-					foreach($tags as $tag){
-						$string=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
-						//set font if specified
-						if(isset($tag['@attributes']['font'])){
-							//$pdf->SetFont($family,$style,$size)
-							$parts=preg_split('/\,/',$tag['@attributes']['font']);
-							$parts[0]=tcpdfTranslate('font',$parts[0]);
-							$parts[1]=tcpdfTranslate('fontstyle',$parts[1]);
-							//echo "SetFont",printValue($parts);
-							$pdf->SetFont(
-								$parts[0],
-								$parts[1],
-								$parts[2]
-							);
-						}
-						//set position if specified: SetXY(float x, float y)
-						$ln=isset($tag['@attributes']['ln'])?$tag['@attributes']['ln']:1;
-						$w=isset($tag['@attributes']['width'])?$tag['@attributes']['width']:0;
-						$h=isset($tag['@attributes']['height'])?$tag['@attributes']['height']:0;
-						$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'J';
-						$x='';
-						$y='';
-						$reseth=isset($tag['@attributes']['reseth'])?tcpdfTranslate('boolean',$tag['@attributes']['reseth']):true;
-						$stretch=isset($tag['@attributes']['stretch'])?$tag['@attributes']['stretch']:false;
-						if(strtolower($key)=='html'){$ishtml=true;}
-						else{
-							$ishtml=isset($tag['@attributes']['ishtml'])?tcpdfTranslate('boolean',$tag['@attributes']['ishtml']):false;
-						}
-						$autopadding=isset($tag['@attributes']['autopadding'])?tcpdfTranslate('boolean',$tag['@attributes']['autopadding']):true;
-						$maxh=isset($tag['@attributes']['maxh'])?$tag['@attributes']['maxh']:0;
-						$valign=isset($tag['@attributes']['valign'])?tcpdfTranslate('valign',$tag['@attributes']['valign']):'T';
-						$fitcell=isset($tag['@attributes']['fitcell'])?tcpdfTranslate('boolean',$tag['@attributes']['fitcell']):false;
-						if(isset($tag['@attributes']['position'])){
-							list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position']);
-						}
-						//background?
-						$fill=0;
-						if(isset($tag['@attributes']['background'])){
-							//convert hex to rgb
-							list($r,$g,$b)=hex2RGB($tag['@attributes']['background']);
-	                    	$pdf->SetFillColor($r,$g,$b);
-	                    	$fill=1;
-						}
-						if(isset($tag['@attributes']['color'])){
-							//convert hex to rgb
-							list($r,$g,$b)=hex2RGB($tag['@attributes']['color']);
-	                    	$pdf->SetTextColor($r,$g,$b);
-	                    	$fill=1;
-						}
-						//border? 0,1,dashed, dotted
-						$resetlinestyle=0;
-						switch(strtolower($tag['@attributes']['border'])){
-	                    	case 0:
-	                    	case 'none':
-								$border=0;
-							break;
-							case 'dashed':
-								$border=1;
-								$resetlinestyle=1;
-								//$pdf->SetLineStyle(array('width' => 0.3, 'dash' => 3));
-								$pdf->SetLineStyle(array('dash' => 3));
-							break;
-							case 'dotted':
-								$border=1;
-								$resetlinestyle=1;
-								$pdf->SetLineStyle(array('dash' => 1));
-							break;
-							default:
-								$border=1;
-							break;
-						}
-						$pdf->MultiCell(
-							$w,$h,$string,$border,$align,
-							$fill,$ln,$x,$y,$reseth,$stretch,$ishtml,$autopadding,
-							$maxh,$valign,$fitcell
+		$pdf->SetXY(0,0);
+		switch(strtolower($key)){
+			case 'box':
+			case 'html':
+				//MultiCell(float w, float h, string txt [, mixed border [, string align [, boolean fill]]])
+				//$w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, 
+				//$stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false
+				foreach($tags as $tag){
+					$string=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
+					//set font if specified
+					if(isset($tag['@attributes']['font'])){
+						//$pdf->SetFont($family,$style,$size)
+						$parts=preg_split('/\,/',$tag['@attributes']['font']);
+						$parts[0]=tcpdfTranslate('font',$parts[0]);
+						$parts[1]=tcpdfTranslate('fontstyle',$parts[1]);
+						//echo "SetFont",printValue($parts);
+						$pdf->SetFont(
+							$parts[0],
+							$parts[1],
+							$parts[2]
 						);
-						if($resetlinestyle==1){
-							$pdf->SetLineStyle(array('width' => 0.2, 'dash' => 0));
-						}
-						if($fill==1){
-	                    	$pdf->SetFillColor(255,255,255);
-	                    	$pdf->SetTextColor(0,0,0);
-						}
 					}
-					break;
-				case 'pagebreak':
-					$pagenum=$pdf->getPage();
-					$pagenum++;
-					$pdf->AddPage($pagenum);
-					$orientation=isset($tags['@attributes']['orientation'])?$tags['@attributes']['orientation']:$orientation;
-					$pdf->setPageOrientation($orientation);
-					if(isset($tags['@attributes'])){
-						$pdf=tcpdfApplyAttributes($pdf,$xml['@attributes']);
+					//set position if specified: SetXY(float x, float y)
+					$ln=isset($tag['@attributes']['ln'])?$tag['@attributes']['ln']:1;
+					$w=isset($tag['@attributes']['width'])?$tag['@attributes']['width']:0;
+					$h=isset($tag['@attributes']['height'])?$tag['@attributes']['height']:0;
+					$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'J';
+					$x='';
+					$y='';
+					$reseth=isset($tag['@attributes']['reseth'])?tcpdfTranslate('boolean',$tag['@attributes']['reseth']):true;
+					$stretch=isset($tag['@attributes']['stretch'])?$tag['@attributes']['stretch']:false;
+					if(strtolower($key)=='html'){$ishtml=true;}
+					else{
+						$ishtml=isset($tag['@attributes']['ishtml'])?tcpdfTranslate('boolean',$tag['@attributes']['ishtml']):false;
 					}
+					$autopadding=isset($tag['@attributes']['autopadding'])?tcpdfTranslate('boolean',$tag['@attributes']['autopadding']):true;
+					$maxh=isset($tag['@attributes']['maxh'])?$tag['@attributes']['maxh']:0;
+					$valign=isset($tag['@attributes']['valign'])?tcpdfTranslate('valign',$tag['@attributes']['valign']):'T';
+					$fitcell=isset($tag['@attributes']['fitcell'])?tcpdfTranslate('boolean',$tag['@attributes']['fitcell']):false;
+					if(isset($tag['@attributes']['position'])){
+						list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position']);
+					}
+					//background?
+					$fill=0;
+					if(isset($tag['@attributes']['background'])){
+						//convert hex to rgb
+						list($r,$g,$b)=hex2RGB($tag['@attributes']['background']);
+                    	$pdf->SetFillColor($r,$g,$b);
+                    	$fill=1;
+					}
+					if(isset($tag['@attributes']['color'])){
+						//convert hex to rgb
+						list($r,$g,$b)=hex2RGB($tag['@attributes']['color']);
+                    	$pdf->SetTextColor($r,$g,$b);
+                    	$fill=1;
+					}
+					//border? 0,1,dashed, dotted
+					$resetlinestyle=0;
+					switch(strtolower($tag['@attributes']['border'])){
+                    	case 0:
+                    	case 'none':
+							$border=0;
+						break;
+						case 'dashed':
+							$border=1;
+							$resetlinestyle=1;
+							//$pdf->SetLineStyle(array('width' => 0.3, 'dash' => 3));
+							$pdf->SetLineStyle(array('dash' => 3));
+						break;
+						case 'dotted':
+							$border=1;
+							$resetlinestyle=1;
+							$pdf->SetLineStyle(array('dash' => 1));
+						break;
+						default:
+							$border=1;
+						break;
+					}
+					$pdf->MultiCell(
+						$w,$h,$string,$border,$align,
+						$fill,$ln,$x,$y,$reseth,$stretch,$ishtml,$autopadding,
+						$maxh,$valign,$fitcell
+					);
+					if($resetlinestyle==1){
+						$pdf->SetLineStyle(array('width' => 0.2, 'dash' => 0));
+					}
+					if($fill==1){
+                    	$pdf->SetFillColor(255,255,255);
+                    	$pdf->SetTextColor(0,0,0);
+					}
+				}
 				break;
-				case 'image':
-				case 'img':
-					foreach($tags as $tag){
-						//<image src="/wfiles/iconsets/64/user.png" position="100,100" width="100" height="30" />
-						//$pdf->Image(
-						//	$file,$x,$y,$w,$h,$type,$link,$align,$resize=true|false,$dpi=300,
-						//	$palign,$ismask=false,$border=0,$fitbox=false,$hidden=false,$fitonpage=false,
-						//	$alt=false,$altimgs=array()
-						$x=0;$y=0;$w=100;$h=50;
-						if(isset($tag['@attributes']['position'])){
-		                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
-						}
-						if(isset($tag['@attributes']['width'])){
-		                	$w=$tag['@attributes']['width'];
-						}
-						if(isset($tag['@attributes']['height'])){
-		                	$h=$tag['@attributes']['height'];
-						}
-						$file=$tag['@attributes']['src'];
-						//type
-						if(isset($tag['@attributes']['type'])){
-							$type=$tag['@attributes']['type'];
-						}
-						elseif(isset($tag['@attributes']['ext'])){
-							$type=$tag['@attributes']['ext'];
-						}
-						else{
-	                    	$type=strtoupper(getFileExtension($file));
-						}
-						//tcpdfTranslate('align',$tag['@attributes']['align']),
-						$link=isset($tag['@attributes']['link'])?$tag['@attributes']['link']:'';
-						$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'';
-						$resize=isset($tag['@attributes']['resize'])?$tag['@attributes']['resize']:true;
-						$dpi=isset($tag['@attributes']['dpi'])?$tag['@attributes']['dpi']:300;
-						$palign=isset($tag['@attributes']['palign'])?$tag['@attributes']['palign']:'';
-						$ismask=isset($tag['@attributes']['ismask'])?$tag['@attributes']['ismask']:false;
-						$border=isset($tag['@attributes']['border'])?$tag['@attributes']['border']:0;
-						$fitbox=isset($tag['@attributes']['fitbox'])?$tag['@attributes']['fitbox']:false;
-	
-						$hidden=isset($tag['@attributes']['hidden'])?$tag['@attributes']['hidden']:false;
-						$fitonpage=isset($tag['@attributes']['fitonpage'])?$tag['@attributes']['fitonpage']:false;
-						$alt=isset($tag['@attributes']['alt'])?$tag['@attributes']['alt']:'';
-						if(isset($tag['@attributes']['altimgs'])){
-		                	$altimgs=preg_split('/[\,\;]+/',$tag['@attributes']['altimgs']);
-						}
-						$pdf->Image($file,$x,$y,$w,$h,$type,$link,$align,$resize,$dpi,$palign,$ismask,$border,$fitbox,$hidden,$fitonpage,$alt,$altimgs);
+			case 'pagebreak':
+				$pdf->AddPage();
+			break;
+			case 'image':
+			case 'img':
+				foreach($tags as $tag){
+					//<image src="/wfiles/iconsets/64/user.png" position="100,100" width="100" height="30" />
+					//$pdf->Image(
+					//	$file,$x,$y,$w,$h,$type,$link,$align,$resize=true|false,$dpi=300,
+					//	$palign,$ismask=false,$border=0,$fitbox=false,$hidden=false,$fitonpage=false,
+					//	$alt=false,$altimgs=array()
+					$x=0;$y=0;$w=100;$h=50;
+					if(isset($tag['@attributes']['position'])){
+	                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
 					}
-					break;
-				case 'annotate':
-				case 'tip':
-					foreach($tags as $tag){
-						//<image src="/wfiles/iconsets/64/user.png" position="100,100" width="100" height="30" />
-						//$pdf->Annotation(
-						//	$x,$y,$w,$h,$type,$text,$opts,$spaces
-						$x=0;$y=0;$w=100;$h=50;
-						if(isset($tag['@attributes']['position'])){
-		                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
-						}
-						if(isset($tag['@attributes']['width'])){
-		                	$w=$tag['@attributes']['width'];
-						}
-						if(isset($tag['@attributes']['height'])){
-		                	$h=$tag['@attributes']['height'];
-						}
-	     				$text=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
-	     				//opts: Subtype,Name,T,Subj,C
-	     				$opts=array(
-							'Subtype'=>'Text',
-							'Name' => 'Comment',
-							'T' => '',
-							'Subj' => '',
-							'C' => array(255, 255, 0)
-						);
-						if(isset($tag['@attributes']['type'])){$opts['Subtype']=$tag['@attributes']['type'];}
-						if(isset($tag['@attributes']['name'])){$opts['Name']=$tag['@attributes']['name'];}
-						if(isset($tag['@attributes']['title'])){$opts['T']=$tag['@attributes']['title'];}
-						if(isset($tag['@attributes']['subject'])){$opts['Subj']=$tag['@attributes']['subject'];}
-						if(isset($tag['@attributes']['color'])){
-	                    	list($r,$g,$b)=hex2RGB($tag['@attributes']['color']);
-	                    	$opts['C']=array($r,$g,$b);
-						}
-						$spaces='';
-						$pdf->Annotation($x,$y,$w,$h,$text,$opts,$spaces);
+					if(isset($tag['@attributes']['width'])){
+	                	$w=$tag['@attributes']['width'];
 					}
-					break;
-				case 'barcode':
-					foreach($tags as $tag){
-						//<barcode position="100,200" width="100" height="30">ABCTST11923</barcode>
-						//$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align)
-						//$pdf->write2DBarcode ($code,$type,$x,$y,$w,$h,$style='',$align='', $distort=false)
-						// define barcode style
+					if(isset($tag['@attributes']['height'])){
+	                	$h=$tag['@attributes']['height'];
+					}
+					$file=$tag['@attributes']['src'];
+					//type
+					if(isset($tag['@attributes']['type'])){
+						$type=$tag['@attributes']['type'];
+					}
+					elseif(isset($tag['@attributes']['ext'])){
+						$type=$tag['@attributes']['ext'];
+					}
+					else{
+                    	$type=strtoupper(getFileExtension($file));
+					}
+					//tcpdfTranslate('align',$tag['@attributes']['align']),
+					$link=isset($tag['@attributes']['link'])?$tag['@attributes']['link']:'';
+					$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'';
+					$resize=isset($tag['@attributes']['resize'])?$tag['@attributes']['resize']:true;
+					$dpi=isset($tag['@attributes']['dpi'])?$tag['@attributes']['dpi']:300;
+					$palign=isset($tag['@attributes']['palign'])?$tag['@attributes']['palign']:'';
+					$ismask=isset($tag['@attributes']['ismask'])?$tag['@attributes']['ismask']:false;
+					$border=isset($tag['@attributes']['border'])?$tag['@attributes']['border']:0;
+					$fitbox=isset($tag['@attributes']['fitbox'])?$tag['@attributes']['fitbox']:false;
+
+					$hidden=isset($tag['@attributes']['hidden'])?$tag['@attributes']['hidden']:false;
+					$fitonpage=isset($tag['@attributes']['fitonpage'])?$tag['@attributes']['fitonpage']:false;
+					$alt=isset($tag['@attributes']['alt'])?$tag['@attributes']['alt']:'';
+					if(isset($tag['@attributes']['altimgs'])){
+	                	$altimgs=preg_split('/[\,\;]+/',$tag['@attributes']['altimgs']);
+					}
+					$pdf->Image($file,$x,$y,$w,$h,$type,$link,$align,$resize,$dpi,$palign,$ismask,$border,$fitbox,$hidden,$fitonpage,$alt,$altimgs);
+				}
+				break;
+			case 'annotate':
+			case 'tip':
+				foreach($tags as $tag){
+					//<image src="/wfiles/iconsets/64/user.png" position="100,100" width="100" height="30" />
+					//$pdf->Annotation(
+					//	$x,$y,$w,$h,$type,$text,$opts,$spaces
+					$x=0;$y=0;$w=100;$h=50;
+					if(isset($tag['@attributes']['position'])){
+	                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
+					}
+					if(isset($tag['@attributes']['width'])){
+	                	$w=$tag['@attributes']['width'];
+					}
+					if(isset($tag['@attributes']['height'])){
+	                	$h=$tag['@attributes']['height'];
+					}
+     				$text=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
+     				//opts: Subtype,Name,T,Subj,C
+     				$opts=array(
+						'Subtype'=>'Text',
+						'Name' => 'Comment',
+						'T' => '',
+						'Subj' => '',
+						'C' => array(255, 255, 0)
+					);
+					if(isset($tag['@attributes']['type'])){$opts['Subtype']=$tag['@attributes']['type'];}
+					if(isset($tag['@attributes']['name'])){$opts['Name']=$tag['@attributes']['name'];}
+					if(isset($tag['@attributes']['title'])){$opts['T']=$tag['@attributes']['title'];}
+					if(isset($tag['@attributes']['subject'])){$opts['Subj']=$tag['@attributes']['subject'];}
+					if(isset($tag['@attributes']['color'])){
+                    	list($r,$g,$b)=hex2RGB($tag['@attributes']['color']);
+                    	$opts['C']=array($r,$g,$b);
+					}
+					$spaces='';
+					$pdf->Annotation($x,$y,$w,$h,$text,$opts,$spaces);
+				}
+				break;
+			case 'barcode':
+				foreach($tags as $tag){
+					//<barcode position="100,200" width="100" height="30">ABCTST11923</barcode>
+					//$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align)
+					//$pdf->write2DBarcode ($code,$type,$x,$y,$w,$h,$style='',$align='', $distort=false)
+					// define barcode style
+					$style = array(
+					    'position' => '',
+					    'align' => 'C',
+					    'stretch' => true,		//stretch the barcode to best fit the available width, otherwise uses $xres resolution for a single bar
+					    'fitwidth' => false, 	//if true reduce the width to fit the barcode width + padding
+					    'cellfitalign' => '',
+					    'border' => false,
+					    'hpadding' => 'auto',
+					    'vpadding' => 'auto',
+					    'fgcolor' => array(0,0,0),
+					    'bgcolor' => false, 	//color array for background (set to false for transparent)
+					    'text' => true,			//prints text below the barcode
+					    'font' => 'helvetica',
+					    'fontsize' => 9,
+					    'stretchtext' => 4 //0=disabled;1=horizontal scaling only if necessary;2=forced horizontal scaling; 3=character spacing only if necessary; 4=forced character spacing
+					);
+					$type=isset($tag['@attributes']['type'])?tcpdfTranslate('barcode',$tag['@attributes']['type']):'C39+';
+					if(stringContains($type,'QRCODE') || stringContains($type,'RAW')){
 						$style = array(
-						    'position' => '',
-						    'align' => 'C',
-						    'stretch' => true,		//stretch the barcode to best fit the available width, otherwise uses $xres resolution for a single bar
-						    'fitwidth' => false, 	//if true reduce the width to fit the barcode width + padding
-						    'cellfitalign' => '',
-						    'border' => false,
-						    'hpadding' => 'auto',
+						    'border' => 2,
 						    'vpadding' => 'auto',
+						    'hpadding' => 'auto',
 						    'fgcolor' => array(0,0,0),
-						    'bgcolor' => false, 	//color array for background (set to false for transparent)
-						    'text' => true,			//prints text below the barcode
-						    'font' => 'helvetica',
-						    'fontsize' => 9,
-						    'stretchtext' => 4 //0=disabled;1=horizontal scaling only if necessary;2=forced horizontal scaling; 3=character spacing only if necessary; 4=forced character spacing
+						    'bgcolor' => false, //array(255,255,255)
+						    'module_width' => 1, // width of a single module in points
+						    'module_height' => 1 // height of a single module in points
 						);
-						$type=isset($tag['@attributes']['type'])?tcpdfTranslate('barcode',$tag['@attributes']['type']):'C39+';
-						if(stringContains($type,'QRCODE') || stringContains($type,'RAW')){
-							$style = array(
-							    'border' => 2,
-							    'vpadding' => 'auto',
-							    'hpadding' => 'auto',
-							    'fgcolor' => array(0,0,0),
-							    'bgcolor' => false, //array(255,255,255)
-							    'module_width' => 1, // width of a single module in points
-							    'module_height' => 1 // height of a single module in points
-							);
-						}
-						foreach($style as $key=>$val){
-	                    	if(isset($tag['@attributes'][$key])){
-								if(preg_match('/^true$/i',$tag['@attributes'][$key])){$style[$key]=true;}
-								elseif(preg_match('/^false$/i',$tag['@attributes'][$key])){$style[$key]=false;}
-								else{
-									if($key=='font'){
-										$parts=preg_split('/\,/',$tag['@attributes']['font']);
-										$style['font']=tcpdfTranslate('font',"{$parts[0]} {$parts[1]}");
-										$style['fontsize']=isset($parts[2])?$parts[2]:9;
-									}
-									elseif(stringContains($key,'color')){
-										//convert hex to rgb
-										list($r,$g,$b)=hex2RGB($tag['@attributes'][$key]);
-	                    				$style[$key]=array($r,$g,$b);
-									}
-									else{$style[$key]=$tag['@attributes'][$key];}
+					}
+					foreach($style as $key=>$val){
+                    	if(isset($tag['@attributes'][$key])){
+							if(preg_match('/^true$/i',$tag['@attributes'][$key])){$style[$key]=true;}
+							elseif(preg_match('/^false$/i',$tag['@attributes'][$key])){$style[$key]=false;}
+							else{
+								if($key=='font'){
+									$parts=preg_split('/\,/',$tag['@attributes']['font']);
+									$style['font']=tcpdfTranslate('font',"{$parts[0]} {$parts[1]}");
+									$style['fontsize']=isset($parts[2])?$parts[2]:9;
 								}
+								elseif(stringContains($key,'color')){
+									//convert hex to rgb
+									list($r,$g,$b)=hex2RGB($tag['@attributes'][$key]);
+                    				$style[$key]=array($r,$g,$b);
+								}
+								else{$style[$key]=$tag['@attributes'][$key];}
 							}
 						}
-						$x=0;$y=0;$w=100;$h=50;
-						if(isset($tag['@attributes']['position'])){
-		                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
-						}
-						if(isset($tag['@attributes']['width'])){
-		                	$w=$tag['@attributes']['width'];
-						}
-						if(isset($tag['@attributes']['height'])){
-		                	$h=$tag['@attributes']['height'];
-						}
-						$code=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
-	
-						//tcpdfTranslate('align',$tag['@attributes']['align']),
-						
-						$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'';
-						$xres=isset($tag['@attributes']['xres'])?$tag['@attributes']['xres']:0.4;
-						//echo "($code,$type,$x,$y,$w,$h,$xres,$style,$align)";exit;
-						if(stringContains($type,'QRCODE') || stringContains($type,'RAW')){
-							$distort=isset($tag['@attributes']['distort'])?tcpdfTranslate('align',$tag['@attributes']['distort']):'N';
-							//echo "pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort)";exit;
-							//$pdf->write2DBarcode('www.tcpdf.org', 'QRCODE,H', 20, 210, 50, 50, $style, 'N');
-							//pdf->write2DBarcode(www.wasql.com,QRCODE,H,400,300,100,50,Array,,)
-							//echo printValue($style)."pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort)";exit;
-							$pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort);
-						}
-						else{
-							if(isset($tag['@attributes']['rotate'])){
-								$parts=preg_split('/\,+/',$tag['@attributes']['rotate']);
-	                        	if(count($parts)==1){
-									$pdf->StartTransform();
-									$pdf->setXY($x,$y);
-	                        		$pdf->Rotate($parts[0]);
-	                        		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
-	                        		$pdf->StopTransform();
-								}
-								elseif(count($parts)==3){
-									$pdf->StartTransform();
-									$pdf->setXY($x,$y);
-	                        		$pdf->Rotate($parts[0],$parts[1],$parts[2]);
-	                        		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
-	                        		$pdf->StopTransform();
-								}
-								else{
-	                            	$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
-								}
-	
+					}
+					$x=0;$y=0;$w=100;$h=50;
+					if(isset($tag['@attributes']['position'])){
+	                	list($x,$y)=preg_split('/\,+/',$tag['@attributes']['position'],2);
+					}
+					if(isset($tag['@attributes']['width'])){
+	                	$w=$tag['@attributes']['width'];
+					}
+					if(isset($tag['@attributes']['height'])){
+	                	$h=$tag['@attributes']['height'];
+					}
+					$code=isset($tag['@cdata'])?$tag['@cdata']:$tag['@value'];
+
+					//tcpdfTranslate('align',$tag['@attributes']['align']),
+					
+					$align=isset($tag['@attributes']['align'])?tcpdfTranslate('align',$tag['@attributes']['align']):'';
+					$xres=isset($tag['@attributes']['xres'])?$tag['@attributes']['xres']:0.4;
+					//echo "($code,$type,$x,$y,$w,$h,$xres,$style,$align)";exit;
+					if(stringContains($type,'QRCODE') || stringContains($type,'RAW')){
+						$distort=isset($tag['@attributes']['distort'])?tcpdfTranslate('align',$tag['@attributes']['distort']):'N';
+						//echo "pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort)";exit;
+						//$pdf->write2DBarcode('www.tcpdf.org', 'QRCODE,H', 20, 210, 50, 50, $style, 'N');
+						//pdf->write2DBarcode(www.wasql.com,QRCODE,H,400,300,100,50,Array,,)
+						//echo printValue($style)."pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort)";exit;
+						$pdf->write2DBarcode($code,$type,$x,$y,$w,$h,$style,$align,$distort);
+					}
+					else{
+						if(isset($tag['@attributes']['rotate'])){
+							$parts=preg_split('/\,+/',$tag['@attributes']['rotate']);
+                        	if(count($parts)==1){
+								$pdf->StartTransform();
+								$pdf->setXY($x,$y);
+                        		$pdf->Rotate($parts[0]);
+                        		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
+                        		$pdf->StopTransform();
+							}
+							elseif(count($parts)==3){
+								$pdf->StartTransform();
+								$pdf->setXY($x,$y);
+                        		$pdf->Rotate($parts[0],$parts[1],$parts[2]);
+                        		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
+                        		$pdf->StopTransform();
 							}
 							else{
-	                    		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
+                            	$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
 							}
+
 						}
-	
-	
+						else{
+                    		$pdf->write1DBarcode($code,$type,$x,$y,$w,$h,$xres,$style,$align);
+						}
 					}
-					break;
-			}
+
+
+				}
+				break;
 		}
 	}
 	$pdf->Output($filename,'I');

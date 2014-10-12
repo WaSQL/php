@@ -1,21 +1,35 @@
-			<div id="frontpage-main">
-				<div id="frontpage-content">
-					<h3>Why Work With Us?</h3>
-					<p>You'll not regret getting in touch with us about your new project. Below are some of the benefits.</p>
-					<ul class="blue-bullets">
-						<li>Over 15 Years Real World Experience</li>
-						<li>Voted No. 1 Design Studio In The World</li>
-						<li>Support And Guidance At Every Step</li>
-						<li>A Great Solution That You&#8217;ll Be Happy With</li>
-					</ul>
-				</div><!--end frontpage-content-->
+<div class="row">
+    <div class="col-xs-12">
+		<div>
 
-				<div id="frontpage-sidebar">
-					<h3>Latest Article</h3>
-					<a class="blog-title" href="#">Top Tips For Hiring A Design Agency</a>
-		            <p class="meta">1st May 2011 / <a href="#" title="Comment on Top Websites To Help Improve Your Skills">No Comments &#187;</a></p>
-		            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.</p>
-					<a class="read-more" href="#">Read More &raquo;</a>
-				</div><!--end frontpage-sidebar-->
+			<h1 class="strawberry">Comming soon!</h1>
+			<div class="menu_item">
+				We hope to be live soon.
+			</div>
+		</div>
+	</div>
 
-			</div><!--end frontpage-main-->
+</div>
+<br /><br />
+<div class="row">
+	<div class="col-xs-12 col-md-3">
+		<div class="box boxleft w_pointer" onclick="window.location='/about';">
+			<h2 class="menu_title">About US</h2>
+		</div>
+	</div>
+    <div class="col-xs-12 col-md-3">
+    	<div class="box boxright w_pointer" onclick="window.location='/contact';">
+			<h2 class="menu_title">Contact Us</h2>
+   		</div>
+	</div>
+	<div class="col-xs-12 col-md-3">
+		<div class="box boxleft w_pointer" onclick="window.location='/home';">
+			<h2 class="menu_title">Home</h2>
+		</div>
+	</div>
+    <div class="col-xs-12 col-md-3">
+    	<div class="box boxright">
+			<h2 class="menu_title">Lorem Ipsum</h2>
+		</div>
+	</div>
+</div>
