@@ -258,11 +258,26 @@ function minifyLines($lines,$conditionals=1) {
 		  to only show for msie 6 [msie eq 6]
 		  to only show for msie greater than 6 [msie gt 6]
 		  to ony show for msie less than or equal to 6 [msie lte 6]
+		  BUT ALLOW FOR [data-toggle="buttons"]
 		*/
 		if(preg_match('/^\[(.+?)\]/',$tline,$cssmatch)){
 			$browser=strtolower($_SERVER['REMOTE_BROWSER']);
 			$parts=preg_split('/\ +/',strtolower($cssmatch[1]),3);
-			if(count($parts)==1 && !in_array($browser,preg_split('/\|/',$parts[0]))){continue;}
+			if(count($parts)==1){
+				//allow for css selectors
+				$valid_browsers=array('msie','chrome','firefox','safari','opera');
+				$part_browsers=preg_split('/\|/',$parts[0]);
+				if(!in_array($part_browsers[0],$valid_browsers)){
+                	$csslines[]=rtrim($line);
+					continue;
+				}
+				//ALLOW FOR [data-toggle="buttons"]
+				if(stringContains($cssmatch[1],'"')){
+					$csslines[]=rtrim($line);
+					continue;
+				}
+				if(!in_array($browser,preg_split('/\|/',$parts[0]))){continue;}
+			}
 			//[not msie]
 			if(count($parts)==2 && $parts[0] == 'not' && in_array($browser,preg_split('/\|/',$parts[1]))){continue;}
 			if(count($parts)==3 ){

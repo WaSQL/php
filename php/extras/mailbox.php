@@ -1,5 +1,4 @@
 <?php
-//error_reporting(E_STRICT | E_ALL);
 /*
 *	Debian Servers may need the following:
 *	>apt-get install php5-imap
@@ -119,7 +118,11 @@ function mailboxGetMessages($mbox,$basefilepath){
 				$email['text']=$txt;
 			}
 	        //parse from
-	        $email['from_email']=mailboxParseEmail($email['from']);
+	        if(isset($email['Reply-To'])){$email['from_email']=mailboxParseEmail($email['Reply-To']);}
+	        elseif(isset($email['reply-to'])){$email['from_email']=mailboxParseEmail($email['reply-to']);}
+	        elseif(isset($email['X-Original-From'])){$email['from_email']=mailboxParseEmail($email['X-Original-From']);}
+	        elseif(isset($email['x-original-from'])){$email['from_email']=mailboxParseEmail($email['x-original-from']);}
+	        else{$email['from_email']=mailboxParseEmail($email['from']);}
 	        //sha
             $shaparts=$email['message_id'].$email['msgno'].$email['attachment_count'].$email['date_utime'].$email['from'].$email['to'];
 			$email['sha']=sha1($shaparts);

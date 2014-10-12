@@ -1,5 +1,8 @@
 <?php
-/*WaSQL Default Schema*/
+/*
+      WaSQL Default Schema
+
+*/
 //---------- begin function createWasqlTables
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -53,6 +56,7 @@ function createWasqlTable($table=''){
 			$fields['xml']="text NULL";
 			$fields['status']=databaseDataType('smallint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			$ok=schemaAddFileData($table);
 			addMetaData($table);
 			return 1;
@@ -73,6 +77,7 @@ function createWasqlTable($table=''){
 			$fields['session_id_unique']="INT NOT NULL Default 1";
 			$fields['guid_unique']="INT NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			$ok=schemaAddFileData($table);
 			addMetaData($table);
 			return 1;
@@ -87,6 +92,7 @@ function createWasqlTable($table=''){
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['list_options']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
@@ -127,6 +133,7 @@ function createWasqlTable($table=''){
 			$fields['running']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['run_log']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"run_cmd",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
@@ -136,10 +143,10 @@ function createWasqlTable($table=''){
 				'tablename'		=> $table,
 				'formfields'	=> "name active run_log begin_date end_date\r\nfrequency run_format run_values\r\nlogfile logfile_maxsize\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
 				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrun_log\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
-				'sortfields'	=> "active desc\r\nrunning desc\r\nbegin_date desc",
+				'sortfields'	=> "active desc, running desc, begin_date desc",
 				'formfields_mod'=> "name begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_date run_length\r\nrun_result",
 				'listfields_mod'=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
-				'sortfields_mod'=> "active desc\r\nrunning desc\r\nbegin_date desc",
+				'sortfields_mod'=> "active desc, running desc, begin_date desc",
 				'synchronize'	=> 1
 				);
 			$id=addDBRecord($addopts);
@@ -161,13 +168,14 @@ function createWasqlTable($table=''){
 			$fields['count_crons_running']="integer NOT NULL Default 1";
 			$fields['count_crons_listening']="integer NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
 				'listfields'	=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length\r\ncount_crons\r\ncount_crons_active\r\ncount_crons_inactive\r\ncount_crons_running\r\ncount_crons_listening",
-				'sortfields'	=> "_cdate desc\r\nname",
+				'sortfields'	=> "_cdate desc, name",
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
@@ -195,6 +203,7 @@ function createWasqlTable($table=''){
 			$fields['width']="INT NULL";
 			$fields['related_table']="varchar(100) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename,fieldname",'-unique'=>true));
 			addMetaData($table);
@@ -211,6 +220,7 @@ function createWasqlTable($table=''){
 			$fields['category']="varchar(100) NULL";
 			$fields['description']="varchar(255) NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"file"));
 			addMetaData($table);
@@ -223,6 +233,7 @@ function createWasqlTable($table=''){
 			$fields['script_url']="varchar(255) NULL";
 			$fields['_xmldata']="text NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_formname"));
 			addMetaData($table);
@@ -236,6 +247,7 @@ function createWasqlTable($table=''){
 			$fields['xmldata']="text NULL";
 			$fields['md5']="char(32) NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename"));
 			addMetaData($table);
@@ -245,6 +257,7 @@ function createWasqlTable($table=''){
 			$fields['name']="varchar(100) NOT NULL";
 			$fields['version']="INT NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexs
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
 			//$query="alter table {$table} add index {$index_name} ({$index_tables})";
@@ -256,6 +269,7 @@ function createWasqlTable($table=''){
 			$fields['active']="tinyint(1) NOT NULL Default 1";
 			$fields['functions']="mediumtext NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexs
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			addMetaData($table);
@@ -295,6 +309,7 @@ function createWasqlTable($table=''){
 			$fields['page_type']=databaseDataType('smallint')." NOT NULL Default 0";
 			$fields['meta_description']="varchar(255) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"permalink"));
@@ -311,11 +326,12 @@ function createWasqlTable($table=''){
 			$fields['command']="varchar(255) NOT NULL";
 			$fields['description']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
 				'listfields'	=> "_cdate,page_name\r\npage_id\r\nuser_id\r\ncommand",
-				'sortfields'	=> "_cdate desc\r\nname",
+				'sortfields'	=> "_cdate desc, name",
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
@@ -332,6 +348,7 @@ function createWasqlTable($table=''){
 			$fields['tablename']="varchar(255) NULL";
 			$fields['user_id']="int NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename"));
 			//Add tabledata
@@ -348,11 +365,34 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 			break;
+		case '_wpass':
+			$fields['title']="varchar(100) NOT NULL";
+			$fields['category']="varchar(50) NOT NULL";
+			$fields['user']="varchar(60) NOT NULL";
+			$fields['pass']="varchar(40) NOT NULL";
+			$fields['url']="varchar(255) NOT NULL";
+			$fields['notes']="mediumtext NULL";
+			$fields['users']="varchar(1000) NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser,category,title",'-unique'=>1));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser"));
+			//Add tabledata
+			$addopts=array('-table'=>"_tabledata",
+				'tablename'		=> $table,
+				'formfields'	=> "category title\r\nuser pass\r\nurl\r\nnotes",
+				'listfields'	=> "_cdate\r\n_cuser\r\ncategory\r\ntitle\r\nurl",
+				);
+			$id=addDBRecord($addopts);
+			addMetaData($table);
+			return 1;
+			break;
 		case '_sessions':
 			$fields['session_id']="char(40) NOT NULL UNIQUE";
 			$fields['session_data']="mediumtext NULL";
 			$fields['touchtime']="int NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"touchtime"));
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
@@ -377,6 +417,7 @@ function createWasqlTable($table=''){
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['tabledesc']="varchar(500) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename",'-unique'=>true));
 			//insert default data
@@ -397,7 +438,7 @@ function createWasqlTable($table=''){
 				'tablename'		=> '_fielddata',
 				'formfields'	=> "tablename fieldname displayname\r\ndescription synchronize\r\ninputtype related_table behavior postedit\r\nwidth height inputmax required editlist mask\r\nonchange\r\ntvals\r\ndvals\r\ndefaultval\r\nhelp",
 				'listfields'	=> "tablename\r\nfieldname\r\ninputtype\r\nwidth\r\nheight\r\ninputmax\r\neditlist\r\ndescription",
-				'sortfields'	=> 'tablename\r\nfieldname\r\ninputtype',
+				'sortfields'	=> 'tablename, fieldname, inputtype',
 				'synchronize'	=> 1
 				));
 			
@@ -406,7 +447,7 @@ function createWasqlTable($table=''){
 				'tablename'		=> '_forms',
 				'formfields'	=> "_formname email\r\nhttp_host script_url\r\n_xmldata",
 				'listfields'	=> '_formname email http_host script_url _cdate',
-				'sortfields'	=> "_formname\r\n_cdate desc"
+				'sortfields'	=> "_formname, _cdate desc"
 				));
 			//_history
 			$id=addDBRecord(array('-table'=>$table,
@@ -437,7 +478,7 @@ function createWasqlTable($table=''){
 				'tablename'		=> '_tabledata',
 				'formfields'	=> "tablename\r\nformfields\r\nlistfields\r\nsortfields\r\nformfields_mod\r\nlistfields_mod\r\nsortfields_mod",
 				'listfields'	=> 'tablename sortfields sortfields_mod',
-				'sortfields'	=> 'tablename\r\n_cdate desc',
+				'sortfields'	=> 'tablename, _cdate desc',
 				'synchronize'	=> 1
 				));
 			//_templates
@@ -458,7 +499,7 @@ function createWasqlTable($table=''){
 				'sortfields'	=> '_adate desc',
 				'formfields_mod'=> "username password\r\ntitle\r\nfirstname lastname\r\naddress1\r\naddress2\r\ncountry email\r\ncity state zip\r\npicture\r\nbio",
 				'listfields_mod'=> 'username firstname lastname email',
-				'sortfields_mod'=> 'lastname\r\nfirstname\r\nusername'
+				'sortfields_mod'=> 'lastname, firstname, username'
 				));
 			addMetaData($table);
 			return 1;
@@ -478,6 +519,7 @@ function createWasqlTable($table=''){
 			$fields['postedit']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			//insert default files for this table from the schema directory
 			schemaAddFileData($table);
@@ -489,6 +531,7 @@ function createWasqlTable($table=''){
 			$fields['key_value']="varchar(5000) NULL";
 			$fields['user_id']="integer NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"key_name,user_id",'-unique'=>true));
 			//set queries on by default
@@ -521,6 +564,7 @@ function createWasqlTable($table=''){
 			$fields['review_user']="varchar(255) NULL";
 			$fields['review_user_id']="integer NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			addMetaData($table);
 			return 1;
 			break;
@@ -551,6 +595,7 @@ function createWasqlTable($table=''){
 			$fields['picture']="varchar(255) NULL";
 			$fields['bio']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"username",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
@@ -573,26 +618,29 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case 'states':
-			$fields['code']="char(5) NOT NULL";
+			$fields['code']="char(7) NOT NULL";
 			$fields['name']="varchar(50) NOT NULL";
 			$fields['country']="char(2) NOT NULL Default 'US'";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,country",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
 			//populate the states with states and provinces for USA and Canada
-			$progpath=dirname(__FILE__);
-			$files=listFilesEx("$progpath/schema",array('name'=>"states_",'ext'=>"csv"));
-			foreach($files as $file){
-				$csv=getCSVFileContents($file['afile']);
-				$tmp=preg_split('/\_/',getFileName($file['name'],1));
-				$country=strtoupper(array_pop($tmp));
-				foreach($csv['items'] as $item){
-	                $item['-table']=$table;
-					if(!isset($item['country'])){$item['country']=$country;}
-					$item['name']=utf8_encode($item['name']);
-	                $id=addDBRecord($item);
-	                if(!isNum($id)){abort(printValue($id).printValue($item));}
+			if(!schemaUpdateStates()){
+				$progpath=dirname(__FILE__);
+				$files=listFilesEx("$progpath/schema",array('name'=>"states_",'ext'=>"csv"));
+				foreach($files as $file){
+					$csv=getCSVFileContents($file['afile']);
+					$tmp=preg_split('/\_/',getFileName($file['name'],1));
+					$country=strtoupper(array_pop($tmp));
+					foreach($csv['items'] as $item){
+		                $item['-table']=$table;
+						if(!isset($item['country'])){$item['country']=$country;}
+						$item['name']=utf8_encode($item['name']);
+		                $id=addDBRecord($item);
+		                if(!isNum($id)){abort(printValue($id).printValue($item));}
+					}
 				}
 	        }
             addMetaData($table);
@@ -604,18 +652,36 @@ function createWasqlTable($table=''){
 			$fields['subject']="varchar(150) NOT NULL";
 			$fields['message']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			addMetaData($table);
 			break;
 		case 'countries':
 			$fields['code']="char(2) NOT NULL";
-			$fields['name']="varchar(50) NOT NULL";
+			$fields['name']="varchar(100) NOT NULL";
+			$fields['tlds']="varchar(255) NULL";
+			$fields['currency']="varchar(150) NULL";
+			$fields['calling_code']="varchar(25) NULL";
+			$fields['language']="varchar(255) NULL";
+			$fields['border_countries']="varchar(255) NULL";
+			$fields['ccn3']="char(5) NULL";
+			$fields['code3']="char(5) NULL";
+			$fields['capital']="varchar(150) NULL";
+			$fields['region']="varchar(150) NULL";
+			$fields['subregion']="varchar(150) NULL";
+			$fields['population']="integer NOT NULL Default 0";
+			$fields['latitude']=databaseDataType('bigint')." NULL";
+			$fields['longitude']=databaseDataType('bigint')." NULL";
+			$fields['relevance']="integer NOT NULL Default 0";
+			$fields['population_rank']="integer NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
+			addMetaData($table);
 			//populate the table if there is a countries.csv
 			$progpath=dirname(__FILE__);
-			if(is_file("$progpath/schema/countries.csv")){
+			if(!schemaUpdateCountries() && is_file("$progpath/schema/countries.csv")){
 				$csv=getCSVFileContents("$progpath/schema/countries.csv");
 				foreach($csv['items'] as $item){
                 	$item['-table']=$table;
@@ -632,6 +698,136 @@ function createWasqlTable($table=''){
     	}
 	return 0;
 	}
+//---------- begin function schemaUpdateCountries
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function schemaUpdateCountries(){
+	$url='https://raw.githubusercontent.com/mledoze/countries/master/countries.json';
+	$post=postURL($url,array('-method'=>'GET','-ssl'=>false,'-ssl_version'=>3));
+	$countries=json_decode($post['body'], true);
+	if(!isset($countries[0]['name'])){return false;}
+	$recs=array();
+	foreach($countries as $country){
+		if(is_array($country['name'])){
+        	$name=$country['name']['common'];
+        	if(isset($country['name']['native']['common']) && $country['name']['native']['common'] != $name){
+				$name .= " ({$country['name']['native']['common']})";
+			}
+			$country['name']=$name;
+		}
+    	$rec=array('name'=>$country['name']);
+    	$tlds=array();
+    	foreach($country['tld'] as $tld){
+        	$tld=preg_replace('/^\./','',$tld);
+        	$tlds[]=$tld;
+		}
+		$rec['tlds']=implode(':',$tlds);
+		$rec['currency']=implode(':',$country['currency']);
+		$rec['calling_code']=implode(':',$country['callingCode']);
+		if(is_array($country['language'])){
+			$rec['language']=implode(':',$country['language']);
+		}
+		else{$rec['language']=$country['language'];}
+		$rec['border_countries']=implode(':',$country['borders']);
+		$rec['ccn3']=$country['ccn3'];
+		$rec['code']=$country['cca2'];
+		$rec['code3']=$country['cca3'];
+		$rec['capital']=$country['capital'];
+		$rec['region']=$country['region'];
+		$rec['subregion']=$country['subregion'];
+		$rec['population']=$country['population'];
+		$rec['latitude']=$country['latlng'][0];
+		$rec['longitude']=$country['latlng'][1];
+		$rec['relevance']=$country['relevance'];
+		switch(strtoupper($rec['code'])){
+        	case 'US':$rec['tlds']='com';break;
+        	case 'UK':$rec['tlds']='co.uk:uk';break;
+        	case 'AU':$rec['tlds']='co.au:au';break;
+		}
+		//remove blanks
+		foreach($rec as $key=>$val){
+			if(!strlen($val)){unset($rec[$key]);}
+		}
+		$crec=getDBRecord(array(
+			'-table'=>'countries',
+			'code'	=> $rec['code'],
+			'name'	=> $rec['name']
+		));
+		if(isset($crec['_id'])){
+        	$rec['-table']='countries';
+        	$rec['-where']="_id={$crec['_id']}";
+        	$ok=editDBRecord($rec);
+		}
+		else{
+			$crecs=getDBRecords(array(
+				'-table'=>'countries',
+				'code'	=> $rec['code']
+			));
+			if(is_array($crecs) && count($crecs)==1){
+            	$rec['-table']='countries';
+        		$rec['-where']="_id={$crecs[0]['_id']}";
+        		$ok=editDBRecord($rec);
+        		//echo printValue($ok).printValue($rec);
+			}
+			else{
+
+				$rec['-table']='countries';
+				$rec['newid']=addDBRecord($rec);
+				if(!isNum($rec['newid'])){
+					echo printValue($rec['newid']).printValue($rec);exit;
+				}
+			}
+		}
+		//$recs[]=$rec;
+	}
+	//determine population_rank
+	$recs=getDBRecords(array(
+		'-table'	=> 'countries',
+		'-order'	=> 'population desc,relevance desc',
+		'-fields'	=> '_id,name,code,population,relevance'
+	));
+	foreach($recs as $i=>$rec){
+		$rank=$i+1;
+    	$ok=executeSQL("update countries set population_rank={$rank} where _id={$rec['_id']}");
+    	$recs[$i]['population_rank']=$rank;
+	}
+	return true;
+}
+//---------- begin function schemaUpdateCountries
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function schemaUpdateStates(){
+	$base_url='https://github.com/astockwell/countries-and-provinces-states-regions/tree/master/countries';
+	$post=postURL($base_url,array('-method'=>'GET','-ssl'=>false,'-ssl_version'=>3));
+	preg_match_all('/a href\=\"(.+?)\/([a-z\-]+?)\.json\"/',$post['body'],$m);
+	if(!isset($m[0][0])){return false;}
+	$cnt=count($m[0]);
+	for($x=0;$x<$cnt;$x++){
+    	$url="https://raw.githubusercontent.com/astockwell/countries-and-provinces-states-regions/master/countries/{$m[2][$x]}.json";
+    	$post=postURL($url,array('-method'=>'GET','-json'=>1,'-ssl'=>false,'-ssl_version'=>3));
+    	if(!is_array($post['json_array'])){continue;}
+    	$country=getDBRecord(array(
+			'-table'=>'countries',
+			'name'	=> str_replace('-',' ',$m[2][$x])
+		));
+		if(!isset($country['code'])){continue;}
+    	foreach($post['json_array'] as $rec){
+			$rec['name']=str_replace(',',' ',$rec['name']);
+			$crec=getDBRecord(array(
+				'-table'=>'states',
+				'country'=> $country['code'],
+				'name'	=> $rec['name']
+			));
+			if(isset($crec['_id'])){continue;}
+			$rec['-table']='states';
+			$rec['country']=$country['code'];
+			$ok=addDBRecord($rec);
+		}
+	}
+	return true;
+}
 //---------- begin function addMetaData
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -914,7 +1110,7 @@ function addMetaData($table=''){
 				'tvals'			=> 'select _id from _templates order by name,_id',
 				'dvals'			=> 'select name from _templates order by name,_id',
 				'required'		=> 1,
-				'default'		=> 2
+				'defaultval'	=> 2
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_pages',
@@ -924,7 +1120,7 @@ function addMetaData($table=''){
 				'tvals'			=> "1\r\n2\r\n3\r\n4",
 				'dvals'			=> "WebPage\r\nBlog\r\nForum\r\nController",
 				'required'		=> 1,
-				'default'		=> 1
+				'defaultval'	=> 1
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_pages',
@@ -1087,6 +1283,74 @@ function addMetaData($table=''){
 				'width'			=> '700',
 				));
 			break;
+		//_wpass
+		case '_wpass':
+			//_fielddata for _wpass
+				$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'category',
+				'inputtype'		=> 'text',
+				'width'			=> '150',
+				'height'		=> 200,
+				'inputmax'		=> 80,
+				'tvals'			=> '<?='.'wpassGetCategories();'.'?>',
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'title',
+				'inputtype'		=> 'text',
+				'width'			=> '200',
+				'inputmax'		=> 100,
+				'required'		=> 1
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'user',
+				'displayname'	=> 'Username **',
+				'inputtype'		=> 'text',
+				'width'			=> '225',
+				'inputmax'		=> 60,
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'pass',
+				'displayname'	=> 'Password **',
+				'inputtype'		=> 'text',
+				'width'			=> '150',
+				'inputmax'		=> 40,
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'url',
+				'displayname'	=> 'URL **',
+				'inputtype'		=> 'text',
+				'width'			=> '400',
+				'inputmax'		=> 255,
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'notes',
+				'displayname'	=> 'Notes **',
+				'inputtype'		=> 'textarea',
+				'width'			=> 400,
+				'height'		=> 200,
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_wpass',
+				'fieldname'		=> 'users',
+				'displayname'	=> 'Share With',
+				'inputtype'		=> 'checkbox',
+				'width'			=> 3,
+				'tvals'			=> 'select _id from _users where _id !=<?=userValue(\'_id\');?> and active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
+				'dvals'			=> 'select firstname,lastname from _users where _id !=<?=userValue(\'_id\');?> and active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
+				'required'		=> 0
+				));
+		break;
 		//_users
 		case '_users':
 			//_fielddata for _users
@@ -1553,6 +1817,7 @@ function addMetaData($table=''){
 				'height'		=> 200,
 				'required'		=> 0
 				));
+
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
 				'fieldname'		=> 'run_values',
@@ -1753,13 +2018,16 @@ function addMetaData($table=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function getWasqlTables(){
+	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','states','countries','contact_form',
-		'_access','_access_summary','_history','_chat','_cron','_cronlog','_pages','_pagelog','_queries',
+		'_fielddata','_tabledata','countries','states','contact_form',
+		'_access','_access_summary','_history','_cron','_cronlog','_pages','_pagelog','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions'
 		);
+	//include wpass table?
+	if($CONFIG['wpass']){$tables[]='_wpass';}
 	return $tables;
 	}
 //---------- begin function schemaAddFileData
@@ -1767,6 +2035,7 @@ function getWasqlTables(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function schemaAddFileData($table){
+	global $CONFIG;
 	$progpath=dirname(__FILE__);
 	$files=listFilesEx("$progpath/schema",array('name'=>$table));
 	$tables=array();
@@ -1844,4 +2113,5 @@ function schemaAddFileData($table){
 	}
 	return count($tables[$table]);
 }
+
 ?>

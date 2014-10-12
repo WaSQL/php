@@ -331,8 +331,17 @@ function redrawField(fieldname,srcObj){
 	var formname=theForm.getAttribute('name');
 	var divid=formname+'_'+fieldname+'_content';
 	var tablename=theForm["_table"].value;
+	var redraw=tablename+':'+fieldname;
+	var params={_redraw:redraw,opt_0:srcObj.name,val_0:srcObj.value};
+	//add attributes of the field we are redrawing
+	var node=theForm[fieldname];
+	for(var i=0; i<node.attributes.length; i++){
+        if(node.attributes.item(i).specified){
+            params['att_'+node.attributes.item(i).nodeName]=node.attributes.item(i).nodeValue;
+		}
+	}
 	//_redraw=_users:states&opt_0=country&val_0=CA
-	ajaxGet('/php/index.php',divid,'_redraw='+tablename+':'+fieldname+'&opt_0='+srcObj.name+'&val_0='+srcObj.value);
+	ajaxGet('/php/index.php',divid,params);
 	return false;
 }
 //--------------------------
@@ -1615,6 +1624,15 @@ function newXmlHttpRequest(){
 	else {
 		return null;
 	}
+}
+function wpassInput(v){
+	if(!isNum(v)){return true;}
+	var obj=getObject('wpass_search');
+	if(undefined == obj){return;}
+	//blank out the search form
+	obj.value='';
+	ajaxGet('/php/index.php','wpass_info',{_wpass:v});
+	return false;
 }
 //--------------------------
 // Parts Taken from  http://www.AjaxToolbox.com/

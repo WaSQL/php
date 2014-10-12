@@ -1,5 +1,10 @@
-function templateCurrentMenu($name){
-  global $PAGE;
-  if($PAGE['name']==$name){return 'current_page_item';}
-  return '';
+<?php
+loadExtrasCss('bootstrap');
+function templateSocialButtons(){
+	return buildSocialButtons(array(
+		'facebook'	=> "http://www.facebook.com/yourfacebookpage",
+		'-size'		=> 'small',
+		'-tooltip'=>true
+	));
 }
+?>

@@ -89,36 +89,45 @@ function opendnsGetDomains($params=array()){
 	if(!is_array($params['-date'])){$params['-date']=array($params['-date']);}
 	if(count($params['-date']) > 2){return 'opendnsGetDomains Error: Only two dates are allowed';}
 	$daterange=implode('to',$params['-date']);
-	$url="https://dashboard.opendns.com";
+	$url="https://login.opendns.com";
 	$progpath=dirname(__FILE__);
 	$cookiefile="{$progpath}/opendns_{$_SERVER['GUID']}.txt";
 	unlink($cookiefile);
 	//first get the formtoken from the form itself
-	$post=postURL("{$url}/signin",array(
+	$post=postURL("{$url}",array(
 		'-method'	=> "GET",
+		'return_to'	=> 'https://dashboard.opendns.com/',
 		'-ssl'		=> false,
+		'-follow'	=> 1,
 		'-cookiefile'=>$cookiefile,
 	));
+	//echo "opendnsGetDomains:".$formtoken.printValue($post['body']);exit;
 	//$post['body']=preg_replace('/[\r\n]+/',' ',$post['body']);
 	if(!preg_match('/name="formtoken" value="([0-9a-fA-F]+)"/s',$post['body'],$m)){return "No formtoken";}
 	$formtoken=$m[1];
+	//echo "opendnsGetDomains:".$formtoken.printValue($post[' o);exit;
 	//log in
-	$post=postURL("{$url}/signin",array(
+	$post=postURL("{$url}",array(
 		'formtoken'=>$formtoken,
 		'username'	=> $params['-user'],
 		'password'	=> $params['-pass'],
 		'-ssl'		=> false,
+		'-follow'	=> 1,
+		'return_to'	=> 'https://dashboard.opendns.com/',
 		'-cookiefile'=>$cookiefile,
-		'sign_in_submit'=>"foo"
+		'sign-in'=>"Sign in"
 	));
+	//echo printValue($post);exit;
 	//if the location header was set to dashboard we are in.
 	if(!stringContains($post['headers']['location'],'/dashboard')){return "Auth Failed";}
+	$url="https://dashboard.opendns.com";
 	//now get the network_id  from the location header
 	$post=postURL("{$url}/stats/all/start",array(
 		'-method'	=> "GET",
 		'-ssl'		=> false,
 		'-cookiefile'=>$cookiefile
 	));
+	unset($post['body']);
 	if(!preg_match('/\/stats\/(.+?)\/start/',$post['headers']['location'],$m)){return "No network_id";}
 	$network_id=$m[1];
 	//now get the items
@@ -147,6 +156,7 @@ function opendnsGetDomains($params=array()){
 			$page+=1;
 		}
 	}
+	unlink($cookiefile);
 	//echo printValue($items);exit;
 	//domain visits blocks categories
 	$domains=array();

@@ -128,16 +128,21 @@
 	switch(strtolower($_REQUEST['_view'])){
     	case 'admin':
     	case 'wp-admin':
-    		header('Location: /php/admin.php');
-    		exit;
-    		break;
+    	case 'a':
+    		if(!isDBPage($_REQUEST['_view'])){
+	    		header('Location: /php/admin.php');
+	    		exit;
+			}
+	    break;
 	}
-	
-	if(isAjax() && isset($_REQUEST['_serverdate'])){
-		$dateformat=isset($_REQUEST['_dateformat'])?$_REQUEST['_serverdate']:"F j, Y, g:i a";
-		echo date($dateformat);
-		exit;
+
+	if(isAjax()){
+		if(isset($_REQUEST['_serverdate'])){
+			$dateformat=isset($_REQUEST['_dateformat'])?$_REQUEST['_serverdate']:"F j, Y, g:i a";
+			echo date($dateformat);
+			exit;
     	}
+	}
 	//get_magic_quotes_gpc fix if it is on
 	wasqlMagicQuotesFix();
 	global $CONFIG;
@@ -242,6 +247,35 @@
     	}
 	//require user to be logged in if the site is stage.
 	global $USER;
+	if(isAjax() && isUser()){
+    	//facebook functions
+		if(isset($_REQUEST['_fbupdate'])){
+	    	$str=decodeBase64($_REQUEST['_fbupdate']);
+	    	list($id,$email)=preg_split('/\:/',$str,2);
+	    	$query="update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}";
+	    	//echo $query;exit;
+	    	executeSQL($query);
+	    	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
+	    	exit;
+		}
+		elseif(isset($_REQUEST['_fblink'])){
+	    	$str=decodeBase64($_REQUEST['_fblink']);
+	    	list($id,$email)=preg_split('/\:/',$str,2);
+	    	$query="update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}";
+	    	//echo $query;exit;
+	    	executeSQL($query);
+	    	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
+	    	exit;
+		}
+		if(isNum($_REQUEST['_wpass'])){
+			echo wpassInfo($_REQUEST['_wpass']);
+			exit;
+		}
+		if(isset($_REQUEST['_formname']) && $_REQUEST['_formname']=='_wpass_addedit'){
+			$ok=processActions();
+        	exit;
+		}
+	}
 	//echo isUser().printValue($USER);exit;
 	if(!isUser() && isset($CONFIG['access']) && strtolower($CONFIG['access']) == 'user'){
     	abort(userLoginForm(),$_SERVER['HTTP_HOST'],'You must login to view this site');
@@ -254,13 +288,17 @@
 	//redraw states field where country=CA .. _redraw=_users:states&opt_0=country&val_0=CA
 	if(isAjax() && isset($_REQUEST['_redraw'])){
 		list($tablename,$fieldname)=preg_split('/\:/',$_REQUEST['_redraw'],2);
+		$att=array();
 		foreach($_REQUEST as $key=>$val){
         	if(preg_match('/^opt\_([0-9]+)$/',$key,$m)){
             	$field=$val;
             	$_REQUEST[$field]=$_REQUEST["val_{$m[1]}"];
 			}
+			elseif(preg_match('/^att\_(.+)$/',$key,$m)){
+				$att[$m[1]]=$val;
+			}
 		}
-		echo buildFormField($tablename,$fieldname);
+		echo buildFormField($tablename,$fieldname,$att);
 		exit;
 	}
 	//execute SQL Preview
@@ -561,9 +599,21 @@
 	//Check for  /page/a/b/c  /a/b/c/d/e/f
 	if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
 		$parts=preg_split('/\/+/',$view);
+		//remove all parts before $view and set passthru
+		$stripped=0;
+		$tmp=array();
+		foreach($parts as $part){
+        	$part=trim($part);
+        	if($part==$view){
+				$stripped=1;
+				continue;
+			}
+			if($stripped){$tmp[]=$part;}
+		}
+		$_REQUEST['passthru']=$tmp;
 		$view=includePage($CONFIG['redirect_page'],array('redirect_page'=>$parts));
+		$view=trim($view);
 		$_REQUEST['_view']=$view;
-		$_REQUEST['passthru']=$parts;
 		$getopts=array(
 			'-table'=>'_pages',
 			'-notimestamp'=>1,
@@ -679,8 +729,34 @@
 		}
 	}
 	if(!is_array($PAGE)){
-		header("HTTP/1.1 404 Not Found");
-    	abort('No page found');
+		if(isset($CONFIG['missing_template'])){
+			$tid=$CONFIG['missing_template'];
+			if(isNum($tid)){
+				$TEMPLATE=getDBRecord(array('-table'=>'_templates','-notimestamp'=>1,'_id'=>$tid));
+			}
+			else{
+				$TEMPLATE=getDBRecord(array('-table'=>'_templates','-notimestamp'=>1,'name'=>$tid));
+			}
+			if(is_array($TEMPLATE)){
+				$htm=$TEMPLATE['body'];
+				//show the page
+				$PAGE['body']='No page found';
+				$htm=evalPHP($htm);
+    			$htm=str_replace('@self(body)',$PAGE['body'],$htm);
+    			$htm = evalPHP($htm);
+    			echo trim($htm);
+    			unset($htm);
+    			exit;
+			}
+			else{
+				header("HTTP/1.1 404 Not Found");
+	    		abort('No page found');
+			}
+		}
+		else{
+			header("HTTP/1.1 404 Not Found");
+    		abort('No page found');
+		}
 	}
     global $TEMPLATE;
     //GOOD TO HERE

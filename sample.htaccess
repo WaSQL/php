@@ -5,6 +5,10 @@ RewriteEngine on
 #Define Custom Environment variables if needed
 #RewriteRule .* - [E=VARNAME:somevalue]
 
+# stuff to let through (ignore)
+RewriteCond %{REQUEST_URI} "/svn_wasql/"
+RewriteRule (.*) $1 [L]
+
 #redirect host requests with a prefix to www
 #RewriteCond %{HTTP_HOST} ^yourdomain.com [NC]
 #RewriteRule ^(.*)$ http://www.yourdomain.com/$1 [L,R=301]

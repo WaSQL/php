@@ -104,7 +104,14 @@ function cpGetRates($params=array()){
 		$params['-error']='missing params';
 		return $params;
 	}
-	$params['-service_url'] = 'https://ct.soa-gw.canadapost.ca/rs/ship/price';
+	if($params['-test']){
+		//development
+		$params['-service_url'] = 'https://ct.soa-gw.canadapost.ca/rs/ship/price';
+	}
+	else{
+		//production
+    	$params['-service_url'] = 'https://soa-gw.canadapost.ca/rs/ship/price';
+	}
 	//default shipping point to the sender_zipcode
 	if(!strlen($params['-shipping_point'])){$params['-shipping_point']=$params['sender_zipcode'];}
 	//notify email
@@ -139,6 +146,8 @@ CANADAPOSTXML;
 	$xml_array=xml2Array($curl_response);
 	if(!isset($xml_array['price-quotes']['price-quote'][0])){
 		//failed to get quotes
+		echo "cpGetRates error #2";
+		if(isAdmin()){echo printValue($xml_array);exit;}
 		return null;
 	}
 	$rtn=array();
@@ -172,7 +181,7 @@ CANADAPOSTXML;
 	}
 	//sort by delivery date
 	$rtn['rates']=sortArrayByKeys($rtn['rates'], array('total'=>SORT_ASC,'expected_delivery_date_utime'=>SORT_ASC));
-	return $rtn;
+	return $rtn['rates'];
 }
 /* Commercial Shipment Calls */
 function cpCreateShipment($params=array()){

@@ -1890,7 +1890,10 @@ function renderView($view, $params=array(), $opts=array()){
 		return '';
 	}
 	foreach($opts as $k=>$v){
-        if(!stringBeginsWith($k,'-') && !strlen($params[$k])){$params[$k]=$v;}
+        if(!stringBeginsWith($k,'-') && !strlen($params[$k])){
+			if(strtolower($opts['-format'])=='email' && in_array($k,array('to','from','subject'))){continue;}
+			$params[$k]=$v;
+		}
 	}
 	$view_code = removeViews($view_code);
 	$VIEW_PARAMS = $params;
@@ -2017,7 +2020,7 @@ function renderEach($view, $rows, $opts=array()){
 	}
 	return $rtn;
 }
-//---------- begin function evalPHP_ob
+//---------- begin function parseUrl
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -2878,7 +2881,7 @@ function evalPHP($strings){
 	for($sIndex=0;$sIndex<$cntA;$sIndex++){
 		unset($evalmatches);
 		unset($ex);
-		if($sIndex == 1){
+		if($sIndex == 1 || $cntA==1){
 			$strings[$sIndex]=removeViews($strings[$sIndex]);
 			$strings[$sIndex]=processForeach($strings[$sIndex]);
 			}
@@ -2897,6 +2900,8 @@ function evalPHP($strings){
 			$evalcode=$evalmatches[1][$ex];
 			$evalcode=preg_replace('/^php/i','',$evalcode);
 			if(preg_match('/^xml version/i',$evalcode)){continue;}
+			//  remove =/*...*/
+			$evalcode=preg_replace('/^\=\/\*(.+?)\*\//','',$evalcode);
 			$evalcode=preg_replace('/^\=/','return ',$evalcode);
 			$evalcheck="error_reporting(E_ERROR | E_PARSE);\nreturn true;\n". trim($evalcode);
 			@trigger_error('');
@@ -3280,6 +3285,11 @@ function fileManager($startdir='',$params=array()){
 	else{
 		$rtn .= '<div>'."\n";
     	}
+    if($params['-rights'] == 'all'){
+    	//HTML5 file upload
+    	$path=encodeBase64($cdir);
+		$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= buildTableBegin(2,0);
 	if($params['-view']=='table'){
@@ -3373,6 +3383,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</tr>'."\n";
 		}
 	$rtn .= '</table>'."\n";
+	if($params['-rights'] == 'all'){$rtn .= '<br /><br /><br /></div>'."\n";}
 	$rtn .= '</div>'."\n";
 	return $rtn;
 	}
@@ -5297,7 +5308,10 @@ function includePage($val='',$params=array()){
 	}
 	//prep to load js and css from minify
 	if(!$params['-dbname'] && !$params['-pageonly'] && isset($rec['_id'])){
-    	$_SESSION['w_MINIFY']['includepages'][]=$rec['_id'];
+		if(!is_array($_SESSION['w_MINIFY']['includepages'])){$_SESSION['w_MINIFY']['includepages']=array();}
+		if(!in_array($rec['_id'],$_SESSION['w_MINIFY']['includepages'])){
+    		$_SESSION['w_MINIFY']['includepages'][]=$rec['_id'];
+		}
 	}
     //unset and restore any request values
     foreach($params as $key=>$val){
@@ -5376,7 +5390,7 @@ function isAdmin(){
 	if(is_array($USER) && isNum($USER['_id']) && $USER['utype']==0){return true;}
 	return false;
 	}
-//---------- begin function isAdmin ----------
+//---------- begin function isAjax ----------
 /**
 * @describe returns true if page was called using AJAX
 * @return boolean
@@ -5858,7 +5872,7 @@ function isSearchBot($agent='',$return_name=0){
 * @usage if(isWindows()){...}
 */
 function isWindows(){
-	if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32'){return true;}
+	if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){return true;}
 	return false;
 }
 //---------- begin function getBrowserInfo--------------------
@@ -5950,7 +5964,7 @@ function isWasqlField($field){
 * @usage if(isWasqlTable($str)){...}
 */
 function isWasqlTable($table){
-	if(stringBeginsWith($field,'_')){return true;}
+	if(stringBeginsWith($table,'_')){return true;}
 	return false;
 	}
 //---------- begin function isXML ----------
@@ -6169,7 +6183,7 @@ function loadExtras($extras){
 		else{
 			$progpath=dirname(__FILE__);
 			//for backward compatibility look for nmi, authnet, paypal - they were moved to merchants folder
-			if(preg_match('/^(nmi|authnet|paypal)$/i',$extra)){
+			if(preg_match('/^(nmi|authnet|paypal|ebanx|securenet|stripe)$/i',$extra)){
             	$extra="merchants/{$extra}";
 			}
 			elseif(preg_match('/^(canada_post|fedex|ups|usps|npf|integracore)$/i',$extra)){
@@ -6220,6 +6234,11 @@ function loadExtrasCss($extras){
     	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
 	foreach($extras as $extra){
+		switch(strtolower($extra)){
+        	case 'bootstrap':
+        		$extra='bootstrap/css/bootstrap';
+        	break;
+		}
 		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
         	$_SESSION['w_MINIFY']['extras_css'][]=$extra;
 		}
@@ -7367,6 +7386,9 @@ function postURL($url,$params=array()) {
 	if(isset($params['-xml']) && $params['-xml']==1 && strlen($rtn['body'])){
 		$rtn['xml_array']=xml2Array($rtn['body']);
     	}
+    elseif(isset($params['-json']) && $params['-json']==1 && strlen($rtn['body'])){
+		$rtn['json_array']=json_decode($rtn['body'],true);
+    	}
 	if(isset($params['skip_error']) && !$params['skip_error'] && !isset($rtn['body']) && isset($rtn['error'])){
 		echo "<h2>postURL Connection Error</h2><br>\n";
 		echo "<b>Error #:</b> {$rtn['error_number']}<br>\n";
@@ -7408,7 +7430,7 @@ function postXML($url='',$xml='',$params=array()) {
 	}
 	else{
 		curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
-    	curl_setopt ($process, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
+		curl_setopt ($process, CURLOPT_HTTPHEADER, array("Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8"));
 	}
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
@@ -7964,7 +7986,8 @@ function processActions(){
 						else{
 							$opts[$field]=$_REQUEST[$field];
 							if($action=='POSTEDIT'){
-								$opts[$field]=utf8_encode($opts[$field]);
+								//removed to make brazil characters render correctly.  Cant remember why it was added.
+								//$opts[$field]=utf8_encode($opts[$field]);
 							}
 						}
 
@@ -8023,7 +8046,7 @@ function processActions(){
 							if($rec['_cache']==1){
 								$progpath=dirname(__FILE__);
 								$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$TEMPLATE['_id']}.htm";
-								unlink($cachefile);
+								if(file_exists($cachefile)){unlink($cachefile);}
 							}
 						}
 						//remove affected static files if table is _templates
@@ -8051,7 +8074,7 @@ function processActions(){
 								$progpath=dirname(__FILE__);
                             	foreach($pages as $p){
 									$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$p['_id']}_{$rec['_id']}.htm";
-									unlink($cachefile);
+									if(file_exists($cachefile)){unlink($cachefile);}
 								}
 							}
 						}
@@ -9379,8 +9402,8 @@ function sendMail($params=array()){
 	$attachincluded=array();
 	/* Required options */
 	$reqopts=array('to','from','subject','message');
-	foreach($reqopts as $opt){
-		if(!isset($params[$opt]) || strlen($params[$opt])==0){return "sendMail Error - missing required parameter: ". $opt;}
+	foreach($reqopts as $key){
+		if(!isset($params[$key]) || strlen($params[$key])==0){return "sendMail Error - missing required parameter: ". $key;}
     	}
     //parse the to and from:  Steve Lloyd <slloyd@timequest.org>
     $headers=array();
@@ -9408,6 +9431,12 @@ function sendMail($params=array()){
     array_push($headers,'X-Mailer: WaSQL Powered PHP ' . getPHPVersion());
 	//add language
     array_push($headers,'Content-Language: en-us');
+    //check for custoom headers
+    if(isset($params['-headers']) && is_array($params['-headers'])){
+		foreach($params['-headers'] as $header){
+			array_push($headers,trim($header));
+		}
+	}
 	/* If there are no attachments and the message is text, just send it */
 	$multi=0;
 	if(is_array($params['attach']) && count($params['attach']) > 0){$multi++;}
@@ -9461,11 +9490,11 @@ function sendMail($params=array()){
 		"Content-Type: multipart/alternative;\n" .
 		" boundary=\"{$alternative_boundary}\"\n\n\n".
 		"--{$alternative_boundary}\n" .
-        "Content-Type: text/plain; charset=\"iso-8859-1\"\n" .
+        "Content-Type: text/plain; charset=\"UTF-8\"\n" .
         "Content-Transfer-Encoding: 7bit\n\n" .
         encodeData($params['message_text'],'7bit') . "\n\n" .
         "--{$alternative_boundary}\n" .
-        "Content-Type: text/html; charset=\"iso-8859-1\"\n" .
+        "Content-Type: text/html; charset=\"UTF-8\"\n" .
         "Content-Transfer-Encoding: quoted-printable\n\n" .
         encodeData($params['message'],'qp') . "\n\n";
     //end text and html message boundary

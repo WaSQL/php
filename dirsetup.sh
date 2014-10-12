@@ -19,8 +19,7 @@ then
 	cp $SDIR/sample.htaccess $SDIR/.htaccess
 fi
 
-#setup soft links to cgi-bin, php, and wfiles
-ln -s $SDIR cgi-bin
+#setup soft links to  php, and wfiles
 ln -s $SDIR/php/ php
 ln -s $SDIR/wfiles/ wfiles
 

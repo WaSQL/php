@@ -939,6 +939,52 @@ function initBehaviors(ajaxdiv){
 				this.style.height=h;
 			}
         }
+        else if(in_array("chart",behaviors)){
+			/* Chart using Chart.js */
+			var chart_type=navEls[n].getAttribute('data-type') || 'bar';
+			chart_type=chart_type.toLowerCase();
+			//labels
+			var chart_labels=navEls[n].getAttribute('data-labels') || '';
+			chart_labels=chart_labels.split(',');
+			//showProperties(chart_labels,'debug',1);return;
+			//datasets
+			var chart_datasets=new Array();
+			var chart_id=navEls[n].getAttribute('data-datasets') || '';
+			var chart_ids=GetElementsByAttribute('div', 'id', chart_id);
+			//showProperties(chart_ids,'debug',1);
+			for (var i=0; i<chart_ids.length; i++) {
+				var txt=getText(chart_ids[i]);
+				var dataset=parseJSONString(txt);
+				chart_datasets.push(dataset);
+			}
+			//showProperties(chart_datasets,'debug',1);
+			var chart_data={
+				labels:chart_labels,
+				datasets:chart_datasets
+			};
+			var chart_options=navEls[n].getAttribute('data-options') || '';
+			if(undefined != document.getElementById(chart_options)){
+            	chart_options=getText(chart_options);
+			}
+			var chart_options=parseJSONString(chart_options);
+			switch(chart_type){
+				case 'bar':
+					var myLine = new Chart(navEls[n].getContext("2d")).Bar(chart_data,chart_options);
+				break;
+				case 'line':
+					var myLine = new Chart(navEls[n].getContext("2d")).Line(chart_data,chart_options);
+				break;
+				case 'pie':
+					var myLine = new Chart(navEls[n].getContext("2d")).Pie(chart_data,chart_options);
+				break;
+			}
+			//save as an image if requested
+			var chart_image=navEls[n].getAttribute('data-image') || '';
+			if(chart_image.length){
+				var img=navEls[n].toDataURL();
+            	setText(chart_image,img);
+			}
+		}
         else if(in_array("clock",behaviors)){
 			/*CLOCK - */
   			var id=navEls[n].getAttribute('id');
@@ -1186,6 +1232,7 @@ function initBehaviors(ajaxdiv){
 			/* SLIDESHOW */
 			var id=navEls[n].getAttribute('id');
 			if(id){
+				addClass(navEls[n],'w_slideshow');
 				var t=navEls[n].getAttribute('timer');
 				if(t){slideShow(id,0,t);}
 				else{slideShow(id,0);}
@@ -1777,9 +1824,9 @@ function findPosY(yobj){
 	}
 /* timeClock - */
 var TimoutArray=new Array();
-function slideShow(divid,idx,s){
+function slideShow(divid,idx,s,t){
 	//info: creates a slideshow using image tags found in divid
-	if(undefined == s){s=10;}
+	if(undefined == s){s=5;}
 	var ms=Math.round(s*1000);
 	idx=Math.round(idx+0)
 	var obj=getObject(divid);
@@ -1792,19 +1839,17 @@ function slideShow(divid,idx,s){
 		}
 	if(idx == imgs.length){idx=0;}
 	for (var i=0; i<imgs.length; i++) {
+		var caption=imgs[i].getAttribute('data-caption');
+		if(undefined == caption){caption='';}
 		if(i==idx){
-			setOpacity(imgs[i],0.0);
-			imgs[i].style.display='block';
-			fadeIn(imgs[i].id);
+			addClass(imgs[i],'opaque');
 			}
 		else{
-			if(imgs[i].style.display=='block'){
-				fadeOut(imgs[i].id);
-				}
-			imgs[i].style.display='none';
-			imgs[i].style.opacity=0.0;
-			}
+			removeClass(imgs[i],'opaque');
+			caption='';
 		}
+		setText(divid+'_caption',caption);
+	}
 	idx=Math.round(idx+1);
     TimoutArray[id]=setTimeout("slideShow('"+divid+"',"+idx+","+s+")",ms);
 	}

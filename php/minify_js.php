@@ -107,6 +107,12 @@ foreach($files as $file){
 //load the template, includepages, and page
 $field=$CONFIG['minify_js']?'js_min':'js';
 $field2=$CONFIG['minify_js']?'js':'js_min';
+if(isset($CONFIG['facebook_appid'])){
+	echo "\r\n/* Facebook AppID {$field} */\r\n";
+	echo "\r\nvar facebook_appid='{$CONFIG['facebook_appid']}';\r\n";
+	echo "\r\nvar facebook_id='{$_SESSION['facebook_id']}';\r\n";
+	echo "\r\nvar facebook_email='{$_SESSION['facebook_email']}';\r\n";
+}
 //_templates
 if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['template_id'] > 0){
 	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field));
@@ -197,6 +203,7 @@ function minifyFiles($path,$names){
 	    	$file="{$path}/{$name}.js";
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
+		else{echo "/* Minify_js Error: NO SUCH NAME:{$name} */\n";}
 	}
 	return false;
 }

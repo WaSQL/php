@@ -372,6 +372,19 @@ function checkDBTableSchema($wtable){
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
 			$rtn .= " added _env to _users table<br />\n";
         }
+        if(isset($CONFIG['facebook_appid'])){
+        	if(!isset($finfo['facebook_id'])){
+				$query="ALTER TABLE {$wtable} ADD facebook_id varchar(50) NULL;";
+				$ok=executeSQL($query);
+				$rtn .= " added facebook_id to _users table<br />\n";
+	        }
+	        if(!isset($finfo['facebook_email'])){
+				$query="ALTER TABLE {$wtable} ADD facebook_email varchar(255) NULL;";
+				$ok=executeSQL($query);
+				$rtn .= " added facebook_email to _users table<br />\n";
+	        }
+		}
+
         if(!isset($finfo['_sid'])){
 			$query="ALTER TABLE {$wtable} ADD _sid varchar(150) NULL;";
 			$ok=executeSQL($query);
@@ -1069,7 +1082,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		<td class="'.$class.'">'."\n";
 	            //default value for add forms
 	            if((!isset($rec) || !is_array($rec))){
-					if(isset($params[$field.'_defaultval'])){
+					if(isset($params[$field])){$opts['value']=$params[$field];}
+					elseif(isset($params[$field.'_defaultval'])){
 						$opts['value']=$params[$field.'_defaultval'];
 						$used[$field.'_defaultval']=1;
 					}
@@ -1365,25 +1379,28 @@ function addEditDBForm($params=array(),$customcode=''){
 		$rtn .= '		<td>'.$params['-savebutton'].'</td>'."\n";
 	}
     elseif(is_array($rec) && isNum($rec['_id'])){
+		$class=isset($params['-save_class'])?$params['-save_class']:'';
 		if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Edit';
-			$rtn .= '		<td><input type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
+			//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
+			$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
 			}
 		if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
-			$rtn .= '		<td><input type="reset" id="resetbutton" value="Reset"></td>'."\n";
+			$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">Reset</button></td>'."\n";
 			}
 		if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Delete';
-			$rtn .= '		<td><input type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';" value="Delete"></td>'."\n";
+			$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">Delete</button></td>'."\n";
 			}
 		if(!isset($params['-hide']) || !preg_match('/clone/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Add';
-			$rtn .= '		<td><input type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';" value="Clone"></td>'."\n";
+			$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">Clone</button></td>'."\n";
 			}
 		}
 	elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
+		$class=isset($params['-save_class'])?$params['-save_class']:'';
 		$action=isset($params['-nosave'])?'':'Add';
-    	$rtn .= '		<td><input type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
+    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
     	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
     	}
     $rtn .= '	</tr>'."\n";
@@ -1443,6 +1460,10 @@ function addDBRecord($params=array()){
         	$params=call_user_func("{$model_table}AddBefore",$params);
         	if(!isset($params['-table'])){return "{$model_table}AddBefore Error: No Table".printValue($params);}
 		}
+	}
+	//wpass?
+	if($params['-table']=='_wpass'){
+        $params=wpassEncryptArray($params);
 	}
 	//get field info for this table
 	unset($info);
@@ -1713,6 +1734,7 @@ function createDBTable($table='',$fields=array(),$engine=''){
 	$function='createDBTable';
 	if(strlen($table)==0){return "createDBTable error: No table";}
 	if(count($fields)==0){return "createDBTable error: No fields";}
+	if(isDBTable($table)){return 0;}
 	global $CONFIG;
 	//verify the wasql fields are there. if not add them
 	if(!isset($fields['_id'])){$fields['_id']=databasePrimaryKeyFieldString();}
@@ -2469,6 +2491,10 @@ function editDBRecord($params=array()){
         	if(!isset($params['-table'])){return "{$model_table}EditBefore Error: No Table".printValue($params);}
 		}
 	}
+	//wpass?
+	if($params['-table']=='_wpass'){
+        $params=wpassEncryptArray($params);
+	}
 	//get field info for this table
 	$info=getDBFieldInfo($params['-table']);
 	if(!isset($params['-noupdate'])){
@@ -2645,12 +2671,17 @@ function executeSQL($query=''){
   	if($query_result){
 		$rtn['result']=$query_result;
 		return $rtn;
-  		}
+  	}
   	else{
 		//echo $query.printValue($query_result).getDBError();exit;
-		return setWasqlError(debug_backtrace(),getDBError(),$query);
-  		}
-	}
+		if(function_exists('setWasqlError')){
+			return setWasqlError(debug_backtrace(),getDBError(),$query);
+		}
+		else{
+        	echo $query.printValue($query_result).getDBError();exit;
+		}
+  	}
+}
 //---------- begin function expandDBKey
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -3194,6 +3225,17 @@ function getDBFieldTag($params=array()){
 			}
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
+	//LOAD data-control if bootstrap is loaded
+	if($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
+		if(!stringContains($info[$field]['class'],'form-control')){
+			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
+                if(stringContains($css,'bootstrap')){
+                    $info[$field]['class'] .= ' form-control';
+                    break;
+				}
+			}
+		}
+	}
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
 		//Checkbox
@@ -3965,8 +4007,24 @@ function getDBFieldTag($params=array()){
 			if(isset($info[$field]['value'])){
 				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
 				}
-			$tag .= '>';
 
+			//check for tvals and build a datalist if present
+			$selections=getDBFieldSelections($info[$field]);
+			if(is_array($selections['tvals']) && count($selections['tvals'])){
+				$list_id=$info[$field]['name'].'_datalist';
+            	$tag .= ' list="'.$list_id.'"';
+			}
+			$tag .= '>';
+			if(is_array($selections['tvals']) && count($selections['tvals'])){
+				$tag .= '	<datalist id="'.$list_id.'">'."\n";
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$tag .= '	<option value="'.$tval.'">'.$dval.'</option>'."\n";
+				}
+			    $tag .= '	</datalist>'."\n";
+			}
 			break;
     	}
     //not done here yet...
@@ -5398,11 +5456,14 @@ function getDBRecord($params=array()){
     	break;
 	}
 	if(count($rec)){
+		if(isset($params['-table']) && $params['-table']=='_wpass'){
+        	return wpassDecryptArray($rec);
+		}
 		return $rec;
 		}
 	return null;
 	}
-//---------- begin function addDBRecord--------------------
+//---------- begin function getDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
 * @param table string - tablename
@@ -6595,11 +6656,47 @@ function isDBStage(){
 	}
 	else{
 		$xset=settingsValues(0);
-		$rtn=0;
-		if(isset($xset['wasql_synchronize_master']) && $xset['wasql_synchronize_master']==$CONFIG['dbname']){$rtn = 1;}
+		if(isset($xset['wasql_synchronize']) && $xset['wasql_synchronize']==0){
+	    	$rtn=0;
+		}
+		elseif(!isset($xset['wasql_synchronize_master']) || !strlen($xset['wasql_synchronize_master'])){
+	    	$rtn=0;
+		}
+		elseif(!isset($xset['wasql_synchronize_slave']) || !strlen($xset['wasql_synchronize_slave'])){
+	    	$rtn=0;
+		}
+		else{
+			$rtn=0;
+			if(isset($xset['wasql_synchronize_master']) && $xset['wasql_synchronize_master']==$CONFIG['dbname']){$rtn = 1;}
+		}
 	}
 	$databaseCache['isDBStage']=$rtn;
 	return $rtn;
+}
+//---------- begin function isDBPage ----------
+/**
+* @describe returns true if said page already exists already exists in the _pages table
+* @param mixed - page name, permalink or id
+* @return boolean
+*	returns true if said page already exists already exists in the _pages table
+* @usage if(isDBPage('index')){...}
+*/
+function isDBPage($str){
+	if(!strlen($str)){
+		debugValue('isDBPage Error: nothing passed in');
+		return false;
+	}
+	if(is_array($str)){
+    	debugValue('isDBPage Error: does not support arrays');
+    	return false;
+	}
+	$rec=getDBRecord(array(
+		'-table'	=> '_pages',
+		'-where'	=> "_id='{$str}' or name='{$str}' or permalink='{$str}'",
+		'-fields'	=> '_id'
+	));
+	if(isset($rec['_id'])){return true;}
+	return false;
 }
 //---------- begin function isDBTable ----------
 /**

@@ -574,6 +574,58 @@ function getCookie(name){
 		}
 	return null;
 	}
+function commonConsoleLog(m){
+	if (typeof console != 'undefined' && typeof console.log != 'undefined'){
+		console.log(m);
+	}
+}
+function parseJSONString( data ) {
+	data=trim(data);
+	//return an empty object if data is blank
+	if(data.length==0){
+    	var js={};
+    	return js;
+	}
+	// Attempt to parse using the native JSON parser first
+	if ( window.JSON && window.JSON.parse ) {
+		// Support: Android 2.3
+		// Workaround failure to string-cast null input
+		return window.JSON.parse( data + "" );
+	}
+
+	var requireNonComma,
+		depth = null,
+		str = jQuery.trim( data + "" );
+
+	// Guard against invalid (and possibly dangerous) input by ensuring that nothing remains
+	// after removing valid tokens
+	return str && !jQuery.trim( str.replace( rvalidtokens, function( token, comma, open, close ) {
+
+		// Force termination if we see a misplaced comma
+		if ( requireNonComma && comma ) {
+			depth = 0;
+		}
+
+		// Perform no more replacements after returning to outermost depth
+		if ( depth === 0 ) {
+			return token;
+		}
+
+		// Commas must not follow "[", "{", or ","
+		requireNonComma = open || comma;
+
+		// Determine new depth
+		// array/object open ("[" or "{"): depth += true - false (increment)
+		// array/object close ("]" or "}"): depth += false - true (decrement)
+		// other cases ("," or primitive): depth += true - true (numeric cast)
+		depth += !close - !open;
+
+		// Remove this token
+		return "";
+	}) ) ?
+		( Function( "return " + str ) )() :
+		jQuery.error( "Invalid JSON: " + data );
+}
 // parseUri 1.2.2
 // (c) Steven Levithan <stevenlevithan.com>
 // MIT License
@@ -645,7 +697,7 @@ function anchorExists(aname){
 function GetElementsByAttribute(tag, att, val){
 	//info: GetElementsByAttribute - returns an array of tags that have an attribute of value.
     //usage: GetElementsByAttribute(tagname, attributename,stringtomatch)
-        val=val.replace(/\[\]$/,"\\\[\\\]");
+        val=val.replace(/\[(.*)\]$/,"\\\[$1\\\]");
         var a, list, found = new Array(), re = new RegExp(val, 'i');
         //if(undefined != document.getElementsByTagName(tag)){return found;}
         list = document.getElementsByTagName(tag);
@@ -997,6 +1049,42 @@ function animateShrink(divid, begin,end){
 	var tstr="animateShrink('" + divid + "'," + h + ","+end+")";
 	animateTimer = setTimeout(tstr, 5);
 	}
+function addClass(element, classToAdd) {
+    var currentClassValue = element.className;
+     
+    if (currentClassValue.indexOf(classToAdd) == -1) {
+        if ((currentClassValue == null) || (currentClassValue === "")) {
+            element.className = classToAdd;
+        } else {
+            element.className += " " + classToAdd;
+        }
+    }
+}
+     
+function removeClass(element, classToRemove) {
+    var currentClassValue = element.className;
+     
+    // removing a class value when there is more than one class value present
+    // and the class you want to remove is not the first one
+    if (currentClassValue.indexOf(" " + classToRemove) != -1) {
+        element.className = element.className.replace(" " + classToRemove, "");
+        return;
+    }
+     
+    // removing the first class value when there is more than one class
+    // value present
+    if (currentClassValue.indexOf(classToRemove + " ") != -1) {
+        element.className = element.className.replace(classToRemove + " ", "");
+        return;
+    }
+     
+    // removing the first class value when there is only one class value
+    // present
+    if (currentClassValue.indexOf(classToRemove) != -1) {
+        element.className = element.className.replace(classToRemove, "");
+        return;
+    }
+}
 //Replace text in a
 function replaceText(obj,s,r,i){
 	var cObj=getObject(obj);

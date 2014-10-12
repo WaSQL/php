@@ -12,6 +12,7 @@ include_once("$progpath/schema.php");
 //echo "DEBUG".printValue(headers_list());exit;
 if(!isDBTable('_users')){$ok=createWasqlTables();}
 if(!isDBTable('states')){$ok=createWasqlTables();}
+if(!isDBTable('countries')){$ok=createWasqlTables();}
 if(!isDBTable('_sessions')){$ok=createWasqlTables();}
 //get the user GUID stored in a cookie
 $guid=getGUID();
@@ -140,6 +141,118 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 	//user login request - get user from login
 
 	}
+elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['email']) && isset($_REQUEST['password'])){
+	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost'])){
+		$rec=getDBRecord(array('-table'=>'_users','email'=>$_REQUEST['email']));
+		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
+			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
+			}
+		}
+	if(isUser()){
+		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
+		}
+	if(isset($CONFIG['authhost'])){
+		$authname=$CONFIG['authhost'];
+		switch(strtolower($authname)){
+			case 'openid':
+				//openid authentication coming soon
+				break;
+			default:
+				//authenticate to a different host
+				$authkey=encodeCRC($_REQUEST['username'].time());
+				$authcode=encrypt("{$_REQUEST['username']}:{$_REQUEST['password']}",$authkey);
+				$url="http://{$CONFIG['authhost']}/php/index.php";
+				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>$_REQUEST['_pwe']);
+				$post=postURL($url,$authopts);
+				if(!isset($post['body']) && isset($post['error'])){
+					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
+					break;
+                	}
+				try {
+					$xml=new SimpleXmlElement($post['body']);
+					//abort("xml:" . printValue($xml));
+					if(strlen((string)$xml->success)){
+						$authcode=(string)$xml->success;
+						$tmp=xml2Arrays(decrypt($authcode,$authkey));
+						//abort(printValue($tmp));
+						unset($_SESSION['authcode']);
+						unset($_SESSION['authkey']);
+						if(is_array($tmp) && isEmail($tmp[0]['email'])){
+							//successful authentication - check for local user record.
+							$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['username']}'"));
+							if(!is_array($local) && isEmail($tmp[0]['email'])){
+								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
+                            	}
+                            if(!is_array($local) && isEmail($tmp[0]['email'])){
+								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$authname}_{$tmp[0]['username']}'"));
+                            	}
+                            if(!is_array($local)){
+								//create a _user record
+								$opts=$tmp[0];
+								//set new users as non-admin
+								$opts['utype']=1;
+								//set username to authhost_{username}
+								$opts['username']="{$tmp[0]['username']}";
+								//set table
+								$opts['-table']="_users";
+								//add the record and load into local
+								$id=addDBRecord($opts);
+								if(isNum($id)){
+                                    $local=getDBRecord(array('-table'=>'_users','_id'=>$id,'-relate'=>1));
+                                	}
+      							}
+							if(is_array($local)){
+								$USER=$local;
+								unset($local);
+								$USER['_local']=true;
+								$eopts=array();
+								$info=getDBFieldInfo("_users");
+								foreach($tmp[0] as $key=>$val){
+									if(isset($info[$key]['_dbtype']) && !preg_match('/^\_/',$key) && (strlen($USER[$key])==0 || $USER[$key] != $val)){
+										$eopts[$key]=$val;
+										}
+									if($key=='password'){
+										$val=preg_replace('/./','*',$val);
+                                    	}
+									$newkey="{$authname}_{$key}";
+									$USER[$newkey]=$val;
+                                	}
+                                if(count($eopts) > 0){
+									$eopts['-table']="_users";
+									$eopts['-where']="_id={$USER['_id']}";
+									$ok=editDBRecord($eopts);
+									$USER['_updated']=$eopts;
+                                	}
+                            	}
+							$USER['_authhost']=$authname;
+							$_SESSION['authcode']=$authcode;
+							$_SESSION['authkey']=$authkey;
+							}
+						}
+					}
+				catch (Exception $e){
+	        		echo $e->faultstring;
+	        		echo "<hr>\n";
+	        		echo $post['body'];
+	        		echo "<hr>\n";
+	        		echo $url . printValue($authopts);
+	        		exit;
+	        		}
+	        	break;
+			}
+    	}
+    else{
+		$getopts=array('-table'=>'_users','-relate'=>1,'email'=>$_REQUEST['email'],'password'=>$_REQUEST['password']);
+		$USER=getDBRecord($getopts);
+    	}
+	//user login request - get user from login
+
+	}
+elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['facebook_email']) && isset($_REQUEST['password'])){
+	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>$_REQUEST['facebook_email'],'facebook_id'=>$_REQUEST['password']);
+	$USER=getDBRecord($getopts);
+
+}
 elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1) || strtoupper($_SERVER['REQUEST_METHOD'])=='POST')){
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
@@ -234,6 +347,7 @@ else{
 	}
 //abort(printValue($userfieldinfo));
 if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['active']) && $userfieldinfo['active']['_dbtype']=='int' && $USER['active'] != 1){
+	//do not allow users that are not active to log in
 	$ok=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>'NULL'));
 	unset($USER);
 	unset($_SESSION['authcode']);
@@ -249,7 +363,7 @@ else{
 	unset($USER);
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
-	if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username'])){
+	if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1){
 		$_REQUEST['_login_error']="Login Error: Invalid username or password";
 		}
 	}
@@ -626,7 +740,7 @@ function userLoginForm($params=array()){
 		'-username'	=> "Username",
 		'-password'	=> "Password",
 		'-login'	=> "Login",
-		'-remind'	=> "Can't access your account? Click here.",
+		'-remind'	=> "Need Help?",
 		'-remind_title'	=> "Click here if you need your login information emailed to you.",
 		'-format'		=> "standard",
 		'-icons'		=> true,
@@ -672,6 +786,7 @@ function userLoginForm($params=array()){
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'."\n";
     	}
+    //$params['-format']='oneline';
     switch(strtolower($params['-format'])){
 		case 'oneline':
 			$form .= '<div id="w_loginform_oneline">'."\n";
@@ -680,6 +795,9 @@ function userLoginForm($params=array()){
 			$form .= '		<th align="left">'.$params['-username'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<th align="left">'.$params['-password'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<td align="right"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
+			if(isset($CONFIG['facebook_appid'])){
+    			$form .= '<td><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">Login with Facebook</fb:login-button></td>';
+			}
 			$form .= '		<td align="left">'."\n";
 			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
 			if($params['-icons']){
@@ -687,6 +805,7 @@ function userLoginForm($params=array()){
 			}
 			$form .= " {$params['-remind']}</a>\n";
 			$form .= '		</td>'."\n";
+			$form .= '		<td><div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div></td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
 			$form .= '</div>'."\n";
@@ -697,18 +816,27 @@ function userLoginForm($params=array()){
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th align="left">'.$params['-username'].'</th>'."\n";
 			$form .= '		<th align="left">'.$params['-password'].'</th>'."\n";
-			$form .= '		<td align="left">'."\n";
+			if(isset($CONFIG['facebook_appid'])){
+				$form .= '		<td align="left" colspan="2">'."\n";
+			}
+			else{
+				$form .= '		<td align="left">'."\n";
+			}
 			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
 			if($params['-icons']){
 				$form .= '<img src="/wfiles/iconsets/16/info.png" border="0" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
 			}
 			$form .= " {$params['-remind']}</a>\n";
+			$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
 			$form .= '		</td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>2)).'</td>'."\n";
 			$form .= '		<td align="right"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
+			if(isset($CONFIG['facebook_appid'])){
+    			$form .= '<td><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">Login with Facebook</fb:login-button></td>';
+			}
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
 			$form .= '</div>'."\n";
@@ -731,9 +859,14 @@ function userLoginForm($params=array()){
 				$form .= '			<img src="/wfiles/iconsets/16/info.png" border="0" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
 			}
 			$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'."\n";
-			$form .= '		</td>'."\n";
+			$form .= '		<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div></td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
+			if(isset($CONFIG['facebook_appid'])){
+				loadExtrasJs('facebook_login');
+				checkDBTableSchema('_users');
+    			$form .= '<div align="right" style="margin-top:15px;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">Login with Facebook</fb:login-button></div>';
+			}
 			$form .= '</div>'."\n";
 			break;
 	}
@@ -749,4 +882,183 @@ function userLoginForm($params=array()){
 	$form .= '</div>'."\n";
     return $form;
 }
+//---------- begin function wpassSalt ----
+/**
+* returns a base salt component for encrypting wpass entries. Never change this.
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassSalt(){
+	return 'W8P2A4S0S?S%A#L@T!';
+}
+//---------- begin function wpassEncrypt ----
+/**
+* encrypts wpass entries.
+* @param string
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassEncrypt($str){
+	$salt=wpassSalt();
+	return encrypt($str,$salt);
+}
+//---------- begin function wpassDecrypt ----
+/**
+* decrypts wpass entries.
+* @param string
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassDecrypt($encstr){
+	$salt=wpassSalt();
+	return decrypt($encstr,$salt);
+}
+//---------- begin function wpassEncryptArray ----
+/**
+* encrypts entire wpass record or add/edit options.
+* @param array
+* @return array
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassEncryptArray($rec=array()){
+	$salt=wpassSalt();
+	$encrypted_keys=array('user','pass','url','notes');
+	foreach($rec as $key=>$val){
+    	if(in_array($key,$encrypted_keys)){
+        	$rec[$key]=wpassEncrypt($rec[$key]);
+		}
+	}
+	return $rec;
+}
+//---------- begin function wpassDecryptArray ----
+/**
+* decrypts entire wpass record
+* @param array
+* @return array
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassDecryptArray($rec=array()){
+	$salt=wpassSalt();
+	$encrypted_keys=array('user','pass','url','notes');
+	foreach($rec as $key=>$val){
+    	if(in_array($key,$encrypted_keys)){
+        	$rec[$key]=wpassDecrypt($rec[$key]);
+		}
+	}
+	return $rec;
+}
+//---------- begin function wpassGetCategories ----
+/**
+* returns current users wpass categories from database
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wpassGetCategories($str=1){
+	global $USER;
+	if(!isNum($USER['_id'])){return '';}
+	$query="select distinct(category) from _wpass where _cuser={$USER['_id']} order by category";
+	$recs=getDBRecords(array('-query'=>$query,'-index'=>'category'));
+	//echo $query.printValue($recs);exit;
+	if(!is_array($recs)){return '';}
+	if($str==1){
+		return implode("\r\n",array_keys($recs));
+	}
+	return array_keys($recs);
+}
+function wpassModule(){
+	global $USER;
+	if(!isNum($USER['_id'])){return '';}
+	if(!isDBTable('_wpass')){createWasqlTables('_wpass');}
+	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'."\n";
+	$rtn .= '	<input id="wpass_search" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'."\n";
+	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer" src="/wfiles/_wpass.png" border="0" class="w_middle" />'."\n";
+	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'."\n";
+	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'."\n";
+	$query="select _id,category,title from _wpass where users like '{$USER['_id']}:%' or users like '%:{$USER['_id']}' or users like '{$USER['_id']}' or users like '%:{$USER['_id']}:%' or  _cuser={$USER['_id']} order by category,title";
+	$recs=getDBRecords(array('-query'=>$query));
+	$rtn .= '	<datalist id="wpass_datalist">'."\n";
+	if(is_array($recs)){
+		foreach($recs as $rec){
+			$rtn .= '	<option value="'.$rec['_id'].'">'."{$rec['category']} - {$rec['title']}".'</option>'."\n";
+    	}
+	}
+    $rtn .= '	</datalist>'."\n";
+	$rtn .= '</div>'."\n";
+	return $rtn;
+}
+function wpassInfo($id){
+	global $USER;
+	if(!isNum($USER['_id'])){return '';}
+	$rtn='';
+	if($id==0){
+    	//add
+    	$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+    	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> New wPass Record</div>'."\n";
+    	$rtn .= addEditDBForm(array(
+			'-table'=>'_wpass',
+			'-name'=> '_wpass_addedit',
+			'-action'=>'/php/index.php',
+			'_wpass_addedit'=>1,
+			'-fields'	=> "category:title,user:pass,url,notes,users",
+			'-onsubmit'=>"ajaxSubmitForm(this,'wpass_info');return false;"
+		));
+		$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'."\n";
+		$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'."\n";
+		$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+	}
+	else{
+		$rec=getDBRecord(array(
+			'-table'	=> '_wpass',
+			'_id'		=> $_REQUEST['_wpass'],
+			'-relate'	=> array('_cuser'=>'_users','_euser'=>'_users')
+		));
+		if(isset($rec['_id'])){
+			$users_list=preg_split('/\:/',$rec['users']);
+			if($rec['_cuser'] != $USER['_id'] && !in_array($USER['_id'],$users_list)){
+            	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> Denied Access</div>'."\n";
+			}
+			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> Edit wPass Record</div>'."\n";
+			$editopts=array(
+				'-table'=>'_wpass',
+				'-name'=> '_wpass_addedit',
+				'_id'	=> $rec['_id'],
+				'-action'=>'/php/index.php',
+				'_wpass_addedit'=>1,
+				'-fields'	=> "category:title,user:pass,url,notes",
+				'-onsubmit'=>"ajaxSubmitForm(this,'wpass_info');return false;"
+			);
+			if($rec['_cuser']==$USER['_id']){
+            	$editopts['-fields']="category:title,user:pass,url,notes,users";
+			}
+			else{
+            	$editopts['-hide']="clone,delete,reset,save";
+			}
+	    	$rtn .= addEditDBForm($editopts);
+			$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'."\n";
+			$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'."\n";
+			if($rec['_cuser']==$USER['_id']){
+				$rtn .= '<div class="w_smaller"> - Created by you on '.$rec['_cdate'].'</div>'."\n";
+			}
+			else{
+            	$rtn .= '<div class="w_smaller"> - Created by '."{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'."\n";
+			}
+			if(strlen($rec['_edate']) && isset($rec['_euser_ex']['firstname'])){
+            	$rtn .= '<div class="w_smaller"> - Last edited by '."{$rec['_euser_ex']['firstname']} {$rec['_euser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'."\n";
+			}
+			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+		}
+		else{
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> No such record</div>'."\n";
+		}
+	}
+	return $rtn;
+}
+
 ?>
