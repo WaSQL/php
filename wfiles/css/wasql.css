@@ -264,7 +264,6 @@ table th a {
 /* slideshow transitions for slideshow behavior */
 .w_slideshow {
 	position:relative;
-	margin:0 auto;
 }
 .w_slideshow .caption{
 	position:absolute;
@@ -277,7 +276,7 @@ table th a {
 	background-color: rgba(200,200,200,0.5);
 
 }
-.w_slideshow img{
+.w_slideshow #w_slide{
 	position:absolute;
 	left:0;
 	opacity:0;
@@ -289,7 +288,7 @@ table th a {
 	transition: all 5s ease-in-out;
 }
 
-.w_slideshow img.opaque {
+.w_slideshow #w_slide.opaque {
 	opacity:1;
 	[msie]-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   	filter: alpha(opacity=1);
@@ -297,7 +296,7 @@ table th a {
 
 }
 /* slideshow: rotate */
-.w_slideshow img.opaque[data-transition="rotate"]{
+.w_slideshow #w_slide.opaque[data-transition="rotate"]{
 	-webkit-transition: all 3s ease-in-out, -webkit-transform 2s;
 	-moz-transition: all 3s ease-in-out, -moz-transform 2s;
 	-o-transition: all 3s ease-in-out, -o-transform 2s;
@@ -307,7 +306,7 @@ table th a {
 }
 /* Reference: http://www.justinaguilar.com/animations */
 /* slideshow: slide left */
-.w_slideshow img.opaque[data-transition="slide left"]{
+.w_slideshow #w_slide.opaque[data-transition="slide left"]{
 	animation-name: slideLeft;
 	-webkit-animation-name: slideLeft;
 	animation-duration: 2s;
@@ -324,7 +323,7 @@ table th a {
 	100% {-webkit-transform: translateX(0%);}
 }
 /* slideshow: slide right */
-.w_slideshow img.opaque[data-transition="slide right"]{
+.w_slideshow #w_slide.opaque[data-transition="slide right"]{
 	animation-name: slideRight;
 	-webkit-animation-name: slideRight;
 	animation-duration: 2s;
@@ -341,7 +340,7 @@ table th a {
 	100% {-webkit-transform: translateX(0%);}
 }
 /* slideshow: slide up */
-.w_slideshow img.opaque[data-transition="slide up"]{
+.w_slideshow #w_slide.opaque[data-transition="slide up"]{
 	animation-name: slideUp;
 	-webkit-animation-name: slideUp;
 	animation-duration: 2s;
@@ -359,7 +358,7 @@ table th a {
 }
 
 /* slideshow: slide down */
-.w_slideshow img.opaque[data-transition="slide down"]{
+.w_slideshow #w_slide.opaque[data-transition="slide down"]{
 	animation-name: slideDown;
 	-webkit-animation-name: slideDown;
 	animation-duration: 2s;
@@ -377,7 +376,7 @@ table th a {
 }
 
 /* slideshow: fade in */
-.w_slideshow img.opaque[data-transition="fade in"]{
+.w_slideshow #w_slide.opaque[data-transition="fade in"]{
 	animation-name: fadeIn;
 	-webkit-animation-name: fadeIn;
 	animation-duration: 3.5s;
@@ -394,7 +393,7 @@ table th a {
 	100% {-webkit-transform: scale(1);opacity: 1;}
 }
 /* slideshow: pull up */
-.w_slideshow img.opaque[data-transition="pull up"]{
+.w_slideshow #w_slide.opaque[data-transition="pull up"]{
 	animation-name: pullUp;
 	-webkit-animation-name: pullUp;
 	animation-duration: 3.1s;
@@ -414,7 +413,7 @@ table th a {
 	100% {-webkit-transform: scaleY(1);}
 }
 /* slideshow: pull down */
-.w_slideshow img.opaque[data-transition="pull down"]{
+.w_slideshow #w_slide.opaque[data-transition="pull down"]{
 	animation-name: pullDown;
 	-webkit-animation-name: pullDown;
 	animation-duration: 3.1s;
@@ -434,7 +433,7 @@ table th a {
 	100% {-webkit-transform: scaleY(1);}
 }
 /* slideshow: stretch left */
-.w_slideshow img.opaque[data-transition="stretch left"]{
+.w_slideshow #w_slide.opaque[data-transition="stretch left"]{
 	animation-name: stretchLeft;
 	-webkit-animation-name: stretchLeft;
 	animation-duration: 3.5s;
@@ -454,7 +453,7 @@ table th a {
 	100% {-webkit-transform: scaleX(1);}
 }
 /* slideshow: stretch right */
-.w_slideshow img.opaque[data-transition="stretch right"]{
+.w_slideshow #w_slide.opaque[data-transition="stretch right"]{
 	animation-name: stretchRight;
 	-webkit-animation-name: stretchRight;
 	animation-duration: 3.5s;
