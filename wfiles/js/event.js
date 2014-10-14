@@ -1829,23 +1829,30 @@ function slideShow(divid,idx,s,t){
 	if(undefined == s){s=5;}
 	var ms=Math.round(s*1000);
 	idx=Math.round(idx+0)
-	var obj=getObject(divid);
-	id='slideshow';
+	var divobj=getObject(divid);
+	var transition=divobj.getAttribute('data-transition');
+	id='slideshow'+divid;
 	clearTimeout(TimoutArray[id]);
-	var imgs=obj.getElementsByTagName("img");
-	if(imgs.length==0){
+	var tag=divobj.getAttribute('data-tag');
+	if(undefined == tag){tag='img';}
+	var objs=divobj.getElementsByTagName(tag);
+	if(objs.length==0){
 		alert('SlideShow Error: - No images found');
 		return false;
 		}
-	if(idx == imgs.length){idx=0;}
-	for (var i=0; i<imgs.length; i++) {
-		var caption=imgs[i].getAttribute('data-caption');
+	if(idx == objs.length){idx=0;}
+	for (var i=0; i<objs.length; i++) {
+		var caption=objs[i].getAttribute('data-caption');
+		if(undefined != transition && undefined == objs[i].getAttribute('data-transition')){
+			objs[i].setAttribute('data-transition',transition);
+		}
+		objs[i].id='w_slide';
 		if(undefined == caption){caption='';}
 		if(i==idx){
-			addClass(imgs[i],'opaque');
+			addClass(objs[i],'opaque');
 			}
 		else{
-			removeClass(imgs[i],'opaque');
+			removeClass(objs[i],'opaque');
 			caption='';
 		}
 		setText(divid+'_caption',caption);
