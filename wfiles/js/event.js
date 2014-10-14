@@ -1833,6 +1833,10 @@ function slideShow(divid,idx,s,t){
 	var transition=divobj.getAttribute('data-transition');
 	id='slideshow'+divid;
 	clearTimeout(TimoutArray[id]);
+	if(isMouseOver(divid)){
+		TimoutArray[id]=setTimeout("slideShow('"+divid+"',"+idx+","+s+")",ms);
+		return;
+	}
 	var tag=divobj.getAttribute('data-tag');
 	if(undefined == tag){tag='img';}
 	var objs=divobj.getElementsByTagName(tag);
