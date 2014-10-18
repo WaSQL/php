@@ -6520,6 +6520,8 @@ function minifyCode($code,$type) {
     $rtn=curl_exec($process);
 	curl_close($process);
 	if(strlen($code) && !strlen(trim($rtn))){return $code;}
+	//check to see if the service failed
+	if(stringContains($rtn,'502 Bad Gateway')){return $code;}
 	return $rtn;
 }
 //---------- begin function monthName--------------------
