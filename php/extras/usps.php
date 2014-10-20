@@ -3,6 +3,7 @@
 	References:
 		http://www.usps.com/webtools/htm/Address-Information.htm#_Toc131231416
 		http://www.marksanborn.net/php/calculating-usps-shipping-rates-with-php/
+		https://www.usps.com/business/web-tools-apis/2014-rate-webtools-v3-v4-transition-guide.rtf
 		United States Postal Service Web Tools: 
 			Main site: 	http://www.usps.com/webtools/
 			Tracking: 	http://www.usps.com/webtools/htm/Track-Confirm.htm
@@ -14,8 +15,8 @@
 function uspsServices($params=array()){
 	if(!isset($params['-userid'])){return "No userid";}
 	if(!isset($params['-weight'])){return "No weight";}
-	$api='RateV3';
-	$request='RateV3Request';
+	$api='RateV4';
+	$request='RateV4Request';
 	if(isset($params['-intl']) && $params['-intl']){
 		//International rate request
 		if(!isset($params['-country'])){return "No country. Required for intl requests";}
@@ -32,7 +33,7 @@ function uspsServices($params=array()){
 	$xml .= 		'<Pounds>'.$params['-weight'].'</Pounds>';
 	$xml .= 		'<Ounces>0</Ounces>';
 	$xml .= 		'<MailType>Package</MailType>';
-	if($request=='RateV3Request'){
+	if($request=='RateV4Request'){
 		$xml .= 		'<Service>'.$params['-service'].'</Service>';
 		$xml .= 		'<ZipOrigination>'.$params['-zip_orig'].'</ZipOrigination>';
 		$xml .= 		'<ZipDestination>'.$params['-zip_dest'].'</ZipDestination>';
