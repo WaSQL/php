@@ -1235,6 +1235,25 @@ function initBehaviors(ajaxdiv){
 			if(id){
 				addClass(navEls[n],'w_slideshow');
 				var t=navEls[n].getAttribute('timer');
+				//add navigation
+				var navobj=getObject(id+'_nav');
+				if(undefined != navobj){
+					var tag=navEls[n].getAttribute('data-tag');
+					if(undefined == tag){tag='img';}
+					var objs=navEls[n].getElementsByTagName(tag);
+					if(objs.length!=0){
+                    	var txt='';
+                    	for(var n=0;n<objs.length;n++){
+							if(t){
+                        		txt+='<span id="'+id+'_nav_'+n+'" class="glyphicon glyphicon-unchecked w_pointer w_pad" onclick="slideShow(\''+id+'\','+n+','+t+');"></span>';
+							}
+							else{
+								txt+='<span id="'+id+'_nav_'+n+'" class="glyphicon glyphicon-unchecked w_pointer w_pad" onclick="slideShow(\''+id+'\','+n+');"></span>';
+							}
+						}
+						setText(navobj,txt);
+					}
+				}
 				if(t){slideShow(id,0,t);}
 				else{slideShow(id,0);}
 			}
@@ -1854,6 +1873,7 @@ function slideShow(divid,idx,s,t){
 		objs[i].id='w_slide';
 		setStyle(objs[i],'display','block');
 		if(undefined == caption){caption='';}
+		var navobj=getObject(divid+'_nav');
 		if(i==idx){
 			addClass(objs[i],'opaque');
 			//check for data-function
@@ -1861,9 +1881,19 @@ function slideShow(divid,idx,s,t){
 				var functionName=objs[i].getAttribute('data-function');
 				window[functionName](objs[i]);
 			}
+			if(undefined != navobj){
+            	var glyph=getObject(divid+'_nav_'+i);
+            	removeClass(glyph,'glyphicon-unchecked');
+            	addClass(glyph,'glyphicon-expand');
+			}
 		}
 		else{
 			removeClass(objs[i],'opaque');
+			if(undefined != navobj){
+            	var glyph=getObject(divid+'_nav_'+i);
+            	removeClass(glyph,'glyphicon-expand');
+            	addClass(glyph,'glyphicon-unchecked');
+			}
 			caption='';
 		}
 		setText(divid+'_caption',caption);
