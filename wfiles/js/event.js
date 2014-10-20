@@ -318,6 +318,7 @@ function centerpopDiv(txt,rtimer,x){
 	popUpDiv('',params);
 	setCenterPopText(divid,txt,{drag:false,close_bot:false});
 	centerObject(divid);
+	setStyle(divid,'zIndex','99999');
 	return false;
 }
 /* tooltipDiv */
@@ -373,7 +374,7 @@ function tooltipDiv(obj,rtimer){
 function popUpDiv(content,param){
 	//showProperties(param,'debug',1);
 	/* set default opt values */
-	var s="position:absolute;top:200px;left:200px;margin:5px;z-index:999;";
+	var s="position:absolute;top:200px;left:200px;margin:5px;z-index:99999;";
 	var bs="padding:5px;border:1px solid #d6dee7;background:#FFF;";
 	clearTimeout('popupdiv_timeout');
 	if(undefined != param['width']){
@@ -415,7 +416,7 @@ function popUpDiv(content,param){
 	else{
 		masterdiv = document.createElement("div");
 		masterdiv.setAttribute("id",opt['id']);
-		masterdiv.style.zIndex='698';
+		masterdiv.style.zIndex='9999';
 		masterdiv.style.position='absolute';
 		var t  = document.createElement("table");
 		t.border=0;
@@ -1851,10 +1852,16 @@ function slideShow(divid,idx,s,t){
 			objs[i].setAttribute('data-transition',transition);
 		}
 		objs[i].id='w_slide';
+		setStyle(objs[i],'display','block');
 		if(undefined == caption){caption='';}
 		if(i==idx){
 			addClass(objs[i],'opaque');
+			//check for data-function
+			if(undefined != objs[i].getAttribute('data-function')){
+				var functionName=objs[i].getAttribute('data-function');
+				window[functionName](objs[i]);
 			}
+		}
 		else{
 			removeClass(objs[i],'opaque');
 			caption='';
