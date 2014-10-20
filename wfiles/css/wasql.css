@@ -269,7 +269,7 @@ table th a {
 	position:absolute;
 	left:0;
 	bottom:5px;
-	z-index:9999;
+	z-index:9980;
 	font-size:2em;
 	color:#FFF;
 	margin:0 auto;
@@ -292,7 +292,7 @@ table th a {
 	opacity:1;
 	[msie]-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   	filter: alpha(opacity=1);
-  	z-index:999;
+  	z-index:9970;
 
 }
 /* slideshow: rotate */
