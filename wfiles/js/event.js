@@ -1229,7 +1229,8 @@ function initBehaviors(ajaxdiv){
 			var id=navEls[n].getAttribute('id');
 			if(id){
 				addClass(navEls[n],'w_slideshow');
-				var t=navEls[n].getAttribute('timer');
+				var t=navEls[n].getAttribute('data-timer');
+				if(undefined == t){navEls[n].getAttribute('timer');}
 				//add navigation
 				var navobj=getObject(id+'_nav');
 				if(undefined != navobj){
