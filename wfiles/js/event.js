@@ -1,6 +1,6 @@
 /* event based javascript routines*/
 /* - Required dependancies: common.js 			 */
-/*----------------------------------------------*/ 
+/*----------------------------------------------*/
 
 /* Capture mouse movement and set MouseX and MouseY to its x,y corordinates */
 var MouseX=0;
@@ -303,7 +303,7 @@ function ajaxPopup(url,params,useropts){
 			if(undefined == opt[key]){opt[key]=useropts[key];}
 			}
 		}
-	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif" border="0"> loading...please wait.</div>',opt);
+	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif"> loading...please wait.</div>',opt);
 	ajaxGet(url,opt['id']+'_Body',params);
 	}
 /* centerpopDiv*/
@@ -386,7 +386,7 @@ function popUpDiv(content,param){
         style: s,
         title: "",
         closestyle:"cursor:pointer;",
-        close: '<img src="/wfiles/x_red.gif" border="0">',
+        close: '<img src="/wfiles/x_red.gif">',
         bodystyle: bs,
         titleleft: 20,
         body: content

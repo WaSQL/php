@@ -942,7 +942,9 @@ table th a {
 
 /* Style to wrap pre tags in Mozilla - Hidden from IE  - Mozilla only */
 [firefox]pre{white-space: pre-wrap;}
-
+.w_nowrap, .nowrap{
+	white-space: nowrap;
+}
 .w_button {
 	padding-bottom:1px;
 	padding-left:2px;
