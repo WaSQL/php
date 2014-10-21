@@ -1010,7 +1010,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'."\n";
 		//row
-		$rtn .= '<table class="w_formtable" cellspacing="0" cellpadding="2" border="0">'."\n";
+		$rtn .= '<table class="w_formtable" class="w_table">'."\n";
 		$rtn .= '	<tr valign="top">'."\n";
 		if(is_array($fields)){
 			foreach($fields as $field){
@@ -1372,7 +1372,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     $rtn .= '</div>'."\n";
     //buttons
-    $rtn .= '<table class="w_formtable" cellspacing="0" cellpadding="2" border="0">'."\n";
+    $rtn .= '<table class="w_formtable" class="w_table">'."\n";
 	$rtn .= '	<tr>'."\n";
     $save=isset($params['-save'])?$params['-save']:'Save';
     if(isset($params['-savebutton'])){
@@ -2014,7 +2014,7 @@ function buildDBPaging($paging=array()){
 				$dval=ucwords(trim($dval));
             	$opts[$tval]=$dval;
 			}
-			$rtn .= '<table cellspacing="0" cellpadding="0" border="0"><tr>'."\n";
+			$rtn .= '<table class="w_table w_nopad"><tr>'."\n";
 			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- Search --")).'</td>'."\n";
 			$rtn .= '	<td><input type="text" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
 			$rtn .= '	<td>'.buildFormSubmit('Search').'</td>'."\n";
@@ -2057,7 +2057,7 @@ function buildDBPaging($paging=array()){
     	$onsubmit=str_replace('(this',"(document.{$formname}",$onsubmit);
 	}
 	if(isset($paging['-limit'])){
-		$rtn .= '<table cellspacing="0" cellpadding="0" border="0" ><tr valign="middle">'."\n";
+		$rtn .= '<table class="w_table w_nopad" ><tr valign="middle">'."\n";
 		$rtn .= '	<th><div style="width:35px;">';
 		if(isset($paging['-first'])){
 			$arr=array();
@@ -3348,7 +3348,7 @@ function getDBFieldTag($params=array()){
 					}
 				else{$dval_cols=$tval_cols;}
 				//put them in a table so the checkboxes line up if multiple lines
-				$tag .= '<table cellspacing="0" cellpadding="2" border="0">'."\n";
+				$tag .= '<table class="w_table">'."\n";
 				$tag .= '	<tr valign="top" align="left">'."\n";
 				$onclick=isset($info[$field]['onclick'])?$info[$field]['onclick'].';':'';
 				$tcount_all=count($tval_cols);
@@ -3499,7 +3499,7 @@ function getDBFieldTag($params=array()){
                 }
 			break;
 		case 'color':
-			$tag .= '<table cellspacing="0" cellpadding="0" border="0">';
+			$tag .= '<table class="w_table w_nopad">';
 			$tag .= '	<tr valign="middle" align="left">';
 			if(strlen($info[$field]['name'])){
 				$colorbox=$info[$field]['name'] . '_boxdiv';
@@ -3538,7 +3538,7 @@ function getDBFieldTag($params=array()){
 				$inputid="combo_" . $field;
 				$comboid="comboselect_" . $field;
 				}
-			$tag .= '<table cellspacing="0" cellpadding="0" border="0">'."\n";
+			$tag .= '<table class="w_table w_nopad">'."\n";
 			$tag .= '	<tr valign="middle" align="left">'."\n";
 			$tag .= '		<td nowrap><div style="position:relative">'."\n";
 			$tag .= '			<input id="'.$inputid.'" type="text"';
@@ -3673,7 +3673,7 @@ function getDBFieldTag($params=array()){
 			$selections=getDBFieldSelections($info[$field]);
 			if(is_array($selections['tvals'])){
 				//put them in a table so the checkboxes line up if multiple lines
-				$tag .= '<table cellspacing="0" cellpadding="0" border="0">';
+				$tag .= '<table class="w_table w_nopad">';
 				$tag .= '	<tr valign="middle" align="left">';
 				$name=$info[$field]['name'];
 				$cnt=count($selections['tvals']);
@@ -4993,7 +4993,7 @@ function getDBSiteStats(){
 		}
 	$rowdates=array();
 	$days=array(6,5,4,3,2,1,0);
-	$rtn .= '<table cellspacing="0" cellpadding="2" border="1" class="w_table">'."\n";
+	$rtn .= '<table class="w_table w_pad w_border">'."\n";
 	//Table Header Row
 	$rtn .= '	<tr valign="top">'."\n";
 	$rtn .= '		<th colspan="2">Stats</th>'."\n";
@@ -6200,7 +6200,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildFormBegin('',$params['-form']);
     	}
     //set table class
-	$tableclass='w_table';
+	$tableclass='w_table w_pad w_border';
 	//add the sortable class if there is only one page of records or is sorting is turned off
 	if(!isset($paging['-next']) || isset($params['-nosort'])){
 		$tableclass .= ' sortable';
@@ -6218,7 +6218,7 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableid'])){
 		$tablestyle=' id="'.$params['-tableid'].'"';
 	}
-	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.' cellspacing="0" cellpadding="2" border="1">'."\n";
+	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'."\n";
 
     //build header row
     $rtn .= "	<thead><tr>\n";
@@ -7449,7 +7449,7 @@ function showDBCronPanel($ajax=0,$frequency=60){
 		$rtn .= '	<div id="cronpanel">'."\n";
 		}
 	//show date updated
-	$rtn .= '			<table cellspacing="0" cellpadding="0" border="0"><tr><td><div style="color:#CCC;font-size:10pt;" align="center">'.date("F j, Y, g:i a").'</div></td><td style="padding-left:5px;"><div style="color:#CCC;font-size:10pt;padding:1px 2px 1px 2px;border:1px solid #CCC;" id="crontimer" data-behavior="countdown">'.$frequency.'</div></td></tr></table>'."\n";
+	$rtn .= '			<table class="w_table w_nopad"><tr><td><div style="color:#CCC;font-size:10pt;" align="center">'.date("F j, Y, g:i a").'</div></td><td style="padding-left:5px;"><div style="color:#CCC;font-size:10pt;padding:1px 2px 1px 2px;border:1px solid #CCC;" id="crontimer" data-behavior="countdown">'.$frequency.'</div></td></tr></table>'."\n";
 	$rtn .= '			<hr size="1">'."\n";
 	$recs=getDBRecords(array('-table'=>"_cron"));
 	//collect some stats

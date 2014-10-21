@@ -8,52 +8,51 @@ table.w_formtable {
     border-spacing: 0;
 }
 table.w_formtable td, table.w_formtable th {
-    padding: 6px;
+    padding: 3px 3px 0 3px;
     font-family:arial;
     font-size:11pt;
 }
 
+table.w_table td{
+	padding: 4px;
+}
+table.w_table.w_nopad td{
+	padding: 0px;
+}
 table.w_table {
     border-collapse: collapse;
     border-spacing: 0;
 }
-table.w_table[border="1"]{
+table.w_table.w_border{
 	border-color:#ccc;
 }
 table.w_table tr:nth-child(even){
 	background:#f8f8f8;
 }
-table.w_table[border="1"] td, table.w_table[border="1"] th {
+table.w_table.w_border{
+	border:1px solid #CCC;
+}
+table.w_table.w_border td, table.w_table.w_border th {
     border-left: 1px solid #ccc;
     border-top: 1px solid #ccc;
-    padding: 3px 4px 2px 4px;
-    font-family:serif,arial;
 }
 
 table.w_table th {
-	background: rgba(219,215,219,1);
-	[firefox]background: -moz-linear-gradient(top, rgba(219,215,219,1) 0%, rgba(166,172,173,1) 55%, rgba(168,168,168,1) 100%);
-	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(219,215,219,1)), color-stop(55%, rgba(166,172,173,1)), color-stop(100%, rgba(168,168,168,1)));
-	background: -webkit-linear-gradient(top, rgba(219,215,219,1) 0%, rgba(166,172,173,1) 55%, rgba(168,168,168,1) 100%);
-	background: -o-linear-gradient(top, rgba(219,215,219,1) 0%, rgba(166,172,173,1) 55%, rgba(168,168,168,1) 100%);
-	background: -ms-linear-gradient(top, rgba(219,215,219,1) 0%, rgba(166,172,173,1) 55%, rgba(168,168,168,1) 100%);
-	background: linear-gradient(to bottom, rgba(219,215,219,1) 0%, rgba(166,172,173,1) 55%, rgba(168,168,168,1) 100%);
-	[msie lt 10]filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbd7db', endColorstr='#a8a8a8', GradientType=0 );
-    border-top: none;
+	background-color:#a7a8a9;
 }
-table.w_table td:first-child {
+table.w_table.w_border td:first-child {
 	border-left:none;
 }
 /* first row, last cell */
-table.w_table tr:first-child th:last-child {
+table.w_table.w_border tr:first-child th:last-child {
     border-right: none;
 }
 /* last row, first cell */
-table.w_table tr:last-child th:first-child {
+table.w_table.w_border tr:last-child th:first-child {
     border-left: none;
 }
 /* last row, last cell */
-table.w_table th:last-child {
+table.w_table.w_border th:last-child {
     border-right: none;
 }
 /* Sortable tables by adding sorttable as a class */
@@ -691,7 +690,7 @@ table th a {
 	left:0px;
 	top:-25px;
 	z-index:9991;
-	background:#3465a4;
+	background:#a7a8a9;
 	color:#FFFFFF;
 	width:inherit;
 	white-space:nowrap;
@@ -751,7 +750,6 @@ table th a {
 	border:0px;
 	}
 .w_wcart_checkout td {
-
 	padding: 2px 0px 2px 0px;
 	border:0px;
 	}
@@ -899,7 +897,7 @@ table th a {
 .w_form input[type="text"],.w_form input[type="password"],.w_form select, .w_form textarea {
    	font-size:9pt;
    	margin:2px;
-   	padding: 6px 12px;
+   	padding: 4px;
 	}
 .w_checklist{
 	border:none;

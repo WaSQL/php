@@ -353,7 +353,7 @@ function wasqlBuildManualTree(){
 	$lang='';
 	$filename='';
 	//
-	//$rtn .= '<table cellspacing="0" cellpadding="2" border="0" width="100%"><tr valign="top">'."\n";
+	//$rtn .= '<table class="w_table" width="100%"><tr valign="top">'."\n";
 	//$rtn .= '	<td style="padding-right:10px;" nowrap>'."\n";
 	$rtn .= '<div class="w_left" style="padding:0 20px 0 10px;height:500px;overflow:auto;border:1px solid #CCC;">'."\n";
 	foreach($Manual['tree'] as $treenode=>$files){
@@ -837,7 +837,7 @@ function attachManager($startdir='',$params=array()){
 		}
 	if(!isset($params['show_height'])){$params['show_height']=300;}
 	if(!isset($params['attach_height'])){$params['attach_height']=150;}
-	$rtn = '<table cellspacing="0" cellpadding="0" border="0">'."\n";
+	$rtn = '<table class="w_table w_nopad">'."\n";
 	$rtn .= '	<tr>'."\n";
 	$rtn .= '		<th class="w_blueback w_white">Files</th>'."\n";
 	$rtn .= '	</tr>'."\n";
@@ -893,7 +893,7 @@ function attachManagerAttachFiles($startdir='',$params=array()){
 	$iconpath=str_replace("\\","/",$iconpath);
 	$cnt=count($_SESSION['attach_files']);
 	$rtn='';
-	$rtn .= '			<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n";
+	$rtn .= '			<table class="w_table" width="100%">'."\n";
 	$rtn .= '				<tr><th colspan="2">'.$cnt.' File(s)</th><th>Size</th><th>Modified</th><th></th></tr>'."\n";
 	ksort($_SESSION['attach_files']);
 	foreach($_SESSION['attach_files'] as $file=>$x){
@@ -960,7 +960,7 @@ function attachManagerShowFiles($startdir='',$params=array()){
         	}
 		$rtn .= '<div class="w_big">'.implode(' <img src="/wfiles/crumb.gif" border="0"> ',$rpathlinks).'</div>'."\n";
 		}
-	$rtn .= '			<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n";
+	$rtn .= '			<table class="w_table" width="100%">'."\n";
 	$rtn .= '				<tr><th></th><th>File</th><th>Size</th><th>Modified</th><th></th></tr>'."\n";
 	$row=0;
 	foreach($files as $file){
@@ -1062,7 +1062,7 @@ function showWasqlErrors($top=50,$right=50,$close=2){
 		}
 	$rtn .= '	<div style="font-weight:bold;font-size:14pt;font-color:#970000;"><img src="/wfiles/icons/warn32.png" border="0" style="vertical-align:middle;"> WaSQL Errors:</div>'."\n";
 	$rtn .= '	<div style="width:600px;">'."\n";
-	$rtn .= '	<table cellspacing="0" cellpadding="2" border="1" style="border-collapse:collapse;">'."\n";
+	$rtn .= '	<table class="w_table w_pad w_border">'."\n";
 	$sets=array();
 	$arrs=array();
 	foreach($_SERVER['WASQL_ERRORS'][0] as $key=>$val){

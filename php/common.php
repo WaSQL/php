@@ -26,13 +26,13 @@ function abort($obj,$title='Aborted',$subtitle=''){
 	$headstr .= '<div class="w_big">' . $subtitle . '</div>'."\n";
 	$heading=array();
 	if(isset($CONFIG['logo']) && strlen($CONFIG['logo'])){
-		$heading[]='<img src="'.$CONFIG['logo'].'" border="0">';
+		$heading[]='<img src="'.$CONFIG['logo'].'">';
 	}
 	else{
-		$heading[]='<img src="/wfiles/iconsets/64/wasql.png" border="0" style="padding:10px;" />';
+		$heading[]='<img src="/wfiles/iconsets/64/wasql.png" style="padding:10px;" />';
 	}
 	$heading[]=$headstr;
-	$rtn .= '<table cellspacing="0" cellpadding="2" border="0">'."\n";
+	$rtn .= '<table>'."\n";
 	$rtn .= buildTableTD($heading);
 	$rtn .= buildTableEnd();
 	$rtn .= '<div class="w_left w_pad">'."\n";
@@ -283,7 +283,7 @@ function buildFormCheckbox($name, $pairs=array(), $params=array()){
 	if(isset($params['-checkall']) && strlen($params['-checkall'])){
     	$rtn .= buildFormCheckAll('data-group',$group)." {$params['-checkall']}\n";
 	}
-	$rtn .= '<table cellspacing="0" cellpadding="0" border="0">'."\n";
+	$rtn .= '<table class="w_table w_nopad">'."\n";
 	$rtn .= '	<tr>'."\n";
 
 	foreach($pairs as $tval=>$dval){
@@ -802,7 +802,7 @@ function buildMsnCtt($emails=array(),$push=0,$name='msn_contacts.ctt'){
 * @usage echo buildOnLoad("document.myform.myfield.focus();");
 */
 function buildOnLoad($str='',$img='/wfiles/clear.gif',$width=1,$height=1){
-	return '<img class="w_buildonload" src="'.$img.'" width="'.$width.'" height="'.$height.'" border="0" onload="'.$str.'">'."\n";
+	return '<img class="w_buildonload" src="'.$img.'" alt="onload functions" width="'.$width.'" height="'.$height.'" style="border:0px;" onload="'.$str.'">'."\n";
 	}
 //---------- begin function buildShareButtons
 /**
@@ -970,9 +970,13 @@ function buildSocialButtons($params=array()){
 * @usage <?=buildTableBegin(2,1);?>
 */
 function buildTableBegin($padding=2,$border=0,$sortable=0,$width=''){
-	$class=$sortable==1?'w_table sortable':'w_table';
+	$class='w_table';
 	if(strlen($width)){$width=' width="'.$width.'"';}
-	return '<table cellspacing="0" cellpadding="'.$padding.'" border="'.$border.'" class="'.$class.'"'.$width.'>'."\n";
+	if($border){$class.=' w_border';}
+	if($sortable){$class.=' sortable';}
+	if($padding){$class.=' w_pad';}
+	else{$class .= ' w_nopad';}
+	return '<table class="'.$class.'"'.$width.'>'."\n";
 	}
 //---------- begin function buildTableEnd
 /**
@@ -2265,7 +2269,7 @@ function setHtmlTagAttributes($tag='',$opts=array()){
 	$atts=array('id','class','style','onclick','onmouseover','onmouseout','_behavior','data-behavior');
 	//add tag specific attributes
 	switch(strtolower($tag)){
-		case 'table':array_push($atts,'align','bgcolor','border','cellpadding','cellspacing','frame','rules','summary','width');break;
+		case 'table':array_push($atts,'align','bgcolor','frame','rules','summary','width');break;
 		case 'a':array_push($atts,'href');break;
     	}
 	foreach($atts as $att){
@@ -2464,7 +2468,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 		$result .= '<div id="diff" style="width:850px;position:relative;overflow-y:scroll;font-size:9pt;">'."\n";
     	}
 
-	$result .= '<table cellspacing="0" cellpadding="0" border="0" width="100%">'."\n";
+	$result .= '<table class="w_table w_nopad" width="100%">'."\n";
 	//$result .= buildTableTH(array('','Stage','Live','M','S'));
 	$anchor_started=0;
 	$anchors=array();
@@ -2533,7 +2537,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 	$result .= '</div>'."\n";
 	$header .= $more;
 	if(count($anchors)){
-    	$header .= '<div style="margin-bottom:3px;"><table cellpadding="2" border="0" cellspacing="0">'."\n";
+    	$header .= '<div style="margin-bottom:3px;"><table class="w_table">'."\n";
 		$header .= '	<tr><td class="w_small">Quicklinks:</td>'."\n";
 		$header .= '		'.implode('',$anchors);
 		if(isNum($diffcount['i']) && $diffcount['i'] > 0){
@@ -3248,7 +3252,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<table cellspacing="0" cellpadding="2" border="0">'."\n";
+	$rtn .= '<table class="w_table">'."\n";
 	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'" class="w_form" enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
