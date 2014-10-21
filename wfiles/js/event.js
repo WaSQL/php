@@ -888,11 +888,6 @@ function initBehaviors(ajaxdiv){
 	//	<div data-behavior="@raid(raidid)"></div><input type="text" name="raidid" value="123">
 	//replace title attributes with ours
 	try{f_tcalInit();}catch(e){}
-	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
-	for(var i=0;i<tobs.length;i++){
-		addEvent(tobs[i],'mouseover', function(){tooltipDiv(this);});
-		addEvent(tobs[i],'mouseout', function(){fadeId('w_tooltip',1);});
-	}
 	var navEls = GetElementsByAttribute('*', 'data-behavior', '.+');
 	var navEls2 = GetElementsByAttribute('*', '_behavior', '.+');
 	//backwords compatibility - get _behavior attributes also
@@ -1244,11 +1239,13 @@ function initBehaviors(ajaxdiv){
 					if(objs.length!=0){
                     	var txt='';
                     	for(var n=0;n<objs.length;n++){
+							var navtitle=objs[n].getAttribute('title');
+							if(undefined == navtitle){navtitle='';}
 							if(t){
-                        		txt+='<span id="'+id+'_nav_'+n+'" class="glyphicon glyphicon-unchecked w_pointer w_pad" onclick="slideShow(\''+id+'\','+n+','+t+');"></span>';
+                        		txt+='<div id="'+id+'_nav_'+n+'" data-tooltip="'+navtitle+'" data-tooltip_position="bottom" class="glyphicon glyphicon-unchecked w_pointer w_pad" style="display:inline block;" onclick="slideShow(\''+id+'\','+n+','+t+');"></div>';
 							}
 							else{
-								txt+='<span id="'+id+'_nav_'+n+'" class="glyphicon glyphicon-unchecked w_pointer w_pad" onclick="slideShow(\''+id+'\','+n+');"></span>';
+								txt+='<div id="'+id+'_nav_'+n+'" data-tooltip="'+navtitle+'" data-tooltip_position="bottom" class="glyphicon glyphicon-unchecked w_pointer w_pad"  style="display:inline block;"  onclick="slideShow(\''+id+'\','+n+');"></div>';
 							}
 						}
 						setText(navobj,txt);
@@ -1329,7 +1326,12 @@ function initBehaviors(ajaxdiv){
 				}
 	       }
 		}
+	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
+	for(var i=0;i<tobs.length;i++){
+		addEvent(tobs[i],'mouseover', function(){tooltipDiv(this);});
+		addEvent(tobs[i],'mouseout', function(){fadeId('w_tooltip',1);});
 	}
+}
 function stickyMenus(){
 	var list = GetElementsByAttribute('*','data-behavior','sticky');
 	var scrollPosition=getWindowScrollPosition();
