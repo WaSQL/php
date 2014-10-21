@@ -472,7 +472,25 @@ table th a {
 	0% {z-index:0;-webkit-transform: scaleX(0.3);}
 	100% {z-index:800;-webkit-transform: scaleX(1);}
 }
-
+/* slideshow nav */
+.w_slideshow_nav{
+	z-index:99999;
+}
+.w_slideshow_nav div{
+	background-color:#000;
+	margin:1px 5px 1px 5px;
+	box-shadow:0px 3px 10px #8C8C8C;
+	[safari|chrome]-webkit-box-shadow:0px 3px 10px #8C8C8C;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	display:inline-block;
+	width:20px;
+	height:10px;
+}
+.w_slideshow_nav div[class="active"]{
+	background-color:#f79622;
+}
 
 
 
