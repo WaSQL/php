@@ -790,7 +790,7 @@ function userLoginForm($params=array()){
     switch(strtolower($params['-format'])){
 		case 'oneline':
 			$form .= '<div id="w_loginform_oneline">'."\n";
-			$form .= '<table cellspacing="0" cellpadding="2" border="0">';
+			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th align="left">'.$params['-username'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<th align="left">'.$params['-password'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>1)).'</td>'."\n";
@@ -812,7 +812,7 @@ function userLoginForm($params=array()){
 			break;
 		case 'inline':
 			$form .= '<div id="w_loginform_inline">'."\n";
-			$form .= '<table cellspacing="0" cellpadding="2" border="0">';
+			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th align="left">'.$params['-username'].'</th>'."\n";
 			$form .= '		<th align="left">'.$params['-password'].'</th>'."\n";
@@ -843,7 +843,7 @@ function userLoginForm($params=array()){
 			break;
 		default:
 			$form .= '<div id="w_loginform_default">'."\n";
-			$form .= '<table cellspacing="0" cellpadding="2" border="0">';
+			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th align="left">'.$params['-username'].'</th>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";

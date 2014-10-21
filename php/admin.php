@@ -487,7 +487,7 @@ if(isAjax()){
 					$sessionID=session_id();
 					echo buildFormBegin('',array('_menu'=>'sandbox','preview'=>1,'-onsubmit'=>"ajaxSubmitForm(this,'sandbox_test');return false;"));
 					echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/php.png" border="0" class="w_middle"> PHP Sandbox '.buildFormSubmit('Test Code (F5)').'</div>'."\n";
-					echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table" width="100%">'."\n";
+					echo '<table class="w_table w_pad w_border" width="100%">'."\n";
 					echo buildTableTH(array('Database Tables','PHP Coding Window','Code Results Window'));
 					echo '	<tr valign="top">'."\n";
 					echo '		<td nowrap>'."\n";
@@ -1348,7 +1348,7 @@ if(isset($_REQUEST['_menu'])){
 			echo $cmessage;
 			break;
 		case 'editor':
-			echo '<table cellspacing="0" cellpadding="0" border="0" width="100%"><tr valign="top">'."\n";
+			echo '<table class="w_table w_nopad" width="100%"><tr valign="top">'."\n";
 			echo '	<td nowrap>'."\n";
 			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/wasql_admin.png" border="0" class="w_middle"> Inline Editor Menu</div>'."\n";
 			echo '	<div id="w_editor_nav">'."\n";
@@ -1359,7 +1359,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '</tr></table>'."\n";
 			break;
 		case 'contentmanager':
-			echo '<table cellspacing="0" cellpadding="0" border="0" width="100%"><tr valign="top">'."\n";
+			echo '<table class="w_table w_nopad" width="100%"><tr valign="top">'."\n";
 			echo '	<td nowrap>'."\n";
 			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/iconsets/32/contentmanager.png" border="0" class="w_middle"> Content Manager</div>'."\n";
 			echo '	<div id="w_editor_nav">'."\n";
@@ -1734,7 +1734,7 @@ if(isset($_REQUEST['_menu'])){
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/info.png" border="0"> About WaSQL</div>'."\n";
-			echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table">'."\n";
+			echo '<table class="w_table w_pad w_border">'."\n";
 			//Database Information
 			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'."\n";
 			ksort($CONFIG);
@@ -1806,7 +1806,7 @@ if(isset($_REQUEST['_menu'])){
 			elseif($info['local']['revision']!=$info['head']['revision']){
 				echo '<table><tr><td><img src="/wfiles/iconsets/32/star.png" border="0" style="vertical-align:middle;"></td><td>Updates are available</td><td><a class="w_link w_dblue" href="/'.$PAGE['name'].'?_menu=svn&_update=1"><img src="/wfiles/iconsets/32/down.png" border="0" style="vertical-align:middle;"> Update Now</a></td></tr></table>'."\n";
             	echo '<br clear="both">'."\n";
-				echo '<table cellpadding="2" cellspacing="0" border="1" class="w_table">'."\n";
+				echo '<table class="w_table w_pad w_border">'."\n";
 				echo '	<tr><th colspan="2">LOCAL Revision</th></tr>'."\n";
 				foreach($info['local'] as $key=>$val){
 					echo '	<tr><td align="left"><b>'.ucwords(str_replace('_',' ',$key)).'</b></td><td>'.$val.'</td></tr>'."\n";
@@ -1820,7 +1820,7 @@ if(isset($_REQUEST['_menu'])){
             else{
 				echo '<table><tr><td><img src="/wfiles/iconsets/32/checkmark.png" border="0" style="vertical-align:middle;"></td><td>Up to date</td></tr></table>'."\n";
             	echo '<br clear="both">'."\n";
-				echo '<table cellpadding="2" cellspacing="0" border="1" class="w_table">'."\n";
+				echo '<table class="w_table w_pad w_border">'."\n";
 				echo '	<tr><th colspan="2">Revision Info</th></tr>'."\n";
 				foreach($info['local'] as $key=>$val){
 					echo '	<tr><td align="left"><b>'.ucwords(str_replace('_',' ',$key)).'</b></td><td>'.$val.'</td></tr>'."\n";
@@ -1847,7 +1847,7 @@ if(isset($_REQUEST['_menu'])){
 			*/
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/table.gif" border="0">Tables</div>'."\n";
 			echo buildFormBegin('',array('_menu'=>'tables','update'=>1));
-			echo '<table cellspacing="2" cellpadding="2" border="1" class="w_table sortable">'."\n";
+			echo '<table class="w_table w_pad w_border sortable">'."\n";
 			echo '<thead>'."\n";
 			echo '	<tr>'."\n";
 			echo '		<th>Action</th>'."\n";
@@ -2149,7 +2149,7 @@ if(isset($_REQUEST['_menu'])){
 			$sessionID=session_id();
 			echo buildFormBegin('',array('_menu'=>'sandbox','preview'=>1,'-onsubmit'=>"ajaxSubmitForm(this,'sandbox_test');return false;"));
 			echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/php.png" border="0" class="w_middle"> PHP Sandbox '.buildFormSubmit('Test Code (F5)').'</div>'."\n";
-			echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table" width="100%">'."\n";
+			echo '<table class="w_table w_pad w_border" width="100%">'."\n";
 			echo buildTableTH(array('Database Tables','PHP Coding Window','Code Results Window'));
 			echo '	<tr valign="top">'."\n";
 			echo '		<td nowrap>'."\n";
@@ -2363,7 +2363,7 @@ if(isset($_REQUEST['_menu'])){
                 		}
                 	}
 				$list=getDBSchema(array($_REQUEST['_table_']));
-				echo '<table cellspacing="0" cellpadding="4" border="0">'."\n";
+				echo '<table class="w_table w_pad">'."\n";
 				echo '<tr valign="top"><td>'."\n";
 				echo listDBRecords(array('_menu'=>$_REQUEST['_menu'],'_table_'=>$_REQUEST['_table_'],'-list'=>$list));
 				echo '</td><td>'."\n";
@@ -2561,7 +2561,7 @@ if(isset($_REQUEST['_menu'])){
 		        }
 			echo $currentTable.' Table</div>'."\n";
 			echo '<table border="0"><tr valign="top"><td>'."\n";
-			echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table" style="border:1px solid #020381;">'."\n";
+			echo '<table class="w_table w_pad w_border">'."\n";
 			echo '<tr><th colspan="7"><img src="/wfiles/iconsets/16/database.png" border="0" style="vertical-align:middle"> Database Properties</th><th colspan="8"><img src="/wfiles/icons/files/html.gif" border="0" style="vertical-align:middle"> META Properties</th></tr>'."\n";
 			echo '	<tr>'."\n";
 			echo '		<th>Name</th>'."\n";
@@ -2636,7 +2636,7 @@ if(isset($_REQUEST['_menu'])){
             echo '</td><td>'."\n";
             $list=getDBSchema(array($currentTable));
 			echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
-			echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table" style="border:1px solid #020381;">'."\n";
+			echo '<table class="w_table w_border w_pad">'."\n";
             echo '	<tr><th><img src="/wfiles/iconsets/16/database.png" border="0" style="vertical-align:middle"> Table Schema Editor</th></tr>'."\n";
             echo '	<tr valign="top"><td>'."\n";
             $height=300;
@@ -2666,7 +2666,7 @@ if(isset($_REQUEST['_menu'])){
             echo '<tr valign="top"><td colspan="2">'."\n";
             echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
             echo buildFormSubmit("Save Changes","do");
-            echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table" style="border:1px solid #4A79B3;">'."\n";
+            echo '<table class="w_table w_border w_pad">'."\n";
             //General Table Settings
             echo '	<tr valign="top">'."\n";
 			echo '		<th colspan="2" align="left"><img src="/wfiles/iconsets/16/generic.png" border="0"> General Table Settings</th>'."\n";
@@ -2852,7 +2852,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'email':
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/email.png" style="vertical-align:middle;" border="0"> Email</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"email",'-name'=>"emailform"));
-			echo '<table cellspacing="0" cellpadding="2" border="0">'."\n";
+			echo '<table class="w_table">'."\n";
 			echo '	<tr valign="top" align="left">'."\n";
 			$tables=getDBTables();
 			echo '		<th>Table<br><select onchange="document.emailform.submit();" name="_table_"><option value=""></option>'."\n";
@@ -2963,7 +2963,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'grep':
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_search.png" border="0"> Database Search</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table cellspacing="0" cellpadding="4" border="0">'."\n";
+			echo '<table class="w_table w_pad">'."\n";
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'."\n";
 			echo '		<th>Schema<br><input type="checkbox" name="_grep_schema" value="1">'."</th>\n";
 			echo '		<th>Records<br><input type="checkbox" name="_grep_records" value="1" checked>'."</th>\n";
@@ -2991,7 +2991,7 @@ if(isset($_REQUEST['_menu'])){
 				//grep Schema?
 				if($grep['schema']==1){
 					echo '<div class="w_bold w_big w_dblue">Schema Results</div>'."\n";
-					echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table">'."\n";
+					echo '<table class="w_table w_border w_pad">'."\n";
 					echo '	<tr><th>Table</th><th>Fields</th></tr>'."\n";
 					foreach($tables as $table){
 						if(strlen($grep['table']) && $table != $grep['table']){continue;}
@@ -3007,7 +3007,7 @@ if(isset($_REQUEST['_menu'])){
                 //grep records?
                 if($grep['records']==1){
                 	echo '<div class="w_bold w_big w_dblue">Record Results</div>'."\n";
-					echo '<table cellspacing="0" cellpadding="2" border="1" class="w_table">'."\n";
+					echo '<table class="w_table w_pad w_border">'."\n";
                 	echo '	<tr><th>Table</th><th>Record</th><th>Fields</th></tr>'."\n";
 					foreach($tables as $table){
 						if(strlen($grep['table']) && $table != $grep['table']){continue;}
@@ -3172,7 +3172,7 @@ if(isset($_REQUEST['_menu'])){
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
 			echo '	<input type="file" _required="1" name="file" size="80" acceptmsg="Only valid xml and csv files are allowed" accept="xml,csv" /><br />'."\n";
 			echo '<div style="width:600px;"'."\n";
-			echo '<table cellspacing="0" cellpadding="4" border="0"><tr valign="top">'."\n";
+			echo '<table class="w_table w_pad"><tr valign="top">'."\n";
 			//XML File Options
 			echo '<td nowrap>'."\n";
 			echo '<div class="w_lblue w_bold w_big">XML File Options</div>'."\n";
@@ -3584,7 +3584,7 @@ function adminClearSessionLog($sessionID){
 function sqlPrompt(){
 	$cmd=stripslashes($_REQUEST['sqlprompt_command']);
 	$rtn='';
-	$rtn .= '<table cellspacing="0" cellpadding="0" border="0" class="w_table" width="100%">'."\n";
+	$rtn .= '<table class="w_table w_nopad" class="w_table" width="100%">'."\n";
 	$rtn .= '<tr valign="top">'."\n";
 	$rtn .= '<td nowrap>'."\n";
 	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><img src="/wfiles/iconsets/16/table.png" border="0" class="w_middle"> Tables</div>'."\n";
@@ -3596,7 +3596,7 @@ function sqlPrompt(){
 	$rtn .= '<form method="POST" name="sqlprompt_form" action="/php/admin.php" class="w_form" onsubmit="ajaxSubmitForm(this,\'sqlprompt_results\');return false;">'."\n";
 	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
 	$rtn .= '	<input type="hidden" name="_table_" value="_reports">'."\n";
-	$rtn .= '<table cellspacing="0" cellpadding="0" border="0" class="w_table" width="100%">'."\n";
+	$rtn .= '<table class="w_table w_nopad" class="w_table" width="100%">'."\n";
 	$rtn .= '	<tr valign="top">'."\n";
 	$rtn .= '		<td align="left" nowrap>'."\n";
 	$rtn .= '			<textarea data-gutter="true" preview="Run SQL and View Results" ajaxid="sqlprompt_results" name="sqlprompt_command" id="sqlprompt_command" style="width:100%;height:250px;" data-behavior="sqleditor" focus="1">'.$cmd.'</textarea><br>'."\n";
@@ -3616,7 +3616,7 @@ function sqlPrompt(){
 	$rtn .= '	<textarea name="sqlprompt_command" style="width:0px;height:0px;"></textarea>'."\n";
 	$rtn .= '	<input type="submit" name="sqlprompt" value="CSV Export">'."\n";
 	$rtn .= '</form>'."\n";
-	$rtn .= '<table cellspacing="0" cellpadding="0" border="0" class="w_table" width="100%">'."\n";
+	$rtn .= '<table class="w_table w_nopad" class="w_table" width="100%">'."\n";
 	//results window
 	$rtn .= '	<tr valign="top">'."\n";
 	$rtn .= '		<td align="left" nowrap>'."\n";
@@ -3643,7 +3643,7 @@ function expandAjaxTables(){
 	$tables=getDBTables();
 	//build a section for wasql tables using createExpandDiv($title,$expand,'#0d0d7d',0);
 	$title='<img src="/wfiles/wasql_admin.png" border="0" class="w_middle"> Tables';
-	$expand = '<table cellspacing="0" cellpadding="0" border="0">'."\n";
+	$expand = '<table class="w_table w_nopad">'."\n";
 	foreach($tables as $table){
 		if(!isWasqlTable($table)){continue;}
 		$divid=$table .'_'. sha1($table);
@@ -3654,7 +3654,7 @@ function expandAjaxTables(){
 
 	//build a section for non-wasql tables using createExpandDiv($title,$expand,'#0d0d7d',0);
 	$title='<img src="/wfiles/iconsets/16/table.png" border="0" class="w_middle"> User Tables';
-	$expand = '<table cellspacing="0" cellpadding="0" border="0">'."\n";
+	$expand = '<table class="w_table w_nopad">'."\n";
 	foreach($tables as $table){
 		if(isWasqlTable($table)){continue;}
 		$divid=$table .'_'. sha1($table);
@@ -4141,7 +4141,7 @@ function tableOptions($table='',$params=array()){
 		    $rtn .= '					</ul>'."\n";
 		    break;
 		case 'table':
-			$rtn .= '<table class="actionmenu" cellspacing="0" cellpadding="0" border="0"><tr>'."\n";
+			$rtn .= '<table class="actionmenu" class="w_table w_nopad"><tr>'."\n";
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
@@ -4260,7 +4260,7 @@ function adminSettings(){
 	$tvals="ICO";
 	$dvals="Show Icons";
 	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"mainmenu_toggle",'inputtype'=>'checkbox','tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
-	$rtn .= '		<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n";
+	$rtn .= '		<table class="w_table w_pad" width="100%">'."\n";
 	//top fade color, bottom fade color, bottom border color
 	$rtn .= '			<tr valign="bottom"><td>Top Fade</td><td>Bottom Fade</td><td>Bottom Border</td></tr>'."\n";
 	$rtn .= '			<tr valign="top">'."\n";
@@ -4285,7 +4285,7 @@ function adminSettings(){
 	$tvals="ICO\r\nTXT";
 	$dvals="Show Icons\r\nShow Text";
 	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"actionmenu_toggle",'inputtype'=>'checkbox','tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
-	$rtn .= '		<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n";
+	$rtn .= '		<table class="w_table w_pad" width="100%">'."\n";
 	//text color, hover background color, hover text color
 	$rtn .= '			<tr valign="bottom"><td>Text Color</td><td>Hover Background</td><td></td></tr>'."\n";
 	$rtn .= '			<tr valign="top">'."\n";
@@ -4310,7 +4310,7 @@ function adminSettings(){
 	//Table settings
 	$rtn .= '	<div id="adminmenu" class="w_bold"><img src="/wfiles/iconsets/16/settings.png" border="0"> Table Colors and Shading</div>'."\n";
 	//top fade color, bottom fade color, bottom border color
-	$rtn .= '		<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n";
+	$rtn .= '		<table class="w_table w_pad" width="100%">'."\n";
 	$rtn .= '			<tr valign="bottom"><td>TH Text Color</td><td>TH Background</td><td>Even Row Color</td></tr>'."\n";
 	$rtn .= '			<tr valign="top">'."\n";
 	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"table_header_text",'inputtype'=>'color'))."</td>\n";
@@ -4560,7 +4560,7 @@ function adminShowSyncChanges($stables=array()){
 	$rtn='';
 	//display change tabs by table
 	$rtn .= '	<div  align="left">'."\n";
-	$rtn .= '	<table id="syncTableMain" cellspacing="0" cellpadding="1" border="0">'."\n";
+	$rtn .= '	<table id="syncTableMain" class="w_table w_pad">'."\n";
 	$rtn .= '		<tr valign="bottom">'."\n";
 	foreach($changes as $table=>$recs){
 		//get changes for the current user
@@ -4681,7 +4681,7 @@ function editorFileEdit($file){
 	$rtn = '';
 	$rtn .= '<div style="position:relative;">'."\n";
 	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('emenu'=>'file','_menu'=>"editor",'file'=>$file,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
-	$rtn .= '<table border="0" cellpadding="4" cellspacing="0"><tr><td>'."\n";
+	$rtn .= '<table class="w_table w_pad"><tr><td>'."\n";
 	$rtn .= '	<div class="w_bold w_bigger w_dblue">Editing File: '.$file.'</div>'."\n";
 	$rtn .= '</td><td>'.buildFormSubmit('Save').'</td></tr></table>'."\n";
 	$rtn .= '<div style="border:1px inset #000;width:800px;">'."\n";
@@ -4707,7 +4707,7 @@ function editorFileAdd($filetype){
 	}
 	$rtn = '';
 	$rtn .= '<div style="position:relative;">'."\n";
-	$rtn .= '<table border="0" cellpadding="4" cellspacing="0"><tr><td><div class="w_bold w_bigger w_dblue">New '.strtoupper($filetype).' File</div></td><td><div id="w_editor_status"></div></td></tr></table>'."\n";
+	$rtn .= '<table class="w_table w_pad"><tr><td><div class="w_bold w_bigger w_dblue">New '.strtoupper($filetype).' File</div></td><td><div id="w_editor_status"></div></td></tr></table>'."\n";
 	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('-name'=>'addedit','emenu'=>'file','filetype'=>$filetype,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
 	$rtn .= '<div style="margin-bottom:5px;">FileName: <input type="text" name="filename" required="1" style="width:400px;">.'.$filetype.'</div>'."\n";
 	$rtn .= '<div style="border:1px inset #000;width:800px;">'."\n";
