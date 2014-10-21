@@ -479,6 +479,7 @@ table th a {
 .w_slideshow_nav div{
 	background-color:#000;
 	margin:1px 5px 1px 5px;
+	cursor:pointer;
 	box-shadow:0px 3px 10px #8C8C8C;
 	[safari|chrome]-webkit-box-shadow:0px 3px 10px #8C8C8C;
 	[safari|chrome]-webkit-border-radius: 3px;
@@ -489,7 +490,7 @@ table th a {
 	height:10px;
 }
 .w_slideshow_nav div[class="active"]{
-	background-color:#f79622;
+	background-color:#fff;
 }
 
 
