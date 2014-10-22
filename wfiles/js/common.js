@@ -433,7 +433,7 @@ function cloneTableRow(tid,opts){
 }
 function delTableRow(source,tid){
 	//info: use to delete current table row
-	//usage: <td><img src="/wfiles/iconsets/16/cancel.png" border="0" style="cursor:pointer" onclick="delTableRow(this,'mytableid');" /></td>
+	//usage: <td><img src="/wfiles/iconsets/16/cancel.png" style="cursor:pointer" onclick="delTableRow(this,'mytableid');" /></td>
 	var oRow = source.parentNode.parentNode;
     document.getElementById(tid).deleteRow(oRow.rowIndex);
 }
@@ -495,11 +495,11 @@ function expand(divid){
 	var icon=document.getElementById('expand_icon_'+divid);
 	if(section.style.display=='none'){
     	section.style.display='block';
-        icon.innerHTML='<img src="/wfiles/minus.gif" border="0">';
+        icon.innerHTML='<img src="/wfiles/minus.gif" alt="minus" />';
         }
     else{
 		section.style.display='none';
-        icon.innerHTML='<img src="/wfiles/plus.gif" border="0">';
+        icon.innerHTML='<img src="/wfiles/plus.gif" alt="plus" />';
         }
     return false;
     }
@@ -516,11 +516,11 @@ function ajaxExpand(divid,url,opts){
 			ajaxGet(url,'expand_section_'+divid,opts);
 		}
     	section.style.display='block';
-        icon.innerHTML='<img src="/wfiles/minus.gif" border="0">';
+        icon.innerHTML='<img src="/wfiles/minus.gif" alt="minus" />';
         }
     else{
 		section.style.display='none';
-        icon.innerHTML='<img src="/wfiles/plus.gif" border="0">';
+        icon.innerHTML='<img src="/wfiles/plus.gif" alt="plus" />';
         }
     return false;
     }

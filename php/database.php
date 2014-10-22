@@ -19,7 +19,7 @@ if(!$dbh){
 	$error=databaseError();
 	if(isPostgreSQL()){$error .= "<br>PostgreSQL does not allow CREATE DATABASE inside a transaction block. Create the database first.";}
 	$msg = '<div>'."\n";
-	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" border="0" style="vertical-align:middle;"> Failed to connect to the <b>'.$CONFIG['dbtype'].'</b> service on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
+	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to connect to the <b>'.$CONFIG['dbtype'].'</b> service on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
 	$msg .= "	<div>{$error}</div>\n";
 	$msg .= '</div>'."\n";
 	echo $msg;
@@ -39,7 +39,7 @@ if(!$sel){
 if(!$sel){
 	$error=databaseError();
 	$msg = '<div>'."\n";
-	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" border="0" style="vertical-align:middle;"> Failed to select database named <b>'.$CONFIG['dbname'].'</b> in <b>'.$CONFIG['dbtype'].'</b> on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
+	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to select database named <b>'.$CONFIG['dbname'].'</b> in <b>'.$CONFIG['dbtype'].'</b> on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
 	$msg .= "	<div>{$error}</div>\n";
 	$msg .= '</div>'."\n";
 	abort($msg);
@@ -1156,7 +1156,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	            	if($info['fieldinfo'][$field]['behavior']=='html'){
 						//show html preview
 						$previewID=$dname.'_previw';
-						$dname .= ' <img title="Click to preview html" onclick="popUpDiv(document.'.$formname.'.'.$field.'.value,{center:1,drag:1});" src="/wfiles/iconsets/16/webpage.png" border="0" width="16" height="16" style="cursor:pointer;vertical-align:middle;">';
+						$dname .= ' <img title="Click to preview html" onclick="popUpDiv(document.'.$formname.'.'.$field.'.value,{center:1,drag:1});" src="/wfiles/iconsets/16/webpage.png" width="16" height="16" style="cursor:pointer;vertical-align:middle;" alt="preview" />';
 	                }
 				}
                 if(isset($params[$field.'_tvals'])){
@@ -1275,7 +1275,7 @@ function addEditDBForm($params=array(),$customcode=''){
             	if($info['fieldinfo'][$field]['behavior']=='html'){
 					//show html preview
 					$previewID=$dname.'_previw';
-					$dname .= ' <img title="Click to preview html" onclick="popUpDiv(document.'.$formname.'.'.$field.'.value,{center:1,drag:1});" src="/wfiles/iconsets/16/webpage.png" border="0" width="16" height="16" style="cursor:pointer;vertical-align:middle;">';
+					$dname .= ' <img title="Click to preview html" onclick="popUpDiv(document.'.$formname.'.'.$field.'.value,{center:1,drag:1});" src="/wfiles/iconsets/16/webpage.png" width="16" height="16" style="cursor:pointer;vertical-align:middle;" alt="preview" />';
                     }
 				}
 
@@ -2160,10 +2160,10 @@ function buildDBProgressChart($params=array()){
 		$rtn .= '<div id="'.$id.'">'."\n";
 		$rtn .= '	<div>'."\n";
 		if(isset($params['-addlink'])){
-			$rtn .= '		<a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" border="0"></a>'."\n";
+			$rtn .= '		<a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a>'."\n";
 			}
 		if(isset($params['-listlink'])){
-			$rtn .= '		<a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" border="0"></a>'."\n";
+			$rtn .= '		<a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a>'."\n";
 			}
 		if(isset($params['-title'])){$rtn .= '		<b>'.$params['-title'].'</b>'."\n";}
 		$rtn .= '	</div>'."\n";
@@ -2190,11 +2190,11 @@ function buildDBProgressChart($params=array()){
 		$rtn .= '<div id="'.$id.'" style="position:relative;width:'.$rwidth.'px;height:'.$height.'px;">'."\n";
 		$bottom=0;
 		if(isset($params['-listlink'])){
-			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" border="0"></a></div>'."\n";
+			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a></div>'."\n";
 			$bottom+=18;
 			}
 		if(isset($params['-addlink'])){
-			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" border="0"></a></div>'."\n";
+			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a></div>'."\n";
 			$bottom+=18;
 			}
 		if(isset($params['-title'])){
@@ -3349,7 +3349,7 @@ function getDBFieldTag($params=array()){
 				else{$dval_cols=$tval_cols;}
 				//put them in a table so the checkboxes line up if multiple lines
 				$tag .= '<table class="w_table">'."\n";
-				$tag .= '	<tr valign="top" align="left">'."\n";
+				$tag .= '	<tr valign="top" class="w_align_left">'."\n";
 				$onclick=isset($info[$field]['onclick'])?$info[$field]['onclick'].';':'';
 				$tcount_all=count($tval_cols);
 				foreach($tval_cols as $colindex=>$tvals){
@@ -3500,7 +3500,7 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'color':
 			$tag .= '<table class="w_table w_nopad">';
-			$tag .= '	<tr valign="middle" align="left">';
+			$tag .= '	<tr valign="middle" class="w_align_left">';
 			if(strlen($info[$field]['name'])){
 				$colorbox=$info[$field]['name'] . '_boxdiv';
 				$colordiv=$info[$field]['name'] . '_imgdiv';
@@ -3522,7 +3522,7 @@ function getDBFieldTag($params=array()){
 			if(isset($info[$field]['value'])){
 				$tag .= ' style="background-color:'.$info[$field]['value'].';"';
 				}
-			$tag .= '><img alt="Show Color Control" title="Show Color Control" src="/wfiles/colors.gif" width="20" height="20" border="0" onClick="selectColor(\''.$colorbox.'\',\''.$colorid.'\',\''.$colordiv.'\');return false;" style="cursor:pointer;">';
+			$tag .= '><img alt="Show Color Control" title="Show Color Control" src="/wfiles/colors.gif" width="20" height="20" onClick="selectColor(\''.$colorbox.'\',\''.$colorid.'\',\''.$colordiv.'\');return false;" style="cursor:pointer;">';
 			$tag .= '<div id="'.$colorbox.'" style="position:absolute;"></div></td>'."\n";
             $tag .= '	</tr>'."\n";
             $tag .= '</table>'."\n";
@@ -3539,8 +3539,8 @@ function getDBFieldTag($params=array()){
 				$comboid="comboselect_" . $field;
 				}
 			$tag .= '<table class="w_table w_nopad">'."\n";
-			$tag .= '	<tr valign="middle" align="left">'."\n";
-			$tag .= '		<td nowrap><div style="position:relative">'."\n";
+			$tag .= '	<tr valign="middle" class="w_align_left">'."\n";
+			$tag .= '		<td class="nowrap"><div style="position:relative">'."\n";
 			$tag .= '			<input id="'.$inputid.'" type="text"';
 			$info[$field]['onkeypress']='return comboComplete(this, event, \''.$comboid.'\')';
 			$tag .= setTagAttributes($info[$field]);
@@ -3548,7 +3548,7 @@ function getDBFieldTag($params=array()){
 			if(isset($info[$field]['value'])){
 				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
 				}
-			$tag .= '><img class="w_noprint3" alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" border="0" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
+			$tag .= '><img class="w_noprint3" alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
 			$selections=getDBFieldSelections($info[$field]);
 			$width=strlen($info[$field]['width'])?$info[$field]['width']:140;
 			$tag .= '	<div id="'.$comboid.'" class="w_drop" style="z-index:945;width:'.$width.'px;">'."\n";
@@ -3674,7 +3674,7 @@ function getDBFieldTag($params=array()){
 			if(is_array($selections['tvals'])){
 				//put them in a table so the checkboxes line up if multiple lines
 				$tag .= '<table class="w_table w_nopad">';
-				$tag .= '	<tr valign="middle" align="left">';
+				$tag .= '	<tr valign="middle" class="w_align_left">';
 				$name=$info[$field]['name'];
 				$cnt=count($selections['tvals']);
 				for($x=0;$x<$cnt;$x++){
@@ -3788,7 +3788,7 @@ function getDBFieldTag($params=array()){
 					$tag .= '><label for="'.$radio_id.'" class="'.$class.'">'.$selections['dvals'][$x];
 					$tag .= '</label></td>'."\n";
 					if(isset($info[$field]['width']) && isFactor(intval($x+1),(int)$info[$field]['width'])){
-						$tag .= '	</tr>'."\n".'	<tr valign="middle" align="left">';
+						$tag .= '	</tr>'."\n".'	<tr valign="middle" class="w_align_left">';
                         	}
                     	}
                     $tag .= '	</tr>'."\n";
@@ -5037,8 +5037,8 @@ function getDBSiteStats(){
 			$xtype=ucwords($type);
 			if($ctype==$type){$xtype='';}
 			$ctype=$type;
-			$rtn .= '		<td align="left"><b>'.$xtype.'</b></td>'."\n";
-			$rtn .= '		<td align="left">'.$title.'</td>'."\n";
+			$rtn .= '		<td class="w_align_left"><b>'.$xtype.'</b></td>'."\n";
+			$rtn .= '		<td class="w_align_left">'.$title.'</td>'."\n";
 			//days
 			foreach($rowdates as $rdate){
 				$rtn .= '		<td';
@@ -5239,7 +5239,7 @@ function getDBTableStatus(){
 		$totals['indexes']+=$rec['indexes'];
 		$totals['fields']+=$rec['fields'];
 		$rtn .= '	<tr align="right">'."\n";
-		$rtn .= '		<td align="left">'.$rec['name'].'</td>'."\n";
+		$rtn .= '		<td class="w_align_left">'.$rec['name'].'</td>'."\n";
 		$rtn .= '		<td>'.$rec['records'].'</td>'."\n";
 		$rtn .= '		<td>'.verboseSize($rec['data_length']).'</td>'."\n";
 		$rtn .= '		<td>'.$rec['fields'].'</td>'."\n";
@@ -6223,7 +6223,7 @@ function listDBRecords($params=array(),$customcode=''){
     //build header row
     $rtn .= "	<thead><tr>\n";
     if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
-		$rtn .= '		<td><img src="/wfiles/icons/users/users.gif" border="0"></td>'."\n";
+		$rtn .= '		<td><img src="/wfiles/icons/users/users.gif" alt="users" /></td>'."\n";
     	}
     //allow user to pass in what fields to display as -listfields
     if(isset($params['-listfields'])){
@@ -6261,48 +6261,48 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($_REQUEST['_sort'])){
 			if($_REQUEST['_sort']==$fld){
 				$arr['_sort'] .= ' desc';
-				$arrow=' <img src="/wfiles/up.gif" border="0" alt="ascending">';
+				$arrow=' <img src="/wfiles/up.gif" alt="ascending">';
 				}
 			elseif($_REQUEST['_sort']== "{$fld} desc"){
-				$arrow=' <img src="/wfiles/down.gif" border="0" alt="descending">';
+				$arrow=' <img src="/wfiles/down.gif" alt="descending">';
 				}
 			}
 		elseif(isset($params['-order'])){
             if($params['-order']==$fld){
 				$arr['order'] .= ' desc';
-				$arrow=' <img src="/wfiles/up.gif" border="0" alt="ascending">';
+				$arrow=' <img src="/wfiles/up.gif" alt="ascending">';
 				}
 			elseif($params['-order']== "{$fld} desc"){
-				$arrow=' <img src="/wfiles/down.gif" border="0" alt="descending">';
+				$arrow=' <img src="/wfiles/down.gif" alt="descending">';
 				}
         	}
         $title=isset($params[$fld."_title"])?' title="'.$params[$fld."_title"].'"':'';
         if(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-        	$rtn .= '		<th'.$title.' nowrap><label for="'.$fld.'_checkbox"> '.$col.'</label><input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"></th>'."\n";
+        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label><input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"></th>'."\n";
 		}
         elseif(isset($params['-nosort']) || isset($params[$fld."_nolink"])){
-			$rtn .= '		<th'.$title.' nowrap>' . "{$col}</th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap">' . "{$col}</th>\n";
         	}
         elseif(isset($params['-sortlink'])){
 			$href=$params['-sortlink'];
 			$replace='%col%';
             $href=str_replace($replace,$col,$href);
-			$rtn .= '		<th'.$title.' nowrap><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "</a></th>\n";
         	}
         elseif(isset($params['-sortclick'])){
 			$onclick=$params['-sortclick'];
 			$replace='%col%';
             $onclick=str_replace($replace,$col,$onclick);
-			$rtn .= '		<th'.$title.' nowrap><a class="w_link w_white w_block" href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>\n";
         	}
         else{
 	        if(preg_match('/\.(php|htm|phtm)$/i',$PAGE['name'])){$href=$PAGE['name'].'?'.buildURL($arr);}
 	        else{$href=$PAGE['name'].'/?'.buildURL($arr);}
-			$rtn .= '		<th'.$title.' nowrap><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "{$arrow}</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "{$arrow}</a></th>\n";
 			}
 		}
 	if(isset($params['-row_actions'])){
-    	$rtn .= '		<th nowrap>Actions</th>'."\n";
+    	$rtn .= '		<th class="w_nowrap">Actions</th>'."\n";
 	}
 	$rtn .= "\t</tr></thead><tbody>\n";
 	$row=0;
@@ -6393,7 +6393,7 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
 			//echo "rec:".printValue($rec);
 			$uinfo=getUserInfo($rec);
-			$rtn .= '		<td><img src="'.$uinfo['icon'].'" title="user:'.$uinfo['username'].', status:'.$uinfo['status'].'" border="0"></td>'."\n";
+			$rtn .= '		<td><img src="'.$uinfo['icon'].'" title="user:'.$uinfo['username'].', status:'.$uinfo['status'].'" alt="" /></td>'."\n";
     		}
     	if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
 			foreach($params['-sumfields'] as $sumfield){
@@ -6445,7 +6445,7 @@ function listDBRecords($params=array(),$customcode=''){
 			//checkmark?
 			if(isset($params[$fld."_checkmark"])){
                 $img=$val==1?'checkmark.png':'x.png';
-				$val='<img src="/wfiles/iconsets/16/'.$img.'" border="0" class="w_bottom">';
+				$val='<img src="/wfiles/iconsets/16/'.$img.'" class="w_bottom" alt="" />';
 				}
 			//link, check, or image?
 			$target=isset($params[$fld."_target"])?' target="'.$params[$fld."_target"].'"':'';
@@ -6487,10 +6487,10 @@ function listDBRecords($params=array(),$customcode=''){
             	}
 			elseif(isset($params[$fld."_check"]) && $params[$fld."_check"]==1){
 				if($val==0){$val='';}
-				elseif($val==1){$val='<center><img src="/wfiles/check.gif" border="0"></center>';}
+				elseif($val==1){$val='<center><img src="/wfiles/check.gif" alt="" /></center>';}
             	}
             elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1){
-				$val='<center><img title="'.$val.'" src="'.$val.'" border="0"></center>';
+				$val='<center><img title="'.$val.'" src="'.$val.'" alt="" /></center>';
             	}
             elseif(isset($params[$fld."_email"]) && $params[$fld."_email"]==1){
 				$val='<a class="w_link" href="mailto:'.$val.'">'.$val.'</a>';
@@ -7444,8 +7444,8 @@ function showDBCronPanel($ajax=0,$frequency=60){
 	$rtn='';
 	if($ajax==0){
 		$rtn .= '<div class="w_pad w_round w_smaller w_right w_border w_tip" style="width:170px;z-index:999;position:absolute;top:5px;right:10px;">'."\n";
-		$rtn .= '	<div class="w_right"><img src="/wfiles/iconsets/16/close.png" border="0" style="cursor:pointer;" onclick="removeId(\'cronpanel\');"></div>'."\n";
-		$rtn .= '	<div class="w_bold"><img src="/wfiles/_cron.png" width="16" height="16" border="0" style="vertical-align:middle;"> Cron Information Panel</div>'."\n";
+		$rtn .= '	<div class="w_right"><img src="/wfiles/iconsets/16/close.png" style="cursor:pointer;" onclick="removeId(\'cronpanel\');" alt="close" /></div>'."\n";
+		$rtn .= '	<div class="w_bold"><img src="/wfiles/_cron.png" width="16" height="16" style="vertical-align:middle;" alt="cron info panel" /> Cron Information Panel</div>'."\n";
 		$rtn .= '	<div id="cronpanel">'."\n";
 		}
 	//show date updated
@@ -7462,10 +7462,10 @@ function showDBCronPanel($ajax=0,$frequency=60){
 		}
 	//how many crons are running?
 	if(!count($stats['cron_pid'])){
-		$rtn .= '		<div><img src="/wfiles/iconsets/16/warning.png" border="0" style="vertical-align:middle"><b class="w_red">WARNING!</b> NO cron servers are listening. At least one cron server must be running in order for cron jobs to work.</div>'."\n";
+		$rtn .= '		<div><img src="/wfiles/iconsets/16/warning.png" style="vertical-align:middle" alt="warning" /><b class="w_red">WARNING!</b> NO cron servers are listening. At least one cron server must be running in order for cron jobs to work.</div>'."\n";
 		}
 	else{
-		$rtn .= '		<div><img src="/wfiles/iconsets/16/checkmark.png" width="16" height="16" border="0" style="vertical-align:bottom;"> '.count($stats['cron_pid']).' Cron servers listening</div>'."\n";
+		$rtn .= '		<div><img src="/wfiles/iconsets/16/checkmark.png" width="16" height="16" style="vertical-align:bottom;" alt="" /> '.count($stats['cron_pid']).' Cron servers listening</div>'."\n";
 		}
 	//last run
 	if(is_array($stats['lastrun'])){

@@ -792,16 +792,16 @@ function userLoginForm($params=array()){
 			$form .= '<div id="w_loginform_oneline">'."\n";
 			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<th align="left">'.$params['-username'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
-			$form .= '		<th align="left">'.$params['-password'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>1)).'</td>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-username'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-password'].'</th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<td align="right"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
     			$form .= '<td><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">Login with Facebook</fb:login-button></td>';
 			}
-			$form .= '		<td align="left">'."\n";
+			$form .= '		<td class="w_align_left">'."\n";
 			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
 			if($params['-icons']){
-				$form .= '<img src="/wfiles/iconsets/16/info.png" border="0" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
+				$form .= '<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
 			}
 			$form .= " {$params['-remind']}</a>\n";
 			$form .= '		</td>'."\n";
@@ -814,17 +814,17 @@ function userLoginForm($params=array()){
 			$form .= '<div id="w_loginform_inline">'."\n";
 			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<th align="left">'.$params['-username'].'</th>'."\n";
-			$form .= '		<th align="left">'.$params['-password'].'</th>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-username'].'</th>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-password'].'</th>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
-				$form .= '		<td align="left" colspan="2">'."\n";
+				$form .= '		<td class="w_align_left" colspan="2">'."\n";
 			}
 			else{
-				$form .= '		<td align="left">'."\n";
+				$form .= '		<td class="w_align_left">'."\n";
 			}
 			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
 			if($params['-icons']){
-				$form .= '<img src="/wfiles/iconsets/16/info.png" border="0" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
+				$form .= '<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
 			}
 			$form .= " {$params['-remind']}</a>\n";
 			$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
@@ -845,18 +845,18 @@ function userLoginForm($params=array()){
 			$form .= '<div id="w_loginform_default">'."\n";
 			$form .= '<table class="w_table">';
 			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<th align="left">'.$params['-username'].'</th>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-username'].'</th>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<td rowspan="2" valign="top"><input class="w_formsubmit w_biggest" tabindex="3" type="submit" value="'.$params['-login'].'"></td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<th align="left">'.$params['-password'].'</th>'."\n";
+			$form .= '		<th class="w_align_left">'.$params['-password'].'</th>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'required'=>1,'tabindex'=>2)).'</td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<td colspan="3" align="left">'."\n";
+			$form .= '		<td colspan="3" class="w_align_left">'."\n";
 			if($params['-icons']){
-				$form .= '			<img src="/wfiles/iconsets/16/info.png" border="0" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
+				$form .= '			<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="remind me" style="vertical-align:middle;">';
 			}
 			$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'."\n";
 			$form .= '		<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div></td>'."\n";
@@ -977,7 +977,7 @@ function wpassModule(){
 	if(!isDBTable('_wpass')){createWasqlTables('_wpass');}
 	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'."\n";
 	$rtn .= '	<input id="wpass_search" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'."\n";
-	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer" src="/wfiles/_wpass.png" border="0" class="w_middle" />'."\n";
+	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer w_middle" src="/wfiles/_wpass.png" alt="add" />'."\n";
 	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'."\n";
 	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'."\n";
 	$query="select _id,category,title from _wpass where users like '{$USER['_id']}:%' or users like '%:{$USER['_id']}' or users like '{$USER['_id']}' or users like '%:{$USER['_id']}:%' or  _cuser={$USER['_id']} order by category,title";
@@ -999,7 +999,7 @@ function wpassInfo($id){
 	if($id==0){
     	//add
     	$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
-    	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> New wPass Record</div>'."\n";
+    	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="new" /> New wPass Record</div>'."\n";
     	$rtn .= addEditDBForm(array(
 			'-table'=>'_wpass',
 			'-name'=> '_wpass_addedit',
@@ -1021,10 +1021,10 @@ function wpassInfo($id){
 		if(isset($rec['_id'])){
 			$users_list=preg_split('/\:/',$rec['users']);
 			if($rec['_cuser'] != $USER['_id'] && !in_array($USER['_id'],$users_list)){
-            	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> Denied Access</div>'."\n";
+            	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="denied" /> Denied Access</div>'."\n";
 			}
 			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
-			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> Edit wPass Record</div>'."\n";
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="edit" /> Edit wPass Record</div>'."\n";
 			$editopts=array(
 				'-table'=>'_wpass',
 				'-name'=> '_wpass_addedit',
@@ -1055,7 +1055,7 @@ function wpassInfo($id){
 			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
 		}
 		else{
-			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" border="0" class="w_middle" /> No such record</div>'."\n";
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="no record" /> No such record</div>'."\n";
 		}
 	}
 	return $rtn;

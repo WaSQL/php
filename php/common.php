@@ -321,7 +321,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(isset($_REQUEST['value'])){
 		$tag .= ' value="'.encodeHtml($_REQUEST['value']).'"';
 		}
-	$tag .= '><img alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" border="0" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
+	$tag .= '><img alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
 	$selections=getDBFieldSelections($info[$field]);
 	$width=strlen($params['width'])?$params['width']:200;
 	$tag .= '	<div id="'.$comboid.'" class="w_drop" style="z-index:945;width:'.$width.'px;">'."\n";
@@ -686,7 +686,7 @@ function buildFormTime($name,$params=array()){
 		$tag .= '>'.$dname.'</option>'."\n";
     }
     $tag .= '</select>'."\n";
-    $tag .= '<a href="#" onclick="setTimeField(\''.$params['-prefix'].'\',\''.$name.'\');return false;" class="w_link" title="Set to Current Time"><img src="/wfiles/icons/misc/time.png" border="0"></a>'."\n";
+    $tag .= '<a href="#" onclick="setTimeField(\''.$params['-prefix'].'\',\''.$name.'\');return false;" class="w_link" title="Set to Current Time"><img src="/wfiles/icons/misc/time.png" alt="time" /></a>'."\n";
 	return $tag;
 }
 //---------- begin function buildHtmlBegin-------------------
@@ -744,7 +744,7 @@ function buildHtmlEnd(){
 */
 function buildImage($name,$size=16){
 	$src=getImageSrc($name,$size);
-	return '<img src="'.$src.'" border="0" class="w_middle">';
+	return '<img src="'.$src.'" border="0" alt="'.$name.'" />';
 }
 //---------- begin function buildInfoBox
 /**
@@ -859,27 +859,27 @@ function buildShareButtons($params=array()){
 		//echo "[{$button}]";
 		switch($button){
         	case 'facebook':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.facebook.com/sharer.php?u='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/facebook.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="Share on Facebook" data-tooltip_position="bottom" alt="Share on Facebook"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.facebook.com/sharer.php?u='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/facebook.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="Share on Facebook" data-tooltip_position="bottom" alt="Share on Facebook"></a>'."\n";
         	break;
         	case 'twitter':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://twitter.com/share?text='.$params['-title'].'&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/twitter.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on twitter"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://twitter.com/share?text='.$params['-title'].'&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/twitter.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on twitter"></a>'."\n";
         	break;
         	case 'google+':
         	case 'google plus':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="https://plus.google.com/share?url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/googleplus.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on Google+"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="https://plus.google.com/share?url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/googleplus.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on Google+"></a>'."\n";
         	break;
         	case 'linkedin':
         	case 'linked in':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.linkedin.com/shareArticle?title='.$params['-title'].'&mini=true&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/linkedin.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on LinkedIn"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.linkedin.com/shareArticle?title='.$params['-title'].'&mini=true&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/linkedin.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on LinkedIn"></a>'."\n";
         	break;
         	case 'reddit':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.reddit.com/submit?title='.$blogt.'&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/reddit.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on reddit"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.reddit.com/submit?title='.$blogt.'&url='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/reddit.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share on reddit"></a>'."\n";
         	break;
         	case 'email':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href,\'email\');" href="'.$params['-url'].'" class="blog_color w_link"><img src="/wfiles/iconsets/'.$params['-size'].'/email.png" border="0" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share via email"></a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href,\'email\');" href="'.$params['-url'].'" class="blog_color w_link"><img src="/wfiles/iconsets/'.$params['-size'].'/email.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Share via email"></a>'."\n";
         	break;
         	case 'comment':
-        		$rtn .= '		<a onclick="return w_shareButton(this.href,\'comment\');" href="'.$params['-url'].'" style="margin-left:25px;" class="blog_color w_link"><img src="/wfiles/iconsets/16/note.png" border="0" width="16" height="16" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Click to view comments and add a comment"> '.$comments[$id]['cnt'].' comments</a>'."\n";
+        		$rtn .= '		<a onclick="return w_shareButton(this.href,\'comment\');" href="'.$params['-url'].'" style="margin-left:25px;" class="blog_color w_link"><img src="/wfiles/iconsets/16/note.png" width="16" height="16" class="w_middle" data-tooltip="att:alt" data-tooltip_position="bottom" alt="Click to view comments and add a comment"> '.$comments[$id]['cnt'].' comments</a>'."\n";
         	break;
 		}
 	}
@@ -1702,7 +1702,8 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','spellcheck','max','min','pattern','placeholder','readonly','step',
-		'data-labelmap','data-ajaxid','lang','autocorrect'
+		'data-labelmap','data-ajaxid','lang','autocorrect',
+		'data-pattern-msg','pattern','data-displayname','data-requiredmsg'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
@@ -2266,7 +2267,10 @@ function calendar($params=array()){
 function setHtmlTagAttributes($tag='',$opts=array()){
 	$rtn='';
 	//set common attributes
-	$atts=array('id','class','style','onclick','onmouseover','onmouseout','_behavior','data-behavior');
+	$atts=array(
+		'id','class','style','onclick','onmouseover','onmouseout','_behavior',
+		'data-behavior','pattern','data-pattern-msg','data-displayname'
+	);
 	//add tag specific attributes
 	switch(strtolower($tag)){
 		case 'table':array_push($atts,'align','bgcolor','frame','rules','summary','width');break;
@@ -2305,14 +2309,14 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$iconId='expand_icon_' . $id;
 	$linkId='expand_link_' . $id;
 	$sectionId='expand_section_' . $id;
-	$icon='<img src="/wfiles/plus.gif" alt="Expand" border="0" style="vertical-align:middle;" />';
+	$icon='<img src="/wfiles/plus.gif" alt="Expand" style="vertical-align:middle;" />';
 	$display='none';
 	if($open){
-		$icon='<img src="/wfiles/minus.gif" alt="Hide" border="0" style="vertical-align:middle;" />';
+		$icon='<img src="/wfiles/minus.gif" alt="Hide" style="vertical-align:middle;" />';
 		$display='block';
     }
 	//begin div
-	$html='<div style="margin-bottom:3px;" align="left">' . "\n";
+	$html='<div style="margin-bottom:3px;" class="w_align_left">' . "\n";
 	if(strlen($ajaxurl)){
     	//build the +/- link
 		$html .= "\t<div id=\"{$iconId}\" onClick=\"ajaxExpand('{$id}','{$ajaxurl}','{$ajaxopts}')\" style=\"float:left;font-size:13pt;width:13px;color:'.$color.';cursor:pointer;\">{$icon}</div>\n";
@@ -3173,7 +3177,7 @@ function fileManager($startdir='',$params=array()){
 			$rpath .= "/{$pathpart}";
 			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
         }
-		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" border="0"> ',$rpathlinks).'</div>'."\n";
+		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks).'</div>'."\n";
 	}
 	//perform actions
 	if(isset($_REQUEST['_newdir']) && $params['-rights'] == 'all'){
@@ -3247,7 +3251,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  <script type="text/javascript">'."\n";
 	$rtn .= '  		function imagePreview(image,title){'."\n";
 	$rtn .= '  			var htm=\'<div class="w_bold w_bigger">\'+title+\'</div>\'+"\n";'."\n";
-	$rtn .= '  			htm +=\'<div><img src="\'+image+\'" border="0"></div>\'+"\n";'."\n";
+	$rtn .= '  			htm +=\'<div><img src="\'+image+\'" alt="" /></div>\'+"\n";'."\n";
 	$rtn .= '  			centerpopDiv(htm);'."\n";
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
@@ -3259,17 +3263,17 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'."\n";
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<tr valign="top">'."\n";
-		$rtn .= '		<th align="left" nowrap>New Dir</th>'."\n";
+		$rtn .= '		<th class="w_align_left w_nowrap">New Dir</th>'."\n";
 		$rtn .= '		<td><input type="text" name="_newdir" value="" style="width:240px;font-size:9pt;"></td>'."\n";
 		$rtn .= '	</tr>'."\n";
 		}
 	if($params['-rights'] != 'readonly'){
 		$rtn .= '	<tr valign="top">'."\n";
-		$rtn .= '		<th align="left" nowrap>New File</th>'."\n";
+		$rtn .= '		<th class="w_align_left w_nowrap">New File</th>'."\n";
 		$rtn .= '		<td><input type="file" name="file" size="25"></td>'."\n";
 		$rtn .= '	</tr>'."\n";
 		$rtn .= '	<tr valign="top">'."\n";
-		$rtn .= '		<th align="left" nowrap>Description</th>'."\n";
+		$rtn .= '		<th class="w_align_left w_nowrap">Description</th>'."\n";
 		$rtn .= '		<td><textarea name="description" style="width:240px;height:30px;" onkeypress="autoGrow(this,200);"></textarea></td>'."\n";
 		$rtn .= '	</tr>'."\n";
 		$rtn .= '	<tr>'."\n";
@@ -3319,14 +3323,14 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
 			$cspan=count($fields);
-			$rtn .= '		<td align="left" colspan="'.$cspan.'" nowrap><a class="w_link w_bold w_block" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" border="0" class="w_middle"> '.$file.'</a></td>'."\n";
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
 			//actions
-			$rtn .= '		<td nowrap>'."\n";
+			$rtn .= '		<td class="nowrap">'."\n";
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" border="0"></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" border="0"></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 			}
-			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/browsefolder.gif" border="0"></a>'."\n";
+			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/browsefolder.gif" alt="browse" /></a>'."\n";
 			$rtn .= '		</td>'."\n";
 			$rtn .= '	</tr>'."\n";
 	    }
@@ -3347,20 +3351,20 @@ function fileManager($startdir='',$params=array()){
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td align="left" nowrap><a title="'.$vsize.'" class="w_link" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"><img src="/wfiles/icons/files/'.$icon.'" border="0" class="w_middle"> '.$file.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"><img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" /> '.$file.'</a></td>'."\n";
 			            	}
 			            else{
-							$rtn .= '		<td align="left" nowrap><a title="'.$vsize.'" class="w_link" href="'.$previewlink.'&-attach=0"><img src="/wfiles/icons/files/'.$icon.'" border="0" class="w_middle">'.$display.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link" href="'.$previewlink.'&-attach=0"><img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" />'.$display.'</a></td>'."\n";
 			            	}
 
                 		break;
                 	case 'desc':
                 	case 'description':
-                		$rtn .= '		<td align="left" style="padding:2px;"><div id="'.$fileId.'" filename="'.$file.'">'.$description[$file].'</div></td>'."\n";
+                		$rtn .= '		<td class="w_align_left" style="padding:2px;"><div id="'.$fileId.'" filename="'.$file.'">'.$description[$file].'</div></td>'."\n";
                 		break;
                 	case 'mtime':
                 	case 'modified':
-                		$rtn .= '		<td align="right" nowrap>'.date('m/d/y',$stat['mtime']).'</td>'."\n";
+                		$rtn .= '		<td align="right" class="w_nowrap">'.date('m/d/y',$stat['mtime']).'</td>'."\n";
                 		break;
                 	case 'perm':
                 	case 'perms':
@@ -3371,16 +3375,16 @@ function fileManager($startdir='',$params=array()){
                 		//size
 						$size=filesize($afile);
 						$vsize=verboseSize($size);
-						$rtn .= '		<td align="right" style="padding-left:5px;" nowrap>'.$vsize.'</td>'."\n";
+						$rtn .= '		<td align="right" style="padding-left:5px;" class="w_nowrap">'.$vsize.'</td>'."\n";
                 		break;
 				}
 			}
 			//actions
-			$rtn .= '		<td align="right" valign="middle" nowrap>'."\n";
-			$rtn .= '		<a title="Download" alt="Download" class="w_link" href="'.$previewlink.'"><img src="/wfiles/download.gif" border="0"></a>'."\n";
+			$rtn .= '		<td align="right" valign="middle" class="w_nowrap">'."\n";
+			$rtn .= '		<a title="Download" alt="Download" class="w_link" href="'.$previewlink.'"><img src="/wfiles/download.gif" alt="download" /></a>'."\n";
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" border="0"></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" border="0"></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 				}
 			$rtn .= '		</td>'."\n";
 			}
@@ -3963,7 +3967,7 @@ function xls2CSV($afile=''){
 * @param file string
 *	name of the file
 * @return image path to the icon associated with file extension
-* @usage <img src="<?=getFileIcon('info.doc');?>" border="0" />
+* @usage <img src="<?=getFileIcon('info.doc');?>" />
 */
 function getFileIcon($file=''){
 	$progpath=dirname(__FILE__);
@@ -3975,7 +3979,7 @@ function getFileIcon($file=''){
 	elseif(isAudioFile($file)){$icon="audio.gif";}
 	elseif(isVideoFile($file)){$icon="video.gif";}
 	else{return null;}
-	return '<img src="/wfiles/icons/files/'.$icon.'" border="0" class="w_middle">';
+	return '<img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" />';
 	}
 //---------- begin function getHolidays
 /**
@@ -6452,7 +6456,7 @@ function niftyPlayer($params=array()){
 	$divid=$params['id']."_div";
 	$npTxt .= '<div id="'.$divid.'">'."\n";
 	if(isset($params['onload']) && $params['onload']==1){
-		$npTxt .= '<img src="/wfiles/clear.gif" alt="Nifty Player" border="0" onLoad="embedFlash(\'/wfiles/niftyplayer.swf?file='.$params['file'].'\',{width:165,height:38,id:\''.$divid.'\',name:\''.$params['id'].'\'});">'."\n";
+		$npTxt .= '<img src="/wfiles/clear.gif" alt="Nifty Player" onLoad="embedFlash(\'/wfiles/niftyplayer.swf?file='.$params['file'].'\',{width:165,height:38,id:\''.$divid.'\',name:\''.$params['id'].'\'});">'."\n";
     	}
 	else{
 		$npTxt .= '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="38" id="'.$params['id'].'" align="">'."\n";
@@ -10014,12 +10018,12 @@ function underMaintenance($note=''){
 	$rtn .= '			<div style="padding-top:15px;font-size:30pt;color:#FFF;">Under Maintenance</div>'."\n";
 	$rtn .= '			<div style="padding-top:2px;font-size:15pt;color:#FFF;">' . $_SERVER['HTTP_HOST'] . '</div>'."\n";
 	$rtn .= '		</div>'."\n";
-	$rtn .= '		<div align="left" style="padding:10px;font-size:15pt;">Our site is currently undergoing maintenance to upgrade our systems in order to better serve you.</div>'."\n";
-	$rtn .= '		<div align="left" style="padding:10px;font-size:12pt;">We apologize for any inconvenience during this short outage and thank you in advance for your patience and understanding.</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:15pt;">Our site is currently undergoing maintenance to upgrade our systems in order to better serve you.</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:12pt;">We apologize for any inconvenience during this short outage and thank you in advance for your patience and understanding.</div>'."\n";
 	if(strlen($note)){
-		$rtn .= '		<div align="left" style="padding:10px;font-size:16pt;" class="w_bold w_dblue">'.$note.'</div>'."\n";
+		$rtn .= '		<div style="padding:10px;font-size:16pt;" class="w_align_left w_bold w_dblue">'.$note.'</div>'."\n";
     	}
-	$rtn .= '		<div align="left" style="padding:10px;font-size:11pt;">Sincerely,<br><br>Customer Service Team</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:11pt;">Sincerely,<br><br>Customer Service Team</div>'."\n";
 	$rtn .= '	</div>'."\n";
 	$rtn .= '</div>'."\n";
 	$rtn .= '</body></html>'."\n";
@@ -10048,15 +10052,15 @@ function underConstruction($note='',$login=0){
 	$rtn .= '			<div style="padding-top:15px;font-size:30pt;color:#FFF;">Under Construction</div>'."\n";
 	$rtn .= '			<div style="padding-top:2px;font-size:15pt;color:#FFF;">' . $_SERVER['HTTP_HOST'] . '</div>'."\n";
 	$rtn .= '		</div>'."\n";
-	$rtn .= '		<div align="left" style="padding:10px;font-size:15pt;">Our site is currently under Construction.</div>'."\n";
-	$rtn .= '		<div align="left" style="padding:10px;font-size:12pt;">We hope to have it up soon so check back often! Thank you in advance for your patience and understanding.</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:15pt;">Our site is currently under Construction.</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:12pt;">We hope to have it up soon so check back often! Thank you in advance for your patience and understanding.</div>'."\n";
 	if(strlen($note)){
-		$rtn .= '		<div align="left" style="padding:10px;font-size:16pt;" class="w_bold w_dblue">'.$note.'</div>'."\n";
+		$rtn .= '		<div style="padding:10px;font-size:16pt;" class="w_bold w_dblue w_align_left">'.$note.'</div>'."\n";
     	}
     if($login==1){
 		$rtn .= userLoginForm();
     	}
-	$rtn .= '		<div align="left" style="padding:10px;font-size:11pt;">Sincerely,<br><br>Customer Service Team</div>'."\n";
+	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:11pt;">Sincerely,<br><br>Customer Service Team</div>'."\n";
 	$rtn .= '	</div>'."\n";
 	$rtn .= '</div>'."\n";
 	$rtn .= '</body></html>'."\n";
