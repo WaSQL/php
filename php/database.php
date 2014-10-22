@@ -1010,7 +1010,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'."\n";
 		//row
-		$rtn .= '<table class="w_formtable" class="w_table">'."\n";
+		$rtn .= '<table class="w_table">'."\n";
 		$rtn .= '	<tr valign="top">'."\n";
 		if(is_array($fields)){
 			foreach($fields as $field){
@@ -1372,7 +1372,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     $rtn .= '</div>'."\n";
     //buttons
-    $rtn .= '<table class="w_formtable" class="w_table">'."\n";
+    $rtn .= '<table class="w_table">'."\n";
 	$rtn .= '	<tr>'."\n";
     $save=isset($params['-save'])?$params['-save']:'Save';
     if(isset($params['-savebutton'])){
