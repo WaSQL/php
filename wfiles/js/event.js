@@ -2018,7 +2018,7 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 		if (dhour<=9) { dhour = "0" + dhour; }
 		if (dmin<=9) { dmin = "0" + dmin; }
 		if (dsec<=9) { dsec = "0" + dsec; }
-		var rtn='<table cellspacing="0" class="w_countdown" cellspacing="2" border="0">'+"\r\n";
+		var rtn='<table  class="w_countdown">'+"\r\n";
 		rtn+='<tr align="center"><th>'+dday+'</th><th>'+dhour+'</th><th>'+dmin+'</th><th>'+dsec+'</th></tr>'+"\r\n";
 		rtn+='<tr align="center"><td>Day</td><td>Hour</td><td>Min</td><td>Sec</td></tr>'+"\r\n";
 		rtn+='</table>'+"\r\n";

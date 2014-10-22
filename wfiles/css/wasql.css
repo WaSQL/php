@@ -615,6 +615,8 @@ table th a {
 .w_border {border:1px solid #000;}
 .w_block {display:block;}
 .w_pointer{cursor:pointer;}
+.w_align_left{text-align:left;}
+.w_align_right{text-align:right;}
 
 /*Padding and Margin */
 .w_pad {padding:5px;}

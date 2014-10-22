@@ -208,7 +208,7 @@ function filemanagerEdit(id,page,param){
 	var desc=getText(obj);
 	var htm='';
 	htm += '<form class="w_form" method="post" action="/'+page+'" onSubmit="return submitForm(this);">'+"\n";
-	htm += '<table border="0">'+"\n";
+	htm += '<table class="w_table w_nopad">'+"\n";
 	htm += '<tr><th>Name</th><td><input type="text" name="file_name" value="'+fname+'" style="width:300px;"></td></tr>'+"\n";
 	htm += '<tr><th>Desc</th><td><textarea name="file_desc" style="width:300px;height:60;" onkeypress="autoGrow(this,200);">'+desc+'</textarea></td></tr>'+"\n";
 	htm += '<tr><td align="right" colspan="2"><input type="submit" value="Save Changes"></td></tr>'+"\n";
@@ -271,7 +271,8 @@ function dynamicSelect(fld,v,p){
 	if(undefined == fld){return false;}
 	if(undefined == v){v='other';}
 	var dname=fld.name;
-	if(fld.getAttribute('displayname')){dname=fld.getAttribute('displayname');}
+	if(fld.getAttribute('data-displayname')){dname=fld.getAttribute('data-displayname');}
+	else if(fld.getAttribute('displayname')){dname=fld.getAttribute('displayname');}
 	if(undefined == p){p='Enter '+v+' "'+dname+'" below and click OK.';}
 	if(fld.value.toLowerCase()==v.toLowerCase()){
 		var other=prompt(p);
@@ -398,12 +399,12 @@ function remindMeForm(){
 	txt +=  '			<input type="hidden" name="_remind" value="1">'+"\n";
 	txt +=  '			<input type="hidden" name="tname" value="remind me">'+"\n";
 	txt +=	'			<div class="w_gray"> Enter the email address tied to your account profile to have your username and password emailed to you.</div>'+"\n";
-	txt +=	'			<div><img src="/wfiles/iconsets/32/email.png" width="32" height="32" alt="Email Address" border="0" class="w_middle"> <b>Email Address</b></div>'+"\n";
-	txt +=	' 			<div><input type="text" maxlength="255" name="email" mask=".+@.+..{2,6}" maskmsg="Invalid Email Address" required="1" requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" style="width:250px;font-size:9pt;font-family:arial;"></div>'+"\n";
+	txt +=	'			<div><img src="/wfiles/iconsets/32/email.png" width="32" height="32" alt="Email Address" class="w_middle"> <b>Email Address</b></div>'+"\n";
+	txt +=	' 			<div><input type="text" maxlength="255" name="email" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" style="width:250px;font-size:9pt;font-family:arial;"></div>'+"\n";
 	txt +=	'			<div align="right" style="margin-right:2px;margin-top:5px;"><input type="submit" class="w_formsubmit" value="Remind Me"></div>'+"\n";
 	txt +=  '		</form>';
 	txt +=	'	</div>'+"\n";
-	var rtitle='<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="reminder" border="0" class="w_middle"> Remind Me Form';
+	var rtitle='<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="reminder" class="w_middle"> Remind Me Form';
 	popUpDiv('',{id:dname,width:300,height:50,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 	setCenterPopText(dname,txt,{title:rtitle});
 	document.remindMe.email.focus();
@@ -412,7 +413,7 @@ function remindMeForm(){
 //--------------------------
 function setProcessing(id,msg){
 	if(undefined == msg){msg='Processing ...';}
-	var str='<div class="w_lblue"><img src="/wfiles/loading_blu.gif" border="0"> '+msg+'</div>';
+	var str='<div class="w_lblue"><img src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
 	setText(id,str);
 	return;
 	}
@@ -687,7 +688,7 @@ function textboxReplaceSelect (oTextbox, sText) {
 //--------------------------
 function submitForm(theForm,popup,debug,ajax){
 	//info: submitForm -- parses through theForm and validates input based in additonal field attributes
-	//info:  Possible attributes are: required="1" requiredmsg="" mask="^[0-9]" maskmsg="Age must begin with a number" maxlength="23"
+	//info:  Possible attributes are: data-required="1" data-requiredmsg="" mask="^[0-9]" data-pattern-msg="Age must begin with a number" maxlength="23"
 
 	if(undefined == debug){debug==0;}
 	if(undefined == ajax){ajax==0;}
@@ -751,13 +752,17 @@ function submitForm(theForm,popup,debug,ajax){
             }
 		}
 		var dname=theForm[i].name;
-		if(theForm[i].getAttribute('displayname')){dname=theForm[i].getAttribute('displayname');}
+		if(theForm[i].getAttribute('data-displayname')){dname=theForm[i].getAttribute('data-displayname');}
+		else if(theForm[i].getAttribute('displayname')){dname=theForm[i].getAttribute('displayname');}
 
         //check for required attribute
         var required=0;
 		if(undefined != theForm[i].getAttribute('_required')){required=theForm[i].getAttribute('_required');}
+		else if(undefined != theForm[i].getAttribute('data-required')){required=theForm[i].getAttribute('data-required');}
 		else if(undefined != theForm[i].getAttribute('required')){required=theForm[i].getAttribute('required');}
         if(required == 1){
+			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
+			if(undefined == requiredmsg){requiredmsg=theForm[i].getAttribute('requiredmsg');}
 			//checkboxes
 			if(theForm[i].type=='checkbox'){
 				var checkname='name';
@@ -773,7 +778,7 @@ function submitForm(theForm,popup,debug,ajax){
                 	}
                 if(isChecked==0){
 					var msg=dname+" is required";
-		            if(theForm[i].getAttribute('requiredmsg')){msg=theForm[i].getAttribute('requiredmsg');}
+		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	submitFormAlert(msg,popup,5);
 		            theForm[i].focus();
 		            return false;
@@ -788,7 +793,7 @@ function submitForm(theForm,popup,debug,ajax){
                 	}
                 if(isChecked==0){
 					var msg=dname+" is required";
-		            if(theForm[i].getAttribute('requiredmsg')){msg=theForm[i].getAttribute('requiredmsg');}
+		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	submitFormAlert(msg,popup,5);
 		            theForm[i].focus();
 		            return false;
@@ -798,7 +803,7 @@ function submitForm(theForm,popup,debug,ajax){
             	var cval=trim(getText(theForm[i]));
             	if(cval.length==0){
                 	var msg=dname+" is required";
-		            if(theForm[i].getAttribute('requiredmsg')){msg=theForm[i].getAttribute('requiredmsg');}
+		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	submitFormAlert(msg,popup,5);
 		            theForm[i].focus();
 		            return false;
@@ -806,21 +811,24 @@ function submitForm(theForm,popup,debug,ajax){
 			}
 			else if(theForm[i].value == ''){
 	            var msg=dname+" is required";
-	            if(theForm[i].getAttribute('requiredmsg')){msg=theForm[i].getAttribute('requiredmsg');}
+	            if(undefined != requiredmsg){msg=requiredmsg;}
 			 	submitFormAlert(msg,popup,5);
 	            theForm[i].focus();
 	            return false;
 				}
             }
         //check for mask attribute - a filter to test input against
-        if(theForm[i].getAttribute('mask') && theForm[i].getAttribute('mask').value != '' && theForm[i].value != ''){
-            var mask=theForm[i].getAttribute('mask');
+        var mask=theForm[i].getAttribute('pattern');
+        if(undefined == mask){mask=theForm[i].getAttribute('mask');}
+        if(undefined != mask && mask != '' && theForm[i].value != ''){
+			var fldmsg=theForm[i].getAttribute('data-pattern-msg');
+			if(undefined == fldmsg){fldmsg=theForm[i].getAttribute('maskmsg');}
             if(mask == 'ccnumber'){
 				//credit card number
 				if(isCreditCardNumber(theForm[i].value) == false){
 					//invalid card number
                     var msg = dname+" must be of valid credit card number ";
-                    if(theForm[i].getAttribute('maskmsg')){msg=theForm[i].getAttribute('maskmsg');}
+                    if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
                     return false;
@@ -831,7 +839,7 @@ function submitForm(theForm,popup,debug,ajax){
 				if(checkInternationalPhone(theForm[i].value) == false){
 					//invalid card number
                     var msg = dname+" must be a valid phone number";
-                    if(theForm[i].getAttribute('maskmsg')){msg=theForm[i].getAttribute('maskmsg');}
+                    if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
                     return false;
@@ -849,7 +857,7 @@ function submitForm(theForm,popup,debug,ajax){
                 var re = new RegExp(rmask, 'i');
                 if(re.test(theForm[i].value) == false){
                     var msg = dname+" must be of type "+mask;
-                    if(theForm[i].getAttribute('maskmsg')){msg=theForm[i].getAttribute('maskmsg');}
+                    if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
                     return false;
@@ -1064,7 +1072,7 @@ function submitFormAlert(msg,popup,timer){
 	if(undefined == popup){popup=0;}
 	if(popup){
 		html='';
-		html+='<div class="w_centerpop_title" style="background:#d50000;"><img src="/wfiles/iconsets/16/alert.png" border="0" alt="errors" class="w_middle"> Error Processing Request</div>'+"\n";
+		html+='<div class="w_centerpop_title" style="background:#d50000;"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request</div>'+"\n";
 		html+= '<div class="w_centerpop_content">'+"\n";
 		html+= '	<div class="w_big w_dblue"> - '+msg+'</div>'+"\n";
 		html+= '	<div class="w_smallest w_right w_lblue" style="margin-right:20px;" id="centerpop2_countdown">4</div>'+"\n";
@@ -1114,7 +1122,7 @@ function checkPerl(field,value){
 		alert('Nothing to check.');
 		return false;
 		}
-	document.getElementById(pfield).innerHTML ='<img src="/wfiles/busy.gif" title="checking Perl syntax" border="0" width="12" height="12">';
+	document.getElementById(pfield).innerHTML ='<img src="/wfiles/busy.gif" title="checking Perl syntax" width="12" height="12" alt="checking Perl syntax" />';
 	document._perlcheck.perlcheck.value=value;
 	ajaxSubmitForm(document._perlcheck,pfield,5);
 	return false;
@@ -1246,7 +1254,7 @@ function ajaxPopup(url,params,useropts){
 			if(undefined == opt[key]){opt[key]=useropts[key];}
 			}
 		}
-	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif" border="0"> loading...please wait.</div>',opt);
+	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif" alt="loading" /> loading...please wait.</div>',opt);
 	ajaxGet(url,'centerpop',params);
 	}
 //--------------------------
@@ -1285,7 +1293,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 				var cb=this.callback;
 				cb=cb.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
-					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" border="0" class="w_middle"> Processing. Please wait...</div>';
+					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" class="w_middle" alt="processing" /> Processing. Please wait...</div>';
 					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
@@ -1390,18 +1398,18 @@ function setCenterPopText(cpid,cptext,params){
 		txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
 	}
 	if(params.close_top){
-		txt += '	<div class="w_centerpop_close_top" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" border="0"></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_top" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
 	}
 	if(params.drag){
-		txt += '	<div class="w_centerpop_drag" id="'+cpid+'_move" title="Click to drag"><img id="'+cpid+'_drag" src="/wfiles/icons/Xmove24.png" width="24" height="24" border="0"></div>'+"\n";
+		txt += '	<div class="w_centerpop_drag" id="'+cpid+'_move" title="Click to drag"><img id="'+cpid+'_drag" src="/wfiles/icons/Xmove24.png" width="24" height="24" alt="move" /></div>'+"\n";
 	}
 	//txt += '	<div class="w_centerpop_content">'+"\n";
 	txt += '		'+cptext+"\n";
 	//txt += '	</div>'+"\n";
 
-	txt += '	<img src="/wfiles/clear.gif" border="0" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');">'+"\n";
+	txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
 	if(params.close_bot){
-		txt += '	<div class="w_centerpop_close_bot" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" border="0"></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_bot" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
 	}
 	txt += '</div>'+"\n";
 	//set the text in cpid
@@ -1496,7 +1504,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var lname=dname.toLowerCase();
 				var cb=this.callback.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
-					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" border="0" class="w_middle"> Processing. Please wait...</div>';
+					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" class="w_middle" alt="processing" /> Processing. Please wait...</div>';
 					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
