@@ -1,0 +1,27 @@
+Title - between 10 and 70 chars
+Description - between 70 and 160 chars
+Heading Tags - use H1 through H6 tags for most important keywords.  Only one H1 tag per page.
+Be consistent with use of keywords in content, title,description, h tags, links.
+Use alt text in all images so they appear in googles Images search
+ratio of text to HTML needs to be between 20 and 70 percent - relevant text.
+sitemap.xml and robots.txt files help search engines index your site and improve SEO
+links need to be limited to less than 200 per page. use nofollow on links that are not revelant to your product
+resolve www and non-www URLs to same site using .htaccess file
+Rewrite links so they do not pass key/value pairs.  use /products/PS33 instead of /products?sku=PS33
+Do NOT use underscores in page names - use dashes instead.
+Do NOT use flash
+do NOT use frames
+fast loading mobile site is important
+Mobile site needs, Mobile CSS, Meta Viewport Tag, Apple Icon, Mobile Redirection, No FLASH content
+short domain names where possible
+Fast load time
+Use microformats - http://en.wikipedia.org/wiki/Microformat
+keep plain text email addresses OFF
+do NOT use inline Styles -  use CSS instead
+adding analytics code also increases SEO score
+make sure you site passes W3C validity tests
+Disable directory browsing
+Social share links
+link to Facebook page
+link to Google+ page
+Local directories for Foursquare and Yelp
