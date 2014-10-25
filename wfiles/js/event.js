@@ -995,18 +995,25 @@ function initBehaviors(ajaxdiv){
 			/* COUNTDOWNDATE */
   			var id=navEls[n].getAttribute('id');
 			if(id){
-				var yr=navEls[n].getAttribute('year');
-				var mon=navEls[n].getAttribute('month');
-				var day=navEls[n].getAttribute('day');
-				var hr=navEls[n].getAttribute('hour');
+				var yr=navEls[n].getAttribute('data-year');
+				if(undefined != yr){yr=navEls[n].getAttribute('year');}
+				var mon=navEls[n].getAttribute('data-month');
+				if(undefined != mon){mon=navEls[n].getAttribute('month');}
+				var day=navEls[n].getAttribute('data-day');
+				if(undefined != day){day=navEls[n].getAttribute('day');}
+				var hr=navEls[n].getAttribute('data-hour');
+				if(undefined != hr){hr=navEls[n].getAttribute('hour');}
 				var m=navEls[n].getAttribute('minute');
+				if(undefined != m){m=navEls[n].getAttribute('minute');}
 				var t=navEls[n].getAttribute('tz');
+				if(undefined != t){t=navEls[n].getAttribute('tz');}
 				countDownDate(id,yr,mon,day,hr,m,t);
 			}
 		}
 		else if(in_array("drag",behaviors)){
 			/* DRAG - Make object draggable */
-			var head=navEls[n].getAttribute('head');
+			var head=navEls[n].getAttribute('data-head');
+			if(undefined != head){head=navEls[n].getAttribute('head');}
 			var headobj=getObject(head);
 			navEls[n].style.position='relative';
             if(undefined == headobj){
@@ -1097,7 +1104,8 @@ function initBehaviors(ajaxdiv){
 			/*FILEUPLOAD - HTMl5 only - drag files here to upload */
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
   				// Great success! All the File APIs are supported.
-				var path=navEls[n].getAttribute('path');
+				var path=navEls[n].getAttribute('data-path');
+				if(undefined != path){path=navEls[n].getAttribute('path');}
 				navEls[n].addEventListener("dragenter", eventCancel, false);
 				navEls[n].addEventListener("dragexit", function(evt){
 					eventCancel(evt);
@@ -1126,8 +1134,9 @@ function initBehaviors(ajaxdiv){
 			/* FLOAT */
 			var id=navEls[n].getAttribute('id');
 			if(id){
-				var top=navEls[n].getAttribute('top');
-				floatDiv(id, top);
+				var t=navEls[n].getAttribute('data-top');
+				if(undefined != t){t=navEls[n].getAttribute('top');}
+				floatDiv(id, t);
             }
 		}
         else if(in_array("pin",behaviors)){
@@ -1152,10 +1161,12 @@ function initBehaviors(ajaxdiv){
 		}
 		else if(in_array("menu",behaviors)){
 			/* MENU - */
-  			var dname=navEls[n].getAttribute('display');
+  			var dname=navEls[n].getAttribute('data-display');
+  			if(undefined == dname){dname=navEls[n].getAttribute('display');}
 			if(dname){
 				navEls[n].onmouseover=function(e){
-					var dname=this.getAttribute('display');
+					var dname=this.getAttribute('data-display');
+					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
 					if(dObj){
 						if(dObj.style.display == 'block'){return true;}
@@ -1205,7 +1216,8 @@ function initBehaviors(ajaxdiv){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
-							var dname=this.getAttribute('display');
+							var dname=this.getAttribute('data-display');
+							if(undefined == dname){dname=this.getAttribute('display');}
 							dObj=getObject(dname);
 							if(dObj){
 								var hide=0;
@@ -1231,8 +1243,10 @@ function initBehaviors(ajaxdiv){
 		else if(in_array("scrolltable",behaviors)){
 			/* SCROLLTABLE  */
 			var id=navEls[n].getAttribute('id');
-  			var h=navEls[n].getAttribute('scrollheight');
-  			var w=navEls[n].getAttribute('scrollwidth');
+  			var h=navEls[n].getAttribute('data-scrollheight');
+  			if(undefined == h){h=navEls[n].getAttribute('scrollheight');}
+  			var w=navEls[n].getAttribute('data-scrollwidth');
+  			if(undefined == w){w=navEls[n].getAttribute('scrollwidth');}
 			if(id){scrollableTable(navEls[n],h,w);}
 		}
 		else if(in_array("slideshow",behaviors)){
