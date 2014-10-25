@@ -1017,6 +1017,17 @@ function initBehaviors(ajaxdiv){
             	Drag.init(headobj,navEls[n]);
    			}
         }
+        else if(in_array("email-link",behaviors)){
+			/* email link:  /info/wasql/com/  */
+			var email=getText(navEls[n]);
+			email=email.replace(/^[\/]+/,'',email);
+			email=email.replace(/[\/]+$/,'',email);
+			email=email.replace(/[\/]/,'@',email);
+			email=email.replace(/[\/]/,'.',email);
+			navEls[n].href='mailto:'+email;
+			setText(navEls[n],email);
+			navEls[n].setAttribute('data-behavior','processed');
+		}
         else if(in_array("signature",behaviors)){
 			/* Signature */
 			var pencolor=navEls[n].getAttribute('data-color') || '#000';
