@@ -417,8 +417,15 @@
 	global $CONFIG;
 	//Handle file uploads
 	 if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
-	 	if(isset($_REQUEST['processFileUploads']) && $_REQUEST['processFileUploads']=='off'){}
-	 	else{processFileUploads();}
+	 	if(isset($CONFIG['processFileUploads']) && $CONFIG['processFileUploads']=='off'){}
+	 	elseif(isset($_REQUEST['processFileUploads']) && $_REQUEST['processFileUploads']=='off'){}
+	 	else{
+			//filemanager will have _dir and _menu
+			if(isset($_REQUEST['_dir']) && isset($_REQUEST['_menu'])){processFileUploads();}
+			//form submit will have _table and _action
+			elseif(isset($_REQUEST['_table']) && isset($_REQUEST['_action'])){processFileUploads();}
+			//else{echo printValue($_REQUEST);exit;}
+			}
      	}
 	//process actions
 	if(isset($_REQUEST['_action'])){
