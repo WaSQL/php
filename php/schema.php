@@ -285,6 +285,7 @@ function createWasqlTable($table=''){
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_aip']="char(15) NULL";
 			$fields['_auser']="integer NULL";
+			$fields['_counter']="integer NULL";
 			$fields['_amem']=databaseDataType('bigint')." NULL";
 			$fields['_env']="text NULL";
 			$fields['_template']="INT NOT NULL Default 1";

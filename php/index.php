@@ -799,6 +799,9 @@
 		$TEMPLATE=getDBRecord($getopts);
 		//set minify array
 		wasqlSetMinify(0);
+		if(isset($PAGE['_counter']) && isNum($PAGE['_id'])){
+        	$ok=executeSQL("update _pages set _counter=_counter+1 where _id={$PAGE['_id']}");
+		}
 		if($PAGE['_cache']==1 && !isUser() && count($_REQUEST)==2){
 			$progpath=dirname(__FILE__);
 			$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$PAGE['_template']}.htm";
