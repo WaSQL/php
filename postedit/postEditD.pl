@@ -62,6 +62,23 @@ foreach my $arg (@ARGV){
 	}
 $progname="postedit";
 my $xmlfile="$progpath/$progname\.xml";
+my $xmlold="$progpath/$progname\.xml.old";
+my $rsyncfile="$progpath/$progname\.rsync";
+if(-s $rsyncfile){
+	$url=getFileContents($rsyncfile);
+	my ($head,$body,$code,$blen,$header_sent,$c)=postURL($url,_method=>"GET");
+	if(-s $xmlfile && !-s $xmlold){rename($xmlfile,$xmlold);}
+	if($code == 200 && open(FH,">$xmlfile")){
+		binmode(FH);
+		if($header->{content-type}=~/text/is){
+			my @lines=split(/[\r\n]+/,$body);
+			foreach my $line (@lines){print FH $line . "\r\n";}
+    	}
+		else{print FH $body;}
+		close(FH);
+	}
+}
+
 if(!-s $xmlfile){
 	print "Missing $xmlfile\n";
 	exit;
