@@ -81,6 +81,11 @@ function checkDBTableSchema($wtable){
 			$ok=executeSQL($query);
 			$rtn .= " added _amem to _pages table<br />\n";
         }
+        if(!isset($finfo['_counter'])){
+			$query="ALTER TABLE {$wtable} ADD _counter integer NOT NULL Default 0;";
+			$ok=executeSQL($query);
+			$rtn .= " added _amem to _pages table<br />\n";
+        }
         if(isset($CONFIG['minify_css']) && $CONFIG['minify_css']==1 && !isset($finfo['css_min'])){
 			$query="ALTER TABLE {$wtable} ADD css_min text NULL;";
 			$ok=executeSQL($query);
