@@ -13,10 +13,10 @@ our $OriginalFilename="postEdit.exe";
 our $InternalName="postEdit";
 #perl2exe_info ProductName=WaSQL Edit Manager
 our $ProductName="WaSQL Edit Manager";
-#perl2exe_info ProductVersion=1.600.31
-our $ProductVersion="1.600.31";
-#perl2exe_info FileVersion=1.1404.26
-our $FileVersion="1.1404.26";
+#perl2exe_info ProductVersion=1.997.35
+our $ProductVersion="1.997.35";
+#perl2exe_info FileVersion=1.1410.28
+our $FileVersion="1.1410.28";
 #perl2exe_info LegalCopyright=Copyright 2004-2012, WaSQL.com
 our $LegalCopyright="Copyright 2004-2012, WaSQL.com";
 #################################################################
@@ -63,9 +63,25 @@ foreach my $arg (@ARGV){
 	$input{$key}=$val;
 	}
 $progname="postedit";
-our $xmlfile="$progpath/$progname\.xml";
-if(! -s $xmlfile){
-	Win32::GUI::MessageBox(0,"Missing $progname\.xml config file\r\nProgram will abort.","postEdit Error",0x0010);
+my $xmlfile="$progpath/$progname\.xml";
+my $xmlold="$progpath/$progname\.xml.old";
+my $rsyncfile="$progpath/$progname\.rsync";
+if(-s $rsyncfile){
+	$url=getFileContents($rsyncfile);
+	my ($head,$body,$code,$blen,$header_sent,$c)=postURL($url,_method=>"GET");
+	if(-s $xmlfile && !-s $xmlold){rename($xmlfile,$xmlold);}
+	if($code == 200 && open(FH,">$xmlfile")){
+		binmode(FH);
+		if($header->{content-type}=~/text/is){
+			my @lines=split(/[\r\n]+/,$body);
+			foreach my $line (@lines){print FH $line . "\r\n";}
+    	}
+		else{print FH $body;}
+		close(FH);
+	}
+}
+
+if(!-s $xmlfile){
 	print "Missing $xmlfile\n";
 	exit;
 	}

@@ -7,6 +7,9 @@
 			file - path to local postEditXml file to load instead of getting it from the server
 			username - username on this
 			apikey - apikey of username
+			
+		Note:
+			You can also create a postedit.rsync file with the url to your postedit.xml file. It will be retrieved and saved locally.
 
 	-->
 	<host
