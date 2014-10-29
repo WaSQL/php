@@ -55,6 +55,7 @@ global $files;
 $files=array();
 //add wasql CSS file
 minifyFiles($csspath,'wasql');
+minifyFiles($csspath,'wasql_icons');
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY']['extras_css'])){
 	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
