@@ -1388,6 +1388,7 @@ function wasqlGetInstallFiles(){
 	);
 	return $files;
 }
+
 //---------- begin function wasqlVersion
 /**
 * @describe - returns WaSQL version as Major.Minor.BuildNumber
@@ -1396,4 +1397,18 @@ function wasqlGetInstallFiles(){
 function wasqlVersion(){
 	return getFileContents('../version.txt');
 	}
+	
+function wasqlFontIcons(){
+	$wfiles_path=getWfilesPath();
+	$file="{$wfiles_path}/css/wasql_icons.css";
+	$lines=file($file);
+	$icons=array();
+	foreach($lines as $line){
+    	if(preg_match('/^\.(icon\-.+?)\:/',$line,$m)){
+        	$icons[]=$m[1];
+		}
+	}
+	sort($icons);
+	return $icons;
+}
 ?>
