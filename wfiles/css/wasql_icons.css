@@ -210,6 +210,21 @@
 .icon-star:before { content: '\e89e'; } /* '' */
 .icon-box:before { content: '\e89f'; } /* '' */
 .icon-gift:before { content: '\e8a0'; } /* '' */
+.icon-business:before { content: '\e8a1'; } /* '' */
+.icon-food:before { content: '\e8a2'; } /* '' */
+.icon-home2:before { content: '\e8a3'; } /* '' */
+.icon-water:before { content: '\e8a4'; } /* '' */
+.icon-fire:before { content: '\e8a5'; } /* '' */
+.icon-snow:before { content: '\e8a6'; } /* '' */
+.icon-sun2:before { content: '\e8a7'; } /* '' */
+.icon-sun:before { content: '\e8a8'; } /* '' */
+.icon-cloud:before { content: '\e8a9'; } /* '' */
+.icon-rain-inv:before { content: '\e8aa'; } /* '' */
+.icon-stopwatch:before { content: '\e8ab'; } /* '' */
+.icon-clock:before { content: '\e8ac'; } /* '' */
+.icon-folder:before { content: '\e8ad'; } /* '' */
+.icon-briefcase:before { content: '\e8ae'; } /* '' */
+.icon-suitcase:before { content: '\e8af'; } /* '' */
 
 /* Animation example, for spinners */
 .animate-spin, .icon-spin1, .icon-spin2, .icon-spin3, .icon-spin4, .icon-spin5, .icon-spin6, .icon-spin7, .icon-spin8 {
