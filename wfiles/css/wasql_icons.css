@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'wasql_icons';
-  src: url('/wfiles/fonts/wasql_icons.eot?28651576');
-  src: url('/wfiles/fonts/wasql_icons.eot?28651576#iefix') format('embedded-opentype'),
-       url('/wfiles/fonts/wasql_icons.woff?28651576') format('woff'),
-       url('/wfiles/fonts/wasql_icons.ttf?28651576') format('truetype'),
-       url('/wfiles/fonts/wasql_icons.svg?28651576#wasql_icons') format('svg');
+  src: url('/wfiles/font/wasql_icons.eot?57611094');
+  src: url('/wfiles/font/wasql_icons.eot?57611094#iefix') format('embedded-opentype'),
+       url('/wfiles/font/wasql_icons.woff?57611094') format('woff'),
+       url('/wfiles/font/wasql_icons.ttf?57611094') format('truetype'),
+       url('/wfiles/font/wasql_icons.svg?57611094#wasql_icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }
