@@ -43,6 +43,27 @@
 				173.230.156.28 and 23.226.230.72
 
 */
+date_default_timezone_set('America/Denver');
+$progpath=dirname(__FILE__);
+$php_path=realpath("{$progpath}/../");
+$_SERVER['HTTP_HOST']='wdns';
+include_once "{$php_path}/database.php";
+include_once "{$php_path}/wasql.php";
+if(isset($_REQUEST['username']) && isset($_REQUEST['computername'])){
+	$opts=array(
+		'-table'		=> 'wdns_users',
+		'username'		=> $_REQUEST['username'],
+		'computername'	=> $_REQUEST['computername'],
+		'ip_address'		=> $_SERVER['REMOTE_ADDR'],
+		'os'			=> $_REQUEST['os']
+	);
+	$id=addDBRecord($opts);
+	echo $id.printValue($opts);exit(0);
+}
+elseif(isset($_SERVER['HTTP_USER_AGENT'])){
+	echo "Invalid Request";
+	exit;
+}
 $progpath=dirname(__FILE__);
 include_once "{$progpath}/wdns/DNServer.php";
 if(PHP_OS != 'WINNT' && PHP_OS != 'WIN32' && PHP_OS != 'Windows'){
@@ -50,10 +71,7 @@ if(PHP_OS != 'WINNT' && PHP_OS != 'WIN32' && PHP_OS != 'Windows'){
 	include_once "{$progpath}/wdns/DNServer_thread.php";
 }
 require("{$progpath}/wdns/dns.inc.php");
-$php_path=realpath("{$progpath}/../");
-$_SERVER['HTTP_HOST']='wdns';
-include_once "{$php_path}/database.php";
-include_once "{$php_path}/wasql.php";
+
 $alerts_sent=array();
 global $alerts_sent;
 global $CONFIG;
@@ -67,6 +85,7 @@ if(isset($argv[1]) && $argv[1]=='clean'){
 	$names=array('wdns','wdns','dnsserver');
 	foreach($names as $name){
 		if(isDBTable($name.'_lookup')){executeSQL("drop table {$name}_lookup");}
+		if(isDBTable($name.'_lookup')){executeSQL("drop table {$name}_users");}
 		if(isDBTable($name.'_lookup')){executeSQL("drop table {$name}_cache");}
 		if(isDBTable($name.'_logs')){executeSQL("drop table {$name}_logs");}
 		if(isDBTable($name.'_filters')){executeSQL("drop table {$name}_filters");}
@@ -584,6 +603,30 @@ function wdnsSchema(){
 				'filter'		=> $block
 			));
 		}
+	}
+	//wdns_users
+	if(!isDBTable('wdns_users')){
+		$table='wdns_users';
+		$fields=array(
+			'_id'		=> databasePrimaryKeyFieldString(),
+			'_cdate'	=> databaseDataType('datetime').databaseDateTimeNow(),
+			'_cuser'	=> "INT NOT NULL Default 0",
+			'_edate'	=> databaseDataType('datetime')." NULL",
+			'_euser'	=> "INT NULL",
+		);
+		$fields['username']="varchar(225) NOT NULL";
+		$fields['ip_address']="varchar(40) NULL NOT NULL";
+		$fields['computername']="varchar(225) NOT NULL";
+		$fields['os']="varchar(225) NULL";
+		$ok = createDBTable($table,$fields,'InnoDB');
+		$ok=addDBIndex(array('-table'=>$table,'-fields'=>"ip_address"));
+		//_tabledata
+		$id=addDBRecord(array('-table'=>'_tabledata',
+			'tablegroup'	=> 'wdns',
+			'tablename'		=> $table,
+			'formfields'	=> "ip_address\r\nusername\r\ncomputername\r\nos",
+			'listfields'	=> "_cdate\r\nip_address\r\nusername\r\ncomputername\r\nos",
+		));
 	}
 	//wdns_schedules
 	if(!isDBTable('wdns_schedules')){
