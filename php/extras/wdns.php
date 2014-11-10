@@ -49,6 +49,9 @@ $php_path=realpath("{$progpath}/../");
 $_SERVER['HTTP_HOST']='wdns';
 include_once "{$php_path}/database.php";
 include_once "{$php_path}/wasql.php";
+global $CONFIG;
+
+
 if(isset($_REQUEST['username']) && isset($_REQUEST['computername'])){
 	$opts=array(
 		'-table'		=> 'wdns_users',
@@ -58,6 +61,11 @@ if(isset($_REQUEST['username']) && isset($_REQUEST['computername'])){
 		'os'			=> $_REQUEST['os']
 	);
 	$id=addDBRecord($opts);
+	//delete records older than 30 days or wdns_users_age if specified in the config.xml
+	if(!isset($CONFIG['wdns_users_age'])){
+		$CONFIG['wdns_users_age']=30;
+	}
+	$ok=executeSQL("DELETE FROM wdns_users WHERE _cdate < DATE_SUB(NOW(), INTERVAL {$CONFIG['wdns_users_age']} DAY);");
 	echo $id.printValue($opts);exit(0);
 }
 elseif(isset($_SERVER['HTTP_USER_AGENT'])){
@@ -74,8 +82,6 @@ require("{$progpath}/wdns/dns.inc.php");
 
 $alerts_sent=array();
 global $alerts_sent;
-global $CONFIG;
-ksort($CONFIG);
 $bind_ip='127.0.0.1';
 if(isset($CONFIG['ip_address'])){
 	$bind_ip=$CONFIG['ip_address'];
@@ -95,8 +101,9 @@ if(isset($argv[1]) && $argv[1]=='clean'){
 		executeSQL("delete from _tabledata where tablename like '{$name}_%'");
 		executeSQL("delete from _fielddata where tablename like '{$name}_%'");
 	}
+	echo "Database Cleaned";
+	exit;
 }
-
 date_default_timezone_set('America/Denver');
 //check database schema for wdns
 wdnsSchema();
@@ -189,7 +196,21 @@ function wdnsGetDomainException($name,$client_ip){
 	));
 	return $rec;
 }
-
+function wdnsGetUserRecord($client_ip,$client_name){
+	//return the first wdns_users record that applies.  
+	//	This table is populated by placing wdns_user.exe in their startup folder so it runs when they login
+	//	wdns_user.exe captures their username,computername, and ip_address when they login
+	$rec=getDBRecord(array(
+		'-table'		=> 'wdns_users',
+		'ip_address'	=> $client_ip,
+		'-order'		=> '_cdate desc'
+	));
+	if(!is_array($rec)){return 'unknown';}
+	//how old is the record in days?
+	$seconds = strtotime(date("M d Y ")) - (strtotime($rec['_cdate']));
+	$rec['age']=floor($str/3600/24);
+	return $rec;
+}
 function wdnsGetFilterRecord($name,$client_ip,$client_name){
 	//return the first wdns_filters record that applies
 	//wdns_filters
