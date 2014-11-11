@@ -6,14 +6,14 @@
 	Compile using http://sourceforge.net/projects/bamcompile/
 	bamcompile.exe -c -i:wdns.ico wdns_user.php wdns_user.exe
 	
-	You can set host, path, and port in a wdns_users.ini file 
+	You can set host, path, and port in a wdns_users.ini file
 
 */
 //set the default time zone
 //date_default_timezone_set('America/Denver');
 $ini=array(
 	'secure'=>0,
-	'host'	=>'localhost',
+	'host'	=>'wdns.wasql.com',
 	'path'	=> '/php/extras/wdns.php',
 	'port'	=> 80
 );
