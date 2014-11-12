@@ -7575,6 +7575,9 @@ function postXML($url='',$xml='',$params=array()) {
         	$rtn['error'] = "Invalid XML: " . printValue($e);
         }
 	}
+    if(isset($params['-json']) && $params['-json']==1 && strlen($rtn['body'])){
+        $rtn['json_array']=json_decode($rtn['body'],true);
+    }
 	$rtn['xml_in']=$xml;
 	$rtn['params_in']=$params;
 	$rtn['raw']=trim($return);
