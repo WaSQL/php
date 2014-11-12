@@ -5081,13 +5081,38 @@ function getPHPVersion(){
 */
 function getUniqueHost($inhost=''){
 	if(strlen($inhost)==0){$inhost=$_SERVER['HTTP_HOST'];}
-	if(preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',$inhost)){$uhost=$inhost;}
-	elseif(preg_match('/^(.+?)\.([A-Z0-9\-]+?)\.([A-Z0-9\-]+)$/i',$inhost,$matches)){
-		$uhost=$matches[2] . '.' . $matches[3];
-		}
-	else{$uhost=$inhost;}
-	$uhost=strtolower($uhost);
-	return $uhost;
+	if(strlen($inhost)==0){$inhost=$_SERVER['SERVER_NAME'];}
+	//check for ip address
+	if(preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',$inhost)){return $inhost;}
+	$parts=preg_split('/\./',$inhost);
+	if(count($parts) < 3){
+		//localhost, domain.com
+    	return $inhost;
+	}
+	$x=array_pop($parts);
+	$y=array_pop($parts);
+	return strtolower("{$y}.{$x}");
+	}
+//---------- begin function getSubdomain--------------------
+/**
+* @describe returns the subdomain of  host name
+* @param [httphost] - host name to parse - if not given defaults to $_SERVER['HTTP_HOST']
+* @return string
+* @usage $subdomain=getSubdomain("login.mydomain.com"); - returns login
+*/
+function getSubdomain($inhost=''){
+	if(strlen($inhost)==0){$inhost=$_SERVER['HTTP_HOST'];}
+	if(strlen($inhost)==0){$inhost=$_SERVER['SERVER_NAME'];}
+	//return inhost if it is an ip address
+	if(preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',$inhost)){return '';}
+	$parts=preg_split('/\./',$inhost);
+	if(count($parts) < 3){
+		//localhost, domain.com - no subdomain
+    	return '';
+	}
+	$x=array_pop($parts);
+	$x=array_pop($parts);
+	return strtolower(implode('.',$parts));
 	}
 //---------- begin function getURL--------------------
 /**
@@ -6798,7 +6823,11 @@ function parseEnv() {
 	//Unique Host
 	if(!isset($_SERVER['UNIQUE_HOST'])){
 		$_SERVER['UNIQUE_HOST']=getUniqueHost($_SERVER['HTTP_HOST']);
-		}
+	}
+	//Subdomain
+	if(!isset($_SERVER['SUBDOMAIN'])){
+		$_SERVER['SUBDOMAIN']=getSubdomain($_SERVER['HTTP_HOST']);
+	}
 	//Request Path
 	if(isset($_SERVER['REQUEST_URI'])){
 		$uri=$_SERVER['REQUEST_URI'];
