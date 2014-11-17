@@ -57,7 +57,7 @@ if(isset($_REQUEST['username']) && isset($_REQUEST['computername'])){
 		'username'		=> $_REQUEST['username'],
 		'computername'	=> $_REQUEST['computername'],
 		'ip_public'		=> $_SERVER['REMOTE_ADDR'],
-		'ip_local'		=> $_REQUEST['ip_address'],
+		'ip_local'		=> $_REQUEST['ip_local'],
 		'os'			=> $_REQUEST['os']
 	);
 	$id=addDBRecord($opts);

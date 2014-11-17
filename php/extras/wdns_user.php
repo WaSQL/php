@@ -34,8 +34,10 @@ if(file_exists('wdns_user.ini')){
 }
 //get os
 $os=urlencode(php_uname());
-$ini['path'] .="?username={$_SERVER['USERNAME']}&os={$os}&computername={$_SERVER['COMPUTERNAME']}";
+$ip_local = getHostByName(getHostName());
+$ini['path'] .="?username={$_SERVER['USERNAME']}&ip_local={$ip_local}&os={$os}&computername={$_SERVER['COMPUTERNAME']}";
 //fsockopen(host,port,errno,errstr,timeout)
+echo printValue($ini);
 $fp = fsockopen($ini['host'], $ini['port'], $errno, $errstr, 5);
 if (!$fp) {
     echo "$errstr ($errno)<br />\n";
