@@ -51,13 +51,13 @@ include_once "{$php_path}/database.php";
 include_once "{$php_path}/wasql.php";
 global $CONFIG;
 
-
 if(isset($_REQUEST['username']) && isset($_REQUEST['computername'])){
 	$opts=array(
 		'-table'		=> 'wdns_users',
 		'username'		=> $_REQUEST['username'],
 		'computername'	=> $_REQUEST['computername'],
-		'ip_address'		=> $_SERVER['REMOTE_ADDR'],
+		'ip_public'		=> $_SERVER['REMOTE_ADDR'],
+		'ip_local'		=> $_REQUEST['ip_address'],
 		'os'			=> $_REQUEST['os']
 	);
 	$id=addDBRecord($opts);
@@ -285,6 +285,7 @@ function wdnsGetScheduleRecord($name,$client_ip,$client_name){
 function wdnsHandleRequest($domain_name,$type,$client_ip){
 	global $CONFIG;
 	global $bind_ip;
+
 	$ip=$bind_ip;
 	$blocked=0;
 	$filter_id=0;
@@ -636,7 +637,8 @@ function wdnsSchema(){
 			'_euser'	=> "INT NULL",
 		);
 		$fields['username']="varchar(225) NOT NULL";
-		$fields['ip_address']="varchar(40) NULL NOT NULL";
+		$fields['ip_public']="varchar(40) NULL NOT NULL";
+		$fields['ip_local']="varchar(40) NULL NOT NULL";
 		$fields['computername']="varchar(225) NOT NULL";
 		$fields['os']="varchar(225) NULL";
 		$ok = createDBTable($table,$fields,'InnoDB');
@@ -645,8 +647,8 @@ function wdnsSchema(){
 		$id=addDBRecord(array('-table'=>'_tabledata',
 			'tablegroup'	=> 'wdns',
 			'tablename'		=> $table,
-			'formfields'	=> "ip_address\r\nusername\r\ncomputername\r\nos",
-			'listfields'	=> "_cdate\r\nip_address\r\nusername\r\ncomputername\r\nos",
+			'formfields'	=> "ip_public\r\nip_local\r\nusername\r\ncomputername\r\nos",
+			'listfields'	=> "_cdate\r\nip_public:ip_local\r\nusername\r\ncomputername\r\nos",
 		));
 	}
 	//wdns_schedules
