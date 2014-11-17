@@ -7,13 +7,16 @@
 	bamcompile.exe -c -i:wdns.ico wdns_user.php wdns_user.exe
 	
 	You can set host, path, and port in a wdns_users.ini file
+	
+	use this local dns proxy to proxy to port 80 so we can use dnsone.com as our proxy.
+	http://mayakron.altervista.org/wikibase/show.php?id=AcrylicHome
 
 */
 //set the default time zone
 //date_default_timezone_set('America/Denver');
 $ini=array(
 	'secure'=>0,
-	'host'	=>'wdns.wasql.com',
+	'host'	=>'www.dnsome.com',
 	'path'	=> '/php/extras/wdns.php',
 	'port'	=> 80
 );
