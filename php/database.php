@@ -1027,6 +1027,18 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 				if(isset($params[$field])){$opts['value']=$params[$field];}
 				if(!isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
+				//LOAD form-control if bootstrap is loaded
+				if($params['-bootstrap']){$opts['class'] .= ' form-control';}
+				elseif($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
+					if(!stringContains($info[$field]['class'],'form-control')){
+						foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
+			                if(stringContains($css,'bootstrap')){
+			                    $opts['class'] .= ' form-control';
+			                    break;
+							}
+						}
+					}
+				}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -3230,12 +3242,12 @@ function getDBFieldTag($params=array()){
 			}
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
-	//LOAD data-control if bootstrap is loaded
-	if($params['-bootstrap']){$info[$field]['class'] .= ' form-control';}
+	//LOAD form-control if bootstrap is loaded
+	if($params['-bootstrap'] && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 	elseif($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
 		if(!stringContains($info[$field]['class'],'form-control')){
 			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
-                if(stringContains($css,'bootstrap')){
+                if(stringContains($css,'bootstrap') && !stringContains($info[$field]['class'],'form-control')){
                     $info[$field]['class'] .= ' form-control';
                     break;
 				}
