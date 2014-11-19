@@ -3231,7 +3231,8 @@ function getDBFieldTag($params=array()){
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
 	//LOAD data-control if bootstrap is loaded
-	if($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
+	if($params['-bootstrap']){$info[$field]['class'] .= ' form-control';}
+	elseif($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
 		if(!stringContains($info[$field]['class'],'form-control')){
 			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
                 if(stringContains($css,'bootstrap')){

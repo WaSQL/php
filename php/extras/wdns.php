@@ -119,8 +119,8 @@ function wdnsGetDomainRecord($name){
 	$days=isNum($CONFIG['cache_days'])?$CONFIG['log_days']:30;
 	$query="DELETE FROM wdns_lookup WHERE _cdate < DATE_SUB(NOW(), INTERVAL {$days} DAY)";
 	$ok=executeSQL($query);
-	if($name=='_xmpp-client._tcp.gmail.com'){$name='talk.google.com';}
-	elseif($name=='_xmppconnect.gmail.com'){$name='talk.google.com';}
+	//if($name=='_xmpp-client._tcp.gmail.com'){$name='talk.google.com';}
+	//elseif($name=='_xmppconnect.gmail.com'){$name='talk.google.com';}
 
 	//wdns_filters
 	$rec=getDBRecord(array(
@@ -176,7 +176,7 @@ function wdnsGetDomainRecord($name){
     	echo "Google IP for {$name}:{$ip}\n";
 	}
 	else{$opts['ip_address']=$ip;}
-	echo printValue($opts);
+	//echo printValue($opts);
 	$id=addDBRecord($opts);
 	$opts['_id']=$id;
 	return $opts;
@@ -291,14 +291,15 @@ function wdnsHandleRequest($domain_name,$type,$client_ip){
 	$filter_id=0;
 	global $cached;
 	$true_domain=str_replace('.Home','',$domain_name);
-	if($CONFIG['debug']){echo "wdnsHandleRequest({$true_domain},{$domain_name},{$type},{$client_ip})\n";}
+	//echo "wdnsHandleRequest({$domain_name},{$type},{$client_ip})\n";
 	$domainRec=wdnsGetDomainRecord($true_domain);
 	$client_name=gethostbyaddr($client_ip);
-	if($CONFIG['debug']){echo "wdnsHandleRequest({$client_name},{$domain_name},[{$type}],{$domainRec['ip_address']},{$domainRec['block']})\n";}
+	//if($CONFIG['debug']){echo "wdnsHandleRequest({$client_name},{$domain_name},[{$type}],{$domainRec['ip_address']},{$domainRec['block']})\n";}
 	$type=strtoupper(trim($type));
 	switch($type){
 		case 'A':
 		case 'AAAA':
+		case 'ANY':
 			//must have a valid domain record
 			if(!strlen($domainRec['ip_address'])){
 				//$client_ip,$client_name,$name,$return_ip,$action=1,$filter_id=0,$exception_id=0
