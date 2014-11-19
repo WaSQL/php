@@ -1029,8 +1029,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
 				if($params['-bootstrap']){$opts['class'] .= ' form-control';}
-				elseif($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
-					if(!stringContains($info[$field]['class'],'form-control')){
+				elseif($info['fieldinfo'][$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
+					if(!stringContains($info['fieldinfo'][$field]['class'],'form-control')){
 						foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
 			                if(stringContains($css,'bootstrap')){
 			                    $opts['class'] .= ' form-control';
