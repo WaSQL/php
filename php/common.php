@@ -7601,14 +7601,16 @@ function sgml2XML($sgml){
 /**
 * @describe returns an html block showing the contents of the object,array,or variable specified
 * @param $v mixed The Variable to be examined.
+ * @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
 * @return string
 *	returns an html block showing the contents of the object,array,or variable specified.
 * @usage 
 *	echo printValue($sampleArray);
+ * printValue($str,1);
 * @author slloyd
 * @history bbarten 2014-01-07 added documentation
 */
-function printValue($v=''){
+function printValue($v='',$exit=0){
 	$type=strtolower(gettype($v));
 	$plaintypes=array('string','integer');
 	if(in_array($type,$plaintypes)){return $v;}
@@ -7619,6 +7621,7 @@ function printValue($v=''){
 	ob_clean();
 	flush();
 	$rtn .= "\n</pre>\n";
+    if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
 //---------- begin function printValue
