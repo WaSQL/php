@@ -2005,16 +2005,19 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 *	The name of the views (with or without the preceding underscore [_])
 * @param rows array
 *	Each item of the array will be passed into the view as $params. Each row must be referenced in views as $params
-* @param opts array
+* @param opts mixed
 *	optional parameters as follows:
 *		<li>-alias - String - name of the variable you want to use inside the view instead of $params. Do Not include the $</li>
 *		<li>opts that do not start with a dash will be passed through as a key in params
+*		if this param is not an array, then the value will be set as -alias
 * @return
 *	Returns Views for each array row with PHP already evaluated
 * @see renderView();
 * @author Jeremy Despain, jeremy.despain@gmail.com
 */
 function renderEach($view, $rows, $opts=array()){
+	//if this param is not an array, then the value will be set as -alias
+	if(!is_array($opts)){$opts=array('-alias'=>$opts);}
 	$rtn = '';
 	foreach($rows as $key=>$params){
 		$opts['-key']=$key;
