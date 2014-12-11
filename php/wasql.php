@@ -1398,9 +1398,9 @@ function wasqlVersion(){
 	return getFileContents('../version.txt');
 	}
 	
-function wasqlFontIcons(){
+function wasqlFontIcons($x=''){
 	$wfiles_path=getWfilesPath();
-	$file="{$wfiles_path}/css/wasql_icons.css";
+	$file="{$wfiles_path}/css/wasql_icons{$x}.css";
 	$lines=file($file);
 	$icons=array();
 	foreach($lines as $line){

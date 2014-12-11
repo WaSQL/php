@@ -1,7 +1,7 @@
 <?php
 	//error_reporting(E_ERROR | E_WARNING | E_PARSE);
 	//error_reporting(E_STRICT | E_ALL);
-	error_reporting(E_ALL & ~E_NOTICE);;
+	error_reporting(E_ALL & ~E_NOTICE);
 	global $TIME_START;
 	$TIME_START=microtime(true);
 	$progpath=dirname(__FILE__);
@@ -523,17 +523,7 @@
 			}
 		}
 	//check for mobile_template in config file if the client device is a mobile device
-	/* Brady Barten Suggestion - allow you to set a Session Template */
-	if(isset($_SESSION['_template']) && !isset($_REQUEST['_template'])){
-		$query="select _id from _templates where";
-		if(isNum($_SESSION['_template'])){$query .= " _id={$_SESSION['_template']}";}
-		else{$query .= " name = '{$_SESSION['_template']}'";}
-		$r=getDBRecords(array('-query'=>$query));
-		if(isNum($r[0]['_id'])){
-			$_REQUEST['_template']=$r[0]['_id'];
-		}
-	}
-	elseif(isset($CONFIG['mobile_template']) && isMobileDevice() && !isset($_REQUEST['_template'])){
+	if(isset($CONFIG['mobile_template']) && isMobileDevice() && !isset($_REQUEST['_template'])){
 		$query="select _id from _templates where";
 		if(isNum($CONFIG['mobile_template'])){$query .= " _id={$CONFIG['mobile_template']}";}
 		else{$query .= " name = '{$CONFIG['mobile_template']}'";}

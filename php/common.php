@@ -214,6 +214,7 @@ function buildFormCalendar($name,$params=array()){
 	if(!isset($params['style'])){$params['style']='width:95px;font-size:12px;font-family:arial;';}
 	if(!isset($params['mask'])){$params['mask']='^[0-9]{1,2}[\-\/][0-9]{1,2}[\-\/][0-9]{2,4}$';}
 	if(!isset($params['maskmsg'])){$params['maskmsg']="Invalid date format (MM-DD-YYYY)";}
+	if(isset($params['class'])){unset($params['class']);}
 	if(!isset($params['id'])){
 		$idparts=array();
 		if(isset($params['-prefix'])){$idparts[]= $params['-prefix'];}
@@ -247,7 +248,19 @@ function buildFormCalendar($name,$params=array()){
 	$tag .= ' value="'.$value.'"';
 	//only use tcal if the HTML5 date is not supported yet
 	if($type=="text"){
-		$tag .= ' class="tcal"';
+		loadExtrasJs('tcal');
+		loadExtrasCss('tcal');
+		$class="tcal tcalInput";
+		if($params['-bootstrap']){$class .= ' form-control';}
+		elseif(is_array($_SESSION['w_MINIFY']['extras_css'])){
+			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
+	            if(stringContains($css,'bootstrap')){
+	                $class .= ' form-control';
+	                break;
+				}
+			}
+		}
+		$tag .= ' class="'.$class.'"';
 	}
 	$tag .= '>';
     return $tag;
@@ -6059,7 +6072,7 @@ function listFilesEx($dir='.',$params=array()){
 	//handle multiple types by separating them with [,;|]
 	$params['type']=strtolower($params['type']);
 	$types=preg_split('/[,;:\|]+/',$params['type']);
-	if(($params['-perms'])){
+	if(isset($params['-perms']) && $params['-perms']){
 		unset($myuid);
 		unset($mygid);
 		if(function_exists('posix_getuid')){
@@ -6091,7 +6104,7 @@ function listFilesEx($dir='.',$params=array()){
             //filter out types not requested
 			if($params['type'] != 'all' && !in_array($ftype,$types)){continue;}
 			$ctime=time();
-			if(($params['-perms'])){
+			if(isset($params['-perms']) && $params['-perms']){
 				$perms=getFilePerms($afile);
 				$fileinfo['user_id']=$info['uid'];
 				$fileinfo['group_id']=$info['gid'];
@@ -8771,7 +8784,7 @@ function processFileUploads($docroot=''){
 	global $USER;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
 	if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
-	 	//echo printValue($_FILES);
+	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
 			if($file['error'] != 0 && !strlen($file['tmp_name'])){
 				$_REQUEST[$name.'_error']="File Upload Error (1) - " . $file['error'];
@@ -8782,6 +8795,12 @@ function processFileUploads($docroot=''){
 				$_REQUEST[$name.'_skipped']=1;
 				continue;
 				}
+			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
+            	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
+            	if(isset($_SERVER['HTTP_X_CHUNK_NUMBER'])){
+					$file['name'].='.chunk'.$_SERVER['HTTP_X_CHUNK_NUMBER'];
+				}
+			}
             $_REQUEST[$name.'_type']=$file['type'];
             $_REQUEST[$name.'_size']=$file['size'];
             //get the weburl and the abs path of the file
@@ -8858,6 +8877,18 @@ function processFileUploads($docroot=''){
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
 				}
+			else{
+				$path='uploads';
+				$cpath=$docroot . $path;
+				$cpath=str_replace('//','/',$cpath);
+				//echo "path: {$cpath}<br>\n";
+				if(!is_dir($cpath)){
+					@trigger_error("");
+					mkdir($cpath,0777,1);
+					}
+				$webpath = $path .'/'. $file['name'];
+				$abspath = $docroot . $webpath;
+				}
 			$webpath=str_replace('//','/',$webpath);
             $abspath=str_replace('//','/',$abspath);
             $absdir=getFilePath($abspath);
@@ -8871,6 +8902,25 @@ function processFileUploads($docroot=''){
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
+				//if this is a chunk - see if all chunks are here and combine them.
+				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
+					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
+					$xfiles=array();
+					for($x=0;$x<$_SERVER['HTTP_X_CHUNK_TOTAL'];$x++){
+						$i=$x+1;
+						$xfile="{$absdir}/{$realname}.chunk{$i}";
+						if(!file_exists($xfile)){break;}
+						$xfiles[]=$xfile;
+					}
+					if(count($xfiles)==$_SERVER['HTTP_X_CHUNK_TOTAL']){
+                    	if(mergeChunkedFiles($xfiles,"{$absdir}/{$realname}")){
+							$abspath="{$absdir}/{$realname}";
+							$webpath = "{$path}/{$realname}";
+							$_REQUEST[$name.'_abspath']=$abspath;
+						}
+
+					}
+				}
             	$_REQUEST[$name]=$webpath;
             	$_REQUEST[$name.'_abspath']=$abspath;
             	$_REQUEST[$name.'_webpath']=$webpath;
@@ -8904,6 +8954,26 @@ function processFileUploads($docroot=''){
 		}
     return 0;
 	}
+function mergeChunkedFiles($chunks,$name){
+	//return false;
+	if(!is_array($chunks) || !count($chunks)){return false;}
+	$cnt=count($chunks);
+	for($x=0;$x<$cnt;$x++){
+		if(!file_exists($chunks[$x])){return false;}
+		$chunkdata=getFileContents($chunks[$x]);
+    	// If it is the first chunk we have to create the file, othewise we append...
+        $out_fp = @fopen($name, $x == 0 ? "wb" : "ab");
+		fwrite($out_fp, $chunkdata);
+		@fclose($out_fp);
+	}
+	if(file_exists($name)){
+		//remove chunks
+		for($x=0;$x<$cnt;$x++){
+        	unlink($chunks[$x]);
+		}
+		return true;
+	}
+}
 //---------- begin function pushData---------------------------------------
 /**
 * @describe pushes raw data to the browser as a file/attachment (forces a save as dialog)

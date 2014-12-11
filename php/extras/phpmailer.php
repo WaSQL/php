@@ -72,11 +72,12 @@ function phpmailerSendMail($params=array()){
 		if(!isset($params[$key]) || strlen($params[$key])==0){return "phpmailerSendMail Error - missing required parameter: ". $key;}
     }
 	$mail = new PHPMailer;
+	//$mail->SMTPDebug = 1;  // debugging: 1 = errors and messages, 2 = messages only
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
 	//custom SMTP?
 	if(isset($params['smtp'])){
 		//default smtpport to 587
-		if(!isNum($params['smtpport'])){
+		if(isNum($params['smtpport'])){
 			$mail->Port = $params['smtpport'];
 		}
 		$mail->IsSMTP();                                      // Set mailer to use SMTP
@@ -101,7 +102,17 @@ function phpmailerSendMail($params=array()){
 		}
 	//SSL or TLS security?
 	if(isset($params['encrypt'])){
-		$mail->SMTPSecure = $params['encrypt'];              // tls or ssl
+		switch(strtolower($params['encrypt'])){
+			case 'tls':
+				$mail->SMTPSecure = 'tls';
+				$mail->Port = 587;
+			break;
+			case 'ssl':
+				$mail->SMTPSecure = 'ssl';
+				$mail->Port = 465;
+			break;
+		}
+
 	}
 	//headers
 	if(isset($params['headers'])){$params['-headers']=$params['headers'];}
@@ -111,6 +122,7 @@ function phpmailerSendMail($params=array()){
 		}
 	}
 	//From
+	$mail->SetFrom($params['from']);
 	$mail->From = $params['from'];
 	if(isset($params['fromname'])){
 		$mail->FromName = $params['fromname'];
@@ -192,6 +204,7 @@ function phpmailerSendMail($params=array()){
 			}
 		}
 	}
+	//echo printValue($mail);exit;
 	if(!$mail->Send()){return "phpmailerSendMail Error -". $mail->ErrorInfo;}
 	return 1;
 }

@@ -228,6 +228,10 @@ function mailboxGetMessageHeader($mbox,$message){
 function mailboxDeleteMessage($mbox,$msgno){
     return(imap_delete($mbox,$msgno));
 	}
+function mailboxMoveMessage($mbox,$msgno,$folder){
+	//move the email to a folder
+    return imap_mail_move($mbox,$msgno,$folder);
+}
 function mailboxParseHeaders($headers){
 	$lines=preg_split('/[\r\n]+/m',$headers);
 	$hdr=array();

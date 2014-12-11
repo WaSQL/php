@@ -2,6 +2,7 @@
 /*Functions for processing orders with IntegraCore, LLC - a logistics company */
 global $import_rules;
 $import_rules=integracoreImportRules();
+//echo printValue($import_rules);exit;
 //Expected Receipts Functions
 //---------------------------
 function integracoreGetExpectedReceipts($params=array()){
@@ -541,7 +542,7 @@ function integracoreGetOrderStatus($params=array()){
 	$info['fields']=array_keys($fields);
 	sort($info['fields']);
     return $info;
-	}
+}
 //-------------------------------
 function integracorePostOrders($orders=array(),$testxml=0){
 	//info: returns the order status for ordernumbers
@@ -1029,6 +1030,10 @@ function integracoreFixOrderErrors($orders,$debug=0){
         	if(strlen($rule['db_field']) && $rule['required']==1 && !isset($orders['orders'][$x]['items'][$i][$rule['db_field']])){$orders['orders'][$x]['items'][$i][$rule['db_field']]='';}
         	}
       	foreach($orders['orders'][$x]['items'][$i] as $key=>$val){
+			if(is_array($val)){
+				$orders['orders'][$x]['items'][$i]['_errors'][]=$val;
+				continue;
+			}
         	$val=trim($val);
         	$uckey=strtoupper($key);
         	$rule=$import_rules['xml']['D'][$uckey];

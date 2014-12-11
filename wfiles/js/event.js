@@ -1103,28 +1103,26 @@ function initBehaviors(ajaxdiv){
         else if(in_array("fileupload",behaviors)){
 			/*FILEUPLOAD - HTMl5 only - drag files here to upload */
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
-  				// Great success! All the File APIs are supported.
-				var path=navEls[n].getAttribute('data-path');
-				if(undefined != path){path=navEls[n].getAttribute('path');}
-				navEls[n].addEventListener("dragenter", eventCancel, false);
-				navEls[n].addEventListener("dragexit", function(evt){
+				//save original background color
+				navEls[n].setAttribute('_bgcolor',navEls[n].style.backgroundColor || '');
+  				//add event listeners
+  				addEventHandler(navEls[n],"dragenter",eventCancel);
+				addEventHandler(navEls[n],"dragexit", function(evt){
 					eventCancel(evt);
 						var bgcolor='';
 						if(undefined != this.getAttribute('_dragcolor_out')){bgcolor=this.getAttribute('_dragcolor_out');}
 						this.style.backgroundColor=bgcolor;
-					}, false);
-				navEls[n].addEventListener("dragover", function(evt){
+					}
+				);
+				addEventHandler(navEls[n],"dragover", function(evt){
 					eventCancel(evt);
-					var bgcolor='#ffff80';
-					if(undefined != this.getAttribute('_dragcolor_over')){bgcolor=this.getAttribute('_dragcolor_over');}
-					this.style.backgroundColor=bgcolor;
+					//change background of div when files are dragged over it to signify it accepts files
+					this.style.backgroundColor=this.getAttribute('data-color-over') || '#ebebeb';
 					}, false);
 				navEls[n].addEventListener("drop", function(evt){
-					var bgcolor='';
-					if(undefined != this.getAttribute('_dragcolor_out')){bgcolor=this.getAttribute('_dragcolor_out');}
-					this.style.backgroundColor=bgcolor;
+					this.style.backgroundColor=this.getAttribute('_bgcolor');
 					fileUploadBehavior(evt,this);
-					}, false);
+					});
 			}
 			else{
 				setText(navEls[n],'Fileupload via dragdrop is not supported in your browser.');
@@ -1399,8 +1397,11 @@ addEvent(window,'load',initBehaviors);
 function addOnLoadEvent(f){
 	addEvent(window,'load',f);
 }
-//generic addEvent for all browsers
-function addEvent(elem,evnt, func){
+//generic addEvent for all browsers - depreciated use addEventHandler instead
+function addEvent(elem, evnt, func){
+	return addEventHandler(elem, evnt, func);
+}
+function addEventHandler(elem,evnt, func){
 	if (elem.addEventListener){
 		// W3C DOM
 		elem.addEventListener(evnt,func,false);
@@ -1411,7 +1412,7 @@ function addEvent(elem,evnt, func){
    }
    else { 
    		// Not IE or W3C - try generic
-		elem[evnt] = func;
+		elem['on'+evnt] = func;
    }
 }
 /* Codemirror helper funcitons */

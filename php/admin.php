@@ -1417,7 +1417,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'font_icons':
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'."\n";
-			echo '<div class="w_bigger"><b>Usage:</b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'."\n";
+			echo '<div class="w_bigger"><b>Usage: </b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'."\n";
 			echo '<hr size="1">'."\n";
 			$icons=wasqlFontIcons();
 			$sets=arrayColumns($icons,5);
@@ -1432,37 +1432,7 @@ if(isset($_REQUEST['_menu'])){
 			}
 			echo '</tr>'."\n";
 			echo buildTableEnd();
-			break;
-			echo printValue($icons);break;
-			echo buildTableBegin(2,0);
-			echo '<tr>';
-			$cnt=0;
-			foreach($iconsets as $name){
-				if(preg_match('/^thumbs$/i',$name)){continue;}
-            	echo '<td class="w_pad w_smallest w_lblue" align="center">'."\n";
-            	echo '	<div><img src="/wfiles/iconsets/64/'.$name.'.png" width="64" height="64" class="w_middle" alt="'.$name.'" /></div>'."\n";
-            	echo '	<div class="w_bold w_dblue w_bigger">'.$name.'</div>'."\n";
-				echo '	<div><b>16:</b> /wfiles/iconsets/16/'.$name.'.png</div>'."\n";
-            	echo '	<div><b>32:</b> /wfiles/iconsets/32/'.$name.'.png</div>'."\n";
-            	echo '	<div><b>64:</b> /wfiles/iconsets/64/'.$name.'.png</div>'."\n";
-				echo '</td>'."\n";
-				$cnt++;
-				if($cnt==4){
-                	echo '</tr><tr>'."\n";
-                	$cnt=0;
-				}
-			}
-			echo '</tr></table>'."\n";
-			//echo printValue($iconsets);
-			break;
-			echo buildTableBegin(2,1);
-			echo buildTableTH(array('Variable','Value'));
-			foreach($_SERVER as $key=>$val){
-				if(preg_match('/^\_/',$key)){continue;}
-				echo buildTableTD(array($key,printValue($val)),array('valign'=>'top'));
-            	}
-            echo buildTableEnd();
-			break;
+		break;
 		case 'system':
 			//Server Variables
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/32/server.png" alt="system info" /> System Info</div>'."\n";

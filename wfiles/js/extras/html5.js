@@ -1,27 +1,28 @@
 function fileUploadBehavior(t, e) {
     eventCancel(t);
-    var i = t.dataTransfer.files,
-        a = i.length;
+    var i = t.dataTransfer.files;
+	var filecount = i.length;
     e = getObject(e);
     var o = e.id + "_original",
         n = document.createElement("div");
-    if (n.style.display = "none", n.innerHTML = getText(e), n.setAttribute("id", o), e.parentNode.appendChild(n), setText(e, "Preparing to Upload " + a + " Files..."), void 0 != e.getAttribute("_max")) {
+    if (n.style.display = "none", n.innerHTML = getText(e), n.setAttribute("id", o), e.parentNode.appendChild(n), setText(e, "Preparing to Upload " + filecount + " Files..."), void 0 != e.getAttribute("_max")) {
         var r = Math.round(e.getAttribute("_max"));
-        if (a > r) {
+        if (filecount > r) {
             var s = "You can only upload " + r + "files at a time.";
             return void 0 != e.getAttribute("_maxmsg") && (s = e.getAttribute("_maxmsg")), alert(s), void 0
         }
     }
     if (void 0 != e.getAttribute("_min")) {
         var d = Math.round(e.getAttribute("_min"));
-        if (d > a) {
+        if (d > filecount) {
             var s = "You must upload at least " + r + "files at a time.";
             return void 0 != e.getAttribute("_minmsg") && (minmsg = e.getAttribute("_minmsg")), alert(minmsg), void 0
         }
     }
     var l = 0;
     e.setAttribute("_uploadcount", 0), e.setAttribute("_uploadedcount", 0);
-    for (var u, c = 0; u = i[c]; c++) {
+    for (c = 0; c < filecount; c++) {
+		var u=i[c];
         if (void 0 != e.getAttribute("_mask_type")) {
             var v = e.getAttribute("_mask_type"),
                 h = new RegExp(v, "i");
@@ -53,7 +54,7 @@ function fileUploadBehavior(t, e) {
             }
         }
         var g = c + 1;
-        l += 1, fileUploadPost(u, e, g, a)
+        l += 1, fileUploadPost(u, e, g, filecount)
     }
     e.setAttribute("_uploadcount", l)
 }
@@ -65,11 +66,12 @@ function fileUploadPost(t, e, i, a) {
         r = "upload" + n,
         s = document.createElement("div");
     s.style.height = "10px", s.style.width = "2px", s.style.backgroundColor = "#f1a538", s.style.border = "1px solid #d5762b", s.style.marginBottom = "1px", s.setAttribute("id", r), e.appendChild(s);
-    var d = e.getAttribute("_action");
-    if (void 0 == d || !d.length) {
-        d = location.href;
-        var l = d.split("?");
-        d = l[0]
+    //determine where to post to
+	var url = e.getAttribute("data-action") || e.getAttribute("data-url");
+    if (void 0 == url || !url.length) {
+        url = location.href;
+        var l = url.split("?");
+        url = l[0]
     }
     for (var u = new FormData, c = "file", v = "", h = "", p = 0; p < e.attributes.length; p++) {
         var _ = e.attributes.item(p).nodeName,
@@ -93,7 +95,7 @@ function fileUploadPost(t, e, i, a) {
         fileUploadError(t, e, r, i, a)
     }, !1), m = e.getAttribute("_onabort"), void 0 != m && m.length ? o.upload.addEventListener("abort", m, !1) : o.upload.addEventListener("abort", function (t) {
         fileUploadAbort(t, e, r, i, a)
-    }, !1), o.open("POST", d, !0), o.send(u), o.responseText
+    }, !1), o.open("POST", url, !0), o.send(u), o.responseText
 }
 
 function fileUploadStart() {}
@@ -103,6 +105,11 @@ function fileUploadSuccess(evt, div, uploadId, fn, ft) {
     var uploaded = Math.round(div.getAttribute("_uploadedcount"));
     uploaded += 1, div.setAttribute("_uploadedcount", uploaded);
     var upload = Math.round(div.getAttribute("_uploadcount"));
+    //check for data-finished and call it
+	if (void 0 != div.getAttribute("data-finished")) {
+        var evalstr = div.getAttribute("data-finished");
+        evalstr.length && eval(evalstr);
+    }
     if (void 0 != div.getAttribute("_onsuccess")) {
         var evalstr = div.getAttribute("_onsuccess");
         evalstr.length && eval(evalstr)

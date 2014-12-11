@@ -985,6 +985,13 @@ function addEditDBForm($params=array(),$customcode=''){
 		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'."\n";
 		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'."\n";
 		}
+	$forcedatts=array(
+		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
+		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
+		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help',
+		'group_id','group_class','group_style','checkclass','checkclasschecked',
+		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap'
+		);
 	$editable_fields=array();
     foreach($info['formfields'] as $fields){
 		if(!is_array($fields) && isXML((string)$fields)){
@@ -1001,7 +1008,32 @@ function addEditDBForm($params=array(),$customcode=''){
 					$cval=nl2br($value);
 				}
 				else{
-					$cval=getDBFieldTag(array('-field'=>$cfield,'-table'=>$params['-table'],'value'=>$value));
+					$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
+					foreach($forcedatts as $copt){
+						if(isset($params[$cfield.'_'.$copt])){
+							$opts[$copt]=$params[$cfield.'_'.$copt];
+							$used[$cfield.'_'.$copt]=1;
+						}
+					}
+					//check for field_options array - the easier, new way to override options
+					if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
+						$used[$cfield.'_options']=1;
+						foreach($params[$cfield.'_options'] as $okey=>$oval){
+							if(in_array($okey,$forcedatts)){
+								$opts[$okey]=$oval;
+								$used[$cfield.'_'.$okey]=1;
+							}
+						}
+					}
+					if(isset($params[$field.'_tvals'])){
+						$opts['tvals']=$params[$field.'_tvals'];
+						$used[$field.'_tvals']=1;
+					}
+					if(isset($params[$field.'_dvals'])){
+						$opts['dvals']=$params[$field.'_dvals'];
+						$used[$field.'_dvals']=1;
+					}
+					$cval=getDBFieldTag($opts);
 				}
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
 				if(!isset($params[$cfield.'_viewonly'])){$fieldlist[]=$cfield;}
@@ -1058,19 +1090,12 @@ function addEditDBForm($params=array(),$customcode=''){
 					}
 				}
 				//opts
-				$forcedatts=array(
-					'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
-					'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
-					'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help',
-					'group_id','group_class','group_style','checkclass','checkclasschecked',
-					'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap'
-					);
 				foreach($forcedatts as $copt){
 					if(isset($params[$field.'_'.$copt])){
 						$opts[$copt]=$params[$field.'_'.$copt];
 						$used[$field.'_'.$copt]=1;
-						}
 					}
+				}
 				//check for field_options array - the easier, new way to override options
 				if(isset($params[$field.'_options']) && is_array($params[$field.'_options'])){
 					$used[$field.'_options']=1;
@@ -1455,6 +1480,10 @@ function addDBRecord($params=array()){
 	$function='addDBRecord';
 	if(!isset($params['-table'])){return 'addDBRecord Error: No table';}
 	$table=$params['-table'];
+	if($table=='_files' && isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL']) && stringContains($params['file'],'chunk')){
+    	//disable adding files if we are still uploading a chunked file.
+    	return;
+	}
 	global $USER;
 	global $CONFIG;
 	//model
@@ -1499,6 +1528,8 @@ function addDBRecord($params=array()){
     	$ucfield=strtoupper($field);
 		if(isset($_SERVER[$ucfield])){$params[$field]=$_SERVER[$ucfield];}
 	}
+	//remove guid in _users table so we do not have duplicate guids.
+	if(strtolower($params['-table'])=='_users' && isset($params['guid'])){unset($params['guid']);}
 	/* Filter the query based on params */
 	$fields=array();
 	$vals=array();
@@ -3258,8 +3289,8 @@ function getDBFieldTag($params=array()){
 	switch ($info[$field]['inputtype']){
 		//Checkbox
 		case 'date':
-			$styles['width']='90px';
-            $styles['font-size']='9pt';
+			$styles['width']='100px';
+            $styles['font-size']='10pt';
             $styles['font-family']='arial';
 			$info[$field]['mask']='^[0-9]{1,2}[\-\/][0-9]{1,2}[\-\/][0-9]{2,4}$';
 			$info[$field]['maskmsg']="Invalid date format (MM-DD-YYYY)";
