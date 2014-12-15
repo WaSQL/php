@@ -1930,10 +1930,18 @@ function renderView($view, $params=array(), $opts=array()){
 		case 'htmlpdf':
 			html2pdf($rtn);
 			exit;
+		break;
 		case 'xmlpdf':
 		case 'pdfx':
 			xml2PDF($rtn);
 			exit;
+		break;
+		case 'md':
+		case 'markdown';
+			//convert markdown
+			loadExtras('markdown');
+			$rtn=markdown2html($rtn);
+		break;
 		case 'email':
 			$fields=array('to','from','subject');
 			foreach($fields as $field){
