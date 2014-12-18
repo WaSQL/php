@@ -1979,19 +1979,19 @@ if(isset($_REQUEST['_menu'])){
 					echo '		<form method="POST" name="new_table" action="/'.$PAGE['name'].'" class="w_form" onSubmit="return submitForm(this);">'."\n";
 					echo '			<input type="hidden" name="_menu" value="add">'."\n";
 					$value=$error==1?$_REQUEST['_table_']:'';
-					echo '			<b>Table Name:</b> <input type="text" data-required="1" data-requiredmsg="Enter a table name" style="width:330px;" maxlength="150" name="_table_" value="'.$value.'" onFocus="this.select();"><br />'."\n";
+					echo '			<b>Table Name:</b> <input type="text" data-required="1" data-requiredmsg="Enter a table name" class="form-control" maxlength="150" name="_table_" value="'.$value.'" onFocus="this.select();"><br />'."\n";
 					//echo '			<img src="/wfiles/iconsets/16/group.png" border="0"> Table Group: <input type="text"  style="width:310px;" maxlength="150" name="tablegroup" value="'.$value.'" onFocus="this.select();"><br />'."\n";
 					//echo '			<img src="/wfiles/iconsets/16/info.png" border="0"> Table Desc: <input type="text" style="width:315px;" maxlength="150" name="tabledesc" value="'.$value.'" onFocus="this.select();"><br />'."\n";
-					echo '			<div class="w_smallest">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'."\n";
+					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'."\n";
 					$value=$error==1?$_REQUEST['_schema']:'';
 					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'."\n";
-					echo '			<div><input type="submit" value="Create"></div>'."\n";
+					echo '			<div><button type="submit" class="btn btn-primary">Create</button></div>'."\n";
 					echo '		</form>'."\n";
 					echo buildOnLoad('document.new_table._table_.focus();');
 					echo '</td><td>'."\n";
 					//reference: http://www.htmlite.com/mysql003.php
 					//Text Types
-					echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/16/info.png" width="16" height="16" class="w_middle" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" /> Text Types</div>'."\n";
+					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');"></span> Text Types</div>'."\n";
 					echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'."\n";
 					echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'."\n";
 					echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'."\n";
@@ -2010,7 +2010,7 @@ if(isset($_REQUEST['_menu'])){
 					//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'."\n";
 					echo '</div>'."\n";
 					//Number Types
-					echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/16/info.png" width="16" height="16" class="w_middle" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types" /> Number Types</div>'."\n";
+					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');"></span> Number Types</div>'."\n";
 					echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'."\n";
 					echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'."\n";
 					echo '</div></div>'."\n";
