@@ -1291,7 +1291,7 @@ echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'."\n
 if(isset($_SESSION['dbhost_original'])){
 	echo '	<div class="w_pad w_margin w_dblue "><table class="w_table"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
 }
-echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><img src="/wfiles/iconsets/16/info.png" class="w_middle" alt="info" /> '.$CONFIG['name'].' - <img src="/wfiles/iconsets/16/database.png" alt="db" class="w_middle" /> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
+echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <img src="/wfiles/iconsets/16/database.png" alt="db" class="w_middle" /> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
 echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
 echo '</div>'."\n";
 echo '<br clear="both" />'."\n";
@@ -1624,14 +1624,14 @@ if(isset($_REQUEST['_menu'])){
 			else{echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
 			echo '		</td>'."\n";
 			echo '		<td>'.$formfield.'</td>'."\n";
-			echo '		<td><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="info" /> '.$help.'</td>'."\n";
+			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
 			echo '	</tr>'."\n";
 			//Wasql Queries
 			$key='wasql_queries';
 			$help='Turn Status ON to log all database queries into the _queries table.  This is normally turned OFF.  Turning it on should help you optimize queries and determine if you need change queries, add indexes to tables, or make other adjustments to increase page load speed.';
-			$help .= '<br><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="set days" /> Set Days to the number of days to record.';
-			$help .= '<br><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="set time" /> Set Time to the minimum number of seconds before recording - 0 logs all.';
-			$help .= '<br><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="set user" /> Setting User will limit the queries to only run when that user is logged in.';
+			$help .= '<br><span class="icon-info"></span> Set Days to the number of days to record.';
+			$help .= '<br><span class="icon-info"></span> Set Time to the minimum number of seconds before recording - 0 logs all.';
+			$help .= '<br><span class="icon-info"></span> Setting User will limit the queries to only run when that user is logged in.';
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="nowrap">'."\n";
 			echo '			<img src="/wfiles/iconsets/16/queries.png" style="vertical-align:middle;" alt="queries" />'."\n";
@@ -1660,12 +1660,12 @@ if(isset($_REQUEST['_menu'])){
 			echo '				<td colspan="2">Limit to Specific User<br>'.$formfield.'</td>'."\n";
 			echo '			</tr>'."\n";
 			echo buildTableEnd();
-			echo '		</td><td><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="info" /> '.$help.'</td></tr>'."\n";
+			echo '		</td><td><span class="icon-help-circled"></span> '.$help.'</td></tr>'."\n";
 			//Wasql Stats Logs
 			$help='Turn Status ON to log all page views into the _access table.  This is normally turned OFF.  Turning it on also populate the _access_summary table.';
-			$help .= '<br><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="search bots on" /> Turn Search Bots on in log search bot requests. Otherwise, hits from search bots will be ignored.';
-			$help .= '<br><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="set dbname" /> Set dbname if you are want to write the access logs to a different database.';
-			$help .= '<div class="w_bold w_red w_big"><img src="/wfiles/iconsets/16/warning.png" style="vertical-align:bottom;" alt="warning" /> Warning: Turning this feature on may slow down high traffic sites.</div>';
+			$help .= '<br><span class="icon-info"></span> Turn Search Bots on in log search bot requests. Otherwise, hits from search bots will be ignored.';
+			$help .= '<br><span class="icon-info"></span> Set dbname if you are want to write the access logs to a different database.';
+			$help .= '<div class="w_bold w_red w_big"><span class="icon-warning"></span> Warning: Turning this feature on may slow down high traffic sites.</div>';
 			$key='wasql_access';
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="nowrap">'."\n";
@@ -1696,7 +1696,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '				<tr><td colspan="2">Alt DBName<br>'.$formfield.'</td></tr>'."\n";
 			echo '			</tr>'."\n";
 			echo buildTableEnd();
-			echo '		</td><td><img src="/wfiles/iconsets/16/info.png" style="vertical-align:middle;" alt="" /> '.$help.'</td></tr>'."\n";
+			echo '		</td><td><span class="icon-help-circled"></span> '.$help.'</td></tr>'."\n";
 			//Wasql synchronize
 			$key='wasql_synchronize';
 			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON",'onchange'=>"if(this.value==1){document.settingsform.set_global_{$key}_master.disabled=0;document.settingsform.set_global_{$key}_slave.disabled=0;document.settingsform.set_global_{$key}_tables.disabled=0;document.settingsform.set_global_{$key}_master.setAttribute('required',1);document.settingsform.set_global_{$key}_slave.setAttribute('required',1);document.settingsform.set_global_{$key}_tables.setAttribute('required',1);}else{document.settingsform.set_global_{$key}_master.disabled=1;document.settingsform.set_global_{$key}_slave.disabled=1;document.settingsform.set_global_{$key}_tables.disabled=1;document.settingsform.set_global_{$key}_master.setAttribute('required',0);document.settingsform.set_global_{$key}_slave.setAttribute('required',0);document.settingsform.set_global_{$key}_tables.setAttribute('required',0);}"));
@@ -1735,7 +1735,7 @@ if(isset($_REQUEST['_menu'])){
 			$formfield=getDBFieldTag(array('requiredmsg'=>'Select Live Database','message'=>'-- Live DB --','required'=>$required,'disabled'=>$disabled,'-table'=>'_settings','-field'=>'key_value','width'=>'','name'=>"set_global_{$subkey}",'value'=>$SETTINGS[$subkey],'inputtype'=>'select','tvals'=>$tvalstr,'dvals'=>$tvalstr));
 			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><img src="/wfiles/iconsets/16/database.png" class="w_middle" alt="" />L&nbsp;  '.$formfield.'</div>'."\n";
 			echo '		</td>'."\n";
-			echo '		<td><img src="/wfiles/iconsets/16/info.png" class="w_middle" alt="" /> '.$help.'</td>'."\n";
+			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
 			echo '	</tr>'."\n";
 			//dreamhost API
 //			$key='dreamhost_api';
@@ -1752,7 +1752,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/info.png" alt="about WaSQL" /> About WaSQL</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info"></span> About WaSQL</div>'."\n";
 			echo '<table class="w_table w_pad w_border">'."\n";
 			//Database Information
 			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'."\n";
@@ -1975,7 +1975,7 @@ if(isset($_REQUEST['_menu'])){
 					//echo printValue($_REQUEST);
 					echo buildTableBegin(2,0);
 					echo '<tr valign="top"><td>'."\n";
-					echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/table_add.png" alt="add new table" /> Add New table.</div>'."\n";
+					echo '<div class="w_lblue w_bold w_bigger"><span class="icon-plus"></span> Add New table.</div>'."\n";
 					echo '		<form method="POST" name="new_table" action="/'.$PAGE['name'].'" class="w_form" onSubmit="return submitForm(this);">'."\n";
 					echo '			<input type="hidden" name="_menu" value="add">'."\n";
 					$value=$error==1?$_REQUEST['_table_']:'';
@@ -2070,7 +2070,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '</td><td>'."\n";
 			//reference: http://www.htmlite.com/mysql003.php
 			//Text Types
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/16/info.png" width="16" height="16" class="w_middle" alt="sample entry" /> Sample Entry</div>'."\n";
+			echo '<div class="w_lblue w_bold"><span class="icon-info"></span> Sample Entry</div>'."\n";
 			echo '<div style="margin-left:25px;"><pre>'."\n";
 			echo 'employees'."\n";
 			echo '	name varchar(55)'."\n";
@@ -2082,7 +2082,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	phone varchar(15)'."\n";
 			echo '	email varchar(255)'."\n";
 			echo '</pre></div>'."\n";
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/16/info.png" width="16" height="16" class="w_middle" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" /> Text Types</div>'."\n";
+			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" ></span> Text Types</div>'."\n";
 			echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'."\n";
 			echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'."\n";
 			echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'."\n";
@@ -2101,7 +2101,7 @@ if(isset($_REQUEST['_menu'])){
 			//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'."\n";
 			echo '</div>'."\n";
 			//Number Types
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/16/info.png" width="16" height="16" class="w_middle" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types" /> Number Types</div>'."\n";
+			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types"></span> Number Types</div>'."\n";
 			echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'."\n";
 			echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'."\n";
 			echo '</div></div>'."\n";
@@ -2719,7 +2719,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '		</td>'."\n";
 			$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);
 			echo '		<td>'."\n";
-			echo '			<div class="w_dblue"><img src="/wfiles/iconsets/16/info.png" alt="table description" /> Table Description:</div>'."\n";
+			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tabledesc')."\n";
 			//echo '			<textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="tabledesc">'.$val.'</textarea>'."\n";
 			echo '		</td>'."\n";
@@ -3817,8 +3817,8 @@ function adminMenu(){
 	$list_table_count=count($group_tables) + count($non_group_tables);
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=tables" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/table.png').' Tables</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=tables">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Tables</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_">'.adminMenuIcon('/wfiles/iconsets/16/table_add.png').' Add New Table</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List Tables</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple">'.adminMenuIcon('/wfiles/iconsets/16/table_add.png').' Add Multiple Tables</a><hr size="1"></li>'."\n";
 	//show wasql tables here also
 	$rtn .= $wtables;
@@ -3869,9 +3869,9 @@ function adminMenu(){
 	$pages=getDBRecords(array('-table'=>'_pages','-limit'=>15,'-order'=>'_edate desc,_cdate desc'));
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_pages" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/pages.png').' Pages</a>'."\n";
 	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Pages</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List Pages</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages">'.adminMenuIcon('/wfiles/add.gif').' Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($pages as $page){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id='.$page['_id'].'">';
 		$lname=strtolower($page['name']);
@@ -3891,9 +3891,9 @@ function adminMenu(){
 	$templates=getDBRecords(array('-table'=>'_templates','-limit'=>15,'-order'=>"_edate desc,_cdate desc"));
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu">'.adminMenuIcon('/wfiles/_templates.gif').' Templates</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Templates</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> List Templates</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates">'.adminMenuIcon('/wfiles/add.gif').' Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($templates)){
 		foreach($templates as $template){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_templates&_id='.$template['_id'].'">';
@@ -3914,11 +3914,11 @@ function adminMenu(){
 	//Reports
 	if(!isDBTable('_reports')){$ok=createWasqlTable('_reports');}
 	$reports=getDBRecords(array('-table'=>'_reports','active'=>1,'menu'=>'_reports','-limit'=>15,'-order'=>'name'));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/reports.png').' Reports</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu"><span class="icon-chart-pie"></span> Reports</a>'."\n";
 	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Reports</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list"></span> List Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports">'.adminMenuIcon('/wfiles/add.gif').' Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($reports)){
 		foreach($reports as $report){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=reports&_id='.$report['_id'].'">';
@@ -3933,7 +3933,7 @@ function adminMenu(){
 	$users=getDBRecords(array('-table'=>'_users','-limit'=>15,'-where'=>'_adate is not null','-order'=>"utype,_adate desc"));
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/users.png').' Users</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Users</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List Users</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report">'.adminMenuIcon('/wfiles/iconsets/16/charts.png').' User Report</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/user_add.png').' Add New</a><hr size="1"></li>'."\n";
@@ -3957,12 +3957,12 @@ function adminMenu(){
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
 		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu">'.adminMenuIcon('/wfiles/_cron.png').' Crons</a>'."\n";
 		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' List Crons</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> List Crons</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog">'.adminMenuIcon('/wfiles/_cron.png').' List Logs</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron">'.adminMenuIcon('/wfiles/add.gif').' Add New</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus"></span> Add New</a></li>'."\n";
 		if(is_array($crons)){
 			if(count($crons) > 15){
-				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron">'.adminMenuIcon('/wfiles/iconsets/16/list.png').' Show All</a></li>'."\n";
+				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> Show All</a></li>'."\n";
 				}
 			foreach($crons as $cron){
 				$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_cron&_id='.$cron['_id'].'">';
@@ -4002,35 +4002,35 @@ function adminMenu(){
 	$rtn .= '	</ul>'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'."\n";
 	//My Profile
-	$rtn .= '		<li class="dir"><a href="#access" onclick="return false;" class="w_topmenu">'.adminMenuIcon('/wfiles/_profile.gif').' '.$USER['username'].'</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="#access" onclick="return false;" class="w_topmenu"><span class="icon-user"></span> '.$USER['username'].'</a>'."\n";
 	$rtn .= '			<ul style="width:110px;">'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu">'.adminMenuIcon('/wfiles/_profile.gif').' My Profile</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_logout=1">'.adminMenuIcon('/wfiles/logoff.gif').' Log Off</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_logout=1"><span class="icon-user" style="color:#CCC;"></span> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	//WaSQL
 	$rtn .= '		<li class="dir"><a href="#">'.adminMenuIcon('/wfiles/wasql_admin.png').'</a>'."\n";
 	$rtn .= '        	<ul>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings">'.adminMenuIcon('/wfiles/iconsets/16/settings.png').' Settings</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual">'.adminMenuIcon('/wfiles/iconsets/16/help.png').' Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about">'.adminMenuIcon('/wfiles/iconsets/16/info.png').' About</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> Settings</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> Documentation</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info"></span> About</a><hr size="1"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit">'.adminMenuIcon('/wfiles/postedit.gif').' PostEdit Manager</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=contentmanager">'.adminMenuIcon('/wfiles/iconsets/16/contentmanager.png').' Content Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=files">'.adminMenuIcon('/wfiles/file.gif').' File Manager</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats">'.adminMenuIcon('/wfiles/stats.gif').' Usage Stats</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><img src="'.getImageSrc('email').'" alt="send mail" /> Send Email</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail"></span> Send Email</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow"></span> List Font Icons</a></li>'."\n";
-    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets">'.adminMenuIcon('/wfiles/iconsets/16/icon.png').' List IconSets</a></li>'."\n";
+    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image"></span> List IconSets</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">'.adminMenuIcon('/wfiles/entity.gif').' HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=svn">'.adminMenuIcon('/wfiles/iconsets/16/subversion.png').' WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
-	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<img src=/wfiles/iconsets/16/bug.png border=0 class=w_middle /> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});">'.adminMenuIcon('/wfiles/iconsets/16/bug.png').' Report a Bug</a></li>'."\n";
+	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
