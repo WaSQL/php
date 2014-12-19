@@ -1196,4 +1196,89 @@ function integracoreParseValue($str='',$val=''){
       }
     return $str;
   }
+function integracoreShipMethodLookup($description){
+	$shipmap=array(
+		'FEDEX 1ST OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 01'),
+		'FEDERAL EXPRESS PRIORITY OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 03'),
+		'FEDEX PRIORITY SATURDAY DELIVERY'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 03S'),
+		'FEDEX STANDARD OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 05'),
+		'FEDEX ECONOMY 2 DAY'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 08'),
+		'FEDEX SAVER PACKAGE 3 DAY'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 11'),
+		'FEDEX 1ST INTL'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 14'),
+		'FEDEX INTL PRIORITY'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 15'),
+		'FEDEX INTL ECONOMY'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 17'),
+		'FedEx Fright Priority International'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 19'),
+		'Fedex Ground'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX G'),
+		'Fedex Ground Signature Required'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX GS'),
+		'UMI DEL CONF'=>array('carrier'=>'UMI','carrier_service_code'=>'UMI 01'),
+		'UMI NON DEL CONF'=>array('carrier'=>'UMI','carrier_service_code'=>'UMI 01N'),
+		'UPS NEXT DAY PACKAGE'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 01'),
+		'UPS NEXT DAY AIR SAVER'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 03'),
+		'UPS EARLY AM'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 05'),
+		'UPS 2ND DAY PACKAGE'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 07'),
+		'UPS 2ND DAY AM'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 09'),
+		'UPS 3 DAY SELECT'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 11'),
+		'UPS Standard to Canada'=>array('carrier'=>'RTX','carrier_service_code'=>'UPS 12'),
+		'UPS Worldwide Expedited'=>array('carrier'=>'RTX','carrier_service_code'=>'UPS 13'),
+		'UPS Worldwide Saver'=>array('carrier'=>'RTX','carrier_service_code'=>'UPS 14'),
+		'UPS Worldwide Express'=>array('carrier'=>'RTX','carrier_service_code'=>'UPS 15'),
+		'UPS Worldwide Express Plus '=>array('carrier'=>'RTX','carrier_service_code'=>'UPS 16'),
+		'UPS EXPRESS PLUS SERVICE LTR INTL'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 17'),
+		'UPS GROUND HUNDREDWEIGHT'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 22'),
+		'UPS NEXT DAY SATURDAY DELIVERY'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS 70'),
+		'UPS GROUND'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS G'),
+		'UPS Ground Signature Required'=>array('carrier'=>'UPS','carrier_service_code'=>'UPS GS'),
+		'USPS PRIORITY MAIL'=>array('carrier'=>'POS','carrier_service_code'=>'USS 01'),
+		'USPS 1st CLASS REGULAR'=>array('carrier'=>'POS','carrier_service_code'=>'USS 04'),
+		'USPS 1st CLASS DEL CONF'=>array('carrier'=>'POS','carrier_service_code'=>'USS 04D'),
+		'USPS First Class Mail INTL - Max 4 lbs'=>array('carrier'=>'POS','carrier_service_code'=>'USS 05'),
+		'USPS Priority Mail INTL - Over 4lbs'=>array('carrier'=>'POS','carrier_service_code'=>'USS 12'),
+		'MEDIA MAIL'=>array('carrier'=>'POS','carrier_service_code'=>'USS 15')
+	);
+	//look for exact match
+	$description=strtoupper($description);
+	if(isset($shipmap[$description])){return $shipmap[$description];}
+
+	//look for metaphone description match first as it is more exact than soundex
+	$mdesc=metaphone($description);
+	foreach($shipmap as $key=>$map){
+    	if(metaphone($key)==$mdesc){return $shipmap[$key];}
+	}
+
+	//look for soundex description match
+	$sdesc=soundex($description);
+	foreach($shipmap as $key=>$map){
+    	if(soundex($key)==$sdesc){return $shipmap[$key];}
+	}
+	$item=array();
+	$parts=preg_split('/\ +/',strtolower($description));
+    switch($parts[0]){
+        case 'fedex':
+            $item['carrier']='FDX';
+            $item['carrier_service_code']='FDX G';
+        break;
+        case 'ups':
+            $item['carrier']='UPS';
+            $item['carrier_service_code']='UPS G';
+        break;
+        case 'usps':
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+        case 'ground':
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+        default:
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+	}
+	if(is_numeric($parts[1])){
+    	$item['3rdPartyAccountNumber']=$parts[1];
+	}
+	return $item;
+}
+
+
 ?>
