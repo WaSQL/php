@@ -1,30 +1,24 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
+    <meta charset="UTF-8" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>Your title here</title>
-	<link href="<?=minifyCssFile();?>" rel="stylesheet">
-    <script type="text/javascript" src="<?=minifyJsFile();?>"></script>
+	<title><?=templateMetaTitle();?></title>
+	<link rel="canonical" href="http://<?=$_SERVER['HTTP_HOST'];?>/" />
+	<link rel="shortcut icon" href="/images/logo.png" type="image/png" />
+	<link rel="apple-touch-icon" href="/images/logo.png" type="image/png" />
+	<meta property="og:title" content="" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="http://<?=$_SERVER['HTTP_HOST'];?>/" />
+	<meta property="og:site_name" content="PureStill" />
+	<meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+	<meta name="viewport" content="minimum-scale=0.25, maximum-scale=1.2" />
+	<meta name="description" content="<?=templateMetaDescription();?>" />
+	<meta name="keywords" content="<?=templateMetaKeywords();?>" />
+	<link type="text/css" rel="stylesheet" href="<?=minifyCssFile();?>" />
+  	<script type="text/javascript" src="<?=minifyJsFile();?>"></script>
 </head>
 <body>
-<div id="container">
-    <div id="header">
-    	<div class="logo"><a href="/"><img src="/wfiles/iconsets/64/world.png" border="0" alt="logo" /></a></div>
-    </div>
-    <div class="mainMenu">
-        <ul>
-            <li><a href="/">home</a></li>
-            <li><a href="/about">about</a></li>
-            <li class="w_right"><a href="/contact">contact</a></li>
-        </ul>
-    </div>
-    <div class="mainContent">
-    	<?=pageValue('body');?>
-	</div>
-	<div class="footerMenu" align="center">
-            <li><a href="/contact">contact</a></li>
-        </ul>
-    </div>
-</div>
+	<?=pageValue('body');?>
 </body>
 </html>
