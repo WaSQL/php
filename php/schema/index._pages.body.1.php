@@ -1,21 +1,13 @@
 <view:default>
-	<div class="background-div">
-		<div style="position: absolute;width:100%;top: 50%;transform: translateY(-50%);">
-			<div class="w_white" style="font-size:3em;">Super Awesome Company</div>
-			<div class="w_white" style="font-size:1.5em;">Our website isn't quite ready, but you can still...</div>
-		</div>
-	</div>
-	<div style="position: absolute;width:100%;top: 50%;transform: translateY(-50%);min-height:100px;" align="center">
-		<div style="width:60%;margin-left:auto;margin-right:auto;min-height:100px;" class="well container">
 			<div class="row">
-				<div class="col-xs-4">
+				<div class="col-sm-12 col-md-4">
 					<div class="mybox round">
 						<h2>Contact us</h2>
 						<div><a href="tel:123.123.1234" class="w_big"><span class="icon-phone"></span> 123.123.1234</a></div>
 						<div><a href="mailto:info@<?=strtolower($_SERVER['UNIQUE_HOST']);?>" class="w_big"><span class="icon-mail"></span> info@<?=strtolower($_SERVER['UNIQUE_HOST']);?></a></div>
 					</div>
 				</div>
-			    <div class="col-xs-4">
+			    <div class="col-sm-12 col-md-4">
 			    	<div class="mybox round">
 						<h2><span class="icon-mail"></span> Subscribe</h2>
 						<div>You will be notified when we are live</div>
@@ -29,7 +21,7 @@
 						</div>
 			   		</div>
 				</div>
-				<div class="col-xs-4">
+				<div class="col-sm-12 col-md-4">
 					<div class="mybox round">
 						<h2>Follow us</h2>
 						<a href="http://www.facebook.com" class="w_huge"><span class="icon-site-facebook-squared"></span></a>
@@ -37,8 +29,6 @@
 					</div>
 				</div>
 			</div>
-		</div>
-	</div>
 </view:default>
 <view:thankyou>
 	<div class="w_centerpop_title"><span class="icon-info"></span> Information Window</div>

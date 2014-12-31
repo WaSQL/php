@@ -1243,6 +1243,7 @@ $expire=gmdate('D, d M Y H:i:s', time()+10);
 @header("Cache-Control: maxage={$expire}");
 @header("Expires: {$expire} GMT");
 @header('X-Platform: WaSQL');
+@header('X-Frame-Options: SAMEORIGIN');
 $js=<<<ENDOFJSSCRIPT
 <script type="text/javascript">
 	//---------- begin function syncTableClick ----
@@ -3935,8 +3936,8 @@ function adminMenu(){
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List Users</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report">'.adminMenuIcon('/wfiles/iconsets/16/charts.png').' User Report</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/user_add.png').' Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie"></span> Password Report</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($users as $cuser){
 		if(isAdmin() && $USER['_id'] != $cuser['_id']){$rtn .= '				<li class="dir">';}
 		else{$rtn .= '				<li>';}

@@ -34,7 +34,7 @@ body {
     border: 2px solid #FFF;
     background: none repeat scroll 0% 0% #ededed;
     text-align: left;
-    min-height: 140px;
+    min-height: 160px;
     padding: 20px;
     color:#428bca;
 }
@@ -60,7 +60,6 @@ body {
 	border-bottom-right-radius: 5px;
 }
 .container{
-	max-width:900px;
 	margin-top:20px;
 }
 a {

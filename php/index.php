@@ -8,7 +8,10 @@
 	//header('Content-type: text/plain');
 	include_once("$progpath/common.php");
 	include_once("$progpath/config.php");
-	global $CONFIG;
+	global $CONFIG;	
+	if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
+		@header('X-Frame-Options: SAMEORIGIN');
+	}
 	if(isset($CONFIG['valid_hosts'])){
     	$valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_hosts'])));
     	if(!count($valid_hosts)){break;}
