@@ -399,12 +399,12 @@ function remindMeForm(){
 	txt +=  '			<input type="hidden" name="_remind" value="1">'+"\n";
 	txt +=  '			<input type="hidden" name="tname" value="remind me">'+"\n";
 	txt +=	'			<div class="w_gray"> Enter the email address tied to your account profile to have your username and password emailed to you.</div>'+"\n";
-	txt +=	'			<div><img src="/wfiles/iconsets/32/email.png" width="32" height="32" alt="Email Address" class="w_middle"> <b>Email Address</b></div>'+"\n";
-	txt +=	' 			<div><input type="text" maxlength="255" name="email" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" style="width:250px;font-size:9pt;font-family:arial;"></div>'+"\n";
-	txt +=	'			<div align="right" style="margin-right:2px;margin-top:5px;"><input type="submit" class="w_formsubmit" value="Remind Me"></div>'+"\n";
+	txt +=	'			<div><span class="icon-mail"></span> <b>Email Address</b></div>'+"\n";
+	txt +=	' 			<div><input type="text" maxlength="255" name="email" placeholder="email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control"></div>'+"\n";
+	txt +=	'			<div align="right" style="margin-right:2px;margin-top:5px;"><button type="submit" class="btn btn-primary w_formsubmit">Remind Me</button></div>'+"\n";
 	txt +=  '		</form>';
 	txt +=	'	</div>'+"\n";
-	var rtitle='<img src="/wfiles/iconsets/16/info.png" width="16" height="16" alt="reminder" class="w_middle"> Remind Me Form';
+	var rtitle='<span class="icon-info"></span> Remind Me Form';
 	popUpDiv('',{id:dname,width:300,height:50,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 	setCenterPopText(dname,txt,{title:rtitle});
 	document.remindMe.email.focus();
