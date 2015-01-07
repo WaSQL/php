@@ -912,11 +912,11 @@ table th a {
 #w_loginform_default{
 	background-color: #fff;
     padding: 15px;
-    border:1px solid #000;
-    [safari|chrome]-webkit-border-radius: 5px;
-	-khtml-border-radius: 5px;
-    border-radius: 5px;
-    width: 350px;
+    border:2px solid #3465a4;
+    [safari|chrome]-webkit-border-radius: 7px;
+	-khtml-border-radius: 7px;
+    border-radius: 7px;
+    display: table-cell;
 }
 /* Form styles. */
 .w_form {margin:0px;padding:0px;}
