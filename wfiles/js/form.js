@@ -1466,11 +1466,11 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	}
 	else{params=xparams;}
 	if(undefined == newtitle){
-		if(undefined != xparams["-newtitle"]){newtitle=xparams["-newtitle"];}
+		if(undefined != xparams && undefined != xparams["-newtitle"]){newtitle=xparams["-newtitle"];}
 		else{newtitle='';}
 	}
 	if(undefined == newurl){
-		if(undefined != xparams["-newurl"]){newurl=xparams["-newurl"];}
+		if(undefined != xparams && undefined != xparams["-newurl"]){newurl=xparams["-newurl"];}
 		else{newurl='';}
 	}
 	if(undefined == callback){callback='';}

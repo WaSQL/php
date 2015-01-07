@@ -1113,15 +1113,38 @@ function setText(obj,txt){
 	//info: sets the text of specified object or id to txt
 	//usage: setText('div2','test');
 	var cObj=getObject(obj);
-    if(undefined == cObj){return null;}
-    //alert(cObj+'\n'+txt);
-    var previous_value=getText(cObj);
-	if(undefined != cObj.innerHTML){cObj.innerHTML=txt;}
-    else if(undefined != cObj.innerText){cObj.innerText=txt;}
-    else if(undefined != cObj.value){cObj.value=txt;}
-    else{
+    if(undefined == cObj){
+		colsole.log('setText: no object found for '.obj);
 		return null;
-    	}
+	}
+    //console.log(cObj.id+'\n'+txt+'\n\n');
+    var previous_value=getText(cObj);
+    var setflag=0;
+	if(undefined != cObj.innerHTML){
+		try{
+			cObj.innerHTML=txt;
+			var check=getText(cObj);
+			if(check!=previous_value){setflag=1;}
+		}
+		catch(e){}
+	}
+	if(setflag==0 && undefined != cObj.innerText){
+		try{
+			cObj.innerText=txt;
+			var check=getText(cObj);
+			if(check!=previous_value){setflag=1;}
+		}
+		catch(e){}
+	}
+    if(setflag==0 && undefined != cObj.value){
+		try{
+			cObj.value=txt;
+			var check=getText(cObj);
+			if(check!=previous_value){setflag=1;}
+		}
+		catch(e){}
+	}
+	if(setflag==0){return null;}
     //check for onchange attribute and kick it off if the value changes
     if(undefined != cObj.onchange && previous_value != txt){
 		cObj.onchange();
