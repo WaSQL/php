@@ -3280,7 +3280,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<table class="w_table">'."\n";
+	$rtn .= '<table class="">'."\n";
 	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'" class="w_form" enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
@@ -3323,7 +3323,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
-	$rtn .= buildTableBegin(2,0);
+	$rtn .= '<table class="table table-condensed table-striped table-bordered">'."\n";
 	if($params['-view']=='table'){
 		$rtn .= '	<tr>'."\n";
 		foreach($fields as $field){

@@ -2062,7 +2062,7 @@ function buildDBPaging($paging=array()){
 				$dval=ucwords(trim($dval));
             	$opts[$tval]=$dval;
 			}
-			$rtn .= '<table class="w_table w_nopad"><tr>'."\n";
+			$rtn .= '<table class="w_nopad"><tr>'."\n";
 			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- Search --")).'</td>'."\n";
 			$rtn .= '	<td><input type="text" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
 			$rtn .= '	<td>'.buildFormSubmit('Search').'</td>'."\n";
@@ -2075,7 +2075,7 @@ function buildDBPaging($paging=array()){
 
 		if(isset($paging['-daterange']) && $paging['-daterange']==1){
 			$rangeid='dr'.time();
-			$rtn .= '<table><tr><td>'."\n";
+			$rtn .= '<table class="w_nopad"><tr><td>'."\n";
 			$checked=(isset($_REQUEST['date_range']) && $_REQUEST['date_range']==1)?' checked':'';
 			$rtn .= '<div style="font-size:9pt;"><input type="checkbox" name="date_range" value="1"'.$checked.' onClick="showHide(\''.$rangeid.'\',this.checked);"> Filter by Date Range</div>'."\n";
 			if(strlen($checked)){
@@ -2084,7 +2084,7 @@ function buildDBPaging($paging=array()){
 			else{
 				$rtn .= '<div style="font-size:9pt;display:none;" align="center" id="'.$rangeid.'">'."\n";
 	        	}
-			$rtn .= '<table>'."\n";
+			$rtn .= '<table class="w_nopad">'."\n";
 			$rtn .= '	<tr>'."\n";
 			if(is_array($paging['-datefield'])){
 				$paging['-formname']=$formname;
@@ -2105,7 +2105,7 @@ function buildDBPaging($paging=array()){
     	$onsubmit=str_replace('(this',"(document.{$formname}",$onsubmit);
 	}
 	if(isset($paging['-limit'])){
-		$rtn .= '<table class="w_table w_nopad" ><tr valign="middle">'."\n";
+		$rtn .= '<table class="w_nopad" ><tr valign="middle">'."\n";
 		$rtn .= '	<th><div style="width:35px;">';
 		if(isset($paging['-first'])){
 			$arr=array();
