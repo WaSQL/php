@@ -6327,7 +6327,7 @@ function listDBRecords($params=array(),$customcode=''){
         	}
         $title=isset($params[$fld."_title"])?' title="'.$params[$fld."_title"].'"':'';
         if(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label><input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'."\n";
+        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'."\n";
 		}
         elseif(isset($params['-nosort']) || isset($params[$fld."_nolink"])){
 			$rtn .= '		<th'.$title.' class="w_nowrap">' . "{$col}</th>\n";
