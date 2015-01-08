@@ -2481,7 +2481,7 @@ if(isset($_REQUEST['_menu'])){
 				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/indexes.gif" alt="all indexes" /> Indexes for All Tables</div>'."\n";
 				$list=getDBIndexes();
 				}
-			echo listDBRecords(array('_menu'=>$_REQUEST['_menu'],'_table_'=>$_REQUEST['_table_'],'-list'=>$list));
+			echo listDBRecords(array('_menu'=>$_REQUEST['_menu'],'_table_'=>$_REQUEST['_table_'],'-tableclass'=>"table table-condensed table-striped table-bordered",'-list'=>$list));
 			//echo printValue($list);
 			break;
 		case 'postedit':
@@ -2580,9 +2580,9 @@ if(isset($_REQUEST['_menu'])){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
 			echo $currentTable.' Table</div>'."\n";
-			echo '<table class="w_table w_nopad"><tr valign="top"><td>'."\n";
-			echo '<table class="w_table w_pad w_border">'."\n";
-			echo '<tr><th colspan="7"><img src="/wfiles/iconsets/16/database.png" style="vertical-align:middle" alt="database properties" /> Database Properties</th><th colspan="8"><img src="/wfiles/icons/files/html.gif" style="vertical-align:middle" alt="meta properties" /> META Properties</th></tr>'."\n";
+			echo '<table class="w_nopad"><tr valign="top"><td>'."\n";
+			echo '<table class="table table-condensed table-striped table-bordered">'."\n";
+			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'."\n";
 			echo '	<tr>'."\n";
 			echo '		<th>Name</th>'."\n";
 			echo '		<th>Type</th>'."\n";
@@ -2638,13 +2638,13 @@ if(isset($_REQUEST['_menu'])){
 					$val=$tinfo['fieldinfo'][$field][$formfield];
 					if(isNum($val)){
 						if($val==1){
-							if($formfield=='required'){$val='<b class="w_red">*</b>';}
-							elseif($formfield=='editlist'){$val='<img src="/wfiles/iconsets/16/list.png" alt="list" />';}
+							if($formfield=='required'){$val='<span class="icon-mark"></span>';}
+							elseif($formfield=='editlist'){$val='<span class="icon-list"></span>';}
 							}
 						elseif($val==0){$val='';}
-						echo '		<td align="right">'.$val.'</td>'."\n";
+						echo '		<td align="right" title="'.$formfield.'">'.$val.'</td>'."\n";
                     	}
-					else{echo '		<td>'.$val.'</td>'."\n";}
+					else{echo '		<td title="'.$formfield.'" nowrap>'.$val.'</td>'."\n";}
 					}
 				$recopts=array('-table'=>"_fielddata",'-where'=>"tablename = '{$currentTable}' and fieldname = '{$field}'");
 				$rec=getDBRecord($recopts);
@@ -2656,8 +2656,8 @@ if(isset($_REQUEST['_menu'])){
             echo '</td><td>'."\n";
             $list=getDBSchema(array($currentTable));
 			echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
-			echo '<table class="w_table w_border w_pad">'."\n";
-            echo '	<tr><th><img src="/wfiles/iconsets/16/database.png" style="vertical-align:middle" alt="schema editor" /> Table Schema Editor</th></tr>'."\n";
+			echo '<table class="table table-condensed table-bordered">'."\n";
+            echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'."\n";
             echo '	<tr valign="top"><td>'."\n";
             $height=300;
             if(count($list) > 15){
@@ -2686,7 +2686,7 @@ if(isset($_REQUEST['_menu'])){
             echo '<tr valign="top"><td colspan="2">'."\n";
             echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
             echo buildFormSubmit("Save Changes","do");
-            echo '<table class="w_table w_border w_pad">'."\n";
+            echo '<table class="table table-condensed table-bordered table-striped table-responsive">'."\n";
             //General Table Settings
             echo '	<tr valign="top">'."\n";
 			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/iconsets/16/generic.png" alt="table settings" /> General Table Settings</th>'."\n";
@@ -2696,15 +2696,15 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			echo buildTableRow(array(
-				'<img src="/wfiles/iconsets/16/synchronize.png" alt="synchronize" />',
+				'<img src="/wfiles/iconsets/16/synchronize.png" alt="synchronize" /> ',
 				buildFormField('_tabledata','synchronize'),
-				'Synchronize'
+				' Synchronize'
 			));
 			//echo '			<input type="checkbox" name="synchronize" value="1"'.$checked.' />'."\n";
 			//echo '			 Synchronize'."\n";
 			echo '		</td>'."\n";
 			echo '		<td>'."\n";
-			echo '			<div class="w_dblue">Synchronize this table is synchronize is turned on</div>'."\n";
+			echo '			<div class="w_dblue">Check to synchronize this table</div>'."\n";
 			echo '		</td>'."\n";
 			echo '	</tr>'."\n";
 			//table group and description
@@ -2714,7 +2714,6 @@ if(isset($_REQUEST['_menu'])){
 			echo '			<div style="width:150px">'."\n";
 			echo '				<div><img src="/wfiles/iconsets/16/group.png" alt="table group" /> Table Group</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tablegroup')."\n";
-			//echo '				<input type="text" name="tablegroup" style="width:145px;" min="5" max="50" value="'.$tinfo['tablegroup'].'">'."\n";
 			echo '				<div>Allows grouping in admin table menu.</div>'."\n";
 			echo '			</div>'."\n";
 			echo '		</td>'."\n";
@@ -2722,7 +2721,6 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<td>'."\n";
 			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tabledesc')."\n";
-			//echo '			<textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="tabledesc">'.$val.'</textarea>'."\n";
 			echo '		</td>'."\n";
 			echo '	</tr>'."\n";
 			//Table Admin List fields
@@ -2730,18 +2728,18 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/admin.gif" alt="administrator settings" /> Administrator Settings</th>'."\n";
 			echo '	</tr>'."\n";
             echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/iconsets/16/list.png" alt="list fields" /> List Fields - fields to display when listing records</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
 			$_REQUEST['listfields']=array2String($tinfo['listfields']);
 			echo '		<td>'.buildFormField('_tabledata','listfields').'</td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/down.gif" alt="sort fields" /> Sort Fields -  default sorting order</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
 			$_REQUEST['sortfields']=array2String($tinfo['sortfields']);
 			echo '		<td>'.buildFormField('_tabledata','sortfields').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/icons/files/html.gif" alt="form fields" /> Form Fields - order of fields to display when showing a form</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form</div></td>'."\n";
 			$_REQUEST['formfields']=array2String($tinfo['formfields']);
 			echo '		<td>'.buildFormField('_tabledata','formfields').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'."\n";
@@ -2751,19 +2749,19 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/user.gif" alt="non-admin settings" /> Non-Administrator Settings</th>'."\n";
 			echo '	</tr>'."\n";
             echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/iconsets/16/list.png" alt="list fields" /> List Fields - fields to display when listing records</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
 			$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);
 			echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/down.gif" alt="sort fields" /> Sort Fields -  default sorting order</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
 			$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);
 			echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><img src="/wfiles/icons/files/html.gif" alt="form fields" /> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'."\n";
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'."\n";
 			$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);
 			echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'."\n";
@@ -3747,7 +3745,7 @@ function adminMenu(){
     $rtn .= '<div id="admin_info" style="display:none">'."\n";
 	$rtn .= '	<div style="width:400px;">'."\n";
 	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'."\n";
-	$rtn .= buildTableBegin(2,1);
+	$rtn .= '<table class="table table-striped table-bordered table-condensed">'."\n";
 	$info=array(
 		'Server Host'	=> $_SERVER['HTTP_HOST'],
 		'Database Host'	=> $CONFIG['dbhost'],
