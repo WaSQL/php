@@ -1584,7 +1584,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'profile':
 			//My Profile
 			$img=$USER['utype']==0?$rtn .= 'admin.gif':'user.gif';
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><img src="/wfiles/edit.png" alt="edit" /> edit</a></div>'."\n";
+			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'."\n";
 			echo buildTableBegin(2,1);
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
@@ -1606,7 +1606,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'settings':
 			global $SETTINGS;
 			echo '<div style="width:800px;padding:10px;">'."\n";
-			echo '<div class="w_lblue w_bold w_biggest"><img src="/wfiles/iconsets/32/settings.png" style="vertical-align:middle;" alt="settings" /> Settings - '.$CONFIG['dbname'].'</a></div>'."\n";
+			echo '<div class="w_lblue w_bold w_biggest"><span class="icon-gear"></span> Settings - '.$CONFIG['dbname'].'</a></div>'."\n";
 			//update
 			echo buildFormBegin('',array('_menu'=>'settings','-name'=>'settingsform','_action'=>'settings'));
 			echo buildTableBegin(2,1);
@@ -2317,10 +2317,10 @@ if(isset($_REQUEST['_menu'])){
             echo '		<td valign="top"><img src="/wfiles/iconsets/32/synchronize.png" class="w_middle" alt="synchronize" /></td>'."\n";
             echo '		<td valign="top">'."\n";
             echo '			<div class="w_lblue w_bigger"> Synchronize Manager</div>'."\n";
-            echo '			<idv class="w_lblue w_smaller w_padleft"><b>Staging Database</b> = '.$db_stage.', <b>Live Database</b> = '.$db_live.'</div>'."\n";
+            echo '			<div class="w_lblue w_smaller w_padleft"><b>Stage DB</b>: '.$db_stage.', <b>Live DB</b>: '.$db_live.'</div>'."\n";
             echo '			<div class="w_lblue w_smaller w_padleft"><b>Tables to sync:</b> '.implode(', ',$stables).'</div>'."\n";
             echo '		</td>'."\n";
-            echo '		<td style="padding-left:25px;"><a class="w_link w_lblue w_bold" href="/php/admin.php?_menu=settings"><img src="/wfiles/iconsets/16/settings.png" alt="settings" /> Settings</a></td>'."\n";
+            echo '		<td style="padding-left:25px;"><a class="w_link w_lblue w_bold" href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> Settings</a></td>'."\n";
             echo '	</tr>'."\n";
             echo buildTableEnd();
             echo '<hr size="1">'."\n";
@@ -3624,17 +3624,18 @@ function sqlPrompt(){
 	$rtn .= '	</tr>'."\n";
 	$rtn .= '	<tr valign="top" id="adminmenu">'."\n";
 	$rtn .= '		<td class="w_align_left w_nowrap">'."\n";
-	$rtn .= '			<input type="submit" name="sqlprompt" value="Run SQL (F5)" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">'."\n";
+	$rtn .= '			<button class="btn btn-primary" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'."\n";
 	//next line inspired by Brady Barten
-	$rtn .= '			<input type="submit" name="sqlprompt" value="Create Report" onclick="document.sqlprompt_form._menu.value=\'add\';">'."\n";
+	$rtn .= '			<button class="btn btn-primary" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'."\n";
 	$rtn .= '		</td>'."\n";
 	$rtn .= '	</tr>'."\n";
 	$rtn .= '</table>'."\n";
 	$rtn .= '</form>'."\n";
-	$rtn .= '<form method="POST" name="sqlprompt_form2" target="_export" action="/php/admin.php" class="w_form" style="position:relative;top:-32px;left:300px;" onsubmit="setText(this.sqlprompt_command,getText(\'sqlprompt_command\'));return submitForm(this);">'."\n";
+	$rtn .= '<form method="POST" name="sqlprompt_form2" target="_export" action="/php/admin.php" class="w_form" style="position:relative;top:-35px;left:300px;" onsubmit="setText(this.sqlprompt_command,getText(\'sqlprompt_command\'));return submitForm(this);">'."\n";
 	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
+	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'."\n";
 	$rtn .= '	<textarea name="sqlprompt_command" style="width:0px;height:0px;"></textarea>'."\n";
-	$rtn .= '	<input type="submit" name="sqlprompt" value="CSV Export">'."\n";
+	$rtn .= '	<button class="btn btn-primary" type="submit"><span class="icon-export"></span> CSV Export</button>'."\n";
 	$rtn .= '</form>'."\n";
 	$rtn .= '<table class="w_table w_nopad" class="w_table" width="100%">'."\n";
 	//results window
@@ -4036,7 +4037,7 @@ function adminMenu(){
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	//Settings Link
-	//$rtn .= '     	<li style="margin-left:15px;"><a href="/php/admin.php?_menu=admin_settings" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=admin_settings\');"><img title="settings" src="/wfiles/iconsets/16/settings.png" alt="" /></a></li>'."\n";
+	//$rtn .= '     	<li style="margin-left:15px;"><a href="/php/admin.php?_menu=admin_settings" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=admin_settings\');"><span class="icon-gear"></span></a></li>'."\n";
 
 	//end menu
 	$rtn .= '	</ul>'."\n";
@@ -4273,9 +4274,9 @@ function adminSettings(){
 	$setfield='_admin_settings_';
 	$rtn='';
 	$rtn .= buildFormBegin('',array('-name'=>"adminSettingsForm",'_action'=>"settings",'_menu'=>"admin_settings",'_userid'=>"-1",'_setfield'=>$setfield,'-multipart'=>1,'-onsubmit'=>'return submitForm(this);'));
-	$rtn .= '<div class="w_bold w_bigger w_lblue w_pad"><img src="/wfiles/iconsets/16/settings.png" alt="admin settings" /> Admin Settings</div>'."\n";
+	$rtn .= '<div class="w_bold w_bigger w_lblue w_pad"><span class="icon-gear"></span> Admin Settings</div>'."\n";
 	$rtn .= '<div id="adminsettings" style="height:450px;width:450px;overflow:scroll;padding-right:20px;">'."\n";
-	$rtn .= '	<div id="adminmenu" class="w_bold"><img src="/wfiles/iconsets/16/settings.png" alt="main menu" /> Main Menu</div>'."\n";
+	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Main Menu</div>'."\n";
 	//$rtn .= '	<div class="mainmenu_fade_color_bot mainmenu_text_color w_big" style="padding-left:3px;">Icons and Text Settings</div>'."\n";
 	//icons, text, tablesbyletter
 	$tvals="ICO";
@@ -4301,7 +4302,7 @@ function adminSettings(){
 	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=mainmenu\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset" /> Reset to default settings</a></div>'."\n";
 
 	//Action Menu
-	$rtn .= '	<div id="adminmenu" class="w_bold"><img src="/wfiles/iconsets/16/settings.png" alt="action menu" /> Action Menu</div>'."\n";
+	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Action Menu</div>'."\n";
 	//icons, text, tablesbyletter
 	$tvals="ICO\r\nTXT";
 	$dvals="Show Icons\r\nShow Text";
@@ -4320,7 +4321,7 @@ function adminSettings(){
 	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=actionmenu\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset to default" /> Reset to default settings</a></div>'."\n";
 
 	//Content Settings
-	$rtn .= '	<div id="adminmenu" class="w_bold"><img src="/wfiles/iconsets/16/settings.png" alt="content position" /> Content Position</div>'."\n";
+	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Content Position</div>'."\n";
 	//Fixed Width Center or Full Width Left
 	$tvals="fixed\r\nfull";
 	$dvals="Fixed Width Center\r\nFull Width Left";
@@ -4329,7 +4330,7 @@ function adminSettings(){
 	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=content\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset to default" /> Reset to default settings</a></div>'."\n";
 
 	//Table settings
-	$rtn .= '	<div id="adminmenu" class="w_bold"><img src="/wfiles/iconsets/16/settings.png" alt="table colors and shading" /> Table Colors and Shading</div>'."\n";
+	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Table Colors and Shading</div>'."\n";
 	//top fade color, bottom fade color, bottom border color
 	$rtn .= '		<table class="w_table w_pad" width="100%">'."\n";
 	$rtn .= '			<tr valign="bottom"><td>TH Text Color</td><td>TH Background</td><td>Even Row Color</td></tr>'."\n";
@@ -4432,6 +4433,7 @@ function syncGetChanges($stables=array()){
 		//now determine what records are different from stage and live
 		$info['recs_diff'][$table]=array();
 		foreach($info['recs_stage'][$table] as $index=>$stagerec){
+			if(stringContains($stagerec['_name'],'->_')){continue;}
 			if(!isset($info['recs_live'][$table][$index])){
             	//new record on stage
             	$stage_userid=$stagerec['_euser'];
@@ -4439,7 +4441,7 @@ function syncGetChanges($stables=array()){
 				if(isset($info['users_stage'][$stage_userid]['username'])){$stage_user=$info['users_stage'][$stage_userid]['username'];}
             	else{$stage_user='Unknown';}
 				$actions=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_push.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Push change Live" alt="push change live" /></a>';
-            	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><img src="/wfiles/iconsets/16/edit.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Edit Record" alt="edit record" /></a>';
+            	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				$for="inp_{$index}_{$table}";
             	$stage_date=setValue(array($stagerec['_edate'],$stagerec['_cdate'],'unknown'));
             	$age=time()-strtotime($stage_date);
@@ -4473,7 +4475,7 @@ function syncGetChanges($stables=array()){
             	$for="inp_{$index}_{$table}";
             	$actions='<label style="cursor:pointer" for="'.$for.'" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_table&diff_table='.$table.'&diff_id='.$index.'\');"><img src="/wfiles/iconsets/16/synchronize_diff.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Compare Differences" alt="compare differences" /></label>';
             	$actions.=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_push.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Push change Live" alt="push change live" /></a>';
-            	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><img src="/wfiles/iconsets/16/edit.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Edit Record" alt="edit record" /></a>';
+            	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				//check to see if live is newer - if so place an alert icon
             	$date_live_val=setValue(array($info['recs_live'][$table][$index]['_edate'],$info['recs_live'][$table][$index]['_cdate'],'unknown'));
             	$date_stage_val=setValue(array($stagerec['_edate'],$stagerec['_cdate'],'unknown'));
@@ -4575,13 +4577,14 @@ function adminShowSyncChanges($stables=array()){
     $databaseCache=array();
     //get changes
     $changes=syncGetChanges($stables);
+
     if(!is_array($changes) || !count($changes)){
         return 'No Changes Found';
 	}
 	$rtn='';
 	//display change tabs by table
 	$rtn .= '	<div  class="w_align_left">'."\n";
-	$rtn .= '	<table id="syncTableMain" class="w_table w_pad">'."\n";
+	$rtn .= '	<table id="syncTableMain" class="w_pad">'."\n";
 	$rtn .= '		<tr valign="bottom">'."\n";
 	foreach($changes as $table=>$recs){
 		//get changes for the current user
@@ -4616,7 +4619,7 @@ function adminShowSyncChanges($stables=array()){
 		$rtn .= '		<div table="'.$table.'" id="'.$syncTableDiv.'">'."\n";
 		$rtn .=  listDBRecords(array(
 			'-list'			=> $changes[$table],'_id_align'=>"left",
-			'-tableclass'	=> "w_table sortable",
+			'-tableclass'	=> "table table-bordered table-condensed sortable",
 			'-tableid'		=> "synctable{$table}",
 			'diff_align'	=> "center",
 			'synctab'		=> $table,
@@ -4639,8 +4642,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableHref}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'."\n";
-	$rtn .= '<input style="padding-left:23px;background:url(/wfiles/iconsets/16/synchronize_push.png);background-repeat:no-repeat;background-position: 5px;" type="submit" class="w_bold w_round" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;" value="Push Changes Live">'."\n";
-	$rtn .= '<input style="padding-left:23px;background:url(/wfiles/iconsets/16/synchronize_pull.png);background-repeat:no-repeat;background-position: 5px;" type="submit" class="w_red w_bold w_round" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;" value="Restore from Live">'."\n";
+	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><img src="/wfiles/iconsets/16/synchronize_push.png" border="0" alt="push"> Push Changes Live</button>'."\n";
+	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><img src="/wfiles/iconsets/16/synchronize_pull.png" border="0" alt="restore"> Restore from Live</button>'."\n";
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }
@@ -4793,7 +4796,7 @@ function editorNavigation(){
 
 	//.htaccess
 	if(is_file(realpath("../.htaccess"))){
-		echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../.htaccess\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/settings.png" class="w_middle" alt=".htaccess" /> .htaccess</a></div>'."\n";
+		echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../.htaccess\');" class="w_link w_lblue"><span class="icon-gear"></span> .htaccess</a></div>'."\n";
 	}
 	//Configuration
 	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/xml.png" class="w_middle" alt="config.xml" /> config.xml</a></div>'."\n";

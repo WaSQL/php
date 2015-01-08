@@ -578,10 +578,10 @@ function buildFormSlider($name, $params=array()){
 * @usage if(!buildDir('/var/www/test/folder/sub/test')){return 'failed to build dir';}
 */
 function buildFormSubmit($val='Submit',$name='',$onclick=''){
-	$rtn = '	<input type="submit" value="'.$val.'"';
+	$rtn = '<button class="btn btn-primary" type="submit"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
-	$rtn .= '>'."\n";
+	$rtn .= '>'.$val."</button>";
 	return $rtn;
 	}
 //---------- begin function buildFormTime-----------------
