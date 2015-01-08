@@ -57,7 +57,7 @@ elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
 	include_once("$progpath/user.php");
 	echo buildHtmlBegin();
 	echo '<div class="w_lblue w_bold"><img src="/wfiles/server.png" alt="server" /> REMOTE Variables</div>'."\n";
-	echo buildTableBegin(2,1);
+	echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 	echo buildTableTH(array('Variable','Value'));
 	foreach($_SERVER as $key=>$val){
 		if(!stringBeginsWith($key,'remote') && !stringBeginsWith($key,'http')){continue;}
@@ -356,7 +356,7 @@ if(isAjax()){
 					}
 				//show total records for this table
 				echo "<div>Record Count: {$tcnt}</div>\n";
-				echo buildTableBegin(2,1);
+				echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 				echo buildTableTH(array('Field','Type','Len','Null','Recs','Nulls'));
 				//echo printValue($finfo);
 				foreach($finfo as $info){
@@ -669,7 +669,7 @@ if(isAjax()){
             	exit;
 			}
 			echo '<div style="width:500px;height:300px;padding-right:25px;overflow:auto;">'."\n";
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Tablename','Status','More Info'));
 			foreach($schemas as $table=>$fieldstr){
 				echo '	<tr valign="top">'."\n";
@@ -1373,7 +1373,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'env':
 			//Server Variables
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/server.png" alt="server variables" /> Server Variables</div>'."\n";
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1386,7 +1386,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/icon.png" alt="list iconsets" /> List Iconsets</div>'."\n";
 			echo '<hr size="1">'."\n";
 			$iconsets=listIconsets();
-			echo buildTableBegin(2,0);
+			echo '<table class="table table-condensed table-striped">'."\n";
 			echo '<tr>';
 			$cnt=0;
 			foreach($iconsets as $name){
@@ -1407,7 +1407,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '</tr></table>'."\n";
 			//echo printValue($iconsets);
 			break;
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1439,7 +1439,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/32/server.png" alt="system info" /> System Info</div>'."\n";
 			$info=getServerInfo();
 			//first show all the items that are not arrays
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Name','Description'));
 			foreach($info as $key=>$val){
 				if(!strlen($key)){continue;}
@@ -1463,7 +1463,7 @@ if(isset($_REQUEST['_menu'])){
 						}
 					else{$fields[$x]=1;}
 					}
-				echo buildTableBegin(2,1);
+				echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 				echo buildTableTH(array_keys($fields));
 				foreach($val as $x=>$subval){
 					$svals=array();
@@ -1486,7 +1486,7 @@ if(isset($_REQUEST['_menu'])){
 			break;
 			//$info=getServerInfo();
 			echo printValue($info);
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			//echo buildTableTH(array('Variable','Value'));
 
             echo buildTableEnd();
@@ -1494,9 +1494,9 @@ if(isset($_REQUEST['_menu'])){
 		case 'entities':
 			//Server Variables
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/entity.gif" alt="HTML Entities" /> HTML Entities</div>'."\n";
-			echo buildTableBegin(4,0);
+			echo buildTableBegin(0,0);
 			echo '<tr valign="top"><td>'."\n";
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 
 			//entities
 			echo '<tr><th colspan="2">HTML Entities</th></tr>'."\n";
@@ -1508,7 +1508,7 @@ if(isset($_REQUEST['_menu'])){
 				}
 			echo buildTableEnd();
 			echo '</td><td>'."\n";
-			echo '	' . buildTableBegin(2,1);
+			echo '	<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo '<tr><th colspan="20">Other ASCII Character Sets  (&amp;#CODE;)</th></tr>'."\n";
 			$th=array();
 			for($x=0;$x<10;$x++){array_push($th,"Code","Val");}
@@ -1585,7 +1585,7 @@ if(isset($_REQUEST['_menu'])){
 			//My Profile
 			$img=$USER['utype']==0?$rtn .= 'admin.gif':'user.gif';
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'."\n";
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1609,7 +1609,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '<div class="w_lblue w_bold w_biggest"><span class="icon-gear"></span> Settings - '.$CONFIG['dbname'].'</a></div>'."\n";
 			//update
 			echo buildFormBegin('',array('_menu'=>'settings','-name'=>'settingsform','_action'=>'settings'));
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo '	<tr><th colspan="3" class="w_align_left w_big"><img src="/wfiles/iconsets/16/users.png" style="vertical-align:middle;" alt="global settings" /> Global Settings</th></tr>'."\n";
 			//Wasql Crons
 			$key='wasql_crons';
@@ -3269,7 +3269,7 @@ if(isset($_REQUEST['_menu'])){
 			echo buildFormBegin('/php/admin.php',array('_menu'=>"export"));
 			echo '<input id="isapp" type="checkbox" name="isapp" value="1"> <label for="isapp"><img src="/wfiles/iconsets/16/applications.png" width="16" height="16" class="w_middle" alt="export as app" /> Export as an application</label><br />'."\n";
 			$tables=getDBTables();
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			$cols=array('Table','Schema','Meta','Data');
 			$th=array();
 			foreach($cols as $col){
@@ -3379,7 +3379,7 @@ if(isset($_REQUEST['_menu'])){
 				$info[$tablename][$dbname]['fields'][$field]=$rec['type'];
 			}
 			//Table Name, Rec Cnt (Stage|Live), Action (stage to live, live to stage)
-			echo buildTableBegin(2,1);
+			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
 			echo '<tr>'."\n";
 			echo '	<th rowspan="2">Table Name</th>'."\n";
 			echo '	<th colspan="2">Record Counts</th>'."\n";
