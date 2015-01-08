@@ -2362,7 +2362,7 @@ if(isset($_REQUEST['_menu'])){
 						case '_users':
 							$cfields['_adate']=databaseDataType('datetime')." NULL";
 							$cfields['_apage']="INT NULL";
-							$cfields['_aip']="char(15) NULL";
+							$cfields['_aip']="char(45) NULL";
 							$cfields['_env']="text NULL";
 							$cfields['_sid']="varchar(150) NULL";
 							break;
@@ -2371,7 +2371,7 @@ if(isset($_REQUEST['_menu'])){
 							break;
 						case '_pages':
 							$cfields['_adate']=databaseDataType('datetime')." NULL";
-							$cfields['_aip']="char(15) NULL";
+							$cfields['_aip']="char(45) NULL";
 							$cfields['_amem']=databaseDataType('bigint')." NULL";
 							$cfields['_auser']="integer NULL";
 							$cfields['_env']="text NULL";

@@ -283,7 +283,7 @@ function createWasqlTable($table=''){
 				user_content text NULL - for user driven content without code
 			*/
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']="char(15) NULL";
+			$fields['_aip']="char(45) NULL";
 			$fields['_auser']="integer NULL";
 			$fields['_counter']="integer NULL";
 			$fields['_amem']=databaseDataType('bigint')." NULL";
@@ -507,7 +507,7 @@ function createWasqlTable($table=''){
 			break;
 		case '_templates':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']="char(15) NULL";
+			$fields['_aip']="char(45) NULL";
 			$fields['_auser']="integer NULL";
 			$fields['body']=databaseDataType('mediumtext')." NULL";
 			$fields['functions']=databaseDataType('mediumtext')." NULL";
@@ -572,7 +572,7 @@ function createWasqlTable($table=''){
 		case '_users':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_apage']="INT NULL";
-			$fields['_aip']="char(15) NULL";
+			$fields['_aip']="char(45) NULL";
 			$fields['_env']="text NULL";
 			$fields['_sid']="varchar(150) NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
