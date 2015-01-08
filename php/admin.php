@@ -2864,7 +2864,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '<div>DBName: '.$CONFIG['dbname'].'</div>'."\n";
 			$files=listFilesEx($backupdir,array('name'=>$CONFIG['dbname'].'__'));
 
-			echo buildFormBegin('',array('_menu'=>'backups'));
+			echo buildFormBegin('',array('_menu'=>'backups','func'=>'','-name'=>'backupform'));
 			echo buildFormSubmit('Backup Now','func');
 			if(is_array($files) && count($files)){
 				$list=array();

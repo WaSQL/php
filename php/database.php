@@ -6310,19 +6310,19 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($_REQUEST['_sort'])){
 			if($_REQUEST['_sort']==$fld){
 				$arr['_sort'] .= ' desc';
-				$arrow=' <img src="/wfiles/up.gif" alt="ascending">';
+				$arrow=' <span class="icon-sort-up"></span>';
 				}
 			elseif($_REQUEST['_sort']== "{$fld} desc"){
-				$arrow=' <img src="/wfiles/down.gif" alt="descending">';
+				$arrow=' <span class="icon-sort-down"></span>';
 				}
 			}
 		elseif(isset($params['-order'])){
             if($params['-order']==$fld){
 				$arr['order'] .= ' desc';
-				$arrow=' <img src="/wfiles/up.gif" alt="ascending">';
+				$arrow=' <span class="icon-sort-up"></span>';
 				}
 			elseif($params['-order']== "{$fld} desc"){
-				$arrow=' <img src="/wfiles/down.gif" alt="descending">';
+				$arrow=' <span class="icon-sort-down"></span>';
 				}
         	}
         $title=isset($params[$fld."_title"])?' title="'.$params[$fld."_title"].'"':'';
@@ -6336,18 +6336,18 @@ function listDBRecords($params=array(),$customcode=''){
 			$href=$params['-sortlink'];
 			$replace='%col%';
             $href=str_replace($replace,$col,$href);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "</a></th>\n";
         	}
         elseif(isset($params['-sortclick'])){
 			$onclick=$params['-sortclick'];
 			$replace='%col%';
             $onclick=str_replace($replace,$col,$onclick);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>\n";
         	}
         else{
 	        if(preg_match('/\.(php|htm|phtm)$/i',$PAGE['name'])){$href=$PAGE['name'].'?'.buildURL($arr);}
 	        else{$href=$PAGE['name'].'/?'.buildURL($arr);}
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link w_white w_block" href="/'.$href.'">' . $col. "{$arrow}</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "{$arrow}</a></th>\n";
 			}
 		}
 	if(isset($params['-row_actions'])){
