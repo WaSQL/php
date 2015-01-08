@@ -879,6 +879,15 @@ function addEditDBForm($params=array(),$customcode=''){
 			array_push($info['formfields'],$line);
         }
     }
+    //check for bootstrap
+    if(isset($_SESSION['w_MINIFY']['extras_css'])){
+	    foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
+	        if(stringContains($css,'bootstrap')){
+	            $params['-bootstrap'] = 1;
+	            break;
+			}
+		}
+	}
     //if formfields is not set - use the default in the backend table metadata
     if(!is_array($info['formfields']) || count($info['formfields'])==0){
 		$info['formfields']=$info['default_formfields'];
@@ -1060,17 +1069,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params[$field])){$opts['value']=$params[$field];}
 				if(!isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
-				if($params['-bootstrap']){$opts['class'] .= ' form-control';}
-				elseif($info['fieldinfo'][$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
-					if(!stringContains($info['fieldinfo'][$field]['class'],'form-control')){
-						foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
-			                if(stringContains($css,'bootstrap')){
-			                    $opts['class'] .= ' form-control';
-			                    break;
-							}
-						}
-					}
-				}
+				if($params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -1422,6 +1421,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     elseif(is_array($rec) && isNum($rec['_id'])){
 		$class=isset($params['-save_class'])?$params['-save_class']:'';
+		if($params['-bootstrap'] && !stringContains($class,'form-control')){$class .= 'btn btn-primary';}
 		if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Edit';
 			//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
@@ -1441,6 +1441,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 	elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 		$class=isset($params['-save_class'])?$params['-save_class']:'';
+		if($params['-bootstrap'] && !stringContains($class,'form-control')){$class .= 'btn btn-primary';}
 		$action=isset($params['-nosave'])?'':'Add';
     	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
     	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
@@ -3275,16 +3276,6 @@ function getDBFieldTag($params=array()){
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
 	//LOAD form-control if bootstrap is loaded
 	if($params['-bootstrap'] && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
-	elseif($info[$field]['inputtype'] != 'file' && is_array($_SESSION['w_MINIFY']['extras_css'])){
-		if(!stringContains($info[$field]['class'],'form-control')){
-			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
-                if(stringContains($css,'bootstrap') && !stringContains($info[$field]['class'],'form-control')){
-                    $info[$field]['class'] .= ' form-control';
-                    break;
-				}
-			}
-		}
-	}
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
 		//Checkbox
