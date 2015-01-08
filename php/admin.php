@@ -32,6 +32,9 @@ date_default_timezone_set('America/Denver');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $progpath=dirname(__FILE__);
 include_once("$progpath/common.php");
+if(isset($_REQUEST['_pushfile'])){
+ 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
+   	}
 //load our own session handling routines
 include_once("$progpath/sessions.php");
 //Fix up REQUEST
@@ -145,9 +148,7 @@ if(isset($_REQUEST['_action']) && $_REQUEST['_action']=='settings' && $_REQUEST[
 if(isset($_REQUEST['_action'])){
  	$ok=processActions();
    	}
-if(isset($_REQUEST['_pushfile'])){
- 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
-   	}
+
 
 //get rid of some dumb Requests keys like __ktv
 foreach($_REQUEST as $key=>$val){
@@ -5089,4 +5090,3 @@ function adminSynchronizeRecord($table,$id,$stage=1){
 	}
 	return $ok.printValue($opts).printValue($live_rec);
 }
-?>

@@ -304,4 +304,3 @@ function minifyLines($lines) {
 	}
 	return $rtn;
 }
-?>

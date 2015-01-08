@@ -101,4 +101,3 @@ elseif(isset($CONFIG['load_extras']) && strlen($CONFIG['load_extras'])){
 	$extras=explode(',',$CONFIG['load_extras']);
 	loadExtras($extras);
 }
-?>

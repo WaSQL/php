@@ -1411,4 +1411,3 @@ function wasqlFontIcons($x=''){
 	sort($icons);
 	return $icons;
 }
-?>

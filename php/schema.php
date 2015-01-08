@@ -2114,5 +2114,3 @@ function schemaAddFileData($table){
 	}
 	return count($tables[$table]);
 }
-
-?>

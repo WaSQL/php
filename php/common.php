@@ -9048,18 +9048,20 @@ function pushFile($file='',$params=array()){
 	if(!isset($params['-attach'])){$params['-attach']=1;}
 	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
 	else{$ctype=getFileContentType($file);}
-	header("Content-Type: {$ctype}");
+	//echo $file.printValue($params);exit;
+	@header("Content-Type: {$ctype}");
 	//echo "HERE:{$ctype}";exit;
 	if($params['-attach']){
-		header('Content-Description: File Transfer');
-    	header('Content-Disposition: attachment; filename="'.getFileName($file).'"');
+		@header('Content-Description: File Transfer');
+    	@header('Content-Disposition: attachment; filename="'.getFileName($file).'"');
 		}
 	else{
-		header('Content-Description: File Transfer');
-    	header('Content-Disposition: inline; filename="'.getFileName($file).'"');
+		@header('Content-Description: File Transfer');
+    	@header('Content-Disposition: inline; filename="'.getFileName($file).'"');
 		}
+
     if(!isTextFile($file)){
-    	header('Content-Transfer-Encoding: binary');
+    	@header('Content-Transfer-Encoding: binary');
 		}
 	header('Content-Length: ' . filesize($file));
 	header("X-Pushed-By: WaSQL");
@@ -10540,4 +10542,3 @@ function xmlHeader($params=array()){
 	$encoding=isset($params['encoding'])?$params['encoding']:"ISO-8859-1";
 	return '<?xml version="'.$version.'" encoding="'.$encoding.'"?>'."\r\n";
 	}
-?>

@@ -7540,4 +7540,3 @@ function showDBCronPanel($ajax=0,$frequency=60){
 		}
 	return $rtn;
 	}
-?>

@@ -969,4 +969,3 @@
 			abort("No PAGE<br>\n" . printValue($_REQUEST));
 			}
 		}
-?>

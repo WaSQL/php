@@ -100,4 +100,3 @@ function sessionGarbageCollect($sess_maxlifetime) {
     executeSQL("DELETE FROM {$table} WHERE touchtime + {$sess_maxlifetime} < {$ctime};");
     return true;
 }
-?>

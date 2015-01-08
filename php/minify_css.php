@@ -319,4 +319,3 @@ function minifyLines($lines,$conditionals=1) {
 	}
 	return 1;
 }
-?>

@@ -1065,5 +1065,3 @@ function wpassInfo($id){
 	}
 	return $rtn;
 }
-
-?>
