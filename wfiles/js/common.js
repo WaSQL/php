@@ -1124,7 +1124,7 @@ function setText(obj,txt){
 		try{
 			cObj.innerHTML=txt;
 			var check=getText(cObj);
-			if(check!=previous_value){setflag=1;}
+			if(check!=previous_value || check==txt){setflag=1;}
 		}
 		catch(e){}
 	}
@@ -1132,7 +1132,7 @@ function setText(obj,txt){
 		try{
 			cObj.innerText=txt;
 			var check=getText(cObj);
-			if(check!=previous_value){setflag=1;}
+			if(check!=previous_value || check==txt){setflag=1;}
 		}
 		catch(e){}
 	}
@@ -1140,7 +1140,7 @@ function setText(obj,txt){
 		try{
 			cObj.value=txt;
 			var check=getText(cObj);
-			if(check!=previous_value){setflag=1;}
+			if(check!=previous_value || check==txt){setflag=1;}
 		}
 		catch(e){}
 	}
