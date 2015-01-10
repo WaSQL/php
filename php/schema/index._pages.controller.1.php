@@ -1,7 +1,17 @@
 <?php
+
 	if(isset($_REQUEST[passthru][0])){
 		$_REQUEST['func']=$_REQUEST[passthru][0];
 	}
+	//check for table. create it if needed
+	if(!isDBTable('email_list')){
+    	createDBTable('email_list',array(
+			'active'		=> 'tinyint(1) NOT NULL Default 1',
+			'confirm_date'	=> 'date NULL',
+			'email'			=> 'varchar(255) NOT NULL UNIQUE'
+		));
+	}
+	//based on func show different views
 	switch(strtolower($_REQUEST['func'])){
     	case 'signup':
     		$rec=pageAddSignup($_REQUEST['email']);

@@ -147,3 +147,4 @@
 	</div>
 	<?=buildOnLoad("centerpopDiv(getText('confirm_error'));");?>
 </view:unsubscribe_error>
+
