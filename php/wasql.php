@@ -305,7 +305,7 @@ function wasqlBuildManualList(){
 						if($rec['lang']=='PHP'){$editor='phpeditor';}
 						if($rec['lang']=='javascript'){$editor='jseditor';}
 					}
-					$expand .= '<div style="margin-top:5px;margin-left:40px;color:#000;"><textarea _behavior="'.$editor.'" data-nokeys="true" data-gutter="false" id="'."{$key}_{$i}".'" readonly="true" style="width:725px;">'."\n";
+					$expand .= '<div style="margin-top:5px;margin-left:40px;color:#000;"><textarea _behavior="'.$editor.'" data-nokeys="true" data-gutter="false" id="'."{$key}_{$i}".'" readonly="true">'."\n";
 				}
             	foreach($val as $value){
 					if(stringEndsWith($value,'---') && count($value) < 20){
@@ -316,7 +316,7 @@ function wasqlBuildManualList(){
 								if($rec['lang']=='PHP'){$editor='phpeditor';}
 								if($rec['lang']=='javascript'){$editor='jseditor';}
 							}
-							$expand .= '</textarea></div><div style="margin-top:5px;margin-left:40px;color:#000;"><textarea _behavior="'.$editor.'" data-nokeys="true" data-gutter="false" id="'."{$key}_{$i}".'" readonly="true" style="width:725px;">'."\n";
+							$expand .= '</textarea></div><div style="margin-top:5px;margin-left:40px;color:#000;"><textarea _behavior="'.$editor.'" data-nokeys="true" data-gutter="false" id="'."{$key}_{$i}".'" readonly="true">'."\n";
 						}
 						else{
 							$expand .= '<hr size="1" style="margin:8px 25px 5px 0px;border-top:1px dotted #ccc;">'."\n";

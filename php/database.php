@@ -880,14 +880,8 @@ function addEditDBForm($params=array(),$customcode=''){
         }
     }
     //check for bootstrap
-    if(isset($_SESSION['w_MINIFY']['extras_css'])){
-	    foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
-	        if(stringContains($css,'bootstrap')){
-	            $params['-bootstrap'] = 1;
-	            break;
-			}
-		}
-	}
+    if(isExtraCss('bootstrap')){$params['-bootstrap'] = 1;}
+
     //if formfields is not set - use the default in the backend table metadata
     if(!is_array($info['formfields']) || count($info['formfields'])==0){
 		$info['formfields']=$info['default_formfields'];

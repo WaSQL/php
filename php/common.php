@@ -1949,7 +1949,8 @@ function renderView($view, $params=array(), $opts=array()){
 			}
 			$opts['message']=$rtn;
 			//echo printValue($opts);exit;
-			$ok=sendMail($opts);
+			if(isExtra('phpmailer')){$ok=phpmailerSendMail($opts);}
+			else{$ok=sendMail($opts);}
 			if(!isNum($ok) && strlen($ok)){return $ok;}
 			return;
 		break;
@@ -2158,6 +2159,20 @@ function stringEndsWith($string, $search){
 function stringContains($string, $search){
 	if(!strlen($string) || !strlen($search)){return false;}
 	return strpos(strtolower($string),strtolower($search)) !== false;
+	}
+//---------- begin function stringEquals--------------------
+/**
+* @describe returns true if $str equals $search (ignores case)
+* @param str string
+* @param search string
+* @return boolean
+* @usage if(stringEquals('beginning','gin')){...}
+*/
+function stringEquals($string, $search){
+	$check=strcmp(strtolower($string),strtolower($search));
+	//echo "{$check},{$string},{$search}";exit;
+	if($check==0){return true;}
+	return false;
 	}
 //---------- begin function calendar
 /**
@@ -5522,9 +5537,72 @@ function isDateTime($str=''){
 	if(!preg_match('/[0-9]{1,2}\:[0-9]{2,2}/is',$str)){return false;}
 	return true;
 	}
+//---------- begin function isExtra ----------
+/**
+* @describe returns true if specified php extra is enabled for use
+* @param str string
+*	string to check
+* @return boolean
+*	returns true if specified php extra is enabled for use
+* @usage if(isExtra($str)){...}
+*/
+function isExtra($string){
+	if(isset($_SESSION['w_MINIFY']['extras'])){
+	    foreach($_SESSION['w_MINIFY']['extras'] as $extra){
+			$parts=preg_split('/\/+/',$extra);
+			$extra=array_pop($parts);
+	        if(stringEquals(getFileName($extra),$string)){
+	            return true;
+			}
+		}
+	}
+	return false;
+}
+//---------- begin function isExtraCss ----------
+/**
+* @describe returns true if specified css extra is enabled for use
+* @param str string
+*	string to check
+* @return boolean
+*	returns true if specified css extra is enabled for use
+* @usage if(isExtraCss($str)){...}
+*/
+function isExtraCss($string){
+	if(isset($_SESSION['w_MINIFY']['extras_css'])){
+	    foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
+			$parts=preg_split('/\/+/',$extra);
+			$extra=array_pop($parts);
+	        if(stringEquals($extra,$string)){
+	            return true;
+			}
+		}
+	}
+	return false;
+}
+//---------- begin function isExtraJs ----------
+/**
+* @describe returns true if specified javascript extra is enabled for use
+* @param str string
+*	string to check
+* @return boolean
+*	returns true if specified javascript extra is enabled for use
+* @usage if(isExtraJs($str)){...}
+*/
+function isExtraJs($string){
+	if(isset($_SESSION['w_MINIFY']['extras_js'])){
+	    foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
+			$parts=preg_split('/\/+/',$extra);
+			$extra=array_pop($parts);
+	        if(stringEquals($extra,$string)){
+	            return true;
+			}
+		}
+	}
+	return false;
+}
 //---------- begin function isGDEnabled ----------
 /**
-* @describe returns true if if GD is enabled. GD must be enabled to create images, etc.
+* @describe returns true if  GD is enabled. GD must be enabled to create images, etc.
 * @return boolean
 *	returns true if GD is enabled. GD must be enabled to create images, etc.
 * @usage if(isGDEnabled($str)){...}

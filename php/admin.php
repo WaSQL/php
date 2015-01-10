@@ -1573,11 +1573,11 @@ if(isset($_REQUEST['_menu'])){
 			}
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/help.png" alt="help" /> WaSQL Documentation</div>'."\n";
 			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_lblue w_smallest"><img src="/wfiles/iconsets/16/refresh.png" width="12" height="12" class="w_middle" alt="rebuild"> Rebuild</a></div>'."\n";
-			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
+			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
 			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
 			echo '			<input type="hidden" name="_type" value="user">'."\n";
-			echo '			<input type="text" name="_search" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
-			echo '			<input type="submit" value="Search">'."\n";
+			echo '			<input type="text" class="form-control" name="_search" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
+			echo '			<button type="submit" class="btn btn-primary">Search</button>'."\n";
 			echo '		</form>'."\n";
 			echo buildOnLoad("document.documentation_searchform._search.focus();");
 			echo wasqlBuildManualTree();
@@ -3779,6 +3779,7 @@ function adminMenu(){
 		'Server Host'	=> $_SERVER['HTTP_HOST'],
 		'Database Host'	=> $CONFIG['dbhost'],
 		'Database Name'	=> $CONFIG['dbname'],
+		'Database Type'	=> $CONFIG['dbtype'],
 		'waSQL Path'	=> getWasqlPath(),
 		'Username'	=> $USER['username'],
 		'PHP User'	=> get_current_user(),
