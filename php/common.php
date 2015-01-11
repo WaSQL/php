@@ -1955,8 +1955,14 @@ function renderView($view, $params=array(), $opts=array()){
 			}
 			$opts['message']=$rtn;
 			//echo printValue($opts);exit;
-			if(isExtra('phpmailer')){$ok=phpmailerSendMail($opts);}
-			else{$ok=sendMail($opts);}
+			if(isExtra('phpmailer')){
+				//echo 'here';exit;
+				$ok=phpmailerSendMail($opts);
+			}
+			else{
+				//echo 'old';exit;
+				$ok=sendMail($opts);
+				}
 			if(!isNum($ok) && strlen($ok)){return $ok;}
 			return;
 		break;
@@ -6315,6 +6321,9 @@ function listFilesEx($dir='.',$params=array()){
 function loadExtras($extras){
 	global $databaseCache;
 	if(!is_array($extras)){$extras=array($extras);}
+	if(!is_array($_SESSION['w_MINIFY']['extras'])){
+    	$_SESSION['w_MINIFY']['extras']=array();
+	}
 	foreach($extras as $extra){
 		if(isset($databaseCache['loadExtras'][$extra])){continue;}
 		$databaseCache['loadExtras'][$extra]=1;
@@ -6354,6 +6363,11 @@ function loadExtras($extras){
     		exit;
     		debugValue("loadExtras Error loading {$phpfile}");
     		debugValue($e);
+		}
+		else{
+        	if(!in_array($extra,$_SESSION['w_MINIFY']['extras'])){
+	        	$_SESSION['w_MINIFY']['extras'][]=$extra;
+			}
 		}
 	}
 }
