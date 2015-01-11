@@ -251,6 +251,7 @@ function buildFormCalendar($name,$params=array()){
 		loadExtrasJs('tcal');
 		loadExtrasCss('tcal');
 		$class="tcal tcalInput";
+		if(isExtraCss('bootstrap')){$class .= ' form-control';}
 		if($params['-bootstrap']){$class .= ' form-control';}
 		elseif(is_array($_SESSION['w_MINIFY']['extras_css'])){
 			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
@@ -327,6 +328,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	$comboid="comboselect_" . $name;
 	$width=strlen($params['width'])?$params['width']:200;
 	if(!isset($params['style'])){$params['style']='width:'.$width.'px;font-size:9pt;font-family:arial;';}
+	if(isExtraCss('bootstrap')){$params['class'] .= ' form-inline';}
 	$tag = '<input name="'.$name.'" id="'.$inputid.'" type="text"';
 	$params['onkeypress']='return comboComplete(this, event, \''.$comboid.'\')';
 	$tag .= setTagAttributes($params);
@@ -356,7 +358,10 @@ function buildFormBegin($action='',$params=array()){
 	global $PAGE;
 	if(!strlen($action)){$action="/{$PAGE['name']}";}
 	if(!isset($params['-method'])){$params['-method']="POST";}
-	if(!isset($params['-class'])){$params['-class']="w_form";}
+	if(!isset($params['-class'])){
+		$params['-class']="w_form";
+		if(isExtraCss('bootstrap')){$params['-class'] .= ' form-inline';}
+		}
 	if(!isset($params['-onsubmit'])){$params['-onsubmit']="return submitForm(this);";}
 	$rtn='';
 	$rtn .= '<form method="'.$params['-method'].'" action="'.$action.'"';
@@ -442,6 +447,7 @@ function buildFormImage($src,$name='',$onclick=''){
 */
 function buildFormSelect($name,$pairs=array(),$params=array()){
 	$rtn = '<select name="'.$name.'"';
+	if(isExtraCss('bootstrap')){$params['class'] .= ' form-control';}
 	$rtn .= setTagAttributes($params);
 	$rtn .= '>';
 	if(isset($params['message'])){

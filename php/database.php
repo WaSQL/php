@@ -2059,12 +2059,12 @@ function buildDBPaging($paging=array()){
 			}
 			$rtn .= '<table class="w_nopad"><tr>'."\n";
 			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- Search --")).'</td>'."\n";
-			$rtn .= '	<td><input type="text" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
+			$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
 			$rtn .= '	<td>'.buildFormSubmit('Search').'</td>'."\n";
 			$rtn .= '</tr></table>'."\n";
 		}
 		else{
-        	$rtn .= '<input type="text" name="_search" onFocus="this.select();" style="width:250px;" value="'.requestValue('_search').'">'."\n";
+        	$rtn .= '<input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:250px;" value="'.requestValue('_search').'">'."\n";
 			$rtn .= buildFormSubmit('Search');
 		}
 
@@ -6441,6 +6441,9 @@ function listDBRecords($params=array(),$customcode=''){
 			if($listform==1 && isset($info[$fld]['editlist']) && $info[$fld]['editlist']==1){
 				$rtn .= '<td>'."\n";
 				$fldopts=array('-table'=>$params['-table'],'-field'=>$fld,'name'=>"{$fld}_{$rec[$idfield]}",'value'=>$rec[$fld]);
+				if(isExtraCss('bootstrap')){
+                	$fldopts['class']='form-control';
+				}
 				foreach($params as $pkey=>$pval){
 					if(preg_match('/^'.$fld.'_(.+)$/',$pkey,$m)){
 						if($m[1]=='tabindex'){$pval += $tabindex;$tabindex++;}

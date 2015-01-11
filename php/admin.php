@@ -2302,8 +2302,9 @@ if(isset($_REQUEST['_menu'])){
                 elseif(isset($_REQUEST['edit_result']['error'])){
 					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" class="w_middle" alt="edit failed" /><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'."\n";
                 	}
-                
+                echo '<div style="padding:15px;">'."\n";
 				echo listDBRecords($recopts);
+				echo '</div>'."\n";
             	}
 			break;
 		case 'synchronize':
@@ -2336,7 +2337,7 @@ if(isset($_REQUEST['_menu'])){
             echo '	</tr>'."\n";
             echo buildTableEnd();
             echo '<hr size="1">'."\n";
-			echo '<div id="synchronize_changes">'."\n";
+			echo '<div id="synchronize_changes" style="padding:15px;">'."\n";
 			echo adminShowSyncChanges($stables);
 			echo '</div>'."\n";
 			break;
@@ -2878,6 +2879,7 @@ if(isset($_REQUEST['_menu'])){
 	            	$rec['download']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="right"><img src="/wfiles/iconsets/16/download.png" class="w_middle" alt="download" /></a>';
 					$list[]=$rec;
 				}
+				echo '<div style="padding:15px;">'."\n";
 				echo listDBRecords(array(
 					'-list'					=>$list,
 					'-fields'				=> "name,download,size_verbose,_cdate,_cdate_age_verbose",
@@ -2890,6 +2892,7 @@ if(isset($_REQUEST['_menu'])){
 					'_cdate_age_verbose_align'	=> 'right',
 					'name_checkbox'			=>1
 					));
+				echo '</div>'."\n";
 				echo buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');");
 			}
 			echo buildFormEnd();
@@ -3010,12 +3013,12 @@ if(isset($_REQUEST['_menu'])){
 		case 'grep':
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_search.png" alt="database search" /> Database Search</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table class="table table-condensed table-striped table-bordered">'."\n";
+			echo '<table class="table table-condensed table-striped table-bordered" style="width:600px;">'."\n";
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'."\n";
-			echo '		<th>Schema<br><input type="checkbox" name="_grep_schema" value="1">'."</th>\n";
-			echo '		<th>Records<br><input type="checkbox" name="_grep_records" value="1" checked>'."</th>\n";
+			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
+			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";
 			$tables=getDBTables();
-			echo '		<th>Table<br><select name="_table_"><option value=""></option>'."\n";
+			echo '		<th>Table<br><select name="_table_" class="form-control"><option value=""></option>'."\n";
 			foreach($tables as $table){
 				echo '				<option value="'.$table.'"';
 				if(isset($_REQUEST['_table_']) && $_REQUEST['_table_']==$table){echo ' selected';}
@@ -3023,9 +3026,9 @@ if(isset($_REQUEST['_menu'])){
             	}
 			echo '			</select>'."</th>\n";
 			echo '	</tr><tr><th>Text:</th>'."\n";
-			echo '		<td colspan="3"><input type="text" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" style="width:250px;" maxlength="255"> '."</td>\n";
+			echo '		<td colspan="3"><input type="text" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
 			echo '	</tr></table>'."\n";
-			echo buildFormSubmit('Grep Database');
+			echo buildFormSubmit('Search Database');
 			echo buildFormEnd();
 			echo buildOnLoad("document.grepform._grep_string.focus();");
 			if(isset($_REQUEST['_grep_string']) && strlen($_REQUEST['_grep_string'])){
@@ -3214,7 +3217,7 @@ if(isset($_REQUEST['_menu'])){
 			if(isset($_REQUEST['file_error'])){
 				echo '<div class="w_red"><img src="/wfiles/warning.gif" alt="warning" /> '.$_REQUEST['file_error'].'</div>'."\n";
             	}
-			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"import"));
+			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import"));
 			if(!isset($_REQUEST['_types'])){$_REQUEST['_types']=array('xmlschema','xmlmeta','xmldata');}
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
 			echo '	<input type="file" data-required="1" name="file" size="80" acceptmsg="Only valid xml and csv files are allowed" accept="xml,csv" /><br />'."\n";
@@ -3235,7 +3238,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<input type="checkbox" name="_options[]" value="truncate"'.$checked.'> Truncate Existing Records'."<br />\n";
 			$checked=(isset($_REQUEST['_options']) && is_array($_REQUEST['_options']) && in_array('ids',$_REQUEST['_options']))?' checked':'';
 			echo '	<input type="checkbox" name="_options[]" value="ids"'.$checked.'> Import IDs'."<br />\n";
-			echo '	Merge Fields:<br /> <textarea name="_merge" style="width:300px;height:50px;" class="w_small"></textarea>'."<br />\n";
+			echo '	Merge Fields:<br /> <textarea name="_merge" style="width:300px;height:50px;" class="w_small form-control"></textarea>'."<br />\n";
 			echo '</td><td>'."\n";
 			echo '<div class="w_lblue w_bold w_big">CSV File Options</div>'."\n";
 			$tables=getDBTables();
