@@ -66,7 +66,9 @@ function fileUploadPost(t, e, i, a) {
         r = "upload" + n,
         s = document.createElement("div");
     s.style.height = "10px", s.style.width = "2px", s.style.backgroundColor = "#f1a538", s.style.border = "1px solid #d5762b", s.style.marginBottom = "1px", s.setAttribute("id", r), e.appendChild(s);
-    //determine where to post to
+    //add a title so we can tell what file is uploading
+	s.setAttribute('title',t.name);
+	//determine where to post to
 	var url = e.getAttribute("data-action") || e.getAttribute("data-url");
     if (void 0 == url || !url.length) {
         url = location.href;
@@ -84,7 +86,7 @@ function fileUploadPost(t, e, i, a) {
         void 0 != e.getAttribute("_fields") && (f = e.getAttribute("_fields")), u.append("_fields", f)
     } else u.append("_action", "add");
     u.append(c, t), m = e.getAttribute("_onprogress"), void 0 != m && m.length ? o.upload.addEventListener("progress", m, !1) : o.upload.addEventListener("progress", function (t) {
-        fileUploadProgress(t, e, r, i, a)
+        fileUploadProgress(t, e, r)
     }, !1);
     var m = e.getAttribute("_onstart");
     return void 0 != m && m.length ? o.upload.addEventListener("loadstart", m, !1) : o.upload.addEventListener("loadstart", function (t) {
@@ -130,9 +132,10 @@ function fileUploadError(t, e, i) {
 
 function fileUploadAbort() {}
 
-function fileUploadProgress(t, e, i) {
+function fileUploadProgress(t,e,r) {
+
     var a = Math.round(t.loaded / t.total * 100),
-        o = getObject(i);
+        o = getObject(r);
     o.style.width = a + "px"
 }
 
