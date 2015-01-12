@@ -471,7 +471,6 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 * @param params array
 *	options are as follows
 *	- displayname. Defaults to "Please Sign Below:"
-
 *	- width. Defaults to 300
 *	- height. Defaults to 75
 * @return

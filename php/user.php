@@ -976,12 +976,19 @@ function wpassGetCategories($str=1){
 	}
 	return array_keys($recs);
 }
+//---------- begin function wpassModule ----
+/**
+* returns the wpass module - allows you to embed it on your site
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function wpassModule(){
 	global $USER;
 	if(!isNum($USER['_id'])){return '';}
 	if(!isDBTable('_wpass')){createWasqlTables('_wpass');}
 	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'."\n";
-	$rtn .= '	<input id="wpass_search" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'."\n";
+	$rtn .= '	<input id="wpass_search" class="form-control" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'."\n";
 	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer w_middle" src="/wfiles/_wpass.png" alt="add" />'."\n";
 	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'."\n";
 	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'."\n";
@@ -997,6 +1004,13 @@ function wpassModule(){
 	$rtn .= '</div>'."\n";
 	return $rtn;
 }
+//---------- begin function wpassInfo ----
+/**
+* @param id int
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function wpassInfo($id){
 	global $USER;
 	if(!isNum($USER['_id'])){return '';}
