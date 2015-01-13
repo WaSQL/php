@@ -1197,8 +1197,16 @@ function integracoreParseValue($str='',$val=''){
     return $str;
   }
 function integracoreShipMethodLookup($description){
-	$parts=preg_split('/\ +/',strtolower($description));
 	$item=array();
+	$parts=preg_split('/\ +/',strtolower($description));
+	$index=count($parts)-1;
+	//determine how many numeric digits are in the last part.  IF more than one, then it is an account number
+	$cnt=preg_match_all('/[0-9]/',$parts[$index],$m);
+	if($cnt > 1){
+		$item['3rdPartyAccountNumber']=array_pop($parts);
+		$description=implode(' ',$parts);
+	}
+
 	$shipmap=array(
 		'FEDEX 1ST OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 01'),
 		'FEDERAL EXPRESS PRIORITY OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 03'),
@@ -1251,9 +1259,6 @@ function integracoreShipMethodLookup($description){
 	$sdesc=soundex($description);
 	foreach($shipmap as $key=>$map){
     	if(soundex($key)==$sdesc){$item = $shipmap[$key];break;}
-	}
-	if(is_numeric($parts[1])){
-    	$item['3rdPartyAccountNumber']=$parts[1];
 	}
 	if(isset($item['carrier'])){return $item;}
 	//defaults
