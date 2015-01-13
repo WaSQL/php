@@ -1197,6 +1197,8 @@ function integracoreParseValue($str='',$val=''){
     return $str;
   }
 function integracoreShipMethodLookup($description){
+	$parts=preg_split('/\ +/',strtolower($description));
+	$item=array();
 	$shipmap=array(
 		'FEDEX 1ST OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 01'),
 		'FEDERAL EXPRESS PRIORITY OVERNIGHT'=>array('carrier'=>'FDX','carrier_service_code'=>'FDX 03'),
@@ -1237,21 +1239,24 @@ function integracoreShipMethodLookup($description){
 	);
 	//look for exact match
 	$description=strtoupper($description);
-	if(isset($shipmap[$description])){return $shipmap[$description];}
+	if(isset($shipmap[$description])){$item = $shipmap[$description];}
 
 	//look for metaphone description match first as it is more exact than soundex
 	$mdesc=metaphone($description);
 	foreach($shipmap as $key=>$map){
-    	if(metaphone($key)==$mdesc){return $shipmap[$key];}
+    	if(metaphone($key)==$mdesc){$item = $shipmap[$key];break;}
 	}
 
 	//look for soundex description match
 	$sdesc=soundex($description);
 	foreach($shipmap as $key=>$map){
-    	if(soundex($key)==$sdesc){return $shipmap[$key];}
+    	if(soundex($key)==$sdesc){$item = $shipmap[$key];break;}
 	}
-	$item=array();
-	$parts=preg_split('/\ +/',strtolower($description));
+	if(is_numeric($parts[1])){
+    	$item['3rdPartyAccountNumber']=$parts[1];
+	}
+	if(isset($item['carrier'])){return $item;}
+	//defaults
     switch($parts[0]){
         case 'fedex':
             $item['carrier']='FDX';
@@ -1273,9 +1278,6 @@ function integracoreShipMethodLookup($description){
             $item['carrier']='POS';
             $item['carrier_service_code']='USS 01';
         break;
-	}
-	if(is_numeric($parts[1])){
-    	$item['3rdPartyAccountNumber']=$parts[1];
 	}
 	return $item;
 }
