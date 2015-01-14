@@ -1717,11 +1717,11 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	$attstring='';
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
-		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
+		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','spellcheck','max','min','pattern','placeholder','readonly','step',
-		'data-labelmap','data-ajaxid','lang','autocorrect',
-		'data-pattern-msg','pattern','data-displayname','data-requiredmsg'
+		'lang','autocorrect',
+		'pattern'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
@@ -1748,8 +1748,17 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 			$val=removeHtml($atts[$att]);
 			$val=str_replace('"',"'",$val);
 			$attstring .= ' ' . $att . '="'.$val.'"';
-			}
-    	}
+		}
+    }
+    //allow any attribute that starts with a data-
+    foreach($atts as $key=>$val){
+		if(in_array($key,$skipatts)){continue;}
+		if(stringBeginsWith($key,'data-')){
+			$val=removeHtml($val);
+			$val=str_replace('"',"'",$val);
+			$attstring .= ' ' . $key . '="'.$val.'"';
+		}
+    }
 	//special case attributes
 	if(isset($atts['inputmax']) && $atts['inputmax'] > 0){$attstring .= ' maxlength="'.$atts['inputmax'].'"';}
 	if(isset($atts['disabled']) && $atts['disabled'] != 0){$attstring .= ' DISABLED';}

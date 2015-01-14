@@ -301,6 +301,7 @@
 				$att[$m[1]]=$val;
 			}
 		}
+		if(isset($att['data-value']) && !strlen($att['value'])){$att['value']=$att['data-value'];}
 		echo buildFormField($tablename,$fieldname,$att);
 		exit;
 	}

@@ -3841,13 +3841,21 @@ function getDBFieldTag($params=array()){
 				$tag .= getDBFieldTag($params);
 				break;
 			}
+			$name=$info[$field]['name'];
+			//set value
+			$value='';
+   			if(isset($params['value'])){$value=$params['value'];}
+			elseif(isset($_REQUEST[$name])){$value=$_REQUEST[$name];}
+			elseif(isset($_REQUEST[$field])){$value=$_REQUEST[$field];}
+			elseif(isset($info[$field]['value'])){$value=$info[$field]['value'];}
+			if(strlen($value)){$info[$field]['data-value']=$value;}
 			//if($field=='state'){echo "selections" . printValue(array($selections,$info[$field]));}
 			if(is_array($selections['tvals']) && count($selections['tvals'])){
                 $tag .= '<select';
 				$tag .= setTagAttributes($info[$field]);
 				$tag .= '>'."\n";
 				$selected=0;
-				$name=$info[$field]['name'];
+
 				$message=isset($info[$field]['message'])?$info[$field]['message']:' -- choose --';
 				//if(!isset($info[$field]['_required']) || $info[$field]['_required'] !=1 || isset($info[$field]['message'])){
 					$tag .= '	<option value="">'.$message.'</option>'."\n";
@@ -3863,26 +3871,8 @@ function getDBFieldTag($params=array()){
 					}
 					$tag .= '	<option value="'.$selections['tvals'][$x].'"';
                     //selected?
-                    if(isset($params['value'])){
-						if($params['value']==$selections['tvals'][$x] || $params['value']==$selections['dvals'][$x]){
-							$tag .= ' selected';
-							$selected=1;
-						}
-					}
-					elseif(isset($_REQUEST[$name])){
-						if($_REQUEST[$name]==$selections['tvals'][$x] || $_REQUEST[$name]==$selections['dvals'][$x]){
-							$tag .= ' selected';
-							$selected=1;
-						}
-					}
-					elseif(isset($_REQUEST[$field])){
-						if($_REQUEST[$field]==$selections['tvals'][$x] || $_REQUEST[$field]==$selections['dvals'][$x]){
-							$tag .= ' selected';
-							$selected=1;
-						}
-					}
-                    elseif(isset($info[$field]['value'])){
-						if($info[$field]['value']==$selections['tvals'][$x] || $info[$field]['value']==$selections['dvals'][$x]){
+                    if(strlen($value)){
+						if($value==$selections['tvals'][$x] || $value==$selections['dvals'][$x]){
 							$tag .= ' selected';
 							$selected=1;
 						}
