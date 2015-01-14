@@ -338,7 +338,7 @@ function redrawField(fieldname,srcObj){
 	var node=theForm[fieldname];
 	for(var i=0; i<node.attributes.length; i++){
         if(node.attributes.item(i).specified){
-            params['att_'+node.attributes.item(i).nodeName]=node.attributes.item(i).nodeValue;
+            params['att_'+node.attributes.item(i).nodeName]=node.attributes.item(i).value;
 		}
 	}
 	//_redraw=_users:states&opt_0=country&val_0=CA
