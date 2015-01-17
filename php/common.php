@@ -8,9 +8,8 @@
 *	prints the abort message to the screen and exits
 * @usage if(!isNum($ok)){abort(array($ok,$recopts,$rec));
 */
-function abort($obj,$title='Aborted',$subtitle=''){
+function abort($obj,$title='',$subtitle=''){
 	global $CONFIG;
-	if(!strlen($subtitle)){$subtitle=$_SERVER['HTTP_HOST'];}
 	$rtn='';
 	$rtn .= '<!DOCTYPE HTML>'."\n";
 	$rtn .= '<html lang="en">'."\n";
@@ -22,8 +21,8 @@ function abort($obj,$title='Aborted',$subtitle=''){
 	$rtn .= '	<script type="text/javascript" src="/php/minify_js.php"></script>'."\n";
 	$rtn .= '</head>'."\n";
 	$rtn .= '<body>'."\n";
-	$headstr = '<div class="w_bigger w_bold">'.$title.'</div>'."\n";
-	$headstr .= '<div class="w_big">' . $subtitle . '</div>'."\n";
+	$headstr = '<div class="w_bigger w_bold w_dblue">'.$title.'</div>'."\n";
+	$headstr .= '<div class="w_big w_dblue">' . $subtitle . '</div>'."\n";
 	$heading=array();
 	if(isset($CONFIG['logo']) && strlen($CONFIG['logo'])){
 		$heading[]='<img src="'.$CONFIG['logo'].'">';

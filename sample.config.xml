@@ -39,6 +39,9 @@
 			template_tracking 0|1 - defaults to 1. Turns off updating the _apage in the _templates table - speed
 			pageview_comments 0|1 - defaults to 0. Adds comments into the HTML specifying what view was used.
 			wpass 0|1 - turn off/On WaSQL password safe. You can add wPass to your page using wpassModule()
+			access all|user - require user before showing site
+			access_page - show this page if not logged in and access=user
+			access_template - use this template if not logged in and access=user - not needed if access_page is set.
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost

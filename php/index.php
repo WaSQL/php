@@ -281,11 +281,11 @@
 	}
 	//echo isUser().printValue($USER);exit;
 	if(!isUser() && isset($CONFIG['access']) && strtolower($CONFIG['access']) == 'user'){
-    	abort(userLoginForm(),$_SERVER['HTTP_HOST'],'You must login to view this site');
+    	indexUserAccess();
     	exit;
 	}
 	elseif(isDBStage() && !isUser() && (!isset($CONFIG['access']) || strtolower($CONFIG['access']) != 'all')){
-    	abort(userLoginForm(),$_SERVER['HTTP_HOST'],'You must login to view this site');
+    	indexUserAccess();
     	exit;
 	}
 	//redraw states field where country=CA .. _redraw=_users:states&opt_0=country&val_0=CA
@@ -739,6 +739,11 @@
 				$TEMPLATE=getDBRecord(array('-table'=>'_templates','-notimestamp'=>1,'name'=>$tid));
 			}
 			if(is_array($TEMPLATE)){
+				wasqlSetMinify();
+				if(strlen(trim($TEMPLATE['functions']))){
+					$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$TEMPLATE['_id']}"));
+					if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
+		        }
 				$htm=$TEMPLATE['body'];
 				//show the page
 				$PAGE['body']='No page found';
@@ -956,6 +961,10 @@
 		//set minify array
 		wasqlSetMinify(0);
 		if(is_array($TEMPLATE)){
+			if(strlen(trim($TEMPLATE['functions']))){
+				$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$TEMPLATE['_id']}"));
+				if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
+	        }
 			//show the page
 			$htm=$TEMPLATE['body'];
 			//$htm=evalInsertPage($htm);
@@ -970,3 +979,58 @@
 			abort("No PAGE<br>\n" . printValue($_REQUEST));
 			}
 		}
+
+function indexUserAccess(){
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	$TEMPLATE=null;
+	if(isset($CONFIG['access_page'])){
+		$pid=$CONFIG['access_page'];
+		if(isNum($pid)){
+			$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'_id'=>$pid));
+		}
+		else{
+			$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'name'=>$pid));
+		}
+		if(!isset($CONFIG['access_template']) && isNum($PAGE['_template'])){
+        	$CONFIG['access_template']=$PAGE['_template'];
+		}
+	}
+	else{$PAGE=array('body'=>userLoginForm());}
+	if(isset($CONFIG['access_template'])){
+		$tid=$CONFIG['access_template'];
+		if(isNum($tid)){
+			$TEMPLATE=getDBRecord(array('-table'=>'_templates','-notimestamp'=>1,'_id'=>$tid));
+		}
+		else{
+			$TEMPLATE=getDBRecord(array('-table'=>'_templates','-notimestamp'=>1,'name'=>$tid));
+		}
+	}
+	//echo printValue($TEMPLATE);exit;
+	if(is_array($TEMPLATE)){
+		wasqlSetMinify();
+		if(strlen(trim($TEMPLATE['functions']))){
+			$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$TEMPLATE['_id']}"));
+			if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
+        }
+        //load page functions
+        if(strlen(trim($PAGE['functions']))){
+			$iopts=array('-table'=>'_pages','-field'=>'functions','-where'=>"_id={$PAGE['_id']}");
+			$ok=includeDBOnce($iopts);
+			if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
+        }
+		$htm=$TEMPLATE['body'];
+
+		$htm=evalPHP($htm);
+    	$htm=str_replace('@self(body)',$PAGE['body'],$htm);
+    	$htm = evalPHP($htm);
+    	echo trim($htm);
+    	unset($htm);
+    	exit;
+	}
+	else{
+    	abort(userLoginForm(),$CONFIG['access_title'],$CONFIG['access_subtitle']);
+	}
+
+}
