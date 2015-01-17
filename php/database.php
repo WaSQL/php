@@ -1898,8 +1898,8 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 					'inputtype'		=> "select",
 					'required'		=> $required,
 					'defaultval'	=> $defaultval,
-					'tvals'			=> 'select code from states order by name,_id',
-					'dvals'			=> 'select name from states order by name,_id'
+					'tvals'			=> '<?='.'wasqlGetStates();'.'?>',
+					'dvals'			=> '<?='.'wasqlGetStates(1);'.'?>'
 					));
 			}
 			return 1;
@@ -1913,8 +1913,8 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 					'inputtype'		=> "select",
 					'required'		=> $required,
 					'defaultval'	=> $defaultval,
-					'tvals'			=> 'select code from countries order by name,_id',
-					'dvals'			=> 'select name from countries order by name,_id'
+					'tvals'			=> '<?='.'wasqlGetCountries();'.'?>',
+					'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>'
 					));
 			}
 			return 1;
@@ -1933,8 +1933,21 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 				));
 			return 1;
 			break;
+		case 'signature':
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> $tablename,
+				'fieldname'		=> $fieldname,
+				'required'		=> $required,
+				'inputtype'		=> 'signature',
+				'width'			=> 400,
+				'height'		=> 125,
+				'defaultval'	=> '',
+				));
+			return 1;
+			break;
 		case 'zip':
 		case 'zipcode':
+		case 'postalcode':
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> $tablename,
 				'fieldname'		=> $fieldname,
