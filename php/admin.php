@@ -1293,7 +1293,7 @@ echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'."\n
 if(isset($_SESSION['dbhost_original'])){
 	echo '	<div class="w_pad w_margin w_dblue "><table class="w_nopad"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
 }
-echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <img src="/wfiles/iconsets/16/database.png" alt="db" class="w_middle" /> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
+echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
 echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
 echo '</div>'."\n";
 echo '<br clear="both" />'."\n";
@@ -2612,21 +2612,21 @@ if(isset($_REQUEST['_menu'])){
 			echo '<table class="table table-condensed table-striped table-bordered">'."\n";
 			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'."\n";
 			echo '	<tr>'."\n";
-			echo '		<th>Name</th>'."\n";
-			echo '		<th>Type</th>'."\n";
-			echo '		<th>Len</th>'."\n";
-			echo '		<th>Null</th>'."\n";
-			echo '		<th>Key</th>'."\n";
-			echo '		<th>Val</th>'."\n";
-			echo '		<th>Extra/Comment</th>'."\n";
-			echo '		<th>Name</th>'."\n";
-			echo '		<th>Type</th>'."\n";
-			echo '		<th>Width</th>'."\n";
-			echo '		<th>Height</th>'."\n";
-			echo '		<th>Max</th>'."\n";
-			echo '		<th>Req</th>'."\n";
-			echo '		<th>Mask</th>'."\n";
-			echo '		<th>List</th>'."\n";
+			echo '		<th class="w_smallest">Name</th>'."\n";
+			echo '		<th class="w_smallest">Type</th>'."\n";
+			echo '		<th class="w_smallest">Len</th>'."\n";
+			echo '		<th class="w_smallest">Null</th>'."\n";
+			echo '		<th class="w_smallest">Key</th>'."\n";
+			echo '		<th class="w_smallest">Val</th>'."\n";
+			echo '		<th class="w_smallest">Extra/Comment</th>'."\n";
+			echo '		<th class="w_smallest">Name</th>'."\n";
+			echo '		<th class="w_smallest">Type</th>'."\n";
+			echo '		<th class="w_smallest">Width</th>'."\n";
+			echo '		<th class="w_smallest">Height</th>'."\n";
+			echo '		<th class="w_smallest">Max</th>'."\n";
+			echo '		<th class="w_smallest">Req</th>'."\n";
+			echo '		<th class="w_smallest">Mask</th>'."\n";
+			echo '		<th class="w_smallest">List</th>'."\n";
 			echo '	</tr>'."\n";
 			$row=0;
 			foreach($fields as $field){
@@ -2652,23 +2652,23 @@ if(isset($_REQUEST['_menu'])){
 				}
 				$extra=implode('/',$extras);
 				if(preg_match('/^\_/',$field)){
-					echo '		<td><a class="w_gray w_link" href="#'.$id.'" onclick="'.$onclick.'" class="w_link">'.$field.'</a></td>'."\n";
+					echo '		<td><a class="w_gray w_link w_block w_smaller" href="#'.$id.'" onclick="'.$onclick.'">'.$field.'</a></td>'."\n";
 					}
 				else{
-					echo '		<td><a class="w_lblue w_link w_bold" href="#'.$id.'" onclick="'.$onclick.'" class="w_link">'.$field.'</a></td>'."\n";
+					echo '		<td><a class="w_lblue w_link w_block w_bold w_smaller" href="#'.$id.'" onclick="'.$onclick.'">'.$field.'</a></td>'."\n";
 					}
-				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbtype'].'</td>'."\n";
-				echo '		<td class="w_gray" align="right">'.$tinfo['fieldinfo'][$field]['_dblength'].'</td>'."\n";
-				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbnull'].'</td>'."\n";
-				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbkey'].'</td>'."\n";
-				echo '		<td class="w_gray" align="right">'.$tinfo['fieldinfo'][$field]['_dbdefault'].'</td>'."\n";
-				echo '		<td class="w_gray">'.$extra.'</td>'."\n";
-				echo '		<td class="w_gray" style="font-size:9pt;color:#848484;" class="w_nowrap">'.$tinfo['fieldinfo'][$field]['displayname'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbtype'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" align="right">'.$tinfo['fieldinfo'][$field]['_dblength'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbnull'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbkey'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" align="right">'.$tinfo['fieldinfo'][$field]['_dbdefault'].'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$extra.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$tinfo['fieldinfo'][$field]['displayname'].'</td>'."\n";
 				if(strlen($tinfo['fieldinfo'][$field]['inputtype'])){
-					echo '		<td class="w_gray" style="font-size:9pt;color:#848484;" class="w_nowrap"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" title="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"> '.$tinfo['fieldinfo'][$field]['inputtype'].'</td>'."\n";
+					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"></td>'."\n";
 				}
 				else{
-                	echo '		<td class="w_gray" style="font-size:9pt;color:#848484;" class="w_nowrap">'.$tinfo['fieldinfo'][$field]['inputtype'].'</td>'."\n";
+                	echo '		<td></td>'."\n";
 				}
 				foreach($formfields as $formfield){
 					$val=$tinfo['fieldinfo'][$field][$formfield];
@@ -2678,13 +2678,12 @@ if(isset($_REQUEST['_menu'])){
 							elseif($formfield=='editlist'){$val='<span class="icon-list"></span>';}
 							}
 						elseif($val==0){$val='';}
-						echo '		<td align="right" title="'.$formfield.'">'.$val.'</td>'."\n";
+						echo '		<td align="right" class="w_smaller" title="'.$formfield.'">'.$val.'</td>'."\n";
                     	}
-					else{echo '		<td title="'.$formfield.'" nowrap>'.$val.'</td>'."\n";}
+					else{echo '		<td title="'.$formfield.'" class="w_smaller" nowrap>'.$val.'</td>'."\n";}
 					}
 				$recopts=array('-table'=>"_fielddata",'-where'=>"tablename = '{$currentTable}' and fieldname = '{$field}'");
 				$rec=getDBRecord($recopts);
-				//echo printValue($rec) . printValue($recopts) . "<hr>";
 				$id=is_array($rec)?$rec['_id']:"''";
 				echo '	</tr>'."\n";
             	}

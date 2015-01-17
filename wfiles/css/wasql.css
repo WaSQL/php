@@ -868,8 +868,12 @@ table th a {
 	padding-left:2px;
 	}
 .w_drop a:hover, .w_block:hover {
-	background-color:#316AC5;
+	background-color:#428bca;
 	color:#FFFFFF;
+	text-decoration:none;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
 	}
 	
 .w_paging{
