@@ -1912,7 +1912,8 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 					'fieldname'		=> $fieldname,
 					'inputtype'		=> "select",
 					'required'		=> $required,
-					'defaultval'	=> $defaultval,
+					'defaultval'	=> 'US',
+					'onchange'		=> "redrawField('state',this);",
 					'tvals'			=> '<?='.'wasqlGetCountries();'.'?>',
 					'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>'
 					));
