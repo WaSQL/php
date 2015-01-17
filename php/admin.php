@@ -1252,31 +1252,15 @@ $js=<<<ENDOFJSSCRIPT
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	function syncTableClick(c){
-		var c=getObject(c);
-		var cname=c.getAttribute('href');
-		var ctab='sync'+cname+'tab';
-		var sTable=getObject('syncTableMain');
-		for (var i = 0, row; row = sTable.rows[i]; i ++) {
-			for (var j = 0, col; col = row.cells[j]; j ++) {
-				var sname=col.id;
-				var stab='sync'+sname+'tab';
-				var shref='sync'+sname+'href';
-				var sdiv='sync'+sname+'div';
-				if(stab==ctab){
-					setText('syncDiv',getText(sdiv));
-					setClassName(stab,'table_header_reverseback w_roundsmall_topleft w_roundsmall_topright w_arial w_small w_border');
-					setClassName(shref,'table_header_reversetext w_link w_bold');
-					var sobj=getObject('synctable'+sname);
-					sorttable.makeSortable(sobj);
-				}
-				else{
-					setClassName(stab,'table_header_background w_roundsmall_topleft w_roundsmall_topright w_arial w_small w_border');
-					setClassName(shref,'table_header_text  w_link w_bold');
-				}
-			}
+		c=getObject(c);
+		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
+		for(var i=0;i<tabs.length;i++){
+			setClassName(tabs[i],'btn btn-primary');
 		}
-		sorttable.init();
-		return false;
+		setClassName(c,'btn btn-warning active');
+		var sdiv=c.getAttribute('data-div');
+		setText('syncDiv',getText(sdiv));
+		return true;
 	}
 </script>
 ENDOFJSSCRIPT;
@@ -4612,10 +4596,9 @@ function adminShowSyncChanges($stables=array()){
         return 'No Changes Found';
 	}
 	$rtn='';
-	//display change tabs by table
+	//display change tabs by table using btn-group of bootstrap
 	$rtn .= '	<div  class="w_align_left">'."\n";
-	$rtn .= '	<table id="syncTableMain" class="w_pad">'."\n";
-	$rtn .= '		<tr valign="bottom">'."\n";
+	$rtn .= '	<div class="btn-group">'."\n";
 	foreach($changes as $table=>$recs){
 		//get changes for the current user
 		$change_user_count=0;
@@ -4626,15 +4609,14 @@ function adminShowSyncChanges($stables=array()){
     	$change_count=count($changes[$table]);
         $syncTableDiv='sync'.$table.'div';
         $syncTableTab='sync'.$table.'tab';
-        $syncTableHref='sync'.$table.'href';
-        $img='';
+		$img='';
 		$src=getImageSrc($table);
 		if(strlen($src)){$img='<img src="'.$src.'" class="w_bottom" alt="" /> ';}
-        $rtn .= '		<td id="'.$table.'"><div id="'.$syncTableTab.'" onclick="syncTableClick(\''.$syncTableHref.'\');return false;" class="table_header_background w_roundsmall_topleft w_roundsmall_topright w_arial w_small" style="cursor:pointer;padding:3px 2px 2px 2px;">'."\n";
-        $rtn .= '			<a id="'.$syncTableHref.'" class="table_header_text w_link w_bold" style="text-decoration:none;padding:1px 2px 1px 2px;" href="'.$table.'" onclick="return false;"><sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup></a>'."\n";
-        $rtn .= '		</div></td>'."\n";
+        $rtn .= '		<button type="button" class="btn btn-primary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'."\n";
+        $rtn .= '			<sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup>'."\n";
+        $rtn .= '		</button>'."\n";
 	}
-	$rtn .= '	</tr></table>'."\n";
+	$rtn .= '	</div>'."\n";
 	//build each table's changes in a hidden div
 	$formname='syncform';
 	$rtn .=  buildFormBegin('',array('_menu'=>"synchronize",'-name'=>$formname,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
@@ -4667,9 +4649,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .= '	</div>'."\n";
 	//show the first table or the one they sorted by
 	$showtable=setValue(array($_REQUEST['synctab'],$first_table));
-	$syncTableDiv='sync'.$showtable.'div';
-	$syncTableHref='sync'.$showtable.'href';
-	$rtn .=  buildOnLoad("syncTableClick('{$syncTableHref}');");
+	$syncTableTab='sync'.$showtable.'tab';
+	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'."\n";
 	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><img src="/wfiles/iconsets/16/synchronize_push.png" border="0" alt="push"> Push Changes Live</button>'."\n";
