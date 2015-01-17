@@ -6424,6 +6424,11 @@ function loadExtrasJs($extras){
     	$_SESSION['w_MINIFY']['extras_js']=array();
 	}
 	foreach($extras as $extra){
+		switch(strtolower($extra)){
+        	case 'angularjs':
+        		$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
+        	break;
+		}
 		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_js'])){
         	$_SESSION['w_MINIFY']['extras_js'][]=$extra;
 		}
