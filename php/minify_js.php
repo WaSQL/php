@@ -195,6 +195,12 @@ function minifyFiles($path,$names){
 			$mcode=minifyCode($code,'js');
 			setFileContents("{$path}/{$name}.min.js",$mcode);
 		}
+		if(preg_match('/^http/i',$name)){
+	     	//remote file - expire every week
+	     	$evalstr="return minifyGetExternal('{$name}');";
+			echo getStoredValue($evalstr,0,168);
+			continue;
+		}
 		if($CONFIG['minify_js'] && is_file("{$path}/{$name}.min.js")){
 			$file="{$path}/{$name}.min.js";
 			if(!in_array($file,$files)){$files[]=$file;}

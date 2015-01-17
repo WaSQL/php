@@ -6419,6 +6419,7 @@ function loadExtrasCss($extras){
 *	<?=loadExtrasJs(array('iefix','html5','custom'));?>
 */
 function loadExtrasJs($extras){
+	global $CONFIG;
 	if(!is_array($extras)){$extras=array($extras);}
 	if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
     	$_SESSION['w_MINIFY']['extras_js']=array();
@@ -6426,7 +6427,12 @@ function loadExtrasJs($extras){
 	foreach($extras as $extra){
 		switch(strtolower($extra)){
         	case 'angularjs':
-        		$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
+        		if($CONFIG['minify_js']){
+        			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js';
+				}
+				else{
+        			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
+				}
         	break;
 		}
 		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_js'])){
