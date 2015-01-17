@@ -1541,6 +1541,7 @@ function codemirrorTextEditor(obj,mode,behavior){
 		electricChars: false,
 		readOnly:readonly,
   		textWrapping: false,
+  		lineWrapping:true,
   		onBlur: function(cm){cm.save()},
     	extraKeys: extrakeys
 	};

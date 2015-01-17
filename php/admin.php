@@ -2618,7 +2618,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<th>Null</th>'."\n";
 			echo '		<th>Key</th>'."\n";
 			echo '		<th>Val</th>'."\n";
-			echo '		<th>Extra</th>'."\n";
+			echo '		<th>Extra/Comment</th>'."\n";
 			echo '		<th>Name</th>'."\n";
 			echo '		<th>Type</th>'."\n";
 			echo '		<th>Width</th>'."\n";
@@ -2643,6 +2643,14 @@ if(isset($_REQUEST['_menu'])){
 				if(preg_match('/unique_key/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' Unique';}
 				if(preg_match('/primary_key/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' Primary Key';}
 				if(preg_match('/auto_increment/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' auto_increment';}
+				$extras=array();
+				if(strlen($tinfo['fieldinfo'][$field]['_dbextra'])){
+					$extras[]=$tinfo['fieldinfo'][$field]['_dbextra'];
+				}
+				if(strlen($tinfo['fieldinfo'][$field]['_dbcomment'])){
+					$extras[]=$tinfo['fieldinfo'][$field]['_dbcomment'];
+				}
+				$extra=implode('/',$extras);
 				if(preg_match('/^\_/',$field)){
 					echo '		<td><a class="w_gray w_link" href="#'.$id.'" onclick="'.$onclick.'" class="w_link">'.$field.'</a></td>'."\n";
 					}
@@ -2654,7 +2662,7 @@ if(isset($_REQUEST['_menu'])){
 				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbnull'].'</td>'."\n";
 				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbkey'].'</td>'."\n";
 				echo '		<td class="w_gray" align="right">'.$tinfo['fieldinfo'][$field]['_dbdefault'].'</td>'."\n";
-				echo '		<td class="w_gray">'.$tinfo['fieldinfo'][$field]['_dbextra'].'</td>'."\n";
+				echo '		<td class="w_gray">'.$extra.'</td>'."\n";
 				echo '		<td class="w_gray" style="font-size:9pt;color:#848484;" class="w_nowrap">'.$tinfo['fieldinfo'][$field]['displayname'].'</td>'."\n";
 				if(strlen($tinfo['fieldinfo'][$field]['inputtype'])){
 					echo '		<td class="w_gray" style="font-size:9pt;color:#848484;" class="w_nowrap"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" title="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"> '.$tinfo['fieldinfo'][$field]['inputtype'].'</td>'."\n";
