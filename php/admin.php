@@ -2617,7 +2617,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<th>Len</th>'."\n";
 			echo '		<th>Null</th>'."\n";
 			echo '		<th>Key</th>'."\n";
-			echo '		<th>Value</th>'."\n";
+			echo '		<th>Val</th>'."\n";
 			echo '		<th>Extra</th>'."\n";
 			echo '		<th>Name</th>'."\n";
 			echo '		<th>Type</th>'."\n";
@@ -2703,6 +2703,7 @@ if(isset($_REQUEST['_menu'])){
 				elseif($field['key']=='UNI'){$type .= ' UNIQUE';}
 				if(strlen($field['default'])){$type .= ' Default '.$field['default'];}
 				if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
+				if(strlen($field['comment'])){$type .= " COMMENT '{$field['comment']}'";}
 				echo "{$field['field']} {$type}\r\n";
                 }
 			echo '		</textarea><br clear="both" />'."\n";

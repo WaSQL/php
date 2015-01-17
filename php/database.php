@@ -1690,7 +1690,6 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	//get current database fields
 	$current=array();
 	$fields=getDBSchema(array($table));
-
 	foreach($fields as $field){
 		$name=strtolower(trim($field['field']));
 		$name=str_replace(' ','_',$name);
@@ -1704,9 +1703,10 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		if($field['key']=='PRI'){$type .= ' Primary Key';}
 		elseif($field['key']=='UNI'){$type .= ' UNIQUE';}
 		if(strlen($field['default'])){
-			$type .= ' Default '.$field['default'];
+			$type .= " Default {$field['default']}";
 			}
-		if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
+		if(strlen($field['extra'])){$type .= " {$field['extra']}";}
+		if(strlen($field['comment'])){$type .= " COMMENT '{$field['comment']}'";}
 		$current[$name]=$type;
         }
     $currentSet=$current;
@@ -1752,7 +1752,7 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	$query .= implode(",",$sets);
 	if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
-	///echo "query_result".printValue($query_result);
+	//echo $query.printValue($query_result);
   	if($query_result==true){
 		foreach($changed as $field=>$attributes){
         	instantDBMeta($ori_table,$field,$attributes);
@@ -6879,7 +6879,9 @@ function databaseDescribeTable($table){
 		}
 	$recs=array();
 	if(isMysqli() || isMysql()){
-		$recs=getDBRecords(array('-query'=>"desc {$table}"));
+		//$query="desc {$table}";
+		$query="show full columns from {$table}";
+		$recs=getDBRecords(array('-query'=>$query));
 		}
 	elseif(isPostgreSQL()){
 		//field,type,null,key,default,extra
