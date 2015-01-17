@@ -3350,6 +3350,7 @@ function getDBFieldTag($params=array()){
 		unset($info[$field]['required']);
 		$info[$field]['_required']=1;
     	}
+    if(isExtraCss('bootstrap')){$info[$field]['class'] .= ' form-control';}
 	$tag='';
 	switch ($info[$field]['inputtype']){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
@@ -4584,7 +4585,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		$name=$fld['field'];
 		foreach($fld as $key=>$val){
 			if(preg_match('/^_/',$key) || !strlen($val)){continue;}
-
+			if($key=='type'){$key='type_ex';}
 			$info[$name]['_db'.$key]=$val;
         	}
     	}

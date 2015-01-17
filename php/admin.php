@@ -2609,7 +2609,7 @@ if(isset($_REQUEST['_menu'])){
 		        }
 			echo $currentTable.' Table</div>'."\n";
 			echo '<table class="w_nopad"><tr valign="top"><td>'."\n";
-			echo '<table class="table table-condensed table-striped table-bordered">'."\n";
+			echo '<table class="table table-condensed table-striped table-bordered table-hover">'."\n";
 			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'."\n";
 			echo '	<tr>'."\n";
 			echo '		<th class="w_smallest">Name</th>'."\n";
@@ -2634,15 +2634,8 @@ if(isset($_REQUEST['_menu'])){
 				$frec=getDBRecord(array('-table'=>"_fielddata",'tablename'=>$currentTable,'fieldname'=>$field));
 				$id=is_array($frec)?$frec['_id']:0;
 				$onclick='return ajaxAddEditForm(\'_fielddata\','.$id.',\'\',\'_menu=properties&fieldname='.$field.'&tablename='.$currentTable.'&_table_='.$currentTable.'\');';
-				if(isEven($row)){echo '	<tr class="w_even">'."\n";}
-				else{echo '	<tr>'."\n";}
-				$val="{$tinfo['fieldinfo'][$field]['_dbtype']} ({$tinfo['fieldinfo'][$field]['_dblength']})";
-				if(preg_match('/not_null/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' NOT NULL';}
-				else{$val .= ' NULL';}
-				//echo printValue($tinfo['fieldinfo'][$field]['_dbflags']);
-				if(preg_match('/unique_key/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' Unique';}
-				if(preg_match('/primary_key/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' Primary Key';}
-				if(preg_match('/auto_increment/i',$tinfo['fieldinfo'][$field]['_dbflags'])){$val .= ' auto_increment';}
+				echo '	<tr onclick="'.$onclick.'">'."\n";
+
 				$extras=array();
 				if(strlen($tinfo['fieldinfo'][$field]['_dbextra'])){
 					$extras[]=$tinfo['fieldinfo'][$field]['_dbextra'];
@@ -2652,10 +2645,10 @@ if(isset($_REQUEST['_menu'])){
 				}
 				$extra=implode('/',$extras);
 				if(preg_match('/^\_/',$field)){
-					echo '		<td><a class="w_gray w_link w_block w_smaller" href="#'.$id.'" onclick="'.$onclick.'">'.$field.'</a></td>'."\n";
+					echo '		<td class="w_gray w_smaller">'.$field.'</td>'."\n";
 					}
 				else{
-					echo '		<td><a class="w_lblue w_link w_block w_bold w_smaller" href="#'.$id.'" onclick="'.$onclick.'">'.$field.'</a></td>'."\n";
+					echo '		<td class="w_lblue w_bold w_smaller">'.$field.'</td>'."\n";
 					}
 				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbtype'].'</td>'."\n";
 				echo '		<td class="w_gray w_smaller" align="right">'.$tinfo['fieldinfo'][$field]['_dblength'].'</td>'."\n";
@@ -2689,7 +2682,8 @@ if(isset($_REQUEST['_menu'])){
             	}
             echo '</table>';
             echo '</td><td>'."\n";
-            $list=getDBSchema(array($currentTable));
+            //$list=getDBSchema(array($currentTable));
+            $list=$tinfo['fieldinfo'];
 			echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
 			echo '<table class="table table-condensed table-bordered">'."\n";
             echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'."\n";
@@ -2702,16 +2696,16 @@ if(isset($_REQUEST['_menu'])){
 			}
 			echo '		<textarea name="_schema" data-behavior="sqleditor" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'."\n";
 			foreach($list as $field){
-				if(preg_match('/^\_/',$field['field'])){continue;}
-				$type=$field['type'];
-				if($field['null']=='NO'){$type .= ' NOT NULL';}
+				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
+				$type=$field['_dbtype_ex'];
+				if($field['_dbnull']=='NO'){$type .= ' NOT NULL';}
 				else{$type .= ' NULL';}
-				if($field['key']=='PRI'){$type .= ' Primary Key';}
-				elseif($field['key']=='UNI'){$type .= ' UNIQUE';}
-				if(strlen($field['default'])){$type .= ' Default '.$field['default'];}
-				if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
-				if(strlen($field['comment'])){$type .= " COMMENT '{$field['comment']}'";}
-				echo "{$field['field']} {$type}\r\n";
+				if($field['_dbkey']=='PRI'){$type .= ' Primary Key';}
+				elseif($field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
+				if(strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
+				if(strlen($field['_dbextra'])){$type .= ' '.$field['_dbextra'];}
+				if(strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
+				echo "{$field['_dbfield']} {$type}\r\n";
                 }
 			echo '		</textarea><br clear="both" />'."\n";
 			echo '<div align="right">'.buildFormSubmit("Save Schema Changes").'</div>'."\n";
@@ -2736,8 +2730,6 @@ if(isset($_REQUEST['_menu'])){
 				buildFormField('_tabledata','synchronize'),
 				' Synchronize'
 			));
-			//echo '			<input type="checkbox" name="synchronize" value="1"'.$checked.' />'."\n";
-			//echo '			 Synchronize'."\n";
 			echo '		</td>'."\n";
 			echo '		<td>'."\n";
 			echo '			<div class="w_dblue">Check to synchronize this table</div>'."\n";
@@ -2748,9 +2740,8 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			echo '			<div style="width:150px">'."\n";
-			echo '				<div><img src="/wfiles/iconsets/16/group.png" alt="table group" /> Table Group</div>'."\n";
+			echo '				<div data-tooltip="Allows grouping in admin table menu."><img src="/wfiles/iconsets/16/group.png" alt="table group" /> Table Group</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tablegroup')."\n";
-			echo '				<div>Allows grouping in admin table menu.</div>'."\n";
 			echo '			</div>'."\n";
 			echo '		</td>'."\n";
 			$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);
