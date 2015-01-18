@@ -210,7 +210,7 @@ function buildFormCalendar($name,$params=array()){
 	loadExtrasCss('tcal');
 	//load the Javascript for tcal
 	loadExtrasJs('tcal');
-	if(!isset($params['style'])){$params['style']='width:95px;font-size:12px;font-family:arial;';}
+	if(!isset($params['style'])){$params['style']='display:table-cell;width:95px;font-size:12px;font-family:arial;';}
 	if(!isset($params['mask'])){$params['mask']='^[0-9]{1,2}[\-\/][0-9]{1,2}[\-\/][0-9]{2,4}$';}
 	if(!isset($params['maskmsg'])){$params['maskmsg']="Invalid date format (MM-DD-YYYY)";}
 	if(isset($params['class'])){unset($params['class']);}
@@ -221,15 +221,7 @@ function buildFormCalendar($name,$params=array()){
 		$idparts[]='date';
 		$params['id']=implode('_',$idparts);
 	}
-	//if the browser supports it - use the HTML5 date type instead
-	if(1==2 && in_array($_SERVER['REMOTE_BROWSER'],array('chrome','opera'))){
-		$type="date";
-		unset($params['style']);
-		unset($params['mask']);
-		unset($params['maskmsg']);
-		//echo printValue($params);exit;
-		}
-	else{$type="text";}
+	$type="text";
 	if(!isset($params['name'])){$params['name']=$name;}
     $tag = '<input type="'.$type.'"';
 	$tag .= setTagAttributes($params);
