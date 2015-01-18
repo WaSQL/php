@@ -70,7 +70,7 @@ function f_tcalGetHTML (d_date) {
 		+ A_TCALCONF.months[d_date.getMonth()] + ' ' + d_date.getFullYear()
 		+ '</th><td id="' + s_pfx + 'NextMonth"' + f_tcalRelDate(d_date, 1) + ' title="' + A_TCALCONF.nextmonth + '"></td>'
 		+ (A_TCALCONF.yearscroll ? '<td id="' + s_pfx + 'NextYear"' + f_tcalRelDate(d_date, 1, 'y') + ' title="' + A_TCALCONF.nextyear + '"></td>' : '')
-		+ '</tr></tbody></table><table id="' + s_pfx + 'Grid"><tbody><tr>';
+		+ '</tr></tbody></table><table id="' + s_pfx + 'Grid" class="table table-striped"><tbody><tr>';
 
 	// print weekdays titles
 	for (var i = 0; i < 7; i++)

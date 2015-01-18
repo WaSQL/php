@@ -34,6 +34,9 @@
 	box-shadow: 3px 3px 4px silver;
 	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='silver')";
 	[msie lt 8]filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='silver');
+	[safari|chrome]-webkit-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	border-radius: 5px;
 }
 
 /* table containing navigation and current month */
@@ -80,14 +83,14 @@
 	padding: 3px 0;
 	text-align: center;
 	font-family: Tahoma, Geneva, sans-serif;
-	font-size: 10px;
-	background-color: gray;
+	font-size: 11px;
+	background-color: #a7a8a9;
 	color: white;
 }
 #tcalGrid td {
 	border: 0;
 	border-collapse: collapse;
-	padding: 2px 0;
+	padding: 3px 0;
 	text-align: center;
 	font-family: Tahoma, Geneva, sans-serif;
 	width: 14%;
@@ -95,6 +98,10 @@
 	cursor: pointer;
 }		
 #tcalGrid td.tcalOtherMonth { color: silver; }
-#tcalGrid td.tcalWeekend { background-color: #dddff9; }
-#tcalGrid td.tcalToday { border: 1px solid red; }
-#tcalGrid td.tcalSelected { background-color: #FFB3BE; }		
+#tcalGrid td.tcalWeekend { 
+	background-color: #337ab7;
+	color:#FFF;
+}
+#tcalGrid td:hover{background-color:#ba1419 !important;color:#FFF !important;}
+#tcalGrid td.tcalToday { background-color:#f0ad4e;color:#FFF; }
+#tcalGrid td.tcalSelected { background-color: #5cb85c; }
