@@ -666,21 +666,25 @@ table th a {
 .w_biggest {font-size:16pt;}
 .w_huge {font-size:24pt;}
 
-/*Colors */
+/*Colors - modified to match bootstrap button colors */
 .w_black {color:#000;}
 .w_white {color:#FFF;}
-.w_dblue {color:#3465a4;}
-.w_lblue {color:#6699CC;}
-.w_red {color:#970000;}
+.w_dblue {color:#428bca;}
+.w_lblue {color:#5bc0de;}
+.w_red {color:#d9534f;}
+.w_orange {color:#f0ad4e;}
+.w_green {color:#5cb85c;}
 .w_gray{color:#939393;}
 .w_lgray{color:#f4f4f4;}
 .w_required {color:#970000;}
 
 .w_blackback  {background-color:#000;}
 .w_whiteback  {background-color:#FFF;}
-.w_dblueback  {background-color:#3465a4;}
-.w_lblueback  {background-color:#6699CC;}
-.w_redback  {background-color:#970000;}
+.w_dblueback  {background-color:#428bca;}
+.w_lblueback  {background-color:#5bc0de;}
+.w_redback  {background-color:#d9534f;}
+.w_greenback  {background-color:#5cb85c;}
+.w_orangeback  {background-color:#f0ad4e;}
 .w_grayback {background-color:#939393;}
 .w_lgrayback {background-color:#f4f4f4;}
 .w_gradientorange{
