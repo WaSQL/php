@@ -695,7 +695,7 @@ function buildFormTime($name,$params=array()){
 		$tag .= '>'.$dname.'</option>'."\n";
     }
     $tag .= '</select>'."\n";
-    $tag .= '<a href="#" onclick="setTimeField(\''.$params['-prefix'].'\',\''.$name.'\');return false;" class="w_link" title="Set to Current Time"><img src="/wfiles/icons/misc/time.png" alt="time" /></a>'."\n";
+    $tag .= '<span onclick="setTimeField(\''.$params['-prefix'].'\',\''.$name.'\');return false;" class="icon-clock w_pointer w_big" title="Set to Current Time"></span>'."\n";
 	return $tag;
 }
 //---------- begin function buildHtmlBegin-------------------
