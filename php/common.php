@@ -1923,6 +1923,9 @@ function renderView($view, $params=array(), $opts=array()){
 	$VIEW_KEY = $opts['-key'];
 	$alias = isset($opts['-alias']) ? " = $".$opts['-alias'] : "";
 	$view_data = '<?'."php\n".'global $VIEW_PARAMS;'."\n";
+	$view_data .= 'global $USER;'."\n";
+	$view_data .= 'global $PAGE;'."\n";
+	$view_data .= 'global $TEMPLATE;'."\n";
 	$view_data .= 'global $VIEW_KEY;'."\n";
 	$view_data .= '$key = $VIEW_KEY;'."\n";
 	$view_data .= '$params '.$alias.' = $VIEW_PARAMS;'."\n?>\n\n";
