@@ -1114,7 +1114,7 @@ function setText(obj,txt){
 	//usage: setText('div2','test');
 	var cObj=getObject(obj);
     if(undefined == cObj){
-		colsole.log('setText: no object found for '.obj);
+		console.log('setText: no object found for '.obj);
 		return null;
 	}
     //console.log(cObj.id+'\n'+txt+'\n\n');
