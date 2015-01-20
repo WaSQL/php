@@ -1253,7 +1253,7 @@ function initBehaviors(ajaxdiv){
 			if(id){
 				addClass(navEls[n],'w_slideshow');
 				var t=navEls[n].getAttribute('data-timer');
-				if(undefined == t){navEls[n].getAttribute('timer');}
+				if(undefined == t){t=navEls[n].getAttribute('timer');}
 				//add navigation
 				var navobj=getObject(id+'_nav');
 				if(undefined != navobj){
@@ -1413,6 +1413,24 @@ function addEventHandler(elem,evnt, func){
    else { 
    		// Not IE or W3C - try generic
 		elem['on'+evnt] = func;
+   }
+}
+//generic remove Event handler for all browsers - depreciated use removeEventHandler instead
+function removeEvent(elem, evnt, func){
+	return removeEventHandler(elem, evnt, func);
+}
+function removeEventHandler(elem,evnt, func){
+	if (elem.removeEventListener){
+		// W3C DOM
+		elem.removeEventListener(evnt,func,false);
+	}
+	else if (elem.detachEvent){
+   		// IE DOM
+   		elem.detachEvent("on"+evnt, func);
+   }
+   else { 
+   		// Not IE or W3C - try generic
+		elem['on'+evnt] = {};
    }
 }
 /* Codemirror helper funcitons */
