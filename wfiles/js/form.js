@@ -1298,7 +1298,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
-				else{
+				else if(undefined == theform.noprocessing){
 					setProcessing(dname);
 					}
 				}
