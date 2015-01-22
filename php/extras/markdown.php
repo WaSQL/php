@@ -32,6 +32,6 @@ function markdownFromHtml($html,$params=array()){
 	$markdown = new HTML_To_Markdown();
 	if($params['-strip_tags']){$markdown->set_option('strip_tags', true);}
 	$markdown->convert($html);
-	return $markdown;
+	return $markdown->output();
 }
 ?>
