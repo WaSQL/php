@@ -413,7 +413,7 @@ function remindMeForm(){
 //--------------------------
 function setProcessing(id,msg){
 	if(undefined == msg){msg='Processing ...';}
-	var str='<div class="w_lblue"><img src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
+	var str='<div style="display:table-cell;"><img src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
 	setText(id,str);
 	return;
 	}
