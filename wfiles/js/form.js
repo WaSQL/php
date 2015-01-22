@@ -1317,6 +1317,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 					setCenterPopText(dname,val);
                     }
 				else{setText(dname,val);}
+				if(undefined != theform.setprocessing){
+					setText(theform.setprocessing.value,'');
+					}
 				}
 			,'onError':function(req){
 				var dname = this.groupName;
@@ -1327,6 +1330,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 					setCenterPopText(dname,val);
                     }
 				else{setText(dname,val);}
+				if(undefined != theform.setprocessing){
+					setText(theform.setprocessing.value,'');
+					}
 				}
 			,'onSuccess':function(req){
 				var dname=this.groupName;
@@ -1339,6 +1345,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 					tinyMCE.execCommand('mceRemoveControl', false, cid);
 					//console.log('ajaxPost - removed tinyMCE for '+cid+' found in '+dname);
 				}
+				if(undefined != theform.setprocessing){
+					setText(theform.setprocessing.value,'');
+					}
 				if(cb != ''){
 					if(cb.indexOf('popupdiv') != -1){
 						popUpDiv(val,{id:dname,center:1,drag:1});
