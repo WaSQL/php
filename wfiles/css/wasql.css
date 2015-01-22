@@ -310,11 +310,12 @@ table th a {
 	opacity:0;
   	[msie]-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   	filter: alpha(opacity=0);
-  	-webkit-transition: all 5s ease-in-out;
-	-moz-transition: all 5s ease-in-out;
-	-o-transition: all 5s ease-in-out;
-	transition: all 5s ease-in-out;
+  	-webkit-transition: all 1.5s ease-in-out;
+	-moz-transition: all 1.5s ease-in-out;
+	-o-transition: all 1.5s ease-in-out;
+	transition: all 1.5s ease-in-out;
 }
+
 
 .w_slideshow #w_slide.opaque {
 	opacity:1;
@@ -325,10 +326,10 @@ table th a {
 }
 /* slideshow: rotate */
 .w_slideshow #w_slide.opaque[data-transition="rotate"]{
-	-webkit-transition: all 3s ease-in-out, -webkit-transform 2s;
-	-moz-transition: all 3s ease-in-out, -moz-transform 2s;
-	-o-transition: all 3s ease-in-out, -o-transform 2s;
-	transition: all 3s ease-in-out, transform 2s;
+	-webkit-transition: all 1.5s ease-in-out, -webkit-transform 1.5s;
+	-moz-transition: all 1.5s ease-in-out, -moz-transform 1.5s;
+	-o-transition: all 1.5s ease-in-out, -o-transform 1.5s;
+	transition: all 1.5s ease-in-out, transform 1.5s;
 	-webkit-transform:rotate(360deg);
     transform:rotate(360deg);
 }
@@ -337,8 +338,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="slide left"]{
 	animation-name: slideLeft;
 	-webkit-animation-name: slideLeft;
-	animation-duration: 2s;
-	-webkit-animation-duration: 2s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-in-out;
 	-webkit-animation-timing-function: ease-in-out;
 }
@@ -354,8 +355,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="slide right"]{
 	animation-name: slideRight;
 	-webkit-animation-name: slideRight;
-	animation-duration: 2s;
-	-webkit-animation-duration: 2s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-in-out;
 	-webkit-animation-timing-function: ease-in-out;
 }
@@ -371,8 +372,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="slide up"]{
 	animation-name: slideUp;
 	-webkit-animation-name: slideUp;
-	animation-duration: 2s;
-	-webkit-animation-duration: 2s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease;
 	-webkit-animation-timing-function: ease;
 }
@@ -389,8 +390,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="slide down"]{
 	animation-name: slideDown;
 	-webkit-animation-name: slideDown;
-	animation-duration: 2s;
-	-webkit-animation-duration: 2s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease;
 	-webkit-animation-timing-function: ease;
 }
@@ -407,8 +408,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="fade in"]{
 	animation-name: fadeIn;
 	-webkit-animation-name: fadeIn;
-	animation-duration: 3.5s;
-	-webkit-animation-duration: 3.5s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-in-out;
 	-webkit-animation-timing-function: ease-in-out;
 }
@@ -424,8 +425,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="pull up"]{
 	animation-name: pullUp;
 	-webkit-animation-name: pullUp;
-	animation-duration: 3.1s;
-	-webkit-animation-duration: 3.1s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-out;
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 50% 100%;
@@ -444,8 +445,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="pull down"]{
 	animation-name: pullDown;
 	-webkit-animation-name: pullDown;
-	animation-duration: 3.1s;
-	-webkit-animation-duration: 3.1s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-out;
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 50% 0%;
@@ -464,8 +465,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="stretch left"]{
 	animation-name: stretchLeft;
 	-webkit-animation-name: stretchLeft;
-	animation-duration: 3.5s;
-	-webkit-animation-duration: 3.5s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-out;
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 100% 0%;
@@ -484,8 +485,8 @@ table th a {
 .w_slideshow #w_slide.opaque[data-transition="stretch right"]{
 	animation-name: stretchRight;
 	-webkit-animation-name: stretchRight;
-	animation-duration: 3.5s;
-	-webkit-animation-duration: 3.5s;
+	animation-duration: 1.5s;
+	-webkit-animation-duration: 1.5s;
 	animation-timing-function: ease-out;
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 0% 0%;
