@@ -1045,7 +1045,7 @@ function addEditDBForm($params=array(),$customcode=''){
             }
 			$rtn .= $customrow;
 			continue;
-			}
+		}
 		//set required string
 		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'."\n";
@@ -1415,7 +1415,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     elseif(is_array($rec) && isNum($rec['_id'])){
 		$class=isset($params['-save_class'])?$params['-save_class']:'';
-		if($params['-bootstrap'] && !stringContains($class,'form-control')){$class .= 'btn btn-primary';}
+		if($params['-bootstrap'] && !stringContains($class,'btn btn-primary')){$class .= 'btn btn-primary';}
 		if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Edit';
 			//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
@@ -1435,7 +1435,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 	elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 		$class=isset($params['-save_class'])?$params['-save_class']:'';
-		if($params['-bootstrap'] && !stringContains($class,'form-control')){$class .= 'btn btn-primary';}
+		if($params['-bootstrap'] && !stringContains($class,'btn btn-primary')){$class .= 'btn btn-primary';}
 		$action=isset($params['-nosave'])?'':'Add';
     	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
     	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
@@ -3347,10 +3347,12 @@ function getDBFieldTag($params=array()){
     	foreach($setstyles as $setstyle){
 			$parts=preg_split('/\:/',$setstyle);
 			$key=trim($parts[0]);
-			$styles[$key]=trim($parts[1]);
-        	}
-        unset($setstyles);
- 		}
+			if(strlen($key) && strlen(trim($parts[1]))){
+				$styles[$key]=trim($parts[1]);
+			}
+        }
+    	unset($setstyles);
+ 	}
  	$stylekeys=array('width','height');
  	foreach($stylekeys as $stylekey){
 		if(!isset($styles[$stylekey]) && isset($info[$field][$stylekey]) && $info[$field][$stylekey] != 0){
@@ -3364,7 +3366,7 @@ function getDBFieldTag($params=array()){
 		unset($info[$field]['required']);
 		$info[$field]['_required']=1;
     	}
-    if(isExtraCss('bootstrap')){$info[$field]['class'] .= ' form-control';}
+    if(isExtraCss('bootstrap') && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 	$tag='';
 	switch ($info[$field]['inputtype']){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
@@ -4038,6 +4040,7 @@ function getDBFieldTag($params=array()){
 			$tag .= buildFormTime($info[$field]['name'],$tagopts);
 			break;
 		//Text
+		case 'text':
 		default:
 			//default to text
 			//remove height since it does not apply to text fields
@@ -6446,9 +6449,7 @@ function listDBRecords($params=array(),$customcode=''){
 			if($listform==1 && isset($info[$fld]['editlist']) && $info[$fld]['editlist']==1){
 				$rtn .= '<td>'."\n";
 				$fldopts=array('-table'=>$params['-table'],'-field'=>$fld,'name'=>"{$fld}_{$rec[$idfield]}",'value'=>$rec[$fld]);
-				if(isExtraCss('bootstrap')){
-                	$fldopts['class']='form-control';
-				}
+				if(isExtraCss('bootstrap') && !stringContains($fldopts['class'],'form-control')){$fldopts['class'] .= ' form-control';}
 				foreach($params as $pkey=>$pval){
 					if(preg_match('/^'.$fld.'_(.+)$/',$pkey,$m)){
 						if($m[1]=='tabindex'){$pval += $tabindex;$tabindex++;}
