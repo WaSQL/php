@@ -4975,6 +4975,18 @@ function getFileContents($file){
 	if(!file_exists($file)){return "getFileContents Error: No such file [$file]";}
 	return file_get_contents($file);
 	}
+//---------- begin function getFileMimeType--------------------
+/**
+* @describe returns the mime type of file
+* @param file string - name and path of file
+* @return string
+* @usage $mimetype=getFileMimeType($afile);
+*/
+function getFileMimeType($file=''){
+	// return mime type ala mimetype extension
+	$finfo = finfo_open(FILEINFO_MIME);
+	return finfo_file($finfo, $file);
+}
 //---------- begin function getFileContentType--------------------
 /**
 * @describe returns the content-type of file based on extension
