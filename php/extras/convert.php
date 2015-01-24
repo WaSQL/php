@@ -19,6 +19,7 @@ function convert2Txt($file){
     	case 'pdf':return convertPDF2Txt($file);break;
     	case 'doc':return convertDoc2Txt($file);break;
     	case 'docx':return convertDocx2Txt($file);break;
+    	case 'xlsx':return convertXlsx2Txt($file);break;
     	default:
     		return "convert2Txt Error: {$ext} files are not supported yet.";
     	break;
@@ -93,6 +94,36 @@ function convertDocx2Txt($file){
 			continue;
 		}
         if(zip_entry_name($zip_entry) != "word/document.xml"){
+			continue;
+		}
+        $content .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+        zip_entry_close($zip_entry);
+    }
+    zip_close($zip);
+    $content = str_replace('</w:r></w:p></w:tc><w:tc>', " ", $content);
+    $content = str_replace('</w:r></w:p>', "\r\n", $content);
+    $striped_content = strip_tags($content);
+    return $striped_content;
+}
+
+//---------- begin function convertXlsx2Txt--------------------------------------
+/**
+* @describe extracts text from a Microsoft xlsx file
+* @param file string
+*	The full file name and path
+* @return txt text
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function convertXlsx2Txt($file){
+    $striped_content = '';
+    $content = '';
+    $zip = zip_open($file);
+    if (!$zip || is_numeric($zip)){return false;}
+    while ($zip_entry = zip_read($zip)) {
+        if (zip_entry_open($zip, $zip_entry) == FALSE){
+			continue;
+		}
+        if(zip_entry_name($zip_entry) != "excel/document.xml"){
 			continue;
 		}
         $content .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
