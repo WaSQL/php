@@ -5,6 +5,7 @@
 $progpath=dirname(__FILE__);
 error_reporting(E_ALL & ~E_NOTICE);
 include_once("{$progpath}/pdf/class.pdf2text.php");
+include_once("{$progpath}/zipfile.php");
 $phppath=preg_replace('/extras*+/i','',$progpath);
 $phppath=str_replace("\\","/",$phppath);
 include_once("{$phppath}/Array2XML.php");
@@ -13,6 +14,7 @@ include_once("{$phppath}/Array2XML.php");
 /**
 * @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html,and text formats.
 *	If the file is an image or an unknown binary file,  it will extract and return the exif data.
+*	If the file is a zip file it will return a list of files in the zip file
 * @param file string
 *	The full file name and path
 * @return txt text
@@ -44,6 +46,9 @@ function convert2Txt($file){
 		case 'html':
 		case 'txt':
 			return trim(removeHtml(getFileContents($file)));
+		break;
+		case 'zip':
+			return implode("\n",zipListFiles($file));
 		break;
     	default:
     		$mimetype=getFileMimeType($file);
@@ -178,7 +183,7 @@ function convertXlsx2Txt($file){
 */
 function convertReadZippedXML($archiveFile, $dataFile) {
 	// Create new ZIP archive
-    $zip = new ZipArchive;
+    $zip = new ZipArchive();
     // Open received archive file
     if (true === $zip->open($archiveFile)) {
     	// If done, search for the data file in the archive

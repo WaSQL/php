@@ -80,4 +80,37 @@ function zipExtract( $zipfile,$newpath=''){
     }
     return $rtn;
 }
+//---------- begin function zipListFiles ----------
+/**
+* @describe returns a list of files found in zip file
+* @param zipfile string - path and zipfile to extract
+* @return array - an array of files
+* @usage
+*	<?php
+*	$files=zipListFiles('/var/www/temp/myfiles.zip');
+*	?>
+*/
+function zipListFiles( $zipfile){
+	//info:
+	//info:returns an array of files written (full path)
+    $zippath=getFilePath($zipfile);
+    $zipname=getFileName($zipfile,1);
+    $slash=isWindows()?"\\":'/';
+    $rtn=array();
+    //default new path to same path zipfile is located in if not specified
+    if(!strlen($newpath)){$newpath="{$zippath}/{$zipname}";}
+    $zip = zip_open($zipfile);
+    $list=array();
+    if(is_resource($zip)){
+		//loop through the files in the zipfile
+        while ($zip_entry = zip_read($zip)){
+			$file=zip_entry_name($zip_entry);
+            $file=preg_replace('/\/+/',$slash,$afile);
+            $file=preg_replace('/\\+/',$slash,$afile);
+            $list[]=$file;
+        }
+        zip_close($zip);
+    }
+    return $rtn;
+}
 ?>
