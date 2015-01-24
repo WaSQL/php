@@ -8,8 +8,8 @@ include_once("{$progpath}/pdf/class.pdf2text.php");
 
 //---------- begin function convert2Txt--------------------------------------
 /**
-* @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html formats. 
-*	If the file is an image it will extract the exif data.
+* @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html,and text formats. 
+*	If the file is an image or an unknown binary file,  it will extract and return the exif data.
 * @param file string
 *	The full file name and path
 * @return txt text
@@ -44,12 +44,11 @@ function convert2Txt($file){
 		break;
     	default:
     		$mimetype=getFileMimeType($file);
-    		return $mimetype.' files are not supported';
-    		if(isImage($file)){
-            	return getFileExif($file);
+    		if(stringContains($mimetype,'text')){
+            	return trim(removeHtml(getFileContents($file)));
 			}
-    		//not supported
-    		return '';
+			//probably a binary file - return any exif data
+    		return getFileExif($file);
     	break;
 	}
 }

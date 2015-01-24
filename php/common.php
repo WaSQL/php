@@ -6067,6 +6067,8 @@ function getBrowserInfo(){
 * @usage if(isImage($filename)){...}
 */
 function isImage($file=''){
+	$mimetype=getFileMimeType($afile);
+	if(stringContains($mimetype,'image')){return true;}
 	$exts=array('jpg','jpeg','gif','png','bmp','tif','tiff');
     $ext=getFileExtension($file);
     if(in_array($ext,$exts)){return true;}
