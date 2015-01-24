@@ -24,6 +24,7 @@ function markdown2Html($txt){
 * @param text string - HTML string
 * @param params array
 *	-strip_tags boolean - default is false - strip HTML tags that don't have a markdown equivalent (span, div)
+*	-atx boolean - default is false - use ## for H1 tags instead of underscores
 * @return string - markdown
 * @usage <?=markdownFromHtml($txt));?>
 * @author Brady Barten 1/20/2014
@@ -31,6 +32,7 @@ function markdown2Html($txt){
 function markdownFromHtml($html,$params=array()){
 	$markdown = new HTML_To_Markdown();
 	if($params['-strip_tags']){$markdown->set_option('strip_tags', true);}
+	if($params['-atx']){$markdown->set_option('header_style', 'atx');}
 	$markdown->convert($html);
 	return $markdown->output();
 }
