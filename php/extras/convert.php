@@ -18,7 +18,7 @@ function convert2Txt($file){
 	switch($ext){
     	case 'pdf':return convertPDF2Txt($file);break;
     	case 'doc':return convertDoc2Txt($file);break;
-    	case 'docs':return convertDocx2Txt($file);break;
+    	case 'docx':return convertDocx2Txt($file);break;
     	default:
     		return "convert2Txt Error: {$ext} files are not supported yet.";
     	break;
