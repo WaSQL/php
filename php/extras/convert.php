@@ -123,7 +123,7 @@ function convertXlsx2Txt($file){
         if (zip_entry_open($zip, $zip_entry) == FALSE){
 			continue;
 		}
-        if(zip_entry_name($zip_entry) != "excel/document.xml"){
+        if(zip_entry_name($zip_entry) != "xl/sharedStrings.xml"){
 			continue;
 		}
         $content .= zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
