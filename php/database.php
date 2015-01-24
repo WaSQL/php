@@ -1498,7 +1498,12 @@ function addDBRecord($params=array()){
     	//look for Before trigger
     	$model['check']=1;
     	if(function_exists("{$model_table}AddBefore")){
+			unset($params['-error']);
         	$params=call_user_func("{$model_table}AddBefore",$params);
+        	if(isset($params['-error'])){
+				debugValue($params['-error']);
+				return $params['-error'];
+			}
         	if(!isset($params['-table'])){return "{$model_table}AddBefore Error: No Table".printValue($params);}
 		}
 	}
@@ -1652,7 +1657,11 @@ function addDBRecord($params=array()){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}AddSuccess")){
 				$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
+				unset($params['-error']);
 	        	$params=call_user_func("{$model_table}AddSuccess",$params);
+	        	if(isset($params['-error'])){
+					debugValue($params['-error']);
+				}
 			}
 		}
     	//if queries are turned on, log this query
@@ -2358,7 +2367,12 @@ function delDBRecord($params=array()){
     	//look for Before trigger
     	if(function_exists("{$model_table}DeleteBefore")){
 			$model['check']=1;
+			unset($params['-error']);
         	$params=call_user_func("{$model_table}DeleteBefore",$params);
+        	if(isset($params['-error'])){
+				debugValue($params['-error']);
+				return $params['-error'];
+			}
         	if(!isset($params['-table'])){return "{$model_table}DeleteBefore Error: No Table".printValue($params);}
 		}
 	}
@@ -2373,7 +2387,11 @@ function delDBRecord($params=array()){
     	if(isset($model['functions'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}DeleteSuccess")){
+				unset($params['-error']);
 	        	$params=call_user_func("{$model_table}DeleteSuccess",$params);
+	        	if(isset($params['-error'])){
+					debugValue($params['-error']);
+				}
 			}
 		}
     	return true;
@@ -2544,7 +2562,12 @@ function editDBRecord($params=array()){
     	//look for Before trigger
     	if(function_exists("{$model_table}EditBefore")){
 			$model['check']=1;
+			unset($params['-error']);
         	$params=call_user_func("{$model_table}EditBefore",$params);
+        	if(isset($params['-error'])){
+				debugValue($params['-error']);
+				return $params['-error'];
+			}
         	if(!isset($params['-table'])){return "{$model_table}EditBefore Error: No Table".printValue($params);}
 		}
 	}
@@ -2677,8 +2700,12 @@ function editDBRecord($params=array()){
     	if(isset($model['functions'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}EditSuccess")){
+				unset($params['-error']);
 				$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
 	        	$params=call_user_func("{$model_table}EditSuccess",$params);
+	        	if(isset($params['-error'])){
+					debugValue($params['-error']);
+				}
 			}
 		}
     	return $id;
