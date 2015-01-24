@@ -5,10 +5,13 @@
 $progpath=dirname(__FILE__);
 error_reporting(E_ALL & ~E_NOTICE);
 include_once("{$progpath}/pdf/class.pdf2text.php");
+$phppath=preg_replace('/extras*+/i','',$progpath);
+$phppath=str_replace("\\","/",$phppath);
+include_once("{$phppath}/Array2XML.php");
 
 //---------- begin function convert2Txt--------------------------------------
 /**
-* @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html,and text formats. 
+* @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html,and text formats.
 *	If the file is an image or an unknown binary file,  it will extract and return the exif data.
 * @param file string
 *	The full file name and path
@@ -48,7 +51,10 @@ function convert2Txt($file){
             	return trim(removeHtml(getFileContents($file)));
 			}
 			//probably a binary file - return any exif data
-    		return getFileExif($file);
+    		$exif=getFileExif($file);
+    		$xml = Array2XML::createXML('root_node_name', $exif);
+        	$txt=$xml->saveXML();
+    		return trim(removeHtml($txt));
     	break;
 	}
 }

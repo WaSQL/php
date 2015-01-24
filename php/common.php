@@ -9436,6 +9436,7 @@ function removeHtmlTags($str='',$tags=array()){
 * @usage $str=removeHtml($str);
 */
 function removeHtml($str=''){
+	if(is_array($str)){$str=implode(' ',$str);}
 	return strip_tags($str);
 	}
 //---------- begin function request2XML ----------
