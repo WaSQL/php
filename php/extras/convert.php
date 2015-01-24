@@ -6,9 +6,9 @@ $progpath=dirname(__FILE__);
 error_reporting(E_ALL & ~E_NOTICE);
 include_once("{$progpath}/pdf/class.pdf2text.php");
 
-//---------- begin function convertPDF2Txt--------------------------------------
+//---------- begin function convert2Txt--------------------------------------
 /**
-* @describe extracts text from a PDF file
+* @describe extracts text from a various file formats. Supports pdf,doc,rtf,pptx,docx,xlsx,odp,ods,odt,htm,html formats
 * @param file string
 *	The full file name and path
 * @return txt text
