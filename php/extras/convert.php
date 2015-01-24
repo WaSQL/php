@@ -179,6 +179,8 @@ function convertReadZippedXML($archiveFile, $dataFile) {
     		$content = $doc->saveXML();
     		// Insert whitespace to prevent words beeing concatenated when stripping tags
     		$content = str_replace('>', '> ', $content);
+    		//collapse multiple spaces into one space
+    		$content=preg_replace('/\ +/',' ',$content);
     		// Return data without XML formatting tags
     		return trim(strip_tags($content));
     	}
@@ -215,5 +217,6 @@ function convertPptx2txt($filename){
     	}
     	$zip->close();
     }
+    $content=preg_replace('/\ +/',' ',$content);
 	return trim($content);
 }
