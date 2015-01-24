@@ -18,8 +18,16 @@ function convert2Txt($file){
 	switch($ext){
     	case 'pdf':return convertPDF2Txt($file);break;
     	case 'doc':return convertDoc2Txt($file);break;
-    	case 'docx':return convertDocx2Txt($file);break;
-    	case 'xlsx':return convertXlsx2Txt($file);break;
+    	case 'docx':
+    		return convertReadZippedXML($file,'word/document.xml');
+		break;
+    	case 'xlsx':
+    		return convertReadZippedXML($file,'xl/sharedStrings.xml');
+		break;
+		case 'oo2':
+			//open office file
+    		return convertReadZippedXML($file,'content.xml');
+		break;
     	default:
     		return "convert2Txt Error: {$ext} files are not supported yet.";
     	break;
@@ -134,4 +142,35 @@ function convertXlsx2Txt($file){
     $content = str_replace('</w:r></w:p>', "\r\n", $content);
     $striped_content = strip_tags($content);
     return $striped_content;
+}
+ /**
+     * Read content from zipped office XML file
+     *
+     * @param string $archiveFile
+     * @param string $dataFile
+     * @return string (empty if no content found)
+     */
+function convertReadZippedXML($archiveFile, $dataFile) {
+	// Create new ZIP archive
+    $zip = new ZipArchive;
+    // Open received archive file
+    if (true === $zip->open($archiveFile)) {
+    	// If done, search for the data file in the archive
+    	if (($index = $zip->locateName($dataFile)) !== false) {
+    		// If found, read it to the string
+    		$data = $zip->getFromIndex($index);
+    		// Close archive file
+    		$zip->close();
+    		// Load XML from a string
+    		$doc = new DOMDocument();
+    		$doc->loadXML($data, LIBXML_NOENT | LIBXML_XINCLUDE | LIBXML_NOERROR | LIBXML_NOWARNING);
+    		$content = $doc->saveXML();
+    		// Insert whitespace to prevent words beeing concatenated when stripping tags
+    		$content = str_replace('>', '> ', $content);
+    		// Return data without XML formatting tags
+    		return strip_tags($content);
+    	}
+    	$zip->close();
+    }
+    return '';
 }
