@@ -3938,11 +3938,22 @@ function getPageFunctions(){
 */
 function getFileExif($afile=''){
 	if(!is_file($afile)){return "No such File: {$afile}";}
+	$slash=isWindows()?"\\":'/';
 	$path=getWasqlPath();
-	$cmd="perl -X {$path}/exif.pl file=\"{$afile}\"";
+	$path=preg_replace('|[\\\/+]+$|','',$path);
+	$path=preg_replace('/\/+/',$slash,$path);
+    $path=preg_replace('/\\+/',$slash,$path);
+	$cmd="perl -X {$path}{$slash}exif.pl file=\"{$afile}\"";
 	$post=cmdResults($cmd);
+	if(isset($post['stderr']) && strlen($post['stderr'])){debugValue($post);}
+	if(!isset($post['stdout']) || !strlen($post['stdout'])){
+    	return '';
+	}
 	$exif=xml2Array($post['stdout']);
-	if(!isset($exif['root'])){return $post;}
+	if(!isset($exif['root'])){
+		debugValue($post);
+		return '';
+		}
 	if(isset($exif['root']['exiftool'])){
 		unset($exif['root']['exiftool']);
 	}
@@ -4984,8 +4995,11 @@ function getFileContents($file){
 */
 function getFileMimeType($file=''){
 	// return mime type ala mimetype extension
-	$finfo = finfo_open(FILEINFO_MIME);
-	return finfo_file($finfo, $file);
+	if(isFunction('finfo_open')){
+		$finfo = finfo_open(FILEINFO_MIME);
+		return finfo_file($finfo, $file);
+	}
+	return getFileContentType($file);
 }
 //---------- begin function getFileContentType--------------------
 /**
@@ -5625,6 +5639,16 @@ function isExtraJs($string){
 		}
 	}
 	return false;
+}
+//---------- begin function isFunction ----------
+/**
+* @describe returns true if said function is available to use
+* @return boolean
+*	returns true if said function is available to use
+* @usage if(isFunction($str)){...}
+*/
+function isFunction($func){
+	return is_callable($func);
 }
 //---------- begin function isGDEnabled ----------
 /**

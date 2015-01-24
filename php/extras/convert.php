@@ -58,9 +58,24 @@ function convert2Txt($file){
 			}
 			//probably a binary file - return any exif data
     		$exif=getFileExif($file);
-    		$xml = Array2XML::createXML('root_node_name', $exif);
-        	$txt=$xml->saveXML();
-    		return trim(removeHtml($txt));
+    		if(isset($exif['_input'])){
+				unset($exif['_input']);
+				$list=array();
+				foreach($exif as $mkey=>$mval){
+					foreach($mval as $key=>$val){
+						if(is_array($val)){
+							foreach($val as $nval){$val=$nval;break;}
+						}
+						$list[$key]=$val;
+					}
+				}
+				ksort($list);
+				$txt='';
+				foreach($list as $key=>$val){
+					$txt.="{$key}: {$val}\n";
+				}
+				return $txt;
+			}
     	break;
 	}
 }
