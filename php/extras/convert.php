@@ -17,17 +17,28 @@ function convert2Txt($file){
 	$ext=strtolower(getFileExtension($file));
 	switch($ext){
     	case 'pdf':return convertPDF2Txt($file);break;
-    	case 'doc':return convertDoc2Txt($file);break;
+    	case 'doc':
+		case 'rtf':
+			return convertDoc2Txt($file);
+		break;
+		case 'pptx':
+			return convertPptx2Txt($file);
+		break;
     	case 'docx':
     		return convertReadZippedXML($file,'word/document.xml');
 		break;
     	case 'xlsx':
     		return convertReadZippedXML($file,'xl/sharedStrings.xml');
 		break;
-		case 'oo2':
+		case 'odp':
+    	case 'ods':
+    	case 'odt':
 			//open office file
     		return convertReadZippedXML($file,'content.xml');
 		break;
+		case 'htm':
+		case 'html':
+			return trim(removeHtml(getFileContents($file)));
     	default:
     		return "convert2Txt Error: {$ext} files are not supported yet.";
     	break;
@@ -143,7 +154,7 @@ function convertXlsx2Txt($file){
     $striped_content = strip_tags($content);
     return $striped_content;
 }
- /**
+/**
 * Read content from zipped office XML file
 *
 * @param string $archiveFile
@@ -174,4 +185,35 @@ function convertReadZippedXML($archiveFile, $dataFile) {
     	$zip->close();
     }
     return '';
+}
+//---------- begin function convertPptx2txt--------------------------------------
+/**
+* @describe extracts text from a Microsoft xlsx file
+* @param file string
+*	The full file name and path
+* @return txt text
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function convertPptx2txt($filename){
+	// Create new ZIP archive
+    $zip = new ZipArchive;
+    $content = '';
+	// Open received archive file
+    if (true === $zip->open($filename)) {
+    	// loop through all slide#.xml files
+    	$slide = 1;
+    	while (($index = $zip->locateName('ppt/slides/slide' . $slide . '.xml')) !== false) {
+    		$data = $zip->getFromIndex($index);
+    		$doc = new DOMDocument();
+    		$doc->loadXML($data, LIBXML_NOENT | LIBXML_XINCLUDE | LIBXML_NOERROR | LIBXML_NOWARNING);
+    		$xml = $doc->saveXML();
+    		// Insert whitespace to prevent words beeing concatenated when stripping tags
+    		$xml = str_replace('>', '> ', $xml);
+    		// append data without XML formatting tags
+    		$content .= strip_tags($xml);
+    		$slide++;
+    	}
+    	$zip->close();
+    }
+	return trim($content);
 }
