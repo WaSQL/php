@@ -105,12 +105,12 @@ function zipListFiles( $zipfile){
 		//loop through the files in the zipfile
         while ($zip_entry = zip_read($zip)){
 			$file=zip_entry_name($zip_entry);
-            $file=preg_replace('/\/+/',$slash,$afile);
-            $file=preg_replace('/\\+/',$slash,$afile);
+            $file=preg_replace('/\/+/',$slash,$file);
+            $file=preg_replace('/\\+/',$slash,$file);
             $list[]=$file;
         }
         zip_close($zip);
     }
-    return $rtn;
+    return $list;
 }
 ?>

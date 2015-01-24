@@ -48,7 +48,8 @@ function convert2Txt($file){
 			return trim(removeHtml(getFileContents($file)));
 		break;
 		case 'zip':
-			return implode("\n",zipListFiles($file));
+			$lines=zipListFiles($file);
+			return implode("\n",$lines);
 		break;
     	default:
     		$mimetype=getFileMimeType($file);
