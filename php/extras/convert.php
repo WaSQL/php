@@ -144,12 +144,13 @@ function convertXlsx2Txt($file){
     return $striped_content;
 }
  /**
-     * Read content from zipped office XML file
-     *
-     * @param string $archiveFile
-     * @param string $dataFile
-     * @return string (empty if no content found)
-     */
+* Read content from zipped office XML file
+*
+* @param string $archiveFile
+* @param string $dataFile
+* @return string (empty if no content found)
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function convertReadZippedXML($archiveFile, $dataFile) {
 	// Create new ZIP archive
     $zip = new ZipArchive;
@@ -168,7 +169,7 @@ function convertReadZippedXML($archiveFile, $dataFile) {
     		// Insert whitespace to prevent words beeing concatenated when stripping tags
     		$content = str_replace('>', '> ', $content);
     		// Return data without XML formatting tags
-    		return strip_tags($content);
+    		return trim(strip_tags($content));
     	}
     	$zip->close();
     }
