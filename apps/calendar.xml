@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="localstage" timestamp="1422170412">
+<xmlschema name="events">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="details" type="varchar(3000) NULL" />
+	<field name="eventdate" type="date NOT NULL" />
+	<field name="icon" type="varchar(255) NULL" />
+	<field name="name" type="varchar(100) NOT NULL" />
+	<field name="user_id" type="int(11) NOT NULL Default 0" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2015-01-24 22:12:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-01-24 22:12:36</_edate>
+	<_euser>1</_euser>
+	<_id>22</_id>
+	<formfields>eventdate name 
+user_id icon
+details</formfields>
+	<synchronize>0</synchronize>
+	<tablename>events</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:13:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-01-24 23:56:07</_edate>
+	<_euser>1</_euser>
+	<_id>236</_id>
+	<behavior>richtext</behavior>
+	<fieldname>details</fieldname>
+	<height>125</height>
+	<inputmax>3000</inputmax>
+	<inputtype>textarea</inputtype>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<width>400</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>232</_id>
+	<fieldname>eventdate</fieldname>
+	<inputtype>date</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:14:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>238</_id>
+	<fieldname>icon</fieldname>
+	<inputmax>765</inputmax>
+	<inputtype>text</inputtype>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<width>285</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:13:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-01-24 22:14:32</_edate>
+	<_euser>1</_euser>
+	<_id>237</_id>
+	<fieldname>name</fieldname>
+	<inputmax>300</inputmax>
+	<inputtype>text</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<width>285</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-01-24 22:12:57</_edate>
+	<_euser>1</_euser>
+	<_id>233</_id>
+	<defaultval>0</defaultval>
+	<displayname>User</displayname>
+	<dvals>select firstname,lastname,username from _users order by firstname,lastname,_id</dvals>
+	<fieldname>user_id</fieldname>
+	<inputtype>select</inputtype>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>234</_id>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>235</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+
+
+<xmldata name="_pages">
+	<_adate>2015-01-25 00:13:06</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_amem>10747904</_amem>
+	<_auser>1</_auser>
+	<_cache>0</_cache>
+	<_cdate>2015-01-10 09:14:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-01-25 00:19:39</_edate>
+	<_env><![CDATA[
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;env&gt;
+        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0&lt;/HTTP_USER_AGENT&gt;
+        &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
+        &lt;REMOTE_PORT&gt;8374&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
+        &lt;REMOTE_BROWSER_VERSION&gt;35.0&lt;/REMOTE_BROWSER_VERSION&gt;
+        &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
+        &lt;REMOTE_LANG&gt;en-US&lt;/REMOTE_LANG&gt;
+        &lt;REMOTE_COUNTRY&gt;US&lt;/REMOTE_COUNTRY&gt;
+        &lt;REMOTE_DEVICE&gt;PC&lt;/REMOTE_DEVICE&gt;
+        &lt;GUID&gt;bb532962c437b9a8a76e07d8c057fe3460f4bb69&lt;/GUID&gt;
+&lt;env&gt;
+
+]]></_env>
+	<_euser>1</_euser>
+	<_id>12</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:_calendar_day&gt;
+	&lt;td class=&quot;col-md-1 calendar_td&quot;&gt;
+		&lt;div class=&quot;calendar_date&quot; onclick=&quot;return pageCalendarEvent('add','&lt;?=$day['date'];?&gt;');&quot;&gt;
+			&lt;div align=&quot;right&quot; class=&quot;calendar_day&quot;&gt;&lt;?=$day['day'];?&gt;&lt;/div&gt;
+			&lt;view:_calendar_event&gt;
+				&lt;div class=&quot;calendar_event&quot;&gt;
+				&lt;view:_calendar_event_icon&gt;
+					&lt;view:_calendar_event_icon_image&gt;
+						&lt;img src=&quot;&lt;?=$event['icon'];?&gt;&quot; /&gt;
+					&lt;/view:_calendar_event_icon_image&gt;
+					&lt;view:_calendar_event_icon_span&gt;
+						&lt;span class=&quot;&lt;?=$event['icon'];?&gt;&quot;&gt;&lt;/span&gt;
+					&lt;/view:_calendar_event_icon_span&gt;
+					&lt;?=renderViewIfElse(isImage($event['icon']),'_calendar_event_icon_image','_calendar_event_icon_span',$event,array('-alias'=&gt;'event'));?&gt;
+				&lt;/view:_calendar_event_icon&gt;
+				&lt;?=renderViewIf(strlen($event['icon']),'_calendar_event_icon',$event,array('-alias'=&gt;'event'));?&gt;
+				&lt;a href=&quot;&quot; onclick=&quot;return pageCalendarEvent('edit','&lt;?=$event['_id'];?&gt;');&quot;&gt;&lt;?=$event['name'];?&gt;&lt;/a&gt;
+				&lt;/div&gt;
+			&lt;/view:_calendar_event&gt;
+			&lt;?=renderEach('_calendar_event',$day['events'],array('-alias'=&gt;'event'));?&gt;
+		&lt;/div&gt;
+	&lt;/td&gt;
+&lt;/view:_calendar_day&gt;
+
+&lt;view:_calendar_week&gt;
+	&lt;tr&gt;
+		&lt;?=renderEach('_calendar_day',$week,array('-alias'=&gt;'day'));?&gt;
+	&lt;/tr&gt;
+&lt;/view:_calendar_week&gt;
+
+&lt;view:_calendar_dayname&gt;
+	&lt;th&gt;&lt;?=$name;?&gt;&lt;/th&gt;
+&lt;/view:_calendar_dayname&gt;
+
+&lt;view:_calendar&gt;
+	&lt;table class=&quot;table table-striped table-bordered&quot;&gt;
+		&lt;tr&gt;
+			&lt;th colspan=&quot;7&quot; class=&quot;text-center&quot;&gt;
+				&lt;div class=&quot;container&quot;&gt;
+					&lt;div class=&quot;row&quot;&gt;
+						&lt;div class=&quot;col-xs-3 text-left&quot;&gt;
+							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth('&lt;?=&quot;{$calendar['prev_month']['month']} {$calendar['prev_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-left&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+						&lt;/div&gt;
+						&lt;div class=&quot;col-xs-6 text-center calendar_monthyear&quot;&gt;
+							&lt;?=$calendar['month'];?&gt; &lt;?=$calendar['year'];?&gt;
+							&lt;div id=&quot;setprocessing&quot;&gt;&lt;/div&gt;
+						&lt;/div&gt;
+						&lt;div class=&quot;col-xs-3 text-right&quot;&gt;
+							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth('&lt;?=&quot;{$calendar['next_month']['month']} {$calendar['next_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-right&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			&lt;/th&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+		&lt;?=renderEach('_calendar_dayname',$calendar['daynames']['long'],array('-alias'=&gt;'name'));?&gt;
+		&lt;/tr&gt;
+		&lt;?=renderEach('_calendar_week',$calendar['weeks'],array('-alias'=&gt;'week'));?&gt;
+	&lt;/table&gt;
+	&lt;?=buildOnLoad(&quot;removeId('centerpop');&quot;);?&gt;
+&lt;/view:_calendar&gt;
+
+&lt;view:_calendar_holiday&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;Holiday: &lt;?=$event['name'];?&gt;&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=printValue($_REQUEST);?&gt;
+		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
+	&lt;/div&gt;
+&lt;/view:_calendar_holiday&gt;
+
+&lt;view:_calendar_event_edit&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;Event: &lt;?=$event['name'];?&gt;&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=pageCalendarEventForm($_REQUEST['id']);?&gt;
+		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
+	&lt;/div&gt;
+&lt;/view:_calendar_event_edit&gt;
+
+&lt;view:_calendar_event_add&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;New Event&lt;/div&gt;
+	&lt;div class=&quot;w_centerpop_content&quot;&gt;
+		&lt;?=pageCalendarEventForm();?&gt;
+		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
+	&lt;/div&gt;
+&lt;/view:_calendar_event_add&gt;
+
+&lt;view:default&gt;
+	&lt;div id=&quot;calendar&quot;&gt;
+	&lt;?=renderView('_calendar',$calendar,array('-alias'=&gt;'calendar'));?&gt;
+	&lt;/div&gt;
+&lt;/view:default&gt;
+
+]]></body>
+	<controller><![CDATA[
+&lt;?
+loadExtras('convert');
+loadExtrasJs(array('nicedit','html5'));
+//set monthyear is passed in the URL
+if(isset($_REQUEST['passthru'][1]) &amp;&amp; !isset($_REQUEST['monthyear'])){
+	if(strlen($_REQUEST['passthru'][1])==4){
+		/* /april/2015 */
+		$_REQUEST['monthyear']=&quot;{$_REQUEST['passthru'][0]} {$_REQUEST['passthru'][1]}&quot;;
+	}
+	else{
+		/* /2015/april */
+		$_REQUEST['monthyear']=&quot;{$_REQUEST['passthru'][1]} {$_REQUEST['passthru'][0]}&quot;;
+	}
+}
+if(!isset($_REQUEST['monthyear'])){$_REQUEST['monthyear']=time();}
+if(isset($_REQUEST['func'])){
+	setView($_REQUEST['func']);
+	$calendar=getCalendar($_REQUEST['monthyear'],array('-events'=&gt;'events'));
+	switch(strtolower($_REQUEST['func'])){
+		case '_event':
+			if($_REQUEST['type']=='add'){
+				$_REQUEST['eventdate']=date('Y-m-d',strtotime($_REQUEST['id']));
+            	setView('_calendar_event_add',1);
+			}
+			elseif(isNum($_REQUEST['id'])){
+            	$event=getDBRecord(array(
+					'-table'=&gt;'events',
+					'_id'	=&gt;$_REQUEST['id']
+				));
+				setView('_calendar_event_edit',1);
+			}
+			else{
+            	$event=getHolidays(array('code'=&gt;$_REQUEST['id'],'-index'=&gt;'code'));
+            	$event=$event[$_REQUEST['id']];
+            	setView('_calendar_holiday',1);
+			}
+			return;
+		break;
+	}
+}
+else{
+	setView('default');
+	$calendar=getCalendar($_REQUEST['monthyear'],array('-events'=&gt;'events'));
+}
+?&gt;
+
+]]></controller>
+	<css>body{
+font-size:15px;
+}
+.fileupload{
+	min-height:50px;
+	width:400px;
+	color:#b2b2b2;
+	font-size:1.1em;
+	border:4px dashed #CCC;
+	text-align:center;
+	padding:5px;
+	-webkit-border-radius: 20px;
+	-khtml-border-radius: 20px;
+	border-radius: 20px;
+}
+.calendar_td{
+	padding:0px !important;
+}
+.calendar_date{
+	min-height:80px;
+	z-index:600 !important;
+	padding:5px;
+}
+.calendar_date:hover{
+	cursor:pointer;
+	background-color:#fdfce3;
+}
+.calendar_day{
+	float:right;
+}
+.calendar_event{
+	font-size:.95rem;
+	z-index:700 !important;
+}
+.calendar_event a{
+	color:#e18a13;
+	z-index:800 !important;
+	padding:3px 2px 3px 2px;
+}
+.calendar_nav{
+	font-size:3rem;
+}
+.calendar_monthyear{
+	font-size:3rem;
+}
+#setprocessing{
+	display:inline;
+	font-size:.8em;
+	color:#337ab7;
+}
+</css>
+	<css_min>body{font-size:15px}.fileupload{min-height:50px;width:400px;color:#b2b2b2;font-size:1.1em;border:4px dashed #CCC;text-align:center;padding:5px;-webkit-border-radius:20px;-khtml-border-radius:20px;border-radius:20px}.calendar_td{padding:0!important}.calendar_date{min-height:80px;z-index:600!important;padding:5px}.calendar_date:hover{cursor:pointer;background-color:#fdfce3}.calendar_day{float:right}.calendar_event{font-size:.95rem;z-index:700!important}.calendar_event a{color:#e18a13;z-index:800!important;padding:3px 2px}.calendar_monthyear,.calendar_nav{font-size:3rem}#setprocessing{display:inline;font-size:.8em;color:#337ab7}</css_min>
+	<functions><![CDATA[
+function pageCalendarEventForm($id=0){
+	$opts=array(
+		'-table'=&gt;'events',
+		'-fields'=&gt;'name,icon,details',
+		'_template'=&gt;1,
+		'setprocessing'=&gt;'setprocessing',
+		'monthyear'=&gt;$_REQUEST['monthyear'],
+		'func'	=&gt; '_calendar',
+		'-hide'	=&gt;'clone',
+		'-onsubmit'=&gt;&quot;return ajaxSubmitForm(this,'calendar');&quot;,
+		'-focus'=&gt;'name'
+	);
+	if(isset($_REQUEST['eventdate'])){
+    	$opts['eventdate']=$_REQUEST['eventdate'];
+	}
+	if(isNum($id) &amp;&amp; $id !=0){
+    	$opts['_id']=$id;
+	}
+	return addEditDBForm($opts);
+}
+
+]]></functions>
+	<js>function pageCalendarMonth(monthyear){
+	return ajaxGet('/calendar','calendar',{_template:1,func:'_calendar',monthyear:monthyear});
+}
+var pageCalendarEvent_open=0;
+function pageCalendarEvent(evnt,id){
+	if(pageCalendarEvent_open==1){return false;}
+	pageCalendarEvent_open=1;
+	console.log('pageCalendarEvent:'+evnt);
+	ajaxGet('/calendar','centerpop',{_template:1,func:'_event','type':evnt,id:id});
+	return false;
+}
+</js>
+	<js_min>function pageCalendarMonth(e){return ajaxGet(&quot;/calendar&quot;,&quot;calendar&quot;,{_template:1,func:&quot;_calendar&quot;,monthyear:e})}function pageCalendarEvent(e,a){return 1==pageCalendarEvent_open?!1:(pageCalendarEvent_open=1,console.log(&quot;pageCalendarEvent:&quot;+e),ajaxGet(&quot;/calendar&quot;,&quot;centerpop&quot;,{_template:1,func:&quot;_event&quot;,type:e,id:a}),!1)}var pageCalendarEvent_open=0;</js_min>
+	<name>calendar</name>
+	<page_type>0</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>Calendar</title>
+</xmldata>
+</export>
