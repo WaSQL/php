@@ -2260,7 +2260,7 @@ function getCalendar($monthyear='',$params=array()){
 			'events'		=> array()
 		);
 		//is it today
-		if($calendar['current_date']['year']['mday']==$day_counter && $calendar['current_date']['year']==$calendar['year'] && $calendar['current_date']['mon']==$calendar['mon']){
+		if($calendar['current_date']['mday']==$day_counter && $calendar['current_date']['year']==$calendar['year'] && $calendar['current_date']['mon']==$calendar['mon']){
         	$current['today']=1;
 		}
 		//add holidays if not specified and not set to false
@@ -2285,7 +2285,7 @@ function getCalendar($monthyear='',$params=array()){
     for($x=$cnt;$x<7;$x++){
 		$calendar['weeks'][$row][]=array();
     }
-    unset($calendar['current_date']);
+    //unset($calendar['current_date']);
     unset($calendar['this_month']);
     unset($calendar[0]);
     //echo printValue($calendar);exit;
