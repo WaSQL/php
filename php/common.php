@@ -2194,7 +2194,7 @@ function stringEquals($string, $search){
 * @param str string - date, month year, or timestamp of the month and year to show the calendar for
 * @param params array - optional params as follows:
 *	-holidays boolean defaults to true. set to false to not load holidays as events.
-*	-events string table name of the events table to pull events from. Required Fields: eventdate,icon,name Optional: details,user_id
+*	-events string table name of the events table to pull events from. Required Fields: eventdate,name Optional: icon,user_id,private
 * @return calendar array
 * @usage $calendar=getCalendar('February 2015');
 */
@@ -2272,7 +2272,10 @@ function getCalendar($monthyear='',$params=array()){
 		if(isset($params['-events'][$day_counter]) && is_array($params['-events'][$day_counter])){
         	foreach($params['-events'][$day_counter] as $event){
 				//skip events set for a specific user if the user is not the current user
-				if(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
+				if(isset($event['private']) && isNum($event['private']) && $event['private'] ==1 && (!isset($USER['_id']) || $event['_cuser'] != $USER['_id'])){
+                	continue;
+				}
+				elseif(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
                 	continue;
 				}
 				$current['events'][]=$event;
