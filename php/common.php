@@ -2187,6 +2187,108 @@ function stringEquals($string, $search){
 	//echo "{$check},{$string},{$search}";exit;
 	if($check==0){return true;}
 	return false;
+}
+//---------- begin function getCalendar--------------------
+/**
+* @describe returns a calendar array for specified date, monthyear, or timestamp
+* @param str string - date, month year, or timestamp of the month and year to show the calendar for
+* @param params array - optional params as follows:
+*	-holidays boolean defaults to true. set to false to not load holidays as events.
+*	-events string table name of the events table to pull events from. Required Fields: eventdate,icon,name Optional: details,user_id
+* @return calendar array
+* @usage $calendar=getCalendar('February 2015');
+*/
+function getCalendar($monthyear='',$params=array()){
+	global $USER;
+	if(!strlen($monthyear)){$monthyear=time();}
+	if(!isNum($monthyear)){$monthyear=strtotime($monthyear);}
+	$calendar=getdate($monthyear);
+	$calendar['current_date']=getdate();
+	$calendar['this_month'] = getdate(mktime(0, 0, 0, $calendar['mon'], 1, $calendar['year']));
+	$calendar['next_month'] = getdate(mktime(0, 0, 0, $calendar['mon'] + 1, 1, $calendar['year']));
+	$calendar['prev_month'] = getdate(mktime(0, 0, 0, $calendar['mon'] - 1, 1, $calendar['year']));
+	//Find out when this month starts and ends.
+	$calendar['first_week_day'] = $calendar['this_month']['wday'];
+	$calendar['days_in_this_month'] = round(($calendar['next_month'][0] - $calendar['this_month'][0]) / (60 * 60 * 24));
+
+	$calendar['daynames']=array(
+    	'short'	=> array('S','M','T','W','T','F','S'),
+    	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
+    	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
+	);
+	//Fill the first week of the month with the appropriate number of blanks.
+	for($week_day = 0; $week_day < $calendar['first_week_day']; $week_day++){
+		$calendar['weeks'][0][]=array();
+	}
+	if(!isset($params['-holidays']) || $params['-holidays']){
+		$holidaymap=getHolidays(array(
+			'year'	=>$calendar['year'],
+			'month'	=>$calendar['month'],
+			'-index'=>'day'
+		));
+	}
+	if(isset($params['-events']) && !is_array($params['-events'])){
+    	$recs=getDBRecords(array(
+			'-table'	=> $params['-events'],
+			'-where'	=> "MONTH(eventdate)='{$calendar['mon']}' and YEAR(eventdate)='{$calendar['year']}'"
+		));
+		if(is_array($recs)){
+			$params['-events']=array();
+			foreach($recs as $rec){
+				$edate=getdate(strtotime($rec['eventdate']));
+				$params['-events'][$edate['mday']][]=$rec;
+            }
+		}
+	}
+	$week_day = $calendar['first_week_day'];
+	$cnt=0;
+	$row=0;
+	for($day_counter = 1; $day_counter <= $calendar['days_in_this_month']; $day_counter++){
+		$week_day %= 7;
+		if($week_day == 0){
+			$row+=1;
+			$cnt=0;
+			}
+		$cnt++;
+		$current=array(
+			'day'			=> $day_counter,
+			'name_char'		=> $calendar['daynames']['short'][$week_day],
+			'name_abbr'		=> $calendar['daynames']['med'][$week_day],
+			'name'			=> $calendar['daynames']['long'][$week_day],
+			'date'			=> "{$calendar['year']}-{$calendar['mon']}-{$day_counter}",
+			'month'			=> $calendar['month'],
+			'events'		=> array()
+		);
+		//is it today
+		if($calendar['current_date']['year']['wday']==$day_counter && $calendar['current_date']['year']==$calendar['year'] && $calendar['current_date']['mon']==$calendar['mon']){
+        $current['today']=1;
+		}
+		//add holidays if not specified and not set to false
+		if((!isset($params['-holidays']) || $params['-holidays']) && isset($holidaymap[$day_counter])){
+			$holidaymap[$day_counter]['_id']=$holidaymap[$day_counter]['code'];
+			$current['events'][]=$holidaymap[$day_counter];
+		}
+		//add other events
+		if(isset($params['-events'][$day_counter]) && is_array($params['-events'][$day_counter])){
+        	foreach($params['-events'][$day_counter] as $event){
+				//skip events set for a specific user if the user is not the current user
+				if(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
+                	continue;
+				}
+				$current['events'][]=$event;
+			}
+		}
+		$calendar['weeks'][$row][]=$current;
+        $week_day++;
+    }
+    //add any missing table cells on the end
+    for($x=$cnt;$x<7;$x++){
+		$calendar['weeks'][$row][]=array();
+    }
+    unset($calendar['current_date']);
+    unset($calendar['this_month']);
+    unset($calendar[0]);
+    return $calendar;
 	}
 //---------- begin function calendar
 /**
@@ -4070,6 +4172,7 @@ function getHolidays($params=array()){
 	$list=array();
 	foreach($holidays as $name=>$holiday){
 		if(isset($params['codes']) && is_array($params['codes']) && !in_array($holiday['code'],$params['codes'])){continue;}
+		if(isset($params['code']) && $holiday['code'] != $params['code']){continue;}
 		if(isset($params['fed']) && $holiday['code'] != $params['fed']){continue;}
 		if(isset($params['country']) && $holiday['country'] != $params['country']){continue;}
 		$holiday['name']=$name;
@@ -4087,7 +4190,11 @@ function getHolidays($params=array()){
 	        	}
         	}
 
-		$holiday['date']=date("m-d-Y",$holiday['timestamp']);
+		$holiday['date']=date("Y-m-d",$holiday['timestamp']);
+		$gdate=getdate($holiday['timestamp']);
+		$holiday['day']=$gdate['mday'];
+		$holiday['month']=$gdate['month'];
+		if(isset($params['month']) && $holiday['month'] != $params['month']){continue;}
 		if(isset($params['-index'])){
 			$index=$holiday[$params['-index']];
 			$list[$index]=$holiday;
