@@ -2267,7 +2267,7 @@ function getCalendar($monthyear='',$params=array()){
 				if(preg_match('/^(events|public|ical|calendar)$/i',$part)){unset($nameparts[$i]);}
 			}
 			$ical_group=implode(' ',$nameparts);
-			$ical_events=getStoredValue("return icsEvents('".$ical."');",0,$cache);
+			$ical_events=getStoredValue("return icalEvents('".$ical."');",0,$cache);
         	foreach($ical_events as $rec){
 				//skip events not in this month
 				$y_start=date('Y',strtotime($rec['date_start']));
