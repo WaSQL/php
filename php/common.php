@@ -2194,7 +2194,12 @@ function stringEquals($string, $search){
 * @param str string - date, month year, or timestamp of the month and year to show the calendar for
 * @param params array - optional params as follows:
 *	-holidays boolean defaults to true. set to false to not load holidays as events.
-*	-events string table name of the events table to pull events from. Required Fields: eventdate,name Optional: icon,user_id,private
+*	-events array - array of event arrays.  An event array needs
+*	-event_table string - table name of the events table to pull events from. Required Fields: eventdate,name Optional: icon,user_id,private
+*  	-ical mixed - array of iCal feeds or a single feed to add to the calendar
+*	-ical_hours - integer - number of hours to cache the iCal feed before checking again. Defaults to 12 hours
+*	-ical_icon string - default icon if none are specified for and event
+*	)
 * @return calendar array
 * @usage $calendar=getCalendar('February 2015');
 */
@@ -2220,6 +2225,7 @@ function getCalendar($monthyear='',$params=array()){
 	for($week_day = 0; $week_day < $calendar['first_week_day']; $week_day++){
 		$calendar['weeks'][0][]=array();
 	}
+	//holiday map
 	if(!isset($params['-holidays']) || $params['-holidays']){
 		$holidaymap=getHolidays(array(
 			'year'	=>$calendar['year'],
@@ -2227,22 +2233,94 @@ function getCalendar($monthyear='',$params=array()){
 			'-index'=>'day'
 		));
 	}
-	if(isset($params['-events']) && !is_array($params['-events'])){
+	//events
+	if(!isset($params['-events']) || !is_array($params['-events'])){
+        $params['-events']=array();
+	}
+	//-event_table
+	if(isset($params['-event_table']) && isDBTable($params['-event_table'])){
     	$recs=getDBRecords(array(
-			'-table'	=> $params['-events'],
+			'-table'	=> $params['-event_table'],
 			'-where'	=> "MONTH(eventdate)='{$calendar['mon']}' and YEAR(eventdate)='{$calendar['year']}'"
 		));
 		if(is_array($recs)){
 			$params['-events']=array();
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['eventdate']));
+				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
 				$params['-events'][$edate['mday']][]=$rec;
             }
+		}
+	}
+	//ical
+	if(isset($params['-ical'])){
+		$cache=isset($params['-ical_hours'])?$params['-ical_hours']:12;
+		$icon=isset($params['-ical_icon'])?$params['-ical_icon']:'icon-globe w_dblue w_big';
+		if(!is_array($params['-ical'])){$params['-ical']=array($params['-ical']);}
+		foreach($params['-ical'] as $ical){
+			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
+			$nameparts=preg_split('/\/+/',$ical);
+			foreach($nameparts as $i=>$part){
+				if(!strlen(trim($part))){unset($nameparts[$i]);}
+				if(preg_match('/^(http|www)/i',$part)){unset($nameparts[$i]);}
+				if(preg_match('/\.ics$/i',$part)){unset($nameparts[$i]);}
+				if(preg_match('/^(events|public|ical|calendar)$/i',$part)){unset($nameparts[$i]);}
+			}
+			$ical_group=implode(' ',$nameparts);
+			$ical_events=getStoredValue("return icsEvents('".$ical."');",0,$cache);
+        	foreach($ical_events as $rec){
+				//skip events not in this month
+				$y_start=date('Y',strtotime($rec['date_start']));
+				$y_stop=date('Y',strtotime($rec['date_stop']));
+				if($calendar['year'] != $y_start && $calendar['year'] != $y_stop){
+					continue;
+				}
+				$m_start=date('n',strtotime($rec['date_start']));
+				$m_stop=date('n',strtotime($rec['date_stop']));
+				if((integer)$calendar['mon'] != (integer)$m_start && (integer)$calendar['mon'] != (integer)$m_stop){
+					continue;
+				}
+            	//span multiple days if dates are different
+            	//eventdate,name Optional: icon,user_id,private
+            	$event=array(
+					'name'	=> $rec['title'],
+					'icon'	=> isset($rec['icon'])?$rec['icon']:$icon,
+					'group'	=> $ical_group,
+					'_id'	=> $rec['uid']
+				);
+				if(isset($rec['geo'])){$event['geo']=$rec['geo'];}
+				if(isset($rec['location'])){$event['location']=$rec['location'];}
+				if(isset($rec['description'])){$event['details']=$rec['description'];}
+				$event['eventtimestamp']=strtotime("{$rec['date_start']} {$rec['time_start']}:00");
+				$event['timestring']=date('g:i a',strtotime($rec['time_start']));
+				if($rec['time_start'] != $rec['time_stop']){
+				$event['timestring']='From '.$event['timestring'].' to '.date('g:i a',strtotime($rec['time_stop']));
+				}
+				$event['name']=$event['eventtime'].' '.$rec['title'];
+            	if($rec['date_stop'] != $rec['date_start']){
+                	$startTime = strtotime("{$rec['date_start']} 12:00");
+					$endTime = strtotime("{$rec['date_stop']} 12:00");
+					// Loop between timestamps, 24 hours at a time
+					for ( $i = $startTime; $i <= $endTime; $i = $i + 86400 ) {
+				  		$event['eventdate']=date( 'Y-m-d', $i );
+				  		$event['eventtimestamp']=strtotime("{$event['eventdate']} {$rec['time_start']}:00");
+				  		$edate=getdate($i);
+						$params['-events'][$edate['mday']][]=$event;
+					}
+				}
+            	else{
+                	$event['eventdate']=$rec['date_start'];
+                	$edate=getdate(strtotime($rec['date_start']));
+                	$mdate=$edate['mday'];
+					$params['-events'][$mdate][]=$event;
+				}
+			}
 		}
 	}
 	$week_day = $calendar['first_week_day'];
 	$cnt=0;
 	$row=0;
+	$shas=array();
 	for($day_counter = 1; $day_counter <= $calendar['days_in_this_month']; $day_counter++){
 		$week_day %= 7;
 		if($week_day == 0){
@@ -2266,10 +2344,18 @@ function getCalendar($monthyear='',$params=array()){
 		//add holidays if not specified and not set to false
 		if((!isset($params['-holidays']) || $params['-holidays']) && isset($holidaymap[$day_counter])){
 			$holidaymap[$day_counter]['_id']=$holidaymap[$day_counter]['code'];
-			$current['events'][]=$holidaymap[$day_counter];
+			$event=$holidaymap[$day_counter];
+			//skip this event if we have already listed it - user has overlapping events from two feeds
+			$sha=sha1(printValue($event));
+			if(isset($shas[$sha])){continue;}
+			$shas[$sha]=1;
+			$event['group']='Holidays';
+			$current['events'][]=$event;
 		}
 		//add other events
 		if(isset($params['-events'][$day_counter]) && is_array($params['-events'][$day_counter])){
+			//sort events by 
+			$params['-events'][$day_counter]=sortArrayByKey($params['-events'][$day_counter],'eventtimestamp',SORT_ASC);
         	foreach($params['-events'][$day_counter] as $event){
 				//skip events set for a specific user if the user is not the current user
 				if(isset($event['private']) && isNum($event['private']) && $event['private'] ==1 && (!isset($USER['_id']) || $event['_cuser'] != $USER['_id'])){
@@ -2278,6 +2364,10 @@ function getCalendar($monthyear='',$params=array()){
 				elseif(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
                 	continue;
 				}
+				//skip this event if we have already listed it - user has overlapping events from two feeds
+				$sha=sha1(printValue($event));
+				if(isset($shas[$sha])){continue;}
+				$shas[$sha]=1;
 				$current['events'][]=$event;
 			}
 		}
