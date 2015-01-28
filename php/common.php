@@ -2238,6 +2238,14 @@ function getCalendar($monthyear='',$params=array()){
 	if(!isset($params['-events']) || !is_array($params['-events'])){
         $params['-events']=array();
 	}
+	else{
+		$recs=$params['-events'];
+		$params['-events']=array();
+    	foreach($recs as $rec){
+        	$edate=getdate(strtotime($rec['eventdate']));
+        	$params['-events'][$edate['mday']][]=$rec;
+		}
+	}
 	//-event_table
 	if(isset($params['-event_table']) && isDBTable($params['-event_table'])){
     	$recs=getDBRecords(array(
@@ -2245,7 +2253,6 @@ function getCalendar($monthyear='',$params=array()){
 			'-where'	=> "MONTH(eventdate)='{$calendar['mon']}' and YEAR(eventdate)='{$calendar['year']}'"
 		));
 		if(is_array($recs)){
-			$params['-events']=array();
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['eventdate']));
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
