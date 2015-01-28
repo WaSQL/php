@@ -2246,7 +2246,7 @@ function getCalendar($monthyear='',$params=array()){
         	$edate=getdate(strtotime($rec['eventdate']));
         	if($calendar['mon'] != $edate['mon']){continue;}
         	$params['-events'][$edate['mday']][]=$rec;
-        	if(isset($rec['group']) && !in_array($rec['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$rec['group'];}
+        	if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){$calendar['groupnames'][$rec['group']]=$rec['icon'];}
 		}
 	}
 	//-event_table
@@ -2259,7 +2259,7 @@ function getCalendar($monthyear='',$params=array()){
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['eventdate']));
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
-				if(!in_array($rec['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$rec['group'];}
+				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){$calendar['groupnames'][$rec['group']]=$rec['icon'];}
 				$params['-events'][$edate['mday']][]=$rec;
             }
 		}
@@ -2281,9 +2281,11 @@ function getCalendar($monthyear='',$params=array()){
 				}
 				$ical_group=implode(' ',$nameparts);
 			}
-			if(!in_array($ical_group,$calendar['groupnames'])){$calendar['groupnames'][]=$ical_group;}
 			//icon override for this group
 			if(isset($params['-ical_icons'][$icon_group])){$icon=$params['-ical_icons'][$icon_group];}
+			//load group and icon into groupnames
+			if(isset($ical_group) && !isset($calendar['groupnames'][$ical_group])){$calendar['groupnames'][$ical_group]=$icon;}
+
 			//$ical_events=icalEvents($ical);
 			//echo printValue($ical_events);exit;
 			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
@@ -2370,7 +2372,7 @@ function getCalendar($monthyear='',$params=array()){
 			if(isset($shas[$sha])){continue;}
 			$shas[$sha]=1;
 			$event['group']='Holidays';
-			if(!in_array($event['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$event['group'];}
+			if(isset($event['group']) && !isset($calendar['groupnames'][$event['group']])){$calendar['groupnames'][$event['group']]=$event['icon'];}
 			$current['events'][]=$event;
 		}
 		//add other events
@@ -2399,7 +2401,7 @@ function getCalendar($monthyear='',$params=array()){
     for($x=$cnt;$x<7;$x++){
 		$calendar['weeks'][$row][]=array();
     }
-    sort($calendar['groupnames'],SORT_STRING);
+    ksort($calendar['groupnames']);
     //unset($calendar['current_date']);
     unset($calendar['this_month']);
     unset($calendar[0]);
