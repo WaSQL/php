@@ -7009,29 +7009,16 @@ function numberFormat($num=0,$dec=0){
 * @usage <?=ordinalSuffix(15);?> birthday - returns 15th birthday
 */
 function ordinalSuffix($number) {
-    //adds the English ordinal suffix. i.e. 179th or 1st
-    if ($number % 100 > 10 && $number %100 < 14){$suffix = "th";}
-    else{
-        switch($number % 10) {
-            case 0:
-                $suffix = "th";
-                break;
-            case 1:
-                $suffix = "st";
-                break;
-            case 2:
-                $suffix = "nd";
-                break;
-            case 3:
-                $suffix = "rd";
-                break;
-            default:
-                $suffix = "th";
-                break;
-        	}
-		}
-    return "${number}$suffix";
+	if (!in_array(($num % 100),array(11,12,13))){
+	    switch ($num % 10) {
+	    	// Handle 1st, 2nd, 3rd
+	      	case 1:  return $num.'st';
+	      	case 2:  return $num.'nd';
+	      	case 3:  return $num.'rd';
+	    }
 	}
+  	return $num.'th';
+}
 //---------- begin function parseKeyValueString--------------------
 /**
 * @describe converts a key/value string into an array
