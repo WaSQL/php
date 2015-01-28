@@ -2243,6 +2243,7 @@ function getCalendar($monthyear='',$params=array()){
 		$params['-events']=array();
     	foreach($recs as $rec){
         	$edate=getdate(strtotime($rec['eventdate']));
+        	if($calendar['mon'] != $edate['mon']){continue;}
         	$params['-events'][$edate['mday']][]=$rec;
 		}
 	}
