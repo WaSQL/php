@@ -2246,7 +2246,9 @@ function getCalendar($monthyear='',$params=array()){
         	$edate=getdate(strtotime($rec['eventdate']));
         	if($calendar['mon'] != $edate['mon']){continue;}
         	$params['-events'][$edate['mday']][]=$rec;
-        	if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){$calendar['groupnames'][$rec['group']]=$rec['icon'];}
+        	if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
+				$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
+				}
 		}
 	}
 	//-event_table
@@ -2259,7 +2261,9 @@ function getCalendar($monthyear='',$params=array()){
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['eventdate']));
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
-				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){$calendar['groupnames'][$rec['group']]=$rec['icon'];}
+				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
+					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
+				}
 				$params['-events'][$edate['mday']][]=$rec;
             }
 		}
@@ -2284,7 +2288,9 @@ function getCalendar($monthyear='',$params=array()){
 			//icon override for this group
 			if(isset($params['-ical_icons'][$icon_group])){$icon=$params['-ical_icons'][$icon_group];}
 			//load group and icon into groupnames
-			if(isset($ical_group) && !isset($calendar['groupnames'][$ical_group])){$calendar['groupnames'][$ical_group]=$icon;}
+			if(isset($ical_group) && !isset($calendar['groupnames'][$ical_group])){
+				$calendar['groupnames'][$ical_group]=array('icon'=>$icon,'name'=>$ical_group);
+			}
 
 			//$ical_events=icalEvents($ical);
 			//echo printValue($ical_events);exit;
@@ -2372,7 +2378,9 @@ function getCalendar($monthyear='',$params=array()){
 			if(isset($shas[$sha])){continue;}
 			$shas[$sha]=1;
 			$event['group']='Holidays';
-			if(isset($event['group']) && !isset($calendar['groupnames'][$event['group']])){$calendar['groupnames'][$event['group']]=$event['icon'];}
+			if(isset($event['group']) && !isset($calendar['groupnames'][$event['group']])){
+				$calendar['groupnames'][$event['group']]=array('icon'=>$event['icon'],'name'=>$event['group']);
+			}
 			$current['events'][]=$event;
 		}
 		//add other events
