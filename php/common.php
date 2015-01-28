@@ -2196,9 +2196,10 @@ function stringEquals($string, $search){
 *	-holidays boolean defaults to true. set to false to not load holidays as events.
 *	-events array - array of event arrays.  An event array needs
 *	-event_table string - table name of the events table to pull events from. Required Fields: eventdate,name Optional: icon,user_id,private
-*  	-ical mixed - array of iCal feeds or a single feed to add to the calendar
+*  	-ical mixed - array of iCal feeds or a single feed to add to the calendar. If the array key is not a number it will be used as the group name.
 *	-ical_hours - integer - number of hours to cache the iCal feed before checking again. Defaults to 12 hours
 *	-ical_icon string - default icon if none are specified for and event
+*	-ical_icons array - array of icons for groups with the groupname as the key
 *	)
 * @return calendar array
 * @usage $calendar=getCalendar('February 2015');
@@ -2266,7 +2267,7 @@ function getCalendar($monthyear='',$params=array()){
 	//ical
 	if(isset($params['-ical'])){
 		$cache=isset($params['-ical_hours'])?$params['-ical_hours']:12;
-		$icon=isset($params['-ical_icon'])?$params['-ical_icon']:'icon-globe w_dblue w_big';
+		$icon=isset($params['-ical_icon'])?$params['-ical_icon']:'icon-slideshow w_dblue w_big';
 		if(!is_array($params['-ical'])){$params['-ical']=array($params['-ical']);}
 		foreach($params['-ical'] as $icalindex => $ical){
 			if(!isNum($icalindex)){$ical_group=$icalindex;}
@@ -2281,6 +2282,8 @@ function getCalendar($monthyear='',$params=array()){
 				$ical_group=implode(' ',$nameparts);
 			}
 			if(!in_array($ical_group,$calendar['groupnames'])){$calendar['groupnames'][]=$ical_group;}
+			//icon override for this group
+			if(isset($params['-ical_icons'][$icon_group])){$icon=$params['-ical_icons'][$icon_group];}
 			//$ical_events=icalEvents($ical);
 			//echo printValue($ical_events);exit;
 			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
