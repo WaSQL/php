@@ -226,6 +226,21 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 			break;
+		case '_markers':
+			$fields['problem']="varchar(500) NULL";
+			$fields['solution']="varchar(1000) NULL";
+			$fields['mousex']="integer NOT NULL Default 0 COMMENT 'Horizontal Position'";
+			$fields['mousey']="integer NOT NULL Default 0 COMMENT 'Vertical Position'";
+			$fields['page_id']="integer NOT NULL Default 0";
+			$fields['priority']="integer NOT NULL Default 2 COMMENT 'High(1),Med(2),Low(3)'";
+			$fields['status']="integer NOT NULL Default 1 COMMENT 'New(1),Fixed(2),Nope(3)'";;
+			$ok=createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"status,page_id"));
+			addMetaData($table);
+			return 1;
+			break;
 		case '_forms':
 			$fields['email']="varchar(255) NULL";
 			$fields['_formname']="varchar(100) NOT NULL";
@@ -1284,6 +1299,50 @@ function addMetaData($table=''){
 				'width'			=> '700',
 				));
 			break;
+		//_markers
+		case '_markers':
+			//_fielddata for _markers
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_markers',
+				'fieldname'		=> 'priority',
+				'inputtype'		=> 'select',
+				'required'		=> 1,
+				'displayname'	=> "Importance",
+				'tvals'			=> "1\r\n2\r\n3",
+				'dvals'			=> "High\r\nMed\r\nLow",
+				'defaultval'	=> 2,
+			));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_markers',
+				'fieldname'		=> 'status',
+				'inputtype'		=> 'select',
+				'required'		=> 1,
+				'displayname'	=> "Status",
+				'tvals'			=> "1\r\n2\r\n3",
+				'dvals'			=> "New\r\nFixed\r\nNope",
+				'defaultval'	=> 1,
+			));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_markers',
+				'fieldname'		=> 'problem',
+				'inputtype'		=> 'textarea',
+				'displayname'	=> 'Explain what needs fixed',
+				'width'			=> 300,
+				'height'		=> 60,
+				'inputmax'		=> 500,
+				'required'		=> 0
+			));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_markers',
+				'fieldname'		=> 'solution',
+				'inputtype'		=> 'textarea',
+				'displayname'	=> 'Explain How you fixed it',
+				'width'			=> 300,
+				'height'		=> 60,
+				'inputmax'		=> 1000,
+				'required'		=> 0
+			));
+		break;
 		//_wpass
 		case '_wpass':
 			//_fielddata for _wpass

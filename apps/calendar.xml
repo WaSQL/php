@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="localstage" timestamp="1422170412">
+<export dbname="test1" timestamp="1422456579">
 <xmlschema name="events">
 	<field name="_cdate" type="datetime NOT NULL" />
 	<field name="_cuser" type="int(11) NOT NULL" />
@@ -10,14 +10,14 @@
 	<field name="eventdate" type="date NOT NULL" />
 	<field name="icon" type="varchar(255) NULL" />
 	<field name="name" type="varchar(100) NOT NULL" />
-	<field name="user_id" type="int(11) NOT NULL Default 0" />
+	<field name="private" type="tinyint(1) NOT NULL Default 0" />
 </xmlschema>
 <xmlmeta name="_tabledata">
 	<_cdate>2015-01-24 22:12:00</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-01-24 22:12:36</_edate>
+	<_edate>2015-01-24 22:12:00</_edate>
 	<_euser>1</_euser>
-	<_id>22</_id>
+	<_id>20</_id>
 	<formfields>eventdate name 
 user_id icon
 details</formfields>
@@ -27,9 +27,9 @@ details</formfields>
 <xmlmeta name="_fielddata">
 	<_cdate>2015-01-24 22:13:00</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-01-24 23:56:07</_edate>
+	<_edate>2015-01-24 23:56:00</_edate>
 	<_euser>1</_euser>
-	<_id>236</_id>
+	<_id>216</_id>
 	<behavior>richtext</behavior>
 	<fieldname>details</fieldname>
 	<height>125</height>
@@ -41,9 +41,9 @@ details</formfields>
 	<width>400</width>
 </xmlmeta>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cdate>2015-01-26 10:26:00</_cdate>
 	<_cuser>1</_cuser>
-	<_id>232</_id>
+	<_id>214</_id>
 	<fieldname>eventdate</fieldname>
 	<inputtype>date</inputtype>
 	<postedit>1</postedit>
@@ -55,7 +55,7 @@ details</formfields>
 <xmlmeta name="_fielddata">
 	<_cdate>2015-01-24 22:14:00</_cdate>
 	<_cuser>1</_cuser>
-	<_id>238</_id>
+	<_id>218</_id>
 	<fieldname>icon</fieldname>
 	<inputmax>765</inputmax>
 	<inputtype>text</inputtype>
@@ -67,9 +67,9 @@ details</formfields>
 <xmlmeta name="_fielddata">
 	<_cdate>2015-01-24 22:13:00</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-01-24 22:14:32</_edate>
+	<_edate>2015-01-24 22:14:00</_edate>
 	<_euser>1</_euser>
-	<_id>237</_id>
+	<_id>219</_id>
 	<fieldname>name</fieldname>
 	<inputmax>300</inputmax>
 	<inputtype>text</inputtype>
@@ -80,25 +80,37 @@ details</formfields>
 	<width>285</width>
 </xmlmeta>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cdate>2015-01-26 10:26:00</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-01-24 22:12:57</_edate>
-	<_euser>1</_euser>
-	<_id>233</_id>
+	<_id>215</_id>
+	<defaultval>0</defaultval>
+	<fieldname>private</fieldname>
+	<inputtype>checkbox</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>events</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-01-25 00:22:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>221</_id>
 	<defaultval>0</defaultval>
 	<displayname>User</displayname>
-	<dvals>select firstname,lastname,username from _users order by firstname,lastname,_id</dvals>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
 	<fieldname>user_id</fieldname>
 	<inputtype>select</inputtype>
 	<postedit>1</postedit>
+	<required>0</required>
 	<synchronize>1</synchronize>
 	<tablename>events</tablename>
 	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
 </xmlmeta>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cdate>2015-01-26 10:26:00</_cdate>
 	<_cuser>1</_cuser>
-	<_id>234</_id>
+	<_id>212</_id>
 	<fieldname>_cdate</fieldname>
 	<inputtype>datetime</inputtype>
 	<postedit>1</postedit>
@@ -108,9 +120,9 @@ details</formfields>
 	<tvals>1</tvals>
 </xmlmeta>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-01-24 22:11:00</_cdate>
+	<_cdate>2015-01-26 10:26:00</_cdate>
 	<_cuser>1</_cuser>
-	<_id>235</_id>
+	<_id>213</_id>
 	<fieldname>_edate</fieldname>
 	<inputtype>datetime</inputtype>
 	<postedit>1</postedit>
@@ -122,20 +134,21 @@ details</formfields>
 
 
 <xmldata name="_pages">
-	<_adate>2015-01-25 00:13:06</_adate>
+	<_adate>2015-01-28 07:48:36</_adate>
 	<_aip>127.0.0.1</_aip>
-	<_amem>10747904</_amem>
+	<_amem>12058624</_amem>
 	<_auser>1</_auser>
 	<_cache>0</_cache>
 	<_cdate>2015-01-10 09:14:00</_cdate>
+	<_counter>524</_counter>
 	<_cuser>1</_cuser>
-	<_edate>2015-01-25 00:19:39</_edate>
+	<_edate>2015-01-28 07:48:54</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
         &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0&lt;/HTTP_USER_AGENT&gt;
         &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;8374&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_PORT&gt;5446&lt;/REMOTE_PORT&gt;
         &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
         &lt;REMOTE_BROWSER_VERSION&gt;35.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
@@ -152,10 +165,10 @@ details</formfields>
 	<body><![CDATA[
 &lt;view:_calendar_day&gt;
 	&lt;td class=&quot;col-md-1 calendar_td&quot;&gt;
-		&lt;div class=&quot;calendar_date&quot; onclick=&quot;return pageCalendarEvent('add','&lt;?=$day['date'];?&gt;');&quot;&gt;
+		&lt;div class=&quot;calendar_date&lt;?=pageCalendarTodayClass($day);?&gt;&quot; onclick=&quot;return pageCalendarEvent(event,'add','&lt;?=$day['date'];?&gt;');&quot;&gt;
 			&lt;div align=&quot;right&quot; class=&quot;calendar_day&quot;&gt;&lt;?=$day['day'];?&gt;&lt;/div&gt;
 			&lt;view:_calendar_event&gt;
-				&lt;div class=&quot;calendar_event&quot;&gt;
+				&lt;div class=&quot;calendar_event&quot; data-group=&quot;&lt;?=$event['group'];?&gt;&quot;&gt;
 				&lt;view:_calendar_event_icon&gt;
 					&lt;view:_calendar_event_icon_image&gt;
 						&lt;img src=&quot;&lt;?=$event['icon'];?&gt;&quot; /&gt;
@@ -166,7 +179,10 @@ details</formfields>
 					&lt;?=renderViewIfElse(isImage($event['icon']),'_calendar_event_icon_image','_calendar_event_icon_span',$event,array('-alias'=&gt;'event'));?&gt;
 				&lt;/view:_calendar_event_icon&gt;
 				&lt;?=renderViewIf(strlen($event['icon']),'_calendar_event_icon',$event,array('-alias'=&gt;'event'));?&gt;
-				&lt;a href=&quot;&quot; onclick=&quot;return pageCalendarEvent('edit','&lt;?=$event['_id'];?&gt;');&quot;&gt;&lt;?=$event['name'];?&gt;&lt;/a&gt;
+				&lt;a href=&quot;&quot; onclick=&quot;return pageCalendarDetail(event,'&lt;?=$event['_id'];?&gt;');&quot;&gt;&lt;?=$event['name'];?&gt;&lt;/a&gt;
+				&lt;div style=&quot;display:none;&quot; id=&quot;&lt;?=$event['_id'];?&gt;&quot;&gt;
+					&lt;?=renderView('_calendar_detail',$event,array('-alias'=&gt;'event'));?&gt;
+				&lt;/div&gt;
 				&lt;/div&gt;
 			&lt;/view:_calendar_event&gt;
 			&lt;?=renderEach('_calendar_event',$day['events'],array('-alias'=&gt;'event'));?&gt;
@@ -185,20 +201,26 @@ details</formfields>
 &lt;/view:_calendar_dayname&gt;
 
 &lt;view:_calendar&gt;
+	&lt;div class=&quot;row&quot;&gt;
+	&lt;view:_calendar_group&gt;
+		&lt;div class=&quot;col-sm-1&quot;&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;form-control&quot; onclick=&quot;pageFilterGroup('&lt;?=$name;?&gt;',this.checked);&quot; checked /&gt;&lt;?=$name;?&gt;&lt;/label&gt;&lt;/div&gt;
+	&lt;/view:_calendar_group&gt;
+	&lt;?=renderEach('_calendar_group',$calendar['groupnames'],array('-alias'=&gt;'name'));?&gt;
+	&lt;/div&gt;
 	&lt;table class=&quot;table table-striped table-bordered&quot;&gt;
 		&lt;tr&gt;
 			&lt;th colspan=&quot;7&quot; class=&quot;text-center&quot;&gt;
 				&lt;div class=&quot;container&quot;&gt;
 					&lt;div class=&quot;row&quot;&gt;
 						&lt;div class=&quot;col-xs-3 text-left&quot;&gt;
-							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth('&lt;?=&quot;{$calendar['prev_month']['month']} {$calendar['prev_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-left&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth(event,'&lt;?=&quot;{$calendar['prev_month']['month']} {$calendar['prev_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-left&quot;&gt;&lt;/span&gt;&lt;/a&gt;
 						&lt;/div&gt;
 						&lt;div class=&quot;col-xs-6 text-center calendar_monthyear&quot;&gt;
 							&lt;?=$calendar['month'];?&gt; &lt;?=$calendar['year'];?&gt;
 							&lt;div id=&quot;setprocessing&quot;&gt;&lt;/div&gt;
 						&lt;/div&gt;
 						&lt;div class=&quot;col-xs-3 text-right&quot;&gt;
-							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth('&lt;?=&quot;{$calendar['next_month']['month']} {$calendar['next_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-right&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+							&lt;a href=&quot;#&quot; class=&quot;calendar_nav&quot; onclick=&quot;return pageCalendarMonth(event,'&lt;?=&quot;{$calendar['next_month']['month']} {$calendar['next_month']['year']}&quot;;?&gt;');&quot;&gt;&lt;span class=&quot;icon-arrow-right&quot;&gt;&lt;/span&gt;&lt;/a&gt;
 						&lt;/div&gt;
 					&lt;/div&gt;
 				&lt;/div&gt;
@@ -212,27 +234,55 @@ details</formfields>
 	&lt;?=buildOnLoad(&quot;removeId('centerpop');&quot;);?&gt;
 &lt;/view:_calendar&gt;
 
-&lt;view:_calendar_holiday&gt;
-	&lt;div class=&quot;w_centerpop_title&quot;&gt;Holiday: &lt;?=$event['name'];?&gt;&lt;/div&gt;
+&lt;view:_calendar_detail&gt;
+	&lt;div class=&quot;w_centerpop_title&quot;&gt;Details: &lt;?=$event['name'];?&gt;&lt;/div&gt;
 	&lt;div class=&quot;w_centerpop_content&quot;&gt;
-		&lt;?=printValue($_REQUEST);?&gt;
-		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
-	&lt;/div&gt;
-&lt;/view:_calendar_holiday&gt;
+		&lt;div class=&quot;w_bold&quot;&gt;
+		&lt;view:_calendar_detail_icon&gt;
+			&lt;view:_calendar_detail_icon_image&gt;
+				&lt;img src=&quot;&lt;?=$event['icon'];?&gt;&quot; /&gt;
+			&lt;/view:_calendar_detail_icon_image&gt;
+			&lt;view:_calendar_detail_icon_span&gt;
+				&lt;span class=&quot;&lt;?=$event['icon'];?&gt;&quot;&gt;&lt;/span&gt;
+			&lt;/view:_calendar_detail_icon_span&gt;
+			&lt;?=renderViewIfElse(isImage($event['icon']),'_calendar_detail_icon_image','_calendar_event_icon_span',$event,array('-alias'=&gt;'event'));?&gt;
+		&lt;/view:_calendar_detail_icon&gt;
+		&lt;?=renderViewIf(strlen($event['icon']),'_calendar_detail_icon',$event,array('-alias'=&gt;'event'));?&gt;
+		&lt;?=$event['name'];?&gt;
+		&lt;/div&gt;
+		&lt;view:_calendar_holiday&gt;
+			&lt;view:_calendar_detail_federal&gt;
+			&lt;div class=&quot;w_padleft&quot;&gt;&lt;span class=&quot;icon-checkbox w_green&quot;&gt;&lt;/span&gt; Federal Holiday&lt;/div&gt;
+			&lt;/view:_calendar_detail_federal&gt;
+			&lt;view:_calendar_detail_nonfederal&gt;
+			&lt;div class=&quot;w_padleft&quot;&gt;&lt;span class=&quot;icon-checkbox-empty&quot;&gt;&lt;/span&gt; NOT a Federal Holiday&lt;/div&gt;
+			&lt;/view:_calendar_detail_nonfederal&gt;
+			&lt;?=renderViewIfElse($event['fed']==1,'_calendar_detail_federal','_calendar_detail_nonfederal');?&gt;
+		&lt;/view:_calendar_holiday&gt;
+		&lt;?=renderViewIf($event['group']=='Holidays','_calendar_holiday',$event,array('-alias'=&gt;'event'));?&gt;
+		&lt;div class=&quot;w_padleft&quot;&gt;&lt;span class=&quot;icon-calendar w_red&quot;&gt;&lt;/span&gt; &lt;?=$event['timestring'];?&gt;&lt;/div&gt;
+		&lt;view:_calendar_event_location&gt;
+			&lt;div class=&quot;w_padleft calendar_location&quot;&gt;&lt;span class=&quot;glyphicon glyphicon-map-marker w_dblue&quot;&gt;&lt;/span&gt; &lt;?=nl2br($event['location']);?&gt;&lt;/div&gt;
+		&lt;/view:_calendar_event_location&gt;
+		&lt;?=renderViewIf(strlen($event['location']),'_calendar_event_location',$event,array('-alias'=&gt;'event'));?&gt;
+		&lt;view:_calendar_event_details&gt;
+			&lt;div class=&quot;w_padleft calendar_details&quot;&gt;&lt;?=nl2br($event['details']);?&gt;&lt;/div&gt;
+		&lt;/view:_calendar_event_details&gt;
+		&lt;?=renderViewIf(strlen($event['details']),'_calendar_event_details',$event,array('-alias'=&gt;'event'));?&gt;
 
-&lt;view:_calendar_event_edit&gt;
-	&lt;div class=&quot;w_centerpop_title&quot;&gt;Event: &lt;?=$event['name'];?&gt;&lt;/div&gt;
-	&lt;div class=&quot;w_centerpop_content&quot;&gt;
-		&lt;?=pageCalendarEventForm($_REQUEST['id']);?&gt;
-		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
+		&lt;view:_calendar_event_edit&gt;
+			&lt;?=pageCalendarEventForm($_REQUEST['id']);?&gt;
+		&lt;/view:_calendar_event_edit&gt;
+		&lt;?=renderViewIf(isNum($event['_id']),'_calendar_event_edit',$event,array('-alias'=&gt;'event'));?&gt;
 	&lt;/div&gt;
-&lt;/view:_calendar_event_edit&gt;
+&lt;/view:_calendar_detail&gt;
+
+
 
 &lt;view:_calendar_event_add&gt;
 	&lt;div class=&quot;w_centerpop_title&quot;&gt;New Event&lt;/div&gt;
 	&lt;div class=&quot;w_centerpop_content&quot;&gt;
 		&lt;?=pageCalendarEventForm();?&gt;
-		&lt;?=buildOnLoad(&quot;pageCalendarEvent_open=0;&quot;);?&gt;
 	&lt;/div&gt;
 &lt;/view:_calendar_event_add&gt;
 
@@ -245,7 +295,7 @@ details</formfields>
 ]]></body>
 	<controller><![CDATA[
 &lt;?
-loadExtras('convert');
+loadExtras(array('ical'));
 loadExtrasJs(array('nicedit','html5'));
 //set monthyear is passed in the URL
 if(isset($_REQUEST['passthru'][1]) &amp;&amp; !isset($_REQUEST['monthyear'])){
@@ -259,9 +309,16 @@ if(isset($_REQUEST['passthru'][1]) &amp;&amp; !isset($_REQUEST['monthyear'])){
 	}
 }
 if(!isset($_REQUEST['monthyear'])){$_REQUEST['monthyear']=time();}
+$calendar=getCalendar($_REQUEST['monthyear'],array(
+	'-events'	=&gt; 'events',
+	'-ical'		=&gt; array(
+		'Java_Users_Group'	=&gt; 'http://www.meetup.com/Utah-Java-Users-Group/events/ical/',
+		//'funny_holidays'	=&gt; 'http://www.webcal.fi/cal.php?id=50&amp;rid=ics&amp;wrn=0&amp;wp=12&amp;wf=55',
+		'Google_Dev'		=&gt; 'http://calendars.techvenue.com/cgi-bin/techvenue.pl?CalendarName=GoogleDeveloper&amp;Op=iCalSubscribe&amp;AddIns=1&amp;Includes=1&amp;x=1&amp;asdf=qwerty'
+	)
+));
 if(isset($_REQUEST['func'])){
 	setView($_REQUEST['func']);
-	$calendar=getCalendar($_REQUEST['monthyear'],array('-events'=&gt;'events'));
 	switch(strtolower($_REQUEST['func'])){
 		case '_event':
 			if($_REQUEST['type']=='add'){
@@ -286,15 +343,11 @@ if(isset($_REQUEST['func'])){
 }
 else{
 	setView('default');
-	$calendar=getCalendar($_REQUEST['monthyear'],array('-events'=&gt;'events'));
 }
 ?&gt;
 
 ]]></controller>
-	<css>body{
-font-size:15px;
-}
-.fileupload{
+	<css>.fileupload{
 	min-height:50px;
 	width:400px;
 	color:#b2b2b2;
@@ -310,19 +363,29 @@ font-size:15px;
 	padding:0px !important;
 }
 .calendar_date{
-	min-height:80px;
+	min-height:90px;
 	z-index:600 !important;
 	padding:5px;
+	max-height:120px;
+	overflow:auto;
 }
 .calendar_date:hover{
 	cursor:pointer;
+	background-color:#fdfce3;
+}
+.calendar_details{
+	max-height:200px;
+	max-width:600px;
+	overflow:auto;
+}
+.calendar_date.active{
 	background-color:#fdfce3;
 }
 .calendar_day{
 	float:right;
 }
 .calendar_event{
-	font-size:.95rem;
+	font-size:.8rem;
 	z-index:700 !important;
 }
 .calendar_event a{
@@ -331,10 +394,10 @@ font-size:15px;
 	padding:3px 2px 3px 2px;
 }
 .calendar_nav{
-	font-size:3rem;
+	font-size:2.5rem;
 }
 .calendar_monthyear{
-	font-size:3rem;
+	font-size:2.5rem;
 }
 #setprocessing{
 	display:inline;
@@ -342,12 +405,14 @@ font-size:15px;
 	color:#337ab7;
 }
 </css>
-	<css_min>body{font-size:15px}.fileupload{min-height:50px;width:400px;color:#b2b2b2;font-size:1.1em;border:4px dashed #CCC;text-align:center;padding:5px;-webkit-border-radius:20px;-khtml-border-radius:20px;border-radius:20px}.calendar_td{padding:0!important}.calendar_date{min-height:80px;z-index:600!important;padding:5px}.calendar_date:hover{cursor:pointer;background-color:#fdfce3}.calendar_day{float:right}.calendar_event{font-size:.95rem;z-index:700!important}.calendar_event a{color:#e18a13;z-index:800!important;padding:3px 2px}.calendar_monthyear,.calendar_nav{font-size:3rem}#setprocessing{display:inline;font-size:.8em;color:#337ab7}</css_min>
+	<css_min>.fileupload{min-height:50px;width:400px;color:#b2b2b2;font-size:1.1em;border:4px dashed #CCC;text-align:center;padding:5px;-webkit-border-radius:20px;-khtml-border-radius:20px;border-radius:20px}.calendar_td{padding:0!important}.calendar_date{min-height:90px;z-index:600!important;padding:5px;max-height:120px;overflow:auto}.calendar_date:hover{cursor:pointer;background-color:#fdfce3}.calendar_details{max-height:200px;max-width:600px;overflow:auto}.calendar_date.active{background-color:#fdfce3}.calendar_day{float:right}.calendar_event{font-size:.8rem;z-index:700!important}.calendar_event a{color:#e18a13;z-index:800!important;padding:3px 2px}.calendar_monthyear,.calendar_nav{font-size:2.5rem}#setprocessing{display:inline;font-size:.8em;color:#337ab7}</css_min>
 	<functions><![CDATA[
+
 function pageCalendarEventForm($id=0){
 	$opts=array(
 		'-table'=&gt;'events',
-		'-fields'=&gt;'name,icon,details',
+		'-fields'=&gt;'name:private,icon,details',
+		'name_displayname'=&gt;'Event Name',
 		'_template'=&gt;1,
 		'setprocessing'=&gt;'setprocessing',
 		'monthyear'=&gt;$_REQUEST['monthyear'],
@@ -364,21 +429,49 @@ function pageCalendarEventForm($id=0){
 	}
 	return addEditDBForm($opts);
 }
+function pageCalendarTodayClass($day){
+	return $day['today']?' active':'';
+}
+
 
 ]]></functions>
-	<js>function pageCalendarMonth(monthyear){
+	<js><![CDATA[
+function pageCalendarMonth(e,monthyear){
+	//cancel parent onclicks so that the click stops here
+	cancelBubble(e);
+	//ajax call to get the requested month
 	return ajaxGet('/calendar','calendar',{_template:1,func:'_calendar',monthyear:monthyear});
 }
-var pageCalendarEvent_open=0;
-function pageCalendarEvent(evnt,id){
-	if(pageCalendarEvent_open==1){return false;}
-	pageCalendarEvent_open=1;
-	console.log('pageCalendarEvent:'+evnt);
+function pageCalendarEvent(e,evnt,id){
+	//cancel parent onclicks so that the click stops here
+	cancelBubble(e);
+	//ajax call to the server to get the event to edit.
 	ajaxGet('/calendar','centerpop',{_template:1,func:'_event','type':evnt,id:id});
 	return false;
 }
-</js>
-	<js_min>function pageCalendarMonth(e){return ajaxGet(&quot;/calendar&quot;,&quot;calendar&quot;,{_template:1,func:&quot;_calendar&quot;,monthyear:e})}function pageCalendarEvent(e,a){return 1==pageCalendarEvent_open?!1:(pageCalendarEvent_open=1,console.log(&quot;pageCalendarEvent:&quot;+e),ajaxGet(&quot;/calendar&quot;,&quot;centerpop&quot;,{_template:1,func:&quot;_event&quot;,type:e,id:a}),!1)}var pageCalendarEvent_open=0;</js_min>
+function pageCalendarDetail(e,id){
+	//cancel parent onclicks so that the click stops here
+	cancelBubble(e);
+	//get the details from the hidden div
+	var txt=getText(id);
+	//show the details in a popup div
+	centerpopDiv(txt);
+	return false;
+}
+function pageFilterGroup(group,ck){
+	var display_value=ck?'block':'none';
+	var els=GetElementsByAttribute('div','data-group',group);
+	for(i=0;i&lt;els.length;i++){
+		var cgroup=els[i].getAttribute('data-group');
+		if(cgroup != group){continue;}
+    	els[i].style.display=display_value;
+	}
+}
+
+]]></js>
+	<js_min><![CDATA[
+function pageCalendarMonth(e,a){return cancelBubble(e),ajaxGet(&quot;/calendar&quot;,&quot;calendar&quot;,{_template:1,func:&quot;_calendar&quot;,monthyear:a})}function pageCalendarEvent(e,a,t){return cancelBubble(e),ajaxGet(&quot;/calendar&quot;,&quot;centerpop&quot;,{_template:1,func:&quot;_event&quot;,type:a,id:t}),!1}function pageCalendarDetail(e,a){cancelBubble(e);var t=getText(a);return centerpopDiv(t),!1}function pageFilterGroup(e,a){var t=a?&quot;block&quot;:&quot;none&quot;,n=GetElementsByAttribute(&quot;div&quot;,&quot;data-group&quot;,e);for(i=0;i&lt;n.length;i++){var r=n[i].getAttribute(&quot;data-group&quot;);r==e&amp;&amp;(n[i].style.display=t)}}
+]]></js_min>
 	<name>calendar</name>
 	<page_type>0</page_type>
 	<postedit>1</postedit>

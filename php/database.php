@@ -1378,7 +1378,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				//$rtn .= '<!--Skipped Used:'.$key.'-->'."\n";
 				continue;
 			}
-			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(menu|search|sort|start|table\_)$/is',$key)){
+			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
 				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'."\n";
 				continue;
 			}

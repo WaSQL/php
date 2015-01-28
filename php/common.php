@@ -2221,6 +2221,7 @@ function getCalendar($monthyear='',$params=array()){
     	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
     	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
 	);
+	$calendar['groupnames']=array();
 	//Fill the first week of the month with the appropriate number of blanks.
 	for($week_day = 0; $week_day < $calendar['first_week_day']; $week_day++){
 		$calendar['weeks'][0][]=array();
@@ -2248,6 +2249,7 @@ function getCalendar($monthyear='',$params=array()){
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['eventdate']));
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
+				if(!in_array($rec['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$rec['group'];}
 				$params['-events'][$edate['mday']][]=$rec;
             }
 		}
@@ -2257,16 +2259,22 @@ function getCalendar($monthyear='',$params=array()){
 		$cache=isset($params['-ical_hours'])?$params['-ical_hours']:12;
 		$icon=isset($params['-ical_icon'])?$params['-ical_icon']:'icon-globe w_dblue w_big';
 		if(!is_array($params['-ical'])){$params['-ical']=array($params['-ical']);}
-		foreach($params['-ical'] as $ical){
-			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
-			$nameparts=preg_split('/\/+/',$ical);
-			foreach($nameparts as $i=>$part){
-				if(!strlen(trim($part))){unset($nameparts[$i]);}
-				if(preg_match('/^(http|www)/i',$part)){unset($nameparts[$i]);}
-				if(preg_match('/\.ics$/i',$part)){unset($nameparts[$i]);}
-				if(preg_match('/^(events|public|ical|calendar)$/i',$part)){unset($nameparts[$i]);}
+		foreach($params['-ical'] as $icalindex => $ical){
+			if(!isNum($icalindex)){$ical_group=$icalindex;}
+			else{
+				$nameparts=preg_split('/\/+/',$ical);
+				foreach($nameparts as $i=>$part){
+					if(!strlen(trim($part))){unset($nameparts[$i]);}
+					if(preg_match('/^(http|www)/i',$part)){unset($nameparts[$i]);}
+					if(preg_match('/\.ics$/i',$part)){unset($nameparts[$i]);}
+					if(preg_match('/^(events|public|ical|calendar)$/i',$part)){unset($nameparts[$i]);}
+				}
+				$ical_group=implode(' ',$nameparts);
 			}
-			$ical_group=implode(' ',$nameparts);
+			if(!in_array($ical_group,$calendar['groupnames'])){$calendar['groupnames'][]=$ical_group;}
+			//$ical_events=icalEvents($ical);
+			//echo printValue($ical_events);exit;
+			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
 			$ical_events=getStoredValue("return icalEvents('".$ical."');",0,$cache);
         	foreach($ical_events as $rec){
 				//skip events not in this month
@@ -2350,6 +2358,7 @@ function getCalendar($monthyear='',$params=array()){
 			if(isset($shas[$sha])){continue;}
 			$shas[$sha]=1;
 			$event['group']='Holidays';
+			if(!in_array($event['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$event['group'];}
 			$current['events'][]=$event;
 		}
 		//add other events
@@ -2378,6 +2387,7 @@ function getCalendar($monthyear='',$params=array()){
     for($x=$cnt;$x<7;$x++){
 		$calendar['weeks'][$row][]=array();
     }
+    sort($calendar['groupnames'],SORT_STRING);
     //unset($calendar['current_date']);
     unset($calendar['this_month']);
     unset($calendar[0]);

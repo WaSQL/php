@@ -478,6 +478,30 @@ function fadeOut(id) {
 		setTimeout("setOpacity('"+id+"'," + (1 - i) + ")", i * 200);
 	}
 }
+/**
+ * sets the cursor to the specfied wasql_icon font
+ * @param element mixed - object or id of the element to set the cursor in
+ * @param classname text - class of the font you want to use
+ * @usage fontIconCursor(document.body,'icon-tags');
+ */
+function fontIconCursor(el,cl){
+	fontdiv=document.createElement('div');
+	fontdiv.className=cl;
+	var filltext = window.getComputedStyle(fontdiv, ':before').getPropertyValue('content');
+	var canvas = document.createElement("canvas");
+    canvas.width = 22;
+    canvas.height = 24;
+    //document.body.appendChild(canvas);
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#000000";
+    ctx.font = "18px wasql_icons";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(filltext,11,16);
+    var dataURL = canvas.toDataURL('image/png')
+    el=getObject(el);
+    el.style.cursor='url('+dataURL+'), auto';
+}
 function formatCurrency(num) {
     num = isNaN(num) || num === '' || num === null ? 0.00 : num;
     return parseFloat(num).toFixed(2);

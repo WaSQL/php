@@ -306,6 +306,12 @@ function ajaxPopup(url,params,useropts){
 	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif"> loading...please wait.</div>',opt);
 	ajaxGet(url,opt['id']+'_Body',params);
 	}
+/* cancelBubble - stop propigation of events to that onclick events of the parent elements do not fire. */
+function cancelBubble(e) {
+ 	var evt = e ? e:window.event;
+ 	if (evt.stopPropagation)    evt.stopPropagation();
+ 	if (evt.cancelBubble!=null) evt.cancelBubble = true;
+}
 /* centerpopDiv*/
 function centerpopDiv(txt,rtimer,x){
 	if(undefined == x){x='';}
@@ -745,6 +751,17 @@ function getChildById(obj, id) {
 	return null;
 	}
 /* centerObject */
+function setObjectPos(obj,x,y){
+	var sObj=getObject(obj);
+	if(undefined == sObj){return false;}
+	if(undefined == x){x=MouseX || 10;}
+	if(undefined == y){y=MouseY || 10;}
+  	sObj.style.position='absolute';
+  	sObj.style.left=x+'px';
+  	sObj.style.top=y+'px';
+  	return new Array(x,y);
+	}
+/* centerObject */
 function centerObject(obj,fade){
 	//info: centers specified object or id
 	if(undefined == fade){fade=0;}
@@ -875,7 +892,7 @@ sfHover = function() {
 		}
 	}
 // Add sfHover to the onLoad queue
-addEvent(window,'load',sfHover);
+addEventHandler(window,'load',sfHover);
 var calledStickyMenus=0;
 /* initPin - function to assign hover to dom objects that have data-behavior="pin" so they hide onMouseOut */
 function initBehaviors(ajaxdiv){
@@ -1010,6 +1027,10 @@ function initBehaviors(ajaxdiv){
 				countDownDate(id,yr,mon,day,hr,m,t);
 			}
 		}
+		else if(in_array("csseditor",behaviors)){
+			/* EDITOR: CSSEDITOR */
+			codemirrorTextEditor(navEls[n],'text/css','csseditor');
+		}
 		else if(in_array("drag",behaviors)){
 			/* DRAG - Make object draggable */
 			var head=navEls[n].getAttribute('data-head');
@@ -1035,15 +1056,14 @@ function initBehaviors(ajaxdiv){
 			setText(navEls[n],email);
 			navEls[n].setAttribute('data-behavior','processed');
 		}
+		else if(in_array("markers",behaviors)){
+			wasqlMarkerInit(navEls[n]);
+		}
         else if(in_array("signature",behaviors)){
 			/* Signature */
 			var pencolor=navEls[n].getAttribute('data-color') || '#000';
 			signaturePad = new SignaturePad(navEls[n],{penColor:pencolor});
 			//signature(navEls[n],'',pencolor);
-		}
-		else if(in_array("csseditor",behaviors)){
-			/* EDITOR: CSSEDITOR */
-			codemirrorTextEditor(navEls[n],'text/css','csseditor');
 		}
 		else if(in_array("txteditor",behaviors)){
 			/* EDITOR: TXTEDITOR */
@@ -1289,7 +1309,7 @@ function initBehaviors(ajaxdiv){
 				navEls[n].setAttribute('sticky_z',navEls[n].style.zIndex);
 			}
 			if(calledStickyMenus==0){
-				addEvent(window,'scroll',stickyMenus);
+				addEventHandler(window,'scroll',stickyMenus);
 				calledStickyMenus=1;
 			}
 		}
@@ -1352,8 +1372,8 @@ function initBehaviors(ajaxdiv){
 		}
 	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
 	for(var i=0;i<tobs.length;i++){
-		addEvent(tobs[i],'mouseover', function(){tooltipDiv(this);});
-		addEvent(tobs[i],'mouseout', function(){fadeId('w_tooltip',1);});
+		addEventHandler(tobs[i],'mouseover', function(){tooltipDiv(this);});
+		addEventHandler(tobs[i],'mouseout', function(){fadeId('w_tooltip',1);});
 	}
 }
 function stickyMenus(){
@@ -1391,11 +1411,11 @@ function removeTinyMCE(id){
 	}
 }
 // Add initBehaviors to the onLoad queue
-addEvent(window,'load',initBehaviors);
+addEventHandler(window,'load',initBehaviors);
 
 
 function addOnLoadEvent(f){
-	addEvent(window,'load',f);
+	addEventHandler(window,'load',f);
 }
 //generic addEvent for all browsers - depreciated use addEventHandler instead
 function addEvent(elem, evnt, func){
@@ -2118,6 +2138,11 @@ function startSum(id,sumid){
 	setText(id,sum);
     TimoutArray[id]=setTimeout("startSum('"+id+"','"+sumid+"')",250);
 	}
+function detectLeftButton(evt) {
+    evt = evt || window.event;
+    var button = evt.which || evt.button;
+    return button == 1;
+}
 function doMath(id){
 	/* 
 		@math(one+two+three)  @math(one+(two*3))             one+(two*3)
@@ -2420,4 +2445,84 @@ function initDrop(tagname,tagatt,attval){
 			}
 		}
 	}
-	
+/*_marker functions */
+function wasqlMarkerForm(){
+	var centerpop=getObject('centerpop');
+	if(undefined != centerpop){return;}
+    ajaxGet('/php/index.php','centerpop',{_template:4,mousex:MouseX,mousey:MouseY,_marker:'click'});
+}
+var wasqlmarkers={};
+var wasqlmarker={};
+function wasqlMarkerTagsJson(id){
+	var jsondata=getText(id);
+	wasqlmarkers=parseJSONString(jsondata);
+	for(var i in wasqlmarkers){
+		wasqlMarkerTag(wasqlmarkers[i].x,wasqlmarkers[i].y,wasqlmarkers[i].page,wasqlmarkers[i].priority);
+	}
+}
+function wasqlMarkerTag(x,y,page,priority){
+	var _markernulldiv=getObject('_markernulldiv');
+	if(undefined == _markernulldiv){return 'no _markernulldiv div';}
+	var guid='_marker_'+x+'_'+y+'_'+page;
+	var hex='#337ab7';
+    switch(priority){
+		case 0:hex='#bc1717';break;
+		case 1:hex='#cf312c';break;
+		case 2:hex='#337ab7';break;
+		case 3:hex='#bcbcbc';break;
+	}
+	var icon=page==0?'icon-tags':'icon-tag';
+	var txt='<span class="'+icon+' w_pointer" style="font-size:2rem;color:'+hex+';"></span>';
+	//console.log(txt);
+	var tag=getObject(guid);
+	if(undefined != tag){
+		setText(tag,txt);
+		return guid;
+	}
+	tag=document.createElement('div');
+	tag.id=guid;
+	tag.style.position='absolute';
+	tag.style.display='inline';
+	tag.style.zIndex=600;
+    tag.style.top=y+'px';
+    tag.style.left=x+'px';
+
+    setText(tag,txt);
+    document.body.appendChild(tag);
+	return new Array(x,y,page,priority,guid,hex,txt);
+}
+function wasqlMarkerLoad(){
+	var _markernulldiv=getObject('_markernulldiv');
+	if(undefined == _markernulldiv){
+	    //create a hidden div for the form to be posted to
+	    var div_outer = document.createElement('div');
+	    div_outer.style.display='none';
+	    document.body.appendChild(div_outer);
+	    var div_inner = document.createElement('div');
+	    div_inner.id='_markernulldiv';
+	    div_outer.appendChild(div_inner);
+	    ajaxGet('/php/index.php','_markernulldiv',{_template:4,_marker:'load'});
+	}
+}
+/**
+ * initialize wasql markers
+ * @param element mixed - object or id of the element to enable wasql markers on - defauts to document.body
+ * @param icon string - classname from wasql_icons to use as the cursor - defaults to icon-tags
+ * @usage wasqlMarkerInit(document.body,'icon-tags');
+ */
+function wasqlMarkerInit(el,cl){
+	if(undefined == el){el=document.body;}
+	if(undefined == cl){cl='icon-tags';}
+	el=getObject(el);
+	/* wasql markers - used to markeup a page for design purposes */
+	wasqlMarkerLoad();
+	//navEls[n].style.cursor='help';
+	fontIconCursor(el,cl);
+	addEventHandler(el,'click',function(e){
+		//cancel parent onclicks so that the click stops here
+		cancelBubble(e);
+		//if the left button is clicked then
+		if(e.altKey && e.ctrlKey){wasqlMarkerForm();return false;}
+		return false;
+	});
+}

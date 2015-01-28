@@ -1,24 +1,23 @@
 <?php
 /* 
-	iCal parser routines
-	see https://code.google.com/p/ics-parser/source/browse/trunk/iCalReader.php?r=2
+	iCalendar feeds -  parser routines
 
 */
 $progpath=dirname(__FILE__);
 
-//---------- begin function icsEvents ----------
+//---------- begin function icalEvents ----------
 /**
-* @describe convert an ics file to an array of events
+* @describe convert an ics iCal feed or file to an array of events
 * @param file string - filename or URL to parse
 * @param params array - additional options
 * @return array - array of events
 */
-function icsEvents($filename,$params=array()){
+function icalEvents($filename,$params=array()){
 	$lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     if (stristr($lines[0], 'BEGIN:VCALENDAR') === false) {
         return false;
     }
-	$ics=array();
+	$events=array();
 	$read=0;
 	$key='';
 	//echo printValue($lines);
@@ -33,6 +32,7 @@ function icsEvents($filename,$params=array()){
         	foreach($event as $key=>$val){
             	$event[$key]=fixMicrosoft(str_replace('[n]',"\n",$val));
 			}
+			$event['description']=removeHtml($event['description']);
         	$events[]=$event;
 		}
 		if($read==0){continue;}
