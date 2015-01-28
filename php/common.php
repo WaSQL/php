@@ -2245,6 +2245,7 @@ function getCalendar($monthyear='',$params=array()){
         	$edate=getdate(strtotime($rec['eventdate']));
         	if($calendar['mon'] != $edate['mon']){continue;}
         	$params['-events'][$edate['mday']][]=$rec;
+        	if(isset($rec['group']) && !in_array($rec['group'],$calendar['groupnames'])){$calendar['groupnames'][]=$rec['group'];}
 		}
 	}
 	//-event_table
