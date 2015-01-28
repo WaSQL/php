@@ -7008,7 +7008,7 @@ function numberFormat($num=0,$dec=0){
 * @return string
 * @usage <?=ordinalSuffix(15);?> birthday - returns 15th birthday
 */
-function ordinalSuffix($number) {
+function ordinalSuffix($num) {
 	if (!in_array(($num % 100),array(11,12,13))){
 	    switch ($num % 10) {
 	    	// Handle 1st, 2nd, 3rd
