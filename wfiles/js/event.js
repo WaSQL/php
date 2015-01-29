@@ -2126,6 +2126,7 @@ function startClock(id,live){
     	}
 	}
 function startUTCClock(id,live){
+	if(undefined == live){live=false;}
 	clearTimeout(TimoutArray[id]);
 	obj=getObject(id);
 	var offset=Math.round(obj.getAttribute('data-offset'));
@@ -2142,26 +2143,45 @@ function startUTCClock(id,live){
 	    h+=24;
 	}
 	var h=h+offset;
-
     var m=dt.getUTCMinutes();
     var s=dt.getUTCSeconds();
     var p=" am";
     if(h > 24){h=h-24;p=" am";}
     else if(h > 12){h=h-12;p=" pm";}
     else if(h==12){p=" pm";}
-    var timestr='';
-    if(h<10){timestr +="0";}
-    timestr += h;
-    timestr += ":";
-    if(m<10){timestr +="0";}
-    timestr += m;
-	timestr += ":";
-    if(s<10){timestr +="0";}
-	timestr += s;
-    timestr +=p;
-    setText(id,timestr);
+    var format=obj.getAttribute('data-format');
+    if(undefined == format){format='h:m:s p';}
+    //set the timer based on if they need seconds or not
+    var t=1000;
+    if(format.indexOf('s') == -1){
+		//no seconds to show  so only run it 4 times a minute
+		t=15000;
+		}
+    var parts=new Array();
+    //hour
+    if(format.indexOf('h') != -1){
+	    if(h<10){h +="0";}
+	    format=format.replace('h',h);
+	}
+    //minute
+    if(format.indexOf('m') != -1){
+    	if(m<10){m +="0";}
+    	format=format.replace('m',m);
+    }
+    //seconds
+    if(format.indexOf('s') != -1){
+    	if(s<10){s +="0";}
+    	format=format.replace('s',s);
+    }
+    //am pm
+    if(format.indexOf('p') != -1){
+    	format=format.replace('p',p);
+    }
+    //set the new clock time
+    setText(id,format);
+    //if live, set a timer.
     if(live){
-    	TimoutArray[id]=setTimeout("startUTCClock('"+id+"',"+live+")",1000);
+    	TimoutArray[id]=setTimeout("startUTCClock('"+id+"',"+live+")",t);
     	}
 	}
 function startRaid(id,raidid){
