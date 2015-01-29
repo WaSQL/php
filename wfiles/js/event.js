@@ -2146,8 +2146,9 @@ function startUTCClock(id,live){
     var m=dt.getUTCMinutes();
     var s=dt.getUTCSeconds();
     var p=" am";
-    if(h > 12){h=h-12;p=" pm";}
-    if(h==12){p=" pm";}
+    if(h > 24){h=h-24;p=" am";}
+    else if(h > 12){h=h-12;p=" pm";}
+    else if(h==12){p=" pm";}
     var timestr='';
     if(h<10){timestr +="0";}
     timestr += h;
