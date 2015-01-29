@@ -2146,9 +2146,9 @@ function startUTCClock(id,live){
     var m=dt.getUTCMinutes();
     var s=dt.getUTCSeconds();
     var p=" am";
-    if(h > 24){h=h-24;p=" am";}
-    else if(h > 12){h=h-12;p=" pm";}
-    else if(h==12){p=" pm";}
+    if(h > 24){h=h-24;p='am';}
+    else if(h > 12){h=h-12;p='pm';}
+    else if(h==12){p='pm';}
     var format=obj.getAttribute('data-format');
     if(undefined == format){format='h:m:s p';}
     //set the timer based on if they need seconds or not
@@ -2160,17 +2160,16 @@ function startUTCClock(id,live){
     var parts=new Array();
     //hour
     if(format.indexOf('h') != -1){
-	    if(h<10){h +="0";}
 	    format=format.replace('h',h);
 	}
     //minute
     if(format.indexOf('m') != -1){
-    	if(m<10){m +="0";}
+    	if(m<10){m ='0'+m;}
     	format=format.replace('m',m);
     }
     //seconds
     if(format.indexOf('s') != -1){
-    	if(s<10){s +="0";}
+    	if(s<10){s ='0'+s;}
     	format=format.replace('s',s);
     }
     //am pm
