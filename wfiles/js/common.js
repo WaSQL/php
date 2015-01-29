@@ -13,8 +13,25 @@ Date.prototype.stdTimezoneOffset = function() {
     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 
-Date.prototype.dst = function() {
-    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+Date.prototype.isDST = function() {
+	if(this.getTimezoneOffset() == this.stdTimezoneOffset()){return false;}
+	/*
+		In the United States Daylight Saving Time begins at 2:00 a.m. local time 
+		on the second Sunday in March. On the first Sunday in November areas on
+		Daylight Saving Time return to Standard Time at 2:00 a.m.
+		
+		if mon==2 && hr > 2 then true
+		else if mon==10 && hr < 2 then true
+		else if mon >1 && mon < 11  then true
+		else false
+	*/
+	var mon=this.getMonth();
+	var hr=this.getHours();
+	var m=this.getMinutes();
+    if(mon==2 && hr > 2){return true;}
+	else if(mon==10 && hr < 2){return true;}
+	else if(mon >1 && mon < 11){return true;}
+	return false;
 }
 /* Define document.getElementById for Internet Explorer 4 */
 if (typeof(document.getElementById) == "undefined")

@@ -2130,19 +2130,19 @@ function startUTCClock(id,live){
 	obj=getObject(id);
 	var offset=Math.round(obj.getAttribute('data-offset'));
     var dt = new Date();
-    var utc=dt.toUTCString();
-    if(dt.dst){
+    if(dt.isDST()){
 		offset=Math.round(obj.getAttribute('data-offset-dst'));
 		if(undefined == offset){
         	offset=Math.round(obj.getAttribute('data-offset'));
 		}
 	}
-	var gmt='';
-	if(offset < 0){gmt='-0'+Math.abs(offset)+'00';}
-	else{gmt='+0'+Math.abs(offset)+'00';}
-	dt=new Date(utc+gmt);
-	var h=dt.getHours();
-	h=h+Math.abs(offset);
+
+	var h=dt.getUTCHours();
+	if(dt.getDate()!=dt.getUTCDate()){
+	    h+=24;
+	}
+	var h=h+offset;
+
     var m=dt.getUTCMinutes();
     var s=dt.getUTCSeconds();
     var p=" am";
