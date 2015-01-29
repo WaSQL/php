@@ -1003,6 +1003,11 @@ function initBehaviors(ajaxdiv){
   			var id=navEls[n].getAttribute('id');
 			if(id){startClock(id,1);}
 		}
+		else if(in_array("utcclock",behaviors)){
+			/*UTC CLOCK - */
+  			var id=navEls[n].getAttribute('id');
+			if(id){startUTCClock(id,1);}
+		}
 		else if(in_array("countdown",behaviors)){
 			/* COUNTDOWN */
   			var id=navEls[n].getAttribute('id');
@@ -2118,6 +2123,38 @@ function startClock(id,live){
     setText(id,timestr);
     if(live){
     	TimoutArray[id]=setTimeout("startClock('"+id+"',"+live+")",1000);
+    	}
+	}
+function startUTCClock(id,live){
+	clearTimeout(TimoutArray[id]);
+	obj=getObject(id);
+	var offset=Math.round(obj.getAttribute('data-offset'));
+    var dt = new Date();
+    if(dt.dst){
+		offset=Math.round(obj.getAttribute('data-offset-dst'));
+		if(undefined == offset){
+        	offset=Math.round(obj.getAttribute('data-offset'));
+		}
+	}
+    var h=dt.getUTCHours()+offset;
+    var m=dt.getUTCMinutes();
+    var s=dt.getUTCSeconds();
+    var p=" am";
+    if(h > 12){h=h-12;p=" pm";}
+    if(h==12){p=" pm";}
+    var timestr='';
+    if(h<10){timestr +="0";}
+    timestr += h;
+    timestr += ":";
+    if(m<10){timestr +="0";}
+    timestr += m;
+	timestr += ":";
+    if(s<10){timestr +="0";}
+	timestr += s;
+    timestr +=p;
+    setText(id,timestr);
+    if(live){
+    	TimoutArray[id]=setTimeout("startUTCClock('"+id+"',"+live+")",1000);
     	}
 	}
 function startRaid(id,raidid){

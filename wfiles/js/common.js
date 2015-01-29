@@ -6,7 +6,16 @@ var isNetscape=(agt.indexOf('netscape')!=-1);
 var isOpera = agt.indexOf("opera")!=-1;
 var isIE = agt.indexOf("msie")!=-1 && !isOpera;
 var isMoz = agt.indexOf("mozilla/5.") == 0 && !isOpera;
+/* add dst to the date object */
+Date.prototype.stdTimezoneOffset = function() {
+    var jan = new Date(this.getFullYear(), 0, 1);
+    var jul = new Date(this.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
 
+Date.prototype.dst = function() {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+}
 /* Define document.getElementById for Internet Explorer 4 */
 if (typeof(document.getElementById) == "undefined")
 	document.getElementById = function (id)
