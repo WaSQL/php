@@ -5615,9 +5615,9 @@ function includePage($val='',$params=array()){
 	ob_start();
 	//Disallow recursive calls - pages that call themselves
 	global $PAGE;
-	if(strtolower($PAGE['name'])==strtolower($val)){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$table='_pages';
 	if($params['-dbname']){$table="{$params['-dbname']}._pages";}
+	if(strtolower($PAGE['name'])==strtolower($val) && $table=='pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$fields="_id,controller,body,functions,name";
 	$fieldname="body";
 	$opts=array(
