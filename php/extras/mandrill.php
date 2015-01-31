@@ -5,6 +5,32 @@
 */
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/Mandrill/Mandrill.php");
+//---------- begin function mandrillSendMail--------------------
+/**
+* @describe mandrill sendMail replacement to send mail using your Mandrill account
+* @param params array
+*	-apikey - your Mandrill API key.
+*	to - the email address to send the email to.  For multiple recepients, separate emails by commas or semi-colons
+*	from - the email address to send the email from
+*	[cc] - optional email address to carbon copy the email to. For multiple recepients, separate emails by commas or semi-colons
+*	[bcc] - optional email address to blind carbon copy the email to. For multiple recepients, separate emails by commas or semi-colons
+*	[reply-to] - the email address to set as the reply-to address
+*	subject - the subject of the email
+*	message - the body of the email
+*	[attach] - an array of files (full path required) to attach to the message
+* @return str value
+*	returns the error message or 1 on success
+* @usage 
+*	loadExtras('mandrill');
+*	$errmsg=mandrillSendMail(array(
+*		'-apikey'	=> 'YOUR_MANDRILL_API_KEY',
+*		'to'		=> 'john@doe.com',
+*		'from'		=> 'jane@doe.com',
+*		'subject'	=> 'When will you be home?',
+*		'message'	=> 'Here is the document you requested',
+*		'attach'	=> array('/var/www/doument.doc')
+*	));
+*/
 function mandrillSendMail($params=array()){
 	if(!isset($params['-apikey'])){return 'mandrillSendMail Error: missing apikey';}
 	if(!isset($params['to'])){return 'mandrillSendMail Error: missing to';}
