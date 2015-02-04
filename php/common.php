@@ -2243,9 +2243,37 @@ function getCalendar($monthyear='',$params=array()){
 		$recs=$params['-events'];
 		$params['-events']=array();
     	foreach($recs as $rec){
-        	$edate=getdate(strtotime($rec['eventdate']));
-        	if($calendar['mon'] != $edate['mon']){continue;}
-        	$params['-events'][$edate['mday']][]=$rec;
+			if(isset($rec['eventdate'])){
+        		$edate=getdate(strtotime($rec['eventdate']));
+        		if($calendar['mon'] != $edate['mon']){continue;}
+        		$rec['_id']=isset($rec['_id'])?$rec['_id']:getGuid();
+        		$params['-events']['mday'][$edate['mday']][]=$rec;
+			}
+			else if(isset($rec['mday'])){
+				$mdays=preg_split('/[\,\:\;]+/',$rec['mday']);
+				foreach($mdays as $mday){
+					$rec['mday']=$mday;
+					$rec['_id']=getGuid();
+					$params['-events']['mday'][$mday][]=$rec;
+				}
+			}
+			else if(isset($rec['wday'])){
+				$wdays=preg_split('/[\,\:\;]+/',$rec['wday']);
+				foreach($wdays as $wday){
+					$rec['wday']=$wday;
+					$rec['_id']=getGuid();
+					$params['-events']['wday'][$wday][]=$rec;
+				}
+			}
+			else if(isset($rec['day'])){
+				$days=preg_split('/[\,\:\;]+/',$rec['day']);
+				foreach($days as $day){
+					$day=ucfirst(strtolower($day));
+					$rec['day']=$day;
+					$rec['_id']=getGuid();
+					$params['-events']['day'][$day][]=$rec;
+				}
+			}
         	if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
 				$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
 				}
@@ -2264,7 +2292,7 @@ function getCalendar($monthyear='',$params=array()){
 				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
 					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
 				}
-				$params['-events'][$edate['mday']][]=$rec;
+				$params['-events']['mday'][$edate['mday']][]=$rec;
             }
 		}
 	}
@@ -2322,7 +2350,7 @@ function getCalendar($monthyear='',$params=array()){
 				$event['eventtimestamp']=strtotime("{$rec['date_start']} {$rec['time_start']}:00");
 				$event['timestring']=date('g:i a',strtotime($rec['time_start']));
 				if($rec['time_start'] != $rec['time_stop']){
-				$event['timestring']='From '.$event['timestring'].' to '.date('g:i a',strtotime($rec['time_stop']));
+					$event['timestring']='From '.$event['timestring'].' to '.date('g:i a',strtotime($rec['time_stop']));
 				}
 				$event['name']=$event['eventtime'].' '.$rec['title'];
             	if($rec['date_stop'] != $rec['date_start']){
@@ -2333,14 +2361,14 @@ function getCalendar($monthyear='',$params=array()){
 				  		$event['eventdate']=date( 'Y-m-d', $i );
 				  		$event['eventtimestamp']=strtotime("{$event['eventdate']} {$rec['time_start']}:00");
 				  		$edate=getdate($i);
-						$params['-events'][$edate['mday']][]=$event;
+						$params['-events']['mday'][$edate['mday']][]=$event;
 					}
 				}
             	else{
                 	$event['eventdate']=$rec['date_start'];
                 	$edate=getdate(strtotime($rec['date_start']));
                 	$mdate=$edate['mday'];
-					$params['-events'][$mdate][]=$event;
+					$params['-events']['mday'][$mdate][]=$event;
 				}
 			}
 		}
@@ -2365,6 +2393,12 @@ function getCalendar($monthyear='',$params=array()){
 			'month'			=> $calendar['month'],
 			'events'		=> array()
 		);
+		$edate=getdate(strtotime($current['date']));
+		$current['mday']=$edate['mday'];
+		$current['wday']=$edate['wday'];
+		$current['day_short']=$calendar['daynames']['short'][$current['wday']];
+		$current['day_med']=$calendar['daynames']['med'][$current['wday']];
+		$current['day_long']=$calendar['daynames']['long'][$current['wday']];
 		//is it today
 		if($calendar['current_date']['mday']==$day_counter && $calendar['current_date']['year']==$calendar['year'] && $calendar['current_date']['mon']==$calendar['mon']){
         	$current['today']=1;
@@ -2384,22 +2418,31 @@ function getCalendar($monthyear='',$params=array()){
 			$current['events'][]=$event;
 		}
 		//add other events
-		if(isset($params['-events'][$day_counter]) && is_array($params['-events'][$day_counter])){
-			//sort events by 
-			$params['-events'][$day_counter]=sortArrayByKey($params['-events'][$day_counter],'eventtimestamp',SORT_ASC);
-        	foreach($params['-events'][$day_counter] as $event){
-				//skip events set for a specific user if the user is not the current user
-				if(isset($event['private']) && isNum($event['private']) && $event['private'] ==1 && (!isset($USER['_id']) || $event['_cuser'] != $USER['_id'])){
-                	continue;
+		$checks=array(
+			'mday'	=> array($day_counter),
+			'wday'	=> array($current['wday']),
+			'day'	=> array($current['day_short'],$current['day_med'],$current['day_long'])
+		);
+		foreach($checks as $key=>$vals){
+			foreach($vals as $val){
+				if(isset($params['-events'][$key][$val]) && is_array($params['-events'][$key][$val])){
+					//sort events by 
+					$params['-events'][$key][$val]=sortArrayByKey($params['-events'][$key][$val],'eventtimestamp',SORT_ASC);
+		        	foreach($params['-events'][$key][$val] as $event){
+						//skip events set for a specific user if the user is not the current user
+						if(isset($event['private']) && isNum($event['private']) && $event['private'] ==1 && (!isset($USER['_id']) || $event['_cuser'] != $USER['_id'])){
+		                	continue;
+						}
+						elseif(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
+		                	continue;
+						}
+						//skip this event if we have already listed it - user has overlapping events from two feeds
+						$sha=sha1(printValue($event));
+						if(isset($shas[$sha])){continue;}
+						$shas[$sha]=1;
+						$current['events'][]=$event;
+					}
 				}
-				elseif(isset($event['user_id']) && isNum($event['user_id']) && $event['user_id'] !=0 && (!isset($USER['_id']) || $event['user_id'] != $USER['_id'])){
-                	continue;
-				}
-				//skip this event if we have already listed it - user has overlapping events from two feeds
-				$sha=sha1(printValue($event));
-				if(isset($shas[$sha])){continue;}
-				$shas[$sha]=1;
-				$current['events'][]=$event;
 			}
 		}
 		$calendar['weeks'][$row][]=$current;
