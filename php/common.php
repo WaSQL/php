@@ -8721,6 +8721,8 @@ function processActions(){
 						}
 					elseif($field=='xmldata'){$opts['xmldata']= request2XML($_REQUEST);}
 					elseif($field=='_xmldata'){$opts['_xmldata']= request2XML($_REQUEST);}
+					elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST);}
+					elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
 					elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
 				//echo printValue($opts);exit;
