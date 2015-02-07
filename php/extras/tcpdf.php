@@ -15,6 +15,7 @@ if(is_file("{$progpath}/tcpdf/config/lang/eng.php")){
 }
 require_once("{$progpath}/tcpdf/tcpdf.php");
 require_once("{$progpath}/../XML2Array.php");
+//echo K_PATH_CACHE;exit;
 //---------- begin function tcpdfHTML--------------------
 /**
 * @describe converts into a PDF file

@@ -6852,6 +6852,10 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	if(isMysqli()){return mysqli_connect($host, $user, $pass, $dbname);}
 	elseif(isMysql()){return mysql_connect($host, $user, $pass);}
 	elseif(isMssql()){return mssql_connect($host, $user, $pass);}
+	elseif(isOracle()){
+          $db = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={$host})(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME={$dbname})))";
+                return oci_connect($user, $pass, $db);
+                }
 	elseif(isPostgreSQL()){
 		//Open a persistent PostgreSQL connection
 		$conn_string="host={$host} dbname={$dbname} user={$user} password={$pass}";
@@ -6873,19 +6877,19 @@ function databaseDataType($str){
 		switch(strtolower($name)){
 			case 'tinyint':return 'int2';break;
 			case 'smallint':return 'int4';break;
-        	case 'bigint':return 'int8';break;
-        	case 'real':return 'float4';break;
-        	case 'datetime':return 'timestamp';break;
-        	case 'numeric':
-        		if(count($parts)==3){return "decimal({$parts[1]},{$parts[2]})";}
-        		elseif(count($parts)==2){return "decimal({$parts[1]})";}
-        		else{return 'decimal';}
-        		break;
-        	case 'tinytext':
-        	case 'mediumtext':
-        	case 'longtext':
+	        	case 'bigint':return 'int8';break;
+	        	case 'real':return 'float4';break;
+	        	case 'datetime':return 'timestamp';break;
+	        	case 'numeric':
+	        		if(count($parts)==3){return "decimal({$parts[1]},{$parts[2]})";}
+	        		elseif(count($parts)==2){return "decimal({$parts[1]})";}
+	        		else{return 'decimal';}
+	        	break;
+	        	case 'tinytext':
+	        	case 'mediumtext':
+	        	case 'longtext':
 				return 'text';
-				break;
+			break;
 		}
 	}
 	return $str;
@@ -6903,6 +6907,9 @@ function databaseDateTimeNow(){
 	}
 	elseif(isPostgreSQL()){
 		return " NOT NULL Default CURRENT_DATE";
+	}
+	elseif(isOracle()){
+		return " NOT NULL Default CURRENT_TIMESTAMP";
 	}
 	elseif(isMssql()){
 		return " NOT NULL Default GETDATE()";
@@ -6926,9 +6933,29 @@ function databaseDescribeTable($table){
 		$query="show full columns from {$table}";
 		$recs=getDBRecords(array('-query'=>$query));
 		}
+	elseif(isOracle()){
+		//SELECT owner,column_name,data_type,data_length,data_precision,nullable,default_length,data_default,character_set_name,default_on_null FROM dba_tab_columns where owner='DOT_DATA' and  table_name='ASH'
+    		$query="
+			SELECT
+				column_name as field,
+				CASE LENGTH(data_length)
+          			when 0 THEN data_type
+          			else data_type || '(' || data_length ||')'
+        			END as  \"type\",
+				'' as extra,
+        			nullable as \"null\",
+        			data_default as \"default\"
+			FROM
+				dba_tab_columns
+			WHERE
+				table_name = '{$table}'
+			ORDER BY column_name
+		";
+		$recs=getDBRecords(array('-query'=>$query));
+	}
 	elseif(isPostgreSQL()){
 		//field,type,null,key,default,extra
-    	$query="
+    		$query="
 			SELECT 
 				a.attname as field, 
 				format_type(a.atttypid, a.atttypmod) as type, 
@@ -6971,6 +6998,7 @@ function databaseError(){
 		return mysqli_error($dbh);
 		}
 	elseif(isMysql()){return mysql_error();}
+	elseif(isOracle()){return oci_error($dbh);}
 	elseif(isPostgreSQL()){return @pg_last_error();}
 	elseif(isMssql()){
 		$err=mysql_error();
@@ -7009,6 +7037,7 @@ function databaseFetchAssoc($query_result){
 	//Returns an associative array of the current row in the result - supports multiple database types
 	if(isMysqli()){return mysqli_fetch_assoc($query_result);}
 	elseif(isMysql()){return mysql_fetch_assoc($query_result);}
+	elseif(isOracle()){return oci_fetch_assoc($query_result);}
 	elseif(isPostgreSQL()){return pg_fetch_assoc($query_result);}
 	elseif(isMssql()){return mssql_fetch_assoc($query_result);}
 	return null;
@@ -7022,6 +7051,7 @@ function databaseFetchObject($query_result){
 	global $dbh;
 	if(isMysqli()){return mysqli_fetch_object($dbh,$query_result);}
 	elseif(isMysql()){return mysql_fetch_object($query_result);}
+	elseif(isOracle()){return oci_fetch_object($query_result);}
 	elseif(isPostgreSQL()){return pg_fetch_object($query_result);}
 	elseif(isMssql()){return mssql_fetch_object($query_result);}
 	return null;
@@ -7034,6 +7064,7 @@ function databaseFetchRow($query_result){
 	//Get a result row as an enumerated array - supports multiple database types
 	if(isMysqli()){return mysqli_fetch_row($query_result);}
 	elseif(isMysql()){return mysql_fetch_row($query_result);}
+	elseif(isOracle()){return oci_fetch_row($query_result);}
 	elseif(isPostgreSQL()){return pg_fetch_row($query_result);}
 	elseif(isMssql()){return mssql_fetch_row($query_result);}
 	return null;
@@ -7047,6 +7078,7 @@ function databaseFieldFlags($query_result,$i=-1){
 	global $dbh;
 	if(isMysqli()){return mysqli_field_flags($dbh,$query_result,$i);}
 	elseif(isMysql()){return mysql_field_flags($query_result,$i);}
+	elseif(isOracle()){return oci_field_precision($query_result,$i);}
 	elseif(isPostgreSQL()){}
 	elseif(isMssql()){
 		return null;
@@ -7063,6 +7095,7 @@ function databaseFieldLength($query_result,$i=-1){
 	global $dbh;
 	if(isMysqli()){return mysqli_field_len($dbh,$query_result,$i);}
 	elseif(isMysql()){return mysql_field_len($query_result,$i);}
+	elseif(isOracle()){return oci_field_size($query_result,$i);}
 	elseif(isPostgreSQL()){return pg_field_prtlen($query_result,$i);}
 	elseif(isMssql()){return mssql_field_length($query_result,$i);}
 	return null;
@@ -7077,6 +7110,7 @@ function databaseFieldName($query_result,$i=-1){
 	//mysqli does not have a mysqli_field_name function
 	if(isMysqli()){return abort("mysqli_field_name does not exist!");}
 	elseif(isMysql()){return mysql_field_name($query_result,$i);}
+	elseif(isOracle()){return oci_field_name($query_result,$i);}
 	elseif(isPostgreSQL()){return pg_field_name($query_result,$i);}
 	elseif(isMssql()){return mssql_field_name($query_result,$i);}
 	return null;
@@ -7090,6 +7124,7 @@ function databaseFieldType($query_result,$i=-1){
 	global $dbh;
 	if(isMysqli()){return mysqli_field_type($dbh,$query_result,$i);}
 	elseif(isMysql()){return mysql_field_type($query_result,$i);}
+	elseif(isOracle()){return oci_field_type($query_result,$i);}
 	elseif(isPostgreSQL()){return pg_field_type($query_result,$i);}
 	elseif(isMssql()){return mssql_field_type($query_result,$i);}
 	return null;
@@ -7104,6 +7139,7 @@ function databaseFreeResult($query_result){
 	if(!is_resource($query_result)){return;}
 	if(isMysqli()){return mysqli_free_result($dbh,$query_result);}
 	elseif(isMysql()){return mysql_free_result($query_result);}
+	elseif(isOracle()){return oci_free_statement($query_result);}
 	elseif(isPostgreSQL()){return pg_free_result($query_result);}
 	elseif(isMssql()){return mssql_free_result($query_result);}
 	return null;
@@ -7117,12 +7153,25 @@ function databaseIndexes($table){
 	if(isMysqli() || isMysql()){
 		return getDBRecords(array('-query'=>"show index from {$table}"));
     	}
+    	elseif(isOracle()){
+    	$query="
+		SELECT
+ 			table_name as name,
+ 			column_name as key_name,
+	 		index_owner as owner,
+			table_name as table
+			FROM dba_ind_columns
+			table_name='{$table}'
+			ORDER BY column_position
+		";
+	return getDBRecords(array('-query'=>$query));
+	}
     elseif(isPostgreSQL()){
     	$query="
 		SELECT n.nspname as schema,
  		c.relname as name,
 		CASE c.relkind 
-			WHEN 'r' THEN 'table' 
+			WHEN 'r' THEN 'table'
 			WHEN 'v' THEN 'view' 
 			WHEN 'i' THEN 'index' 
 			WHEN 'S' THEN 'sequence' 
@@ -7210,6 +7259,11 @@ function databaseListDbs(){
 			$dbs[]=$name;
 		}
 	}
+	elseif(isOracle()){
+    		$query="select distinct owner from dba_tab_columns WHERE table_name not like '%$&'";
+		$recs=getDBRecords(array('-query'=>$query));
+		foreach($recs as $rec){$dbs[]=$rec['name'];}
+	}
 	elseif(isPostgreSQL()){
     	$query="SELECT datname as name FROM pg_database WHERE datistemplate IS FALSE AND datallowconn IS TRUE AND datname != 'postgres'";
 		$recs=getDBRecords(array('-query'=>$query));
@@ -7226,6 +7280,16 @@ function databaseListProcesses(){
 	global $dbh;
 	if(isMysqli()){return mysqli_list_processes($dbh);}
 	elseif(isMysql()){return mysql_list_processes();}
+	elseif(isOracle()){
+		$query="SELECT sess.process, sess.status, sess.username, sess.schemaname, sql.sql_text
+  			FROM v\$session sess,
+       		v\$sql     sql
+ 			WHERE sql.sql_id(+) = sess.sql_id
+   			AND sess.type     = 'USER'
+			AND sess.status='ACTIVE'
+			";
+		return getDBRecords(array('-query'=>$query));
+	}
 	elseif(isPostgreSQL()){
 		$query="select * from pg_stat_activity";
 		return getDBRecords(array('-query'=>$query));
@@ -7244,6 +7308,7 @@ function databaseNumFields($query_result){
 	//Free result memory - supports multiple database types
 	if(isMysqli()){return mysqli_num_fields($query_result);}
 	elseif(isMysql()){return mysql_num_fields($query_result);}
+	elseif(isOracle()){return oci_num_fields($query_result);}
 	elseif(isPostgreSQL()){return pg_num_fields($query_result);}
 	elseif(isMssql()){return mssql_num_fields($query_result);}
 	return null;
@@ -7256,6 +7321,7 @@ function databaseNumRows($query_result){
 	//Free result memory - supports multiple database types
 	if(isMysqli()){return mysqli_num_rows($query_result);}
 	elseif(isMysql()){return mysql_num_rows($query_result);}
+	elseif(isOracle()){return oci_num_rows($query_result);}
 	elseif(isPostgreSQL()){return pg_num_rows($query_result);}
 	elseif(isMssql()){return mssql_num_rows($query_result);}
 	return null;
@@ -7266,6 +7332,7 @@ function databaseNumRows($query_result){
 */
 function databasePrimaryKeyFieldString(){
 	if(isMysqli() || isMysql()){return "integer NOT NULL Primary Key auto_increment";}
+	elseif(isOracle()){return 'NUMBER GENERATED BY DEFAULT AS IDENTITY';}
 	elseif(isPostgreSQL()){return "serial PRIMARY KEY";}
 	elseif(isMssql()){return "INT NOT NULL IDENTITY(1,1)";}
 	}
@@ -7278,6 +7345,11 @@ function databaseQuery($query){
 	global $dbh;
 	if(isMysqli()){return mysqli_query($dbh,$query);}
 	elseif(isMysql()){return mysql_query($query);}
+	elseif(isOracle()){
+		$stid=oci_parse($dbh,$query);
+		oci_execute($stid, OCI_DEFAULT);
+		return $stid;
+	}
 	elseif(isPostgreSQL()){return pg_query($dbh,$query);}
 	elseif(isMssql()){return mssql_query($query);}
 	}
@@ -7375,6 +7447,7 @@ function databaseType(){
 	elseif(isPostgreSQL()){return 'PostgreSQL';}
 	elseif(isMssql()){return 'MS SQL';}
 	elseif(isSqlite()){return 'SQLite';}
+	elseif(isOracle()){return 'Oracle';}
 	return 'Unknown';
 	}
 
@@ -7388,6 +7461,18 @@ function isMysql(){
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
 	if($dbtype=='mysql'){return true;}
+	return false;
+	}
+//---------- begin function isOracle ----------
+/**
+* @describe returns true if database driver is Oracle
+* @return boolean
+* @usage if(isOracle()){...}
+*/
+function isOracle(){
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='oracle'){return true;}
 	return false;
 	}
 //---------- begin function isMysqli ----------

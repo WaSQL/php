@@ -2213,6 +2213,8 @@ function getCalendar($monthyear='',$params=array()){
 	$calendar['this_month'] = getdate(mktime(0, 0, 0, $calendar['mon'], 1, $calendar['year']));
 	$calendar['next_month'] = getdate(mktime(0, 0, 0, $calendar['mon'] + 1, 1, $calendar['year']));
 	$calendar['prev_month'] = getdate(mktime(0, 0, 0, $calendar['mon'] - 1, 1, $calendar['year']));
+	//week number of the month
+	$calendar['current_date']['wnum']=date('W', $monthyear) - date('W', strtotime(date('Y-m-01', $monthyear)));
 	//Find out when this month starts and ends.
 	$calendar['first_week_day'] = $calendar['this_month']['wday'];
 	$calendar['days_in_this_month'] = round(($calendar['next_month'][0] - $calendar['this_month'][0]) / (60 * 60 * 24));
@@ -7358,7 +7360,37 @@ function getWasqlPath($subdir=''){
 	}
 
 	return $rtnpath;
-	}
+}
+//---------- begin function getWeekNumber--------------------
+/**
+* @describe return the week num
+* @param datestring string - a timestamp or string representing a date
+* @return int integer - the number of the week that the said date is in (1 through 5)
+* @usage $wnum=getWeekNumber(time());
+*/
+function getWeekNumber($timestamp=''){
+	if(!strlen($timestamp)){$timestamp=time();}
+	else{$timestamp=strtotime($timestamp);}
+	$maxday    = date("t",$timestamp);
+    $thismonth = getdate($timestamp);
+    //Create time stamp of the first day from the give date.
+    $timeStamp = mktime(0,0,0,$thismonth['mon'],1,$thismonth['year']);
+    //get first day of the given month
+    $startday  = date('w',$timeStamp);
+    $day = $thismonth['mday'];
+    $weeks = 0;
+    $week_num = 0;
+
+    for ($i=0; $i<($maxday+$startday); $i++) {
+        if(($i % 7) == 0){
+            $weeks++;
+        }
+        if($day == ($i - $startday + 1)){
+            $week_num = $weeks;
+        }
+    }
+    return $week_num;
+}
 //---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -8689,6 +8721,8 @@ function processActions(){
 						}
 					elseif($field=='xmldata'){$opts['xmldata']= request2XML($_REQUEST);}
 					elseif($field=='_xmldata'){$opts['_xmldata']= request2XML($_REQUEST);}
+					elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST);}
+					elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
 					elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
 				//echo printValue($opts);exit;

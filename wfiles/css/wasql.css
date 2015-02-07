@@ -720,10 +720,10 @@ table th a {
 	border:1px solid #939598;
 	z-index:9990;
 	background:#FFFFFF;
-	border-radius: 9px;
-    [safari|chrome]-webkit-border-radius: 9px;
-    box-shadow: 0px 1px 3px #818181;
-    [safari|chrome]-webkit-box-shadow: 0px 1px 3px #818181;
+	border-radius: 6px;
+    [safari|chrome]-webkit-border-radius: 6px;
+    box-shadow: 0px 5px 30px #818181;
+    [safari|chrome]-webkit-box-shadow: 0px 5px 30px #818181;
     animation-name: centerpopAnimate;
 	-webkit-animation-name: centerpopAnimate;
 	animation-duration: .3s;
@@ -732,11 +732,29 @@ table th a {
 	-webkit-animation-timing-function: ease-in-out;
 	}
 @keyframes centerpopAnimate {
-	0% {transform: scale(.7);opacity: 0.7;}
+	0% {transform: scale(0);opacity: 0;}
+	10% {transform: scale(.1);opacity: 0.1;}
+	20% {transform: scale(.2);opacity: 0.2;}
+	30% {transform: scale(.3);opacity: 0.3;}
+	40% {transform: scale(.4);opacity: 0.4;}
+	50% {transform: scale(.5);opacity: 0.5;}
+	60% {transform: scale(.6);opacity: 0.6;}
+	70% {transform: scale(.7);opacity: 0.7;}
+	80% {transform: scale(.8);opacity: 0.8;}
+	90% {transform: scale(.9);opacity: 0.9;}
 	100% {transform: scale(1);opacity: 1;}
 }
 @-webkit-keyframes centerpopAnimate {
-	0% {-webkit-transform: scale(.7);opacity: 0.7;}
+	0% {-webkit-transform: scale(0);opacity: 0;}
+	10% {-webkit-transform: scale(.1);opacity: 0.1;}
+	20% {-webkit-transform: scale(.2);opacity: 0.2;}
+	30% {-webkit-transform: scale(.3);opacity: 0.3;}
+	40% {-webkit-transform: scale(.4);opacity: 0.4;}
+	50% {-webkit-transform: scale(.5);opacity: 0.5;}
+	60% {-webkit-transform: scale(.6);opacity: 0.6;}
+	70% {-webkit-transform: scale(.7);opacity: 0.7;}
+	80% {-webkit-transform: scale(.8);opacity: 0.8;}
+	90% {-webkit-transform: scale(.9);opacity: 0.9;}
 	100% {-webkit-transform: scale(1);opacity: 1;}
 }
 .w_centerpop .w_centerpop_title{
@@ -751,10 +769,10 @@ table th a {
 	margin:0px;
 	padding:3px 50px 3px 50px;
 	text-align:center;
-	border-top-right-radius: 9px;
-    [safari|chrome]-webkit-border-radius-topright: 9px;
-    border-top-left-radius: 9px;
-    [safari|chrome]-webkit-border-radius-topleft: 9px;
+	border-top-right-radius: 6px;
+    [safari|chrome]-webkit-border-radius-topright: 6px;
+    border-top-left-radius: 6px;
+    [safari|chrome]-webkit-border-radius-topleft: 6px;
 }
 .w_centerpop .w_centerpop_drag{
 	cursor:move;
