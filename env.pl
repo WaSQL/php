@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+### script that prints our Environment variables
 $|=1;
 print "Content-type: text/plain\n\n";
 foreach my $key (sort(keys(%ENV))){
