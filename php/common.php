@@ -1158,16 +1158,20 @@ function cleanDir($dir='') {
 * @return string
 *	returns the results of executing the command
 */
-function cmdResults($cmd,$args=''){
+function cmdResults($cmd,$args='',$dir=''){
+	if(!is_dir($dir)){$dir=null;}
+	if(strlen($args)){$cmd .= ' '.trim($args);}
 	$proc=proc_open($cmd,
 		array(
 			0=>array('pipe', 'r'), //stdin
 			1=>array('pipe', 'w'), //stdout
 			2=>array('pipe', 'a')  //stderr
 			),
-		$pipes
+		$pipes,
+		$dir
 		);
-    fwrite($pipes[0], $args);
+	stream_set_blocking($pipes[2], 0);
+    //fwrite($pipes[0], $args);
 	fclose($pipes[0]);
     $stdout=stream_get_contents($pipes[1]);fclose($pipes[1]);
     $stderr=stream_get_contents($pipes[2]);fclose($pipes[2]);
@@ -1175,6 +1179,7 @@ function cmdResults($cmd,$args=''){
     return array(
     	'cmd'	=> $cmd,
     	'args'	=> $args,
+    	'dir'	=> $dir,
 		'stdout'=>$stdout,
         'stderr'=>$stderr,
         'rtncode'=>$rtncode
