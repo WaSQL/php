@@ -4395,11 +4395,11 @@ function includeDBOnce($params=array()){
 		@eval($evalstring);
 		$e=error_get_last();
 		if($e['message']!=='' && !preg_match('/Undefined/i',$e['message'])){
-    		// An error occurred
-    		//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
-    		debugValue($params);
-    		return 0;
-			}
+    			// An error occurred
+    			//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
+    			debugValue($e);
+    			return 0;
+		}
 		return 1;
     	}
     else{
