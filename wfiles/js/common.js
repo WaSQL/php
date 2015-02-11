@@ -1112,6 +1112,7 @@ function addClass(element, classToAdd) {
 }
      
 function removeClass(element, classToRemove) {
+	element=getObject(element);
     var currentClassValue = element.className;
      
     // removing a class value when there is more than one class value present
