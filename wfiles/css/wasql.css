@@ -431,6 +431,24 @@ table th a {
 	100% { transform: scale(1);opacity: 1; }
 }
 
+@-webkit-keyframes fadeOut {
+	0% { -webkit-transform: scale(1);opacity: 1; }
+	20% { -webkit-transform: scale(0.9);opacity: 0.9; }
+	40% { -webkit-transform: scale(0.5);opacity: 0.5; }
+	60% { -webkit-transform: scale(0.3);opacity: 0.3; }
+	80% { -webkit-transform: scale(0);opacity: 0; }
+	100% { -webkit-transform: scale(0);opacity: 0; }
+}
+
+@keyframes fadeOut {
+	0% { transform: scale(1);opacity: 1; }
+	20% { transform: scale(0.9);opacity: 0.9; }
+	40% { transform: scale(0.5);opacity: 0.5; }
+	60% { transform: scale(0.3);opacity: 0.3; }
+	80% { transform: scale(0);opacity: 0; }
+	100% { transform: scale(0);opacity: 0; }
+}
+
 
 /* slideshow: pull up */
 .w_slideshow #w_slide.opaque[data-transition="pull up"]{
