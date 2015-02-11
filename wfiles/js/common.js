@@ -1100,6 +1100,7 @@ function animateShrink(divid, begin,end){
 	animateTimer = setTimeout(tstr, 5);
 	}
 function addClass(element, classToAdd) {
+	element=getObject(element);
     var currentClassValue = element.className;
      
     if (currentClassValue.indexOf(classToAdd) == -1) {
@@ -1121,7 +1122,7 @@ function removeClass(element, classToRemove) {
         element.className = element.className.replace(" " + classToRemove, "");
         return;
     }
-     
+
     // removing the first class value when there is more than one class
     // value present
     if (currentClassValue.indexOf(classToRemove + " ") != -1) {
