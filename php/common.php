@@ -2224,7 +2224,7 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['current']['minutes']);
 	unset($calendar['current']['hours']);
 	//week number of the month
-	$calendar['current']['wnum']=date('W', $monthyear) - date('W', strtotime(date('Y-m-01', $monthyear)));
+	$calendar['current']['wnum']=getWeekNumber($monthyear);
 
 	$calendar['next_day'] = getdate(strtotime('+1 day', $calendar['current'][0]));
 	unset($calendar['next_day']['seconds']);
@@ -2288,7 +2288,7 @@ function getCalendar($monthyear='',$params=array()){
     	foreach($recs as $rec){
 			if(isset($rec['eventdate'])){
         		$edate=getdate(strtotime($rec['eventdate']));
-        		$edate['wnum']=date('W', $edate[0]) - date('W', strtotime(date('Y-m-01', $edate[0])));
+        		$edate['wnum']=getWeekNumber($edate[0]);
         		//skip events that do not apply to this view
         		if($calendar['current']['year'] != $edate['year']){continue;}
         		if($calendar['current']['mon'] != $edate['mon']){continue;}
@@ -2385,9 +2385,9 @@ function getCalendar($monthyear='',$params=array()){
         	foreach($ical_events as $rec){
 				//skip events not in this month
 				$dstart=getdate(strtotime($rec['date_start']));
-				$dstart['wnum']=date('W', $dstart[0]) - date('W', strtotime(date('Y-m-01', $dstart[0])));
+				$dstart['wnum']=getWeekNumber($dstart[0]);
 				$dstop=getdate(strtotime($rec['date_stop']));
-				$dstop['wnum']=date('W', $dstop[0]) - date('W', strtotime(date('Y-m-01', $dstop[0])));
+				$dstop['wnum']=getWeekNumber($dstop[0]);
 				//skip events not revelent to this view
 				if($calendar['current']['year'] != $dstart['year'] && $calendar['current']['year'] != $dstop['year']){
 					continue;
@@ -2462,6 +2462,9 @@ function getCalendar($monthyear='',$params=array()){
 			'month'			=> $calendar['current']['month'],
 			'events'		=> array()
 		);
+		$m=strlen($calendar['current']['mon'])==2?$calendar['current']['mon']:'0'.$calendar['current']['mon'];
+		$d=strlen($day_counter)==2?$day_counter:'0'.$day_counter;
+		$current['date']="{$calendar['current']['year']}-{$m}-{$d}";
 		$edate=getdate(strtotime($current['date']));
 		unset($edate['seconds']);
 		unset($edate['minutes']);
@@ -2470,27 +2473,36 @@ function getCalendar($monthyear='',$params=array()){
 		$current['day_short']=$calendar['daynames']['short'][$current['wday']];
 		$current['day_med']=$calendar['daynames']['med'][$current['wday']];
 		$current['day_long']=$calendar['daynames']['long'][$current['wday']];
-		$current['wnum']=date('W', $current[0]) - date('W', strtotime(date('Y-m-01', $current[0])));
+		$current['wnum']=getWeekNumber($current[0]);
 		//skip if not relevant to this view
-		if($params['-view']=='week' && $calendar['current']['wnum'] != $current['wnum']){continue;}
-		elseif($params['-view']=='day' && $calendar['current']['mday'] != $current['mday']){continue;}
-		//is it today
-		if($calendar['current']['mday']==$day_counter && $calendar['current']['year']==$current['year'] && $calendar['current']['mon']==$current['mon']){
-        	$current['today']=1;
-		}
+		//if($params['-view']=='week' && $calendar['current']['wnum'] != $current['wnum']){continue;}
+		//elseif($params['-view']=='day' && $calendar['current']['mday'] != $current['mday']){continue;}
+
 		//add holidays if not specified and not set to false
 		if((!isset($params['-holidays']) || $params['-holidays']) && isset($holidaymap[$day_counter])){
 			$holidaymap[$day_counter]['_id']=$holidaymap[$day_counter]['code'];
 			$event=$holidaymap[$day_counter];
+			$hdate=getdate($event['timestamp']);
+			foreach($hdate as $k=>$v){$event[$k]=$v;}
+			$event['wnum']=getWeekNumber($event[0]);
+			$valid=1;
+			//skip events not revelent to this view
+			if($calendar['current']['year'] != $event['year']){$valid=0;}
+			if($calendar['current']['mon'] != $event['mon']){$valid=0;}
+			if($params['-view']=='week' && $calendar['current']['wnum'] != $event['wnum']){$valid=0;}
+			elseif($params['-view']=='day' && $calendar['current']['mday'] != $event['mday']){$valid=0;}
 			//skip this event if we have already listed it - user has overlapping events from two feeds
 			$sha=sha1(printValue($event));
-			if(isset($shas[$sha])){continue;}
-			$shas[$sha]=1;
-			$event['group']='Holidays';
-			if(isset($event['group']) && !isset($calendar['groupnames'][$event['group']])){
-				$calendar['groupnames'][$event['group']]=array('icon'=>$event['icon'],'name'=>$event['group']);
+			if(isset($shas[$sha])){$valid=0;}
+			else{$shas[$sha]=1;}
+			if($valid){
+				$event['group']='Holidays';
+				if(isset($event['group']) && !isset($calendar['groupnames'][$event['group']])){
+					$calendar['groupnames'][$event['group']]=array('icon'=>$event['icon'],'name'=>$event['group']);
+				}
+				$current['events'][]=$event;
+				$calendar['events'][]=$event;
 			}
-			$current['events'][]=$event;
 		}
 		//add other events
 		$checks=array(
@@ -2516,9 +2528,15 @@ function getCalendar($monthyear='',$params=array()){
 						if(isset($shas[$sha])){continue;}
 						$shas[$sha]=1;
 						$current['events'][]=$event;
+						$calendar['events'][]=$event;
+
 					}
 				}
 			}
+		}
+		//is it today
+		if($calendar['current']['mday']==$day_counter && $calendar['current']['year']==$current['year'] && $calendar['current']['mon']==$current['mon']){
+        	$current['today']=1;
 		}
 		$calendar['weeks'][$row][]=$current;
         $week_day++;
@@ -7440,28 +7458,10 @@ function getWasqlPath($subdir=''){
 * @return int integer - the number of the week that the said date is in (1 through 5)
 * @usage $wnum=getWeekNumber(time());
 */
-function getWeekNumber($timestamp=''){
-	if(!strlen($timestamp)){$timestamp=time();}
-	else{$timestamp=strtotime($timestamp);}
-	$maxday    = date("t",$timestamp);
-    $thismonth = getdate($timestamp);
-    //Create time stamp of the first day from the give date.
-    $timeStamp = mktime(0,0,0,$thismonth['mon'],1,$thismonth['year']);
-    //get first day of the given month
-    $startday  = date('w',$timeStamp);
-    $day = $thismonth['mday'];
-    $weeks = 0;
-    $week_num = 0;
-
-    for ($i=0; $i<($maxday+$startday); $i++) {
-        if(($i % 7) == 0){
-            $weeks++;
-        }
-        if($day == ($i - $startday + 1)){
-            $week_num = $weeks;
-        }
-    }
-    return $week_num;
+function getWeekNumber($date){
+	if(!isNum($date)){$date=strtotime($date);}
+	$date += 86400; //For weeks starting on Sunday
+ 	return date('W', $date) - date('W', strtotime(date("Y-m-01", $date)));
 }
 //---------- begin function evalPHP_ob
 /**
