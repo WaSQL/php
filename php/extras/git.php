@@ -1,13 +1,10 @@
 <?php
 /* 
-	git
-	git config --global credential.helper wincred
-	git config --global credential.helper "cache --timeout=3600"
-	
-	On branch master
-Your branch is ahead of 'origin/master' by 2 commits.
+	https://github.com/kbjr/Git.php
+
 */
 $progpath=dirname(__FILE__);
+require_once("{$progpath}/git/Git.php");
 //---------- begin function gitStatus--------------------------------------
 /**
 * @describe executes git status command and returns result in a key/value array
@@ -20,43 +17,9 @@ $progpath=dirname(__FILE__);
 *		modified - array of modified files found
 *		raw - raw lines returned before parsing
 */
-function gitStatus($dir=''){
-	$results=cmdResults('git','status',$dir);
-	if(isset($results['stderr']) && strlen($results['stderr'])){
-    	return "gitStatus Error: {$results['stderr']}";
-	}
-	$lines=preg_split('/[\r\n]+/',$results['stdout']);
-	$rtn=array('dir'=>$dir);
-	$marker='';
-	foreach($lines as $i=>$line){
-    	$line=trim($line);
-    	//skip blank lines
-    	if(!strlen($line)){continue;}
-    	if(preg_match('/^On branch is ([a-z0-9\-]+)/i',$line,$m)){
-			$rtn['branch']=$m[1];
-			continue;
-		}
-    	elseif(preg_match('/^Your branch is ([a-z0-9\-]+)/i',$line,$m)){
-			$rtn['status']=$m[1];
-			continue;
-		}
-		elseif(stringContains($line,'use "git')){continue;}
-		elseif(preg_match('/^modified\:(.+)$/i',$line,$m)){
-        	$rtn['modified'][]=trim($m[1]);
-        	continue;
-		}
-		//skip comment lines
-		if(preg_match('/^\(/',$line)){continue;}
-		if(preg_match('/^Untracked files\:/i',$line)){
-        	$marker='new';
-        	continue;
-		}
-		if(!strlen($marker)){continue;}
-		$rtn[$marker][]=trim($line);
-
-	}
-	$rtn['raw']=$lines;
-	return $rtn;
+function gitStatus($dir='',$format='array'){
+	$repo = Git::open($dir);
+	return $repo->status($format);
 }
 
 //---------- begin function gitPull--------------------------------------
