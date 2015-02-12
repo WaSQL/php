@@ -2217,7 +2217,7 @@ function getCalendar($monthyear='',$params=array()){
 	if(!isset($params['-view'])){$params['-view']='month';}
 	$params['-view']=strtolower(trim($params['-view']));
 	//build current array
-	$calendar=array();
+	$calendar=array('-view'=>$params['-view']);
 	//setup current
 	$calendar['current']=getdate($monthyear);
 	unset($calendar['current']['seconds']);
@@ -2225,11 +2225,14 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['current']['hours']);
 	//week number of the month
 	$calendar['current']['wnum']=getWeekNumber($monthyear);
-
+	$calendar['current']['first_week_day']=$calendar['current']['mday']-$calendar['current']['wday'];
+	$calendar['current']['last_week_day']=$calendar['current']['first_week_day']+6;
+	
 	$calendar['next_day'] = getdate(strtotime('+1 day', $calendar['current'][0]));
 	unset($calendar['next_day']['seconds']);
 	unset($calendar['next_day']['minutes']);
 	unset($calendar['next_day']['hours']);
+
 	$calendar['prev_day'] = getdate(strtotime('-1 day', $calendar['current'][0]));
 	unset($calendar['prev_day']['seconds']);
 	unset($calendar['prev_day']['minutes']);
@@ -2239,10 +2242,15 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['next_week']['seconds']);
 	unset($calendar['next_week']['minutes']);
 	unset($calendar['next_week']['hours']);
+	$calendar['next_week']['first_week_day']=$calendar['next_week']['mday']-$calendar['next_week']['wday'];
+	$calendar['next_week']['last_week_day']=$calendar['next_week']['first_week_day']+6;
+
 	$calendar['prev_week'] = getdate(strtotime('-1 week', $calendar['current'][0]));
 	unset($calendar['prev_week']['seconds']);
 	unset($calendar['prev_week']['minutes']);
 	unset($calendar['prev_week']['hours']);
+	$calendar['prev_week']['first_week_day']=$calendar['prev_week']['mday']-$calendar['prev_week']['wday'];
+	$calendar['prev_week']['last_week_day']=$calendar['prev_week']['first_week_day']+6;
 
 	$calendar['this_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'], 1, $calendar['current']['year']));
 	unset($calendar['this_month']['seconds']);
@@ -2258,7 +2266,7 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['prev_month']['hours']);
 
 	//Find out when this month starts and ends.
-	$calendar['current']['first_week_day'] = $calendar['this_month']['wday'];
+	$calendar['current']['first_month_day'] = $calendar['this_month']['wday'];
 	$calendar['current']['days_in_this_month'] = round(($calendar['next_month'][0] - $calendar['this_month'][0]) / (60 * 60 * 24));
 	$calendar['daynames']=array(
     	'short'	=> array('S','M','T','W','T','F','S'),
@@ -2267,7 +2275,7 @@ function getCalendar($monthyear='',$params=array()){
 	);
 	$calendar['groupnames']=array();
 	//Fill the first week of the month with the appropriate number of blanks.
-	for($week_day = 0; $week_day < $calendar['current']['first_week_day']; $week_day++){
+	for($week_day = 0; $week_day < $calendar['current']['first_month_day']; $week_day++){
 		$calendar['weeks'][0][]=array();
 	}
 	//holiday map
@@ -2442,7 +2450,7 @@ function getCalendar($monthyear='',$params=array()){
 			}
 		}
 	}
-	$week_day = $calendar['current']['first_week_day'];
+	$week_day = $calendar['current']['first_month_day'];
 	$cnt=0;
 	$row=0;
 	$shas=array();
@@ -2569,7 +2577,7 @@ function calendar($params=array()){
 	$this_month = getdate(mktime(0, 0, 0, $month, 1, $year));
 	$next_month = getdate(mktime(0, 0, 0, $month + 1, 1, $year));
 	//Find out when this month starts and ends.
-	$first_week_day = $this_month["wday"];
+	$first_month_day = $this_month["wday"];
 	$days_in_this_month = round(($next_month[0] - $this_month[0]) / (60 * 60 * 24));
 	//draw the calendar
 	$rtn=''."\n";
@@ -2590,10 +2598,10 @@ function calendar($params=array()){
 	$rtn .= '	</tr>'."\n";
 	$rtn .= '	<tr class="w_calendar_days" valign="top">'."\n";
 	//Fill the first week of the month with the appropriate number of blanks.
-	for($week_day = 0; $week_day < $first_week_day; $week_day++){
+	for($week_day = 0; $week_day < $first_month_day; $week_day++){
 		$rtn .= '		<td></td>'."\n";
 		}
-	$week_day = $first_week_day;
+	$week_day = $first_month_day;
 	$cnt=0;
 	for($day_counter = 1; $day_counter <= $days_in_this_month; $day_counter++){
 		$week_day %= 7;
