@@ -847,6 +847,7 @@ function dropDBIndex($params=array()){
 */
 function addEditDBForm($params=array(),$customcode=''){
 	if(!isset($params['-table'])){return 'addEditDBForm Error: No table';}
+	if(!isDBTable($params['-table'])){return "addEditDBForm Error: No table named '{$params['-table']}'";}
 	unset($rec);
 	if(isset($params['_id']) && isNum($params['_id'])){
 		$rec=getDBRecord(array('-table'=>$params['-table'],'_id'=>$params['_id']));
