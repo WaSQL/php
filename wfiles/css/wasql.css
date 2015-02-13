@@ -743,6 +743,14 @@ table th a {
     [safari|chrome]-webkit-box-shadow: 0px 1px 3px #818181;
 	-khtml-box-shadow: 0px 1px 3px #818181;
 	}
+#centerpop, #centerpop2, #centerpop3, #centerpop4, #centerpop5, #centerpop6, #centerpop7, #centerpop8, #centerpop9, #remindMePopup, #popupdiv{
+	animation-name: centerpopAnimate;
+	-webkit-animation-name: centerpopAnimate;
+	animation-duration: .3s;
+	-webkit-animation-duration: .3s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
 .w_centerpop {
 	position: relative;
 	padding:25px 0px 25px 0px;
@@ -753,12 +761,7 @@ table th a {
     [safari|chrome]-webkit-border-radius: 6px;
     box-shadow: 0px 5px 30px #818181;
     [safari|chrome]-webkit-box-shadow: 0px 5px 30px #818181;
-    animation-name: centerpopAnimate;
-	-webkit-animation-name: centerpopAnimate;
-	animation-duration: .3s;
-	-webkit-animation-duration: .3s;
-	animation-timing-function: ease-in-out;
-	-webkit-animation-timing-function: ease-in-out;
+    
 	}
 @keyframes centerpopAnimate {
 	0% {transform: scale(0);opacity: 0;}
