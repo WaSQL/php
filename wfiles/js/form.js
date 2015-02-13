@@ -1517,7 +1517,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var cb=this.callback.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" class="w_middle" alt="processing" /> Processing. Please wait...</div>';
-					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
+					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:10px;border:0px;background:#FFF;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
@@ -1585,7 +1585,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						var val=req.responseText;
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
-                    	}
+                    }
                     else if(lname.indexOf('centerpop') != -1){
 						if(undefined != this.var2 && this.var2.length > 0){
 							setCenterPopText(dname,req.responseText,{title:this.var2});
@@ -1593,7 +1593,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						else{
                         	setCenterPopText(dname,req.responseText);
 						}
-                    	}
+                    }
 					else if(document.getElementById(dname)){
 						if(undefined == document.getElementById(dname).style.display || document.getElementById(dname).style.display=='none'){
 							document.getElementById(dname).style.display='inline';
