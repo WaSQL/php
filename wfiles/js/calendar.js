@@ -13,6 +13,7 @@ function Calendar(target_id,month, year) {
 	this.timeid=this.id+'_time';
 	var caldiv=getObject(this.id);
   	if(undefined == caldiv){
+		tobj.style.position='relative';
     	caldiv = document.createElement("div");
     	caldiv.id=this.id;
     	caldiv.className='w_calendar_div';
@@ -130,7 +131,7 @@ function Calendar(target_id,month, year) {
 		html += 	'	<tr class="w_calendar_month">'+"\n";
 		html +=		'		<th title="Prev Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.prevyear+'\');"><span class="icon-dir-left"></span></th>'+"\n";
 		html +=		'		<th title="Prev Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.prevmonth+'\',\''+this.prevmonthyear+'\');"><span class="icon-arrow-left"></span></th>'+"\n";
-		html +=		'		<th colspan="3" class="w_calendar_title">' + monthName + "&nbsp;" + this.year+'</th>'+"\n";
+		html +=		'		<th colspan="3" class="w_calendar_title"><span class="icon-calendar"></span> ' + monthName + "&nbsp;" + this.year+'</th>'+"\n";
 		html +=		'		<th title="Next Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.nextmonth+'\',\''+this.nextmonthyear+'\');"><span class="icon-arrow-right"></span></th>'+"\n";
 		html +=		'		<th title="Next Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.nextyear+'\');"><span class="icon-dir-right"></span></th>'+"\n";
 		html +=		'	</tr>'+"\n";
@@ -194,7 +195,7 @@ function Calendar(target_id,month, year) {
 		if(this.showtime){
 			this.timesheight=rows*22+21;
 			html += 	'</td><td nowrap>'+"\n";
-			html +=		'<div class="w_bold w_underline" align="center">Time</div>'+"\n";
+			html +=		'<div class="w_bold w_small" align="center"><span class="icon-clock"></span>Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
 			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
 			var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
@@ -245,7 +246,7 @@ function Calendar(target_id,month, year) {
 	else if(this.showtime){
 		this.timesheight=200;
 		html += 	'<div style="width:100px;">'+"\n";
-		html +=		'<div class="w_bold w_underline" align="center">Time</div>'+"\n";
+		html +=		'<div class="w_bold w_small" align="center"><span class="icon-clock"></span> Time</div>'+"\n";
 		this.showtimes=this.id+'_showtimes';
 		html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
 		var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
@@ -283,6 +284,15 @@ function Calendar(target_id,month, year) {
   	//populate the div
 	caldiv.innerHTML=html;
 	caldiv.style.display='block';
+	var h=getHeight(caldiv);
+	h=parseInt(h)+3;
+	if(h < 150){h=150;}
+	caldiv.style.bottom='-'+h+'px';
+	caldiv.style.left='0px';
+	caldiv.style.zIndex=this.current_date.getTime();
+
+
+
 	if(this.showtime){
     	var sobj=getObject(this.showtimes);
     	sobj.scrollTop=320;
