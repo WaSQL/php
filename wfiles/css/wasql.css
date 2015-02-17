@@ -871,24 +871,109 @@ table th a {
 	color:#fff;
 	}
 /* Calendar styles */
-.w_calendar tr td{
-	border:1px solid #6699CC;
-    }
-.w_calendar_month{
+.w_calendar_div{
+	position:absolute;
+	padding:6px;
+	margin:0 3px 3px 3px;
+	background:#FFF;
+	border:1px solid #ddd;
+	[safari|chrome]-webkit-border-radius: 4px;
+	-khtml-border-radius: 4px;
+	border-radius: 4px;
+	box-shadow:3px 3px 4px silver;
+	[safari|chrome]-webkit-box-shadow:3px 3px 4px silver;
+	display:inline;
+}
+.w_calendar_table{
+	background-color: #FFF;
+}
+.w_calendar_title{
+	font-size:11px;
+}
+.w_calendar_month th{
 	font-weight:bold;
+	text-align:center;
 	}
-.w_calendar_names{
-	background:#6699CC;
+.w_calendar_head th{
+	font-weight:normal;
+	border-collapse:collapse;
+	padding:0 2px 0 2px;
+	background:#a7a8a9;
+	font-size:11px;
 	color:#FFF;
-    }
-.w_calendar_days td{
-	font-size:9pt;
-	padding:0 1px 2px 2px;
-	}
-.w_calendar_today{
-	background:#ffffae;
-    }
+	text-align:center;
+}
+.w_calendar_body th{
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 11px;
+	text-align:right;
+	font-weight:normal;
+	border-collapse:collapse;
+	padding:0 2px 0 2px;
+	background:#337ab7;
+	color:#FFF;
+	cursor: pointer;
+}
+.w_calendar_body th div, .w_calendar_body td div{
+	height:22px;
+	width:22px;
+}
+.w_calendar_body td{
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 11px;
+	text-align:right;
+	border-collapse:collapse;
+	padding:0 2px 0 2px;
+	color:#000;
+	border-bottom: 1px solid #dddddd;
+	cursor: pointer;
+}
+.w_calendar_body td[class="today"]{
+	background:#ffffa8;
+	color:#000;
+}
+.w_calendar_body td:hover, .w_calendar_body th:hover, .w_calendar_time:hover{
+	color:#fff;
+	background:#dd1c1c;
+	text-decoration:none;
+}
+.w_calendar tr:nth-child(even)[class="w_calendar_body"]{
+	background:#f8f8f8 !important;
+}
+.w_calendar_times{
+	height:120px;
+	overflow:auto;
 
+	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+}
+.w_calendar_close{
+	position:absolute;
+	bottom:-8px;
+	right:-8px;
+	font-size:12px;
+	font-family:arial;
+	color:#FFF;
+	cursor:pointer;
+	background:#a7a8a9;
+	line-height:85%;
+	[safari|chrome]-webkit-border-radius: 6px;
+	-khtml-border-radius: 6px;
+	border-radius: 6px;
+}
+.w_calendar_time{
+	padding:2px;
+	padding-right:18px;
+	border-bottom:1px solid #ddd;
+	font-size:11px;
+	display:block;
+	width:100%;
+}
+.w_calendar_body td.active, .w_calendar_body th.active, .w_calendar_time.active, .w_calendar_time.active{
+	color:#fff;
+	background:#5cb85c;
+	text-decoration:none;
+}
 /* misc*/
 .w_drop {
 	display:none;

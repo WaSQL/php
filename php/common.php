@@ -2201,7 +2201,7 @@ function stringEquals($string, $search){
 *	-view string month|week|day - defaults to month
 *	-holidays boolean defaults to true. set to false to not load holidays as events.
 *	-events array - array of event arrays.  An event array needs
-*	-event_table string - table name of the events table to pull events from. Required Fields: eventdate,name Optional: icon,user_id,private
+*	-event_table string - table name of the events table to pull events from. Required Fields: startdate,name Optional: icon,user_id,private
 *  	-ical mixed - array of iCal feeds or a single feed to add to the calendar. If the array key is not a number it will be used as the group name.
 *	-ical_hours - integer - number of hours to cache the iCal feed before checking again. Defaults to 12 hours
 *	-ical_icon string - default icon if none are specified for and event
@@ -2218,16 +2218,28 @@ function getCalendar($monthyear='',$params=array()){
 	$params['-view']=strtolower(trim($params['-view']));
 	//build current array
 	$calendar=array('-view'=>$params['-view']);
+
 	//setup current
 	$calendar['current']=getdate($monthyear);
+	$calendar['current']['wnum']=getWeekNumber($monthyear);
 	unset($calendar['current']['seconds']);
 	unset($calendar['current']['minutes']);
 	unset($calendar['current']['hours']);
-	//week number of the month
-	$calendar['current']['wnum']=getWeekNumber($monthyear);
-	$calendar['current']['first_week_day']=$calendar['current']['mday']-$calendar['current']['wday'];
-	$calendar['current']['last_week_day']=$calendar['current']['first_week_day']+6;
 	
+	//first_week_day
+	$calendar['current']['first_week_day']=getdate($calendar['current']['0']-($calendar['current']['wday']*86400));
+	unset($calendar['next_day']['seconds']);
+	unset($calendar['next_day']['minutes']);
+	unset($calendar['next_day']['hours']);
+	
+	//last_week_day
+	$calendar['current']['last_week_day']=getdate($calendar['current']['first_week_day'][0]+(6*86400));
+	unset($calendar['next_day']['last_week_day']['seconds']);
+	unset($calendar['next_day']['last_week_day']['minutes']);
+	unset($calendar['next_day']['last_week_day']['hours']);
+
+	$calendar['current']['days_in_this_month'] = getDaysInMonth($calendar['current'][0]);
+
 	$calendar['next_day'] = getdate(strtotime('+1 day', $calendar['current'][0]));
 	unset($calendar['next_day']['seconds']);
 	unset($calendar['next_day']['minutes']);
@@ -2242,41 +2254,65 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['next_week']['seconds']);
 	unset($calendar['next_week']['minutes']);
 	unset($calendar['next_week']['hours']);
-	$calendar['next_week']['first_week_day']=$calendar['next_week']['mday']-$calendar['next_week']['wday'];
-	$calendar['next_week']['last_week_day']=$calendar['next_week']['first_week_day']+6;
 
 	$calendar['prev_week'] = getdate(strtotime('-1 week', $calendar['current'][0]));
 	unset($calendar['prev_week']['seconds']);
 	unset($calendar['prev_week']['minutes']);
 	unset($calendar['prev_week']['hours']);
-	$calendar['prev_week']['first_week_day']=$calendar['prev_week']['mday']-$calendar['prev_week']['wday'];
-	$calendar['prev_week']['last_week_day']=$calendar['prev_week']['first_week_day']+6;
 
 	$calendar['this_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'], 1, $calendar['current']['year']));
+	$calendar['this_month']['days_in_this_month'] = getDaysInMonth($calendar['this_month'][0]);
 	unset($calendar['this_month']['seconds']);
 	unset($calendar['this_month']['minutes']);
 	unset($calendar['this_month']['hours']);
+	
+	$calendar['nextnext_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] + 2, 1, $calendar['current']['year']));
+	$calendar['nextnext_month']['days_in_this_month'] = getDaysInMonth($calendar['nextnext_month'][0]);
+	unset($calendar['nextnext_month']['seconds']);
+	unset($calendar['nextnext_month']['minutes']);
+	unset($calendar['nextnext_month']['hours']);
+
 	$calendar['next_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] + 1, 1, $calendar['current']['year']));
+	$calendar['next_month']['days_in_this_month'] = getDaysInMonth($calendar['next_month'][0]);
 	unset($calendar['next_month']['seconds']);
 	unset($calendar['next_month']['minutes']);
 	unset($calendar['next_month']['hours']);
+
+
 	$calendar['prev_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] - 1, 1, $calendar['current']['year']));
+	$calendar['prev_month']['days_in_this_month'] = getDaysInMonth($calendar['prev_month'][0]);
 	unset($calendar['prev_month']['seconds']);
 	unset($calendar['prev_month']['minutes']);
 	unset($calendar['prev_month']['hours']);
-
+	
 	//Find out when this month starts and ends.
 	$calendar['current']['first_month_day'] = $calendar['this_month']['wday'];
-	$calendar['current']['days_in_this_month'] = round(($calendar['next_month'][0] - $calendar['this_month'][0]) / (60 * 60 * 24));
+
 	$calendar['daynames']=array(
     	'short'	=> array('S','M','T','W','T','F','S'),
     	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
     	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
 	);
 	$calendar['groupnames']=array();
-	//Fill the first week of the month with the appropriate number of blanks.
+	//Fill the first week of the month with the appropriate days from previous month
+	$minus=-1;
+	for($week_day = 0; $week_day < $calendar['current']['first_month_day']; $week_day++){$minus++;}
+	$d=$calendar['prev_month']['days_in_this_month']-$minus;
+	$m=$calendar['prev_month']['month'];
+	$y=$calendar['prev_month']['year'];
+
 	for($week_day = 0; $week_day < $calendar['current']['first_month_day']; $week_day++){
-		$calendar['weeks'][0][]=array();
+		$cdate=getdate(strtotime("{$m} {$d} {$y}"));
+		$cdate['wnum']=getWeekNumber($cdate[0]);
+		$cdate['day']			= $cdate['mday'];
+		$cdate['name_char']		= $calendar['daynames']['short'][$cdate['wday']];
+		$cdate['name_abbr']		= $calendar['daynames']['med'][$cdate['wday']];
+		$cdate['name']			= $calendar['daynames']['long'][$cdate['wday']];
+		$cdate['date']			= "{$cdate['year']}-{$cdate['mon']}-{$cdate['mday']}";
+		$cdate['month']			= $calendar['current']['month'];
+		$cdate['previous_month']=1;
+		$calendar['weeks'][1][]=$cdate;
+		$d++;
 	}
 	//holiday map
 	if(!isset($params['-holidays']) || $params['-holidays']){
@@ -2294,8 +2330,8 @@ function getCalendar($monthyear='',$params=array()){
 		$recs=$params['-events'];
 		$params['-events']=array();
     	foreach($recs as $rec){
-			if(isset($rec['eventdate'])){
-        		$edate=getdate(strtotime($rec['eventdate']));
+			if(isset($rec['startdate'])){
+        		$edate=getdate(strtotime($rec['startdate']));
         		$edate['wnum']=getWeekNumber($edate[0]);
         		//skip events that do not apply to this view
         		if($calendar['current']['year'] != $edate['year']){continue;}
@@ -2341,19 +2377,19 @@ function getCalendar($monthyear='',$params=array()){
 	if(isset($params['-event_table']) && isDBTable($params['-event_table'])){
 		$recopts=array(
 			'-table'	=> $params['-event_table'],
-			'-where'	=> "MONTH(eventdate)='{$calendar['current']['mon']}' and YEAR(eventdate)='{$calendar['current']['year']}'"
+			'-where'	=> "MONTH(startdate)='{$calendar['current']['mon']}' and YEAR(startdate)='{$calendar['current']['year']}'"
 		);
 		if($params['-view']=='week'){
-        	$recopts['-where'].=" AND WEEK(eventdate)={$calendar['current']['wnum']}";
+        	$recopts['-where'].=" AND WEEK(startdate)={$calendar['current']['wnum']}";
 		}
 		elseif($params['-view']=='day'){
-        	$recopts['-where'].=" AND DAYOFMONTH(eventdate)={$calendar['current']['mday']}";
+        	$recopts['-where'].=" AND DAYOFMONTH(startdate)={$calendar['current']['mday']}";
 		}
     	$recs=getDBRecords($recopts);
 
 		if(is_array($recs)){
 			foreach($recs as $rec){
-				$edate=getdate(strtotime($rec['eventdate']));
+				$edate=getdate(strtotime($rec['startdate']));
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
 				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
 					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
@@ -2414,7 +2450,7 @@ function getCalendar($monthyear='',$params=array()){
 					}
 				}
             	//span multiple days if dates are different
-            	//eventdate,name Optional: icon,user_id,private
+            	//startdate,name Optional: icon,user_id,private
             	$event=array(
 					'name'	=> $rec['title'],
 					'icon'	=> isset($rec['icon'])?$rec['icon']:$icon,
@@ -2426,8 +2462,10 @@ function getCalendar($monthyear='',$params=array()){
 				if(isset($rec['description'])){$event['details']=$rec['description'];}
 				$event['eventtimestamp']=strtotime("{$rec['date_start']} {$rec['time_start']}:00");
 				$event['timestring']=date('g:i a',strtotime($rec['time_start']));
+				$event['time_start']=date('g:i a',strtotime($rec['time_start']));
 				if($rec['time_start'] != $rec['time_stop']){
 					$event['timestring']='From '.$event['timestring'].' to '.date('g:i a',strtotime($rec['time_stop']));
+					$event['time_stop']=date('g:i a',strtotime($rec['time_stop']));
 				}
 				$event['name']=$event['eventtime'].' '.$rec['title'];
             	if($rec['date_stop'] != $rec['date_start']){
@@ -2435,14 +2473,14 @@ function getCalendar($monthyear='',$params=array()){
 					$endTime = strtotime("{$rec['date_stop']} 12:00");
 					// Loop between timestamps, 24 hours at a time
 					for ( $i = $startTime; $i <= $endTime; $i = $i + 86400 ) {
-				  		$event['eventdate']=date( 'Y-m-d', $i );
-				  		$event['eventtimestamp']=strtotime("{$event['eventdate']} {$rec['time_start']}:00");
+				  		$event['startdate']=date( 'Y-m-d', $i );
+				  		$event['eventtimestamp']=strtotime("{$event['startdate']} {$rec['time_start']}:00");
 				  		$edate=getdate($i);
 						$params['-events']['mday'][$edate['mday']][]=$event;
 					}
 				}
             	else{
-                	$event['eventdate']=$rec['date_start'];
+                	$event['startdate']=$rec['date_start'];
                 	$edate=getdate(strtotime($rec['date_start']));
                 	$mdate=$edate['mday'];
 					$params['-events']['mday'][$mdate][]=$event;
@@ -2452,7 +2490,7 @@ function getCalendar($monthyear='',$params=array()){
 	}
 	$week_day = $calendar['current']['first_month_day'];
 	$cnt=0;
-	$row=0;
+	$row=$week_day==0?0:1;
 	$shas=array();
 	for($day_counter = 1; $day_counter <= $calendar['current']['days_in_this_month']; $day_counter++){
 		$week_day %= 7;
@@ -2521,7 +2559,7 @@ function getCalendar($monthyear='',$params=array()){
 		foreach($checks as $key=>$vals){
 			foreach($vals as $val){
 				if(isset($params['-events'][$key][$val]) && is_array($params['-events'][$key][$val])){
-					//sort events by 
+					//sort events by
 					$params['-events'][$key][$val]=sortArrayByKey($params['-events'][$key][$val],'eventtimestamp',SORT_ASC);
 		        	foreach($params['-events'][$key][$val] as $event){
 						//skip events set for a specific user if the user is not the current user
@@ -2542,17 +2580,32 @@ function getCalendar($monthyear='',$params=array()){
 				}
 			}
 		}
+		$today=getdate();
 		//is it today
-		if($calendar['current']['mday']==$day_counter && $calendar['current']['year']==$current['year'] && $calendar['current']['mon']==$current['mon']){
+		if($today['mday']==$day_counter && $today['year']==$current['year'] && $today['mon']==$current['mon']){
         	$current['today']=1;
 		}
 		$calendar['weeks'][$row][]=$current;
         $week_day++;
     }
     //add any missing table cells on the end
-    for($x=$cnt;$x<7;$x++){
-		$calendar['weeks'][$row][]=array();
-    }
+    $d=1;
+	$m=$calendar['next_month']['month'];
+	$y=$calendar['next_month']['year'];
+	for($x=$cnt;$x<7;$x++){
+		$cdate=getdate(strtotime("{$m} {$d} {$y}"));
+		$cdate['wnum']=getWeekNumber($cdate[0]);
+		$cdate['day']			= $cdate['mday'];
+		$cdate['name_char']		= $calendar['daynames']['short'][$cdate['wday']];
+		$cdate['name_abbr']		= $calendar['daynames']['med'][$cdate['wday']];
+		$cdate['name']			= $calendar['daynames']['long'][$cdate['wday']];
+		$cdate['date']			= "{$cdate['year']}-{$cdate['mon']}-{$cdate['mday']}";
+		$cdate['month']			= $calendar['current']['month'];
+		$cdate['previous_month']=1;
+		$calendar['weeks'][$row][]=$cdate;
+		$d++;
+	}
+
     ksort($calendar['groupnames']);
     unset($calendar['this_month']);
     unset($calendar[0]);
@@ -7459,6 +7512,29 @@ function getWasqlPath($subdir=''){
 
 	return $rtnpath;
 }
+//---------- begin function getDaysInMonth--------------------
+/**
+* @describe return the number of days in any given month
+* @param datestring string - a timestamp or string representing a date
+* @return int integer - the number of days in the month
+* @usage $n=getDaysInMonth(time());
+*/
+function getDaysInMonth($date){
+	if(!isNum($date)){$date=strtotime($date);}
+ 	return date('t', $date);
+}
+//---------- begin function getFirstMonthDay--------------------
+/**
+* @describe return the day the month starts 0-6 with 0 as Sunday
+* @param datestring string - a timestamp or string representing a date
+* @return int integer - the day the month starts 0-6 with 0 as Sunday
+* @usage $n=getFirstMonthDay(time());
+*/
+function getFirstMonthDay($date){
+	if(!isNum($date)){$date=strtotime($date);}
+	$str=date('F 1 Y',$date);
+ 	return date('w', strtotime($str));
+}
 //---------- begin function getWeekNumber--------------------
 /**
 * @describe return the week num
@@ -7467,9 +7543,32 @@ function getWasqlPath($subdir=''){
 * @usage $wnum=getWeekNumber(time());
 */
 function getWeekNumber($date){
+	global $getWeekNumber;
+	$start=microtime(true);
 	if(!isNum($date)){$date=strtotime($date);}
-	$date += 86400; //For weeks starting on Sunday
- 	return date('W', $date) - date('W', strtotime(date("Y-m-01", $date)));
+	$key=date('W',$date);
+	if(isset($getWeekNumber[$key])){return $getWeekNumber[$key];}
+	$first_month_day=getFirstMonthDay($date);
+	$days_in_month=getDaysInMonth($date);
+	$day_of_month=date('j',$date);
+	$group=array();
+	$g=array();
+	$d=1;
+	//week (w) should is never bigger than 7
+	for($w=1;$w<7;$w++){
+		for($x=0;$x<7;$x++){
+			if($w==1 && $x < $first_month_day){continue;}
+			if($d == $day_of_month){
+				$getWeekNumber[$key]=$w;
+				return $w;
+				}
+			$d++;
+		}
+	}
+	$stop=microtime(true);
+	$diff=$stop-$start;
+	echo "getWeekNumber took: $diff<br>\n";
+	return 0;
 }
 //---------- begin function evalPHP_ob
 /**

@@ -1111,7 +1111,7 @@ function addClass(element, classToAdd) {
         }
     }
 }
-     
+
 function removeClass(element, classToRemove) {
 	element=getObject(element);
     var currentClassValue = element.className;
@@ -1234,11 +1234,8 @@ function showContextId(id){
 	return false;
 	}
 function showId(id,xoff,yoff){
-    if(undefined == document.getElementById(id)){
-		alert('Error in showId\n"'+id+'" is not defined as a valid object');
-		return;
-    	}
-	var formObj=document.getElementById(id);
+	var formObj=getObject(id);
+	if(undefined == formObj){return abort("undefined object passed to showId:"+id);}
 	formObj.style.position='absolute';
 	if(undefined != xoff){
 		var x=MouseX;
@@ -1270,7 +1267,7 @@ function hideId(id){
 	//info: hides specified object or id (does not destroy it)
 	//usage: hideId('tdiv');
 	var cObj=getObject(id);
-    if(undefined == cObj){return abort("undefined object passed to showHide:"+id);}
+    if(undefined == cObj){return abort("undefined object passed to hideId:"+id);}
     cObj.style.display='none';
 	}
 /* showDrop */
