@@ -228,7 +228,7 @@ function Calendar(target_id,month, year) {
 		html += '	<tr>'+"\n";
 		if(this.showtime){
 		  	html +=	'		<td style="width:50%;"><div id="'+this.dateid+'" style="height:15px;text-align:right;padding-right:4px;">';
-			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth)+'-'+CalendarTwoDigits(this.cvalDate);}
+			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
 			html+=	'</div></td>'+"\n";
 		  	html +=	'		<td style="width:50%"><div id="'+this.timeid+'" style="height:15px;text-align:left;padding-left:4px;">';
 			if(this.hasvalue){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
@@ -236,7 +236,7 @@ function Calendar(target_id,month, year) {
 		}
 		else{
 			html +=	'		<td><div id="'+this.dateid+'" style="height:15px;text-align:center;">';
-			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth)+'-'+CalendarTwoDigits(this.cvalDate);}
+			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
 			html +=	'</div></td>'+"\n";
 		}
 		html += '	</tr>'+"\n";
