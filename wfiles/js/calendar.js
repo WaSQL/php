@@ -133,7 +133,7 @@ function Calendar(target_id,month, year) {
 		html += 	'	<tr class="w_calendar_month">'+"\n";
 		html +=		'		<th title="Prev Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.prevyear+'\');"><span class="icon-dir-left"></span></th>'+"\n";
 		html +=		'		<th title="Prev Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.prevmonth+'\',\''+this.prevmonthyear+'\');"><span class="icon-arrow-left"></span></th>'+"\n";
-		html +=		'		<th colspan="3" class="w_calendar_title"><span class="icon-calendar"></span> ' + monthName + "&nbsp;" + this.year+'</th>'+"\n";
+		html +=		'		<th colspan="3" class="w_calendar_title">' + monthName + "&nbsp;" + this.year+'</th>'+"\n";
 		html +=		'		<th title="Next Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.nextmonth+'\',\''+this.nextmonthyear+'\');"><span class="icon-arrow-right"></span></th>'+"\n";
 		html +=		'		<th title="Next Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.nextyear+'\');"><span class="icon-dir-right"></span></th>'+"\n";
 		html +=		'	</tr>'+"\n";
@@ -197,7 +197,7 @@ function Calendar(target_id,month, year) {
 		if(this.showtime){
 			this.timesheight=parseInt(rows*21)+15;
 			html += 	'</td><td style="padding:0px !important;" nowrap>'+"\n";
-			html +=		'<div class="w_bold w_smaller" align="center"><span class="icon-clock"></span>Time</div>'+"\n";
+			html +=		'<div class="w_bold w_smaller" align="center">Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
 			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px !important;">'+"\n";
 			var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
@@ -231,15 +231,15 @@ function Calendar(target_id,month, year) {
 		html += '	<tr>'+"\n";
 		if(this.showtime){
 		  	html +=	'		<td style="width:50%;"><div id="'+this.dateid+'" style="height:15px;text-align:right;padding-right:4px;">';
-			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
+			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
 			html+=	'</div></td>'+"\n";
 		  	html +=	'		<td style="width:50%"><div id="'+this.timeid+'" style="height:15px;text-align:left;padding-left:4px;">';
-			if(this.hasvalue){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
+			if(this.hasvalue && undefined != this.cvalHr){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
 			html +=	'</div></td>'+"\n";
 		}
 		else{
 			html +=	'		<td><div id="'+this.dateid+'" style="height:15px;text-align:center;">';
-			if(this.hasvalue){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
+			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
 			html +=	'</div></td>'+"\n";
 		}
 		html += '	</tr>'+"\n";
@@ -248,7 +248,7 @@ function Calendar(target_id,month, year) {
 	else if(this.showtime){
 		this.timesheight=200;
 		html += 	'<div style="width:100px;">'+"\n";
-		html +=		'<div class="w_bold w_small" align="center"><span class="icon-clock"></span> Time</div>'+"\n";
+		html +=		'<div class="w_bold w_small" align="center">Time</div>'+"\n";
 		this.showtimes=this.id+'_showtimes';
 		html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
 		var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
@@ -277,7 +277,7 @@ function Calendar(target_id,month, year) {
 		}
 		html +=		'</div>'+"\n";
 		html +=		'<div id="'+this.timeid+'" style="height:15px;text-align:center;">';
-		if(this.hasvalue){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
+		if(this.hasvalue && undefined != this.cvalHr){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
 		html +=		'</div>'+"\n";
 		html += 	'</div>'+"\n";
 	}
