@@ -387,7 +387,7 @@
 		}
 		//look for local files - used them if they exist
 		if(isset($_REQUEST['_view']) && strlen($_REQUEST['_view'])){
-			$exts=array('','htm','html','php','js','css','txt','otf');
+			$exts=array('','htm','html','php','js','css','txt','ttf','eot','svg','otf','woff');
 			foreach($exts as $ext){
 				if(isset($_SERVER['REQUEST_URI']) && preg_match('/\/$/',$_SERVER['REQUEST_URI'])){
 					$cfile="{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}/{$_REQUEST['_view']}.{$ext}";
@@ -403,6 +403,11 @@
 					switch($ext){
 						case 'js':header("Content-type: text/javascript");break;
 						case 'css':header("Content-type: text/css");break;
+						case 'ttf':header("Content-type: application/font-sfnt");break;
+						case 'eot':header("Content-type: application/vnd.ms-fontobject");break;
+						case 'svg':header("Content-type: image/svg+xml");break;
+						case 'otf':header("Content-type: application/font-sfnt");break;
+						case 'woff':header("Content-type: application/font-woff");break;
 						default:
 							$ctype=getFileContentType($cfile);
 							header("Content-type: {$ctype}");

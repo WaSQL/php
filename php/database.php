@@ -3315,15 +3315,6 @@ function getDBFieldTag($params=array()){
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
 		//Checkbox
-		case 'date':
-			$styles['width']='100px';
-            $styles['font-size']='10pt';
-            $styles['font-family']='arial';
-			$info[$field]['mask']='^[0-9]{1,2}[\-\/][0-9]{1,2}[\-\/][0-9]{2,4}$';
-			$info[$field]['maskmsg']="Invalid date format (MM-DD-YYYY)";
-			//if(!isset($info[$field]['value'])){$info[$field]['value']=date("m-d-Y");}
-			unset($info[$field]['height']);
-			break;
 		case 'text':
 			unset($info[$field]['height']);
 			break;
@@ -3649,7 +3640,12 @@ function getDBFieldTag($params=array()){
 			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
 			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
 			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];}
-			$tag .= buildFormCalendar($name,$tagopts);
+			if(isset($params['-formname'])){$tagopts['-formname']=$params['-formname'];}
+			//check for required
+			if(isset($info[$field]['_required']) && $info[$field]['_required'] ==1){
+				$tagopts['-required']=1;
+			}
+			$tag .= buildFormDate($name,$tagopts);
 			break;
 		case 'datetime':
 			$name=$info[$field]['name'];
@@ -3661,8 +3657,13 @@ function getDBFieldTag($params=array()){
 			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
 			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];} 
 			//set prefix to formname
-			if(isset($params['-formname'])){$tagopts['-prefix']=$params['-formname'];}
-			$tag .= buildFormCalendar("{$name}[]",$tagopts);
+			if(isset($params['-formname'])){$tagopts['-formname']=$params['-formname'];}
+			//check for required
+			if(isset($info[$field]['_required']) && $info[$field]['_required'] ==1){
+				$tagopts['-required']=1;
+			}
+			$tag .= buildFormDateTime($name,$tagopts);
+			break;
 			//time part
 			$tagopts=array();
 			//check for value
@@ -4061,9 +4062,6 @@ function getDBFieldTag($params=array()){
 			//check for required
 			if(isset($info[$field]['_required']) && $info[$field]['_required'] ==1){
 				$tagopts['-required']=1;
-				if(!isset($tagopts['-value'])){
-                	$tagopts['-value']=date('h:i:s');
-				}
 			}
 			$tag .= buildFormTime($info[$field]['name'],$tagopts);
 			break;

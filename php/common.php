@@ -337,6 +337,72 @@ function buildFormCombo($name,$opts=array(),$params=array()){
     $tag .= '	</div>'."\n";
 	return $tag;
 	}
+//---------- begin function buildFormDate-------------------
+/**
+* @describe creates an HTML date control
+* @param action string
+* @param params array
+* @return string
+* @usage echo buildFormDate('mydate');
+*/
+function buildFormDate($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['width'])){$params['width']=150;}
+	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	else{$required='';}
+	$tag='';
+	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
+	$tag .= '	<input type="text" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-format="date" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
+	$tag .= '</div>'."\n";
+	return $tag;
+}
+//---------- begin function buildFormDateTime-------------------
+/**
+* @describe creates an HTML date and time control
+* @param action string
+* @param params array
+* @return string
+* @usage echo buildFormDateTime('mydate');
+*/
+function buildFormDateTime($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['width'])){$params['width']=250;}
+	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	else{$required='';}
+	$tag='';
+	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
+	$tag .= '	<input type="text" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-format="datetime" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock"></span></span>'."\n";
+	$tag .= '</div>'."\n";
+	return $tag;
+}
+//---------- begin function buildFormTime-------------------
+/**
+* @describe creates an HTML time control
+* @param action string
+* @param params array
+* @return string
+* @usage echo buildFormTime('mytime');
+*/
+function buildFormTime($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['width'])){$params['width']=123;}
+	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	else{$required='';}
+	$tag='';
+	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
+	$tag .= '	<input type="text" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-format="time" value="'.$params['-value'].'" '.$required.' />'."\n";
+	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
+	$tag .= '</div>'."\n";
+	return $tag;
+}
 //---------- begin function buildFormBegin-------------------
 /**
 * @describe creates a beginning HTML form tag
@@ -589,7 +655,7 @@ function buildFormSubmit($val='Submit',$name='',$onclick=''){
 * @return string
 * @usage echo buildFormTime('ctime',array('-value'=>"12:24 am"));
 */
-function buildFormTime($name,$params=array()){
+function buildFormTimeOLD($name,$params=array()){
 	//set defaults
 	/*
 		Notes:
@@ -7567,7 +7633,7 @@ function getWeekNumber($date){
 	}
 	$stop=microtime(true);
 	$diff=$stop-$start;
-	echo "getWeekNumber took: $diff<br>\n";
+	//echo "getWeekNumber took: $diff<br>\n";
 	return 0;
 }
 //---------- begin function evalPHP_ob

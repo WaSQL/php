@@ -770,24 +770,26 @@ function wasqlSetMinify($backend=0){
 		if($_SERVER['REMOTE_BROWSER']=='msie'){loadExtrasJs('html5_ie');}
 		return;
 		}
+	//bootstrap
+	loadExtrasCss(array('bootstrap'));
 	//wsiwyg editor instance check
 	if(stringContains($PAGE['body'],'data-behavior="editor"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	elseif(stringContains($PAGE['body'],'data-behavior="tinymce"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	elseif(stringContains($PAGE['body'],'data-behavior="wysiwyg"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	elseif(stringContains($PAGE['body'],'_behavior="editor"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	elseif(stringContains($PAGE['body'],'_behavior="tinymce"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	elseif(stringContains($PAGE['body'],'_behavior="wysiwyg"')){
-    	loadExtrasCss(array('nicedit'));;
+    	loadExtrasCss(array('nicedit'));
 	}
 	//template
 	if(isset($TEMPLATE['name'])){$_SESSION['w_MINIFY']['template_name']=$TEMPLATE['name'];}
