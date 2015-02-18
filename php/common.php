@@ -354,7 +354,7 @@ function buildFormDate($name,$params=array()){
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" maxlength="10" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.$params['-value'].'"'.$required.' />'."\n";
 	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
@@ -376,7 +376,7 @@ function buildFormDateTime($name,$params=array()){
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="19" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="25" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.$params['-value'].'"'.$required.' />'."\n";
 	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock"></span></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
