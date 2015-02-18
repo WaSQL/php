@@ -969,6 +969,7 @@ table th a {
 	font-size:11px !important;
 	display:block !important;
 	width:100% !important;
+	cursor:pointer;
 }
 .w_calendar_body td.active, .w_calendar_body th.active, .w_calendar_time.active, .w_calendar_time.active{
 	color:#fff !important;

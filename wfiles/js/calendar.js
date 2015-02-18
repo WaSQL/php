@@ -53,21 +53,28 @@ function Calendar(target_id,month, year) {
 		this.hasvalue=true;
 		// Split timestamp into [ Y, M, D, h, m, s ]
 		var t = cval.split(/[- :]/);
-		if(this.showdate && this.showtime){
+		if(t.length==6){
 			//var d = new Date(year, month, day, hours, minutes, seconds, milliseconds);
 			this.cval = new Date(parseInt(t[0]), parseInt(t[1])-1, parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), parseInt(t[5]),0);
+			this.cvalYear=this.cval.getFullYear();
+			this.cvalMonth=this.cval.getMonth();
+			this.cvalDate=this.cval.getDate();
+			this.cvalHr=this.cval.getHours()
+			this.cvalMin=this.cval.getMinutes();
 		}
-		else if(this.showdate){
+		else if(t.length==3 && t[0].length==4){
 			this.cval = new Date(parseInt(t[0]), parseInt(t[1])-1, parseInt(t[2]), 0, 0, 0,0);
+			this.cvalYear=this.cval.getFullYear();
+			this.cvalMonth=this.cval.getMonth();
+			this.cvalDate=this.cval.getDate();
 		}
-		else if(this.showtime){
+		else if(t.length==3){
         	this.cval = new Date(this.current_dateYear, this.current_dateMonth, this.current_dateDate, parseInt(t[0]), parseInt(t[1]), parseInt(t[2]),0);
+
+			this.cvalHr=this.cval.getHours()
+			this.cvalMin=this.cval.getMinutes();
 		}
-		this.cvalYear=this.cval.getFullYear();
-		this.cvalMonth=this.cval.getMonth();
-		this.cvalDate=this.cval.getDate();
-		this.cvalHr=this.cval.getHours()
-		this.cvalMin=this.cval.getMinutes();
+
 	}
 	var html='';
 	if(this.showdate){
@@ -169,7 +176,7 @@ function Calendar(target_id,month, year) {
 		      	else{html += '		<td';}
 		      	if(active){html+=' class="active"';}
 		      	else if(today){html+=' class="today"';}
-		      	html+='>';
+		      	html+=' style="padding:0px !important;">';
 		      	if (day <= monthLength && (i > 0 || j >= startingDay)) {
 					var d=day < 10?'0'+day:day;
 					var m=CalendarTwoDigits(this.month+1);
