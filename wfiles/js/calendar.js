@@ -13,7 +13,9 @@ function Calendar(target_id,month, year) {
 	this.timeid=this.id+'_time';
 	var caldiv=getObject(this.id);
   	if(undefined == caldiv){
-		tobj.style.position='relative';
+  if(undefined == tobj.style.position){
+			//tobj.style.position='relative';
+		}
     	caldiv = document.createElement("div");
     	caldiv.id=this.id;
     	caldiv.className='w_calendar_div';
@@ -25,7 +27,7 @@ function Calendar(target_id,month, year) {
 			case 'datetime':
 				this.showtime=true;
 				this.showdate=true;
-				caldiv.style.width='260px';
+				caldiv.style.width='247px';
 			break;
 			case 'time':
 				this.showtime=true;
@@ -124,7 +126,7 @@ function Calendar(target_id,month, year) {
 		// do the header
 		var monthName = this.months_labels[this.month];
 		if(this.showtime){
-			html += 	'<table width="100%"><tr valign="top"><td width="100%">';
+			html += 	'<table width="100%"><tr valign="top"><td width="100%" style="padding:0px !important;">';
 		}
 		html += 	'<table class="w_calendar_table">';
 		//month and year
@@ -193,11 +195,11 @@ function Calendar(target_id,month, year) {
 		html += '</tr>'+"\n";
 		html += '</table>'+"\n";
 		if(this.showtime){
-			this.timesheight=rows*22+21;
-			html += 	'</td><td nowrap>'+"\n";
-			html +=		'<div class="w_bold w_small" align="center"><span class="icon-clock"></span>Time</div>'+"\n";
+			this.timesheight=parseInt(rows*21)+15;
+			html += 	'</td><td style="padding:0px !important;" nowrap>'+"\n";
+			html +=		'<div class="w_bold w_smaller" align="center"><span class="icon-clock"></span>Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
-			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
+			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px !important;">'+"\n";
 			var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
 			var ms=new Array('00','30');
 			for(var h=0;h<hrs.length;h++){
@@ -267,7 +269,6 @@ function Calendar(target_id,month, year) {
 				var onclick=hh+':'+ms[m]+':00';
 				var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(ms[m]),0,0);
 				var active=false;
-				console.log(new Array(this.hasvalue,this.cvalHr,this.cvalMin,cdate.getHours(),cdate.getMinutes()));
 				if(this.hasvalue && this.cvalHr==cdate.getHours() && this.cvalMin==cdate.getMinutes()){active=true;}
 				html += '<div onclick="CalendarSetTime(\''+this.target_id+'\',\''+onclick+'\');" class="w_calendar_time';
 				if(active){html += ' active';}

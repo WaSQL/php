@@ -1169,30 +1169,34 @@ function setText(obj,txt){
 		console.log('setText: no object found for '.obj);
 		return null;
 	}
-    //console.log(cObj.id+'\n'+txt+'\n\n');
     var previous_value=getText(cObj);
     var setflag=0;
-	if(undefined != cObj.innerHTML){
+    //if the object has a value attribute, set it
+    if(undefined != cObj.getAttribute('value')){
+		cObj.value=txt;setflag=1;
+	}
+	//otherwise try a few others
+	if(setflag==0){
 		try{
 			cObj.innerHTML=txt;
 			var check=getText(cObj);
-			if(check!=previous_value || check==txt){setflag=1;}
+			setflag=1;
 		}
 		catch(e){}
 	}
-	if(setflag==0 && undefined != cObj.innerText){
+	if(setflag==0){
 		try{
 			cObj.innerText=txt;
 			var check=getText(cObj);
-			if(check!=previous_value || check==txt){setflag=1;}
+			setflag=1;
 		}
 		catch(e){}
 	}
-    if(setflag==0 && undefined != cObj.value){
+    if(setflag==0){
 		try{
 			cObj.value=txt;
 			var check=getText(cObj);
-			if(check!=previous_value || check==txt){setflag=1;}
+			setflag=1;
 		}
 		catch(e){}
 	}
