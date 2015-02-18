@@ -947,6 +947,7 @@ table th a {
 	overflow:auto !important;
 	border-top: 1px solid #dddddd !important;
 	border-bottom: 1px solid #dddddd !important;
+	border-left: 1px solid #dddddd !important;
 }
 .w_calendar_close{
 	position:absolute !important;

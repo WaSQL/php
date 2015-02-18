@@ -21,30 +21,34 @@ function Calendar(target_id,month, year) {
     	caldiv.className='w_calendar_div';
     	tobj.insertAdjacentElement('afterEnd',caldiv);
 	}
-	var format=tobj.getAttribute('data-format');
-	if(undefined != format){
-		switch(format.toLowerCase()){
+	var controlType=tobj.getAttribute('data-type');
+	if(undefined != controlType){
+		switch(controlType.toLowerCase()){
 			case 'datetime':
+				//datetime control - show both date and time
 				this.showtime=true;
 				this.showdate=true;
-				caldiv.style.width='247px';
+				caldiv.style.width='220px';
 			break;
 			case 'time':
+				//time control
 				this.showtime=true;
 				this.showdate=false;
 				caldiv.style.width='115px';
 			break;
 			default:
+				//default to a date control
 				this.showdate=true;
 				this.showtime=false;
-				caldiv.style.width='200px';
+				caldiv.style.width='155px';
 			break;
 		}
 	}
 	else{
+		//default to a date control
 		this.showdate=true;
 		this.showtime=false;
-		caldiv.style.width='200px';
+		caldiv.style.width='155px';
 	}
 	//get current value
 	this.hasvalue=false;
@@ -311,9 +315,9 @@ function CalendarSetDate(target_id,date){
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
 	var tobj=getObject(target_id);
 	if(undefined==tobj){alert('No Calendar target named'+target_id+' found');return false;}
-	var format=tobj.getAttribute('data-format');
-	if(undefined != format){
-		switch(format.toLowerCase()){
+	var controlType=tobj.getAttribute('data-type');
+	if(undefined != controlType){
+		switch(controlType.toLowerCase()){
 			case 'datetime':
 				this.showtime=true;
 				this.showdate=true;
@@ -353,9 +357,9 @@ function CalendarSetTime(target_id,time){
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
 	var tobj=getObject(target_id);
 	if(undefined==tobj){alert('No Calendar target named'+target_id+' found');return false;}
-	var format=tobj.getAttribute('data-format');
-	if(undefined != format){
-		switch(format.toLowerCase()){
+	var controlType=tobj.getAttribute('data-type');
+	if(undefined != controlType){
+		switch(controlType.toLowerCase()){
 			case 'datetime':
 				this.showtime=true;
 				this.showdate=true;
