@@ -1,7 +1,10 @@
 <view:default>
 <div class="container-fluid">
 	<div class="row-sm-12">
-		<div class="w_bigger w_lblue w_bold"><span class="icon-git"></span> Repo Manager - <?=$gitpath;?></div>
+		<div>
+			<div class="w_right w_lblue"><?=$git['status'];?></div>
+			<div class="w_bigger w_lblue w_bold"><span class="icon-git"></span> Repo Manager - <?=$git['repo_path'];?></div>
+		</div>
 	</div>
 	<div class="row-sm-12">
 		<form method="post" name="gitform" action="/php/admin.php">
