@@ -183,6 +183,12 @@ if(isAjax()){
 	}
 
 	switch(strtolower($_REQUEST['_menu'])){
+		case 'tempfiles':
+		case 'git':
+			echo adminViewPage($_REQUEST['_menu']);
+			exit;
+		break;
+
 		case 'datasync':
 			echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/database_synchronize.png"  class="w_middle" alt="synchronize" /> Synchronize Records in '.$_REQUEST['tablename'].'</div>'."\n";
 			echo '<div class="w_centerpop_content">'."\n";
@@ -2540,6 +2546,10 @@ if(isset($_REQUEST['_menu'])){
 			echo '</p>'."\n";
 			echo '</div>'."\n";
 			break;
+		case 'tempfiles':
+		case 'git':
+			echo adminViewPage($_REQUEST['_menu']);
+			break;
 		case 'properties':
 			if(!isset($_REQUEST['_table_']) || !strlen($_REQUEST['_table_'])){echo "No Table";break;}
 			$currentTable=$_REQUEST['_table_'];
@@ -3568,6 +3578,14 @@ echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
 
+
+function adminViewPage($menu){
+	$progpath=dirname(__FILE__);
+	$menu=strtolower($menu);
+	$body=getFileContents("{$progpath}/admin/{$menu}_body.htm");
+	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
+	return evalPHP(array($controller,$body));
+}
 //---------- begin function adminShowSessionLog ----
 /**
  * @author slloyd
@@ -4031,7 +4049,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> Documentation</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info"></span> About</a><hr size="1"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit">'.adminMenuIcon('/wfiles/postedit.gif').' PostEdit Manager</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=contentmanager">'.adminMenuIcon('/wfiles/iconsets/16/contentmanager.png').' Content Manager</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";
@@ -4044,7 +4062,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">'.adminMenuIcon('/wfiles/entity.gif').' HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=svn">'.adminMenuIcon('/wfiles/iconsets/16/subversion.png').' WaSQL Update</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
 	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
