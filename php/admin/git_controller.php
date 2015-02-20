@@ -69,12 +69,23 @@
 			if(is_array($files) && count($files)){
 				$commit='';
 				foreach($files as $file){
-					$commit.=gitCommit($gitpath,$file['msg'],$file['name']);
+					$file['msg']=trim($file['msg']);
+					if(strlen($file['msg'])){
+						$log=gitCommit($gitpath,$file['msg'],$file['name']);
+						$commit.=nl2br($long);
+					}
+					else{
+                    	$commit.="ERROR: Missing Message for {$file['name']}<br>\n";
+					}
+
 				}
 				echo "Commit".printValue($commit);
+				$git=gitStatus($gitpath);
 			}
-			$pull=gitPush($gitpath);
-			echo "Pull".printValue($pull);
+			$push=gitPush($gitpath);
+			echo "Push".printValue($push);
+			$git=gitStatus($gitpath);
+			setView('default',1);
 		break;
 	}
 	setView('default',1);
