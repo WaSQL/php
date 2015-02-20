@@ -317,7 +317,34 @@ class GitRepo {
 	public function run($command) {
 		return $this->run_command(Git::get_bin()." ".$command);
 	}
-
+	/**
+	 * Runs a 'git log' call
+	 *
+	 * @access public
+	 * @param string  file to log <br />
+	 * @return array
+	 */
+	public function log($file) {
+		$msg = $this->run("log \"{$file}\"");
+		$lines=preg_split('/[\r\n]+/',trim($msg));
+		$rtn=array('repo_path'=>$this->repo_path);
+		$rtn['raw']=$lines;
+		return $rtn;
+	}
+	/**
+	 * Runs a 'git diff' call
+	 *
+	 * @access public
+	 * @param string  file to diff <br />
+	 * @return array
+	 */
+	public function diff($file) {
+		$msg = $this->run("diff \"{$file}\"");
+		$lines=preg_split('/[\r\n]+/',trim($msg));
+		$rtn=array('repo_path'=>$this->repo_path);
+		$rtn['raw']=$lines;
+		return $rtn;
+	}
 	/**
 	 * Runs a 'git status' call
 	 *
@@ -346,11 +373,11 @@ class GitRepo {
 			}
 			elseif(stringContains($line,'use "git')){continue;}
 			elseif(preg_match('/^modified\:(.+)$/i',$line,$m)){
-	        	$rtn['modified'][]=trim($m[1]);
+	        	$rtn['files'][]=$this->fileinfo(trim($m[1]),'modified');
 	        	continue;
 			}
 			elseif(preg_match('/^(new|new file)\:(.+)$/i',$line,$m)){
-	        	$rtn['added'][]=trim($m[2]);
+	        	$rtn['files'][]=$this->fileinfo(trim($m[2]),'added');
 	        	continue;
 			}
 			//skip comment lines
@@ -360,8 +387,23 @@ class GitRepo {
 	        	continue;
 			}
 			if(!strlen($marker)){continue;}
-			$rtn[$marker][]=trim($line);
+			if($marker=='new'){
+	        	$rtn['files'][]=$this->fileinfo(trim($line),'new');
+			}
+			else{
+				$rtn[$marker][]=trim($line);
+			}
 	
+		}
+		//clean up duplicates caused by newfile
+		$modified=array();
+		foreach($rtn['files'] as $i=>$file){
+			if($file['status']=='modified'){$modified[]=$file['name'];}
+		}
+		foreach($rtn['files'] as $i=>$file){
+			if($file['status']=='added' && in_array($file['name'],$modified)){
+				unset($rtn['files'][$i]);
+			}
 		}
 		$rtn['raw']=$lines;
 		switch(strtolower(trim($format))){
@@ -377,7 +419,38 @@ class GitRepo {
         	break;
 		}
 	}
-
+	private function fileinfo($name,$status){
+		$repo=$this->repo_path;
+		$afile="{$repo}/{$name}";
+		$info=lstat($afile);
+		$guid=sha1($name);
+	    $rtn=array(
+			'name'		=> $name,
+			'guid'		=> $guid,
+			'status'	=> $status,
+			'lines'		=> getFileLineCount($afile),
+			'size'		=> $info['size'],
+			'type'		=> filetype($afile),
+        	'afile'		=> $afile,
+        	'size_verbose'=>verboseSize($info['size']),
+		);
+    	$rtn['_cdate_utime']=$info['ctime'];
+		$rtn['_cdate_age']=time()-$rtn['_cdate_utime'];
+		if($rtn['_cdate_age'] < 0){$rtn['_cdate_age']=0;}
+		$rtn['_cdate_age_verbose']=verboseTime($rtn['_cdate_age']);
+		$rtn['_cdate']=date('m/d/Y g:i a',$rtn['_cdate_utime']);
+		$rtn['_edate_utime']=$info['mtime'];
+		$rtn['_edate_age']=time()-$rtn['_edate_utime'];
+		if($rtn['_edate_age'] < 0){$rtn['_edate_age']=0;}
+		$rtn['_edate_age_verbose']=verboseTime($rtn['_edate_age']);
+		$rtn['_edate']=date('m/d/Y g:i a',$rtn['_edate_utime']);
+		$rtn['_adate_utime']=$info['atime'];
+		$rtn['_adate_age']=time()-$rtn['_adate_utime'];
+		if($rtn['_adate_age'] < 0){$rtn['_adate_age']=0;}
+		$rtn['_adate_age_verbose']=verboseTime($rtn['_adate_age']);
+		$rtn['_adate']=date('m/d/Y g:i a',$rtn['_adate_utime']);
+		return $rtn;
+	}
 	/**
 	 * Runs a `git add` call
 	 *
@@ -691,6 +764,14 @@ class GitRepo {
 	 */
 	public function get_description() {
 		return file_get_contents($this->repo_path."/.git/description");
+	}
+	/**
+	 * Gets the project repo_path.
+	 *
+	 * @return string
+	 */
+	public function get_repo_path() {
+		return $this->repo_path;
 	}
 
 	/**
