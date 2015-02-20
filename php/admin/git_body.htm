@@ -4,6 +4,7 @@
 		<div class="w_bigger w_lblue w_bold"><span class="icon-git"></span> Repo Manager - <?=$gitpath;?></div>
 	</div>
 	<div class="row-sm-12">
+		<view:_gitfiles>
 		<form method="post" name="gitform" action="/php/admin.php">
 		<input type="hidden" name="_menu" value="git" />
 		<input type="hidden" name="func" value="" />
@@ -60,9 +61,13 @@
 			</div>
 		</div>
 		</form>
+		</view:_gitfiles>
+		<view:_nogitfiles>
+			<?=printValue($git);?>
+		</view:_nogitfiles>
+		<?=renderViewIfElse(isset($git['files']) && count($git['files']),'_gitfiles','_nogitfiles',$git,array('-alias'=>'git'));?>
 	</div>
 </div>
-<?=printValue($_REQUEST);?>
 </view:default>
 
 <view:details>
