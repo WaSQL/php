@@ -5085,6 +5085,34 @@ function getFileLineCount($file,$regex='',$i=1){
 	}
 	return $linecnt;
 }
+//---------- begin function getFileContentsPartial---------------------------------------
+/**
+* @describe returns partial contents of file
+* @param file string
+*	full path and name of the file to inspect
+* @param begin integer - line to start with - default is 0
+* @param end integer - line to end with - default is 200
+* @return string partial contents of file
+* @usage 
+*	$sample=getFileContentsPartial($afile,0,300);
+*/
+function getFileContentsPartial($file,$begin=0,$end=200){
+	$content='';
+	$linecnt=0;
+	if ($fh = fopen($file,'r')) {
+		while (!feof($fh)) {
+			//stream_get_line is significantly faster than fgets
+			$content .= stream_get_line($fh, 1000000, "\n");
+			$linecnt++;
+			if($linecnt >= $end){
+				break;
+			}
+		}
+		fclose($fh);
+	}
+	return $content;
+}
+
 //---------- begin function processFileLines---------------------------------------
 /**
 * @describe sends each line of a file through specified function for processing
@@ -5879,7 +5907,7 @@ function includePage($val='',$params=array()){
 	global $PAGE;
 	$table='_pages';
 	if($params['-dbname']){$table="{$params['-dbname']}._pages";}
-	if(strtolower($PAGE['name'])==strtolower($val) && $table=='pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
+	if(strtolower($PAGE['name'])==strtolower($val) && $table=='_pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$fields="_id,controller,body,functions,name";
 	$fieldname="body";
 	$opts=array(
