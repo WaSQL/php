@@ -87,10 +87,15 @@ function createWasqlTable($table=''){
 			$fields['_auser']="integer NULL";
 			$fields['name']="varchar(100) NOT NULL";
 			$fields['menu']="varchar(50) NULL";
+			$fields['description']="text NULL";
+			$fields['rowcount']="integer NOT NULL Default 0";
+			$fields['runtime']="integer NOT NULL Default 0";
 			$fields['icon']="varchar(50) NULL"; 
 			$fields['query']="text NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['list_options']="text NULL";
+			$fields['departments']="varchar(1000) NULL";
+			$fields['users']="varchar(1000) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -101,10 +106,10 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name menu active\r\nquery\r\nlist_options",
-				'listfields'	=> "_cdate\r\n_cuser\r\n_edate\r\n_euser\r\n_adate\r\n_auser\r\nname\r\nmenu\r\nactive",
+				'formfields'	=> "name menu active\r\ndescription\r\nquery\r\nlist_options\r\ndepartments\r\nusers",
+				'listfields'	=> "_cdate\r\n_cuser\r\n_edate\r\n_euser\r\n_adate\r\n_auser\r\nname\r\nmenu\r\nactive\r\nrowcount\r\nruntime",
 				'sortfields'	=> "_auser,_adate desc",
-				'formfields_mod'=> "name menu active\r\nquery\r\nlist_options",
+				'formfields_mod'=> "name menu active\r\ndescription\r\nquery\r\nlist_options\r\ndepartments\r\nusers",
 				'listfields_mod'=> "name\r\nmenu\r\nactive",
 				'sortfields_mod'=> "name",
 				'synchronize'	=> 1
@@ -510,10 +515,10 @@ function createWasqlTable($table=''){
 			//_users
 			$id=addDBRecord(array('-table'=>$table,
 				'tablename'		=> '_users',
-				'formfields'	=> "utype active\r\nusername password\r\ntitle\r\nfirstname lastname\r\naddress1\r\naddress2\r\ncountry email\r\ncity state zip\r\npicture\r\nbio\r\nnote",
+				'formfields'	=> "utype active\r\nusername password\r\ntitle department\r\nfirstname lastname\r\naddress1\r\naddress2\r\ncountry email\r\ncity state zip\r\npicture\r\nbio\r\nnote",
 				'listfields'	=> 'active utype username firstname lastname email _adate _aip',
 				'sortfields'	=> '_adate desc',
-				'formfields_mod'=> "username password\r\ntitle\r\nfirstname lastname\r\naddress1\r\naddress2\r\ncountry email\r\ncity state zip\r\npicture\r\nbio",
+				'formfields_mod'=> "username password\r\ntitle department\r\nfirstname lastname\r\naddress1\r\naddress2\r\ncountry email\r\ncity state zip\r\npicture\r\nbio",
 				'listfields_mod'=> 'username firstname lastname email',
 				'sortfields_mod'=> 'lastname, firstname, username'
 				));
@@ -597,6 +602,7 @@ function createWasqlTable($table=''){
 			$fields['country']="char(2) NOT NULL Default 'US'";
 			$fields['email']="varchar(255) NULL";
 			$fields['guid']="char(40) NULL";
+			$fields['department']="varchar(60) NULL";
 			$fields['hint']="varchar(255) NULL";
 			$fields['firstname']="varchar(100) NULL";
 			$fields['lastname']="varchar(150) NULL";
@@ -1434,8 +1440,16 @@ function addMetaData($table=''){
 				'tablename'		=> '_users',
 				'fieldname'		=> 'title',
 				'inputtype'		=> 'text',
-				'width'			=> '400',
+				'width'			=> '200',
 				'inputmax'		=> 255,
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_users',
+				'fieldname'		=> 'department',
+				'inputtype'		=> 'text',
+				'width'			=> '180',
+				'inputmax'		=> 60,
 				'required'		=> 0
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
@@ -1666,10 +1680,37 @@ function addMetaData($table=''){
 		case '_reports':
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
-				'fieldname'		=> 'query',
+				'fieldname'		=> 'description',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'heiht'			=> '200',
+				'height'		=> '100',
+				'behavior'		=> 'nicedit'
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_reports',
+				'fieldname'		=> 'users',
+				'displayname'	=> 'Limit Access To Users',
+				'inputtype'		=> 'checkbox',
+				'width'			=> 5,
+				'tvals'			=> 'select _id from _users where active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
+				'dvals'			=> 'select firstname,lastname from _users where active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_reports',
+				'fieldname'		=> 'departments',
+				'displayname'	=> 'Limit Access To Departments',
+				'inputtype'		=> 'checkbox',
+				'width'			=> 5,
+				'tvals'			=> 'select distinct(department) from _users where active=1 and department is not null order by department',
+				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_reports',
+				'fieldname'		=> 'query',
+				'inputtype'		=> 'text',
+				'width'			=> '600',
+				'height'		=> '200',
 				'behavior'		=> 'sqleditor'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
@@ -1701,7 +1742,8 @@ function addMetaData($table=''){
 				'fieldname'		=> 'list_options',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'heiht'			=> '800',
+				'height'		=> '80',
+				'behavior'		=> 'jseditor',
 				'displayname'	=> 'List Options (JSON)'
 				));
 			break;
