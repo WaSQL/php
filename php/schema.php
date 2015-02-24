@@ -87,29 +87,28 @@ function createWasqlTable($table=''){
 			$fields['_auser']="integer NULL";
 			$fields['name']="varchar(100) NOT NULL";
 			$fields['menu']="varchar(50) NULL";
-			$fields['description']="text NULL";
+			$fields['description']="varchar(255) NULL";
 			$fields['rowcount']="integer NOT NULL Default 0";
 			$fields['runtime']="integer NOT NULL Default 0";
 			$fields['icon']="varchar(50) NULL"; 
 			$fields['query']="text NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
-			$fields['list_options']="text NULL";
+			$fields['options']="text NULL";
 			$fields['departments']="varchar(1000) NULL";
 			$fields['users']="varchar(1000) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,menu",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"menu"));
 			//echo $table.printValue($ok).printValue($fields);
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name menu active\r\ndescription\r\nquery\r\nlist_options\r\ndepartments\r\nusers",
+				'formfields'	=> "name menu active\r\ndescription\r\nquery\r\noptions\r\ndepartments\r\nusers",
 				'listfields'	=> "_cdate\r\n_cuser\r\n_edate\r\n_euser\r\n_adate\r\n_auser\r\nname\r\nmenu\r\nactive\r\nrowcount\r\nruntime",
 				'sortfields'	=> "_auser,_adate desc",
-				'formfields_mod'=> "name menu active\r\ndescription\r\nquery\r\nlist_options\r\ndepartments\r\nusers",
+				'formfields_mod'=> "name menu active\r\ndescription\r\nquery\r\noptions\r\ndepartments\r\nusers",
 				'listfields_mod'=> "name\r\nmenu\r\nactive",
 				'sortfields_mod'=> "name",
 				'synchronize'	=> 1
@@ -1681,15 +1680,14 @@ function addMetaData($table=''){
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'description',
-				'inputtype'		=> 'textarea',
+				'inputtype'		=> 'text',
 				'width'			=> '600',
-				'height'		=> '100',
-				'behavior'		=> 'nicedit'
+				'inputmax'		=> 255
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'users',
-				'displayname'	=> 'Limit Access To Users',
+				'displayname'	=> 'Limit Access To These Users',
 				'inputtype'		=> 'checkbox',
 				'width'			=> 5,
 				'tvals'			=> 'select _id from _users where active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
@@ -1699,7 +1697,7 @@ function addMetaData($table=''){
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'departments',
-				'displayname'	=> 'Limit Access To Departments',
+				'displayname'	=> 'Limit Access To These Departments',
 				'inputtype'		=> 'checkbox',
 				'width'			=> 5,
 				'tvals'			=> 'select distinct(department) from _users where active=1 and department is not null order by department',
@@ -1708,16 +1706,16 @@ function addMetaData($table=''){
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'query',
-				'inputtype'		=> 'text',
+				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'height'		=> '200',
+				'height'		=> '150',
 				'behavior'		=> 'sqleditor'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'name',
 				'inputtype'		=> 'text',
-				'width'			=> '220',
+				'width'			=> '325',
 				'inputmax'		=> 100,
 				'required'		=> 1
 				));
@@ -1734,17 +1732,19 @@ function addMetaData($table=''){
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'menu',
 				'inputtype'		=> 'text',
-				'width'			=> 120,
+				'tvals'			=> 'select distinct(menu) from _reports order by menu',
+				'width'			=> 200,
+				'height'		=> 200,
 				'required'		=> 0
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
-				'fieldname'		=> 'list_options',
+				'fieldname'		=> 'options',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'height'		=> '80',
-				'behavior'		=> 'jseditor',
-				'displayname'	=> 'List Options (JSON)'
+				'height'		=> '150',
+				'displayname'	=> 'Options - one per line.  key=value, or name:key=value.  -- lines are ignored',
+				'defaultval'	=> "autorun=false\r\ntotal_columns=none\r\n--Color:type=number\r\n--Color:default=2\r\n--Color:values=1:Green,2:Red,3:Blue"
 				));
 			break;
 		//_forms
