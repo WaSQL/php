@@ -6958,6 +6958,13 @@ function loadExtrasCss($extras){
         	case 'bootstrap':
         		$extra='bootstrap/css/bootstrap';
         	break;
+        	case 'codemirror':
+        	case 'tcal':
+        		//load the js required for these just in case they don't
+        		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_js'])){
+        			$_SESSION['w_MINIFY']['extras_js'][]=$extra;
+				}
+        	break;
 		}
 		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
         	$_SESSION['w_MINIFY']['extras_css'][]=$extra;
@@ -6990,6 +6997,13 @@ function loadExtrasJs($extras){
 				}
 				else{
         			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
+				}
+        	break;
+        	case 'codemirror':
+        	case 'tcal':
+        		//load the css required for these just in case they don't
+        		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
 				}
         	break;
 		}
