@@ -28,14 +28,14 @@
   display: inline-block;
   text-decoration: inherit;
   width: 1rem;
-  margin-right: .3rem;
+  margin-right: .8rem;
   text-align: center;
   /* opacity: .8; */
 
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
   text-transform: none;
-     
+
   /* fix buttons height, for twitter bootstrap */
   line-height: 0.9rem;
  
