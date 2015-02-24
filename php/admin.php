@@ -185,6 +185,7 @@ if(isAjax()){
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'tempfiles':
 		case 'git':
+		case 'reports':
 			echo adminViewPage($_REQUEST['_menu']);
 			exit;
 		break;
@@ -2207,7 +2208,7 @@ if(isset($_REQUEST['_menu'])){
 			ob_end_clean();
 			echo $output;
 			break;
-		case 'reports':
+		case 'reportsOLD':
 			$rec=getDBRecord(array('-table'=>'_reports','_id'=>$_REQUEST['_id']));
 			echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/reports.png" class="w_middle" alt="report" /> Report: '.$rec['name'].'</div>'."\n";
 			$opts=array(
@@ -2548,6 +2549,7 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'tempfiles':
 		case 'git':
+		case 'reports':
 			echo adminViewPage($_REQUEST['_menu']);
 			break;
 		case 'properties':
@@ -3582,6 +3584,9 @@ exit;
 function adminViewPage($menu){
 	$progpath=dirname(__FILE__);
 	$menu=strtolower($menu);
+	if(is_file("{$progpath}/admin/{$menu}_functions.php")){
+    	include_once("{$progpath}/admin/{$menu}_functions.php");
+	}
 	$body=getFileContents("{$progpath}/admin/{$menu}_body.htm");
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
@@ -3951,11 +3956,12 @@ function adminMenu(){
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu"><span class="icon-chart-pie"></span> Reports</a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list"></span> List Reports</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line"></span> Run Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($reports)){
 		foreach($reports as $report){
-			$rtn .= '				<li><a href="/php/admin.php?_menu=reports&_id='.$report['_id'].'">';
+			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_reports&_id='.$report['_id'].'">';
 			$rtn .= ' '.$report['_id'].'. '.$report['name'].'</a></li>'."\n";
 	    }
 	}
