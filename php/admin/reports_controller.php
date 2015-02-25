@@ -23,6 +23,15 @@
 			setView('report',1);
 			return;
 		break;
+		case 'export':
+			$id=addslashes($_REQUEST['id']);
+			$report=getDBRecord(array('-table'=>'_reports','active'=>1,'_id'=>$id));
+			$report=reportsRunReport($report);
+			$csv=arrays2CSV($report['recs']);
+			pushData($csv,'csv',$report['name'].'.csv');
+			exit;
+			return;
+		break;
 		default:
 			$groups=reportsGetGroups();
 			setView('default',1);
