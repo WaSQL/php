@@ -58,7 +58,7 @@
 			<td>
 				<div class="w_right">
 					<a title="Run Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'report',id:'<?=$rec['_id'];?>'});"><span class="icon-chart-line"></span></a>
-					<a title="Run Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$rec['_id'];?>'});"><span class="icon-edit"></span></a>
+					<a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$rec['_id'];?>'});"><span class="icon-edit"></span></a>
 				</div>
 				<?=$rec['name'];?>
 			</td>
@@ -75,7 +75,64 @@
 
 <view:report>
 	<div class="w_bold w_big"><?=$report['menu'];?> &raquo; <?=$report['name'];?></div>
-	<?=printValue($report);?>
+	<div class="row">
+		<div class="col-xs-2">
+		<form method="post" name="optionsform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'reports');">
+			<input type="hidden" name="_menu" value="reports" />
+			<input type="hidden" name="func" value="report" />
+			<input type="hidden" name="status" value="ready" />
+			<input type="hidden" name="limit" value="0,100" />
+			<input type="hidden" name="id" value="<?=$report['_id'];?>" />
+
+			<view:_option>
+				<p><label><?=$option['key'];?><br />
+				<?=reportsRenderOption($option);?>
+				</label>
+				</p>
+			</view:_option>
+			<?=renderEach('_option',$report['options'],array('-alias'=>'option'));?>
+			<div><button type="submit" onclick="document.optionsform.func.value='report';" class="btn btn-warning">Run Report</button></div>
+			</form>
+		</div>
+		<div class="col-xs-10">
+			<table class="w_table">
+				<tr>
+					<td nowrap><?=createExpandDiv('<span class="icon-file-code"></span> show query','<div style="position:absolute;background:#FFF">'.$report['query'].'</div>','#0d0d7d',0);?></td>
+					<td nowrap><a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$report['_id'];?>'});"><span class="icon-edit"></span> edit report</a></td>
+					<td nowrap><a title="Export Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick=document.optionsform.func.value='export';document.optionsform.submit();return false;"><span class="icon-export"></span>csv export</a></td>
+					<td width="100%" align="right">
+						<div class="btn-group">
+							<view:_page_prev>
+							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_prev'];?>';ajaxSubmitForm(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-left"></span></button>
+							</view:_page_prev>
+							<?=renderViewIf(isset($report['limit_prev']),'_page_prev',$report,array('-alias'=>'report'));?>
+							<view:_page_next>
+							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_next'];?>';ajaxSubmitForm(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-right"></span></button>
+							</view:_page_next>
+							<?=renderViewIf(isset($report['limit_next']),'_page_next',$report,array('-alias'=>'report'));?>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<div style="max-height:500px;overflow:auto;padding-right:3px;">
+			<table class="table table-striped table-condensed table-bordered">
+				<tr>
+					<view:_th><th><?=ucwords(str_replace('_',' ',$field));?></th></view:_th>
+					<?=renderEach('_th',$report['fields'],array('-alias'=>'field'));?>
+				</tr>
+				<view:_row>
+				<tr>
+					<?
+					$fields=array_keys($rec);
+					foreach($fields as $field){echo '<td>'.$rec[$field].'</td>'."\n";}
+					?>
+				</tr>
+				</view:_row>
+				<?=renderEach('_row',$report['recs'],array('-alias'=>'rec'));?>
+			</table>
+			</div>
+		</div>
+	</div>
 </view:report>
 
 <view:details>
