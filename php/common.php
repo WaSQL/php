@@ -415,7 +415,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='	<div class="w_dropdown">'."\n";
 	$group=$name;
     $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group)." {$params['-checkall']}</label></div>\n";
-	$tag .= '<div style="height:200px;overflow:auto;padding-right:18px;">'."\n";
+	$tag .= '<div style="max-height:200px;overflow:auto;padding-right:18px;">'."\n";
 	$checked_cnt=0;
 	foreach($pairs as $tval=>$dval){
 		$id=$name.'_'.$tval;
@@ -431,7 +431,8 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='	</div>'."\n";
 	$tag.='	</div>'."\n";
 	$icon=$checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
-	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$name.'</button>'."\n";
+	$dname=ucwords(trim(str_replace('_',' ',$name)));
+	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
 	$tag.='	<button type="button" class="btn btn-sm btn-default"><span class="'.$icon.'"></span></button>'."\n";
 	$tag.='</div>'."\n";
 	return $tag;
@@ -7008,6 +7009,9 @@ function loadExtrasCss($extras){
 	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
     	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
+	if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
+    	$_SESSION['w_MINIFY']['extras_js']=array();
+	}
 	foreach($extras as $extra){
 		switch(strtolower($extra)){
         	case 'bootstrap':
@@ -7043,6 +7047,9 @@ function loadExtrasJs($extras){
 	if(!is_array($extras)){$extras=array($extras);}
 	if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
     	$_SESSION['w_MINIFY']['extras_js']=array();
+	}
+	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
+    	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
 	foreach($extras as $extra){
 		switch(strtolower($extra)){
