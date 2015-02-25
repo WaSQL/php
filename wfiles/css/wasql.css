@@ -95,6 +95,19 @@ table th a {
 	-ms-transform: translateY(-50%);
 	transform: translateY(-50%);
 }
+/*drowdown menu*/
+.w_dropdown{
+	background:#FFF;
+	border:1px solid #CCC;
+	z-index:99999 !important;
+	[safari|chrome]-webkit-border-bottom-left-radius: 7px;
+	-khtml-border-radius-bottomleft: 7px;
+	border-bottom-left-radius: 7px;
+	[safari|chrome]-webkit-border-bottom-right-radius: 7px;
+	-khtml-border-radius-bottomright: 7px;
+	border-bottom-right-radius: 7px;
+	padding:0 3px 5px 3px;
+}
 /*when using w_vcenter you should place w_preserve3d or w_vcenter_parent in the parent so that elements are not placed on a half-pixel that might cause it be blurry */
 /*Reference: http://zerosixthree.se/vertical-align-anything-with-just-3-lines-of-css */
 %w_preserve-3d {
