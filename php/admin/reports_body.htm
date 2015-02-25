@@ -5,30 +5,23 @@
 			<div class="w_right w_padright">
 				<a href="#" onclick="return ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'new'});"><span class="icon-plus"></span> new report</a>
 			</div>
-			<div class="w_bigger w_lblue w_bold"><span class="icon-chart-line"></span> Reports</div>
+			<div class="w_bigger w_lblue w_bold"><span class="icon-chart-line"></span> WaSQL Reports</div>
 		</div>
 	</div>
+
 	<div class="row">
-		<form method="post" name="filter" action="/php/admin.php">
-		<input type="hidden" name="_menu" value="reports" />
-		<input type="hidden" name="func" value="" />
-		<input type="hidden" name="sort" value="<?$_REQUEST['sort'];?>" />
-		</form>
-	</div>
-	<div class="row">
-		<div class="col-xs-2">
-			<div class="w_bold w_pad w_border">Groups</div>
+		<div class="col-xs-2 w_round" style="border:1px solid #BBB;">
+			<div class="w_bold w_pad w_dblue" style="border-bottom:1px solid #BBB;">Categories</div>
 			<div class="w_pad">
 			<view:_group>
-				<div class="group"><a class="w_link w_block" href="#" onclick="return ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'reports',menu:'<?=encodeUrl($rec['name']);?>'});"><?=ucwords($rec['name']);?></a></div>
+				<div class="group"><a class="w_link w_block" href="#" onclick="return ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'reports',menu:'<?=encodeUrl($group);?>'});"><?=ucwords($group);?></a></div>
 			</view:_group>
-			<?=renderEach('_group',$groups,array('-alias'=>'rec'));?>
+			<?=renderEach('_group',$groups,array('-alias'=>'group'));?>
 			</div>
 		</div>
 		<div class="col-xs-10" id="reports">
 		</div>
 	</div>
-	<?//=printValue($reports);?>
 </div>
 </view:default>
 
@@ -63,10 +56,10 @@
 				<?=$rec['name'];?>
 			</td>
 			<td><?=$rec['description'];?></td>
-			<td><?=$rec['rows'];?></td>
+			<td><?=$rec['rowcount'];?></td>
 			<td><?=$rec['runtime'];?></td>
-			<td><?=$rec['_auser_ex']['username'];?></td>
-			<td><?=$rec['_adate'];?></td>
+			<td><?=$rec['_euser_ex']['username'];?></td>
+			<td><?=$rec['_edate'];?></td>
 		</tr>
 		</view:_report>
 		<?=renderEach('_report',$reports,array('-alias'=>'rec'));?>
