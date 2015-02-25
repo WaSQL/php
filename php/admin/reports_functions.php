@@ -15,7 +15,8 @@
 			'-table'	=> '_reports',
 			'active'	=> 1,
 			'-order'	=> 'menu,name',
-			'-fields'	=> '_id,name,description',
+			'-fields'	=> '_id,name,description,_euser,_edate,runtime,rowcount',
+			'-relate'	=> array('_euser'=>'_users'),
 			'menu'		=> $menu
 		);
 		return getDBRecords($opts);
@@ -42,10 +43,40 @@
 		));
 	}
 	function reportsGetGroups(){
-		$query="select distinct(menu) as name from _reports where active=1 order by menu";
-		return getDBRecords(array('-query'=>$query));
+		global $USER;
+		//only show groups that this person has access to
+		$opts=array(
+			'-table'	=> '_reports',
+			'active'	=> 1,
+			'-order'	=> 'menu,name',
+			'-fields'	=> '_id,_cuser,departments,users,menu'
+		);
+		$recs=getDBRecords($opts);
+		$groups=array();
+		foreach($recs as $rec){
+        	$rec_users=array();
+			if(strlen(trim($rec['users']))){
+				$rec_users=preg_split('/\:/',trim($rec['users']));
+			}
+        	$rec_departments=array();
+        	$group=strlen(trim($rec['menu']))?trim($rec['menu']):'Unknown';
+        	if(strlen(trim($rec['departments']))){
+				$rec_departments=preg_split('/\:/',trim($rec['departments']));
+			}
+
+        	if(count($rec_users)){
+				if(!in_array($USER['_id'],$rec_users) && $USER['_id'] != $rec['_cuser']){continue;}
+			}
+        	if(count($rec_departments)){
+				if(!strlen($USER['department']) || !in_array($USER['department'],$rec_departments)){continue;}
+			}
+
+			if(!in_array($group,$groups)){$groups[]=$group;}
+		}
+		return $groups;
 	}
 	function reportsRunReport($report){
+		global $USER;
 		//load options
 		$options=array();
 		if(strlen($report['options'])){
@@ -107,11 +138,11 @@
 			$parts=preg_split('/\,/',$_REQUEST['limit']);
 			if(count($parts)==2){
 				$report['offset']=$parts[0];
-				$report['limit']=$parts[1];
+				$report['rows']=$parts[1];
 			}
 			else{
             	$report['offset']=0;
-				$report['limit']=$parts[0];
+				$report['rows']=$parts[0];
 			}
 		}
 		$report['limit']="{$report['offset']},{$report['rows']}";
@@ -120,8 +151,17 @@
 			$query .= " LIMIT {$report['limit']}";
 			}
 		$report['query']=$query;
-		//return $report;
+		$start=microtime(true);
 		$report['recs']=getDBRecords(array('-query'=>$query));
+		$stop=microtime(true);
+		$runtime=$stop-$start;
+		$rowcount=count($report['recs'])+$report['offset'];
+		$ok=editDBRecord(array(
+			'-table'	=> '_reports',
+			'-where'	=> "_id={$report['_id']}",
+			'runtime'	=> $runtime,
+			'rowcount'	=> $rowcount
+		));
 		if(isset($report['recs'][0])){
         	$report['fields']=array_keys($report['recs'][0]);
 		}
