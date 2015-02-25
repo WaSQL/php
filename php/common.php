@@ -381,6 +381,61 @@ function buildFormDateTime($name,$params=array()){
 	$tag .= '</div>'."\n";
 	return $tag;
 }
+//---------- begin function buildFormMultiSelect-------------------
+/**
+* @describe creates an HTML multi-select control
+* @param name string
+* @param pairs array  key=>value pairs
+* @param params array
+* @return string
+* @usage echo buildFormMultiSelect('states',$pairs,$params);
+*/
+function buildFormMultiSelect($name,$pairs=array(),$params=array()){
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	$params['width']=isNum($params['width'])?$params['width']:200;
+	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
+	$mid=$name.'_options';
+	if(isset($params['-values'])){
+    	if(!is_array($params['-values'])){
+        	$params['-values']=array($params['-values']);
+		}
+	}
+	elseif(isset($_REQUEST[$name])){
+    	if(!is_array($_REQUEST[$name])){
+        	$params['-values']=array($_REQUEST[$name]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$name];
+		}
+	}
+	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
+	$tag='';
+	$tag.='<div class="btn-group" role="group" data-behavior="dropdown" display="'.$mid.'">'."\n";
+	$tag.='	<div style="display:none;" id ="'.$mid.'">'."\n";
+	$tag.='	<div class="w_dropdown">'."\n";
+	$group=$name;
+    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group)." {$params['-checkall']}</label></div>\n";
+	$tag .= '<div style="height:200px;overflow:auto;padding-right:18px;">'."\n";
+	$checked_cnt=0;
+	foreach($pairs as $tval=>$dval){
+		$id=$name.'_'.$tval;
+    	$tag .= '	<div style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
+    	$tag .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	if(in_array($tval,$params['-values'])){
+        	$tag .= ' checked';
+        	$checked_cnt++;
+		}
+    	$tag .= '> '.$dval.'</label></div>'."\n";
+	}
+	$tag.='	</div>'."\n";
+	$tag.='	</div>'."\n";
+	$tag.='	</div>'."\n";
+	$icon=$checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
+	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$name.'</button>'."\n";
+	$tag.='	<button type="button" class="btn btn-sm btn-default"><span class="'.$icon.'"></span></button>'."\n";
+	$tag.='</div>'."\n";
+	return $tag;
+}
 //---------- begin function buildFormTime-------------------
 /**
 * @describe creates an HTML time control
