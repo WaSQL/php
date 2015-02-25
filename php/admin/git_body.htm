@@ -76,8 +76,10 @@
 
 <view:diff>
 	<div class="w_centerpop_title">Git File Diff - <?=$name;?></div>
-	<div class="w_centerpop_content" style="max-height:500px;overflow:auto;">
-		<?=implode('<br>',$diff['raw']);?>
+	<div class="w_centerpop_content" >
+<textarea id="diff" wrap="off" style="height:500px;width:600px;" data-behavior="diffeditor">
+<?=implode("\r\n",$diff['raw']);?>
+</textarea>
 	</div>
 </view:diff>
 
