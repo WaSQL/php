@@ -1,4 +1,15 @@
 <?php
+	function reportsRenderOption($option){
+		if(isset($option['value']) && !isset($_REQUEST[$option['key']]) && $_REQUEST['status'] != 'ready'){$_REQUEST[$option['key']]=$option['value'];}
+    	if(isset($option['values']) && is_array($option['values'])){
+			if($option['multi']){
+            	return buildFormMultiSelect($option['key'],$option['values'],array('message'=>" -- {$option['key']} --"));
+			}
+			else{
+        		return buildFormSelect($option['key'],$option['values'],array('message'=>" -- {$option['key']} --"));
+			}
+		}
+	}
 	function reportsGetReports($menu){
     	$opts=array(
 			'-table'	=> '_reports',
@@ -52,30 +63,79 @@
 		}
 		$report['options']=$options;
 		unset($options);
-		//if all the options with a values key also have defaults then run it. otherwise ask for input.
-		// status: ready,input
-		$status='ready';
+		$report['status']=isset($_REQUEST['status'])?$_REQUEST['status']:'input';
 		foreach($report['options'] as $key=>$val){
 			if(isset($val['values'])){
 				if(isset($_REQUEST[$key])){
                 	$report['options'][$key]['value']=$_REQUEST[$key];
 				}
-				elseif(isset($val['default'])){
+				elseif(isset($val['default']) && $report['status']=='input'){
 					$report['options'][$key]['value']=$val['default'];
 				}
 				else{
-					$report['status']='input';
-					return $report;
+					$report['options'][$key]['value']='NULL';
 				}
 			}
 		}
+		$tmp=array();
+		foreach($report['options'] as $i=>$val){
+        	$report['options'][$i]['key']=$key;
+        	$tmp[]=$report['options'][$i];
+		}
+		$report['options']=$tmp;
+
+		if($report['status']=='input'){
+        	return $report;
+		}
+		//return $report;
 		//parse the query
 		$query=trim($report['query']);
-		foreach($report['options'] as $key=>$val){
-			$value=$report['status'][$key]['value'];
-			$query=str_replace(":{$key}","'{$value}'",$query);
+		foreach($report['options'] as $i=>$option){
+			$value=$option['value'];
+			$key=$option['key'];
+			if(is_array($value)){$value=implode("','",$value);}
+			if($value=='NULL'){
+				$query=str_replace(":{$key}","{$key}",$query);
+			}
+			else{
+            	$query=str_replace(":{$key}","'{$value}'",$query);
+			}
 		}
+		$report['offset']=isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
+		$report['rows']=isset($_REQUEST['rows'])?$_REQUEST['rows']:100;
+		if(isset($_REQUEST['limit'])){
+			$parts=preg_split('/\,/',$_REQUEST['limit']);
+			if(count($parts)==2){
+				$report['offset']=$parts[0];
+				$report['limit']=$parts[1];
+			}
+			else{
+            	$report['offset']=0;
+				$report['limit']=$parts[0];
+			}
+		}
+		$report['limit']="{$report['offset']},{$report['rows']}";
+		if(!stringContains($query,'limit') && $_REQUEST['func']!='export'){
+			//paging set to show 50 at a time
+			$query .= " LIMIT {$report['limit']}";
+			}
+		$report['query']=$query;
+		//return $report;
 		$report['recs']=getDBRecords(array('-query'=>$query));
+		if(isset($report['recs'][0])){
+        	$report['fields']=array_keys($report['recs'][0]);
+		}
+		$report['count']=count($report['recs']);
+		//set limit_prev and limit_next
+		if($report['offset'] > 0){
+        	$offset=$report['offset']-$report['rows'];
+        	if($offset<0){$offset=0;}
+        	$report['limit_prev']="{$offset},{$report['rows']}";
+		}
+		if($report['count'] == $report['rows']){
+			$offset=$report['offset']+$report['rows'];
+        	$report['limit_next']="{$offset},{$report['rows']}";
+		}
 		return $report;
 	}
 	function reportsGetValues($str){
