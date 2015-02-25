@@ -1070,6 +1070,10 @@ function initBehaviors(ajaxdiv){
 			signaturePad = new SignaturePad(navEls[n],{penColor:pencolor});
 			//signature(navEls[n],'',pencolor);
 		}
+		else if(in_array("diffeditor",behaviors)){
+			/* EDITOR: DIFF Mode */
+			codemirrorTextEditor(navEls[n],"text/x-diff",'diffeditor');
+		}
 		else if(in_array("txteditor",behaviors)){
 			/* EDITOR: TXTEDITOR */
 			codemirrorTextEditor(navEls[n],'text/plain','txteditor');
@@ -1181,6 +1185,55 @@ function initBehaviors(ajaxdiv){
   			if(undefined != attr['id']){
                	marquee(attr['id']);
 			}
+		}
+		else if(in_array("dropdown",behaviors)){
+			/* Dropdown MENU - */
+  			var dname=navEls[n].getAttribute('data-display');
+  			if(undefined == dname){dname=navEls[n].getAttribute('display');}
+			if(dname){
+				navEls[n].style.position='relative';
+				navEls[n].onclick=function(e){
+					var dname=this.getAttribute('data-display');
+					if(undefined == dname){dname=this.getAttribute('display');}
+					dObj=getObject(dname);
+					if(dObj){
+						if(dObj.style.display == 'block'){return true;}
+						dObj.style.display='block';
+						dObj.style.position='absolute';
+				    	dObj.style.bottom="-199px";
+				    	dObj.style.height="200px";
+				    	dObj.style.left="0px";
+				    	dObj.style.zIndex='999999';
+				    	dObj.style.backgroundColor='#FFF';
+					}
+                }
+                navEls[n].onmouseout=function(e){
+					if(undefined == e){e = fixE(e);}
+					if(undefined != e){
+						if(checkMouseLeave(this,e)){
+							var dname=this.getAttribute('data-display');
+							if(undefined == dname){dname=this.getAttribute('display');}
+							dObj=getObject(dname);
+							if(dObj){
+								var hide=0;
+								if(undefined != dObj.className){
+									if(dObj.className.indexOf("current") == -1){hide++;}
+                                }
+								else{
+									var cclass=dObj.getAttribute('class');
+									if(undefined == cclass){hide++;}
+									else{
+										if(cclass.indexOf("current") == -1){hide++;}
+	                                }
+								}
+                                if(hide){dObj.style.display='none';}
+							}
+							var onhide=this.getAttribute('onhide');
+							if(onhide){eval(onhide);}
+						}
+					}
+				}
+            }
 		}
 		else if(in_array("menu",behaviors)){
 			/* MENU - */
