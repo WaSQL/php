@@ -1,5 +1,6 @@
 <?php
 	loadExtras('git');
+	loadExtrasJs('codemirror');
 	$gitpath=getWasqlPath();
 	$config=gitConfigList($gitpath);
 	$git=gitStatus($gitpath);
@@ -70,6 +71,9 @@
 				$commit='';
 				foreach($files as $file){
 					$file['msg']=trim($file['msg']);
+					if(!strlen($file['msg']) && isset($_REQUEST['msg']) && strlen($_REQUEST['msg'])){
+                    	$file['msg']=$_REQUEST['msg'];
+					}
 					if(strlen($file['msg'])){
 						$log=gitCommit($gitpath,$file['msg'],$file['name']);
 						$commit.=nl2br($long);
