@@ -3694,20 +3694,15 @@ function getDBFieldTag($params=array()){
 			$tag .= '>'."\n";
 			break;
 		case 'multiselect':
-			//a multiselect is just a special checkbox field group
-			if(!isset($info[$field]['width'])){$info[$field]['width']=200;}
-			$mid=$field.'_options';
-			if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
-			$tag .= '<div style="border:1px solid #CCC;padding:2px 2px 2px 0;width:'.$info[$field]['width'].'px;" data-behavior="menu" display="'.$mid.'"> -- choose --'."\n";
-			$tag .= '<div style="display:none;position:absolute;background:#FFF;border:1px solid #CCC;padding:3px 3px 10px 5px;z-index:9999" class="w_roundsmall_botleft w_roundsmall_botright" id ="'.$mid.'">'."\n";
-			$info[$field]['width']=1;
-			$info[$field]['inputtype'] = "checkbox";
-			$info[$field]['-table']=$params['-table'];
-			$info[$field]['-field']=$params['-field'];
-			$info[$field]['name']="{$field}[]";
-			$tag .=  getDBFieldTag($info[$field]);
-			$tag .= '</div>'."\n";
-			$tag .= '</div>'."\n";
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormMultiSelect($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		//Password
 		case 'password':
