@@ -35,7 +35,7 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	//abort(printValue($_REQUEST));
 	}
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
-	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost'])){
+	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username']));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
@@ -44,7 +44,47 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
 		}
-	if(isset($CONFIG['authhost'])){
+	if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
+     	loadExtras('ldap');
+     	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
+     	$authopts=array(
+			'-host'		=> $host,
+			'-username'	=> $_REQUEST['username'],
+			'-password'	=> $_REQUEST['password']
+		);
+     	$ldap=ldapAuth($authopts);
+		if(is_array($ldap)){
+          	$ldap=ldapConvert2UserRecord($ldap);
+          	$fields=getDBFields('_users');
+          	//add or update this user record
+          	$rec=getDBRecord(array('-table'=>'_users','username'=>$ldap['username']));
+          	if(is_array($rec)){
+               	$changes=array();
+               	foreach($fields as $field){
+                    	if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
+                         	$changes[$field]=$ldap[$field];
+					}
+				}
+				if(count($changes)){
+                    	$changes['-table']='_users';
+                    	$changes['-where']="_id={$rec['_id']}";
+                    	$ok=editDBRecord($changes);
+				}
+				$USER=getDBRecord(array('-table'=>'_users','_id'=>$rec['_id']));
+			}
+			else{
+               	$ldap['-table']='_users';
+               	$id=addDBRecord($ldap);
+               	if(isNum($id)){
+                    	$USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+				}
+			}
+		}
+		else{
+          	$_REQUEST['_login_error']=$ldap;
+		}
+	}
+	elseif(isset($CONFIG['authhost'])){
 		$authname=$CONFIG['authhost'];
 		switch(strtolower($authname)){
 			case 'openid':
@@ -364,9 +404,12 @@ else{
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
 	if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1){
-		$_REQUEST['_login_error']="Login Error: Invalid username or password";
+		if(!isset($_REQUEST['_login_error'])){
+			$_REQUEST['_login_error']="Login Error: Invalid username or password";
 		}
+
 	}
+}
 global $SETTINGS;
 if(!isDBTable('_settings')){$ok=createWasqlTable('_settings');}
 $uid=setValue(array($USER['_id'],0));
@@ -763,8 +806,14 @@ function userLoginForm($params=array()){
 	}
 	//echo printValue($params).printValue($defaults);exit;
 	if(isset($CONFIG['authhost'])){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note:</b>This site authenticates using your"'.$CONFIG['authhost'].'" login.</div>'."\n";
-    }
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'."\n";
+	}
+	elseif(isset($CONFIG['authldap'])){
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'."\n";
+	}
+	elseif(isset($CONFIG['authldaps'])){
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'."\n";
+	}
     if(!isset($params['-username'])){
     	$params['-username']='<span class="icon-user w_biggest"></span>';
 	}

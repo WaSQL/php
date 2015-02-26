@@ -14,6 +14,9 @@
 			missing_page - Page to view if current page is missing (use instead of missing_msg and missing_template)
 			backup_cmd - run this command when going to backup
 			authhost - authenticate and replicate this user profile
+			authldap - authenticate using this LDAP server
+			authldaps - authenticate using this SECURE LDAP server
+			authldap_admin - memberof group to match for admins.. i.e.  authldap_admin="OU=Administration".  These records become admins
 			load_modules - loads additional php files found in the PHP directory.. i.e load_modules="fedex,authnet"
 			access_log - 0,off,false turns logging off, any number sets the days too keep in the table.
 			minify_{NAME} - adds or replaces minify groups for css and js minify scripting
