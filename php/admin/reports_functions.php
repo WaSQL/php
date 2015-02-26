@@ -11,7 +11,7 @@
 		}
 	}
 	function reportsGetReports($menu){
-    	$opts=array(
+    		$opts=array(
 			'-table'	=> '_reports',
 			'active'	=> 1,
 			'-order'	=> 'menu,name',
@@ -22,7 +22,7 @@
 		return getDBRecords($opts);
 	}
 	function reportsNewReport(){
-    	return addEditDBForm(array(
+    		return addEditDBForm(array(
 			'-table'=>'_reports',
 			'-action'=>'/php/admin.php',
 			'_menu'=>'reports',
@@ -32,7 +32,7 @@
 		));
 	}
 	function reportsEditReport($id){
-    	return addEditDBForm(array(
+    		return addEditDBForm(array(
 			'-table'=>'_reports',
 			'-action'=>'/php/admin.php',
 			'_menu'=>'reports',
@@ -109,9 +109,9 @@
 			}
 		}
 		$tmp=array();
-		foreach($report['options'] as $i=>$val){
-        	$report['options'][$i]['key']=$key;
-        	$tmp[]=$report['options'][$i];
+		foreach($report['options'] as $key=>$val){
+        		$val['key']=$key;
+        		$tmp[]=$val;
 		}
 		$report['options']=$tmp;
 
@@ -126,7 +126,8 @@
 			$key=$option['key'];
 			if(is_array($value)){$value=implode("','",$value);}
 			if($value=='NULL'){
-				$query=str_replace(":{$key}","{$key}",$query);
+				$field=isset($option['field'])?$option['field']:$key;
+				$query=str_replace(":{$key}",$field,$query);
 			}
 			else{
             	$query=str_replace(":{$key}","'{$value}'",$query);

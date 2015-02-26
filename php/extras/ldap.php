@@ -7,6 +7,32 @@
 
 */
 $progpath=dirname(__FILE__);
+function ldapAuth($params=array()){
+$ldap_host='corp.doterra.net';
+// Active Directory DN
+$ldap_dn = "CN=Users,DC=ad,DC=domain";
+// Domain, for purposes of constructing $user
+$ldap_usr_dom = "@".$ldap_host;
+    // Active Directory user
+    $user = "slloyd";
+    $password = "Dotf44h41";
+    // User attributes we want to keep
+    // List of User Object properties:
+    // http://www.dotnetactivedirectory.com/Understanding_LDAP_Active_Directory_User_Object_Properties.html
+    $keep = array(
+        "samaccountname",
+        "distinguishedname"
+    );
+    	// Connect to AD
+    	$ldap = ldap_connect($ldap_host);
+    	$bind=ldap_bind($ldap,$user.$ldap_usr_dom,$password);
+    	if(!$bind){
+		echo "Failed to auth";
+	}
+	else{
+		echo "Auth Success";
+	}
+}
 //---------- begin function ldapGetRecords--------------------
 /**
 * @describe returns a list of LDAP records based on parameters

@@ -755,6 +755,7 @@ elseif($USER['utype'] != 0){
 	exit;
 	}
 //
+
 if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isset($_REQUEST['export']) && is_array($_REQUEST['export'])){
 	$isapp=isset($_REQUEST['isapp']) && $_REQUEST['isapp']==1?true:false;
 	//echo $isapp . printValue($_REQUEST);exit;
@@ -1247,11 +1248,7 @@ if(isset($_REQUEST['_menu'])){
 	}
 //cache the page for 5 seconds
 $expire=gmdate('D, d M Y H:i:s', time()+10);
-@header("Pragma: public");
-@header("Cache-Control: maxage={$expire}");
-@header("Expires: {$expire} GMT");
-@header('X-Platform: WaSQL');
-@header('X-Frame-Options: SAMEORIGIN');
+adminSetHeaders();
 $js=<<<ENDOFJSSCRIPT
 <script type="text/javascript">
 	//---------- begin function syncTableClick ----
@@ -1296,6 +1293,11 @@ if(1==2 && !isset($_SESSION['WASQLUpdateCheck']) || $_REQUEST['_menu']=='about')
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
+		case 'tempfiles':
+		case 'git':
+		case 'reports':
+			echo adminViewPage($_REQUEST['_menu']);
+		break;
 		case 'charset':
 			global $CONFIG;
 			$cmessage='';
@@ -1735,7 +1737,7 @@ if(isset($_REQUEST['_menu'])){
 //			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'text','width'=>200,'maxlength'=>255));
 //			$help='Enter your Dreamhost API key if you are hosting on dreamhost and want to manage your account from within WaSQL. <a class="w_link w_dblue" href="http://www.dreamhost.com/r.cgi?210166">Click Here to Signup for a DreamHost account.</a>';
 //			echo '	<tr valign="top"><td class="nowrap"><img src="/wfiles/dreamhost.png" style="vertical-align:middle;"> '.friendlyName($key).'</b></td><td>'.$formfield.'</td><td><img src="/wfiles/iconsets/16/info.png" vertical-align:middle;"> '.$help.'</td></tr>'."\n";
-			
+
 			echo buildTableEnd();
 			echo buildFormSubmit("Save Settings");
 			echo buildFormEnd();
@@ -2546,12 +2548,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_xml"><img src="/wfiles/dropdown.gif" alt="download sample" />Download sample PostEdit XML file</b></a>'."\n";
 			echo '</p>'."\n";
 			echo '</div>'."\n";
-			break;
-		case 'tempfiles':
-		case 'git':
-		case 'reports':
-			echo adminViewPage($_REQUEST['_menu']);
-			break;
+		break;
 		case 'properties':
 			if(!isset($_REQUEST['_table_']) || !strlen($_REQUEST['_table_'])){echo "No Table";break;}
 			$currentTable=$_REQUEST['_table_'];
@@ -5097,4 +5094,11 @@ function adminSynchronizeRecord($table,$id,$stage=1){
 		return $ok;
 	}
 	return $ok.printValue($opts).printValue($live_rec);
+}
+function adminSetHeaders(){
+	@header("Pragma: public");
+	@header("Cache-Control: maxage={$expire}");
+	@header("Expires: {$expire} GMT");
+	@header('X-Platform: WaSQL');
+	@header('X-Frame-Options: SAMEORIGIN');
 }
