@@ -110,7 +110,7 @@ function ldapConvert2UserRecord($lrec=array()){
 	foreach($lrec as $key=>$val){
 		switch(strtolower($key)){
           	case 'samaccountname':$rec['username']=$val;break;
-          	case 'dn':$rec['password']=substr(encodeBase64($val),0,15);break;
+          	case 'dn':$rec['password']=substr(encodeBase64($val),10,30);break;
           	case 'l':$rec['city']=$val;break;
           	case 'c':$rec['country']=$val;break;
           	case 'sn':$rec['lastname']=$val;break;
