@@ -26,7 +26,7 @@ function ldapAuth($params=array()){
 	if(!isset($params['-host'])){return 'LDAP Auth Error: no host';}
 	if(!isset($params['-username'])){return 'LDAP Auth Error: no username';}
 	if(!isset($params['-password'])){return 'LDAP Auth Error: no password';}
-	$params['-user']="{$params['-username']}@{$params['-host']}";
+	if(!isset($params['-bind'])){$params['-bind']="{$params['-username']}@{$params['-host']}";}
 	$ldap_base_dn = array();
 	$hostparts=preg_split('/\./',$params['-host']);
 	foreach($hostparts as $part){
@@ -43,10 +43,10 @@ function ldapAuth($params=array()){
     ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
     ldap_set_option($ldap_connection, LDAP_OPT_REFERRALS, 0);
 	//bind
-    $bind=ldap_bind($ldap_connection,$params['-user'],$params['-password']);
+    $bind=ldap_bind($ldap_connection,$params['-bind'],$params['-password']);
     if(!$bind){
 		ldap_unbind($ldap_connection); // Clean up after ourselves.
-		return 'LDAP Auth Error: auth failed';
+		return 'LDAP Auth Error: auth failed'.printValue($params);
 	}
     //now get this users record and return it
 	$rec=array();
@@ -57,45 +57,46 @@ function ldapAuth($params=array()){
 	//echo "result".printValue($ldap_base_dn);
 	if (FALSE !== $result){
 		$entries = ldap_get_entries($ldap_connection, $result);
-	    	if ($entries['count'] == 1){
-	    		$lrec=$entries[0];
-	    		foreach($lrec as $key=>$val){
-               	if(is_numeric($key)){continue;}
-               	if($key=='objectguid' || $key=='count'){continue;}
-
+	    if ($entries['count'] == 1){
+	    	$lrec=$entries[0];
+	    	foreach($lrec as $key=>$val){
+            if(is_numeric($key)){continue;}
+            if($key=='objectguid' || $key=='count'){continue;}
                	switch(strtolower($key)){
-                    	case 'whencreated':
-                    	case 'whenchanged':
-                    	case 'badpasswordtime':
-                    	case 'dscorepropagationdata':
-                    	case 'accountexpires':
-                    	case 'lastlogontimestamp':
-                    	case 'lastlogon':
-                    	case 'pwdlastset':
-                    		$rec[$key]=ldapValue($val);
-                    		$rec["{$key}_unix"]=ldapTimestamp($val[0]);
-                    		$rec["{$key}_date"]=date('Y-m-d h:i a',$rec["{$key}_unix"]);
-	                    break;
-	                    case 'memberof':
-	                    	$tmp=preg_split('/\,/',ldapValue($val));
-	                    	$parts=array();
-	                    	foreach($tmp as $part){
-                              	if(!in_array($part,$parts)){$parts[]=$part;}
+                    case 'whencreated':
+                    case 'whenchanged':
+                    case 'badpasswordtime':
+                    case 'dscorepropagationdata':
+                    case 'accountexpires':
+                    case 'lastlogontimestamp':
+                    case 'lastlogon':
+                    case 'pwdlastset':
+                    	$rec[$key]=ldapValue($val);
+                    	$rec["{$key}_unix"]=ldapTimestamp($val[0]);
+                    	$rec["{$key}_date"]=date('Y-m-d h:i a',$rec["{$key}_unix"]);
+                    break;
+                    case 'memberof':
+                    	$tmp=preg_split('/\,/',ldapValue($val));
+                    	$parts=array();
+                    	foreach($tmp as $part){
+                            if(!in_array($part,$parts)){$parts[]=$part;}
 						}
 						$rec[$key]=implode(',',$parts);
-	                    break;
-	                    default:
-	                    	$rec[$key]=ldapValue($val);
-	                    break;
+                    break;
+                    default:
+                    	$rec[$key]=ldapValue($val);
+                    break;
 				}
 			}
 			ldap_unbind($ldap_connection);
+			ksort($rec);
 			return $rec;
 		}
+		ldap_unbind($ldap_connection); // Clean up after ourselves.
+    	return 'LDAP Auth Error: unable to get a unique LDAP user object'.printValue($entries);
 	}
     ldap_unbind($ldap_connection); // Clean up after ourselves.
-    ksort($rec);
-    return $rec;
+    return 'LDAP Auth Error: unable to search'.printValue($result);
 }
 //---------- begin function ldapConvert2UserRecord--------------------
 /**
