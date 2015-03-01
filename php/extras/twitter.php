@@ -9,7 +9,7 @@ $progpath=dirname(__FILE__);
 * @param url string
 * @param cnt integer  number of tweets to scrape
 * @param hrs integer  number of hours to cache.  Set to 0 to disable cache. Defaults to 3 hours
-* @return array
+* @return array - array of tweet arrays with url,txt as keys 
 * @usage $tweets=twitterTweets('https://twitter.com/@myurl',3);
 */
 function twitterTweets($url,$cnt=3,$cache=3) {
