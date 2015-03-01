@@ -356,7 +356,7 @@ function buildFormDate($name,$params=array()){
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.$params['-value'].'"'.$required.' />'."\n";
-	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" style="padding:0px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
+	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" style="padding-left:2px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
@@ -378,7 +378,7 @@ function buildFormDateTime($name,$params=array()){
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="25" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.$params['-value'].'"'.$required.' />'."\n";
-	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" style="padding:0px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock" style="padding:0px !important;"></span></span>'."\n";
+	$tag .= '	<span class="icon-calendar w_dblue w_pointer input-group-addon" style="padding-left:2px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock" style="padding:0px !important;"></span></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
@@ -456,7 +456,7 @@ function buildFormTime($name,$params=array()){
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" value="'.$params['-value'].'" '.$required.' />'."\n";
-	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding:0px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
+	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:2px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
