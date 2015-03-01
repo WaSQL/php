@@ -1,4 +1,4 @@
-function Calendar(target_id,month, year) {
+function Calendar(target_id,month, year, s) {
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
 	var tobj=getObject(target_id);
 	if(undefined==tobj){alert('No Calendar target named'+target_id+' found');return false;}
@@ -13,13 +13,14 @@ function Calendar(target_id,month, year) {
 	this.timeid=this.id+'_time';
 	var caldiv=getObject(this.id);
   	if(undefined == caldiv){
-  if(undefined == tobj.style.position){
-			//tobj.style.position='relative';
-		}
     	caldiv = document.createElement("div");
     	caldiv.id=this.id;
     	caldiv.className='w_calendar_div';
     	tobj.insertAdjacentElement('afterEnd',caldiv);
+	}
+	else if(undefined==s && caldiv.style.display=='block'){
+    	caldiv.style.display='none';
+    	return;
 	}
 	var controlType=tobj.getAttribute('data-type');
 	if(undefined != controlType){
@@ -40,7 +41,7 @@ function Calendar(target_id,month, year) {
 				//default to a date control
 				this.showdate=true;
 				this.showtime=false;
-				caldiv.style.width='155px';
+				caldiv.style.width='175px';
 			break;
 		}
 	}
@@ -48,7 +49,7 @@ function Calendar(target_id,month, year) {
 		//default to a date control
 		this.showdate=true;
 		this.showtime=false;
-		caldiv.style.width='155px';
+		caldiv.style.width='175px';
 	}
 	//get current value
 	this.hasvalue=false;
@@ -136,22 +137,20 @@ function Calendar(target_id,month, year) {
 	  	}
 		// do the header
 		var monthName = this.months_labels[this.month];
-		if(this.showtime){
-			html += 	'<table width="100%"><tr valign="top"><td width="100%" style="padding:0px !important;">';
-		}
+		html += 	'<table border="0" style="border:1px solid #CCC;"><tr valign="top"><td style="padding:0px !important;">';
 		html += 	'<table class="w_calendar_table">';
 		//month and year
 		html += 	'	<tr class="w_calendar_month">'+"\n";
-		html +=		'		<th title="Prev Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.prevyear+'\');"><span class="icon-dir-left"></span></th>'+"\n";
-		html +=		'		<th title="Prev Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.prevmonth+'\',\''+this.prevmonthyear+'\');"><span class="icon-arrow-left"></span></th>'+"\n";
+		html +=		'		<th title="Prev Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.prevyear+'\',1);"><span class="icon-dir-left w_link w_block"></span></th>'+"\n";
+		html +=		'		<th title="Prev Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.prevmonth+'\',\''+this.prevmonthyear+'\',1);"><span class="icon-arrow-left w_link w_block"></span></th>'+"\n";
 		html +=		'		<th colspan="3" class="w_calendar_title">' + monthName + "&nbsp;" + this.year+'</th>'+"\n";
-		html +=		'		<th title="Next Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.nextmonth+'\',\''+this.nextmonthyear+'\');"><span class="icon-arrow-right"></span></th>'+"\n";
-		html +=		'		<th title="Next Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.nextyear+'\');"><span class="icon-dir-right"></span></th>'+"\n";
+		html +=		'		<th title="Next Month" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.nextmonth+'\',\''+this.nextmonthyear+'\',1);"><span class="icon-arrow-right w_link w_block"></span></th>'+"\n";
+		html +=		'		<th title="Next Year" class="w_pointer" onclick="Calendar(\''+this.target_id+'\',\''+this.month+'\',\''+this.nextyear+'\',1);"><span class="icon-dir-right w_link w_block"></span></th>'+"\n";
 		html +=		'	</tr>'+"\n";
 		//days of the week
 	  	html += 	'	<tr class="w_calendar_head">'+"\n";
 	  	for(var i = 0; i <= 6; i++ ){
-	    	html += '		<th>'+this.days_labels[i]+'</th>'+"\n";
+	    	html += '		<th style="padding:0px !important;">'+this.days_labels[i]+'</th>'+"\n";
 	  	}
 	  	html += 	'	</tr>'+"\n";
 		html +=		'	<tr class="w_calendar_body">'+"\n";
@@ -204,10 +203,10 @@ function Calendar(target_id,month, year) {
 	    	}
 	  	}
 		html += '</tr>'+"\n";
-		html += '</table>'+"\n";
+		html += '</table></td>'+"\n";
 		if(this.showtime){
 			this.timesheight=parseInt(rows*21)+15;
-			html += 	'</td><td style="padding:0px !important;" nowrap>'+"\n";
+			html += 	'<td style="padding:0px !important;" nowrap>'+"\n";
 			html +=		'<div class="w_bold w_smaller" align="center">Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
 			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px !important;">'+"\n";
@@ -236,10 +235,11 @@ function Calendar(target_id,month, year) {
 				}
 			}
 			html +=		'</div>'+"\n";
-			html += 	'</td></tr><table>'+"\n";
+			html += 	'</td>'+"\n";
 		}
-		html += '<table class="w_calendar_table">'+"\n";
-		html += '	<tr>'+"\n";
+		html += '	</tr>'+"\n";
+		html += '	<tr><td colspan="7" style="display:relative;">'+"\n";
+		html += '		<table><tr>'+"\n";
 		if(this.showtime){
 		  	html +=	'		<td style="width:50%;"><div id="'+this.dateid+'" style="height:15px;text-align:right;padding-right:4px;">';
 			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
@@ -249,12 +249,12 @@ function Calendar(target_id,month, year) {
 			html +=	'</div></td>'+"\n";
 		}
 		else{
-			html +=	'		<td><div id="'+this.dateid+'" style="height:15px;text-align:center;">';
+			html +=	'		<td width="100%"><div id="'+this.dateid+'" style="height:15px;text-align:center;">';
 			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
 			html +=	'</div></td>'+"\n";
 		}
-		html += '	</tr>'+"\n";
-		html += '</table>'+"\n";
+		html += '	<td class="w_calendar_close" title="Click to close" onclick="hideId(\''+this.id+'\');"><span class="icon-cancel-circled w_link w_block"></span></td>'+"\n";
+		html += '</tr></table></td></tr></table>'+"\n";
 	}
 	else if(this.showtime){
 		this.timesheight=200;
@@ -292,7 +292,7 @@ function Calendar(target_id,month, year) {
 		html +=		'</div>'+"\n";
 		html += 	'</div>'+"\n";
 	}
-  	html += '	<div class="w_calendar_close" title="Click to close" onclick="hideId(\''+this.id+'\');"><span class="icon-cancel-circled"></span></div>'+"\n";
+
   	//populate the div
 	caldiv.innerHTML=html;
 	caldiv.style.display='block';
