@@ -1100,8 +1100,6 @@ table th a {
     box-sizing: border-box;
 }
 .w_form input[type="text"],.w_form input[type="password"],.w_form select, .w_form textarea {
-   	font-size:9pt;
-   	margin:2px;
    	padding: 4px;
 	}
 .w_checklist{
