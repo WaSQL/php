@@ -137,7 +137,7 @@ function Calendar(target_id,month, year, s) {
 	  	}
 		// do the header
 		var monthName = this.months_labels[this.month];
-		html += 	'<table border="0" style="border:1px solid #CCC;"><tr valign="top"><td style="padding:0px !important;">';
+		html += 	'<table class="w_calendar_table" border="0" style="border:1px solid #CCC;"><tr valign="top"><td style="padding:0px !important;border-right:px solid #CCC !important;">';
 		html += 	'<table class="w_calendar_table">';
 		//month and year
 		html += 	'	<tr class="w_calendar_month">'+"\n";
@@ -206,7 +206,7 @@ function Calendar(target_id,month, year, s) {
 		html += '</table></td>'+"\n";
 		if(this.showtime){
 			this.timesheight=parseInt(rows*21)+15;
-			html += 	'<td style="padding:0px !important;" nowrap>'+"\n";
+			html += 	'<td style="padding:0px !important;border-left:1px solid #CCC;" nowrap>'+"\n";
 			html +=		'<div class="w_bold w_smaller" align="center">Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
 			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px !important;">'+"\n";
@@ -238,8 +238,8 @@ function Calendar(target_id,month, year, s) {
 			html += 	'</td>'+"\n";
 		}
 		html += '	</tr>'+"\n";
-		html += '	<tr><td colspan="7" style="display:relative;">'+"\n";
-		html += '		<table><tr>'+"\n";
+		html += '	<tr><td colspan="7" style="display:relative;padding:0px !important;">'+"\n";
+		html += '		<table class="w_calendar_table"><tr>'+"\n";
 		if(this.showtime){
 		  	html +=	'		<td style="width:50%;"><div id="'+this.dateid+'" style="height:15px;text-align:right;padding-right:4px;">';
 			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
