@@ -684,7 +684,7 @@ table th a {
 .w_text {color:#565A50;}
 .w_bold {font-weight:bold;}
 .w_border {border:1px solid #000;}
-.w_block {display:block;}
+.w_block {display:block-inline !important;}
 .w_pointer{cursor:pointer;}
 .w_align_left{text-align:left;}
 .w_align_right{text-align:right;}
@@ -889,12 +889,6 @@ table th a {
 	padding:6px;
 	margin:0 3px 3px 3px;
 	background:#FFF;
-	border:1px solid #ddd;
-	[safari|chrome]-webkit-border-radius: 4px;
-	-khtml-border-radius: 4px;
-	border-radius: 4px;
-	box-shadow:3px 3px 4px silver;
-	[safari|chrome]-webkit-box-shadow:3px 3px 4px silver;
 	display:inline;
 }
 .w_calendar_table{
@@ -912,7 +906,7 @@ table th a {
 .w_calendar_head th{
 	font-weight:normal !important;
 	border-collapse:collapse !important;
-	padding:0 2px 0 2px !important;
+	padding:0px !important;
 	background-color:#a7a8a9 !important;
 	font-size:11px !important;
 	color:#FFF !important;
@@ -924,7 +918,7 @@ table th a {
 	text-align:right !important;
 	font-weight:normal !important;
 	border-collapse:collapse !important;
-	padding:0 2px 0 2px !important;
+	padding:0px !important;
 	background-color:#337ab7 !important;
 	color:#FFF !important;
 	cursor: pointer !important;
@@ -932,13 +926,15 @@ table th a {
 .w_calendar_body th div, .w_calendar_body td div{
 	height:20px !important;
 	width:20px !important;
+	margin:0px !important;
+	padding:0px !important;
 }
 .w_calendar_body td{
 	font-family: Tahoma, Geneva, sans-serif !important;
 	font-size: 11px !important;
 	text-align:right !important;
 	border-collapse:collapse !important;
-	padding:0 2px 0 2px !important;
+	padding:0px !important;
 	color:#000 !important;
 	border-bottom: 1px solid #dddddd !important;
 	cursor: pointer !important;
@@ -963,18 +959,13 @@ table th a {
 	border-left: 1px solid #dddddd !important;
 }
 .w_calendar_close{
-	position:absolute !important;
-	bottom:-8px !important;
-	right:-8px !important;
-	font-size:12px !important;
+	font-size:13px !important;
 	font-family:arial !important;
-	color:#FFF !important;
+	color:#961f24 !important;
 	cursor:pointer !important;
-	background-color:#a7a8a9 !important;
-	line-height:85% !important;
-	[safari|chrome]-webkit-border-radius: 6px !important;
-	-khtml-border-radius: 6px !important;
-	border-radius: 6px !important;
+	[safari|chrome]-webkit-border-radius: 4px !important;
+	-khtml-border-radius: 4px !important;
+	border-radius: 4px !important;
 }
 .w_calendar_time{
 	padding:2px !important;
