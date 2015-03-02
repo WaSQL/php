@@ -18,7 +18,7 @@ function Calendar(target_id,month, year, s) {
     	caldiv.className='w_calendar_div';
     	tobj.insertAdjacentElement('afterEnd',caldiv);
 	}
-	else if(undefined==s && caldiv.style.display=='block'){
+	else if(undefined==s && caldiv.style.display=='inline-block'){
     	caldiv.style.display='none';
     	return;
 	}
