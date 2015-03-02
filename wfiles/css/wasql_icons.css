@@ -27,8 +27,7 @@
 
   display: inline-block;
   text-decoration: inherit;
-  width: .9rem;
-  margin-right: .3rem;
+
   text-align: center;
   /* opacity: .8; */
 
@@ -41,7 +40,8 @@
  
   /* Animation center compensation - margins should be symmetric */
   /* remove if not needed */
-  margin-left: .3rem;
+  margin-left: .1rem;
+  margin-right: .1rem;
  
   /* you can be more comfortable with increased icons size */
   /* font-size: 120%; */
