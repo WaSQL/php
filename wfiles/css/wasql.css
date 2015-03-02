@@ -886,10 +886,10 @@ table th a {
 /* Calendar styles */
 .w_calendar_div{
 	position:absolute;
-	padding:6px;
-	margin:0 3px 3px 3px;
 	background:#FFF;
-	display:inline;
+	display:inline-block;
+	padding:0px !important;
+	margin:0px !important;
 }
 .w_calendar_table{
 	background-color: #FFF !important;
@@ -968,7 +968,6 @@ table th a {
 	border-radius: 4px !important;
 }
 .w_calendar_time{
-	padding:2px !important;
 	padding-right:18px !important;
 	border-bottom:1px solid #ddd !important;
 	font-size:11px !important;
