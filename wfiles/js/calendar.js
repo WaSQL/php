@@ -29,19 +29,19 @@ function Calendar(target_id,month, year, s) {
 				//datetime control - show both date and time
 				this.showtime=true;
 				this.showdate=true;
-				caldiv.style.width='220px';
+				//caldiv.style.width='220px';
 			break;
 			case 'time':
 				//time control
 				this.showtime=true;
 				this.showdate=false;
-				caldiv.style.width='115px';
+				//caldiv.style.width='115px';
 			break;
 			default:
 				//default to a date control
 				this.showdate=true;
 				this.showtime=false;
-				caldiv.style.width='175px';
+				//caldiv.style.width='175px';
 			break;
 		}
 	}
@@ -49,7 +49,7 @@ function Calendar(target_id,month, year, s) {
 		//default to a date control
 		this.showdate=true;
 		this.showtime=false;
-		caldiv.style.width='175px';
+		///caldiv.style.width='175px';
 	}
 	//get current value
 	this.hasvalue=false;
@@ -137,7 +137,7 @@ function Calendar(target_id,month, year, s) {
 	  	}
 		// do the header
 		var monthName = this.months_labels[this.month];
-		html += 	'<table class="w_calendar_table" border="0" style="border:1px solid #CCC;"><tr valign="top"><td style="padding:0px !important;border-right:px solid #CCC !important;">';
+		html += 	'<table class="w_calendar_table" border="0" style="border:1px solid #CCC;padding:0px !important"><tr valign="top"><td style="padding:0px !important;border-right:px solid #CCC !important;">';
 		html += 	'<table class="w_calendar_table">';
 		//month and year
 		html += 	'	<tr class="w_calendar_month">'+"\n";
@@ -240,20 +240,21 @@ function Calendar(target_id,month, year, s) {
 		html += '	</tr>'+"\n";
 		html += '	<tr><td colspan="7" style="display:relative;padding:0px !important;">'+"\n";
 		html += '		<table class="w_calendar_table"><tr>'+"\n";
+		var val='';
 		if(this.showtime){
-		  	html +=	'		<td style="width:50%;"><div id="'+this.dateid+'" style="height:15px;text-align:right;padding-right:4px;">';
-			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
-			html+=	'</div></td>'+"\n";
-		  	html +=	'		<td style="width:50%"><div id="'+this.timeid+'" style="height:15px;text-align:left;padding-left:4px;">';
-			if(this.hasvalue && undefined != this.cvalHr){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
-			html +=	'</div></td>'+"\n";
+			val='';
+			if(this.hasvalue && undefined != this.cvalYear){val = this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
+		  	html +=	'		<td><input type="text" id="'+this.dateid+'" class="form-control" style="height:24px;border:0px;" value="'+val+'" /></td>'+"\n";
+		  	val='';
+		  	if(this.hasvalue && undefined != this.cvalHr){val= CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
+		  	html +=	'		<td><input type="text" id="'+this.timeid+'" class="form-control" style="height:24px;border:0px;" value="'+val+'" /></td>'+"\n";
 		}
 		else{
-			html +=	'		<td width="100%"><div id="'+this.dateid+'" style="height:15px;text-align:center;">';
-			if(this.hasvalue && undefined != this.cvalYear){html += this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
-			html +=	'</div></td>'+"\n";
+			val='';
+			if(this.hasvalue && undefined != this.cvalYear){val = this.cvalYear+'-'+CalendarTwoDigits(this.cvalMonth+1)+'-'+CalendarTwoDigits(this.cvalDate);}
+		  	html +=	'		<td><input type="text" id="'+this.dateid+'" class="form-control" style="height:24px;border:0px;" value="'+val+'" /></td>'+"\n";
 		}
-		html += '	<td class="w_calendar_close" title="Click to close" onclick="hideId(\''+this.id+'\');"><span class="icon-cancel-circled w_link w_block"></span></td>'+"\n";
+		html += '	<td class="w_calendar_close" title="Click to close" onclick="CalendarSetTarget(\''+this.target_id+'\');"><span class="icon-cancel-circled w_link w_block"></span></td>'+"\n";
 		html += '</tr></table></td></tr></table>'+"\n";
 	}
 	else if(this.showtime){
@@ -287,15 +288,15 @@ function Calendar(target_id,month, year, s) {
 			}
 		}
 		html +=		'</div>'+"\n";
-		html +=		'<div id="'+this.timeid+'" style="height:15px;text-align:center;">';
-		if(this.hasvalue && undefined != this.cvalHr){html += CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
-		html +=		'</div>'+"\n";
+		var val='';
+		if(this.hasvalue && undefined != this.cvalHr){val= CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
+		html +=		'<input type="text" id="'+this.timeid+'" class="form-control" style="height:24px;border:0px;" value="'+val+'" />'+"\n";
 		html += 	'</div>'+"\n";
 	}
 
   	//populate the div
 	caldiv.innerHTML=html;
-	caldiv.style.display='block';
+	caldiv.style.display='inline-block';
 	var h=getHeight(caldiv);
 	h=parseInt(h)+3;
 	if(h < 150){h=150;}
@@ -352,6 +353,42 @@ function CalendarSetDate(target_id,date){
     	hideId(this.id);
 	}
 	return false;
+}
+function CalendarSetTarget(target_id){
+	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
+	var tobj=getObject(target_id);
+	if(undefined==tobj){alert('No Calendar target named'+target_id+' found');return false;}
+	var controlType=tobj.getAttribute('data-type');
+	if(undefined != controlType){
+		switch(controlType.toLowerCase()){
+			case 'datetime':
+				this.showtime=true;
+				this.showdate=true;
+			break;
+			case 'time':
+				this.showtime=true;
+				this.showdate=false;
+			break;
+			default:
+				this.showdate=true;
+				this.showtime=false;
+			break;
+		}
+	}
+	else{
+		this.showdate=true;
+		this.showtime=false;
+	}
+	this.dateid=this.id+'_date';
+	this.timeid=this.id+'_time';
+	this.id=target_id+'_cal';
+	var time=getText(this.timeid);
+	var date=getText(this.dateid);
+	if(time.length){
+    	setText(target_id,date+' '+time);
+	}
+	else{setText(target_id,date);}
+	hideId(this.id);
 }
 function CalendarSetTime(target_id,time){
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
