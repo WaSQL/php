@@ -1,4 +1,4 @@
-/* CSS - Treeviewer */
+/* CSS - Treeviewer --  http://localhost/wfiles/css/extras/treeview.html  */
 .w_treeview ul, .w_treeview li{
 	padding: 0;
 	margin: 0;
@@ -13,6 +13,7 @@
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	user-select: none;
+	display:table-cell;
 }
 .w_treeview a{
 	text-decoration: none;
@@ -20,7 +21,6 @@
 .w_treeview a:hover{
 	padding-left:5px !important;
 	padding-right:5px !important;
-	margin-left:15px !important;
 }
 .w_treeview input[type="checkbox"] + label + ul{
 	margin: 0 0 0 22px;
@@ -37,6 +37,8 @@
 }
 .w_treeview input[type="checkbox"]:checked:not(:disabled) ~ ul{
 	display: block;
+	border-left:1px solid #CCC;
+
 }
 .w_treeview label, .w_treeview label::before, .w_treeview a, .w_treeview a::before{
 	background: url("/wfiles/css/extras/treeview.png") no-repeat;
@@ -50,7 +52,7 @@
 }
 .w_treeview a{
 	background-position: 0 -50px;
-	padding: 0 0 5px 20px;
+	padding: 0 0 0 5px;
 }
 .w_treeview label{
 	background-position: 18px 0;
