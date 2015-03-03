@@ -9,41 +9,54 @@
  	<meta name="viewport" content="width=device-width, initial-scale=1" />
  	<link type="text/css" rel="stylesheet" href="/php/minify_css.php?1122334455667788" />
  	<link type="text/css" rel="stylesheet" href="treeview.css" />
+ 	<script type="text/javascript" src="/php/minify_js.php?1231231234"> </script>
 </head>
 <body style="background:#FFFFFF;margin:0px;padding:0px;">
+<label class="w_pointer"><input type="checkbox" onclick="return checkAllElements('data-group','treeview',this.checked);" /> Expand Tree</label>
 <div class="w_treeview">
 	<ul>
     	<li>
-      		<input type="checkbox" id="cb-1">
+      		<input data-group="treeview" type="checkbox" id="cb-1">
       		<label for="cb-1">
         		<span>Top Folder Label</span>
       		</label>
       		<ul>
-        		<li><a href="#">dolor sit amet</a></li>
+        		<li><a href="#" class="w_link w_block">dolor sit amet</a></li>
         		<li>
-          			<input type="checkbox" id="cb-1-2">
+          			<input data-group="treeview" type="checkbox" id="cb-1-2">
           			<label for="cb-1-2">
             			<span>Sub Folder Label</span>
           			</label>
           			<ul>
-            			<li><a href="#">elitr</a></li>
-            			<li><a href="#">sed diam nonumy</a></li>
+            			<li><a href="#" class="w_link w_block">elitr</a></li>
+            			<li><a href="#" class="w_link w_block">sed diam nonumy</a></li>
           			</ul>
         		</li>
         		<li><a href="#" class="w_link w_block">eirmod tempor</a></li>
-        		<li><a href="#">invidunt ut</a></li>
-        		<li><a href="#">labore et dolore</a></li>
+        		<li><a href="#" class="w_link w_block">invidunt ut</a></li>
+        		<li><a href="#" class="w_link w_block">labore et dolore</a></li>
       		</ul>
     	</li>
     	<li>
-      		<input type="checkbox" id="cb-2">
+      		<input data-group="treeview" type="checkbox" id="cb-2">
       		<label for="cb-2">
-        		<span>magna aliquyam</span>
+        		<a href="#" class="w_link w_block">eirmod tempor</a>
       		</label>
       		<ul>
-        		<li><span>erat sed</span></li>
-        		<li><span>diam voluptua</span></li>
-        		<li><span>At vero eos</span></li>
+        		<li><a href="#" class="w_link w_block">erat sed</a></li>
+        		<li><a href="#" class="w_link w_block">diam voluptua</a></li>
+        		<li><a href="#" class="w_link w_block">At vero eos</a></li>
+      		</ul>
+    	</li>
+    	<li>
+      		<input data-group="treeview" type="checkbox" id="cb-3">
+      		<label for="cb-3">
+        		<a href="#" class="w_link w_block">eirmod tempor</a>
+      		</label>
+      		<ul>
+        		<li><a href="#" class="w_link w_block">erat sed</a></li>
+        		<li><a href="#" class="w_link w_block">diam voluptua</a></li>
+        		<li><a href="#" class="w_link w_block">At vero eos</a></li>
       		</ul>
     	</li>
   	</ul>
