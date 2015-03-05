@@ -712,10 +712,10 @@ function getUserInfo($cuser,$size=16){
 		return $info;
 		}
 	//never logged in
-    if(!isNum($cuser['_adate_utime'])){
+    if(!strlen($cuser['_adate'])){
 		//Never logged In?
 		$info['status']="Never logged in";
-        $info['status'] .= " - Created {$info['created_age']} ago on {$info['created_time']}";
+        //$info['status'] .= " - Created {$info['created_age']} ago on {$info['created_time']}";
 		return $info;
 		}
 	//age of user
@@ -735,7 +735,7 @@ function getUserInfo($cuser,$size=16){
     $info['accessed_seconds']=$nowstamp - $info['accessed_timestamp'];
 	$info['accessed_age']=verboseTime($info['accessed_seconds']);
 	if(!strlen(trim($info['accessed_age']))){$info['accessed_age']="0 seconds";}
-	$info['status'] .= " - Last Accessed {$info['accessed_age']} ago on {$info['accessed_time']}";
+	//$info['status'] .= " - Last Accessed {$info['accessed_age']} ago on {$info['accessed_time']}";
 	return $info;
 }
 
