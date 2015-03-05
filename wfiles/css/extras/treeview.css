@@ -15,10 +15,8 @@
 	user-select: none;
 	display:table-cell;
 }
-.w_treeview a{
+.w_treeview a, .w_treeview span{
 	text-decoration: none;
-}
-.w_treeview a:hover{
 	padding-left:5px !important;
 	padding-right:5px !important;
 }
@@ -34,6 +32,17 @@
 .w_treeview input[type="checkbox"]:disabled + label{
 	cursor: default;
 	opacity: .6;
+}
+.w_treeview a.active, .w_treeview span.active {
+	background-color:#ffffc6;
+	color:#000;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+}
+.w_treeview a.active:hover {
+	background-color:#428bca;
+	color:#FFFFFF;
 }
 .w_treeview input[type="checkbox"]:checked:not(:disabled) ~ ul{
 	display: block;
