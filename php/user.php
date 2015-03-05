@@ -35,7 +35,7 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	//abort(printValue($_REQUEST));
 	}
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
-	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
+	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username']));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
@@ -82,6 +82,59 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 		}
 		else{
           	$_REQUEST['_login_error']=$ldap;
+		}
+	}
+	elseif(isset($CONFIG['auth365'])){
+     	loadExtras('office365');
+     	$authopts=array(
+			'-username'	=> $_REQUEST['username'],
+			'-password'	=> $_REQUEST['password']
+		);
+     	$auth=office365Auth($authopts);
+		if(is_array($auth)){
+          	//currently office365 can only tell me they are valid. I will need to makup the rest for now.
+          	$admins=array();
+          	if(isset($CONFIG['auth365_admin'])){
+            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['auth365_admin']);
+			}
+          	//add or update this user record
+          	$rec=getDBRecord(array('-table'=>'_users','username'=>$authopts['-username']));
+          	if(is_array($rec)){
+				if(in_array($authopts['-username'],$admins) && $rec['utype'] !=0){
+                	$rec['utype']=0;
+                	$ok=editDBRecord(array(
+						'-table'	=> "_users",
+						'-where'	=> "_id={$rec['_id']}",
+						'utype'		=> 0
+					));
+				}
+				elseif($rec['utype']==0){
+                	$rec['utype']=1;
+                	$ok=editDBRecord(array(
+						'-table'	=> "_users",
+						'-where'	=> "_id={$rec['_id']}",
+						'utype'		=> 1
+					));
+				}
+				$USER=$rec;
+			}
+			else{
+				$opts=array(
+					'-table'	=> "_users",
+					'password'	=> substr(sha1($auth['value']),0,25),
+					'username'	=> $authopts['-username'],
+					'utype'		=> 1,
+					'email'		=> $authopts['-username'],
+				);
+				if(in_array($authopts['-username'],$admins)){$opts['utype']=0;}
+               	$id=addDBRecord($opts);
+               	if(isNum($id)){
+                    $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+				}
+			}
+		}
+		else{
+          	$_REQUEST['_login_error']=$auth;
 		}
 	}
 	elseif(isset($CONFIG['authhost'])){
@@ -813,6 +866,9 @@ function userLoginForm($params=array()){
 	}
 	elseif(isset($CONFIG['authldaps'])){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'."\n";
+	}
+	elseif(isset($CONFIG['auth365'])){
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'."\n";
 	}
     if(!isset($params['-username'])){
     	$params['-username']='<span class="icon-user w_biggest"></span>';
