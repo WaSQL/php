@@ -7,7 +7,8 @@
 		https://samjlevy.com/use-php-and-ldap-to-list-members-of-an-active-directory-group-improved/
 		http://stackoverflow.com/questions/14815142/php-ldap-bind-on-secure-remote-server-windows-fail
 		
-
+        http://pear.php.net/package/Net_LDAP2/download
+        http://stackoverflow.com/questions/8276682/wamp-2-2-install-pear
 
 */
 $progpath=dirname(__FILE__);
@@ -21,40 +22,54 @@ $progpath=dirname(__FILE__);
 *	[-secure] - prepends ldaps:// to the host name. Use for secure ldap servers
 * @return mixed - ldap user record array on success, error msg on failure
 * @usage $rec=LDAP Auth(array('-host'=>'myldapserver','-username'=>'myusername','-password'=>'mypassword'));
+
+
+
 */
 function ldapAuth($params=array()){
 	if(!isset($params['-host'])){return 'LDAP Auth Error: no host';}
 	if(!isset($params['-username'])){return 'LDAP Auth Error: no username';}
 	if(!isset($params['-password'])){return 'LDAP Auth Error: no password';}
+	global $CONFIG;
 	if(!isset($params['-bind'])){$params['-bind']="{$params['-username']}@{$params['-host']}";}
 	$ldap_base_dn = array();
 	$hostparts=preg_split('/\./',$params['-host']);
 	foreach($hostparts as $part){
-		$ldap_base_dn[]="DC={$part}";
+		$ldap_base_dn[]="dc={$part}";
 	}
-	$ldap_base_dn=implode(',',$ldap_base_dn);
+	$params['basedn']=implode(',',$ldap_base_dn);
 	if($params['-secure']){
 		$params['-host']='ldaps://'.$params['-host'];
 	}
+
 	//connect
+	$params['-host']='ldap://'.$params['-host'];
 	$ldap_connection = ldap_connect($params['-host']);
 	if(!$ldap_connection){return 'LDAP Auth Error: unable to connect to host';}
 	// We need this for doing an LDAP search.
+	ldap_set_option($ldap_connection, LDAP_OPT_REFERRALS, 0);
     ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-    ldap_set_option($ldap_connection, LDAP_OPT_REFERRALS, 0);
+
+    ldap_set_option($ldap_connection, LDAP_OPT_NETWORK_TIMEOUT, 5);
+    ldap_set_option($ldap_connection, LDAP_OPT_SIZELIMIT, 5);
+    ldap_set_option($ldap_connection, LDAP_OPT_TIMELIMIT, 5);
+    $enum=ldap_errno($ldap_connection);
+    $msg=ldap_err2str( $enum );
 	//bind
     $bind=ldap_bind($ldap_connection,$params['-bind'],$params['-password']);
     if(!$bind){
+        $enum=ldap_errno($ldap_connection);
+        $msg=ldap_err2str( $enum );
 		ldap_unbind($ldap_connection); // Clean up after ourselves.
-		return 'LDAP Auth Error: auth failed'.printValue($params);
+		return "LDAP Auth Error: auth failed. Err:{$enum}, Msg:{$msg} .. ".printValue($params);
 	}
     //now get this users record and return it
 	$rec=array();
 	//$search_filter = "(&(objectCategory=person))";
 	//set search filter to be the current username so we get the current user record back
-	$search_filter = "(&(sAMAccountName={$params['-username']}))";
-	$result = ldap_search($ldap_connection, $ldap_base_dn, $search_filter);
-	//echo "result".printValue($ldap_base_dn);
+	$params['search'] = "(&(objectClass=user)(sAMAccountName={$params['-username']}))";
+	$result = ldap_search($ldap_connection, $params['basedn'], $params['search']);
+	//echo "result".printValue($result).printValue($params);exit;
 	if (FALSE !== $result){
 		$entries = ldap_get_entries($ldap_connection, $result);
 	    if ($entries['count'] == 1){
@@ -90,6 +105,7 @@ function ldapAuth($params=array()){
 			}
 			ldap_unbind($ldap_connection);
 			ksort($rec);
+			//echo "rec".printValue($rec);exit;
 			return $rec;
 		}
 		ldap_unbind($ldap_connection); // Clean up after ourselves.
