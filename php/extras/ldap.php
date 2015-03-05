@@ -123,7 +123,7 @@ function ldapAuth($params=array()){
 */
 function ldapConvert2UserRecord($lrec=array()){
 	global $CONFIG;
-	$rec=array('active'=>1);
+	$rec=array('active'=>1,'utype'=>1);
 	foreach($lrec as $key=>$val){
 		switch(strtolower($key)){
           	case 'samaccountname':$rec['username']=$val;break;
@@ -150,14 +150,6 @@ function ldapConvert2UserRecord($lrec=array()){
 				else{$rec['manager']=$val;}
 			break;
           	case 'memberof':
-				if(isset($CONFIG['authldap_admin'])){
-					$tmp=preg_split('/\,/',$val);
-					if(in_array($CONFIG['authldap_admin'],$tmp)){$rec['utype']=0;}
-					else{$rec['utype']=1;}
-				}
-				else{
-                    	$rec['utype']=1;
-				}
 				$rec['memberof']=$val;
 			break;
           	//case 'samaccountname':$rec['username']=$val;break;
