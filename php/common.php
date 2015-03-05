@@ -396,19 +396,27 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	$mid=$name.'_options';
+	if(isset($params['value'])){
+      if(!is_array($params['value'])){
+        $params['-values']=preg_split('/\:/',trim($params['value']));
+      }
+      else{$params['-values']=$params['value'];}
+      unset($params['value']);
+    }
 	if(isset($params['-values'])){
-    	if(!is_array($params['-values'])){
-        	$params['-values']=array($params['-values']);
+    		if(!is_array($params['-values'])){
+        		$params['-values']=array($params['-values']);
 		}
 	}
 	elseif(isset($_REQUEST[$name])){
-    	if(!is_array($_REQUEST[$name])){
-        	$params['-values']=array($_REQUEST[$name]);
+    		if(!is_array($_REQUEST[$name])){
+        		$params['-values']=array($_REQUEST[$name]);
 		}
 		else{
-        	$params['-values']=$_REQUEST[$name];
+        		$params['-values']=$_REQUEST[$name];
 		}
 	}
+
 	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
 	$tag='';
 	$tag.='<div class="btn-group" role="group" data-behavior="dropdown" display="'.$mid.'">'."\n";
