@@ -44,7 +44,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
 		}
-	if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
+	if((isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
      	loadExtras('ldap');
      	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
      	$authopts=array(
@@ -56,27 +56,46 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 		if(is_array($ldap)){
           	$ldap=ldapConvert2UserRecord($ldap);
           	$fields=getDBFields('_users');
+          	$admins=array();
+          	if(isset($CONFIG['ldap_admin'])){
+            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['ldap_admin']);
+			}
           	//add or update this user record
-          	$rec=getDBRecord(array('-table'=>'_users','username'=>$ldap['username']));
+          	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
           	if(is_array($rec)){
                	$changes=array();
                	foreach($fields as $field){
-                    	if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
-                         	$changes[$field]=$ldap[$field];
+                    if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
+                        $changes[$field]=$ldap[$field];
+                        $rec[$field]=$ldap[$field];
 					}
 				}
-				if(count($changes)){
-                    	$changes['-table']='_users';
-                    	$changes['-where']="_id={$rec['_id']}";
-                    	$ok=editDBRecord($changes);
+				if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
+					if($rec['utype'] != 0){
+						$changes['utype']=0;
+						$rec['utype']=0;
+					}
 				}
-				$USER=getDBRecord(array('-table'=>'_users','_id'=>$rec['_id']));
+				elseif($rec['utype'] == 0){
+					$changes['utype']=1;
+					$rec['utype']=1;
+				}
+				if(count($changes)){
+                    $changes['-table']='_users';
+                    $changes['-where']="_id={$rec['_id']}";
+                    $ok=editDBRecord($changes);
+				}
+				$USER=$rec;
 			}
 			else{
                	$ldap['-table']='_users';
+               	if(in_array($ldap['username'],$admins) || in_array($ldap['email'],$admins)){
+					$ldap['utype']= 0;
+				}
+				else{$ldap['utype']=1;}
                	$id=addDBRecord($ldap);
                	if(isNum($id)){
-                    	$USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+                    $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
 				}
 			}
 		}
@@ -98,15 +117,17 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
             	$admins=preg_split('/[\,\;\:]+/',$CONFIG['auth365_admin']);
 			}
           	//add or update this user record
-          	$rec=getDBRecord(array('-table'=>'_users','username'=>$authopts['-username']));
+          	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$authopts['-username']}' or email='{$authopts['-username']}'"));
           	if(is_array($rec)){
-				if(in_array($authopts['-username'],$admins) && $rec['utype'] !=0){
-                	$rec['utype']=0;
-                	$ok=editDBRecord(array(
-						'-table'	=> "_users",
-						'-where'	=> "_id={$rec['_id']}",
-						'utype'		=> 0
-					));
+				if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
+					if($rec['utype'] !=0){
+	                	$rec['utype']=0;
+	                	$ok=editDBRecord(array(
+							'-table'	=> "_users",
+							'-where'	=> "_id={$rec['_id']}",
+							'utype'		=> 0
+						));
+					}
 				}
 				elseif($rec['utype']==0){
                 	$rec['utype']=1;
@@ -861,10 +882,10 @@ function userLoginForm($params=array()){
 	if(isset($CONFIG['authhost'])){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'."\n";
 	}
-	elseif(isset($CONFIG['authldap'])){
+	elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'."\n";
 	}
-	elseif(isset($CONFIG['authldaps'])){
+	elseif(isset($CONFIG['authldaps']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'."\n";
 	}
 	elseif(isset($CONFIG['auth365'])){
