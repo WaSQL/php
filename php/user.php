@@ -57,8 +57,8 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
           	$ldap=ldapConvert2UserRecord($ldap);
           	$fields=getDBFields('_users');
           	$admins=array();
-          	if(isset($CONFIG['ldap_admin'])){
-            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['ldap_admin']);
+          	if(isset($CONFIG['authldap_admin'])){
+            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
 			}
           	//add or update this user record
           	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
