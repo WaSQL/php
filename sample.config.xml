@@ -16,6 +16,7 @@
 			authhost - authenticate and replicate this user profile
 			authldap - authenticate using this LDAP server
 			authldaps - authenticate using this SECURE LDAP server
+			authldap_network - only use ldap if the network starts with this value.  setting this and auth 365 will allow you to use ldap on the local network and office365 when remote.
 			authldap_admin - memberof group to match for admins.. i.e.  authldap_admin="OU=Administration".  These records become admins
 			auth365 - authenticate using your portal.office365.com login
 			auth365_admin - comma separated list of users that are admins
