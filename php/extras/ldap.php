@@ -55,6 +55,7 @@ function ldapAuth($params=array()){
     ldap_set_option($ldap_connection, LDAP_OPT_TIMELIMIT, 5);
     $enum=ldap_errno($ldap_connection);
     $msg=ldap_err2str( $enum );
+    //echo printValue($params);exit;
 	//bind
     $bind=ldap_bind($ldap_connection,$params['-bind'],$params['-password']);
     if(!$bind){
@@ -123,7 +124,8 @@ function ldapAuth($params=array()){
 */
 function ldapConvert2UserRecord($lrec=array()){
 	global $CONFIG;
-	$rec=array('active'=>1,'utype'=>1);
+	unset($lrec['objectsid']);
+	$rec=array('active'=>1,'utype'=>1,'ldap'=>printValue($lrec));
 	foreach($lrec as $key=>$val){
 		switch(strtolower($key)){
           	case 'samaccountname':$rec['username']=$val;break;
@@ -138,12 +140,13 @@ function ldapConvert2UserRecord($lrec=array()){
           	case 'mail':$rec['email']=$val;break;
           	case 'company':$rec['company']=$val;break;
           	case 'homephone':$rec['phone_home']=$val;break;
-          	case 'mobile':$rec['mobile_phone']=$val;break;
+          	case 'mobile':$rec['phone_mobile']=$val;break;
           	case 'postalcode':$rec['zip']=$val;break;
           	case 'st':$rec['state']=$val;break;
           	case 'streetaddress':$rec['address1']=$val;break;
           	case 'telephonenumber':$rec['phone']=$val;break;
           	case 'url':$rec['url']=$val;break;
+          	case 'primarygroupid':$rec['primarygroupid']=$val;break;
           	case 'manager':
           		if(preg_match('/CN\=(.+?)\,/',$val,$m)){$rec['manager']=$m[1];}
           		elseif(preg_match('/CN\=(.+?)$/',$val,$m)){$rec['manager']=$m[1];}
