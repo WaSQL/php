@@ -958,6 +958,12 @@ table th a {
 	border-bottom: 1px solid #dddddd !important;
 	border-left: 1px solid #dddddd !important;
 }
+.w_calendar_now{
+	font-size:13px !important;
+	font-family:arial !important;
+	color:#961f24 !important;
+	cursor:pointer !important;
+}
 .w_calendar_close{
 	font-size:13px !important;
 	font-family:arial !important;
