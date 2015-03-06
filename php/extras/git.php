@@ -62,6 +62,22 @@ function gitAdd($dir='',$files=array()){
 	return $repo->add($files);
 }
 
+//---------- begin function gitCheckout--------------------------------------
+/**
+* @describe executes git checkout command on file - used to remove local changes
+* @param dir string - the directory of your git repo
+* @param files array -  files to checkout
+* @return array
+*/
+function gitCheckout($dir='',$files=array()){
+	//return gitPullOld($dir);
+	$repo = Git::open($dir);
+	$filestr=implode('" "',$files);
+	$cmd="checkout \"{$filestr}\"";
+	//echo printValue($cmd);exit;
+	$repo->run($cmd);
+}
+
 //---------- begin function gitCommit--------------------------------------
 /**
 * @describe executes git commit command on the file
