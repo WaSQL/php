@@ -7,6 +7,8 @@ function Calendar(target_id,month, year, s) {
 	this.current_dateYear=this.current_date.getFullYear();
 	this.current_dateMonth=this.current_date.getMonth();
 	this.current_dateDate=this.current_date.getDate();
+	this.current_dateHour=this.current_date.getHours();
+	this.current_dateMin=this.current_date.getMinutes();
 	this.target_id=target_id;
 	this.id=this.target_id+'_cal';
 	this.dateid=this.id+'_date';
@@ -240,6 +242,7 @@ function Calendar(target_id,month, year, s) {
 		html += '	</tr>'+"\n";
 		html += '	<tr><td colspan="7" style="display:relative;padding:0px !important;">'+"\n";
 		html += '		<table class="w_calendar_table"><tr>'+"\n";
+		html += '	<td class="w_calendar_now" title="Now" onclick="CalendarSetTarget(\''+this.target_id+'\',1);"><span class="icon-calendar w_link w_block"></span></td>'+"\n";
 		var val='';
 		if(this.showtime){
 			val='';
@@ -354,7 +357,7 @@ function CalendarSetDate(target_id,date){
 	}
 	return false;
 }
-function CalendarSetTarget(target_id){
+function CalendarSetTarget(target_id,now){
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
 	var tobj=getObject(target_id);
 	if(undefined==tobj){alert('No Calendar target named'+target_id+' found');return false;}
@@ -379,11 +382,32 @@ function CalendarSetTarget(target_id){
 		this.showdate=true;
 		this.showtime=false;
 	}
-	this.dateid=this.id+'_date';
-	this.timeid=this.id+'_time';
-	this.id=target_id+'_cal';
-	var time=getText(this.timeid);
-	var date=getText(this.dateid);
+	var date;
+	var time;
+	if(undefined != now){
+		this.current_date = new Date();
+		var mon=this.current_date.getMonth();
+		if(parseInt(mon) < 10){mon='0'+mon;}
+		var day=this.current_date.getDate();
+		if(parseInt(day) < 10){day='0'+day;}
+		date=this.current_date.getFullYear()+'-'+mon+'-'+day;
+		if(this.showtime){
+			var h=this.current_date.getHours();
+			if(parseInt(h) < 10){h='0'+h;}
+			var m=this.current_date.getMinutes();
+			if(parseInt(m) < 10){m='0'+m;}
+			var s=this.current_date.getSeconds();
+			if(parseInt(s) < 10){s='0'+s;}
+        	time=h+':'+m+':'+s;
+		}
+	}
+	else{
+		this.dateid=this.id+'_date';
+		this.timeid=this.id+'_time';
+		this.id=target_id+'_cal';
+		time=getText(this.timeid);
+		date=getText(this.dateid);
+	}
 	if(time.length){
     	setText(target_id,date+' '+time);
 	}
