@@ -42,6 +42,16 @@
 				echo "Add".printValue($add);
 			}
 		break;
+		case 'checkout':
+			if(is_array($files) && count($files)){
+				$list=array();
+				foreach($files as $file){$list[]=$file['name'];}
+				$ok=gitCheckout($gitpath,$list);
+				$git=gitStatus($gitpath);
+				setView('default',1);
+				return;
+			}
+		break;
 		case 'commit':
 			if(is_array($files) && count($files)){
 				$commit='';
