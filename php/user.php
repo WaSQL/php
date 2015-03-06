@@ -840,6 +840,7 @@ function encodeUserAuthCode(){
 *	['id']                changes the id attribute in the form tag. Default is "loginform"
 *	['method']             changes the method attribute in the form tag. Default is "POST"
 *	['style']             adds the style attribute in the form tag. No Default
+*	[-noremind]			hide the remind me link
 *	Additional params are passed through as hidden key/value pairs
 * @usage
 *	<?=userLoginForm();?> - returns the default wasql login form so a user can sign in.
@@ -929,13 +930,15 @@ function userLoginForm($params=array()){
 			if(isset($CONFIG['facebook_appid'])){
     			$form .= '<td><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">Login with Facebook</fb:login-button></td>';
 			}
-			$form .= '		<td class="w_align_left">'."\n";
-			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
-			if($params['-icons']){
-				$form .= '<span class="icon-mail w_biggest"></span>';
+			if(!isset($params['-noremind'])){
+				$form .= '		<td class="w_align_left">'."\n";
+				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
+				if($params['-icons']){
+					$form .= '<span class="icon-mail w_biggest"></span>';
+				}
+				$form .= " {$params['-remind']}</a>\n";
+				$form .= '		</td>'."\n";
 			}
-			$form .= " {$params['-remind']}</a>\n";
-			$form .= '		</td>'."\n";
 			$form .= '		<td><div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div></td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
@@ -953,11 +956,13 @@ function userLoginForm($params=array()){
 			else{
 				$form .= '		<td class="w_align_left">'."\n";
 			}
-			$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
-			if($params['-icons']){
-				$form .= '<span class="icon-mail w_biggest"></span>';
+			if(!isset($params['-noremind'])){
+				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
+				if($params['-icons']){
+					$form .= '<span class="icon-mail w_biggest"></span>';
+				}
+				$form .= " {$params['-remind']}</a>\n";
 			}
-			$form .= " {$params['-remind']}</a>\n";
 			$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
 			$form .= '		</td>'."\n";
 			$form .= '	</tr>'."\n";
@@ -984,14 +989,16 @@ function userLoginForm($params=array()){
 			$form .= '		<td class="w_align_left" title="Password"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name']."_password",'required'=>1,'tabindex'=>2,'placeholder'=>'password')).'</td>'."\n";
 			$form .= '	</tr>'."\n";
-			$form .= '	<tr valign="middle" align="right">';
-			$form .= '		<td colspan="3" class="w_align_left">'."\n";
-			if($params['-icons']){
-				$form .= '			<span class="icon-mail w_biggest"></span> ';
+			if(!isset($params['-noremind'])){
+				$form .= '	<tr valign="middle" align="right">';
+				$form .= '		<td colspan="3" class="w_align_left">'."\n";
+				if($params['-icons']){
+					$form .= '			<span class="icon-mail w_biggest"></span> ';
+				}
+				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a><div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
+				$form .= '		</td>'."\n";
+				$form .= '	</tr>'."\n";
 			}
-			$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a><div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
-			$form .= '		</td>'."\n";
-			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				loadExtrasJs('facebook_login');
