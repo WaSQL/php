@@ -382,8 +382,8 @@ function CalendarSetTarget(target_id,now){
 		this.showdate=true;
 		this.showtime=false;
 	}
-	var date;
-	var time;
+	var date='';
+	var time='';
 	if(undefined != now){
 		this.current_date = new Date();
 		var mon=this.current_date.getMonth();
