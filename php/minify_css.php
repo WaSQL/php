@@ -255,6 +255,8 @@ function minifyLines($lines,$conditionals=1) {
 		/*look for variable definations */
 		if(preg_match('/^\@(.+?)\:(.+?)\;/',$tline,$vm)){
 			$vars['@'.$vm[1]]=$vm[2];
+			$csslines[]=rtrim($line);
+			continue;
 		}
      	/* look for conditonals - must appear at the beginning of the CSS line
 		  supported browser names: firefox|msie|chrome|safari|opera
