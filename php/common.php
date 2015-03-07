@@ -303,7 +303,41 @@ function buildFormCheckbox($name, $pairs=array(), $params=array()){
 	$rtn .= '</table>'."\n";
     return $rtn;
 }
-
+//---------- begin function buildFormColor-------------------
+/**
+* @describe creates an HTML color control
+* @param name string - field name
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[-value] string - specify the current value
+*	[-required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html color control
+* @usage echo buildFormColor('color');
+*/
+function buildFormColor($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	$iconid=$params['id'].'_icon';
+	//force witdh
+	$params['width']=115;
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$iconcolor='#c0c0c0';
+	if(strlen($params['value'])){$iconcolor=$params['value'];}
+	if(!isset($params['placeholder'])){$params['placeholder']='#HEXVAL';}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	$params['maxlength']=7;
+	$tag='';
+	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
+	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'."\n";
+	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.' !important;padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"></span>'."\n";
+	$tag .= '</div>'."\n";
+	return $tag;
+}
 
 
 //---------- begin function buildFormCombo--------------------
@@ -451,21 +485,28 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 //---------- begin function buildFormTime-------------------
 /**
 * @describe creates an HTML time control
-* @param action string
+* @param name string - field name
 * @param params array
-* @return string
+*	[-formname] string - specify the form name - defaults to addedit
+*	[-interval] integer - specify the time interval. 1,5,10,15,30,60 - defaults to 30
+*	[-value] string - specify the current value
+*	[-required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html time control
 * @usage echo buildFormTime('mytime');
 */
 function buildFormTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-interval'])){$params['-interval']='30';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=115;
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	$required='';
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" value="'.$params['-value'].'" '.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" data-interval="'.$params['-interval'].'" value="'.$params['-value'].'" '.$required.' />'."\n";
 	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
