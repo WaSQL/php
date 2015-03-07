@@ -50,7 +50,7 @@ $jspath=realpath('../wfiles/js');
 global $files;
 $files=array();
 //add wasql js file
-minifyFiles($jspath,array('common','event','form','calendar'));
+minifyFiles($jspath,array('common','event','form','calendar','colorpicker'));
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_js']) && is_array($_SESSION['w_MINIFY']['extras_js'])){
 	foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
