@@ -762,38 +762,28 @@ function wasqlSetMinify($backend=0){
 		$_SESSION['facebook_email']=$USER['facebook_email'];
 		$_SESSION['facebook_id']=$USER['facebook_id'];
 	}
+	//bootstrap for everyone
+	loadExtrasCss(array('bootstrap'));
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
-		loadExtrasCss(array('bootstrap','nicedit','codemirror','admin','treeview','dropdown','socialbuttons'));
-		loadExtrasJs(array('html5','nicedit','codemirror','tcal','sorttable','jquery.cycle.all'));
+		loadExtrasCss(array('nicedit','codemirror','admin','treeview','dropdown','socialbuttons'));
+		loadExtrasJs(array('html5','nicedit','codemirror'));
 		loadExtras('system');
 		if($_SERVER['REMOTE_BROWSER']=='msie'){loadExtrasJs('html5_ie');}
 		return;
 		}
-	//bootstrap
-	loadExtrasCss(array('bootstrap'));
+
 	//wsiwyg editor instance check
-	if(stringContains($PAGE['body'],'data-behavior="editor"')){
-    	loadExtrasCss(array('nicedit'));
-	}
-	elseif(stringContains($PAGE['body'],'data-behavior="tinymce"')){
-    	loadExtrasCss(array('nicedit'));
-	}
-	elseif(stringContains($PAGE['body'],'data-behavior="wysiwyg"')){
-    	loadExtrasCss(array('nicedit'));
-	}
-	elseif(stringContains($PAGE['body'],'_behavior="editor"')){
-    	loadExtrasCss(array('nicedit'));
-	}
-	elseif(stringContains($PAGE['body'],'_behavior="tinymce"')){
-    	loadExtrasCss(array('nicedit'));
-	}
-	elseif(stringContains($PAGE['body'],'_behavior="wysiwyg"')){
-    	loadExtrasCss(array('nicedit'));
-	}
+	$wsiwyg=false;
+	if(stringContains($PAGE['body'].$TEMPLATE['body'],'data-behavior="editor"')){$wsiwyg=true;}
+	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'data-behavior="tinymce"')){$wsiwyg=true;}
+	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'data-behavior="wysiwyg"')){$wsiwyg=true;}
+	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="editor"')){$wsiwyg=true;}
+	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="tinymce"')){$wsiwyg=true;}
+	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="wysiwyg"')){$wsiwyg=true;}
+	if($wsiwyg){loadExtrasCss('nicedit');}
 	//template
 	if(isset($TEMPLATE['name'])){$_SESSION['w_MINIFY']['template_name']=$TEMPLATE['name'];}
-
 	//page
 	if(isset($PAGE['name'])){$_SESSION['w_MINIFY']['page_name']=$PAGE['name'];}
 }
