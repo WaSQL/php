@@ -40,8 +40,10 @@
 				$tmp=array();
 				foreach($files as $file){$tmp[]=$file['name'];}
 				$add=gitAdd($gitpath,$tmp);
-				echo "Add".printValue($add);
 			}
+			$git=gitStatus($gitpath);
+			setView('default',1);
+			return;
 		break;
 		case 'checkout':
 			if(is_array($files) && count($files)){
