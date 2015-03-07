@@ -23,7 +23,7 @@ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING, WI
 This is the entire agreement between you and the AUTHOR which supersedes any prior agreement or understanding, whether written or oral, relating to the subject matter of this license.
 	
 ### CODE UPDATES
-Updates to this software can be obtained via subversion by going to http://www.wasql.com/svn/source/live. If you make changes/bug fixes to WaSQL you are encouraged to send updates to updates@wasql.com You can request changes/bug fixes but are not guaranteed any. Please send requests to bugs@wasql.com
+Updates to this software can be obtained via github by going to https://github.com/WaSQL. If you make changes/bug fixes to WaSQL you are encouraged to send updates to steve.lloyd@gmail.com You can request changes/bug fixes but are not guaranteed any. Please send requests to steve.lloyd@gmail.com
 
 ### DONATE
 You are under no obligation to donate but f you wish to donate you may via PayPal (http://www.paypal.com) by sending a payment to steve.lloyd@gmail.com
