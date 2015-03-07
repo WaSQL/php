@@ -486,6 +486,98 @@ function selectColor(divid,frmObj,imgid){
 	ajaxGet('/wfiles/colortable.html',divid);
 	}
 //--------------------------
+function colorSelector(id){
+	var obj=getObject(id);
+	if(undefined == obj){alert(id+' does not exist');return false;}
+	var wobj=getObject(id+'_wrapper');
+	if(undefined != wobj){
+    	//already open - close it.
+    	removeId(wobj);
+    	return false;
+	}
+	obj.style.position='relative';
+	this.iconid=id+'_icon';
+	var iconobj=getObject(this.iconid);
+	var h=getHeight(obj);
+	//wrapper
+	this.wrapper=document.createElement('div');
+	this.wrapper.style.width='115px';
+	this.wrapper.style.height='134px';
+	this.wrapper.id=id+'_wrapper';
+	this.wrapper.style.position='absolute';
+	this.wrapper.style.top=h+'px';
+	this.wrapper.style.left='0px';
+	this.wrapper.style.zIndex='99999';
+	this.wrapper.style.border='1px solid #C0C0C0';
+	this.wrapper.style.backgroundColor='#FFFFFF';
+	this.wrapper.style.borderBottom='10px solid #C0C0C0';
+	iconobj.insertAdjacentElement('afterEnd',this.wrapper);
+	//box in wrapper
+	this.colorbox=document.createElement('div');
+	this.colorbox.style.width='80px';
+	this.colorbox.style.height='100px';
+	this.colorbox.style.position='absolute';
+	this.colorbox.style.top='0px';
+	this.colorbox.style.left='0px';
+	this.colorbox.style.cursor='crosshair';
+	this.colorbox.id=id+'_colorbox';
+	this.wrapper.insertAdjacentElement('afterBegin',this.colorbox);
+	//slider in wrapper
+	this.slider=document.createElement('div');
+	this.slider.style.width='35px';
+	this.slider.style.height='100px';
+	this.slider.style.position='absolute';
+	this.slider.style.top='0px';
+	this.slider.style.right='0px';
+	this.slider.style.cursor='crosshair';
+	this.slider.id=id+'_slider';
+	this.wrapper.insertAdjacentElement('afterBegin',this.slider);
+	//value in wrapper
+	this.valuebox=document.createElement('div');
+	this.valuebox.style.width='115px';
+	this.valuebox.style.height='24px';
+	this.valuebox.style.position='absolute';
+	this.valuebox.style.top='100px';
+	this.valuebox.style.left='0px';
+	this.valuebox.id=id+'_valuebox';
+	this.wrapper.insertAdjacentElement('afterBegin',this.valuebox);
+	this.setid=id+'_set';
+	this.btnid=id+'_btn';
+	this.lineid=id+'_line';
+	var valuetext='<div style="font-size:14px;height:30px;width:115px;font-family:arial;position:relative;">';
+	valuetext+='<div style="position:absolute;top:0px;right:3px;cursor:pointer;" onclick="colorSelectorSet(\''+id+'\')" title="Set Color"><span id="'+this.btnid+'" class="icon-checkbox" style="font-size:18px;cursor:pointer"></span></div>';
+	valuetext+='<div style="position:absolute;top:0px;left:5px;" id="'+this.setid+'"></div>';
+	valuetext+='</div>';
+	setText(this.valuebox,valuetext);
+	//call ColorPicker
+	this.picker=ColorPicker(this.slider,this.colorbox,function(hex, hsv, rgb) {
+		var btnid=this.control_id+'_btn';
+		var setid=this.control_id+'_set';
+		var lineid=this.control_id+'_wrapper';
+		hex=hex.toUpperCase();
+		setText(setid,hex);
+		setStyle(btnid,'color',hex);
+		setStyle(lineid,'borderBottom','10px solid '+hex);
+	});
+	this.picker.control_id=id;
+	this.picker.id=this.wrapper.id;
+	if(obj.value.length){
+		this.picker.setHex(obj.value);
+	}
+	return false;
+}
+//--------------------------
+function colorSelectorSet(id){
+	var setid=id+'_set';
+	var wrapper=id+'_wrapper';
+	var iconid=id+'_icon';
+	var hex=getText(setid);
+	setText(id,hex);
+	setStyle(iconid,'color',hex);
+	removeId(wrapper);
+	return false;
+}
+//--------------------------
 function setHex(hex){
 	setText(setHexObj,hex);
 	setText(setHexDiv,'');
