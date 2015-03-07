@@ -4,6 +4,7 @@
 	$gitpath=getWasqlPath();
 	$config=gitConfigList($gitpath);
 	$git=gitStatus($gitpath);
+	//echo printValue($git);exit;
 	if(isset($_REQUEST['file'])){
 		$name=decodeBase64($_REQUEST['file']);
 	}
