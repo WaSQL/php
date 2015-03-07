@@ -253,7 +253,7 @@ function minifyLines($lines,$conditionals=1) {
 			continue;
 		}
 		/*look for variable definations */
-		if(preg_match('/^\@(.+?)\:(.+?)\;/',$tline,$vm)){
+		if(preg_match('/^\@(.+?)\:(.*?)\;/',$tline,$vm)){
 			$vars['@'.$vm[1]]=$vm[2];
 			$csslines[]=rtrim($line);
 			continue;
