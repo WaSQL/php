@@ -545,7 +545,7 @@ function colorSelector(id){
 	this.btnid=id+'_btn';
 	this.lineid=id+'_line';
 	var valuetext='<div style="font-size:14px;height:30px;width:115px;font-family:arial;position:relative;">';
-	valuetext+='<div style="position:absolute;top:0px;right:3px;cursor:pointer;" onclick="colorSelectorSet(\''+id+'\')" title="Set Color"><span id="'+this.btnid+'" class="icon-checkbox" style="font-size:18px;cursor:pointer"></span></div>';
+	valuetext+='<div style="position:absolute;top:0px;right:3px;cursor:pointer;" onclick="colorSelectorSet(\''+id+'\')" title="Set Color"><span id="'+this.btnid+'" class="icon-checkbox" style="font-size:18px;cursor:pointer;color:none;"></span></div>';
 	valuetext+='<div style="position:absolute;top:0px;left:5px;" id="'+this.setid+'"></div>';
 	valuetext+='</div>';
 	setText(this.valuebox,valuetext);
