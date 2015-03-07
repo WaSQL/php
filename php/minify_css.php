@@ -240,6 +240,7 @@ function minifyLines($lines,$conditionals=1) {
 	if(!is_array($lines)){
 		$lines=preg_split('/[\r\n]+/',$lines);
 	}
+	$vars=array();
 	foreach($lines as $line){
 		$tline=trim($line);
      	if(!strlen($tline)){continue;}
@@ -250,6 +251,10 @@ function minifyLines($lines,$conditionals=1) {
      	if(!$conditionals){
 			$csslines[]=rtrim($line);
 			continue;
+		}
+		/*look for variable definations */
+		if(preg_match('/^\@(.+?)\:(.+?)\;/',$tline,$vm)){
+			$vars['@'.$vm[1]]=$vm[2];
 		}
      	/* look for conditonals - must appear at the beginning of the CSS line
 		  supported browser names: firefox|msie|chrome|safari|opera
@@ -312,6 +317,10 @@ function minifyLines($lines,$conditionals=1) {
 			}
 			//remove the conditional statement
 			$line=str_replace($cssmatch[0],'',$line);
+		}
+		//replace any vars
+		foreach($vars as $vkey=>$vval){
+			$line=str_replace($vkey,$vval,$line);
 		}
 		//add the line but trim the right side
 		if(strpos($tline,'@import') === 0){$pre_csslines[]=rtrim($line);}
