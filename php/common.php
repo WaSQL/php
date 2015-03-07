@@ -237,7 +237,7 @@ function buildFormCalendar($name,$params=array()){
 	if(preg_match('/^([0-9]{4,4})-([0-9]{2,2})-([0-9]{2,2})/s',$value,$dmatch)){
 		$value=$dmatch[2] . "-" . $dmatch[3] . "-" . $dmatch[1];
 		}
-	$tag .= ' value="'.$value.'"';
+	$tag .= ' value="'.encodeHtml($value).'"';
 	//only use tcal if the HTML5 date is not supported yet
 	if($type=="text"){
 		loadExtrasJs('tcal');
@@ -331,7 +331,7 @@ function buildFormColor($name,$params=array()){
 	$params['maxlength']=7;
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
+	$tag .= '	<input type="text" name="'.$name.'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'."\n";
 	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.';padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"></span>'."\n";
@@ -350,26 +350,22 @@ function buildFormColor($name,$params=array()){
 * @usage echo buildFormCombo('mydate',$opts,$params);
 */
 function buildFormCombo($name,$opts=array(),$params=array()){
-	$inputid="combo_" . $name;
-	$comboid="comboselect_" . $name;
-	$width=strlen($params['width'])?$params['width']:200;
-	if(!isset($params['style'])){$params['style']='width:'.$width.'px;font-size:9pt;font-family:arial;';}
-	if(isExtraCss('bootstrap')){$params['class'] .= ' form-inline';}
-	$tag = '<input name="'.$name.'" id="'.$inputid.'" type="text"';
-	$params['onkeypress']='return comboComplete(this, event, \''.$comboid.'\')';
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	$params['list']=$params['id'].'_datalist';
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$params['name']=$name;
+	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' last_index="0"';
-	if(isset($_REQUEST['value'])){
-		$tag .= ' value="'.encodeHtml($_REQUEST['value']).'"';
-		}
-	$tag .= '><img alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
-	$selections=getDBFieldSelections($info[$field]);
-	$width=strlen($params['width'])?$params['width']:200;
-	$tag .= '	<div id="'.$comboid.'" class="w_drop" style="z-index:945;width:'.$width.'px;">'."\n";
+	$tag .= ' />'."\n";
+	$tag .= '<datalist id="'.$params['list'].'">'."\n";
 	foreach($opts as $tval=>$dval){
-		$tag .= '		<div><a class="w_link w_dblue" href="#" onClick="setText(\''.$inputid.'\',this.getAttribute(\'tval\'));hideId(\''.$comboid.'\');return false;" tval="'.$tval.'">'.$dval.'</a></div>'."\n";
-    	}
-    $tag .= '	</div>'."\n";
+		$tag .= '	<option value="'.$tval.'">'.$dval.'</option>'."\n";
+	}
+	$tag .= '</datalist>'."\n";
 	return $tag;
 	}
 //---------- begin function buildFormDate-------------------
@@ -389,7 +385,7 @@ function buildFormDate($name,$params=array()){
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
@@ -411,12 +407,56 @@ function buildFormDateTime($name,$params=array()){
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="25" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.$params['-value'].'"'.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="25" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock" style="padding:0px !important;"></span></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
-//---------- begin function buildFormMultiSelect-------------------
+//---------- begin function buildFormHidden--------------------
+/**
+* @describe creates an HTML hidden field
+* @param name string
+* @param opts array
+* @param params array
+* @return string
+* @usage echo buildFormHidden('mydate',$params);
+*/
+function buildFormHidden($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$params['name']=$name;
+	$tag .= '	<input type="hidden" value="'.encodeHtml($params['value']).'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'."\n";
+	return $tag;
+}
+//---------- begin function buildFormPassword--------------------
+/**
+* @describe creates an HTML password field
+* @param name string
+* @param opts array
+* @param params array
+* @return string
+* @usage echo buildFormPassword('mydate',$params);
+*/
+function buildFormPassword($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$params['name']=$name;
+	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'."\n";
+	return $tag;
+}
+//---------- begin FUNCTION BUILDfORMMultiSelect-------------------
 /**
 * @describe creates an HTML multi-select control
 * @param name string
@@ -506,7 +546,7 @@ function buildFormTime($name,$params=array()){
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" data-interval="'.$params['-interval'].'" value="'.$params['-value'].'" '.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" data-interval="'.$params['-interval'].'" value="'.encodeHtml($params['-value']).'" '.$required.' />'."\n";
 	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
@@ -753,124 +793,6 @@ function buildFormSubmit($val='Submit',$name='',$onclick=''){
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
 	$rtn .= '>'.$val."</button>";
 	return $rtn;
-	}
-//---------- begin function buildFormTime-----------------
-/**
-* @describe creates an HTML time control tag
-* @param name string - name of the field
-* @param value string - current time value to set -  as a time string - hh:mm pm
-* @param id_prefix string - defaults to current timestamp.  Used when multiple time controls are called on the same page.
-* @return string
-* @usage echo buildFormTime('ctime',array('-value'=>"12:24 am"));
-*/
-function buildFormTimeOLD($name,$params=array()){
-	//set defaults
-	/*
-		Notes:
-			Noon is 12:00:00  12pm
-			Midnight is 00:00:00  12am
-	*/
-	if(!isset($params['-prefix'])){$params['-prefix']=time();}
-	$tag='';
-	unset($timeparts);
-	if(is_array($params['-value'])){
-		if(preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})$/s',$params['-value'][0],$dmatch)){
-			$params['-value']="{$params['-value'][1]}:{$params['-value'][2]} {$params['-value'][3]}";
-		}
-		elseif(preg_match('/^([0-9]{4,4})-([0-9]{2,2})-([0-9]{2,2})$/s',$params['-value'][0],$dmatch)){
-			$params['-value']="{$params['-value'][1]}:{$params['-value'][2]} {$params['-value'][3]}";
-		}
-		else{
-        	$params['-value']="{$params['-value'][0]}:{$params['-value'][1]} {$params['-value'][2]}";
-		}
-    }
-	if(strlen($params['-value'])){
-		//strip off date from value if given
-		if(preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})\ (.+)$/s',$params['-value'],$dmatch)){
-			$params['-value']=trim($dmatch[4]);
-		}
-		elseif(preg_match('/^([0-9]{4,4})-([0-9]{2,2})-([0-9]{2,2})\ (.+)$/s',$params['-value'],$dmatch)){
-			$params['-value']=trim($dmatch[4]);
-		}
-    	$timeparts=preg_split('/[\:\ ]+/',strtolower($params['-value']));
-    	if(is_array($timeparts)){
-			switch($timeparts[2]){
-                case 'am':
-                case 'pm':break;
-                default:
-                	if((integer)$timeparts[0] == 0 && (integer)$timeparts[1] == 0 && (integer)$timeparts[2] == 0){
-                    	//midnight (00:00:00)
-						$timeparts[0]=12;
-						$timeparts[1]='00';
-						$timeparts[2]='am';
-					}
-					elseif((integer)$timeparts[0] == 0){
-						$timeparts[0]=12;
-						$timeparts[2]='am';
-					}
-					elseif((integer)$timeparts[0] == 12){
-						//noon
-                    	$timeparts[2]='pm';
-					}
-					elseif((integer)$timeparts[0] > 12){
-						$timeparts[0]=(integer)$timeparts[0] - 12;
-						$timeparts[2]='pm';
-					}
-					else{
-						$timeparts[2]='am';
-			        }
-				break;
-			}
-		}
-	}
-	//Hour
-	$opts=array(1,2,3,4,5,6,7,8,9,10,11,12);
-	$id="{$params['-prefix']}_{$name}_hour";
-    $tag .= '<select id="'.$id.'" name="'.$name.'[]" title="Note: Noon is 12pm" style="font-size:9pt;">'."\n";
-	if(!isset($params['-required']) || $params['-required'] !=1){
-		$tag .= '	<option></option>'."\n";
-    }
-	foreach($opts as $opt){
-		$dname=$opt<10?'0'.$opt:$opt;
-        $tag .= '	<option value="'.$dname.'"';
-        //selected?
-        if(isset($timeparts[0]) && $timeparts[0]==$dname){$tag .= ' selected';}
-		$tag .= '>'.$dname.'</option>'."\n";
-    }
-    $tag .= '</select>';
-    //Minute
-    $opts=array(0,5,10,15,20,25,30,35,40,45,50,55);
-    $id="{$params['-prefix']}_{$name}_minute";
-    $tag .= '<select id="'.$id.'" name="'.$name.'[]" style="font-size:9pt;">'."\n";
-	if(!isset($params['-required']) || $params['-required'] !=1){
-		$tag .= '	<option></option>'."\n";
-    }
-    for($x=0;$x<60;$x++){
-		$opt=$x;
-		$dname=$opt<10?'0'.$opt:$opt;
-        $tag .= '	<option value="'.$dname.'"';
-        //selected?
-        if(isset($timeparts[1]) && $timeparts[1]==$dname){$tag .= ' selected';}
-		$tag .= '>'.$dname.'</option>'."\n";
-    }
-    $tag .= '</select>';
-    //Am Pm
-    $opts=array('am','pm');
-    $id="{$params['-prefix']}_{$name}_ampm";
-    $tag .= '<select id="'.$id.'" name="'.$name.'[]" style="font-size:9pt;">'."\n";
-	if(!isset($params['-required']) || $params['-required'] !=1){
-		$tag .= '	<option></option>'."\n";
-        }
-	foreach($opts as $opt){
-		$dname=strtolower($opt);
-        $tag .= '	<option value="'.$opt.'"';
-        //selected?
-        if(isset($timeparts[2]) && $timeparts[2]==$dname){$tag .= ' selected';}
-		$tag .= '>'.$dname.'</option>'."\n";
-    }
-    $tag .= '</select>'."\n";
-    $tag .= '<span onclick="setTimeField(\''.$params['-prefix'].'\',\''.$name.'\');return false;" class="icon-clock w_pointer w_big" title="Set to Current Time"></span>'."\n";
-	return $tag;
 }
 //---------- begin function buildHtmlBegin-------------------
 /**
@@ -1890,7 +1812,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','spellcheck','max','min','pattern','placeholder','readonly','step',
-		'lang','autocorrect',
+		'lang','autocorrect','list',
 		'pattern'
 		);
 	//change the required attribute to _required since it messes up HTML5
