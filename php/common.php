@@ -309,8 +309,8 @@ function buildFormCheckbox($name, $pairs=array(), $params=array()){
 * @param name string - field name
 * @param params array
 *	[-formname] string - specify the form name - defaults to addedit
-*	[-value] string - specify the current value
-*	[-required] boolean - make it a required field - defaults to addedit false
+*	[value] string - specify the current value
+*	[required] boolean - make it a required field - defaults to addedit false
 *	[id] string - specify the field id - defaults to formname_fieldname
 * @return string - html color control
 * @usage echo buildFormColor('color');
