@@ -376,6 +376,10 @@ class GitRepo {
 	        	$rtn['files'][]=$this->fileinfo(trim($m[1]),'modified');
 	        	continue;
 			}
+			elseif(preg_match('/^deleted\:(.+)$/i',$line,$m)){
+	        	$rtn['files'][]=$this->fileinfo(trim($m[1]),'deleted');
+	        	continue;
+			}
 			elseif(preg_match('/^(new|new file)\:(.+)$/i',$line,$m)){
 	        	$rtn['files'][]=$this->fileinfo(trim($m[2]),'added');
 	        	continue;
@@ -422,8 +426,20 @@ class GitRepo {
 	private function fileinfo($name,$status){
 		$repo=$this->repo_path;
 		$afile="{$repo}/{$name}";
-		$info=lstat($afile);
 		$guid=sha1($name);
+		if(!is_file($afile)){
+			//deleted
+        	$rtn=array(
+				'name'		=> $name,
+				'guid'		=> $guid,
+				'status'	=> $status,
+	        	'afile'		=> $afile,
+			);
+			return $rtn;
+
+		}
+		$info=lstat($afile);
+
 	    $rtn=array(
 			'name'		=> $name,
 			'guid'		=> $guid,
