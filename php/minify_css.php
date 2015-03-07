@@ -247,17 +247,28 @@ function minifyLines($lines,$conditionals=1) {
      	//ignore comments
      	if(strpos($tline,"//") === 0){continue;}
      	if(strpos($tline,"/*") === 0 && strpos(strrev($tline),"/*") === 0){continue;}
+     	/*look for variable definations */
+     	preg_match_all('/\@([a-zA-Z0-9\-\_]+?)\:([^\{\}]*?)\;/ism',$tline,$vm);
+     	for($v=0;$v<count($vm[1]);$v++){
+			$vars['@'.$vm[1][$v]]=$vm[2][$v];
+			$line=str_replace($vm[0][$v],'',$line);
+		}
+		//replace any vars
+		foreach($vars as $vkey=>$vval){
+			$line=str_replace($vkey,$vval,$line);
+		}
      	//skip conditionals for minified files
      	if(!$conditionals){
+			//remove conditionals
+			preg_match_all('/\;\[([a-zA-Z0-9\s\|]+?)\]/ism',$line,$vm);
+			foreach($vm[1] as $conditional){
+				$conditional="[{$conditional}]";
+				$line=str_replace($conditional,'',$line);
+			}
 			$csslines[]=rtrim($line);
 			continue;
 		}
-		/*look for variable definations */
-		if(preg_match('/^\@(.+?)\:(.*?)\;/',$tline,$vm)){
-			$vars['@'.$vm[1]]=$vm[2];
-			$csslines[]=rtrim($line);
-			continue;
-		}
+
      	/* look for conditonals - must appear at the beginning of the CSS line
 		  supported browser names: firefox|msie|chrome|safari|opera
 		  supported operators: lt, gt, lte, gte, eq, not
@@ -319,10 +330,6 @@ function minifyLines($lines,$conditionals=1) {
 			}
 			//remove the conditional statement
 			$line=str_replace($cssmatch[0],'',$line);
-		}
-		//replace any vars
-		foreach($vars as $vkey=>$vval){
-			$line=str_replace($vkey,$vval,$line);
 		}
 		//add the line but trim the right side
 		if(strpos($tline,'@import') === 0){$pre_csslines[]=rtrim($line);}
