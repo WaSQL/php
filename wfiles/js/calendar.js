@@ -53,6 +53,56 @@ function Calendar(target_id,month, year, s) {
 		this.showtime=false;
 		///caldiv.style.width='175px';
 	}
+	//time interval
+	var interval=tobj.getAttribute('data-interval');
+	if(undefined != interval){
+		switch(parseInt(interval)){
+			case 1:
+				//every minute
+				this.ms=new Array(
+					'00','01','02','03','04','05','06','07','08','09','10','11','12','13','14',
+					'15','16','17','18','19','20','21','22','23','24','25','26','27','28','29',
+					'30','31','32','33','34','35','36','37','38','39','40','41','42','43','44',
+					'45','46','47','48','49','50','51','52','53','54','55','56','57','58','59'
+				);
+				this.scrollPos=8000;
+			break;
+			case 5:
+				//every five minutes
+				this.ms=new Array('00','05','10','15','20','25','30','35','40','45','50','55');
+				this.scrollPos=1600;
+			break;
+			case 10:
+				//every ten minutes
+				this.ms=new Array('00','10','20','30','40','50');
+				this.scrollPos=800;
+			break;
+			case 15:
+				//every fifteen minutes
+				this.ms=new Array('00','15','30','45');
+				this.scrollPos=530;
+			break;
+			case 60:
+				//every hour
+				this.ms=new Array('00');
+				this.scrollPos=130;
+			break;
+
+			default:
+				//default to every 30 minutes
+				this.ms=new Array('00','30');
+				this.scrollPos=320;
+			break;
+			break;
+		}
+	}
+	else{
+		//default to every 30 minutes
+		this.ms=new Array('00','30');
+		this.scrollPos=320;
+	}
+
+
 	//get current value
 	this.hasvalue=false;
 	var cval=getText(tobj);
@@ -213,7 +263,6 @@ function Calendar(target_id,month, year, s) {
 			this.showtimes=this.id+'_showtimes';
 			html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px !important;">'+"\n";
 			var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
-			var ms=new Array('00','30');
 			for(var h=0;h<hrs.length;h++){
 				var a='am';
 				var hours;
@@ -225,10 +274,10 @@ function Calendar(target_id,month, year, s) {
 					hours=hrs[h];
 				}
 				var hh=CalendarTwoDigits(hrs[h]);
-				for(var m=0;m<ms.length;m++){
-					var time=hours+':'+ms[m]+' '+a;
-					var onclick=hh+':'+ms[m]+':00';
-					var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(ms[m]),0,0);
+				for(var m=0;m<this.ms.length;m++){
+					var time=hours+':'+this.ms[m]+' '+a;
+					var onclick=hh+':'+this.ms[m]+':00';
+					var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(this.ms[m]),0,0);
 					var active=false;
 					if(this.hasvalue && this.cvalHr==cdate.getHours() && this.cvalMin==cdate.getMinutes()){active=true;}
 					html += '<div onclick="CalendarSetTime(\''+this.target_id+'\',\''+onclick+'\');" class="w_calendar_time';
@@ -267,7 +316,6 @@ function Calendar(target_id,month, year, s) {
 		this.showtimes=this.id+'_showtimes';
 		html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
 		var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
-		var ms=new Array('00','30');
 		for(var h=0;h<hrs.length;h++){
 			var a='am';
 			var hours;
@@ -279,10 +327,10 @@ function Calendar(target_id,month, year, s) {
 				hours=hrs[h];
 			}
 			var hh=CalendarTwoDigits(hrs[h]);
-			for(var m=0;m<ms.length;m++){
-				var time=hours+':'+ms[m]+' '+a;
-				var onclick=hh+':'+ms[m]+':00';
-				var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(ms[m]),0,0);
+			for(var m=0;m<this.ms.length;m++){
+				var time=hours+':'+this.ms[m]+' '+a;
+				var onclick=hh+':'+this.ms[m]+':00';
+				var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(this.ms[m]),0,0);
 				var active=false;
 				if(this.hasvalue && this.cvalHr==cdate.getHours() && this.cvalMin==cdate.getMinutes()){active=true;}
 				html += '<div onclick="CalendarSetTime(\''+this.target_id+'\',\''+onclick+'\');" class="w_calendar_time';
@@ -311,7 +359,7 @@ function Calendar(target_id,month, year, s) {
 
 	if(this.showtime){
     	var sobj=getObject(this.showtimes);
-    	sobj.scrollTop=320;
+    	sobj.scrollTop=this.scrollPos;
 	}
 	return false;
 }
