@@ -1,22 +1,32 @@
-##WaSQL V2 is licensed under the MIT license
-###The MIT License (MIT)
+# License Information for WaSQL
+Copyright Steven Lloyd  All Rights Reserved. "WaSQL" and "wasql.com" are trademarks of Steven Lloyd.
 
-Copyright (c) [year] [fullname]
+### LICENSE GRANT.
+Steven Lloyd ("the AUTHOR") grants you a non-exclusive license to use the SOFTWARE for any personal and/or commercial purposes. “The SOFTWARE” refers to the wasql code as well as all related data, text and other files contained with it. This license does not entitle you to receive from AUTHOR hard-copy documentation, technical support, telephone assistance, or enhancements or updates to the SOFTWARE.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+### OWNERSHIP
+The SOFTWARE is owned and copyrighted by the AUTHOR. Your license confers no title or ownership in the SOFTWARE and should not be construed as a sale of any right in the SOFTWARE.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+### COPYRIGHT.
+The SOFTWARE is protected by United States copyright law and international treaty provisions. You acknowledge that no title to the intellectual property in the SOFTWARE is transferred to you.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+### SEVERABILITY.
+In the event of invalidity of any provision of this license, the parties agree that such invalidity shall not affect the validity of the remaining portions of this license.
+
+### EXCLUSION OF OTHER WARRANTIES.
+EXCEPT AS PROVIDED ABOVE, THE SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND INCLUDING WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE.
+
+### LIMITATION OF LIABILITY.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, LOST PROFITS, BUSINESS INTERRUPTION, OR LOST INFORMATION) ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+### ENTIRE AGREEMENT.  
+This is the entire agreement between you and the AUTHOR which supersedes any prior agreement or understanding, whether written or oral, relating to the subject matter of this license.
+	
+### CODE UPDATES
+Updates to this software can be obtained via subversion by going to http://www.wasql.com/svn/source/live. If you make changes/bug fixes to WaSQL you are encouraged to send updates to updates@wasql.com You can request changes/bug fixes but are not guaranteed any. Please send requests to bugs@wasql.com
+
+### DONATE
+You are under no obligation to donate but f you wish to donate you may via PayPal (http://www.paypal.com) by sending a payment to steve.lloyd@gmail.com
+
+### RESERVED RIGHTS.
+All rights not expressly granted here are reserved to the AUTHOR.
