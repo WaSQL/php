@@ -3313,7 +3313,7 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'color':
 			unset($info[$field]['height']);
-			$info[$field]['width']=80;
+			unset($info[$field]['width']);
 			break;
 		case 'slider':
 			$info[$field]['min']=$info[$field]['height'];
@@ -3539,33 +3539,7 @@ function getDBFieldTag($params=array()){
                 }
 			break;
 		case 'color':
-			$tag .= '<table class="w_table w_nopad">';
-			$tag .= '	<tr valign="middle" class="w_align_left">';
-			if(strlen($info[$field]['name'])){
-				$colorbox=$info[$field]['name'] . '_boxdiv';
-				$colordiv=$info[$field]['name'] . '_imgdiv';
-				$colorid=$info[$field]['name'] . '_inpdiv';
-            	}
-            else{
-				$colorbox=$field . '_boxdiv';
-				$colordiv=$field . '_imgdiv';
-				$colorid=$field . '_inpdiv';
-				}
-
-            $tag .= '		<td><input id="'.$colorid.'" type="text"';
-			$tag .= setTagAttributes($info[$field]);
-			if(isset($info[$field]['value'])){
-				$tag .= ' value="'.$info[$field]['value'].'"';
-				}
-			$tag .= '></td>'."\n";
-			$tag .= '		<td valign="top"><div id="'.$colordiv.'"';
-			if(isset($info[$field]['value'])){
-				$tag .= ' style="background-color:'.$info[$field]['value'].';"';
-				}
-			$tag .= '><img alt="Show Color Control" title="Show Color Control" src="/wfiles/colors.gif" width="20" height="20" onClick="selectColor(\''.$colorbox.'\',\''.$colorid.'\',\''.$colordiv.'\');return false;" style="cursor:pointer;">';
-			$tag .= '<div id="'.$colorbox.'" style="position:absolute;"></div></td>'."\n";
-            $tag .= '	</tr>'."\n";
-            $tag .= '</table>'."\n";
+			$tag=buildFormColor($info[$field]['name'],$info[$field]);
 			break;
 		case 'combo':
 			//editable selection list
