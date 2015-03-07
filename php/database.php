@@ -3542,40 +3542,15 @@ function getDBFieldTag($params=array()){
 			$tag=buildFormColor($info[$field]['name'],$info[$field]);
 			break;
 		case 'combo':
-			//editable selection list
-			if(!isset($info[$field]['width'])){$info[$field]['width']=140;}
-			if(strlen($info[$field]['name'])){
-				$inputid="combo_" . $info[$field]['name'];
-				$comboid="comboselect_" . $info[$field]['name'];
-            	}
-            else{
-				$inputid="combo_" . $field;
-				$comboid="comboselect_" . $field;
-				}
-			$tag .= '<table class="w_table w_nopad">'."\n";
-			$tag .= '	<tr valign="middle" class="w_align_left">'."\n";
-			$tag .= '		<td class="nowrap"><div style="position:relative">'."\n";
-			$tag .= '			<input id="'.$inputid.'" type="text"';
-			$info[$field]['onkeypress']='return comboComplete(this, event, \''.$comboid.'\')';
-			$tag .= setTagAttributes($info[$field]);
-			$tag .= ' last_index="0"';
-			if(isset($info[$field]['value'])){
-				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
-				}
-			$tag .= '><img class="w_noprint3" alt="Show Selections" title="Show Selections" src="/wfiles/dropdown.gif" width="16" height="16" onClick="return showDropDown(\''.$comboid.'\');" style="cursor:pointer;"><br>'."\n";
 			$selections=getDBFieldSelections($info[$field]);
-			$width=strlen($info[$field]['width'])?$info[$field]['width']:140;
-			$tag .= '	<div id="'.$comboid.'" class="w_drop" style="z-index:945;width:'.$width.'px;">'."\n";
-			if(is_array($selections['tvals'])){
-				$cnt=count($selections['tvals']);
-				for($x=0;$x<$cnt;$x++){
-					$tag .= '		<div><a class="w_link" href="#" onClick="setText(\''.$inputid.'\',this.getAttribute(\'tval\'));hideId(\''.$comboid.'\');return false;" tval="'.$selections['tvals'][$x].'">'.$selections['dvals'][$x].'</a></div>'."\n";
-    			}
-			}
-            $tag .= '	</div>'."\n";
-			$tag .= '		</div></td>'."\n";
-			$tag .= '	</tr>'."\n";
-            $tag .= '</table>'."\n";
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormCombo($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		case 'date':
 			$name=$info[$field]['name'];
@@ -3608,25 +3583,6 @@ function getDBFieldTag($params=array()){
 			}
 			$tag .= buildFormDateTime($name,$tagopts);
 			break;
-			//time part
-			$tagopts=array();
-			//check for value
-			if(isset($params['-value'])){$tagopts['-value']=$params['-value'];}
-			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
-			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
-			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];}
-			//set prefix to formname
-			if(isset($params['-formname'])){$tagopts['-prefix']=$params['-formname'];}
-			//check for required
-			if(isset($info[$field]['_required']) && $info[$field]['_required'] ==1){
-				$tagopts['-required']=1;
-				if(!isset($tagopts['-value'])){
-                	$tagopts['-value']=date('h:i:s');
-				}
-			}
-			$tag .= buildFormTime($info[$field]['name'],$tagopts);
-			break;
-		//File
 		case 'file':
 			//set path of where to store this file in
 			$name=$info[$field]['name'];
@@ -3660,12 +3616,7 @@ function getDBFieldTag($params=array()){
 		case 'formula':
 			break;
 		case 'hidden':
-			$tag .= '<input type="hidden"';
-			$tag .= setTagAttributes($info[$field]);
-			if(isset($info[$field]['value'])){
-				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
-				}
-			$tag .= '>'."\n";
+			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
 		case 'multiselect':
 			$selections=getDBFieldSelections($info[$field]);
@@ -3680,12 +3631,7 @@ function getDBFieldTag($params=array()){
 			break;
 		//Password
 		case 'password':
-			$tag .= '<input type="password"';
-			$tag .= setTagAttributes($info[$field]);
-			if(isset($info[$field]['value'])){
-				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
-				}
-			$tag .= '>'."\n";
+			$tag=buildFormPassword($info[$field]['name'],$info[$field]);
 			break;
 		//Radio
 		case 'radio':
@@ -3818,70 +3764,14 @@ function getDBFieldTag($params=array()){
 		//Select
 		case 'select':
 			$selections=getDBFieldSelections($info[$field]);
-			if($field=='state' && (!is_array($selections['tvals']) || !count($selections['tvals']) || (count($selections['tvals'])==1 && !strlen($selections['tvals'][0])))){
-				$params['inputtype']="text";
-				if(!isset($params['width'])){
-                	$params['width']=150;
-				}
-				$tag .= getDBFieldTag($params);
-				break;
-			}
-			$name=$info[$field]['name'];
-			//set value
-			$value='';
-   			if(isset($params['value'])){$value=$params['value'];}
-			elseif(isset($_REQUEST[$name])){$value=$_REQUEST[$name];}
-			elseif(isset($_REQUEST[$field])){$value=$_REQUEST[$field];}
-			elseif(isset($info[$field]['value'])){$value=$info[$field]['value'];}
-			if(strlen($value)){$info[$field]['data-value']=$value;}
-			//if($field=='state'){echo "selections" . printValue(array($selections,$info[$field]));}
-			if(is_array($selections['tvals']) && count($selections['tvals'])){
-                $tag .= '<select';
-				$tag .= setTagAttributes($info[$field]);
-				$tag .= '>'."\n";
-				$selected=0;
-
-				$message=isset($info[$field]['message'])?$info[$field]['message']:' -- choose --';
-				//if(!isset($info[$field]['_required']) || $info[$field]['_required'] !=1 || isset($info[$field]['message'])){
-					$tag .= '	<option value="">'.$message.'</option>'."\n";
-                //}
-                $cnt=count($selections['tvals']);
-				for($x=0;$x<$cnt;$x++){
-					//-filter:
-					if(isset($info['-tval_filter']) && !stristr($info['-tval_filter'],$selections['tvals'][$x])){continue;}
-                    if(isset($info['-dval_filter']) && !stristr($info['-dval_filter'],$selections['dvals'][$x])){continue;}
-                    if($selections['tvals'][$x]=='--' && $selections['dvals'][$x]=='--'){
-                		$selections['tvals'][$x]='';
-                		$selections['dvals'][$x]='----------';
-					}
-					$tag .= '	<option value="'.$selections['tvals'][$x].'"';
-                    //selected?
-                    if(strlen($value)){
-						if($value==$selections['tvals'][$x] || $value==$selections['dvals'][$x]){
-							$tag .= ' selected';
-							$selected=1;
-						}
-					}
-					$tag .= '>'.$selections['dvals'][$x].'</option>'."\n";
-                }
-                $tag .= '</select>'."\n";
-                if($selected==1 && isset($params['-formname']) && isset($info[$field]['onchange'])){
-					$fname=strlen($info[$field]['name'])?$info[$field]['name']:$field;
-					$fieldstr="document.{$params['-formname']}.{$fname}";
-					$onchange=preg_replace('/this/',$fieldstr,$info[$field]['onchange']);
-					$tag .= buildOnLoad($onchange);
-                }
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
             }
-            else{
-            	$tag .= '<select';
-				$tag .= setTagAttributes($info[$field]);
-				$tag .= '>'."\n";
-				$selected=0;
-				$name=$info[$field]['name'];
-				$message=isset($info[$field]['message'])?$info[$field]['message']:' -- --';
-				$tag .= '	<option value="">'.$message.'</option>'."\n";
-				$tag .= '</select>'."\n";
-			}
+            $tag=buildFormSelect($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		case 'signature':
 			//$tag .= printValue($tagopts).printValue($info[$field]);break;
