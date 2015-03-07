@@ -334,7 +334,7 @@ function buildFormColor($name,$params=array()){
 	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'."\n";
-	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.' !important;padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"></span>'."\n";
+	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.';padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
