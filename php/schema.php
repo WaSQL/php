@@ -411,6 +411,7 @@ function createWasqlTable($table=''){
 			$fields['session_id']="char(40) NOT NULL UNIQUE";
 			$fields['session_data']="mediumtext NULL";
 			$fields['touchtime']="int NOT NULL Default 0";
+			$fields['json']="tinyint(1) NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"touchtime"));
