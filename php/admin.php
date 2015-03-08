@@ -37,6 +37,11 @@ if(isset($_REQUEST['_pushfile'])){
    	}
 //load our own session handling routines
 include_once("$progpath/sessions.php");
+$fields=getDBFields('_sessions');
+if(!in_array('json',$fields)){
+	$query="ALTER TABLE _sessions ADD json ".databaseDataType('tinyint')." NOT NULL DEFAULT 1;";
+	$ok=executeSQL($query);
+}
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){
 	if(is_array($val)){continue;}
