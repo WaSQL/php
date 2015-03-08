@@ -53,9 +53,13 @@ function sessionClose() {
 function sessionRead($session_id) {
 	global $USER;
 	$table=sessionTable();
-	$rec=getDBRecord(array('-query'=>"select _id,session_data from {$table} where session_id = '{$session_id}';"));
+	$rec=getDBRecord(array('-query'=>"select _id,session_data,json from {$table} where session_id = '{$session_id}';"));
 	$ctime = time();
 	if(isset($rec['_id'])){
+		//custom decode if session is stored in JSON
+		if($rec['json']==1){
+			$_SESSION=json_decode($rec['session_data'],true);
+		}
 		//update touchtime
 		executeSQL("UPDATE {$table} SET touchtime = {$ctime} WHERE session_id = '{$session_id}';");
 		return $rec['session_data'];
@@ -63,11 +67,11 @@ function sessionRead($session_id) {
 	//no session found  - add a blank record
 	$cuser=0;$cdate=date('Y-m-d H:i:s');
 	if(isNum($CUSER['_id'])){$cuser=$CUSER['_id'];}
-	$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id, touchtime) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime});");
+	$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
 	return '';
 }
 /* sessionWrite
-	The write callback is called when the session needs to be saved and closed. 
+	The write callback is called when the session needs to be saved and closed.
 	This callback receives the current session ID a serialized version the $_SESSION superglobal.
 	The serialization method used internally by PHP is specified in the session.serialize_handler ini setting.
 	The serialized session data passed to this callback should be stored against the passed session ID.
@@ -76,10 +80,14 @@ function sessionRead($session_id) {
 	Note that after executing this function PHP will internally execute the close callback.
 */
 function sessionWrite($session_id, $session_data) {
+	//decode the data and then store it as json instead so other programs can also share the session data
+	session_decode($session_data);
+    $session_data = json_encode($_SESSION);
+
 	$table=sessionTable();
 	$ctime = time();
 	$session_data=databaseEscapeString($session_data);
-	$query="UPDATE {$table} SET session_data = '{$session_data}', touchtime = {$ctime} WHERE session_id = '{$session_id}';";
+	$query="UPDATE {$table} SET session_data = '{$session_data}', touchtime = {$ctime}, json=1 WHERE session_id = '{$session_id}';";
 	executeSQL($query);
     return true;
 }
