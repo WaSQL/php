@@ -57,9 +57,7 @@ function sessionRead($session_id) {
 	$ctime = time();
 	if(isset($rec['_id'])){
 		//custom decode if session is stored in JSON
-		if($rec['json']==1){
-			$_SESSION=json_decode($rec['session_data'],true);
-		}
+		$_SESSION=json_decode($rec['session_data'],true);
 		//update touchtime
 		executeSQL("UPDATE {$table} SET touchtime = {$ctime} WHERE session_id = '{$session_id}';");
 		return $rec['session_data'];
