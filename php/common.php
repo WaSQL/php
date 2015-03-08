@@ -8157,10 +8157,12 @@ function postURL($url,$params=array()) {
 	if(isset($params['-user_agent'])){
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 		}
-	if(isset($params['-ssl']) && $params['-ssl']==false){
-		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, FALSE);
-		}
+	if(stringBeginsWith($url,'https') || $params['-ssl']){
+		$cacert=dirname(__FILE__) . '/cacert.pem';
+		curl_setopt($process, CURLOPT_CAINFO, $cacert);
+		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 1);
+	}
 	if(isset($params['-ssl_version'])){
 		curl_setopt($process, CURLOPT_SSLVERSION,$params['-ssl_version']);
 		}
@@ -8282,10 +8284,11 @@ function postXML($url='',$xml='',$params=array()) {
     curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);
-    if(!isset($params['-ssl']) || !$params['-ssl']){
-    	curl_setopt ($process, CURLOPT_SSL_VERIFYPEER, 0);
-    	curl_setopt ($process, CURLOPT_SSL_VERIFYHOST, 2);
-    	$rtn['_debug'][]='set ssl';
+    if(stringBeginsWith($url,'https') || $params['-ssl']){
+		$cacert=dirname(__FILE__) . '/cacert.pem';
+		curl_setopt($process, CURLOPT_CAINFO, $cacert);
+		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 1);
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
     curl_setopt($process,CURLOPT_POSTFIELDS,$xml);
