@@ -5442,7 +5442,13 @@ function getDBRecords($params=array()){
 	$query_result=@databaseQuery($query);
   	if(!$query_result){
 		$e=getDBError();
-		echo printValue($e);exit;
+		//check to see if we can fix the error
+		if(isset($params['-query']) && stringContains($params['-query'],'from _sessions') && stringContains($e,"Unknown column 'json'")){
+        	$query="ALTER TABLE _sessions ADD json ".databaseDataType('tinyint')." NOT NULL DEFAULT 1;";
+			$ok=executeSQL($query);
+			return getDBRecords($params);
+		}
+		echo printValue($e).printValue($params);exit;
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){
 				return setWasqlError(debug_backtrace(),getDBError(),$query);
