@@ -32,18 +32,11 @@ date_default_timezone_set('America/Denver');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $progpath=dirname(__FILE__);
 include_once("$progpath/common.php");
-include_once("$progpath/database.php");
 if(isset($_REQUEST['_pushfile'])){
  	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
    	}
-$fields=getDBFields('_sessions');
-if(is_array($fields) && !in_array('json',$fields)){
-	$query="ALTER TABLE _sessions ADD json ".databaseDataType('tinyint')." NOT NULL DEFAULT 1;";
-	$ok=executeSQL($query);
-}
 //load our own session handling routines
 include_once("$progpath/sessions.php");
-
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){
 	if(is_array($val)){continue;}
