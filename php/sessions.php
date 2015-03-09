@@ -21,6 +21,11 @@ if(!isDBTable('_sessions')){
 	}
 	$ok=createWasqlTable('_sessions');
 }
+$fields=getDBFields('_sessions');
+if(!in_array('json',$fields)){
+	$query="ALTER TABLE _sessions ADD json ".databaseDataType('tinyint')." NOT NULL DEFAULT 1;";
+	$ok=executeSQL($query);
+}
 global $CONFIG;
 if(isset($CONFIG['database_sessions']) && $CONFIG['database_sessions']==1){
 	session_set_save_handler('sessionOpen', 'sessionClose', 'sessionRead', 'sessionWrite', 'sessionDestroy', 'sessionGarbageCollect');
