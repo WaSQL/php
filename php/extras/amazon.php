@@ -16,6 +16,7 @@ function amazonSendMail($params=array()){
 	if(!isset($params['message'])){return "No Message";}
 	$progpath=dirname(__FILE__);
 	require_once("$progpath/amazon/SimpleEmailService.php");
+	require_once("$progpath/amazon/SimpleEmailServiceMessage.php");
 	$ses = new SimpleEmailService($params['-accesskey'], $params['-secretkey']);
 	$m = new SimpleEmailServiceMessage();
 	if(!is_array($params['to'])){$params['to']=preg_split('/[\,\;]+/',$params['to']);}
