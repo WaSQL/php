@@ -8214,7 +8214,7 @@ function postURL($url,$params=array()) {
 			if(!preg_match('/\:/',$part)){continue;}
 			list($key,$val)=preg_split('/\:/',trim($part),2);
 			$key=strtolower(trim($key));
-			$headers[$key]=trim($val);
+			$headers[$key][]=trim($val);
         }
         foreach($headers as $k=>$v){
         	if(count($v)==1){$rtn['headers'][$k]=$v[0];}
