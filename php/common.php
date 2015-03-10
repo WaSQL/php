@@ -8209,13 +8209,18 @@ function postURL($url,$params=array()) {
 		$rtn['body']=trim($parts[1]);
 		//parse the header into an array
 		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
+		$headers=array();
 		foreach($parts as $part){
 			if(!preg_match('/\:/',$part)){continue;}
 			list($key,$val)=preg_split('/\:/',trim($part),2);
 			$key=strtolower(trim($key));
-			$rtn['headers'][$key]=trim($val);
-        	}
-    	}
+			$headers[$key]=trim($val);
+        }
+        foreach($headers as $k=>$v){
+        	if(count($v)==1){$rtn['headers'][$k]=$v[0];}
+        	else{$rtn['headers'][$k]=$v;}
+		}
+    }
 	$rtn['url']=$url;
 	if(isset($params['-xml']) && $params['-xml']==1 && strlen($rtn['body'])){
 		$rtn['xml_array']=xml2Array($rtn['body']);
