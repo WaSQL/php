@@ -8161,7 +8161,7 @@ function postURL($url,$params=array()) {
 		$cacert=dirname(__FILE__) . '/cacert.pem';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 1);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
 	}
 	if(isset($params['-ssl_version'])){
 		curl_setopt($process, CURLOPT_SSLVERSION,$params['-ssl_version']);
