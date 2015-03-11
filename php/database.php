@@ -4181,11 +4181,11 @@ function includeDBOnce($params=array()){
 		return 'includeDBOnce Error: No record. ' .$rec. printValue($params);
 	}
 	$content=trim($rec[$field]);
-	if(!stringBeginsWith($content,'<?')){
-    	$content="<?php
-    	{$content}
-    	?>";
-	}
+	$content=preg_replace('/^\<\?php/is','',$content);
+	$content=preg_replace('/^\<\?/is','',$content);
+	$content=preg_replace('/\?\>$/s','',$content);
+	$content="<?php\r\n{$content}";
+	$content=trim($content);
 	$where=preg_replace('/[^a-z0-9]+/i','_',$params['-where']);
 	$where=preg_replace('/\_+$/','',$where);
 	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
