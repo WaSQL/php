@@ -65,6 +65,11 @@ while(1){
         	}
         #skip this host if nocron is set
         next if $Config{$host}{nocron};
+        #skip this host if cron=0
+        next if defined $Config{$host}{cron} && $Config{$host}{cron}==0;
+        #skip this host is stage and cron is not set
+        next if $Config{$host}{stage} && !$Config{$host}{cron};
+        #check for dups
         $runcheck_key=$Config{$host}{dbhost}.$Config{$host}{dbname}.$Config{$host}{dbtype};
         if(length($runcheck{$runcheck_key})){
 			#if($filter{echo}){print " - skipping dup entry - $runcheck_key\n";}
