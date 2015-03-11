@@ -6,9 +6,8 @@ $progpath=dirname(__FILE__);
 	References: http://www.amazonsellercommunity.com/forums/thread.jspa?threadID=173132&tstart=1
 	https://github.com/daniel-zahariev/php-aws-ses
 	https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:
+	http://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html
 */
-
-
 function amazonSendMail($params=array()){
 	if(!isset($params['-accesskey'])){return "No Access Key";}
 	if(!isset($params['-secretkey'])){return "No Secret Key";}
@@ -21,6 +20,7 @@ function amazonSendMail($params=array()){
 	require_once("$progpath/amazon/SimpleEmailServiceMessage.php");
 	require_once("$progpath/amazon/SimpleEmailServiceRequest.php");
 	$ses = new SimpleEmailService($params['-accesskey'], $params['-secretkey']);
+	$ses->verifyPeer(0);
 	$m = new SimpleEmailServiceMessage();
 	if(!is_array($params['to'])){$params['to']=preg_split('/[\,\;]+/',$params['to']);}
 	$m->addTo($params['to']);
