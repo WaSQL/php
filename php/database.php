@@ -3771,7 +3771,9 @@ function getDBFieldTag($params=array()){
 				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
 				$options[$tval]=$dval;
             }
-            $tag=buildFormSelect($info[$field]['fieldname'],$options,$info[$field]);
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelect($name,$options,$info[$field]);
 			break;
 		case 'signature':
 			//$tag .= printValue($tagopts).printValue($info[$field]);break;
