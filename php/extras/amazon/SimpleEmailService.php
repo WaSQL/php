@@ -75,9 +75,12 @@ class SimpleEmailService
 	* @param string $accessKey Access key
 	* @param string $secretKey Secret key
 	* @param string $host Amazon Host through which to send the emails
+	*		email.us-east-1.amazonaws.com = US East (N. Virginia) Region ,uses SMTP: email-smtp.us-east-1.amazonaws.com
+	*		email.us-west-2.amazonaws.com = US West (Oregon) Region ,uses SMTP: email-smtp.us-west-2.amazonaws.com
+	*		email.eu-west-1.amazonaws.com = EU (Ireland) Region ,uses SMTP: email-smtp.eu-west-1.amazonaws.com
 	* @return void
 	*/
-	public function __construct($accessKey = null, $secretKey = null, $host = 'email.us-east-1.amazonaws.com') {
+	public function __construct($accessKey = null, $secretKey = null, $host = 'email.us-west-2.amazonaws.com') {
 		if ($accessKey !== null && $secretKey !== null) {
 			$this->setAuth($accessKey, $secretKey);
 		}
