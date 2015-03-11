@@ -651,8 +651,11 @@ function buildFormImage($src,$name='',$onclick=''){
 * @usage echo buildFormSelect('age',array(5=>"Below Five",10=>"5 to 10"));
 */
 function buildFormSelect($name,$pairs=array(),$params=array()){
-	$rtn = '<select name="'.$name.'"';
-	if(isExtraCss('bootstrap')){$params['class'] .= ' form-control';}
+	$params['name']=$name;
+	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
+		$params['class'] .= ' form-control';
+	}
+	$rtn = '<select ';
 	$rtn .= setTagAttributes($params);
 	$rtn .= '>';
 	if(isset($params['message'])){
@@ -8158,7 +8161,7 @@ function postURL($url,$params=array()) {
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 		}
 	if(stringBeginsWith($url,'https') || $params['-ssl']){
-		$cacert=dirname(__FILE__) . '/cacert.pem';
+		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
