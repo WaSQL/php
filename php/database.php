@@ -64,7 +64,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 /**
 * @describe function to check for required fields in certain wasql pages
 * @exclude  - this function is for internal use only and thus excluded from the manual
-*/
+*/;
 function checkDBTableSchema($wtable){
 	global $CONFIG;
 	$finfo=getDBFieldInfo($wtable);
@@ -607,8 +607,6 @@ function checkDBTableSchema($wtable){
     //make sure _queries table has a tablename field
     if($wtable=='_settings'){
 		$finfo=getDBFieldInfo($wtable);
-		//echo printValue($finfo);
-		//exit;
 		if($finfo['key_value']['_dblength'] > 0 && $finfo['key_value']['_dblength'] < 5000){
 			if(isPostgreSQL()){
 				$query="ALTER TABLE {$wtable} ALTER COLUMN key_value TYPE varchar(5000);";
@@ -866,7 +864,6 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
-	//echo printValue($info);exit;
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -1133,7 +1130,6 @@ function addEditDBForm($params=array(),$customcode=''){
 	            if(!strlen($current_value) && isset($_REQUEST[$field])){$current_value=$_REQUEST[$field];}
 	            if(strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
 		     	if(!strlen($opts['behavior']) && strlen($current_value)){
-					//echo $info[$field]['value'];exit;
 					if(stringContains($current_value,'/*filetype:css*/')){
 		            	$opts['behavior']='csseditor';
 					}
@@ -1493,7 +1489,6 @@ function addDBRecord($params=array()){
 		$params['-dbname']=array_shift($table_parts);
 		$model_table=implode('.',$table_parts);
 		}
-	//echo printValue($model);exit;
 	if(isset($model['functions']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
@@ -1739,11 +1734,9 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		array_push($sets,"drop {$field}");
     	}
     if(count($sets)==0 && !strlen($engine)){return "Nothing changed";}
-    //echo "sets".printValue($sets);
 	$query .= implode(",",$sets);
 	if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
-	//echo $query.printValue($query_result);
   	if($query_result==true){
 		foreach($changed as $field=>$attributes){
         	instantDBMeta($ori_table,$field,$attributes);

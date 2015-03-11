@@ -5,12 +5,14 @@
 	global $TIME_START;
 	$TIME_START=microtime(true);
 	$progpath=dirname(__FILE__);
-	//header('Content-type: text/plain');
 	include_once("$progpath/common.php");
 	include_once("$progpath/config.php");
 	global $CONFIG;	
 	if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 		@header('X-Frame-Options: SAMEORIGIN');
+	}
+	if(isset($_REQUEST['_viewext']) && strlen($_REQUEST['_viewext'])){
+    	setContentType();
 	}
 	if(isset($CONFIG['valid_hosts'])){
     	$valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_hosts'])));
@@ -184,7 +186,6 @@
 	    $_REQUEST['_xmlrequest_array']=xml2Array($xmlpost);
 	     $_REQUEST['_xmlrequest_raw']=$xmlpost;
 	}
-
 	include_once("{$progpath}/database.php");
 	include_once("{$progpath}/user.php");
 	//remind Me Form?
@@ -231,7 +232,7 @@
 				$headers = "From: ".$_SERVER['HTTP_HOST']." <no-reply@".$_SERVER['UNIQUE_HOST'].">\r\n";
 				$headers .= "X-Mailer: WaSQL PHP/".phpversion();
 				$headers .= "MIME-Version: 1.0\r\n";
-				$headers .= "Content-type: text/html; charset=iso-8859-1\r\n";
+				$headers .= "Content-type: text/html; charset=UTF-8\r\n";
 				if(@mail($ruser['email'], $subject, $message, $headers)){
 					echo '<img src="/wfiles/success.gif" border="0" style="vertical-align:middle;">  <b class="w_green">Account found!</b><br /><br />'."\n";
 					echo 'We have sent your login information to ' . $ruser['email'];
@@ -401,8 +402,8 @@
 				if(is_file($cfile)){
 					header('X-Platform: WaSQL');
 					switch($ext){
-						case 'js':header("Content-type: text/javascript");break;
-						case 'css':header("Content-type: text/css");break;
+						case 'js':header("Content-type: text/javascript; charset=UTF-8");break;
+						case 'css':header("Content-type: text/css; charset=UTF-8");break;
 						case 'ttf':header("Content-type: application/font-sfnt");break;
 						case 'eot':header("Content-type: application/vnd.ms-fontobject");break;
 						case 'svg':header("Content-type: image/svg+xml");break;
@@ -443,7 +444,7 @@
 	//	Build in API calls - requires the user to be logged in (via apikey)
 	if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		if(!isUser()){
-			header('Content-type: text/xml');
+			header('Content-type: text/xml; charset=UTF-8');
 			header('X-Platform: WaSQL');
 			echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
 			echo "<result>\r\n";
@@ -454,7 +455,7 @@
 		//only allow administrators to use postedit
 		if(!isAdmin()){
 			$user=ucwords(xmlEncodeCDATA($USER['username']));
-			header('Content-type: text/xml');
+			header('Content-type: text/xml; charset=UTF-8');
 			header('X-Platform: WaSQL');
 			echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
 			echo "<result>\r\n";
@@ -472,7 +473,7 @@
 						if(isDBTable($mtable) && !in_array($mtable,$tables)){array_push($tables,$mtable);}
                     }
                 }
-				header('Content-type: text/xml');
+				header('Content-type: text/xml; charset=UTF-8');
 				header('X-Platform: WaSQL');
 
 				echo postEditXml($tables,$_REQUEST['dbname']);
@@ -480,7 +481,7 @@
 				break;
 			case 'posteditupload':
 				//upload
-				header('Content-type: text/plain');
+				header('Content-type: text/plain; charset=UTF-8');
 				header('X-Platform: WaSQL');
 				echo "PostEdit Upload:\n";
 				echo printValue($_REQUEST) . printValue($_FILES);
@@ -488,7 +489,7 @@
 				break;
 			case 'posteditlist':
 				//list files in a specific path off of document root
-				header('Content-type: text/plain');
+				header('Content-type: text/plain; charset=UTF-8');
 				header('X-Platform: WaSQL');
 				$listdir="{$_SERVER['DOCUMENT_ROOT']}/{$_REQUEST['_path']}";
 				$files=listFiles($listdir);
@@ -855,22 +856,7 @@
 		if(strlen(trim($PAGE[$_REQUEST['_viewfield']]))==0){
           	$_REQUEST['_viewfield']='body';
 		}
-		//echo printValue($viewfield);exit;
-		//determine Content-type
-		if(!headers_sent()){
-			if(strtolower($PAGE['name'])=='css'){header("Content-type: text/css");}
-			elseif(strtolower($PAGE['name'])=='js'){header("Content-type: text/javascript");}
-			else{
-	          	switch($_REQUEST['_viewfield']){
-	               	case 'xml':header("Content-type: text/xml");break;
-	               	case 'json':header("Content-type: application/json");break;
-	               	case 'csv':header("Content-type: text/csv");break;
-	               	default:
-						header("Content-type: text/html");
-						break;
-				}
-			}
-		}
+		//echo printValue($_REQUEST);exit;
 		$tid=1;
 		if(isset($_REQUEST['_template']) && $_REQUEST['_template']==0){unset($_REQUEST['_template']);}
 		if(isAjax() && !isset($_REQUEST['_template']) && strtoupper($_SERVER['REQUEST_METHOD'])=='GET'){
@@ -897,6 +883,7 @@
 			$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$PAGE['_template']}.htm";
 			if(is_file($cachefile)){
 				$cdate=strlen($PAGE['_edate'])?$PAGE['_edate']:$PAGE['_cdate'];
+				setContentType();
 				header('X-Platform: WaSQL');
 				header('X-Cached: '.$cdate);
 				if($ext=='php'){
@@ -946,6 +933,7 @@
 			$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$TEMPLATE['_id']}.htm";
 			setFileContents($cachefile,$htm);
 		}
+		setContentType();
 		echo trim($htm);
     	unset($htm);
     	global $USER;

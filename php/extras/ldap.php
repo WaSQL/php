@@ -49,7 +49,6 @@ function ldapAuth($params=array()){
 	// We need this for doing an LDAP search.
 	ldap_set_option($ldap_connection, LDAP_OPT_REFERRALS, 0);
     ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-
     ldap_set_option($ldap_connection, LDAP_OPT_NETWORK_TIMEOUT, 5);
     ldap_set_option($ldap_connection, LDAP_OPT_SIZELIMIT, 5);
     ldap_set_option($ldap_connection, LDAP_OPT_TIMELIMIT, 5);
