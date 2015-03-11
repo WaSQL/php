@@ -1363,7 +1363,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 	//verify that the sid exists
 	if(undefined == callback){callback='';}	
 	if(undefined == returnreq){returnreq=false;}
-	if(undefined == tmeout || tmeout < 90000){tmeout=90000;}
+	//default timeout to 10 minutes with a 3 minute minimum
+	if(undefined == tmeout){tmeout=600000;}
+	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
 	if(undefined == document.getElementById(sid) && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
@@ -1581,11 +1583,10 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	if(undefined == nosetprocess){nosetprocess=true;}
 	if(undefined == returnreq){returnreq=false;}
 	var guid=getCookie('GUID');
-	//default timeout to 3 minutes
-	if(undefined == tmeout){tmeout=180000;}
+	//default timeout to 10 minutes with a 3 minute minimum
+	if(undefined == tmeout){tmeout=600000;}
+	if(tmeout < 180000){tmeout=180000;}
 	if(undefined == nosetprocess){nosetprocess=0;}
-	//set minimum timeout to 30 seconds
-	if(tmeout < 90000){tmeout=90000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
 	if(undefined == document.getElementById(sid) && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
