@@ -91,9 +91,13 @@ final class SimpleEmailServiceRequest
 		// Basic setup
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_USERAGENT, 'SimpleEmailService/php');
-
+		//slloyd: set the cert file
+		$path=realpath(dirname(__FILE__).'/../../') ;
+		$cacert="{$path}/curl-ca-bundle.crt";
+		curl_setopt($curl, CURLOPT_CAINFO, $cacert);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, ($this->ses->verifyHost() ? 2 : 0));
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, ($this->ses->verifyPeer() ? 1 : 0));
+		//curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, ($this->ses->verifyPeer() ? 1 : 0));
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
 		// Request types
 		switch ($this->verb) {
