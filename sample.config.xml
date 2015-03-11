@@ -48,6 +48,9 @@
 			access all|user - require user before showing site
 			access_page - show this page if not logged in and access=user
 			access_template - use this template if not logged in and access=user - not needed if access_page is set.
+			stage 0|1 - is this host a staging site
+			cron 0|1 - must be set to 1 on stage sites if you want to run crons on stage
+			nocron 0|1 - set nocron=1 to nor run crons  - same as cron=0
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost
