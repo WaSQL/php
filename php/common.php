@@ -506,6 +506,12 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		$id=$name.'_'.$tval;
     	$tag .= '	<div style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
     	$tag .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	if(isset($params['onchange']) && strlen($params['onchange'])){
+        	$tab .= ' onclick="'.$params['onchange'].'"';
+		}
+		elseif(isset($params['onclick']) && strlen($params['onclick'])){
+        	$tab .= ' onclick="'.$params['onchange'].'"';
+		}
     	if(in_array($tval,$params['-values'])){
         	$tag .= ' checked';
         	$checked_cnt++;
