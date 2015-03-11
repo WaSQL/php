@@ -4,6 +4,8 @@ $progpath=dirname(__FILE__);
 //require_once("$progpath/amazon/AmazonMerchantAtSoapClient.php");
 /*
 	References: http://www.amazonsellercommunity.com/forums/thread.jspa?threadID=173132&tstart=1
+	https://github.com/daniel-zahariev/php-aws-ses
+	https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:
 */
 
 
