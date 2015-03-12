@@ -4,12 +4,13 @@
 
 error_reporting(E_ALL & ~E_NOTICE);
 $progpath=dirname(__FILE__);
-include_once("$progpath/common.php");
-include_once("$progpath/wasql.php");
-include_once("$progpath/config.php");
 //set the default time zone
 date_default_timezone_set('America/Denver');
-//load our own session handling routines
+//includes
+include_once("$progpath/common.php");
+include_once("$progpath/config.php");
+include_once("$progpath/wasql.php");
+include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
