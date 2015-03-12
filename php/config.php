@@ -1,6 +1,6 @@
 <?php
 $progpath=dirname(__FILE__);
-include_once("$progpath/common.php");
+//require common to be loaded first
 //Read in the WaSQL configuration xml file to determine what database to connect to
 if(file_exists("$progpath/config.xml")){
 	//found confix.xml in the php directory
