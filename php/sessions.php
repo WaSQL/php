@@ -10,9 +10,7 @@
 	);
 */
 $progpath=dirname(__FILE__);
-include_once("$progpath/common.php");
-include_once("$progpath/config.php");
-include_once("$progpath/database.php");
+//requires common,config, and database to be loaded first
 if(!isDBTable('_sessions')){
 	include_once("$progpath/schema.php");
 	include_once("$progpath/user.php");
