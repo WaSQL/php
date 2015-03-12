@@ -11,15 +11,6 @@ include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
-/* global $debugme;
-$debugme=array();
-$debugme[]=headers_list();
-$recs=getDBRecords(array('-table'=>'_pages','_id'=>1,'-relate'=>1));
-$debugme[]=headers_list();
-echo printValue($debugme);exit;
-pushData('1,2,3','csv','pushdata.csv');
-*/
-
 include_once("$progpath/user.php");
 global $CONFIG;
 if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
