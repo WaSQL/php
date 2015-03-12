@@ -855,11 +855,11 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		elseif(strtolower($PAGE['name'])=='js'){header("Content-type: text/javascript");}
 		else{
           	switch($_REQUEST['_viewfield']){
-               	case 'xml':header("Content-type: text/xml; charset=utf-8");break;
-               	case 'json':header("Content-type: application/json; charset=utf-8");break;
-               	case 'csv':header("Content-type: text/csv; charset=utf-8");break;
+               	case 'xml':header("Content-type: text/xml");break;
+               	case 'json':header("Content-type: application/json");break;
+               	case 'csv':header("Content-type: text/csv");break;
                	default:
-					header("Content-type: text/html; charset=utf-8");
+					header("Content-type: text/html");
 					break;
 			}
 		}
