@@ -1,8 +1,5 @@
 <?php
-/*
-      WaSQL Default Schema
 
-*/
 //---------- begin function createWasqlTables
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
