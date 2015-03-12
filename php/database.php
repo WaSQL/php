@@ -1,8 +1,5 @@
 <?php
 $progpath=dirname(__FILE__);
-error_reporting(E_ALL & ~E_NOTICE);
-include_once("$progpath/config.php");
-//include_once("$progpath/wasql.php");
 //create a global variable for storing queries that have already happened
 global $databaseCache;
 if(!is_array($databaseCache)){$databaseCache=array();}
@@ -64,7 +61,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 /**
 * @describe function to check for required fields in certain wasql pages
 * @exclude  - this function is for internal use only and thus excluded from the manual
-*/;
+*/
 function checkDBTableSchema($wtable){
 	global $CONFIG;
 	$finfo=getDBFieldInfo($wtable);
@@ -607,6 +604,8 @@ function checkDBTableSchema($wtable){
     //make sure _queries table has a tablename field
     if($wtable=='_settings'){
 		$finfo=getDBFieldInfo($wtable);
+		//echo printValue($finfo);
+		//exit;
 		if($finfo['key_value']['_dblength'] > 0 && $finfo['key_value']['_dblength'] < 5000){
 			if(isPostgreSQL()){
 				$query="ALTER TABLE {$wtable} ALTER COLUMN key_value TYPE varchar(5000);";
@@ -636,12 +635,8 @@ function checkDBTableSchema($wtable){
 */
 function clearDBCache($names){
 	global $databaseCache;
-	if(is_array($names)){}
-	elseif(strlen($names)){$names=array($names);}
-	else{
-    	$databaseCache=array();
-    	return 1;
-	}
+	if(!is_array($names)){$names=array($names);}
+	if(!count($names)){return 0;}
 	foreach($names as $name){
 		if(isset($databaseCache[$name])){unset($databaseCache[$name]);}
 	}
@@ -864,6 +859,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
+	//echo printValue($info);exit;
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -1130,6 +1126,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	            if(!strlen($current_value) && isset($_REQUEST[$field])){$current_value=$_REQUEST[$field];}
 	            if(strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
 		     	if(!strlen($opts['behavior']) && strlen($current_value)){
+					//echo $info[$field]['value'];exit;
 					if(stringContains($current_value,'/*filetype:css*/')){
 		            	$opts['behavior']='csseditor';
 					}
@@ -1489,6 +1486,7 @@ function addDBRecord($params=array()){
 		$params['-dbname']=array_shift($table_parts);
 		$model_table=implode('.',$table_parts);
 		}
+	//echo printValue($model);exit;
 	if(isset($model['functions']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
@@ -1734,9 +1732,11 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		array_push($sets,"drop {$field}");
     	}
     if(count($sets)==0 && !strlen($engine)){return "Nothing changed";}
+    //echo "sets".printValue($sets);
 	$query .= implode(",",$sets);
 	if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
+	//echo $query.printValue($query_result);
   	if($query_result==true){
 		foreach($changed as $field=>$attributes){
         	instantDBMeta($ori_table,$field,$attributes);
@@ -2950,6 +2950,13 @@ function exportDBRecords($params=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function getDBTableModel($table){
+	global $databaseCache;
+	if(!isset($databaseCache['getDBTableModel'])){
+		$databaseCache['getDBTableModel']=array();
+	}
+	if(isset($databaseCache['getDBTableModel'][$table])){
+		return $databaseCache['getDBTableModel'][$table];
+	}
 	//check to see if they passed a databasename with table
 	$table_parts=preg_split('/\./', $table);
 	$originaltable=$table;
@@ -2959,16 +2966,16 @@ function getDBTableModel($table){
 		$table=implode('.',$table_parts);
 		$model_table="{$dbname}._models";
 		}
-	if(!isDBTable($model_table)){return null;}
-	if(isset($_SERVER['_cache_']['getDBTableModel'][$originaltable]['name'])){
-		return $_SERVER['_cache_']['getDBTableModel'][$originaltable];
+
+	if(!isDBTable($model_table)){
+		$databaseCache['getDBTableModel'][$table]=null;
+		return $databaseCache['getDBTableModel'][$table];
 	}
 	$recopts=array('-table'=>$model_table,'name'=>$table,'active'=>1);
-	$rec=getDBRecord($recopts);
-	//echo printValue($recopts).printValue($rec)."<hr>\n";
-	$_SERVER['_cache_']['getDBTableModel'][$originaltable]=$rec;
-
-	return $rec;
+	$recs=getDBRecord($recopts);
+	if(!is_array($recs)){$recs='';}
+	$databaseCache['getDBTableModel'][$table]=$recs;
+	return $databaseCache['getDBTableModel'][$table];
 }
 
 //---------- begin function getDBAdminSettings
@@ -3177,6 +3184,7 @@ function getDBFieldMeta($table,$fields='',$fieldname=''){
     	$getrecs['-where']="tablename='{$table}' and fieldname='{$fieldname}'";
 	}
 	$rtn = getDBRecords($getrecs);
+	if(!is_array($rtn)){$rtn='';}
 	$databaseCache['getDBFieldMeta'][$dbcachekey]=$rtn;
 	return $rtn;
 }
@@ -4178,7 +4186,7 @@ function includeDBOnce($params=array()){
 	$content=preg_replace('/^\<\?/is','',$content);
 	$content=preg_replace('/\?\>$/s','',$content);
 	$content="<?php\r\n{$content}";
-	$content=trim($content);
+	
 	$where=preg_replace('/[^a-z0-9]+/i','_',$params['-where']);
 	$where=preg_replace('/\_+$/','',$where);
 	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
@@ -4735,17 +4743,17 @@ function getDBRelatedRecords($table,$values){
 	$cachekey=strtolower($table).sha1(printValue($values));
 	if(isset($databaseCache['getDBRelatedRecords'][$cachekey])){
 		return $databaseCache['getDBRelatedRecords'][$cachekey];
-		}
+	}
 	if(is_array($values)){
 		sort($values);
 		$values=implode(',',$values);
-		}
+	}
 	$getopts=array('-table'=>$table,'-notimestamp'=>1,'-where'=>"_id in ({$values})",'-index'=>'_id');
-	//echo $table . printValue($getopts);
 	$recs=getDBRecords($getopts);
+	if(!is_array($recs)){$recs='';}
 	$databaseCache['getDBRelatedRecords'][$cachekey]=$recs;
 	return $recs;
-	}
+}
 //---------- begin function getDBRelatedTable
 /**
 * @describe returns table that matches related field
@@ -4761,7 +4769,7 @@ function getDBRelatedTable($rfield,$dbname=''){
 		preg_replace('/\_id$/i','',$rfield),
 		preg_replace('/\_id$/i','s',$rfield),
 		"_{$rfield}s"
-		);
+	);
 	foreach($tablenames as $tablename){
 		if(isDBTable($tablename)){return $dbname.$tablename;}
 		if(isDBTable("_{$tablename}")){return "{$dbname}_{$tablename}";}
@@ -4775,9 +4783,9 @@ function getDBRelatedTable($rfield,$dbname=''){
 		case 'manager_id':
 			return $dbname.'_users';
 			break;
-    	}
+    }
 	return '';
-	}
+}
 //---------- begin function getDBSiteStats
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -5160,14 +5168,13 @@ function getDBTableStatus(){
 function getDBQuery($params=array()){
 	if(!isset($params['-table'])){return 'getDBQuery Error: No table' . printValue($params);}
 	//get field info for this table
-	//echo "getting info for {$params['-table']}<br>\n";
 	$info=getDBFieldInfo($params['-table']);
 	if(!is_array($info)){return $info;}
 	$loopfields=array();
 	if(isset($params['-fields'])){
 		if(is_array($params['-fields'])){$loopfields=$params['-fields'];}
 		else{$loopfields=preg_split('/\,+/',trim($params['-fields']));}
-    	}
+    }
     else{$loopfields=array_keys($info);}
     //now add the _utime to any date fields
     $fields=array();
@@ -5209,7 +5216,7 @@ function getDBQuery($params=array()){
         if(isset($params['-search'])){
 			if(preg_match('/^where (.+)/i',$params['-search'],$smatch)){
 				$query .= ' and ('.$smatch[1].')';
-            	}
+            }
             elseif(isset($params['-searchfield'])){
 				$field=$params['-searchfield'];
 				if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
@@ -5235,16 +5242,16 @@ function getDBQuery($params=array()){
 					if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
 						if(isNum($params['-search'])){
 							array_push($ors,"{$field} = {$params['-search']}");
-                        	}
-	                	}
+                        }
+	                }
 	                else{array_push($ors,"{$field} like '%{$params['-search']}%'");}
-					}
+				}
 				if(count($ors)){
 					$query .= ' and ('.implode(' or ',$ors).')';
-	            	}
-				}
-        	}
-    	}
+	            }
+			}
+        }
+    }
 	else{
 		if(isset($params['-filter'])){$query .= " where ({$params['-filter']})";}
 		else{$query .= ' where 1=1';}
@@ -5255,19 +5262,19 @@ function getDBQuery($params=array()){
 			if(!isset($info[$key]['_dbtype'])){continue;}
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='real'){
 				$query .= " and {$key}={$val}";
-				}
+			}
 			else{
 				$val=databaseEscapeString($val);
 				$query .= " and {$key}='{$val}'";
-	        	}
-	    	}
+	        }
+	    }
 	    if(isset($params['-search'])){
 			if(!stringBeginsWith($params['-search'],'where')){
 				$params['-search']=databaseEscapeString($params['-search']);
 			}
 			if(preg_match('/^where (.+)/i',$params['-search'],$smatch)){
 				$query .= ' and ('.$smatch[1].')';
-            	}
+            }
             elseif(isset($params['-searchfield'])){
 				$field=$params['-searchfield'];
 				if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
@@ -5293,25 +5300,24 @@ function getDBQuery($params=array()){
 					if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
 						if(isNum($params['-search'])){
 							array_push($ors,"{$field} = {$params['-search']}");
-                        	}
-	                	}
+                        }
+	                }
 	                else{array_push($ors,"{$field} like '%{$params['-search']}%'");}
-					}
+				}
 				if(count($ors)){
 					$query .= ' and ('.implode(' or ',$ors).')';
-	            	}
 	            }
-        	}
-	    }
+	        }
+        }
+	}
 	//Set order by if defined
     if(isset($params['-group'])){$query .= ' group by '.$params['-group'];}
 	//Set order by if defined
     if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
     //Set limit if defined
     if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
-	//if($params['-debug']){debugValue($query);}
     return $query;
-    }
+}
 //---------- begin function getDBRecord-------------------
 /**
 * @describe returns a single multi-dimensional record based on params
@@ -5329,16 +5335,17 @@ function getDBQuery($params=array()){
 * @usage $rec=getDBRecord(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecord($params=array()){
-	if(!isset($params['-table']) && !isset($params['-query'])){return "getDBRecord Error: no table or query defined" . printValue($params);}
+	if(!isset($params['-table']) && !isSet($params['-query'])){return "getDBRecord Error: no table or query defined" . printValue($params);}
+	//if(isset($params['-table'])){echo printValue($params);}
 	if(isset($params['-random'])){
 		$params['-random']=1;
 		unset($params['-limit']);
-		}
-     else{$params['-limit']=1;}
+	}
+    else{$params['-limit']=1;}
 	$list=getDBRecords($params);
 	if(!is_array($list)){return $list;}
-	if(!count($list)){return null;}
-	if(!isset($list[0])){return null;}
+	if(!count($list)){return '';}
+	if(!isset($list[0])){return '';}
 	$rec=array();
 	//get the first record and return it. the index may not be zero if they indexed it differently.
 	foreach($list as $index=>$crec){
@@ -5401,12 +5408,12 @@ function getDBRecords($params=array()){
 		if(!databaseSelectDb($params['-dbname'])){
 			setWasqlError(debug_backtrace(),getDBError());
 			return getDBError();
-			}
 		}
+	}
 	if(isset($params['-query'])){$query=$params['-query'];}
 	elseif(isset($params['-table'])){
 		$query=getDBQuery($params);
-		}
+	}
 	else{
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){
@@ -5455,9 +5462,9 @@ function getDBRecords($params=array()){
 	if(!$rows){
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){return setWasqlError(debug_backtrace(),getDBError(),$query);}
-			}
-		return null;
 		}
+		return null;
+	}
 	$list=array();
 	$x=0;
 	$randompick=0;
@@ -5468,9 +5475,9 @@ function getDBRecords($params=array()){
 		while((count($random) < $params['-random']*10) && (count($random) < $max)){
 			$r=rand(0,$max);
 			if(isNum($r) && !in_array($r,$random)){$random[]=$r;}
-        	}
+        }
         $randompick=1;
-		}
+	}
 	$rx=0;
 	while ($row = databaseFetchAssoc($query_result)) {
 		if($randompick==1){
@@ -5519,19 +5526,19 @@ function getDBRecords($params=array()){
 	foreach($list as $i=>$r){
 		$fields=array_keys($r);
 		break;
-		}
+	}
 	if(!isset($params['-nolog']) || $params['-nolog'] != 1){
 		$fieldstr=implode(',',$fields);
 		$row_count=count($list);
 		if(isset($params['-table'])){
 			logDBQuery($query,$start,$function,$params['-table'],$fieldstr,$row_count);
-			}
 		}
+	}
 	if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 		if(!databaseSelectDb($CONFIG['dbname'])){
 			return setWasqlError(debug_backtrace(),getDBError());
-			}
 		}
+	}
 	//get related
 	$related=array();
 	if(isset($params['-table']) && isset($params['-relate'])){
@@ -5539,7 +5546,7 @@ function getDBRecords($params=array()){
 		$dbname='';
 		if(count($table_parts) > 1){
 			$dbname=array_shift($table_parts);
-			}
+		}
 		if(isNum($params['-relate']) && $params['-relate']==1){
 			$xinfo=getDBFieldMeta($params['-table'],"tvals,dvals,inputtype");
 			//check for -norelate fields to skip
@@ -5555,7 +5562,6 @@ function getDBRecords($params=array()){
 				if(!isset($xinfo[$field]) || !is_array($xinfo[$field]) || in_array($field,$skipfields)){continue;}
 				$tvals=trim($xinfo[$field]['tvals']);
 				$dvals=trim($xinfo[$field]['dvals']);
-				
 				if(preg_match('/(select|checkbox)/i',$xinfo[$field]['inputtype']) && strlen($tvals) && strlen($dvals) && !preg_match('/^select/i',$tvals)){
                 	//simple select list - not a query
                 	$tmap=array();
@@ -5661,6 +5667,7 @@ function getDBRecords($params=array()){
             }
             return $newlist;
 		}
+
 		//process GetRecord model functions as long as -model is not false
 		if(isset($params['-table']) && (!isset($params['-model']) || ($params['-model']))){
 			$model=getDBTableModel($params['-table']);
@@ -5682,9 +5689,10 @@ function getDBRecords($params=array()){
 				}
 			}
 		}
+
 		return $list;
 		}
-	return null;
+	return '';
 	}
 //---------- begin function getDBSchema--------------------
 /**
@@ -6812,6 +6820,7 @@ function databaseDescribeTable($table){
 			$recs[]=$rec;
         	}
     	}
+    if(!is_array($recs)){$recs='';}
     $databaseCache['databaseDescribeTable'][$cachekey]=$recs;
 	return $recs;
 	}
