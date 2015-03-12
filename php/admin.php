@@ -5,33 +5,17 @@ ini_set('POST_MAX_SIZE', '34M');
 ini_set('UPLOAD_MAX_FILESIZE', '30M');
 ini_set('max_execution_time', 5000);
 set_time_limit(5500);
-date_default_timezone_set('America/Denver');
-/*
-	Items Left to impliment:
-		Add csv export to listDBRecords
-		<label> hover on checkbox and radio - label outside so spaces also work?
 
-	inline functions
-	check for json string and use values when adding field and table metadata
-	{group:,field gender is available to these groups}
-
-	In tabledata, create a crud_functions field that stores pre and post functions
-		$crud=array(
-			'pre_create'	=> " function stuff goes here",
-			'pre_read'		=> " function stuff goes here",
-			'pre_update'	=> " function stuff goes here",
-			'pre_delete'	=> " function stuff goes here",
-			'post_create'	=> " function stuff goes here",
-			'post_read'		=> " function stuff goes here",
-			'post_update'	=> " function stuff goes here",
-			'post_delete'	=> " function stuff goes here",
-		);
-	add a $_REQUEST['add_crud']=array(ones that got processed);
-	DONE: create a code test area where you can enter code to test and run it without creating a new page record
-*/
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $progpath=dirname(__FILE__);
+//set the default time zone
+date_default_timezone_set('America/Denver');
+//includes
 include_once("$progpath/common.php");
+include_once("$progpath/config.php");
+include_once("$progpath/wasql.php");
+include_once("$progpath/database.php");
+include_once("$progpath/sessions.php");
 if(isset($_REQUEST['_pushfile'])){
  	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
    	}
@@ -1535,7 +1519,7 @@ if(isset($_REQUEST['_menu'])){
 				}
 			}
 			else{
-	    		clearDBCache(array('databaseTables','databaseTables','isDBTable'));
+	    		clearDBCache(array('databaseTables','isDBTable'));
 				$wtables=getWasqlTables();
 				$tables=getDBTables();
 				if(count($tables)){
@@ -1553,7 +1537,7 @@ if(isset($_REQUEST['_menu'])){
 					echo printValue($ok);
 					}
 			}
-			clearDBCache(array('databaseTables','databaseTables','isDBTable'));
+			clearDBCache(array('databaseTables','isDBTable'));
 			echo '<div>Complete</div>'."\n";
     		break;
 		case 'manual':
@@ -1933,7 +1917,6 @@ if(isset($_REQUEST['_menu'])){
 			echo buildTableEnd();
 			echo buildFormSubmit('Update');
 			echo buildFormEnd();
-			echo buildOnLoad("sorttable.init();");
 			break;
 		case 'summary':
 			//Table Summary
@@ -4137,7 +4120,7 @@ function tableOptions($table='',$params=array()){
     	unset($tableoptions['drop']);
 	}
 	//check for _models for this table
-	$model=getDBRecord(array('-table'=>"_models",'name'=>$table));
+	$model=getDBTableModel($table);
 	//if($table=='states'){echo "HERE".printValue($tableoptions);exit;}
 	$rtn='';
 	switch(strtolower($params['-format'])){
