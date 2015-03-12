@@ -3947,17 +3947,15 @@ function getDBFieldSelections($info=array()){
 		else{
 			$tvals=trim($info['tvals']);
 			if(!strlen($tvals)){return;}
-			if(preg_match('/\<\?(.+?)\?\>/is',$tvals,$match)){
-				$match[1]=preg_replace('/^\=/','return ',$match[1]);
-				$tvals = eval($match[1]);
+			if(preg_match('/\<\?(.+?)\?\>/is',$tvals)){
+				$tvals = evalPHP($tvals);
 			}
 		}
 		if(is_array($info['tvals'])){$dvals=$info['dvals'];}
 		else{
 			$dvals=trim($info['dvals']);
-			if(strlen($dvals) && preg_match('/\<\?(.+?)\?\>/is',$dvals,$match)){
-				$match[1]=preg_replace('/^\=/','return ',$match[1]);
-				$dvals = eval($match[1]);
+			if(strlen($dvals) && preg_match('/\<\?(.+?)\?\>/is',$dvals)){
+				$dvals = evalPHP($dvals);
 			}
 		}
 		if(is_array($tvals) && is_array($dvals)){
