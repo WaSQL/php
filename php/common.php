@@ -9788,19 +9788,17 @@ function mergeChunkedFiles($chunks,$name){
 */
 function pushData($data='',$ext='txt',$name=''){
 	if(!strlen($data)){
-		header('Content-type: text/plain; charset=UTF-8');
+		header('Content-type: text/plain');
 		echo "pushData error: No Data to push!";
 		exit;
 		}
-	$_REQUEST['_viewext']=$ext;
 	if(!strlen($name)){$name=md5($data) . ".{$ext}";}
 	header('Content-Description: File Transfer');
-	header("Content-Type: text/{$ext}; charset=UTF-8");
+	header("Content-Type: text/{$ext}");
     header('Content-Disposition: attachment; filename='.basename($name));
     header("Accept-Ranges: bytes");
 	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 	header('ETag: ' . md5(time()));
-
 	//Note: caching on https will make it so it will fail in IE
     if (isset($_SERVER['HTTPS'])) {
 		header('Pragma: ');
@@ -9814,23 +9812,6 @@ function pushData($data='',$ext='txt',$name=''){
     echo $data;
     exit;
 	}
-function setContentType(){
-	if(headers_sent()){return;}
-	global $PAGE;
-	$ext=isset($_REQUEST['_viewext'])?$_REQUEST['_viewext']:$_REQUEST['_viewfield'];
-	if(strtolower($PAGE['name'])=='css'){$ext='css';}
-	if(strtolower($PAGE['name'])=='js'){$ext='js';}
-	switch(strtolower($ext)){
-		case 'css':header("Content-type: text/css; charset=UTF-8");break;
-		case 'js':header("Content-type: text/javascript; charset=UTF-8");break;
-	    case 'xml':header("Content-type: text/xml; charset=UTF-8");break;
-	    case 'json':header("Content-type: application/json; charset=UTF-8");break;
-	    case 'csv':header("Content-type: text/csv; charset=UTF-8");break;
-	    default:
-			header("Content-type: text/html; charset=UTF-8");
-		break;
-	}
-}
 //---------- begin function pushFile---------------------------------------
 /**
 * @describe pushes file contents to the browser as a file/attachment (forces a save as dialog)
@@ -9848,16 +9829,15 @@ function setContentType(){
 */
 function pushFile($file='',$params=array()){
 	if(!is_file($file)){
-		header('Content-type: text/plain; charset=UTF-8');
+		header('Content-type: text/plain');
 		echo "{$file} does NOT exist!";
 		exit;
 		}
 	if(!isset($params['-attach'])){$params['-attach']=1;}
 	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
 	else{$ctype=getFileContentType($file);}
-	$_REQUEST['_viewext']=getFileExtension($file);
 	//echo $file.printValue($params);exit;
-	@header("Content-Type: {$ctype}; charset=UTF-8");
+	@header("Content-Type: {$ctype}");
 	//echo "HERE:{$ctype}";exit;
 	if($params['-attach']){
 		@header('Content-Description: File Transfer');
