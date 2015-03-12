@@ -3094,7 +3094,6 @@ if(isset($_REQUEST['_menu'])){
 						$items=exportFile2Array($_REQUEST['file_abspath']);
 						unlink($_REQUEST['file_abspath']);
 						echo "<div>Importing Items </div>\n";
-						flush();
 	    				ob_flush();
 						$importmsg .= importXmlData($items,$_REQUEST);
 						}
