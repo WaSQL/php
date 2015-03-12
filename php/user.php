@@ -1,19 +1,27 @@
 <?php
 $progpath=dirname(__FILE__);
-include_once("$progpath/common.php");
-//echo "DEBUG".printValue(headers_list());exit;
-include_once("$progpath/wasql.php");
-//echo "DEBUG".printValue(headers_list());exit;
+//requires common,wasql, and database to be loaded first
 //parse Server Variables
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
-include_once("$progpath/database.php");
 //echo "DEBUG".printValue(headers_list());exit;
-include_once("$progpath/schema.php");
+
 //echo "DEBUG".printValue(headers_list());exit;
-if(!isDBTable('_users')){$ok=createWasqlTables();}
-if(!isDBTable('states')){$ok=createWasqlTables();}
-if(!isDBTable('countries')){$ok=createWasqlTables();}
-if(!isDBTable('_sessions')){$ok=createWasqlTables();}
+if(!isDBTable('_users')){
+	include_once("$progpath/schema.php");
+	$ok=createWasqlTables();
+}
+if(!isDBTable('states')){
+	include_once("$progpath/schema.php");
+	$ok=createWasqlTables();
+}
+if(!isDBTable('countries')){
+	include_once("$progpath/schema.php");
+	$ok=createWasqlTables();
+}
+if(!isDBTable('_sessions')){
+	include_once("$progpath/schema.php");
+	$ok=createWasqlTables();
+}
 //get the user GUID stored in a cookie
 $guid=getGUID();
 $oldguid=$guid;
@@ -33,17 +41,18 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	list($_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,2);
 	$_REQUEST['_auth']=1;
 	//abort(printValue($_REQUEST));
-	}
+}
+
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username']));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
-			}
 		}
+	}
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
-		}
+	}
 	if((isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
      	loadExtras('ldap');
      	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
@@ -251,20 +260,18 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
     else{
 		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>$_REQUEST['username'],'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
-    	}
-	//user login request - get user from login
-
-	}
+    }
+}
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['email']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost'])){
 		$rec=getDBRecord(array('-table'=>'_users','email'=>$_REQUEST['email']));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
-			}
 		}
+	}
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
-		}
+	}
 	if(isset($CONFIG['authhost'])){
 		$authname=$CONFIG['authhost'];
 		switch(strtolower($authname)){
@@ -281,7 +288,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				if(!isset($post['body']) && isset($post['error'])){
 					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
 					break;
-                	}
+                }
 				try {
 					$xml=new SimpleXmlElement($post['body']);
 					//abort("xml:" . printValue($xml));
@@ -330,20 +337,20 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
                                     	}
 									$newkey="{$authname}_{$key}";
 									$USER[$newkey]=$val;
-                                	}
+                                }
                                 if(count($eopts) > 0){
 									$eopts['-table']="_users";
 									$eopts['-where']="_id={$USER['_id']}";
 									$ok=editDBRecord($eopts);
 									$USER['_updated']=$eopts;
-                                	}
-                            	}
+                                }
+                            }
 							$USER['_authhost']=$authname;
 							$_SESSION['authcode']=$authcode;
 							$_SESSION['authkey']=$authkey;
-							}
 						}
 					}
+				}
 				catch (Exception $e){
 	        		echo $e->faultstring;
 	        		echo "<hr>\n";
@@ -351,26 +358,23 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 	        		echo "<hr>\n";
 	        		echo $url . printValue($authopts);
 	        		exit;
-	        		}
+	        	}
 	        	break;
 			}
     	}
-    else{
+	else{
 		$getopts=array('-table'=>'_users','-relate'=>1,'email'=>$_REQUEST['email'],'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
-    	}
-	//user login request - get user from login
-
-	}
+    }
+}
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['facebook_email']) && isset($_REQUEST['password'])){
 	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>$_REQUEST['facebook_email'],'facebook_id'=>$_REQUEST['password']);
 	$USER=getDBRecord($getopts);
-
 }
 elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1) || strtoupper($_SERVER['REQUEST_METHOD'])=='POST')){
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
-		}
+	}
 	//apikey login request - requires a POST for security
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>$_REQUEST['username']));
 	if(is_array($rec)){
@@ -379,18 +383,18 @@ elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_
 			str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$rec['username'])),
 			str_replace(':','',crypt($rec['username'],$pw)),
 		    str_replace(':','',crypt($pw,$rec['username']))
-		    );
+		);
 		$api=preg_split('/[:]/',decodeBase64($_REQUEST['apikey']));
 		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
         	$USER=$rec;
         	$oldguid=$rec['guid'];
-  			}
-		}
+  		}
 	}
+}
 elseif(isset($_SESSION['apikey']) && isset($_SESSION['username']) &&  strtoupper($_SERVER['REQUEST_METHOD'])=='GET'){
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
-		}
+	}
 	//apikey login request - requires a POST for security
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>$_SESSION['username']));
 	if(is_array($rec)){
@@ -399,20 +403,20 @@ elseif(isset($_SESSION['apikey']) && isset($_SESSION['username']) &&  strtoupper
 			str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$pw)),
 			str_replace(':','',crypt($rec['username'],$pw)),
 		    str_replace(':','',crypt($pw,$rec['username']))
-		    );
+		);
 		$api=preg_split('/[:]/',decodeBase64($_SESSION['apikey']));
 		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
         	$USER=$rec;
         	$oldguid=$rec['guid'];
-  			}
-		}
+  		}
+	}
 	unset($_SESSION['apikey']);
 	unset($_SESSION['username']);
-	}
+}
 elseif(isset($CONFIG['authhost']) && isset($_SESSION['authcode']) && isset($_SESSION['authkey'])){
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
-		}
+	}
 	$authstring=decrypt($_SESSION['authcode'],$_SESSION['authkey']);
 	//echo printValue($_SESSION);
 	//echo "Session authstring:" . printValue($authstring);
@@ -423,7 +427,7 @@ elseif(isset($CONFIG['authhost']) && isset($_SESSION['authcode']) && isset($_SES
 		$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
 		if(!is_array($local) && isEmail($tmp[0]['email'])){
 			$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username = '{$authname}_{$tmp[0]['username']}'"));
-	        }
+	    }
 	    if(!is_array($local)){
 			//create a _user record
 			$opts=$tmp[0];
@@ -437,28 +441,25 @@ elseif(isset($CONFIG['authhost']) && isset($_SESSION['authcode']) && isset($_SES
 			$id=addDBRecord($opts);
 			if(isNum($id)){
 	            $local=getDBRecord(array('-table'=>'_users','-relate'=>1,'_id'=>$id));
-	            }
-	      	}
+	        }
+	    }
 	    $authname=$CONFIG['authhost'];
 		if(is_array($local)){
 			$USER=$local;
 			foreach($tmp[0] as $key=>$val){
 				$newkey="{$authname}_{$key}";
 				$USER[$newkey]=$val;
-	            }
 	        }
+	    }
 	    $oldguid=$USER['guid'];
 		$USER['_authhost']=$authname;
-		}
 	}
+}
 else{
-	//echo "DEBUGx".printValue(headers_list());exit;
 	//guid login request
 	$recopts=array('-table'=>'_users','guid'=>$guid,'-relate'=>1);
-	//echo "DEBUGa".printValue($recopts).printValue(headers_list());exit;
 	$USER=getDBRecord($recopts);
-	//echo printValue($recopts).printValue($USER);
-	}
+}
 //abort(printValue($userfieldinfo));
 if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['active']) && $userfieldinfo['active']['_dbtype']=='int' && $USER['active'] != 1){
 	//do not allow users that are not active to log in
