@@ -3937,21 +3937,28 @@ function getDBFieldTag($params=array()){
 function getDBFieldSelections($info=array()){
 	$selections=array();
 	if(strtolower(trim($info['tvals']))=='&getdbtables'){
-			$selections['tvals']=getDBTables();
-			$selections['dvals']=$selections['tvals'];
-			return $selections;
-        	}
+		$selections['tvals']=getDBTables();
+		$selections['dvals']=$selections['tvals'];
+		return $selections;
+    }
 	if(!isset($info['dvals']) || !strlen($info['dvals'])){$info['dvals']=$info['tvals'];}
     if(isset($info['tvals'])){
 		if(is_array($info['tvals'])){$tvals=$info['tvals'];}
 		else{
 			$tvals=trim($info['tvals']);
-			if(preg_match('/\<\?(.+?)\?\>/is',$tvals)){$tvals = evalPHP($tvals);}
+			if(!strlen($tvals)){return;}
+			if(preg_match('/\<\?(.+?)\?\>/is',$tvals,$match)){
+				$match[1]=preg_replace('/^\=/','return ',$match[1]);
+				$tvals = eval($match[1]);
+			}
 		}
 		if(is_array($info['tvals'])){$dvals=$info['dvals'];}
 		else{
 			$dvals=trim($info['dvals']);
-			if(preg_match('/\<\?(.+?)\?\>/is',$dvals)){$dvals = evalPHP($dvals);}
+			if(strlen($dvals) && preg_match('/\<\?(.+?)\?\>/is',$dvals,$match)){
+				$match[1]=preg_replace('/^\=/','return ',$match[1]);
+				$dvals = eval($match[1]);
+			}
 		}
 		if(is_array($tvals) && is_array($dvals)){
 			$selections['tvals']=$tvals;
@@ -3970,46 +3977,45 @@ function getDBFieldSelections($info=array()){
 						$vals=array();
                         foreach($tvalresult as $rkey=>$rval){
 							array_push($vals,$rval);
-                        	}
+                        }
 						$val=implode(' ',$vals);
 						unset($vals);
 						array_push($tvalues,$val);
-                    	}
+                    }
                     $dvalues=array();
 	                foreach($dvalresults as $dvalresult){
 						$vals=array();
                         foreach($dvalresult as $rkey=>$rval){
 							array_push($vals,$rval);
-                        	}
+                        }
 						$val=implode(' ',$vals);
 						unset($vals);
 						array_push($dvalues,$val);
-                    	}
+                    }
 					$selections['tvals']=$tvalues;
 					$selections['dvals']=$dvalues;
-	            	}
-            	}
+	            }
+            }
 
-        	}
+        }
         elseif(preg_match('/^([0-9]+?)\.\.([0-9]+)$/',$tvals,$tvmatch)){
 			$selections['tvals']=array();
 			$start=(integer)$tvmatch[1];
 			$end=(integer)$tvmatch[2];
 			for($x=$start;$x <= $end;$x++){
                 array_push($selections['tvals'],$x);
-            	}
+            }
             $selections['dvals']=$selections['tvals'];
-        	}
+        }
 		else{
 			//Parse values in tvals and dvals
 			$selections['tvals']=preg_split('/[\r\n\,]+/',$tvals);
 			$selections['dvals']=preg_split('/[\r\n\,]+/',$dvals);
-			//abort(printValue($selections));
-        	}
+        }
         return $selections;
-    	}
-	return;
-	}
+    }
+	return '';
+}
 //---------- begin function getDBList--------------------
 /**
 * @describe returns an array of databases that the dbuser has rights to see
@@ -4028,13 +4034,13 @@ function getDBList(){
 function getDBProcesses(){
 	$db_list = databaseListProcesses();
 	$procs=array();
-	while ($row = databaseFetchObject($db_list)) {
+	while ($row = databaseFetchObject($db_list)){
 		$proc=array();
 		foreach($row as $key=>$val){$proc[$key]=$val;}
 		$procs[]=$proc;
-		}
-	return $procs;
 	}
+	return $procs;
+}
 //---------- begin function getDBPaging--------------------
 /**
 * @describe returns an array of paging information needed for buildDBPaging
@@ -4050,7 +4056,7 @@ function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 	$paging=array();
 	if(isset($_REQUEST['_start']) && isNum($_REQUEST['_start'])){
 		$limit_start=(integer)$_REQUEST['_start'];
-		}
+	}
 	$limit_cnt=$page_count+$limit_start;
 	if($limit_cnt > $recs_count){$limit_cnt = $recs_count;}
 	$paging['-start']=$limit_start;
@@ -4063,8 +4069,8 @@ function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 		$paging['-prev']=$prev;
 		if($prev > 0){
 			$paging['-first']=0;
-			}
 		}
+	}
 	//next
 	if($limit_cnt < $recs_count){
 		$next=$limit_start+$page_count;
@@ -4072,12 +4078,12 @@ function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 		$last=$recs_count-$page_count;
 		if($last > 0 && $last > $next){
 			$paging['-last']=$last;
-			}
 		}
+	}
 	//text
 	$paging['-text']=round(($limit_start+1),0) . " - {$limit_cnt} of {$recs_count}";
 	return $paging;
-	}
+}
 //---------- begin function loadDBFunctions---------------------------------------
 /**
 * @describe loads functions in pages. Returns the load times for each loaded page.
@@ -4107,7 +4113,7 @@ function loadDBFunctions($names,$field='body'){
     	if(preg_match('/^(.+?)\.(.+)$/',$name,$m)){
 			$table="{$m[1]}._pages";
 			$name=$m[2];
-        	}
+        }
 		$opts=array('-table'=>$table,'-field'=>$field);
 		if(isNum($name)){$opts['-where']="_id={$name}";}
 		else{$opts['-where']="name = '{$name}'";}
@@ -4117,12 +4123,12 @@ function loadDBFunctions($names,$field='body'){
 		if(!isNum($ok)){
 			$rtn .= "	{$tname} ERRORS: {$ok}\n";
 			debugValue($ok);
-			}
+		}
 		else{$rtn .= "	{$tname} took {$loadtime} seconds\n";}
-    	}
+    }
     $rtn .= ' -->'."\n";
 	return $rtn;
-	}
+}
 //---------- begin function logDBQuery
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -4145,7 +4151,7 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 		'query'			=> $query,
 		'row_count'		=> $rowcount,
 		'run_length'	=> $run_length,
-		);
+	);
 	if(strlen($tablename)){$addopts['tablename']=$tablename;}
 	if(!is_array($fields)){$fields=preg_split('/[\,\;\ ]+/',$fields);}
 	$addopts['fields']=implode(',',$fields);
@@ -4159,9 +4165,9 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 		$query="delete from _queries where _cdate < DATE_ADD(NOW(), INTERVAL -{$days} DAY)";
 		$x=executeSQL($query);
 		$_SERVER['logDBQuery']=1;
-		}
-	return $ok;
 	}
+	return $ok;
+}
 //---------- begin function includeDBOnce
 /**
 * @describe function to load database records as php you can include dynamic functions
@@ -4255,10 +4261,10 @@ function includeDBOnce($params=array()){
 function mapDBDvalsToTvals($table,$field,$params=array()){
 	global $databaseCache;
 	$cachekey=$table.'_'.$field;
-	if(count($params)){$cachekey .= '_'.sha1(printValue($params));}
+	if(count($params)){$cachekey .= '_'.sha1(json_encode($params));}
 	if(isset($databaseCache['mapDBDvalsToTvals'][$cachekey])){
 		return $databaseCache['mapDBDvalsToTvals'][$cachekey];
-		}
+	}
 	$info=getDBFieldMeta($table,"tvals,dvals",$field);
 	$selections=getDBFieldSelections($info[$field]);
 	if(is_array($selections['tvals'])){
@@ -4279,7 +4285,7 @@ function mapDBDvalsToTvals($table,$field,$params=array()){
         $databaseCache['mapDBDvalsToTvals'][$cachekey]=$tdmap;
         return $tdmap;
     	}
-    return null;
+    return '';
     }
 //---------- begin function mapDBTvalsToDvals--------------------
 /**
@@ -4740,13 +4746,12 @@ function getDBIndexes($tables=array(),$dbname=''){
 */
 function getDBRelatedRecords($table,$values){
 	global $databaseCache;
-	$cachekey=strtolower($table).sha1(printValue($values));
+	if(!is_array($values)){$values=preg_split('/[\,\;\:]+/',$values);}
+	sort($values);
+	$values=implode(',',$values);
+	$cachekey=strtolower($table).sha1($values);
 	if(isset($databaseCache['getDBRelatedRecords'][$cachekey])){
 		return $databaseCache['getDBRelatedRecords'][$cachekey];
-	}
-	if(is_array($values)){
-		sort($values);
-		$values=implode(',',$values);
 	}
 	$getopts=array('-table'=>$table,'-notimestamp'=>1,'-where'=>"_id in ({$values})",'-index'=>'_id');
 	$recs=getDBRecords($getopts);
@@ -5902,7 +5907,7 @@ function listDBRecords($params=array(),$customcode=''){
 	$rtn='';
 	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'."\n";}
 	elseif(isset($params['-ajax']) && (integer)$params['-ajax']==1){
-		$params['-ajaxid']='list_'.sha1(printValue($params));
+		$params['-ajaxid']='list_'.sha1(json_encode($params));
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'."\n";
 	}
 	elseif(isset($params['-ajaxid'])){
