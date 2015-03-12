@@ -382,6 +382,7 @@ function buildFormDate($name,$params=array()){
 	$params['width']=155;
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
@@ -404,6 +405,7 @@ function buildFormDateTime($name,$params=array()){
 	$params['width']=220;
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
@@ -549,6 +551,7 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	$required='';
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
+	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
 	else{$required='';}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
