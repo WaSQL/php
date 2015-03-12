@@ -40,7 +40,6 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	//abort($decoded);
 	list($_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,2);
 	$_REQUEST['_auth']=1;
-	//abort(printValue($_REQUEST));
 }
 
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
@@ -190,7 +189,6 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 					if(strlen((string)$xml->success)){
 						$authcode=(string)$xml->success;
 						$tmp=xml2Arrays(decrypt($authcode,$authkey));
-						//abort(printValue($tmp));
 						unset($_SESSION['authcode']);
 						unset($_SESSION['authkey']);
 						if(is_array($tmp) && isEmail($tmp[0]['email'])){
@@ -295,7 +293,6 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 					if(strlen((string)$xml->success)){
 						$authcode=(string)$xml->success;
 						$tmp=xml2Arrays(decrypt($authcode,$authkey));
-						//abort(printValue($tmp));
 						unset($_SESSION['authcode']);
 						unset($_SESSION['authkey']);
 						if(is_array($tmp) && isEmail($tmp[0]['email'])){
@@ -460,7 +457,6 @@ else{
 	$recopts=array('-table'=>'_users','guid'=>$guid,'-relate'=>1);
 	$USER=getDBRecord($recopts);
 }
-//abort(printValue($userfieldinfo));
 if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['active']) && $userfieldinfo['active']['_dbtype']=='int' && $USER['active'] != 1){
 	//do not allow users that are not active to log in
 	$ok=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>'NULL'));
