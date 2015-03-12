@@ -2644,7 +2644,7 @@ function getCalendar($monthyear='',$params=array()){
 			if($params['-view']=='week' && $calendar['current']['wnum'] != $event['wnum']){$valid=0;}
 			elseif($params['-view']=='day' && $calendar['current']['mday'] != $event['mday']){$valid=0;}
 			//skip this event if we have already listed it - user has overlapping events from two feeds
-			$sha=sha1(printValue($event));
+			$sha=sha1(json_encode($event));
 			if(isset($shas[$sha])){$valid=0;}
 			else{$shas[$sha]=1;}
 			if($valid){
@@ -2676,7 +2676,7 @@ function getCalendar($monthyear='',$params=array()){
 		                	continue;
 						}
 						//skip this event if we have already listed it - user has overlapping events from two feeds
-						$sha=sha1(printValue($event));
+						$sha=sha1(json_encode($event));
 						if(isset($shas[$sha])){continue;}
 						$shas[$sha]=1;
 						$current['events'][]=$event;
@@ -3045,7 +3045,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 	if(count($s) > $linecnt){$linecnt=count($s);}
 	$sdiff=simpleDiff($m,$s);
 	//return printValue($sdiff);
-	$sha=sha1(printValue($m).printValue($s));
+	$sha=sha1(json_encode(array($m,$s)));
 	$header= '';
 	$result='';
 	//$result .= "<div>Diffs:" . implode(',',$diffs)."</div>\n";
@@ -3528,8 +3528,7 @@ function evalPHP($strings){
 			}
 		}
 	}
-	ob_clean();
-	flush();
+	ob_end_flush();
 	showErrors();
 	return implode('',$strings);
 }
@@ -4381,7 +4380,7 @@ function getAllVersions(){
 				else{$versions[$name]=$ver;}
 	        	}
 			catch(Exception $e){
-				//echoNow(printValue($e));
+				//
             	}
 	    	}
 		}
@@ -9120,7 +9119,7 @@ function processActions(){
 					$val_array=xml2Array($val);
 					//if($USER['_id']==1){echo "rec" . printValue($val_array) . printValue($settings[$setkey]) . printValue($rec);}
 					if(is_array($rec)){
-						if(sha1(printValue($val_array)) != sha1(printValue($settings[$setkey]))){
+						if(sha1(json_encode($val_array)) != sha1(json_encode($settings[$setkey]))){
 							$editopts=array('-table'=>'_settings','-where'=>"_id={$rec['_id']}",'key_value'=>$val);
 							$ok=editDBRecord($editopts);
 							$_REQUEST['edit_result']=$ok;
@@ -10631,7 +10630,7 @@ function swfChart($recs=array(),$params=array(),$crc=''){
   	//build inline data and add any attributes passed in
   	$total=0;
   	foreach($recs as $rec){$total+=$rec['yval'];}
-  	if(!strlen($crc)){$crc=encodeCRC(printValue($recs) . printValue($params));}
+  	if(!strlen($crc)){$crc=encodeCRC(json_encode(array($recs,$params)));}
   	if(!isset($params['showNames'])){$params['showNames']=1;}
   	if(!isset($params['decimalPrecision'])){$params['decimalPrecision']=0;}
   	if(!isset($params['subcaption'])){$params['subcaption']="Total: {$total}";}
