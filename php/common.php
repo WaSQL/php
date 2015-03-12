@@ -3509,7 +3509,7 @@ function evalPHP($strings){
 				$val=@eval($evalcode);
 				$ob=ob_get_contents();
 				ob_clean();
-				flush();
+				ob_flush();
 				//echo "VAL".printValue($val)."\n\n";echo "OB".printValue($ob)."\n\n";exit;
 				if(strlen(trim($ob)) && strlen(trim($val))){
 					if(stringContains($ob,'wasqlDebug')){
@@ -3528,7 +3528,8 @@ function evalPHP($strings){
 			}
 		}
 	}
-	ob_end_flush();
+	ob_clean();
+	ob_flush();
 	showErrors();
 	return implode('',$strings);
 }
@@ -5897,7 +5898,7 @@ function includeFile($file,$params=array()){
 	//start with any contents currently in the buffer,if any
 	$rtn=trim(ob_get_contents());
 	ob_clean();
-	flush();
+	ob_flush();
 	ob_start();
 	if(!is_file($file)){
 		return '<img src="/wfiles/alert.gif" alt="Alert" title="includeFile error: No file."> includeFile error: No file '.$file."\n";;
@@ -5941,7 +5942,7 @@ function includePage($val='',$params=array()){
 	//start with any contents currently in the buffer
 	$rtn=trim(ob_get_contents());
 	ob_clean();
-	flush();
+	ob_flush();
 	ob_start();
 	//Disallow recursive calls - pages that call themselves
 	global $PAGE;
@@ -8428,7 +8429,6 @@ function printValue($v='',$exit=0){
 	print_r($v);
 	$rtn .= ob_get_contents();
 	ob_clean();
-	flush();
 	$rtn .= "\n</pre>\n";
     if($exit){echo $rtn;exit;}
 	return $rtn;
