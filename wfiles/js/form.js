@@ -411,11 +411,25 @@ function remindMeForm(){
 	return false;
 	}
 //--------------------------
-function setProcessing(id,msg){
+function setProcessing(id,msg,cancel){
+	if(undefined == cancel){cancel=1;}
 	if(undefined == msg){msg='Processing ...';}
-	var str='<div style="display:table-cell;"><img src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
+	var str=getProcessingDiv(id,msg,cancel);
 	setText(id,str);
 	return;
+	}
+//--------------------------
+function getProcessingDiv(id,msg,cancel){
+	if(undefined == cancel){cancel=1;}
+	if(undefined == msg){msg='Processing. Please Wait ...';}
+	var str='<div style="display:table-cell;">';
+	str+='<div><img src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
+	if(cancel==1){
+    	str+='<div align="right" style="padding:5px 0 0 0;"><a href="#cancel" onclick="return ajaxAbort(\''+id+'\');" class="btn btn-default btn-sm" style="display:table-cell;padding:0 2px 0 2px;font-size:14px;">Cancel <span class="icon-cancel-circled" style="font-size:18px;"></span></a></div>';
+	}
+
+	str+='</div>';
+	return str;
 	}
 //--------------------------
 function submitRemindMeForm(frm){
@@ -1372,6 +1386,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 		alert('Error in ajaxPost\n'+sid+' is not defined as a valid object id');
 		return false;
     	}
+    if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
+		ajaxAbort(sid);
+	}
     //Set the ajax ID
 	var AJUid=new Date().getTime() + "";
 	//submit the form via ajax
@@ -1387,7 +1404,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 				var cb=this.callback;
 				cb=cb.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
-					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" class="w_middle" alt="processing" /> Processing. Please wait...</div>';
+					var txt=getProcessingDiv(sid);
 					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
@@ -1504,7 +1521,7 @@ function setCenterPopText(cpid,cptext,params){
 		txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
 	}
 	if(params.close_top){
-		txt += '	<div class="w_centerpop_close_top" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_top" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
 	}
 	if(params.drag){
 		txt += '	<div class="w_centerpop_drag" id="'+cpid+'_move" title="Click to drag"><img id="'+cpid+'_drag" src="/wfiles/icons/Xmove24.png" width="24" height="24" alt="move" /></div>'+"\n";
@@ -1515,7 +1532,7 @@ function setCenterPopText(cpid,cptext,params){
 
 	txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
 	if(params.close_bot){
-		txt += '	<div class="w_centerpop_close_bot" title="Click to close" onclick="removeDiv(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_bot" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
 	}
 	txt += '</div>'+"\n";
 	//set the text in cpid
@@ -1541,10 +1558,21 @@ function callWaSQL(id,name,params){
 //--------------------------
 function ajaxAbort(sid){
 	if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
-		AjaxRequest.ActiveAjaxGroupRequests[sid].xmlHttpRequest.abort();
-		delete(AjaxRequest.ActiveAjaxGroupRequests[sid]);
-		return true;
+		var req=AjaxRequest.ActiveAjaxGroupRequests[sid];
+		//check for callback
+		if(undefined != req.callback && req.callback.length){
+			req.status='aborted';
+			var str=req.callback+'(req);';
+			eval(str);
+        }
+		req.xmlHttpRequest.abort();
+		delete(req);
+		if(sid.indexOf('centerpop') != -1){removeId(sid);}
+		else{setText(sid,req.prevValue);}
+		return false;
 	}
+	if(sid.indexOf('centerpop') != -1){removeId(sid);}
+	else{setText(sid,'');}
 	return false;
 }
 //--------------------------
@@ -1593,7 +1621,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 		alert('Error in ajaxGet\n'+sid+' is not defined as a valid object id');
 		return false;
     	}
-	//document.getElementById(name).innerHTML = "Processing AJAX Request ...";
+    if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
+		ajaxAbort(sid);
+	}
 	var getReq=AjaxRequest.get(
 		{
     		'url':url+'?'+params,
@@ -1603,13 +1633,14 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     		'var3':newtitle,
     		'var4':newurl,
 			'groupName':sid,
+			'prevValue':getText(sid),
 			'var1':nosetprocess,
 			'onGroupBegin':function(req){
 				var dname=this.groupName;
 				var lname=dname.toLowerCase();
 				var cb=this.callback.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
-					var txt='<div class="w_centerpop_content"><img src="/wfiles/loading_blu.gif" class="w_middle" alt="processing" /> Processing. Please wait...</div>';
+					var txt=getProcessingDiv(sid);
 					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:10px;border:0px;background:#FFF;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
@@ -1805,6 +1836,7 @@ function AjaxRequest() {
 	req.xName = null;
 	req.xAction = null;
 	req.xId = null;
+	req.prevValue = null;
 
 	/**
 	 * The parameters is an object holding name/value pairs which will be 
@@ -1908,6 +1940,7 @@ function AjaxRequest() {
 	 * the statusCode=200
 	 */
 	req.onSuccess = null;
+	
 
 	/**
 	 * A function reference assigned will be called after onComplete, if 
@@ -1998,7 +2031,9 @@ function AjaxRequest() {
 		};
 	req.onCompleteInternal = 
 		function() {
-			if (req.onCompleteInternalHandled || req.aborted) { return; }
+			if (req.onCompleteInternalHandled || req.aborted) { 
+				return;
+			}
 			req.onCompleteInternalHandled = true;
 			AjaxRequest.numActiveAjaxRequests--;
 			if (AjaxRequest.numActiveAjaxRequests==0 && typeof(window['AjaxRequestEnd'])=="function") {
