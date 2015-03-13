@@ -3910,7 +3910,7 @@ function getDBFieldTag($params=array()){
 
 			//check for tvals and build a datalist if present
 			$selections=getDBFieldSelections($info[$field]);
-			if(is_array($selections['tvals']) && count($selections['tvals'])){
+			if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
 				$list_id=$info[$field]['name'].'_datalist';
             	$tag .= ' list="'.$list_id.'"';
 			}
