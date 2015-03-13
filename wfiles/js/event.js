@@ -464,7 +464,7 @@ function popUpDiv(content,param){
 			var titlediv = document.createElement("div");
 		    var titletxt='<div id="'+opt['id']+'_Title'+'" style="float:left;margin-left:10px;margin-top:1px">'+opt['title']+'</div>';
 		    //add close div
-		    titletxt += '<a href="#" style="font-weight:bold;font-size:12px;font-family:arial;color:#970000;text-decoration:none;padding:0 3px 0 0;" onClick="fadeId(\''+opt['id']+'\',1);return false;">X</a>';
+		    titletxt += '<a href="#" style="font-weight:bold;font-size:12px;font-family:arial;color:#970000;text-decoration:none;padding:0 3px 0 0;" onclick="ajaxAbort(\''+opt['id']+'\',1);return false;">X</a>';
 		    titlediv.innerHTML=titletxt;
 		    titlecell.appendChild(titlediv);
 		    toprow.appendChild(titlecell);
@@ -501,7 +501,7 @@ function popUpDiv(content,param){
 		    botcell.style.backgroundColor=bgcolor;
 			var botdiv = document.createElement("div");
 		    //add close div
-		    var bottxt = '<a href="#" class="w_red w_bold w_link"" onClick="fadeId(\''+opt['id']+'\',1);return false;">Close</a>';
+		    var bottxt = '<a href="#" class="w_red w_bold w_link"" onclick="ajaxAbort(\''+opt['id']+'\',1);return false;">Close</a>';
 		    botdiv.innerHTML=bottxt;
 		    botcell.appendChild(botdiv);
 		    botrow.appendChild(botcell);
