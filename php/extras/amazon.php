@@ -44,7 +44,7 @@ function amazonSendMail($params=array()){
 	$m->setFrom($params['from']);
 	$m->setSubject($params['subject']);
 	$m->setMessageFromString($params['message']);
-	$rtn = $ses->sendRawEmail($m);
+	$rtn = $ses->SendRawEmail($m);
 	if(isset($rtn['MessageId'])){return 1;}
 	return printValue($rtn);
 
