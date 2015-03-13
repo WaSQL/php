@@ -3915,7 +3915,7 @@ function getDBFieldTag($params=array()){
             	$tag .= ' list="'.$list_id.'"';
 			}
 			$tag .= '>';
-			if(is_array($selections['tvals']) && count($selections['tvals'])){
+			if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
 				$tag .= '	<datalist id="'.$list_id.'">'."\n";
 				$cnt=count($selections['tvals']);
 				for($x=0;$x<$cnt;$x++){
