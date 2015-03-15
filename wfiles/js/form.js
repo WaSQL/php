@@ -809,9 +809,9 @@ function submitForm(theForm,popup,debug,ajax){
     popup=1;
     //Define some quickmasks
     var quickmask=new Array();
-	quickmask['alpha'] = '^[a-zA-Z_-\\?\\ \\\']+$';
-	quickmask['alphanumeric'] = '^[0-9a-zA-Z_-\\.\\?\\ \\\']+$';
-	quickmask['calendar'] = '^[0-9]{1,2}-[0-9]{1,2}-[0-9]{1,4}$';
+	quickmask['alpha'] = '^[a-zA-Z_\\-\\?\\ \\\']+$';
+	quickmask['alphanumeric'] = '^[0-9a-zA-Z_\\-\\.\\?\\ \\\']+$';
+	quickmask['calendar'] = '^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{1,4}$';
 	quickmask['email'] = '.+@.+\\..{2,6}';
 	quickmask['integer'] = '^[0-9]+$';
 	quickmask['hexcolor'] = '^#[abcdef0-9]{6,6}$';
@@ -819,8 +819,8 @@ function submitForm(theForm,popup,debug,ajax){
 	quickmask['number'] = '(^[0-9]+$)|(^\\.[0-9]+$)|(^[0-9]+\\.[0-9]+$)';
 	quickmask['phone'] = '^([0-9]{3,3}[\\-\\.][0-9]{3,3}[\\-\\.][0-9]{4,4}|\\([0-9]{3,3}\\)\\ [0-9]{3,3}[\\-][0-9]{4,4})$';
 	quickmask['time'] = '^[0-9]{1,2}\\:[0-9]{2}$';
-	quickmask['ssn'] = '^[0-9]{3,3}-[0-9]{2,2}-[0-9]{4,4}$';
-	quickmask['zipcode'] = '^[0-9]{5,5}(\\-[0-9]{4,4})*$';
+	quickmask['ssn'] = '^[0-9]{3,3}\\-[0-9]{2,2}\\-[0-9]{4,4}$';
+	quickmask['zipcode'] = '^[0-9]{5,5}(\\\-[0-9]{4,4})*$';
 	//alert("theForm type="+typeof(theForm));
 	if(theForm.length ==0){return false;}
 	if(debug==1){alert("Form length: "+theForm.length);}
@@ -960,6 +960,7 @@ function submitForm(theForm,popup,debug,ajax){
 				}
 				var rmask=mask;
                 if(undefined != quickmask[mask]){rmask=quickmask[mask]+'';}
+                //console.log('rmask:'+rmask);
                 var re = new RegExp(rmask, 'i');
                 if(re.test(theForm[i].value) == false){
                     var msg = dname+" must be of type "+mask;
