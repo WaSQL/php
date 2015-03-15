@@ -963,7 +963,7 @@ function addEditDBForm($params=array(),$customcode=''){
     $rtn .= '<input type="hidden" name="_table" value="'.$params['-table'].'">'."\n";
     $rtn .= '<input type="hidden" name="_formname" value="'.$formname.'">'."\n";
     $rtn .= '<input type="hidden" name="_enctype" value="'.$enctype.'">'."\n";
-    $rtn .= '<input type="hidden" name="_action" value="">'."\n";
+    $rtn .= '<input type="hidden" name="_action" value="'.$params['_action'].'">'."\n";
 	if($params['-auth_required']){
 		$rtn .= '<input type="hidden" name="_auth_required" value="1">'."\n";
 	}
@@ -3774,6 +3774,8 @@ function getDBFieldTag($params=array()){
             }
             $name=$field;
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $dname=ucwords(str_replace('_',' ',$name));
+            $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelect($name,$options,$info[$field]);
 			break;
 		case 'signature':
