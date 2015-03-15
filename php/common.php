@@ -7292,11 +7292,23 @@ function niftyPlayer($params=array()){
 function minifyCode($code,$type) {
 	if(!strlen($code)){return 'no code';}
 	if(!strlen($type)){return 'no type';}
+	
+
 	switch(strtolower($type)){
 		case 'js':
+			require_once("min-js.php");
+			$parser = new JSqueeze;
+    		return $parser->squeeze($code);
 			$url='http://javascript-minifier.com/raw';
 			break;
 		case 'css':
+			// Remove comments
+			$code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
+			// Remove space after colons
+			$code = str_replace(': ', ':', $code);
+			// Remove whitespace
+			$code = str_replace(array("\r\n", "\r", "\n", "\t", ' ', ' ', ' '), '', $code);
+			return $code;
 			$url='http://cssminifier.com/raw';
 			break;
 	}
@@ -7304,7 +7316,7 @@ function minifyCode($code,$type) {
 	curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
     curl_setopt($process, CURLOPT_HEADER, 0);
     curl_setopt($process,CURLOPT_POST,1);
-    curl_setopt($process,CURLOPT_TIMEOUT, 60);
+    curl_setopt($process,CURLOPT_TIMEOUT, 10);
     curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
