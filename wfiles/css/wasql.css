@@ -688,6 +688,9 @@ table th a {
 .w_pointer{cursor:pointer;}
 .w_align_left{text-align:left;}
 .w_align_right{text-align:right;}
+.w_underline{text-decoration:underline;}
+.w_borderbot{border-bottom:1px solid #000;}
+.w_bordertop{border-top:1px solid #000;}
 
 /*Padding and Margin */
 .w_pad {padding:5px;}
@@ -712,24 +715,25 @@ table th a {
 /*Colors - modified to match bootstrap button colors */
 .w_black {color:#000;}
 .w_white {color:#FFF;}
-.w_dblue {color:#428bca;}
-.w_lblue {color:#5bc0de;}
-.w_red {color:#d9534f;}
-.w_orange {color:#f0ad4e;}
-.w_green {color:#5cb85c;}
-.w_gray{color:#939393;}
-.w_lgray{color:#f4f4f4;}
+.w_dblue, .w_primary {color:#428bca;}
+.w_lblue, .w_info {color:#5bc0de;}
+.w_red, .w_danger {color:#d9534f;}
+.w_orange, .w_warning {color:#f0ad4e;}
+.w_green, .w_success {color:#5cb85c;}
+.w_gray, .w_grey {color:#939393;}
+.w_lgray, .w_lgrey {color:#f4f4f4;}
 .w_required {color:#970000;}
+
 
 .w_blackback  {background-color:#000;}
 .w_whiteback  {background-color:#FFF;}
-.w_dblueback  {background-color:#428bca;}
-.w_lblueback  {background-color:#5bc0de;}
-.w_redback  {background-color:#d9534f;}
-.w_greenback  {background-color:#5cb85c;}
-.w_orangeback  {background-color:#f0ad4e;}
-.w_grayback {background-color:#939393;}
-.w_lgrayback {background-color:#f4f4f4;}
+.w_dblueback, .w_primaryback  {background-color:#428bca;}
+.w_lblueback, .w_infoback  {background-color:#5bc0de;}
+.w_redback, .w_dangerback  {background-color:#d9534f;}
+.w_orangeback, .w_warningback {background-color:#f0ad4e;}
+.w_greenback, .w_successback  {background-color:#5cb85c;}
+.w_grayback, .w_greyback {background-color:#939393;}
+.w_lgrayback, .w_lgreyback {background-color:#f4f4f4;}
 .w_gradientorange{
 	[safari|chrome]background: -webkit-gradient(linear,left bottom,left top,color-stop(0.20, #ff7c3e),color-stop(0.70, #ff5400));
 	[firefox]background: -moz-linear-gradient(center bottom,#ff7c3e 20%,#ff5400 70%);
