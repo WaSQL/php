@@ -354,6 +354,35 @@ function appendText(obj,val,lf){
 		}
 	setText(obj,newval);
 	}
+//Clone Div
+function cloneDiv(div,init){
+	//info: use to clone a div and all form elements in the div.  It will automatically incriment any names, ids, and tabindexes
+	//usage: onclick="return cloneTableRow('mytableid');"
+	var divObj = getObject(div);
+	if(undefined == divObj){alert('cloneDiv Error: No id found for '+div);return false;}
+	if(undefined == init){init=0;}
+	//have we hit our max
+	var cnt=parseInt(divObj.getAttribute('data-cnt'));
+	var max_cnt=0;
+	if(undefined != divObj.getAttribute('data-max')){
+		max_cnt=parseInt(divObj.getAttribute('data-max'));
+	}
+	if(max_cnt > 0 && cnt >= max_cnt){return false;}
+	if(undefined == divObj.id){divObj.id=time();}
+	//add a clone button before we clone it.
+	//$rtn .= '<div class="col-sm-1"><label>Clone</label><button class="btn btn-default"><span class="icon-plus"></span></button></div>'."\n";
+	if(init==1){
+		var cloneDiv=document.createElement('div');
+		cloneDiv.className='col-sm-1';
+		cloneDiv.innerHTML='<label>Clone</label><button class="btn btn-default" onclick="cloneDiv(\''+divObj.id+'\')"><span class="icon-plus"></span></button>';
+		divObj.insertAdjacentElement('afterBegin',cloneDiv);
+		return true;
+	}
+
+	var clone=divObj.cloneNode(true);
+	divObj.insertAdjacentElement('afterEnd',clone);
+	return true;
+}
 //Clone table row
 function cloneTableRow(tid,opts){
 	//info: use to clone a table row, and all elements in the row.  It will automatically incriment any names, ids, and tabindexes
