@@ -1003,6 +1003,10 @@ function initBehaviors(ajaxdiv){
   			var id=navEls[n].getAttribute('id');
 			if(id){startClock(id,1);}
 		}
+		else if(in_array("clone",behaviors)){
+			/*CLONE DIV - */
+			cloneDiv(navEls[n],1);
+		}
 		else if(in_array("utcclock",behaviors)){
 			/*UTC CLOCK - */
   			var id=navEls[n].getAttribute('id');
