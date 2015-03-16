@@ -7387,6 +7387,9 @@ function minifyCode($code,$type) {
 			$url='http://javascript-minifier.com/raw';
 			break;
 		case 'css':
+			require_once("min-css.php");
+			$code = CssMin::minify($code);
+			return $code;
 			// Remove comments
 			$code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
 			// Remove space after colons
