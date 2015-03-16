@@ -1005,7 +1005,7 @@ function initBehaviors(ajaxdiv){
 		}
 		else if(in_array("clone",behaviors)){
 			/*CLONE DIV - */
-			cloneDiv(navEls[n],1);
+			cloneDiv(navEls[n]);
 		}
 		else if(in_array("utcclock",behaviors)){
 			/*UTC CLOCK - */

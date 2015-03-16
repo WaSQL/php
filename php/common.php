@@ -533,6 +533,10 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if(isset($params['height'])){
+		if(isNum($params['height'])){$params['height'].='px';}
+		$params['style'].=";height:{$params['height']}";
+	}
 	if(strlen($params['behavior'])){
 		$params['data-behavior']=strtolower($params['behavior']);
 		$params['wrap']="off";
@@ -563,6 +567,7 @@ function buildFormTextarea($name,$params=array()){
 	$params['value']=fixMicrosoft($params['value']);
 	$tag .= encodeHtml($params['value']);
 	$tag .= '</textarea>'."\n";
+	//echo printValue($params);exit;
 	return $tag;
 }
 //---------- begin function buildFormTime-------------------

@@ -355,33 +355,73 @@ function appendText(obj,val,lf){
 	setText(obj,newval);
 	}
 //Clone Div
-function cloneDiv(div,init){
+function cloneDiv(div,c){
 	//info: use to clone a div and all form elements in the div.  It will automatically incriment any names, ids, and tabindexes
 	//usage: onclick="return cloneTableRow('mytableid');"
 	var divObj = getObject(div);
 	if(undefined == divObj){alert('cloneDiv Error: No id found for '+div);return false;}
-	if(undefined == init){init=0;}
 	//have we hit our max
+	if(undefined == divObj.getAttribute('data-cnt')){
+		divObj.setAttribute('data-cnt',1);
+	}
+	if(undefined == divObj.getAttribute('data-max')){
+		divObj.setAttribute('data-max',0);
+	}
 	var cnt=parseInt(divObj.getAttribute('data-cnt'));
 	var max_cnt=0;
 	if(undefined != divObj.getAttribute('data-max')){
 		max_cnt=parseInt(divObj.getAttribute('data-max'));
 	}
-	if(max_cnt > 0 && cnt >= max_cnt){return false;}
-	if(undefined == divObj.id){divObj.id=time();}
+	if(undefined == divObj.getAttribute('id')){
+		divObj.id='c' + guid();
+		divObj.setAttribute('id',divObj.id);
+	}
+	if(max_cnt > 0 && cnt >= max_cnt){
+		console.log('cloneDiv max reached for '+divObj.id);
+		return false;
+	}
 	//add a clone button before we clone it.
 	//$rtn .= '<div class="col-sm-1"><label>Clone</label><button class="btn btn-default"><span class="icon-plus"></span></button></div>'."\n";
-	if(init==1){
+	if(undefined == divObj.getAttribute('data-init')){
+		divObj.setAttribute('data-init',1);
 		var cloneDiv=document.createElement('div');
+		cloneDiv.setAttribute('id','clonebutton');
 		cloneDiv.className='col-sm-1';
-		cloneDiv.innerHTML='<label>Clone</label><button class="btn btn-default" onclick="cloneDiv(\''+divObj.id+'\')"><span class="icon-plus"></span></button>';
+		cloneDiv.innerHTML='<label>Clone</label><button type="button" class="btn btn-default btn-sm" onclick="cloneDiv(\''+divObj.id+'\',1)"><span class="icon-plus"></span></button>';
 		divObj.insertAdjacentElement('afterBegin',cloneDiv);
 		return true;
 	}
-
-	var clone=divObj.cloneNode(true);
-	divObj.insertAdjacentElement('afterEnd',clone);
-	return true;
+	if(undefined != c && c==1){
+		//incriment the clone count
+		var count=cnt;
+		cnt++;
+		divObj.setAttribute('data-cnt',cnt);
+		var clone=divObj.cloneNode(true);
+		//incriment inputs
+		var list=clone.querySelectorAll("input");
+		for(var i=0;i<list.length;i++){
+			//id
+        	var cid=list[i].id;
+			list[i].setAttribute('id',cid+'_'+count);
+			//name
+			var cname=list[i].name;
+			list[i].setAttribute('name',cname+'_'+count);
+		}
+		//incriment labels
+		var list=clone.querySelectorAll("label");
+		for(var i=0;i<list.length;i++){
+			//for
+        	var cfor=list[i].getAttribute('for');
+			list[i].setAttribute('for',cfor+'_'+count);
+		}
+		//hide all but the last clone button
+		var list=clone.querySelectorAll("[id=clonebutton]");
+		for(var i=0;i<list.length;i++){
+			list[i].style.visibility='hidden';
+		}
+		divObj.insertAdjacentElement('afterEnd',clone);
+		return true;
+	}
 }
 //Clone table row
 function cloneTableRow(tid,opts){
