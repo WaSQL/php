@@ -663,7 +663,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 * @param name string
 * @param params array
 * @return string
-* @usage echo buildFormText('name',$params);
+* @usage echo buildFormFile('file',$params);
 */
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
