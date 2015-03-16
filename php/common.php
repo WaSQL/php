@@ -7127,6 +7127,10 @@ function loadExtrasJs($extras){
         			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
 				}
         	break;
+        	case 'signature':
+			case 'file':
+				$extra='html5';
+			break;
         	case 'codemirror':
         	case 'tcal':
         		//load the css required for these just in case they don't
