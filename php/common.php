@@ -332,6 +332,7 @@ function buildFormDate($name,$params=array()){
 	$params['width']=155;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if($params['-value']=='NULL'){$params['-value']='';}
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
 	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
 	else{$required='';}
