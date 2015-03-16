@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="atest" timestamp="1426512129">
+<export dbname="atest" timestamp="1426515540">
 <xmlschema name="forms">
 	<field name="_cdate" type="datetime NOT NULL" />
 	<field name="_cuser" type="int(11) NOT NULL" />
@@ -92,46 +92,6 @@
 	<tablename>forms</tablename>
 	<tvals>1</tvals>
 </xmlmeta>
-<xmldata name="forms">
-	<_cdate>2015-03-14 08:16:43</_cdate>
-	<_cuser>1</_cuser>
-	<_edate>2015-03-16 07:19:32</_edate>
-	<_euser>1</_euser>
-	<_id>1</_id>
-	<active>1</active>
-	<layout>name color birthday
-comment
-file</layout>
-	<name>testform1</name>
-</xmldata>
-<xmldata name="forms">
-	<_cdate>2015-03-14 08:25:45</_cdate>
-	<_cuser>1</_cuser>
-	<_id>2</_id>
-	<active>1</active>
-	<name>testform2</name>
-</xmldata>
-<xmldata name="forms">
-	<_cdate>2015-03-14 10:37:45</_cdate>
-	<_cuser>1</_cuser>
-	<_id>3</_id>
-	<active>1</active>
-	<name>testform3</name>
-</xmldata>
-<xmldata name="forms">
-	<_cdate>2015-03-14 10:39:01</_cdate>
-	<_cuser>1</_cuser>
-	<_id>4</_id>
-	<active>1</active>
-	<name>testform4</name>
-</xmldata>
-<xmldata name="forms">
-	<_cdate>2015-03-14 10:45:32</_cdate>
-	<_cuser>1</_cuser>
-	<_id>5</_id>
-	<active>1</active>
-	<name>testform5</name>
-</xmldata>
 
 
 <xmlschema name="forms_data">
@@ -298,59 +258,6 @@ file</layout>
 	<tablename>forms_fields</tablename>
 	<tvals>1</tvals>
 </xmlmeta>
-<xmldata name="forms_fields">
-	<_cdate>2015-03-14 17:07:58</_cdate>
-	<_cuser>1</_cuser>
-	<_edate>2015-03-15 23:25:41</_edate>
-	<_euser>1</_euser>
-	<_id>1</_id>
-	<form_id>1</form_id>
-	<inputtype>text</inputtype>
-	<name>name</name>
-	<required>0</required>
-</xmldata>
-<xmldata name="forms_fields">
-	<_cdate>2015-03-14 17:19:02</_cdate>
-	<_cuser>1</_cuser>
-	<_edate>2015-03-15 23:25:36</_edate>
-	<_euser>1</_euser>
-	<_id>2</_id>
-	<defaultval>#CCCCCC</defaultval>
-	<form_id>1</form_id>
-	<inputtype>color</inputtype>
-	<name>color</name>
-	<required>0</required>
-</xmldata>
-<xmldata name="forms_fields">
-	<_cdate>2015-03-15 20:10:18</_cdate>
-	<_cuser>1</_cuser>
-	<_edate>2015-03-15 23:25:05</_edate>
-	<_euser>1</_euser>
-	<_id>3</_id>
-	<form_id>1</form_id>
-	<inputtype>textarea</inputtype>
-	<name>comment</name>
-	<options>height:100px</options>
-	<required>0</required>
-</xmldata>
-<xmldata name="forms_fields">
-	<_cdate>2015-03-16 06:54:28</_cdate>
-	<_cuser>1</_cuser>
-	<_id>4</_id>
-	<form_id>1</form_id>
-	<inputtype>date</inputtype>
-	<name>birthday</name>
-	<required>1</required>
-</xmldata>
-<xmldata name="forms_fields">
-	<_cdate>2015-03-16 07:17:10</_cdate>
-	<_cuser>1</_cuser>
-	<_id>5</_id>
-	<form_id>1</form_id>
-	<inputtype>file</inputtype>
-	<name>file</name>
-	<required>1</required>
-</xmldata>
 
 
 <xmlschema name="forms_flow">
@@ -417,20 +324,20 @@ file</layout>
 
 
 <xmldata name="_pages">
-	<_adate>2015-03-16 07:19:32</_adate>
+	<_adate>2015-03-16 07:42:49</_adate>
 	<_aip>127.0.0.1</_aip>
 	<_amem>8388608</_amem>
 	<_auser>1</_auser>
 	<_cache>0</_cache>
 	<_cdate>2015-03-13 21:46:58</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-03-16 06:58:37</_edate>
+	<_edate>2015-03-16 07:43:01</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
         &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0&lt;/HTTP_USER_AGENT&gt;
         &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;4354&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_PORT&gt;4533&lt;/REMOTE_PORT&gt;
         &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
         &lt;REMOTE_BROWSER_VERSION&gt;36.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
@@ -492,7 +399,7 @@ file</layout>
 	&lt;div class=&quot;row&quot; id=&quot;form_field&quot;&gt;
 	&lt;?=pageAddEditFormField($form);?&gt;
 	&lt;/div&gt;
-	&lt;div class=&quot;row&quot; id=&quot;form_field_list&quot;&gt;
+	&lt;div class=&quot;row&quot; id=&quot;form_field_list&quot; style=&quot;max-height:150px;overflow:auto;padding-right:18px;&quot;&gt;
 		&lt;?=renderView('_form_field_recs',$form['fields'],array('-alias'=&gt;'recs'));?&gt;
 	&lt;/div&gt;
 	&lt;div class=&quot;row&quot;&gt;
@@ -513,7 +420,7 @@ file</layout>
 	&lt;div class=&quot;row&quot;&gt;
 		&lt;?=pageAddEditFormFlow($form);?&gt;
 	&lt;/div&gt;
-	&lt;div class=&quot;row&quot; id=&quot;form_flow_list&quot;&gt;
+	&lt;div class=&quot;row&quot; id=&quot;form_flow_list&quot; style=&quot;max-height:150px;overflow:auto;padding-right:18px;&quot;&gt;
 		&lt;?=renderView('_form_flow_recs',$form['flow'],array('-alias'=&gt;'recs'));?&gt;
 	&lt;/div&gt;
 	&lt;?=buildOnLoad(&quot;pageFormsList();&quot;);?&gt;
@@ -577,6 +484,7 @@ file</layout>
 ]]></body>
 	<controller><![CDATA[
 &lt;?php
+loadExtrasJs(array('signature','codemirror','nicedit'));
 switch(strtolower($_REQUEST['func'])){
 	case 'new_form':
 		setView('new_form');
@@ -638,6 +546,7 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 }
 ?&gt;
+
 ]]></controller>
 	<css>.junk{}</css>
 	<css_min>.junk{}</css_min>
@@ -703,6 +612,7 @@ function pageFormPreview($form){
 					case 'datetime':$form['fields'][$field]['width']=220;break;
 					case 'time':$form['fields'][$field]['width']=115;break;
 					case 'color':$form['fields'][$field]['width']=115;break;
+					case 'hidden':$form['fields'][$field]['width']=0;break;
 					case 'signature':$form['fields'][$field]['width']=300;break;
                 	default:
 						$form['fields'][$field]['width']=200;
@@ -713,6 +623,10 @@ function pageFormPreview($form){
 		}
 		$rtn .= '&lt;div class=&quot;row&quot;&gt;'.&quot;\n&quot;;
 		foreach($fields as $field){
+			if($form['fields'][$field]['inputtype']=='hidden'){
+				$rtn .= '	'.pageFormField($form['fields'][$field]).&quot;\n&quot;;
+				continue;
+			}
         	$pcnt=round(($form['fields'][$field]['width']/$twidth),3);
         	$col=round(($pcnt*12),0);
         	$dname=ucwords(str_replace('_',' ',$form['fields'][$field]['name']));
