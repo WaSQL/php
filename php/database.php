@@ -3218,7 +3218,8 @@ function getDBFieldTag($params=array()){
     foreach($params as $key=>$val){
 		if(preg_match('/^\-/',$key)){continue;}
 		$info[$field][$key]=$val;
-    	}
+    }
+    if(isset($params['-formname'])){$info[$field]['-formname']=$params['-formname'];}
     //set value
     if(isset($params['value'])){$info[$field]['value']=$params['value'];}
 	else{
@@ -3807,28 +3808,7 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'textarea':
 			$end_div=0;
-			//add a behavior for css, js
-			if(!strlen($info[$field]['behavior']) && strlen($info[$field]['value'])){
-				//echo $info[$field]['value'];exit;
-				if(stringContains($info[$field]['value'],'/*filetype:css*/')){
-	            	$info[$field]['behavior']='csseditor';
-				}
-				elseif(stringContains($info[$field]['value'],'/*filetype:js*/')){
-	            	$info[$field]['behavior']='jseditor';
-				}
-				elseif(stringContains($info[$field]['value'],'/*filetype:php*/')){
-	            	$info[$field]['behavior']='phpeditor';
-				}
-				elseif(stringContains($info[$field]['value'],'/*filetype:pl*/')){
-	            	$info[$field]['behavior']='perleditor';
-				}
-				elseif(stringContains($info[$field]['value'],'/*filetype:rb*/')){
-	            	$info[$field]['behavior']='rubyeditor';
-				}
-				elseif(stringContains($info[$field]['value'],'/*filetype:xml*/')){
-	            	$info[$field]['behavior']='xmleditor';
-				}
-			}
+			//
 			if(strlen($info[$field]['behavior']) && $info[$field]['behavior']=='nowrap'){
             	$info[$field]['behavior']='';
 				$info[$field]['wrap']="off";
@@ -3855,8 +3835,7 @@ function getDBFieldTag($params=array()){
 				if($tagwrap==1){
 					$tag .= '<div style="background-color:#FFFFFF;">'."\n";
 					$end_div=1;
-					//$info[$field]['value']=fixMicrosoft($info[$field]['value']);
-                	}
+                }
 			}
 			//pass behavior as a hidden field
 			if(strlen($info[$field]['behavior'])){
@@ -3902,31 +3881,7 @@ function getDBFieldTag($params=array()){
 		//Text
 		case 'text':
 		default:
-			//default to text
-			//remove height since it does not apply to text fields
-			$tag .= '<input type="text"';
-			$tag .= setTagAttributes($info[$field]);
-			if(isset($info[$field]['value'])){
-				$tag .= ' value="'.encodeHtml($info[$field]['value']).'"';
-				}
-
-			//check for tvals and build a datalist if present
-			$selections=getDBFieldSelections($info[$field]);
-			if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
-				$list_id=$info[$field]['name'].'_datalist';
-            	$tag .= ' list="'.$list_id.'"';
-			}
-			$tag .= '>';
-			if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
-				$tag .= '	<datalist id="'.$list_id.'">'."\n";
-				$cnt=count($selections['tvals']);
-				for($x=0;$x<$cnt;$x++){
-					$tval=$selections['tvals'][$x];
-					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-					$tag .= '	<option value="'.$tval.'">'.$dval.'</option>'."\n";
-				}
-			    $tag .= '	</datalist>'."\n";
-			}
+			$tag=buildFormText($info[$field]['name'],$info[$field]);
 			break;
     	}
     //not done here yet...
