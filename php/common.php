@@ -537,10 +537,10 @@ function buildFormTextarea($name,$params=array()){
 		if(isNum($params['height'])){$params['height'].='px';}
 		$params['style'].=";height:{$params['height']}";
 	}
+	$white_wrap=0;
 	if(strlen($params['behavior'])){
 		$params['data-behavior']=strtolower($params['behavior']);
 		$params['wrap']="off";
-		$params['style'].=';background:#FFF;';
 		switch(strtolower($params['behavior'])){
 	    	case 'nowrap':
 	    		$params['behavior']='';
@@ -550,6 +550,7 @@ function buildFormTextarea($name,$params=array()){
 			case 'tinymce':
 			case 'wysiwyg':
 			case 'nicedit':
+				$white_wrap=1;
 				$params['data-behavior']="nicedit";
 				loadExtrasCss(array('nicedit'));
 				loadExtrasJs(array('nicedit'));
@@ -557,16 +558,19 @@ function buildFormTextarea($name,$params=array()){
 			break;
 			default:
 				loadExtrasJs(array('codemirror'));
+				$white_wrap=1;
 			break;
 		}
 	}
 	$params['name']=$name;
+	if($white_wrap==1){$tag.='<div style="background:#FFF;">'."\n";}
 	$tag .= '	<textarea';
 	$tag .= setTagAttributes($params);
 	$tag .= ' >';
 	$params['value']=fixMicrosoft($params['value']);
 	$tag .= encodeHtml($params['value']);
 	$tag .= '</textarea>'."\n";
+	if($white_wrap==1){$tag.='</div>'."\n";}
 	//echo printValue($params);exit;
 	return $tag;
 }
