@@ -207,56 +207,6 @@ function buildFakeContent($title='FAKE for'){
 */
 function buildFormCalendar($name,$params=array()){
 	return buildFormDate($name,$params);
-	//load the CSS for tcal
-	loadExtrasCss('tcal');
-	//load the Javascript for tcal
-	loadExtrasJs('tcal');
-	if(!isset($params['style'])){$params['style']='display:table-cell;width:95px;font-size:12px;font-family:arial;';}
-	if(!isset($params['mask'])){$params['mask']='^[0-9]{1,2}[\-\/][0-9]{1,2}[\-\/][0-9]{2,4}$';}
-	if(!isset($params['maskmsg'])){$params['maskmsg']="Invalid date format (MM-DD-YYYY)";}
-	if(isset($params['class'])){unset($params['class']);}
-	if(!isset($params['id'])){
-		$idparts=array();
-		if(isset($params['-prefix'])){$idparts[]= $params['-prefix'];}
-		$idparts[]=preg_replace('/\[\]/','',$name);
-		$idparts[]='date';
-		$params['id']=implode('_',$idparts);
-	}
-	$type="text";
-	if(!isset($params['name'])){$params['name']=$name;}
-    $tag = '<input type="'.$type.'"';
-	$tag .= setTagAttributes($params);
-	//check for value
-	$value='';
-	if(isset($params['-value'])){$value=$params['-value'];}
-	elseif(isset($params['value'])){$value=$params['value'];}
-	elseif(isset($_REQUEST[$name])){$value=$_REQUEST[$name];}
-	if(is_array($value) && preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})$/s',$value[0],$dmatch)){
-		$value=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
-	}
-	if(preg_match('/^([0-9]{4,4})-([0-9]{2,2})-([0-9]{2,2})/s',$value,$dmatch)){
-		$value=$dmatch[2] . "-" . $dmatch[3] . "-" . $dmatch[1];
-		}
-	$tag .= ' value="'.encodeHtml($value).'"';
-	//only use tcal if the HTML5 date is not supported yet
-	if($type=="text"){
-		loadExtrasJs('tcal');
-		loadExtrasCss('tcal');
-		$class="tcal tcalInput";
-		if(isExtraCss('bootstrap')){$class .= ' form-control';}
-		if($params['-bootstrap']){$class .= ' form-control';}
-		elseif(is_array($_SESSION['w_MINIFY']['extras_css'])){
-			foreach($_SESSION['w_MINIFY']['extras_css'] as $css){
-	            if(stringContains($css,'bootstrap')){
-	                $class .= ' form-control';
-	                break;
-				}
-			}
-		}
-		$tag .= ' class="'.$class.'"';
-	}
-	$tag .= '>';
-    return $tag;
 }
 //---------- begin function buildFormCheckAll--------------------
 /**
@@ -380,6 +330,7 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=155;
+	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
 	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
@@ -403,6 +354,7 @@ function buildFormDateTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=220;
+	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
 	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
@@ -440,18 +392,16 @@ function buildFormHidden($name,$params=array()){
 /**
 * @describe creates an HTML password field
 * @param name string
-* @param opts array
 * @param params array
 * @return string
-* @usage echo buildFormPassword('mydate',$params);
+* @usage echo buildFormPassword('password',$params);
 */
 function buildFormPassword($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
+	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -469,6 +419,8 @@ function buildFormPassword($name,$params=array()){
 */
 function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	$mid=$name.'_options';
@@ -530,6 +482,88 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='</div>'."\n";
 	return $tag;
 }
+//---------- begin function buildFormText--------------------
+/**
+* @describe creates an HTML text field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormText('name',$params);
+*/
+function buildFormText($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['name']=$name;
+	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
+	$tag .= setTagAttributes($params);
+	//check for tvals and build a datalist if present
+	$selections=getDBFieldSelections($params);
+	if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
+		$list_id=$name.'_datalist';
+        $tag .= ' list="'.$list_id.'"';
+        $tag .= ' />'."\n";
+        $tag .= '	<datalist id="'.$list_id.'">'."\n";
+		$cnt=count($selections['tvals']);
+		for($x=0;$x<$cnt;$x++){
+			$tval=$selections['tvals'][$x];
+			$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+			$tag .= '	<option value="'.$tval.'">'.$dval.'</option>'."\n";
+		}
+	    $tag .= '	</datalist>'."\n";
+	}
+	else{
+		$tag .= ' />'."\n";
+		return $tag;
+	}
+	return $tag;
+}
+//---------- begin function buildFormTextarea--------------------
+/**
+* @describe creates an HTML textarea field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormTextarea('name',$params);
+*/
+function buildFormTextarea($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if(strlen($params['behavior'])){
+		$params['data-behavior']=strtolower($params['behavior']);
+		$params['wrap']="off";
+		$params['style'].=';background:#FFF;';
+		switch(strtolower($params['behavior'])){
+	    	case 'nowrap':
+	    		$params['behavior']='';
+				$params['wrap']="off";
+			break;
+			case 'editor':
+			case 'tinymce':
+			case 'wysiwyg':
+			case 'nicedit':
+				$params['data-behavior']="nicedit";
+				loadExtrasCss(array('nicedit'));
+				loadExtrasJs(array('nicedit'));
+				$params['wrap']="off";
+			break;
+			default:
+				loadExtrasJs(array('codemirror'));
+			break;
+		}
+	}
+	$params['name']=$name;
+	$tag .= '	<textarea';
+	$tag .= setTagAttributes($params);
+	$tag .= ' >';
+	$params['value']=fixMicrosoft($params['value']);
+	$tag .= encodeHtml($params['value']);
+	$tag .= '</textarea>'."\n";
+	return $tag;
+}
 //---------- begin function buildFormTime-------------------
 /**
 * @describe creates an HTML time control
@@ -545,9 +579,10 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 */
 function buildFormTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['-interval'])){$params['-interval']='30';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['-interval'])){$params['-interval']='30';}
 	$params['width']=115;
+	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	$required='';
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
@@ -622,7 +657,47 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 	$opts['-field']=$fieldname;
 	return getDBFieldTag($opts);
 	}
-	
+//---------- begin function buildFormFile--------------------
+/**
+* @describe creates an HTML file upload field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormText('name',$params);
+*/
+function buildFormFile($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['name']=$name;
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$params['name']}";}
+	}
+	$tag='';
+	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	if(isset($params['autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    if(strlen($params['value'])){
+		$val=encodeHtml($params['value']);
+		$tag .= '<div class="w_smallest w_lblue">'."\n";
+		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove"> Remove'."\n";
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
+		$tag .= '</div>'."\n";
+	}
+    //remove style attribute since it is not supported
+    $params['style']="border:0px;box-shadow:none;";
+    $params['size']=intval((string)$params['width']/8);
+	$tag .= '	<input type="file"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'."\n";
+	return $tag;
+}
 //---------- begin function buildFormEnd-------------------
 /**
 * @describe creates an HTML form ending tag
@@ -632,7 +707,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 function buildFormEnd(){
 	return '</form>'."\n";
 	}
-	
+
 //---------- begin function buildFormImage-------------------
 /**
 * @describe creates an image submit tag
@@ -660,6 +735,8 @@ function buildFormImage($src,$name='',$onclick=''){
 * @usage echo buildFormSelect('age',array(5=>"Below Five",10=>"5 to 10"));
 */
 function buildFormSelect($name,$pairs=array(),$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['name']=$name;
 	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
 		$params['class'] .= ' form-control';
@@ -695,6 +772,8 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 */
 function buildFormSignature($name,$params=array()){
 	$rtn='';
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
 	if(!isset($params['width'])){$params['width']=300;}
 	if(!isset($params['height'])){$params['height']=75;}
@@ -738,7 +817,8 @@ function buildFormSignature($name,$params=array()){
 */
 function buildFormSlider($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
-	if(!isset($params['formname'])){$params['formname']="addedit";}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
 	if(!isset($params['step'])){$params['step']=1;}
@@ -1821,11 +1901,11 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	$attstring='';
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
-		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','display','onfocus','title','alt','tabindex',
+		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur',
+		'_behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
-		'placeholder','spellcheck','max','min','pattern','placeholder','readonly','step',
-		'lang','autocorrect','list',
-		'pattern'
+		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
+		'lang','autocorrect','list'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
