@@ -3191,7 +3191,9 @@ if(isset($_REQUEST['_menu'])){
 			if(isset($_REQUEST['file_error'])){
 				echo '<div class="w_red"><img src="/wfiles/warning.gif" alt="warning" /> '.$_REQUEST['file_error'].'</div>'."\n";
             	}
-			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import"));
+            $progpath=dirname(__FILE__);
+			$filepath="{$progpath}/temp";
+			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import",'file_path'=>$filepath,'file_autonumber'=>1));
 			if(!isset($_REQUEST['_types'])){$_REQUEST['_types']=array('xmlschema','xmlmeta','xmldata');}
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
 			echo '	<input type="file" data-required="1" name="file" size="80" acceptmsg="Only valid xml and csv files are allowed" accept="xml,csv" /><br />'."\n";
