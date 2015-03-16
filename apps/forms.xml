@@ -1,0 +1,903 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="atest" timestamp="1426512129">
+<xmlschema name="forms">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="active" type="tinyint(1) NOT NULL Default 1" />
+	<field name="layout" type="varchar(3000) NULL" />
+	<field name="name" type="varchar(200) NOT NULL UNIQUE" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2015-03-13 21:45:43</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-13 21:45:43</_edate>
+	<_euser>1</_euser>
+	<_id>20</_id>
+	<synchronize>0</synchronize>
+	<tabledesc>Forms</tabledesc>
+	<tablegroup>Forms</tablegroup>
+	<tablename>forms</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>211</_id>
+	<defaultval>1</defaultval>
+	<fieldname>active</fieldname>
+	<inputtype>checkbox</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-14 11:51:51</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-15 20:17:39</_edate>
+	<_euser>1</_euser>
+	<_id>225</_id>
+	<displayname>Field Layout</displayname>
+	<fieldname>layout</fieldname>
+	<height>150</height>
+	<inputmax>9000</inputmax>
+	<inputtype>textarea</inputtype>
+	<postedit>1</postedit>
+	<related_table>_access</related_table>
+	<synchronize>1</synchronize>
+	<tablename>forms</tablename>
+	<width>300</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-14 12:12:31</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-15 20:18:51</_edate>
+	<_euser>1</_euser>
+	<_id>226</_id>
+	<displayname>Form Name</displayname>
+	<fieldname>name</fieldname>
+	<inputmax>600</inputmax>
+	<inputtype>text</inputtype>
+	<postedit>1</postedit>
+	<related_table>_access</related_table>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms</tablename>
+	<width>260</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>212</_id>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>213</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="forms">
+	<_cdate>2015-03-14 08:16:43</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-16 07:19:32</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<active>1</active>
+	<layout>name color birthday
+comment
+file</layout>
+	<name>testform1</name>
+</xmldata>
+<xmldata name="forms">
+	<_cdate>2015-03-14 08:25:45</_cdate>
+	<_cuser>1</_cuser>
+	<_id>2</_id>
+	<active>1</active>
+	<name>testform2</name>
+</xmldata>
+<xmldata name="forms">
+	<_cdate>2015-03-14 10:37:45</_cdate>
+	<_cuser>1</_cuser>
+	<_id>3</_id>
+	<active>1</active>
+	<name>testform3</name>
+</xmldata>
+<xmldata name="forms">
+	<_cdate>2015-03-14 10:39:01</_cdate>
+	<_cuser>1</_cuser>
+	<_id>4</_id>
+	<active>1</active>
+	<name>testform4</name>
+</xmldata>
+<xmldata name="forms">
+	<_cdate>2015-03-14 10:45:32</_cdate>
+	<_cuser>1</_cuser>
+	<_id>5</_id>
+	<active>1</active>
+	<name>testform5</name>
+</xmldata>
+
+
+<xmlschema name="forms_data">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="firstname" type="varchar(100) NULL" />
+	<field name="form_id" type="int(11) NOT NULL Default 0" />
+	<field name="form_name" type="varchar(200) NULL" />
+	<field name="json" type="text NULL" />
+	<field name="lastname" type="varchar(150) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2015-03-13 21:45:43</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-13 21:45:43</_edate>
+	<_euser>1</_euser>
+	<_id>21</_id>
+	<synchronize>0</synchronize>
+	<tabledesc>Data from filled out forms</tabledesc>
+	<tablegroup>Forms</tablegroup>
+	<tablename>forms_data</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>217</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_data</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>218</_id>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_data</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>219</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_data</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+
+
+<xmlschema name="forms_fields">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="defaultval" type="varchar(200) NULL" />
+	<field name="form_id" type="int(11) NOT NULL Default 0" />
+	<field name="inputtype" type="varchar(50) NOT NULL" />
+	<field name="name" type="varchar(100) NOT NULL" />
+	<field name="options" type="varchar(2000) NULL" />
+	<field name="required" type="tinyint(1) NOT NULL Default 1" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2015-03-13 21:45:43</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-13 21:45:43</_edate>
+	<_euser>1</_euser>
+	<_id>22</_id>
+	<synchronize>0</synchronize>
+	<tabledesc>fields for the form</tabledesc>
+	<tablegroup>Forms</tablegroup>
+	<tablename>forms_fields</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-14 11:24:49</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-14 11:25:34</_edate>
+	<_euser>1</_euser>
+	<_id>223</_id>
+	<displayname>Format Type</displayname>
+	<dvals><![CDATA[
+&lt;?=wasqlGetInputtypes(1);?&gt;
+]]></dvals>
+	<fieldname>inputtype</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>select</inputtype>
+	<mask>alpha</mask>
+	<postedit>1</postedit>
+	<related_table>_access</related_table>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_fields</tablename>
+	<tvals><![CDATA[
+&lt;?=wasqlGetInputtypes();?&gt;
+]]></tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-14 11:25:04</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-14 17:33:15</_edate>
+	<_euser>1</_euser>
+	<_id>224</_id>
+	<fieldname>options</fieldname>
+	<height>60</height>
+	<inputmax>6000</inputmax>
+	<inputtype>textarea</inputtype>
+	<postedit>1</postedit>
+	<related_table>_access</related_table>
+	<synchronize>1</synchronize>
+	<tablename>forms_fields</tablename>
+	<width>200</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>214</_id>
+	<defaultval>1</defaultval>
+	<fieldname>required</fieldname>
+	<inputtype>checkbox</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_fields</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>215</_id>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_fields</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>216</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_fields</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmldata name="forms_fields">
+	<_cdate>2015-03-14 17:07:58</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-15 23:25:41</_edate>
+	<_euser>1</_euser>
+	<_id>1</_id>
+	<form_id>1</form_id>
+	<inputtype>text</inputtype>
+	<name>name</name>
+	<required>0</required>
+</xmldata>
+<xmldata name="forms_fields">
+	<_cdate>2015-03-14 17:19:02</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-15 23:25:36</_edate>
+	<_euser>1</_euser>
+	<_id>2</_id>
+	<defaultval>#CCCCCC</defaultval>
+	<form_id>1</form_id>
+	<inputtype>color</inputtype>
+	<name>color</name>
+	<required>0</required>
+</xmldata>
+<xmldata name="forms_fields">
+	<_cdate>2015-03-15 20:10:18</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-15 23:25:05</_edate>
+	<_euser>1</_euser>
+	<_id>3</_id>
+	<form_id>1</form_id>
+	<inputtype>textarea</inputtype>
+	<name>comment</name>
+	<options>height:100px</options>
+	<required>0</required>
+</xmldata>
+<xmldata name="forms_fields">
+	<_cdate>2015-03-16 06:54:28</_cdate>
+	<_cuser>1</_cuser>
+	<_id>4</_id>
+	<form_id>1</form_id>
+	<inputtype>date</inputtype>
+	<name>birthday</name>
+	<required>1</required>
+</xmldata>
+<xmldata name="forms_fields">
+	<_cdate>2015-03-16 07:17:10</_cdate>
+	<_cuser>1</_cuser>
+	<_id>5</_id>
+	<form_id>1</form_id>
+	<inputtype>file</inputtype>
+	<name>file</name>
+	<required>1</required>
+</xmldata>
+
+
+<xmlschema name="forms_flow">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="email" type="varchar(255) NULL" />
+	<field name="filter" type="varchar(500) NULL" />
+	<field name="form_id" type="int(11) NOT NULL Default 0" />
+	<field name="name" type="varchar(100) NOT NULL" />
+	<field name="value" type="varchar(255) NULL" />
+</xmlschema>
+<xmlmeta name="_tabledata">
+	<_cdate>2015-03-13 21:45:43</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-13 21:45:43</_edate>
+	<_euser>1</_euser>
+	<_id>23</_id>
+	<synchronize>0</synchronize>
+	<tabledesc>Flow logic</tabledesc>
+	<tablegroup>Forms</tablegroup>
+	<tablename>forms_flow</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>220</_id>
+	<fieldname>email</fieldname>
+	<inputmax>255</inputmax>
+	<inputtype>text</inputtype>
+	<mask>email</mask>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_flow</tablename>
+	<width>220</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>221</_id>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_flow</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-03-13 21:43:39</_cdate>
+	<_cuser>1</_cuser>
+	<_id>222</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>forms_flow</tablename>
+	<tvals>1</tvals>
+</xmlmeta>
+
+
+<xmldata name="_pages">
+	<_adate>2015-03-16 07:19:32</_adate>
+	<_aip>127.0.0.1</_aip>
+	<_amem>8388608</_amem>
+	<_auser>1</_auser>
+	<_cache>0</_cache>
+	<_cdate>2015-03-13 21:46:58</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2015-03-16 06:58:37</_edate>
+	<_env><![CDATA[
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;env&gt;
+        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0&lt;/HTTP_USER_AGENT&gt;
+        &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
+        &lt;REMOTE_PORT&gt;4354&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
+        &lt;REMOTE_BROWSER_VERSION&gt;36.0&lt;/REMOTE_BROWSER_VERSION&gt;
+        &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
+        &lt;REMOTE_LANG&gt;en-US&lt;/REMOTE_LANG&gt;
+        &lt;REMOTE_COUNTRY&gt;US&lt;/REMOTE_COUNTRY&gt;
+        &lt;REMOTE_DEVICE&gt;PC&lt;/REMOTE_DEVICE&gt;
+        &lt;GUID&gt;bb532962c437b9a8a76e07d8c057fe3460f4bb69&lt;/GUID&gt;
+&lt;env&gt;
+
+]]></_env>
+	<_euser>1</_euser>
+	<_id>13</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:default&gt;
+&lt;div class=&quot;row&quot; style=&quot;padding-top:10px;&quot;&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;
+		&lt;div class=&quot;row&quot;&gt;
+			&lt;form method=&quot;post&quot; name=&quot;searchform&quot; action=&quot;/forms&quot; onsubmit=&quot;return ajaxSubmitForm(this,'forms_detail');&quot;&gt;
+				&lt;input type=&quot;hidden&quot; name=&quot;_template&quot; value=&quot;1&quot; /&gt;
+				&lt;div class=&quot;input-group&quot;&gt;
+					&lt;input type=&quot;text&quot; name=&quot;search&quot; class=&quot;form-control&quot; value=&quot;&quot; placeholder=&quot;Search&quot; /&gt;
+					&lt;span class=&quot;input-group-btn&quot;&gt;&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;Search&lt;/button&gt;&lt;/span&gt;
+				&lt;/div&gt;
+			&lt;/form&gt;
+			&lt;?=buildOnLoad(&quot;document.searchform.search.focus();&quot;);?&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;row w_borderbot w_bold w_primary w_bigger&quot;&gt;
+			&lt;div class=&quot;col-sm-7 text-left icon-newspaper&quot;&gt; Forms&lt;/div&gt;
+			&lt;div class=&quot;col-sm-5 text-right w_pointer icon-plus w_block&quot; onclick=&quot;pageNewForm();&quot;&gt; new&lt;/div&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;row w_pad&quot; id=&quot;forms_list&quot;&gt;
+		&lt;?=renderView('_forms',$forms,array('-alias'=&gt;'forms'));?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;col-sm-10 text-left&quot; id=&quot;forms_detail&quot; style=&quot;padding:0 30px 10px 30px;&quot;&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+&lt;/view:default&gt;
+
+&lt;view:forms_list&gt;
+&lt;?=renderView('_forms',$forms,array('-alias'=&gt;'forms'));?&gt;
+&lt;/view:forms_list&gt;
+
+&lt;view:_forms&gt;
+	&lt;view:_form&gt;
+		&lt;div&gt;&lt;a class=&quot;w_block&quot; href=&quot;#&lt;?=$form['name'];?&gt;&quot; onclick=&quot;return pageEditForm(&lt;?=$form['_id'];?&gt;)&quot;&gt;&lt;?=$form['name'];?&gt;&lt;/a&gt;&lt;/div&gt;
+	&lt;/view:_form&gt;
+	&lt;?=renderEach('_form',$forms,array('-alias'=&gt;'form'));?&gt;
+&lt;/view:_forms&gt;
+
+&lt;view:new_form&gt;
+	&lt;?=pageAddEditForm();?&gt;
+&lt;/view:new_form&gt;
+
+&lt;view:edit_form&gt;
+	&lt;div class=&quot;row&quot;&gt;&lt;h3 class=&quot;w_primary&quot;&gt;Form Name: &lt;?=$form['name'];?&gt;&lt;/h3&gt;&lt;/div&gt;
+	&lt;div class=&quot;row w_bold w_big w_primary w_bordertop&quot;&gt;Form Fields&lt;/div&gt;
+	&lt;div class=&quot;row&quot; id=&quot;form_field&quot;&gt;
+	&lt;?=pageAddEditFormField($form);?&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot; id=&quot;form_field_list&quot;&gt;
+		&lt;?=renderView('_form_field_recs',$form['fields'],array('-alias'=&gt;'recs'));?&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;col-sm-4 w_bordertop&quot;&gt;
+			&lt;div class=&quot;row w_bold w_big w_primary&quot;&gt;Form Layout&lt;/div&gt;
+			&lt;div class=&quot;row&quot; id=&quot;form&quot;&gt;
+				&lt;?=pageAddEditForm($form['_id']);?&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;col-sm-8 w_bordertop&quot;&gt;
+			&lt;div class=&quot;row w_bold w_big w_primary&quot;&gt;Layout Preview&lt;/div&gt;
+			&lt;div class=&quot;row&quot; id=&quot;preview&quot; style=&quot;padding:30px;&quot;&gt;
+				&lt;?=pageFormPreview($form);?&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row w_bold w_big w_primary w_bordertop&quot;&gt;Form Flow&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;?=pageAddEditFormFlow($form);?&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot; id=&quot;form_flow_list&quot;&gt;
+		&lt;?=renderView('_form_flow_recs',$form['flow'],array('-alias'=&gt;'recs'));?&gt;
+	&lt;/div&gt;
+	&lt;?=buildOnLoad(&quot;pageFormsList();&quot;);?&gt;
+&lt;/view:edit_form&gt;
+
+&lt;view:preview_form&gt;
+	&lt;?=printValue($form);?&gt;
+&lt;/view:preview_form&gt;
+
+&lt;view:_form_field_recs&gt;
+&lt;table class=&quot;table table-condensed table-hover table-striped&quot;&gt;
+	&lt;tr&gt;
+		&lt;th&gt;FieldName&lt;/th&gt;
+		&lt;th&gt;Format&lt;/th&gt;
+		&lt;th&gt;Req&lt;/th&gt;
+		&lt;th&gt;Default&lt;/th&gt;
+		&lt;th&gt;&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;view:_form_field_rec&gt;
+	&lt;tr&gt;
+		&lt;td&gt;&lt;?=$rec['name'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['inputtype'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['required'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['defaultval'];?&gt;&lt;/td&gt;
+		&lt;td&gt;
+			&lt;span onclick=&quot;return pageEditFormField(&lt;?=$rec['form_id'];?&gt;,&lt;?=$rec['_id'];?&gt;);&quot; class=&quot;icon-edit w_block w_pointer&quot; style=&quot;display:table-cell;padding-right:3px;&quot;&gt;&lt;/span&gt;
+			&lt;span class=&quot;icon-cancel-squared w_block w_pointer w_danger&quot; style=&quot;display:table-cell;padding-right:3px;&quot;&gt;&lt;/span&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;/view:_form_field_rec&gt;
+	&lt;?=renderEach('_form_field_rec',$recs,array('-alias'=&gt;'rec'));?&gt;
+&lt;/table&gt;
+&lt;?=buildOnLoad(&quot;document.formfieldform.reset();document.formfieldform.name.focus();&quot;);?&gt;
+&lt;/view:_form_field_recs&gt;
+
+&lt;view:_form_flow_recs&gt;
+&lt;table class=&quot;table table-condensed table-hover table-striped&quot;&gt;
+	&lt;tr&gt;
+		&lt;th&gt;FieldName&lt;/th&gt;
+		&lt;th&gt;Value&lt;/th&gt;
+		&lt;th&gt;Email&lt;/th&gt;
+		&lt;th&gt;Filter&lt;/th&gt;
+		&lt;th&gt;&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;view:_form_flow_rec&gt;
+	&lt;tr&gt;
+		&lt;td&gt;&lt;?=$rec['name'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['value'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['email'];?&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;?=$rec['filter'];?&gt;&lt;/td&gt;
+		&lt;td&gt;
+			&lt;span onclick=&quot;return pageEditFormFlow(&lt;?=$rec['form_id'];?&gt;,&lt;?=$rec['_id'];?&gt;);&quot; class=&quot;icon-edit w_block w_pointer&quot; style=&quot;display:table-cell;padding-right:3px;&quot;&gt;&lt;/span&gt;
+			&lt;span class=&quot;icon-cancel-squared w_block w_pointer w_danger&quot; style=&quot;display:table-cell;padding-right:3px;&quot;&gt;&lt;/span&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;/view:_form_flow_rec&gt;
+	&lt;?=renderEach('_form_field_rec',$recs,array('-alias'=&gt;'rec'));?&gt;
+&lt;/table&gt;
+&lt;/view:_form_flow_recs&gt;
+
+]]></body>
+	<controller><![CDATA[
+&lt;?php
+switch(strtolower($_REQUEST['func'])){
+	case 'new_form':
+		setView('new_form');
+	break;
+	case 'edit_form':
+		if(isNum($_REQUEST['add_id'])){$id=addslashes($_REQUEST['add_id']);}
+		elseif(isNum($_REQUEST['edit_id'])){$id=addslashes($_REQUEST['edit_id']);}
+		elseif(isNum($_REQUEST['id'])){$id=addslashes($_REQUEST['id']);}
+		$form=pageGetForm($id);
+		setView('edit_form');
+	break;
+	case 'forms_list':
+		$search=addslashes($_REQUEST['search']);
+		$forms=pageGetForms($search);
+		setView('forms_list');
+	break;
+	case 'form_field_list':
+		$id=addslashes($_REQUEST['form_id']);
+		$form=pageGetForm($id);
+		$recs=$form['fields'];
+		setView('_form_field_recs');
+	break;
+	case 'edit_form_field':
+		$form_id=addslashes($_REQUEST['form_id']);
+		$form=pageGetForm($form_id);
+		$id=addslashes($_REQUEST['id']);
+		echo pageAddEditFormField($form,$id);
+		exit;
+		setView('_edit_form_field');
+	break;
+	case 'edit_form_flow':
+		$form_id=addslashes($_REQUEST['form_id']);
+		$form=pageGetForm($form_id);
+		$id=addslashes($_REQUEST['id']);
+		echo pageAddEditFormFlow($form,$id);
+		exit;
+		setView('_edit_form_field');
+	break;
+	case 'form_flow_list':
+		$id=addslashes($_REQUEST['form_id']);
+		$form=pageGetForm($id);
+		$recs=$form['flow'];
+		setView('_form_flow_recs');
+	break;
+	case 'preview':
+		$id=addslashes($_REQUEST['id']);
+		$form=pageGetForm($id);
+		setView('preview_form');
+	break;
+	case 'search':
+		$search=addslashes($_REQUEST['search']);
+		$forms=pageSearchForms($search);
+		setView('search_results');
+	break;
+	default:
+		$forms=pageGetForms();
+		//echo printValue($forms);exit;
+		setView('default');
+	break;
+}
+?&gt;
+]]></controller>
+	<css>.junk{}</css>
+	<css_min>.junk{}</css_min>
+	<functions><![CDATA[
+&lt;?php
+/*************************************/
+function pageGetForms($id=0){
+	$opts=array(
+		'-table'=&gt;'forms'
+	);
+	if($id != 0){
+        $opts['_id']=$id;
+	}
+	$recs=getDBRecords($opts);
+	if(!is_array($recs)){return array();}
+	foreach($recs as $i=&gt;$rec){
+    	$recs[$i]['fields']=getDBRecords(array('-table'=&gt;'forms_fields','form_id'=&gt;$rec['_id'],'-index'=&gt;'name'));
+    	foreach($recs[$i]['fields'] as $fld=&gt;$rec){
+        	if(strlen($rec['options'])){
+            	$options=pageParseOptions($rec['options']);
+            	foreach($options as $key=&gt;$val){
+                	$recs[$i]['fields'][$fld][$key]=$val;
+				}
+			}
+		}
+		$recs[$i]['flow']=getDBRecords(array('-table'=&gt;'forms_flow','form_id'=&gt;$rec['_id'],'-index'=&gt;'name'));
+	}
+	return $recs;
+}
+/*************************************/
+function pageParseOptions($str){
+	$lines=preg_split('/[\r\n]+/',trim($str));
+	$options=array();
+	foreach($lines as $line){
+    	list($key,$val)=preg_split('/\:/',trim($line));
+    	$key=strtolower($key);
+    	$options[$key]=$val;
+	}
+	return $options;
+}
+/*************************************/
+function pageGetForm($id){
+	$recs=pageGetForms($id);
+	return $recs[0];
+}
+/*************************************/
+function pageFormPreview($form){
+	//return printValue($form);
+	$lines=preg_split('/[\r\n]+/',trim($form['layout']));
+	//return printValue($lines);
+	$rtn='';
+	foreach($lines as $line){
+    	$fields=preg_split('/\ +/',trim($line));
+    	$tcount=count($fields);
+    	$twidth=0;
+    	foreach($fields as $field){
+        	if(isset($form['fields'][$field]['width'])){
+            	$form['fields'][$field]['width']=preg_replace('/[^0-9]+/','',$form['fields'][$field]['width'])+0;
+			}
+			else{
+            	switch($form['fields'][$field]['inputtype']){
+					case 'date':$form['fields'][$field]['width']=155;break;
+					case 'datetime':$form['fields'][$field]['width']=220;break;
+					case 'time':$form['fields'][$field]['width']=115;break;
+					case 'color':$form['fields'][$field]['width']=115;break;
+					case 'signature':$form['fields'][$field]['width']=300;break;
+                	default:
+						$form['fields'][$field]['width']=200;
+                	break;
+				}
+			}
+			$twidth+=$form['fields'][$field]['width'];
+		}
+		$rtn .= '&lt;div class=&quot;row&quot;&gt;'.&quot;\n&quot;;
+		foreach($fields as $field){
+        	$pcnt=round(($form['fields'][$field]['width']/$twidth),3);
+        	$col=round(($pcnt*12),0);
+        	$dname=ucwords(str_replace('_',' ',$form['fields'][$field]['name']));
+        	$rtn .= '&lt;div class=&quot;col-sm-'.$col.'&quot;&gt;'.&quot;\n&quot;;
+        	$rtn .= '	&lt;label for=&quot;addedit_'.$form['fields'][$field]['name'].'&quot;&gt;'.$dname.'&lt;/label&gt;'.&quot;\n&quot;;
+        	$rtn .= '	'.pageFormField($form['fields'][$field]).&quot;\n&quot;;
+			$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+		}
+		$rtn .= '&lt;/div&gt;'.&quot;\n&quot;;
+	}
+	return $rtn;
+	return encodeHtml($rtn);
+}
+/*************************************/
+function pageFormField($field){
+	switch(strtolower($field['inputtype'])){
+    	case 'text':return buildFormText($field['name'],$field);break;
+    	case 'textarea':return buildFormTextarea($field['name'],$field);break;
+    	case 'color':return buildFormColor($field['name'],$field);break;
+    	case 'date':return buildFormDate($field['name'],$field);break;
+    	case 'datetime':return buildFormDatetime($field['name'],$field);break;
+    	case 'time':return buildFormTime($field['name'],$field);break;
+    	case 'combo':return buildFormCombo($field['name'],$field);break;
+    	case 'hidden':return buildFormHidden($field['name'],$field);break;
+    	case 'mulitselect':return buildFormMultiSelect($field['name'],$field);break;
+    	case 'select':return buildFormSelect($field['name'],$field);break;
+    	case 'signature':return buildFormSignature($field['name'],$field);break;
+    	case 'slider':return buildFormSlider($field['name'],$field);break;
+    	case 'file':return buildFormFile($field['name'],$field);break;
+	}
+}
+/*************************************/
+function pageAddEditForm($id=0){
+	$opts=array(
+		'-table'=&gt;'forms',
+		'-name'=&gt;'formsform'
+	);
+	if($id==0){
+    	$opts['-fields']='name';
+    	$opts['-save']='Next';
+    	$opts['_action']='ADD';
+    	$opts['-focus']='name';
+    	$opts['-onsubmit']=&quot;return ajaxSubmitForm(this,'forms_detail');&quot;;
+    	$opts['func']='edit_form';
+    	$opts['_template']=1;
+	}
+	else{
+$fields = &lt;&lt;&lt;ENDOFFIELDS
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;[active]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-10&quot;&gt;[name]&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-sm-12&quot;&gt;[layout]&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-sm-6&quot;&gt;&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-sm&quot;&gt;Save/Preview&lt;/button&gt;&lt;/div&gt;
+&lt;/div&gt;
+ENDOFFIELDS;
+		$opts['name_class']='form-control input-sm';
+		$opts['name_style']='width:none';
+		$opts['layout_class']='form-control input-sm';
+		$opts['layout_style']='width:none;height:400px;';
+		$opts['-fields']=$fields;
+		$opts['func']='edit_form';
+		$opts['_template']=1;
+		$opts['-onsubmit']=&quot;return ajaxSubmitForm(this,'forms_detail');&quot;;
+		$opts['_id']=$id;
+		$opts['-hide']='save,clone,delete,reset';
+		$opts['_action']='EDIT';
+	}
+	return addEditDBForm($opts);
+}
+/*************************************/
+function pageAddEditFormField($form,$id=0){
+$fields = &lt;&lt;&lt;ENDOFFIELDS
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-sm-7&quot;&gt;
+		&lt;div class=&quot;row&quot;&gt;
+			&lt;div class=&quot;col-sm-6&quot;&gt;[name]&lt;/div&gt;
+			&lt;div class=&quot;col-sm-6&quot;&gt;[inputtype]&lt;/div&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;row&quot;&gt;
+			&lt;div class=&quot;col-sm-5&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;label for=&quot;required_0-0_formfieldform&quot; style=&quot;font-weight:normal;&quot;&gt;Require this Field &lt;/label&gt;&lt;/td&gt;&lt;td&gt;[required]&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;
+			&lt;div class=&quot;col-sm-7&quot;&gt;[defaultval]&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;col-sm-3&quot;&gt;[options]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-lg&quot;&gt;save&lt;/button&gt;&lt;/div&gt;
+&lt;/div&gt;
+ENDOFFIELDS;
+	$opts=array(
+		'-table'=&gt;'forms_fields',
+		'-name'	=&gt; 'formfieldform',
+		'form_id'	=&gt; $form['_id'],
+		'-hide'		=&gt; 'save,clone,reset,delete',
+		'-fields'=&gt;$fields,
+		'_template'=&gt;1,
+		'_action'	=&gt; 'ADD',
+		'func'=&gt;'form_field_list',
+		'-onsubmit' 	=&gt; &quot;return ajaxSubmitForm(this,'form_field_list');&quot;,
+		'name_placeholder'=&gt;'Field Name',
+		'name_style'=&gt;'width:none',
+		'name_class'=&gt;'form-control input-sm',
+		'inputtype_class'=&gt;'form-control input-sm',
+		'defaultval_class'=&gt;'form-control input-sm',
+		'defaultval_style'=&gt;'width:none',
+		'required_style'=&gt;'display:inline;',
+		'inputtype_message'=&gt;'--Format Type--',
+		'options_placeholder'=&gt;'Options',
+		'options_style'=&gt;'width:none',
+		'defaultval_placeholder'=&gt;'Default Value',
+	);
+	if($id!=0){
+    	$opts['_action']='EDIT';
+    	$opts['_id']=$id;
+	}
+
+	return addEditDBForm($opts);
+}
+function pageAddEditFormFlow($form,$id=0){
+	$fields = &lt;&lt;&lt;ENDOFFIELDS
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-sm-3&quot;&gt;[name]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;[value]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-3&quot;&gt;[email]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;[filter]&lt;/div&gt;
+	&lt;div class=&quot;col-sm-2&quot;&gt;&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-sm&quot;&gt;save&lt;/button&gt;&lt;/div&gt;
+&lt;/div&gt;
+ENDOFFIELDS;
+	$opts=array(
+		'-table'=&gt;'forms_flow',
+		'-name'	=&gt; 'formflowform',
+		'form_id'	=&gt; $form['_id'],
+		'_action'	=&gt; 'ADD',
+		'-hide'		=&gt; 'save',
+		'-fields'=&gt;$fields,
+		'name_placeholder'=&gt;'Field Name',
+		'name_inputtype'=&gt;'select',
+		'name_tvals'=&gt;&quot;select name from forms_fields where form_id={$form['_id']} order by name&quot;,
+		'name_message'=&gt;'--Field Name--',
+		'name_class'=&gt;'form-control input-sm',
+		'name_style'=&gt;'width:none',
+		'value_placeholder'=&gt;'Value',
+		'value_class'=&gt;'form-control input-sm',
+		'value_style'=&gt;'width:none',
+		'email_placeholder'=&gt;'Notify Email',
+		'email_class'=&gt;'form-control input-sm',
+		'email_style'=&gt;'width:none',
+		'filter_placeholder'=&gt;'Filter/Group',
+		'filter_class'=&gt;'form-control input-sm',
+		'filter_style'=&gt;'width:none',
+	);
+	if($id!=0){
+    	$opts['_action']='EDIT';
+    	$opts['_id']=$id;
+	}
+	return addEditDBForm($opts);
+}
+
+]]></functions>
+	<js>function pageNewForm(){
+	return ajaxGet('/forms','forms_detail',{_template:1,func:'new_form'});
+}
+function pageEditForm(id){
+	return ajaxGet('/forms','forms_detail',{_template:1,func:'edit_form',id:id});
+}
+function pageEditFormField(form_id,id){
+	return ajaxGet('/forms','form_field',{_template:1,func:'edit_form_field',form_id:form_id,id:id});
+}
+function pageEditFormFlow(form_id,id){
+	return ajaxGet('/forms','form_flow',{_template:1,func:'edit_form_flow',form_id:form_id,id:id});
+}
+function pageFormsList(){
+	return ajaxGet('/forms','forms_list',{_template:1,func:'forms_list'});
+}
+function pagePreview(id){
+	return ajaxGet('/forms','preview',{_template:1,func:'preview',id:id});
+}</js>
+	<js_min>;function pageNewForm(){return ajaxGet('/forms','forms_detail',{r$:1,func:'new_form'})};function pageEditForm(r){return ajaxGet('/forms','forms_detail',{r$:1,func:'edit_form',id:r})};function pageEditFormField(r,f){return ajaxGet('/forms','form_field',{r$:1,func:'edit_form_field',form_id:r,id:f})};function pageEditFormFlow(r,f){return ajaxGet('/forms','form_flow',{r$:1,func:'edit_form_flow',form_id:r,id:f})};function pageFormsList(){return ajaxGet('/forms','forms_list',{r$:1,func:'forms_list'})};function pagePreview(r){return ajaxGet('/forms','preview',{r$:1,func:'preview',id:r})};</js_min>
+	<name>forms</name>
+	<page_type>0</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>Forms</title>
+</xmldata>
+</export>
