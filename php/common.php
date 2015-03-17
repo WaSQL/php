@@ -273,7 +273,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	}
 	$tag.='<div class="row">'."\n";
 	foreach($cols as $opts){
-    	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
+    	$tag .= '	<div class="col-xs-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
 
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
@@ -573,7 +573,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	$tag='';
 	$tag.='<div class="row">'."\n";
 	foreach($cols as $opts){
-    	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
+    	$tag .= '	<div class="col-xs-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
