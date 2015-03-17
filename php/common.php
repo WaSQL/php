@@ -278,7 +278,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
 			$tag .= '		<div style="white-space: nowrap;">'."\n";
-			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
@@ -537,9 +537,9 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 *	HTML Form radio button for each pair passed in
 */
 function buildFormRadio($name, $opts=array(), $params=array()){
-	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
+	if(!strlen(trim($name))){return 'buildFormRadio Error: no name';}
 	$name=preg_replace('/[\[\]]+$/','',$name);
-	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
+	if(!is_array($opts) || !count($opts)){return 'buildFormRadio Error: no opts';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
@@ -575,7 +575,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
     	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
-			$tag .= '		<div style="white-space: nowrap;"><input id="'.$id.'" type="radio" name="'.$name.'" value="'.$tval.'"';
+			$tag .= '		<div style="white-space: nowrap;"><input id="'.$id.'" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
