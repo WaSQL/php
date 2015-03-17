@@ -12,10 +12,7 @@ Date.prototype.stdTimezoneOffset = function() {
     var jul = new Date(this.getFullYear(), 6, 1);
     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
-
-Date.prototype.isDST = function() {
-	if(this.getTimezoneOffset() == this.stdTimezoneOffset()){return false;}
-	/*
+/*
 		In the United States Daylight Saving Time begins at 2:00 a.m. local time 
 		on the second Sunday in March. On the first Sunday in November areas on
 		Daylight Saving Time return to Standard Time at 2:00 a.m.
@@ -25,6 +22,8 @@ Date.prototype.isDST = function() {
 		else if mon >1 && mon < 11  then true
 		else false
 	*/
+Date.prototype.isDST = function() {
+	if(this.getTimezoneOffset() == this.stdTimezoneOffset()){return false;}
 	var mon=this.getMonth();
 	var hr=this.getHours();
 	var m=this.getMinutes();
@@ -34,18 +33,18 @@ Date.prototype.isDST = function() {
 	return false;
 }
 /* Define document.getElementById for Internet Explorer 4 */
-if (typeof(document.getElementById) == "undefined")
-	document.getElementById = function (id)
-	{
+if (typeof(document.getElementById) == "undefined"){
+	document.getElementById = function (id){
 		// Just return the corresponding index of all.
 		return document.all[id];
 	}
+}
 /* Code so that insertAdjacentHTML works in Mozilla Browsers*/
 if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentElement){
 	HTMLElement.prototype.insertAdjacentElement = function(where,parsedNode){
 		switch (where){
 			case 'beforeBegin':
-				this.parentNode.insertBefore(parsedNode,this)
+				this.parentNode.insertBefore(parsedNode,this);
 				break;
 			case 'afterBegin':
 				this.insertBefore(parsedNode,this.firstChild);
@@ -66,12 +65,12 @@ if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentEleme
 			var r = this.ownerDocument.createRange();
 			r.setStartBefore(this);
 			var parsedHTML = r.createContextualFragment(htmlStr);
-			this.insertAdjacentElement(where,parsedHTML)
+			this.insertAdjacentElement(where,parsedHTML);
 			}
 		}
 	HTMLElement.prototype.insertAdjacentText = function(where,txtStr){
-		var parsedText = document.createTextNode(txtStr)
-		this.insertAdjacentElement(where,parsedText)
+		var parsedText = document.createTextNode(txtStr);
+		this.insertAdjacentElement(where,parsedText);
 		}
 	}
 /*get all attributes*/
@@ -189,11 +188,11 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
  
 	var tbody = this.tableEl.getElementsByTagName('tbody');
 	this.tbody = (tbody[0]) ? tbody[0] : null;
- 
-	if (!this.tbody) return;
- 
-	if (document.all && document.getElementById && !window.opera) this.initIEengine();
-	if (!document.all && document.getElementById && !window.opera) this.initFFengine();
+
+	if (!this.tbody){return;}
+
+	if (document.all && document.getElementById && !window.opera){this.initIEengine();}
+	if (!document.all && document.getElementById && !window.opera){this.initFFengine();}
 }
 var loadJsCssFiles=new Array();
 function loadJsFile(fname){
@@ -207,12 +206,14 @@ function loadJsCss(fname, filetype){
 		//file already loaded
 		return true;
 		}
-	if (filetype=="js"){ //if filename is a external JavaScript file
+	if (filetype=="js"){
+		//if filename is a external JavaScript file
 		var fileref=document.createElement('script');
 		fileref.setAttribute("type","text/javascript");
 		fileref.setAttribute("src", fname);
  		}
- 	else if (filetype=="css"){ //if filename is an external CSS file
+ 	else if (filetype=="css"){
+		//if filename is an external CSS file
   		var fileref=document.createElement("link");
   		fileref.setAttribute("rel", "stylesheet");
   		fileref.setAttribute("type", "text/css");
@@ -252,10 +253,7 @@ function simulateEvent(element, eventName){
 	element=getObject(element);
 	var options = arguments[2] || {};
     var oEvent, eventType = null;
-    var eventMatchers = {
-    	'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
-    	'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
-	}
+    var eventMatchers = {'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/}
 	var defaultOptions = {
 	    pointerX: 0,
 	    pointerY: 0,
@@ -305,8 +303,10 @@ function isDST(){
 	//info: returns true if Daylight Savings Time
 	var today = new Date;
 	var yr = today.getFullYear();
-	var dst_start = new Date("March 14, "+yr+" 02:00:00"); // 2nd Sunday in March can't occur after the 14th
-	var dst_end = new Date("November 07, "+yr+" 02:00:00"); // 1st Sunday in November can't occur after the 7th
+	// 2nd Sunday in March can't occur after the 14th
+	var dst_start = new Date("March 14, "+yr+" 02:00:00");
+	// 1st Sunday in November can't occur after the 7th
+	var dst_end = new Date("November 07, "+yr+" 02:00:00");
 	var day = dst_start.getDay(); // day of week of 14th
 	dst_start.setDate(14-day); // Calculate 2nd Sunday in March of this year
 	day = dst_end.getDay(); // day of the week of 7th
