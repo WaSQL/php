@@ -386,7 +386,7 @@ function cloneDiv(div,c){
 		divObj.setAttribute('data-init',1);
 		var cloneDiv=document.createElement('div');
 		cloneDiv.setAttribute('id','clonebutton');
-		cloneDiv.className='col-sm-1';
+		cloneDiv.className='col-sm-1 w_noprint';
 		cloneDiv.innerHTML='<label>Clone</label><button type="button" class="btn btn-default btn-sm" onclick="cloneDiv(\''+divObj.id+'\',1)"><span class="icon-plus"></span></button>';
 		divObj.insertAdjacentElement('afterBegin',cloneDiv);
 		return true;
