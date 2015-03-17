@@ -1,6 +1,24 @@
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
+/** attachDropFiles **/
+/** https://thiscouldbebetter.wordpress.com/2013/07/03/converting-a-file-to-a-base64-dataurl-in-javascript/ **/
+function attachDropFiles(fld){
+	var filesSelected = fld.files;
+	if (filesSelected.length == 0){return;}
+	for(var i=0;i<filesSelected.length;i++){
+		var fileToLoad = filesSelected[i];
+		var fileReader = new FileReader();
+		fileReader.setAttribute('data-filename',fld.name+'_'+i+'_base64');
+		fileReader.onload = function(fileLoadedEvent){
+			var txtarea = document.createElement("textarea");
+			txtarea.name=this.getAttribute('data-filename');
+			txtarea.innerHTML = fileLoadedEvent.target.result;
+		};
+		fileReader.readAsDataURL(fileToLoad);
+	}
+}
+/*----------------------------------------------*/
 function autoFill(theForm,answerid,ro){
 	if(undefined == ro){
 		//default to not read only
@@ -307,6 +325,7 @@ function heartbeat(div,t){
 	if(undefined == t){t=60;}
 	ajaxGet('/php/index.php',div,'_heartbeat=1&t='+t+'&div='+div);
 	}
+
 //--------------------------
 var timer_session_errors='';
 function scheduleSessionErrors(div,t){
