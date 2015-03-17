@@ -1090,6 +1090,20 @@ input[list]{
 	background-position:right;
 	background-origin: content-box;
 }
+input[type=checkbox] + label, input[type=radio] + label {
+	cursor:pointer;
+	padding:0 4px 0 2px;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	white-space: nowrap;
+}
+input[type=checkbox]:checked + label, input[type=radio]:checked + label {
+	background: #ffffc6;
+	border:1px solid #ccc;
+
+}
+
 .w_form {margin:0px;padding:0px;}
 
 .w_form input[type="submit"],.w_form input[type="reset"],.w_form input[type="cancel"] {
