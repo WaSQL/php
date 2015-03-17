@@ -21,9 +21,7 @@ else if(document.attachEvent){
     document.attachEvent("onmouseup",mouseMove);
     document.attachEvent("onmousemove",mouseMove);
 	}
-else if(document.captureEvents){
-	document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);
-	}
+else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
 function marquee(id){
 	//info: turns text in specified object or id into a scrolling marquee
 	mobj=getObject(id);
@@ -169,10 +167,7 @@ function embedFlash(swf,param){
 		}
 	}
 /* make a div float */
-function makeDivFloat(id, sx, sy){
-	//info: makes specified div float at sx,sy
-	setFloatDiv(id, sx, sy).floatIt();
-	}
+function makeDivFloat(id, sx, sy){setFloatDiv(id, sx, sy).floatIt();}
 var d=document;
 var ns = (navigator.appName.indexOf("Netscape") != -1);
 function setFloatDiv(id, sx, sy){
@@ -218,11 +213,8 @@ function scheduleAjaxGet(id,page,div,opts,ms,nosetprocess){
     }
 function pageRefresh(page,div,opts,nosetprocess){
 	if(undefined == document.getElementById(div)){return false;}
-	//url,sid,params,callback,tmeout,nosetprocess
-	//alert('pageRefresh:'+nosetprocess);
 	ajaxGet('/'+page,div,opts,'',60000,nosetprocess);
-    }
-
+}
 // -- processMultiComboBox
 function processMultiComboBox(tid,cid,tcnt,cm,showvalues){
      var tbox=document.getElementById(tid);
@@ -230,7 +222,7 @@ function processMultiComboBox(tid,cid,tcnt,cm,showvalues){
 	if(cm && cbox){
 	     if(cbox.checked){cbox.checked = false;}
 		else{cbox.checked = true;}
-		}
+	}
 	var list = GetElementsByAttribute('input','name',tid);
 	var cnt=0;
 	var val='';
@@ -238,25 +230,23 @@ function processMultiComboBox(tid,cid,tcnt,cm,showvalues){
 		if(list[i].checked){
 			if(showvalues){val += list[i].value+",";}
 			cnt++;
-			}
 		}
+	}
 	if(showvalues){tbox.value=val;}
 	else{tbox.value=cnt+"/"+tcnt+" selected";}
-	}
+}
 
 //Determine if an objects value has changed
 function setChangeState(tid){
      var el=document.getElementById(tid);
      changeState[tid]=el.value;
      }
-
 function setChangeValue(tid,val){
      changeValue[tid]=val;
      }
 function evalChange(tid){
 	eval(changeValue[tid]);
 	}
-
 function hasChanged(tid){
      var el=document.getElementById(tid);
      var changed=0;
