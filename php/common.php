@@ -7494,6 +7494,27 @@ function minifyCode($code,$type) {
 
 	switch(strtolower($type)){
 		case 'js':
+			$url='http://javascript-minifier.com/raw';
+			break;
+			$code=trim($code);
+			// remove comments
+			$code = preg_replace('/\/\*(.+?)\*\//mis', '', $code);
+			$lines=preg_split('/[\r\n]+/',$code);
+			$tmp=array();
+			foreach($lines as $line){
+            	$line=trim($line);
+            	if(preg_match('/^\/\//',$line)){continue;}
+            	//remove inline comments
+            	$line = preg_replace('/\/\/([a-zA-z0-9\ \-\*]+)$/', '', $line);
+            	$line = str_replace(' = ','=',$line);
+            	$line = str_replace(') {','){',$line);
+            	$line=trim($line);
+            	if(!strlen($line)){continue;}
+            	if(preg_match('/[\:\;\,]$/',$line)){$tmp[]=$line;}
+            	else{$tmp[]="{$line}\r\n";}
+			}
+			$code=implode('',$tmp);
+			return $code;
 			require_once("min-js.php");
 			$parser = new JSqueeze;
     		return $parser->squeeze($code);
