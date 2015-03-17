@@ -3363,182 +3363,14 @@ function getDBFieldTag($params=array()){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
 		case 'checkbox':
 			$selections=getDBFieldSelections($info[$field]);
-			if(is_array($selections['tvals'])){
-				$name=$info[$field]['name'];
-				$tval_count=count($selections['tvals']);
-				$group_id="group_{$info[$field]['name']}";
-				$group_id=preg_replace('/\[\]$/','',$group_id);
-				if(isset($params['checkclass']) && isset($params['checkclasschecked'])){
-					$checkclass=$params['checkclass'];
-					$checkclasschecked=$params['checkclasschecked'];
-					}
-				if(isset($params['-formname'])){$group_id .= "_{$params['-formname']}";}
-				//show Select All
-				if((!isset($params['-all']) || $params['-all'] != 0) && $tval_count > 1 && isNum($info[$field]['width']) && $tval_count > (integer)$info[$field]['width']){
-					if(isset($params['checkclass']) && isset($params['checkclasschecked'])){
-						$tag .= '<div style="margin-bottom:5px;"><input id="'.$group_id.'_all" type="checkbox" onclick="checkAllElements(\'group\',\''.$group_id.'\',this.checked);setLabelChecked(\'id\',\''.$group_id.'\',this.checked,\''.$checkclass.'\',\''.$checkclasschecked.'\');"><label for="'.$group_id.'_all"> Check/Uncheck All</label></div>'."\n";
-					}
-					else{
-						$tag .= '<div style="margin-bottom:5px;"><input id="'.$group_id.'_all" type="checkbox" onclick="checkAllElements(\'group\',\''.$group_id.'\',this.checked);setLabelChecked(\'id\',\''.$group_id.'\',this.checked);"><label for="'.$group_id.'_all"> Check/Uncheck All</label></div>'."\n";
-                    }
-				}
-				$width=(integer)$info[$field]['width'];
-				if($width==0){$width=1;}
-				$tval_cols=arrayColumns($selections['tvals'],$width);
-				if(is_array($selections['dvals']) && count($selections['dvals'])==count($selections['tvals'])){
-					$dval_cols=arrayColumns($selections['dvals'],$width);
-					}
-				else{$dval_cols=$tval_cols;}
-				//put them in a table so the checkboxes line up if multiple lines
-				$tag .= '<table class="w_table">'."\n";
-				$tag .= '	<tr valign="top" class="w_align_left">'."\n";
-				$onclick=isset($info[$field]['onclick'])?$info[$field]['onclick'].';':'';
-				$tcount_all=count($tval_cols);
-				foreach($tval_cols as $colindex=>$tvals){
-					$tag .= '		<td>'."\n";
-     				$tcount=count($tvals);
-					for($x=0;$x<$tcount;$x++){
-						$tval=$tval_cols[$colindex][$x];
-						$dval=$dval_cols[$colindex][$x];
-						$check_id="{$name}_{$colindex}-{$x}";
-						$ischecked=array();
-						if(isset($params['-formname'])){$check_id .= "_{$params['-formname']}";}
-						$tag .= '			<div style="padding:2px 2px 2px 0;">'."\n";
-						if(isset($params['checkclass']) && isset($params['checkclasschecked'])){
-							$tag .= '		<input group="'.$group_id.'" id="'.$check_id.'" onclick="'.$onclick.'setLabelChecked(\'for\',\''.$check_id.'\',this.checked,\''.$checkclass.'\',\''.$checkclasschecked.'\');" type="checkbox" style="margin:0px;" name="'.$info[$field]['name'];
-							}
-						else{
-							$tag .= '		<input group="'.$group_id.'" id="'.$check_id.'" onclick="'.$onclick.'setLabelChecked(\'for\',\''.$check_id.'\',this.checked);" type="checkbox" style="margin:0px;" name="'.$info[$field]['name'];
-							}
-						if($tcount_all > 1){
-							$tag .='[]';
-							if(isset($info[$field]['_required']) && !isset($info[$field]['requiredmsg'])){
-								$info[$field]['requiredmsg']=$name." is required";
-                        		}
-							}
-						$tag .= '" value="'.$tval.'"';
-	                    //Required?
-	                    $topts=array('_required','requiredmsg');
-	                    foreach($topts as $t){
-	                    	if(isset($info[$field][$t])){
-								$val=$info[$field][$t];
-								$tag .= ' '.$t.'="'.$val.'"';
-								}
-	                    	}
-	                    //selected?
-	                    if(isset($params['value'])){
-							if($params['value']==$tval || $params['value']==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								}
-							else{
-								$parts=preg_split('/\:+/',$params['value']);
-								foreach($parts as $part){
-									if($part==$tval || $part==$dval){
-										$ischecked[$check_id]=1;
-										$tag .= ' checked';
-										break;
-										}
-	                            	}
-	                        	}
-							}
-						elseif(isset($_REQUEST[$name])){
-							if($_REQUEST[$name]==$tval || $_REQUEST[$name]==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								}
-							else{
-								if(is_array($_REQUEST[$name])){$parts=$_REQUEST[$name];}
-								else{$parts=preg_split('/\:+/',$_REQUEST[$name]);}
-								foreach($parts as $part){
-									if($part==$tval || $part==$dval){
-										$ischecked[$check_id]=1;
-										$tag .= ' checked';
-										break;
-										}
-	                            	}
-	                        	}
-							}
-	                    elseif(isset($info[$field]['value']) && is_array($info[$field]['value'])){
-							foreach($info[$field]['value'] as $rval){
-								if($rval==$tval || $rval==$dval){
-									$tag .= ' checked';
-									$ischecked[$check_id]=1;
-									break;
-	                                }
-	                            }
-	                        }
-						elseif(isset($info[$field]['value'])){
-							if($info[$field]['value']==$tval || $info[$field]['value']==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								}
-							else{
-								if(is_array($info[$field]['value'])){$parts=$info[$field]['value'];}
-								else{$parts=preg_split('/\:+/',$info[$field]['value']);}
-								foreach($parts as $part){
-									if($part==$tval || $part==$dval){
-										$tag .= ' checked';
-										$ischecked[$check_id]=1;
-										break;
-										}
-	                            	}
-	                        	}
-							}
-	                    elseif(is_array($params[$name])){
-							foreach($params[$name] as $rval){
-								if($rval==$tval || $rval==$dval){
-									$tag .= ' checked';
-									$ischecked[$check_id]=1;
-									break;
-	                                }
-	                            }
-	                        }
-	                    elseif(isset($params[$name])){
-							if($params[$name]==$tval || $params[$name]==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								}
-							else{
-								if(is_array($params[$name])){$parts=$params[$name];}
-								else{$parts=preg_split('/\:+/',$params[$name]);}
-								foreach($parts as $part){
-									if($part==$tval || $part==$dval){
-										$tag .= ' checked';
-										$ischecked[$check_id]=1;
-										break;
-										}
-	                            	}
-	                        	}
-							}
-						elseif(is_array($_REQUEST[$name])){
-							foreach($_REQUEST[$name] as $rval){
-								if($rval==$tval || $rval==$dval){
-									$tag .= ' checked';
-									$ischecked[$check_id]=1;
-									break;
-	                                }
-	                            }
-	                        }
-						$tag .= '>'."\n";
-						if(sha1($dval) != sha1('1') || $tval_count > 1){
-							if($ischecked[$check_id]==1){
-								$class=isset($params['checkclasschecked'])?$params['checkclasschecked']:'w_checklist_checked';
-								}
-							else{
-								$class=isset($params['checkclass'])?$params['checkclass']:'w_checklist';
-								}
-							$tag .= '<label style="margin:0px;" class="'.$class.'" id="'.$group_id.'" for="'.$check_id.'">';
-							$tag .= $dval;
-							$tag .= '</label>';
-							}
-						$tag .= '</div>'."\n";
-	                	}
-	                $tag .= '		</td>'."\n";
-	                }
-                $tag .= '	</tr>'."\n";
-                $tag .= '</table>'."\n";
-                }
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormCheckbox($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		case 'color':
 			$tag=buildFormColor($info[$field]['name'],$info[$field]);
@@ -3586,37 +3418,10 @@ function getDBFieldTag($params=array()){
 			$tag .= buildFormDateTime($name,$tagopts);
 			break;
 		case 'file':
-			//set path of where to store this file in
-			$name=$info[$field]['name'];
-			$path=isset($info[$field]['path'])?$info[$field]['path']:$info[$field]['defaultval'];
-			if(preg_match('/^\<\?(.+?)\?\>$/is',$path)){$path = trim(evalPHP($path));}
-			if(!strlen($path)){$path='/files';}
-			if(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$path=$_REQUEST["{$name}_path"];}
-            $tag .= '<input type="hidden" name="'.$name.'_path" value="'.$path.'">'."\n";
-            //remove style attribute since it is not supported
-            unset($info[$field]['style']);
-            $info[$field]['size']=intval((string)$info[$field]['width']/8);
-            //autonumber on upload - appends unix timestamp to filename
-            if(isset($info[$field]['autonumber']) || $info[$field]['tvals'] == 'autonumber' || $info[$field]['behavior'] == 'autonumber'){
-				$tag .= '<input type="hidden" name="'.$name.'_autonumber" value="1">'."\n";
-                }
-            //if a value exists then display it as a link with a remove checkbox
-			if($params['-editmode'] && strlen($info[$field]['value']) && $info[$field]['value'] != $info[$field]['defaultval']){
-				$val=encodeHtml($info[$field]['value']);
-				$tag .= '<div class="w_smallest w_lblue">'."\n";
-				$tag .= '<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
-				$tag .= '<input type="checkbox" value="1" name="'.$name.'_remove"> Remove'."\n";
-				$tag .= '<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
-				$tag .= '</div>'."\n";
-            	}
-            //exit;
-            //file tag
-			$tag .= '<input type="file"';
-			$tag .= setTagAttributes($info[$field]);
-			$tag .= '>'."\n";
+			$tag=buildFormFile($info[$field]['name'],$info[$field]);
 			break;
 		case 'formula':
-			break;
+		break;
 		case 'hidden':
 			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
@@ -3638,130 +3443,14 @@ function getDBFieldTag($params=array()){
 		//Radio
 		case 'radio':
 			$selections=getDBFieldSelections($info[$field]);
-			if(is_array($selections['tvals'])){
-				//put them in a table so the checkboxes line up if multiple lines
-				$tag .= '<table class="w_table w_nopad">';
-				$tag .= '	<tr valign="middle" class="w_align_left">';
-				$name=$info[$field]['name'];
-				$cnt=count($selections['tvals']);
-				for($x=0;$x<$cnt;$x++){
-					$radio_id="{$name}_{$x}";
-					$tval=$selections['tvals'][$x];
-					$dval=$selections['dvals'][$x];
-					if(isset($params['-formname'])){$radio_id .= "_{$params['-formname']}";}
-					$tag .= '		<td><input type="radio" id="'.$radio_id.'" name="'.$name.'"';
-                    $tag .= ' value="'.$tval.'"';
-                    //set onclick manually since we add setRadioLabel also...
-                    $onclicks=array("setRadioLabel(this.name)");
-                    if(isset($info[$field]['onclick'])){
-                    	$onclicks[]=$info[$field]['onclick'];
-					}
-					$onclick=implode(';',$onclicks);
-					$tag .= ' onclick="'.$onclick.'"';
-					//set other attrubutes (like required)
-					$tag .= setTagAttributes($info[$field],array('id','name','value','onclick','maxlength'));
-                    //selected?
-                    if(isset($params['value'])){
-						if($params['value']==$tval || $params['value']==$dval){
-							$tag .= ' checked';
-							$ischecked[$check_id]=1;
-							}
-						else{
-							$parts=preg_split('/\:+/',$params['value']);
-							foreach($parts as $part){
-								if($part==$tval || $part==$dval){
-									$ischecked[$check_id]=1;
-									$tag .= ' checked';
-									break;
-									}
-                            	}
-                        	}
-						}
-					elseif(isset($_REQUEST[$name])){
-						if($_REQUEST[$name]==$tval || $_REQUEST[$name]==$dval){
-							$tag .= ' checked';
-							$ischecked[$check_id]=1;
-							}
-						else{
-							$parts=preg_split('/\:+/',$_REQUEST[$name]);
-							foreach($parts as $part){
-								if($part==$tval || $part==$dval){
-									$ischecked[$check_id]=1;
-									$tag .= ' checked';
-									break;
-									}
-                            	}
-                        	}
-						}
-                    elseif(isset($info[$field]['value']) && is_array($info[$field]['value'])){
-						foreach($info[$field]['value'] as $rval){
-							if($rval==$tval || $rval==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								break;
-                                }
-                            }
-                        }
-					elseif(isset($info[$field]['value'])){
-						if($info[$field]['value']==$tval || $info[$field]['value']==$dval){
-							$tag .= ' checked';
-							$ischecked[$check_id]=1;
-							}
-						else{
-							$parts=preg_split('/\:+/',$info[$field]['value']);
-							foreach($parts as $part){
-								if($part==$tval || $part==$dval){
-									$tag .= ' checked';
-									$ischecked[$check_id]=1;
-									break;
-									}
-                            	}
-                        	}
-						}
-                    elseif(is_array($params[$name])){
-						foreach($params[$name] as $rval){
-							if($rval==$tval || $rval==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								break;
-                                }
-                            }
-                        }
-                    elseif(isset($params[$name])){
-						if($params[$name]==$tval || $params[$name]==$dval){
-							$tag .= ' checked';
-							$ischecked[$check_id]=1;
-							}
-						else{
-							$parts=preg_split('/\:+/',$params[$name]);
-							foreach($parts as $part){
-								if($part==$tval || $part==$dval){
-									$tag .= ' checked';
-									$ischecked[$check_id]=1;
-									break;
-									}
-                            	}
-                        	}
-						}
-					elseif(is_array($_REQUEST[$name])){
-						foreach($_REQUEST[$name] as $rval){
-							if($rval==$tval || $rval==$dval){
-								$tag .= ' checked';
-								$ischecked[$check_id]=1;
-								break;
-                                }
-                            }
-                        }
-					$tag .= '><label for="'.$radio_id.'" class="'.$class.'">'.$selections['dvals'][$x];
-					$tag .= '</label></td>'."\n";
-					if(isset($info[$field]['width']) && isFactor(intval($x+1),(int)$info[$field]['width'])){
-						$tag .= '	</tr>'."\n".'	<tr valign="middle" class="w_align_left">';
-                        	}
-                    	}
-                    $tag .= '	</tr>'."\n";
-                    $tag .= '</table>'."\n";
-                    $tag .= buildOnLoad("setRadioLabel('{$info[$field]['name']}');");
-                	}
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormRadio($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		//Select
 		case 'select':
@@ -3780,25 +3469,7 @@ function getDBFieldTag($params=array()){
             $tag=buildFormSelect($name,$options,$info[$field]);
 			break;
 		case 'signature':
-			//$tag .= printValue($tagopts).printValue($info[$field]);break;
-			$name=$info[$field]['name'];
-			//date part
-			$tagopts=array();
-			//check for value
-			if(isset($params['-value'])){$tagopts['-value']=$params['-value'];}
-			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
-			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
-			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];} 
-			//check for displayname
-			if(isset($params['-displayname'])){$tagopts['displayname']=$params['-displayname'];}
-			elseif(isset($info[$field]['displayname'])){$tagopts['displayname']=$info[$field]['displayname'];}
-			if(isset($params['width'])){$tagopts['width']=$params['width'];}
-			elseif(isset($info[$field]['width'])){$tagopts['width']=$info[$field]['width'];}
-			if(isset($params['height'])){$tagopts['height']=$params['height'];}
-			elseif(isset($info[$field]['height'])){$tagopts['height']=$info[$field]['height'];}
-			//set prefix to formname
-			if(isset($params['-formname'])){$tagopts['-prefix']=$params['-formname'];}
-			$tag .= buildFormSignature($name,$tagopts);
+			$tag=buildFormSignature($info[$field]['name'],$info[$field]);
 			break;
 		case 'slider':
 		case 'range':
@@ -3807,62 +3478,8 @@ function getDBFieldTag($params=array()){
 			//echo "HERE".printValue($tag).printValue($info[$field]);exit;
 			break;
 		case 'textarea':
-			$end_div=0;
-			//
-			if(strlen($info[$field]['behavior']) && $info[$field]['behavior']=='nowrap'){
-            	$info[$field]['behavior']='';
-				$info[$field]['wrap']="off";
-			}
-			if(strlen($info[$field]['behavior'])){
-				//set the flag to load additional behaior js if needed
-				$tagwrap=0;
-				if(stringContains($info[$field]['behavior'],'editor')){
-					loadExtrasCss(array('codemirror','nicedit'));
-					$tagwrap=1;
-				}
-				elseif(stringContains($info[$field]['behavior'],'tinymce')){
-					loadExtrasCss(array('nicedit'));
-					$tagwrap=1;
-				}
-				elseif(stringContains($info[$field]['behavior'],'wysiwyg')){
-					loadExtrasCss(array('nicedit'));
-					$tagwrap=1;
-				}
-				elseif(stringContains($info[$field]['behavior'],'nicedit')){
-					loadExtrasCss(array('nicedit'));
-					$tagwrap=1;
-				}
-				if($tagwrap==1){
-					$tag .= '<div style="background-color:#FFFFFF;">'."\n";
-					$end_div=1;
-                }
-			}
-			//pass behavior as a hidden field
-			if(strlen($info[$field]['behavior'])){
-            	$tag .= '<input type="hidden" name="'.$field.'_behavior" value="'.$info[$field]['behavior'].'">'."\n";
-			}
-			if(!isset($info[$field]['id'])){$info[$field]['id']="txtfld_{$field}";}
-			$tag .= '<textarea ';
-			//wrap?
-			if(isset($params['wrap'])){$info[$field]['wrap']=$params['wrap'];}
-			elseif($params['-table']=='_pages'){$info[$field]['wrap']="off";}
-			//show preview for _pages and _templates
-			if(isset($params['-preview'])){
-				$tag .= ' preview="'.$params['-preview'].'"';
-			}
-			$tag .= setTagAttributes($info[$field]);
-			$tag .= '>';
-			if(isset($info[$field]['value'])){
-				//Aug 7 2012: fix for UTF-8 characters to show properly in textarea
-				$info[$field]['value']=fixMicrosoft($info[$field]['value']);
-				$tag .= encodeHtml($info[$field]['value']);
-				}
-            $tag .= '</textarea>'."\n";
-            if($end_div==1){$tag .= '</div>'."\n";}
-            if(isset($info[$field]['wrap'])){
-                $tag .= '<input type="hidden" name="'.$field.'_wrap" value="'.$info[$field]['wrap'].'">'."\n";
-             	}
-            break;
+			$tag=buildFormTextarea($info[$field]['name'],$info[$field]);
+			break;
 		case 'time':
 			$tagopts=array();
 			//check for value
