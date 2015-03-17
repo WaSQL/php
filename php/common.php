@@ -277,7 +277,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     	foreach($opts as $tval=>$dval){
 
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
-			$tag .= '		<div style="white-space: nowrap;">'."\n";
+			$minwidth=floor(strlen($dval)*10)+25;
+			$tag .= '		<div style="min-width:'.$minwidth.'px;">'."\n";
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
@@ -575,7 +576,8 @@ function buildFormRadio($name, $opts=array(), $params=array()){
     	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
-			$tag .= '		<div style="white-space: nowrap;"><input id="'.$id.'" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
+			$minwidth=floor(strlen($dval)*10)+25;
+			$tag .= '		<div style="min-width: '.$minwidth.'px;"><input id="'.$id.'" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
