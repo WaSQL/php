@@ -216,42 +216,84 @@ function buildFormCalendar($name,$params=array()){
 * @return boolean
 * @usage echo buildFormCheckAll('id','users');
 */
-function buildFormCheckAll($att,$attval){
-	return '<input type="checkbox" onclick="return checkAllElements(\''.$att.'\',\''.$attval.'\',this.checked);">';
+function buildFormCheckAll($att,$attval,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	return '<input type="checkbox" id="'.$params['id'].'" onclick="return checkAllElements(\''.$att.'\',\''.$attval.'\',this.checked);">';
 	}
 //---------- begin function buildFormCheckbox--------------------------------------
 /**
 * @describe creates an HTML Form checkbox
 * @param name string
 *	The name of the checkbox
-* @param pairs array
-*	key/value pairs to user for multiple checkboxes
-* @param params array
-*	options
+* @param opts array tval/dval pairs to display
+* @param params array - options
+*	[width] how many to show in a row - default to 6
 * @return
 *	HTML Form checkbox for each pair passed in
 */
-function buildFormCheckbox($name, $pairs=array(), $params=array()){
+function buildFormCheckbox($name, $opts=array(), $params=array()){
 	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
-	$rtn='';
-	$group=$name;
-	$group=preg_replace('/[\[\]]+$/','',$group);
-	if(isset($params['-checkall']) && strlen($params['-checkall'])){
-    	$rtn .= buildFormCheckAll('data-group',$group)." {$params['-checkall']}\n";
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
+	if(!isset($params['width'])){$params['width']=6;}
+	if(isset($params['value'])){
+      if(!is_array($params['value'])){
+        $params['-values']=preg_split('/\:/',trim($params['value']));
+      }
+      else{$params['-values']=$params['value'];}
+      unset($params['value']);
+    }
+	if(isset($params['-values'])){
+    	if(!is_array($params['-values'])){
+        	$params['-values']=array($params['-values']);
+		}
 	}
-	$rtn .= '<table class="w_table w_nopad">'."\n";
-	$rtn .= '	<tr>'."\n";
+	elseif(isset($_REQUEST[$name])){
+    	if(!is_array($_REQUEST[$name])){
+        	$params['-values']=array($_REQUEST[$name]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$name];
+		}
+	}
+	else{
+    	$params['-values']=array();
+	}
+	$cols=arrayColumns($opts,$params['width'],true);
+	$colsize=floor(12/count($cols));
+	$tag='';
+	if(isset($params['-checkall'])){
+		$tag .= '<div class="row">'."\n";
+    	$tag .= buildFormCheckAll('data-group',$params['group']);
+    	$tag .= '</div>'."\n";
+	}
+	$tag.='<div class="row">'."\n";
+	foreach($cols as $opts){
+    	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
+    	foreach($opts as $tval=>$dval){
 
-	foreach($pairs as $tval=>$dval){
-		$id=$name.'_'.$tval;
-    	$rtn .= '		<td>'."\n";
-    	$rtn .= '			<input data-group="'.$group.'" id="'.$id.'" type="checkbox" name="'.$name.'" value="'.$tval.'"';
-    	$rtn .= '><label style="margin:0px;" class="w_checklist" for="'.$id.'" id="'.$id.'_label">'.$dval.'</label>'."\n";
-		$rtn .= '		</td>'."\n";
+			$id=$params['-formname'].'_'.$name.'_'.$tval;
+			$tag .= '		<div style="white-space: nowrap;">'."\n";
+			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    		if(in_array($tval,$params['-values'])){
+        		$tag .= ' checked';
+        		$checked_cnt++;
+			}
+			$tag .= '>'."\n";
+			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
+			else{
+				$tag .= '			<label for="'.$id.'"> '.$dval.'</label>'."\n";
+			}
+			$tag .= '		</div>'."\n";
+		}
+    	$tag .= '	</div>'."\n";
 	}
-	$rtn .= '	</tr>'."\n";
-	$rtn .= '</table>'."\n";
-    return $rtn;
+	$tag .= '</div>'."\n";
+	return $tag;
 }
 //---------- begin function buildFormColor-------------------
 /**
@@ -409,7 +451,7 @@ function buildFormPassword($name,$params=array()){
 	$tag .= ' />'."\n";
 	return $tag;
 }
-//---------- begin FUNCTION BUILDfORMMultiSelect-------------------
+//---------- begin FUNCTION buildFormMultiSelect-------------------
 /**
 * @describe creates an HTML multi-select control
 * @param name string
@@ -481,6 +523,68 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
 	$tag.='	<button type="button" class="btn btn-sm btn-default"><span class="'.$icon.'"></span></button>'."\n";
 	$tag.='</div>'."\n";
+	return $tag;
+}
+//---------- begin function buildFormRadio--------------------------------------
+/**
+* @describe creates an HTML Form radio button
+* @param name string
+*	The name of the radio
+* @param opts array tval/dval pairs to display
+* @param params array - options
+*	[width] how many to show in a row - default to 6
+* @return
+*	HTML Form radio button for each pair passed in
+*/
+function buildFormRadio($name, $opts=array(), $params=array()){
+	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
+	if(!isset($params['width'])){$params['width']=6;}
+	if(isset($params['value'])){
+      if(!is_array($params['value'])){
+        $params['-values']=preg_split('/\:/',trim($params['value']));
+      }
+      else{$params['-values']=$params['value'];}
+      unset($params['value']);
+    }
+	if(isset($params['-values'])){
+    	if(!is_array($params['-values'])){
+        	$params['-values']=array($params['-values']);
+		}
+	}
+	elseif(isset($_REQUEST[$name])){
+    	if(!is_array($_REQUEST[$name])){
+        	$params['-values']=array($_REQUEST[$name]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$name];
+		}
+	}
+	else{
+    	$params['-values']=array();
+	}
+	$cols=arrayColumns($opts,$params['width'],true);
+	$colsize=floor(12/count($cols));
+	$tag='';
+	$tag.='<div class="row">'."\n";
+	foreach($cols as $opts){
+    	$tag .= '	<div class="col-sm-'.$colsize.'">'."\n";
+    	foreach($opts as $tval=>$dval){
+			$id=$params['-formname'].'_'.$name.'_'.$tval;
+			$tag .= '		<div style="white-space: nowrap;"><input id="'.$id.'" type="radio" name="'.$name.'" value="'.$tval.'"';
+    		if(in_array($tval,$params['-values'])){
+        		$tag .= ' checked';
+        		$checked_cnt++;
+			}
+			$tag .= '> <label for="'.$id.'"> '.$dval.'</label></div>'."\n";
+		}
+    	$tag .= '	</div>'."\n";
+	}
+	$tag .= '</div>'."\n";
 	return $tag;
 }
 //---------- begin function buildFormText--------------------
@@ -678,7 +782,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='';}
+	$params['class']='';
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	//set path of where to store this file in
@@ -692,11 +796,11 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
 		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
     }
-    if(strlen($params['value'])){
+    if(strlen($params['value']) && $params['value'] != $params['defaultval']){
 		$val=encodeHtml($params['value']);
 		$tag .= '<div class="w_smallest w_lblue">'."\n";
 		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove"> Remove'."\n";
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" id="'.$name.'_remove"> <label for="'.$name.'_remove"> Remove</label>'."\n";
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
 		$tag .= '</div>'."\n";
 	}
