@@ -2468,10 +2468,14 @@ if(isset($_REQUEST['_menu'])){
 					}
 				echo '<div><b>Select fields to index</b></div>'."\n";
 				echo '<div style="margin-left:30px;">'."\n";
-				echo getDBFieldTag(array('-table'=>'_tabledata','-field'=>'fieldname','-all'=>0,'name'=>'_indexfields_','inputtype'=>'checkbox','width'=>10,'tvals'=>join("\r\n",$fields),'dvals'=>join("\r\n",$fields)));
+				$opts=array();
+				foreach($fields as $field){
+                	$opts[$field]=$field;
+				}
+				echo buildFormCheckbox('_indexfields_',$opts,array('width'=>6));
 				echo '</div>'."\n";
-				echo '<input type="checkbox" name="fulltext" value="1" id="fulltextid"><label for="fulltextid">FullText</label>'."\n";
-				echo '<input type="checkbox" name="unique" value="1" id="uniqueid"><label for="uniqueid">Unique</label>'."\n";
+				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid"><label for="fulltextid"> FullText</label>'."\n";
+				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid"><label for="uniqueid"> Unique</label>'."\n";
 				echo buildFormSubmit("Create Index");
 				echo buildFormEnd();
 				//echo printValue($_REQUEST);
