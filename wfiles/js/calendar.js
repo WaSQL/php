@@ -266,7 +266,10 @@ function Calendar(target_id,month, year, s) {
 			for(var h=0;h<hrs.length;h++){
 				var a='am';
 				var hours;
-	        	if(hrs[h] > 12){
+				if(hrs[h] == 12){
+	            	a='pm';
+				}
+	        	else if(hrs[h] > 12){
 	            	if(h !=0){a='pm';}
 	            	hours=hrs[h]-12;
 				}
@@ -319,7 +322,10 @@ function Calendar(target_id,month, year, s) {
 		for(var h=0;h<hrs.length;h++){
 			var a='am';
 			var hours;
-        	if(hrs[h] > 12){
+        	if(hrs[h] == 12){
+	            	a='pm';
+				}
+	        else if(hrs[h] > 12){
             	if(h !=0){a='pm';}
             	hours=hrs[h]-12;
 			}
