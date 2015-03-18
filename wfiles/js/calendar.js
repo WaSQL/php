@@ -268,6 +268,7 @@ function Calendar(target_id,month, year, s) {
 				var hours;
 				if(hrs[h] == 12){
 	            	a='pm';
+	            	hours=hrs[h];
 				}
 	        	else if(hrs[h] > 12){
 	            	if(h !=0){a='pm';}
@@ -324,6 +325,7 @@ function Calendar(target_id,month, year, s) {
 			var hours;
         	if(hrs[h] == 12){
 	            	a='pm';
+	            	hours=hrs[h];
 				}
 	        else if(hrs[h] > 12){
             	if(h !=0){a='pm';}
