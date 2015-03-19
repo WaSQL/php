@@ -994,8 +994,8 @@ function addEditDBForm($params=array(),$customcode=''){
 	//check for data- options for this field
 	foreach($params as $pkey=>$pval){
     	if(preg_match('/^(.+?)\_data\-(.+)$/i',$pkey,$pmatch)){
-			$fkey=strtolower($m[1]);
-			$dkey='data-'.strtolower($m[2]);
+			$fkey=strtolower($pmatch[1]);
+			$dkey='data-'.strtolower($pmatch[2]);
         	$dataopts[$fkey][$dkey]=$pval;
 		}
 	}
