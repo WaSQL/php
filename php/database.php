@@ -989,6 +989,16 @@ function addEditDBForm($params=array(),$customcode=''){
 		'group_id','group_class','group_style','checkclass','checkclasschecked',
 		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap'
 		);
+	//data opts
+	$dataopts=array();
+	//check for data- options for this field
+	foreach($params as $pkey=>$pval){
+    	if(preg_match('/^(.+?)\_data\-(.+)$/i',$pkey,$pmatch)){
+			$fkey=strtolower($m[1]);
+			$dkey='data-'.strtolower($m[2]);
+        	$dataopts[$fkey][$dkey]=$pval;
+		}
+	}
 	$editable_fields=array();
     foreach($info['formfields'] as $fields){
 		if(!is_array($fields) && isXML((string)$fields)){
@@ -1006,6 +1016,11 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 				else{
 					$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
+					//dataopts
+					if(isset($dataopts[$cfield])){
+						foreach($dataopts[$cfield] as $k=>$v){$opts[$k]=$v;}
+					}
+					//forcedatts
 					foreach($forcedatts as $copt){
 						if(isset($params[$cfield.'_'.$copt])){
 							$opts[$copt]=$params[$cfield.'_'.$copt];
@@ -1051,6 +1066,10 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
 				$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
+				//dataopts
+				if(isset($dataopts[$field])){
+					foreach($dataopts[$field] as $k=>$v){$opts[$k]=$v;}
+				}
 				if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
 				if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 				if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
