@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<style>
+body {
+	font-size:14px; //1rem = 14px
+}
+nav {
+	text-align:right;
+}
+nav .icon-list{
+	font-size:2rem;
+	cursor:pointer;
+}
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+nav ul li {
+	display: inline-block;
+	padding:.2rem;
+}
+
+nav a {
+    display: inline-block;
+    padding:.4rem 1rem;
+    text-decoration:none;
+    background-color: #dddddd;
+    border-radius:.2rem;
+    color:#000;
+
+}
+nav a:hover{
+	background-color: #a0a0a0;
+    text-decoration:none;
+    color:#FFF;
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-width : 1px) and (max-width : 480px) {
+	/* Styles */
+	html{font-size:0.75rem;}
+	label[for=mobile_menu_toggle]{
+		font-size:2.0rem;
+		font-weight:bold;
+		display:inline-block;
+		color:#a0a0a0;
+		border:1px solid #a0a0a0;
+		padding:0 3px 0 3px;
+		cursor:pointer;
+		background:#efefef;
+		-webkit-border-top-left-radius: 6px;
+		-khtml-border-radius-topleft: 6px;
+		border-top-left-radius: 6px;
+	}
+	label[for=mobile_menu_toggle]:hover{
+		background-color: #a0a0a0;
+    	color:#FFF;
+	}
+	#mobile_menu_toggle + .menu{
+		display:none;
+	}
+	#mobile_menu_toggle:checked + .menu{
+		position:absolute;
+		right:0px;
+		display:block;
+		text-align:left;
+		background:#efefef;
+		border:1px solid #a0a0a0;
+		border-right:0px;
+		padding:.5rem 0 .5rem .5rem;
+		-webkit-border-bottom-left-radius: 8px;
+		-khtml-border-radius-bottomleft: 8px;
+		border-bottom-left-radius: 8px;
+		-webkit-border-top-left-radius: 8px;
+		-khtml-border-radius-topleft: 8px;
+		border-top-left-radius: 8px;
+	}
+	nav ul li {display:block;}
+	nav a{
+		background:none;
+		font-size:1.2rem;
+	}
+}
+
+/*------ devices larger than a smartphone (ipads, laptops, desktops) ----------- */
+@media only screen and (min-width : 481px) and (max-device-width : 3600px) {
+	/* Styles */
+	label[for=mobile_menu_toggle]{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+	<label for="mobile_menu_toggle">&#8595;&#8801;</label>
+	<input type="checkbox" id="mobile_menu_toggle" style="display:none;" />
+	<div class="menu">
+		<ul>
+			<li><a href="#home">Home</a></li>
+			<li><a href="#news">News</a></li>
+			<li><a href="#contact">Contact</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#home">Home2</a></li>
+			<li><a href="#news">News2</a></li>
+			<li><a href="#contact">Contact2</a></li>
+			<li><a href="#about">About2</a></li>
+		</ul>
+	</div>
+</nav>
+<h1>Responsive Menu Demo using only CSS - No Javascript and No Images!</h1>
+<p>
+Aenean lobortis enim a faucibus lobortis. Curabitur malesuada justo nec vehicula vehicula. Integer nulla metus, lacinia a pretium quis, ullamcorper vitae quam. Maecenas laoreet sollicitudin commodo. Morbi ut ante sed tortor mattis vestibulum at eget felis. Morbi ligula justo, volutpat vitae turpis nec, rutrum imperdiet lectus. Phasellus iaculis massa at nibh elementum gravida. Praesent in ligula vitae urna lacinia dapibus. Maecenas mollis lorem eget mi finibus mattis. Pellentesque nec mauris orci. Nullam tempus odio sit amet ligula aliquet pellentesque. Mauris viverra, nisl vitae mollis dignissim, mauris enim vehicula mi, eget congue lorem sem eget libero. Sed sit amet posuere elit. </p>
+<p>
+Curabitur volutpat orci tortor, pellentesque sagittis sapien fringilla vel. Praesent at volutpat leo. Vestibulum tempor, nulla sed tincidunt commodo, lacus turpis mattis lectus, vitae scelerisque ante sem non eros. Nulla fermentum quam tellus, ut efficitur ipsum sollicitudin at. Cras a justo sit amet felis suscipit imperdiet ac ut purus. Maecenas sit amet erat in odio sodales vestibulum nec vel justo. Nulla et eros arcu. Nunc tincidunt leo sit amet eleifend volutpat. Cras molestie, justo ornare tempor scelerisque, arcu ligula pellentesque nunc, id pharetra purus leo non enim. Pellentesque eget finibus nisi. Quisque elementum quis turpis at accumsan. Vivamus sed tristique eros, quis efficitur arcu. Sed rutrum egestas massa, eu pellentesque turpis tristique eu. Aenean ut mi viverra, sodales erat nec, pharetra neque. Nullam a odio faucibus, vulputate tortor eu, vestibulum augue.
+</p>
+
+</body>
+</html>
