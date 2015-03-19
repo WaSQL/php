@@ -1541,7 +1541,20 @@ function codemirrorTextEditor(obj,mode,behavior){
 					ajaxSubmitForm(cmForm,ajaxid);
 				}
 				else{
-                	ajaxGet('/php/index.php',ajaxid,'ajaxid='+ajaxid+'&_sqlpreview_='+cm.getValue());
+					var opts={ajaxid:ajaxid,_template:1};
+					var url='/php/index.php';
+					if(undefined != obj.getAttribute('data-url')){
+						url=obj.getAttribute('data-url');
+					}
+					if(undefined != obj.getAttribute('data-execute')){
+						opts['execute']=obj.getAttribute('data-execute');
+					}
+					if(undefined != obj.getAttribute('data-execute_name')){
+						var cname=obj.getAttribute('data-execute_name');
+						opts[cname]=cm.getValue();
+					}
+					else{opts['_sqlpreview_']=cm.getValue();}
+                	ajaxGet(url,ajaxid,opts);
 				}
 			},
 			"F6": function(cm) {
