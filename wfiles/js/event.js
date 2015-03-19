@@ -1546,11 +1546,11 @@ function codemirrorTextEditor(obj,mode,behavior){
 					if(undefined != obj.getAttribute('data-url')){
 						url=obj.getAttribute('data-url');
 					}
-					if(undefined != obj.getAttribute('data-execute')){
-						opts['execute']=obj.getAttribute('data-execute');
+					if(undefined != obj.getAttribute('data-func')){
+						opts['func']=obj.getAttribute('data-func');
 					}
-					if(undefined != obj.getAttribute('data-execute_name')){
-						var cname=obj.getAttribute('data-execute_name');
+					if(undefined != obj.getAttribute('data-query')){
+						var cname=obj.getAttribute('data-query');
 						opts[cname]=cm.getValue();
 					}
 					else{opts['_sqlpreview_']=cm.getValue();}
