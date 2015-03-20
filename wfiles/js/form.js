@@ -6,14 +6,48 @@
 function attachDropFiles(fld){
 	var filesSelected = fld.files;
 	if (filesSelected.length == 0){return;}
+	//get the parent form
+	var parentForm=getParentForm(fld);
+	if(undefined == parentForm){return;}
+	var pname=parentForm.getAttribute('name');
+	if(undefined == pname){pname=parentForm.getAttribute('id');}
+	if(undefined == pname){pname='noname';}
+	//check to see if we should allow multiple files
+	var allow_multiple=false;
+	if(undefined != fld.getAttribute('multiple')){
+		allow_multiple=true;
+	}
 	for(var i=0;i<filesSelected.length;i++){
 		var fileToLoad = filesSelected[i];
 		var fileReader = new FileReader();
-		fileReader.setAttribute('data-filename',fld.name+'_'+i+'_base64');
+		if(allow_multiple){fileReader.cname=fld.name+'_base64[]';}
+		else{fileReader.cname=fld.name+'_base64';}
+		fileReader.cid=pname+'_'+fld.name+'_base64';
+		fileReader.allow_multiple=allow_multiple;
+		fileReader.fname=fileToLoad.name;
+		fileReader.fid=pname+'_'+fld.name+'_base64_filename';
 		fileReader.onload = function(fileLoadedEvent){
-			var txtarea = document.createElement("textarea");
-			txtarea.name=this.getAttribute('data-filename');
-			txtarea.innerHTML = fileLoadedEvent.target.result;
+			if(this.allow_multiple){
+				var txtarea = document.createElement("textarea");
+				txtarea.name=this.cname;
+				txtarea.id=this.cid;
+				txtarea.setAttribute('data-filename',this.fname);
+				txtarea.innerHTML = 'filename:'+this.fname+';'+fileLoadedEvent.target.result;
+				txtarea.style.display='none';
+				parentForm.appendChild(txtarea);
+			}
+			else{
+				var txtobj=getObject(this.cid);
+				if(undefined == txtobj){
+                	txtarea = document.createElement("textarea");
+                	txtarea.name=this.cname;
+					txtarea.id=this.cid;
+					txtarea.style.display='none';
+					parentForm.appendChild(txtarea);
+				}
+				txtarea.setAttribute('data-filename',this.fname)
+				txtarea.innerHTML = 'filename:'+this.fname+';'+fileLoadedEvent.target.result;
+			}
 		};
 		fileReader.readAsDataURL(fileToLoad);
 	}
