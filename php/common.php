@@ -811,6 +811,9 @@ function buildFormFile($name,$params=array()){
     $params['size']=intval((string)$params['width']/8);
 	$tag .= '	<input type="file"';
 	$tag .= setTagAttributes($params);
+	if(isset($params['multiple']) && $params['multiple']){
+    	$tag .= ' multiple ';
+	}
 	$tag .= ' />'."\n";
 	return $tag;
 }
@@ -8781,7 +8784,7 @@ function processWysiwygPost($table,$id,$fields=array()){
     	return $ok;
 	}
 }
-//---------- begin function processWysiwygPost---------------------------------------
+//---------- begin function processInlineImage---------------------------------------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8825,6 +8828,46 @@ function processInlineImage($img,$fld='inline'){
 	}
 	debugValue("processInlineImage error: unable to save file: {$afile}");
 	return 0;
+}
+//---------- begin function processInlineImage---------------------------------------
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function processInlineFiles(){
+	foreach($_REQUEST as $key=>$val){
+    	if(isset($_REQUEST["{$key}_base64"])){
+        	$path=isset($_REQUEST["{$key}_path"])?$_REQUEST["{$key}_path"]:"/files/{$key}";
+        	$apath="{$_SERVER['DOCUMENT_ROOT']}/{$path}";
+			if(!is_dir($apath)){buildDir($apath);}
+			if(!is_dir($apath)){
+				debugValue("processInlineFiles error: unable to find or create path for {$key} files: {$apath}");
+				continue;
+			}
+			$base64_files=$_REQUEST["{$key}_base64"];
+			if(!is_array($base64_files)){$base64_files=array($base64_files);}
+
+			foreach($base64_files as $base64_file){
+				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
+				$decoded=base64_decode($encodedString);
+				if(isset($_REQUEST["{$key}_autonumber"])){
+					$crc=encodeCRC(sha1($encodedString));
+					$name=getFileName($name,1) . '_' . $crc . '.' . getFileExtension($name);
+				}
+				$afile="{$apath}/{$name}";
+				//remove the file if it exists already
+				if(file_exists($afile)){unlink($afile);}
+				//save the file
+				file_put_contents($afile,$decoded);
+				if(file_exists($afile)){
+			        $_REQUEST[$key][]="/{$path}/{$name}";
+				}
+				else{
+					debugValue("processInlineFiles error: unable to find or create file: {$afile}");
+				}
+			}
+			if(count($_REQUEST[$key])==1){$_REQUEST[$key]=$_REQUEST[$key][0];}
+		}
+	}
 }
 //---------- begin function processActions---------------------------------------
 /**
@@ -9809,7 +9852,7 @@ function processActions(){
 			break;
 		}
 	}
-//---------- begin function processWysiwygPost---------------------------------------
+//---------- begin function processFileUploads---------------------------------------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
