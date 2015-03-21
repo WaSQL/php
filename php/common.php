@@ -8845,7 +8845,8 @@ function processInlineFiles(){
 			}
 			$base64_files=$_REQUEST["{$key}_base64"];
 			if(!is_array($base64_files)){$base64_files=array($base64_files);}
-
+			echo printValue($base64_files);
+			$efiles=array();
 			foreach($base64_files as $base64_file){
 				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
 				$decoded=base64_decode($encodedString);
@@ -8859,13 +8860,16 @@ function processInlineFiles(){
 				//save the file
 				file_put_contents($afile,$decoded);
 				if(file_exists($afile)){
-			        $_REQUEST[$key][]="/{$path}/{$name}";
+			        $efiles[]="/{$path}/{$name}";
 				}
 				else{
 					debugValue("processInlineFiles error: unable to find or create file: {$afile}");
 				}
 			}
-			if(count($_REQUEST[$key])==1){$_REQUEST[$key]=$_REQUEST[$key][0];}
+
+			if(count($efiles)==1){$efiles=$efiles[0];}
+			$_REQUEST[$key]=$efiles;
+			unset($_REQUEST["{$key}_base64"]);
 		}
 	}
 }
