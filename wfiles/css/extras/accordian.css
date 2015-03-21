@@ -29,10 +29,9 @@
     -moz-transition: all .2s ease-out;
 }
 .accordion .content {
-    padding:0 10px;
-    overflow:hidden;
     -webkit-transition: all .5s ease-out;
     -moz-transition: all .5s ease-out;
+    overflow:hidden;
 }
 
 .accordion ul li {
@@ -45,8 +44,9 @@
 }
 
 .accordion ul li .content {
-    height:0px;
+    max-height:0px;
 }
 .accordion [type=radio]:checked ~ label ~ .content, .accordion [type=checkbox]:checked ~ label ~ .content {
-    height:300px;
+    max-height:400px;
+    overflow:auto;
 }
