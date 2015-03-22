@@ -217,9 +217,14 @@ function buildFormCalendar($name,$params=array()){
 * @usage echo buildFormCheckAll('id','users');
 */
 function buildFormCheckAll($att,$attval,$params=array()){
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	return '<input type="checkbox" id="'.$params['id'].'" onclick="return checkAllElements(\''.$att.'\',\''.$attval.'\',this.checked);">';
+	$onclick='';
+	if(isset($params['onchange'])){$onclick=$params['onchange'];unset($params['onchange']);}
+	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
+	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);{$onclick};";
+	$tag='<input type="checkbox"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />';
+	return $tag;
 	}
 //---------- begin function buildFormCheckbox--------------------------------------
 /**
@@ -496,20 +501,22 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='<div class="btn-group" role="group" data-behavior="dropdown" display="'.$mid.'">'."\n";
 	$tag.='	<div style="display:none;" id ="'.$mid.'">'."\n";
 	$tag.='	<div class="w_dropdown">'."\n";
-	$group=$name;
-    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group)." {$params['-checkall']}</label></div>\n";
+	$group=$params['id'];
+    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'onchange'=>"formSetMultiSelectStatus(this);"))." {$params['-checkall']}</label></div>\n";
 	$tag .= '<div style="max-height:200px;overflow:auto;padding-right:18px;">'."\n";
 	$checked_cnt=0;
 	foreach($pairs as $tval=>$dval){
 		$id=$name.'_'.$tval;
     	$tag .= '	<div style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
     	$tag .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
-        	$tag .= ' onclick="'.$params['onchange'].'"';
+			$onclick .= $params['onchange'];
 		}
 		elseif(isset($params['onclick']) && strlen($params['onclick'])){
-        	$tag .= ' onclick="'.$params['onchange'].'"';
+        	$onclick .= $params['onchange'];
 		}
+		$tag .= ' onclick="'.$onclick.'"';
     	if(in_array($tval,$params['-values'])){
         	$tag .= ' checked';
         	$checked_cnt++;
@@ -523,7 +530,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
-	$tag.='	<button type="button" class="btn btn-sm btn-default"><span class="'.$icon.'"></span></button>'."\n";
+	$tag.='	<button type="button" class="btn btn-sm btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span></button>'."\n";
 	$tag.='</div>'."\n";
 	return $tag;
 }
