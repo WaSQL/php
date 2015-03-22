@@ -223,6 +223,24 @@ function comboComplete(oTextbox, oEvent, vid) {
    		}
 	}
 //--------------------------
+function formSetMultiSelectStatus(fld){
+	var group=fld.getAttribute('data-group');
+	var list=GetElementsByAttribute('input','data-group',group);
+	var spans=GetElementsByAttribute('span','data-group',group);
+	var vals=new Array();
+	for(var i=0;i<list.length;i++){
+		//skip if no value
+		if(undefined == list[i].value){continue;}
+		if(list[i].value=''){continue;}
+    	if(list[i].checked){vals.push(list[i].value);}
+	}
+	var cname=vals.length?'icon-checkbox':'icon-checkbox-empty';
+	for(var i=0;i<spans.length;i++){
+		spans[i].className=cname;
+	}
+	return;
+}
+//--------------------------
 //fielddataChange(this);
 function fielddataChange(fld){
 	var parentObj=getParentForm(fld);
