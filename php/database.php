@@ -1561,6 +1561,7 @@ function addDBRecord($params=array()){
 			array_push($vals,$pm[1]);
 			}
 		elseif(($info[$key]['_dbtype'] =='date')){
+			if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
 			$val=date("Y-m-d",strtotime($val));
 			array_push($vals,"'$val'");
 			}
@@ -2592,9 +2593,7 @@ function editDBRecord($params=array()){
 		else{
 			if(isset($info[$key.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
 			if(($info[$key]['_dbtype']=='date')){
-				if(preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})$/s',$val,$dmatch)){
-					$val=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
-				}
+				if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
 				if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
 				else{$val=date("Y-m-d",strtotime($val));}
 			}
