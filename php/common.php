@@ -520,7 +520,8 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='	</div>'."\n";
 	$tag.='	</div>'."\n";
 	$icon=$checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
-	$dname=ucwords(trim(str_replace('_',' ',$name)));
+	if(isset($params['displayname'])){$dname=$params['displayname'];}
+	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
 	$tag.='	<button type="button" class="btn btn-sm btn-default"><span class="'.$icon.'"></span></button>'."\n";
 	$tag.='</div>'."\n";
