@@ -231,14 +231,15 @@ function formSetMultiSelectStatus(fld){
 	for(var i=0;i<list.length;i++){
 		//skip if no value
 		if(undefined == list[i].value){continue;}
-		if(list[i].value=''){continue;}
+		if(list[i].value==''){continue;}
     	if(list[i].checked){vals.push(list[i].value);}
 	}
 	var cname=vals.length?'icon-checkbox':'icon-checkbox-empty';
 	for(var i=0;i<spans.length;i++){
 		spans[i].className=cname;
 	}
-	return;
+	if(fld.checked){fld.checked=true;}
+	return true;
 }
 //--------------------------
 //fielddataChange(this);
