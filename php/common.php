@@ -502,7 +502,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag.='	<div style="display:none;" id ="'.$mid.'">'."\n";
 	$tag.='	<div class="w_dropdown">'."\n";
 	$group=$params['id'];
-    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'onchange'=>"formSetMultiSelectStatus(this);"))." {$params['-checkall']}</label></div>\n";
+    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'name'=>$params['id'].'_checkall','onchange'=>"formSetMultiSelectStatus(this);return false;"))." {$params['-checkall']}</label></div>\n";
 	$tag .= '<div style="max-height:200px;overflow:auto;padding-right:18px;">'."\n";
 	$checked_cnt=0;
 	foreach($pairs as $tval=>$dval){
