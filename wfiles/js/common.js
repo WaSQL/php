@@ -251,6 +251,7 @@ function simulateEvent(element, eventName){
 	//info: simulate an event without it actually happening
 	//usage: simulateEvent(divid,'mouseover');
 	element=getObject(element);
+	if(undefined !== element){return false;}
 	var options = arguments[2] || {};
     var oEvent, eventType = null;
     var eventMatchers = {'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/}
