@@ -509,6 +509,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		$id=$name.'_'.$tval;
     	$tag .= '	<div style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
     	$tag .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	if($params['required'] || $params['_required']){$tag.=' data-required="1"';}
     	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
 			$onclick .= $params['onchange'];
