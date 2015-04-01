@@ -1464,6 +1464,12 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 	}
     //Set the ajax ID
 	var AJUid=new Date().getTime() + "";
+	//add AjaxRequestUniqueId as a hidden value to the form
+	var h=document.createElement('input');
+	h.type='hidden';
+	h.name='AjaxRequestUniqueId';
+	h.value=AJUid;
+	theform.appendChild(h);
 	//submit the form via ajax
 	var getReq = AjaxRequest.submit(
 		theform,{
@@ -1938,6 +1944,7 @@ function AjaxRequest() {
 	req.var3 = null;
 	req.var4 = null;
 	req.var5 = null;
+	req.AjaxRequestUniqueId = null;
 	
 	/**
 	 * The query string to be added to the end of a GET request, in proper 
