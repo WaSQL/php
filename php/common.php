@@ -222,6 +222,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
 	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);{$onclick};";
 	$tag='<input type="checkbox"';
+	unset($params[$att]);
 	$tag .= setTagAttributes($params);
 	$tag .= ' />';
 	return $tag;
