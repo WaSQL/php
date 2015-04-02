@@ -1411,9 +1411,9 @@ function cloneObj(c){
 	return inc;
 	}
 //--------------------------
-function ajaxSubmitForm(theform,sid,tmeout,callback,returnreq){
+function ajaxSubmitForm(theform,sid,tmeout,callback,returnreq,abort_callback){
 	//info: submits a form via AJAX and returns the requested page contents to sid.  File inputs are not allowed via ajax
-	return ajaxPost(theform,sid,tmeout,callback,returnreq);
+	return ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback);
 	}
 //--------------------------
 function ajaxPopup(url,params,useropts){
@@ -1438,7 +1438,7 @@ function ajaxPopup(url,params,useropts){
 	}
 //--------------------------
 //--Submit form using ajax
-function ajaxPost(theform,sid,tmeout,callback,returnreq) {
+function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	//verify that they passed in the form object
 	if(undefined == theform){
 		alert("No form object passed to ajaxPost");
@@ -1450,6 +1450,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 	//verify that the sid exists
 	if(undefined == callback){callback='';}	
 	if(undefined == returnreq){returnreq=false;}
+	if(undefined == abort_callback){abort_callback='';}
 	//default timeout to 10 minutes with a 3 minute minimum
 	if(undefined == tmeout){tmeout=600000;}
 	if(tmeout < 180000){tmeout=180000;}
@@ -1476,6 +1477,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq) {
 			'groupName':sid
 			,'timeout':tmeout
 			,'callback':callback
+			,'abort_callback':abort_callback
 			,'AjaxRequestUniqueId':AJUid
 			,'onGroupBegin':function(req){
 				var dname=this.groupName;
@@ -1638,10 +1640,10 @@ function callWaSQL(id,name,params){
 function ajaxAbort(sid){
 	if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
 		var req=AjaxRequest.ActiveAjaxGroupRequests[sid];
-		//check for callback
-		if(undefined != req.callback && req.callback.length){
+		//check for abort_callback
+		if(undefined != req.abort_callback && req.abort_callback.length){
 			req.status='aborted';
-			var str=req.callback+'(req);';
+			var str=req.abort_callback+'(req);';
 			eval(str);
         }
 		req.xmlHttpRequest.abort();
@@ -1655,7 +1657,7 @@ function ajaxAbort(sid){
 	return false;
 }
 //--------------------------
-function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle,newurl){
+function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle,newurl,abort_callback){
 	//info: makes an AJAX request and returns request page contents to sid
 	//get GUID cookie and pass it in
 	//if params is a json string, use it instead of the other params...
@@ -1663,6 +1665,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	var cp_title='';
 	if(typeof(xparams) == 'object'){
     	if(undefined != xparams.callback){callback=xparams.callback;}
+		if(undefined != xparams.abort_callback){abort_callback=xparams.abort_callback;}
     	if(undefined != xparams.timeout){tmeout=xparams.timeout;}
     	if(undefined != xparams.nosetprocess){nosetprocess=xparams.nosetprocess;}
     	if(undefined != xparams.cp_title){cp_title=xparams.cp_title;}
@@ -1671,6 +1674,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 			//skip keys that start with a dash - these are configuration settings
 			if(key.indexOf("-")==0){continue;}
 			if(key == 'callback'){continue;}
+			if(key == 'abort_callback'){continue;}
 			if(key == 'timeout'){continue;}
 			if(key == 'nosetprocess'){continue;}
 			if(key == 'cp_title'){continue;}
@@ -1687,6 +1691,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 		else{newurl='';}
 	}
 	if(undefined == callback){callback='';}
+	if(undefined == abort_callback){abort_callback='';}
 	if(undefined == nosetprocess){nosetprocess=true;}
 	if(undefined == returnreq){returnreq=false;}
 	var guid=getCookie('GUID');
@@ -1707,6 +1712,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 		{
     		'url':url+'?'+params,
     		'callback':callback,
+			'abort_callback':abort_callback,
     		'timeout':tmeout,
     		'var2':cp_title,
     		'var3':newtitle,
@@ -1939,6 +1945,7 @@ function AjaxRequest() {
 	 */
 	req.groupName = null;
 	req.callback = null;
+	req.abort_callback = null;
 	req.var1 = null;
 	req.var2 = null;
 	req.var3 = null;
