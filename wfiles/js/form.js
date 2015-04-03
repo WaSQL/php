@@ -1448,9 +1448,21 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	var ok=submitForm(theform,1,0,1);
 	if(!ok){return false;}
 	//verify that the sid exists
-	if(undefined == callback){callback='';}	
+	if(undefined == callback){
+		//check hidden fields in the form
+		if(undefined != theform.callback && theform.callback.type=='hidden' && theform.callback.value.length){
+        	callback=theform.callback.value;
+		}
+		else{callback='';}
+	}
 	if(undefined == returnreq){returnreq=false;}
-	if(undefined == abort_callback){abort_callback='';}
+	if(undefined == abort_callback){
+		//check hidden fields in the form
+		if(undefined != theform.abort_callback && theform.abort_callback.type=='hidden' && theform.abort_callback.value.length){
+        	abort_callback=theform.abort_callback.value;
+		}
+		else{abort_callback='';}
+	}
 	//default timeout to 10 minutes with a 3 minute minimum
 	if(undefined == tmeout){tmeout=600000;}
 	if(tmeout < 180000){tmeout=180000;}
