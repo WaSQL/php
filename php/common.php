@@ -10173,16 +10173,17 @@ function pushFile($file='',$params=array()){
 	if(!isset($params['-attach'])){$params['-attach']=1;}
 	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
 	else{$ctype=getFileContentType($file);}
+	if(isset($params['-filename'])){$params['-filename']=getFileName($file);}
 	//echo $file.printValue($params);exit;
 	@header("Content-Type: {$ctype}");
 	//echo "HERE:{$ctype}";exit;
 	if($params['-attach']){
 		@header('Content-Description: File Transfer');
-    	@header('Content-Disposition: attachment; filename="'.getFileName($file).'"');
+    	@header('Content-Disposition: attachment; filename="'.$params['-filename'].'"');
 		}
 	else{
 		@header('Content-Description: File Transfer');
-    	@header('Content-Disposition: inline; filename="'.getFileName($file).'"');
+    	@header('Content-Disposition: inline; filename="'.$params['-filename'].'"');
 		}
 
     if(!isTextFile($file)){
