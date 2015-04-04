@@ -10173,7 +10173,7 @@ function pushFile($file='',$params=array()){
 	if(!isset($params['-attach'])){$params['-attach']=1;}
 	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
 	else{$ctype=getFileContentType($file);}
-	if(isset($params['-filename'])){$params['-filename']=getFileName($file);}
+	if(!isset($params['-filename'])){$params['-filename']=getFileName($file);}
 	//echo $file.printValue($params);exit;
 	@header("Content-Type: {$ctype}");
 	//echo "HERE:{$ctype}";exit;
