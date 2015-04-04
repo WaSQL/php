@@ -443,6 +443,7 @@ function CalendarSetTarget(target_id,now){
 	if(undefined != now){
 		this.current_date = new Date();
 		var mon=this.current_date.getMonth();
+		mon=parseInt(mon)+1;
 		if(parseInt(mon) < 10){mon='0'+mon;}
 		var day=this.current_date.getDate();
 		if(parseInt(day) < 10){day='0'+day;}
