@@ -1655,6 +1655,7 @@ function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 	$cnt=count($parts);
 	for($x=0;$x<$cnt;$x++){
 		$parts[$x]=fixMicrosoft($parts[$x]);
+		$parts[$x]=str_replace($enclose,$enclose.$enclose,$parts[$x]);
 		if($force || stringContains($parts[$x],$delim)){$parts[$x]=$enclose . $parts[$x] . $enclose;}
     	}
     return implode($delim,$parts);
