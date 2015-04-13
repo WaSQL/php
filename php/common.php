@@ -1651,6 +1651,12 @@ function convertString ( $source, $target_encoding ){
 * @usage $line=csvImplode($parts_array);
 */
 function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
+	ob_start(); // buffer the output ...
+	$fp = fopen('php://output', 'w'); // this file actual writes to php output
+    fputcsv($fp, $parts, $delim, $enclose);
+    fclose($fp);
+    return ob_get_clean(); // ... then return it as a string!
+
 	//create a csv string from an array
 	$cnt=count($parts);
 	for($x=0;$x<$cnt;$x++){
