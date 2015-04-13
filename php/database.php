@@ -1003,7 +1003,7 @@ function addEditDBForm($params=array(),$customcode=''){
     foreach($info['formfields'] as $fields){
 		if(!is_array($fields) && isXML((string)$fields)){
 			$customrow=trim((string)$fields);
-			if(preg_match('/^\<\?(.+?)\?\>$/is',$customrow)){$customrow = trim(evalPHP($customrow));}
+			if(preg_match('/\<\?(.+?)\?\>/is',$customrow)){$customrow = trim(evalPHP($customrow));}
 			//convert [{field}] to getDBFieldTags
 			unset($cm);
 			preg_match_all('/\[(.+?)\]/sm',$customrow,$cm);
