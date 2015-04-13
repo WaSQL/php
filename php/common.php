@@ -1655,7 +1655,7 @@ function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 	$fp = fopen('php://output', 'w'); // this file actual writes to php output
     fputcsv($fp, $parts, $delim, $enclose);
     fclose($fp);
-    return ob_get_clean(); // ... then return it as a string!
+    return trim(ob_get_clean()); // ... then return it as a string!
 
 	//create a csv string from an array
 	$cnt=count($parts);
