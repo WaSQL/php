@@ -55,8 +55,6 @@
 .w_treeview label, .w_treeview a, .w_treeview label::before{
 	display: inline-block;
 	font-size: 11px;
-	height: 18px;
-	line-height: 18px;
 	vertical-align: middle;
 }
 .w_treeview a{
