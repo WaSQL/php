@@ -1650,11 +1650,19 @@ function convertString ( $source, $target_encoding ){
 *	returns a csv string
 * @usage $line=csvImplode($parts_array);
 */
-function csvImplode($parts=array(),$delim=',', $enclose='"'){
+function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
+	ob_start(); // buffer the output ...
+	$fp = fopen('php://output', 'w'); // this file actual writes to php output
+    fputcsv($fp, $parts, $delim, $enclose);
+    fclose($fp);
+    return trim(ob_get_clean()); // ... then return it as a string!
+
 	//create a csv string from an array
 	$cnt=count($parts);
 	for($x=0;$x<$cnt;$x++){
-		if(stringContains($parts[$x],$delim)){$parts[$x]=$enclose . $parts[$x] . $enclose;}
+		$parts[$x]=fixMicrosoft($parts[$x]);
+		$parts[$x]=str_replace($enclose,$enclose.$enclose,$parts[$x]);
+		if($force || stringContains($parts[$x],$delim)){$parts[$x]=$enclose . $parts[$x] . $enclose;}
     	}
     return implode($delim,$parts);
 	}
@@ -1863,14 +1871,25 @@ function arrays2CSV($recs=array(),$params=array()){
 	}
 	$csvlines=array();
 	if(!isset($params['-noheader']) || $params['-noheader']==0){
-		$csvlines[]=csvImplode(array_values($fieldmap));
+		if($params['-force']){
+			$csvlines[]=csvImplode(array_values($fieldmap),',','"',1);
+		}
+		else{
+        	$csvlines[]=csvImplode(array_values($fieldmap));
+		}
+
 	}
 	foreach($recs as $rec) {
 		$vals=array();
 		foreach($fieldmap as $field=>$dval){
         	$vals[]=$rec[$field];
 		}
-		$csvlines[]=csvImplode($vals);
+		if($params['-force']){
+			$csvlines[]=csvImplode($vals,',','"',1);
+		}
+		else{
+        	$csvlines[]=csvImplode($vals);
+		}
 	}
     return implode("\r\n",$csvlines);
 }
