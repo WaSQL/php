@@ -876,8 +876,8 @@ function userLoginForm($params=array()){
 	foreach($defaults as $key=>$val){
     	if(!isset($params[$key])){$params[$key]=$val;}
 	}
-	//echo printValue($params).printValue($defaults);exit;
-	if(isset($CONFIG['authhost'])){
+	if(isset($CONFIG['login_title'])){$params['-title']=$CONFIG['login_title'];}
+	elseif(isset($CONFIG['authhost'])){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'."\n";
 	}
 	elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
