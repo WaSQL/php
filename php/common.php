@@ -8593,7 +8593,7 @@ function postXML($url='',$xml='',$params=array()) {
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);
     if(stringBeginsWith($url,'https') || $params['-ssl']){
-		$cacert=dirname(__FILE__) . '/cacert.pem';
+		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 1);
