@@ -245,6 +245,29 @@ function showClock(divid,offset){
     setText(divid,t);
     setTimeout("showClock('"+divid+"',"+offset+")",1000);
 	}
+//
+function simulateTab(){
+	var keyboardEvent = document.createEvent("KeyboardEvent");
+	if(undefined == keyboardEvent){
+		console.log('keyboardEvent is not defined');
+		return;
+	}
+	var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? "initKeyboardEvent" : "initKeyEvent";
+	keyboardEvent[initMethod](
+                   "keydown", // event type : keydown, keyup, keypress
+                    true, // bubbles
+                    true, // cancelable
+                    window, // viewArg: should be window
+                    false, // ctrlKeyArg
+                    false, // altKeyArg
+                    false, // shiftKeyArg
+                    false, // metaKeyArg
+                    9, // keyCodeArg : unsigned long the virtual key code, else 0
+                    0 // charCodeArgs : unsigned long the Unicode character associated with the depressed key, else 0
+	);
+	document.dispatchEvent(keyboardEvent);
+	return true;
+}
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
