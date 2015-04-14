@@ -20,6 +20,7 @@
 			authldap_admin - memberof group to match for admins.. i.e.  authldap_admin="OU=Administration".  These records become admins
 			auth365 - authenticate using your portal.office365.com login
 			auth365_admin - comma separated list of users that are admins
+			login_title - title to display on login form
 			load_modules - loads additional php files found in the PHP directory.. i.e load_modules="fedex,authnet"
 			access_log - 0,off,false turns logging off, any number sets the days too keep in the table.
 			minify_{NAME} - adds or replaces minify groups for css and js minify scripting
