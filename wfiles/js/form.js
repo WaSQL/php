@@ -1704,7 +1704,6 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	}
 	if(undefined == callback){callback='';}
 	if(undefined == abort_callback){abort_callback='';}
-	if(undefined == nosetprocess){nosetprocess=true;}
 	if(undefined == returnreq){returnreq=false;}
 	var guid=getCookie('GUID');
 	//default timeout to 10 minutes with a 3 minute minimum
