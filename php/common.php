@@ -475,10 +475,10 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	$mid=$name.'_options';
 	if(isset($params['value'])){
-      if(!is_array($params['value'])){
+      if(!is_array($params['value']) && strlen($params['value'])){
         $params['-values']=preg_split('/\:/',trim($params['value']));
       }
-      else{$params['-values']=$params['value'];}
+      elseif(strlen($params['value'])){$params['-values']=$params['value'];}
       unset($params['value']);
     }
 	if(isset($params['-values'])){
@@ -498,6 +498,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
     	$params['-values']=array();
 	}
 	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
+
 	$tag='';
 	$tag.='<div class="btn-group" role="group" data-behavior="dropdown" display="'.$mid.'">'."\n";
 	$tag.='	<div style="display:none;" id ="'.$mid.'">'."\n";
