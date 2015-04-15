@@ -10006,17 +10006,25 @@ function processFileUploads($docroot=''){
 					}
 				}
 			elseif(strlen($_REQUEST[$name.'_path'])){
+				$wpath=getWasqlPath();
 				$path=$_REQUEST[$name.'_path'];
-				$cpath=$docroot . $path;
-				$cpath=str_replace('//','/',$cpath);
-				//echo "path: {$cpath}<br>\n";
-				if(!is_dir($cpath)){
-					@trigger_error("");
-					mkdir($cpath,0777,1);
-					}
-				$webpath = $path .'/'. $file['name'];
-				$abspath = $docroot . $webpath;
+				if(isAdmin() && is_dir($path) && stringContains($path,$wpath)){
+                	$cpath=$path;
+                	$webpath=str_replace($wpath,'',$path);
+                	$abspath=$path;
 				}
+				else{
+					$cpath=$docroot . $path;
+					$cpath=str_replace('//','/',$cpath);
+					//echo "path: {$cpath}<br>\n";
+					if(!is_dir($cpath)){
+						@trigger_error("");
+						mkdir($cpath,0777,1);
+						}
+					$webpath = $path .'/'. $file['name'];
+					$abspath = $docroot . $webpath;
+				}
+			}
 			elseif(strlen($_REQUEST['_path'])){
 				$path=$_REQUEST['_path'];
 				$cpath=$docroot . $path;
