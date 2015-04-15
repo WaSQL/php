@@ -910,7 +910,7 @@ function initBehaviors(ajaxdiv){
 		if(in_array("ajax",behaviors)){
 			/* AJAX - Updates div with ajax call every refresh seconds. data-behavior="ajax" url="" id="mytest" timer="20" */
   			var attr=getAllAttributes(navEls[n]);
-  			if(undefined != attr['id'] && undefined != attr['url'] && undefined != attr['timer']){
+  			if(undefined != attr['id'] && (undefined != attr['url'] || undefined != attr['data-url'] || undefined != attr['data-function']) && (undefined != attr['data-timer'] || undefined != attr['timer'])){
 				ajaxTimer(attr['id']);
 			}
 		}
@@ -2072,20 +2072,45 @@ function ajaxTimer(id){
 	var obj=getObject(id);
 	if(undefined == obj){return;}
 	var attr=getAllAttributes(obj);
-	if(undefined != attr['countdown']){number=parseInt(attr['countdown']);}
+	var number;
+	if(undefined != attr['data-countdown']){number=parseInt(attr['data-countdown']);}
+	else if(undefined != attr['countdown']){number=parseInt(attr['countdown']);}
+	else if(undefined != attr['data-timer']){number=parseInt(attr['data-timer']);}
+	else if(undefined != attr['timer']){number=parseInt(attr['timer']);}
+
 	else{
-    	number=parseInt(attr['timer']);
+		//default to 75 seconds
+    	number=75;
 	}
 	number--;
-	obj.setAttribute('countdown',number);
+	obj.setAttribute('data-countdown',number);
+	var timer;
+	if(undefined != attr['data-timer']){timer=parseInt(attr['data-timer']);}
+	else if(undefined != attr['timer']){timer=parseInt(attr['timer']);}
+	else{
+		//default to 75 seconds
+    	timer=75;
+	}
 	if(number <= 0){
-    	//call ajax and reset the countdown timer
-		var parts=attr['url'].split('?');
-		var params='';
-		if(undefined != parts[1]){params=parts[1];}
-		ajaxGet(parts[0],attr['id'],params);
+		if(undefined != attr['url'] || undefined != attr['data-url']){
+			var url;
+			if(undefined != attr['url']){url=attr['url'];}
+			else{url=attr['data-url'];}
+    		//call ajax and reset the countdown timer
+			var parts=url.split('?');
+			var params='';
+			if(undefined != parts[1]){params=parts[1];}
+			ajaxGet(parts[0],attr['id'],params);
+		}
+		else if(undefined != attr['function'] || undefined != attr['data-function']){
+        	//run a function instead
+        	var func;
+			if(undefined != attr['function']){func=attr['function'];}
+			else{func=attr['data-function'];}
+			eval(func);
+		}
 		//reset the timer
-		obj.setAttribute('countdown',attr['timer']);
+		obj.setAttribute('data-countdown',timer);
 	}
 	TimoutArray[id]=setTimeout("ajaxTimer('"+id+"')",1000);
 }
