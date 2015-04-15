@@ -10010,8 +10010,8 @@ function processFileUploads($docroot=''){
 				$path=$_REQUEST[$name.'_path'];
 				if(isAdmin() && is_dir($path) && stringContains($path,$wpath)){
                 	$cpath=$path;
-                	$webpath=str_replace($wpath,'',$path);
-                	$abspath=$path;
+                	$webpath='/'.str_replace($wpath,'',$path).'/'. $file['name'];
+                	$abspath=$path.'/'. $file['name'];
 				}
 				else{
 					$cpath=$docroot . $path;
