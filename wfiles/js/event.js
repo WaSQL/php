@@ -2098,8 +2098,8 @@ function ajaxTimer(id){
 			else{url=attr['data-url'];}
     		//call ajax and reset the countdown timer
 			var parts=url.split('?');
-			var params='';
-			if(undefined != parts[1]){params=parts[1];}
+			var params={};
+			if(undefined != parts[1]){params=JSON.parse('{"' + decodeURI(parts[1].replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');}
 			params['showprocessing']=false;
 			ajaxGet(parts[0],attr['id'],params);
 		}
