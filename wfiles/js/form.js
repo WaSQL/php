@@ -1477,18 +1477,21 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	}
 	//show processing?
 	var showprocessing=true;
-	if(undefined != theform.noprocessing){
-		if(theform.noprocessing.toLowerCase()== 'true'){showprocessing=false;}
-		if(theform.noprocessing.toLowerCase()== '1'){showprocessing=false;}
+	if(undefined != theform.showprocessing){
+		if(theform.setprocessing.value.toLowerCase()=='false'){showprocessing=false;}
+		if(theform.setprocessing.value.toLowerCase()=='0'){showprocessing=false;}
 	}
-	else if(undefined != theform.showprocessing){
-		if(theform.setprocessing.toLowerCase()== 'false'){showprocessing=false;}
-		if(theform.setprocessing.toLowerCase()== '0'){showprocessing=false;}
+	else if(undefined != theform.noprocessing){
+		if(theform.noprocessing.value.toLowerCase()=='true'){showprocessing=false;}
+		if(theform.noprocessing.value.toLowerCase()=='1'){showprocessing=false;}
 	}
 	//show processing div
 	var showprocessingdiv=sid;
-	if(undefined != theform.setprocessing){
-		showprocessingdiv=theform.setprocessing;
+	if(undefined != theform.showprocessingdiv){
+		showprocessingdiv=theform.showprocessingdiv.value;
+	}
+	else if(undefined != theform.setprocessing){
+		showprocessingdiv=theform.setprocessing.value;
 	}
 
     //Set the ajax ID
