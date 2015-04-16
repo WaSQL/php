@@ -1475,6 +1475,22 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
 		ajaxAbort(sid);
 	}
+	//show processing?
+	var showprocessing=true;
+	if(undefined != theform.noprocessing){
+		if(theform.noprocessing.toLowerCase()== 'true'){showprocessing=false;}
+		if(theform.noprocessing.toLowerCase()== '1'){showprocessing=false;}
+	}
+	else if(undefined != theform.showprocessing){
+		if(theform.setprocessing.toLowerCase()== 'false'){showprocessing=false;}
+		if(theform.setprocessing.toLowerCase()== '0'){showprocessing=false;}
+	}
+	//show processing div
+	var showprocessingdiv=sid;
+	if(undefined != theform.setprocessing){
+		showprocessingdiv=theform.setprocessing;
+	}
+
     //Set the ajax ID
 	var AJUid=new Date().getTime() + "";
 	//add AjaxRequestUniqueId as a hidden value to the form
@@ -1490,6 +1506,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 			,'timeout':tmeout
 			,'callback':callback
 			,'abort_callback':abort_callback
+			,'showprocessing':showprocessing
+			,'showprocessingdiv':showprocessingdiv
 			,'AjaxRequestUniqueId':AJUid
 			,'onGroupBegin':function(req){
 				var dname=this.groupName;
@@ -1502,11 +1520,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
-				else if(undefined != theform.setprocessing){
-					setProcessing(theform.setprocessing.value);
-					}
-				else if(undefined == theform.noprocessing){
-					setProcessing(dname);
+				else if(this.showprocessing){
+					setProcessing(this.showprocessingdiv);
 					}
 				}
           	,'onGroupEnd':function(req){
@@ -1675,11 +1690,27 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	//if params is a json string, use it instead of the other params...
 	var params='';
 	var cp_title='';
+	//show processing div
+	var showprocessingdiv=sid;
+	//show processing
+	var showprocessing=true;
 	if(typeof(xparams) == 'object'){
     	if(undefined != xparams.callback){callback=xparams.callback;}
 		if(undefined != xparams.abort_callback){abort_callback=xparams.abort_callback;}
     	if(undefined != xparams.timeout){tmeout=xparams.timeout;}
-    	if(undefined != xparams.nosetprocess){nosetprocess=xparams.nosetprocess;}
+    	if(undefined != xparams.nosetprocess){
+			if(xparams.nosetprocess){showprocessing=false;}
+		}
+		else if(undefined != xparams.showprocessing){
+			if(!xparams.showprocessing){showprocessing=false;}
+		}
+		if(undefined != xparams.setprocessing){
+			showprocessingdiv=xparams.setprocessing;
+		}
+		else if(undefined != xparams.showprocessingdiv){
+			showprocessingdiv=xparams.showprocessingdiv;
+		}
+
     	if(undefined != xparams.cp_title){cp_title=xparams.cp_title;}
     	//build a new params string
 		for(var key in xparams){
@@ -1689,6 +1720,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 			if(key == 'abort_callback'){continue;}
 			if(key == 'timeout'){continue;}
 			if(key == 'nosetprocess'){continue;}
+			if(key == 'showprocessing'){continue;}
+			if(key == 'setprocessing'){continue;}
+			if(key == 'showprocessingdiv'){continue;}
 			if(key == 'cp_title'){continue;}
         	params=params+key+'='+xparams[key]+'&';
 		}
@@ -1709,13 +1743,16 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	//default timeout to 10 minutes with a 3 minute minimum
 	if(undefined == tmeout){tmeout=600000;}
 	if(tmeout < 180000){tmeout=180000;}
-	if(undefined == nosetprocess){nosetprocess=0;}
+
+	if(undefined == nosetprocess){
+    	if(nosetprocess){showprocessing=false;}
+	}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
 	if(undefined == document.getElementById(sid) && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
 		alert('Error in ajaxGet\n'+sid+' is not defined as a valid object id');
 		return false;
-    	}
+    }
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
 		ajaxAbort(sid);
 	}
@@ -1724,13 +1761,14 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     		'url':url+'?'+params,
     		'callback':callback,
 			'abort_callback':abort_callback,
+			'showprocessing':showprocessing,
+			'showprocessingdiv':showprocessingdiv,
     		'timeout':tmeout,
     		'var2':cp_title,
     		'var3':newtitle,
     		'var4':newurl,
 			'groupName':sid,
 			'prevValue':getText(sid),
-			'var1':nosetprocess,
 			'onGroupBegin':function(req){
 				var dname=this.groupName;
 				var lname=dname.toLowerCase();
@@ -1741,8 +1779,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
-				else if(this.var1==0){
-					setProcessing(dname);
+				else if(this.showprocessing){
+					setProcessing(this.showprocessingdiv);
 					}
 				},
 			'onTimeout':function(req){
@@ -1950,6 +1988,16 @@ function AjaxRequest() {
 	 */
 	req.responseReceived = false;
 	
+	/**
+	 * Indicates whether to show processing message
+	 */
+	req.showprocessing = true;
+	
+	/**
+	 * div to show processing in if showprocessing is true
+	 */
+	req.showprocessingdiv = null;
+
 	/**
 	 * The name of the group that this request belongs to, for activity 
 	 * monitoring purposes
