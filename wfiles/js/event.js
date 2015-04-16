@@ -2100,6 +2100,7 @@ function ajaxTimer(id){
 			var parts=url.split('?');
 			var params='';
 			if(undefined != parts[1]){params=parts[1];}
+			params['nosetprocess']=1;
 			ajaxGet(parts[0],attr['id'],params);
 		}
 		else if(undefined != attr['function'] || undefined != attr['data-function']){
