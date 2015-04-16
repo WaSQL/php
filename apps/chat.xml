@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="stage" timestamp="1429225125">
+<export dbname="stage" timestamp="1429226508">
 <xmlschema name="chatlog">
 	<field name="_cdate" type="datetime NOT NULL" />
 	<field name="_cuser" type="int(11) NOT NULL" />
@@ -37,20 +37,20 @@
 
 
 <xmldata name="_pages">
-	<_adate>2015-04-16 16:58:42</_adate>
+	<_adate>2015-04-16 17:21:41</_adate>
 	<_aip>10.10.132.184</_aip>
-	<_amem>8912896</_amem>
+	<_amem>6291456</_amem>
 	<_auser>21</_auser>
 	<_cache>0</_cache>
 	<_cdate>2015-04-15 07:15:50</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-16 16:58:04</_edate>
+	<_edate>2015-04-16 17:21:03</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
         &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0&lt;/HTTP_USER_AGENT&gt;
         &lt;REMOTE_ADDR&gt;10.10.132.184&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;58036&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_PORT&gt;58992&lt;/REMOTE_PORT&gt;
         &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
         &lt;REMOTE_BROWSER_VERSION&gt;37.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
@@ -92,7 +92,7 @@
 &lt;view:_userlist&gt;
 	&lt;view:_user&gt;
 		&lt;div class=&quot;user&quot; data-userlist=&quot;&lt;?=strtolower(&quot;{$cuser['name']} - {$cuser['department']}&quot;);?&gt;&quot; style=&quot;display:none;&quot;&gt;
-			&lt;a href=&quot;#&quot; onclick=&quot;return pageSendMessage(&lt;?=$cuser['_id'];?&gt;,'');&quot; class=&quot;w_block w_link&quot;&gt;&lt;span data-minutes=&quot;&lt;?=$cuser['minutes'];?&gt;&quot; class=&quot;icon-user &lt;?=$cuser['active_level'];?&gt;&quot;&gt;&lt;/span&gt; &lt;?=$cuser['name'];?&gt; - &lt;?=$cuser['department'];?&gt;&lt;/a&gt;
+			&lt;a href=&quot;#&quot; onclick=&quot;return chatSendMessage(&lt;?=$cuser['_id'];?&gt;,'');&quot; class=&quot;w_block w_link&quot;&gt;&lt;span data-minutes=&quot;&lt;?=$cuser['minutes'];?&gt;&quot; class=&quot;icon-user &lt;?=$cuser['active_level'];?&gt;&quot;&gt;&lt;/span&gt; &lt;?=$cuser['name'];?&gt; - &lt;?=$cuser['department'];?&gt;&lt;/a&gt;
 		&lt;/div&gt;
 	&lt;/view:_user&gt;
 	&lt;?=renderEach('_user',$users,array('-alias'=&gt;'cuser'));?&gt;
@@ -102,7 +102,7 @@
 &lt;view:_chatlist&gt;
 	&lt;view:_user&gt;
 		&lt;div class=&quot;chatbox&quot;&gt;
-			&lt;div class=&quot;w_right&quot;&gt;&lt;span class=&quot;icon-cancel-squared w_red w_pointer w_block&quot; onclick=&quot;pageSendMessage(&lt;?=$chat['id'];?&gt;,'x');&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+			&lt;div class=&quot;w_right&quot;&gt;&lt;span class=&quot;icon-cancel-squared w_red w_pointer w_block&quot; onclick=&quot;chatSendMessage(&lt;?=$chat['id'];?&gt;,'x');&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 			&lt;div class=&quot;title&quot;&gt;&lt;span class=&quot;icon-user &lt;?=$chat['active_level'];?&gt;&quot;&gt;&lt;/span&gt; &lt;?=$chat['name'];?&gt; - &lt;?=$chat['department'];?&gt;&lt;/div&gt;
 			&lt;div class=&quot;chats&quot; id=&quot;chatbox_chats_&lt;?=$chat['id'];?&gt;&quot;&gt;
 			&lt;view:_msg&gt;
@@ -131,8 +131,8 @@
 	&lt;input type=&quot;hidden&quot; name=&quot;func&quot; value=&quot;sendmessage&quot; /&gt;
 	&lt;input type=&quot;hidden&quot; name=&quot;noprocessing&quot; value=&quot;1&quot; /&gt;
 	&lt;div class=&quot;input-group&quot;&gt;
-		&lt;input type=&quot;text&quot; autocomplete=&quot;off&quot; class=&quot;form-control&quot; name=&quot;msg&quot; required=&quot;1&quot; value=&quot;&quot; placeholder=&quot;Click here to send message&quot; /&gt;
-		&lt;span class=&quot;icon-logout input-group-addon&quot;&gt;&lt;/span&gt;
+		&lt;input type=&quot;text&quot; autocomplete=&quot;off&quot; class=&quot;form-control input-sm&quot; name=&quot;msg&quot; required=&quot;1&quot; value=&quot;&quot; placeholder=&quot;Click here to send message&quot; /&gt;
+		&lt;span class=&quot;input-group-btn&quot;&gt;&lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-sm&quot;&gt;&amp;#9658;&lt;/button&gt;&lt;/span&gt;
 	&lt;/div&gt;
 	&lt;/form&gt;
 &lt;/div&gt;
@@ -234,7 +234,7 @@
 	border-right:1px solid rgba(102, 175, 233, 1);
 	border-bottom:1px solid rgba(102, 175, 233, 1);
 	background-color:#fff;
-	z-index:999999;
+	z-index:9999999;
 	-webkit-border-bottom-left-radius: 4px;
 	-khtml-border-radius-bottomleft: 4px;
 	border-bottom-left-radius: 4px;
@@ -292,7 +292,7 @@ span.icon-user.inactive{
 	margin-top:10px;
 }
 </css>
-	<css_min>#chat_userlistform{position:absolute;top:0px;left:0px}#chat_userlist{position:absolute;top:30px;left:0px;z-index:9999999;background:#f0f0f0;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist{position:absolute;top:100px;left:0px;z-index:999999;background:#ebebeb;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist a,#chat_userlist a{color:#535353;font-size:.8em}.icon-logout{font-size:1.5em;cursor:pointer;padding:0 5px 0 5px}.content{max-height:100px}#chat_userlist{border-left:1px solid rgba(102, 175, 233, 1);border-right:1px solid rgba(102, 175, 233, 1);border-bottom:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:999999;-webkit-border-bottom-left-radius:4px;-khtml-border-radius-bottomleft:4px;border-bottom-left-radius:4px;-webkit-border-bottom-right-radius:4px;-khtml-border-radius-bottomright:4px;border-bottom-right-radius:4px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding-bottom:20px}span.icon-user.active{color:#5cb85c}span.icon-user.was_active{color:#5bc0de}span.icon-user.inactive{color:#d7d7e1}.msg{font-size:.8em}.msg.me{color:#d38212}.msg.them{color:#6388a3}#chat_chatlist{margin-top:30px}#chat_chatlist .chatbox{margin-top:10px;border:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:999999;-webkit-border-radius:3px;-khtml-border-radius:3px;border-radius:3px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding:3px}#chat_chatlist .title{margin-bottom:10px}#chat_chatlist .chats{max-height:100px;overflow:auto}#chat_chatlist .form{margin-top:10px}</css_min>
+	<css_min>#chat_userlistform{position:absolute;top:0px;left:0px}#chat_userlist{position:absolute;top:30px;left:0px;z-index:9999999;background:#f0f0f0;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist{position:absolute;top:100px;left:0px;z-index:999999;background:#ebebeb;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist a,#chat_userlist a{color:#535353;font-size:.8em}.icon-logout{font-size:1.5em;cursor:pointer;padding:0 5px 0 5px}.content{max-height:100px}#chat_userlist{border-left:1px solid rgba(102, 175, 233, 1);border-right:1px solid rgba(102, 175, 233, 1);border-bottom:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:9999999;-webkit-border-bottom-left-radius:4px;-khtml-border-radius-bottomleft:4px;border-bottom-left-radius:4px;-webkit-border-bottom-right-radius:4px;-khtml-border-radius-bottomright:4px;border-bottom-right-radius:4px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding-bottom:20px}span.icon-user.active{color:#5cb85c}span.icon-user.was_active{color:#5bc0de}span.icon-user.inactive{color:#d7d7e1}.msg{font-size:.8em}.msg.me{color:#d38212}.msg.them{color:#6388a3}#chat_chatlist{margin-top:30px}#chat_chatlist .chatbox{margin-top:10px;border:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:999999;-webkit-border-radius:3px;-khtml-border-radius:3px;border-radius:3px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding:3px}#chat_chatlist .title{margin-bottom:10px}#chat_chatlist .chats{max-height:100px;overflow:auto}#chat_chatlist .form{margin-top:10px}</css_min>
 	<functions><![CDATA[
 &lt;?php
 /*
@@ -620,13 +620,10 @@ function chatScrollToBottom(id){
 	element.scrollTop = element.scrollHeight;
 }
 
-function pageSendMessage(msg_to,msg){
+function chatSendMessage(msg_to,msg){
 	document.chat_searchform.search.value='';
 	chatSearchList();
 	return ajaxGet('/chat','chat_chatlist',{_template:1,func:'sendmessage',msg_to:msg_to,msg:msg,nosetprocess:1});
-}
-function pageAjaxAbort(req){
-	showProperties(req);
 }
 /* autocomplete functionality for chat search field */
 function chatSearchList(str){
@@ -655,7 +652,7 @@ function chatSearchList(str){
 
 ]]></js>
 	<js_min><![CDATA[
-function chatlistTimer(){(void 0==document.activeElement||&quot;msg&quot;!=document.activeElement.name)&amp;&amp;ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;chatlist&quot;,nosetprocess:1})}function chatSetFocus(t){return void 0==document.getElementById(&quot;chatform_&quot;+t)?void console.log(&quot;chatform_&quot;+t+&quot; does not exist to focus on&quot;):void document.getElementById(&quot;chatform_&quot;+t).msg.focus()}function chatScrollToBottom(t){if(void 0==document.getElementById(&quot;chatbox_chats_&quot;+t))return void console.log(&quot;chatbox_chats_&quot;+t+&quot; does not exist to scroll to bottom of&quot;);var e=document.getElementById(&quot;chatbox_chats_&quot;+t);e.scrollTop=e.scrollHeight}function pageSendMessage(t,e){return document.chat_searchform.search.value=&quot;&quot;,chatSearchList(),ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;sendmessage&quot;,msg_to:t,msg:e,nosetprocess:1})}function pageAjaxAbort(t){showProperties(t)}function chatSearchList(t){void 0==t&amp;&amp;(t=&quot;&quot;),t=t.toLowerCase();for(var e=document.querySelectorAll(&quot;div[data-userlist]&quot;),o=0,c=0;c&lt;e.length;c++){var a=e[c].getAttribute(&quot;data-userlist&quot;);t.length&amp;&amp;-1!=a.indexOf(t)?(e[c].style.display=&quot;block&quot;,o++):e[c].style.display=&quot;none&quot;}return document.querySelector(&quot;div#chat_userlist&quot;).style.display=o&gt;0?&quot;block&quot;:&quot;none&quot;,!1}
+function chatlistTimer(){(void 0==document.activeElement||&quot;msg&quot;!=document.activeElement.name)&amp;&amp;ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;chatlist&quot;,nosetprocess:1})}function chatSetFocus(t){return void 0==document.getElementById(&quot;chatform_&quot;+t)?void console.log(&quot;chatform_&quot;+t+&quot; does not exist to focus on&quot;):void document.getElementById(&quot;chatform_&quot;+t).msg.focus()}function chatScrollToBottom(t){if(void 0==document.getElementById(&quot;chatbox_chats_&quot;+t))return void console.log(&quot;chatbox_chats_&quot;+t+&quot; does not exist to scroll to bottom of&quot;);var e=document.getElementById(&quot;chatbox_chats_&quot;+t);e.scrollTop=e.scrollHeight}function chatSendMessage(t,e){return document.chat_searchform.search.value=&quot;&quot;,chatSearchList(),ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;sendmessage&quot;,msg_to:t,msg:e,nosetprocess:1})}function chatSearchList(t){void 0==t&amp;&amp;(t=&quot;&quot;),t=t.toLowerCase();for(var e=document.querySelectorAll(&quot;div[data-userlist]&quot;),o=0,c=0;c&lt;e.length;c++){var a=e[c].getAttribute(&quot;data-userlist&quot;);t.length&amp;&amp;-1!=a.indexOf(t)?(e[c].style.display=&quot;block&quot;,o++):e[c].style.display=&quot;none&quot;}return document.querySelector(&quot;div#chat_userlist&quot;).style.display=o&gt;0?&quot;block&quot;:&quot;none&quot;,!1}
 ]]></js_min>
 	<name>chat</name>
 	<page_type>0</page_type>
