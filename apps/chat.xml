@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="live" timestamp="1429223578">
+<export dbname="stage" timestamp="1429225125">
 <xmlschema name="chatlog">
-	<field name="_cdate" type="datetime NOT NULL Default 'CURRENT_TIMESTAMP'" />
+	<field name="_cdate" type="datetime NOT NULL" />
 	<field name="_cuser" type="int(11) NOT NULL" />
 	<field name="_edate" type="datetime NULL" />
 	<field name="_euser" type="int(11) NULL" />
@@ -11,63 +11,53 @@
 	<field name="msg_to" type="varchar(500) NOT NULL" />
 </xmlschema>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-04-16 15:48:38</_cdate>
+	<_cdate>2015-04-15 07:15:50</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-16 15:49:22</_edate>
-	<_euser>1</_euser>
 	<_id>354</_id>
-	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
-	<editlist>1</editlist>
-	<fieldname>msg_from</fieldname>
-	<inputmax>11</inputmax>
-	<inputtype>select</inputtype>
-	<mask>integer</mask>
-	<postedit>1</postedit>
-	<synchronize>1</synchronize>
-	<tablename>chatlog</tablename>
-	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
-</xmlmeta>
-<xmlmeta name="_fielddata">
-	<_cdate>2015-04-16 15:48:54</_cdate>
-	<_cuser>1</_cuser>
-	<_edate>2015-04-16 15:49:39</_edate>
-	<_euser>1</_euser>
-	<_id>355</_id>
-	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
-	<editlist>1</editlist>
-	<fieldname>msg_to</fieldname>
-	<inputmax>500</inputmax>
-	<inputtype>select</inputtype>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
 	<postedit>1</postedit>
 	<required>1</required>
 	<synchronize>1</synchronize>
 	<tablename>chatlog</tablename>
-	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
+	<tvals>1</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-04-15 07:15:50</_cdate>
+	<_cuser>1</_cuser>
+	<_id>355</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>chatlog</tablename>
+	<tvals>1</tvals>
 </xmlmeta>
 
 
 <xmldata name="_pages">
-	<_adate>2015-04-16 16:32:56</_adate>
-	<_aip>10.10.130.45</_aip>
-	<_amem>6291456</_amem>
-	<_auser>15</_auser>
+	<_adate>2015-04-16 16:58:42</_adate>
+	<_aip>10.10.132.184</_aip>
+	<_amem>8912896</_amem>
+	<_auser>21</_auser>
 	<_cache>0</_cache>
-	<_cdate>2015-04-15 10:43:01</_cdate>
+	<_cdate>2015-04-15 07:15:50</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-16 16:22:05</_edate>
+	<_edate>2015-04-16 16:58:04</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
-        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36&lt;/HTTP_USER_AGENT&gt;
-        &lt;REMOTE_ADDR&gt;10.10.130.45&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;59314&lt;/REMOTE_PORT&gt;
-        &lt;REMOTE_BROWSER&gt;chrome&lt;/REMOTE_BROWSER&gt;
-        &lt;REMOTE_BROWSER_VERSION&gt;41.0&lt;/REMOTE_BROWSER_VERSION&gt;
+        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0&lt;/HTTP_USER_AGENT&gt;
+        &lt;REMOTE_ADDR&gt;10.10.132.184&lt;/REMOTE_ADDR&gt;
+        &lt;REMOTE_PORT&gt;58036&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
+        &lt;REMOTE_BROWSER_VERSION&gt;37.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
         &lt;REMOTE_LANG&gt;en-US&lt;/REMOTE_LANG&gt;
         &lt;REMOTE_COUNTRY&gt;US&lt;/REMOTE_COUNTRY&gt;
         &lt;REMOTE_DEVICE&gt;PC&lt;/REMOTE_DEVICE&gt;
-        &lt;GUID&gt;e2764a33431de12ec443d7d955b1f09601099125&lt;/GUID&gt;
+        &lt;GUID&gt;003d328e002e60384af41d7e31937687406a56e7&lt;/GUID&gt;
 &lt;env&gt;
 
 ]]></_env>
@@ -463,13 +453,14 @@ function pageGetChatList(){
 SELECT a.*
 FROM chatlog a
 WHERE
-	(a.msg_from = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -10 MINUTE) AND a.msg != '')
+	(a.msg_from = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -30 MINUTE) AND a.msg != '')
 	OR
-	(a.msg_to = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -15 MINUTE) AND a.msg != '')
+	(a.msg_to = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -30 MINUTE) AND a.msg != '')
 	OR 
-	(a.msg_from = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -5 MINUTE) AND a.msg = '')
+	(a.msg_from = {$USER['_id']} AND a._cdate &gt; DATE_ADD(NOW(), INTERVAL -10 MINUTE) AND a.msg = '')
 ORDER BY _id desc
 	&quot;;
+	//echo $query;exit;
 	$recs= getDBRecords(array('-query'=&gt;$query));
 	//echo $query.printValue($recs);
 	//group by msg_to
@@ -486,17 +477,19 @@ ORDER BY _id desc
 					'department'	=&gt; $usermap[$id]['department']
 				);
 		}
-		if(strlen($rec['msg'])){
-			if($rec['msg_from']==$USER['_id']){$rec['class']='me';}
-			else{$rec['class']='them';}
-			$chats[$id]['msgs'][]=$rec;
-		}
+		if($rec['msg_from']==$USER['_id']){$rec['class']='me';}
+		else{$rec['class']='them';}
+		$chats[$id]['msgs'][]=$rec;
 	}
 	//remove any chats that have the max record as x
 	foreach($chats as $id=&gt;$chat){
-		if($chat['msgs'][0]['msg']=='x'){
+		if($chat['msgs'][0]['msg']=='x' &amp;&amp; $chat['msgs'][0]['msg_from']==$USER['_id']){
         	unset($chats[$id]);
         	continue;
+		}
+		//remove blanks
+		foreach($chat['msgs'] as $i=&gt;$c){
+        	if(!strlen($c['msg']) || $c['msg']=='x'){unset($chat['msgs'][$i]);}
 		}
 		$chats[$id]['msgs']=array_reverse($chat['msgs']);
 	}
