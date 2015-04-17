@@ -1,87 +1,82 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="atest" timestamp="1429239673">
+<export dbname="live" timestamp="1429308306">
 <xmlschema name="chatlog">
-	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cdate" type="datetime NOT NULL Default 'CURRENT_TIMESTAMP'" />
 	<field name="_cuser" type="int(11) NOT NULL" />
 	<field name="_edate" type="datetime NULL" />
 	<field name="_euser" type="int(11) NULL" />
 	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
-	<field name="msg" type="varchar(1500) NOT NULL" />
+	<field name="msg" type="varchar(1500) NULL" />
 	<field name="msg_from" type="int(11) NOT NULL Default 0" />
 	<field name="msg_to" type="varchar(500) NOT NULL" />
 </xmlschema>
-<xmlmeta name="_tabledata">
-	<_cdate>2015-04-01 21:37:20</_cdate>
+<xmlmeta name="_fielddata">
+	<_cdate>2015-04-16 15:48:38</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-14 21:09:33</_edate>
+	<_edate>2015-04-16 15:49:22</_edate>
 	<_euser>1</_euser>
-	<_id>26</_id>
-	<formfields>msg_from msg_to
-msg</formfields>
-	<listfields>_cdate
-msg_from
-msg_to
-msg</listfields>
-	<synchronize>0</synchronize>
+	<_id>354</_id>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<editlist>1</editlist>
+	<fieldname>msg_from</fieldname>
+	<inputmax>11</inputmax>
+	<inputtype>select</inputtype>
+	<mask>integer</mask>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
 	<tablename>chatlog</tablename>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
 </xmlmeta>
 <xmlmeta name="_fielddata">
-	<_cdate>2015-04-01 21:37:20</_cdate>
+	<_cdate>2015-04-16 15:48:54</_cdate>
 	<_cuser>1</_cuser>
-	<_id>235</_id>
-	<fieldname>_cdate</fieldname>
-	<inputtype>datetime</inputtype>
+	<_edate>2015-04-16 15:49:39</_edate>
+	<_euser>1</_euser>
+	<_id>355</_id>
+	<dvals>select firstname,lastname from _users order by firstname,lastname,_id</dvals>
+	<editlist>1</editlist>
+	<fieldname>msg_to</fieldname>
+	<inputmax>500</inputmax>
+	<inputtype>select</inputtype>
 	<postedit>1</postedit>
 	<required>1</required>
 	<synchronize>1</synchronize>
 	<tablename>chatlog</tablename>
-	<tvals>1</tvals>
-</xmlmeta>
-<xmlmeta name="_fielddata">
-	<_cdate>2015-04-01 21:37:20</_cdate>
-	<_cuser>1</_cuser>
-	<_id>236</_id>
-	<fieldname>_edate</fieldname>
-	<inputtype>datetime</inputtype>
-	<postedit>1</postedit>
-	<required>0</required>
-	<synchronize>1</synchronize>
-	<tablename>chatlog</tablename>
-	<tvals>1</tvals>
+	<tvals>select _id from _users order by firstname,lastname,_id</tvals>
 </xmlmeta>
 
 
 <xmldata name="_pages">
-	<_adate>2015-04-16 21:01:10</_adate>
-	<_aip>127.0.0.1</_aip>
-	<_amem>8126464</_amem>
-	<_auser>1</_auser>
+	<_adate>2015-04-17 16:05:05</_adate>
+	<_aip>10.10.128.225</_aip>
+	<_amem>6291456</_amem>
+	<_auser>40</_auser>
 	<_cache>0</_cache>
-	<_cdate>2015-04-15 07:15:50</_cdate>
+	<_cdate>2015-04-15 10:43:01</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-16 20:59:52</_edate>
+	<_edate>2015-04-17 11:29:39</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
-        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0&lt;/HTTP_USER_AGENT&gt;
-        &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;3973&lt;/REMOTE_PORT&gt;
-        &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
-        &lt;REMOTE_BROWSER_VERSION&gt;37.0&lt;/REMOTE_BROWSER_VERSION&gt;
+        &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36&lt;/HTTP_USER_AGENT&gt;
+        &lt;REMOTE_ADDR&gt;10.10.128.225&lt;/REMOTE_ADDR&gt;
+        &lt;REMOTE_PORT&gt;59040&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_BROWSER&gt;chrome&lt;/REMOTE_BROWSER&gt;
+        &lt;REMOTE_BROWSER_VERSION&gt;41.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
         &lt;REMOTE_LANG&gt;en-US&lt;/REMOTE_LANG&gt;
         &lt;REMOTE_COUNTRY&gt;US&lt;/REMOTE_COUNTRY&gt;
         &lt;REMOTE_DEVICE&gt;PC&lt;/REMOTE_DEVICE&gt;
-        &lt;GUID&gt;bb532962c437b9a8a76e07d8c057fe3460f4bb69&lt;/GUID&gt;
+        &lt;GUID&gt;ee9f3cf74efd9ff35a2bb8bc13fd95cfc6b329f7&lt;/GUID&gt;
 &lt;env&gt;
 
 ]]></_env>
 	<_euser>1</_euser>
-	<_id>15</_id>
+	<_id>27</_id>
 	<_template>1</_template>
 	<body><![CDATA[
 &lt;view:default&gt;
-&lt;div style=&quot;position:fixed;min-width:200px;&quot;&gt;
+&lt;div style=&quot;position:relative;&quot;&gt;
 	&lt;div id=&quot;chat_userlistform&quot;&gt;
 		&lt;form class=&quot;w_form&quot; method=&quot;post&quot; name=&quot;chat_searchform&quot; action=&quot;/chat&quot; onsubmit=&quot;return false;&quot;&gt;
 			&lt;input type=&quot;hidden&quot; name=&quot;_template&quot; value=&quot;1&quot; /&gt;
@@ -116,7 +111,7 @@ msg</listfields>
 
 &lt;view:_chatlist&gt;
 	&lt;view:_user&gt;
-		&lt;div class=&quot;chatbox&quot;&gt;
+		&lt;div class=&quot;chatbox &lt;?=$chat['notify'];?&gt;&quot;&gt;
 			&lt;div class=&quot;w_right&quot;&gt;&lt;span class=&quot;icon-cancel-squared w_red w_pointer w_block&quot; onclick=&quot;chatSendMessage(&lt;?=$chat['id'];?&gt;,'-');&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 			&lt;div class=&quot;title&quot;&gt;&lt;span class=&quot;icon-user &lt;?=$chat['active_level'];?&gt;&quot;&gt;&lt;/span&gt; &lt;?=$chat['name'];?&gt; - &lt;?=$chat['department'];?&gt;&lt;/div&gt;
 			&lt;div class=&quot;chats&quot; id=&quot;chatbox_chats_&lt;?=$chat['id'];?&gt;&quot;&gt;
@@ -225,7 +220,7 @@ msg</listfields>
 	position:absolute;
 	top:30px;
 	left:0px;
-	z-index:999999;
+	z-index:99999999;
 	background:inherit;
 	color:#000;
 }
@@ -287,6 +282,10 @@ msg</listfields>
 	transition: box-shadow ease-in-out .15s;
 	padding:3px;
 }
+#chat_chatlist .chatbox.new{
+	border:1px solid rgba(255, 32, 32, 1);
+	background-color:#ffff20;
+}
 #chat_chatlist .title{
 	margin-bottom:10px;
 }
@@ -298,7 +297,7 @@ msg</listfields>
 	margin-top:10px;
 }
 </css>
-	<css_min>#chat_userlistform{position:absolute;top:0px;left:0px}#chat_userlist{position:absolute;top:30px;left:0px;z-index:9999999;background:#f0f0f0;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist{position:absolute;top:30px;left:0px;z-index:999999;background:inherit;color:#000}#chat_chatlist a,#chat_userlist a{color:#535353;font-size:.8em}#chat_userlist{border-left:1px solid rgba(102, 175, 233, 1);border-right:1px solid rgba(102, 175, 233, 1);border-bottom:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:9999999;-webkit-border-bottom-left-radius:4px;-khtml-border-radius-bottomleft:4px;border-bottom-left-radius:4px;-webkit-border-bottom-right-radius:4px;-khtml-border-radius-bottomright:4px;border-bottom-right-radius:4px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding-bottom:20px}#chat_chatlist span.icon-user.active,#chat_userlist span.icon-user.active{color:#5cb85c}#chat_chatlist span.icon-user.was_active,#chat_userlist span.icon-user.was_active{color:#5bc0de}#chat_chatlist span.icon-user.inactive,#chat_userlist span.icon-user.inactive{color:#d7d7e1}#chat_chatlist .msg{font-size:.8em}#chat_chatlist .msg.me{color:#d38212}#chat_chatlist .msg.them{color:#6388a3}#chat_chatlist{margin-top:30px}#chat_chatlist .chatbox{margin-top:10px;border:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:999999;-webkit-border-radius:3px;-khtml-border-radius:3px;border-radius:3px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding:3px}#chat_chatlist .title{margin-bottom:10px}#chat_chatlist .chats{max-height:100px;overflow:auto}#chat_chatlist .form{margin-top:10px}</css_min>
+	<css_min>#chat_userlistform{position:absolute;top:0px;left:0px}#chat_userlist{position:absolute;top:30px;left:0px;z-index:9999999;background:#f0f0f0;max-height:600px;overflow:auto;padding-right:18px;color:#000}#chat_chatlist{position:absolute;top:30px;left:0px;z-index:99999999;background:inherit;color:#000}#chat_chatlist a,#chat_userlist a{color:#535353;font-size:.8em}#chat_userlist{border-left:1px solid rgba(102, 175, 233, 1);border-right:1px solid rgba(102, 175, 233, 1);border-bottom:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:9999999;-webkit-border-bottom-left-radius:4px;-khtml-border-radius-bottomleft:4px;border-bottom-left-radius:4px;-webkit-border-bottom-right-radius:4px;-khtml-border-radius-bottomright:4px;border-bottom-right-radius:4px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding-bottom:20px}#chat_chatlist span.icon-user.active,#chat_userlist span.icon-user.active{color:#5cb85c}#chat_chatlist span.icon-user.was_active,#chat_userlist span.icon-user.was_active{color:#5bc0de}#chat_chatlist span.icon-user.inactive,#chat_userlist span.icon-user.inactive{color:#d7d7e1}#chat_chatlist .msg{font-size:.8em}#chat_chatlist .msg.me{color:#d38212}#chat_chatlist .msg.them{color:#6388a3}#chat_chatlist{margin-top:30px}#chat_chatlist .chatbox{margin-top:10px;border:1px solid rgba(102, 175, 233, 1);background-color:#fff;z-index:999999;-webkit-border-radius:3px;-khtml-border-radius:3px;border-radius:3px;box-shadow:0 0 5px rgba(81, 203, 238, .55);transition:box-shadow ease-in-out .15s;padding:3px}#chat_chatlist .chatbox.new{border:1px solid rgba(255, 32, 32, 1);background-color:#ffff20}#chat_chatlist .title{margin-bottom:10px}#chat_chatlist .chats{max-height:100px;overflow:auto}#chat_chatlist .form{margin-top:10px}</css_min>
 	<functions><![CDATA[
 &lt;?php
 /*
@@ -468,7 +467,8 @@ ORDER BY _id desc
 					'name'			=&gt; $usermap[$id]['name'],
 					'id'			=&gt; $id,
 					'active_level'	=&gt; $usermap[$id]['active_level'],
-					'department'	=&gt; $usermap[$id]['department']
+					'department'	=&gt; $usermap[$id]['department'],
+					'notify'		=&gt; ''
 				);
 		}
 		if($rec['msg_from']==$USER['_id']){$rec['class']='me';}
@@ -487,15 +487,20 @@ ORDER BY _id desc
         	if(!strlen($c['msg']) || $c['msg']=='*' || $c['msg']=='-' || $c['msg']=='x'){unset($chat['msgs'][$i]);}
 		}
 		$chats[$id]['msgs']=array_reverse($chat['msgs']);
+		//set notification if the last message is not me
+		$last=count($chats[$id]['msgs'])-1;
+		if($chats[$id]['msgs'][$last]['msg_to']==$USER['_id']){
+        	$chats[$id]['notify']='new';
+		}
 	}
 	//echo printValue($chats);
+	$chats=sortArrayByKeys($chats, array('id'=&gt;SORT_ASC, 'name'=&gt;SORT_ASC));
 	return $chats;
 }
 ?&gt;
 
 ]]></functions>
 	<js><![CDATA[
-
 function chatlistTimer(){
 	if(undefined != document.activeElement &amp;&amp; document.activeElement.name=='msg'){return;}
 	ajaxGet('/chat','chat_chatlist',{_template:1,func:'chatlist',nosetprocess:1});
@@ -517,6 +522,7 @@ function chatScrollToBottom(id){
 }
 
 function chatSendMessage(msg_to,msg){
+	if(undefined == msg || !msg.length){msg='*';}
 	document.chat_searchform.search.value='';
 	chatSearchList();
 	return ajaxGet('/chat','chat_chatlist',{_template:1,func:'sendmessage',msg_to:msg_to,msg:msg,nosetprocess:1});
@@ -546,12 +552,9 @@ function chatSearchList(str){
 	return false;
 }
 
-
 ]]></js>
 	<js_min><![CDATA[
-
-function chatlistTimer(){(void 0==document.activeElement||&quot;msg&quot;!=document.activeElement.name)&amp;&amp;ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;chatlist&quot;,nosetprocess:1})}function chatSetFocus(t){return void 0==document.getElementById(&quot;chatform_&quot;+t)?void console.log(&quot;chatform_&quot;+t+&quot; does not exist to focus on&quot;):void document.getElementById(&quot;chatform_&quot;+t).msg.focus()}function chatScrollToBottom(t){if(void 0==document.getElementById(&quot;chatbox_chats_&quot;+t))return void console.log(&quot;chatbox_chats_&quot;+t+&quot; does not exist to scroll to bottom of&quot;);var e=document.getElementById(&quot;chatbox_chats_&quot;+t);e.scrollTop=e.scrollHeight}function chatSendMessage(t,e){return document.chat_searchform.search.value=&quot;&quot;,chatSearchList(),ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;sendmessage&quot;,msg_to:t,msg:e,nosetprocess:1})}function chatSearchList(t){void 0==t&amp;&amp;(t=&quot;&quot;),t=t.toLowerCase();for(var e=document.querySelectorAll(&quot;div[data-userlist]&quot;),o=0,c=0;c&lt;e.length;c++){var a=e[c].getAttribute(&quot;data-userlist&quot;);t.length&amp;&amp;-1!=a.indexOf(t)?(e[c].style.display=&quot;block&quot;,o++):e[c].style.display=&quot;none&quot;}return document.querySelector(&quot;div#chat_userlist&quot;).style.display=o&gt;0?&quot;block&quot;:&quot;none&quot;,!1}
-
+function chatlistTimer(){(void 0==document.activeElement||&quot;msg&quot;!=document.activeElement.name)&amp;&amp;ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;chatlist&quot;,nosetprocess:1})}function chatSetFocus(t){return void 0==document.getElementById(&quot;chatform_&quot;+t)?void console.log(&quot;chatform_&quot;+t+&quot; does not exist to focus on&quot;):void document.getElementById(&quot;chatform_&quot;+t).msg.focus()}function chatScrollToBottom(t){if(void 0==document.getElementById(&quot;chatbox_chats_&quot;+t))return void console.log(&quot;chatbox_chats_&quot;+t+&quot; does not exist to scroll to bottom of&quot;);var e=document.getElementById(&quot;chatbox_chats_&quot;+t);e.scrollTop=e.scrollHeight}function chatSendMessage(t,e){return void 0!=e&amp;&amp;e.length||(e=&quot;*&quot;),document.chat_searchform.search.value=&quot;&quot;,chatSearchList(),ajaxGet(&quot;/chat&quot;,&quot;chat_chatlist&quot;,{_template:1,func:&quot;sendmessage&quot;,msg_to:t,msg:e,nosetprocess:1})}function chatSearchList(t){void 0==t&amp;&amp;(t=&quot;&quot;),t=t.toLowerCase();for(var e=document.querySelectorAll(&quot;div[data-userlist]&quot;),o=0,c=0;c&lt;e.length;c++){var a=e[c].getAttribute(&quot;data-userlist&quot;);t.length&amp;&amp;-1!=a.indexOf(t)?(e[c].style.display=&quot;block&quot;,o++):e[c].style.display=&quot;none&quot;}return document.querySelector(&quot;div#chat_userlist&quot;).style.display=o&gt;0?&quot;block&quot;:&quot;none&quot;,!1}
 ]]></js_min>
 	<name>chat</name>
 	<page_type>0</page_type>
