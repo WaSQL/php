@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="atest" timestamp="1429238698">
+<export dbname="atest" timestamp="1429239673">
 <xmlschema name="chatlog">
 	<field name="_cdate" type="datetime NOT NULL" />
 	<field name="_cuser" type="int(11) NOT NULL" />
@@ -52,20 +52,20 @@ msg</listfields>
 
 
 <xmldata name="_pages">
-	<_adate>2015-04-16 20:44:34</_adate>
+	<_adate>2015-04-16 21:01:10</_adate>
 	<_aip>127.0.0.1</_aip>
 	<_amem>8126464</_amem>
 	<_auser>1</_auser>
 	<_cache>0</_cache>
 	<_cdate>2015-04-15 07:15:50</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2015-04-16 20:43:29</_edate>
+	<_edate>2015-04-16 20:59:52</_edate>
 	<_env><![CDATA[
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;env&gt;
         &lt;HTTP_USER_AGENT&gt;Mozilla/5.0 (Windows NT 6.1; WOW64; rv:37.0) Gecko/20100101 Firefox/37.0&lt;/HTTP_USER_AGENT&gt;
         &lt;REMOTE_ADDR&gt;127.0.0.1&lt;/REMOTE_ADDR&gt;
-        &lt;REMOTE_PORT&gt;3498&lt;/REMOTE_PORT&gt;
+        &lt;REMOTE_PORT&gt;3973&lt;/REMOTE_PORT&gt;
         &lt;REMOTE_BROWSER&gt;firefox&lt;/REMOTE_BROWSER&gt;
         &lt;REMOTE_BROWSER_VERSION&gt;37.0&lt;/REMOTE_BROWSER_VERSION&gt;
         &lt;REMOTE_OS&gt;Windows 7&lt;/REMOTE_OS&gt;
@@ -86,8 +86,8 @@ msg</listfields>
 		&lt;form class=&quot;w_form&quot; method=&quot;post&quot; name=&quot;chat_searchform&quot; action=&quot;/chat&quot; onsubmit=&quot;return false;&quot;&gt;
 			&lt;input type=&quot;hidden&quot; name=&quot;_template&quot; value=&quot;1&quot; /&gt;
 			&lt;input type=&quot;hidden&quot; name=&quot;func&quot; value=&quot;search&quot; /&gt;
-			&lt;div class=&quot;input-group&quot; data-tooltip=&quot;chat - search by NAME or DEPARTMENT&quot; data-tooltip_position=&quot;bottom&quot;&gt;
-				&lt;input type=&quot;text&quot; autocomplete=&quot;off&quot; onkeyup=&quot;chatSearchList(this.value);&quot; class=&quot;form-control input-sm&quot; name=&quot;search&quot; value=&quot;&quot; placeholder=&quot;chat&quot; /&gt;
+			&lt;div class=&quot;input-group&quot; data-tooltip=&quot;&lt;?=$chatTitle;?&gt; - search by NAME or DEPARTMENT&quot; data-tooltip_position=&quot;bottom&quot;&gt;
+				&lt;input type=&quot;text&quot; autocomplete=&quot;off&quot; onkeyup=&quot;chatSearchList(this.value);&quot; class=&quot;form-control input-sm&quot; name=&quot;search&quot; value=&quot;&quot; placeholder=&quot;&lt;?=$chatTitle;?&gt;&quot; /&gt;
 				&lt;span class=&quot;input-group-addon w_pointer&quot; onclick=&quot;chatSearchList();&quot;&gt;&lt;span class=&quot;w_primary&quot; id=&quot;chat_icon_color&quot;&gt;&lt;span class=&quot;icon-chat&quot; style=&quot;padding-right:5px;&quot;&gt;&lt;/span&gt;&lt;span id=&quot;chat_active_users_count&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
 			&lt;/div&gt;
 		&lt;/form&gt;
@@ -159,6 +159,7 @@ msg</listfields>
 	loadExtrasCss('accordian');
 	global $USER;
 	chatCheckSetup();
+	$chatTitle=isset($_REQUEST['chat_title'])?$_REQUEST['chat_title']:'chatjat';
 	if(!isUser()){
     	setView('login',1);
     	return;
