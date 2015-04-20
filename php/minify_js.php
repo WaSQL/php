@@ -47,6 +47,8 @@ header('Expires: ' . gmdate('D, d M Y H:i:s', time()-$expires) . ' GMT');
 ob_start("compress");
 //get the js path
 $jspath=realpath('../wfiles/js');
+//app path
+$appspath=realpath('../apps');
 //initialize the global files array
 global $files;
 $files=array();
@@ -60,6 +62,11 @@ if(isset($_SESSION['w_MINIFY']['extras_js']) && is_array($_SESSION['w_MINIFY']['
 		}
 		elseif($extra=='google'){
 			minifyGoogleFiles();
+		}
+		elseif(preg_match('/^app\:(.+)$/i',$extra,$m)){
+        	$app=strtolower($m[1]);
+        	/* --- /apps/chat/chat.css ---*/
+        	minifyFiles(realpath("{$appspath}/{$app}"),"{$app}.css");
 		}
 		else{
 			minifyFiles(realpath("{$jspath}/extras"),$extra);
