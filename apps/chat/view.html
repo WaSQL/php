@@ -1,0 +1,81 @@
+<view:default>
+<div style="position:relative;">
+	<div id="chat_userlistform">
+		<form class="w_form" method="post" name="chat_searchform" action="/chat" onsubmit="return false;">
+			<input type="hidden" name="_template" value="1" />
+			<input type="hidden" name="func" value="search" />
+			<div class="input-group">
+				<input type="text" autocomplete="off" data-tooltip="<?=$chatTitle;?> - search by NAME or DEPARTMENT" data-tooltip_position="bottom" onkeyup="chatSearchList(this.value);" class="form-control input-sm" name="search" value="" placeholder="<?=$chatTitle;?>" />
+				<span class="input-group-addon w_pointer" data-tooltip="Show People I have chatted with" data-tooltip_position="bottom" onclick="chatShowMyChatUsers();"><span class="w_primary" id="chat_icon_color"><span class="icon-chat" style="padding-right:5px;"></span><span id="chat_active_users_count"></span></span></span>
+			</div>
+		</form>
+	</div>
+	<div id="chat_mychatusers" style="display:none;"></div>
+	<div id="chat_userlist" data-behavior="ajax" url="/chat?_template=1&func=userlist" timer="60">
+		<?=renderView('_userlist',$chat['userlist'],array('-alias'=>'users'));?>
+	</div>
+	<div id="chat_chatlist" data-behavior="ajax" data-function="chatlistTimer();" data-timer="10">
+		<?=renderView('_chatlist',$chat['chatlist'],array('-alias'=>'chats'));?>
+	</div>
+	<div style="display:none;">
+		<div id="nulldiv"></div>
+	</div>
+</div>
+</view:default>
+
+<view:_userlist>
+	<view:_user>
+		<div class="user" data-userlist="<?=strtolower("{$cuser['name']} - {$cuser['department']}");?>" style="display:none;">
+			<a href="#" onclick="return chatSendMessage(<?=$cuser['_id'];?>,'*');" class="w_block w_link"><span data-minutes="<?=$cuser['minutes'];?>" class="icon-user <?=$cuser['active_level'];?>"></span> <?=$cuser['name'];?> - <?=$cuser['department'];?></a>
+		</div>
+	</view:_user>
+	<?=renderEach('_user',$users,array('-alias'=>'cuser'));?>
+	<?=buildOnLoad("chatSearchList(document.chat_searchform.search.value);");?>
+</view:_userlist>
+
+<view:_chatlist>
+	<view:_user>
+		<div class="chatbox <?=$chat['notify'];?>">
+			<div class="w_right"><span class="icon-cancel-squared w_red w_pointer w_block" onclick="chatSendMessage(<?=$chat['id'];?>,'-');"></span></div>
+			<div class="title" title="User <?=$chat['id'];?> is <?=$chat['active_level'];?>"><span class="icon-user <?=$chat['active_level'];?>"></span>  <?=$chat['name'];?> - <?=$chat['department'];?></div>
+			<div class="chats" id="chatbox_chats_<?=$chat['id'];?>">
+			<view:_msg>
+				<div class="msg <?=$msg['class'];?>"><?=chatMessageDate($msg['_cdate']);?>: <?=$msg['msg'];?></div>
+			</view:_msg>
+			<?=renderEach('_msg',$chat['msgs'],array('-alias'=>'msg'));?>
+			</div>
+			<?=renderView('_chatform',$chat,array('-alias'=>'chat'));?>
+			<?=buildOnLoad("chatScrollToBottom({$chat['id']})");?>
+		</div>
+	</view:_user>
+	<?=renderEach('_user',$chats,array('-alias'=>'chat'));?>
+	<view:_setfocus>
+	<?=buildOnLoad("chatSetFocus({$_REQUEST['setfocus']})");?>
+	</view:_setfocus>
+	<?=renderViewIf(isset($_REQUEST['setfocus']),'_setfocus');?>
+</view:_chatlist>
+
+
+<view:_chatform>
+<div class="form">
+	<form name="chatform_<?=$chat['id'];?>" id="chatform_<?=$chat['id'];?>" class="chatform" method="post" action="/chat" onsubmit="return ajaxSubmitForm(this,'chat_chatlist');">
+	<input type="hidden" name="msg_to" value="<?=$chat['id'];?>" />
+	<input type="hidden" name="_template" value="1" />
+	<input type="hidden" name="setfocus" value="<?=$chat['id'];?>" />
+	<input type="hidden" name="func" value="sendmessage" />
+	<input type="hidden" name="noprocessing" value="1" />
+	<div class="input-group">
+		<input type="text" autocomplete="off" class="form-control input-sm" name="msg" required="1" value="" placeholder="Click here to send message" />
+		<span class="input-group-btn"><button type="submit" class="btn btn-primary btn-sm">&#9658;</button></span>
+	</div>
+	</form>
+</div>
+</view:_chatform>
+
+<view:mychatusers>
+	<div align="right">Recent <span class="icon-cancel-squared w_red w_pointer w_block" onclick="hideId('chat_mychatusers');"></span></div>
+	<view:_myuser>
+		<div><a href="#" onclick="return chatSendMessage(<?=$user['_id'];?>,'*');"><span class="icon-chat"></span><?="{$user['firstname']} {$user['lastname']}";?></a></div>
+	</view:_myuser>
+	<?=renderEach('_myuser',$users,array('-alias'=>'user'));?>
+</view:mychatusers>
