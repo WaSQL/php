@@ -16,13 +16,13 @@
 			return;
 		break;
 		case 'userlist':
-			$users=chatGetUserList();
+			$chat['userlist']=chatGetUserList();
 			setView('_userlist',1);
 			return;
 		break;
 		case 'chatlist':
-			$chats=chatGetChatList();
-			setView('_chatlist',1);
+			$chat['chatlist']=chatGetChatList();
+			setView('chatlist',1);
 			return;
 		break;
 		case 'sendmessage':
