@@ -361,6 +361,11 @@ if(isAjax() && (isset($_REQUEST['_sqlpreview_']) || isset($_REQUEST['_queryid_']
 }
 //if the requested url ends with a slash, look for an existing index file and use it.
 $_REQUEST['_view']=preg_replace('/\/$/','',$_REQUEST['_view']);
+//check for apps
+if(preg_match('/apps\/(.+)/i',$_REQUEST['_view'],$m)){
+	echo includeApp($m[1]);
+	exit;
+}
 $rec=getDBRecord(array('-table'=>'_pages','-fields'=>"_id,name",'name'=>databaseEscapeString($_REQUEST['_view'])));
 if(!is_array($rec)){
 	if(isset($_SERVER['REQUEST_URI']) && preg_match('/\/$/',$_SERVER['REQUEST_URI'])){
