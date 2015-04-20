@@ -723,8 +723,9 @@ function createWasqlTable($table=''){
 */
 function schemaUpdateCountries(){
 	$url='https://raw.githubusercontent.com/mledoze/countries/master/countries.json';
-	$post=postURL($url,array('-method'=>'GET','-ssl'=>false,'-ssl_version'=>3));
+	$post=postURL($url,array('-method'=>'GET','-ssl'=>true));
 	$countries=json_decode($post['body'], true);
+	//echo printValue($post);exit;
 	if(!isset($countries[0]['name'])){return false;}
 	$recs=array();
 	foreach($countries as $country){
