@@ -112,16 +112,6 @@ function chatGetUserList(){
 /*-------------*/
 function chatCleanupMessages(){
 	global $USER;
-	//delete old blanks
-	$ok=delDBRecord(array(
-		'-table'	=> 'chatlog',
-		'-where'	=> "msg_from={$USER['_id']} and (msg='' or msg='*')"
-	));
-	//remove blanks older than two days and remove messages older than 1 year
-	$ok=delDBRecord(array(
-		'-table'	=> 'chatlog',
-		'-where'	=> "(msg='-' or msg='*') AND _cdate < DATE_SUB(NOW(), INTERVAL 2 DAY)"
-	));
 	//remove all records older than one year
 	$ok=delDBRecord(array(
 		'-table'	=> 'chatlog',
