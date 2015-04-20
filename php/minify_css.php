@@ -64,8 +64,8 @@ if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY'][
 	}
 	$filename.='X'.count($_SESSION['w_MINIFY']['extras_css']);
 }
-if(isset($_SESSION['cssfiles']) && is_array($_SESSION['cssfiles'])){
-	foreach($_SESSION['cssfiles'] as $file){
+if(isset($_SESSION['w_MINIFY']['cssfiles']) && is_array($_SESSION['w_MINIFY']['cssfiles'])){
+	foreach($_SESSION['w_MINIFY']['cssfiles'] as $file){
     	if(!in_array($file,$files)){$files[]=$file;}
 	}
 	$filename.='F'.count($_SESSION['w_MINIFY']['cssfiles']);
