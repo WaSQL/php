@@ -6193,6 +6193,89 @@ function includeFile($file,$params=array()){
 		}
     return $rtn;
 	}
+//---------- begin function includeApp---------------------------------------
+/**
+* @describe returns the specified app found in the apps folder
+* @param $appname string
+*    -name of the application in the apps folder you want to include
+* @param $params array
+*    additional $_REQUEST key/value pairs you want sent to the app
+* @return string
+*    returns the specified app
+* @usage echo includeApp('chat',array('app_title'=>'mychat'));
+* @author slloyd
+*/
+function includeApp($app,$params=array()){
+	global $CONFIG;
+	$app_path=getWasqlPath("apps/{$app}");
+	if(!is_dir($app_path)){
+    	return "includeApp Error:{$app_path} does not exist";
+	}
+	//Load any params into the Request array, saving existing values in prev array
+    $prev=array();
+    foreach($params as $key=>$pval){
+		if(preg_match('/^\-\-/',$key)){continue;}
+		if(isset($_REQUEST[$key])){$prev[$key]=$_REQUEST[$key];}
+		$_REQUEST[$key]=$pval;
+	}
+	//include functions
+	if(is_file("{$app_path}/model.php")){
+    	include_once("{$app_path}/model.php");
+	}
+	if(is_file("{$app_path}/functions.php")){
+    	include_once("{$app_path}/functions.php");
+	}
+
+	$controller='';
+	if(is_file("{$app_path}/controller.php")){
+    	$controller=getFileContents("{$app_path}/controller.php");
+    	$controller=trim($controller);
+	}
+	$view='';
+	if(is_file("{$app_path}/view.php")){
+    	$view=getFileContents("{$app_path}/view.php");
+	}
+	elseif(is_file("{$app_path}/{$app}.php")){
+    	$view=getFileContents("{$app_path}/{$app}.php");
+	}
+	elseif(is_file("{$app_path}/view.html")){
+    	$view=getFileContents("{$app_path}/view.html");
+	}
+	elseif(is_file("{$app_path}/{$app}.html")){
+    	$view=getFileContents("{$app_path}/{$app}.html");
+	}
+	//prep css
+	if(is_file("{$app_path}/style.css")){
+		$_SESSION['w_MINIFY']['cssfiles'][]="{$app_path}/style.css";
+	}
+	elseif(is_file("{$app_path}/{$app}.css")){
+		$_SESSION['w_MINIFY']['cssfiles'][]="{$app_path}/{$app}.css";
+	}
+	//prep js
+	if(is_file("{$app_path}/javascript.js")){
+		$_SESSION['w_MINIFY']['jsfiles'][]="{$app_path}/javascript.js";
+	}
+	elseif(is_file("{$app_path}/{$app}.js")){
+		$_SESSION['w_MINIFY']['jsfiles'][]="{$app_path}/{$app}.js";
+	}
+	//start with any contents currently in the buffer
+	$rtn=trim(ob_get_contents());
+	ob_clean();
+	ob_flush();
+	ob_start();
+	if(strlen($controller)){
+		$rtn .=  evalPHP(array($controller,$view));
+	}
+	else{
+	    $rtn .=  evalPHP($view);
+	}
+    //unset and restore any request values
+    foreach($params as $key=>$val){
+		if(isset($prev[$key])){$_REQUEST[$key]=$prev[$key];}
+		else{unset($_REQUEST[$key]);}
+	}
+    return $rtn;
+}
 //---------- begin function includePage---------------------------------------
 /**
 * @describe returns the specified page and loads any functions, etc of that page
@@ -6270,6 +6353,7 @@ function includePage($val='',$params=array()){
 	}
     return $rtn;
 }
+
 //---------- begin function includePHPOnce--------------------
 /**
 * @describe provides a method to dynamically load functions
