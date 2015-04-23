@@ -2091,7 +2091,6 @@ function ajaxTimer(id){
 		//default to 75 seconds
     	timer=75;
 	}
-	//console.log(document.activeElement.type);
 	if(number <= 0){
 		if(undefined != attr['url'] || undefined != attr['data-url']){
 			var url;
