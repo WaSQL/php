@@ -103,6 +103,8 @@
 	box-shadow: 0 0 5px rgba(81, 203, 238, .55);
 	transition: box-shadow ease-in-out .15s;
 	padding:3px;
+	resize: both;
+    overflow: auto;
 }
 #chat_chatlist .chatbox.new{
 	border:1px solid rgba(255, 32, 32, 1);
