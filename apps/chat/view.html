@@ -1,7 +1,7 @@
 <view:default>
 <div style="position:relative;">
 	<div id="chat_userlistform">
-		<form class="w_form" method="post" name="chat_searchform" action="/chat" onsubmit="return false;">
+		<form class="w_form" method="post" name="chat_searchform" action="/apps/chat" onsubmit="return false;">
 			<input type="hidden" name="_template" value="1" />
 			<input type="hidden" name="func" value="search" />
 			<div class="input-group">
@@ -11,10 +11,10 @@
 		</form>
 	</div>
 	<div id="chat_mychatusers" style="display:none;"></div>
-	<div id="chat_userlist" data-behavior="ajax" url="/chat?_template=1&func=userlist" timer="60">
+	<div id="chat_userlist" data-behavior="ajax" url="/apps/chat?_template=1&func=userlist" timer="250">
 		<?=renderView('_userlist',$chat['userlist'],array('-alias'=>'users'));?>
 	</div>
-	<div id="chat_chatlist" data-behavior="ajax" data-function="chatlistTimer();" data-timer="10">
+	<div id="chat_chatlist" data-behavior="ajax" data-function="chatlistTimer();" data-timer="13">
 		<?=renderView('_chatlist',$chat['chatlist'],array('-alias'=>'chats'));?>
 	</div>
 	<div style="display:none;">
@@ -33,11 +33,15 @@
 	<?=buildOnLoad("chatSearchList(document.chat_searchform.search.value);");?>
 </view:_userlist>
 
+<view:chatlist>
+	<?=renderView('_chatlist',$chat['chatlist'],array('-alias'=>'chats'));?>
+</view:chatlist>
+
 <view:_chatlist>
 	<view:_user>
 		<div class="chatbox <?=$chat['notify'];?>">
 			<div class="w_right"><span class="icon-cancel-squared w_red w_pointer w_block" onclick="chatSendMessage(<?=$chat['id'];?>,'-');"></span></div>
-			<div class="title" title="User <?=$chat['id'];?> is <?=$chat['active_level'];?>"><span class="icon-user <?=$chat['active_level'];?>"></span>  <?=$chat['name'];?> - <?=$chat['department'];?></div>
+			<div class="title" title="User <?=$chat['id'];?> is <?=$chat['active_level'];?>"><span class="icon-user <?=$chat['active_level'];?>"></span>  <?=$chat['id'];?> <?=$chat['name'];?> - <?=$chat['department'];?></div>
 			<div class="chats" id="chatbox_chats_<?=$chat['id'];?>">
 			<view:_msg>
 				<div class="msg <?=$msg['class'];?>"><?=chatMessageDate($msg['_cdate']);?>: <?=$msg['msg'];?></div>
@@ -58,7 +62,7 @@
 
 <view:_chatform>
 <div class="form">
-	<form name="chatform_<?=$chat['id'];?>" id="chatform_<?=$chat['id'];?>" class="chatform" method="post" action="/chat" onsubmit="return ajaxSubmitForm(this,'chat_chatlist');">
+	<form name="chatform_<?=$chat['id'];?>" id="chatform_<?=$chat['id'];?>" class="chatform" method="post" action="/apps/chat" onsubmit="return ajaxSubmitForm(this,'chat_chatlist');">
 	<input type="hidden" name="msg_to" value="<?=$chat['id'];?>" />
 	<input type="hidden" name="_template" value="1" />
 	<input type="hidden" name="setfocus" value="<?=$chat['id'];?>" />

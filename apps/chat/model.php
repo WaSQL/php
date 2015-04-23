@@ -159,12 +159,10 @@ function chatGetChatList(){
 SELECT _cdate,_id,msg,msg_to,msg_from
 FROM chatlog
 WHERE
-	(msg_from = {$USER['_id']} AND _cdate > DATE_ADD(NOW(), INTERVAL -60 MINUTE))
-	OR
-	(msg_to = {$USER['_id']} AND _cdate > DATE_ADD(NOW(), INTERVAL -5 Day))
-	OR
-	(msg_from = {$USER['_id']} AND _cdate > DATE_ADD(NOW(), INTERVAL -3 MINUTE) AND msg = '*')
+	msg_from = {$USER['_id']}
+	OR msg_to = {$USER['_id']}
 ORDER BY _id desc
+LIMIT 5000
 	";
 	//get the records
 	$recs= getDBRecords(array('-query'=>$query));
@@ -203,7 +201,6 @@ ORDER BY _id desc
             	$their_last_message=$msg;
 			}
 		}
-		//if($id==21){echo "{$id},[{$my_last_message['_id']},{$my_last_message['msg']}],[{$their_last_message['_id']},{$their_last_message['msg']}]<br>\n";}
 		if(in_array($my_last_message['msg'],array('-','x')) && $their_last_message['_id'] < $my_last_message['_id']){
 			unset($chats[$id]);
         	continue;

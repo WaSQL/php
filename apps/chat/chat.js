@@ -1,6 +1,6 @@
 function chatlistTimer(){
 	if(undefined != document.activeElement && document.activeElement.name=='msg'){return;}
-	ajaxGet('/chat','chat_chatlist',{_template:1,func:'chatlist',nosetprocess:1});
+	ajaxGet('/apps/chat','chat_chatlist',{_template:1,func:'chatlist',nosetprocess:1});
 }
 function chatShowMyChatUsers(){
 	var obj=getObject('chat_mychatusers');
@@ -8,7 +8,7 @@ function chatShowMyChatUsers(){
 		obj.style.display='none';
 		return;
 	}
-	return ajaxGet('/chat','chat_mychatusers',{_template:1,func:'mychatusers',nosetprocess:1});
+	return ajaxGet('/apps/chat','chat_mychatusers',{_template:1,func:'mychatusers',nosetprocess:1});
 }
 function chatSetFocus(id){
 	if(undefined == document.getElementById('chatform_'+id)){
@@ -31,7 +31,7 @@ function chatSendMessage(msg_to,msg){
 	if(undefined == msg || !msg.length){msg='*';}
 	document.chat_searchform.search.value='';
 	chatSearchList();
-	return ajaxGet('/chat','chat_chatlist',{_template:1,func:'sendmessage',msg_to:msg_to,msg:msg,nosetprocess:1});
+	return ajaxGet('/apps/chat','chat_chatlist',{_template:1,func:'sendmessage',msg_to:msg_to,msg:msg,nosetprocess:1});
 }
 /* autocomplete functionality for chat search field */
 function chatSearchList(str){
