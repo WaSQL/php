@@ -2091,6 +2091,7 @@ function ajaxTimer(id){
 		//default to 75 seconds
     	timer=75;
 	}
+	//console.log(document.activeElement.type);
 	if(number <= 0){
 		if(undefined != attr['url'] || undefined != attr['data-url']){
 			var url;
@@ -2101,7 +2102,9 @@ function ajaxTimer(id){
 			var params={};
 			if(undefined != parts[1]){params=JSON.parse('{"' + decodeURI(parts[1].replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');}
 			params['showprocessing']=false;
-			ajaxGet(parts[0],attr['id'],params);
+			if(undefined == document.activeElement || undefined == document.activeElement.type || document.activeElement.type.indexOf('text') == -1){
+				ajaxGet(parts[0],attr['id'],params);
+			}
 		}
 		else if(undefined != attr['function'] || undefined != attr['data-function']){
         	//run a function instead
