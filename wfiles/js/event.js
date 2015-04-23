@@ -2092,25 +2092,25 @@ function ajaxTimer(id){
     	timer=75;
 	}
 	if(number <= 0){
-		if(undefined != attr['url'] || undefined != attr['data-url']){
-			var url;
-			if(undefined != attr['url']){url=attr['url'];}
-			else{url=attr['data-url'];}
-    		//call ajax and reset the countdown timer
-			var parts=url.split('?');
-			var params={};
-			if(undefined != parts[1]){params=JSON.parse('{"' + decodeURI(parts[1].replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');}
-			params['showprocessing']=false;
-			if(undefined == document.activeElement || undefined == document.activeElement.type || document.activeElement.type.indexOf('text') == -1){
+		if(undefined == document.activeElement || undefined == document.activeElement.type || document.activeElement.type.indexOf('text') == -1){
+			if(undefined != attr['url'] || undefined != attr['data-url']){
+				var url;
+				if(undefined != attr['url']){url=attr['url'];}
+				else{url=attr['data-url'];}
+	    		//call ajax and reset the countdown timer
+				var parts=url.split('?');
+				var params={};
+				if(undefined != parts[1]){params=JSON.parse('{"' + decodeURI(parts[1].replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');}
+				params['showprocessing']=false;
 				ajaxGet(parts[0],attr['id'],params);
 			}
-		}
-		else if(undefined != attr['function'] || undefined != attr['data-function']){
-        	//run a function instead
-        	var func;
-			if(undefined != attr['function']){func=attr['function'];}
-			else{func=attr['data-function'];}
-			eval(func);
+			else if(undefined != attr['function'] || undefined != attr['data-function']){
+	        	//run a function instead
+	        	var func;
+				if(undefined != attr['function']){func=attr['function'];}
+				else{func=attr['data-function'];}
+				eval(func);
+			}
 		}
 		//reset the timer
 		obj.setAttribute('data-countdown',timer);
