@@ -171,7 +171,8 @@ LIMIT 5000
 	foreach($recs as $i=>$rec){
 		if($rec['msg_to'] != $USER['_id']){$id=$rec['msg_to'];}
 		elseif($rec['msg_from'] != $USER['_id']){$id=$rec['msg_from'];}
-		else{$id=$USER['id'];}
+		else{continue;}
+		if(!isset($id) || !strlen($id)){continue;}
 		if(!isset($chats[$id]['id']) && $id != $USER['_id']){
 				$chats[$id]=array(
 					'name'			=> $usermap[$id]['name'],
