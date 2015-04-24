@@ -3533,7 +3533,10 @@ function getDBFieldSelections($info=array()){
 		$selections['dvals']=$selections['tvals'];
 		return $selections;
     }
-	if(!isset($info['dvals']) || !strlen($info['dvals'])){$info['dvals']=$info['tvals'];}
+	if(is_array($info['dvals'])){
+		if(!count($info['dvals'])){$info['dvals']=$info['tvals'];}
+	}
+	elseif(!strlen($info['dvals'])){$info['dvals']=$info['tvals'];}
     if(isset($info['tvals'])){
 		if(is_array($info['tvals'])){$tvals=$info['tvals'];}
 		else{
