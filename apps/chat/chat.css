@@ -115,7 +115,7 @@
 	font-size:.9em;
 }
 #chat_chatlist .chats{
-	max-height:100px;
+	max-height:200px;
 	overflow:auto;
 }
 #chat_chatlist .form{
