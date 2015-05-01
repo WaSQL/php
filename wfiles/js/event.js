@@ -1636,11 +1636,16 @@ function codemirrorTextEditor(obj,mode,behavior){
 	var fkeys=new Array('F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12');
 	for(var f=0;f<fkeys.length;f++){
 		var key=fkeys[f];
-		if(undefined == obj.getAttribute('data-'+key)){
-	    	extrakeys[key]=obj.getAttribute('data-'+key);
+		var key2=key.toLowerCase();
+		if(undefined != obj.getAttribute('data-'+key)){
+			var fname=obj.getAttribute('data-'+key);
+	    	extrakeys[key]=function(cm){cm.save();window[fname]();};
+		}
+		else if(undefined != obj.getAttribute('data-'+key2)){
+	    	var fname=obj.getAttribute('data-'+key2);
+	    	extrakeys[key]=function(cm){cm.save();window[fname]();};
 		}
 	}
-	
 	var params={
 		mode: mode,
 		behavior: behavior,
@@ -1696,6 +1701,18 @@ function codemirrorTextEditor(obj,mode,behavior){
 	}
 	return;
 }
+
+function executeFunctionByName(functionName, context /*, args */) {
+	if(undefined == context){context='window';}
+	var args = [].slice.call(arguments).splice(2);
+	var namespaces = functionName.split(".");
+	var func = namespaces.pop();
+	for(var i = 0; i < namespaces.length; i++) {
+		context = context[namespaces[i]];
+	}
+	return context[func].apply(this, args);
+}
+
 function codemirrorHelp(cm){
 	if(undefined != document.getElementById('codemirrorpop')){
     		removeDiv('codemirrorpop');
