@@ -1632,6 +1632,15 @@ function codemirrorTextEditor(obj,mode,behavior){
 			}
 		};
 	}
+	//function keys overrides
+	var fkeys=new Array('F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12');
+	for(var f=0;f<fkeys.length;f++){
+		var key=fkeys[f];
+		if(undefined == obj.getAttribute('data-'+key)){
+	    	extrakeys[key]=obj.getAttribute('data-'+key);
+		}
+	}
+	
 	var params={
 		mode: mode,
 		behavior: behavior,
