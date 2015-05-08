@@ -2094,7 +2094,9 @@ function stopWatch(id){
 	}
 function ajaxTimer(id){
 	//info: used by ajax behavior
+	//info: create an object with skip_ajax_timer as the id to skip
 	clearTimeout(TimoutArray[id]);
+
 	var obj=getObject(id);
 	if(undefined == obj){return;}
 	var attr=getAllAttributes(obj);
@@ -2117,7 +2119,9 @@ function ajaxTimer(id){
 		//default to 75 seconds
     	timer=75;
 	}
-	if(number <= 0){
+	//check for skip attribute on page
+	var skip=getObject('skip_ajax_timer');
+	if(undefined == skip && number <= 0){
 		if(undefined == document.activeElement || undefined == document.activeElement.type || document.activeElement.type.indexOf('text') == -1){
 			if(undefined != attr['url'] || undefined != attr['data-url']){
 				var url;
