@@ -10,6 +10,9 @@ function chatShowMyChatUsers(){
 	}
 	return ajaxGet('/apps/chat','chat_mychatusers',{_template:1,func:'mychatusers',nosetprocess:1});
 }
+function chatShowConfig(){
+	return ajaxGet('/apps/chat','centerpop',{_template:1,func:'chatconfig',nosetprocess:1});
+}
 function chatSetFocus(id){
 	if(undefined == document.getElementById('chatform_'+id)){
 		console.log('chatform_'+id+' does not exist to focus on');
