@@ -390,7 +390,7 @@ function chatCheckSetup(){
 	if(!isDBTable($table)){
 		$fields=array(
 			'msg_from'	=&gt; 'integer NOT NULL Default 0',
-			'msg_to'	=&gt; 'varchar(500) NOT NULL',
+			'msg_to'	=&gt; 'integer NOT NULL Default 0',
 			'msg'		=&gt; &quot;varchar(1500) NOT NULL Default ''&quot;
 		);
 		$ok = createDBTable($table,$fields,'InnoDB');
