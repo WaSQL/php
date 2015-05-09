@@ -7,6 +7,7 @@
 			<div class="input-group">
 				<input type="text" autocomplete="off" data-tooltip="<?=$chatTitle;?> - search by NAME or DEPARTMENT" data-tooltip_position="bottom" onkeyup="chatSearchList(this.value);" class="form-control input-sm" name="search" value="" placeholder="<?=$chatTitle;?>" />
 				<span class="input-group-addon w_pointer" data-tooltip="Show People I have chatted with" data-tooltip_position="bottom" onclick="chatShowMyChatUsers();"><span class="w_primary" id="chat_icon_color"><span class="icon-chat" style="padding-right:5px;"></span><span id="chat_active_users_count"></span></span></span>
+				<span class="input-group-addon w_pointer" data-tooltip="Config" data-tooltip_position="bottom" onclick="chatShowConfig();"><span class="<?=chatShowConfigIcon();?>" id="chat_icon_config"></span></span>
 			</div>
 		</form>
 	</div>
@@ -36,6 +37,17 @@
 <view:chatlist>
 	<?=renderView('_chatlist',$chat['chatlist'],array('-alias'=>'chats'));?>
 </view:chatlist>
+
+<view:chatconfig>
+	<div class="w_centerpop_title"><span class="icon-chat"></span> Chat Configuration Options for <?="{$USER['firstname']} {$USER['lastname']}";?><span class="icon-gear w_lgrey"></span></div>
+	<div class="w_centerpop_content">
+		<?=chatConfigForm();?>
+	</div>
+</view:chatconfig>
+
+<view:chatconfig2>
+	<?=buildOnLoad("removeDiv('centerpop');document.getElementById('chat_icon_config').className='".chatShowConfigIcon()."';");?>
+</view:chatconfig2>
 
 <view:_chatlist>
 	<view:_user>
