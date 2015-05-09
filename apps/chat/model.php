@@ -27,6 +27,42 @@ ORDER BY last_date desc
 	";
 	return getDBRecords(array('-query'=>$query));
 }
+function chatConfigForm(){
+	global $USER;
+	$rec=getDBRecord(array('-table'=>'chatconfig','user_id'=>$USER['_id']));
+	$opts=array(
+		'-table'	=> 'chatconfig',
+		'-name'		=> 'chatconfigform',
+		'-action'	=> '/apps/chat',
+		'-fields'	=> 'backup_ids',
+		'user_id'	=> $USER['_id'],
+		'-hide'		=> 'clone',
+		'func'		=> 'chatconfig2',
+		'-onsubmit'	=> "return ajaxSubmitForm(this,'nulldiv');",
+		'backup_ids_displayname'	=> '<span class="icon-users"></span> Select who you want to redirect messages to if you are NOT online:'
+	);
+	if(is_array($rec)){$opts['_id']=$rec['_id'];}
+	return addEditDBForm($opts);
+}
+function chatShowConfigIcon(){
+	global $USER;
+	$rec=getDBRecord(array('-table'=>'chatconfig','user_id'=>$USER['_id']));
+	if(is_array($rec) && strlen($rec['backup_ids'])){return 'icon-gear w_primary';}
+	return 'icon-gear';
+}
+function chatGetBackupIds(){
+	global $USER;
+	$rec=getDBRecord(array('-table'=>'chatconfig','user_id'=>$USER['_id']));
+	if(is_array($rec) && strlen($rec['backup_ids'])){return preg_split('/\:+/',trim($rec['backup_ids']));}
+	return array();
+}
+function chatIsUserActive($id){
+	$rec=getDBRecord(array('-table'=>'_users','_id'=>$id,'-fields'=>'_adate'));
+	if(!is_array($rec)){return false;}
+	$minutes=floor(time()-strtotime($rec['_adate']))/60;
+	if($minutes < 10){return true;}
+	return false;
+}
 /*-------------*/
 function chatMessageDate($d){
 	$dt=strtotime($d);
@@ -73,7 +109,33 @@ function chatCheckSetup(){
 			'listfields'	=> "_cdate\r\nmsg_from\r\nmsg_to",
 			);
 		$id=addDBRecord($addopts);
-		return true;
+	}
+	//chatconfig
+	$table='chatconfig';
+	if(!isDBTable($table)){
+		$fields=array(
+			'user_id'	=> 'integer NOT NULL UNIQUE',
+			'backup_ids'=> 'varchar(254)'
+		);
+		$ok = createDBTable($table,$fields,'InnoDB');
+		if($ok != 1){return false;}
+		//Add tabledata
+		$addopts=array('-table'=>"_tabledata",
+			'tablename'		=> $table,
+			'formfields'	=> "user_id\r\nbackup_ids",
+			'listfields'	=> "_cdate\r\nuser_id\r\nbackup_ids",
+		);
+		$id=addDBRecord($addopts);
+		$id=addDBRecord(array(
+			'-table'		=> '_fielddata',
+			'tablename'		=> $table,
+			'fieldname'		=> 'backup_ids',
+			'inputtype'		=> 'checkbox',
+			'width'			=> 4,
+			'displayname'	=> "Select Users for your messages to redirect to if you are not online.",
+			'tvals'			=> 'select _id from _users where active=1 order by department,firstname,lastname',
+			'dvals'			=> 'select firstname,lastname from _users where active=1 order by department,firstname,lastname',
+		));
 	}
 	//clean up messages
 	chatCleanupMessages();
