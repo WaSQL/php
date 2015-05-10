@@ -42,9 +42,12 @@
 			}
 			//if the msg_to is not active then send the message to backup ids instead
 			$tos=array();
-			if(chatIsUserActive($msg_to)){$tos[]=$msg_to;}
+			if($msg=='*' || $msg=='-'){$tos[]=$msg_to;}
 			else{
-				$tos=chatGetBackupIds();
+				if(chatIsUserActive($msg_to)){$tos[]=$msg_to;}
+				else{
+					$tos=chatGetBackupIds();
+				}
 			}
 			foreach($tos as $to){
 				$ok=addDBRecord(array(
