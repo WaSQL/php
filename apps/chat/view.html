@@ -7,7 +7,7 @@
 			<div class="input-group">
 				<input type="text" autocomplete="off" data-tooltip="<?=$chatTitle;?> - search by NAME or DEPARTMENT" data-tooltip_position="bottom" onkeyup="chatSearchList(this.value);" class="form-control input-sm" name="search" value="" placeholder="<?=$chatTitle;?>" />
 				<span class="input-group-addon w_pointer" data-tooltip="Show People I have chatted with" data-tooltip_position="bottom" onclick="chatShowMyChatUsers();"><span class="w_primary" id="chat_icon_color"><span class="icon-chat" style="padding-right:5px;"></span><span id="chat_active_users_count"></span></span></span>
-				<span class="input-group-addon w_pointer" data-tooltip="Config" data-tooltip_position="bottom" onclick="chatShowConfig();"><span class="<?=chatShowConfigIcon();?>" id="chat_icon_config"></span></span>
+				<span class="input-group-addon w_pointer" data-tooltip="Config" data-tooltip_position="bottom" onclick="chatShowConfig();" style="padding:0 2px 0 2px;"><span class="<?=chatShowConfigIcon();?>" id="chat_icon_config"></span></span>
 			</div>
 		</form>
 	</div>
