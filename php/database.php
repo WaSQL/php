@@ -2407,12 +2407,21 @@ function delDBRecord($params=array()){
 /**
 * @describe drops the specified table
 * @param table string - name of table to drop
-* @param [meta] boolean - also remove metadata in _fielddata and _tabledata tables associated with this table. defaults to false
+* @param [meta] boolean - also remove metadata in _fielddata and _tabledata tables associated with this table. defaults to true
 * @return 1
 * @usage $ok=dropDBTable('comments',1);
 */
-function dropDBTable($table='',$meta=0){
+	function dropDBTable($table='',$meta=1){
 	if(!isDBTable($table)){return "No such table: {$table}";}
+
+	//drop indexes first
+	$recs=getDBIndexes(array($table));
+	if(is_array($recs)){
+		foreach($recs as $rec){
+	    	$key=$rec['key_name'];
+	    	$ok=dropDBIndex($table,$key);
+		}
+	}
 	if(isMssql()){$table="[{$table}]";}
 	$result=executeSQL("drop table {$table}");
 	if(isset($result['error'])){
