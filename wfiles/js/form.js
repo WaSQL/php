@@ -109,19 +109,664 @@ function ajaxAddEditForm(table,id,flds,userparams){
 	if(undefined != id && id > 0){
 		params += '&_id='+id;
 		xtitle='Edit Record';
-		}
+	}
 	if(undefined != flds){params += '&-fields='+flds;}
 	if(undefined != userparams){params += '&'+userparams;}
 	ajaxPopup('/php/index.php',params,{id:'centerpop'});
 	return false;
-	}
+}
+
 //--------------------------
 function autoGrow(box,maxheight) {
 	//info: allows a textbox to grow as a person types
 	//usage: <textarea onkeypress="autoGrow();"><textarea>
 	if(undefined==maxheight){maxheight=400;}
 	if (box.scrollHeight < maxheight && box.scrollHeight > box.clientHeight && !window.opera){box.style.height=box.scrollHeight+'px';}
+}
+
+//---------- begin function buildFormCalendar--------------------
+/**
+* @describe creates an HTML calendar control
+* @param fieldname string - name of the input field to create
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+* @return object
+* @usage buildFormCalendar('fdate',{'-parent':'myform'});
+*/
+function buildFormCalendar(fieldname,params){
+	return buildFormDate(fieldname,params);
+}
+//---------- begin function buildFormCheckAll--------------------
+/**
+* @describe creates a checkbox element that checks other checkboxes
+* @param att string
+* @param attval string
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[onclick] string - additional function to run when control is clicked
+*	[label] string - override label - defaults to Check All
+*	[id] string - specify specific id attribute - generates a uniquie guid value by default
+* @return element object
+* @usage var cb=buildFormCheckAll('id','users');
+*/
+function buildFormCheckAll(att,attval,params){
+	var tagdiv = document.createElement("div");
+	if(undefined == params){params={};}
+	if(undefined == params.id){params.id='c'+guid();}
+	var tag = document.createElement("input");
+	tag.type='checkbox';
+	tag.id=params.id;
+	var onclick='';
+	if(undefined != params['onchange']){
+		onclick=params['onchange'];
 	}
+	else if(undefined != params['onclick']){
+		onclick=params['onclick'];
+	}
+	onclick="checkAllElements('"+att+"','"+attval+"',this.checked);"+onclick+";";
+	tag.setAttribute('onclick',onclick);
+	tagdiv.appendChild(tag);
+	//now the label
+	if(undefined == params.label){params.label='Check All';}
+	var taglabel = document.createElement("label");
+	taglabel.setAttribute('for',tag.id);
+	taglabel.innerHTML='&nbsp;'+params.label;
+	tagdiv.appendChild(taglabel);
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tagdiv);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tagdiv;
+}
+//---------- begin function buildFormCheckbox--------------------------------------
+/**
+* @describe creates an HTML Form checkbox
+* @param name string
+*	The name of the checkbox
+* @param opts array tval/dval pairs to display
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[group] string - groupname. defaults to formname_fieldname_group
+*	[-values] mixed - specify values that are checked. Can be an array or a colon separated string
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[width] how many to show in a row - default to 6
+*	[-checkall] boolean - show checkall control  - defaults to false
+*	[-radio]	boolean - return radio button control instead - defaults to false
+* @return element object
+*	HTML Form checkbox for each pair passed in
+*/
+function buildFormCheckbox(fieldname, opts, params){
+	if(undefined == fieldname || !fieldname.length){alert('buildFormCheckbox Error: no name');return undefined;}
+	fieldname=fieldname.replace('/[\[\]]+$/','');
+	if(undefined == params){params={};}
+	if(undefined == opts){alert('buildFormCheckbox Error: no opts');return undefined;}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
+	if(undefined == params['group']){params['group']=params['-formname']+'_'+fieldname+'_group';}
+	if(undefined == params['width']){params['width']=4;}
+	if(undefined == params['-values']){params['-values']={};}
+	if(undefined != params['value']){
+		var vtype=typeof(params['value']);
+		//parse the value
+    	if(vtype.toLowerCase() == 'string'){
+        	var vals=params['value'].split(':');
+        	for(v=0;v<vals.length;v++){
+            	params['-values'][vals[v]]=true;
+			}
+      	}
+      	else{params['-values']=params['value'];}
+      	params['value']='';
+    }
+    if(undefined != params['-values']){
+		var vtype=typeof(params['-values']);
+		//parse the value
+    	if(vtype.toLowerCase() == 'string'){
+    		var vals=params['-values'].split(':');
+    		params['-values']={};
+    		for(v=0;v<vals.length;v++){
+            	params['-values'][vals[v]]=true;
+			}
+    	}
+	}
+    var rowdiv = document.createElement("div");
+	rowdiv.className='row';
+	if(undefined != params['-checkall'] && undefined == params['-radio']){
+    	var checkalldiv=buildFormCheckAll('data-group',params['group'],{'-parent':rowdiv});
+	}
+	//divide the opts into columns
+	var col_opts={};
+	var x=0;
+	for(var tval in opts){
+		if(undefined == col_opts[x]){col_opts[x]={};}
+		var dval=opts[tval];
+		col_opts[x][tval]=dval;
+		x=x+1;
+		if(x==params.width){x=0;}
+	}
+	var col_width=Math.floor(12/params.width);
+	for(var x=0;x<params.width;x++){
+		var coldiv = document.createElement("div");
+		coldiv.className='col-xs-'+col_width;
+		for(var tval in col_opts[x]){
+			var dval=col_opts[x][tval];
+			var ctagdiv = document.createElement("div");
+			var cid=params['-formname']+'_'+fieldname+'_'+tval;
+			var ctag = document.createElement("input");
+			if(undefined != params['-radio']){
+				ctag.type='radio';
+				ctag.name=fieldname;
+			}
+			else{
+				ctag.type='checkbox';
+				ctag.name=fieldname+'[]';
+			}
+
+			ctag.value=tval;
+			if(undefined != params['-values'][tval]){ctag.checked=true;}
+			if(params.required){ctag.setAttribute('_required',params.required);}
+			ctag.id=cid;
+			ctag.setAttribute('data-group',params.group);
+			ctag.setAttribute('data-type','checkbox');
+			ctagdiv.appendChild(ctag);
+			var ctaglabel = document.createElement("label");
+			ctaglabel.setAttribute('for',cid);
+			ctaglabel.innerHTML='&nbsp;'+dval;
+			ctagdiv.appendChild(ctaglabel);
+			coldiv.appendChild(ctagdiv);
+		}
+		rowdiv.appendChild(coldiv);
+	}
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(rowdiv);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return rowdiv;
+}
+//---------- begin function buildFormColor-------------------
+/**
+* @describe creates an HTML color control
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+*	[class] string - class attribute value - defaults to form-control
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[placeholder] string - placeholder attribute value - defaults to #HEXVAL
+* @return element object
+* @usage echo buildFormColor('color');
+*/
+function buildFormColor(fieldname,params){
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	var iconid=params.id+'_icon';
+	//force witdh
+	params.width=115;
+	var iconcolor='#c0c0c0';
+	if(undefined != params.value){iconcolor=params.value;}
+	if(undefined == params.placeholder){params.placeholder='#HEXVAL';}
+	if(undefined == params.class){params.class='form-control';}
+	params['maxlength']=7;
+	var tagdiv = document.createElement("div");
+	tagdiv.className="input-group";
+	tagdiv.style.width=params.width+'px';
+	var tag = document.createElement("input");
+	tag.type='text';
+	tag.maxlength=7;
+	tag.className=params.class;
+	tag.style.fontSize='11px';
+	tag.style.fontFamily='arial';
+	tag.name=fieldname;
+	tag.id=params.id
+	if(params.required){tag.setAttribute('required',params.required);}
+	if(undefined != params.value){
+		tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	tag.classname=params.class;
+	tag.placeholder=params.placeholder;
+	tagdiv.appendChild(tag);
+	var tagspan = document.createElement("span");
+	tagspan.id=iconid;
+	tagspan.setAttribute('onclick',"return colorSelector('"+params.id+"');");
+	tagspan.className="icon-color-adjust w_bigger w_pointer input-group-addon";
+	tagspan.style.color=iconcolor+';padding-left:3px !important;padding-right:6px !important;';
+	tagspan.title='Color Selector';
+	tagdiv.appendChild(tagspan);
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tagdiv);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tagdiv;
+}
+
+//---------- begin function buildFormCombo--------------------
+/**
+* @describe creates an HTML combo field
+* @param name string
+* @param opts array
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[class] string - class attribute value - defaults to form-control
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return element object
+* @usage echo buildFormCombo('mydate',$opts,$params);
+*/
+function buildFormCombo(fieldname,opts,params){
+	if(undefined == fieldname){alert('buildFormCombo requires fieldname');return undefined;}
+	if(undefined == opts){alert('buildFormCombo requires opts');return undefined;}
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	if(undefined == params.class){params.class='form-control';}
+	var datalist_id=params.id+'_datalist';
+	var tagdiv = document.createElement("div");
+	var tag = document.createElement("input");
+	tag.className=params.class;
+	if(params.required){tag.setAttribute('required',params.required);}
+	if(undefined != params.value){
+    	tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	tag.name=fieldname;
+	tag.id=params.id;
+	tag.setAttribute('list',datalist_id);
+	tagdiv.appendChild(tag);
+	//datalist
+	var taglist = document.createElement("datalist");
+	taglist.id=datalist_id;
+	for(var tval in opts){
+		var coption = document.createElement("OPTION");
+		coption.value=tval;
+		coption.innerHTML=opts[tval];
+		taglist.appendChild(coption);
+	}
+	tagdiv.appendChild(taglist);
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tagdiv);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tagdiv;
+}
+//---------- begin function buildFormDate-------------------
+/**
+* @describe creates an HTML color control
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[class] string - class attribute value - defaults to form-control
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[value] string - current value - no default
+*	[title] string - title attribute - defaults to Date Control
+*	[-control] string - control type: date,datetime,time - defaults to date
+* @return element object
+* @usage echo buildFormDate('fdate');
+*/
+function buildFormDate(fieldname,params){
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params['-control']){params['-control']='date';}
+	var spanclass='';
+	switch(params['-control']){
+    	case 'date':
+			if(undefined == params.title){params.title='Date Control';}
+			spanclass="icon-calendar w_pointer input-group-addon";
+			params.width=155;
+			if(undefined == params.placeholder){params.placeholder='YYYY-MM-DD';}
+		break;
+    	case 'datetime':
+			if(undefined == params.title){params.title='Date and Time Control';}
+			spanclass="icon-calendar w_pointer input-group-addon";
+			params.width=220;
+			if(undefined == params.placeholder){params.placeholder='YYYY-MM-DD MH:MM:SS';}
+		break;
+    	case 'time':
+			if(undefined == params.title){params.title='Time Control';}
+			spanclass="icon-clock w_pointer input-group-addon";
+			params.width=115;
+			if(undefined == params.placeholder){params.placeholder='MH:MM:SS';}
+		break;
+	}
+	var iconid=params.id+'_icon';
+	var iconcolor='#c0c0c0';
+	var tagdiv = document.createElement("div");
+	tagdiv.className="input-group";
+	tagdiv.style.width=params.width+'px';
+	var tag = document.createElement("input");
+	tag.type='text';
+	tag.className=params.class;
+	tag.style.fontSize='12px';
+	tag.style.fontFamily='arial';
+	tag.name=fieldname;
+	tag.id=params.id
+	if(params.required){tag.setAttribute('required',params.required);}
+	if(undefined != params.value && params.value.length){
+		tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	tag.classname=params.class;
+	tag.setAttribute('data-type',params['-control']);
+	tag.placeholder=params.placeholder;
+	tagdiv.appendChild(tag);
+	var tagspan = document.createElement("span");
+	tagspan.id=iconid;
+	tagspan.setAttribute('onclick',"return Calendar('"+params.id+"');");
+	tagspan.className=spanclass;
+	tagspan.style.color=iconcolor+';padding-left:3px !important;padding-right:6px !important;';
+	tagspan.title=params.title;
+	if(params['-control']=='datetime'){
+    	tagspan.innerHTML='<span class="icon-clock"></span>'
+	}
+	tagdiv.appendChild(tagspan);
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tagdiv);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tagdiv;
+}
+//---------- begin function buildFormDateTime-------------------
+/**
+* @describe creates an HTML color control
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[class] string - class attribute value - defaults to form-control
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[value] string - current value - no default
+*	[title] string - title attribute - defaults to Date and Time Control
+* @return element object
+* @usage echo buildFormDateTime('color');
+*/
+function buildFormDateTime(fieldname,params){
+	if(undefined == params){params={};}
+	params['-control']='datetime';
+	return buildFormDate(fieldname,params);
+}
+//---------- begin function buildFormHidden-------------------
+/**
+* @describe creates hidden form field
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+* @return element object
+* @usage echo buildFormDateTime('color');
+*/
+function buildFormHidden(fieldname,params){
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	var tag = document.createElement("input");
+	tag.type='hidden';
+	tag.name=fieldname;
+	if(undefined != params.value){
+		tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	tag.id=params.id;
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tag);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tag;
+}
+//---------- begin function buildFormPassword-------------------
+/**
+* @describe creates hidden form field
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+* @return element object
+* @usage echo buildFormPassword('color');
+*/
+function buildFormPassword(fieldname,params){
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	if(undefined == params.class){params.class='form-control';}
+	var tag = document.createElement("input");
+	tag.type='password';
+	tag.name=fieldname;
+	tag.value=params.value;
+	if(params.required){tag.setAttribute('required',params.required);}
+	tag.id=params.id;
+	tag.className=params.class;
+	if(undefined != params.value){
+		tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tag);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tag;
+}
+//---------- begin function buildFormRadio--------------------------------------
+/**
+* @describe creates an HTML Form checkbox
+* @param name string
+*	The name of the checkbox
+* @param opts array tval/dval pairs to display
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[group] string - groupname. defaults to formname_fieldname_group
+*	[-values] mixed - specify values that are checked. Can be an array or a colon separated string
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[width] how many to show in a row - default to 6
+* @return element object
+*	HTML Form checkbox for each pair passed in
+*/
+function buildFormRadio(fieldname, opts, params){
+	if(undefined == params){params={};}
+	params['-radio']=true;
+	return buildFormCheckbox(fieldname, opts, params)
+}
+//---------- begin function buildFormText--------------------
+/**
+* @describe creates an HTML combo field
+* @param name string
+* @param opts array
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+* @return element object
+* @usage echo buildFormText('mydate',$opts,$params);
+*/
+function buildFormText(fieldname,params){
+	if(undefined == fieldname){alert('buildFormText requires fieldname');return undefined;}
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	if(undefined == params.class){params.class='form-control';}
+	var tag = document.createElement("input");
+	tag.className=params.class;
+	if(params.required){tag.setAttribute('required',params.required);}
+	if(undefined != params.value){
+    	tag.setAttribute('value',params.value);
+	}
+	else{tag.setAttribute('value','');}
+	tag.name=fieldname;
+	tag.id=params.id;
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tag);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tag;
+}
+//---------- begin function buildFormTextarea--------------------
+/**
+* @describe creates an HTML textarea field
+* @param name string
+* @param opts array
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+* @return element object
+* @usage echo buildFormTextarea('mydate',$opts,$params);
+*/
+function buildFormTextarea(fieldname,params){
+	if(undefined == fieldname){alert('buildFormTextarea requires fieldname');return undefined;}
+	if(undefined == params){params={};}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.height){params.height=50;}
+	if(undefined != params.behavior){params['data-behavior']=params.behavior;}
+	var tag = document.createElement("textarea");
+	tag.className=params.class;
+	if(params.required){tag.setAttribute('required',params.required);}
+	if(undefined != params.value){
+    	tag.innerHTML=params.value;
+	}
+	else{tag.innerHTML='';}
+	tag.name=fieldname;
+	tag.id=params.id;
+	tag.style.height=params.height+'px';
+	//look for behaviors
+	if(undefined != params['data-behavior']){
+    	switch(params['data-behavior'].toLowerCase()){
+        	case 'editor':
+			case 'tinymce':
+			case 'wysiwyg':
+			case 'nicedit':
+				tag.setAttribute('data-behavior','nicedit');
+			break;
+			default:
+				tag.setAttribute('data-behavior',params['data-behavior']);
+			break;
+		}
+	}
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tag);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tag;
+}
+//---------- begin function buildFormTime-------------------
+/**
+* @describe creates an HTML time control
+* @param name string - field name
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[class] string - class attribute value - defaults to form-control
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[value] string - current value - no default
+*	[title] string - title attribute - defaults to Time Control
+* @return element object
+* @usage  buildFormDateTime('ftime');
+*/
+function buildFormTime(fieldname,params){
+	if(undefined == params){params={};}
+	params['-control']='time';
+	return buildFormDate(fieldname,params);
+}
+//---------- begin function buildFormSelect--------------------------------------
+/**
+* @describe creates an HTML Form checkbox
+* @param name string
+*	The name of the checkbox
+* @param opts array tval/dval pairs to display
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+*	[-formname] string - specify the form name - defaults to addedit
+*	[id] string - specify the field id - defaults to formname_fieldname
+*	[-values] mixed - specify values that are checked. Can be an array or a colon separated string
+*	[required] boolean - make it a required field - defaults to addedit false
+* @return element object
+*	HTML Form checkbox for each pair passed in
+*/
+function buildFormSelect(fieldname, opts, params){
+	if(undefined == fieldname || !fieldname.length){alert('buildFormCheckbox Error: no name');return undefined;}
+	fieldname=fieldname.replace('/[\[\]]+$/','');
+	if(undefined == params){params={};}
+	if(undefined == opts){alert('buildFormCheckbox Error: no opts');return undefined;}
+	if(undefined == params['-formname']){params['-formname']='addedit';}
+	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
+	if(undefined == params['-values']){params['-values']={};}
+	if(undefined != params['value']){
+		var vtype=typeof(params['value']);
+		//parse the value
+    	if(vtype.toLowerCase() == 'string'){
+        	var vals=params['value'].split(':');
+        	for(v=0;v<vals.length;v++){
+            	params['-values'][vals[v]]=true;
+			}
+      	}
+      	else{params['-values']=params['value'];}
+      	params['value']='';
+    }
+    if(undefined != params['-values']){
+		var vtype=typeof(params['-values']);
+		//parse the value
+    	if(vtype.toLowerCase() == 'string'){
+    		var vals=params['-values'].split(':');
+    		params['-values']={};
+    		for(v=0;v<vals.length;v++){
+            	params['-values'][vals[v]]=true;
+			}
+    	}
+	}
+    var tag = document.createElement("select");
+	tag.className=params.class;
+	if(params.required){tag.setAttribute('required',params.required);}
+	tag.name=fieldname;
+	tag.id=params.id;
+	if(undefined != params['-parent']){
+		var pobj=getObject(params['-parent']);
+		if(undefined != pobj){
+			pobj.appendChild(tag);
+		}
+		else{console.log(params['-parent']+' does not exist');}
+	}
+	return tag;
+}
+
+
+
 //--------------------------
 function comboCompleteMatch (sText, arrValues) {
 	sText=sText.toLowerCase();
