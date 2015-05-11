@@ -29,6 +29,19 @@
 		case 'diff':
 			setView('diff',1);
 			$diff=gitDiff($gitpath,$name);
+			$diff['rows']=array();
+			foreach($diff['raw'] as $line){
+				$row=array();
+				if(preg_match('/^\+/',$line)){
+					$row['class']='w_ins';
+				}
+				elseif(preg_match('/^\-/',$line)){$row['class']='w_del';}
+				else{
+					$row['class']='';
+				}
+				$row['line']=encodeHtml($line);
+				$diff['rows'][]=$row;
+			}
 			return;
 		break;
 		case 'pull':
