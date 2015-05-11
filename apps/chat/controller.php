@@ -46,9 +46,13 @@
 			else{
 				if(chatIsUserActive($msg_to)){$tos[]=$msg_to;}
 				else{
-					$tos=chatGetBackupIds();
+					$ids=chatGetBackupIds();
+					foreach($ids as $id){
+						if(chatIsUserActive($id)){$tos[]=$id;}
+					}
 				}
 			}
+			if(!count($tos)){$tos[]=$msg_to;}
 			foreach($tos as $to){
 				$ok=addDBRecord(array(
 					'-table'	=> 'chatlog',
