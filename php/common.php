@@ -867,11 +867,18 @@ function buildFormImage($src,$name='',$onclick=''){
 function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['value'])){
+		if(strlen($params['value'])){$sval=$params['value'];}
+	}
+	elseif(isset($_REQUEST[$name])){
+		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
+	}
+	else{$sval='';}
 	$params['name']=$name;
 	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
 		$params['class'] .= ' form-control';
 	}
-	$rtn = '<select ';
+	$rtn = '<select data-value="'.$sval.'"';
 	$rtn .= setTagAttributes($params);
 	$rtn .= '>';
 	if(isset($params['message'])){
@@ -880,15 +887,16 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	foreach($pairs as $tval=>$dval){
 		if(!isset($dval) || !strlen($dval)){$dval=$tval;}
 		$rtn .= '	<option value="'.$tval.'"';
-		if(isset($params['value'])){
-			if($params['value']==$tval){$rtn .= ' selected';}
-			elseif($params['value']==$dval){$rtn .= ' selected';}
+		if(strlen($sval)){
+			if($sval==$tval){$rtn .= ' selected';}
+			elseif($sval==$dval){$rtn .= ' selected';}
 		}
-		elseif(isset($_REQUEST[$name]) && $_REQUEST[$name]==$tval){$rtn .= ' selected';}
 		$rtn .= '>'.$dval.'</option>'."\n";
     	}
     $rtn .= '</select>'."\n";
-	return $rtn;
+    //return printValue($params);
+    return $rtn;
+	return encodeHtml($rtn);
 	}
 //---------- begin function buildFormSignature--------------------------------------
 /**
