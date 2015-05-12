@@ -880,7 +880,10 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	foreach($pairs as $tval=>$dval){
 		if(!isset($dval) || !strlen($dval)){$dval=$tval;}
 		$rtn .= '	<option value="'.$tval.'"';
-		if(isset($params['value']) && $params['value']==$tval){$rtn .= ' selected';}
+		if(isset($params['value'])){
+			if($params['value']==$tval){$rtn .= ' selected';}
+			elseif($params['value']==$dval){$rtn .= ' selected';}
+		}
 		elseif(isset($_REQUEST[$name]) && $_REQUEST[$name]==$tval){$rtn .= ' selected';}
 		$rtn .= '>'.$dval.'</option>'."\n";
     	}
