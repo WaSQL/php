@@ -894,9 +894,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		$rtn .= '>'.$dval.'</option>'."\n";
     	}
     $rtn .= '</select>'."\n";
-    //return printValue($params);
     return $rtn;
-	return encodeHtml($rtn);
 	}
 //---------- begin function buildFormSignature--------------------------------------
 /**
