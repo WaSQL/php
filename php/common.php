@@ -242,10 +242,10 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
 	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=6;}
-	if(isset($params['name'])){$name=$params['name'];}
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(isset($params['value'])){
       if(!is_array($params['value'])){
@@ -317,6 +317,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 */
 function buildFormColor($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$iconid=$params['id'].'_icon';
 	//force witdh
@@ -351,6 +352,7 @@ function buildFormColor($name,$params=array()){
 */
 function buildFormCombo($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	$params['list']=$params['id'].'_datalist';
@@ -378,6 +380,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 */
 function buildFormDate($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=155;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
@@ -403,6 +406,7 @@ function buildFormDate($name,$params=array()){
 */
 function buildFormDateTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=220;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
@@ -428,6 +432,7 @@ function buildFormDateTime($name,$params=array()){
 */
 function buildFormHidden($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){
@@ -449,6 +454,7 @@ function buildFormHidden($name,$params=array()){
 */
 function buildFormPassword($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
@@ -471,6 +477,7 @@ function buildFormPassword($name,$params=array()){
 function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
@@ -551,6 +558,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 */
 function buildFormRadio($name, $opts=array(), $params=array()){
 	if(!strlen(trim($name))){return 'buildFormRadio Error: no name';}
+	if(isset($params['name'])){$name=$params['name'];}
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(!is_array($opts) || !count($opts)){return 'buildFormRadio Error: no opts';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -611,6 +619,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 */
 function buildFormText($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
@@ -648,6 +657,7 @@ function buildFormText($name,$params=array()){
 */
 function buildFormTextarea($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
@@ -707,6 +717,7 @@ function buildFormTextarea($name,$params=array()){
 */
 function buildFormTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['-interval'])){$params['-interval']='30';}
 	$params['width']=115;
@@ -795,6 +806,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 */
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['class']='';
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
@@ -867,6 +879,7 @@ function buildFormImage($src,$name='',$onclick=''){
 */
 function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['value'])){
 		if(strlen($params['value'])){$sval=$params['value'];}
@@ -913,6 +926,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 function buildFormSignature($name,$params=array()){
 	$rtn='';
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
 	if(!isset($params['width'])){$params['width']=300;}
@@ -958,6 +972,7 @@ function buildFormSignature($name,$params=array()){
 function buildFormSlider($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
