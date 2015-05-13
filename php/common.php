@@ -282,7 +282,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     	$tag .= '	<div class="col-xs-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
 
-			$id=$params['-formname'].'_'.$name.'_'.$tval;
+			$id=$params['id'].'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
 			$tag .= '		<div style="min-width:'.$minwidth.'px;">'."\n";
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
