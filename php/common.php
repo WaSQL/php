@@ -240,12 +240,13 @@ function buildFormCheckAll($att,$attval,$params=array()){
 */
 function buildFormCheckbox($name, $opts=array(), $params=array()){
 	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
-	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=6;}
+	if(isset($params['name'])){$name=$params['name'];}
+	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(isset($params['value'])){
       if(!is_array($params['value'])){
         $params['-values']=preg_split('/\:/',trim($params['value']));
