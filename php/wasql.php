@@ -700,6 +700,7 @@ function wasqlSetMinify($backend=0){
 	global $TEMPLATE;
 	global $USER;
 	global $CONFIG;
+	if(!isset($PAGE['_id'])){return;}
 	$_SESSION['w_MINIFY']=array();
 	$_SESSION['w_MINIFY']['template_id']=$TEMPLATE['_id'];
 	$_SESSION['w_MINIFY']['page_id']=$PAGE['_id'];
