@@ -1,7 +1,8 @@
 <?php
 
 //require_once('./daemonize.php');
-require_once('./users.php');
+$progpath=dirname(__FILE__);
+require_once("{$progpath}/users.php");
 
 abstract class WebSocketServer {
 
@@ -10,7 +11,7 @@ abstract class WebSocketServer {
   protected $master;
   protected $sockets                              = array();
   protected $users                                = array();
-  protected $interactive                          = true;
+  public $interactive                          = true;
   protected $headerOriginRequired                 = false;
   protected $headerSecWebSocketProtocolRequired   = false;
   protected $headerSecWebSocketExtensionsRequired = false;
@@ -24,7 +25,7 @@ abstract class WebSocketServer {
     $this->sockets['m'] = $this->master;
     $this->stdout("Server started\nListening on: $addr:$port\nMaster socket: ".$this->master);
 
-    
+
   }
 
   abstract protected function process($user,$message); // Called immediately when the data is recieved. 
@@ -97,6 +98,8 @@ abstract class WebSocketServer {
           } 
           else {
             $user = $this->getUserBySocket($socket);
+            //determine client IP address and port
+            @socket_getpeername($socket, $user->address, $user->port);
             if (!$user->handshake) {
               $tmp = str_replace("\r", '', $buffer);
               if (strpos($tmp, "\n\n") === false ) {
@@ -113,7 +116,19 @@ abstract class WebSocketServer {
       }
     }
   }
-
+protected function printValue($v='',$exit=0){
+	$type=strtolower(gettype($v));
+	$plaintypes=array('string','integer');
+	if(in_array($type,$plaintypes)){return $v;}
+	$rtn = '<pre class="w_times" type="'.$type.'">'."\n";
+	ob_start();
+	print_r($v);
+	$rtn .= ob_get_contents();
+	ob_clean();
+	$rtn .= "\n</pre>\n";
+    if($exit){echo $rtn;exit;}
+	return $rtn;
+}
   protected function connect($socket) {
     $user = new $this->userClass(uniqid('u'), $socket);
     $this->users[$user->id] = $user;
