@@ -8847,12 +8847,13 @@ function printValue($v='',$exit=0){
 	$type=strtolower(gettype($v));
 	$plaintypes=array('string','integer');
 	if(in_array($type,$plaintypes)){return $v;}
-	$rtn = '<pre class="w_times" type="'.$type.'">'."\n";
+	$rtn='';
+	if($exit != -1){$rtn .= '<pre class="w_times" type="'.$type.'">'."\n";}
 	ob_start();
 	print_r($v);
 	$rtn .= ob_get_contents();
 	ob_clean();
-	$rtn .= "\n</pre>\n";
+	if($exit != -1){$rtn .= "\n</pre>\n";}
     if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
