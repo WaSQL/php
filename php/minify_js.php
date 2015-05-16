@@ -26,11 +26,12 @@ $etagHeader=isset($_SERVER['HTTP_IF_NONE_MATCH'])?trim($_SERVER['HTTP_IF_NONE_MA
 $afilename="{$progpath}/minify/{$filename}";
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
+	echo "Session ID: ".session_id()."\r\n";
 	foreach($_SESSION['w_MINIFY'] as $key=>$val){
 		if(!is_array($val) && strlen($val) > 300){continue;}
 		$debug[$key]=$val;
 	}
-	echo '$_SESSION[w_MINIFY] Values:'.printValue($debug);
+	echo 'Minify Values:'.printValue($debug,-1);
 	exit;
 }
 else{
