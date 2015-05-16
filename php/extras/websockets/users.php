@@ -4,6 +4,8 @@ class WebSocketUser {
 
   public $socket;
   public $id;
+  public $address;
+  public $port;
   public $headers = array();
   public $handshake = false;
 
