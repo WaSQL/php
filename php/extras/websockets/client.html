@@ -22,7 +22,7 @@ function init() {
 		socket = new WebSocket(host);
 		log('WebSocket - status '+socket.readyState);
 		socket.onopen    = function(msg) { 
-							   log("Welcome - status "+this.readyState); 
+							   log("Welcome - status "+msg.data); 
 						   };
 		socket.onmessage = function(msg) { 
 							   log("Received: "+msg.data); 
