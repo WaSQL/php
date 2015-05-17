@@ -2,7 +2,7 @@
 <?php
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/websockets.php");
-class echoServer extends WebSocketServer {
+class wsServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
   
   protected function process ($user, $message) {
@@ -23,7 +23,7 @@ class echoServer extends WebSocketServer {
   }
 }
 
-$echo = new echoServer("0.0.0.0","9000");
+$echo = new wsServer("0.0.0.0","9000");
 $echo->interactive=false;
 try {
   $echo->run();
