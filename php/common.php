@@ -3251,6 +3251,7 @@ function deleteDirectory($dir=''){
 * @usage $ok=cleanupDirectory($dir[,3]);
 */
 function cleanupDirectory($dir='',$num=5,$type='days'){
+	$cnt=0;
 	if ($handle = opendir($dir)) {
 		while (false !== ($file = readdir($handle))) {
 			if ($file[0] == '.' || is_dir($dir.'/'.$file)) {continue;}
@@ -3284,12 +3285,13 @@ function cleanupDirectory($dir='',$num=5,$type='days'){
 			//echo "File {$file}, Time:{$ttime}, Mtime:{$mtime}, Dtime:{$dtime}, Ctime:{$ctime}<br>\n";
 		    if ($dtime > $ctime) {
 		    	unlink($dir.'/'.$file);
+		    	$cnt++;
 		    	//echo " - removing {$file}<br>\n";
 		    }
 		}
 	    closedir($handle);
 	}
-	return true;
+	return $cnt;
 }
 //---------- begin function diffText
 /**
