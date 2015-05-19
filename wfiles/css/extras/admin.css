@@ -8,10 +8,8 @@
 	font-size:13px;
 	border-bottom:1px solid #7a93df;
 	/* mainmenu fade colors (gradient) */
-	[firefox]background-image: -moz-linear-gradient(top, #FFFFFF, #4A79B3);
-	[safari|chrome]background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#4A79B3));
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#4A79B3'); /* ie7 */
-	[msie gte 8]-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#4A79B3'); /* ie8 */
+	background-image: -moz-linear-gradient(top, #FFFFFF, #4A79B3);
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#4A79B3));
 	}
 #adminmenu a{
 	color:#3a3a3a;;
