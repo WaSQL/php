@@ -315,8 +315,8 @@ table th a {
 
 
 .w_slideshow #w_slide.opaque {
-	opacity:1;
-  	filter: alpha(opacity=1);
+	opacity:1.0;
+  	filter: alpha(opacity=100);
   	z-index:840;
 
 }
