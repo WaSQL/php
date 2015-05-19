@@ -4571,6 +4571,35 @@ function generatePassword($length=9, $strength=2) {
 	}
 	return $password;
 }
+//---------- begin function generateGUID--------------------
+/**
+* @describe creates a password with specified strength
+* @param [curly] boolean - show curly brackets - defaults to false
+* @param [hyphen] - include hypyens - defaults to true
+* @return string
+* @usage $guid=generateGUID(false,true);
+*/
+function generateGUID($curly=false,$hyphen=true){
+	if( function_exists('com_create_guid') ){
+        if( $curly ){ return com_create_guid(); }
+        else { return trim( com_create_guid(), '{}' ); }
+    }
+    else {
+        mt_srand( (double)microtime() * 10000 );    // optional for php 4.2.0 and up.
+        $charid = strtoupper( md5(uniqid(rand(), true)) );
+        $dash = $hyphen ? chr( 45 ) : "";    // "-"
+        $left_curly = $curly ? chr(123) : "";     //  "{"
+        $right_curly = $curly ? chr(125) : "";    //  "}"
+        $uuid = $left_curly
+            . substr( $charid, 0, 8 ) . $dash
+            . substr( $charid, 8, 4 ) . $dash
+            . substr( $charid, 12, 4 ) . $dash
+            . substr( $charid, 16, 4 ) . $dash
+            . substr( $charid, 20, 12 )
+            . $right_curly;
+        return $uuid;
+    }
+}
 //---------- begin function functionList
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
