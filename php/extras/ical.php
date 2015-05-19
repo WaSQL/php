@@ -4,7 +4,60 @@
 
 */
 $progpath=dirname(__FILE__);
+//---------- begin function icalCreateICS ----------
+/**
+* @describe creates an ics file or pushes the file to the browser
+* @param params array - options
+* 	start  string - start date and time of the event - string or timestamp
+* 	end  string - end date and time of the event - string or timestamp
+* 	name string - name the event
+* 	description string - description of the event
+*	location string - location of the event
+*	[-push] boolean - push event as a file
+*	[-file] string - full file name and path to save file to server as -
+* @return mixed - ics string or file or push to browser based on params
+*/
+function icalCreateICS($params=array()){
+	$parts=array(
+		"BEGIN:VCALENDAR",
+		"VERSION:2.0",
+		"METHOD:PUBLISH",
+		"BEGIN:VEVENT",
+		"DTSTART:".date("Ymd\THis\Z",strtotime($params['start'])),
+		"DTEND:".date("Ymd\THis\Z",strtotime($params['end'])),
+		"LOCATION:".$params['location'],
+		"TRANSP: OPAQUE",
+		"SEQUENCE:0",
+		"UID:",
+		"DTSTAMP:".date("Ymd\THis\Z"),
+		"SUMMARY:".$params['name'],
+		"DESCRIPTION:".$params['description'],
+		"PRIORITY:1",
+		"CLASS:PUBLIC",
+		//alarm
+		"BEGIN:VALARM",
+		"TRIGGER:-PT10080M",
+		"ACTION:DISPLAY",
+		"DESCRIPTION: Reminder - ".$params['name'],
+		"END:VALARM",
 
+		"END:VEVENT",
+		"END:VCALENDAR"
+    );
+    $ics=implode("\r\n",$parts);
+    if($params['-push']){
+    	header("Content-type:text/calendar");
+        header('Content-Disposition: attachment; filename="'.$params['name'].'.ics"');
+        Header('Content-Length: '.strlen($ics));
+        Header('Connection: close');
+        echo $ics;
+        exit;
+	}
+	if($params['-file']){
+    	file_put_contents($params['-file'],$ics);
+	}
+	return $ics;
+}
 //---------- begin function icalEvents ----------
 /**
 * @describe convert an ics iCal feed or file to an array of events
