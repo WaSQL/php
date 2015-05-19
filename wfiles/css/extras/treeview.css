@@ -12,7 +12,6 @@
 	font: normal 11px "Segoe UI", Arial, Sans-serif;
 	-moz-user-select: none;
 	-webkit-user-select: none;
-	user-select: none;
 	display:table-cell;
 }
 .w_treeview a, .w_treeview span{
@@ -36,7 +35,7 @@
 .w_treeview a.active, .w_treeview span.active {
 	background-color:#ffffc6;
 	color:#000;
-	[safari|chrome]-webkit-border-radius: 3px;
+	-webkit-border-radius: 3px;
 	-khtml-border-radius: 3px;
 	border-radius: 3px;
 }
