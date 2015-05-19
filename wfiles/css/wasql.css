@@ -108,19 +108,6 @@ table th a {
 	border-bottom-right-radius: 7px;
 	padding:0 3px 5px 3px;
 }
-/*when using w_vcenter you should place w_preserve3d or w_vcenter_parent in the parent so that elements are not placed on a half-pixel that might cause it be blurry */
-/*Reference: http://zerosixthree.se/vertical-align-anything-with-just-3-lines-of-css */
-%w_preserve-3d {
-  -webkit-transform-style: preserve-3d;
-  -moz-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-}
-.w_preserve3d{
-	@extend %w_preserve-3d;
-}
-.w_vcenter_parent{
-	@extend %w_preserve-3d;
-}
 
 /*w_buildonload - used with function buildOnLoad(); */
 .w_buildonload{
@@ -1511,6 +1498,20 @@ div.mojozoom_imgctr {
 	.w_noprint3{display:inline;}
 	.w_printonly{display:none;}
 	.w_printonly2{visibility:hidden;}
+}
+
+/*when using w_vcenter you should place w_preserve3d or w_vcenter_parent in the parent so that elements are not placed on a half-pixel that might cause it be blurry */
+/*Reference: http://zerosixthree.se/vertical-align-anything-with-just-3-lines-of-css */
+%w_preserve-3d {
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+.w_preserve3d{
+	@extend %w_preserve-3d;
+}
+.w_vcenter_parent{
+	@extend %w_preserve-3d;
 }
 
 /* Mobile device overrides*/
