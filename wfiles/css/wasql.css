@@ -116,10 +116,10 @@ table th a {
   transform-style: preserve-3d;
 }
 .w_preserve3d{
-	@extend %w_preserve-3d
+	@extend %w_preserve-3d;
 }
 .w_vcenter_parent{
-	@extend %w_preserve-3d
+	@extend %w_preserve-3d;
 }
 
 /*w_buildonload - used with function buildOnLoad(); */
@@ -297,7 +297,7 @@ table th a {
 .w_shadow{
 	box-shadow:0px 5px 20px #8C8C8C;
 	[safari|chrome]-webkit-box-shadow:0px 5px 20px #8C8C8C;
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.dropShadow(color=#8C8C8C, offX=5, offY=5, positive=true);
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.dropShadow(color=#8C8C8C, offX=5, offY=5, positive=true)";
 	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.dropShadow(color=#8C8C8C, offX=5, offY=5, positive=true)";
 	}
 
@@ -574,7 +574,7 @@ table th a {
 	/* For IE 8 */
 	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
 	/* For IE 5.5 - 7 */
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
 }
 .w_textshadow {
 	[safari|chrome]-webkit-text-shadow: 3px 3px 4px #000;
@@ -586,26 +586,26 @@ table th a {
 	[safari|chrome]-webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 	box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
 	/* IE */
-	[msie lt 8]filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=5, OffY=5, Color='gray');
+	[msie lt 8]filter:"progid:DXImageTransform.Microsoft.dropshadow(OffX=5, OffY=5, Color='gray')";
 	/* slightly different syntax for IE8 */
 	[msie gte 8]-ms-filter:"progid:DXImageTransform.Microsoft.dropshadow(OffX=5, OffY=5, Color='gray')";
 	}
 .w_glow{
 	[safari|chrome]-webkit-box-shadow: 0 0 10px rgba(50, 50, 50, 0.8);
 	box-shadow: 0 0 10px rgba(50, 50, 50, 0.8);
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.Shadow(color='gray', Direction=135, Strength=3);
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.Shadow(color='gray', Direction=135, Strength=3)";
 	[msie gte 8]-ms-filter:"progid:DXImageTransform.Microsoft.Shadow(Strength=3, Direction=135, Color='gray')";
 	}
 .w_gradient_red{
 	[firefox]background-image: -moz-linear-gradient(top, #641d1c, #f00);
 	[safari|chrome]background-image: -webkit-gradient(linear, left top, left bottom, from(#641d1c), to(#f00));
-	[msie lt 8]filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff641d1c,endColorstr=#ffff0000);
+	[msie lt 8]filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff641d1c,endColorstr=#ffff0000)";
 	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff641d1c,endColorstr=#ffff0000)";
 	}
 .w_transparent {
 	background-color: transparent;
 	background-color: rgba(200,200,200,0.8);
-	[msie lt 8]filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#99dddddd,endColorstr=#99dddddd);
+	[msie lt 8]filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr=#99dddddd,endColorstr=#99dddddd)";
 	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99dddddd,endColorstr=#99dddddd)";
 	}
 .w_upsidedown {
@@ -613,7 +613,7 @@ table th a {
 	[firefox]-moz-transform-origin: bottom left;
 	[safari|chrome]-webkit-transform: rotate(180deg);
 	[opera]-o-transform: rotate(180deg);
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
 	[msie gte 8]-ms-filter:"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
 	}
 .w_rotate_up {
@@ -625,7 +625,7 @@ table th a {
 	/*opera*/
 	[opera]-o-transform: rotate(270deg);
 	/*msie*/
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
 	[msie gte 8]-ms-filter:"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
 	}
 .w_rotate_down {
@@ -633,7 +633,7 @@ table th a {
 	[firefox]-moz-transform-origin: bottom left;
 	[safari|chrome]-webkit-transform: rotate(90deg);
 	[opera]-o-transform: rotate(90deg);
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
 	[msie gte 8]-ms-filter:"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
 	[msie]writing-mode: tb-rl;
 	}
@@ -651,7 +651,7 @@ table th a {
    -o-transform: scale(2);
    transform: scale(2);
    -ms-transform: scale(2);
-	[msie]filter: progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11=2, M12=-0, M21=0, M22=2);
+	[msie]filter: "progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11=2, M12=-0, M21=0, M22=2)";
    }
 
 /* diff styles */
@@ -883,7 +883,7 @@ table th a {
 	background: #2E31B5;
 	[firefox]background: -moz-linear-gradient(bottom, #5F63D4, #2E3191 17.5%, #5F63D4 87.2%, #2E31B5);
 	[safari|chrome]background: -webkit-gradient(linear, 0% 100%, 0% 0%, from(#5F63D4), to(#2E31B5), color-stop(.175,#2E3191), color-stop(.872,#5F63D4));
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5F63D4', endColorstr='#2E3191');
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#5F63D4', endColorstr='#2E3191')";
 	text-align:center;
 	color:#fff;
 	}
@@ -1389,7 +1389,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	[safari|chrome]background: -webkit-linear-gradient(top, #eeeeee 1%,#cccccc 99%); /* Chrome10+,Safari5.1+ */
 	[opera]background: -o-linear-gradient(top, #eeeeee 1%,#cccccc 99%); /* Opera 11.10+ */
 	[msie gte 10]background: -ms-linear-gradient(top, #eeeeee 1%,#cccccc 99%); /* IE10+ */
-	[msie lt 10]filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
+	[msie lt 10]filter: "progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 )"; /* IE6-9 */
 }
 /* CSS for Tabbed Content */
 #tab_header {
@@ -1425,8 +1425,8 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	bottom:-1px;
 	[firefox]background-image: -moz-linear-gradient(top, #FFFFFF, #c5d4e6);
 	[safari|chrome]background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#c5d4e6));
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#c5d4e6'); /* ie7 */
-	[msie gte 8]-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#c5d4e6'); /* ie8 */
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#c5d4e6')"; /* ie7 */
+	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#c5d4e6')"; /* ie8 */
   }
 #tab_header a.tab, #tab_header a.tab_blue, #tab_header a.tab_red {
 	float:left;
@@ -1444,8 +1444,8 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	border-bottom:1px solid #FFF;
 	[firefox]background-image: -moz-linear-gradient(top, #c5d4e6,#FFFFFF);
 	[safari|chrome]background-image: -webkit-gradient(linear, left top, left bottom, from(#c5d4e6), to(#FFFFFF));
-	[msie lt 8]filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#c5d4e6', endColorstr='#FFFFFF'); /* ie7 */
-	[msie gte 8]-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#c5d4e6', endColorstr='#FFFFFF'); /* ie8 */
+	[msie lt 8]filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#c5d4e6', endColorstr='#FFFFFF')"; /* ie7 */
+	[msie gte 8]-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#c5d4e6', endColorstr='#FFFFFF')"; /* ie8 */
 }
 /* Custom tooltips to replace title attributes adapted from http://davidwalsh.name/demo/css-tooltips.php */
 #w_tooltip {
