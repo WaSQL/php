@@ -726,35 +726,18 @@ function buildFormSelect(fieldname, opts, params){
 	if(undefined == opts){alert('buildFormCheckbox Error: no opts');return undefined;}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
-	if(undefined == params['-values']){params['-values']={};}
-	if(undefined != params['value']){
-		var vtype=typeof(params['value']);
-		//parse the value
-    	if(vtype.toLowerCase() == 'string'){
-        	var vals=params['value'].split(':');
-        	for(v=0;v<vals.length;v++){
-            	params['-values'][vals[v]]=true;
-			}
-      	}
-      	else{params['-values']=params['value'];}
-      	params['value']='';
-    }
-    if(undefined != params['-values']){
-		var vtype=typeof(params['-values']);
-		//parse the value
-    	if(vtype.toLowerCase() == 'string'){
-    		var vals=params['-values'].split(':');
-    		params['-values']={};
-    		for(v=0;v<vals.length;v++){
-            	params['-values'][vals[v]]=true;
-			}
-    	}
-	}
     var tag = document.createElement("select");
 	tag.className=params.class;
 	if(params.required){tag.setAttribute('required',params.required);}
 	tag.name=fieldname;
 	tag.id=params.id;
+	for(var tval in opts){
+		var coption = document.createElement("OPTION");
+		coption.value=tval;
+		coption.innerHTML=opts[tval];
+		if(undefined != params.value && tval==params.value){coption.setAttribute('selected',true);}
+		tag.appendChild(coption);
+	}
 	if(undefined != params['-parent']){
 		var pobj=getObject(params['-parent']);
 		if(undefined != pobj){
