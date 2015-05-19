@@ -28,7 +28,7 @@ function icalCreateICS($params=array()){
 		"LOCATION:".$params['location'],
 		"TRANSP: OPAQUE",
 		"SEQUENCE:0",
-		"UID:",
+		"UID:".generateGUID(false,false),
 		"DTSTAMP:".date("Ymd\THis\Z"),
 		"SUMMARY:".$params['name'],
 		"DESCRIPTION:".$params['description'],
