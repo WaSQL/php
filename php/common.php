@@ -3251,6 +3251,7 @@ function deleteDirectory($dir=''){
 * @usage $ok=cleanupDirectory($dir[,3]);
 */
 function cleanupDirectory($dir='',$num=5,$type='days'){
+	$cnt=0;
 	if ($handle = opendir($dir)) {
 		while (false !== ($file = readdir($handle))) {
 			if ($file[0] == '.' || is_dir($dir.'/'.$file)) {continue;}
@@ -3284,12 +3285,13 @@ function cleanupDirectory($dir='',$num=5,$type='days'){
 			//echo "File {$file}, Time:{$ttime}, Mtime:{$mtime}, Dtime:{$dtime}, Ctime:{$ctime}<br>\n";
 		    if ($dtime > $ctime) {
 		    	unlink($dir.'/'.$file);
+		    	$cnt++;
 		    	//echo " - removing {$file}<br>\n";
 		    }
 		}
 	    closedir($handle);
 	}
-	return true;
+	return $cnt;
 }
 //---------- begin function diffText
 /**
@@ -4570,6 +4572,35 @@ function generatePassword($length=9, $strength=2) {
 		}
 	}
 	return $password;
+}
+//---------- begin function generateGUID--------------------
+/**
+* @describe creates a password with specified strength
+* @param [curly] boolean - show curly brackets - defaults to false
+* @param [hyphen] - include hypyens - defaults to true
+* @return string
+* @usage $guid=generateGUID(false,true);
+*/
+function generateGUID($curly=false,$hyphen=true){
+	if( function_exists('com_create_guid') ){
+        if( $curly ){ return com_create_guid(); }
+        else { return trim( com_create_guid(), '{}' ); }
+    }
+    else {
+        mt_srand( (double)microtime() * 10000 );    // optional for php 4.2.0 and up.
+        $charid = strtoupper( md5(uniqid(rand(), true)) );
+        $dash = $hyphen ? chr( 45 ) : "";    // "-"
+        $left_curly = $curly ? chr(123) : "";     //  "{"
+        $right_curly = $curly ? chr(125) : "";    //  "}"
+        $uuid = $left_curly
+            . substr( $charid, 0, 8 ) . $dash
+            . substr( $charid, 8, 4 ) . $dash
+            . substr( $charid, 12, 4 ) . $dash
+            . substr( $charid, 16, 4 ) . $dash
+            . substr( $charid, 20, 12 )
+            . $right_curly;
+        return $uuid;
+    }
 }
 //---------- begin function functionList
 /**
