@@ -37,8 +37,7 @@ function amazonSendMail($params=array()){
 		foreach($params['attach'] as $afile){
         	$name=getFileName($afile);
         	$type=getFileMimeType($afile);
-			$path=getFilePath($afile);
-			$m->addAttachmentFromFile($name, $path, $type);
+			$m->addAttachmentFromFile($name, $afile, $type);
 		}
 	}
 	$m->setFrom($params['from']);
