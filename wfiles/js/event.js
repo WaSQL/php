@@ -677,9 +677,13 @@ function removeId(divid){
 	//info: removes specified id
 	var obj=getObject(divid);
 	if(undefined == obj){return;}
-	setText(divid,'');
-    if(isIE){obj.removeNode(true);}
-    else{obj.parentNode.removeChild(obj);}
+	try{
+    	document.body.removeChild(obj);
+    	document.getElementsByTagName('BODY')[0].removeChild(obj);
+    	obj.parentNode.removeChild(obj);
+    	return;
+	}
+	catch(e){}
     return;
 }
 function removeDivOnExit(divid,fade){
