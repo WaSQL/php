@@ -938,7 +938,9 @@ function userLoginForm($params=array()){
 			}
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
-			$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
+			if(isset($_REQUEST['_login_error'])){
+				$form .= '<div style="display:inline;margin-left:25px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'."\n";
+			}
 			$form .= '</div>'."\n";
 			break;
 		case 'inline':
@@ -971,7 +973,9 @@ function userLoginForm($params=array()){
 			}
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
-			$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
+			if(isset($_REQUEST['_login_error'])){
+				$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'."\n";
+			}
 			$form .= '</div>'."\n";
 			break;
 		default:
@@ -990,12 +994,15 @@ function userLoginForm($params=array()){
 				$form .= '	<tr valign="middle" align="right">';
 				$form .= '		<td class="w_align_left" style="padding-right:10px;">'."\n";
 				if($params['-icons']){
-					$form .= '			<span class="icon-mail w_biggest"></span> ';
+					$form .= '			<span class="icon-mail"></span> ';
 				}
 				$form .= '</td><td colspan="2" class="w_align_left">'."\n";
-				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a><div style="display:inline;margin-left:15px;" class="w_red w_small" id="loginform_msg">'.$_REQUEST['_login_error'].'</div>'."\n";
+				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'."\n";
 				$form .= '		</td>'."\n";
 				$form .= '	</tr>'."\n";
+			}
+			if(isset($_REQUEST['_login_error'])){
+				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'."\n";
 			}
 			$form .= '</table>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
