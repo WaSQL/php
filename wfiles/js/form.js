@@ -720,10 +720,10 @@ function buildFormTime(fieldname,params){
 *	HTML Form checkbox for each pair passed in
 */
 function buildFormSelect(fieldname, opts, params){
-	if(undefined == fieldname || !fieldname.length){alert('buildFormCheckbox Error: no name');return undefined;}
+	if(undefined == fieldname || !fieldname.length){alert('buildFormSelect Error: no name');return undefined;}
 	fieldname=fieldname.replace('/[\[\]]+$/','');
 	if(undefined == params){params={};}
-	if(undefined == opts){alert('buildFormCheckbox Error: no opts');return undefined;}
+	if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
     var tag = document.createElement("select");
