@@ -43,7 +43,7 @@ if(!$sel){
 	}
 //up the memory limit to resolve the "allowed memory" error
 if(isset($CONFIG['memory_limit']) && strlen($CONFIG['memory_limit'])){ini_set("memory_limit",$CONFIG['memory_limit']);}
-else{ini_set("memory_limit","500M");}
+else{ini_set("memory_limit","1024M");}
 /* Load_pages as specified in the conf settings */
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
