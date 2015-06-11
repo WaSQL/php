@@ -4,7 +4,7 @@
 	http://phpseclib.sourceforge.net/sftp/examples.html
 */
 $progpath=dirname(__FILE__);
-include_once("{$progpath}/phplibsec/Net/SFTP.php");
+include_once("{$progpath}/phpseclib/Net/SFTP.php");
 
 //---------- begin function sftpListFiles
 /**
