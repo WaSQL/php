@@ -1330,6 +1330,7 @@ function initBehaviors(ajaxdiv){
 				addClass(navEls[n],'w_slideshow');
 				var t=navEls[n].getAttribute('data-timer');
 				if(undefined == t){t=navEls[n].getAttribute('timer');}
+				if(undefined == t){t=15;}
 				//add navigation
 				var navobj=getObject(id+'_nav');
 				if(undefined != navobj){
@@ -1351,8 +1352,7 @@ function initBehaviors(ajaxdiv){
 						setText(navobj,txt);
 					}
 				}
-				if(t){slideShow(id,0,t);}
-				else{slideShow(id,0);}
+				slideShow(id,0,t);
 			}
 		}
 		else if(in_array("sticky",behaviors)){
@@ -2007,9 +2007,9 @@ function findPosY(yobj){
 	}
 /* timeClock - */
 var TimoutArray=new Array();
-function slideShow(divid,idx,s,t){
+function slideShow(divid,idx,s){
 	//info: creates a slideshow using image tags found in divid
-	if(undefined == s){s=5;}
+	if(undefined == s){s=15;}
 	var ms=Math.round(s*1000);
 	idx=Math.round(idx+0)
 	var divobj=getObject(divid);
@@ -2024,7 +2024,7 @@ function slideShow(divid,idx,s,t){
 	if(undefined == tag){tag='img';}
 	var objs=divobj.getElementsByTagName(tag);
 	if(objs.length==0){
-		alert('SlideShow Error: - No images found');
+		alert('SlideShow Error: - No '+tag+' elements found');
 		return false;
 		}
 	if(idx == objs.length){idx=0;}
