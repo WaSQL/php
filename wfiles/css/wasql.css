@@ -293,7 +293,6 @@ table th a {
 }
 .w_slideshow .caption{
 	position:absolute;
-	left:0;
 	bottom:5px;
 	z-index:851;
 	font-size:2em;
@@ -304,7 +303,6 @@ table th a {
 }
 .w_slideshow #w_slide{
 	position:absolute;
-	left:0;
 	opacity:0;
    	filter: alpha(opacity=0);
   	-webkit-transition: all 1.5s ease-in-out;
