@@ -8614,7 +8614,7 @@ function postURL($url,$params=array()) {
 		}
 	curl_setopt($process, CURLOPT_HEADER, 1);
 	//alernate port?
-	if(isNum($params['-port'])){
+	if(isset($params['-port']) && isNum($params['-port'])){
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
 	}
 	if(isset($params['-user_agent'])){
@@ -8743,7 +8743,7 @@ function postXML($url='',$xml='',$params=array()) {
 		$rtn['_debug'][]='set crlf';
 	}
 	//alernate port?
-	if(isNum($params['-port'])){
+	if(isset($params['-port']) && isNum($params['-port'])){
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
 	}
     curl_setopt($process, CURLOPT_HEADER, 1);
@@ -8756,7 +8756,7 @@ function postXML($url='',$xml='',$params=array()) {
 		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 1);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
     curl_setopt($process,CURLOPT_POSTFIELDS,$xml);
