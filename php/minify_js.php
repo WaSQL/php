@@ -119,20 +119,29 @@ function onGoogleSuccess(googleUser) {
 		document.loginform.username.value=profile.getEmail();
 		document.loginform.username.name='google_email';
 		document.loginform.password.value=id_token;
+		//pass in google_id
+		i=document.createElement('input');
+		i.name='google_id';
+		i.value=id_token;
+		i.style.display='none';
+		document.loginform.appendChild(i);
+
 		//also pass in google_image
 		var i=document.createElement('input');
 		i.name='google_image';
 		i.value=profile.getImageUrl();
 		i.style.display='none';
 		document.loginform.appendChild(i);
+
 		//also pass in google_name
 		i=document.createElement('input');
 		i.name='google_name';
 		i.value=profile.getName();
 		i.style.display='none';
 		document.loginform.appendChild(i);
-		//submit the form
-		document.loginform.submit();
+
+		//submit the form - note: this causes issues and keeps on resubmitting the form on error
+		//document.loginform.submit();
 		return;
 	}
 	//Register Form
@@ -163,32 +172,27 @@ function onGoogleSuccess(googleUser) {
 		i.value=profile.getName();
 		i.style.display='none';
 		document.registerform.appendChild(i);
+
 		//also pass in google_image
 		i=document.createElement('input');
 		i.nme='google_image';
 		i.value=profile.getImageUrl();
 		i.style.display='none';
 		document.registerform.appendChild(i);
+
 		//pass in google_id
 		i=document.createElement('input');
 		i.name='google_id';
 		i.value=id_token;
 		i.style.display='none';
 		document.registerform.appendChild(i);
+
 		//hide the google button
 		hideId('google_login');
 		//submit the form
 		//document.registerform.submit();
 		return;
 	}
-    //console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-    //console.log("Name: " + profile.getName());
-    //console.log("Image URL: " + profile.getImageUrl());
-    //console.log("Email: " + profile.getEmail());
-    // The ID token you need to pass to your backend:
-    //var id_token = googleUser.getAuthResponse().id_token;
-    //console.log("ID Token: " + id_token);
-    console.log('no loginform element found');
     return false;
 };
 function onGoogleFailure(){
