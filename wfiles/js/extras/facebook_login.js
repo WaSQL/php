@@ -41,7 +41,7 @@ function facebookStatusChangeCallback(response,login) {
 				i.name='facebook_id';
 				i.value=response.id;
 				document.registerform.appendChild(i);
-    			document.registerform.submit();
+    			//document.registerform.submit();
 			}
 			/* response object now: first_name,last_name,gender,email,locale,name,id,timezone*/
 			var facebook_status='';
