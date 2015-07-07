@@ -210,7 +210,12 @@ while(1){
 				#skip if running
 				my %cronrec=getDBRecord('-table'=>"_cron",'_id'=>$recid);
 				next if !isNum($cronrec{_id});
-				next if $cronrec{running} == 1;
+				if($cronrec{running}==1){
+					next if !isNum($cronrec{frequency});
+					next if !isNum($cronrec{run_date_utime});
+					$age=time()-($cronrec{running}*60);
+					next if $age < $cronrec{run_date_utime};
+	            	}
 				#set to running
 				$rundate=getDate("YYYY-NM-ND MH:MM:SS");
 				my $ok=editDBData("_cron","_id=$recid",cron_pid=>$cron_pid,running=>1,run_date=>$rundate);
