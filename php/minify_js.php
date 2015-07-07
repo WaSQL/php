@@ -161,13 +161,12 @@ function onGoogleSuccess(googleUser) {
 		if(undefined != document.registerform.icon){
 			document.registerform.name.value=profile.getImageUrl();
 		}
-		else{
-			//also pass in google_image
-			var i=document.createElement('input');
-			i.name='google_image';
-			i.value=profile.getImageUrl();
-			document.registerform.appendChild(i);
-		}
+		//also pass in google_image
+		var i=document.createElement('input');
+		i.nme='google_image';
+		i.value=profile.getImageUrl();
+		document.registerform.appendChild(i);
+		//pass in google_id
 		i=document.createElement('input');
 		i.name='google_id';
 		i.value=id_token;
