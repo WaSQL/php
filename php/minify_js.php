@@ -148,7 +148,8 @@ function onGoogleSuccess(googleUser) {
 			document.registerform.name.value=profile.getName();
 		}
 		else if(undefined != document.registerform.firstname && undefined != document.registerform.lastname){
-			var p=document.registerform.name.split(' ',2);
+			var pname=profile.getName();
+			var p=pname.split(' ',2);
 			document.registerform.firstname.value=p[0];
 			document.registerform.lastname.value=p[1];
 
@@ -175,6 +176,8 @@ function onGoogleSuccess(googleUser) {
 		i.value=id_token;
 		i.style.display='none';
 		document.registerform.appendChild(i);
+		//hide the google button
+		hideId('google_login');
 		//submit the form
 		//document.registerform.submit();
 		return;
