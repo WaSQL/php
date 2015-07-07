@@ -15,12 +15,33 @@ function facebookStatusChangeCallback(response,login) {
     	// Logged into your app and Facebook.
       	//Add facebook info to login and Submit the login form
       	FB.api('/me', function(response) {
-			if(undefined != login && undefined != document.loginform){
-				document.loginform.username.value=response.email;
-				document.loginform.username.name='facebook_email';
-				document.loginform.password.value=response.id;
-				document.loginform.submit();
-            	//console.log(response);
+			if(undefined != login){
+				if(undefined != document.loginform){
+					document.loginform.username.value=response.email;
+					document.loginform.username.name='facebook_email';
+					document.loginform.password.value=response.id;
+					document.loginform.submit();
+					return;
+				}
+				else if(undefined != document.registerform){
+					if(undefined != document.registerform.username){
+						document.registerform.username.value=response.email;
+					}
+					if(undefined != document.registerform.email){
+						document.registerform.email.value=response.email;
+					}
+				}
+				//also pass in facebook_email
+				var i=document.createElement('input');
+				i.nme='facebook_email';
+				i.value=response.email;
+				document.registerform.appendChild(i);
+				//pass in facebook_id
+				i=document.createElement('input');
+				i.name='facebook_id';
+				i.value=response.id;
+				document.registerform.appendChild(i);
+    			document.registerform.submit();
 			}
 			/* response object now: first_name,last_name,gender,email,locale,name,id,timezone*/
 			var facebook_status='';
