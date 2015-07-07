@@ -161,6 +161,7 @@ function onGoogleSuccess(googleUser) {
 		var i=document.createElement('input');
 		i.name='google_name';
 		i.value=profile.getName();
+		i.style.display='none';
 		document.registerform.appendChild(i);
 		//also pass in google_image
 		i=document.createElement('input');
