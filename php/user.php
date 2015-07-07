@@ -368,6 +368,10 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>$_REQUEST['facebook_email'],'facebook_id'=>$_REQUEST['password']);
 	$USER=getDBRecord($getopts);
 }
+elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['google_email']) && isset($_REQUEST['password'])){
+	$getopts=array('-table'=>'_users','-relate'=>1,'google_email'=>$_REQUEST['google_email'],'google_id'=>$_REQUEST['password']);
+	$USER=getDBRecord($getopts);
+}
 elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1) || strtoupper($_SERVER['REQUEST_METHOD'])=='POST')){
 	if(isUser()){
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
@@ -915,7 +919,7 @@ function userLoginForm($params=array()){
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'."\n";
     	}
-    //$params['-format']='oneline';
+    //$params['-format']='inline';
     switch(strtolower($params['-format'])){
 		case 'oneline':
 			$form .= '<div id="w_loginform_oneline">'."\n";
@@ -926,7 +930,10 @@ function userLoginForm($params=array()){
 			$form .= '		<td align="right" style="padding-right:10px;"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<td style="padding-right:10px;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'/fb:login-button></td>';
+    			$form .= '<td style="padding-right:10px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
+			}
+			if(isset($CONFIG['google_appid'])){
+    			$form .= '<td style="padding-right:10px;"><div id="google_login"></div></td>';
 			}
 			if(!isset($params['-noremind'])){
 				$form .= '		<td class="w_align_left" style="padding-right:10px;">'."\n";
@@ -950,7 +957,7 @@ function userLoginForm($params=array()){
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th class="w_align_left"><label for="'.$params['-name'].'_username" style="padding:0px;">'.$params['-username'].'</label></th>'."\n";
 			$form .= '		<th class="w_align_left"><label for="'.$params['-name'].'_password" style="padding:0px;">'.$params['-password'].'</label></th>'."\n";
-			if(isset($CONFIG['facebook_appid'])){
+			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
 				$form .= '		<td class="w_align_left" colspan="2">'."\n";
 			}
 			else{
@@ -971,7 +978,10 @@ function userLoginForm($params=array()){
 			$form .= '		<td align="right"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<td><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></td>';
+    			$form .= '<td style="padding:3px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
+			}
+			if(isset($CONFIG['google_appid'])){
+    			$form .= '<td style="padding:3px;"><div id="google_login"></div></td>';
 			}
 			$form .= '	</tr>'."\n";
 			$form .= '</table>'."\n";
@@ -1007,12 +1017,17 @@ function userLoginForm($params=array()){
 				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'."\n";
 			}
 			$form .= '</table>'."\n";
+			$form .= '<table><tr>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				loadExtrasJs('facebook_login');
 				checkDBTableSchema('_users');
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<div align="right" style="margin-top:15px;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div>';
+    			$form .= '<td style="margin-top:15px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
 			}
+			if(isset($CONFIG['google_appid'])){
+    			$form .= '<td style="margin-top:15px;padding-left:10px;"><div id="google_login"></div></td>';
+			}
+			$form .= '</tr></table>'."\n";
 			$form .= '</div>'."\n";
 			break;
 	}
@@ -1026,6 +1041,7 @@ function userLoginForm($params=array()){
 	$form .= '</form>'."\n";
 	$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
 	$form .= '</div>'."\n";
+	//$form .=printValue($_REQUEST);
     return $form;
 }
 //---------- begin function wpassSalt ----
