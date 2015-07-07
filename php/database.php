@@ -386,6 +386,18 @@ function checkDBTableSchema($wtable){
 				$rtn .= " added facebook_email to _users table<br />\n";
 	        }
 		}
+		if(isset($CONFIG['google_appid'])){
+        	if(!isset($finfo['google_id'])){
+				$query="ALTER TABLE {$wtable} ADD google_id varchar(500) NULL;";
+				$ok=executeSQL($query);
+				$rtn .= " added google_id to _users table<br />\n";
+	        }
+	        if(!isset($finfo['google_email'])){
+				$query="ALTER TABLE {$wtable} ADD google_email varchar(255) NULL;";
+				$ok=executeSQL($query);
+				$rtn .= " added google_email to _users table<br />\n";
+	        }
+		}
 
         if(!isset($finfo['_sid'])){
 			$query="ALTER TABLE {$wtable} ADD _sid varchar(150) NULL;";
