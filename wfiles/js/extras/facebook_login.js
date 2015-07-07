@@ -20,7 +20,7 @@ function facebookStatusChangeCallback(response,login) {
 				document.loginform.username.name='facebook_email';
 				document.loginform.password.value=response.id;
 				document.loginform.submit();
-            	console.log(response);
+            	//console.log(response);
 			}
 			/* response object now: first_name,last_name,gender,email,locale,name,id,timezone*/
 			var facebook_status='';
