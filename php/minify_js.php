@@ -144,7 +144,8 @@ function onGoogleSuccess(googleUser) {
 		if(undefined != document.registerform.email){
 			document.registerform.email.value=profile.getEmail();
 		}
-		if(undefined != document.registerform.name){
+		//check for name in form (not the form name itself)
+		if(undefined != document.registerform.name && undefined != document.registerform.name.type){
 			document.registerform.name.value=profile.getName();
 		}
 		else if(undefined != document.registerform.firstname && undefined != document.registerform.lastname){
@@ -152,20 +153,17 @@ function onGoogleSuccess(googleUser) {
 			var p=pname.split(' ',2);
 			document.registerform.firstname.value=p[0];
 			document.registerform.lastname.value=p[1];
-
-		}
-		else{
-        	//also pass in google_name
-			i=document.createElement('input');
-			i.name='google_name';
-			i.value=profile.getName();
-			document.registerform.appendChild(i);
 		}
 		if(undefined != document.registerform.icon){
 			document.registerform.name.value=profile.getImageUrl();
 		}
-		//also pass in google_image
+		//also pass in google_name
 		var i=document.createElement('input');
+		i.name='google_name';
+		i.value=profile.getName();
+		document.registerform.appendChild(i);
+		//also pass in google_image
+		i=document.createElement('input');
 		i.nme='google_image';
 		i.value=profile.getImageUrl();
 		i.style.display='none';
