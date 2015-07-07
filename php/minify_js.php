@@ -123,11 +123,13 @@ function onGoogleSuccess(googleUser) {
 		var i=document.createElement('input');
 		i.name='google_image';
 		i.value=profile.getImageUrl();
+		i.style.display='none';
 		document.loginform.appendChild(i);
 		//also pass in google_name
 		i=document.createElement('input');
 		i.name='google_name';
 		i.value=profile.getName();
+		i.style.display='none';
 		document.loginform.appendChild(i);
 		//submit the form
 		document.loginform.submit();
@@ -165,14 +167,16 @@ function onGoogleSuccess(googleUser) {
 		var i=document.createElement('input');
 		i.nme='google_image';
 		i.value=profile.getImageUrl();
+		i.style.display='none';
 		document.registerform.appendChild(i);
 		//pass in google_id
 		i=document.createElement('input');
 		i.name='google_id';
 		i.value=id_token;
+		i.style.display='none';
 		document.registerform.appendChild(i);
 		//submit the form
-		document.registerform.submit();
+		//document.registerform.submit();
 		return;
 	}
     //console.log("ID: " + profile.getId()); // Don't send this directly to your server!
