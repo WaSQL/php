@@ -89,6 +89,121 @@ if(isset($_SESSION['w_MINIFY']['device_browser']) && $_SESSION['w_MINIFY']['devi
 	$files[]='http://html5shiv.googlecode.com/svn/trunk/html5.js';
 	$filename.='IE';
 }
+
+if(isset($CONFIG['facebook_appid'])){
+	echo <<<ENDOFFACEBOOKAPPJS
+/* Facebook AppID js */
+var facebook_appid='{$CONFIG['facebook_appid']}';
+var facebook_id='{$_SESSION['facebook_id']}';
+var facebook_email='{$_SESSION['facebook_email']}';
+ENDOFFACEBOOKAPPJS;
+}
+if(isset($CONFIG['google_appid'])){
+	$files[]='https://apis.google.com/js/platform.js?onload=renderGoogleLogin';
+	echo <<<ENDOFGOOGLEAPPJS
+
+/* Google Login*/
+var meta = document.createElement('meta');
+meta.name = "google-signin-scope";
+meta.content = "profile email";
+document.getElementsByTagName('head')[0].appendChild(meta);
+meta = document.createElement('meta');
+meta.name = "google-signin-client_id";
+meta.content = '{$CONFIG['google_appid']}';
+document.getElementsByTagName('head')[0].appendChild(meta);
+function onGoogleSuccess(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    //Login Form?
+    if(undefined != document.loginform){
+		var id_token = googleUser.getAuthResponse().id_token;
+		document.loginform.username.value=profile.getEmail();
+		document.loginform.username.name='google_email';
+		document.loginform.password.value=id_token;
+		//also pass in google_image
+		var i=document.createElement('input');
+		i.name='google_image';
+		i.value=profile.getImageUrl();
+		document.loginform.appendChild(i);
+		//also pass in google_name
+		i=document.createElement('input');
+		i.name='google_name';
+		i.value=profile.getName();
+		document.loginform.appendChild(i);
+		//submit the form
+		document.loginform.submit();
+		return;
+	}
+	//Register Form
+	else if(undefined != document.registerform){
+		var id_token = googleUser.getAuthResponse().id_token;
+		if(undefined != document.registerform.username){
+			document.registerform.username.value=profile.getEmail();
+		}
+		if(undefined != document.registerform.email){
+			document.registerform.email.value=profile.getEmail();
+		}
+		if(undefined != document.registerform.name){
+			document.registerform.name.value=profile.getName();
+		}
+		else if(undefined != document.registerform.firstname && undefined != document.registerform.lastname){
+			var p=document.registerform.name.split(' ',2);
+			document.registerform.firstname.value=p[0];
+			document.registerform.lastname.value=p[1];
+
+		}
+		else{
+        	//also pass in google_name
+			i=document.createElement('input');
+			i.name='google_name';
+			i.value=profile.getName();
+			document.registerform.appendChild(i);
+		}
+		if(undefined != document.registerform.icon){
+			document.registerform.name.value=profile.getImageUrl();
+		}
+		else{
+			//also pass in google_image
+			var i=document.createElement('input');
+			i.name='google_image';
+			i.value=profile.getImageUrl();
+			document.registerform.appendChild(i);
+		}
+		i=document.createElement('input');
+		i.name='google_id';
+		i.value=id_token;
+		document.registerform.appendChild(i);
+		//submit the form
+		document.registerform.submit();
+		return;
+	}
+    //console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+    //console.log("Name: " + profile.getName());
+    //console.log("Image URL: " + profile.getImageUrl());
+    //console.log("Email: " + profile.getEmail());
+    // The ID token you need to pass to your backend:
+    //var id_token = googleUser.getAuthResponse().id_token;
+    //console.log("ID Token: " + id_token);
+    console.log('no loginform element found');
+    return false;
+};
+function onGoogleFailure(){
+	console.log('google login failed');
+	return false;
+}
+function renderGoogleLogin() {
+    gapi.signin2.render('google_login', {
+        'scope': 'https://www.googleapis.com/auth/plus.login',
+        'width': 150,
+        'height': 20,
+        'longtitle': true,
+        'theme': 'dark',
+        'onsuccess': onGoogleSuccess,
+        'onfailure': onGoogleFailure
+    });
+}
+ENDOFGOOGLEAPPJS;
+}
+
 //include files and set the lastmodifiedtime of any file
 foreach($files as $file){
 	if($_REQUEST['debug']==1){
@@ -116,12 +231,7 @@ foreach($files as $file){
 //load the template, includepages, and page
 $field=$CONFIG['minify_js']?'js_min':'js';
 $field2=$CONFIG['minify_js']?'js':'js_min';
-if(isset($CONFIG['facebook_appid'])){
-	echo "\r\n/* Facebook AppID {$field} */\r\n";
-	echo "\r\nvar facebook_appid='{$CONFIG['facebook_appid']}';\r\n";
-	echo "\r\nvar facebook_id='{$_SESSION['facebook_id']}';\r\n";
-	echo "\r\nvar facebook_email='{$_SESSION['facebook_email']}';\r\n";
-}
+
 //_templates
 if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['template_id'] > 0){
 	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field));
