@@ -139,7 +139,7 @@ function onGoogleSuccess(googleUser) {
 		i.value=profile.getName();
 		i.style.display='none';
 		document.loginform.appendChild(i);
-
+		hideId('google_login');
 		//submit the form - note: this causes issues and keeps on resubmitting the form on error
 		//document.loginform.submit();
 		return;
@@ -207,8 +207,15 @@ function renderGoogleLogin() {
         'longtitle': true,
         'theme': 'dark',
         'onsuccess': onGoogleSuccess,
-        'onfailure': onGoogleFailure
+        'onfailure': onGoogleFailure,
     });
+    addEventHandler(window,'load',changeGoogleLoginText);
+}
+function changeGoogleLoginText(){
+    var s = document.querySelectorAll('span[id^="not_signed_in"]');
+    if(s.length==1){setText(s[0],'Autofill using Google');}
+    s = document.querySelectorAll('span[id^="connected"]');
+    if(s.length==1){setText(s[0],'Autofilled using Google');}
 }
 ENDOFGOOGLEAPPJS;
 }
