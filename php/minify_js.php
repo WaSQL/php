@@ -112,6 +112,8 @@ meta.name = "google-signin-client_id";
 meta.content = '{$CONFIG['google_appid']}';
 document.getElementsByTagName('head')[0].appendChild(meta);
 function onGoogleSuccess(googleUser) {
+	var s = document.querySelectorAll('span[id^="not_signed_in"]');
+	if(s[0].indexOf('Autofill') != -1){return;}
     var profile = googleUser.getBasicProfile();
     //Login Form?
     if(undefined != document.loginform){
