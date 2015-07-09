@@ -217,7 +217,7 @@ function changeGoogleLoginText(){
     var s = document.querySelectorAll('span[id^="not_signed_in"]');
     if(s.length==1){setText(s[0],'Autofill using Google');}
     s = document.querySelectorAll('span[id^="connected"]');
-    if(s.length==1){setText(s[0],'Autofilled using Google');}
+    if(s.length==1){setText(s[0],'Autofill using Google');}
 }
 ENDOFGOOGLEAPPJS;
 }
