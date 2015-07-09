@@ -113,7 +113,15 @@ meta.content = '{$CONFIG['google_appid']}';
 document.getElementsByTagName('head')[0].appendChild(meta);
 function onGoogleSuccess(googleUser) {
 	var s = document.querySelectorAll('span[id^="not_signed_in"]');
-	if(s[0].indexOf('Autofill') == -1){return;}
+	if(undefined == s || undefined == s[0]){return false;}
+	var ck=s[0].getAttribute('data-loaded');
+	if(undefined == ck){
+		s[0].setAttribute('data-loaded',1);
+		return false;
+	}
+	var txt=getText(s[0]);
+	console.log(txt.indexOf('Autofill'));
+	if(txt.indexOf('Autofill') == -1){return false;}
     var profile = googleUser.getBasicProfile();
     //Login Form?
     if(undefined != document.loginform){
