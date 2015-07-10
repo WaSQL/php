@@ -2148,9 +2148,9 @@ function ajaxTimer(id){
 			else{func=attr['data-function'];}
 			eval(func);
 		}
-		//reset the timer
-		obj.setAttribute('data-countdown',timer);
 	}
+	//reset the timer
+	obj.setAttribute('data-countdown',timer);
 	TimoutArray[id]=setTimeout("ajaxTimer('"+id+"')",1000);
 }
 function countDown(id){
