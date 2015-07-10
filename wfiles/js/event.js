@@ -2129,6 +2129,7 @@ function ajaxTimer(id){
 		skip=1;
 	}
 	else if(undefined != getObject('skip_ajax_timer')){skip=1;}
+	obj.setAttribute('data-skip',skip);
 	if(skip==0 && number <= 0){
 		if(undefined != attr['url'] || undefined != attr['data-url']){
 			var url;
@@ -2148,9 +2149,9 @@ function ajaxTimer(id){
 			else{func=attr['data-function'];}
 			eval(func);
 		}
+		//reset the timer
+		obj.setAttribute('data-countdown',timer);
 	}
-	//reset the timer
-	obj.setAttribute('data-countdown',timer);
 	TimoutArray[id]=setTimeout("ajaxTimer('"+id+"')",1000);
 }
 function countDown(id){
