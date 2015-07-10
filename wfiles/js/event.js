@@ -2128,8 +2128,7 @@ function ajaxTimer(id){
 	if(undefined != document.activeElement && undefined != document.activeElement.type && document.activeElement.type.indexOf('text') != -1){
 		skip=1;
 	}
-	else if(undefined != getObject(skip_ajax_timer)){skip=1;}
-	var skip=getObject('skip_ajax_timer');
+	else if(undefined != getObject('skip_ajax_timer')){skip=1;}
 	if(skip==0 && number <= 0){
 		if(undefined != attr['url'] || undefined != attr['data-url']){
 			var url;
