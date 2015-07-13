@@ -13,6 +13,17 @@ $progpath=dirname(__FILE__);
 date_default_timezone_set('America/Denver');
 //includes
 include_once("$progpath/common.php");
+//check for special user login path
+$url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
+//echo printValue($_SERVER);exit;
+if($url_parts[0]=='u'){
+	array_shift($url_parts);
+	$_REQUEST['username']=array_shift($url_parts);
+	$_REQUEST['apikey']=array_shift($url_parts);
+	$_REQUEST['_auth']=1;
+	$_REQUEST['_view']=implode('/',$url_parts);
+	//echo printValue($_REQUEST['_view']);exit;
+}
 include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
