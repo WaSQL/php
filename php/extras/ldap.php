@@ -193,6 +193,9 @@ function ldapGetUsersAll(){
 	} while($cookie !== null && $cookie != '');
 	return $recs;
 }
+function ldapConvert2UserRecord($rec){
+	return $rec;
+}
 //---------- begin function ldapParseEntry--------------------
 /**
 * @describe determines if an ldap record is active or not
