@@ -162,13 +162,15 @@ function ldapConvert2UserRecord($lrec=array()){
 */
 function ldapGetUsers($params=array()) {
 	global $ldapInfo;
-	//set the pageSize
+	//set the pageSize dynamically
 	ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
-	//echo $pageSize;
+	//set search to perform
 	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
+	//set cookie to blank - used for paging results
 	$cookie='';
+	//initialize the recs array
 	$recs=array();
-	//loop through based on pageSize and get the records
+	//loop through based on page_size and get the records
 	do {
         ldap_control_paged_result($ldapInfo['connection'], $ldapInfo['page_size'], true, $cookie);
         $result = ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $ldapInfo['lastsearch']);
@@ -182,10 +184,19 @@ function ldapGetUsers($params=array()) {
 	} while($cookie !== null && $cookie != '');
 	return $recs;
 }
+//---------- begin function ldapParseEntry--------------------
+/**
+* @describe parses an ldap entry and returns a more human friendly record set
+* @param ldaprec array
+* @return array
+* @usage $lrec=ldapParseEntry($lrec);
+*/
 function ldapParseEntry($lrec=array()){
 	$rec=array('active'=>1,'utype'=>1);
 	foreach($lrec as $key=>$val){
+		//skip numeric keys - not needed
     	if(is_numeric($key)){continue;}
+    	//skip keys with values that are binary 
         if($key=='objectguid' || $key=='objectsid' || $key=='msexchsafesendershash' || $key=='count'){continue;}
         switch(strtolower($key)){
             case 'whencreated':
@@ -239,6 +250,14 @@ function ldapParseEntry($lrec=array()){
 	}
 	return $rec;
 }
+//---------- begin function ldapTimestamp--------------------
+/**
+* @describe returns an ldap timestamp
+* @param datestr string
+* @return string
+* @usage $ts=ldapTimestamp($datestr);
+* @exclude - internal use only
+*/
 function ldapTimestamp($ad) {
 	if(stringContains($ad,'.')){
      	//YYYYMMDDHHIISS
@@ -251,6 +270,14 @@ function ldapTimestamp($ad) {
    $timestamp = $seconds_ad - $unix;
    return $timestamp;
 }
+//---------- begin function ldapValue--------------------
+/**
+* @describe returns an ldap value
+* @param val mixed
+* @return string
+* @usage $val=ldapValue($val);
+* @exclude - internal use only
+*/
 function ldapValue($val){
 	if(!isset($val['count'])){return $val;}
 	unset($val['count']);
