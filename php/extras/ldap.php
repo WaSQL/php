@@ -81,8 +81,8 @@ function ldapAuth($params=array()){
 		$entries = ldap_get_entries($ldapInfo['connection'], $result);
 	    if ($entries['count'] == 1){
 	    	$rec=ldapParseEntry($entries[0]);
-	    	echo printValue($rec);ldapClose();exit;
-	    	return $rec;
+	    	//echo printValue($rec);ldapClose();exit;
+	    	if(is_array($rec)){return $rec;}
 		}
 		ldapClose();
 		//ldap_unbind($ldap_connection); // Clean up after ourselves.
@@ -103,64 +103,62 @@ function ldapClose(){
 	ldap_unbind($ldapInfo['connection']);
 	$ldapInfo=array();
 }
-//---------- begin function ldapConvert2UserRecord--------------------
-/**
-* @describe converts an ldap user record to a record for the _users table
-* @param params array
-* @return array
-* @usage $rec=ldapConvert2UserRecord($rec);
-*/
-function ldapConvert2UserRecord($lrec=array()){
-	global $CONFIG;
-	//unset($lrec['objectsid']);
-	$rec=array('active'=>1,'utype'=>1,'ldap'=>printValue($lrec));
-	foreach($lrec as $key=>$val){
-		switch(strtolower($key)){
-          	case 'samaccountname':$rec['username']=$val;break;
-          	case 'dn':$rec['password']=substr(encodeBase64($val),10,30);break;
-          	case 'l':$rec['city']=$val;break;
-          	case 'c':$rec['country']=$val;break;
-          	case 'sn':$rec['lastname']=$val;break;
-          	case 'givenname':$rec['firstname']=$val;break;
-          	case 'displayname':$rec['name']=$val;break;
-          	case 'department':$rec['department']=$val;break;
-          	case 'title':$rec['title']=$val;break;
-          	case 'mail':$rec['email']=$val;break;
-          	case 'company':$rec['company']=$val;break;
-          	case 'homephone':$rec['phone_home']=$val;break;
-          	case 'mobile':$rec['phone_mobile']=$val;break;
-          	case 'postalcode':$rec['zip']=$val;break;
-          	case 'st':$rec['state']=$val;break;
-          	case 'streetaddress':$rec['address1']=$val;break;
-          	case 'telephonenumber':$rec['phone']=$val;break;
-          	case 'url':$rec['url']=$val;break;
-          	case 'primarygroupid':$rec['primarygroupid']=$val;break;
-          	case 'manager':
-          		if(preg_match('/CN\=(.+?)\,/',$val,$m)){$rec['manager']=$m[1];}
-          		elseif(preg_match('/CN\=(.+?)$/',$val,$m)){$rec['manager']=$m[1];}
-				else{$rec['manager']=$val;}
-			break;
-          	case 'memberof':
-				$rec['memberof']=$val;
-			break;
-          	//case 'samaccountname':$rec['username']=$val;break;
-          	//case 'samaccountname':$rec['username']=$val;break;
-		}
-	}
-	unset($rec['ldap']);
-	ksort($rec);
-	return $rec;
-}
 //---------- begin function ldapGetRecords--------------------
 /**
 * @describe returns a list of LDAP records based on parameters
-* @param params array
+* @param params array - filters to apply
+*	active=>1  filter our inactive accouts
+*	email=>%@doterra.com  email must end with @doterra.com
+*	firstname=>ste%  firstname must start with ste
+*	lastname=>%jon%  lastname much contain jon
+*	lastname=>~jon  lastname must contain jon (same as %jon%)
+*	lastname=>jones lastname must equal jones
 * @return array or null if blank
 * @usage $recs=ldapGetRecords($params);
 * @exclude - not ready yet
 * @reference https://samjlevy.com/use-php-and-ldap-to-list-members-of-an-active-directory-group-improved/
 */
-function ldapGetUsers($params=array()) {
+function ldapGetUsers($params=array()){
+	global $ldapInfo;
+	//set the pageSize dynamically
+	ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	//set search to perform
+	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
+	//set cookie to blank - used for paging results
+	$cookie='';
+	//initialize the recs array
+	$recs=array();
+	$list=getStoredValue("return ldapGetUsersAll();",0,12);
+	foreach($list as $rec){
+    	$skip=0;
+		foreach($params as $k=>$v){
+            	if(!isset($rec[$k])){$skip=1;break;}
+			if(preg_match('/^\%(.+)\%$/',$v,$m)){
+				//contains
+				if(!stringContains($rec[$k],$m[1])){$skip=1;break;}
+			}
+			elseif(preg_match('/^\%(.+)$/',$v,$m)){
+				//ends with
+				if(!stringEndsWith($rec[$k],$m[1])){$skip=1;break;}
+			}
+			elseif(preg_match('/^(.+)\%$/',$v,$m)){
+				//Begins With
+				if(!stringBeginsWith($rec[$k],$m[1])){$skip=1;break;}
+			}
+			elseif(preg_match('/^\~(.+)$/',$v,$m)){
+				//contains
+				if(!stringContains($rec[$k],$m[1])){$skip=1;break;}
+			}
+			else{
+                	if(strtolower($rec[$k]) != strtolower($v)){$skip=1;break;}
+			}
+		}
+		if($skip==1){continue;}
+		$recs[]=$rec;
+	}
+	return $recs;
+}
+function ldapGetUsersAll(){
 	global $ldapInfo;
 	//set the pageSize dynamically
 	ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
@@ -177,12 +175,41 @@ function ldapGetUsers($params=array()) {
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
         foreach ($entries as $e) {
-		 	$recs[]=ldapParseEntry($e);
+			//lowercase the keys
+			$e=array_change_key_case($e,CASE_LOWER);
+			//do not include Service Accounts
+			if(isset($e['distinguishedname']) && stringContains(ldapValue($e['distinguishedname']),'Service Account')){continue;}
+			if(isset($e['description']) && stringContains(ldapValue($e['description']),'Service Account')){continue;}
+			//do not include Build-in accounts
+			if(isset($e['description']) && stringContains(ldapValue($e['description']),'Built-in account')){continue;}
+			//require a memberof key
+			if(!isset($e['memberof'])){continue;}
+			$rec=ldapParseEntry($e);
+			$recs[]=$rec;
         }
     	ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
+    	//if(count($recs) > 400){return $recs;}
 
 	} while($cookie !== null && $cookie != '');
 	return $recs;
+}
+//---------- begin function ldapParseEntry--------------------
+/**
+* @describe determines if an ldap record is active or not
+* @param ldaprec array
+* @return int 0=disables, 1=active
+* @usage $active=ldapIsActiveRecord($lrec);
+*/
+function ldapIsActiveRecord($lrec=array()){
+	//lowercase the keys, if not already
+	if(!isset($lrec['memberof'])){
+		$lrec=array_change_key_case($lrec,CASE_LOWER);
+	}
+	if(!isset($lrec['useraccountcontrol'])){return 0;}
+	$flags=ldapValue($lrec['useraccountcontrol']);
+	$bool=$flags & 0x002;
+	if(!$bool){return 1;}
+	return 0;
 }
 //---------- begin function ldapParseEntry--------------------
 /**
@@ -192,12 +219,22 @@ function ldapGetUsers($params=array()) {
 * @usage $lrec=ldapParseEntry($lrec);
 */
 function ldapParseEntry($lrec=array()){
-	$rec=array('active'=>1,'utype'=>1);
+	//lowercase the keys, if not already
+	if(!isset($lrec['memberof'])){
+		$lrec=array_change_key_case($lrec,CASE_LOWER);
+	}
+	//require a memberof key
+	if(!isset($lrec['memberof'])){return null;}
+	$rec=array('active'=>ldapIsActiveRecord($lrec));
+	$skipkeys=array(
+		'logonhours','objectguid','objectsid','msexchsafesendershash','count','usercertificate',
+		'msexchblockedsendershash','msexchsaferecipientshash','thumbnailphoto'
+	);
 	foreach($lrec as $key=>$val){
 		//skip numeric keys - not needed
     	if(is_numeric($key)){continue;}
-    	//skip keys with values that are binary 
-        if($key=='objectguid' || $key=='objectsid' || $key=='msexchsafesendershash' || $key=='count'){continue;}
+    	//skip keys
+    	if(in_array($key,$skipkeys)){continue;}
         switch(strtolower($key)){
             case 'whencreated':
             case 'whenchanged':
@@ -212,33 +249,34 @@ function ldapParseEntry($lrec=array()){
                 $rec["{$key}_date"]=date('Y-m-d h:i a',$rec["{$key}_unix"]);
             break;
             case 'memberof':
+            case 'distinguishedname':
                 $tmp=preg_split('/\,/',ldapValue($val));
                 $parts=array();
                 foreach($tmp as $part){
-                    if(!in_array($part,$parts)){$parts[]=$part;}
+					list($k,$v)=preg_split('/\=/',$part,2);
+                    if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
-				$rec[$key]=implode(',',$parts);
+				foreach($parts as $k=>$v){
+					$rec["memberof_{$k}"]=implode(',',$v);
+				}
             break;
-            case 'samaccountname':$rec['username']=$val;break;
+            case 'samaccountname':$rec['username']=ldapValue($val);break;
           	case 'dn':$rec['password']=substr(encodeBase64($val),10,30);break;
-          	case 'l':$rec['city']=$val;break;
-          	case 'c':$rec['country']=$val;break;
-          	case 'sn':$rec['lastname']=$val;break;
-          	case 'givenname':$rec['firstname']=$val;break;
-          	case 'displayname':$rec['name']=$val;break;
-          	case 'department':$rec['department']=$val;break;
-          	case 'title':$rec['title']=$val;break;
-          	case 'mail':$rec['email']=$val;break;
-          	case 'company':$rec['company']=$val;break;
-          	case 'homephone':$rec['phone_home']=$val;break;
-          	case 'mobile':$rec['phone_mobile']=$val;break;
-          	case 'postalcode':$rec['zip']=$val;break;
-          	case 'st':$rec['state']=$val;break;
-          	case 'streetaddress':$rec['address1']=$val;break;
-          	case 'telephonenumber':$rec['phone']=$val;break;
-          	case 'url':$rec['url']=$val;break;
-          	case 'primarygroupid':$rec['primarygroupid']=$val;break;
+          	case 'l':$rec['city']=ldapValue($val);break;
+          	case 'c':$rec['country_code']=ldapValue($val);break;
+          	case 'co':$rec['country']=ldapValue($val);break;
+          	case 'sn':$rec['lastname']=ldapValue($val);break;
+          	case 'givenname':$rec['firstname']=ldapValue($val);break;
+          	case 'displayname':$rec['name']=ldapValue($val);break;
+          	case 'mail':$rec['email']=ldapValue($val);break;
+          	case 'homephone':$rec['phone_home']=ldapValue($val);break;
+          	case 'mobile':$rec['phone_mobile']=ldapValue($val);break;
+          	case 'postalcode':$rec['zip']=ldapValue($val);break;
+          	case 'st':$rec['state']=ldapValue($val);break;
+          	case 'streetaddress':$rec['address1']=ldapValue($val);break;
+          	case 'telephonenumber':$rec['phone']=ldapValue($val);break;
           	case 'manager':
+          		$val=ldapValue($val);
           		if(preg_match('/CN\=(.+?)\,/',$val,$m)){$rec['manager']=$m[1];}
           		elseif(preg_match('/CN\=(.+?)$/',$val,$m)){$rec['manager']=$m[1];}
 				else{$rec['manager']=$val;}
@@ -248,6 +286,7 @@ function ldapParseEntry($lrec=array()){
             break;
 		}
 	}
+	ksort($rec);
 	return $rec;
 }
 //---------- begin function ldapTimestamp--------------------
