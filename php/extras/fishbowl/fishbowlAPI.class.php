@@ -102,7 +102,23 @@ class FishbowlAPI {
         	$this->loggedIn = false;
         }
     }
+	/**
+	 * Get list of SO's by location group
+	 * @param string $LocationGroup
+	 */
+	public function postXML($xml) {
+        // Create request and pack
+		$this->createRequest($xml);
+        $len = strlen($this->xmlRequest);
+        $packed = pack("N", $len);
 
+        // Send and get the response
+        fwrite($this->id, $packed, 4);
+        fwrite($this->id, $this->xmlRequest);
+        $this->getResponse();
+
+        return $this->xmlResponse;
+    }
     /**
      * Get customer information
      * @param string $type - What type of call are you running. Default is NameList
