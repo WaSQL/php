@@ -62,7 +62,6 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 		);
      	$ldap=ldapAuth($authopts);
 		if(is_array($ldap)){
-          	$ldap=ldapConvert2UserRecord($ldap);
           	$fields=getDBFields('_users');
           	$admins=array();
           	if(isset($CONFIG['authldap_admin'])){
