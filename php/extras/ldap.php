@@ -51,9 +51,12 @@ function ldapAuth($params=array()){
 	// We need this for doing an LDAP search.
 	ldap_set_option($ldapInfo['connection'], LDAP_OPT_REFERRALS, 0);
     ldap_set_option($ldapInfo['connection'], LDAP_OPT_PROTOCOL_VERSION, 3);
-    ldap_set_option($ldapInfo['connection'], LDAP_OPT_NETWORK_TIMEOUT, 5);
-    ldap_set_option($ldapInfo['connection'], LDAP_OPT_SIZELIMIT, 5);
-    ldap_set_option($ldapInfo['connection'], LDAP_OPT_TIMELIMIT, 5);
+    ldap_set_option($ldapInfo['connection'], LDAP_OPT_NETWORK_TIMEOUT, 10);
+    ldap_set_option($ldapInfo['connection'], LDAP_OPT_SIZELIMIT, 500);
+    ldap_set_option($ldapInfo['connection'], LDAP_OPT_TIMELIMIT, 300);
+    if(!isset($ldapInfo['page_size'])){
+		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	}
     $enum=ldap_errno($ldapInfo['connection']);
     $msg=ldap_err2str( $enum );
     //echo printValue($params);exit;
@@ -121,7 +124,9 @@ function ldapClose(){
 function ldapGetUsers($params=array()){
 	global $ldapInfo;
 	//set the pageSize dynamically
-	ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	if(!isset($ldapInfo['page_size'])){
+		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	}
 	//set search to perform
 	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
 	//set cookie to blank - used for paging results
@@ -161,7 +166,9 @@ function ldapGetUsers($params=array()){
 function ldapGetUsersAll(){
 	global $ldapInfo;
 	//set the pageSize dynamically
-	ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	if(!isset($ldapInfo['page_size'])){
+		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+	}
 	//set search to perform
 	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
 	//set cookie to blank - used for paging results
