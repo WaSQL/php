@@ -45,7 +45,7 @@ function ldapAuth($params=array()){
 	//connect
 	$params['-host']='ldap://'.$params['-host'];
 	global $ldapInfo;
-	$ldapInfo=array();
+	$ldapInfo=array('dirty'=>0);
 	$ldapInfo['connection'] = ldap_connect($params['-host']);
 	if(!$ldapInfo['connection']){return 'LDAP Auth Error: unable to connect to host';}
 	// We need this for doing an LDAP search.
@@ -133,11 +133,37 @@ function ldapGetUsers($params=array()){
 	$cookie='';
 	//initialize the recs array
 	$recs=array();
-	$list=getStoredValue("return ldapGetUsersAll();",0,12);
+	$list=getStoredValue("return ldapGetUsersAll();",$ldapInfo['dirty'],12);
 	foreach($list as $rec){
     	$skip=0;
 		foreach($params as $k=>$v){
-            	if(!isset($rec[$k])){$skip=1;break;}
+			if($k=='*'){
+				$found=0;
+            	foreach($rec as $rk=>$rv){
+                	if(preg_match('/^\%(.+)\%$/',$v,$m)){
+						//contains
+						if(stringContains($rv,$m[1])){$found=1;break;}
+					}
+					elseif(preg_match('/^\%(.+)$/',$v,$m)){
+						//ends with
+						if(stringEndsWith($rv,$m[1])){$found=1;break;}
+					}
+					elseif(preg_match('/^(.+)\%$/',$v,$m)){
+						//Begins With
+						if(stringBeginsWith($rv,$m[1])){$found=1;break;}
+					}
+					elseif(preg_match('/^\~(.+)$/',$v,$m)){
+						//contains
+						if(stringContains($rv,$m[1])){$found=1;break;}
+					}
+					else{
+		                if(strtolower($rv) == strtolower($v)){$found=1;break;}
+					}
+				}
+				if(!$found){$skip=1;}
+				continue;
+			}
+            if(!isset($rec[$k])){$skip=1;break;}
 			if(preg_match('/^\%(.+)\%$/',$v,$m)){
 				//contains
 				if(!stringContains($rec[$k],$m[1])){$skip=1;break;}
@@ -237,7 +263,7 @@ function ldapParseEntry($lrec=array()){
 	if(!isset($lrec['memberof'])){return null;}
 	$rec=array('active'=>ldapIsActiveRecord($lrec));
 	$skipkeys=array(
-		'logonhours','objectguid','objectsid','msexchsafesendershash','count','usercertificate',
+		'logonhours','msexchsafesendershash','count','usercertificate',
 		'msexchblockedsendershash','msexchsaferecipientshash','thumbnailphoto'
 	);
 	foreach($lrec as $key=>$val){
@@ -246,6 +272,12 @@ function ldapParseEntry($lrec=array()){
     	//skip keys
     	if(in_array($key,$skipkeys)){continue;}
         switch(strtolower($key)){
+			case 'objectguid':
+			case 'objectsid':
+				//binary ojects - base64 encode them
+				$rec[$key]=base64_encode(ldapValue($val));
+				$rec['guid']=encodeCRC($rec[$key]);
+			break;
             case 'whencreated':
             case 'whenchanged':
             case 'badpasswordtime':
@@ -260,6 +292,9 @@ function ldapParseEntry($lrec=array()){
             break;
             case 'memberof':
             case 'distinguishedname':
+            case 'dn':
+            case 'directreports':
+            	$rec[$key]=ldapValue($val);
                 $tmp=preg_split('/\,/',ldapValue($val));
                 $parts=array();
                 foreach($tmp as $part){
@@ -267,11 +302,11 @@ function ldapParseEntry($lrec=array()){
                     if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
 				foreach($parts as $k=>$v){
-					$rec["memberof_{$k}"]=implode(',',$v);
+					$k=strtolower($k);
+					$rec["{$key}_{$k}"]=implode(',',$v);
 				}
             break;
             case 'samaccountname':$rec['username']=ldapValue($val);break;
-          	case 'dn':$rec['password']=substr(encodeBase64($val),10,30);break;
           	case 'l':$rec['city']=ldapValue($val);break;
           	case 'c':$rec['country']=ldapValue($val);break;
           	case 'co':$rec['country_ex']=ldapValue($val);break;
@@ -296,8 +331,16 @@ function ldapParseEntry($lrec=array()){
             break;
 		}
 	}
+	$rec['password']='AD'.$rec['guid'];
 	ksort($rec);
 	return $rec;
+}
+function ldapModify($objectguid,$changes){
+	global $ldapInfo;
+	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
+	$dn=$recs[0]['dn'];
+	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
+	return $result;
 }
 //---------- begin function ldapTimestamp--------------------
 /**
