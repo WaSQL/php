@@ -886,7 +886,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	}
 	elseif(isset($_REQUEST['template']) && strlen($_REQUEST['template'])){$tid=$_REQUEST['template'];}
 	elseif(isset($_REQUEST['_template']) && strlen($_REQUEST['_template'])){$tid=$_REQUEST['_template'];}
-	elseif(isset($USER['template']) && isNum($USER['template'])){
+	elseif(isset($USER['template']) && isNum($USER['template']) && $PAGE['template'] != 1){
 		//allow user specific template in the _users table
 		$tid=$USER['template'];
 	}
