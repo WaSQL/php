@@ -5593,6 +5593,28 @@ function processCSVFileLines($file,$func_name,$params=array()){
 	}
 	return $linecnt;
 }
+function fopen_utf8($filename){
+	$encoding='';
+	$handle = fopen($filename, 'rb');
+	$bom = fread($handle, 2);
+	rewind($handle);
+	
+	if($bom === chr(0xff).chr(0xfe)  || $bom === chr(0xfe).chr(0xff)){
+		// UTF16 Byte Order Mark present
+		$encoding = 'UTF-16';
+	} else {
+		$file_sample = fread($handle, 1000) + 'e'; //read first 1000 bytes
+		// + e is a workaround for mb_string bug
+		rewind($handle);
+	
+		$encoding = mb_detect_encoding($file_sample , 'UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
+	}
+	if ($encoding){
+		stream_filter_append($handle, 'convert.iconv.'.$encoding.'/UTF-8');
+	}
+	return  ($handle);
+}
+
 //---------- begin function getCSVFileContents--------------------
 /**
 * @describe returns the contents of a CSV file as an array
@@ -5610,18 +5632,29 @@ function processCSVFileLines($file,$func_name,$params=array()){
 function getCSVFileContents($file,$params=array()){
 	if(!isset($params['maxrows'])){$params['maxrows']=20000;}
 	if(!isset($params['maxlen'])){$params['maxlen']=4096;}
-	if(!isset($params['separator'])){$params['separator']=',';}
 	$results=array('file'=>$file,'params'=>$params);
 	if(!file_exists($file)){
 		$results['error']="No such file [$file]";
 		return $results;
 		}
 	$row = 1;
-	$handle = fopen($file, "r");
+	//$handle =  fopen($file, "r");
+	$handle = fopen_utf8($file, "rb");
+	//determine separator
+	if(!isset($params['separator'])){
+		$sample = fgets($handle); //read first 1000 bytes, + e is a workaround for mb_string bug
+		rewind($handle);
+		if(!stringContains($sample,',') && stringContains($sample,"\t")){
+			$params['separator']="\t";
+		}
+	}
+	if(!isset($params['separator'])){$params['separator']=',';}
 	if(isset($params['fields']) && is_array($params['fields'])){$xfields=$params['fields'];}
 	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator']);}
+	//echo "XFIELDS:".printValue($xfields);fclose($handle);exit;
 	if(!is_array($xfields) || count($xfields)==0){
 		$results['error']="No Fields found: " . printValue($xfields);
+		fclose($handle);
 		return $results;
 		}
 	//skip rows if requested
