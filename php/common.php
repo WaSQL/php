@@ -5640,6 +5640,7 @@ function getCSVFileContents($file,$params=array()){
 	$row = 1;
 	//$handle =  fopen($file, "r");
 	$handle = fopen_utf8($file, "rb");
+	$results['stat']=fstat($handle);
 	//determine separator
 	if(!isset($params['separator'])){
 		$sample = fgets($handle); //read first 1000 bytes, + e is a workaround for mb_string bug
