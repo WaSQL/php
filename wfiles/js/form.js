@@ -2073,8 +2073,13 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		return false;
 		}
 	//Pass form through validation before calling ajax
-	var ok=submitForm(theform,1,0,1);
-	if(!ok){return false;}
+	if(undefined != tmeout && tmeout=='novalidation'){
+		tmeout=600000;
+	}
+	else{
+		var ok=submitForm(theform,1,0,1);
+		if(!ok){return false;}
+	}
 	//verify that the sid exists
 	if(undefined == callback){
 		//check hidden fields in the form
