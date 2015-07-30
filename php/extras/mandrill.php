@@ -34,38 +34,43 @@ require_once("{$progpath}/Mandrill/Mandrill.php");
 function mandrillSendMail($params=array()){
 	if(!isset($params['-apikey'])){return 'mandrillSendMail Error: missing apikey';}
 	if(!isset($params['to'])){return 'mandrillSendMail Error: missing to';}
+	if(isset($params['from_email'])){$params['from']=$params['from_email'];}
 	if(!isset($params['from'])){return 'mandrillSendMail Error: missing from';}
 	if(!isset($params['subject'])){return 'mandrillSendMail Error: missing subject';}
+	if(isset($params['html'])){$params['message']=$params['html'];}
 	if(!isset($params['message'])){return 'mandrillSendMail Error: missing message';}
+	if(isEmail($params['to'])){
+    	$params['to']=array(
+	            array(
+	                'email' => $params['to'],
+	                'name' => isset($params['to_name'])?$params['to_name']:'',
+	                'type' => 'to'
+	            )
+	        );
+	}
 	try {
 	    $mandrill = new Mandrill($params['-apikey']);
 	    $message = array(
-	        'html' => $params['message'],
-	        'text' => removeHtml($params['message']),
+	        'html' => isset($params['html'])?$params['html']:$params['message'],
+	        'text' => isset($params['text'])?$params['text']:removeHtml($params['message']),
 	        'subject' => $params['subject'],
 	        'from_email' => $params['from'],
-	        'from_name' => '',
-	        'to' => array(
-	            array(
-	                'email' => $params['to'],
-	                'name' => '',
-	                'type' => 'to'
-	            )
-	        ),
+	        'from_name' => isset($params['from_name'])?$params['from_name']:'',
+	        'to' => $params['to'],
 	        'headers' => array('Reply-To' => $params['from']),
-	        'important' => true,
-	        'track_opens' => null,
-	        'track_clicks' => null,
-	        'auto_text' => null,
-	        'auto_html' => null,
-	        'inline_css' => null,
-	        'url_strip_qs' => null,
-	        'preserve_recipients' => null,
-	        'view_content_link' => null,
-	        'tracking_domain' => null,
-	        'signing_domain' => null,
-	        'return_path_domain' => null,
-	        'merge' => false,
+	        'important' => isset($params['important'])?$params['important']:true,
+	        'track_opens' => isset($params['track_opens'])?$params['track_opens']:true,
+	        'track_clicks' => isset($params['track_clicks'])?$params['track_clicks']:true,
+	        'auto_text' => isset($params['auto_text'])?$params['auto_text']:true,
+	        'auto_html' => isset($params['auto_html'])?$params['auto_html']:true,
+	        'inline_css' => isset($params['inline_css'])?$params['inline_css']:true,
+	        'url_strip_qs' => isset($params['url_strip_qs'])?$params['url_strip_qs']:null,
+	        'preserve_recipients' => isset($params['preserve_recipients'])?$params['preserve_recipients']:null,
+	        'view_content_link' => isset($params['view_content_link'])?$params['view_content_link']:null,
+	        'tracking_domain' => isset($params['tracking_domain'])?$params['tracking_domain']:null,
+	        'signing_domain' => isset($params['signing_domain'])?$params['signing_domain']:null,
+	        'return_path_domain' => isset($params['return_path_domain'])?$params['return_path_domain']:null,
+	        'merge' => isset($params['merge'])?$params['merge']:null,
 	    );
 	    //attachments
 	    if(isset($params['-attach'])){
@@ -97,11 +102,11 @@ function mandrillSendMail($params=array()){
 				$message['images'][]=$attach;
 			}
 		}
-	    $async = false;
-	    $ip_pool = 'Main Pool';
+	    $async = isset($params['async'])?$params['async']:true;
+	    $ip_pool = isset($params['ip_pool'])?$params['ip_pool']:'Main Pool';
 	    //put send_at in the past to send now
-	    $send_at = date('Y-m-d H:i:s',strtotime('yesterday'));
-	    $result = $mandrill->messages->send($message, $async, $ip_pool, $send_at);
+	    $send_at = isset($params['send_at'])?$params['send_at']:date('Y-m-d H:i:s',strtotime('yesterday'));
+	    $result = $mandrill->messages->send($message, $async, $ip_pool, $schedule);
 	    if(isset($result[0]['status']) && strtolower($result[0]['status'])=='sent'){
         	return 1;
 		}
