@@ -65,16 +65,22 @@ function mandrillSendMail($params=array()){
 	        'auto_html' => isset($params['auto_html'])?$params['auto_html']:true,
 	        'inline_css' => isset($params['inline_css'])?$params['inline_css']:true,
 	        'url_strip_qs' => isset($params['url_strip_qs'])?$params['url_strip_qs']:null,
-	        'preserve_recipients' => isset($params['preserve_recipients'])?$params['preserve_recipients']:null,
+	        'preserve_recipients' => isset($params['preserve_recipients'])?$params['preserve_recipients']:false,
 	        'view_content_link' => isset($params['view_content_link'])?$params['view_content_link']:null,
 	        'tracking_domain' => isset($params['tracking_domain'])?$params['tracking_domain']:null,
 	        'signing_domain' => isset($params['signing_domain'])?$params['signing_domain']:null,
 	        'return_path_domain' => isset($params['return_path_domain'])?$params['return_path_domain']:null,
-	        'merge' => isset($params['merge'])?$params['merge']:null,
+	        'merge' => isset($params['merge'])?$params['merge']:true,
 	    );
 	    if(isset($params['tags'])){
 			if(!is_array($params['tags'])){$params['tags']=array($params['tags']);}
         	$message['tags'] = $params['tags'];
+		}
+		if(isset($params['merge_vars'])){
+        	$message['merge_vars'] = $params['merge_vars'];
+		}
+		if(isset($params['global_merge_vars'])){
+        	$message['global_merge_vars'] = $params['merge_vars'];
 		}
 	    //attachments
 	    if(isset($params['-attach'])){
