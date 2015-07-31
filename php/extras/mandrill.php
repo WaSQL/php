@@ -80,7 +80,7 @@ function mandrillSendMail($params=array()){
         	$message['merge_vars'] = $params['merge_vars'];
 		}
 		if(isset($params['global_merge_vars'])){
-        	$message['global_merge_vars'] = $params['merge_vars'];
+        	$message['global_merge_vars'] = $params['global_merge_vars'];
 		}
 	    //attachments
 	    if(isset($params['-attach'])){
