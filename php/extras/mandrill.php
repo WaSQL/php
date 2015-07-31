@@ -109,7 +109,7 @@ function mandrillSendMail($params=array()){
 	    $async = isset($params['async'])?$params['async']:true;
 	    $ip_pool = isset($params['ip_pool'])?$params['ip_pool']:'Main Pool';
 	    //put send_at in the past to send now
-	    $send_at = isset($params['send_at'])?date('Y-m-d H:i:s',strtotime($params['send_at']):date('Y-m-d H:i:s',strtotime('yesterday'));
+	    $send_at = isset($params['send_at'])?date('Y-m-d H:i:s',strtotime($params['send_at'])):date('Y-m-d H:i:s',strtotime('yesterday'));
 	    $result = $mandrill->messages->send($message, $async, $ip_pool, $schedule);
 	    return $result;
 	    if(isset($result[0]['status']) && strtolower($result[0]['status'])=='sent'){
