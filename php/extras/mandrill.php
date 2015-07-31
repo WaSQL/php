@@ -72,6 +72,10 @@ function mandrillSendMail($params=array()){
 	        'return_path_domain' => isset($params['return_path_domain'])?$params['return_path_domain']:null,
 	        'merge' => isset($params['merge'])?$params['merge']:null,
 	    );
+	    if(isset($params['tags'])){
+			if(!is_array($params['tags'])){$params['tags']=array($params['tags']);}
+        	$message['tags'] = $params['tags'];
+		}
 	    //attachments
 	    if(isset($params['-attach'])){
         	if(!is_array($params['-attach'])){$params['-attach']=array($params['-attach']);}
@@ -105,12 +109,13 @@ function mandrillSendMail($params=array()){
 	    $async = isset($params['async'])?$params['async']:true;
 	    $ip_pool = isset($params['ip_pool'])?$params['ip_pool']:'Main Pool';
 	    //put send_at in the past to send now
-	    $send_at = isset($params['send_at'])?$params['send_at']:date('Y-m-d H:i:s',strtotime('yesterday'));
+	    $send_at = isset($params['send_at'])?date('Y-m-d H:i:s',strtotime($params['send_at']):date('Y-m-d H:i:s',strtotime('yesterday'));
 	    $result = $mandrill->messages->send($message, $async, $ip_pool, $schedule);
+	    return $result;
 	    if(isset($result[0]['status']) && strtolower($result[0]['status'])=='sent'){
         	return 1;
 		}
-	    return printValue($result);
+	    return $result;
 	} catch(Mandrill_Error $e) {
 	    // Mandrill errors are thrown as exceptions
 	    return 'mandrillSendMail error: ' . get_class($e) . ' - ' . $e->getMessage();
