@@ -5593,6 +5593,11 @@ function processCSVFileLines($file,$func_name,$params=array()){
 	}
 	return $linecnt;
 }
+//---------- begin function fopen_utf8 ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function fopen_utf8($filename){
 	$encoding='';
 	$handle = fopen($filename, 'rb');
@@ -10290,6 +10295,11 @@ function processFileUploads($docroot=''){
 		}
     return 0;
 	}
+//---------- begin function mergeChunkedFiles ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function mergeChunkedFiles($chunks,$name){
 	//return false;
 	if(!is_array($chunks) || !count($chunks)){return false;}
