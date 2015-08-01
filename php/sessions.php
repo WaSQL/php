@@ -32,21 +32,36 @@ if(isset($CONFIG['session_domain'])){
 //start the session
 session_start();
 /********************************************************/
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function sessionTable(){
 	return '_sessions';
 }
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function sessionOpen($sess_path, $sess_name) {
 	return true;
 }
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function sessionClose() {
     return true;
 }
-/* sessionRead
-    The read callback must always return a session encoded (serialized) string, or an empty string if there is no data to read.
-    This callback is called internally by PHP when the session starts or when session_start() is called. Before this callback is invoked PHP will invoke the open callback.
-    The value this callback returns must be in exactly the same serialized format that was originally passed for storage to the write callback. 
-	The value returned will be unserialized automatically by PHP and used to populate the $_SESSION superglobal. 
-	While the data looks similar to serialize() please note it is a different format which is speficied in the session.serialize_handler ini setting.
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ * sessionRead
+ *   The read callback must always return a session encoded (serialized) string, or an empty string if there is no data to read.
+ *  This callback is called internally by PHP when the session starts or when session_start() is called. Before this callback is invoked PHP will invoke the open callback.
+ *   The value this callback returns must be in exactly the same serialized format that was originally passed for storage to the write callback.
+ *	The value returned will be unserialized automatically by PHP and used to populate the $_SESSION superglobal.
+ *	While the data looks similar to serialize() please note it is a different format which is speficied in the session.serialize_handler ini setting.
 */
 function sessionRead($session_id) {
 	global $USER;
@@ -66,14 +81,17 @@ function sessionRead($session_id) {
 	$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
 	return '';
 }
-/* sessionWrite
-	The write callback is called when the session needs to be saved and closed.
-	This callback receives the current session ID a serialized version the $_SESSION superglobal.
-	The serialization method used internally by PHP is specified in the session.serialize_handler ini setting.
-	The serialized session data passed to this callback should be stored against the passed session ID.
-	When retrieving this data, the read callback must return the exact value that was originally passed to the write callback.
-	This callback is invoked when PHP shuts down or explicitly when session_write_close() is called.
-	Note that after executing this function PHP will internally execute the close callback.
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ * sessionWrite
+ *	The write callback is called when the session needs to be saved and closed.
+ *	This callback receives the current session ID a serialized version the $_SESSION superglobal.
+ *	The serialization method used internally by PHP is specified in the session.serialize_handler ini setting.
+ *	The serialized session data passed to this callback should be stored against the passed session ID.
+ *	When retrieving this data, the read callback must return the exact value that was originally passed to the write callback.
+ *	This callback is invoked when PHP shuts down or explicitly when session_write_close() is called.
+ *	Note that after executing this function PHP will internally execute the close callback.
 */
 function sessionWrite($session_id, $session_data) {
 	//decode the data and then store it as json instead so other programs can also share the session data
@@ -87,16 +105,23 @@ function sessionWrite($session_id, $session_data) {
 	executeSQL($query);
     return true;
 }
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function sessionDestroy($session_id) {
 	$table=sessionTable();
     executeSQL("DELETE FROM {$table} WHERE session_id = '{$session_id}';");
     return true;
 }
-/* sessionGarbageCollect
-	The garbage collector callback is invoked internally by PHP periodically in order to purge old session data. 
-	The frequency is controlled by session.gc_probability and session.gc_divisor. 
-	The value of lifetime which is passed to this callback can be set in session.gc_maxlifetime. 
-	Return value should be TRUE for success, FALSE for failure.
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ * sessionGarbageCollect
+ *	The garbage collector callback is invoked internally by PHP periodically in order to purge old session data.
+ *	The frequency is controlled by session.gc_probability and session.gc_divisor.
+ *	The value of lifetime which is passed to this callback can be set in session.gc_maxlifetime.
+ *	Return value should be TRUE for success, FALSE for failure.
 */
 function sessionGarbageCollect($sess_maxlifetime) {
 	$table=sessionTable();
