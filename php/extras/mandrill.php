@@ -2,6 +2,7 @@
 /*
 	References:
 	https://mandrillapp.com/api/docs/messages.php.html
+	https://mandrill.zendesk.com/hc/en-us/articles/205582487-How-do-I-use-merge-tags-to-add-dynamic-content-
 */
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/Mandrill/Mandrill.php");
