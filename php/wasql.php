@@ -1390,7 +1390,10 @@ function wasqlGetInstallFiles(){
 function wasqlVersion(){
 	return getFileContents('../version.txt');
 	}
-	
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+*/	
 function wasqlFontIcons($x=''){
 	$wfiles_path=getWfilesPath();
 	$file="{$wfiles_path}/css/wasql_icons{$x}.css";
