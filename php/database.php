@@ -5614,6 +5614,9 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-action'])){
         	$paging['-action']=$params['-action'];
 		}
+		if(isset($params['-method'])){
+        	$paging['-method']=$params['-method'];
+		}
 		//$rtn .= printValue($paging).printValue($params);
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
