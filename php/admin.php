@@ -1555,7 +1555,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '			<input type="hidden" name="_type" value="user">'."\n";
 			echo '			<input type="text" class="form-control" name="_search" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
 			echo '			<button type="submit" class="btn btn-primary">Search</button>'."\n";
-			echo '		</form>'."\n";
+			echo '		</form><br />'."\n";
 			echo buildOnLoad("document.documentation_searchform._search.focus();");
 			echo wasqlBuildManualTree();
 			break;
@@ -2499,13 +2499,18 @@ if(isset($_REQUEST['_menu'])){
 			echo '<p><b>PostEdit Manager</b> is a windows application that downloads your pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
 			echo 'This allows you to use any editor you wish to update your pages and templates.'."\n";
 			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to the website database.'."\n";
+			echo '<div>'."\n";
+			echo '	<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_zip"><img src="/wfiles/dropdown.gif" alt="download postedit" />Download PostEdit Program</a>'."\n";
+			echo ' <span style="font-size:9pt;">('.verboseSize($psize).')</span><br>';
+			echo '</div>'."\n";
 			echo '</p><p>'."\n";
 			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'."\n";
 			echo 'This file contains authentication information for each domain/website you want to connect to.'."\n";
-			echo 'This following entry could be added to postedit.xml to authenticate to this domain as the current user:'."\n";
+			echo 'Add the following entry to postedit.xml to authenticate to this domain as the current user:'."\n";
 			echo '<pre><xmp>'."\n";
 			echo '<host'."\n";
 			echo '	name="'.$_SERVER['HTTP_HOST'].'"'."\n";
+			echo '	alias="'.$_SERVER['HTTP_HOST'].'"'."\n";
 			echo '	group="'.$_SERVER['UNIQUE_HOST'].'"'."\n";
 			echo '	apikey="'.$USER['apikey'].'"'."\n";
 			echo '	username="'.$USER['username'].'"'."\n";
@@ -2515,12 +2520,15 @@ if(isset($_REQUEST['_menu'])){
 			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'."\n";
 			echo '<ul>'."\n";
 			echo '	<li><b class="w_red">name</b> - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>'."\n";
+			echo '	<li><b class="w_red">group</b> - this is the group name. You can group like hostnames together or group them by client, etc.</li>'."\n";
 			echo '	<li><b class="w_red">username</b> - the username to authenticate as. This must be a valid username for this domain.</li>'."\n";
 			echo '	<li><b class="w_red">apikey</b> - the apikey for the authenticating user. This is found in the user profile menu after logging in.'."\n";
 			echo '		<ul style="list-style-image:url(/wfiles/post.gif);">'."\n";
 			echo '			<li> Changing your username or password will change your apikey.'."\n";
 			echo '		</ul>'."\n";
 			echo '	</li>'."\n";
+			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, stage.domain.com may have an alias of domain.com (Stage).</li>'."\n";
+			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'."\n";
 			echo '	<li><b>checks</b> - default checks to perform when a file change is detected before uploading change to website.'."\n";
 			echo '		<ul style="list-style-image:url(/wfiles/post.gif);">'."\n";
 			echo '			<li> You must have PHP installed locally and in your PATH to check PHP syntax.'."\n";
@@ -2530,10 +2538,12 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'."\n";
 			echo '</ul>'."\n";
 			echo '</p><p>'."\n";
-			echo '<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_zip"><img src="/wfiles/dropdown.gif" alt="download postedit" />Download PostEdit Program</a>'."\n";
-			echo ' <span style="font-size:9pt;">('.verboseSize($psize).')</span><br>';
-			echo '<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_xml"><img src="/wfiles/dropdown.gif" alt="download sample" />Download sample PostEdit XML file</b></a>'."\n";
-			echo '</p>'."\n";
+			echo '<div><b>Sample postedit.xml File</b></div>'."\n";
+			echo '<pre><xmp>'."\n";
+			echo getFileContents(realpath('../postedit/sample.postedit.xml'));
+			echo '</xmp></pre>'."\n";
+			echo '	<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_xml"><img src="/wfiles/dropdown.gif" alt="download sample" />Download a sample PostEdit XML file</b></a>'."\n";
+			echo '</p><br /><br /><br /><br />'."\n";
 			echo '</div>'."\n";
 		break;
 		case 'properties':
@@ -3565,7 +3575,11 @@ echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
 
-
+//---------- begin function adminShowSessionLog ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function adminViewPage($menu){
 	$progpath=dirname(__FILE__);
 	$menu=strtolower($menu);
@@ -5083,6 +5097,11 @@ function adminSynchronizeRecord($table,$id,$stage=1){
 	}
 	return $ok.printValue($opts).printValue($live_rec);
 }
+//---------- begin function adminShowSessionLog ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function adminSetHeaders(){
 	@header("Pragma: public");
 	@header("Cache-Control: maxage={$expire}");
