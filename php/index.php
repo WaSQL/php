@@ -1073,7 +1073,11 @@ else{
 		abort("No PAGE<br>\n" . printValue($_REQUEST));
 	}
 }
-
+//---------- begin function indexUserAccess ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function indexUserAccess(){
 	global $CONFIG;
 	global $PAGE;
