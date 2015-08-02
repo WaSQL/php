@@ -879,16 +879,19 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		}
 	}
 	$tid=1;
+	if(isset($_REQUEST['template'])){$_REQUEST['_template']=$_REQUEST['template'];}
 	if(isset($_REQUEST['_template']) && $_REQUEST['_template']==0){unset($_REQUEST['_template']);}
 	if(isAjax() && !isset($_REQUEST['_template']) && strtoupper($_SERVER['REQUEST_METHOD'])=='GET'){
 		//default to the first template (blank) if the request is ajax and the request not a post
 		$tid=1;
 	}
-	elseif(isset($_REQUEST['template']) && strlen($_REQUEST['template'])){$tid=$_REQUEST['template'];}
-	elseif(isset($_REQUEST['_template']) && strlen($_REQUEST['_template'])){$tid=$_REQUEST['_template'];}
-	elseif(isset($USER['template']) && isNum($USER['template']) && $PAGE['_template'] != 1){
-		//allow user specific template in the _users table
-		$tid=$USER['template'];
+	elseif(isset($_REQUEST['_template']) && strlen($_REQUEST['_template'])){
+		if(strtolower($_REQUEST['_template'])=='user' && isNum($USER['template'])){
+        	$tid=$USER['template'];
+		}
+		else{
+			$tid=$_REQUEST['_template'];
+		}
 	}
 	elseif(isset($_SERVER['_template']) && strlen($_SERVER['_template'])){$tid=$_SERVER['_template'];}
 	elseif($_REQUEST['_viewfield'] != 'body'){$tid=1;}
