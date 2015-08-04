@@ -5614,7 +5614,7 @@ function fopen_utf8($filename){
 	
 		$encoding = mb_detect_encoding($file_sample , 'UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
 	}
-	if ($encoding){
+	if ($encoding  && strtoupper($encoding) != 'UTF-8'){
 		stream_filter_append($handle, 'convert.iconv.'.$encoding.'/UTF-8');
 	}
 	return  ($handle);
