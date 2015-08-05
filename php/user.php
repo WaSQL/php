@@ -803,19 +803,21 @@ function userProfileForm($params=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 * @history - bbarten 2014-01-02 added documentation
 */
-function encodeUserAuthCode(){
+function encodeUserAuthCode($id=0){
 	global $USER;
-	$pw=userIsEncryptedPW($USER['password'])?userDecryptPW($USER['password']):$USER['password'];
+	if($id==0 || $id==$USER['_id']){$rec=$USER;}
+	else{$rec=getDBRecord(array('-table'=>'_users','_id'=>$id));}
+	$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 	$auth=array(
-		str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$USER['username'])),
-		str_replace(':','',crypt($USER['username'],$pw)),
-	    str_replace(':','',crypt($pw,$USER['username']))
+		str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$rec['username'])),
+		str_replace(':','',crypt($rec['username'],$pw)),
+	    str_replace(':','',crypt($pw,$rec['username']))
 	    );
 	$code=encodeBase64(implode(':',$auth));
 	//echo "PW:{$pw} [{$code}]<br>\n";
 	return $code;
 	//generate a user auth code  GUIDUsernamePasswordMM
-	$raw='Wa6QI' .':'. $USER['username'] .':'. $pw;
+	$raw='Wa6QI' .':'. $rec['username'] .':'. $pw;
 	$string=encodeBase64($raw);
 	return $string;
 }
