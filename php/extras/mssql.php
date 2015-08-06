@@ -37,7 +37,7 @@ function mssqlDBConnect($params=array()){
 	return $mssql['conn'];
 }
 
-function mssqlAddRecord($params){
+function mssqlAddDBRecord($params){
 	global $USER;
 	if(!isset($params['-table'])){return 'mssqlAddRecord error: No table specified.';}
 	$fields=mssqlGetTableFields($params['-table']);
@@ -95,7 +95,7 @@ function mssqlAddRecord($params){
 ENDOFQUERY;
 	return mssqlQueryResults($query);
 }
-function mssqlEditRecord($params){
+function mssqlEditDBRecord($params){
 	if(!isset($params['-table'])){return 'mssqlEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'mssqlEditRecord error: No where specified.';}
 	global $USER;
@@ -127,7 +127,7 @@ ENDOFQUERY;
 	mssqlQueryResults($query);
 	return;
 }
-function mssqlGetRecords($params){
+function mssqlGetDBRecords($params){
 	if(!isset($params['-table'])){return 'mssqlGetRecords error: No table specified.';}
 	if(!isset($params['-fields'])){$params['-fields']='*';}
 	$fields=mssqlGetTableFields($params['-table']);
@@ -159,13 +159,13 @@ ENDOFQUERY;
 	return mssqlQueryResults($query);
 	}
 
-//---------- begin function mssqlGetTables ----------
+//---------- begin function mssqlGetDBTables ----------
 /**
 * @describe returns connection resource
 * @return array
 *	dbname, owner, name, type
 */
-function mssqlGetTables(){
+function mssqlGetDBTables(){
 	$query="
 	SELECT
 		table_catalog as dbname
@@ -181,7 +181,7 @@ function mssqlGetTables(){
 	return $recs;
 }
 
-function mssqlGetTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo'){
+function mssqlGetDBTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo'){
 	$query="
 	SELECT
 		ccu.column_name
@@ -204,7 +204,7 @@ function mssqlGetTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo'){
     }
 	return $keys;
 }
-function mssqlGetTableFields($table,$catalog='TASKEAssist',$owner='dbo'){
+function mssqlGetDBFields($table,$catalog='TASKEAssist',$owner='dbo'){
 	$query="
 		SELECT 
 			COLUMN_NAME
