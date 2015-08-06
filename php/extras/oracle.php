@@ -226,6 +226,12 @@ function oracleGetActiveSessionCount($seconds=0){
 	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
 	return $query;
 }
+//---------- begin function oracleGetTables ----------
+/**
+* @describe returns connection resource
+* @return array
+*	dbname, owner, name, type
+*/
 function oracleGetTables(){
 	$query="
 		SELECT 
