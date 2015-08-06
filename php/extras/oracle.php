@@ -33,7 +33,7 @@ function oracleDBConnect($params=array()){
 	return $oracle['conn'];
 }
 
-function oracleAddRecord($params){
+function oracleAddDBRecord($params){
 	global $USER;
 	if(!isset($params['-table'])){return 'oracleAddRecord error: No table specified.';}
 	$fields=oracleGetTableFields($params['-table']);
@@ -147,7 +147,7 @@ ENDOFQUERY;
 	}
 	return 'error_3';
 }
-function oracleEditRecord($params){
+function oracleEditDBRecord($params){
 	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
 	global $USER;
@@ -179,7 +179,7 @@ ENDOFQUERY;
 	oracleQueryResults($query);
 	return;
 }
-function oracleGetRecords($params){
+function oracleGetDBRecords($params){
 	if(!isset($params['-table'])){return 'oracleGetRecords error: No table specified.';}
 	if(!isset($params['-fields'])){$params['-fields']='*';}
 	$fields=oracleGetTableFields($params['-table']);
@@ -226,13 +226,13 @@ function oracleGetActiveSessionCount($seconds=0){
 	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
 	return $query;
 }
-//---------- begin function oracleGetTables ----------
+//---------- begin function oracleGetDBTables ----------
 /**
 * @describe returns connection resource
 * @return array
 *	dbname, owner, name, type
 */
-function oracleGetTables(){
+function oracleGetDBTables(){
 	$query="
 		SELECT 
 			distinct table_name,owner 
@@ -258,7 +258,7 @@ function oracleGetTables(){
 	foreach($tmp2 as $tmp){$recs[]=$tmp;}
 	return $recs;
 }
-function oracleGetTablePrimaryKeys($table,$owner){
+function oracleGetDBTablePrimaryKeys($table,$owner){
 	$table=str_replace("'","''",$table);
 	$table=strtoupper($table);
 	$owner=str_replace("'","''",$owner);
@@ -285,7 +285,7 @@ function oracleGetTablePrimaryKeys($table,$owner){
     }
 	return $keys;
 }
-function oracleGetTableFields($table,$owner=''){
+function oracleGetDBFields($table,$owner=''){
 	$table=str_replace("'","''",$table);
 	$table=strtoupper($table);
 	global $oracle;
