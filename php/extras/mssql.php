@@ -36,6 +36,129 @@ function mssqlDBConnect($params=array()){
 	}
 	return $mssql['conn'];
 }
+
+function mssqlAddRecord($params){
+	global $USER;
+	if(!isset($params['-table'])){return 'mssqlAddRecord error: No table specified.';}
+	$fields=mssqlGetTableFields($params['-table']);
+	$sequence='';
+	$owner='';
+	foreach($fields as $field){
+    	if(isset($field['sequence'])){
+        	$sequence=$field['sequence'];
+        	$owner=$field['owner'];
+        	break;
+		}
+	}
+	$opts=array();
+	if(isset($fields['cdate'])){
+		$opts['fields'][]='CDATE';
+		$opts['values'][]=strtoupper(date('d-M-Y'));
+	}
+	if(isset($fields['cuser'])){
+		$opts['fields'][]='CUSER';
+		$opts['values'][]=$USER['username'];
+	}
+	$valstr='';
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if($k=='cuser' || $k=='cdate'){continue;}
+		if(is_array($params[$k])){
+            	$params[$k]=implode(':',$params[$k]);
+		}
+		switch(strtolower($fields[$k]['type'])){
+        	case 'integer':
+        	case 'number':
+        		$opts['values'][]=$params[$k];
+        	break;
+        	case 'date':
+        		$opts['values'][]="todate('{$params[$k]}')";
+        	break;
+        	default:
+        		$opts['values'][]="'{$params[$k]}'";
+        	break;
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+
+        $opts['fields'][]=trim(strtoupper($k));
+	}
+	$fieldstr=implode('","',$opts['fields']);
+	$valstr=implode(',',$opts['values']);
+    $query=<<<ENDOFQUERY
+		INSERT INTO {$params['-table']}
+			("{$fieldstr}")
+		VALUES(
+			{$valstr}
+		)
+ENDOFQUERY;
+	return mssqlQueryResults($query);
+}
+function mssqlEditRecord($params){
+	if(!isset($params['-table'])){return 'mssqlEditRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'mssqlEditRecord error: No where specified.';}
+	global $USER;
+	$fields=mssqlGetTableFields($params['-table']);
+	$opts=array();
+	if(isset($fields['edate'])){
+		$opts['edate']=strtoupper(date('d-M-Y'));
+	}
+	if(isset($fields['euser'])){
+		$opts['euser']=$USER['username'];
+	}
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if($k=='cuser' || $k=='cdate'){continue;}
+		if(is_array($params[$k])){
+            	$params[$k]=implode(':',$params[$k]);
+		}
+        	$params[$k]=str_replace("'","''",$params[$k]);
+        	$updates[]="upper({$k})=upper('{$params[$k]}')";
+	}
+	$updatestr=implode(', ',$updates);
+    $query=<<<ENDOFQUERY
+		UPDATE {$params['-table']}
+		SET {$updatestr}
+		WHERE {$params['-where']}
+ENDOFQUERY;
+	mssqlQueryResults($query);
+	return;
+}
+function mssqlGetRecords($params){
+	if(!isset($params['-table'])){return 'mssqlGetRecords error: No table specified.';}
+	if(!isset($params['-fields'])){$params['-fields']='*';}
+	$fields=mssqlGetTableFields($params['-table']);
+	$ands=array();
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if(is_array($params[$k])){
+            $params[$k]=implode(':',$params[$k]);
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+        $ands[]="upper({$k})=upper('{$params[$k]}')";
+	}
+	$wherestr='';
+	if(count($ands)){
+		$wherestr='WHERE '.implode(' and ',$ands);
+	}
+    $query=<<<ENDOFQUERY
+		SELECT
+			{$params['-fields']}
+		FROM 
+			{$params['-table']}
+		{$wherestr}
+ENDOFQUERY;
+	if(isset($params['-order'])){
+    	$query .= " ORDER BY {$params['-order']}";
+	}
+	return mssqlQueryResults($query);
+	}
+
 //---------- begin function mssqlGetTables ----------
 /**
 * @describe returns connection resource
@@ -136,6 +259,12 @@ function mssqlQueryResults($query='',$params=array()){
 	mssql_query("SET ANSI_WARNINGS ON");
 	$data=@mssql_query($query,$mssql['conn']);
 	if(!$data){return "MS SQL Query Error: " . mssql_get_last_message();}
+	if(preg_match('/^insert /i',$query)){
+    	//return the id inserted on insert statements
+    	$id=databaseAffectedRows($data);
+    	mssql_close($mssql['conn']);
+    	return $id;
+	}
 	$results = mssqlEnumQueryResults($data,$showblank);
 	mssql_close($mssql['conn']);
 	return $results;
