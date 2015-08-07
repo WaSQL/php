@@ -4141,7 +4141,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<div class="container">'."\n";
+	$rtn .= '<div style="width:400px;padding:15px;">'."\n";
 	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
