@@ -4141,6 +4141,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
+	$rtn .= '<div class="container">'."\n";
 	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
@@ -4164,9 +4165,8 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
 		$rtn .= '	</div>'."\n";
 		}
-
 	$rtn .= '	</form>'."\n";
-	$rtn .= '</table>'."\n";
+	$rtn .= '</div>'."\n";
 	if(count($files)==0){
 		return $rtn;
 		}
