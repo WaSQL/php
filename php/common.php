@@ -4168,7 +4168,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '	</form>'."\n";
 	$rtn .= '</div>'."\n";
 	if(count($files)==0){
-		if($params['-rights'] == 'all'){
+		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
 	    	$path=encodeBase64($cdir);
 			$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
