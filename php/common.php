@@ -4141,7 +4141,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<div style="width:400px;padding:15px;">'."\n";
+	$rtn .= '<div style="width:400px;padding:25px;">'."\n";
 	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
@@ -4161,13 +4161,19 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '		<label for="description">Description</label>'."\n";
 		$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
 		$rtn .= '	</div>'."\n";
-		$rtn .= '	<div class="row pull-right">'."\n";
+		$rtn .= '	<div class="row pull-right" style="padding-top:15px;">'."\n";
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
 		$rtn .= '	</div>'."\n";
 		}
 	$rtn .= '	</form>'."\n";
 	$rtn .= '</div>'."\n";
 	if(count($files)==0){
+		if($params['-rights'] == 'all'){
+	    	//HTML5 file upload
+	    	$path=encodeBase64($cdir);
+			$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+			$rtn .= '<br /><br /><br /></div>'."\n";
+		}
 		return $rtn;
 		}
 	sort($files);
