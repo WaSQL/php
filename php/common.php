@@ -4282,7 +4282,10 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</tr>'."\n";
 		}
 	$rtn .= '</table>'."\n";
-	if($params['-rights'] != 'readonly'){$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";}
+	if($params['-rights'] != 'readonly'){
+		$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
+		$rtn .= '</div>'."\n";
+	}
 	$rtn .= '</div>'."\n";
 	return $rtn;
 	}
