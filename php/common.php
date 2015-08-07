@@ -4161,7 +4161,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '		<label for="description">Description</label>'."\n";
 		$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
 		$rtn .= '	</div>'."\n";
-		$rtn .= '	<div class="row pull-right" style="padding-top:15px;">'."\n";
+		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'."\n";
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
 		$rtn .= '	</div>'."\n";
 		}
@@ -4171,11 +4171,12 @@ function fileManager($startdir='',$params=array()){
 		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
 	    	$path=encodeBase64($cdir);
-			$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
-			$rtn .= '<br /><br /><br /></div>'."\n";
+			$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+			$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
+			$rtn .= '</div>'."\n";
 		}
 		return $rtn;
-		}
+	}
 	sort($files);
 	if(isNum($params['-height'])){
 		$rtn .= '<div style="height:'.$params['-height'].'px;overflow:auto;padding-right:18px;">'."\n";
@@ -4183,10 +4184,10 @@ function fileManager($startdir='',$params=array()){
 	else{
 		$rtn .= '<div>'."\n";
     	}
-    if($params['-rights'] == 'all'){
+    if($params['-rights'] != 'readonly'){
     	//HTML5 file upload
     	$path=encodeBase64($cdir);
-		$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="background:url(/wfiles/iconsets/32/upload.png);background-repeat:no-repeat;background-position:bottom center;display:inline-table;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+		$rtn .= '<div title="drag files to upload" _onsuccess="window.location=window.location;" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= '<table class="table table-condensed table-striped table-bordered">'."\n";
@@ -4281,7 +4282,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</tr>'."\n";
 		}
 	$rtn .= '</table>'."\n";
-	if($params['-rights'] == 'all'){$rtn .= '<br /><br /><br /></div>'."\n";}
+	if($params['-rights'] != 'readonly'){$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";}
 	$rtn .= '</div>'."\n";
 	return $rtn;
 	}
