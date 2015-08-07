@@ -1155,23 +1155,27 @@ function initBehaviors(ajaxdiv){
 				//save original background color
 				navEls[n].setAttribute('_bgcolor',navEls[n].style.backgroundColor || '');
   				//add event listeners
-  				addEventHandler(navEls[n],"dragenter",eventCancel);
+  				addEventHandler(navEls[n],"dragover",cancel);
 				addEventHandler(navEls[n],"dragexit", function(evt){
-					eventCancel(evt);
+					cancelBubble(evt);
 						var bgcolor='';
 						if(undefined != this.getAttribute('_dragcolor_out')){bgcolor=this.getAttribute('_dragcolor_out');}
 						this.style.backgroundColor=bgcolor;
 					}
 				);
-				addEventHandler(navEls[n],"dragover", function(evt){
-					eventCancel(evt);
+				addEventHandler(navEls[n],"dragenter", function(evt){
+					cancelBubble(evt);
 					//change background of div when files are dragged over it to signify it accepts files
-					this.style.backgroundColor=this.getAttribute('data-color-over') || '#ebebeb';
+					this.style.backgroundColor=this.getAttribute('data-color-over') || 'green';
 					}, false);
-				navEls[n].addEventListener("drop", function(evt){
+				addEventHandler(navEls[n],"drop", function(evt){
+					// get window.event if e argument missing (in IE)
+					evt = evt || window.event;
+					// stops the browser from redirecting off to the image.
+		            if (evt.preventDefault) {evt.preventDefault();}
 					this.style.backgroundColor=this.getAttribute('_bgcolor');
 					fileUploadBehavior(evt,this);
-					});
+					},false);
 			}
 			else{
 				setText(navEls[n],'Fileupload via dragdrop is not supported in your browser.');
@@ -1454,6 +1458,10 @@ function initBehaviors(ajaxdiv){
 		addEventHandler(tobs[i],'mouseout', function(){fadeId('w_tooltip',1);});
 	}
 }
+function cancel(e) {
+      if (e.preventDefault) { e.preventDefault(); }
+      return false;
+    }
 function stickyMenus(){
 	var list = GetElementsByAttribute('*','data-behavior','sticky');
 	var scrollPosition=getWindowScrollPosition();
