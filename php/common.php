@@ -10229,7 +10229,7 @@ function processFileUploads($docroot=''){
 				$abspath = $docroot . $webpath;
 				}
 			else{
-				$path='uploads';
+				$path='/uploads';
 				$cpath=$docroot . $path;
 				$cpath=str_replace('//','/',$cpath);
 				//echo "path: {$cpath}<br>\n";
