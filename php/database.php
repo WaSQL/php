@@ -690,7 +690,7 @@ function addDBAccess(){
 	if(!isNum($id)){
 		setWasqlError(debug_backtrace(),$id);
 		}
-	//add this request to the summary table
+	//add this request to the summary table - this is probably what takes the longest
 	$finfo=getDBFieldInfo($sumtable,1);
 	$parts=array();
 	foreach($fields as $field){
@@ -721,9 +721,9 @@ function addDBAccess(){
 				}
 			}
 		}
-	//remove _access records older than 32 days old
+	//remove _access records older than 2 years
 	if(!isset($_SERVER['addDBAccess'])){
-		$query="delete from {$table} where _cdate < DATE_ADD(NOW(), INTERVAL -32 DAY)";
+		$query="delete from {$table} where _cdate < DATE_ADD(NOW(), INTERVAL -730 DAY)";
 		$x=executeSQL($query);
 		$_SERVER['addDBAccess']=1;
 		}
