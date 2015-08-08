@@ -1,4 +1,5 @@
 <?php
+include_once(realpath('../schema.php'));
 //make sure _tiny table exists
 if(!isDBTable('_tiny')){
 	createWasqlTables(array('_tiny'));
