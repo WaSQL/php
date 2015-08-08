@@ -1,11 +1,9 @@
 <?php
-include_once(realpath('../database.php'));
 //make sure _tiny table exists
 if(!isDBTable('_tiny')){
 	createWasqlTables(array('_tiny'));
 }
-tinyTest();
-function tinyURL($url){
+function tinyUrl($url){
 	$url=strtolower($url);
 	//add record to tiny
 	$rec=getDBRecord(array('-table'=>'_tiny','url'=>$url,'-fields'=>'_id'));
@@ -17,14 +15,16 @@ function tinyURL($url){
 		));
 	}
 	if(isNum($id)){
-		return tinyBase2Base($id, 10, 36);
+		$http=isset($_SERVER['HTTPS'])?'https':'http';
+		return "{$http}://{$_SERVER['HTTP_HOST']}/t/".tinyBase2Base($id, 10, 36);
 	}
 	return 'ERROR:'.$id;
 }
 function tinyCode($code){
 	$code=strtoupper($code);
 	$id=tinyBase2Base($code, 36, 10);
-	if(isNum($id)){return 'ERROR';}
+	//echo "code:{$code}, id:{$id}";exit;
+	if(!isNum($id)){return 'ERROR';}
 	//add record to tiny
 	$rec=getDBRecord(array('-table'=>'_tiny','_id'=>$id,'-fields'=>'_id,url'));
 	if(isset($rec['url'])){return $rec['url'];}
