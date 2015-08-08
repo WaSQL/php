@@ -15,7 +15,6 @@ function createWasqlTables($wtables=array()){
 		if(!in_array($wtable,$ctables)){
 			clearDBCache(array('getDBFieldInfo','databaseTables','isDBTable'));
 			$rtn[$wtable]=createWasqlTable($wtable);
-			$cnt++;
 			}
 		else{
 			$rtn[$wtable]="already exists";
