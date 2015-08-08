@@ -14,7 +14,6 @@ if(!isDBTable('_tiny')){
 	createWasqlTables(array('_tiny'));
 }
 function tinyUrl($url){
-	$url=strtolower($url);
 	//add record to tiny
 	$rec=getDBRecord(array('-table'=>'_tiny','url'=>$url,'-fields'=>'_id'));
 	if(isset($rec['_id'])){$id=$rec['_id'];}
