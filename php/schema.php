@@ -227,6 +227,14 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 			break;
+		case '_tiny':
+			$fields['url']="varchar(500) NOT NULL";
+			$ok=createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"url"));
+			return 1;
+			break;
 		case '_markers':
 			$fields['problem']="varchar(500) NULL";
 			$fields['solution']="varchar(1000) NULL";
