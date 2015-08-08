@@ -15,13 +15,30 @@ function tinyUrl($url){
 		));
 	}
 	if(isNum($id)){
+		$code=tinyBase2Base($id, 10, 36);
+  		if(strlen($code) < 3){
+			$seed=str_split('$!');
+			shuffle($seed);
+			$code .= array_shift($seed);
+        	$seed=str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        	shuffle($seed);
+        	while(strlen($code) < 4){
+				$code .= array_shift($seed);
+			}
+		}
 		$http=isset($_SERVER['HTTPS'])?'https':'http';
-		return "{$http}://{$_SERVER['HTTP_HOST']}/t/".tinyBase2Base($id, 10, 36);
+		return "{$http}://{$_SERVER['HTTP_HOST']}/t/{$code}";
 	}
 	return 'ERROR:'.$id;
 }
+//---------- begin function tinyCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function tinyCode($code){
 	$code=strtoupper($code);
+	if(preg_match('/^(.+?)[\$\!]/',$code,$m)){$code=$m[1];}
+
 	$id=tinyBase2Base($code, 36, 10);
 	//echo "code:{$code}, id:{$id}";exit;
 	if(!isNum($id)){return 'ERROR';}
@@ -31,6 +48,10 @@ function tinyCode($code){
 
 	return 'ERROR: No such tiny url';
 }
+//---------- begin function tinyTest
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function tinyTest(){
 	date_default_timezone_set('America/Denver');
 	for($i=0;$i<20;$i++){
@@ -42,6 +63,10 @@ function tinyTest(){
 		echo "Base:{$base}, Num:{$rnum}, Tiny: {$b62} \n";
 	}
 }
+//---------- begin function tinyDec2Base
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function tinyDec2Base($iNum, $iBase, $iScale=0) { // cope with base 2..62
 	$sChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 	$sResult = ''; // Store the result
@@ -79,6 +104,10 @@ function tinyDec2Base($iNum, $iBase, $iScale=0) { // cope with base 2..62
   	}
   	return $sResult;
 }
+//---------- begin function tinyBase2Dec
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function tinyBase2Dec($sNum, $iBase=0, $iScale=0) {
 	$sChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 	$sResult = '';
@@ -150,6 +179,10 @@ function tinyBase2Dec($sNum, $iBase=0, $iScale=0) {
   	return $sResult;
 }
 //$tiny = tinyBase2Base(554512, 10, 62); and that evaluates to $tiny = '2KFk'.
+//---------- begin function tinyBase2Base
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function tinyBase2Base($iNum, $iBase, $oBase, $iScale=0) {
 	if ($iBase != 10){
 		$oNum = tinyBase2Dec($iNum, $iBase, $iScale);
