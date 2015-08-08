@@ -228,11 +228,9 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_tiny':
-			$fields['url']="varchar(500) NOT NULL";
+			$fields['url']="varchar(2100) NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
-			//indexes
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"url"));
 			return 1;
 			break;
 		case '_markers':
