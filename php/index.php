@@ -27,6 +27,17 @@ if($url_parts[0]=='u'){
 include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
+include_once("$progpath/schema.php");
+//check for tiny urls - /t/B49Z  - checks the _tiny table
+if($url_parts[0]=='t' && count($url_parts)==2){
+	loadExtras('tiny');
+	$url=tinyCode($url_parts[1]);
+	//echo $url;exit;
+	if(preg_match('/^http/i',$url)){
+    	header("Location: {$url}");
+    	exit;
+	}
+}
 include_once("$progpath/sessions.php");
 include_once("$progpath/user.php");
 global $CONFIG;
