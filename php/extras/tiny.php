@@ -1,5 +1,14 @@
 <?php
-include_once(realpath('../schema.php'));
+$path=realpath('../');
+if(is_file("{$path}/schema.php")){
+	include_once("{$path}/schema.php");
+}
+else{
+	$path=realpath('../php');
+	if(is_file("{$path}/schema.php")){
+		include_once("{$path}/schema.php");
+	}
+}
 //make sure _tiny table exists
 if(!isDBTable('_tiny')){
 	createWasqlTables(array('_tiny'));
