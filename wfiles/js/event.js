@@ -899,6 +899,18 @@ function initBehaviors(ajaxdiv){
 	//	<div data-behavior="@raid(raidid)"></div><input type="text" name="raidid" value="123">
 	//replace title attributes with ours
 	try{f_tcalInit();}catch(e){}
+	//bootstrap toggles
+	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');
+	for(var i=0;i<buttons.length;i++){
+		buttons[i].onclick=function(){
+			//get all children of the parentNode
+			var kids=this.parentNode.childNodes;
+			for(var k=0;k<kids.length;k++){
+            	removeClass(kids[k],'active');
+			}
+			addClass(this,'active');
+		}
+	}
 	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
 	var navbars = GetElementsByAttribute('button', 'data-toggle', 'collapse');
 	for (var n=0; n<navbars.length; n++){
@@ -1438,6 +1450,10 @@ function initBehaviors(ajaxdiv){
 								setText(cObj,getText(navEls[n]));
 								navEls[n].setAttribute('raidid',str);
 								navEls[n].onkeyup=function(){
+									var raidid = this.getAttribute('raidid');
+									setText(raidid,getText(this));
+								}
+								navEls[n].onchange=function(){
 									var raidid = this.getAttribute('raidid');
 									setText(raidid,getText(this));
 								}
