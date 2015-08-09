@@ -911,12 +911,32 @@ function initBehaviors(ajaxdiv){
 			addClass(this,'active');
 		}
 	}
+	//look for data-toggle modal
+	var navbars = GetElementsByAttribute('button', 'data-toggle', 'modal');
+	for (var n=0; n<navbars.length; n++){
+    	navbars[n].onclick=function(){
+        	var t=this.getAttribute('data-target');
+        	var tdiv=document.querySelector(t);
+        	var state=this.getAttribute('aria-hidden');
+        	switch(state.toLowerCase()){
+            	case 'f':
+            	case 'false':
+            	case 0:
+            		this.setAttribute('aria-hidden','true');
+            		removeClass(tdiv,'in');
+            	break;
+            	default:
+            		this.setAttribute('aria-hidden','false');
+            		addClass(tdiv,'in');
+            	break;
+			}
+		};
+	}
 	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
 	var navbars = GetElementsByAttribute('button', 'data-toggle', 'collapse');
 	for (var n=0; n<navbars.length; n++){
     	navbars[n].onclick=function(){
         	var t=this.getAttribute('data-target');
-        	console.log('t='+t);
         	var tdiv=document.querySelector(t);
         	var state=this.getAttribute('aria-expanded');
         	switch(state.toLowerCase()){
