@@ -1437,7 +1437,7 @@ function initBehaviors(ajaxdiv){
 							if(typeof(cObj)=='object'){
 								setText(cObj,getText(navEls[n]));
 								navEls[n].setAttribute('raidid',str);
-								navEls[n].onkeydown=function(){
+								navEls[n].onkeyup=function(){
 									var raidid = this.getAttribute('raidid');
 									setText(raidid,getText(this));
 								}
