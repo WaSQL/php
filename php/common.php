@@ -421,6 +421,47 @@ function buildFormDateTime($name,$params=array()){
 	$tag .= '</div>'."\n";
 	return $tag;
 }
+//---------- begin function buildFormGender--------------------
+/**
+* @describe creates an HTML hidden field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormGender('gender',$params);
+*/
+function buildFormGender($name='gender',$params=array()){
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$opts=array();
+	switch(strtolower($params['value'])){
+    	case 'm':
+    	case 'male':
+    		$opts['m_active']=' active';
+    		$opts['m_checked']=' checked';
+    		$opts['f_active']='';
+    		$opts['f_checked']='';
+    	break;
+    	case 'f':
+    	case 'female':
+    		$opts['f_active']=' active';
+    		$opts['f_checked']=' checked';
+    		$opts['m_active']='';
+    		$opts['m_checked']='';
+    	break;
+	}
+	$tag='';
+	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
+	//male
+    $tag .= '	<label class="btn btn-default icon-user-male'.$opts['m_active'].'">'."\n";
+    $tag .= '   	<input type="radio" name="'.$name.'" value="M"'.$opts['m_checked'].' /> Male'."\n";
+    $tag .= '   </label>'."\n";
+    $tag .= '   <label class="btn btn-default icon-user-female'.$opts['f_active'].'">'."\n";
+    $tag .= '   	<input type="radio" name="'.$name.'" value="F"'.$opts['f_checked'].' /> Female'."\n";
+    $tag .= '   </label>'."\n";
+    $tag .= '</div>'."\n";
+	return $tag;
+}
 //---------- begin function buildFormHidden--------------------
 /**
 * @describe creates an HTML hidden field
@@ -732,6 +773,46 @@ function buildFormTime($name,$params=array()){
 	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" data-interval="'.$params['-interval'].'" value="'.encodeHtml($params['-value']).'" '.$required.' />'."\n";
 	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
+	return $tag;
+}
+//---------- begin function buildFormYesNo--------------------
+/**
+* @describe creates an HTML YesNo field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormYesNo('yesno',$params);
+*/
+function buildFormYesNo($name='yesno',$params=array()){
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$opts=array();
+	switch(strtolower($params['value'])){
+    	case 'y':
+    	case 'yes':
+    		$opts['y_active']=' active';
+    		$opts['y_checked']=' checked';
+    		$opts['n_active']='';
+    		$opts['n_checked']='';
+    	break;
+    	case 'n':
+    	case 'no':
+    		$opts['n_active']=' active';
+    		$opts['n_checked']=' checked';
+    		$opts['y_active']='';
+    		$opts['y_checked']='';
+    	break;
+	}
+	$tag='';
+	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
+    $tag .= '	<label class="btn btn-default icon-user-mark'.$opts['y_active'].'">'."\n";
+    $tag .= '   	<input type="radio" name="'.$name.'" value="Y"'.$opts['y_checked'].' /> Yes'."\n";
+    $tag .= '   </label>'."\n";
+    $tag .= '   <label class="btn btn-default icon-user-cancel'.$opts['n_active'].'">'."\n";
+    $tag .= '   	<input type="radio" name="'.$name.'" value="N"'.$opts['n_checked'].' /> No'."\n";
+    $tag .= '   </label>'."\n";
+    $tag .= '</div>'."\n";
 	return $tag;
 }
 //---------- begin function buildFormBegin-------------------
