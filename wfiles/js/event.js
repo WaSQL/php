@@ -916,17 +916,17 @@ function initBehaviors(ajaxdiv){
 	for (var n=0; n<navbars.length; n++){
     	navbars[n].onclick=function(){
         	var t=this.getAttribute('data-target');
-        	var tdiv=document.querySelector(t);
-        	var state=this.getAttribute('aria-hidden');
+        	var tdiv=getObject(t);
+        	var state=tdiv.getAttribute('aria-hidden');
         	switch(state.toLowerCase()){
             	case 'f':
             	case 'false':
             	case 0:
-            		this.setAttribute('aria-hidden','true');
+            		tdiv.setAttribute('aria-hidden','true');
             		removeClass(tdiv,'in');
             	break;
             	default:
-            		this.setAttribute('aria-hidden','false');
+            		tdiv.setAttribute('aria-hidden','false');
             		addClass(tdiv,'in');
             	break;
 			}
