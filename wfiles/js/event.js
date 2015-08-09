@@ -912,7 +912,7 @@ function initBehaviors(ajaxdiv){
 		}
 	}
 	//look for data-toggle modal
-	var navbars = GetElementsByAttribute('button', 'data-toggle', 'modal');
+	var navbars=document.querySelectorAll('[data-toggle="modal"]');
 	for (var n=0; n<navbars.length; n++){
     	navbars[n].onclick=function(){
         	var t=this.getAttribute('data-target');
@@ -933,7 +933,7 @@ function initBehaviors(ajaxdiv){
 		};
 	}
 	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
-	var navbars = GetElementsByAttribute('button', 'data-toggle', 'collapse');
+	var navbars=document.querySelectorAll('[data-toggle="collapse"]');
 	for (var n=0; n<navbars.length; n++){
     	navbars[n].onclick=function(){
         	var t=this.getAttribute('data-target');
