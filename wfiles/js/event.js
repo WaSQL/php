@@ -925,10 +925,12 @@ function initBehaviors(ajaxdiv){
             	case 0:
             		tdiv.setAttribute('aria-hidden','true');
             		removeClass(tdiv,'in');
+            		tdiv.style.display='none';
             	break;
             	default:
             		tdiv.setAttribute('aria-hidden','false');
             		addClass(tdiv,'in');
+            		tdiv.style.display='block';
             	break;
 			}
 			return false;
