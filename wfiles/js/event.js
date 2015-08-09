@@ -914,7 +914,8 @@ function initBehaviors(ajaxdiv){
 	//look for data-toggle modal
 	var navbars=document.querySelectorAll('[data-toggle="modal"]');
 	for (var n=0; n<navbars.length; n++){
-    	navbars[n].onclick=function(){
+    	navbars[n].onclick=function(e){
+			cancel(e);
         	var t=this.getAttribute('data-target');
         	var tdiv=getObject(t);
         	var state=tdiv.getAttribute('aria-hidden');
@@ -930,6 +931,7 @@ function initBehaviors(ajaxdiv){
             		addClass(tdiv,'in');
             	break;
 			}
+			return false;
 		};
 	}
 	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
