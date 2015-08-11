@@ -796,28 +796,32 @@ table th a {
 	height:24px;
 	z-index:9992
 }
-.w_centerpop .w_centerpop_close_top{
+.w_centerpop_close_top{
 	position:absolute;
-	right:-7px;
-	top:-7px;
-	width:24px;
-	height:24px;
+	right:-4px;
+	top:-4px;
+	font-size:20px;
 	cursor:pointer;
 	z-index:9993;
+	color:#58595a;
 }
+
 .w_centerpop .w_centerpop_content{
 	position:relative;
 	top:-15px;
 	padding:0px 10px 0px 10px;
 }
-.w_centerpop .w_centerpop_close_bot{
+.w_centerpop_close_bot{
 	position:absolute;
-	right:-7px;
-	bottom:-7px;
-	width:24px;
-	height:24px;
+	right:-4px;
+	bottom:-4px;
+	font-size:20px;
 	cursor:pointer;
 	z-index:9994;
+	color:#58595a;
+}
+.w_centerpop_close_top:hover, .w_centerpop_close_bot:hover{
+	color:#b34538;
 }
 /*wcart styles*/
 .w_wcart {
