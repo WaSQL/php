@@ -1793,6 +1793,22 @@ fieldset[disabled] .checkbox,
 fieldset[disabled] .checkbox-inline {
   cursor: not-allowed;
 }
+.input-xs {
+  height: 20px;
+  padding: 3px 8px;
+  font-size: 10px;
+  line-height: 1.2;
+  border-radius: 3px;
+}
+
+select.input-xs {
+  height: 20px;
+  line-height: 20px;
+}
+
+textarea.input-xs {
+  height: auto;
+}
 .input-sm {
   height: 30px;
   padding: 5px 10px;
