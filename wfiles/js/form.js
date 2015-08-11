@@ -2265,10 +2265,7 @@ function setCenterPopText(cpid,cptext,params){
 		txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
 	}
 	if(params.close_top){
-		txt += '	<div class="w_centerpop_close_top" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
-	}
-	if(params.drag){
-		txt += '	<div class="w_centerpop_drag" id="'+cpid+'_move" title="Click to drag"><img id="'+cpid+'_drag" src="/wfiles/icons/Xmove24.png" width="24" height="24" alt="move" /></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_top icon-cancel" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
 	}
 	//txt += '	<div class="w_centerpop_content">'+"\n";
 	txt += '		'+cptext+"\n";
@@ -2276,10 +2273,11 @@ function setCenterPopText(cpid,cptext,params){
 
 	txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
 	if(params.close_bot){
-		txt += '	<div class="w_centerpop_close_bot" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"><img src="/wfiles/icons/Xbutton24.png" width="24" height="24" alt="close" /></div>'+"\n";
+		txt += '	<div class="w_centerpop_close_bot icon-cancel" style="font-size:18px;" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
 	}
 	txt += '</div>'+"\n";
 	//set the text in cpid
+	console.log(txt);
 	setText(cpid,txt);
 	//center the object
 	if(params.center){
@@ -2288,10 +2286,12 @@ function setCenterPopText(cpid,cptext,params){
 	//make the object draggable
 	if(params.drag){
 		var dObj=getObject(cpid);
-		var dObjMove=getObject(cpid+'_move');
-		Drag.init(dObjMove,dObj);
-		dObjMove.style.position='absolute';
-		dObj.style.position='absolute';
+		var dObjMove=document.querySelector('[class="w_centerpop_title"]');
+		if(undefined != dObjMove){
+			Drag.init(dObjMove,dObj);
+			dObjMove.style.position='relative';
+			dObj.style.position='absolute';
+		}
 	}
 }
 //--------------------------
