@@ -1179,7 +1179,7 @@ function wasqlGetBehaviors($d=0){
 	//exclude: true
 	//$tvals=array('csseditor','jseditor','perleditor','phpeditor','rubyeditor','sqleditor','xmleditor');
 	$behaviors=array(
-		'csseditor'	=> '<img src="/wfiles/iconsets/16/css3.png" border="0" class="w_middle" /> CSS Editor',
+		'csseditor'	=> '<span class="icon-css3"></span> CSS Editor',
 		'javascript'=> '<img src="/wfiles/iconsets/16/javascript.png" border="0" class="w_middle" /> Javascript Editor',
 		'perleditor'=> '<img src="/wfiles/iconsets/16/perl.png" border="0" class="w_middle" /> Perl Editor',
 		'phpeditor'	=> '<img src="/wfiles/iconsets/16/php.png" border="0" class="w_middle" /> PHP Editor',
@@ -1210,6 +1210,7 @@ function wasqlGetInputtypes($d=0){
 	//"checkbox\r\ncolor\r\ncombo\r\ndate\r\ndatetime\r\nfile\r\nformula\r\nhidden\r\n
 	//multiselect\r\npassword\r\nradio\r\nselect\r\nslider\r\ntext\r\ntextarea\r\ntime",
 	$types=array(
+		'buttonselect'=>'Button Select',
 		'checkbox'	=> 'Checkbox',
 		'color'		=> 'Color',
 		'combo'		=> 'Combo',
