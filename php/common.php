@@ -196,6 +196,43 @@ function buildFakeContent($title='FAKE for'){
 	$rtn .= '<p><div class="w_bold">'.loremIpsum(30).'</div> '.loremIpsum(300).'</p>'."\n";
 	return $rtn;
 }
+//---------- begin function buildFormButtonSelect--------------------
+/**
+* @describe creates an button selection field
+* @param name string
+* @param opts array - true value/display value pairs.
+* @param params array 
+*	[value] - sets default selection
+*	[-button'] - btn-default, btn-primary, btn-warning, btn-danger, btn-info - defaults to btn-default
+* @return string
+* @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
+*/
+function buildFormButtonSelect($name,$opts=array(),$params=array()){
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	if(!isset($params['-button'])){
+		$params['-button']='btn-default';
+	}
+	$tag='';
+	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
+	foreach($opts as $tval=>$dval){
+		$class=$params['-button'];
+		$checked='';
+		if($tval==$params['value'] || $dval==$params['value']){
+			$class.=' active';
+			$checked=' checked';
+		}
+		if(isset($params["{$tval}_class"])){$class.=' '.$params["{$tval}_class"];}
+	    $tag .= '	<label class="btn '.$class.'">'."\n";
+	    $tag .= '   	<input type="radio" name="'.$name.'" value="'.$tval.'"';
+		$tag .= setTagAttributes($params);
+		$tag .= $checked.' /> '.$dval."\n";
+	    $tag .= '   </label>'."\n";
+	}
+    $tag .= '</div>'."\n";
+	return $tag;
+}
 //---------- begin function buildFormCalendar--------------------
 /**
 * @describe creates an HTML calendar control
@@ -423,44 +460,20 @@ function buildFormDateTime($name,$params=array()){
 }
 //---------- begin function buildFormGender--------------------
 /**
-* @describe creates an HTML hidden field
+* @describe creates an Button Select field for Gender
 * @param name string
 * @param params array
 * @return string
 * @usage echo buildFormGender('gender',$params);
 */
 function buildFormGender($name='gender',$params=array()){
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
-	$opts=array();
-	switch(strtolower($params['value'])){
-    	case 'm':
-    	case 'male':
-    		$opts['m_active']=' active';
-    		$opts['m_checked']=' checked';
-    		$opts['f_active']='';
-    		$opts['f_checked']='';
-    	break;
-    	case 'f':
-    	case 'female':
-    		$opts['f_active']=' active';
-    		$opts['f_checked']=' checked';
-    		$opts['m_active']='';
-    		$opts['m_checked']='';
-    	break;
-	}
-	$tag='';
-	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
-	//male
-    $tag .= '	<label class="btn btn-default icon-user-male'.$opts['m_active'].'">'."\n";
-    $tag .= '   	<input type="radio" name="'.$name.'" value="M"'.$opts['m_checked'].' /> Male'."\n";
-    $tag .= '   </label>'."\n";
-    $tag .= '   <label class="btn btn-default icon-user-female'.$opts['f_active'].'">'."\n";
-    $tag .= '   	<input type="radio" name="'.$name.'" value="F"'.$opts['f_checked'].' /> Female'."\n";
-    $tag .= '   </label>'."\n";
-    $tag .= '</div>'."\n";
-	return $tag;
+	$opts=array(
+		'M'=>'Male',
+		'F'=>'Female'
+	);
+	$params['M_class']='icon-user-male';
+	$params['F_class']='icon-user-female';
+	return buildFormButtonSelect('gender',$opts,$params);
 }
 //---------- begin function buildFormHidden--------------------
 /**
@@ -777,43 +790,20 @@ function buildFormTime($name,$params=array()){
 }
 //---------- begin function buildFormYesNo--------------------
 /**
-* @describe creates an HTML YesNo field
+* @describe creates an Button Select field for Yes/No
 * @param name string
 * @param params array
 * @return string
 * @usage echo buildFormYesNo('yesno',$params);
 */
 function buildFormYesNo($name='yesno',$params=array()){
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
-	$opts=array();
-	switch(strtolower($params['value'])){
-    	case 'y':
-    	case 'yes':
-    		$opts['y_active']=' active';
-    		$opts['y_checked']=' checked';
-    		$opts['n_active']='';
-    		$opts['n_checked']='';
-    	break;
-    	case 'n':
-    	case 'no':
-    		$opts['n_active']=' active';
-    		$opts['n_checked']=' checked';
-    		$opts['y_active']='';
-    		$opts['y_checked']='';
-    	break;
-	}
-	$tag='';
-	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
-    $tag .= '	<label class="btn btn-default icon-user-mark'.$opts['y_active'].'">'."\n";
-    $tag .= '   	<input type="radio" name="'.$name.'" value="Y"'.$opts['y_checked'].' /> Yes'."\n";
-    $tag .= '   </label>'."\n";
-    $tag .= '   <label class="btn btn-default icon-user-cancel'.$opts['n_active'].'">'."\n";
-    $tag .= '   	<input type="radio" name="'.$name.'" value="N"'.$opts['n_checked'].' /> No'."\n";
-    $tag .= '   </label>'."\n";
-    $tag .= '</div>'."\n";
-	return $tag;
+	$opts=array(
+		'Y'=>'Yes',
+		'N'=>'No'
+	);
+	$params['Y_class']='icon-thumbs-up';
+	$params['N_class']='icon-thumbs-down';
+	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormBegin-------------------
 /**
