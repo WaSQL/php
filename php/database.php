@@ -3474,11 +3474,22 @@ function getDBFieldTag($params=array()){
 				$options[$tval]=$dval;
             }
             $tag=buildFormMultiSelect($info[$field]['fieldname'],$options,$info[$field]);
-			break;
+		break;
+		case 'buttonselect':
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormButtonSelect($info[$field]['fieldname'],$options,$info[$field]);
+		break;
 		//Password
 		case 'password':
 			$tag=buildFormPassword($info[$field]['name'],$info[$field]);
-			break;
+		break;
 		//Radio
 		case 'radio':
 			$selections=getDBFieldSelections($info[$field]);
