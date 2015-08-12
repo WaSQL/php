@@ -214,6 +214,30 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	if(!isset($params['-button'])){
 		$params['-button']='btn-default';
 	}
+	//check for size option
+	if(!isset($params['-size'])){$params['-size']='';}
+	switch(strtolower($params['-size'])){
+    	case 'xs':
+    	case 'extrasmall':
+    		$params['-button'].=' btn-xs';
+    	break;
+		case 'small':
+    	case 'sm':
+			$params['-button'].=' btn-sm';
+		break;
+		case 'md':
+		case 'medium':
+			$params['-button'].=' btn-md';
+		break;
+		case 'lg':
+		case 'large':
+			$params['-button'].=' btn-lg';
+		break;
+		case 'full':
+		case 'block':
+			$params['-button'].=' btn-block';
+		break;
+	}
 	$tag='';
 	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
 	foreach($opts as $tval=>$dval){
