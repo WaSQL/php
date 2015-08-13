@@ -4283,7 +4283,7 @@ function fileManager($startdir='',$params=array()){
     if($params['-rights'] != 'readonly'){
     	//HTML5 file upload
     	$path=encodeBase64($cdir);
-		$rtn .= '<div title="drag files to upload" _onsuccess="'.$params['-onsuccess'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+		$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= '<table class="table table-condensed table-striped table-bordered">'."\n";
