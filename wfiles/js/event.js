@@ -312,7 +312,7 @@ function centerpopDiv(txt,rtimer,x){
 		params.showtime=rtimer;
     }
 	popUpDiv('',params);
-	setCenterPopText(divid,txt,{drag:false,close_bot:false});
+	setCenterPopText(divid,txt,{drag:true,close_bot:false});
 	centerObject(divid);
 	setStyle(divid,'zIndex','99999');
 	return false;
@@ -382,7 +382,7 @@ function popUpDiv(content,param){
         style: s,
         title: "",
         closestyle:"cursor:pointer;",
-        close: '<img src="/wfiles/x_red.gif">',
+        close: '<span class="icon-cancel w_danger"></span>',
         bodystyle: bs,
         titleleft: 20,
         body: content
@@ -437,7 +437,7 @@ function popUpDiv(content,param){
 	    var tb = document.createElement("tbody");
 	    if(undefined == param['notop']){
 		    //title row - begin
-		    var toprow = document.createElement("tr");
+		    var toprow = document.createElement("div");
 		    //titlecell
 		    var titlecell = document.createElement("td");
 		 	//title
