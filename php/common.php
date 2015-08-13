@@ -4262,12 +4262,12 @@ function fileManager($startdir='',$params=array()){
 		}
 	$rtn .= '	</form>'."\n";
 	$rtn .= '</div>'."\n";
-	if(!$params['-onsuccess']){$params['-onsuccess']='window.location=window.location;';}
+	if(!$params['-onfinish']){$params['-onfinish']='window.location=window.location;';}
 	if(count($files)==0){
 		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
 	    	$path=encodeBase64($cdir);
-			$rtn .= '<div title="drag files to upload" _onsuccess="'.$params['-onsuccess'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+			$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 			$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
 			$rtn .= '</div>'."\n";
 		}
