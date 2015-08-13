@@ -1992,7 +1992,7 @@ function arrays2CSV($recs=array(),$params=array()){
 	}
 	$csvlines=array();
 	if(!isset($params['-noheader']) || $params['-noheader']==0){
-		if($params['-force']){
+		if(isset($params['-force']) && $params['-force']){
 			$csvlines[]=csvImplode(array_values($fieldmap),',','"',1);
 		}
 		else{
@@ -2005,7 +2005,7 @@ function arrays2CSV($recs=array(),$params=array()){
 		foreach($fieldmap as $field=>$dval){
         	$vals[]=$rec[$field];
 		}
-		if($params['-force']){
+		if(isset($params['-force']) && $params['-force']){
 			$csvlines[]=csvImplode($vals,',','"',1);
 		}
 		else{
@@ -8765,7 +8765,7 @@ function postURL($url,$params=array()) {
 	if(isset($params['-user_agent'])){
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 		}
-	if(stringBeginsWith($url,'https') || $params['-ssl']){
+	if(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
 		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
