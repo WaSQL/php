@@ -906,12 +906,16 @@ function filemanagerEdit(id,page,param){
 	var fname=obj.getAttribute('filename');
 	var desc=getText(obj);
 	var htm='';
-	htm += '<form class="w_form" method="post" action="/'+page+'" onSubmit="return submitForm(this);">'+"\n";
-	htm += '<table class="w_table w_nopad">'+"\n";
-	htm += '<tr><th>Name</th><td><input type="text" name="file_name" value="'+fname+'" style="width:300px;"></td></tr>'+"\n";
-	htm += '<tr><th>Desc</th><td><textarea name="file_desc" style="width:300px;height:60;" onkeypress="autoGrow(this,200);">'+desc+'</textarea></td></tr>'+"\n";
-	htm += '<tr><td align="right" colspan="2"><input type="submit" value="Save Changes"></td></tr>'+"\n";
-	htm += '</table>'+"\n";
+	htm += '<div class="w_centerpop_title">File Manager File Edit</div>'+"\n";
+	htm += '<div  style="padding:0 25px 0 25px;">'+"\n";
+	htm += '	<form method="post" action="/'+page+'" onSubmit="return submitForm(this);">'+"\n";
+	htm += '		<div class="row">'+"\n";
+	htm += '			<label for="file_name">Name</label><input type="text" id="file_name" name="file_name" value="'+fname+'" class="form-control">'+"\n";
+	htm += '		</div>'+"\n";
+	htm += '		<div class="row">'+"\n";
+	htm += '			<label for="file_desc">Desc</label><textarea name="file_desc" class="form-control" onkeypress="autoGrow(this,200);">'+desc+'</textarea>'+"\n";
+	htm += '		</div>'+"\n";
+	htm += '		<div class="row text-right" style="margin-top:20px;"><button type="submit" class="btn btn-primary">Save Changes</button></div>'+"\n";
 	if(param){
 		htm += '<div style="display:none" id="params">'+"\n";
 		for (var key in param){
@@ -919,9 +923,10 @@ function filemanagerEdit(id,page,param){
 			}
 		htm += '</div>'+"\n";
 		}
-	htm += '</form><br />'+"\n";
+	htm += '</form>'+"\n";
+	htm += '</div>'+"\n";
 	//alert(htm);
-	popUpDiv(htm,{title:'filemanager Edit',drag:1,center:'x',y:'-100',width:350});
+	centerpopDiv(htm);
 	return false;
 	}
 //--------------------------
