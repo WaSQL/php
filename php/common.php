@@ -11391,6 +11391,9 @@ function wasqlMail($opts=array(),$debug=0){
 	if(!isset($opts['url']) && isset($CONFIG['wasqlmail'])){
 		$opts['url']=$CONFIG['wasqlmail'];
 		}
+	if(isset($opts['attach'])){
+		if(is_array($opts['attach'])){$opts['attach']=implode(';',$opts['attach']);}
+	}
 	//defaults
 	if(!isset($opts['url'])){$opts['url']='http://'.$_SERVER['HTTP_HOST'].'/cgi-bin/wasqlmail.pl';}
 	if(!isset($opts['from'])){$opts['from']='no-reply@'.$_SERVER['UNIQUE_HOST'];}
