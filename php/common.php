@@ -4063,6 +4063,7 @@ function fileExplorer($startdir='',$param=array()){
 function fileManager($startdir='',$params=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
 	if(!is_dir($startdir)){return "{$startdir} does not exist";}
+	loadExtrasJs('html5');
 	if(isset($params['rights'])){$params['-rights']=$params['rights'];}
 	if(!isset($params['-rights'])){$params['-rights']='all';}
 	if(isset($params['height'])){$params['-height']=$params['height'];}
