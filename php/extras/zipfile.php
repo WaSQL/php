@@ -5,6 +5,28 @@
 //load the common functions library
 $progpath=dirname(__FILE__);
 include_once("{$progpath}/zipfile/CreateZipFile.inc.php");
+//---------- begin function zipCreate ----------
+/**
+* @describe creates a zip file and returns the name
+* @param files array - array of files to include in the zip file
+* @param zipname string - name of the zipfile - defaults to zipfile.zip
+* @return boolean
+* @usage
+*	<?php
+*	$files=array('/var/www/temp/file1.php','/var/www/temp/file2.txt','/var/www/temp/file3.png');
+*	$bool=zipCreate($files,'myfiles.zip');
+*	?>
+*/
+function zipCreate($files=array(),$zipname='zipfile.zip'){
+	$zip = new CreateZipFile;
+	foreach($files as $filename=>$data){
+		$zip->addFile($data, $filename);
+	}
+	$fd=fopen($zipname, "wb");
+	$out=fwrite($fd,$zip->getZippedfile());
+	fclose($fd);
+	return true;
+}
 //---------- begin function zipPushData ----------
 /**
 * @describe creates and pushes a zip file to the browser
