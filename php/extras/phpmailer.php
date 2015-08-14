@@ -72,7 +72,9 @@ function phpmailerSendMail($params=array()){
 		if(!isset($params[$key]) || strlen($params[$key])==0){return "phpmailerSendMail Error - missing required parameter: ". $key;}
     }
 	$mail = new PHPMailer;
-	//$mail->SMTPDebug = 1;  // debugging: 1 = errors and messages, 2 = messages only
+	if(isset($params['debug'])){
+		$mail->SMTPDebug = $params['debug'];  // debugging: 1 = errors and messages, 2 = messages only
+	}
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
 	//custom SMTP?
 	if(isset($params['smtp'])){
@@ -82,7 +84,10 @@ function phpmailerSendMail($params=array()){
 		}
 		$mail->IsSMTP();                                      // Set mailer to use SMTP
 		$mail->Host = $params['smtp'];                 		  // Specify main and backup server
-		$mail->SMTPAuth = true;                               // Enable SMTP authentication
+		// Enable SMTP authentication only if user and pass are set
+		if(isset($params['smtpuser']) || isset($params['smtppass'])){
+			$mail->SMTPAuth = true;
+		}
 		if(isset($params['smtpuser'])){
 			$mail->Username = $params['smtpuser'];         // SMTP username
 		}
@@ -177,7 +182,6 @@ function phpmailerSendMail($params=array()){
 			}
 			else{
 				$name=getFileName($file);
-				//$path,$name
 				$mail->AddAttachment($file,$name);
 			}
 		}
@@ -204,7 +208,7 @@ function phpmailerSendMail($params=array()){
 			}
 		}
 	}
-	//echo printValue($mail);exit;
+	//echo printValue($params). printValue($mail);exit;
 	if(!$mail->Send()){return "phpmailerSendMail Error -". $mail->ErrorInfo;}
 	return 1;
 }
