@@ -80,7 +80,7 @@ sub getContentType{
 sub getFileContentId{
 	#info: returns a unique content ID based on the shaw hash - 40 char hexadecimal number
 	my $file=shift;
-	my $name=getFileName($file);
+	my $name=sha1_hex(getFileName($file));
 	$shaw=sha1_hex(getFileContents($file));
 	return $name . '@'. $shaw;
 	}
@@ -992,7 +992,7 @@ sub sendMailData{
 		print $MailSock qq|X-MimeOLE: Produced By WaSQL Mailer MimeOLE V6.00.2800.1106\r\n|;
 		print $MailSock qq|Priority: Normal\r\n|;
 		}
-	print $MailSock "X-Mailer: WaSQL Mailer Express 6.00.2900.3138\r\n";
+	print $MailSock "X-Mailer: WaSQL Mailer Express 7.00.2900.3138\r\n";
 	print $MailSock "Status: RO\r\n\r\n";
 	if($params{attach} ne '' or $params{message}=~m/\<(.+?)\>/is){print $MailSock qq|This is a multi-part message in MIME format.\r\n\r\n|;}
 	if($msg_type=~/^Html$/is){
@@ -1085,7 +1085,7 @@ sub sendMailData{
 			print $MailSock qq|\-\-$boundary\r\n|;
 			print $MailSock qq|Content-Type: $type;\r\n|;
 			print $MailSock qq|\tname="$filename"\r\n|;
-			print $MailSock qq|Content-Description: File Transfer\r\n|;
+			print $MailSock qq|Content-Description: $filename\r\n|;
 			if($type=~/text/is){
 				print $MailSock qq|Content-Transfer-Encoding: 7bit\r\n|;
 				}
