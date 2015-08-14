@@ -19,8 +19,8 @@ include_once("{$progpath}/zipfile/CreateZipFile.inc.php");
 */
 function zipCreate($files=array(),$zipname='zipfile.zip'){
 	$zip = new CreateZipFile;
-	foreach($files as $filename=>$data){
-		$zip->addFile($data, $filename);
+	foreach($files as $file){
+		$zip->addFile(getFileContents($file), getFileName($file));
 	}
 	$fd=fopen($zipname, "wb");
 	$out=fwrite($fd,$zip->getZippedfile());
