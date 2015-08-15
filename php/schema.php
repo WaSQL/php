@@ -226,6 +226,17 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 			break;
+		case '_html_entities':
+			$fields['entity_name']="varchar(125) NULL";
+			$fields['entity_number']="varchar(15) NOT NULL UNIQUE";
+			$fields['category']="varchar(100) NULL";
+			$fields['description']="varchar(255) NULL";
+			$ok=createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//import csv
+			$ok=schemaImportCSV($table,'html_entities.csv');
+			return 1;
+			break;
 		case '_tiny':
 			$fields['url']="varchar(2100) NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
@@ -706,12 +717,7 @@ function createWasqlTable($table=''){
 			//populate the table if there is a countries.csv
 			$progpath=dirname(__FILE__);
 			if(!schemaUpdateCountries() && is_file("$progpath/schema/countries.csv")){
-				$csv=getCSVFileContents("$progpath/schema/countries.csv");
-				foreach($csv['items'] as $item){
-                	$item['-table']=$table;
-                	$id=addDBRecord($item);
-                	if(!isNum($id)){abort(printValue($id).printValue($item));}
-				}
+				$ok=schemaImportCSV($table,'countries.csv');
             }
             addMetaData($table);
             return 1;
@@ -722,6 +728,19 @@ function createWasqlTable($table=''){
     	}
 	return 0;
 	}
+//---------- begin function schemaUpdateCountries
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function schemaImportCSV($table,$file){
+	$progpath=dirname(__FILE__);
+	$csv=getCSVFileContents("$progpath/schema/{$file}");
+	foreach($csv['items'] as $item){
+        $item['-table']=$table;
+        $id=addDBRecord($item);
+        if(!isNum($id)){abort(printValue($id).printValue($item));}
+	}
+}
 //---------- begin function schemaUpdateCountries
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -2130,7 +2149,7 @@ function getWasqlTables(){
 		'_fielddata','_tabledata','countries','states','contact_form',
 		'_access','_access_summary','_history','_cron','_cronlog','_pages','_pagelog','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_models','_sessions'
+		'_reports','_models','_sessions','_html_entities'
 		);
 	//include wpass table?
 	if($CONFIG['wpass']){$tables[]='_wpass';}
