@@ -3620,7 +3620,9 @@ function encodeHtml($string='',$convert_tabs=0){
 	if(strlen($string)==0){return $string;}
 	//Mar 30 2015 - additional UTF-8 fix
 	$string=str_replace('?','[[!Q!]]',$string);
-	$string=utf2Html($string);
+	if(function_exists('mb_encode_numericentity')){
+		$string=utf2Html($string);
+	}
 	$string=str_replace('?',' ',$string);
 	$string=str_replace('[[!Q!]]','?',$string);
 	//Aug 7 2012: fix for UTF-8 characters to show properly in textarea
