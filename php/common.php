@@ -10366,7 +10366,8 @@ function processFileUploads($docroot=''){
                 	$cmd="convert -resize '{$_REQUEST['data-resize']}' '{$abspath}' '{$refile}'";
                 	$ok=cmdResults($cmd);
                 	if(is_file($refile) && filesize($refile) > 0){
-						$abspath=$refile;
+						unlink($abspath);
+						rename($refile,$abspath);
 						$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
                 		$_REQUEST[$name.'_size']=filesize($abspath);
 					}
