@@ -10361,11 +10361,17 @@ function processFileUploads($docroot=''){
             if(is_file($abspath)){
 				//resize the image?
 				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
-                	$cmd="convert -resize {$_REQUEST['data-resize']} '{$abspath}' '{$abspath}'";
+					$fname=getFileName($abspath,1);
+					$refile=str_replace($fname,$fname.'_resized',$abspath);
+                	$cmd="convert -resize '{$_REQUEST['data-resize']}' '{$abspath}' '{$refile}'";
                 	$ok=cmdResults($cmd);
-                	$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
-                	$_REQUEST[$name.'_size']=filesize($abspath);
+                	if(is_file($refile) && filesize($refile) > 0){
+						$abspath=$refile;
+						$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+                		$_REQUEST[$name.'_size']=filesize($abspath);
+					}
                 	$_REQUEST[$name.'_resized']=$ok;
+                	//echo printValue($_REQUEST);exit;
 				}
 				//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
