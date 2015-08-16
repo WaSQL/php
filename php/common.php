@@ -4270,7 +4270,11 @@ function fileManager($startdir='',$params=array()){
 		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
 	    	$path=encodeBase64($cdir);
-			$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+			$rtn .= '<div title="drag files to upload"';
+			if(isset($params['-resize'])){
+            	$rtn .= ' data-resize="'.$params['-resize'].'"'."\n";
+			}
+			$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 			$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
 			$rtn .= '</div>'."\n";
 		}
@@ -4286,7 +4290,11 @@ function fileManager($startdir='',$params=array()){
     if($params['-rights'] != 'readonly'){
     	//HTML5 file upload
     	$path=encodeBase64($cdir);
-		$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+		$rtn .= '<div title="drag files to upload"';
+		if(isset($params['-resize'])){
+            $rtn .= ' data-resize="'.$params['-resize'].'"'."\n";
+		}
+		$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= '<table class="table table-condensed table-striped table-bordered">'."\n";
@@ -10224,18 +10232,19 @@ function processFileUploads($docroot=''){
 	$_REQUEST['ProcessFileUploads_CallCount']+=1;
 	global $USER;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
-	if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	if(is_array($_FILES) && count($_FILES) > 0){
 	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
 			if($file['error'] != 0 && !strlen($file['tmp_name'])){
 				$_REQUEST[$name.'_error']="File Upload Error (1) - " . $file['error'];
 				continue;
-				}
+			}
 			//if editing a record there will be a _prev. If _remove != 1 skip
 			if(isset($_REQUEST[$name.'_prev']) && strlen($_REQUEST[$name.'_prev']) && $_REQUEST[$name.'_prev'] != 'NULL' && $_REQUEST[$name.'_remove'] != 1){
 				$_REQUEST[$name.'_skipped']=1;
 				continue;
-				}
+			}
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
             	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
             	if(isset($_SERVER['HTTP_X_CHUNK_NUMBER'])){
@@ -10258,9 +10267,8 @@ function processFileUploads($docroot=''){
 			if(isset($_REQUEST[$name.'_autonumber']) && $_REQUEST[$name.'_autonumber']==1){
 				//change the filename to be unique
 				$crc=encodeCRC(sha1_file($file['tmp_name']));
-
 				$file['name']=getFileName($file['name'],1) . '_' . $crc . '.' . getFileExtension($file['name']);
-				}
+			}
 			elseif(isset($_REQUEST[$name.'_rename'])){
 				/*Rename specs:
 					%key% will be replace with the value of $_REQUEST[key}
@@ -10272,10 +10280,10 @@ function processFileUploads($docroot=''){
                 foreach($_REQUEST as $rfld=>$rval){
 					$rfldstr='%'.$rfld.'%';
                     $rename=str_replace($rfldstr,$rval,$rename);
-                	}
+                }
 				//change the filename to be unique
 				$file['name']=$rename . ".{$ext}";
-				}
+			}
 			if(strlen($_REQUEST['_dir'])){
 				$cpath =decodeBase64($_REQUEST['_dir']);
 				$cpath=str_replace('//','/',$cpath);
@@ -10289,11 +10297,11 @@ function processFileUploads($docroot=''){
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
-						}
+					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
-					}
 				}
+			}
 			elseif(strlen($_REQUEST[$name.'_path'])){
 				$wpath=getWasqlPath();
 				$path=$_REQUEST[$name.'_path'];
@@ -10309,7 +10317,7 @@ function processFileUploads($docroot=''){
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
-						}
+					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
 				}
@@ -10322,10 +10330,10 @@ function processFileUploads($docroot=''){
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
-					}
+				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
-				}
+			}
 			else{
 				$path='/uploads';
 				$cpath=$docroot . $path;
@@ -10334,23 +10342,31 @@ function processFileUploads($docroot=''){
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
-					}
+				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
-				}
+			}
 			$webpath=str_replace('//','/',$webpath);
             $abspath=str_replace('//','/',$abspath);
             $absdir=getFilePath($abspath);
             if(!is_dir($absdir)){
 				@trigger_error("");
 				mkdir($absdir,0777,1);
-				}
+			}
             if(!is_file($file['tmp_name'])){$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";}
             //echo "moving {$file['tmp_name']} to {$abspath}<br>\n";
             @trigger_error("");
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
+				//resize the image?
+				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
+                	$cmd="convert -resize {$_REQUEST['data-resize']} '{$abspath}' '{$abspath}'";
+                	$ok=cmdResults($cmd);
+                	$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+                	$_REQUEST[$name.'_size']=filesize($abspath);
+                	$_REQUEST[$name.'_resized']=$ok;
+				}
 				//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
 					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
@@ -10377,32 +10393,31 @@ function processFileUploads($docroot=''){
 				$_REQUEST[$name.'_size']=filesize($abspath);
 				//Perhaps we should extract the exif info from the file.
 				// /cgi-bin/exif.pl?file=$afile
-
             	//if the uploaded file is an image - get its width and height
             	if(isImage($abspath)){
 					$info=@getimagesize($abspath);
 					if(is_array($info)){
                         $_REQUEST[$name.'_width']=$info[0];
                         $_REQUEST[$name.'_height']=$info[1];
-                    	}
-                	}
-            	}
+                    }
+                }
+            }
             else{
 				$e=error_get_last();
 				if($e['message']!==''){
 		    		// An error occurred uploading the file
 		    		$_REQUEST[$name.'_error']="File Upload Error (2) - " . $e['message'];
-					}
+				}
 				else{
 					$_REQUEST[$name.'_error']="File Upload Error (3)" . printValue($e);
-                	}
+                }
                 //echo printValue($e);
-            	}
-        	}
+            }
+        }
 		return 1;
-		}
-    return 0;
 	}
+    return 0;
+}
 //---------- begin function mergeChunkedFiles ----
 /**
  * @author slloyd
