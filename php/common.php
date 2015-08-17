@@ -4075,6 +4075,7 @@ function fileManager($startdir='',$params=array()){
 	if(!isset($params['-icons'])){$params['-icons']=1;}
 	if(!isset($params['-actions'])){$params['-actions']='download,edit,delete';}
 	if(!isset($params['-fields'])){$params['-fields']='name,description,size,modified,perms';}
+	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
 	$params['-rights']=strtolower($params['-rights']);
 	global $PAGE;
 	$rtn='';
@@ -4125,7 +4126,7 @@ function fileManager($startdir='',$params=array()){
 		}
 	//echo printValue($description);
 	//Handle file uploads
-	 if($params['-rights'] == 'all' && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	 if($params['-rights'] == 'all' && is_array($_FILES) && count($_FILES) > 0){
 	 	processFileUploads($cdir);
 	 	//update the description XML in the current path
 	 	if(isset($_REQUEST['file_path']) && isset($_REQUEST['file_size']) && isset($_REQUEST['file_type']) && isset($_REQUEST['description']) && strlen($_REQUEST['description'])){
@@ -4155,10 +4156,10 @@ function fileManager($startdir='',$params=array()){
 		$pathparts=preg_split('/\/+/',$relpath);
 		$rpath=$startdir;
 		$rpathlinks=array();
-		array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($rpath).'">Root:</a>'."\n");
+		array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">Root:</a>'."\n");
 		foreach($pathparts as $pathpart){
 			$rpath .= "/{$pathpart}";
-			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
+			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
         }
 		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks).'</div>'."\n";
 	}
@@ -4239,26 +4240,30 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<div style="width:400px;padding:25px;">'."\n";
-	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'"  enctype="multipart/form-data">'."\n";
+	$rtn .= '  <div style="width:400px;padding:25px;">'."\n";
+
+	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
 	$rtn .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'."\n";
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="_newdir">New Dir</label>'."\n";
+		$rtn .= '		<label for="_newdir">New Directory Name</label>'."\n";
 		$rtn .= '		<input type="text" id="_newdir" class="form-control" name="_newdir" value="" />'."\n";
 		$rtn .= '	</div>'."\n";
 		}
 	if($params['-rights'] != 'readonly'){
-		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="file">New File</label>'."\n";
-		$rtn .= '		<input type="file" class="form-control" id="file" name="file" />'."\n";
-		$rtn .= '	</div>'."\n";
-		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="description">Description</label>'."\n";
-		$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
-		$rtn .= '	</div>'."\n";
+		if(!isset($params['-hide']) || !stringContains($params['-hide'],'browse')){
+			$rtn .= '	<div class="row">'."\n";
+			$rtn .= '		<label for="file">New File</label>'."\n";
+			$rtn .= '		<input type="file" class="form-control" id="file" name="file" />'."\n";
+			$rtn .= '	</div>'."\n";
+			$rtn .= '	<div class="row">'."\n";
+			$rtn .= '		<label for="description">Description</label>'."\n";
+			$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
+			$rtn .= '	</div>'."\n";
+		}
+
 		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'."\n";
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
 		$rtn .= '	</div>'."\n";
@@ -4321,12 +4326,12 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
 			$cspan=count($fields);
-			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
 			//actions
 			$rtn .= '		<td class="nowrap">'."\n";
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 			}
 			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/browsefolder.gif" alt="browse" /></a>'."\n";
 			$rtn .= '		</td>'."\n";
@@ -4381,8 +4386,8 @@ function fileManager($startdir='',$params=array()){
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap">'."\n";
 			$rtn .= '		<a title="Download" alt="Download" class="w_link" href="'.$previewlink.'"><img src="/wfiles/download.gif" alt="download" /></a>'."\n";
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 				}
 			$rtn .= '		</td>'."\n";
 			}
