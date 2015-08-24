@@ -135,8 +135,8 @@ function fileUploadAbort() {}
 function fileUploadProgress(t,e,r) {
 	o = getObject(r);
 	if(undefined == o){return;}
-    var a = Math.round(t.loaded / t.total * 100),
-    o.style.width = a + "px"
+    var a = Math.round(t.loaded / t.total * 100);
+    o.style.width = a + "px";
 }
 
 function eventCancel(t) {
