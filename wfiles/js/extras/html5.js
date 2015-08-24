@@ -133,9 +133,9 @@ function fileUploadError(t, e, i) {
 function fileUploadAbort() {}
 
 function fileUploadProgress(t,e,r) {
-
+	o = getObject(r);
+	if(undefined == o){return;}
     var a = Math.round(t.loaded / t.total * 100),
-        o = getObject(r);
     o.style.width = a + "px"
 }
 
