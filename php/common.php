@@ -3620,7 +3620,9 @@ function encodeHtml($string='',$convert_tabs=0){
 	if(strlen($string)==0){return $string;}
 	//Mar 30 2015 - additional UTF-8 fix
 	$string=str_replace('?','[[!Q!]]',$string);
-	$string=utf2Html($string);
+	if(function_exists('mb_encode_numericentity')){
+		$string=utf2Html($string);
+	}
 	$string=str_replace('?',' ',$string);
 	$string=str_replace('[[!Q!]]','?',$string);
 	//Aug 7 2012: fix for UTF-8 characters to show properly in textarea
@@ -4073,6 +4075,7 @@ function fileManager($startdir='',$params=array()){
 	if(!isset($params['-icons'])){$params['-icons']=1;}
 	if(!isset($params['-actions'])){$params['-actions']='download,edit,delete';}
 	if(!isset($params['-fields'])){$params['-fields']='name,description,size,modified,perms';}
+	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
 	$params['-rights']=strtolower($params['-rights']);
 	global $PAGE;
 	$rtn='';
@@ -4123,7 +4126,7 @@ function fileManager($startdir='',$params=array()){
 		}
 	//echo printValue($description);
 	//Handle file uploads
-	 if($params['-rights'] == 'all' && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	 if($params['-rights'] == 'all' && is_array($_FILES) && count($_FILES) > 0){
 	 	processFileUploads($cdir);
 	 	//update the description XML in the current path
 	 	if(isset($_REQUEST['file_path']) && isset($_REQUEST['file_size']) && isset($_REQUEST['file_type']) && isset($_REQUEST['description']) && strlen($_REQUEST['description'])){
@@ -4153,10 +4156,10 @@ function fileManager($startdir='',$params=array()){
 		$pathparts=preg_split('/\/+/',$relpath);
 		$rpath=$startdir;
 		$rpathlinks=array();
-		array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($rpath).'">Root:</a>'."\n");
+		array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">Root:</a>'."\n");
 		foreach($pathparts as $pathpart){
 			$rpath .= "/{$pathpart}";
-			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
+			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
         }
 		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks).'</div>'."\n";
 	}
@@ -4237,26 +4240,30 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '<div style="width:400px;padding:25px;">'."\n";
-	$rtn .= '	<form name="_fmfile" method="POST" action="/'.$PAGE['name'].'"  enctype="multipart/form-data">'."\n";
+	$rtn .= '  <div style="width:400px;padding:25px;">'."\n";
+
+	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
 	$rtn .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'."\n";
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="_newdir">New Dir</label>'."\n";
+		$rtn .= '		<label for="_newdir">New Directory Name</label>'."\n";
 		$rtn .= '		<input type="text" id="_newdir" class="form-control" name="_newdir" value="" />'."\n";
 		$rtn .= '	</div>'."\n";
 		}
 	if($params['-rights'] != 'readonly'){
-		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="file">New File</label>'."\n";
-		$rtn .= '		<input type="file" class="form-control" id="file" name="file" />'."\n";
-		$rtn .= '	</div>'."\n";
-		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="description">Description</label>'."\n";
-		$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
-		$rtn .= '	</div>'."\n";
+		if(!isset($params['-hide']) || !stringContains($params['-hide'],'browse')){
+			$rtn .= '	<div class="row">'."\n";
+			$rtn .= '		<label for="file">New File</label>'."\n";
+			$rtn .= '		<input type="file" class="form-control" id="file" name="file" />'."\n";
+			$rtn .= '	</div>'."\n";
+			$rtn .= '	<div class="row">'."\n";
+			$rtn .= '		<label for="description">Description</label>'."\n";
+			$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
+			$rtn .= '	</div>'."\n";
+		}
+
 		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'."\n";
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
 		$rtn .= '	</div>'."\n";
@@ -4268,7 +4275,11 @@ function fileManager($startdir='',$params=array()){
 		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
 	    	$path=encodeBase64($cdir);
-			$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+			$rtn .= '<div title="drag files to upload"';
+			if(isset($params['-resize'])){
+            	$rtn .= ' data-resize="'.$params['-resize'].'"'."\n";
+			}
+			$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 			$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
 			$rtn .= '</div>'."\n";
 		}
@@ -4284,7 +4295,11 @@ function fileManager($startdir='',$params=array()){
     if($params['-rights'] != 'readonly'){
     	//HTML5 file upload
     	$path=encodeBase64($cdir);
-		$rtn .= '<div title="drag files to upload" _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
+		$rtn .= '<div title="drag files to upload"';
+		if(isset($params['-resize'])){
+            $rtn .= ' data-resize="'.$params['-resize'].'"'."\n";
+		}
+		$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'."\n";
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= '<table class="table table-condensed table-striped table-bordered">'."\n";
@@ -4311,12 +4326,12 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
 			$cspan=count($fields);
-			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
 			//actions
 			$rtn .= '		<td class="nowrap">'."\n";
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 			}
 			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/browsefolder.gif" alt="browse" /></a>'."\n";
 			$rtn .= '		</td>'."\n";
@@ -4371,8 +4386,8 @@ function fileManager($startdir='',$params=array()){
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap">'."\n";
 			$rtn .= '		<a title="Download" alt="Download" class="w_link" href="'.$previewlink.'"><img src="/wfiles/download.gif" alt="download" /></a>'."\n";
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$PAGE['name'].'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
 				}
 			$rtn .= '		</td>'."\n";
 			}
@@ -10222,18 +10237,19 @@ function processFileUploads($docroot=''){
 	$_REQUEST['ProcessFileUploads_CallCount']+=1;
 	global $USER;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
-	if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
+	if(is_array($_FILES) && count($_FILES) > 0){
 	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
 			if($file['error'] != 0 && !strlen($file['tmp_name'])){
 				$_REQUEST[$name.'_error']="File Upload Error (1) - " . $file['error'];
 				continue;
-				}
+			}
 			//if editing a record there will be a _prev. If _remove != 1 skip
 			if(isset($_REQUEST[$name.'_prev']) && strlen($_REQUEST[$name.'_prev']) && $_REQUEST[$name.'_prev'] != 'NULL' && $_REQUEST[$name.'_remove'] != 1){
 				$_REQUEST[$name.'_skipped']=1;
 				continue;
-				}
+			}
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
             	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
             	if(isset($_SERVER['HTTP_X_CHUNK_NUMBER'])){
@@ -10256,9 +10272,8 @@ function processFileUploads($docroot=''){
 			if(isset($_REQUEST[$name.'_autonumber']) && $_REQUEST[$name.'_autonumber']==1){
 				//change the filename to be unique
 				$crc=encodeCRC(sha1_file($file['tmp_name']));
-
 				$file['name']=getFileName($file['name'],1) . '_' . $crc . '.' . getFileExtension($file['name']);
-				}
+			}
 			elseif(isset($_REQUEST[$name.'_rename'])){
 				/*Rename specs:
 					%key% will be replace with the value of $_REQUEST[key}
@@ -10270,10 +10285,10 @@ function processFileUploads($docroot=''){
                 foreach($_REQUEST as $rfld=>$rval){
 					$rfldstr='%'.$rfld.'%';
                     $rename=str_replace($rfldstr,$rval,$rename);
-                	}
+                }
 				//change the filename to be unique
 				$file['name']=$rename . ".{$ext}";
-				}
+			}
 			if(strlen($_REQUEST['_dir'])){
 				$cpath =decodeBase64($_REQUEST['_dir']);
 				$cpath=str_replace('//','/',$cpath);
@@ -10287,11 +10302,11 @@ function processFileUploads($docroot=''){
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
-						}
+					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
-					}
 				}
+			}
 			elseif(strlen($_REQUEST[$name.'_path'])){
 				$wpath=getWasqlPath();
 				$path=$_REQUEST[$name.'_path'];
@@ -10307,7 +10322,7 @@ function processFileUploads($docroot=''){
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
-						}
+					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
 				}
@@ -10320,10 +10335,10 @@ function processFileUploads($docroot=''){
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
-					}
+				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
-				}
+			}
 			else{
 				$path='/uploads';
 				$cpath=$docroot . $path;
@@ -10332,23 +10347,38 @@ function processFileUploads($docroot=''){
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
-					}
+				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
-				}
+			}
 			$webpath=str_replace('//','/',$webpath);
             $abspath=str_replace('//','/',$abspath);
             $absdir=getFilePath($abspath);
             if(!is_dir($absdir)){
 				@trigger_error("");
 				mkdir($absdir,0777,1);
-				}
+			}
             if(!is_file($file['tmp_name'])){$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";}
             //echo "moving {$file['tmp_name']} to {$abspath}<br>\n";
             @trigger_error("");
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
+				//resize the image?
+				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
+					$fname=getFileName($abspath,1);
+					$refile=str_replace($fname,$fname.'_resized',$abspath);
+                	$cmd="convert -resize '{$_REQUEST['data-resize']}' '{$abspath}' '{$refile}'";
+                	$ok=cmdResults($cmd);
+                	if(is_file($refile) && filesize($refile) > 0){
+						unlink($abspath);
+						rename($refile,$abspath);
+						$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+                		$_REQUEST[$name.'_size']=filesize($abspath);
+					}
+                	$_REQUEST[$name.'_resized']=$ok;
+                	//echo printValue($_REQUEST);exit;
+				}
 				//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
 					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
@@ -10375,32 +10405,31 @@ function processFileUploads($docroot=''){
 				$_REQUEST[$name.'_size']=filesize($abspath);
 				//Perhaps we should extract the exif info from the file.
 				// /cgi-bin/exif.pl?file=$afile
-
             	//if the uploaded file is an image - get its width and height
             	if(isImage($abspath)){
 					$info=@getimagesize($abspath);
 					if(is_array($info)){
                         $_REQUEST[$name.'_width']=$info[0];
                         $_REQUEST[$name.'_height']=$info[1];
-                    	}
-                	}
-            	}
+                    }
+                }
+            }
             else{
 				$e=error_get_last();
 				if($e['message']!==''){
 		    		// An error occurred uploading the file
 		    		$_REQUEST[$name.'_error']="File Upload Error (2) - " . $e['message'];
-					}
+				}
 				else{
 					$_REQUEST[$name.'_error']="File Upload Error (3)" . printValue($e);
-                	}
+                }
                 //echo printValue($e);
-            	}
-        	}
+            }
+        }
 		return 1;
-		}
-    return 0;
 	}
+    return 0;
+}
 //---------- begin function mergeChunkedFiles ----
 /**
  * @author slloyd

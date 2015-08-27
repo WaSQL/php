@@ -1470,45 +1470,23 @@ if(isset($_REQUEST['_menu'])){
             echo buildTableEnd();
 			break;
 		case 'entities':
-			//Server Variables
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/entity.gif" alt="HTML Entities" /> HTML Entities</div>'."\n";
-			echo buildTableBegin(0,0);
-			echo '<tr valign="top"><td>'."\n";
-			echo '<table class="table table-condensed table-bordered table-striped">'."\n";
+			/*
+				Best Lists on web: 
+					http://www.danshort.com/HTMLentities/index.php?w=punct
+					http://www.amp-what.com/unicode/search/
+			*/
+			echo '<div class="w_lblue w_bold">&sum;&phi; HTML Entities</div>'."\n";
 
-			//entities
-			echo '<tr><th colspan="2">HTML Entities</th></tr>'."\n";
-			echo buildTableTH(array('Entity','Result'));
-			$table = get_html_translation_table(HTML_ENTITIES);
-			foreach($table as $x=>$val){
-				$code=preg_replace('/^\&/','&amp;',$val);
-				echo buildTableTD(array($code,$val));
-				}
-			echo buildTableEnd();
-			echo '</td><td>'."\n";
-			echo '	<table class="table table-condensed table-bordered table-striped">'."\n";
-			echo '<tr><th colspan="20">Other ASCII Character Sets  (&amp;#CODE;)</th></tr>'."\n";
-			$th=array();
-			for($x=0;$x<10;$x++){array_push($th,"Code","Val");}
-			echo buildTableTH($th);
-			$special_nums = array_merge(range(32,383),array(399,402,416,417,431,432),range(461,476),range(506,511),array(601),range(900,974),range(1025,1116),array(1118,1119),range(1168,1182),range(1197,1211),array(1240,1241,1256,1257),range(1329,1475),array(1757,1758,1769,4342),range(7840,7929),range(8211,8226),array(8362,8482,8531,8532),range(8539,8542),range(8592,8597),array(8706,8710,8719,8721,8730,8734,8745,8776,8800,8801,8804,8805,8962,9650,9658,9660,9668,9674,9675,9679,9688,9689,9786,9787,9788,9792,9794,9824,9827,9829,9830,9834,9835));
-			$count=0;
-            foreach($special_nums as $x){
-				if(in_array($x,array(129,141,143,144,157,907,909,930,1367,1368,1376,1416))){continue;}
-				if(in_array($x,range(1418,1455))){continue;}
-				//if(($x>745 && $x<900) || ($x>1415 && $x<1475) || ($x>1836 && $x<1920) || ($x>1957 && $x<2309) || ($x>2799 && $x<2949) || ($x>3439 && $x<3585) || ($x>3675 && $x<4304) || ($x>4342 && $x<4978) || ($x>4987 && $x<5870) || ($x>5872 && $x<7680) || ($x>8260 && $x<8352) || ($x>8367 && $x<8448) || ($x>8995 && $x<9216) || ($x>9252 && $x<9312) || ($x>9710 && $x<9786) || ($x>9794 && $x<9824) || ($x>9841 && $x<10001)){continue;}
-				$count++;
-				if(isFactor($count,2)){echo "<td class=\"w_lgrayback\">{$x}</td><td class=\"w_lgrayback\">&#{$x};</td>";}
-				else{echo "<td>{$x}</td><td>&#{$x};</td>";}
-
-				if($count==10){
-					$count=0;
-					echo "</tr>\n		<tr>\n";
-                	}
-            	}
-            echo buildTableEnd();
-            echo '</td></tr>'."\n";
-            echo buildTableEnd();
+			echo listDBRecords(array(
+				'_menu'				=>$_REQUEST['_menu'],
+				'-tableclass'		=> "table table-bordered table-striped table-condensed",
+				'-table'			=>'_html_entities',
+				'-listfields'		=> 'entity,entity_name,entity_number,description,category',
+				'entity_eval'		=> "return '<b class=\"w_bigger\">%entity_number%</b>';",
+				'entity_name_eval'	=>"return encodeHtml('%entity_name%');",
+				'entity_number_eval'=>"return encodeHtml('%entity_number%');",
+				'-order'			=> 'entity_number'
+			));
 			break;
 		case 'rebuild':
 			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/rebuild.png" class="w_files" alt="rebuild tables" /> Rebuild waSQL Tables</div>'."\n";
@@ -4065,7 +4043,7 @@ function adminMenu(){
     $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image"></span> List IconSets</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">'.adminMenuIcon('/wfiles/entity.gif').' HTML Entities</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">&sum;&phi; HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";

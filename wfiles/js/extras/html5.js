@@ -133,10 +133,10 @@ function fileUploadError(t, e, i) {
 function fileUploadAbort() {}
 
 function fileUploadProgress(t,e,r) {
-
-    var a = Math.round(t.loaded / t.total * 100),
-        o = getObject(r);
-    o.style.width = a + "px"
+	o = getObject(r);
+	if(undefined == o){return;}
+    var a = Math.round(t.loaded / t.total * 100);
+    o.style.width = a + "px";
 }
 
 function eventCancel(t) {
