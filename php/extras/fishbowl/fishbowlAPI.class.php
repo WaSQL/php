@@ -24,6 +24,7 @@ class FishbowlAPI {
     private $xmlResponse;
     private $id;
     private $key;
+    private $sock;
 
 	/**
 	 * Create the connection to Fishbowl
@@ -41,9 +42,11 @@ class FishbowlAPI {
      * Close the connection
      */
     public function closeConnection() {
-        fclose($this->id);
+		if(is_resource($this)){
+        	fclose($this->id);
+		}
     }
-    
+
     /**
      * Set the App info - key, name, description
      */
@@ -110,13 +113,14 @@ class FishbowlAPI {
         // Create request and pack
 		$this->createRequest($xml);
         $len = strlen($this->xmlRequest);
+        //echo encodeHtml($this->xmlRequest)."<br />\n";
         $packed = pack("N", $len);
 
         // Send and get the response
         fwrite($this->id, $packed, 4);
         fwrite($this->id, $this->xmlRequest);
         $this->getResponse();
-
+		//echo nl2br(encodeHtml($this->xmlResponse))."<hr>\n";
         return $this->xmlResponse;
     }
     /**
@@ -366,7 +370,7 @@ class FishbowlAPI {
 	 * Create XML header
 	 */
 	private function xmlHeader() {
-        $xml = "<FbiXml>\n<Ticket>\n<UserID>1</UserID>\n<Key>{$this->key}</Key>\n</Ticket>\n<FbiMsgsRq>\n";
+        $xml = "<FbiXml>\r\n<Ticket>\r\n<UserID>1</UserID>\r\n<Key>{$this->key}</Key>\r\n</Ticket>\r\n<FbiMsgsRq>\r\n";
         return $xml;
 	}
 	
