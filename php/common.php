@@ -7338,6 +7338,7 @@ function listFiles($dir='.'){
 *	type - limit results to this type - defaults to file
 *	-dateformat - return date format
 *	-perms - limit results to files this these permissions
+*	-lines - return the line count of each file returned
 * @return array
 * @usage $files=listFilesEx($dir);
 */
@@ -7473,7 +7474,9 @@ function listFilesEx($dir='.',$params=array()){
             	}
             if($skip > 0){continue;}
             //line count
-            $fileinfo['lines']=getFileLineCount($afile);
+            if(isset($params['-lines']) && $params['-lines']){
+            	$fileinfo['lines']=getFileLineCount($afile);
+			}
 			ksort($fileinfo);
         	$files[]=$fileinfo;
     		}
