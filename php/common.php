@@ -7433,8 +7433,6 @@ function listFilesEx($dir='.',$params=array()){
 			if($fileinfo['type']=='file'){
 				$fileinfo['ext']=getFileExtension($fileinfo['name']);
             	}
-            //line count
-            $fileinfo['lines']=getFileLineCount($afile);
             //filters?
             $skip=0;
             foreach($params as $key=>$val){
@@ -7474,6 +7472,8 @@ function listFilesEx($dir='.',$params=array()){
 				elseif(!stringContains($fileinfo[$key],$val)){$skip++;}
             	}
             if($skip > 0){continue;}
+            //line count
+            $fileinfo['lines']=getFileLineCount($afile);
 			ksort($fileinfo);
         	$files[]=$fileinfo;
     		}
