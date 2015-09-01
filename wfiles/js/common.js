@@ -321,7 +321,64 @@ function simulateEvent(element, eventName){
     }
     return true;
 }
-
+function isDate(str){
+	var d = new Date(str);
+	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+  		// it is a date
+  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+    		// date is not valid
+    		return false;
+  		}
+  		else {
+    		// date is valid
+    		return true;
+  		}
+	}
+	else {
+  		// not a date
+  		return false;
+	}
+}
+function isFutureDate(str){
+	var d = new Date(str);
+	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+  		// it is a date
+  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+    		// date is not valid
+    		return false;
+  		}
+  		else {
+    		// date is valid
+    		var today = new Date();
+    		if((today-d)<0){return true;}
+    		return false;
+  		}
+	}
+	else {
+  		// not a date
+  		return false;
+	}
+}
+function isPastDate(str){
+	var d = new Date(str);
+	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+  		// it is a date
+  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+    		// date is not valid
+    		return false;
+  		}
+  		else {
+    		// date is valid
+    		var today = new Date();
+    		if((today-d)>0){return true;}
+    		return false;
+  		}
+	}
+	else {
+  		// not a date
+  		return false;
+	}
+}
 /* isDST - returns true if Daylight Savings Time */
 function isDST(){
 	//info: returns true if Daylight Savings Time
