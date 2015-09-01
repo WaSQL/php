@@ -888,7 +888,11 @@ function buildFormBegin($action='',$params=array()){
 */
 function buildFormField($tablename,$fieldname,$opts=array()){
 	$opts['-table']=$tablename;
-	$opts['-field']=$fieldname;
+	if(preg_match('/^(.+?)\[\]$/',$fieldname,$m)){
+		$opts['-field']=$m[1];
+		$opts['name']=$fieldname;
+	}
+
 	return getDBFieldTag($opts);
 	}
 //---------- begin function buildFormFile--------------------
