@@ -1643,8 +1643,41 @@ function submitForm(theForm,popup,debug,ajax){
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
                     return false;
-                    }
                 }
+            }
+            else if(mask == 'date'){
+				//date
+				if(isDate(theForm[i].value) == false){
+					//invalid date
+                    var msg = dname+" must be of valid date ";
+                    if(undefined != fldmsg){msg=fldmsg;}
+                    submitFormAlert(msg,popup,5);
+                    theForm[i].focus();
+                    return false;
+                }
+            }
+            else if(mask == 'futuredate'){
+				//future date
+				if(isFutureDate(theForm[i].value) == false){
+					//invalid date
+                    var msg = dname+" must be of valid date in the future ";
+                    if(undefined != fldmsg){msg=fldmsg;}
+                    submitFormAlert(msg,popup,5);
+                    theForm[i].focus();
+                    return false;
+                }
+            }
+            else if(mask == 'pastdate'){
+				//past date
+				if(isPastDate(theForm[i].value) == false){
+					//invalid date
+                    var msg = dname+" must be of valid date in the past ";
+                    if(undefined != fldmsg){msg=fldmsg;}
+                    submitFormAlert(msg,popup,5);
+                    theForm[i].focus();
+                    return false;
+                }
+            }
             else if(mask == 'intlphone'){
 				//international phone check
 				if(checkInternationalPhone(theForm[i].value) == false){
