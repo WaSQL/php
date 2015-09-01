@@ -1631,6 +1631,7 @@ function submitForm(theForm,popup,debug,ajax){
         //check for mask attribute - a filter to test input against
         var mask=theForm[i].getAttribute('pattern');
         if(undefined == mask){mask=theForm[i].getAttribute('mask');}
+        if(undefined == mask){mask=theForm[i].getAttribute('data-mask');}
         if(undefined != mask && mask != '' && theForm[i].value != ''){
 			var fldmsg=theForm[i].getAttribute('data-pattern-msg');
 			if(undefined == fldmsg){fldmsg=theForm[i].getAttribute('maskmsg');}
