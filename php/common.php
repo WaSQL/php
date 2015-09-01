@@ -450,10 +450,16 @@ function buildFormDate($name,$params=array()){
 	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
 	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
 	else{$required='';}
-	$mask=isset($params['mask'])?$params['mask']:'date';
+	$mask='date';
+	if(isset($params['mask'])){
+    	$mask=$params['mask'];
+	}
+	elseif(isset($params['data-mask'])){
+    	$mask=$params['data-mask'];
+	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" mask="'.$mask.'" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
+	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" data-mask="'.$mask.'" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
