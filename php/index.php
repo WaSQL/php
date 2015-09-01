@@ -17,10 +17,18 @@ include_once("$progpath/common.php");
 $url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
 //echo printValue($_SERVER);exit;
 if($url_parts[0]=='u'){
+	//u=user   /u/username/apikey/pagename/....
 	array_shift($url_parts);
 	$_REQUEST['username']=array_shift($url_parts);
 	$_REQUEST['apikey']=array_shift($url_parts);
 	$_REQUEST['_auth']=1;
+	$_REQUEST['_view']=implode('/',$url_parts);
+	//echo printValue($_REQUEST['_view']);exit;
+}
+elseif($url_parts[0]=='t'){
+	//t= template  /t/4/forms/....
+	array_shift($url_parts);
+	$_REQUEST['_template']=array_shift($url_parts);
 	$_REQUEST['_view']=implode('/',$url_parts);
 	//echo printValue($_REQUEST['_view']);exit;
 }
