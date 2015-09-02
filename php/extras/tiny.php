@@ -36,7 +36,7 @@ function tinyUrl($url){
 			}
 		}
 		$http=isset($_SERVER['HTTPS'])?'https':'http';
-		return "{$http}://{$_SERVER['HTTP_HOST']}/t/{$code}";
+		return "{$http}://{$_SERVER['HTTP_HOST']}/y/{$code}";
 	}
 	return 'ERROR:'.$id;
 }
