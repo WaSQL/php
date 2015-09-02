@@ -484,17 +484,17 @@ function cloneDiv(div,c){
 			//id
 			if(undefined != list[i].id){
         		var cid=list[i].id;
-				list[i].setAttribute('id',cid+'_'+count);
+        		if(cid.length){list[i].setAttribute('id',cid+'_'+count);}
 			}
 			//name
 			if(undefined != list[i].name){
 				var cname=list[i].name;
-				list[i].setAttribute('name',cname+'_'+count);
+				if(cname.length){list[i].setAttribute('name',cname+'_'+count);}
 			}
 			//for
 			if(undefined != list[i].getAttribute('for')){
         		var cfor=list[i].getAttribute('for');
-				list[i].setAttribute('for',cfor+'_'+count);
+				if(cfor.length){list[i].setAttribute('for',cfor+'_'+count);}
 			}
 		}
 
