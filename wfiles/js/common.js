@@ -478,23 +478,26 @@ function cloneDiv(div,c){
 		cnt++;
 		divObj.setAttribute('data-cnt',cnt);
 		var clone=divObj.cloneNode(true);
-		//incriment inputs
-		var list=clone.querySelectorAll("input");
+		//incriment id, name, and for attributes
+		var list=clone.querySelectorAll("*");
 		for(var i=0;i<list.length;i++){
 			//id
-        	var cid=list[i].id;
-			list[i].setAttribute('id',cid+'_'+count);
+			if(undefined != list[i].id){
+        		var cid=list[i].id;
+				list[i].setAttribute('id',cid+'_'+count);
+			}
 			//name
-			var cname=list[i].name;
-			list[i].setAttribute('name',cname+'_'+count);
-		}
-		//incriment labels
-		var list=clone.querySelectorAll("label");
-		for(var i=0;i<list.length;i++){
+			if(undefined != list[i].name){
+				var cname=list[i].name;
+				list[i].setAttribute('name',cname+'_'+count);
+			}
 			//for
-        	var cfor=list[i].getAttribute('for');
-			list[i].setAttribute('for',cfor+'_'+count);
+			if(undefined != list[i].getAttribute('for')){
+        		var cfor=list[i].getAttribute('for');
+				list[i].setAttribute('for',cfor+'_'+count);
+			}
 		}
+
 		//hide all but the last clone button
 		var list=clone.querySelectorAll("[id=clonebutton]");
 		for(var i=0;i<list.length;i++){
