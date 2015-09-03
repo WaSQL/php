@@ -899,7 +899,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 		$opts['-field']=$m[1];
 		$opts['name']=$fieldname;
 	}
-
+	else{$opts['-field']=$fieldname;}
 	return getDBFieldTag($opts);
 	}
 //---------- begin function buildFormFile--------------------
