@@ -8588,7 +8588,7 @@ function postEditXml($pextables=array(),$dbname=''){
 			foreach($rec as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
 				if(preg_match('/^(template|name|css_min|js_min)$/i',$key)){continue;}
-				if(preg_match('/\_mdml$/i',$key)){continue;}
+				//if(preg_match('/\_mdml$/i',$key)){continue;}
 				if(!strlen($val)){continue;}
 				if((strlen($finfo[$key]['inputtype']) && $finfo[$key]['inputtype'] == 'textarea') || $finfo[$key]['_dbtype']=='blob'){
 					//skip this one if there is a filter and it does not match
