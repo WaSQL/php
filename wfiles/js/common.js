@@ -1497,7 +1497,7 @@ function str_replace(search, replace, str) {
     return sa ? s : s[0];
 }
 //toggleClass(id,class1,class2){
-function toggleClass(id,class1,class2){
+function toggleClass(id,class1,class2,myid,myclass1,myclass2){
 	var obj=getObject(id);
 	if(undefined == obj){return;}
 	if(obj.className.indexOf(class1) != -1){
@@ -1509,6 +1509,20 @@ function toggleClass(id,class1,class2){
     	addClass(obj,class1);
 	}
 	else{addClass(obj,class1);}
+	//a second set may be set to also modify the caller
+	if(undefined != myid){
+		var obj=getObject(myid);
+		if(undefined == obj){return;}
+		if(obj.className.indexOf(myclass1) != -1){
+	    	removeClass(obj,myclass1);
+	    	addClass(obj,myclass2);
+		}
+		else if(obj.className.indexOf(myclass2) != -1){
+	    	removeClass(obj,myclass2);
+	    	addClass(obj,myclass1);
+		}
+		else{addClass(obj,myclass1);}
+	}
 }
 //trim - remove beginning and ending spaces, tabs, and line returns
 function trim(str){
