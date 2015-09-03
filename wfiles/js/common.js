@@ -1496,6 +1496,20 @@ function str_replace(search, replace, str) {
  
     return sa ? s : s[0];
 }
+//toggleClass(id,class1,class2){
+function toggleClass(id,class1,class2){
+	var obj=getObject(id);
+	if(undefined == obj){return;}
+	if(obj.className.indexOf(class1) != -1){
+    	removeClass(obj,class1);
+    	addClass(obj,class2);
+	}
+	else if(obj.className.indexOf(class2) != -1){
+    	removeClass(obj,class2);
+    	addClass(obj,class1);
+	}
+	else{addClass(obj,class1);}
+}
 //trim - remove beginning and ending spaces, tabs, and line returns
 function trim(str){
 	//info: remove beginning and ending spaces, tabs, and line returns
