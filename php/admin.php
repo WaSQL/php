@@ -1475,7 +1475,7 @@ if(isset($_REQUEST['_menu'])){
 					http://www.danshort.com/HTMLentities/index.php?w=punct
 					http://www.amp-what.com/unicode/search/
 			*/
-			echo '<div class="w_lblue w_bold">&sum;&phi; HTML Entities</div>'."\n";
+			echo '<div class="w_lblue w_bold">&#128291; HTML Entities</div>'."\n";
 
 			echo listDBRecords(array(
 				'_menu'				=>$_REQUEST['_menu'],
@@ -3745,10 +3745,15 @@ function adminMenu(){
 		$lname=strtolower($table);
 		$wtables .= '						<li class="dir"><a href="/php/admin.php?_menu=list&_table_='.$table.'">';
 		if($show_icons==1){
-			$img=getImageSrc($lname);
-			if(strlen($img)){
-				$wtables .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
-        	}
+			switch($lname){
+				case '_html_entities':$wtables .= '&#128291;';break;
+				default:
+					$img=getImageSrc($lname);
+					if(strlen($img)){
+						$wtables .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
+			        }
+				break;
+			}
 		}
 		$wtables .= ' '.$table.'</a>'."\n";
 		$wtables .= tableOptions($table,array('-format'=>"li"));
@@ -3848,7 +3853,7 @@ function adminMenu(){
 			unset($img);
 			$rtn .= '				<li class="dir"><a href="/php/admin.php?_menu=list&_table_='.$table.'">';
 			if($show_icons==1){
-				$img=getImageSrc($lname);
+    			$img=getImageSrc($lname);
 				if(strlen($img)){
 					$rtn .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
@@ -4043,7 +4048,7 @@ function adminMenu(){
     $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image"></span> List IconSets</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">&sum;&phi; HTML Entities</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">&#128291; HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
