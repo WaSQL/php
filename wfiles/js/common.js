@@ -502,7 +502,7 @@ function cloneDiv(div,c){
         		//@raid(id)
         		var matches=att.match(/\@raid\((.+?)\)/);
         		if(undefined != matches[1]){
-					var newval='@raid('+matches[1]+'_'+count;
+					var newval='@raid('+matches[1]+'_'+count+')';
 					list[i].setAttribute('data-behavior',newval);
 				}
 			}
