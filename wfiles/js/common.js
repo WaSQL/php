@@ -461,6 +461,8 @@ function cloneDiv(div,c){
 		console.log('cloneDiv max reached for '+divObj.id);
 		return false;
 	}
+	//increment the master div
+	divObj.setAttribute('id',divObj.id+'_'+cnt);
 	//add a clone button before we clone it.
 	//$rtn .= '<div class="col-sm-1"><label>Clone</label><button class="btn btn-default"><span class="icon-plus"></span></button></div>'."\n";
 	if(undefined == divObj.getAttribute('data-init')){
