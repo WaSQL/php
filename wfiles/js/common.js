@@ -496,6 +496,16 @@ function cloneDiv(div,c){
         		var cfor=list[i].getAttribute('for');
 				if(cfor.length){list[i].setAttribute('for',cfor+'_'+count);}
 			}
+			//data-behavior
+			if(undefined != list[i].getAttribute('data-behavior')){
+        		var att=list[i].getAttribute('data-behavior');
+        		//@raid(id)
+        		var matches=att.match(/\@raid\((.+?)\)/);
+        		if(undefined != matches[1]){
+					var newval='@raid('+matches[1]+'_'+count;
+					list[i].setAttribute('data-behavior',newval);
+				}
+			}
 		}
 
 		//hide all but the last clone button
