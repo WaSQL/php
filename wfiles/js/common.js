@@ -518,6 +518,8 @@ function cloneDiv(div,c){
 			list[i].style.visibility='hidden';
 		}
 		divObj.insertAdjacentElement('afterEnd',clone);
+		//initBehaviors
+		initBehaviors();
 		return true;
 	}
 }
