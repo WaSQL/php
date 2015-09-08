@@ -506,6 +506,10 @@ function cloneDiv(div,c){
 					list[i].setAttribute('data-behavior',newval);
 				}
 			}
+			//data-clear
+			if(undefined != list[i].getAttribute('data-clear')){
+				list[i].value='';
+			}
 		}
 
 		//hide all but the last clone button
