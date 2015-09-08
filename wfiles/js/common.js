@@ -479,7 +479,7 @@ function cloneDiv(div,c){
 		cnt++;
 		divObj.setAttribute('data-cnt',cnt);
 		var clone=divObj.cloneNode(true);
-		clone.setAttribute('id',divObj.id+'_'+cnt);
+		clone.setAttribute('id',divObj.id+'_'+count);
 		//incriment id, name, and for attributes
 		var list=clone.querySelectorAll("*");
 		for(var i=0;i<list.length;i++){
