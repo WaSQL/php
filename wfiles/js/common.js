@@ -508,7 +508,7 @@ function cloneDiv(div,c){
 			}
 			//data-clear
 			if(undefined != list[i].getAttribute('data-clear')){
-				list[i].value='';
+				setText(list[i],'');
 			}
 		}
 
