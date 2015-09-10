@@ -1057,6 +1057,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts['dvals']=$params[$field.'_dvals'];
 						$used[$field.'_dvals']=1;
 					}
+					if(!isset($params['-focus'])){$params['-focus']=$field;}
 					$cval=getDBFieldTag($opts);
 				}
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
@@ -1269,6 +1270,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		</td>'."\n";
 				if(!isset($used[$field])){$used[$field]=1;}
 				else{$used[$field]+=1;}
+				if(!isset($params['-focus'])){$params['-focus']=$field;}
 	        	}
         	}
         else{
@@ -1380,6 +1382,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 			$rtn .= '		</td>'."\n";
 			$used[$field]+=1;
+			if(!isset($params['-focus'])){$params['-focus']=$field;}
             }
         $rtn .= '	</tr>'."\n";
         $rtn .= '</table>'."\n";
