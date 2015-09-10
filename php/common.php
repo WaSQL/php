@@ -447,19 +447,24 @@ function buildFormDate($name,$params=array()){
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if($params['-value']=='NULL'){$params['-value']='';}
-	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
-	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
-	else{$required='';}
-	$mask='date';
+	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
+
+	$params['data-mask']='date';
 	if(isset($params['mask'])){
-    	$mask=$params['mask'];
+    	$params['data-mask']=$params['mask'];
+    	unset($params['mask']);
 	}
-	elseif(isset($params['data-mask'])){
-    	$mask=$params['data-mask'];
-	}
+	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
+	if(!isset($params['maxlength'])){$params['maxlength']='15';}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['data-type'])){$params['data-type']='date';}
+	if(!isset($params['name'])){$params['name']=$name;}
+	if(!isset($params['id'])){$params['id']=$params['id'];}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD" data-mask="'.$mask.'" maxlength="15" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="date" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
+	$tag .= '	<input type="text"';
+	$tag .= setTagAttributes($params);
+	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
@@ -479,12 +484,24 @@ function buildFormDateTime($name,$params=array()){
 	$params['width']=220;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
-	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
-	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
-	else{$required='';}
+	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
+
+	//$params['data-mask']='date';
+	if(isset($params['mask'])){
+    	$params['data-mask']=$params['mask'];
+    	unset($params['mask']);
+	}
+	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD HH:MM:SS';}
+	if(!isset($params['maxlength'])){$params['maxlength']='25';}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['data-type'])){$params['data-type']='datetime';}
+	if(!isset($params['name'])){$params['name']=$name;}
+	if(!isset($params['id'])){$params['id']=$params['id'];}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="YYYY-MM-DD HH:MM:SS" maxlength="25" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="datetime" value="'.encodeHtml($params['-value']).'"'.$required.' />'."\n";
+	$tag .= '	<input type="text"';
+	$tag .= setTagAttributes($params);
+	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock" style="padding:0px !important;"></span></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
@@ -808,13 +825,24 @@ function buildFormTime($name,$params=array()){
 	$params['width']=115;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
-	$required='';
-	if(isset($params['-required']) && $params['-required']){$required=' required="1"';}
-	elseif(isset($params['required']) && $params['required']){$required=' required="1"';}
-	else{$required='';}
+	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
+
+	//$params['data-mask']='date';
+	if(isset($params['mask'])){
+    	$params['data-mask']=$params['mask'];
+    	unset($params['mask']);
+	}
+	if(!isset($params['placeholder'])){$params['placeholder']='HH:MM:SS';}
+	if(!isset($params['maxlength'])){$params['maxlength']='25';}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['data-type'])){$params['data-type']='time';}
+	if(!isset($params['name'])){$params['name']=$name;}
+	if(!isset($params['id'])){$params['id']=$params['id'];}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text" placeholder="HH:MM:SS" maxlength="8" class="form-control" name="'.$name.'" id="'.$params['id'].'" data-type="time" data-interval="'.$params['-interval'].'" value="'.encodeHtml($params['-value']).'" '.$required.' />'."\n";
+	$tag .= '	<input type="text"';
+	$tag .= setTagAttributes($params);
+	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
 	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
