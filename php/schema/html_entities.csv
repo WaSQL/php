@@ -492,7 +492,7 @@ entity_name,entity_number,description,category
 ,&#9992;,Airplane,Dingbats
 ,&#9993;,Envelope,Dingbats
 ,&#9996;,Victory or peace sign,Dingbats
-,&#9997;,Writing hand,Dingbats
+,&#9997;,Writing hand signature pen,Dingbats
 ,&#9998;,Pencil,Dingbats
 ,&#9999;,Pencil,Dingbats
 ,&#10000;,Pencil,Dingbats
@@ -703,5 +703,13 @@ entity_name,entity_number,description,category
 ,&#128459;,Empty Document,Miscellaneous
 ,&#128441;,Document with Text,Miscellaneous
 ,&#8505;,Information Source,Miscellaneous
+,&#128218;,Books,Miscellaneous
+,&#128214;,Open Book,Miscellaneous
+,&#128113;,Person with blond hair student,Miscellaneous
+,&#9876;,Crossed Swords military,Miscellaneous
+,&#9892;,Gender,Miscellaneous
+,&#9744;,Checkbox Empty,Miscellaneous
+,&#9745;,Checkbox Checked,Miscellaneous
+,&#9746;,Checkbox X,Miscellaneous
 
 
