@@ -239,7 +239,8 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		break;
 	}
 	$tag='';
-	$tag .= '<div class="btn-group" data-toggle="buttons">'."\n";
+	$class=isset($params['class'])?$params['class']:'';
+	$tag .= '<div class="btn-group w_nowrap '.$class.'" data-toggle="buttons">'."\n";
 	foreach($opts as $tval=>$dval){
 		$class=$params['-button'];
 		$checked='';
@@ -462,7 +463,7 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="text"';
+	$tag .= '	<input type="date"';
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
 	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
