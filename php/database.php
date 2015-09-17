@@ -3937,7 +3937,7 @@ function mapDBTvalsToDvals($table,$field){
 		}
 	$info=getDBFieldMeta($table,"tvals,dvals",$field);
 	$selections=getDBFieldSelections($info[$field]);
-	if(is_array($selections['tvals'])){
+	if(isset($selections['tvals']) && is_array($selections['tvals'])){
 		$tdmap=array();
 		$tcount=count($selections['tvals']);
 		for($x=0;$x<$tcount;$x++){
@@ -5367,7 +5367,9 @@ function getDBSchema($tables=array(),$force=0){
 		$sortfield=$smatch[1];
 		$direction='SORT_'.strtoupper($smatch[2]);
     	}
-    $schema=sortArrayByKeys($schema, array($sortfield=>$direction));
+    if(function_exists('sortArrayByKeys')){
+    	$schema=sortArrayByKeys($schema, array($sortfield=>$direction));
+	}
     if($force==0){$databaseCache['getDBSchema'][$cachekey]=$schema;}
     return $schema;
 	}
