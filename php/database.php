@@ -1953,6 +1953,21 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 				));
 			return 1;
 			break;
+		case 'body':
+		case 'comments':
+		case 'notes':
+		case 'message':
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> $tablename,
+				'fieldname'		=> $fieldname,
+				'required'		=> $required,
+				'inputtype'		=> 'textarea',
+				'width'			=> '600',
+				'height'		=> '200',
+				'defaultval'	=> $defaultval
+				));
+			return 1;
+			break;
 		case 'signature':
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> $tablename,
@@ -1967,7 +1982,9 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 			break;
 		case 'zip':
 		case 'zipcode':
+		case 'zip_code':
 		case 'postalcode':
+		case 'postal_code':
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> $tablename,
 				'fieldname'		=> $fieldname,
@@ -1992,7 +2009,7 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 			break;
 	}
 	//check for tinyint fields
-	if(preg_match('/tinyint\(1\)/i',$attributes)){
+	if(preg_match('/boolean/i',$attributes) || preg_match('/tinyint\(1\)/i',$attributes)){
 		$id=addDBRecord(array('-table'=>'_fielddata',
 			'tablename'		=> $tablename,
 			'fieldname'		=> $fieldname,
@@ -2000,6 +2017,20 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 			'inputtype'		=> 'checkbox',
 			'defaultval'	=> $defaultval,
 			'tvals'			=> 1,
+			));
+		return 1;
+	}
+	//check for blob types
+	if(preg_match('/(blob|text|mediumtext|smalltext|largetext)/i',$attributes)){
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> $tablename,
+			'fieldname'		=> $fieldname,
+			'required'		=> $required,
+			'inputtype'		=> 'textarea',
+			'width'			=> 600,
+			'height'		=> 200,
+			'defaultval'	=> $defaultval,
+			'tvals'			=> '1',
 			));
 		return 1;
 	}
@@ -2011,18 +2042,50 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 			'required'		=> $required,
 			'inputtype'		=> 'datetime',
 			'defaultval'	=> $defaultval,
-			'tvals'			=> '1',
 			));
 		return 1;
 	}
-	elseif(preg_match('/date/i',$attributes)){
+	if(preg_match('/date/i',$attributes)){
 		$id=addDBRecord(array('-table'=>'_fielddata',
 			'tablename'		=> $tablename,
 			'fieldname'		=> $fieldname,
 			'required'		=> $required,
 			'inputtype'		=> 'date',
 			'defaultval'	=> $defaultval,
-			'tvals'			=> '1',
+			));
+		return 1;
+	}
+	if(preg_match('/(timestamp|integer|smallint|bigint)/i',$attributes)){
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> $tablename,
+			'fieldname'		=> $fieldname,
+			'required'		=> $required,
+			'inputtype'		=> 'text',
+			'width'			=> 120,
+			'defaultval'	=> $defaultval,
+			'mask'			=> 'integer',
+			));
+		return 1;
+	}
+	if(preg_match('/time/i',$attributes)){
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> $tablename,
+			'fieldname'		=> $fieldname,
+			'required'		=> $required,
+			'inputtype'		=> 'time',
+			'defaultval'	=> $defaultval,
+			));
+		return 1;
+	}
+	if(preg_match('/(float|real|decimal|number|numeric)/i',$attributes)){
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> $tablename,
+			'fieldname'		=> $fieldname,
+			'required'		=> $required,
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'number',
+			'defaultval'	=> $defaultval,
 			));
 		return 1;
 	}
