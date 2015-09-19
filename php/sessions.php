@@ -77,7 +77,7 @@ function sessionRead($session_id) {
 	}
 	//no session found  - add a blank record
 	$cuser=0;$cdate=date('Y-m-d H:i:s');
-	if(isNum($CUSER['_id'])){$cuser=$CUSER['_id'];}
+	if(isset($CUSER['_id']) && isNum($CUSER['_id'])){$cuser=$CUSER['_id'];}
 	$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
 	return '';
 }
