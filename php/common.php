@@ -3379,20 +3379,23 @@ function deleteDirectory($dir=''){
 * @describe removes files from directory older than x days old. x defaults to 5 days
 * @param dir string
 *	absolute path of directory to cleanup
-* @param days integer
-*	Days old - any file older than this is removed
+* @param num integer
+*	units old - any file older than this is removed
+* @param unit string - mon,day,hour,min
+*
 * @return boolean
 *	returns true upon success
 * @usage $ok=cleanupDirectory($dir[,3]);
 */
-function cleanupDirectory($dir='',$num=5,$type='days'){
+function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
 	$cnt=0;
 	if ($handle = opendir($dir)) {
 		while (false !== ($file = readdir($handle))) {
 			if ($file[0] == '.' || is_dir($dir.'/'.$file)) {continue;}
+			if(strlen($ext) && strtolower(getFileExtension($file)) != strtolower($ext)){continue;}
 			$mtime=filemtime($dir.'/'.$file);
 			$ttime=time();
-			switch(strtolower($type)){
+			switch(strtolower($unit)){
 				case 'mon':
 				case 'month':
 				case 'months':
