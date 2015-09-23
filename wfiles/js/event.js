@@ -934,6 +934,23 @@ function initBehaviors(ajaxdiv){
 			return false;
 		};
 	}
+	//look for data-toggle modal
+	var navbars=document.querySelectorAll('[data-toggle="dropdown"]');
+	for (var n=0; n<navbars.length; n++){
+    	navbars[n].onclick=function(e){
+			cancel(e);
+        	var p=getParent(this);
+        	if(undefined != p){
+            	if(p.className.indexOf('open')==-1){
+                	addClass(p,'open');
+				}
+				else{
+					removeClass(p,'open');
+				}
+			}
+			return false;
+		};
+	}
 	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
 	var navbars=document.querySelectorAll('[data-toggle="collapse"]');
 	for (var n=0; n<navbars.length; n++){
