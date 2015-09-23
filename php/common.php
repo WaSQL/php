@@ -618,12 +618,14 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$litags='';
 	foreach($pairs as $tval=>$dval){
 		$id=$name.'_'.$tval;
-    	$litags .= '		<li style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
+    	$litags .= '		<li style="white-space:nowrap;">';
     	if($tval=='--'){
 			$litags .= '--------</li>'."\n";
 			continue;
 		}
-    	$litags .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+		//$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+
+    	$litags .= '<input data-group="'.$group.'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     	if($params['required'] || $params['_required']){$tag.=' data-required="1"';}
     	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
@@ -637,7 +639,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$litags .= ' checked';
         	$checked_cnt++;
 		}
-    	$litags .= '> '.$dval.'</label></li>'."\n";
+    	$litags .= ' /><label for="'.$id.'" style="cursor:pointer;font-weight:normal;"> '.$dval.'</label></li>'."\n";
 	}
 
 
@@ -648,6 +650,8 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag .= '		<button type="button" class="btn btn-sm btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span><span class="caret"></span></button>'."\n";
 	$tag .= ' 	</div>'."\n";
 	$tag .= ' 	<div class="dropdown-menu" style="background:#FFF;z-index:9999;">'."\n";
+	//checkall
+	$tag .= '		<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;margin-left:5px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'name'=>$params['id'].'_checkall','onchange'=>"formSetMultiSelectStatus(this);return false;"))." {$params['-checkall']}</label></div>\n";
 	$tag .= '		<ul style="max-height:200px;list-style-type:none;overflow:auto;padding-right:18px;padding-left:18px;border-bottom:1px solid #d9d9d9;">'."\n";
 	$tag .= $litags;
 	$tag .= '  		</ul>'."\n";
