@@ -616,10 +616,11 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$dropdown_classid=$params['id'].'_dropdown';
 	$checked_cnt=0;
 	$litags='';
+	//return printValue($pairs);
 	foreach($pairs as $tval=>$dval){
 		$id=$name.'_'.$tval;
     	$litags .= '		<li style="white-space:nowrap;">';
-    	if($tval=='--'){
+    	if(!isNum($tval) && $tval=='--'){
 			$litags .= '--------</li>'."\n";
 			continue;
 		}
