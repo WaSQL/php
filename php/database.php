@@ -5806,13 +5806,24 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
 	    if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
-	    if(strlen($params['-action'])){unset($parts['_template']);}
+	    if(strlen($params['-action'])){
+			if(isset($parts['_template'])){unset($parts['_template']);}
+			if(isset($parts['_view'])){unset($parts['_view']);}
+	    	if(isset($parts['undefined'])){unset($parts['undefined']);}
+			if(isset($parts['AjaxRequestUniqueId'])){unset($parts['AjaxRequestUniqueId']);}
+		}
+
 		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
 		if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
-		if(strlen($params['-action'])){unset($parts['_template']);}
+		if(strlen($params['-action'])){
+			if(isset($parts['_template'])){unset($parts['_template']);}
+			if(isset($parts['_view'])){unset($parts['_view']);}
+	    	if(isset($parts['undefined'])){unset($parts['undefined']);}
+			if(isset($parts['AjaxRequestUniqueId'])){unset($parts['AjaxRequestUniqueId']);}
+		}
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
