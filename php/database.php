@@ -5786,7 +5786,10 @@ function listDBRecords($params=array(),$customcode=''){
 		    	}
 			}
     	}
-    if(!isset($params['-action'])){$params['-action']='';}
+    if(!isset($params['-action'])){
+		$params['-action']='';
+		unset($params['_template']);
+	}
     //remove fields that are not valid
 	if(isset($params['-table'])){
 		$info=getDBFieldMeta($params['-table'],"displayname,editlist");
