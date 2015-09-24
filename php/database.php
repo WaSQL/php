@@ -5805,13 +5805,12 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_action']="multi_update";
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
-	    //$rtn .= printValue($parts);
-	    if(strlen($params['-action'])){unset($parts['_template']);}
+	    if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
 		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
-		if(strlen($params['-action'])){unset($parts['_template']);}
+		if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
