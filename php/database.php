@@ -5789,9 +5789,6 @@ function listDBRecords($params=array(),$customcode=''){
     if(!isset($params['-action'])){
 		$params['-action']='';
 	}
-	else{
-    	unset($params['_template']);
-	}
     //remove fields that are not valid
 	if(isset($params['-table'])){
 		$info=getDBFieldMeta($params['-table'],"displayname,editlist");
@@ -5809,10 +5806,12 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
 	    //$rtn .= printValue($parts);
+	    if(strlen($params['-action'])){unset($parts['_template']);}
 		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
+		if(strlen($params['-action'])){unset($parts['_template']);}
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
