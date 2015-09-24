@@ -5806,11 +5806,13 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
 	    if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
+	    if(strlen($params['-action'])){unset($parts['_template']);}
 		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
 		if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
+		if(strlen($params['-action'])){unset($parts['_template']);}
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
