@@ -5788,7 +5788,9 @@ function listDBRecords($params=array(),$customcode=''){
     	}
     if(!isset($params['-action'])){
 		$params['-action']='';
-		unset($params['_template']);
+	}
+	else{
+    	unset($params['_template']);
 	}
     //remove fields that are not valid
 	if(isset($params['-table'])){
