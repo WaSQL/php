@@ -5786,6 +5786,7 @@ function listDBRecords($params=array(),$customcode=''){
 		    	}
 			}
     	}
+    if(!isset($params['-action'])){$params['-action']='';}
     //remove fields that are not valid
 	if(isset($params['-table'])){
 		$info=getDBFieldMeta($params['-table'],"displayname,editlist");
@@ -5803,11 +5804,11 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
 	    //$rtn .= printValue($parts);
-		$rtn .= buildFormBegin('',$parts);
+		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
-		$rtn .= buildFormBegin('',$params['-form']);
+		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
 	$tableclass='w_table w_pad w_border';
