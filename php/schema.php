@@ -114,7 +114,20 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 			break;
-
+		case '_changelog':
+			$fields['action']="char(5) NOT NULL";
+			$fields['tablename']="varchar(255) NOT NULL";
+			$fields['record_id']="INT NOT NULL";
+			$fields['diff']="text NULL";
+			$fields['guid']="varchar(40) NULL";
+			$fields['note']="varchar(255) NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"record_id,tablename"));
+			addMetaData($table);
+			return 1;
+			break;
 		case '_cron':
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['begin_date']="date NULL";
