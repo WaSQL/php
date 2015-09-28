@@ -5786,6 +5786,9 @@ function listDBRecords($params=array(),$customcode=''){
 		    	}
 			}
     	}
+    if(!isset($params['-action'])){
+		$params['-action']='';
+	}
     //remove fields that are not valid
 	if(isset($params['-table'])){
 		$info=getDBFieldMeta($params['-table'],"displayname,editlist");
@@ -5802,12 +5805,26 @@ function listDBRecords($params=array(),$customcode=''){
 	    $parts['_action']="multi_update";
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
-	    //$rtn .= printValue($parts);
-		$rtn .= buildFormBegin('',$parts);
+	    if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
+	    if(strlen($params['-action'])){
+			if(isset($parts['_template'])){unset($parts['_template']);}
+			if(isset($parts['_view'])){unset($parts['_view']);}
+	    	if(isset($parts['undefined'])){unset($parts['undefined']);}
+			if(isset($parts['AjaxRequestUniqueId'])){unset($parts['AjaxRequestUniqueId']);}
+		}
+
+		$rtn .= buildFormBegin($params['-action'],$parts);
 		$listform=1;
     	}
     elseif(isset($params['-form']) && is_array($params['-form'])){
-		$rtn .= buildFormBegin('',$params['-form']);
+		if(isset($params['-onsubmit'])){$parts['-onsubmit']=$params['-onsubmit'];}
+		if(strlen($params['-action'])){
+			if(isset($parts['_template'])){unset($parts['_template']);}
+			if(isset($parts['_view'])){unset($parts['_view']);}
+	    	if(isset($parts['undefined'])){unset($parts['undefined']);}
+			if(isset($parts['AjaxRequestUniqueId'])){unset($parts['AjaxRequestUniqueId']);}
+		}
+		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
 	$tableclass='w_table w_pad w_border';
