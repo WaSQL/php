@@ -623,7 +623,8 @@ function minifyFilename($ext=''){
 	$parts=array(
 		$CONFIG['dbname'],
 		$_SERVER['REMOTE_BROWSER'],
-		$_SERVER['REMOTE_BROWSER_VERSION']
+		$_SERVER['REMOTE_BROWSER_VERSION'],
+		$_SERVER['REQUEST_URI']
 	);
 /* 	if(isset($_REQUEST['passthru']) && is_array($_REQUEST['passthru']) && count($_REQUEST['passthru'])){
 		$parts=array_merge($parts,$_REQUEST['passthru']);
