@@ -631,9 +631,6 @@ function minifyFilename($ext=''){
 	} */
 	$filename='M'.encodeCRC(implode('',$parts));
 	$filename .= 'P'.$PAGE['_id'];
-	if(isset($PAGE['includePage']) && is_array($PAGE['includePage']) && count($PAGE['includePage'])){
-		$filename='I'.encodeCRC(implode('',$PAGE['includePage']));
-	}
 	$filename .= 'T'.$TEMPLATE['_id'];
 	if(isAjax()){$filename .= 'A';}
 	$rec=getDBRecord(array('-table'=>"_minify",'name'=>$filename));
