@@ -299,8 +299,9 @@ function ajaxPopup(url,params,useropts){
 /* cancelBubble - stop propigation of events to that onclick events of the parent elements do not fire. */
 function cancelBubble(e) {
  	var evt = e ? e:window.event;
- 	if (evt.stopPropagation)    evt.stopPropagation();
- 	if (evt.cancelBubble!=null) evt.cancelBubble = true;
+ 	if (evt.preventDefault){evt.preventDefault();}
+	if (evt.stopPropagation){evt.stopPropagation();}
+ 	if (evt.cancelBubble != null){evt.cancelBubble = true;}
 }
 /* centerpopDiv*/
 function centerpopDiv(txt,rtimer,x){
@@ -1206,7 +1207,10 @@ function initBehaviors(ajaxdiv){
 				//save original background color
 				navEls[n].setAttribute('_bgcolor',navEls[n].style.backgroundColor || '');
   				//add event listeners
-  				addEventHandler(navEls[n],"dragover",cancel);
+  				addEventHandler(navEls[n],"dragover",function(evt){
+					cancelBubble(evt);
+					}
+				);
 				addEventHandler(navEls[n],"dragexit", function(evt){
 					cancelBubble(evt);
 						var bgcolor='';
@@ -1223,7 +1227,7 @@ function initBehaviors(ajaxdiv){
 					// get window.event if e argument missing (in IE)
 					evt = evt || window.event;
 					// stops the browser from redirecting off to the image.
-		            if (evt.preventDefault) {evt.preventDefault();}
+		            cancelBubble(evt);
 					this.style.backgroundColor=this.getAttribute('_bgcolor');
 					fileUploadBehavior(evt,this);
 					},false);
