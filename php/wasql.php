@@ -625,8 +625,14 @@ function minifyFilename($ext=''){
 		$_SERVER['REMOTE_BROWSER'],
 		$_SERVER['REMOTE_BROWSER_VERSION']
 	);
+/* 	if(isset($_REQUEST['passthru']) && is_array($_REQUEST['passthru']) && count($_REQUEST['passthru'])){
+		$parts=array_merge($parts,$_REQUEST['passthru']);
+	} */
 	$filename='M'.encodeCRC(implode('',$parts));
 	$filename .= 'P'.$PAGE['_id'];
+	if(isset($PAGE['includePage']) && is_array($PAGE['includePage']) && count($PAGE['includePage'])){
+		$filename='I'.encodeCRC(implode('',$PAGE['includePage']));
+	}
 	$filename .= 'T'.$TEMPLATE['_id'];
 	if(isAjax()){$filename .= 'A';}
 	$rec=getDBRecord(array('-table'=>"_minify",'name'=>$filename));
