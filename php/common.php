@@ -6631,7 +6631,6 @@ function includePage($val='',$params=array()){
 	if(isset($rec['-error'])){
 		return '<img src="/wfiles/alert.gif" alt="Alert" title="' . $rec['-error'] . '"> Error: ' . $rec['-error'];
     }
-    $PAGE['includePage'][]=$rec['_id'];
     //Load any params into the Request array, saving existing values in prev array
     $prev=array();
     foreach($params as $key=>$pval){
