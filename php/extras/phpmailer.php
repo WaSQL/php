@@ -142,6 +142,30 @@ function phpmailerSendMail($params=array()){
 			$mail->AddAddress($to);               // Name is optional
 		}
 	}
+	//CC
+	if(isset($params['cc'])){
+		if(!is_array($params['cc'])){$params['cc']=preg_split('/[\,\;]+/',$params['cc']);}
+		foreach($params['cc'] as $to){
+			if(is_array($to) && isEmail($to[0])){
+				$mail->addCC($to[0], $to[1]);  // Add a recipient and name
+			}
+			elseif(isEmail($to)){
+				$mail->addCC($to);               // Name is optional
+			}
+		}
+	}
+	//BCC
+	if(isset($params['bcc'])){
+		if(!is_array($params['bcc'])){$params['bcc']=preg_split('/[\,\;]+/',$params['bcc']);}
+		foreach($params['bcc'] as $to){
+			if(is_array($to) && isEmail($to[0])){
+				$mail->addBCC($to[0], $to[1]);  // Add a recipient and name
+			}
+			elseif(isEmail($to)){
+				$mail->addBCC($to);               // Name is optional
+			}
+		}
+	}
 	//Reply-To
 	if(isset($params['reply-to'])){
 		if(!is_array($params['reply-to'])){$params['reply-to']=preg_split('/[\,\;]+/',$params['reply-to']);}
