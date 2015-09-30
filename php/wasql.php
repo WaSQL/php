@@ -620,11 +620,12 @@ function minifyFilename($ext=''){
 	global $CONFIG;
 	if(!isNum($PAGE['_id'])){return '';}
 	if(!isNum($TEMPLATE['_id'])){return '';}
+	list($url,$params)=preg_split('/\?/',$_SERVER['REQUEST_URI'],2);
 	$parts=array(
 		$CONFIG['dbname'],
 		$_SERVER['REMOTE_BROWSER'],
 		$_SERVER['REMOTE_BROWSER_VERSION'],
-		$_SERVER['REQUEST_URI']
+		$url
 	);
 /* 	if(isset($_REQUEST['passthru']) && is_array($_REQUEST['passthru']) && count($_REQUEST['passthru'])){
 		$parts=array_merge($parts,$_REQUEST['passthru']);
