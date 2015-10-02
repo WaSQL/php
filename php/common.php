@@ -6087,6 +6087,86 @@ function getCSVFileContents($file,$params=array()){
 	unset($rows);
 	return $results;
 	}
+//---------- begin function arrays2SchemaFields-------------------
+/**
+* @describe returns the schema needed for the records in recs
+* @param recs array - array of recs with key/value pairs
+* @return array fields needed for schema
+* @usage $fields=arrays2SchemaFields($recs);
+*/
+function arrays2SchemaFields($recs=array()){
+	//properties to collect: valcount, minlen, maxlen, maxord, maxdec, numeric, date
+	$properties=array();
+
+	foreach($recs as $rec){
+    	foreach($rec as $k=>$v){
+			//valcount
+			if(strlen($v)){$properties[$k]['valcount']+=1;}
+			//minlen
+			if(!isset($properties[$k]['minlen']) || strlen($v) < $properties[$k]['minlen']){
+            	$properties[$k]['minlen']=strlen($v);
+			}
+			//maxlen
+			if(!isset($properties[$k]['maxlen']) || strlen($v) > $properties[$k]['maxlen']){
+            	$properties[$k]['maxlen']=strlen($v);
+			}
+			//type - date, numeric
+			if(is_int($v)){$properties[$k]['types']['int']+=1;}
+			elseif(is_numeric($v)){
+				$properties[$k]['types']['real']+=1;
+				list($ord,$dec)=preg_split('/\./',$v);
+				//maxord
+				if(!isset($properties[$k]['maxord']) || strlen($o) > $properties[$k]['maxord']){
+	            	$properties[$k]['maxord']=strlen($o);
+				}
+				//maxdec
+				if(!isset($properties[$k]['maxdec']) || strlen($d) > $properties[$k]['maxdec']){
+	            	$properties[$k]['maxdec']=strlen($d);
+				}
+			}
+			elseif(isDateTime($v)){$properties[$k]['types']['datetime']+=1;}
+			elseif(isDate($v)){$properties[$k]['types']['date']+=1;}
+			elseif(!is_string($v)){$properties[$k]['types']['blob']+=1;}
+			else{$properties[$k]['types']['varchar']+=1;}
+		}
+	}
+	$fields=array(
+		'_id'	=> function_exists('databasePrimaryKeyFieldString')?databasePrimaryKeyFieldString():'autoincrement primary key',
+		'_cdate'=> "datetime NOT NULL",
+		'_cuser'=> "int NOT NULL",
+		'_edate'=> "datetime NULL",
+		'_euser'=> "int NULL",
+	);
+	foreach($properties as $fld=>$property){
+		$fld=preg_replace('/[^a-z0-9]+/i','_',$fld);
+		if(count($property['types'])==1){$type=$property['types'][0];}
+		switch($type){
+			case 'int':
+				$fields[$fld]="integer NULL";
+			break;
+			case 'real':
+				$m=$properties[$k]['maxord']+$properties[$k]['maxdec']+1;
+				$fields[$fld]="real({$m},{$properties[$k]['maxdec']}) NULL";
+			break;
+			case 'datetime':
+				$fields[$fld]="datetime NULL";
+			break;
+			case 'date':
+				$fields[$fld]="date NULL";
+			break;
+			default:
+				//round the max to the nearest 10th going up
+				$max = ceil($property['maxlen'] / 10) * 10;
+				if($max > 9000000){$fields[$fld]="longtext NULL";}
+				elseif($max > 65000){$fields[$fld]="mediumtext NULL";}
+				elseif($max > 2000){$fields[$fld]="text NULL";}
+				elseif($max < 11){$fields[$fld]="char({$max}) NULL";}
+				else{$fields[$fld]="varchar({$max}) NULL";}
+			break;
+        }
+    }
+    return $fields;
+}
 //---------- begin function getEncodedFileContents-------------------
 /**
 * @describe reads the contents of any encoded file (UTF-8, Unicode, etc)
