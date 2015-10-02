@@ -156,6 +156,10 @@ function ldapGetUsers($params=array()){
 						//contains
 						if(stringContains($rv,$m[1])){$found=1;break;}
 					}
+					elseif((strtolower($rv)=='null' || $rv=='') && !strlen(trim($v))){
+						//is null (empty)
+                    	$found==1;break;
+					}
 					else{
 		                if(strtolower($rv) == strtolower($v)){$found=1;break;}
 					}
