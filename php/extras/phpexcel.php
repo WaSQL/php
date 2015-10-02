@@ -90,15 +90,15 @@ function phpexcelXlsx2csv($file,$throttle='',$cleanup='',$unpack=0){
 		exit;
 	}
 	if(!is_file($file)){return 'NO FILE';}
-	$binpath="{$progpath}/phpexcel";
+	$binpath="{$progpath}/phpexcel/temp";
 	if(!is_dir($binpath)){mkdir($binpath, 0770);};
  	$newcsvfile  = "{$binpath}/".getFileName($file,1).'.csv';
 	require_once "{$progpath}/phpexcel/pclzip.lib.php";
  	$archive = new PclZip($file);
- 	$list = $archive->extract(PCLZIP_OPT_PATH, "bin");
+ 	$list = $archive->extract(PCLZIP_OPT_PATH, $binpath);
 	$strings = array();
 	$dir = getcwd();
-	$filename = $dir."\bin\xl\sharedstrings.xml";
+	$filename = "{$binpath}\xl\sharedstrings.xml";
 	$z = new XMLReader;
 	$z->open($filename);
 	$doc = new DOMDocument;
@@ -121,7 +121,7 @@ function phpexcelXlsx2csv($file,$throttle='',$cleanup='',$unpack=0){
 	ob_end_flush();
 	$z->close($filename);
 	$dir = getcwd();
-	$filename = $dir."\bin\xl\worksheets\sheet1.xml";
+	$filename = "{$binpath}8\xl\worksheets\sheet1.xml";
 	$z = new XMLReader;
 	$z->open($filename);
 	$doc = new DOMDocument;
@@ -165,11 +165,11 @@ function phpexcelXlsx2csv($file,$throttle='',$cleanup='',$unpack=0){
 	    		$emptyRow[]="";
 	  		}
 			if(!empty($emptyRow)){
-	    		my_fputcsv($csvfile,$emptyRow);
+	    		phpexcelFputcsv($csvfile,$emptyRow);
 	    	};
 	    $rowCount++;
 	  	}
-		my_fputcsv($csvfile,$thisrow);
+		phpexcelFputcsv($csvfile,$thisrow);
 		if($rowCount<$throttle||$throttle==""||$throttle=="0"){
 			$z->next('row');
 	    }
@@ -178,8 +178,8 @@ function phpexcelXlsx2csv($file,$throttle='',$cleanup='',$unpack=0){
 	}
 	$z->close($filename);
 	ob_end_flush();
-  	cleanUp("bin/");
-  	return $filename
+  	phpexcelCleanUp($binpath);
+  	return $filename;
 }
 /**
  * convert xml objects to array
