@@ -1568,6 +1568,11 @@ END{
 }
 #############
 BEGIN {
+	#add path to INC
+	my @parts=split(/\:/,$ENV{PATH});
+	foreach $part (@parts){
+    	unshift(@INC,$part);
+	}
 	#call exit when CTRL-C is used to abort - this way we cleanup properly
 	$SIG{INT} = sub {exit(1);};
 	our ($temp_dir,$progpath,$progexe,$LogFile,$progname,$isexe)=('','','','','',0);
