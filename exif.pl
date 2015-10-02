@@ -62,7 +62,11 @@ foreach my $group (sort(keys(%exif))){
 print "</root>\r\n";
 #############
 BEGIN {
-	print "BEGIN\n";exit;
+	#add path to INC
+	my @parts=split(/\:/,$ENV{PATH});
+	foreach $part (@parts){
+    	unshift(@INC,$part);
+	}
 	$temp_dir = ( $ENV{TEMP} || $ENV{TMP} || $ENV{WINDIR} || '/tmp' ) . "/p2xtmp-$$";
 	$0 = $^X unless ($^X =~ m%(^|[/\\])(perl)|(perl.exe)$%i);
 	($progpath) = $0 =~ m%^(.*)[/\\]%;
