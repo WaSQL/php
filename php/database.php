@@ -723,11 +723,76 @@ function addDBAccess(){
 		}
 	//remove _access records older than 2 years
 	if(!isset($_SERVER['addDBAccess'])){
-		$query="delete from {$table} where _cdate < DATE_ADD(NOW(), INTERVAL -730 DAY)";
-		$x=executeSQL($query);
+		$ok=cleanupDBRecords($table,730);
 		$_SERVER['addDBAccess']=1;
 		}
     return true;
+}
+//---------- begin function cleanupDBRecords
+/**
+* @describe - add changes to the _changelog table
+* @param table string  - table name
+* @param length int  - number of days to leave - defaults to 30
+* @param field string  - date field  - defaults to _cdate
+* @usage
+*	$ok=cleanupDBRecords('comments');
+* 	$ok=cleanupDBRecords('comments',60);
+* 	$ok=cleanupDBRecords('log',90,'logdate');
+*/
+function cleanupDBRecords($table,$length=30,$field='_cdate'){
+	$format='Y-m-d';
+	if(isOracle()){
+		$format='d-M-Y';
+	}
+    $now=date($format);
+    $then=date($format,strtotime("-{$length} Days"));
+    $opts=array(
+		'-table'	=> $table,
+		'-where'	=> "{$field} between '{$now}' and '{$then}'"
+	);
+    return delDBRecord($opts);
+}
+//---------- begin function addDBChangeLog
+/**
+* @describe - add changes to the _changelog table
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*	// tablename, record_id, diff, guid, changes
+*/
+function addDBChangeLog($table,$id,$diff){
+	if(!isDBTable("_changelog") || $table=='_changelog'){return false;}
+	if(preg_match('/^_(history|changelog|access)$/is',$table)){return false;}
+	$rec=getDBRecord(array('-table'=>$table,'_id'=>$id));
+	if(!isset($rec['_id'])){return false;}
+
+	//valid action values: add,edit,del,
+	if(isDBTable("_history")){
+		$info=getDBFieldInfo($table,1);
+		if(!isset($info['xmldata'])){return false;}
+		$action=strtolower(trim($action));
+		$recs=getDBRecords(array('-table'=>$table,'-where'=>$where));
+		if(is_array($recs)){
+			foreach($recs as $rec){
+				ksort($rec);
+				$md5=md5(implode('',array_values($rec)));
+				//don't update it nothing changed
+				if(getDBCount(array('-table'=>"_history",'tablename'=>$table,'record_id'=>$rec['_id'],'md5'=>$md5))){continue;}
+				$opts=array(
+					'-table'	=> "_history",
+					'action'	=> $action,
+					'tablename'	=> $table,
+					'record_id'	=> $rec['_id'],
+					'xmldata'	=> request2XML($rec,array()),
+					'md5'		=> $md5
+					);
+				if(isNum($PAGE['_id'])){$opts['page_id']=$PAGE['_id'];}
+				$id=addDBRecord($opts);
+				if(!isNum($id)){
+					setWasqlError(debug_backtrace(),$id);
+					}
+            	}
+        	}
+        }
+	return false;
 }
 //---------- begin function addDBHistory
 /**
@@ -3853,8 +3918,7 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	//remove records older than $SETTINGS['wasql_queries_age'] days. Default to 10 days
 	$days=setValue(array($SETTINGS['wasql_queries_days'],10));
 	if(!isset($_SERVER['logDBQuery'])){
-		$query="delete from _queries where _cdate < DATE_ADD(NOW(), INTERVAL -{$days} DAY)";
-		$x=executeSQL($query);
+		$ok=cleanupDBRecords('_queries',$days);
 		$_SERVER['logDBQuery']=1;
 	}
 	return $ok;
@@ -7009,7 +7073,6 @@ function databaseType(){
 	elseif(isOracle()){return 'Oracle';}
 	return 'Unknown';
 	}
-
 //---------- begin function isMysql ----------
 /**
 * @describe returns true if database driver is MySQL
