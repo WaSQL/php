@@ -6095,7 +6095,10 @@ function listDBRecords($params=array(),$customcode=''){
     	$tabindex=0;
 		foreach($listfields as $fld){
 			//Show editlist?
-			if($listform==1 && isset($info[$fld]['editlist']) && $info[$fld]['editlist']==1){
+			$editlist_field=0;
+			if(isset($info[$fld]['editlist']) && $info[$fld]['editlist']==1){$editlist_field=1;}
+			if(isset($params["{$field}_editlist"]) && $params["{$field}_editlist"]==1){$editlist_field=1;}
+			if($listform==1 && $editlist_field==1 ){
 				$rtn .= '<td>'."\n";
 				$fldopts=array('-table'=>$params['-table'],'-field'=>$fld,'name'=>"{$fld}_{$rec[$idfield]}",'value'=>$rec[$fld]);
 				if(isExtraCss('bootstrap') && !stringContains($fldopts['class'],'form-control')){$fldopts['class'] .= ' form-control';}
