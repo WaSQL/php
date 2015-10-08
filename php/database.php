@@ -2232,7 +2232,8 @@ function buildDBPaging($paging=array()){
 					'lt'	=> 'Less Than',
 					'egt'	=> 'Equals or Greater than',
 					'elt'	=> 'Less than or Equals',
-					'in'	=> 'In List',
+					'in'	=> 'Any of These',
+					'all'	=> 'ALL of These',
 					'ib'	=> 'Is Blank',
 					'nb'	=> 'Is Not Blank'
 				);
@@ -2263,7 +2264,8 @@ function buildDBPaging($paging=array()){
 							case 'lt': $doper='Less Than';break;
 							case 'egt': $doper='Equals or Greater than';break;
 							case 'elt': $doper='Less than or Equals';break;
-							case 'in': $doper='In List';break;
+							case 'in': $doper='Any of These';break;
+							case 'all': $doper='ALL of These';break;
 							case 'ib': $doper='Is Blank';$dval='';break;
 							case 'nb': $doper='Is Not Blank';$dval='';break;
 						}
@@ -3111,7 +3113,10 @@ function exportDBRecords($params=array()){
 	else{
 		if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
 			$params['-search']=$_REQUEST['_search'];
-        	}
+        }
+        if(isset($_REQUEST['_filters']) && strlen($_REQUEST['_filters'])){
+			$params['-filters']=$_REQUEST['_filters'];
+        }
         if(isset($_REQUEST['_searchfield']) && strlen($_REQUEST['_searchfield'])){
 			$params['-searchfield']=$_REQUEST['_searchfield'];
         	}
@@ -5048,6 +5053,74 @@ function getDBQuery($params=array()){
 	if(isset($params['-where'])){
         $query .= ' where '.$params['-where'];
         if(isset($params['-filter'])){$query .= " and ({$params['-filter']})";}
+        if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
+        	$sets=preg_split('/[\r\n]+/',$params['-filters']);
+        	$wheres=array();
+            foreach($sets as $set){
+                list($field,$oper,$val)=preg_split('/\-/',$set,3);
+                if($field=='null' || $val=='null'){continue;}
+				switch($doper){
+		        	case 'ct': 
+		        		//contains
+		        		$wheres[]="{$field} like '%{$val}%'";
+					break;
+					case 'eq':
+						//equals
+						$wheres[]="{$field} = '{$val}'";
+					break;
+					case 'gt':
+						//greater than
+						$wheres[]="{$field} > '{$val}'";
+					break;
+					case 'lt':
+						//less than
+						$wheres[]="{$field} < '{$val}'";
+					break;
+					case 'egt': 
+						//Equals or Greater than
+						$wheres[]="{$field} >= '{$val}'";
+					break;
+					case 'elt':
+						//Less than or Equals
+						$wheres[]="{$field} =< '{$val}'";
+					break;
+					case 'in': 
+					case 'any':
+						//In List
+						$vals=preg_split('/\,/',$val);
+						$ors=array();
+						foreach($vals as $val){
+							$val=trim($val);
+                        	$ors[]="{$field} = '{$val}'";
+						}
+						if(count($ors)){
+							$orstr=implode(' or ',$ors);
+							$wheres[]=" and ({$orstr})";
+						}
+					break;
+					case 'all':
+						//All of these
+						$vals=preg_split('/\,/',$val);
+						foreach($vals as $val){
+							$val=trim($val);
+                        	$wheres[]="{$field} = '{$val}'";
+						}
+					break;
+					case 'ib':
+						//Is Blank
+						$wheres[]="{$field} is null or {$field}=''";
+					break;
+					case 'nb':
+						//Is Not Blank
+						$wheres[]="{$field} is not null and {$field} != ''";
+					break;
+				}
+			}
+			if(count($wheres)){
+				$wherestr=implode(' and ',$wheres);
+            	$query .= "and ({$wherestr})";
+			}
+		}
         if(isset($params['-search'])){
 			if(preg_match('/^where (.+)/i',$params['-search'],$smatch)){
 				$query .= ' and ('.$smatch[1].')';
@@ -5103,6 +5176,74 @@ function getDBQuery($params=array()){
 				$query .= " and {$key}='{$val}'";
 	        }
 	    }
+	    if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
+        	$sets=preg_split('/[\r\n]+/',$params['-filters']);
+        	$wheres=array();
+            foreach($sets as $set){
+                list($field,$oper,$val)=preg_split('/\-/',$set,3);
+                if($field=='null' || $val=='null'){continue;}
+				switch($doper){
+		        	case 'ct': 
+		        		//contains
+		        		$wheres[]="{$field} like '%{$val}%'";
+					break;
+					case 'eq':
+						//equals
+						$wheres[]="{$field} = '{$val}'";
+					break;
+					case 'gt':
+						//greater than
+						$wheres[]="{$field} > '{$val}'";
+					break;
+					case 'lt':
+						//less than
+						$wheres[]="{$field} < '{$val}'";
+					break;
+					case 'egt': 
+						//Equals or Greater than
+						$wheres[]="{$field} >= '{$val}'";
+					break;
+					case 'elt':
+						//Less than or Equals
+						$wheres[]="{$field} =< '{$val}'";
+					break;
+					case 'in': 
+					case 'any':
+						//In List
+						$vals=preg_split('/\,/',$val);
+						$ors=array();
+						foreach($vals as $val){
+							$val=trim($val);
+                        	$ors[]="{$field} = '{$val}'";
+						}
+						if(count($ors)){
+							$orstr=implode(' or ',$ors);
+							$wheres[]=" and ({$orstr})";
+						}
+					break;
+					case 'all':
+						//All of these
+						$vals=preg_split('/\,/',$val);
+						foreach($vals as $val){
+							$val=trim($val);
+                        	$wheres[]="{$field} = '{$val}'";
+						}
+					break;
+					case 'ib':
+						//Is Blank
+						$wheres[]="{$field} is null or {$field}=''";
+					break;
+					case 'nb':
+						//Is Not Blank
+						$wheres[]="{$field} is not null and {$field} != ''";
+					break;
+				}
+			}
+			if(count($wheres)){
+				$wherestr=implode(' and ',$wheres);
+            	$query .= "and ({$wherestr})";
+			}
+		}
 	    if(isset($params['-search'])){
 			if(!stringBeginsWith($params['-search'],'where')){
 				$params['-search']=databaseEscapeString($params['-search']);
@@ -5767,7 +5908,10 @@ function listDBRecords($params=array(),$customcode=''){
 	else{
 		if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
 			$params['-search']=$_REQUEST['_search'];
-        	}
+        }
+        if(isset($_REQUEST['_filters']) && strlen($_REQUEST['_filters'])){
+			$params['-filters']=$_REQUEST['_filters'];
+        }
         if(isset($_REQUEST['_searchfield']) && strlen($_REQUEST['_searchfield'])){
 			$params['-searchfield']=$_REQUEST['_searchfield'];
         	}
@@ -5826,6 +5970,9 @@ function listDBRecords($params=array(),$customcode=''){
 		if(!isset($params['-search']) && isset($_REQUEST['_search'])){
         	$paging['-search']=$_REQUEST['_search'];
 		}
+		if(isset($_REQUEST['_filters']) && strlen($_REQUEST['_filters'])){
+			$params['-filters']=$_REQUEST['_filters'];
+        }
 		foreach($_REQUEST as $pkey=>$pval){
         	if(stringBeginsWith($pkey,'_')){$paging[$pkey]=$_REQUEST[$pkey];}
 		}
