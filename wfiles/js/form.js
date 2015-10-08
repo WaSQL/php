@@ -1813,6 +1813,67 @@ function submitForm(theForm,popup,debug,ajax){
 function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
 	}
+
+function pagingAddFilter(frm){
+	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
+	if(frm.filter_operator.value.length==0){alert('select a filter operator');return false;}
+	if(frm.filter_value.value.length==0 && frm.filter_operator.value != 'null'){
+		alert('select a filter value');
+		frm.filter_value.focus();
+		return false;
+	}
+	if(frm.filter_operator.value == 'null' && frm.filter_field.value == '*'){
+		alert('select a field to check for null values on');
+		frm.filter_field.focus();
+		return false;
+	}
+	var id=frm.filter_field.value+frm.filter_operator.value+frm.filter_value.value;
+	var obj=getObject(id);
+	var filters=new Array();
+	if(undefined != obj){
+		obj.style.display='inline-block';
+	}
+	else{
+		var d=document.createElement('div');
+		d.className='w_pagingfilter';
+		d.setAttribute('data-field',frm.filter_field.value);
+		d.setAttribute('data-operator',frm.filter_operator.value);
+		d.setAttribute('data-value',frm.filter_value.value);
+		d.id=id;
+		var dfield=frm.filter_field.value;
+		if(dfield=='*'){dfield='Any Field';}
+		var doper=frm.filter_operator.value;
+		var dval='\''+frm.filter_value.value+'\'';
+		switch(doper){
+        	case 'ct': doper='Contains';break;
+			case 'eq': doper='Equals';break;
+			case 'gt': doper='Greater Than';break;
+			case 'lt': doper='Less Than';break;
+			case 'egt': doper='Equals or Greater than';break;
+			case 'elt': doper='Less than or Equals';break;
+			case 'in': doper='In';break;
+			case 'null': doper='Is Blank Or Null';dval='';break;
+		}
+		d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="hideId(\''+id+'\');"></span>';
+		var p=getObject('send_to_filters');
+		p.appendChild(d);
+	}
+}
+function pagingSetFilters(frm){
+	var f=document.querySelectorAll('.w_pagingfilter');
+	var filters=new Array();
+	for(var i=0;i<f.length;i++){
+    	if(f[i].style.display=='none'){continue;}
+    	var fval=f[i].getAttribute('data-field')+'-'+f[i].getAttribute('data-operator')+'-'+f[i].getAttribute('data-value');
+    	filters.push(fval);
+	}
+	//update filters field
+	frm._filters.value=implode(':',filters);
+}
+
+
+
+
 //--------------------------
 //submitSurveyForm appends additional info to the form 
 //  like question, section, etc
