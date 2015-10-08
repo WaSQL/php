@@ -677,15 +677,35 @@ function removeDiv(divid){
 function removeId(divid){
 	//info: removes specified id
 	var obj=getObject(divid);
-	if(undefined == obj){return;}
+	if(undefined == obj){return false;}
 	try{
-    	document.body.removeChild(obj);
-    	document.getElementsByTagName('BODY')[0].removeChild(obj);
-    	obj.parentNode.removeChild(obj);
-    	return;
+		obj.remove();
+		if(undefined == obj){return true;}
 	}
 	catch(e){}
-    return;
+	try{
+		if(undefined != obj.parentNode){
+			obj.parentNode.removeChild(obj);
+			if(undefined == obj){return true;}
+		}
+	}
+	catch(e){}
+	try{
+		document.body.removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+	try{
+		document.getElementsByTagName('BODY')[0].removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+	try{
+    	obj.parentNode.removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+    return false;
 }
 function removeDivOnExit(divid,fade){
 	//info: removes specified id when the mouse cursor exits the area
