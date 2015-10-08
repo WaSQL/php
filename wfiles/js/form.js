@@ -1817,14 +1817,17 @@ function imposeMaxlength(obj, max){
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
 	if(frm.filter_operator.value.length==0){alert('select a filter operator');return false;}
-	if(frm.filter_value.value.length==0 && frm.filter_operator.value != 'null'){
-		alert('select a filter value');
-		frm.filter_value.focus();
-		return false;
-	}
+
 	if(frm.filter_field.value == '*' && (frm.filter_operator.value == 'ib' || frm.filter_operator.value == 'nb')){
 		alert('select a field to check for null values on');
 		frm.filter_field.focus();
+		return false;
+	}
+	else if(frm.filter_field.value != '*' && (frm.filter_operator.value == 'ib' || frm.filter_operator.value == 'nb')){
+	}
+	else if(frm.filter_value.value.length==0 && frm.filter_operator.value != 'null'){
+		alert('select a filter value');
+		frm.filter_value.focus();
 		return false;
 	}
 	var id=frm.filter_field.value+frm.filter_operator.value+frm.filter_value.value;
@@ -1845,14 +1848,18 @@ function pagingAddFilter(frm){
 		var doper=frm.filter_operator.value;
 		var dval='\''+frm.filter_value.value+'\'';
 		switch(doper){
-        	case 'ct': doper='Contains';break;
-			case 'eq': doper='Equals';break;
+        	case 'ct': 	doper='Contains';break;
+        	case 'nct': doper='Not Contains';break;
+        	case 'ca': 	doper='Contains Any of These';break;
+        	case 'nca': doper='Not Contain Any of These';break;
+			case 'eq': 	doper='Equals';break;
+			case 'neq': doper='Not Equals';break;
+			case 'ea': 	doper='Equals Any of These';break;
+			case 'nea': doper='Not Equals Any of These';break;
 			case 'gt': doper='Greater Than';break;
 			case 'lt': doper='Less Than';break;
 			case 'egt': doper='Equals or Greater than';break;
 			case 'elt': doper='Less than or Equals';break;
-			case 'in': doper='Any of These';break;
-			case 'all': doper='ALL of These';break;
 			case 'ib': doper='Is Blank';dval='';break;
 			case 'nb': doper='Is Not Blank';dval='';break;
 		}
