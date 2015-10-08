@@ -2201,6 +2201,7 @@ if(isset($_REQUEST['_menu'])){
 				$recopts=array(
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-bordered table-striped",
+					//'-filters'		=> 1,
 					'_table_'=>$_REQUEST['_table_'],
 					'-table'=>$_REQUEST['_table_'],
 					'-action'=>'/php/admin.php','_id_href'=>'/php/admin.php?'.$idurl
