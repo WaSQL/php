@@ -1224,7 +1224,7 @@ function buildFormSlider($name, $params=array()){
 * @usage if(!buildDir('/var/www/test/folder/sub/test')){return 'failed to build dir';}
 */
 function buildFormSubmit($val='Submit',$name='',$onclick=''){
-	$rtn = '<button class="btn btn-primary" type="submit" value="'.$val.'"';
+	$rtn = '<button class="btn btn-default" type="submit" value="'.$val.'"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
 	$rtn .= '>'.$val."</button>";
