@@ -2201,7 +2201,7 @@ function buildDBPaging($paging=array()){
 		if(preg_match('/^\-/',$pkey)){continue;}
 		if($pkey=='_action' && $pval=='multi_update'){continue;}
 		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
-		if(preg_match('/^\_(start|id\_href|search)$/i',$pkey)){continue;}
+		if(preg_match('/^\_(start|id\_href|search|filters)$/i',$pkey)){continue;}
 		if(preg_match('/\_(onclick|href|eval)$/i',$pkey)){continue;}
 		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
     	}
@@ -2214,7 +2214,7 @@ function buildDBPaging($paging=array()){
 			if(isset($paging['-filters'])){
             	//new options to allow user to set multiple filters
             	$rtn .= '<div class="row padtop">'."\n";
-            	$rtn .= '<input type="hidden" name="_filters" value="" />'."\n";
+            	$rtn .= '<div style="display:none;"><textarea name="_filters">'.$_REQUEST['_filters'].'</textarea></div>'."\n";
             	//$rtn .= '	<b>Filters:</b>'."\n";
             	//fields
             	$vals=array('*'=>'Any Field');
@@ -2244,7 +2244,35 @@ function buildDBPaging($paging=array()){
 				$rtn .= '	<button type="submit" class="btn btn-default icon-search">Search</button>'."\n";
 				$rtn .= '</div>'."\n";
 				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
-				$rtn .= '	<div id="send_to_filters"></div>'."\n";
+				$rtn .= '	<div id="send_to_filters">'."\n";
+				if(strlen($paging['-filters']) && $paging['-filters'] != 1){
+                	//field-oper-value
+                	$sets=preg_split('/[\r\n]+/',$paging['-filters']);
+                	foreach($sets as $set){
+                    	list($field,$oper,$val)=preg_split('/\-/',$set,3);
+                    	if($field=='null' || $val=='null'){continue;}
+                    	$fid=$field.$oper.$val;
+                    	$dfield=$field;
+						if($dfield=='*'){$dfield='Any Field';}
+                    	$doper=$oper;
+						$dval="'{$val}'";
+						switch($doper){
+				        	case 'ct': $doper='Contains';break;
+							case 'eq': $doper='Equals';break;
+							case 'gt': $doper='Greater Than';break;
+							case 'lt': $doper='Less Than';break;
+							case 'egt': $doper='Equals or Greater than';break;
+							case 'elt': $doper='Less than or Equals';break;
+							case 'in': $doper='In List';break;
+							case 'ib': $doper='Is Blank';$dval='';break;
+							case 'nb': $doper='Is Not Blank';$dval='';break;
+						}
+						$dstr="{$dfield} {$doper} {$dval}";
+                    	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'."\n";
+					}
+					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'."\n";
+				}
+				$rtn .= '	</div>'."\n";
 				$rtn .= '</div>'."\n";
 			}
 			else{
@@ -5762,6 +5790,9 @@ function listDBRecords($params=array(),$customcode=''){
         if(!isset($_REQUEST['_sort']) && !isset($_REQUEST['-order']) && !isset($params['-order'])){
 			$params['-order']="{$idfield} desc";
         	}
+        if(isset($_REQUEST['_filters'])){
+        	$params['-filters']=$_REQUEST['_filters'];
+		}
 		$rec_count=getDBCount($params);
 		if(isset($params['-limit']) && isNum($params['-limit']) && $params['-limit'] > 0){
 			$paging=getDBPaging($rec_count,$params['-limit']);
@@ -5810,6 +5841,7 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-filters'])){
         	$paging['-filters']=$params['-filters'];
 		}
+
 		//$rtn .= printValue($paging).printValue($params);
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
