@@ -1851,7 +1851,8 @@ function pagingAddFilter(frm){
 			case 'lt': doper='Less Than';break;
 			case 'egt': doper='Equals or Greater than';break;
 			case 'elt': doper='Less than or Equals';break;
-			case 'in': doper='In List';break;
+			case 'in': doper='Any of These';break;
+			case 'all': doper='ALL of These';break;
 			case 'ib': doper='Is Blank';dval='';break;
 			case 'nb': doper='Is Not Blank';dval='';break;
 		}
