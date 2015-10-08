@@ -2186,6 +2186,7 @@ function buildDBPaging($paging=array()){
 		else{$formname='form_' . $paging['-ajaxid'];}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:"ajaxSubmitForm(this,'{$paging['-ajaxid']}');return false;";
 		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
+		if(isset($paging['-bulkedit'])){$onsubmit="pagingClearBulkEdit(this);{$onsubmit}";}
 		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	else{
@@ -2201,7 +2202,7 @@ function buildDBPaging($paging=array()){
 		if(preg_match('/^\-/',$pkey)){continue;}
 		if($pkey=='_action' && $pval=='multi_update'){continue;}
 		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
-		if(preg_match('/^\_(start|id\_href|search|filters)$/i',$pkey)){continue;}
+		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit)$/i',$pkey)){continue;}
 		if(preg_match('/\_(onclick|href|eval)$/i',$pkey)){continue;}
 		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
     	}
@@ -2214,7 +2215,12 @@ function buildDBPaging($paging=array()){
 			if(isset($paging['-filters'])){
             	//new options to allow user to set multiple filters
             	$rtn .= '<div class="row padtop">'."\n";
-            	$rtn .= '<div style="display:none;"><textarea name="_filters">'.$_REQUEST['_filters'].'</textarea></div>'."\n";
+            	$rtn .= '<div style="display:none;">'."\n";
+				$rtn .= '	<textarea name="_filters">'.$_REQUEST['_filters'].'</textarea>'."\n";
+				if(isset($paging['-bulkedit'])){
+					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'."\n";
+				}
+				$rtn .= '</div>'."\n";
             	//$rtn .= '	<b>Filters:</b>'."\n";
             	//fields
             	$vals=array('*'=>'Any Field');
@@ -2244,7 +2250,7 @@ function buildDBPaging($paging=array()){
 				$opts=array('class'=>'form-control input-sm');
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
-				$rtn .= '	<input id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
+				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
 				$rtn .= '	<button class="btn btn-default btn-sm" type="button" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
 				$rtn .= '	<button type="submit" class="btn btn-default icon-search">Search</button>'."\n";
 				if(isset($paging['-bulkedit'])){
@@ -5061,8 +5067,34 @@ function getDBQuery($params=array()){
 		$query .= "top({$params['-limit']}) ";
 		}
 	$query .= implode(',',$fields).' from ' . $params['-table'];
+	//build where clause
+	$where = getDBWhere($params);
+	if(strlen($where)){$query .= " where {$where}";}
+	//Set order by if defined
+    if(isset($params['-group'])){$query .= ' group by '.$params['-group'];}
+	//Set order by if defined
+    if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
+    //Set limit if defined
+    if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
+    return $query;
+}
+//---------- begin function getDBWhere--------------------
+/**
+* @describe builds a database query where clause only
+* @param params array
+*	[-table] string - table to query
+*	[-notimestamp] - turn off building _utime fields for date and time fields
+*	Other key value pairs passed in are used to filter the results.  i.e. 'active'=>1
+* @return string - query where string
+* @usage $where=getDBWhere(array('-table'=>$table,'field1'=>$val1...));
+*/
+function getDBWhere($params,$info=array()){
+	if(!isset($info) || !count($info)){
+		$info=getDBFieldInfo($params['-table']);
+	}
+	$query='';
 	if(isset($params['-where'])){
-        $query .= ' where '.$params['-where'];
+        $query .= $params['-where'];
         if(isset($params['-filter'])){$query .= " and ({$params['-filter']})";}
         if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
         	$wherestr=getDBFiltersString($params['-filters']);
@@ -5110,8 +5142,7 @@ function getDBQuery($params=array()){
         }
     }
 	else{
-		if(isset($params['-filter'])){$query .= " where ({$params['-filter']})";}
-		else{$query .= ' where 1=1';}
+		if(isset($params['-filter'])){$query .= "({$params['-filter']})";}
 		/* Filter the query based on params */
 		foreach($params as $key=>$val){
 			//skip keys that begin with a dash
@@ -5173,13 +5204,9 @@ function getDBQuery($params=array()){
 	        }
         }
 	}
-	//Set order by if defined
-    if(isset($params['-group'])){$query .= ' group by '.$params['-group'];}
-	//Set order by if defined
-    if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
-    //Set limit if defined
-    if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
-    return $query;
+	$query=trim($query);
+	$query=preg_replace('/^and\ /i','',$query);
+	return $query;
 }
 function getDBFiltersString($filters){
 	$sets=preg_split('/[\r\n]+/',$filters);
@@ -5919,6 +5946,18 @@ function listDBRecords($params=array(),$customcode=''){
         	}
         if(isset($_REQUEST['_filters'])){
         	$params['-filters']=$_REQUEST['_filters'];
+		}
+		if(isset($_REQUEST['_bulkedit']) && $_REQUEST['_bulkedit']==1){
+        	$params['-bulkedit']=1;
+        	$where=getDBWhere($params);
+        	if(strlen($_REQUEST['filter_field']) && strlen($_REQUEST['filter_value'])){
+				if(!strlen($where)){$where='1=1';}
+            	$ok=editDBRecord(array(
+					'-table'	=> $params['-table'],
+					'-where'	=> $where,
+					$_REQUEST['filter_field']=>$_REQUEST['filter_value']
+				));
+			}
 		}
 		$rec_count=getDBCount($params);
 		if(isset($params['-limit']) && isNum($params['-limit']) && $params['-limit'] > 0){
