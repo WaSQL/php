@@ -115,12 +115,9 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_changelog':
-			$fields['action']="char(5) NOT NULL";
 			$fields['tablename']="varchar(255) NOT NULL";
 			$fields['record_id']="INT NOT NULL";
-			$fields['diff']="text NULL";
-			$fields['guid']="varchar(40) NULL";
-			$fields['note']="varchar(255) NULL";
+			$fields['diff']="mediumtext NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
@@ -2160,7 +2157,7 @@ function getWasqlTables(){
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
 		'_fielddata','_tabledata','countries','states','contact_form',
-		'_access','_access_summary','_history','_cron','_cronlog','_pages','_pagelog','_queries',
+		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_pagelog','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities'
 		);
