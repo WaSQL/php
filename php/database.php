@@ -2185,13 +2185,15 @@ function buildDBPaging($paging=array()){
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='form_' . $paging['-ajaxid'];}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:"ajaxSubmitForm(this,'{$paging['-ajaxid']}');return false;";
-		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
+		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
+		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start,'-class'=>"form-inline"));
 	}
 	else{
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='s' . time();}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:'return true;';
-		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
+		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
+		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start,'-class'=>"form-inline"));
 	}
 	//hide other inputs
 	$rtn .= '<div style="display:none;" id="inputs">'."\n";
@@ -2209,20 +2211,57 @@ function buildDBPaging($paging=array()){
 	if(isset($paging['-search'])){
 		if(isset($paging['-table'])){
 			$fields=getDBFields($paging['-table'],1);
-			$indexes=getDBIndexes(array($paging['-table']));
-			$opts=array();
-			foreach($indexes as $rec){
-				if(!in_array($rec['column_name'],$fields)){continue;}
-				$tval=$rec['column_name'];
-				$dval=str_replace('_',' ',$tval);
-				$dval=ucwords(trim($dval));
-            	$opts[$tval]=$dval;
+			if(isset($paging['-filters'])){
+            	//new options to allow user to set multiple filters
+            	$rtn .= '<div class="row padtop">'."\n";
+            	$rtn .= '<input type="hidden" name="_filters" value="" />'."\n";
+            	$rtn .= '	<b>Filters:</b>'."\n";
+            	//fields
+            	$vals=array('*'=>'Any Field');
+				foreach($fields as $field){
+			    	if(isWasqlField($field) && $field != '_id'){continue;}
+			    	$vals[$field]=ucfirst($field);
+				}
+				$opts=array('class'=>'form-control input-sm');
+				$rtn .= buildFormSelect('filter_field',$vals,$opts);
+				//operaters
+				$vals=array(
+					'ct'	=> 'Contains',
+					'eq'	=> 'Equals',
+					'gt'	=> 'Greater Than',
+					'lt'	=> 'Less Than',
+					'egt'	=> 'Equals or Greater than',
+					'elt'	=> 'Less than or Equals',
+					'in'	=> 'In (comma separated)',
+					'null'	=> 'Is Blank Or Null'
+				);
+				$opts=array('class'=>'form-control input-sm');
+				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
+				//value
+				$rtn .= '	<input id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
+				$rtn .= '	<button class="btn btn-default btn-sm" type="button" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
+				$rtn .= '	<button type="submit" class="btn btn-default icon-search">Search</button>'."\n";
+				$rtn .= '</div>'."\n";
+				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
+				$rtn .= '	<div id="send_to_filters"></div>'."\n";
+				$rtn .= '</div>'."\n";
 			}
-			$rtn .= '<table class="w_nopad"><tr>'."\n";
-			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'."\n";
-			$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
-			$rtn .= '	<td><button type="submit" class="btn btn-default icon-search">Search</button></td>'."\n";
-			$rtn .= '</tr></table>'."\n";
+			else{
+				$indexes=getDBIndexes(array($paging['-table']));
+				$opts=array();
+				foreach($indexes as $rec){
+					if(!in_array($rec['column_name'],$fields)){continue;}
+					$tval=$rec['column_name'];
+					$dval=str_replace('_',' ',$tval);
+					$dval=ucwords(trim($dval));
+	            	$opts[$tval]=$dval;
+				}
+				$rtn .= '<table class="w_nopad"><tr>'."\n";
+				$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'."\n";
+				$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
+				$rtn .= '	<td><button type="submit" class="btn btn-default icon-search">Search</button></td>'."\n";
+				$rtn .= '</tr></table>'."\n";
+			}
 		}
 		else{
         	$rtn .= '<input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:250px;" value="'.requestValue('_search').'">'."\n";
@@ -2327,7 +2366,12 @@ function buildDBPaging($paging=array()){
 		$rtn .= buildFormEnd();
 		}
 	if(isset($paging['-search'])){
-		$rtn .= buildOnLoad("document.{$formname}._search.focus();");
+		if(isset($paging['-filters'])){
+        	$rtn .= buildOnLoad("document.{$formname}.filter_value.focus();");
+		}
+		else{
+			$rtn .= buildOnLoad("document.{$formname}._search.focus();");
+		}
 	}
 	//$rtn .= printValue($_REQUEST);
 	return $rtn;
@@ -5761,6 +5805,9 @@ function listDBRecords($params=array(),$customcode=''){
 		}
 		if(isset($params['-method'])){
         	$paging['-method']=$params['-method'];
+		}
+		if(isset($params['-filters'])){
+        	$paging['-filters']=$params['-filters'];
 		}
 		//$rtn .= printValue($paging).printValue($params);
 		$rtn .= buildDBPaging($paging);
