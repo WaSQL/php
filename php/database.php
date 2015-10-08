@@ -2186,14 +2186,14 @@ function buildDBPaging($paging=array()){
 		else{$formname='form_' . $paging['-ajaxid'];}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:"ajaxSubmitForm(this,'{$paging['-ajaxid']}');return false;";
 		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
-		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start,'-class'=>"form-inline"));
+		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	else{
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='s' . time();}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:'return true;';
 		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
-		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start,'-class'=>"form-inline"));
+		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	//hide other inputs
 	$rtn .= '<div style="display:none;" id="inputs">'."\n";
@@ -2215,7 +2215,7 @@ function buildDBPaging($paging=array()){
             	//new options to allow user to set multiple filters
             	$rtn .= '<div class="row padtop">'."\n";
             	$rtn .= '<input type="hidden" name="_filters" value="" />'."\n";
-            	$rtn .= '	<b>Filters:</b>'."\n";
+            	//$rtn .= '	<b>Filters:</b>'."\n";
             	//fields
             	$vals=array('*'=>'Any Field');
 				foreach($fields as $field){
@@ -2232,8 +2232,9 @@ function buildDBPaging($paging=array()){
 					'lt'	=> 'Less Than',
 					'egt'	=> 'Equals or Greater than',
 					'elt'	=> 'Less than or Equals',
-					'in'	=> 'In (comma separated)',
-					'null'	=> 'Is Blank Or Null'
+					'in'	=> 'In List',
+					'ib'	=> 'Is Blank',
+					'nb'	=> 'Is Not Blank'
 				);
 				$opts=array('class'=>'form-control input-sm');
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
@@ -2313,7 +2314,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        	}
 			$arr['_start']=$paging['-first'];
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
             }
         $rtn .= '</div></th>'."\n";
 		$rtn .= '	<th><div style="width:35px;">';
@@ -2327,7 +2328,7 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
             }
         $rtn .= '</div></th>'."\n";
 
