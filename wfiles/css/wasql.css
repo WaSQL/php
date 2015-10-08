@@ -1022,6 +1022,15 @@ table th a {
 	font-size:11pt;
 	font-weight:bold;
 	}
+.w_pagingfilter{
+	float:left;
+	padding:3px;
+	border:1px solid #999;
+	border-radius: 4px;
+	margin:7px 7px 0 0;
+	background:#f0f0f0;
+	cursor:pointer;
+}
 
 .w_body {
 	margin:0px;
