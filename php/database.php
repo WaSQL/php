@@ -2227,13 +2227,17 @@ function buildDBPaging($paging=array()){
 				//operaters
 				$vals=array(
 					'ct'	=> 'Contains',
+					'nct'	=> 'Not Contains',
+					'ca'	=> 'Contains Any of These',
+					'nca'	=> 'Not Contain Any of These',
 					'eq'	=> 'Equals',
+					'neq'	=> 'Not Equals',
+					'ea'	=> 'Equals Any of These',
+					'nea'	=> 'Not Equals Any of These',
 					'gt'	=> 'Greater Than',
 					'lt'	=> 'Less Than',
 					'egt'	=> 'Equals or Greater than',
 					'elt'	=> 'Less than or Equals',
-					'in'	=> 'Any of These',
-					'all'	=> 'ALL of These',
 					'ib'	=> 'Is Blank',
 					'nb'	=> 'Is Not Blank'
 				);
@@ -2257,15 +2261,19 @@ function buildDBPaging($paging=array()){
 						if($dfield=='*'){$dfield='Any Field';}
                     	$doper=$oper;
 						$dval="'{$val}'";
-						switch($doper){
+						switch($oper){
 				        	case 'ct': $doper='Contains';break;
+				        	case 'nct': $doper='Not Contains';break;
+				        	case 'ca': $doper='Contains Any of These';break;
+				        	case 'nca': $doper='Not Contain Any of These';break;
 							case 'eq': $doper='Equals';break;
+							case 'neq': $doper='Not Equals';break;
+							case 'ea': $doper='Equals Any of These';break;
+							case 'nea': $doper='Not Equals Any of These';break;
 							case 'gt': $doper='Greater Than';break;
 							case 'lt': $doper='Less Than';break;
 							case 'egt': $doper='Equals or Greater than';break;
 							case 'elt': $doper='Less than or Equals';break;
-							case 'in': $doper='Any of These';break;
-							case 'all': $doper='ALL of These';break;
 							case 'ib': $doper='Is Blank';$dval='';break;
 							case 'nb': $doper='Is Not Blank';$dval='';break;
 						}
@@ -5054,71 +5062,9 @@ function getDBQuery($params=array()){
         $query .= ' where '.$params['-where'];
         if(isset($params['-filter'])){$query .= " and ({$params['-filter']})";}
         if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$sets=preg_split('/[\r\n]+/',$params['-filters']);
-        	$wheres=array();
-            foreach($sets as $set){
-                list($field,$oper,$val)=preg_split('/\-/',$set,3);
-                if($field=='null' || $val=='null'){continue;}
-				switch($doper){
-		        	case 'ct': 
-		        		//contains
-		        		$wheres[]="{$field} like '%{$val}%'";
-					break;
-					case 'eq':
-						//equals
-						$wheres[]="{$field} = '{$val}'";
-					break;
-					case 'gt':
-						//greater than
-						$wheres[]="{$field} > '{$val}'";
-					break;
-					case 'lt':
-						//less than
-						$wheres[]="{$field} < '{$val}'";
-					break;
-					case 'egt': 
-						//Equals or Greater than
-						$wheres[]="{$field} >= '{$val}'";
-					break;
-					case 'elt':
-						//Less than or Equals
-						$wheres[]="{$field} =< '{$val}'";
-					break;
-					case 'in': 
-					case 'any':
-						//In List
-						$vals=preg_split('/\,/',$val);
-						$ors=array();
-						foreach($vals as $val){
-							$val=trim($val);
-                        	$ors[]="{$field} = '{$val}'";
-						}
-						if(count($ors)){
-							$orstr=implode(' or ',$ors);
-							$wheres[]=" and ({$orstr})";
-						}
-					break;
-					case 'all':
-						//All of these
-						$vals=preg_split('/\,/',$val);
-						foreach($vals as $val){
-							$val=trim($val);
-                        	$wheres[]="{$field} = '{$val}'";
-						}
-					break;
-					case 'ib':
-						//Is Blank
-						$wheres[]="{$field} is null or {$field}=''";
-					break;
-					case 'nb':
-						//Is Not Blank
-						$wheres[]="{$field} is not null and {$field} != ''";
-					break;
-				}
-			}
-			if(count($wheres)){
-				$wherestr=implode(' and ',$wheres);
-            	$query .= "and ({$wherestr})";
+        	$wherestr=getDBFiltersString($params['-filters']);
+        	if(strlen($wherestr)){
+				$query .= " and ({$wherestr})";
 			}
 		}
         if(isset($params['-search'])){
@@ -5177,71 +5123,9 @@ function getDBQuery($params=array()){
 	        }
 	    }
 	    if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$sets=preg_split('/[\r\n]+/',$params['-filters']);
-        	$wheres=array();
-            foreach($sets as $set){
-                list($field,$oper,$val)=preg_split('/\-/',$set,3);
-                if($field=='null' || $val=='null'){continue;}
-				switch($doper){
-		        	case 'ct': 
-		        		//contains
-		        		$wheres[]="{$field} like '%{$val}%'";
-					break;
-					case 'eq':
-						//equals
-						$wheres[]="{$field} = '{$val}'";
-					break;
-					case 'gt':
-						//greater than
-						$wheres[]="{$field} > '{$val}'";
-					break;
-					case 'lt':
-						//less than
-						$wheres[]="{$field} < '{$val}'";
-					break;
-					case 'egt': 
-						//Equals or Greater than
-						$wheres[]="{$field} >= '{$val}'";
-					break;
-					case 'elt':
-						//Less than or Equals
-						$wheres[]="{$field} =< '{$val}'";
-					break;
-					case 'in': 
-					case 'any':
-						//In List
-						$vals=preg_split('/\,/',$val);
-						$ors=array();
-						foreach($vals as $val){
-							$val=trim($val);
-                        	$ors[]="{$field} = '{$val}'";
-						}
-						if(count($ors)){
-							$orstr=implode(' or ',$ors);
-							$wheres[]=" and ({$orstr})";
-						}
-					break;
-					case 'all':
-						//All of these
-						$vals=preg_split('/\,/',$val);
-						foreach($vals as $val){
-							$val=trim($val);
-                        	$wheres[]="{$field} = '{$val}'";
-						}
-					break;
-					case 'ib':
-						//Is Blank
-						$wheres[]="{$field} is null or {$field}=''";
-					break;
-					case 'nb':
-						//Is Not Blank
-						$wheres[]="{$field} is not null and {$field} != ''";
-					break;
-				}
-			}
-			if(count($wheres)){
-				$wherestr=implode(' and ',$wheres);
-            	$query .= "and ({$wherestr})";
+        	$wherestr=getDBFiltersString($params['-filters']);
+        	if(strlen($wherestr)){
+				$query .= " and ({$wherestr})";
 			}
 		}
 	    if(isset($params['-search'])){
@@ -5293,6 +5177,102 @@ function getDBQuery($params=array()){
     //Set limit if defined
     if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
     return $query;
+}
+function getDBFiltersString($filters){
+	$sets=preg_split('/[\r\n]+/',$filters);
+    $wheres=array();
+    foreach($sets as $set){
+        list($field,$oper,$val)=preg_split('/\-/',$set,3);
+        if(!strlen($field) ||  !strlen($oper) || $field=='null'){continue;}
+		switch($oper){
+        	case 'ct': 
+        		//contains
+        		$wheres[]="{$field} like '%{$val}%'";
+			break;
+			case 'nct':
+        		//not contains
+        		$wheres[]="{$field} not like '%{$val}%'";
+			break;
+			case 'ca':
+				//Contains Any of These
+				$vals=preg_split('/\,/',$val);
+				$ors=array();
+				foreach($vals as $val){
+					$val=trim($val);
+                    $ors[]="{$field} like '%{$val}%'";
+				}
+				if(count($ors)){
+					$orstr=implode(' or ',$ors);
+					$wheres[]="({$orstr})";
+				}
+			break;
+			case 'nca':
+				//Not contain any of these
+				$vals=preg_split('/\,/',$val);
+				foreach($vals as $val){
+					$val=trim($val);
+                    $wheres[]="{$field} not like '%{$val}%'";
+				}
+			break;
+			case 'eq':
+				//equals
+				$wheres[]="{$field} = '{$val}'";
+			break;
+			case 'neq':
+				//equals
+				$wheres[]="{$field} != '{$val}'";
+			break;
+			case 'ea':
+				//Equals Any of These
+				$vals=preg_split('/\,/',$val);
+				$ors=array();
+				foreach($vals as $val){
+					$val=trim($val);
+                    $ors[]="{$field} = '{$val}'";
+				}
+				if(count($ors)){
+					$orstr=implode(' or ',$ors);
+					$wheres[]="({$orstr})";
+				}
+			break;
+			case 'nea':
+				//Not equals any of these
+				$vals=preg_split('/\,/',$val);
+				foreach($vals as $val){
+					$val=trim($val);
+                    $wheres[]="{$field} != '{$val}'";
+				}
+			break;
+			case 'gt':
+				//greater than
+				$wheres[]="{$field} > '{$val}'";
+			break;
+			case 'lt':
+				//less than
+				$wheres[]="{$field} < '{$val}'";
+			break;
+			case 'egt': 
+				//Equals or Greater than
+				$wheres[]="{$field} >= '{$val}'";
+			break;
+			case 'elt':
+				//Less than or Equals
+				$wheres[]="{$field} =< '{$val}'";
+			break;
+			case 'ib':
+				//Is Blank
+				$wheres[]="{$field} is null or {$field}=''";
+			break;
+			case 'nb':
+				//Is Not Blank
+				$wheres[]="{$field} is not null and {$field} != ''";
+			break;
+		}
+	}
+	if(count($wheres)){
+		return implode(' and ',$wheres);
+	}
+	return '';
 }
 //---------- begin function getDBRecord-------------------
 /**
