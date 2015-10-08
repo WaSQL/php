@@ -2247,6 +2247,9 @@ function buildDBPaging($paging=array()){
 				$rtn .= '	<input id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
 				$rtn .= '	<button class="btn btn-default btn-sm" type="button" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
 				$rtn .= '	<button type="submit" class="btn btn-default icon-search">Search</button>'."\n";
+				if(isset($paging['-bulkedit'])){
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger"></span></button>'."\n";
+				}
 				$rtn .= '</div>'."\n";
 				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
 				$rtn .= '	<div id="send_to_filters">'."\n";
@@ -5967,6 +5970,9 @@ function listDBRecords($params=array(),$customcode=''){
 		}
 		if(isset($params['-filters'])){
         	$paging['-filters']=$params['-filters'];
+		}
+		if(isset($params['-bulkedit'])){
+        	$paging['-bulkedit']=$params['-bulkedit'];
 		}
 
 		//$rtn .= printValue($paging).printValue($params);
