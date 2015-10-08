@@ -58,7 +58,7 @@ function autoFill(theForm,answerid,ro){
 		//default to not read only
 		ro=0;
         }
-    //get the answers - 
+    //get the answers -
 	var answers=new Array();
 	var slist=GetElementsByAttribute('div', 'id', answerid);
 	for(i=0;i<slist.length;i++){
@@ -1822,7 +1822,7 @@ function pagingAddFilter(frm){
 		frm.filter_value.focus();
 		return false;
 	}
-	if(frm.filter_operator.value == 'null' && frm.filter_field.value == '*'){
+	if(frm.filter_field.value == '*' && (frm.filter_operator.value == 'ib' || frm.filter_operator.value == 'nb')){
 		alert('select a field to check for null values on');
 		frm.filter_field.focus();
 		return false;
@@ -1851,13 +1851,28 @@ function pagingAddFilter(frm){
 			case 'lt': doper='Less Than';break;
 			case 'egt': doper='Equals or Greater than';break;
 			case 'elt': doper='Less than or Equals';break;
-			case 'in': doper='In';break;
-			case 'null': doper='Is Blank Or Null';dval='';break;
+			case 'in': doper='In List';break;
+			case 'ib': doper='Is Blank';dval='';break;
+			case 'nb': doper='Is Not Blank';dval='';break;
 		}
-		d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="hideId(\''+id+'\');"></span>';
+		d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+id+'\');"></span>';
 		var p=getObject('send_to_filters');
 		p.appendChild(d);
 	}
+	//Clear Filters button
+	obj=getObject('paging_clear_filters');
+	if(undefined != obj){removeId(obj);}
+	var d=document.createElement('div');
+	d.className='w_pagingfilter  icon-erase w_danger';
+	d.id='paging_clear_filters';
+	d.setAttribute('title','Clear All Filters');
+	d.onclick=function(){
+		pagingClearFilters();
+	};
+	var p=getObject('send_to_filters');
+	p.appendChild(d);
+	frm.filter_value.value='';
+	frm.filter_value.focus();
 }
 function pagingSetFilters(frm){
 	var f=document.querySelectorAll('.w_pagingfilter');
@@ -1868,7 +1883,18 @@ function pagingSetFilters(frm){
     	filters.push(fval);
 	}
 	//update filters field
-	frm._filters.value=implode(':',filters);
+	frm._filters.value=implode("\r\n",filters);
+}
+function pagingClearFilters(){
+	var f=document.querySelectorAll('.w_pagingfilter');
+	for(var i=0;i<f.length;i++){
+		removeId(f[i]);
+	}
+	//clear filters field
+	var f=GetElementsByAttribute('textarea','name','_filters');
+	for(var i=0;i<f.length;i++){
+    	setText(f[i],'');
+	}
 }
 
 
