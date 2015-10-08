@@ -2219,9 +2219,9 @@ function buildDBPaging($paging=array()){
             	$opts[$tval]=$dval;
 			}
 			$rtn .= '<table class="w_nopad"><tr>'."\n";
-			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- Search --")).'</td>'."\n";
+			$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'."\n";
 			$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
-			$rtn .= '	<td>'.buildFormSubmit('Search').'</td>'."\n";
+			$rtn .= '	<td><button type="submit" class="btn btn-default icon-search">Search</button></td>'."\n";
 			$rtn .= '</tr></table>'."\n";
 		}
 		else{
@@ -2274,7 +2274,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        	}
 			$arr['_start']=$paging['-first'];
-			$rtn .= '<input type="image" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" src="/wfiles/icons/first.png">'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
             }
         $rtn .= '</div></th>'."\n";
 		$rtn .= '	<th><div style="width:35px;">';
@@ -2288,7 +2288,7 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<input type="image" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" src="/wfiles/icons/prev.png">'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
             }
         $rtn .= '</div></th>'."\n";
 
@@ -2305,7 +2305,8 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'."\n";
+			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'."\n";
+			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
             }
         if(isset($paging['-last'])){
 			$arr=array();
@@ -2317,7 +2318,8 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'."\n";
+			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'."\n";
+			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
             }
         $rtn .= '</tr></table>'."\n";
 		}
@@ -5891,7 +5893,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
-	$tableclass='w_table w_pad w_border';
+	$tableclass='table table-bordered table-striped';
 	//add the sortable class if there is only one page of records or is sorting is turned off
 	if(!isset($paging['-next']) || isset($params['-nosort'])){
 		$tableclass .= ' sortable';
