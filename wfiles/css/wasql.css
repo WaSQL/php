@@ -1033,10 +1033,11 @@ table th a {
 }
 div.w_viewonly{
 	box-sizing:border-box;
-	border-radius: 4px;
+	border-radius: 3px;
 	border:1px solid #999;
 	padding:3px;
-	min-height:20px;
+	min-height:25px;
+	background-color:#f1f1f1;
 }
 
 .w_body {
