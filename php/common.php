@@ -240,7 +240,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	}
 	$tag='';
 	$class=isset($params['class'])?$params['class']:'';
-	$tag .= '<div class="btn-group w_nowrap '.$class.'" data-toggle="buttons">'."\n";
+	$tag .= '<div class="btn-group w_nowrap" data-toggle="buttons">'."\n";
 	foreach($opts as $tval=>$dval){
 		$class=$params['-button'];
 		$checked='';
