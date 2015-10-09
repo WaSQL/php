@@ -1815,13 +1815,15 @@ function imposeMaxlength(obj, max){
 	}
 function pagingBulkEdit(frm){
 	if(frm.filter_field.value.length==0 || frm.filter_field.value=='*'){alert('select a field to edit');return false;}
-	if(frm.filter_value.value.length==0){alert('select a value');return false;}
-	if(!confirm('Are you sure you want to update the current dataset?'+"\r\n\r\n"+'Mass Update \''+frm.filter_field.value+'\' field to \''+frm.filter_value.value+'\'?'+"\r\n\r\n"+'Click OK to confirm.  THIS IS NOT REVERSABLE.')){return false;}
+	var editval='';
+	if(frm.filter_value.value.length==0){editval='NULL';}
+	else{editval="'"+frm.filter_value.value+"'";}
+	if(!confirm('Are you sure you want to update the current dataset?'+"\r\n\r\n"+'Mass Update \''+frm.filter_field.value+'\' field to '+editval+'?'+"\r\n\r\n"+'Click OK to confirm.  THIS IS NOT REVERSABLE.')){return false;}
 	frm._bulkedit.value='1';
 	frm.submit();
 }
 function pagingClearBulkEdit(frm){
-	frm._bulkedit.value='';
+	if(undefined != frm._bulkedit){frm._bulkedit.value='';}
 }
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
@@ -1835,7 +1837,7 @@ function pagingAddFilter(frm){
 	else if(frm.filter_field.value != '*' && (frm.filter_operator.value == 'ib' || frm.filter_operator.value == 'nb')){
 	}
 	else if(frm.filter_value.value.length==0 && frm.filter_operator.value != 'null'){
-		alert('select a filter value');
+		//alert('select a filter value');
 		frm.filter_value.focus();
 		return false;
 	}
