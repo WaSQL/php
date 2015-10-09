@@ -1300,8 +1300,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				$field_content=$opts['id'].'_content';
 				if(isset($params[$field.'_viewonly'])){
 					$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                	$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
-					$rtn .= '			<div id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
+                	$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'."\n";
+					$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
 				}
 				elseif(isset($params[$field.'_group_id'])){
 					$group_id = $params[$field.'_group_id'];
@@ -1413,8 +1413,8 @@ function addEditDBForm($params=array(),$customcode=''){
 			$field_content=$opts['id'].'_content';
 			if(isset($params[$field.'_viewonly'])){
 				$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                $rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
-				$rtn .= '			<div id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
+                $rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</div>'."\n";
+				$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
 			}
             elseif(isset($params[$field.'_group_id'])){
 				$used[$field.'_group_id']=1;
