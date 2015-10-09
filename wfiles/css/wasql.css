@@ -1034,7 +1034,7 @@ table th a {
 div.w_viewonly{
 	box-sizing:border-box;
 	border-radius: 3px;
-	border:1px solid #999;
+	border:1px dotted #999;
 	padding:3px;
 	min-height:25px;
 	background-color:#f8f8f8;
