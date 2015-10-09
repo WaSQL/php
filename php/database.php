@@ -888,7 +888,7 @@ function dropDBIndex($params=array()){
 }
 //---------- begin function addEditDBForm--------------------
 /**
-* @describe 
+* @describe
 *	returns html form used to enter data into specified table
 *	to add/override and event add {field}_{event}=>"function" as a param
 *	to override class for checkbox fields, add {field}_checkclass=>"classname",{field}_checkclasschecked=>"checkedClassName" as params
@@ -1300,7 +1300,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				$field_content=$opts['id'].'_content';
 				if(isset($params[$field.'_viewonly'])){
 					$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                	$rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
+                	$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 					$rtn .= '			<div id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
 				}
 				elseif(isset($params[$field.'_group_id'])){
@@ -1321,14 +1321,14 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$field.'_group_custom']=1;
 						}
 					if($info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
+						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
 					$rtn .= '		</div>'."\n";
 					}
 				else{
 					if($info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
+						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</div>'."\n";
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
                 	}
@@ -1434,14 +1434,14 @@ function addEditDBForm($params=array(),$customcode=''){
 					$used[$field.'_group_custom']=1;
 					}
 				if($info['fieldinfo'][$field]['inputtype']!='signature'){
-					$rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
+					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
 				$rtn .= '		</div>'."\n";
 				}
 			else{
 				if($info['fieldinfo'][$field]['inputtype']!='signature'){
-					$rtn .= '			<div id="'.$field_dname.'">'.$dname.'</div>'."\n";
+					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
 				}
