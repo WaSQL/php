@@ -2203,7 +2203,7 @@ function buildDBPaging($paging=array()){
 		if($pkey=='_action' && $pval=='multi_update'){continue;}
 		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
 		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit)$/i',$pkey)){continue;}
-		if(preg_match('/\_(onclick|href|eval)$/i',$pkey)){continue;}
+		if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
 		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
     	}
     $rtn .= '</div>'."\n";
@@ -6166,6 +6166,9 @@ function listDBRecords($params=array(),$customcode=''){
 			if(preg_match('/^(GUID|PHPSESSID)$/i',$key)){continue;}
 			if(preg_match('/\_[0-9]+$/i',$key)){continue;}
 			if(preg_match('/\_([0-9]+?)\_prev$/i',$key)){continue;}
+			if(preg_match('/^(x|y)$/i',$key)){continue;}
+			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit)$/i',$key)){continue;}
+			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
 			if(is_array($val) || strlen($val) > 255){continue;}
 			$parts[$key]=$val;
 	    	}
@@ -6212,7 +6215,7 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableid'])){
 		$tablestyle=' id="'.$params['-tableid'].'"';
 	}
-	$rtn .= '<div  style="overflow:auto;">'."\n";
+	$rtn .= '<div class="table-responsive">'."\n";
 	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'."\n";
 
     //build header row
