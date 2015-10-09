@@ -2185,15 +2185,16 @@ function buildDBPaging($paging=array()){
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='form_' . $paging['-ajaxid'];}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:"ajaxSubmitForm(this,'{$paging['-ajaxid']}');return false;";
-		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
-		if(isset($paging['-bulkedit'])){$onsubmit="pagingClearBulkEdit(this);{$onsubmit}";}
+		if(isset($paging['-bulkedit'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);pagingClearBulkEdit(this);{$onsubmit}";}
+		elseif(isset($paging['-filters'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);{$onsubmit}";}
 		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	else{
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='s' . time();}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:'return true;';
-		if(isset($paging['-filters'])){$onsubmit="pagingSetFilters(this);{$onsubmit}";}
+		if(isset($paging['-bulkedit'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);pagingClearBulkEdit(this);{$onsubmit}";}
+		elseif(isset($paging['-filters'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);{$onsubmit}";}
 		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	//hide other inputs
@@ -2252,10 +2253,10 @@ function buildDBPaging($paging=array()){
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
 				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
-				$rtn .= '	<button class="btn btn-default btn-sm" type="button" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
-				$rtn .= '	<button type="submit" class="btn btn-default icon-search">Search</button>'."\n";
+				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search">Search</button>'."\n";
+				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
 				if(isset($paging['-bulkedit'])){
-                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger"></span></button>'."\n";
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger"></span></button>'."\n";
 				}
 				$rtn .= '</div>'."\n";
 				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
@@ -5999,12 +6000,14 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($_REQUEST['_bulkedit']) && $_REQUEST['_bulkedit']==1){
         	$params['-bulkedit']=1;
         	$where=getDBWhere($params);
-        	if(strlen($_REQUEST['filter_field']) && strlen($_REQUEST['filter_value'])){
+        	if(strlen($_REQUEST['filter_field'])){
+				$val=addslashes($_REQUEST['filter_value']);
+				$field=addslashes($_REQUEST['filter_field']);
 				if(!strlen($where)){$where='1=1';}
             	$ok=editDBRecord(array(
 					'-table'	=> $params['-table'],
 					'-where'	=> $where,
-					$_REQUEST['filter_field']=>$_REQUEST['filter_value']
+					$field		=> $val
 				));
 			}
 		}
