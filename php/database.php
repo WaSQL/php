@@ -6236,7 +6236,14 @@ function listDBRecords($params=array(),$customcode=''){
 			$col=preg_replace('/\_+/',' ',$fld);
 			$col=ucwords($col);
 			}
-		$arr=$_REQUEST;
+		$arr=array();
+		foreach($_REQUEST as $key=>$val){
+        	if(preg_match('/^(GUID|PHPSESSID)$/i',$key)){continue;}
+			if(preg_match('/^(x|y)$/i',$key)){continue;}
+			if(preg_match('/^\_(filters|bulkedit|viewfield)$/i',$key)){continue;}
+			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
+        	$arr[$key]=$val;
+		}
 		if(isset($_REQUEST['add_result']) || isset($_REQUEST['edit_result'])){$arr=array();}
 		foreach($arr as $key=>$val){
 			if(is_array($val) || strlen($val)>255 || isXML($val)){unset($arr[$key]);}
