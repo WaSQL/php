@@ -1031,6 +1031,12 @@ table th a {
 	background:#f0f0f0;
 	cursor:pointer;
 }
+div.w_viewonly{
+	box-sizing:border-box;
+	border-radius: 4px;
+	border:1px solid #999;
+	padding:3px;
+}
 
 .w_body {
 	margin:0px;
