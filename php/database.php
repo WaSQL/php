@@ -2212,6 +2212,7 @@ function buildDBPaging($paging=array()){
 	if(isset($paging['-search'])){
 		if(isset($paging['-table'])){
 			$fields=getDBFields($paging['-table'],1);
+			if(isset($paging['-bulkedit']) && !isset($paging['-filters'])){$paging['-filters']=1;}
 			if(isset($paging['-filters'])){
             	//new options to allow user to set multiple filters
             	$rtn .= '<div class="row padtop">'."\n";
@@ -5097,7 +5098,7 @@ function getDBWhere($params,$info=array()){
         $query .= $params['-where'];
         if(isset($params['-filter'])){$query .= " and ({$params['-filter']})";}
         if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$wherestr=getDBFiltersString($params['-filters']);
+        	$wherestr=getDBFiltersString($params['-table'],$params['-filters']);
         	if(strlen($wherestr)){
 				$query .= " and ({$wherestr})";
 			}
@@ -5157,7 +5158,7 @@ function getDBWhere($params,$info=array()){
 	        }
 	    }
 	    if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$wherestr=getDBFiltersString($params['-filters']);
+        	$wherestr=getDBFiltersString($params['-table'],$params['-filters']);
         	if(strlen($wherestr)){
 				$query .= " and ({$wherestr})";
 			}
@@ -5208,20 +5209,44 @@ function getDBWhere($params,$info=array()){
 	$query=preg_replace('/^and\ /i','',$query);
 	return $query;
 }
-function getDBFiltersString($filters){
+//---------- begin function getDBFiltersString
+/**
+* @describe returns filters as a string to use in a where clause
+* @param table string - tablename
+* @param filters string - multiline string with filters in field-oper-val format
+* @return string
+* @usage $filters=getDBFiltersString($table,$filters));
+*/
+function getDBFiltersString($table,$filters){
+	$tfields=getDBFields($table);
 	$sets=preg_split('/[\r\n]+/',$filters);
     $wheres=array();
     foreach($sets as $set){
         list($field,$oper,$val)=preg_split('/\-/',$set,3);
         if(!strlen($field) ||  !strlen($oper) || $field=='null'){continue;}
+        if($field=='*'){
+			$fields=array('_id');
+			$fields=array_merge($fields,$tfields);
+		}
+        else{$fields=array($field);}
 		switch($oper){
         	case 'ct': 
         		//contains
-        		$wheres[]="{$field} like '%{$val}%'";
+        		$ors=array();
+        		foreach($fields as $field){
+					$ors[]="{$field} like '%{$val}%'";
+				}
+				$orstr=implode(" or ",$ors);
+				$wheres[]="({$orstr})";
 			break;
 			case 'nct':
         		//not contains
-        		$wheres[]="{$field} not like '%{$val}%'";
+        		$ors=array();
+        		foreach($fields as $field){
+					$ors[]="{$field} not like '%{$val}%'";
+				}
+				$orstr=implode(" or ",$ors);
+				$wheres[]="({$orstr})";
 			break;
 			case 'ca':
 				//Contains Any of These
@@ -5229,7 +5254,9 @@ function getDBFiltersString($filters){
 				$ors=array();
 				foreach($vals as $val){
 					$val=trim($val);
-                    $ors[]="{$field} like '%{$val}%'";
+					foreach($fields as $field){
+                    	$ors[]="{$field} like '%{$val}%'";
+					}
 				}
 				if(count($ors)){
 					$orstr=implode(' or ',$ors);
@@ -5241,16 +5268,22 @@ function getDBFiltersString($filters){
 				$vals=preg_split('/\,/',$val);
 				foreach($vals as $val){
 					$val=trim($val);
-                    $wheres[]="{$field} not like '%{$val}%'";
+					foreach($fields as $field){
+                    	$wheres[]="{$field} not like '%{$val}%'";
+					}
 				}
 			break;
 			case 'eq':
 				//equals
-				$wheres[]="{$field} = '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} = '{$val}'";
+				}
 			break;
 			case 'neq':
 				//equals
-				$wheres[]="{$field} != '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} != '{$val}'";
+				}
 			break;
 			case 'ea':
 				//Equals Any of These
@@ -5258,7 +5291,9 @@ function getDBFiltersString($filters){
 				$ors=array();
 				foreach($vals as $val){
 					$val=trim($val);
-                    $ors[]="{$field} = '{$val}'";
+					foreach($fields as $field){
+                    	$ors[]="{$field} = '{$val}'";
+					}
 				}
 				if(count($ors)){
 					$orstr=implode(' or ',$ors);
@@ -5270,32 +5305,46 @@ function getDBFiltersString($filters){
 				$vals=preg_split('/\,/',$val);
 				foreach($vals as $val){
 					$val=trim($val);
-                    $wheres[]="{$field} != '{$val}'";
+					foreach($fields as $field){
+                    	$wheres[]="{$field} != '{$val}'";
+					}
 				}
 			break;
 			case 'gt':
 				//greater than
-				$wheres[]="{$field} > '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} > '{$val}'";
+				}
 			break;
 			case 'lt':
 				//less than
-				$wheres[]="{$field} < '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} < '{$val}'";
+				}
 			break;
 			case 'egt': 
 				//Equals or Greater than
-				$wheres[]="{$field} >= '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} >= '{$val}'";
+				}
 			break;
 			case 'elt':
 				//Less than or Equals
-				$wheres[]="{$field} =< '{$val}'";
+				foreach($fields as $field){
+					$wheres[]="{$field} =< '{$val}'";
+				}
 			break;
 			case 'ib':
 				//Is Blank
-				$wheres[]="{$field} is null or {$field}=''";
+				foreach($fields as $field){
+					$wheres[]="({$field} is null or {$field}='')";
+				}
 			break;
 			case 'nb':
 				//Is Not Blank
-				$wheres[]="{$field} is not null and {$field} != ''";
+				foreach($fields as $field){
+					$wheres[]="({$field} is not null and {$field} != '')";
+				}
 			break;
 		}
 	}
@@ -6163,6 +6212,7 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableid'])){
 		$tablestyle=' id="'.$params['-tableid'].'"';
 	}
+	$rtn .= '<div  style="overflow:auto;">'."\n";
 	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'."\n";
 
     //build header row
@@ -6508,6 +6558,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= '	</tr></tfoot>'."\n";
 	}
     $rtn .= "</table>\n";
+    $rtn .= '</div>'."\n";
     if($listform==1){
 		if($editlist > 0){$rtn .= buildFormSubmit("Update");}
 		$rtn .= $customcode;
