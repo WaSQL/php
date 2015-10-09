@@ -2202,7 +2202,7 @@ function buildDBPaging($paging=array()){
 		if(preg_match('/^\-/',$pkey)){continue;}
 		if($pkey=='_action' && $pval=='multi_update'){continue;}
 		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
-		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewbody)$/i',$pkey)){continue;}
+		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewfield)$/i',$pkey)){continue;}
 		if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
 		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
     	}
@@ -6167,7 +6167,7 @@ function listDBRecords($params=array(),$customcode=''){
 			if(preg_match('/\_[0-9]+$/i',$key)){continue;}
 			if(preg_match('/\_([0-9]+?)\_prev$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewbody)$/i',$key)){continue;}
+			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
 			if(is_array($val) || strlen($val) > 255){continue;}
 			$parts[$key]=$val;
@@ -6245,7 +6245,7 @@ function listDBRecords($params=array(),$customcode=''){
         	if(preg_match('/^\-/',$key)){continue;}
         	if(preg_match('/^(GUID|PHPSESSID)$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(filters|bulkedit|viewbody)$/i',$key)){continue;}
+			if(preg_match('/^\_(filters|bulkedit|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
         	$arr[$key]=$val;
 		}
