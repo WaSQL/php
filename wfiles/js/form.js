@@ -1822,8 +1822,9 @@ function pagingBulkEdit(frm){
 	frm._bulkedit.value='1';
 	frm.submit();
 }
-function pagingClearBulkEdit(frm){
-	if(undefined != frm._bulkedit){frm._bulkedit.value='';}
+function pagingExport(frm){
+	frm._export.value='1';
+	frm.submit();
 }
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
@@ -1903,6 +1904,10 @@ function pagingSetFilters(frm){
 	}
 	//update filters field
 	frm._filters.value=implode("\r\n",filters);
+	//clear bulk edit if it exists
+	if(undefined != frm._bulkedit){frm._bulkedit.value='';}
+	//clear export if it exists
+	if(undefined != frm._export){frm._export.value='';}
 }
 function pagingClearFilters(){
 	var f=document.querySelectorAll('.w_pagingfilter');
