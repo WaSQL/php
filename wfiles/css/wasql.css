@@ -1072,9 +1072,9 @@ div.w_viewonly{
   text-align:right;
   }
 #w_loginform_default{
-	background-color: #fff;
+	background-color: rgba(245, 245, 245, 0.4);
     padding: 15px;
-    border:2px solid #3465a4;
+    border:2px solid #e3e3e3;
     [safari|chrome]-webkit-border-radius: 7px;
 	-khtml-border-radius: 7px;
     border-radius: 7px;
