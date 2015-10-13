@@ -895,10 +895,10 @@ function userLoginForm($params=array()){
 		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'."\n";
 	}
     if(!isset($params['-username'])){
-    	$params['-username']='<span class="icon-user w_biggest"></span>';
+    	$params['-username']='<span class="icon-user w_biggest w_grey"></span>';
 	}
 	if(!isset($params['-password'])){
-    	$params['-password']='<span class="icon-lock w_biggest"></span>';
+    	$params['-password']='<span class="icon-lock w_biggest w_warning"></span>';
 	}
 	//return the user Login form
 	$form='';
@@ -928,7 +928,7 @@ function userLoginForm($params=array()){
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<th class="w_align_left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<th class="w_align_left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>1)).'</td>'."\n";
-			$form .= '		<td align="right" style="padding-right:10px;"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
+			$form .= '		<td align="right" style="padding-right:10px;"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td style="padding-right:10px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -976,7 +976,7 @@ function userLoginForm($params=array()){
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1)).'</td>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2)).'</td>'."\n";
-			$form .= '		<td align="right"><input class="w_formsubmit" type="submit" tabindex="3" value="'.$params['-login'].'"></td>'."\n";
+			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td style="padding:3px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -997,7 +997,7 @@ function userLoginForm($params=array()){
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<td class="w_align_left" title="Username" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></td>'."\n";
 			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'placeholder'=>'username')).'</td>'."\n";
-			$form .= '		<td rowspan="2" valign="top"><button class="btn btn-primary w_formsubmit w_biggest" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
+			$form .= '		<td rowspan="2" valign="top"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
 			$form .= '	</tr>'."\n";
 			$form .= '	<tr valign="middle" align="right">';
 			$form .= '		<td class="w_align_left" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'."\n";
