@@ -2193,8 +2193,7 @@ function buildDBPaging($paging=array()){
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
 		else{$formname='s' . time();}
 		$onsubmit=isset($paging['-onsubmit'])?$paging['-onsubmit']:'return true;';
-		if(isset($paging['-bulkedit'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);pagingClearBulkEdit(this);{$onsubmit}";}
-		elseif(isset($paging['-filters'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);{$onsubmit}";}
+		if(isset($paging['-filters'])){$onsubmit="pagingAddFilter(this);pagingSetFilters(this);{$onsubmit}";}
 		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	//hide other inputs
@@ -2203,7 +2202,7 @@ function buildDBPaging($paging=array()){
 		if(preg_match('/^\-/',$pkey)){continue;}
 		if($pkey=='_action' && $pval=='multi_update'){continue;}
 		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
-		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewfield)$/i',$pkey)){continue;}
+		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$pkey)){continue;}
 		if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
 		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
     	}
@@ -2221,6 +2220,9 @@ function buildDBPaging($paging=array()){
 				$rtn .= '	<textarea name="_filters">'.$_REQUEST['_filters'].'</textarea>'."\n";
 				if(isset($paging['-bulkedit'])){
 					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'."\n";
+				}
+				if(isset($paging['-bulkedit'])){
+					$rtn .= '	<input type="hidden" name="_export" value="" />'."\n";
 				}
 				$rtn .= '</div>'."\n";
             	//$rtn .= '	<b>Filters:</b>'."\n";
@@ -2256,7 +2258,29 @@ function buildDBPaging($paging=array()){
 				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search">Search</button>'."\n";
 				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
 				if(isset($paging['-bulkedit'])){
-                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger"></span></button>'."\n";
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger w_bold"></span></button>'."\n";
+				}
+				if(!isset($paging['-noexport'])){
+                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');">export</a>'."\n";
+                	//export
+					if(isset($_REQUEST['_export']) && $_REQUEST['_export']==1){
+			        	$where=getDBWhere($paging);
+			        	$recs=getDBRecords(array(
+			        		'-table'	=> $paging['-table'],
+							'-where'	=> $where,
+						));
+						//echo $where.printValue($paging).printValue($recs);
+						if(is_array($recs)){
+			        		$csv=arrays2csv($recs);
+			        		$sha=sha1($where);
+			        		$progpath=dirname(__FILE__);
+			        		$file="{$params['-table']}_export_{$sha}.csv";
+			        		$afile="{$progpath}/temp/{$file}";
+			        		setFileContents($afile,$csv);
+			        		$rtn .= '<a href="/php/temp/'.$file.'" class="icon-file-excel w_success w_bold">file</a>'."\n";
+			        		//exit;
+						}
+					}
 				}
 				$rtn .= '</div>'."\n";
 				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
@@ -5997,6 +6021,7 @@ function listDBRecords($params=array(),$customcode=''){
         if(isset($_REQUEST['_filters'])){
         	$params['-filters']=$_REQUEST['_filters'];
 		}
+		//bulkedit
 		if(isset($_REQUEST['_bulkedit']) && $_REQUEST['_bulkedit']==1){
         	$params['-bulkedit']=1;
         	$where=getDBWhere($params);
@@ -6170,7 +6195,7 @@ function listDBRecords($params=array(),$customcode=''){
 			if(preg_match('/\_[0-9]+$/i',$key)){continue;}
 			if(preg_match('/\_([0-9]+?)\_prev$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|viewfield)$/i',$key)){continue;}
+			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
 			if(is_array($val) || strlen($val) > 255){continue;}
 			$parts[$key]=$val;
@@ -6243,7 +6268,7 @@ function listDBRecords($params=array(),$customcode=''){
 		foreach($_REQUEST as $key=>$val){
         	if(preg_match('/^(GUID|PHPSESSID)$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(filters|bulkedit|viewfield)$/i',$key)){continue;}
+			if(preg_match('/^\_(filters|bulkedit|export|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
         	$arr[$key]=$val;
 		}
@@ -6255,7 +6280,7 @@ function listDBRecords($params=array(),$customcode=''){
         	if(preg_match('/^\-/',$key)){continue;}
         	if(preg_match('/^(GUID|PHPSESSID)$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(filters|bulkedit|viewfield)$/i',$key)){continue;}
+			if(preg_match('/^\_(filters|bulkedit|export|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
         	$arr[$key]=$val;
 		}
