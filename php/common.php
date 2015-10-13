@@ -461,6 +461,9 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['data-type'])){$params['data-type']='date';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
+	if(strlen($params['-value'])){
+    	$params['-value']=date('Y-m-d',strtotime($params['-value']));
+	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="date"';
@@ -498,6 +501,9 @@ function buildFormDateTime($name,$params=array()){
 	if(!isset($params['data-type'])){$params['data-type']='datetime';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
+	if(strlen($params['-value'])){
+    	$params['-value']=date('Y-m-d H:i:s',strtotime($params['-value']));
+	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="text"';
@@ -893,6 +899,9 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['data-type'])){$params['data-type']='time';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
+	if(strlen($params['-value'])){
+    	$params['-value']=date('h:i:s',strtotime($params['-value']));
+	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
 	$tag .= '	<input type="text"';
