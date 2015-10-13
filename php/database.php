@@ -2221,9 +2221,7 @@ function buildDBPaging($paging=array()){
 				if(isset($paging['-bulkedit'])){
 					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'."\n";
 				}
-				if(isset($paging['-bulkedit'])){
-					$rtn .= '	<input type="hidden" name="_export" value="" />'."\n";
-				}
+				$rtn .= '	<input type="hidden" name="_export" value="" />'."\n";
 				$rtn .= '</div>'."\n";
             	//$rtn .= '	<b>Filters:</b>'."\n";
             	//fields
