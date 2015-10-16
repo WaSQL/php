@@ -2077,7 +2077,14 @@ function arrays2CSV($recs=array(),$params=array()){
 		if(is_array($params['-fields'])){$fields=$params['-fields'];}
 		else{$fields=preg_split('/[\,\:\;]+/',trim($params['-fields']));}
 	}
-	else{$fields=array_keys($recs[0]);}
+	else{
+		$fields=array();
+		foreach($recs as $rec){
+        	foreach($rec as  $k=>$v){
+            	if(!in_array($k,$fields)){$fields[]=$k;}
+			}
+		}
+	}
 	$fieldmap=array();
 	foreach($fields as $field){
 		$key=$field;
