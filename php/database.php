@@ -2166,6 +2166,7 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 function buildDBPaging($paging=array()){
 	$rtn='';
 	global $PAGE;
+	if(!isset($paging['-filters'])){$paging['-filters']=1;}
 	//action
 	if(isset($paging['-action'])){$action=$paging['-action'];}
 	elseif(preg_match('/\.php$/i',$PAGE['name'])){$action="/{$PAGE['name']}";}
@@ -2404,8 +2405,8 @@ function buildDBPaging($paging=array()){
         $rtn .= '</div></th>'."\n";
 
         if(isset($paging['-text'])){
-            	$rtn .= '		<td align="center"><div class="w_paging">'.$paging['-text'].' records</div></td>'."\n";
-			}
+            $rtn .= '		<td align="center"><div class="w_paging">'.$paging['-text'].' records</div></td>'."\n";
+		}
         if(isset($paging['-next'])){
 			$arr=array();
 			foreach($_REQUEST as $key=>$val){
@@ -2415,10 +2416,10 @@ function buildDBPaging($paging=array()){
 				if($key=='_fields' && preg_match('/\:/i',$val)){continue;}
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
-	        	}
+	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'."\n";
 			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
-            }
+        }
         if(isset($paging['-last'])){
 			$arr=array();
 			foreach($_REQUEST as $key=>$val){
@@ -2428,15 +2429,18 @@ function buildDBPaging($paging=array()){
 				if($key=='_fields' && preg_match('/\:/i',$val)){continue;}
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
-	        	}
+	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'."\n";
 			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
-            }
+        }
         $rtn .= '</tr></table>'."\n";
-		}
+	}
+	elseif(isset($paging['-text'])){
+        $rtn .= '	<div class="w_paging">'.$paging['-text'].' records</div>'."\n";
+	}
 	if(!isset($paging['-formname'])){
 		$rtn .= buildFormEnd();
-		}
+	}
 	if(isset($paging['-search'])){
 		if(isset($paging['-filters'])){
         	$rtn .= buildOnLoad("document.{$formname}.filter_value.focus();");
@@ -3929,8 +3933,12 @@ function getDBProcesses(){
 */
 function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 	if(!isNum($page_count)){$page_count=20;}
-	if($recs_count <= $page_count){return null;}
 	$paging=array();
+	if($recs_count <= $page_count){
+		$paging['-text']=$recs_count;
+		return $paging;
+	}
+
 	if(isset($_REQUEST['_start']) && isNum($_REQUEST['_start'])){
 		$limit_start=(integer)$_REQUEST['_start'];
 	}
@@ -6045,7 +6053,7 @@ function listDBRecords($params=array(),$customcode=''){
 			$paging=getDBPaging($rec_count,$CONFIG['paging']);
         	}
 		else{$paging=getDBPaging($rec_count);}
-		//echo $rec_count . printValue($paging);
+		//$rtn .= $rec_count . printValue($paging);
 		if(isset($paging['-limit'])){
 			$params['-limit']=$paging['-limit'];
 			}
@@ -6193,11 +6201,11 @@ function listDBRecords($params=array(),$customcode=''){
 			if(preg_match('/\_[0-9]+$/i',$key)){continue;}
 			if(preg_match('/\_([0-9]+?)\_prev$/i',$key)){continue;}
 			if(preg_match('/^(x|y)$/i',$key)){continue;}
-			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$key)){continue;}
+			if(preg_match('/^\_(start|id\_href|search|bulkedit|export|viewfield)$/i',$key)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$key)){continue;}
 			if(is_array($val) || strlen($val) > 255){continue;}
 			$parts[$key]=$val;
-	    	}
+	    }
 	    $parts['_action']="multi_update";
 	    $parts['_table']=$params['-table'];
 	    $parts['_fields']=implode(':',$fields);
