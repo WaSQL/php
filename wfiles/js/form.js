@@ -1899,6 +1899,7 @@ function pagingSetFilters(frm){
 	var filters=new Array();
 	for(var i=0;i<f.length;i++){
     	if(f[i].style.display=='none'){continue;}
+    	if(undefined == f[i].getAttribute('data-field') || f[i].getAttribute('data-field')=='null'){continue;}
     	var fval=f[i].getAttribute('data-field')+'-'+f[i].getAttribute('data-operator')+'-'+f[i].getAttribute('data-value');
     	filters.push(fval);
 	}
