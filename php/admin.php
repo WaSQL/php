@@ -4034,16 +4034,16 @@ function adminMenu(){
 	//WaSQL
 	$rtn .= '		<li class="dir"><a href="#">'.adminMenuIcon('/wfiles/wasql_admin.png').'</a>'."\n";
 	$rtn .= '        	<ul>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> Settings</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gears"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info"></span> About</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> About</a><hr size="1"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit">'.adminMenuIcon('/wfiles/postedit.gif').' PostEdit Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats">'.adminMenuIcon('/wfiles/stats.gif').' Usage Stats</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail"></span> Send Email</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow"></span> List Font Icons</a></li>'."\n";
     $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image"></span> List IconSets</a></li>'."\n";
