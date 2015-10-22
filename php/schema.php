@@ -2193,7 +2193,7 @@ function schemaAddFileData($table){
 				$tables[$table][$fid]['description']=ucwords(str_replace('_',' ',$fname));
 				$tables[$table][$fid]['_template']=1;
 				$tables[$table][$fid]['page_type']=4;
-				if($fext=='php' && !preg_match('/^(functions|mobile|css|js)$/i',$fname)){
+				if($field=='body' && !preg_match('/^(functions|mobile|css|js)$/i',$fname)){
                 	$tables[$table][$fid]['_template']=2;
 				}
 				switch(strtolower($fname)){
