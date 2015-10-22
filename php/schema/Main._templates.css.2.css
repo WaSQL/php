@@ -1,13 +1,4 @@
-@font-face {
-	font-family: bebasNeue;
-	src: url('/fonts/bebasneue-webfont.eot');
-	src: url('/fonts/bebasneue-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('/fonts/bebasneue-webfont.woff') format('woff'),
-		 url('/fonts/bebasneue-webfont.ttf') format('truetype'),
-		 url('/fonts/bebasneue-webfont.svg#bebas_neueregular') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
+
 body {
 	font-family: serif;
 }
@@ -30,6 +21,9 @@ body {
 	@extend %w_preserve-3d
 }
 
+.navbar {
+    border-radius: 0px;
+}
 .mybox {
     border: 2px solid #FFF;
     background: none repeat scroll 0% 0% #ededed;
@@ -77,7 +71,6 @@ a:hover {
 .centurygothic{
 	font-family:Century Gothic;
 }
-.bebas{font-family: bebasNeue;}
 .blackline{
 	border:2px solid #102932;
 	border-right:1px solid transparent;
@@ -99,7 +92,6 @@ a:hover {
 	bottom:0px;
 	right:15px;
 	height:20px;
-	font-family: bebasNeue;
 }
 #cart_wrapper a{
 	color:#58c7fe;
@@ -122,7 +114,6 @@ a:hover {
 h1, h2, h3, h4, h5 {
 	margin-top:0px;
 	margin-bottom:3px;
-	font-family: bebasNeue;
 }
 .list-inline li{
 	position:relative;
@@ -131,7 +122,6 @@ h1, h2, h3, h4, h5 {
 .menu{
 	font-size:40px;
 	line-height:50px;
-	font-family: bebasNeue;
 	font-weight:bold;
 	color:#58c7fe;
 	display:block;
