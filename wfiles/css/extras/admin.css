@@ -1,18 +1,18 @@
 /* -- adminmenu -- */
 #adminmenu {
 	margin:0 0 0 0;
-	padding:3px;
+	padding:4px;
 	color:#3a3a3a;
 	font-weight:bold;
 	font-family:arial;
 	font-size:13px;
-	border-bottom:1px solid #7a93df;
+	border-bottom:1px solid #aaaaaa;
 	/* mainmenu fade colors (gradient) */
-	background-image: -moz-linear-gradient(top, #FFFFFF, #4A79B3);
-	background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#4A79B3));
+	background-image: -moz-linear-gradient(top, #FFFFFF, #bbbbbb);
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#bbbbbb));
 	}
 #adminmenu a{
-	color:#3a3a3a;;
+	color:#3a3a3a;
 }
 #adminmenu a:hover, #adminmenu a.current {
 	background-color: #e4eaed;
@@ -63,6 +63,7 @@ table.w_table tr th a, table.w_table tr th a:hover {
 
 ul.dropdown li {
 	color: #3465a4;
+	font-size:1.2em;
 	}
 /* when the top menu items are hovered over */
 ul.dropdown li.hover,
