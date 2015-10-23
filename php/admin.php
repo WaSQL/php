@@ -945,7 +945,7 @@ if(isset($_REQUEST['_menu'])){
 					//echo printValue($_REQUEST);
 					if($CONFIG['codereview']==1){
 						if($codereview > 0){
-	                    	$_REQUEST['-formfields'].= "\n".'<div class="w_pad w_tip w_bold w_required"><img src="/wfiles/iconsets/16/users.png" border="" class="w_middle" width="16" height="16" alt="Code Review Required">Reviewed by (required):</div>'."\n";
+	                    	$_REQUEST['-formfields'].= "\n".'<div class="w_pad w_tip w_bold w_required"><span class="icon-users"></span> Reviewed by (required):</div>'."\n";
 							$_REQUEST['-formfields'].= "review_user:review_pass";
 	                    	$_REQUEST['review_user_required']=1;
 	                    	$_REQUEST['review_user_requiredmsg']="A Review is required before submitting changes.";
@@ -1566,7 +1566,7 @@ if(isset($_REQUEST['_menu'])){
 			//update
 			echo buildFormBegin('',array('_menu'=>'settings','-name'=>'settingsform','_action'=>'settings'));
 			echo '<table class="table table-bordered table-striped">'."\n";
-			echo '	<tr><th colspan="3" class="w_align_left w_big"><img src="/wfiles/iconsets/16/users.png" style="vertical-align:middle;" alt="global settings" /> Global Settings</th></tr>'."\n";
+			echo '	<tr><th colspan="3" class="w_align_left w_big"><span class="icon-gears"></span> Global Settings</th></tr>'."\n";
 			//Wasql Crons
 			$key='wasql_crons';
 			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
@@ -1591,7 +1591,7 @@ if(isset($_REQUEST['_menu'])){
 			$help .= '<br><span class="icon-info"></span> Setting User will limit the queries to only run when that user is logged in.';
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="nowrap">'."\n";
-			echo '			<img src="/wfiles/iconsets/16/queries.png" style="vertical-align:middle;" alt="queries" />'."\n";
+			echo '			<span class="icon-database-empty w_danger"></span>'."\n";
 			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
 			if($SETTINGS[$key]==1){echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
 			else{echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
@@ -1686,11 +1686,11 @@ if(isset($_REQUEST['_menu'])){
 			if(!strlen($SETTINGS[$subkey])){$SETTINGS[$subkey]=$CONFIG['dbname'];}
 			echo "<div>Staging/Live {$disabled}</div>\n";
 			$formfield=getDBFieldTag(array('requiredmsg'=>'Select Staging Database','message'=>'-- Staging DB --','required'=>$required,'disabled'=>$disabled,'-table'=>'_settings','-field'=>'key_value','width'=>'','name'=>"set_global_{$subkey}",'value'=>$SETTINGS[$subkey],'inputtype'=>'select','tvals'=>$tvalstr,'dvals'=>$tvalstr));
-			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><img src="/wfiles/iconsets/16/database.png" class="w_middle" alt="" />S '.$formfield.'</div>'."\n";
+			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><span class="icon-database w_warning"></span> S '.$formfield.'</div>'."\n";
 			//slave
 			$subkey=$key.'_slave';
 			$formfield=getDBFieldTag(array('requiredmsg'=>'Select Live Database','message'=>'-- Live DB --','required'=>$required,'disabled'=>$disabled,'-table'=>'_settings','-field'=>'key_value','width'=>'','name'=>"set_global_{$subkey}",'value'=>$SETTINGS[$subkey],'inputtype'=>'select','tvals'=>$tvalstr,'dvals'=>$tvalstr));
-			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><img src="/wfiles/iconsets/16/database.png" class="w_middle" alt="" />L&nbsp;  '.$formfield.'</div>'."\n";
+			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><span class="icon-database w_success"></span> L&nbsp;  '.$formfield.'</div>'."\n";
 			echo '		</td>'."\n";
 			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
 			echo '	</tr>'."\n";
@@ -2571,7 +2571,7 @@ if(isset($_REQUEST['_menu'])){
 			sort($fields);
 			//echo printValue($_REQUEST);
 			unset($_REQUEST);
-            echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/properties.png" alt="table properties" /> Table Properties for ';
+            echo '<div class="w_lblue w_bold w_bigger"><span class="icon-th-thumb-empty w_danger"></span> Table Properties for ';
 			$img=getImageSrc(strtolower($currentTable));
 				if(strlen($img)){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
@@ -2659,11 +2659,11 @@ if(isset($_REQUEST['_menu'])){
             echo '	<tr valign="top"><td>'."\n";
             $height=300;
             if(count($list) > 15){
-            	$height=round((count($list)*10),0);
+            	$height=round((count($list)*12),0);
             	if($height > 700){$height=700;}
             	if($height < 300){$height=300;}
 			}
-			echo '		<textarea name="_schema" data-behavior="sqleditor" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'."\n";
+			echo '		<textarea name="_schema" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'."\n";
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
 				$type=$field['_dbtype_ex'];
@@ -2677,7 +2677,7 @@ if(isset($_REQUEST['_menu'])){
 				echo "{$field['_dbfield']} {$type}\r\n";
                 }
 			echo '		</textarea><br clear="both" />'."\n";
-			echo '<div align="right">'.buildFormSubmit("Save Schema Changes").'</div>'."\n";
+			echo '<div align="right">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'."\n";
 			echo buildFormEnd();
 			echo '	</td></tr>'."\n";
 			echo '</table>'."\n";
@@ -3621,7 +3621,7 @@ function sqlPrompt(){
 	$rtn .= '<table class="w_nopad" width="100%">'."\n";
 	$rtn .= '<tr valign="top">'."\n";
 	$rtn .= '<td class="nowrap">'."\n";
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><img src="/wfiles/iconsets/16/table.png" class="w_middle" alt="tables" /> Tables</div>'."\n";
+	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-table w_grey"></span> Tables</div>'."\n";
 	$rtn .= '<div style="height:500px;overflow:auto;padding-right:30px;">'."\n";
 	$rtn .= expandAjaxTables();
 	$rtn .= '</div>'."\n";
@@ -3688,7 +3688,7 @@ function expandAjaxTables(){
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
 	//build a section for non-wasql tables using createExpandDiv($title,$expand,'#0d0d7d',0);
-	$title='<img src="/wfiles/iconsets/16/table.png" class="w_middle" alt="user tables" /> User Tables';
+	$title='<span class="icon-user w_grey"><span class="icon-table"></span></span> User Tables';
 	$expand = '<table class="w_nopad">'."\n";
 	foreach($tables as $table){
 		if(isWasqlTable($table)){continue;}
@@ -3736,7 +3736,7 @@ function adminMenu(){
 	$tables=getDBTables();
 	//Build Wasql Tables
  	$wtables='';
-	$wtables .= '				<li class="dir"><a href="#" class="w_bold">';
+	$wtables .= '				<li class="dir"><a href="#">';
 	if($show_icons==1){$wtables .= '<img src="/wfiles/wasql_admin.png" class="w_middle" alt="wasql tables" />';}
 	$wtables .= ' Tables';
 	$wtables .= '</a>'."\n";
@@ -3799,7 +3799,8 @@ function adminMenu(){
 	$rtn .= '	<img data-tooltip="id:admin_info" src="/wfiles/wasql_admin.png" width="51" height="21" style="position:absolute;top:0px;left:0px;" alt="WaSQL admin logo" />';
 	$rtn .= '</li>'."\n";
 	//Database
-	$rtn .= '		<li class="dir"><a href="#" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/database.png').' Database</a>'."\n";
+	$color_class=isDBStage()?'w_warning':'w_success';
+	$rtn .= '		<li class="dir"><a href="#" class="w_topmenu"><span class="icon-database '.$color_class.'"></span> Database</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt">'.adminMenuIcon('/wfiles/iconsets/16/database_prompt.png').' SQL Prompt</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=grep">'.adminMenuIcon('/wfiles/iconsets/16/database_search.png').' Search</a></li>'."\n";
@@ -3837,7 +3838,7 @@ function adminMenu(){
 	ksort($group_tables);
 	sort($non_group_tables);
 	$list_table_count=count($group_tables) + count($non_group_tables);
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=tables" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/table.png').' Tables</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=tables" class="w_topmenu"><span class="icon-table w_grey"></span> Tables</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List Tables</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
@@ -3889,10 +3890,10 @@ function adminMenu(){
  	//Pages
 	if(!isDBTable('_pages')){$ok=createWasqlTable('_pages');}
 	$pages=getDBRecords(array('-table'=>'_pages','-limit'=>15,'-order'=>'_edate desc,_cdate desc'));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_pages" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/pages.png').' Pages</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_pages" class="w_topmenu"><span class="icon-file-doc w_grey"></span> Pages</a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List Pages</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($pages as $page){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id='.$page['_id'].'">';
@@ -3911,10 +3912,10 @@ function adminMenu(){
 	//Templates
 	if(!isDBTable('_templates')){$ok=createWasqlTable('_templates');}
 	$templates=getDBRecords(array('-table'=>'_templates','-limit'=>15,'-order'=>"_edate desc,_cdate desc"));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu">'.adminMenuIcon('/wfiles/_templates.gif').' Templates</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu"><span class="icon-file-docs w_grey"></span> Templates</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> List Templates</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($templates)){
 		foreach($templates as $template){
@@ -3940,7 +3941,7 @@ function adminMenu(){
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list"></span> List Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line"></span> Run Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($reports)){
 		foreach($reports as $report){
@@ -3954,10 +3955,10 @@ function adminMenu(){
 	//Users
 	if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
 	$users=getDBRecords(array('-table'=>'_users','-limit'=>15,'-where'=>'_adate is not null','-order'=>"utype,_adate desc"));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/users.png').' Users</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu"><span class="icon-users w_info"></span> Users</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List Users</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users">'.adminMenuIcon('/wfiles/iconsets/16/properties.png').' Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie"></span> Password Report</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($users as $cuser){
@@ -4000,7 +4001,7 @@ function adminMenu(){
 	//Queries
 	if(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/queries.png').' Queries</a></li>'."\n";
+		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger"></span> Queries</a></li>'."\n";
 		}
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
@@ -4548,7 +4549,7 @@ function syncGetChanges($stables=array()){
 	}
 	foreach($schema as $table=>$rec){
     	if(!isset($rec['live']) || !strlen($rec['live'])){
-			$actions=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><img src="/wfiles/iconsets/16/properties.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Properties" alt="properties" /></a>';
+			$actions=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-th-thumb-empty w_danger" title="Properties"></span></a>';
 			//new table in stage
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
@@ -4567,7 +4568,7 @@ function syncGetChanges($stables=array()){
 		elseif($rec['stage'] != $rec['live']){
 			//table schema has changed in stage
 			$actions='<a href="#" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><img src="/wfiles/iconsets/16/synchronize_diff.png" title="diff" alt="diff" /></a>';
-			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><img src="/wfiles/iconsets/16/properties.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Properties" alt="properties" /></a>';
+			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-th-thumb-empty w_danger" title="properties"></span></a>';
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
 				'tablename'		=> $table,
@@ -4823,7 +4824,7 @@ function editorNavigation(){
 	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=sandbox&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/php.png" class="w_middle" alt="php sandbox" /> PHP Sandbox</a></div>'."\n";
 	//templates
 	$recs=getDBRecords(array('-table'=>'_templates','-order'=>'name','-index'=>'_id','-fields'=>'_id,name'));
-	$ico='<img src="/wfiles/_templates.gif" class="w_middle" alt="templates" />';
+	$ico='<span class="icon-file-docs w_grey"></span>';
 	$title=$ico.' Templates ('.count($recs).')';
 	$expand='';
 	//add new link
