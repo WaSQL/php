@@ -2202,34 +2202,40 @@ function schemaAddFileData($table){
 		                $tables[$table][$fid]['permalink']="home";
 		                $tables[$table][$fid]['sort_order']=1;
 		                $tables[$table][$fid]['page_type']=1;
+		                $tables[$table][$fid]['_template']=2;
 						break;
 					case 'about':
 		                $tables[$table][$fid]['title']="About";
 		                $tables[$table][$fid]['sort_order']=2;
 		                $tables[$table][$fid]['page_type']=1;
+		                $tables[$table][$fid]['_template']=2;
 						break;
 					case 'contact':
 		                $tables[$table][$fid]['title']="Contact";
 		                $tables[$table][$fid]['permalink']="home";
 		                $tables[$table][$fid]['sort_order']=3;
 		                $tables[$table][$fid]['page_type']=1;
+		                $tables[$table][$fid]['_template']=2;
 						break;
 					case 'products':
 						$tables[$table][$fid]['title']="Products";
 		                $tables[$table][$fid]['sort_order']=4;
 		                $tables[$table][$fid]['page_type']=1;
+		                $tables[$table][$fid]['_template']=2;
 						break;
 					case 'blog':
 						$tables[$table][$fid]['title']="Blog";
 		                $tables[$table][$fid]['sort_order']=6;
 		                $tables[$table][$fid]['page_type']=1;
 						$tables[$table][$fid]['parent']="contact";
+						$tables[$table][$fid]['_template']=2;
 						break;
 					case 'forum':
 						$tables[$table][$fid]['title']="Support";
 		                $tables[$table][$fid]['sort_order']=7;
 		                $tables[$table][$fid]['page_type']=1;
 		                $tables[$table][$fid]['parent']="contact";
+		                $tables[$table][$fid]['_template']=2;
 						break;
 					default:
 						$tables[$table][$fid]['title']=ucwords(strtolower($fname));
