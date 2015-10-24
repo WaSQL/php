@@ -1137,7 +1137,12 @@ function addEditDBForm($params=array(),$customcode=''){
 		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'."\n";
 		//row
-		$rtn .= '<table class="w_table">'."\n";
+		if(isset($params['-tableclass'])){
+        	$rtn .= '<table class="'.$params['-tableclass'].'">'."\n";
+		}
+		else{
+			$rtn .= '<table class="w_table">'."\n";
+		}
 		$rtn .= '	<tr valign="top">'."\n";
 		if(is_array($fields)){
 			foreach($fields as $field){
