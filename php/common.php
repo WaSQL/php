@@ -7002,8 +7002,8 @@ function isGDEnabled(){
 /**
 * @describe returns true if string is a valid JSON. returns error if not.
 * @return mixed
-*	returns true if GD is enabled. GD must be enabled to create images, etc.
-* @usage if(isGDEnabled($str)){...}
+*	returns 1 if string is valid json
+* @usage $ck=jsonCheck($str);if($ck==1){...}
 */
 function jsonCheck($string){
     // decode the JSON data
@@ -7047,7 +7047,7 @@ function jsonCheck($string){
     if ($error !== '') {
 		return $error;
     }
-	return true;
+	return 1;
 }
 //---------- begin function isLiveUrl ----------
 /**
@@ -9246,7 +9246,11 @@ function postJSON($url='',$json='',$params=array()) {
         	$rtn['error'] = "Invalid XML: " . printValue($e);
         }
 	}
-    return json_decode($rtn['body'],true);
+	$ck=jsonCheck($rtn['body']);
+	if($ck==1){
+    	return json_decode($rtn['body'],true);
+	}
+	return $rtn;
 }
 
 //---------- begin function postXML--------------------
