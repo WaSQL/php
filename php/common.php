@@ -9166,7 +9166,7 @@ function postJSON($url='',$json='',$params=array()) {
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
-    curl_setopt($process,CURLOPT_POSTFIELDS,$xml);
+    curl_setopt($process,CURLOPT_POSTFIELDS,$json);
     $return=curl_exec($process);
     $blank_count=0;
 	//Process the result
@@ -9230,6 +9230,7 @@ function postJSON($url='',$json='',$params=array()) {
 		$rtn['xml_format']='sgml';
 		$rtn['body'] = sgml2XML($rtn['body']);
 	}
+	//echo $rtn['body'];exit;
 	if(preg_match('/^\<\?xml /i',$rtn['body'])){
 		if(preg_match('/\<soap:/i',$rtn['body'])){
 			//returned as a SOAP request - fix it up so that SimpleXmlElement can parse it
