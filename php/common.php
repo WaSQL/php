@@ -9060,6 +9060,144 @@ function postURL($url,$params=array()) {
 	return $rtn;
 	}
 
+//---------- begin function postJSON--------------------
+/**
+* @describe post an JSON string to a URL and return the results.
+* @param url string - URL to post to
+* @param json string - JSON to post
+* @param params array
+*	-user_agent - USER AGENT to pose as
+*	-encoding - charset to set encoding to
+*	-headers - headers to set
+*	-crlf - post using carriage returns for windows servers
+*	-ssl - ignore SSL is set to true
+* @return array
+* @usage $post=postJSON($url,$json);
+*/
+function postJSON($url='',$json='',$params=array()) {
+	$rtn=array('_debug'=>array(),'body'=>'','headers'=>array());
+	$process = curl_init($url);
+	if(isset($params['-user_agent'])){
+		$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
+		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
+	}
+	if(isset($params['-encoding'])){
+		curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
+		curl_setopt ($process, CURLOPT_HTTPHEADER, array("Content-Type: text/xml; charset={$params['-encoding']}","Accept-Charset: {$params['-encoding']}"));
+		$rtn['_debug'][]='set encoding to '.$params['-encoding'];
+	}
+	else{
+		curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
+		curl_setopt ($process, CURLOPT_HTTPHEADER, array("Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8"));
+	}
+	if(isset($params['-headers']) && is_array($params['-headers'])){
+		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
+		$rtn['_debug'][]='set headers' . printValue($params['-headers']);
+	}
+	if(isset($params['-crlf']) && $params['-crlf']==1){
+		curl_setopt($process, CURLOPT_CRLF, true);
+		$rtn['_debug'][]='set crlf';
+	}
+	//alernate port?
+	if(isset($params['-port']) && isNum($params['-port'])){
+		curl_setopt($process, CURLOPT_PORT, $params['-port']);
+	}
+    curl_setopt($process, CURLOPT_HEADER, 1);
+    curl_setopt($process,CURLOPT_POST,1);
+    curl_setopt($process,CURLOPT_TIMEOUT, 60);
+    curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
+    curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($process, CURLINFO_HEADER_OUT, true);
+    if(stringBeginsWith($url,'https') || $params['-ssl']){
+		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
+		curl_setopt($process, CURLOPT_CAINFO, $cacert);
+		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+	}
+	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
+    curl_setopt($process,CURLOPT_POSTFIELDS,$xml);
+    $return=curl_exec($process);
+    $blank_count=0;
+	//Process the result
+	$ofx=0;
+	//check for errors
+	if ( curl_errno($process) ) {
+		$rtn['err'] = curl_errno($process);
+		$rtn['errno'] = curl_error($process);
+	}
+	else{
+		//parse the result
+		$lines=preg_split('/[\r\n]/',trim($return));
+		$rtn['raw_lines']=$lines;
+		foreach($lines as $line){
+			$tline=trim($line);
+			if(strlen($tline)==0){
+				$blank_count+=1;
+				continue;
+            }
+            //elseif(!strlen($rtn['body'])){$blank_count=0;}
+            if(preg_match('/^HTTP\//i',$tline)){
+				list($junk,$code,$ok)=preg_split('/[\s\t]+/',$tline);
+				$rtn['code']=$code;
+				$blank_count=0;
+				continue;
+			}
+			if(preg_match('/^([a-z\-\_]+?)\ *?\:(.+)/i',$tline,$headerMatch)){
+				//header line
+				$key=strtolower(trim($headerMatch[1]));
+				$rtn['headers'][$key]=trim($headerMatch[2]);
+				$blank_count=0;
+				continue;
+			}
+			if(!count($rtn['headers'])){
+				$blank_count=0;
+				continue;
+			}
+			unset($pm);
+			if(preg_match('/\<\?xml version\=\"(.+?)\" encoding\=\"(.+?)\"\?\>(.*)/i',$tline,$pm)){
+				$rtn['body'] .= xmlHeader(array('version'=>$pm[1],'encoding'=>$pm[2])) ."\n";
+				$rtn['body'] .= "{$pm[3]}\n";
+				$blank_count=2;
+				continue;
+			}
+			if(preg_match('/^\<ofx\>\</i',$tline)){
+				$rtn['body'] = '';
+				$ofx=1;
+				$blank_count=2;
+			}
+			if($blank_count > 1){
+				$rtn['body'] .= "{$line}\n";
+            }
+        }
+    }
+    $rtn['header_out']=curl_getinfo($process,CURLINFO_HEADER_OUT);
+    //close the handle
+	curl_close($process);
+	$rtn['body']=trim($rtn['body']);
+	if($ofx==1){
+		//OFX is returned in SGML - fix it up to be valid XML
+		$rtn['xml_format']='sgml';
+		$rtn['body'] = sgml2XML($rtn['body']);
+	}
+	if(preg_match('/^\<\?xml /i',$rtn['body'])){
+		if(preg_match('/\<soap:/i',$rtn['body'])){
+			//returned as a SOAP request - fix it up so that SimpleXmlElement can parse it
+			$rtn['xml_format']='soap';
+			$rtn['body'] = preg_replace('|<([/\w]+)(:)|m','<$1',$rtn['body']);
+			$rtn['body'] = preg_replace('|(\w+)(:)(\w+=\")|m','$1$3',$rtn['body']);
+	    }
+	    if(!isset($rtn['xml_format'])){$rtn['xml_format']='xml';}
+		try {
+			$rtn['xml_out']=new SimpleXmlElement($rtn['body']);
+			return xml2Array($rtn['body']);
+		}
+		catch (Exception $e){
+        	$rtn['error'] = "Invalid XML: " . printValue($e);
+        }
+	}
+    return json_decode($rtn['body'],true);
+}
+
 //---------- begin function postXML--------------------
 /**
 * @describe post an XML string to a URL and return the results.
