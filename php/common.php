@@ -9251,6 +9251,7 @@ function postJSON($url='',$json='',$params=array()) {
 	if($ck==1){
     	return json_decode($rtn['body'],true);
 	}
+	$rtn['error']=$ck;
 	return $rtn;
 }
 
