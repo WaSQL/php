@@ -272,7 +272,7 @@ function ldapParseEntry($lrec=array()){
 		'logonhours','msexchsafesendershash','count','usercertificate',
 		'msexchblockedsendershash','msexchsaferecipientshash','thumbnailphoto'
 	);
-	echo printValue($lrec);exit;
+	//echo printValue($lrec);exit;
 	foreach($lrec as $key=>$val){
 		//skip numeric keys - not needed
     	if(is_numeric($key)){continue;}
