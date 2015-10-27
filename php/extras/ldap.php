@@ -19,6 +19,7 @@ $progpath=dirname(__FILE__);
 *	-host - LDAP host
 *	-username
 *	-password
+*	[-domain] - domain to bind to. defaults to -host
 *	[-secure] - prepends ldaps:// to the host name. Use for secure ldap servers
 * @return mixed - ldap user record array on success, error msg on failure
 * @usage $rec=LDAP Auth(array('-host'=>'myldapserver','-username'=>'myusername','-password'=>'mypassword'));
@@ -30,10 +31,11 @@ function ldapAuth($params=array()){
 	if(!isset($params['-host'])){return 'LDAP Auth Error: no host';}
 	if(!isset($params['-username'])){return 'LDAP Auth Error: no username';}
 	if(!isset($params['-password'])){return 'LDAP Auth Error: no password';}
+	if(!isset($params['-domain'])){$params['-domain']=$params['-host'];}
 	global $CONFIG;
-	if(!isset($params['-bind'])){$params['-bind']="{$params['-username']}@{$params['-host']}";}
+	if(!isset($params['-bind'])){$params['-bind']="{$params['-username']}@{$params['-domain']}";}
 	$ldap_base_dn = array();
-	$hostparts=preg_split('/\./',$params['-host']);
+	$hostparts=preg_split('/\./',$params['-domain']);
 	foreach($hostparts as $part){
 		$ldap_base_dn[]="dc={$part}";
 	}
@@ -270,6 +272,7 @@ function ldapParseEntry($lrec=array()){
 		'logonhours','msexchsafesendershash','count','usercertificate',
 		'msexchblockedsendershash','msexchsaferecipientshash','thumbnailphoto'
 	);
+	echo printValue($lrec);exit;
 	foreach($lrec as $key=>$val){
 		//skip numeric keys - not needed
     	if(is_numeric($key)){continue;}
