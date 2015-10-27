@@ -60,6 +60,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 			'-username'	=> $_REQUEST['username'],
 			'-password'	=> $_REQUEST['password']
 		);
+		if(isset($CONFIG['authldap_domain'])){
+        	$authopts['-domain']=$CONFIG['authldap_domain'];
+		}
      	$ldap=ldapAuth($authopts);
 		if(is_array($ldap)){
           	$fields=getDBFields('_users');
