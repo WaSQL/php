@@ -37,6 +37,16 @@ function ldapAddUser($params){
 	}
 	//prevent the user from being disabled
 	$params['UserAccountControl']="512";
+	//check for mapped fields
+	foreach($params as $key=>$val){
+    	$mkey=ldapMapField($key);
+    	if($mkey != $key){
+        	$params[$mkey]=$val;
+        	unset($params[$key]);
+		}
+	}
+
+
 	//call ldap_add to add the entry
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
 		return ldap_error($ldapInfo['connection']);
@@ -280,6 +290,33 @@ function ldapIsActiveRecord($lrec=array()){
 	$bool=$flags & 0x002;
 	if(!$bool){return 1;}
 	return 0;
+}
+//---------- begin function ldapParseEntry--------------------
+/**
+* @describe parses an ldap entry and returns a more human friendly record set
+* @param ldaprec array
+* @return array
+* @usage $lrec=ldapParseEntry($lrec);
+*/
+function ldapMapField($field){
+	switch(strtolower(trim($field))){
+    	case 'username':return 'samaccountname';break;
+    	case 'city':return 'l';break;
+    	case 'country':return 'c';break;
+    	case 'country_ex':return 'co';break;
+    	case 'lastname':return 'sn';break;
+    	case 'firstname':return 'givenname';break;
+    	case 'name':return 'displayname';break;
+    	case 'email':return 'mail';break;
+    	case 'zip':return 'postalcode';break;
+    	case 'state':return 'st';break;
+    	case 'address1':return 'streetaddress';break;
+    	case 'phone':return 'telephonenumber';break;
+    	case 'zip':return 'postalcode';break;
+    	case 'zip':return 'postalcode';break;
+
+	}
+	return $field;
 }
 //---------- begin function ldapParseEntry--------------------
 /**
