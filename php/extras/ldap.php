@@ -52,6 +52,7 @@ function ldapAddUser($params){
 	return 'success';
 }
 function ldapErrorMessage($no){
+	global $ldapInfo;
 	return ldap_err2str($ldapInfo['connection'],$no);
 }
 //---------- begin function LDAP Auth--------------------
