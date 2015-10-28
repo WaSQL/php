@@ -32,6 +32,7 @@ function ldapAddUser($params){
 	//user password
 	if(!isset($params['userpassword']) && isset($params['password'])){
 		$params["userpassword"] = '{md5}' . base64_encode(pack('H*', md5($params['password'])));
+		//unset the password
 		unset($params['password']);
 	}
 	//prevent the user from being disabled
