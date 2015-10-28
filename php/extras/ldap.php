@@ -12,6 +12,28 @@
 
 */
 $progpath=dirname(__FILE__);
+//---------- begin function ldapAddUser--------------------
+/**
+* @describe add entry to LDAP server
+* @param params array any key/value pair associated with this user
+* @return boolean - true on success, false on failure
+* @usage $rec=ldapAddUser(array('cn'=>'John Doe','sn'=>'Jones','mail'=>'jdoe@mycompany.com));
+* @link http://php.net/manual/en/function.ldap-add.php
+*/
+function ldapAddUser($params){
+	global $ldapInfo;
+	if(isset($params['cn']) && !isset($params['samaccountname'])){
+    	$params['samaccountname']=$params['cn'];
+	}
+	//create user class if not defined
+	if(!isset($params['objectclass'])){
+		$params['objectclass']= array("top","person","organizationalPerson","user");
+	}
+	//prevent the user from being disabled
+	$params['UserAccountControl']="512";
+	//call ldap_add to add the entry
+	return ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params);
+}
 //---------- begin function LDAP Auth--------------------
 /**
 * @describe used ldap to authenticate user and returns user ldap record
@@ -23,9 +45,6 @@ $progpath=dirname(__FILE__);
 *	[-secure] - prepends ldaps:// to the host name. Use for secure ldap servers
 * @return mixed - ldap user record array on success, error msg on failure
 * @usage $rec=LDAP Auth(array('-host'=>'myldapserver','-username'=>'myusername','-password'=>'mypassword'));
-
-
-
 */
 function ldapAuth($params=array()){
 	if(!isset($params['-host'])){return 'LDAP Auth Error: no host';}
