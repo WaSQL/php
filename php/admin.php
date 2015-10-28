@@ -175,7 +175,7 @@ if(isAjax()){
 		break;
 
 		case 'datasync':
-			echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/database_synchronize.png"  class="w_middle" alt="synchronize" /> Synchronize Records in '.$_REQUEST['tablename'].'</div>'."\n";
+			echo '<div class="w_centerpop_title"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records in '.$_REQUEST['tablename'].'</div>'."\n";
 			echo '<div class="w_centerpop_content">'."\n";
 			global $SETTINGS;
 			//synchronize must be turned on
@@ -886,7 +886,7 @@ if(isset($_REQUEST['_menu'])){
 	            if($_REQUEST['sync_action']=='sync' && isset($_REQUEST['sync_items']) && is_array($_REQUEST['sync_items']) && count($_REQUEST['sync_items']) && !isset($_REQUEST['sync_verify'])){
 					//Verifiy Changes form and add a note - goes to the _synchronize table
 					//list changes to be made
-					echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/synchronize.png" border"0" width"16" height="16" class="w_middle"> Synchronize Verification</div>'."\n";
+					echo '<div class="w_centerpop_title"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Verification</div>'."\n";
 					echo '<div class="w_centerpop_content">'."\n";
 					echo '	<div><img src="/wfiles/iconsets/16/user.png" class="w_middle" width="16" height="16" alt="Submitted by"> Submitted by: <b>'.$USER['username'].'</b></div>'."\n";
 					echo '	<div>The following changes <u>will be pushed live</u>:</div>'."\n";
@@ -1030,7 +1030,7 @@ if(isset($_REQUEST['_menu'])){
                         $txt_live=trim(getDBSchemaText("{$db_live}.{$table}"));
 						$arr_stage=preg_split('/[\r\n]+/', $txt_stage);
 						$arr_live=preg_split('/[\r\n]+/', $txt_live);
-						$link=' <a class="w_link w_smaller w_red" href="#" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=sync&sync_items[]=schema--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize.png" width="16" height="16" alt="synchronize" /> sync now</a>';
+						$link=' <a class="w_link w_smaller w_red" href="#" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=sync&sync_items[]=schema--'.$table.'\');"><span class="icon-sync w_warning w_big w_bold"></span> sync now</a>';
 						echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/synchronize_diff.png" class="w_middle" width="16" height="16" alt="Schema Diff" /> '.$table.' Schema Diff</div>'."\n";
 						echo '<div class="w_centerpop_content">'."\n";
 						echo diffText($arr_stage,$arr_live, "<img src=\"/wfiles/iconsets/16/synchronize_diff.png\" width=\"16\" height=\"16\" class=\"w_middle\" alt=\"Schema Diff\" /> Schema Diff for {$table} table",$link);
@@ -1093,7 +1093,7 @@ if(isset($_REQUEST['_menu'])){
 								));
 							}
 						}
-						echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/synchronize.png" class="w_middle" alt="synchronize" /> Synchronize</div>'."\n";
+						echo '<div class="w_centerpop_title"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize</div>'."\n";
                         echo '<div class="w_centerpop_content">'."\n";
                 		foreach($_REQUEST['sync_items'] as $item){
                         	list($id,$table)=preg_split('/\-\-/',$item,2);
@@ -1662,7 +1662,7 @@ if(isset($_REQUEST['_menu'])){
 			$help.='The synchronize checkbox is found in the properties window of each table.';
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="nowrap">'."\n";
-			echo '			<img src="/wfiles/iconsets/16/synchronize.png" style="vertical-align:middle;" alt="" />'."\n";
+			echo '			<span class="icon-sync w_warning w_big w_bold"></span>'."\n";
 			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
 			if($SETTINGS[$key]==1){
 				echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";
@@ -2211,10 +2211,20 @@ if(isset($_REQUEST['_menu'])){
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
-				$img=getImageSrc(strtolower($_REQUEST['_table_']));
-				if(strlen($img)){
-					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
-		        }
+				switch(strtolower($_REQUEST['_table_'])){
+					case '_cron':echo '<span class="icon-stopwatch w_success w_big"></span>';break;
+					case '_users':echo '<span class="icon-users w_info w_big"></span>';break;
+					case '_reports':echo '<span class="icon-chart-pie w_big"></span>';break;
+					case '_templates':echo '<span class="icon-file-docs w_big"></span>';break;
+					case '_pages':echo '<span class="icon-file-doc w_big"></span>';break;
+					case '_queries':echo '<span class="icon-database-empty w_danger w_big"></span>';break;
+					default:
+						$img=getImageSrc(strtolower($_REQUEST['_table_']));
+						if(strlen($img)){
+							echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
+				        }
+				    break;
+				}
 				echo $_REQUEST['_table_'].' table.</div>'."\n";
 				//special options for some tables
 				switch(strtolower($_REQUEST['_table_'])){
@@ -2264,14 +2274,14 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'synchronize':
 			if(!isset($SETTINGS['wasql_synchronize']) || $SETTINGS['wasql_synchronize']==0){
-				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/synchronize.png" class="w_middle" alt="synchronize manager" /> Synchronize Manager</div>'."\n";
+				echo '<div class="w_bigger w_lblue w_bold"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Manager</div>'."\n";
 				//currently turned off
 				echo 'Synchronize Manager is currently off. Use the Settings options under the WaSQL menu to turn it on.'."\n";
 				echo $infobox;
 				break;
             	}
             if(!strlen($SETTINGS['wasql_synchronize_master']) || !strlen($SETTINGS['wasql_synchronize_slave'])){
-				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/synchronize.png" class="w_middle" alt="synchronize manager" /> Synchronize Manager</div>'."\n";
+				echo '<div class="w_bigger w_lblue w_bold"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Manager</div>'."\n";
 				//currently turned off
 				echo 'Synchronize Manager is on but the live and stage databases are not selected. Use the Settings options under the WaSQL menu to set these.'."\n";
 				echo $infobox;
@@ -2282,7 +2292,7 @@ if(isset($_REQUEST['_menu'])){
 	        $stables=adminGetSynchronizeTables();
             echo buildTableBegin(0,0);
             echo '	<tr valign="bottom">'."\n";
-            echo '		<td valign="top"><img src="/wfiles/iconsets/32/synchronize.png" class="w_middle" alt="synchronize" /></td>'."\n";
+            echo '		<td valign="top"><span class="icon-sync w_warning w_big w_bold"></span></td>'."\n";
             echo '		<td valign="top">'."\n";
             echo '			<div class="w_lblue w_bigger"> Synchronize Manager</div>'."\n";
             echo '			<div class="w_lblue w_smaller w_padleft"><b>Stage DB</b>: '.$db_stage.', <b>Live DB</b>: '.$db_live.'</div>'."\n";
@@ -2695,7 +2705,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			echo buildTableRow(array(
-				'<img src="/wfiles/iconsets/16/synchronize.png" alt="synchronize" /> ',
+				'<span class="icon-sync w_warning w_big w_bold"></span> ',
 				buildFormField('_tabledata','synchronize'),
 				' Synchronize'
 			));
@@ -3296,7 +3306,7 @@ if(isset($_REQUEST['_menu'])){
 			//echo printValue($_REQUEST);
 			break;
 		case 'datasync':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_synchronize.png" class="w_middle" alt="synchronize records" /> Synchronize Records</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records</div>'."\n";
 			echo '<div class="w_lblue w_smaller">Tool to transfer data between matching tables on stage and live.</div>'."\n";
 			global $SETTINGS;
 			//synchronize must be turned on
@@ -3811,7 +3821,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_optimize.png').' Optimize</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=import">'.adminMenuIcon('/wfiles/iconsets/16/database_import.png').' Import</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=export">'.adminMenuIcon('/wfiles/iconsets/16/database_export.png').' Export</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync">'.adminMenuIcon('/wfiles/iconsets/16/database_synchronize.png').' Synchronize Records</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records</a></li>'."\n";
 	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><img src="/wfiles/summary.gif" alt="table status" /> Table Status</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=charset">'.adminMenuIcon('/wfiles/charset.gif').' Character Sets</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'."\n";
@@ -3979,10 +3989,10 @@ function adminMenu(){
 	if(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1){
 		if(!isDBTable('_cron')){$ok=createWasqlTable('_cron');}
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
-		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu">'.adminMenuIcon('/wfiles/_cron.png').' Crons</a>'."\n";
+		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-stopwatch w_success w_big"></span> Crons</a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> List Crons</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog">'.adminMenuIcon('/wfiles/_cron.png').' List Logs</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-stopwatch w_success w_big"></span> List Logs</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus"></span> Add New</a></li>'."\n";
 		if(is_array($crons)){
 			if(count($crons) > 15){
@@ -4016,10 +4026,10 @@ function adminMenu(){
 	//synchronize
 	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
 		$rtn .= '		<li>'."\n";
-		$rtn .= '			<a href="/php/admin.php?_menu=synchronize" class="w_topmenu">'.adminMenuIcon('/wfiles/iconsets/16/synchronize.png').' Synchronize</a>'."\n";
+		$rtn .= '			<a href="/php/admin.php?_menu=synchronize" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize</a>'."\n";
 		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=_synchronize">'.adminMenuIcon('/wfiles/iconsets/16/synchronize.png').' Pending Changes</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize">'.adminMenuIcon('/wfiles/iconsets/16/synchronize.png').' Sync History</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=_synchronize"><span class="icon-sync w_danger w_big w_bold"></span> Pending Changes</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-sync w_info w_big w_bold"></span> Sync History</a></li>'."\n";
 		$rtn .= '			</ul>'."\n";
 		$rtn .= '		</li>'."\n";
 		}
@@ -4894,7 +4904,7 @@ function adminCronBoard(){
 	//return printValue($recs);
 	$rtn .= buildTableBegin(2,0);
 	$rtn .= '	<tr>'."\n";
-	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><img src="/wfiles/_cron.png" class="w_middle" title="goto Cron" alt="goto cron" /></a></td>'."\n";
+	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-stopwatch w_success w_big"></span></a></td>'."\n";
 	$rtn .= '		<td colspan="5" class="w_bold w_dblue" align="center" style="font-size:1.1em;">Cron Activity Dashboard</td>'."\n";
 	$rtn .= '		<td align="right"><div title="Update Timer" data-behavior="countdown" class="w_lblue w_smaller" id="cronboard_countdown">31</div></td>'."\n";
 	$rtn .= '		<td align="right"><a href="/php/admin.php?_menu=list&_table_=_cronlog"><img src="/wfiles/_cronlog.png" class="w_middle" title="goto CronLog" alt="cron log" /></a></td>'."\n";
