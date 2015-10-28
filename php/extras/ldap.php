@@ -45,13 +45,11 @@ function ldapAddUser($params){
         	unset($params[$key]);
 		}
 	}
-
-
 	//call ldap_add to add the entry
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
 		return ldap_error($ldapInfo['connection']);
 	}
-	return true;
+	return 'success';
 }
 //---------- begin function LDAP Auth--------------------
 /**
