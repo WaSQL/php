@@ -36,7 +36,10 @@ function ldapAddUser($params){
 	//prevent the user from being disabled
 	$params['UserAccountControl']="512";
 	//call ldap_add to add the entry
-	return ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params);
+	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
+		return ldap_error($ldapInfo['connection']);
+	}
+	return true;
 }
 //---------- begin function LDAP Auth--------------------
 /**
