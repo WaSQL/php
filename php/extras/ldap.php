@@ -47,9 +47,12 @@ function ldapAddUser($params){
 	}
 	//call ldap_add to add the entry
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
-		return ldap_error($ldapInfo['connection']);
+		return ldap_errno($ldapInfo['connection']);
 	}
 	return 'success';
+}
+function ldapErrorMessage($no){
+	return ldap_err2str($ldapInfo['connection'],$no);
 }
 //---------- begin function LDAP Auth--------------------
 /**
