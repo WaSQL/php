@@ -3801,11 +3801,11 @@ function adminMenu(){
 	ksort($group_tables);
 	sort($non_group_tables);
 	$list_table_count=count($group_tables) + count($non_group_tables);
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=tables" class="w_topmenu"><span class="icon-table w_grey"></span> Tables</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=tables" class="w_topmenu"><span class="icon-table w_grey w_big"></span> Tables</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List Tables</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list w_big"></span> List Tables</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple">'.adminMenuIcon('/wfiles/iconsets/16/table_add.png').' Add Multiple Tables</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple">'.adminMenuIcon('/wfiles/iconsets/16/table_add.png').' Add Multiple Tables</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//show wasql tables here also
 	$rtn .= $wtables;
 	//now show groups
@@ -3855,42 +3855,29 @@ function adminMenu(){
 	$pages=getDBRecords(array('-table'=>'_pages','-limit'=>15,'-order'=>'_edate desc,_cdate desc'));
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_pages" class="w_topmenu"><span class="icon-file-doc w_grey"></span> Pages</a>'."\n";
 	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List Pages</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list w_big"></span> List Pages</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	foreach($pages as $page){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id='.$page['_id'].'">';
 		$lname=strtolower($page['name']);
-		if($show_icons==1){
-			$img=getImageSrc($lname);
-			if(strlen($img)){
-				$rtn .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
-        	}
-		}
 		$rtn .= ' '.$page['_id'].'. '.$page['name'].'</a></li>'."\n";
-    	}
+    }
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	unset($pages);
 	//Templates
 	if(!isDBTable('_templates')){$ok=createWasqlTable('_templates');}
 	$templates=getDBRecords(array('-table'=>'_templates','-limit'=>15,'-order'=>"_edate desc,_cdate desc"));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu"><span class="icon-file-docs w_grey"></span> Templates</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu"><span class="icon-file-docs w_big w_grey"></span> Templates</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> List Templates</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list w_big"></span> List Templates</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	if(is_array($templates)){
 		foreach($templates as $template){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_templates&_id='.$template['_id'].'">';
 			$lname=strtolower($template['name']);
-			if($show_icons==1){
-				$img=getImageSrc($lname);
-
-				if(strlen($img)){
-					$rtn .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
-	        	}
-			}
 			$rtn .= ' '.$template['_id'].'. '.$template['name'].'</a></li>'."\n";
 	    	}
 		}
@@ -3902,10 +3889,10 @@ function adminMenu(){
 	$reports=getDBRecords(array('-table'=>'_reports','active'=>1,'menu'=>'_reports','-limit'=>15,'-order'=>'name'));
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu"><span class="icon-chart-pie"></span> Reports</a>'."\n";
 	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list"></span> List Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line"></span> Run Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list w_big"></span> List Reports</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line w_big"></span> Run Reports</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	if(is_array($reports)){
 		foreach($reports as $report){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_reports&_id='.$report['_id'].'">';
@@ -3918,19 +3905,19 @@ function adminMenu(){
 	//Users
 	if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
 	$users=getDBRecords(array('-table'=>'_users','-limit'=>15,'-where'=>'_adate is not null','-order'=>"utype,_adate desc"));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu"><span class="icon-users w_info"></span> Users</a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu"><span class="icon-users w_info w_big"></span> Users</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List Users</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie"></span> Password Report</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list w_big"></span> List Users</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie w_big"></span> Password Report</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	foreach($users as $cuser){
 		if(isAdmin() && $USER['_id'] != $cuser['_id']){$rtn .= '				<li class="dir">';}
 		else{$rtn .= '				<li>';}
 		$rtn .= '<a href="/php/admin.php?_menu=edit&_id='.$cuser['_id'].'&_table_=_users">';
 		//determine what image
 		$info=getUserInfo($cuser);
-		if($show_icons==1){$rtn .= '<img src="'.$info['icon'].'" title="'.$info['status'].'" alt="'.$info['status'].'" /> ';}
+		if($show_icons==1){$rtn .= '<span class="'.$info['class'].'" title="'.$info['status'].'"></span> ';}
 		$rtn .= ' '.$cuser['_id'].'. '.$cuser['username'].'</a>';
 		if(isAdmin() && $USER['_id'] != $cuser['_id']){$rtn .= '				<ul><li><a href="/php/admin.php?_menu=list&_table_=_users&_su_='.$cuser['_id'].'">Switch User (SU)</a></li></ul>';}
 		$rtn .= '</li>'."\n";
@@ -3944,12 +3931,12 @@ function adminMenu(){
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
 		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-stopwatch w_success w_big"></span> Crons</a>'."\n";
 		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> List Crons</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-stopwatch w_success w_big"></span> List Logs</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus"></span> Add New</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus w_big"></span> Add New</a></li>'."\n";
 		if(is_array($crons)){
 			if(count($crons) > 15){
-				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> Show All</a></li>'."\n";
+				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> Show All</a></li>'."\n";
 				}
 			foreach($crons as $cron){
 				$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_cron&_id='.$cron['_id'].'">';
@@ -3964,7 +3951,7 @@ function adminMenu(){
 	//Queries
 	if(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger"></span> Queries</a></li>'."\n";
+		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger w_big"></span> Queries</a></li>'."\n";
 		}
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
@@ -4000,12 +3987,12 @@ function adminMenu(){
 	$rtn .= '        	<ul>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big"></span> Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big"></span> About</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big"></span> About</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Temp Files Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
@@ -4013,7 +4000,7 @@ function adminMenu(){
     $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List IconSets</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">&#128291; HTML Entities</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-site-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
