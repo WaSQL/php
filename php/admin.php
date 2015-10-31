@@ -2534,7 +2534,7 @@ if(isset($_REQUEST['_menu'])){
 			sort($fields);
 			//echo printValue($_REQUEST);
 			unset($_REQUEST);
-            echo '<div class="w_lblue w_bold w_bigger"><span class="icon-th-thumb-empty w_danger"></span> Table Properties for ';
+            echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_danger"></span> Table Properties for ';
 			$img=getImageSrc(strtolower($currentTable));
 				if(strlen($img)){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
@@ -3551,7 +3551,7 @@ function adminShowSessionLog($sessionID){
 	}
 	$rtn='';
 	$files=listFilesEx($errpath,array('name'=>"{$sessionID}.log"));
-	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><img src="/wfiles/iconsets/16/erase.png" width="16" height="16" class="w_middle" alt="clear error log" /> Clear Error Log</a></div>'."\n";
+	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><span class="icon-erase w_danger"></span> Clear Error Log</a></div>'."\n";
 	$rtn .= getFileContents($errfile);
 	return $rtn;
 }
@@ -3765,18 +3765,18 @@ function adminMenu(){
 	$color_class=isDBStage()?'w_warning':'w_success';
 	$rtn .= '		<li class="dir"><a href="#" class="w_topmenu"><span class="icon-database '.$color_class.'"></span> Database</a>'."\n";
 	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt">'.adminMenuIcon('/wfiles/iconsets/16/database_prompt.png').' SQL Prompt</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=grep">'.adminMenuIcon('/wfiles/iconsets/16/database_search.png').' Search</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt w_big w_default"></span> SQL Prompt</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search w_big w_default"></span> Search</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=backup" onclick="return confirm(\'This will backup the database. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_backup.png').' Backup</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=backups">'.adminMenuIcon('/wfiles/iconsets/16/database_backup.png').' Backups</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_grey w_big w_default"></span> Backups</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=schema"><img src="/wfiles/schema.gif"> Schema</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=indexes"><img src="/wfiles/indexes.gif"> Indexes</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_optimize.png').' Optimize</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=import">'.adminMenuIcon('/wfiles/iconsets/16/database_import.png').' Import</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=export">'.adminMenuIcon('/wfiles/iconsets/16/database_export.png').' Export</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records</a></li>'."\n";
-	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><img src="/wfiles/summary.gif" alt="table status" /> Table Status</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=charset">'.adminMenuIcon('/wfiles/charset.gif').' Character Sets</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=import"><span class="icon-import w_big w_default w_big"></span> Import</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_warning w_big"></span> Synchronize Records</a></li>'."\n";
+	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
@@ -3856,7 +3856,7 @@ function adminMenu(){
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_pages" class="w_topmenu"><span class="icon-file-doc w_grey"></span> Pages</a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List Pages</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($pages as $page){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id='.$page['_id'].'">';
@@ -3878,7 +3878,7 @@ function adminMenu(){
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_templates" class="w_topmenu"><span class="icon-file-docs w_grey"></span> Templates</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> List Templates</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($templates)){
 		foreach($templates as $template){
@@ -3904,7 +3904,7 @@ function adminMenu(){
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list"></span> List Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line"></span> Run Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	if(is_array($reports)){
 		foreach($reports as $report){
@@ -3921,7 +3921,7 @@ function adminMenu(){
 	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_users" class="w_topmenu"><span class="icon-users w_info"></span> Users</a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List Users</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-th-thumb-empty w_danger"></span> Properties</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_danger"></span> Properties</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie"></span> Password Report</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> Add New</a><hr size="1"></li>'."\n";
 	foreach($users as $cuser){
@@ -4068,20 +4068,21 @@ function tableOptions($table='',$params=array()){
 	if(!isset($params['-options'])){$params['-options']='drop,rebuild,truncate,backup,grep,model,indexes,properties,list,add';}
 	if(!is_array($params['-options'])){$params['-options']=preg_split('/[\,\:]+/',$params['-options']);}
 	global $PAGE;
+	//Bootstrap Colors: default, primary, success, info, warning, danger, black, grey
 	$tableoptions=array(
-		'drop'		=> array("Delete Table",'x'),
-		'truncate'	=> array("Truncate Table",'erase'),
-		'indexes'	=> array("Show Indexes",'table_index'),
-		'backup'	=> array("Backup Table",'backup'),
-		'model'		=> array("Model",'models'),
+		'drop'		=> array("Delete Table",'icon-erase w_danger w_big'),
+		'truncate'	=> array("Truncate Table",'icon-blank w_warning w_big'),
+		'indexes'	=> array("Show Indexes",'icon-optimize w_gold w_big'),
+		'backup'	=> array("Backup Table",'icon-save w_grey w_big'),
+		'model'		=> array("Triggers",'icon-toggle-on w_black w_big'),
 //		'schema'	=> array("Schema",'table_truncate'),
-		'properties'=> array("Properties",'properties'),
-		'list'		=> array("List Records",'list'),
-		'grep'		=> array("Search Records",'grep'),
-		'add'		=> array("Add New Record",'add')
+		'properties'=> array("Properties",'icon-properties w_grey w_big'),
+		'list'		=> array("List Records",'icon-list w_default w_big'),
+		//'grep'		=> array("Grep Records",'icon-database-search w_primary w_big'),
+		'add'		=> array("Add New Record",'icon-plus w_success w_big')
 		);
 	if(in_array($table,$wtables) && !in_array($table,array('_pages','_fielddata','_tabledata','_users','_templates'))){
-    	$tableoptions['rebuild']=array('Rebuild','rebuild');
+    	$tableoptions['rebuild']=array('Rebuild','icon-refresh w_info w_big');
 	}
 	if(isWasqlTable($table)){
     	unset($tableoptions['drop']);
@@ -4097,7 +4098,7 @@ function tableOptions($table='',$params=array()){
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
-				$img=$tableoptions[$option][1];
+				$spanclass=$tableoptions[$option][1];
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
                 	if(isset($model['_id'])){
@@ -4118,7 +4119,7 @@ function tableOptions($table='',$params=array()){
 					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DROP and REBUILD this table back to WaSQL Defaults!!!\\r\\n\\r\\nARE YOU SURE you want to Rebuild the '.$table.' table?\\r\\n\\r\\nClick OK to confirm.\');"';
 		            }
 				$rtn .= '>';
-				$rtn .= '<img alt="'.$title.'" src="/wfiles/iconsets/16/'.$img.'.png" class="w_middle" style="margin:0 3px 0 3px;"> ';
+				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
@@ -4152,8 +4153,8 @@ function tableOptions($table='',$params=array()){
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
-				$img=$tableoptions[$option][1];
-				$class='';
+				$spanclass=$tableoptions[$option][1];
+				$class='btn btn-default';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
                 	if(isset($model['_id'])){
@@ -4163,8 +4164,8 @@ function tableOptions($table='',$params=array()){
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
 				}
-				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class='current';}
-				$rtn .= '	<td><a data-tooltip_position="bottom" data-tooltip="'.$title.'" class="w_link '.$class.'" href="'.$href.'"';
+				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class.=' active';}
+				$rtn .= '	<td><button type="button" style="line-height:1.2;padding:5px; margin-right:3px;" data-tooltip_position="bottom" data-tooltip="'.$title.'" class="'.$class.'"';
 				if($option == 'truncate'){
 					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Purge all records from '.$table.' table?\\r\\nTHIS IS IRREVERSIBLE!!!\\r\\n\\r\\n Click OK to confirm.\');"';
 		            }
@@ -4179,12 +4180,15 @@ function tableOptions($table='',$params=array()){
 					$onclick="return ajaxGet('/php/admin.php','centerpop','_menu=add&_table_={$table}');";
 					$rtn .= ' onclick="'.$onclick.'"';
 		            }
+		        else{
+                	$rtn .= 'onclick="window.location=\''.$href.'\';"';
+				}
 				$rtn .= '>';
-				$rtn .= '<img alt="'.$title.'" src="/wfiles/iconsets/16/'.$img.'.png" class="w_middle" style="margin:0 3px 0 3px;"> ';
+				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
-				$rtn .= '</a></td>'."\n";
+				$rtn .= '</button></td>'."\n";
 		        }
 		    $rtn .= '</tr></table>'."\n";
 			break;
@@ -4193,7 +4197,7 @@ function tableOptions($table='',$params=array()){
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
-				$img=$tableoptions[$option][1];
+				$spanclass=$tableoptions[$option][1];
 				$class='';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
@@ -4221,7 +4225,7 @@ function tableOptions($table='',$params=array()){
 					$rtn .= ' onclick="'.$onclick.'"';
 		            }
 				$rtn .= '>';
-				$rtn .= '<img alt="'.$title.'" src="/wfiles/iconsets/16/'.$img.'.png" class="w_middle" style="margin:0 3px 0 3px;"> ';
+				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
@@ -4512,7 +4516,7 @@ function syncGetChanges($stables=array()){
 	}
 	foreach($schema as $table=>$rec){
     	if(!isset($rec['live']) || !strlen($rec['live'])){
-			$actions=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-th-thumb-empty w_danger" title="Properties"></span></a>';
+			$actions=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-properties w_danger" title="Properties"></span></a>';
 			//new table in stage
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
@@ -4531,7 +4535,7 @@ function syncGetChanges($stables=array()){
 		elseif($rec['stage'] != $rec['live']){
 			//table schema has changed in stage
 			$actions='<a href="#" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><img src="/wfiles/iconsets/16/synchronize_diff.png" title="diff" alt="diff" /></a>';
-			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-th-thumb-empty w_danger" title="properties"></span></a>';
+			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-properties w_danger" title="properties"></span></a>';
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
 				'tablename'		=> $table,
