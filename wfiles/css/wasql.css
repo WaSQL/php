@@ -713,6 +713,7 @@ table th a {
 .w_gray, .w_grey {color:#939393;}
 .w_lgray, .w_lgrey {color:#f4f4f4;}
 .w_required {color:#970000;}
+.w_gold {color:#ffd700;}
 
 
 .w_blackback  {background-color:#000;}
@@ -724,6 +725,7 @@ table th a {
 .w_greenback, .w_successback  {background-color:#5cb85c;}
 .w_grayback, .w_greyback {background-color:#939393;}
 .w_lgrayback, .w_lgreyback {background-color:#f4f4f4;}
+.w_goldback {background-color:#ffd700;}
 .w_gradientorange{
 	[safari|chrome]background: -webkit-gradient(linear,left bottom,left top,color-stop(0.20, #ff7c3e),color-stop(0.70, #ff5400));
 	[firefox]background: -moz-linear-gradient(center bottom,#ff7c3e 20%,#ff5400 70%);
