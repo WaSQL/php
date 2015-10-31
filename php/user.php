@@ -690,9 +690,11 @@ function getUserInfo($cuser,$size=16){
 	//set user icon based on admin or not
 	if($cuser['utype']==0){
 		$info['icon']="/wfiles/iconsets/{$size}/user_admin.png";
+		$info['class']='icon-user-admin w_primary';
     }
     else{
 		$info['icon']="/wfiles/iconsets/{$size}/user.png";
+		$info['class']='icon-user w_grey';
     }
     $nowstamp=time();
     $timestamp=$nowstamp-300;
@@ -712,12 +714,26 @@ function getUserInfo($cuser,$size=16){
     if(isset($cuser['active']) && $cuser['active']==0){
 		//inactive
 		$info['status']="Inactive";
+		//set user icon based on admin or not
+		if($cuser['utype']==0){
+			$info['class']='icon-user-admin w_info';
+	    }
+	    else{
+			$info['class']='icon-user w_lgrey';
+	    }
+
 		return $info;
 		}
 	//never logged in
     if(!strlen($cuser['_adate'])){
 		//Never logged In?
 		$info['status']="Never logged in";
+		if($cuser['utype']==0){
+			$info['class']='icon-user-admin w_warning';
+	    }
+	    else{
+			$info['class']='icon-user w_danger';
+	    }
         //$info['status'] .= " - Created {$info['created_age']} ago on {$info['created_time']}";
 		return $info;
 		}
