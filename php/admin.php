@@ -145,8 +145,6 @@ $ConfigSettings=getDBAdminSettings();
 //Handle ajax requests
 if(isAjax()){
 	if(!isUser()){
-    	//echo '<div style="font-size:24px;display:inline;color:#dd8602;"><img width="32" height="32" src="/wfiles/iconsets/32/wasql.png" border="0" style="vertical-align:middle;border-right:1px solid #dd8602;border-bottom:1px solid #dd8602;padding:3px;"><b style="border-bottom:1px solid #dd8602;"> '.ucwords($_SERVER['HTTP_HOST']).' Admin Login</b></div>'."\n";
-		//echo '<div style="padding:5px;color:#dd8602;">'.userLoginForm(array('-action'=>'/php/admin.php')).'</div>'."\n";
 		echo 'Not logged in';
 		exit;
 	}
@@ -260,7 +258,7 @@ if(isAjax()){
                 $xtables=adminGetSynchronizeTables($CONFIG['dbname_stage']);
                 if(in_array($_REQUEST['_table_'],$xtables)){
 					echo '<div class="w_bold">'."\n";
-					echo '	<img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" />'."\n";
+					echo '	<span class="icon-warning w_danger w_bold"></span>'."\n";
 					echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'."\n";
 					echo '</div>'."\n";
 					echo '</div>'."\n";
@@ -707,9 +705,6 @@ if(!isUser()){
 	echo buildHtmlBegin($params);
 	//echo '<div id="adminmenu">'."\n";
 	echo adminUserLoginMenu();
-	//echo '<br clear="both" />'."\n";
-	//echo '<div style="font-size:24px;display:inline;color:#dd8602;"><img width="32" height="32" src="/wfiles/iconsets/32/wasql.png" border="0" style="vertical-align:middle;padding:3px;"><b> '.ucwords($_SERVER['HTTP_HOST']).' Admin Login</b></div>'."\n";
-	//echo '</div>'."\n";
 	echo '	<div style="padding:5px;color:'.$ConfigSettings['mainmenu_text_color'].';">'."\n";
 	$formopts=array(
 		'-action'=>'/php/admin.php',
@@ -725,8 +720,8 @@ if(!isUser()){
 elseif($USER['utype'] != 0){
 	echo buildHtmlBegin();
 	echo '<div class="w_left w_tip w_pad w_border">'."\n";
-	echo '	<img src="/wfiles/iconsets/32/abort.png" class="w_middle" alt="abort" /><b class="w_red w_bigger"> Administration access denied.</b>'."\n";
-	echo '	<div class="w_big w_red">You must log in as an administrator to access the administration area.</div>'."\n";
+	echo '	<span class="icon-warning w_danger w_bigger w_bold"></span><b class="w_danger w_bigger"> Administration access denied.</b>'."\n";
+	echo '	<div class="w_big w_danger">You must log in as an administrator to access the administration area.</div>'."\n";
 	echo '</div>'."\n";
 	$formopts=array(
 		'-action'=>'/php/admin.php',
@@ -888,7 +883,7 @@ if(isset($_REQUEST['_menu'])){
 					//list changes to be made
 					echo '<div class="w_centerpop_title"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Verification</div>'."\n";
 					echo '<div class="w_centerpop_content">'."\n";
-					echo '	<div><img src="/wfiles/iconsets/16/user.png" class="w_middle" width="16" height="16" alt="Submitted by"> Submitted by: <b>'.$USER['username'].'</b></div>'."\n";
+					echo '	<div><span class="icon-user"></span> Submitted by: <b>'.$USER['username'].'</b></div>'."\n";
 					echo '	<div>The following changes <u>will be pushed live</u>:</div>'."\n";
 					echo '	<ol>'."\n";
 					//remove duplicate sync_items
@@ -905,7 +900,7 @@ if(isset($_REQUEST['_menu'])){
 							$stage_time=setValue(array($rec_stage['_edate_utime'],$rec_stage['_cdate_utime'],0));
 							$live_time=setValue(array($rec_live['_edate_utime'],$rec_live['_cdate_utime'],0));
 							if($live_time > $stage_time){
-                            	echo '		<li>Record '.$id.' in the \''.$table.'\' table. <b class="w_red"><img src="/wfiles/iconsets/16/warning.png" class="w_middle" alt="warning" /> Live record is newer.</b></li>'."\n";
+                            	echo '		<li>Record '.$id.' in the \''.$table.'\' table. <b class="w_red"><span class="icon-warning w_warning"></span> Live record is newer.</b></li>'."\n";
 							}
 							else{
                         		echo "		<li>Record {$id} in the '{$table}' table</li>\n";
@@ -953,7 +948,7 @@ if(isset($_REQUEST['_menu'])){
 	                    	$_REQUEST['review_pass_requiredmsg']="A Review is required before submitting changes.";
 						}
 						else{
-							$_REQUEST['-formfields'].= "\n".'<div class="w_pad w_lblue"><img src="/wfiles/iconsets/16/checkmark.png" border="" class="w_middle" width="16" height="16" alt="I approve"> I have reviewed this code and approve.</div>'."\n";
+							$_REQUEST['-formfields'].= "\n".'<div class="w_pad w_lblue"><span class="icon-mark w_bold w_success"></span> I have reviewed this code and approve.</div>'."\n";
 							$_REQUEST['crskipcnt']=$codereview;
 						}
 					}
@@ -1039,7 +1034,7 @@ if(isset($_REQUEST['_menu'])){
                 	case 'sync':
                 		//echo printValue($_REQUEST);
                 		if(!is_array($_REQUEST['sync_items'])){
-							echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+							echo '<div class="w_centerpop_title"><span class="icon-warning w_danger w_bold"></span> Error Processing Request:</div>'."\n";
                         	echo '<div class="w_centerpop_content">'."\n";
 							echo "No records selected to sync";
 							echo '</div>'."\n";
@@ -1048,7 +1043,7 @@ if(isset($_REQUEST['_menu'])){
 						//check for codereview setting in CONFIG
 						if($CONFIG['codereview']==1 && !isset($_REQUEST['crskipcnt'])){
 							if(!strlen(trim($_REQUEST['review_user']))){
-								echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+								echo '<div class="w_centerpop_title"><span class="icon-warning w_danger w_bold"></span> Error Processing Request:</div>'."\n";
                         		echo '<div class="w_centerpop_content">'."\n";
                             	echo "A Review is required before submitting changes.";
                             	echo "<br />Missing Code Review username.";
@@ -1056,7 +1051,7 @@ if(isset($_REQUEST['_menu'])){
                             	break;
 							}
 							if(!strlen(trim($_REQUEST['review_pass']))){
-								echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+								echo '<div class="w_centerpop_title"><span class="icon-warning w_danger w_bold"></span> Error Processing Request:</div>'."\n";
                         		echo '<div class="w_centerpop_content">'."\n";
                             	echo "A Review is required before submitting changes.";
                             	echo "<br />Missing Code Review password.";
@@ -1067,7 +1062,7 @@ if(isset($_REQUEST['_menu'])){
 							$review_pass=userEncryptPW($_REQUEST['review_pass']);
 							$review_rec=getDBRecord(array('-table'=>'_users','-fields'=>'_id,username,password','utype'=>0,'username'=>$_REQUEST['review_user']));
 							if(!is_array($review_rec) || sha1($review_pass) != sha1($review_rec['password'])){
-								echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+								echo '<div class="w_centerpop_title"><span class="icon-warning w_danger w_bold"></span> Error Processing Request:</div>'."\n";
                         		echo '<div class="w_centerpop_content">'."\n";
 								echo "A Review by another admin is required before submitting changes.";
                             	echo "<br />Invalid Code Reviewer authentication.";
@@ -1076,7 +1071,7 @@ if(isset($_REQUEST['_menu'])){
 							}
 							//check to make sure they are not reviewing their own code
 							if(is_array($review_rec) && sha1($review_rec['username']) == sha1($USER['username'])){
-								echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+								echo '<div class="w_centerpop_title"><span class="icon-warning w_warning w_bold"></span> Error Processing Request:</div>'."\n";
                         		echo '<div class="w_centerpop_content">'."\n";
                             	echo "A Review by another admin is required before submitting changes.";
                             	echo "<br />You cannot review your own code. [{$_REQUEST['review_user']}]";
@@ -1130,7 +1125,7 @@ if(isset($_REQUEST['_menu'])){
                 	case 'cancel':
                 		//echo printValue($_REQUEST);
                 		if(!is_array($_REQUEST['sync_items'])){
-							echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request:</div>'."\n";
+							echo '<div class="w_centerpop_title"><span class="icon-warning w_warning w_bold"></span> Error Processing Request:</div>'."\n";
                         	echo '<div class="w_centerpop_content">'."\n";
                         	echo "No records selected to cancel";
                         	echo '</div>'."\n";
@@ -1526,7 +1521,7 @@ if(isset($_REQUEST['_menu'])){
 			else{
             	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
 			}
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/help.png" alt="help" /> WaSQL Documentation</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
 			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_lblue w_smallest"><img src="/wfiles/iconsets/16/refresh.png" width="12" height="12" class="w_middle" alt="rebuild"> Rebuild</a></div>'."\n";
 			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
 			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
@@ -1562,23 +1557,23 @@ if(isset($_REQUEST['_menu'])){
 		case 'settings':
 			global $SETTINGS;
 			echo '<div style="width:800px;padding:10px;">'."\n";
-			echo '<div class="w_lblue w_bold w_biggest"><span class="icon-gear"></span> Settings - '.$CONFIG['dbname'].'</a></div>'."\n";
 			//update
 			echo buildFormBegin('',array('_menu'=>'settings','-name'=>'settingsform','_action'=>'settings'));
 			echo '<table class="table table-bordered table-striped">'."\n";
-			echo '	<tr><th colspan="3" class="w_align_left w_big"><span class="icon-gears"></span> Global Settings</th></tr>'."\n";
+			echo '	<tr><th colspan="3" class="w_align_left w_big"><span class="icon-gear"></span> Global Settings</th></tr>'."\n";
 			//Wasql Crons
 			$key='wasql_crons';
 			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
 			$help='Turn ON to use WaSQL crons.  WaSQL crons allow you to schedule and manage externals processes - when and how often they run. It also records the result of such processes.';
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="nowrap">'."\n";
-			echo '			<img src="/wfiles/iconsets/16/datetime.png" style="vertical-align:middle;" alt="" />'."\n";
-			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
+			echo '			<span class="icon-cron w_big w_warning"></span> <b class="w_big w_warning">'.friendlyName($key)."</b>\n";
 			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";
-				}
-			else{echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
+				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" title="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
+			else{
+				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
 			echo '		</td>'."\n";
 			echo '		<td>'.$formfield.'</td>'."\n";
 			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
@@ -1593,9 +1588,13 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<td class="nowrap">'."\n";
 			echo '			<span class="icon-database-empty w_danger"></span>'."\n";
 			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
-			else{echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
-			echo '		</td>'."\n";			
+			if($SETTINGS[$key]==1){
+				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
+			else{
+				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
+			echo '		</td>'."\n";
 			echo '		<td>'."\n";
 			echo buildTableBegin(2,0);
 			//status,days,time,user
@@ -1628,9 +1627,12 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<td class="nowrap">'."\n";
 			echo '			<img src="/wfiles/_access.gif" style="vertical-align:middle;" alt="" />'."\n";
 			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
-			else{echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";}
-			echo '		</td>'."\n";			
+			if($SETTINGS[$key]==1){
+				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
+			else{
+				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}			echo '		</td>'."\n";
 			echo '		<td>'."\n";
 			echo buildTableBegin(2,0);
 			//status
@@ -1665,11 +1667,11 @@ if(isset($_REQUEST['_menu'])){
 			echo '			<span class="icon-sync w_warning w_big w_bold"></span>'."\n";
 			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
 			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><img src="/wfiles/iconsets/32/poweron.png" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";
-				}
+				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
 			else{
-				echo '			<div align="center"><img src="/wfiles/iconsets/32/poweroff.png" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></div>'."\n";
-				}
+				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
+			}
 			echo '		</td>'."\n";
 			echo '		<td class="nowrap">'."\n";
 			echo "<div>{$formfield}</div>\n";
@@ -1694,11 +1696,6 @@ if(isset($_REQUEST['_menu'])){
 			echo '		</td>'."\n";
 			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
 			echo '	</tr>'."\n";
-			//dreamhost API
-//			$key='dreamhost_api';
-//			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'text','width'=>200,'maxlength'=>255));
-//			$help='Enter your Dreamhost API key if you are hosting on dreamhost and want to manage your account from within WaSQL. <a class="w_link w_dblue" href="http://www.dreamhost.com/r.cgi?210166">Click Here to Signup for a DreamHost account.</a>';
-//			echo '	<tr valign="top"><td class="nowrap"><img src="/wfiles/dreamhost.png" style="vertical-align:middle;"> '.friendlyName($key).'</b></td><td>'.$formfield.'</td><td><img src="/wfiles/iconsets/16/info.png" vertical-align:middle;"> '.$help.'</td></tr>'."\n";
 
 			echo buildTableEnd();
 			echo buildFormSubmit("Save Settings");
@@ -1761,50 +1758,6 @@ if(isset($_REQUEST['_menu'])){
 				echo "<tr valign=\"top\"><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
             	}
             echo '</table>'."\n";
-			break;
-		case 'svn':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/subversion.png" alt="svn update" /> WaSQL SVN Update</div>'."\n";
-			if(isset($_REQUEST['_update']) && $_REQUEST['_update']==1){
-				$wpath=getWasqlPath();
-				$cmd="svn update \"{$wpath}\"";
-				$res = cmdResults($cmd);
-				if(isset($res['stdout'])){
-					echo nl2br($res['stdout']);
-                	}
-            	}
-			$info=svnInfo();
-			if(!is_array($info) || !isset($info['head']) || !isset($info['local'])){
-				echo "<div><img src=\"/wfiles/warn.gif\" border=\"0\"> Unable to determine SVN version. Perhaps you do not have svn installed or in your path.</div>\n";
-				}
-			elseif($info['local']['repository_uuid']!=$info['head']['repository_uuid']){
-				echo "<div><img src=\"/wfiles/warn.gif\" border=\"0\"> Repository Mismatch</div>\n";
-            	}
-			elseif($info['local']['revision']!=$info['head']['revision']){
-				echo '<table><tr><td><img src="/wfiles/iconsets/32/star.png" style="vertical-align:middle;" alt="updates available" /></td><td>Updates are available</td><td><a class="w_link w_dblue" href="/'.$PAGE['name'].'?_menu=svn&_update=1"><img src="/wfiles/iconsets/32/down.png" style="vertical-align:middle;" alt="update now" /> Update Now</a></td></tr></table>'."\n";
-            	echo '<br clear="both">'."\n";
-				echo '<table class="table table-striped table-bordered">'."\n";
-				echo '	<tr><th colspan="2">LOCAL Revision</th></tr>'."\n";
-				foreach($info['local'] as $key=>$val){
-					echo '	<tr><td class="w_align_left"><b>'.ucwords(str_replace('_',' ',$key)).'</b></td><td>'.$val.'</td></tr>'."\n";
-                	}
-				echo '	<tr><th colspan="2">HEAD Revision</th></tr>'."\n";
-				foreach($info['head'] as $key=>$val){
-					echo '	<tr><td class="w_align_left"><b>'.ucwords(str_replace('_',' ',$key)).'</b></td><td>'.$val.'</td></tr>'."\n";
-                	}
-                echo '</table>'."\n";
-            	}
-            else{
-				echo '<table><tr><td><img src="/wfiles/iconsets/32/checkmark.png" style="vertical-align:middle;" alt="up to date" /></td><td>Up to date</td></tr></table>'."\n";
-            	echo '<br clear="both">'."\n";
-				echo '<table class="table table-striped table-bordered">'."\n";
-				echo '	<tr><th colspan="2">Revision Info</th></tr>'."\n";
-				foreach($info['local'] as $key=>$val){
-					echo '	<tr><td class="w_align_left"><b>'.ucwords(str_replace('_',' ',$key)).'</b></td><td>'.$val.'</td></tr>'."\n";
-                	}
-                echo '</table>'."\n";
-				}
-			echo '<p>'."\n";
-            //echo printValue($info);
 			break;
 		case 'stats':
 			//Site Stats from the _access table
@@ -1920,7 +1873,7 @@ if(isset($_REQUEST['_menu'])){
 					$error=0;
 					if(is_array($_SESSION['admin_errors']) && count($_SESSION['admin_errors'])){
 						echo '<div class="w_padding w_left">'."\n";
-						echo '	<div class="w_bold"><img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="error" /> Error Adding Table:</div>'."\n";
+						echo '	<div class="w_bold"><span class="icon-warning w_danger w_bold"></span> Error Adding Table:</div>'."\n";
 						foreach($_SESSION['admin_errors'] as $adderror){
 							echo "	<div class=\"w_marginleft w_red w_bold\"> - {$adderror}</div>\n";
                     	}
@@ -1996,7 +1949,7 @@ if(isset($_REQUEST['_menu'])){
                     	$xtables=adminGetSynchronizeTables($CONFIG['dbname_stage']);
                     	if(in_array($_REQUEST['_table_'],$xtables)){
 							echo '<div class="w_bold">'."\n";
-							echo '	<img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" />'."\n";
+							echo '	<span class="icon-warning w_danger w_bold"></span>'."\n";
 							echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'."\n";
 							echo '</div>'."\n";
 						}
@@ -2951,14 +2904,14 @@ if(isset($_REQUEST['_menu'])){
 				$pwscore=passwordScore($pw);
 				if($recs[$i]['utype']==0){
 					//admins must have at 10/10 to get green
-					if($pwscore == 10){$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/checkmark.png" class="w_middle" alt="success" /> '.$pwscore.'/10';}
-					elseif($pwscore >= 8){$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" /> '.$pwscore.'/10';}
-					else{$recs[$i]['pw_score']=$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/x.png" class="w_middle" alt="fail" /> '.$pwscore.'/10';}
+					if($pwscore == 10){$recs[$i]['pw_score']='<span class="icon-mark w_success w_bold"></span> '.$pwscore.'/10';}
+					elseif($pwscore >= 8){$recs[$i]['pw_score']='<span class="icon-warning w_warning w_bold"></span> '.$pwscore.'/10';}
+					else{$recs[$i]['pw_score']=$recs[$i]['pw_score']='<span class="icon-cancel w_danger w_bold"></span> '.$pwscore.'/10';}
 				}
 				else{
-					if($pwscore >= 8){$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/checkmark.png" class="w_middle" alt="success" /> '.$pwscore.'/10';}
-					elseif($pwscore >= 4){$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" /> '.$pwscore.'/10';}
-					else{$recs[$i]['pw_score']=$recs[$i]['pw_score']='<img src="/wfiles/iconsets/16/x.png" class="w_middle" alt="fail" /> '.$pwscore.'/10';}
+					if($pwscore >= 8){$recs[$i]['pw_score']='<span class="icon-mark w_success w_bold"></span> '.$pwscore.'/10';}
+					elseif($pwscore >= 4){$recs[$i]['pw_score']='<span class="icon-warning w_warning w_bold"></span> '.$pwscore.'/10';}
+					else{$recs[$i]['pw_score']=$recs[$i]['pw_score']='<span class="icon-cancel w_danger w_bold"></span> '.$pwscore.'/10';}
 				}
 				$ctime=time();
 				$recs[$i]['created']=verboseTime($ctime-$recs[$i]['_cdate_utime']);
@@ -4045,26 +3998,26 @@ function adminMenu(){
 	//WaSQL
 	$rtn .= '		<li class="dir"><a href="#">'.adminMenuIcon('/wfiles/wasql_admin.png').'</a>'."\n";
 	$rtn .= '        	<ul>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gears"></span> Settings</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> About</a><hr size="1"></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit">'.adminMenuIcon('/wfiles/postedit.gif').' PostEdit Manager</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big"></span> Settings</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big"></span> Documentation</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big"></span> About</a><hr size="1"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor" class="w_bold">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning"></span> Usage Stats</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail"></span> Send Email</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow"></span> List Font Icons</a></li>'."\n";
-    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image"></span> List IconSets</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> List Font Icons</a></li>'."\n";
+    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List IconSets</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities">&#128291; HTML Entities</a><hr size="1"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-site-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
-	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug"></span> Report a Bug</a></li>'."\n";
+	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug w_big"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
@@ -4408,7 +4361,7 @@ function syncGetChanges($stables=array()){
 	foreach($info['db_tables'] as $table){
 		$fields=adminGetSynchronizeFields($table);
 		if(!is_array($fields)){
-			echo '<div class="w_red"><img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" /> '.$table.' has no sync fields defined.</div>'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span> '.$table.' has no sync fields defined.</div>'."\n";
 			continue;
 		}
 		//determine the field to use as a name field.
@@ -4417,7 +4370,7 @@ function syncGetChanges($stables=array()){
 			if(in_array($checkfield,$fields)){$namefield=$checkfield;break;}
 		}
 		if(!isset($namefield)){
-			echo '<div class="w_red"><img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" />'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'."\n";
 			echo "	No namefield specified in stage for {$table}:".implode(', ',$fields)."<br />\n";
 			echo "	One of the following fields must be in the table and marked as syncronize in the meta data:".implode(', ',$checkfields)."<br />\n";
 			echo '</div>'."\n";
@@ -4443,7 +4396,7 @@ function syncGetChanges($stables=array()){
 			if(in_array($checkfield,$fields)){$namefield=$checkfield;break;}
 		}
 		if(!isset($namefield)){
-			echo '<div class="w_red"><img src="/wfiles/iconsets/16/alert.png" class="w_middle" alt="alert" />'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'."\n";
 			echo "	No namefield specified in stage for {$table}:".implode(', ',$fields)."<br />\n";
 			echo "	One of the following fields must be in the table and marked as syncronize in the meta data:".implode(', ',$checkfields)."<br />\n";
 			echo '</div>'."\n";
