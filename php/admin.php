@@ -1277,50 +1277,6 @@ if(isset($_REQUEST['_menu'])){
 		case 'reports':
 			echo adminViewPage($_REQUEST['_menu']);
 		break;
-		case 'charset':
-			global $CONFIG;
-			$cmessage='';
-			if(isset($_REQUEST['_charset']) && strlen($_REQUEST['_charset'])){
-				$cmessage .= '<h3>'.$_REQUEST['_charset'].' conversion results:</h3><hr>'."\n";
-				$tables=getDBTables();
-				foreach($tables as $table){
-					$runsql='ALTER TABLE '.$table.' CONVERT TO CHARACTER SET '.$_REQUEST['_charset'];
-					$cmessage .= 'Converting Table '.$table.'...'."\n";
-					$ck=executeSQL($runsql);
-					if(isset($ck['result'])){
-						if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
-						else{$cmessage .= 'SUCCESS<br>'."\n";}
-						}
-					elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
-					else{$cmessage .= 'SUCCESS<br>'."\n";}
-	            	}
-	            $runsql='ALTER DATABASE '.$CONFIG['dbname'].' CHARACTER SET '.$_REQUEST['_charset'];
-				$cmessage .= 'Converting Database '.$CONFIG['dbname'].'...'."\n";
-				$ck=executeSQL($runsql);
-				if(isset($ck['result'])){
-					if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
-					else{$cmessage .= 'SUCCESS<br>'."\n";}
-					}
-				elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
-				else{$cmessage .= 'SUCCESS<br>'."\n";}
-		        }
-			$charsets=getDBCharsets();
-			$current_charset=getDBCharset();
-			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'."\n";
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/charset.gif" alt="charsets" /> Available Character Sets that your current Database supports</div>'."\n";
-			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'."\n";
-			echo '			<input type="hidden" name="_menu" value="charset">'."\n";
-			echo '			<select name="_charset">'."\n";
-			foreach($charsets as $charset=>$desc){
-				echo '				<option value="'.$charset.'"';
-				if($charset == $current_charset){echo ' selected';}
-				echo '>'.$desc.'</option>'."\n";
-            	}
-			echo '			</select>'."\n";
-			echo buildFormSubmit('Convert');
-			echo '		</form>'."\n";
-			echo $cmessage;
-			break;
 		case 'editor':
 			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'."\n";
 			echo '	<td class="nowrap">'."\n";
@@ -1774,7 +1730,7 @@ if(isset($_REQUEST['_menu'])){
 					add column to see records and fields for Stage and Live
 					add links to push data: live to stage, stage to live
 			*/
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/table.gif" alt="tables" />Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table w_biggest"></span> Tables</div>'."\n";
 			echo buildFormBegin('',array('_menu'=>'tables','update'=>1));
 			echo '<table class="table table-bordered table-striped sortable">'."\n";
 			echo '<thead>'."\n";
@@ -1846,14 +1802,57 @@ if(isset($_REQUEST['_menu'])){
             	}
             echo '</tbody>'."\n";
 			echo buildTableEnd();
-			echo buildFormSubmit('Update');
+			echo buildFormSubmit('Save Changes','','','icon-save');
 			echo buildFormEnd();
 			break;
 		case 'summary':
+		case 'charset':
 			//Table Summary
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/summary.gif" alt="table status" />Table Status</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_info w_biggest"></span> Table Properties</div>'."\n";
+			$cmessage='';
+			if(isset($_REQUEST['_charset']) && strlen($_REQUEST['_charset'])){
+				$cmessage .= '<h3>'.$_REQUEST['_charset'].' conversion results:</h3><hr>'."\n";
+				$tables=getDBTables();
+				foreach($tables as $table){
+					$runsql='ALTER TABLE '.$table.' CONVERT TO CHARACTER SET '.$_REQUEST['_charset'];
+					$cmessage .= 'Converting Table '.$table.'...'."\n";
+					$ck=executeSQL($runsql);
+					if(isset($ck['result'])){
+						if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
+						else{$cmessage .= 'SUCCESS<br>'."\n";}
+						}
+					elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
+					else{$cmessage .= 'SUCCESS<br>'."\n";}
+	            	}
+	            $runsql='ALTER DATABASE '.$CONFIG['dbname'].' CHARACTER SET '.$_REQUEST['_charset'];
+				$cmessage .= 'Converting Database '.$CONFIG['dbname'].'...'."\n";
+				$ck=executeSQL($runsql);
+				if(isset($ck['result'])){
+					if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
+					else{$cmessage .= 'SUCCESS<br>'."\n";}
+					}
+				elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
+				else{$cmessage .= 'SUCCESS<br>'."\n";}
+		        }
+			$charsets=getDBCharsets();
+			$current_charset=getDBCharset();
+			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'."\n";
+			echo '<div class="w_lblue w_bold"> Available Character Sets:</div>'."\n";
+			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'."\n";
+			echo '			<input type="hidden" name="_menu" value="charset">'."\n";
+			echo '			<select name="_charset">'."\n";
+			foreach($charsets as $charset=>$desc){
+				echo '				<option value="'.$charset.'"';
+				if($charset == $current_charset){echo ' selected';}
+				echo '>'.$desc.'</option>'."\n";
+            	}
+			echo '			</select>'."\n";
+			echo buildFormSubmit('Convert');
+			echo '		</form>'."\n";
+			echo $cmessage;
 			echo listDBRecords(array(
 				'-query'				=>	"show table status",
+				'-hidesearch'				=> 1,
 				'-tableclass'			=> "table table-bordered table-striped",
 				'name_href'				=> "/php/admin.php?_menu=list&_table_=%name%",
 				'data_length_eval'		=>	"return verboseSize(%data_length%);",
@@ -2741,7 +2740,7 @@ if(isset($_REQUEST['_menu'])){
 			//echo printValue($_REQUEST);
 			break;
 		case 'optimize':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_optimize.png" class="w_middle" alt="optimize tables" /> Optimize Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'."\n";
 			$rtn=optimizeDB();
 			echo "<div>Command: {$rtn['command']}</div>\n";
 			echo nl2br($rtn['result']);
@@ -2749,35 +2748,35 @@ if(isset($_REQUEST['_menu'])){
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_backup.png" alt="backups" /> Backups</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backups</div>'."\n";
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
                 	case 'backup':
                 		$dump=dumpDB(requestValue('_table_'));
                 		if(!isset($dump['success'])){
-							echo '<img src="/wfiles/x_red.gif" alt="failed" /> <b>Backup Command Failed</b><br>'."\n";
+							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'."\n";
 							echo '<div style="margin-left:50px;">'."\n";
 							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
 							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'."\n";
 							echo '</div>'."\n";
 						}
 						else{
-							echo '<img src="/wfiles/check.png" alt="success" /> <b>Backup Successful</b><br>'."\n";
+							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'."\n";
 							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
 			            }
                 		break;
 					case 'backup now':
                 		$dump=dumpDB();
                 		if(!isset($dump['success'])){
-							echo '<img src="/wfiles/x_red.gif" alt="failed" /> <b>Backup Command Failed</b><br>'."\n";
+							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'."\n";
 							echo '<div style="margin-left:50px;">'."\n";
 							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
 							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'."\n";
 							echo '</div>'."\n";
 						}
 						else{
-							echo '<img src="/wfiles/check.png" alt="success" /> <b>Backup Successful</b><br>'."\n";
+							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'."\n";
 							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
 			            }
                 		break;
@@ -2798,7 +2797,7 @@ if(isset($_REQUEST['_menu'])){
 			$files=listFilesEx($backupdir,array('name'=>$CONFIG['dbname'].'__'));
 
 			echo buildFormBegin('',array('_menu'=>'backups','func'=>'','-name'=>'backupform'));
-			echo buildFormSubmit('Backup Now','func');
+			echo buildFormSubmit('Backup Now','func','','icon-save');
 			if(is_array($files) && count($files)){
 				$list=array();
 				$filecnt=count($files);
@@ -2807,7 +2806,7 @@ if(isset($_REQUEST['_menu'])){
                     	continue;
 					}
 					$rec=$files[$x];
-	            	$rec['download']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="right"><img src="/wfiles/iconsets/16/download.png" class="w_middle" alt="download" /></a>';
+	            	$rec['download']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="right"><span class="icon-save w_big"></span></a>';
 					$list[]=$rec;
 				}
 				echo '<div style="padding:15px;">'."\n";
@@ -2815,7 +2814,7 @@ if(isset($_REQUEST['_menu'])){
 					'-list'					=>$list,
 					'-fields'				=> "name,download,size_verbose,_cdate,_cdate_age_verbose",
 					'-tableclass'			=> "table table-bordered table-striped",
-					'download_displayname'	=> '<img src="/wfiles/iconsets/16/download.png" border="0" class="w_middle" />',
+					'download_displayname'	=> '<span class="icon-save w_big"> Save</span>',
 					'size_verbose_displayname'	=> 'Size',
 					'_cdate_displayname'	=> 'Date Created',
 					'type_align'			=>'center',
@@ -2824,7 +2823,7 @@ if(isset($_REQUEST['_menu'])){
 					'name_checkbox'			=>1
 					));
 				echo '</div>'."\n";
-				echo buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');");
+				echo buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');",'icon-cancel w_big');
 			}
 			echo buildFormEnd();
 			//echo printValue($_REQUEST);
@@ -2942,7 +2941,7 @@ if(isset($_REQUEST['_menu'])){
 			//$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 			break;
 		case 'grep':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_search.png" alt="database search" /> Database Search</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-search w_grey w_biggest"></span> Database Search</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
 			echo '<table class="table table-striped table-bordered" style="width:600px;">'."\n";
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'."\n";
@@ -2959,7 +2958,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	</tr><tr><th>Text:</th>'."\n";
 			echo '		<td colspan="3"><input type="text" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
 			echo '	</tr></table>'."\n";
-			echo buildFormSubmit('Search Database');
+			echo buildFormSubmit('Search Database','','','icon-search');
 			echo buildFormEnd();
 			echo buildOnLoad("document.grepform._grep_string.focus();");
 			if(isset($_REQUEST['_grep_string']) && strlen($_REQUEST['_grep_string'])){
@@ -3038,7 +3037,7 @@ if(isset($_REQUEST['_menu'])){
             	}
 			break;
 		case 'import':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_import.png" style="vertical-align: middle;" alt="import from file" /> Import from file</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'."\n";
 			$importmsg='';
 			global $progpath;
 			if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
@@ -3145,7 +3144,7 @@ if(isset($_REQUEST['_menu'])){
                 	}
 				}
 			if(isset($_REQUEST['file_error'])){
-				echo '<div class="w_red"><img src="/wfiles/warning.gif" alt="warning" /> '.$_REQUEST['file_error'].'</div>'."\n";
+				echo '<div class="w_red"><span class="icon-cancel w_danger w_big"></span> '.$_REQUEST['file_error'].'</div>'."\n";
             	}
             $progpath=dirname(__FILE__);
 			$filepath="{$progpath}/temp";
@@ -3189,7 +3188,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	</div>'."\n";
 			echo '</div>'."\n";
 			echo '</td></tr>'."\n";
-			echo '<tr><td style="padding-top:25px;">'.buildFormSubmit('Import XML File','do').'</td><td>'.buildFormSubmit('Import CSV File','do').'</td></tr>'."\n";
+			echo '<tr><td style="padding-top:25px;">'.buildFormSubmit('Import XML File','do','','icon-import').'</td><td>'.buildFormSubmit('Import CSV File','do','','icon-import').'</td></tr>'."\n";
 			echo '</table>'."\n";
 			echo '</div>'."\n";
 			echo buildFormEnd();
@@ -3201,9 +3200,9 @@ if(isset($_REQUEST['_menu'])){
 			//echo printValue($_FILES);
 			break;
 		case 'export':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/database_export.png" style="vertical-align: middle;" alt="export to xml" /> Export to xml</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-export w_biggest w_warning"></span> Export to xml</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('_menu'=>"export"));
-			echo '<input id="isapp" type="checkbox" name="isapp" value="1"> <label for="isapp"><img src="/wfiles/iconsets/16/applications.png" width="16" height="16" class="w_middle" alt="export as app" /> Export as an application</label><br />'."\n";
+			echo '<input id="isapp" type="checkbox" name="isapp" value="1"> <label for="isapp"> Export as an application</label><br />'."\n";
 			$tables=getDBTables();
 			echo '<table class="table table-bordered table-striped">'."\n";
 			$cols=array('Table','Schema','Meta','Data');
@@ -3254,7 +3253,7 @@ if(isset($_REQUEST['_menu'])){
         	echo '	</div></td></tr>'."\n";
 			echo buildTableEnd();
 
-			echo buildFormSubmit('Export');
+			echo buildFormSubmit('Export','','','icon-export');
 			echo buildFormEnd();
 			//echo printValue($_REQUEST);
 			break;
@@ -3589,7 +3588,7 @@ function sqlPrompt(){
 	$rtn .= expandAjaxTables();
 	$rtn .= '</div>'."\n";
 	$rtn .= '</td><td width="100%">'."\n";
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><img src="/wfiles/iconsets/16/database_prompt.png" class="w_middle" alt="sql command window" /> SQL Command Window: <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. For help press F1)</span></div>'."\n";
+	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-prompt w_black w_biggest"></span> SQL Command Window: <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. For help press F1)</span></div>'."\n";
 	$rtn .= '<form method="POST" name="sqlprompt_form" action="/php/admin.php" class="w_form" onsubmit="ajaxSubmitForm(this,\'sqlprompt_results\');return false;">'."\n";
 	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
 	$rtn .= '	<input type="hidden" name="_table_" value="_reports">'."\n";
@@ -3776,7 +3775,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_warning w_big"></span> Synchronize Records</a></li>'."\n";
 	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'."\n";
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
