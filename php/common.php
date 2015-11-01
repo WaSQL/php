@@ -1236,7 +1236,7 @@ function buildFormSubmit($val='Submit',$name='',$onclick='',$class=''){
 	$rtn = '<button class="btn btn-default '.$class.'" type="submit" value="'.$val.'"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
-	$rtn .= '>'.$val."</button>";
+	$rtn .= '> '.$val."</button>";
 	return $rtn;
 }
 //---------- begin function buildHtmlBegin-------------------
