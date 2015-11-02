@@ -831,9 +831,10 @@ table th a {
 }
 .w_centerpop_close_top{
 	position:absolute;
-	right:-4px;
-	top:-4px;
-	font-size:20px;
+	right:2px;
+	top:2px;
+	font-size:12px;
+	font-family:arial;
 	cursor:pointer;
 	z-index:9993;
 	color:#58595a;
@@ -846,9 +847,10 @@ table th a {
 }
 .w_centerpop_close_bot{
 	position:absolute;
-	right:-4px;
-	bottom:-4px;
-	font-size:20px;
+	right:2px;
+	bottom:2px;
+	font-size:12px;
+	font-family:arial;
 	cursor:pointer;
 	z-index:9994;
 	color:#58595a;
