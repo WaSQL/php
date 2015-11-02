@@ -2273,7 +2273,29 @@ function buildDBPaging($paging=array()){
 			        		'-table'	=> $paging['-table'],
 							'-where'	=> $where,
 						));
-						//echo $where.printValue($paging).printValue($recs);
+						//check for eval
+						$evals=array();
+						foreach($paging as $pk=>$pv){
+                        	if(preg_match('/^(.+)\_eval$/',$pk,$m)){
+                            	$evals[$m[1]]=$pv;
+							}
+						}
+						if(count($evals)){
+							//echo printValue($evals);exit;
+							foreach($recs as $i=>$rec){
+								foreach($evals as $fld=>$evalstr){
+									foreach($rec as $xfld=>$xval){
+										if(is_array($xfld) || is_array($xval)){continue;}
+										$replace='%'.$xfld.'%';
+					                    $evalstr=str_replace($replace,$rec[$xfld],$evalstr);
+					                	}
+					                $val=evalPHP('<?' . $evalstr .'?>');
+					                $recs[$i][$fld]=$val;
+					                //echo $fld.$evalstr.$val;exit;
+								}
+							}
+						}
+						//echo $where.printValue($paging).printValue($recs);exit;
 						if(is_array($recs)){
 			        		$csv=arrays2csv($recs);
 			        		$sha=sha1($where);
@@ -6101,8 +6123,11 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-bulkedit'])){
         	$paging['-bulkedit']=$params['-bulkedit'];
 		}
-
+		foreach($params as $pk=>$pv){
+        	if(preg_match('/\_eval$/',$pk)){$paging[$pk]=$pv;}
+		}
 		//$rtn .= printValue($paging).printValue($params);
+		//echo printValue($paging).printValue($params);exit;
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
 			$tinfo=getDBTableInfo(array('-table'=>$params['-table']));
