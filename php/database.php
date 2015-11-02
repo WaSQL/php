@@ -2259,13 +2259,13 @@ function buildDBPaging($paging=array()){
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
 				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
-				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search">Search</button>'."\n";
-				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter w_grey"></span><span class="icon-plus w_grey"></span></button>'."\n";
+				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search"> Search</button>'."\n";
+				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'."\n";
 				if(isset($paging['-bulkedit'])){
-                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_danger w_bold"></span></button>'."\n";
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'."\n";
 				}
 				if(!isset($paging['-noexport'])){
-                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');">export</a>'."\n";
+                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');"> export</a>'."\n";
                 	//export
 					if(isset($_REQUEST['_export']) && $_REQUEST['_export']==1){
 			        	$where=getDBWhere($paging);
@@ -2319,7 +2319,7 @@ function buildDBPaging($paging=array()){
 						$dstr="{$dfield} {$doper} {$dval}";
                     	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'."\n";
 					}
-					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'."\n";
+					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'."\n";
 				}
 				$rtn .= '	</div>'."\n";
 				$rtn .= '</div>'."\n";
