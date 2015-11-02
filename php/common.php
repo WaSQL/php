@@ -4915,7 +4915,7 @@ function functionSearch($str,$internal=1,$wasql=1){
 */
 function getAllVersions(){
 	$versions=array(
-		'WaSQL'	=> wasqlVersion(),
+		//'WaSQL'	=> wasqlVersion(),
 		databaseType()	=> getDBVersion()
 		);
 	$funcs=get_defined_functions();
