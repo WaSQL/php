@@ -113,7 +113,7 @@ if(isAdmin() && isset($_REQUEST['_su_']) && isNum($_REQUEST['_su_'])){
 $PAGE['name']='php/admin.php';
 $PAGE['_id']=0;
 $TEMPLATE['_id']=0;
-$wasql_version=wasqlVersion();
+//$wasql_version=wasqlVersion();
 //process actions
 if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
  	if(isset($_REQUEST['processFileUploads']) && $_REQUEST['processFileUploads']=='off'){}
@@ -1260,15 +1260,12 @@ echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'."\n
 if(isset($_SESSION['dbhost_original'])){
 	echo '	<div class="w_pad w_margin w_dblue "><table class="w_nopad"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
 }
-echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
+//echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
 echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
 echo '</div>'."\n";
 echo '<br clear="both" />'."\n";
 echo '<div style="clear:both;float:left;width:100%;"></div>'."\n";
 echo '<div id="admin_body" class="w_pad" style="position:relative;">'."\n";
-if(1==2 && !isset($_SESSION['WASQLUpdateCheck']) || $_REQUEST['_menu']=='about'){
-	echo buildOnload("setProcessing('updatecheck','Checking for updates...');ajaxGet('{$_SERVER['PHP_SELF']}','updatecheck','_menu=updatecheck');");
-}
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
@@ -1312,8 +1309,8 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'iconsets':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/icon.png" alt="list iconsets" /> List Iconsets</div>'."\n";
-			echo '<hr size="1">'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-file-image w_big"></span> List Iconsets</div>'."\n";
+			echo '<hr size="1" style="padding:0px;margin:0px;">'."\n";
 			$iconsets=listIconsets();
 			echo '<table class="table table-striped">'."\n";
 			echo '<tr>';
@@ -1348,7 +1345,7 @@ if(isset($_REQUEST['_menu'])){
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'."\n";
 			echo '<div class="w_bigger"><b>Usage: </b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'."\n";
-			echo '<hr size="1">'."\n";
+			echo '<hr size="1" style="padding:0px;margin:0px;">'."\n";
 			$icons=wasqlFontIcons();
 			$sets=arrayColumns($icons,5);
 			echo buildTableBegin();
@@ -1478,7 +1475,7 @@ if(isset($_REQUEST['_menu'])){
             	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
 			}
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
-			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_lblue w_smallest"><img src="/wfiles/iconsets/16/refresh.png" width="12" height="12" class="w_middle" alt="rebuild"> Rebuild</a></div>'."\n";
+			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_success w_smallest"><span class="icon-refresh"></span> Rebuild</a></div>'."\n";
 			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
 			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
 			echo '			<input type="hidden" name="_type" value="user">'."\n";
@@ -1662,7 +1659,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info"></span> About WaSQL</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info-circled"></span> About WaSQL</div>'."\n";
 			echo '<table class="table table-striped table-bordered">'."\n";
 			//Database Information
 			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'."\n";
@@ -2123,23 +2120,6 @@ if(isset($_REQUEST['_menu'])){
 			ob_end_clean();
 			echo $output;
 			break;
-		case 'reportsOLD':
-			$rec=getDBRecord(array('-table'=>'_reports','_id'=>$_REQUEST['_id']));
-			echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/reports.png" class="w_middle" alt="report" /> Report: '.$rec['name'].'</div>'."\n";
-			$opts=array(
-				'-hidesearch'	=>1,
-				'-tableclass'	=> "table table-bordered table-striped",
-				'-query'		=> evalPHP($rec['query'])
-				);
-			if(strlen($rec['list_options'])){
-            	$json=json_decode(trim($rec['list_options']),true);
-            	//echo "json".printValue($json);
-            	if(is_array($json)){
-                	foreach($json as $key=>$val){$opts[$key]=$val;}
-				}
-			}
-			echo listDBRecords($opts);
-			break;
 		case 'list':
 			if(isset($_REQUEST['_table_'])){
 				//params
@@ -2207,17 +2187,17 @@ if(isset($_REQUEST['_menu'])){
 						$recopts['tablename_align']='right';
 						$recopts['tablename_href']="?_menu=indexes&_table_=%tablename%";
 						$recopts['-row_actions']=array(
-							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&explain=1\');"><img src="/wfiles/iconsets/16/table_index.png" data-tooltip="Explain Query" class="w_middle" alt="explain query" /></a>','function','getDBRecords'),
+							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&explain=1\');"><span class="icon-optimize w_gold w_big" alt="Show Indexes" data-tooltip="Explain Query"></span></a>','function','getDBRecords'),
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&view=1\');"><img src="/wfiles/iconsets/16/sql.png" data-tooltip="View This Query" class="w_middle" alt="view query" /></a>')
 						);
 						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$SETTINGS['wasql_queries_days'].', Time:'.$SETTINGS['wasql_queries_time'].' seconds</div>'."\n";
                 	break;
 				}
 				if(isset($_REQUEST['add_result']['error'])){
-					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" class="w_middle" alt="add failed" /><b class="w_red"> Add Failed:</b> '.printValue($_REQUEST['add_result']).'</div>'."\n";
+					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Add Failed:</b> '.printValue($_REQUEST['add_result']).'</div>'."\n";
                 	}
                 elseif(isset($_REQUEST['edit_result']['error'])){
-					echo '<div class="w_tip w_pad w_border"><img src="/wfiles/iconsets/32/abort.png" class="w_middle" alt="edit failed" /><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'."\n";
+					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'."\n";
                 	}
                 echo '<div style="padding:15px;">'."\n";
 				echo listDBRecords($recopts);
@@ -2253,7 +2233,7 @@ if(isset($_REQUEST['_menu'])){
             echo '		<td style="padding-left:25px;"><a class="w_link w_lblue w_bold" href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> Settings</a></td>'."\n";
             echo '	</tr>'."\n";
             echo buildTableEnd();
-            echo '<hr size="1">'."\n";
+            echo '<hr size="1" style="padding:0px;margin:0px;">'."\n";
 			echo '<div id="synchronize_changes" style="padding:15px;">'."\n";
 			echo adminShowSyncChanges($stables);
 			echo '</div>'."\n";
@@ -2650,7 +2630,7 @@ if(isset($_REQUEST['_menu'])){
             echo '<table class="table table-bordered table-striped table-responsive">'."\n";
             //General Table Settings
             echo '	<tr valign="top">'."\n";
-			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/iconsets/16/generic.png" alt="table settings" /> General Table Settings</th>'."\n";
+			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'."\n";
 			echo '	</tr>'."\n";
 			//synchronize
 			$_REQUEST['synchronize']=$tinfo['synchronize'];
@@ -2683,7 +2663,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	</tr>'."\n";
 			//Table Admin List fields
             echo '	<tr valign="top">'."\n";
-			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/admin.gif" alt="administrator settings" /> Administrator Settings</th>'."\n";
+			echo '		<th colspan="2" class="w_align_left"><span class="icon-user-admin w_danger w_big"></span> Administrator Settings</th>'."\n";
 			echo '	</tr>'."\n";
             echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
@@ -2829,7 +2809,7 @@ if(isset($_REQUEST['_menu'])){
 			//echo printValue($_REQUEST);
 			break;
 		case 'email':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/email.png" style="vertical-align:middle;" alt="email" /> Email</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-mail"></span> Email</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"email",'-name'=>"emailform"));
 			echo '<table class="table table-striped table-bordered">'."\n";
 			echo '	<tr valign="top" class="w_align_left">'."\n";
@@ -2884,7 +2864,7 @@ if(isset($_REQUEST['_menu'])){
 						$ok=wasqlMail(array('to'=>$email,'from'=>$_REQUEST['_from_'],'subject'=>$_REQUEST['_subject_'],'message'=>$_REQUEST['message']));
 						echo " ... ";
 						if(is_array($ok)){echo printValue($ok);}
-						else{echo '<img src="/wfiles/iconsets/16/checkmark.png" style="vertical-align:middle;" alt="" />'."\n";}
+						else{echo '<span class="icon-check w_success"></span>'."\n";}
                     	}
 					echo '</div>'."\n";
 					}
@@ -2893,7 +2873,7 @@ if(isset($_REQUEST['_menu'])){
             echo buildFormEnd();
 			break;
 		case 'user_report':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/user.png" alt="user" /><img src="/wfiles/iconsets/32/charts.png" alt="charts" /> User Report</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-user w_grey"></span><span class="icon-chart-bar w_grey"></span> Password Report</div>'."\n";
 			$recs=getDBRecords(array(
 				'-table'=>'_users',
 				'-order'=>"utype,lastname"
@@ -2924,7 +2904,7 @@ if(isset($_REQUEST['_menu'])){
                 	$recs[$i]['edited'] .= " by {$erec['username']}" ;
 				}
 				$recs[$i]['accessed']=verboseTime($ctime-$recs[$i]['_adate_utime']);
-				$recs[$i]['type']=$recs[$i]['utype']==0?'<img src="/wfiles/iconsets/16/user_admin.png" alt="use admin" />':'<img src="/wfiles/iconsets/16/user.png"alt="user" />';
+				$recs[$i]['type']=$recs[$i]['utype']==0?'<span class="icon-user-admin w_red"></span>':'<span class="icon-user w_grey"></span>';
 
 			}
 			echo listDBRecords(array(
@@ -3390,119 +3370,8 @@ if(isset($_REQUEST['_menu'])){
 			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'."\n";
 			break;
 		case 'files':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/file.gif" alt="file manager" /> File Manager</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-attach"></span> File Manager</div>'."\n";
 			echo fileManager();
-			break;
-		case 'explore':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/files.png" class="w_middle" alt="file explorer" /> File Explorer</div>'."\n";
-			echo fileExplorer();
-			break;
-		case 'domain':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/website.gif" alt="domain search" /> Domain Search</div>'."\n";
-			echo '<div>Enter one domain per line without the .com/net/org extension</div>'."\n";
-			echo buildFormBegin('',array('-name'=>"domainsearch",'_menu'=>"domain"));
-			echo '<textarea name="_domain_name" style="width:250px;height:100px;font-size:9pt;">'.$_REQUEST['_domain_name'].'</textarea><br />'."\n";
-			echo buildFormSubmit("Check Domain Name Availability");
-			echo buildFormEnd();
-			echo buildOnLoad("document.domainsearch._domain_name.focus();");
-			if(isset($_REQUEST['_domain_name']) && strlen($_REQUEST['_domain_name'])){
-				$lines=preg_split('/[\r\n]+/',trim($_REQUEST['_domain_name']));
-				foreach($lines as $line){
-					$domain=str_replace(' ','',trim($line));
-					$results = wsDomainSearch($domain);
-					if(is_array($results)){
-						$name=$results['name'];
-						echo '<div class="w_bold w_big w_dblue">'.$results['name'].'</div>'."\n";
-						echo '<div style="margin-left:25px;">'."\n";
-						unset($results['name']);
-						$regurl='http://www.dreamhost.com/r.cgi?210166/domreg.cgi?domain=';
-						foreach($results as $key=>$val){
-							if(preg_match('/available/i',$val)){
-								$val .= ' <a class="w_link" href="'.$regurl.$name.'.'.$key.'"><img src="/wfiles/iconsets/16/cart.png" alt="buy now" /> Buy now at dreamhost.com</a>';
-								}
-							echo '<div><b>'.$key.':</b> '.$val.'</div>'."\n";
-	                    	}
-	                    echo '</div>'."\n";
-						}
-					}
-            	}
-			break;
-		case 'dictionary':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/dictionary.gif" alt="dictionary" /> Dictionary</div>'."\n";
-			echo buildFormBegin('',array('-name'=>"domainsearch",'_menu'=>"dictionary"));
-			echo '<input type="text" name="_search" style="width:150px;font-size:9pt;">'."\n";
-			echo buildFormSubmit("Lookup");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				echo " Results for \"<b>{$_REQUEST['_search']}</b>\"";
-            	}
-			echo buildFormEnd();
-			echo buildOnLoad("document.domainsearch._search.focus();");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				$results = wsDictionary($_REQUEST['_search']);
-				if(is_array($results)){
-					foreach($results as $result){
-						echo '<div class="w_bold">'.$result['title'].'</div>'."\n";
-						echo '<div class="w_small w_padleft">'.$result['answer'].'</div>'."\n";
-                    	}
-					}
-				else{
-					echo '<div class="w_red">'.$results.'</div>'."\n";
-                	}
-            	}
-			break;
-		case 'thesaurus':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/thesaurus.gif" alt="thesaurus" /> Thesaurus</div>'."\n";
-			echo buildFormBegin('',array('-name'=>"domainsearch",'_menu'=>"thesaurus"));
-			echo '<input type="text" name="_search" style="width:150px;font-size:9pt;">'."\n";
-			echo buildFormSubmit("Lookup");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				echo " Results for \"<b>{$_REQUEST['_search']}</b>\"";
-            	}
-			echo buildFormEnd();
-			echo buildOnLoad("document.domainsearch._search.focus();");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				$results = wsThesaurus($_REQUEST['_search']);
-				if(is_array($results)){
-					foreach($results as $result){
-						echo '<div class="w_bold">'.$result['title'].'</div>'."\n";
-						echo '<div class="w_small w_padleft">'.$result['answer'].'</div>'."\n";
-                    	}
-					}
-				else{
-					echo '<div class="w_red">'.$results.'</div>'."\n";
-                	}
-            	}
-			break;
-		case 'php':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/php.gif" alt="php functions" /> PHP Functions</div>'."\n";
-			echo buildFormBegin('',array('-name'=>"domainsearch",'_menu'=>'php'));
-			echo '<input type="text" name="_search" style="width:150px;font-size:9pt;">'."\n";
-			echo buildFormSubmit("Lookup");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				echo " Results for \"<b>{$_REQUEST['_search']}</b>\"";
-            	}
-			echo buildFormEnd();
-			echo buildOnLoad("document.domainsearch._search.focus();");
-			if(isset($_REQUEST['_search']) && strlen($_REQUEST['_search'])){
-				$results = wsPHPDocumentation($_REQUEST['_search'],1);
-				if(is_array($results)){
-					if(isset($results['name']) && is_array($results['syntax'])){
-						echo '<div class="w_bold">'.$results['name'].'</div>'."\n";
-						foreach($results['syntax'] as $syntax){
-							echo '<div class="w_small w_padleft">'.$syntax.'</div>'."\n";
-	                    	}
-                    	}
-                    elseif(is_array($results['matches'])){
-						foreach($results['matches'] as $match){
-							echo '<div class="w_small"><a class="w_link" href="/'.$PAGE['name'].'?_menu=php&_search='.$match.'">'.$match.'</a></div>'."\n";
-                        	}
-						//echo printValue($results);
-						}
-					}
-				else{
-					echo $results;
-                	}
-            	}
 			break;
     	}
    	}
@@ -3731,11 +3600,11 @@ function adminMenu(){
 	$rtn .= '<table class="table table-striped table-bordered">'."\n";
 	$info=array(
 		'Server Host'	=> $_SERVER['HTTP_HOST'],
-		'Database Host'	=> $CONFIG['dbhost'],
-		'Database Name'	=> $CONFIG['dbname'],
-		'Database Type'	=> $CONFIG['dbtype'],
+		'<span class="icon-database w_success"></span> Database Host'	=> $CONFIG['dbhost'],
+		'<span class="icon-database w_success"></span> Database Name'	=> $CONFIG['dbname'],
+		'<span class="icon-database w_success"></span> Database Type'	=> $CONFIG['dbtype'],
 		'waSQL Path'	=> getWasqlPath(),
-		'Username'	=> $USER['username'],
+		'<span class="icon-user w_grey"></span> Username'	=> $USER['username'],
 		'PHP User'	=> get_current_user(),
 		'Server'	=> php_uname()
 	);
@@ -3749,7 +3618,7 @@ function adminMenu(){
 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;">'."\n";
 	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
 	$rtn .= '     			<input type="text" placeholder="help" style="margin:1px;padding:1px;font-size:12px;width:75px;" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
-	$rtn .= '     			<input type="image" src="/wfiles/iconsets/16/help.png" class="w_submit w_middle" alt="search" />'."\n";
+	$rtn .= '     			<button class="btn btn-default" type="submit"><span class="icon-help w_big"></span></button>'."\n";
 	$rtn .= '     		'.buildFormEnd()."</div>\n";
 	//show wpass in menu?
 	if($CONFIG['wpass']){$rtn .= wpassModule();}
@@ -3984,10 +3853,11 @@ function adminMenu(){
 	//WaSQL
 	$rtn .= '		<li class="dir"><a href="#">'.adminMenuIcon('/wfiles/wasql_admin.png').'</a>'."\n";
 	$rtn .= '        	<ul>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big"></span> Settings</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big"></span> Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big"></span> About</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit Manager</a></li>'."\n";
+	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><div style="padding-right:15px;height:15px;display:inline;background-color:#8892bf;border-radius:6px;border:1px solid #4f5b93"></div> Goto PHP.NET</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
@@ -3996,14 +3866,14 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> List Font Icons</a></li>'."\n";
-    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List IconSets</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' Server Vars</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' System Info</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1"></li>'."\n";
+    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' List Server Vars</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' List System Info</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-site-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://www.wasql.com">'.adminMenuIcon('/wfiles/website.gif').' Goto WaSQL.com</a></li>'."\n";
-	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&wasql='.wasqlVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug w_big"></span> Report a Bug</a></li>'."\n";
+	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'."\n";
+	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
@@ -4455,7 +4325,7 @@ function syncGetChanges($stables=array()){
             	$date_live_val=setValue(array($info['recs_live'][$table][$index]['_edate'],$info['recs_live'][$table][$index]['_cdate'],'unknown'));
             	$date_stage_val=setValue(array($stagerec['_edate'],$stagerec['_cdate'],'unknown'));
             	if(!strlen($date_live_val) || strtotime($date_live_val) > strtotime($date_stage_val)){
-					$date_live_val .= ' <img src="/wfiles/iconsets/16/warning.png" width="16" height="16" class="w_middle" title="Warning: Live Record is NEWER!" alt="warning: live record is newer" /> ';
+					$date_live_val .= ' <span class="icon-warning w_danger" title="Warning: Live Record is NEWER!" alt="warning: live record is newer"></span> ';
 				}
 				$stage_userid=$stagerec['_euser'];
 				if(isset($info['users_stage'][$stage_userid]['username'])){$stage_user=$info['users_stage'][$stage_userid]['username'];}
@@ -4781,7 +4651,7 @@ function editorNavigation(){
 	$title=$ico.' Templates ('.count($recs).')';
 	$expand='';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_templates\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle" alt="add new" /> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_templates\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
 	$expand .= buildTableBegin(1,1,1);
 	$expand .= buildTableTH(array('ID','Name'),array('thead'=>1));
 	$expand .= '	<tbody>'."\n";
@@ -4797,7 +4667,7 @@ function editorNavigation(){
 	$ico='<img src="/wfiles/_pages.gif" class="w_middle" alt="pages" />';
 	$title=$ico.' Pages ('.count($recs).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_pages\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle" alt="add new" /> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_pages\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
 	$expand .= buildTableBegin(1,1,1);
 	$expand .= buildTableTH(array('ID','Name','TID'),array('thead'=>1));
 	$expand .= '	<tbody>'."\n";
@@ -4814,7 +4684,7 @@ function editorNavigation(){
 	$ico=getFileIcon("x.css");
 	$title=$ico.' Custom CSS Files ('.count($files).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=css\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle" alt="add new" /> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=css\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
 	foreach($files as $file){
     	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
 	}
@@ -4826,7 +4696,7 @@ function editorNavigation(){
 	$ico=getFileIcon("x.js");
 	$title=$ico.' Custom Js Files ('.count($files).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=js\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle" alt="add new" /> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=js\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
 	foreach($files as $file){
     	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
 	}
