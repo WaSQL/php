@@ -2030,7 +2030,7 @@ function submitFormAlert(msg,popup,timer){
 	if(undefined == popup){popup=0;}
 	if(popup){
 		html='';
-		html+='<div class="w_centerpop_title" style="background:#d50000;"><img src="/wfiles/iconsets/16/alert.png" alt="errors" class="w_middle"> Error Processing Request</div>'+"\n";
+		html+='<div class="w_centerpop_title"><span class="icon-warning w_danger"></span> Error Processing Request</div>'+"\n";
 		html+= '<div class="w_centerpop_content">'+"\n";
 		html+= '	<div class="w_big w_dblue"> - '+msg+'</div>'+"\n";
 		html+= '	<div class="w_smallest w_right w_lblue" style="margin-right:20px;" id="centerpop2_countdown">4</div>'+"\n";
