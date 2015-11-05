@@ -936,7 +936,7 @@ if(isset($_REQUEST['_menu'])){
                 	$_REQUEST['note_width']=300;
                 	$_REQUEST['note_height']=100;
                 	$_REQUEST['-onsubmit']="ajaxSubmitForm(this,'centerpop');return false;";
-                	$_REQUEST['-savebutton'] = '<input style="padding-left:23px;background:url(/wfiles/iconsets/16/synchronize_push.png);background-repeat:no-repeat;background-position: 5px;" type="submit" class="w_bold w_round" onclick="document.sync_verify_form._action.value=\'ADD\';" value="Push Changes Live">'."\n";
+                	$_REQUEST['-savebutton'] = '<button type="input" class="btn btn-default" onclick="document.sync_verify_form._action.value=\'ADD\';"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'."\n";
 					//echo printValue($_REQUEST);
 					if($CONFIG['codereview']==1){
 						if($codereview > 0){
@@ -972,13 +972,13 @@ if(isset($_REQUEST['_menu'])){
 								elseif(isset($rec_live[$checkfield])){$namefield=$rec_live[$checkfield];break;}
 							}
 							$link =  '	<div style="float:right;">'."\n";
-							$link .= '		<a class="w_link w_smaller w_red" href="#" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=sync&sync_items[]='.$id.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_push.png" width="16" height="10" alt="synchronize_push" /> Push Change Live</a>'."\n";
-							$link .= '		<a class="w_link w_smaller w_red" href="#" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=cancel&sync_items[]='.$id.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_pull.png" width="16" height="10" alt="synchronize_pull" /> Restore From Live</a>'."\n";
+							$link .= '		<a class="w_link w_smaller w_red" href="#" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=sync&sync_items[]='.$id.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span> Push Change Live</a>'."\n";
+							$link .= '		<a class="w_link w_smaller w_red" href="#" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=cancel&sync_items[]='.$id.'--'.$table.'\');"><span class="icon-sync-pull w_big w_danger"></span> Restore From Live</a>'."\n";
 
 							$link .= '	</div>';
-							echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/synchronize_diff.png" class="w_middle" width="16" height="16" alt="synchronize_diff" /> '.$table.' Record Diff</div>'."\n";
+							echo '<div class="w_centerpop_title"><span class="icon-sync-diff w_big w_info"></span> '.$table.' Record Diff</div>'."\n";
 							echo '<div class="w_centerpop_content">'."\n";
-							echo "<div class=\"w_tip w_big w_pad\">{$link}<img src=\"/wfiles/iconsets/16/synchronize_diff.png\" width=\"16\" height=\"16\" class=\"w_middle\" alt=\"synchronize_diff\" /> Diff for <b>{$table}</b> table <b>{$namefield}</b>  record <b>{$id}</b></div>\n";
+							echo "<div class=\"w_tip w_big w_pad\">{$link}<span class=\"icon-sync-diff w_big w_info\"></span> Diff for <b>{$table}</b> table <b>{$namefield}</b>  record <b>{$id}</b></div>\n";
 							$finfo=getDBFieldInfo("{$db_stage}.{$table}",1);
 							$diffs=array();
 							foreach($rec_stage as $field=>$val){
@@ -1026,9 +1026,9 @@ if(isset($_REQUEST['_menu'])){
 						$arr_stage=preg_split('/[\r\n]+/', $txt_stage);
 						$arr_live=preg_split('/[\r\n]+/', $txt_live);
 						$link=' <a class="w_link w_smaller w_red" href="#" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=synchronize&sync+action=sync&sync_items[]=schema--'.$table.'\');"><span class="icon-sync w_warning w_big w_bold"></span> sync now</a>';
-						echo '<div class="w_centerpop_title"><img src="/wfiles/iconsets/16/synchronize_diff.png" class="w_middle" width="16" height="16" alt="Schema Diff" /> '.$table.' Schema Diff</div>'."\n";
+						echo '<div class="w_centerpop_title"><span class="icon-sync-diff w_big w_info"></span> '.$table.' Schema Diff</div>'."\n";
 						echo '<div class="w_centerpop_content">'."\n";
-						echo diffText($arr_stage,$arr_live, "<img src=\"/wfiles/iconsets/16/synchronize_diff.png\" width=\"16\" height=\"16\" class=\"w_middle\" alt=\"Schema Diff\" /> Schema Diff for {$table} table",$link);
+						echo diffText($arr_stage,$arr_live, "<span class=\"icon-sync-diff w_big w_info\"></span> Schema Diff for {$table} table",$link);
                 		echo '</div>'."\n";
 						break;
                 	case 'sync':
@@ -1736,7 +1736,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '		<th>Tablename</th>'."\n";
 			echo '		<th>Records</th>'."\n";
 			echo '		<th>Fields</th>'."\n";
-			echo '		<th>Group</th>'."\n";
+			echo '		<th><span class="icon-group w_success w_big"></span> Group</th>'."\n";
 			echo '		<th>Description</th>'."\n";
 			echo '	</tr>'."\n";
 			echo '</thead>'."\n";
@@ -1782,8 +1782,8 @@ if(isset($_REQUEST['_menu'])){
 						'<a style="display:block;" class="w_link w_lblue" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
 						$rec['records'],
 						$rec['fields'],
-						$rec['group'],
-						$rec['desc'],
+						'WaSQL',
+						'Internal WaSQL Table',
 						));
 				}
 				else{
@@ -1792,8 +1792,8 @@ if(isset($_REQUEST['_menu'])){
 						'<a style="display:block;" class="w_link w_lblue" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
 						$rec['records'],
 						$rec['fields'],
-						'<input type="text" name="g_'.$rec['name'].'" style="width:120px;" maxlength="50" value="'.$rec['group'].'">',
-						'<input type="text" name="d_'.$rec['name'].'" style="width:300px;" maxlength="255" value="'.$rec['desc'].'">',
+						'<input type="text" name="g_'.$rec['name'].'" class="form-control" style="width:100%" maxlength="50" value="'.$rec['group'].'">',
+						'<input type="text" name="d_'.$rec['name'].'" class="form-control" style="width:100%" maxlength="255" value="'.$rec['desc'].'">',
 						));
 				}
             	}
@@ -2651,7 +2651,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			echo '			<div style="width:150px">'."\n";
-			echo '				<div data-tooltip="Allows grouping in admin table menu."><img src="/wfiles/iconsets/16/group.png" alt="table group" /> Table Group</div>'."\n";
+			echo '				<div data-tooltip="Allows grouping in admin table menu."><span class="icon-group w_success w_big"></span> Table Group</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tablegroup')."\n";
 			echo '			</div>'."\n";
 			echo '		</td>'."\n";
@@ -3357,8 +3357,8 @@ if(isset($_REQUEST['_menu'])){
 				}
 				else{
                 	//same fields - allow actions
-                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync to live\\r\\nDescription: Drop all records on LIVE and move all records on STAGE to LIVE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=push&tablename='.$tablename.'\');}return false;" href="#push" class="w_link w_lblue" style="margin-left:15px;"><img src="/wfiles/iconsets/16/synchronize_push.png" class="w_middle" alt="sync to live" />sync to live</a>'."\n";
-                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync from live\\r\\nDescription: Drop all records on STAGE and move all records on LIVE to STAGE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=pull&tablename='.$tablename.'\');}return false;" href="#pull" class="w_link w_lblue" style="margin-left:15px;"><img src="/wfiles/iconsets/16/synchronize_pull.png" class="w_middle" alt="sync from live" />sync from live</a>'."\n";
+                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync to live\\r\\nDescription: Drop all records on LIVE and move all records on STAGE to LIVE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=push&tablename='.$tablename.'\');}return false;" href="#push" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-push w_big w_warning"></span> sync to live</a>'."\n";
+                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync from live\\r\\nDescription: Drop all records on STAGE and move all records on LIVE to STAGE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=pull&tablename='.$tablename.'\');}return false;" href="#pull" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-pull w_big w_danger"></span> sync from live</a>'."\n";
 				}
 				echo '	</td>'."\n";
             	echo '</tr>'."\n";
@@ -3679,7 +3679,7 @@ function adminMenu(){
 	//now show groups
 	foreach($group_tables as $group=>$gtables){
 		sort($gtables);
-		$rtn .= '				<li class="dir"><a href="#" onclick="return false;">'.adminMenuIcon('/wfiles/iconsets/16/group.png').' '.$group.' Tables</a><ul>'."\n";
+		$rtn .= '				<li class="dir"><a href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> '.$group.' Tables</a><ul>'."\n";
 		foreach($gtables as $table){
 			if(preg_match('/^\_/',$table)){continue;}
 			$lname=strtolower($table);
@@ -3929,8 +3929,8 @@ function tableOptions($table='',$params=array()){
 		'drop'		=> array("Delete Table",'icon-erase w_danger w_big'),
 		'truncate'	=> array("Truncate Table",'icon-blank w_warning w_big'),
 		'indexes'	=> array("Show Indexes",'icon-optimize w_gold w_big'),
-		'backup'	=> array("Backup Table",'icon-save w_grey w_big'),
-		'model'		=> array("Triggers",'icon-toggle-on w_black w_big'),
+		'backup'	=> array("Backup Table",'icon-save w_black w_big'),
+		'model'		=> array("Triggers",'icon-toggle-on w_grey w_big'),
 //		'schema'	=> array("Schema",'table_truncate'),
 		'properties'=> array("Properties",'icon-properties w_grey w_big'),
 		'list'		=> array("List Records",'icon-list w_default w_big'),
@@ -3994,7 +3994,7 @@ function tableOptions($table='',$params=array()){
 		        }
 		    if(is_array($recs) && count($recs)){
 	        	$menu=$_REQUEST['_menu'];
-	        	$rtn .= '						<li class="dir"><a class="w_link" href="#" onclick="return false;">'.adminMenuIcon('/wfiles/iconsets/16/group.png').' Group with</a>'."\n";
+	        	$rtn .= '						<li class="dir"><a class="w_link" href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> Group with</a>'."\n";
 	        	$rtn .= '							<ul>'."\n";
 	        	foreach($recs as $rec){
 	            	$rtn .= '								<li><a class="w_link" href="/php/admin.php?_groupwith='.$rec['tablegroup'].'&_menu='.$menu.'&_table_='.$table.'">'.$rec['tablegroup'].'</a></li>'."\n";
@@ -4285,7 +4285,7 @@ function syncGetChanges($stables=array()){
             	if(!isNum($stagerec['_euser'])){$stage_userid=$stagerec['_cuser'];}
 				if(isset($info['users_stage'][$stage_userid]['username'])){$stage_user=$info['users_stage'][$stage_userid]['username'];}
             	else{$stage_user='Unknown';}
-				$actions=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_push.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Push change Live" alt="push change live" /></a>';
+				$actions=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
             	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				$for="inp_{$index}_{$table}";
             	$stage_date=setValue(array($stagerec['_edate'],$stagerec['_cdate'],'unknown'));
@@ -4318,8 +4318,8 @@ function syncGetChanges($stables=array()){
             	//changes found
             	$changestr=implode("\n",$changes);
             	$for="inp_{$index}_{$table}";
-            	$actions='<label style="cursor:pointer" for="'.$for.'" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_table&diff_table='.$table.'&diff_id='.$index.'\');"><img src="/wfiles/iconsets/16/synchronize_diff.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Compare Differences" alt="compare differences" /></label>';
-            	$actions.=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><img src="/wfiles/iconsets/16/synchronize_push.png" style="margin:0 2px 0 2px;padding:0 2px 0 2px;" title="Push change Live" alt="push change live" /></a>';
+            	$actions='<label style="cursor:pointer" for="'.$for.'" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_table&diff_table='.$table.'&diff_id='.$index.'\');"><span class="icon-sync-diff w_big w_info"></span></label>';
+            	$actions.=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
             	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				//check to see if live is newer - if so place an alert icon
             	$date_live_val=setValue(array($info['recs_live'][$table][$index]['_edate'],$info['recs_live'][$table][$index]['_cdate'],'unknown'));
@@ -4390,7 +4390,7 @@ function syncGetChanges($stables=array()){
 		}
 		elseif($rec['stage'] != $rec['live']){
 			//table schema has changed in stage
-			$actions='<a href="#" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><img src="/wfiles/iconsets/16/synchronize_diff.png" title="diff" alt="diff" /></a>';
+			$actions='<a href="#" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><span class="icon-sync-diff w_big w_info"></span></a>';
 			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-properties w_danger" title="properties"></span></a>';
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
@@ -4484,8 +4484,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'."\n";
-	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><img src="/wfiles/iconsets/16/synchronize_push.png" border="0" alt="push"> Push Changes Live</button>'."\n";
-	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><img src="/wfiles/iconsets/16/synchronize_pull.png" border="0" alt="restore"> Restore from Live</button>'."\n";
+	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'."\n";
+	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'."\n";
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }
