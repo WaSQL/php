@@ -4023,13 +4023,13 @@ function tableOptions($table='',$params=array()){
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class.=' active';}
 				$rtn .= '	<td><button type="button" style="line-height:1.2;padding:5px; margin-right:3px;" data-tooltip_position="bottom" data-tooltip="'.$title.'" class="'.$class.'"';
 				if($option == 'truncate'){
-					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Purge all records from '.$table.' table?\\r\\nTHIS IS IRREVERSIBLE!!!\\r\\n\\r\\n Click OK to confirm.\');"';
+					$rtn .= ' onclick="if(confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Purge all records from '.$table.' table?\\r\\nTHIS IS IRREVERSIBLE!!!\\r\\n\\r\\n Click OK to confirm.\')){window.location=\''.$href.'\';}"';
 		            }
 		        elseif($option == 'drop'){
-					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Permanently Delete '.$table.' table and all records in it?\\r\\n\\r\\nClick OK to confirm.\');"';
+					$rtn .= ' onclick="if(confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Permanently Delete '.$table.' table and all records in it?\\r\\n\\r\\nClick OK to confirm.\')){window.location=\''.$href.'\';}"';
 		            }
 		        elseif($option == 'rebuild'){
-					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DROP and REBUILD this table back to WaSQL Defaults!!!\\r\\n\\r\\nARE YOU SURE you want to Rebuild the '.$table.' table?\\r\\n\\r\\nClick OK to confirm.\');"';
+					$rtn .= ' onclick="if(confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DROP and REBUILD this table back to WaSQL Defaults!!!\\r\\n\\r\\nARE YOU SURE you want to Rebuild the '.$table.' table?\\r\\n\\r\\nClick OK to confirm.\')){window.location=\''.$href.'\';}"';
 		            }
 		        elseif($option == 'add'){
 					//ajaxAddEditForm(table,id,flds,userparams)
