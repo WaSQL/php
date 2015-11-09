@@ -4179,6 +4179,7 @@ function fileManager($startdir='',$params=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
 	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	loadExtrasJs('html5');
+	global $PAGE;
 	if(isset($params['rights'])){$params['-rights']=$params['rights'];}
 	if(!isset($params['-rights'])){$params['-rights']='all';}
 	if(isset($params['height'])){$params['-height']=$params['height'];}
@@ -4190,7 +4191,7 @@ function fileManager($startdir='',$params=array()){
 	if(!isset($params['-fields'])){$params['-fields']='name,description,size,modified,perms';}
 	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
 	$params['-rights']=strtolower($params['-rights']);
-	global $PAGE;
+
 	$rtn='';
 	//$rtn .= printValue($params);
 	$progpath=dirname(__FILE__);
@@ -4354,7 +4355,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
 	$rtn .= '  <div style="width:400px;padding:25px;">'."\n";
-
+	//$rtn .= $action;
 	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'."\n";
