@@ -3873,7 +3873,7 @@ function adminMenu(){
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-site-git-squared w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'."\n";
-	$rtn .= '     			<li><a href="#" onclick="return iframePopup(\'http://www.wasql.com/bugs?email='.encodeURL($USER['email']).'&php='.getPHPVersion().'&dbtype='.databaseType().'&http_host='.$_SERVER['HTTP_HOST'].'\',{title:\'<span class=icon-bug></span> WaSQL Bug Form\',id:\'bugsform\',drag:1,center:1,iwidth:550,iheight:400});"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'."\n";
+	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
