@@ -8,6 +8,9 @@
 	if(isset($_REQUEST['file'])){
 		$name=decodeBase64($_REQUEST['file']);
 	}
+	if(isset($_REQUEST['sort'])){
+		$git['files']=sortArrayByKey($git['files'],$_REQUEST['sort']);
+	}
 	if(isset($_REQUEST['files']) && is_array($_REQUEST['files'])){
 		$files=array();
     	foreach($_REQUEST['files'] as $i=>$file){
@@ -46,7 +49,7 @@
 		break;
 		case 'pull':
 			$pull=gitPull($gitpath);
-			echo "Pull".printValue($pull);
+			$git['response']=$pull;
 		break;
 		case 'add':
 			if(is_array($files) && count($files)){
@@ -69,32 +72,33 @@
 			}
 		break;
 		case 'commit':
+			$response='';
 			if(is_array($files) && count($files)){
 				$commit='';
 				foreach($files as $file){
 					$file['msg']=trim($file['msg']);
 					if(strlen($file['msg'])){
 						$log=gitCommit($gitpath,$file['msg'],$file['name']);
-						$commit.=nl2br($long);
+						$response.=nl2br($long);
 					}
 					else{
-                    	$commit.="ERROR: Missing Message for {$file['name']}<br>\n";
+                    	$response.="ERROR: Missing Message for {$file['name']}<br>\n";
 					}
 
 				}
-				echo "Commit".printValue($commit);
 				$git=gitStatus($gitpath);
+				$git['response']=$response;
 				setView('default',1);
 				return;
 			}
 		break;
 		case 'push':
 			$push=gitPush($gitpath);
-			echo "Push".printValue($push);
+			$git['response']=$push;
 		break;
 		case 'commit_push':
+			$response='';
 			if(is_array($files) && count($files)){
-				$commit='';
 				foreach($files as $file){
 					$file['msg']=trim($file['msg']);
 					if(!strlen($file['msg']) && isset($_REQUEST['msg']) && strlen($_REQUEST['msg'])){
@@ -102,19 +106,19 @@
 					}
 					if(strlen($file['msg'])){
 						$log=gitCommit($gitpath,$file['msg'],$file['name']);
-						$commit.=nl2br($long);
+						$response.=nl2br($long);
 					}
 					else{
-                    	$commit.="ERROR: Missing Message for {$file['name']}<br>\n";
+                    	$response.="ERROR: Missing Message for {$file['name']}<br>\n";
 					}
 
 				}
-				echo "Commit".printValue($commit);
 				$git=gitStatus($gitpath);
 			}
 			$push=gitPush($gitpath);
-			echo "Push".printValue($push);
+			$response.= $push;
 			$git=gitStatus($gitpath);
+			$git['response']=$response;
 			setView('default',1);
 		break;
 	}
