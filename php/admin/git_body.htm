@@ -3,20 +3,20 @@
 	<div class="row-sm-12">
 		<div>
 			<div class="w_right w_lblue"><?=$git['status'];?></div>
-			<div class="w_bigger w_lblue w_bold"><span class="icon-git"></span> Repo Manager - <?=$git['repo_path'];?></div>
+			<div class="w_bigger w_lblue w_bold"><span class="icon-git w_bigger"></span> WaSQL Repository Manager - <?=$git['repo_path'];?></div>
 		</div>
 	</div>
 	<div class="row-sm-12">
 		<form method="post" name="gitform" action="/php/admin.php">
 		<input type="hidden" name="_menu" value="git" />
 		<input type="hidden" name="func" value="" />
-		<input type="hidden" name="sort" value="<?$_REQUEST['sort'];?>" />
+		<input type="hidden" name="sort" value="<?=$_REQUEST['sort'];?>" />
 		<table class="table table-striped table-bordered table-hover table-condensed">
 			<tr>
 				<th><?=buildFormCheckAll('class','file');?></th>
-				<th><a href="/php/admin.php?_menu=git&sort=name">Name</a></th>
+				<th><a href="/php/admin.php?_menu=git&sort=name">File Name</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=ext">Type</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=ext">Status</a></th>
+				<th><a href="/php/admin.php?_menu=git&sort=status">Status</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=size">Size</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=_edate_age">Edited</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=lines">Lines</a></th>
@@ -53,17 +53,35 @@
 				<input type="email" required="1" name="email" value="<?=$config['user.email'];?>" class="form-control input-sm" placeholder="your email" />
 			</div>
 		</div>
-		<div class="row">
+		<div class="row w_padtop">
 			<div class="col-sm-12">
-				<button class="btn btn-warning" type="button" onclick="document.gitform.func.value='pull';document.gitform.submit();"><span class="icon-mail-reply"></span> Pull</button>
-				<button class="btn btn-default" type="submit" onclick="document.gitform.func.value='checkout';"><span class="icon-mail-reply">-</span> Remove Selected Changes</button>
-				<button class="btn btn-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add Selected</button>
-				<button class="btn btn-primary" type="submit" onclick="document.gitform.func.value='commit';"><span class="icon-checkbox"></span> Commit Selected</button>
-				<button class="btn btn-danger" type="submit" onclick="document.gitform.func.value='push';"><span class="icon-mail-forward"></span> Push Committed</button>
-				<button class="btn btn-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-checkbox"><span class="icon-mail-forward"></span></span> Commit and Push Selected</button>
+				<button class="btn btn-warning" type="button" onclick="document.gitform.func.value='pull';document.gitform.submit();"><span class="icon-git-pull"></span> Pull</button>
+				<button class="btn btn-default" type="submit" onclick="document.gitform.func.value='checkout';"><span class="icon-git-remove"></span> Remove Selected Changes</button>
+				<button class="btn btn-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-git-add"></span> Add Selected</button>
+				<button class="btn btn-primary" type="submit" onclick="document.gitform.func.value='commit';"><span class="icon-git-commit"></span> Commit Selected</button>
+				<button class="btn btn-danger" type="submit" onclick="document.gitform.func.value='push';"><span class="icon-git-push"></span> Push Committed</button>
+				<button class="btn btn-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push Selected</button>
 			</div>
 		</div>
 		</form>
+		<div class="row w_padtop">
+			<div class="col-sm-6">
+				<label class="w_bigger">Legend:</label>
+				<div style="margin-bottom:2px;"><label class="btn w_warningback icon-git-pull"></label> - Pull down the latest version from github</div>
+				<div style="margin-bottom:2px;"><label class="btn w_defaultback icon-git-remove" style="border:1px solid #CCC;"></label> - Discard local changes in the files selected</div>
+				<div style="margin-bottom:2px;"><label class="btn w_infoback icon-git-add"></label> - Add new local files to the git repository</div>
+				<div style="margin-bottom:2px;"><label class="btn w_primaryback icon-git-commit"></label> - Commit local changes to github without pushing</div>
+				<div style="margin-bottom:2px;"><label class="btn w_dangerback icon-git-push"></label> - Push committed local changes to github</div>
+				<div style="margin-bottom:2px;"><label class="btn w_successback icon-git-push-commit"></label> - Command and Push local changes to github in the selected files</div>
+			</div>
+			<div class="col-sm-6">
+				<view:_response>
+				<label class="w_bigger">Response:</label>
+				<div style="max-height:200px;overflow:auto;"><?=$git['response'];?></div>
+				</view:_response>
+				<?=renderViewIf(strlen($git['response']),'_response',$git,array('-alias'=>'git'));?>
+			</div>
+		</div>
 	</div>
 </div>
 </view:default>
