@@ -173,7 +173,7 @@ if(isAjax()){
 		break;
 
 		case 'datasync':
-			echo '<div class="w_centerpop_title"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records in '.$_REQUEST['tablename'].'</div>'."\n";
+			echo '<div class="w_centerpop_title"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records in '.$_REQUEST['tablename'].'</div>'."\n";
 			echo '<div class="w_centerpop_content">'."\n";
 			global $SETTINGS;
 			//synchronize must be turned on
@@ -3237,7 +3237,7 @@ if(isset($_REQUEST['_menu'])){
 			//echo printValue($_REQUEST);
 			break;
 		case 'datasync':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Records</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records</div>'."\n";
 			echo '<div class="w_lblue w_smaller">Tool to transfer data between matching tables on stage and live.</div>'."\n";
 			global $SETTINGS;
 			//synchronize must be turned on
@@ -3641,7 +3641,9 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=import"><span class="icon-import w_big w_default w_big"></span> Import</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_warning w_big"></span> Synchronize Records</a></li>'."\n";
+	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
+		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Records</a></li>'."\n";
+	}
 	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'."\n";
@@ -3835,8 +3837,9 @@ function adminMenu(){
 		$rtn .= '		<li>'."\n";
 		$rtn .= '			<a href="/php/admin.php?_menu=synchronize" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span><span class="hidden-xs"> Synchronize</span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=_synchronize"><span class="icon-sync w_danger w_big w_bold"></span> Pending Changes</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync w_warning w_big w_bold"></span> Pending Changes</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-sync w_info w_big w_bold"></span> Sync History</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Database Records</a></li>'."\n";
 		$rtn .= '			</ul>'."\n";
 		$rtn .= '		</li>'."\n";
 		}
