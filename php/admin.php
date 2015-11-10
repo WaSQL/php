@@ -1715,7 +1715,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'stats':
 			//Site Stats from the _access table
 			if(!isDBTable('_access')){$ok=createWasqlTable('_access');}
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/stats.gif" alt="site stats" /> Site Stats</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-chart-line w_warning w_bigger"></span> Usage Stats</div>'."\n";
 			echo getDBSiteStats();
 			//echo printValue($stats);
 			break;
@@ -2415,13 +2415,14 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'postedit':
 			$psize=filesize("$progpath/../postedit/postedit.exe");
-			echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/postedit.gif" alt="postedit manager" /> PostEdit Manager</div>'."\n";
+			echo '<div class="w_bigger w_lblue w_bold"><span class="icon-postedit w_bigger"></span> PostEdit Manager</div>'."\n";
 			echo '<div style="width:800px;">'."\n";
-			echo '<p><b>PostEdit Manager</b> is a windows application that downloads your pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
+			echo '<p><b>PostEdit Manager</b> is a windows application that WaSQL pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
 			echo 'This allows you to use any editor you wish to update your pages and templates.'."\n";
-			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to the website database.'."\n";
+			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to your WaSQL database.'."\n";
 			echo '<div>'."\n";
-			echo '	<a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_zip"><img src="/wfiles/dropdown.gif" alt="download postedit" />Download PostEdit Program</a>'."\n";
+			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If use this link to download it. <br>'."\n";
+			echo ' <a class="w_link" href="/'.$PAGE['name'].'?_menu=postedit_zip"><img src="/wfiles/dropdown.gif" alt="download postedit" />Download PostEdit Program</a>'."\n";
 			echo ' <span style="font-size:9pt;">('.verboseSize($psize).')</span><br>';
 			echo '</div>'."\n";
 			echo '</p><p>'."\n";
@@ -3617,8 +3618,8 @@ function adminMenu(){
 	//search on right
 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;">'."\n";
 	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
-	$rtn .= '     			<input type="text" placeholder="help" style="margin:1px;padding:1px;font-size:12px;width:75px;" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
-	$rtn .= '     			<button class="btn btn-default" type="submit"><span class="icon-help w_big"></span></button>'."\n";
+	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
+	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'."\n";
 	$rtn .= '     		'.buildFormEnd()."</div>\n";
 	//show wpass in menu?
 	if($CONFIG['wpass']){$rtn .= wpassModule();}
