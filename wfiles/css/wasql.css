@@ -679,18 +679,20 @@ table th a {
 .w_align_left{text-align:left;}
 .w_align_right{text-align:right;}
 .w_underline{text-decoration:underline;}
-.w_borderbot{border-bottom:1px solid #000;}
+.w_borderbot, .w_borderbottom{border-bottom:1px solid #000;}
 .w_bordertop{border-top:1px solid #000;}
 
 /*Padding and Margin */
-.w_pad {padding:5px;}
-.w_indent {padding-left:15px;}
-.w_margin {margin:5px;}
-.w_padding {padding:5px;}
-.w_padleft{padding-left:20px;}
-.w_padright{padding-right:20px;}
-.w_marginleft{margin-left:20px;}
-.w_marginright{margin-right:20px;}
+.w_pad, .w_padding {padding:15px;}
+.w_padtop{padding-top:15px;}
+.w_padbot, .w_padbottom{padding-top:15px;}
+.w_padleft, .w_indent{padding-left:15px;}
+.w_padright{padding-right:15px;}
+.w_margin {margin:15px;}
+.w_margintop{margin-top:15px;}
+.w_marginbot, .w_marginbottom{margin-bottom:15px;}
+.w_marginleft{margin-left:15px;}
+.w_marginright{margin-right:15px;}
 
 /* Font Sizes */
 .w_tiny {font-size:7pt;}
