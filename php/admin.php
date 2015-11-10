@@ -3853,12 +3853,13 @@ function adminMenu(){
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	//WaSQL
-	$rtn .= '		<li class="dir"><img src="/wfiles/wasql.png" alt="WaSQL Menu" /></a>'."\n";
+	$rtn .= '		<li class="dir"><a href="#" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help</span></a>'."\n";
 	$rtn .= '        	<ul>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big"></span> Documentation</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><div style="padding-right:15px;height:15px;display:inline;background-color:#8892bf;border-radius:6px;border:1px solid #4f5b93"></div> Goto PHP.NET</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
+	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
