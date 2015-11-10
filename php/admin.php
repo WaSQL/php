@@ -3614,7 +3614,7 @@ function adminMenu(){
 	$rtn .= '	</div>'."\n";
 	$rtn .= '</div>'."\n";
 	//search on right
-	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs">'."\n";
+	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'."\n";
 	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
 	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
 	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'."\n";
@@ -3756,7 +3756,7 @@ function adminMenu(){
 	//Reports
 	if(!isDBTable('_reports')){$ok=createWasqlTable('_reports');}
 	$reports=getDBRecords(array('-table'=>'_reports','active'=>1,'menu'=>'_reports','-limit'=>15,'-order'=>'name'));
-	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu"><span class="icon-chart-pie"></span><span class="hidden-xs"> Reports</span></a>'."\n";
+	$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_reports" class="w_topmenu"><span class="icon-chart-pie"></span><span class="hidden-xs hidden-sm"> Reports</span></a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list w_big"></span> List Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line w_big"></span> Run Reports</a></li>'."\n";
@@ -3798,7 +3798,7 @@ function adminMenu(){
 	if(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1){
 		if(!isDBTable('_cron')){$ok=createWasqlTable('_cron');}
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
-		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-stopwatch w_success w_big"></span><span class="hidden-xs"> Crons</span></a>'."\n";
+		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-stopwatch w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons</span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-stopwatch w_success w_big"></span> List Logs</a></li>'."\n";
@@ -3820,7 +3820,7 @@ function adminMenu(){
 	//Queries
 	if(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger w_big"></span><span class="hidden-xs"> Queries</span></a></li>'."\n";
+		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger w_big"></span><span class="hidden-xs hidden-sm"> Queries</span></a></li>'."\n";
 		}
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
@@ -3835,7 +3835,7 @@ function adminMenu(){
 	//synchronize
 	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
 		$rtn .= '		<li>'."\n";
-		$rtn .= '			<a href="/php/admin.php?_menu=synchronize" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span><span class="hidden-xs"> Synchronize</span></a>'."\n";
+		$rtn .= '			<a href="/php/admin.php?_menu=synchronize" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span><span class="hidden-xs hidden-sm"> Synchronize</span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync w_warning w_big w_bold"></span> Pending Changes</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-sync w_info w_big w_bold"></span> Sync History</a></li>'."\n";
@@ -3846,7 +3846,7 @@ function adminMenu(){
 	$rtn .= '	</ul>'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'."\n";
 	//My Profile
-	$rtn .= '		<li class="dir"><a href="#access" onclick="return false;" class="w_topmenu"><span class="icon-user"></span><span class="hidden-xs"> '.$USER['username'].'</span></a>'."\n";
+	$rtn .= '		<li class="dir"><a href="#access" onclick="return false;" class="w_topmenu"><span class="icon-user"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'</span></a>'."\n";
 	$rtn .= '			<ul style="width:110px;">'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_logout=1"><span class="icon-user" style="color:#CCC;"></span> Log Off</a></li>'."\n";
