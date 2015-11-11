@@ -1435,11 +1435,12 @@ if(isset($_REQUEST['_menu'])){
 			));
 			break;
 		case 'rebuild':
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/rebuild.png" class="w_files" alt="rebuild tables" /> Rebuild waSQL Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'."\n";
 			if(isset($_REQUEST['_table_'])){
             	if(dropDBTable($_REQUEST['_table_'],1)){
 					$ok=createWasqlTables($_REQUEST['_table_']);
-					echo printValue($ok);
+					$_REQUEST['_menu']='list';
+					goto LIST_TABLE;
 				}
 			}
 			else{
@@ -2119,6 +2120,7 @@ if(isset($_REQUEST['_menu'])){
 			echo $output;
 			break;
 		case 'list':
+LIST_TABLE:
 			if(isset($_REQUEST['_table_'])){
 				//params
                 $parts=array();
