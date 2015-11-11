@@ -21,7 +21,8 @@ Feel free to request changes via github.  You can also help by donating to the c
 ##Installation - Windows
 - **Install git**
 	-  you can install git by going to https://git-scm.com/download/win.  This will download the latest git client.  I suggest selecting "Use Git and optional Unix tools from the Windows Command Prompt".  If you are not comfortable with this option, select "Use Git from the Windows Command Prompt" option. Select the default options for the rest.
-	- Open a command prompt and cd to the directory you want to place the wasql folder.  Type the following command and hit enter: 
+- **Install WaSQL**
+	- Open a command prompt and cd to the directory you want to place the wasql folder.  Type the following command and hit enter:
 		- d:\\>git clone https://github.com/WaSQL/v2.git wasql
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
@@ -43,10 +44,31 @@ Feel free to request changes via github.  You can also help by donating to the c
 	</Directory>
 </xmp></pre>
 
-- copy sample.htaccess in the wasql folder to c:\wamp\www\.htaccess.  
-- restart Apache using the icon in the system tray.
+- copy sample.htaccess in the wasql folder to c:\wamp\www\.htaccess.
+- restart Apache using the WAMP icon in the system tray.
 - using the WAMP icon in the system tray, open a MySQL console and hit ENTER (default password in blank). Type the following (changing the user and pass to match the config.xml file)
 	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
 	- mysql>flush privileges;
-- using a browser open http://localhost.  If all went well it will take a second to load and you will see the sample website.
-- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
+	- mysql>create database wasql_sample;
+- **Ready to try**
+	- using a browser open http://localhost.  If all went well it will take a second to load and you will see the sample website.
+	- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
+
+##Installation - Linux
+- **Install git**
+	-  if you don't already have it installed, install git.  Depending on your linux flavor this will be different.
+- **Install WaSQL**
+	- From a telnet prompt cd to the directory you want to place the wasql folder.  I usually place it just below document root (/var/www)  Type the following command and hit enter:
+		- >git clone https://github.com/WaSQL/v2.git wasql
+		- in the wasql folder copy sample.config.xml to config.xml 
+		- edit config.xml. Change the dbname, dbuser, and dbpass if you want.
+		- in the wasql folder copy sample.htaccess to .htaccess
+		- give execute permission to the .sh files and .pl files
+			- chmod 755 *.sh sh/*.sh *.pl
+		- from your document root run dirsetup.sh as follows.  If you places wasql in /var/www and your documentroot was /var/www/html, then from /var/www/html
+			->../wasql/dirsetup.sh
+		- create a blank database called wasql_sample (to match the dbname in config.xml)
+- **Ready to try**
+	- using a browser open your website.  If all went well it will take a second to load and you will see the sample website.
+	- using a browser open your website with /a at the end of the url.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
+
