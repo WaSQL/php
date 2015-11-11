@@ -58,18 +58,20 @@
 		dbhost="localhost"
 		paging="50"
 		dbtype="mysqli"
-        dbname="dbnamehere"
-        dbuser="username"
-        dbpass="password"
-	/>
-	<!-- create a host entry for each domain and subdomain -->
-	<host
-		name="localhost"
-        dbname="dbnamehere"
+        dbname="wasql_sample"
+        dbuser="wasql_dbuser"
+        dbpass="wasql_dbpass"
         minify_css="1"
         minify_js="1"
         markdown="1"
         database_sessions="1"
+        access="all"
+        missing_page="passthru"
+	/>
+	<!-- create a host entry for each domain and subdomain -->
+	<host
+		name="localhost"
+        dbname="wasql_sample"
 	/>
 </hosts>
 
