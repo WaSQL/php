@@ -13,7 +13,7 @@ To use WaSQL effectively you need to know HTML5, CSS3, JavaScript SQL, and PHP. 
 I have found that the best way to learn WaSQL is to download it and use it.  I also recommend reading the functions found in database.php and common.php for starters.
 
 ## Where to Get Help
-If you need professional help with you project please contact me at steve.lloyd@gmail.com.  There are also developers at http://www.devmavin.com that know WaSQL well and have used it often.
+Documentation is built in and searchable via the backend admin Help menu. If you need additional help with your project please contact me at steve.lloyd@gmail.com.  There are also developers at http://www.devmavin.com that know WaSQL well and are willing to help.
 
 ## How can I Help WaSQL become better?
 Feel free to request changes via github.  You can also help by donating to the cause.  Donations can be sent via PayPal to steve.lloyd@gmail.com
