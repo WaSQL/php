@@ -701,28 +701,33 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			break;
 		case 'countries':
-			$fields['code']="char(2) NOT NULL";
-			$fields['name']="varchar(100) NOT NULL";
-			$fields['tlds']="varchar(255) NULL";
-			$fields['currency']="varchar(150) NULL";
-			$fields['calling_code']="varchar(25) NULL";
-			$fields['language']="varchar(255) NULL";
-			$fields['border_countries']="varchar(255) NULL";
-			$fields['ccn3']="char(5) NULL";
-			$fields['code3']="char(5) NULL";
-			$fields['capital']="varchar(150) NULL";
-			$fields['region']="varchar(150) NULL";
-			$fields['subregion']="varchar(150) NULL";
+			$fields['areainsqkm']="real(12,1) NOT NULL Default 0";
+			$fields['capital']="varchar(255) NULL";
+			$fields['continent']="char(5) NULL";
+			$fields['continentname']="varchar(255) NULL";
+			$fields['countrycode']="char(5) NOT NULL";
+			$fields['countryname']="varchar(255) NULL";
+			$fields['currencycode']="varchar(150) NULL";
+			$fields['east']=databaseDataType('bigint')." NULL";
+			$fields['fipscode']="char(5) NOT NULL";
+			$fields['geonameid']="integer NOT NULL Default 0";
+			$fields['isoalpha3']="char(3) NOT NULL";
+			$fields['isonumeric']="integer NOT NULL";
+			$fields['languages']="varchar(255) NULL";
 			$fields['population']="integer NOT NULL Default 0";
-			$fields['latitude']=databaseDataType('bigint')." NULL";
-			$fields['longitude']=databaseDataType('bigint')." NULL";
-			$fields['relevance']="integer NOT NULL Default 0";
 			$fields['population_rank']="integer NOT NULL Default 0";
+			$fields['north']=databaseDataType('bigint')." NULL";
+			$fields['south']=databaseDataType('bigint')." NULL";
+			$fields['west']=databaseDataType('bigint')." NULL";
+			$fields['code']="char(2) NOT NULL";
+			$fields['code3']="char(3) NULL";
+			$fields['name']="varchar(200) NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"geonameid"));
 			addMetaData($table);
 			//populate the table if there is a countries.csv
 			$progpath=dirname(__FILE__);
@@ -738,7 +743,7 @@ function createWasqlTable($table=''){
     	}
 	return 0;
 	}
-//---------- begin function schemaUpdateCountries
+//---------- begin function schemaImportCSV
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -756,99 +761,45 @@ function schemaImportCSV($table,$file){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function schemaUpdateCountries(){
-	$url='https://raw.githubusercontent.com/mledoze/countries/master/countries.json';
+	$url='http://www.geonames.org/countryInfoJSON';
 	$post=postURL($url,array('-method'=>'GET','-ssl'=>true));
 	$countries=json_decode($post['body'], true);
-	//echo printValue($post);exit;
-	if(!isset($countries[0]['name'])){return false;}
-	$recs=array();
-	foreach($countries as $country){
-		if(is_array($country['name'])){
-        	$name=$country['name']['common'];
-        	if(isset($country['name']['native']['common']) && $country['name']['native']['common'] != $name){
-				$name .= " ({$country['name']['native']['common']})";
-			}
-			$country['name']=$name;
-		}
-    	$rec=array('name'=>$country['name']);
-    	$tlds=array();
-    	foreach($country['tld'] as $tld){
-        	$tld=preg_replace('/^\./','',$tld);
-        	$tlds[]=$tld;
-		}
-		$rec['tlds']=implode(':',$tlds);
-		$rec['currency']=implode(':',$country['currency']);
-		$rec['calling_code']=implode(':',$country['callingCode']);
-		if(is_array($country['language'])){
-			$rec['language']=implode(':',$country['language']);
-		}
-		else{$rec['language']=$country['language'];}
-		$rec['border_countries']=implode(':',$country['borders']);
-		$rec['ccn3']=$country['ccn3'];
-		$rec['code']=$country['cca2'];
-		$rec['code3']=$country['cca3'];
-		$rec['capital']=$country['capital'];
-		$rec['region']=$country['region'];
-		$rec['subregion']=$country['subregion'];
-		$rec['population']=$country['population'];
-		$rec['latitude']=$country['latlng'][0];
-		$rec['longitude']=$country['latlng'][1];
-		$rec['relevance']=$country['relevance'];
-		switch(strtoupper($rec['code'])){
-        	case 'US':$rec['tlds']='com';break;
-        	case 'UK':$rec['tlds']='co.uk:uk';break;
-        	case 'AU':$rec['tlds']='co.au:au';break;
-		}
-		//remove blanks
-		foreach($rec as $key=>$val){
-			if(!strlen($val)){unset($rec[$key]);}
-		}
-		$crec=getDBRecord(array(
+	//echo printValue($countries);exit;
+	if(!isset($countries['geonames'][0])){return false;}
+	foreach($countries['geonames'] as $country){
+    	$country=array_change_key_case($country,CASE_LOWER);
+    	$country['code']=$country['countrycode'];
+    	$country['code3']=$country['isoalpha3'];
+    	$country['name']=$country['countryname'];
+    	$country['code']=$country['countrycode'];
+    	$crec=getDBRecord(array(
 			'-table'=>'countries',
-			'code'	=> $rec['code'],
-			'name'	=> $rec['name']
+			'geonameid'	=> $country['geonameid'],
+			'-fields'	=> '_id'
 		));
+		//echo printValue($rec).printValue($country);exit;
+		$country['-table']='countries';
 		if(isset($crec['_id'])){
-        	$rec['-table']='countries';
-        	$rec['-where']="_id={$crec['_id']}";
-        	$ok=editDBRecord($rec);
+        	$country['-where']="_id={$crec['_id']}";
+        	$ok=editDBRecord($country);
 		}
 		else{
-			$crecs=getDBRecords(array(
-				'-table'=>'countries',
-				'code'	=> $rec['code']
-			));
-			if(is_array($crecs) && count($crecs)==1){
-            	$rec['-table']='countries';
-        		$rec['-where']="_id={$crecs[0]['_id']}";
-        		$ok=editDBRecord($rec);
-        		//echo printValue($ok).printValue($rec);
-			}
-			else{
-
-				$rec['-table']='countries';
-				$rec['newid']=addDBRecord($rec);
-				if(!isNum($rec['newid'])){
-					echo printValue($rec['newid']).printValue($rec);exit;
-				}
-			}
+        	$id=addDBRecord($country);
 		}
-		//$recs[]=$rec;
 	}
-	//determine population_rank
+	//determine population_rank based on population
 	$recs=getDBRecords(array(
 		'-table'	=> 'countries',
-		'-order'	=> 'population desc,relevance desc',
-		'-fields'	=> '_id,name,code,population,relevance'
+		'-order'	=> 'population desc',
+		'-fields'	=> '_id'
 	));
 	foreach($recs as $i=>$rec){
 		$rank=$i+1;
     	$ok=executeSQL("update countries set population_rank={$rank} where _id={$rec['_id']}");
-    	$recs[$i]['population_rank']=$rank;
 	}
 	return true;
 }
-//---------- begin function schemaUpdateCountries
+//---------- begin function schemaUpdateStates
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
