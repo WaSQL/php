@@ -2733,6 +2733,21 @@ LIST_TABLE:
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
+					case 'restore':
+						$file=decodeBase64($_REQUEST['file']);
+						if(preg_match('/\.gz$/i',$file)){
+                        	$ok=cmdResults("gunzip '{$file}'");
+                        	echo printValue($ok);
+                        	$file=preg_replace('/\.gz$/i','',$file);
+						}
+						if(is_file($file) && preg_match('/\.sql$/i',$file)){
+							$path=realpath(getWasqlPath());
+							$slash=isWindows()?'\\':'/';
+							$cmd="{$path}{$slash}sh{$slash}db_import.sh {$CONFIG['dbname']} '{$file}'";
+							echo "<div>{$cmd}</div>\n";
+							$ok=cmdResults($cmd);
+						}
+					break;
                 	case 'backup':
                 		$dump=dumpDB(requestValue('_table_'));
                 		if(!isset($dump['success'])){
@@ -2787,15 +2802,16 @@ LIST_TABLE:
                     	continue;
 					}
 					$rec=$files[$x];
-	            	$rec['download']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="right"><span class="icon-save w_big"></span></a>';
+	            	$rec['action']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
+	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=restore&file='.encodeBase64($rec['afile']).'" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\n ARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
 					$list[]=$rec;
 				}
 				echo '<div style="padding:15px;">'."\n";
 				echo listDBRecords(array(
 					'-list'					=>$list,
-					'-fields'				=> "name,download,size_verbose,_cdate,_cdate_age_verbose",
+					'-fields'				=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
 					'-tableclass'			=> "table table-bordered table-striped",
-					'download_displayname'	=> '<span class="icon-save w_big"> Save</span>',
+					'action_displayname'	=> '<span class="icon-download w_big"></span>  <span class="icon-undo w_big"></span> Actions',
 					'size_verbose_displayname'	=> 'Size',
 					'_cdate_displayname'	=> 'Date Created',
 					'type_align'			=>'center',
