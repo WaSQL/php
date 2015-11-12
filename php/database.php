@@ -2739,7 +2739,23 @@ function dumpDB($table=''){
 	if(!is_dir($dump['path'])){buildDir($dump['path']);}
 	$dump['file'] = $CONFIG['dbname'].'__' . date("Y-m-d_H-i-s")  . '.sql';
 	$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
-	if(isMysql() || isMysqli()){
+	if(isset($CONFIG['backup_command'])){
+		$dump['command'] = $CONFIG['backup_command'];
+		$dump['command'] .= " --host={$CONFIG['dbhost']}";
+		if(strlen($CONFIG['dbuser'])){
+			$dump['command'] .= " --user={$CONFIG['dbuser']}";
+			}
+		if(strlen($CONFIG['dbuser'])){
+			$dump['command'] .= " --password={$CONFIG['dbpass']}";
+			}
+		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
+		if(strlen($table)){
+			$dump['command'] .= " {$table}";
+			$dump['file'] = $CONFIG['dbname'].'.'.$table.'_' . date("Y-m-d_H-i-s")  . '.sql';
+			$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
+		}
+	}
+	elseif(isMysql() || isMysqli()){
 		//mysqldump
 		$dump['command'] = isWindows()?"mysqldump.exe":"mysqldump";
 		$dump['command'] .= " --host={$CONFIG['dbhost']}";
@@ -6559,7 +6575,7 @@ function listDBRecords($params=array(),$customcode=''){
 				}
 			elseif(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
 				$cval=$val;
-				$val='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'">';
+				$val='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'"> ';
 				if(!isNum($cval)){$val .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
             	}
 			elseif(isset($params[$fld."_check"]) && $params[$fld."_check"]==1){
