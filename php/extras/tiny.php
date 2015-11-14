@@ -13,6 +13,12 @@ else{
 if(!isDBTable('_tiny')){
 	createWasqlTables(array('_tiny'));
 }
+//---------- begin function tinyUrl --------------------------------------
+/**
+* @describe creates a tinyurl
+* @param url string - URL string to make tiny
+* @return string  - tiny url
+*/
 function tinyUrl($url){
 	//add record to tiny
 	$rec=getDBRecord(array('-table'=>'_tiny','url'=>$url,'-fields'=>'_id'));
