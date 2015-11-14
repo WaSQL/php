@@ -1473,7 +1473,7 @@ if(isset($_REQUEST['_menu'])){
 			else{
             	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
 			}
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger" style="color:#1b68ae;"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
 			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_success w_smallest"><span class="icon-refresh"></span> Rebuild</a></div>'."\n";
 			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
 			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
@@ -3632,14 +3632,15 @@ function adminMenu(){
 	$rtn .= '	</div>'."\n";
 	$rtn .= '</div>'."\n";
 	//search on right
-	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'."\n";
+/* 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'."\n";
 	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
 	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
 	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'."\n";
 	$rtn .= '     		'.buildFormEnd()."</div>\n";
 	//show wpass in menu?
 	if($CONFIG['wpass']){$rtn .= wpassModule();}
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</div>'."\n"; 
+*/
 	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'."\n";
 	//logo
