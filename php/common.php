@@ -2395,15 +2395,15 @@ function setView($name='',$clear=0){
 //---------- begin function
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
+* @author -  added by Jeremy Despain
 */
 function removeViews($htm){
 	global $PAGE;
 	global $CONFIG;
-	global $VIEWS; //added by Jeremy Despain
-	//used for resuable views see below and in renderView() and renderEach();
+	global $VIEWS; //
 	$depth=0;
 	$sha='none';
-	while($depth < 20 && stringContains($htm,'<view:')){
+	while($depth < 50 && stringContains($htm,'<view:')){
 		if(sha1($htm) == $sha){break;}
 		$sha=sha1($htm);
 		$depth++;
@@ -2414,33 +2414,17 @@ function removeViews($htm){
 			1 = the view name
 			2 = the view contents
 		*/
-		
-		/*
-		 	Views that start with _ (<view:_someView>...</view:_someView>)
-		 	will be saved as a view that can be used by renderView();
-		  	Author: Jeremy Despain jeremy.despain@gmail.com 
-		*/
 		if($VIEWS == null ) { $VIEWS = array(); }
 		$cnt=count($removeViewMatches[1]);
+		//save views so they can be used by renderEach and renderView;
         for($i = 0; $i<$cnt; ++$i){
-        	if(stringBeginsWith($removeViewMatches[1][$i], '_')) {
-				$VIEWS[$removeViewMatches[1][$i]] = $removeViewMatches[2][$i];
-				//add pageview comments to saved views if specified
-				if(isset($CONFIG['pageview_comments']) && $CONFIG['pageview_comments']==1){
-					$name=strtolower(trim($removeViewMatches[1][$i]));
-	            	$VIEWS[$removeViewMatches[1][$i]]="<!-- START VIEW:{$name} -->{$VIEWS[$removeViewMatches[1][$i]]}<!-- END VIEW:{$name} -->";
-				}
-			}
-         }
+			$VIEWS[$removeViewMatches[1][$i]] = $removeViewMatches[2][$i];
+        }
 		for($ex=0;$ex<$cnt;$ex++){
 			$replace_str='';
 			$name=strtolower(trim($removeViewMatches[1][$ex]));
 			if(isset($PAGE['setView'][$name]) || ($name=='default' && !isset($PAGE['setView']))){
 				$replace_str=$removeViewMatches[2][$ex];
-				//add pageview comments if specified
-				if(isset($CONFIG['pageview_comments']) && $CONFIG['pageview_comments']==1){
-	            	$replace_str="<!-- START VIEW:{$name} -->{$replace_str}<!-- END VIEW:{$name} -->";
-				}
 			}
 			$htm=str_replace($removeViewMatches[0][$ex],$replace_str,$htm);
 		}
