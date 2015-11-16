@@ -873,6 +873,7 @@ function formSetMultiSelectStatus(fld){
 //fielddataChange(this);
 function fielddataChange(fld){
 	var parentObj=getParentForm(fld);
+	return false;
 	var pname=parentObj.name;
 	var fname=fld.name;
 	var val=fld.value;
