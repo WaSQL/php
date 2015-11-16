@@ -2428,7 +2428,7 @@ function setCenterPopText(cpid,cptext,params){
 	}
 	txt += '</div>'+"\n";
 	//set the text in cpid
-	console.log(txt);
+	//console.log(txt);
 	setText(cpid,txt);
 	//center the object
 	if(params.center){
