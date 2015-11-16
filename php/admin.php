@@ -3402,7 +3402,7 @@ echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
 
-//---------- begin function adminShowSessionLog ----
+//---------- begin function adminViewPage ----
 /**
  * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
