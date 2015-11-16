@@ -718,16 +718,16 @@ table th a {
 .w_gold {color:#ffd700;}
 
 
-.w_blackback  {background:#000;}
-.w_whiteback  {background:#FFF;}
-.w_dblueback, .w_primaryback  {background:#428bca;}
-.w_lblueback, .w_infoback  {background:#5bc0de;}
-.w_redback, .w_dangerback  {background:#d9534f;}
-.w_orangeback, .w_warningback {background:#f0ad4e;}
-.w_greenback, .w_successback  {background:#5cb85c;}
-.w_grayback, .w_greyback {background:#939393;}
-.w_lgrayback, .w_lgreyback {background:#f4f4f4;}
-.w_goldback {background:#ffd700;}
+.w_blackback  {background-color:#000 !important;}
+.w_whiteback  {background-color:#FFF !important;}
+.w_dblueback, .w_primaryback  {background-color:#428bca !important;}
+.w_lblueback, .w_infoback  {background-color:#5bc0de !important;}
+.w_redback, .w_dangerback  {background-color:#d9534f !important;}
+.w_orangeback, .w_warningback {background-color:#f0ad4e !important;}
+.w_greenback, .w_successback  {background-color:#5cb85c !important;}
+.w_grayback, .w_greyback {background-color:#939393 !important;}
+.w_lgrayback, .w_lgreyback {background-color:#f4f4f4 !important;}
+.w_goldback {background-color:#ffd700 !important;}
 .w_gradientorange{
 	[safari|chrome]background: -webkit-gradient(linear,left bottom,left top,color-stop(0.20, #ff7c3e),color-stop(0.70, #ff5400));
 	[firefox]background: -moz-linear-gradient(center bottom,#ff7c3e 20%,#ff5400 70%);
