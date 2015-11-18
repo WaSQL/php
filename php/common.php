@@ -6856,6 +6856,12 @@ function isAudioFile($file=''){
 function isDate($str=''){
 	//use checkdate to validate date
 	if(!strlen(trim($str))){return false;}
+	//must have one of these: ./-
+	$ok=0;
+	if(stringContains($str,'.')){$ok+=1;}
+	if(stringContains($str,'-')){$ok+=1;}
+	if(stringContains($str,'/')){$ok+=1;}
+	if($ok==0){return false;}
 	$time=strtotime($str);
 	if(!strlen($time)|| $time==0){return false;}
 	$m=date('m',$time);
@@ -6863,7 +6869,7 @@ function isDate($str=''){
 	$y=date('Y',$time);
 	return checkdate($m,$d,$y);
 	if(checkdate($m,$d,$y)){return true;}
-	}
+}
 //---------- begin function isDateTime ----------
 /**
 * @describe returns true if string is in a valid datetime format
