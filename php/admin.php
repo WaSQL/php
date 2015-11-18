@@ -265,25 +265,29 @@ if(isAjax()){
 					exit;
 				}
 				else{
-					echo addEditDBForm(array(
+					$addopts=array(
 						'-action'=>'/php/admin.php',
 						'-table'=>$_REQUEST['_table_'],
 						'_table_'=>$_REQUEST['_table_'],
 						'_menu'=>'list',
 						'_sort'=>$_REQUEST['_sort'],
 						'_start'=>$_REQUEST['_start']
-					));
+					);
+					//echo printValue($addopts);
+					echo addEditDBForm($addopts);
 				}
 			}
 			else{
-	    		echo addEditDBForm(array(
+				$addopts=array(
 					'-action'=>'/php/admin.php',
 					'-table'=>$_REQUEST['_table_'],
 					'_table_'=>$_REQUEST['_table_'],
 					'_menu'=>'list',
 					'_sort'=>$_REQUEST['_sort'],
 					'_start'=>$_REQUEST['_start']
-				));
+				);
+				//echo printValue($addopts);
+	    		echo addEditDBForm($addopts);
 			}
 			echo '</div>'."\n";
 			exit;
@@ -437,7 +441,7 @@ if(isAjax()){
 						//table record add
 			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'."\n";
 						echo '<div class="w_centerpop_content">'."\n";
-						echo addEditDBForm(array(
+						$addopts=array(
 							'-table'=>'_pages',
 							'-action'=>$_SERVER['PHP_SELF'],
 							'content_width'=>700,
@@ -447,7 +451,9 @@ if(isAjax()){
 							'emenu'=>'record',
 							'_menu'=>'contentmanager',
 							'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"
-							));
+						);
+						//echo printValue($addopts);
+						echo addEditDBForm($addopts);
 						echo '</div>'."\n";
 					}
 		    		break;
@@ -1951,13 +1957,31 @@ if(isset($_REQUEST['_menu'])){
 						else{
 							echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 							echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'."\n";
-							echo addEditDBForm(array('-action'=>'/php/admin.php','-table'=>$_REQUEST['_table_'],'_table_'=>$_REQUEST['_table_'],'_menu'=>"list",'_sort'=>$_REQUEST['_sort'],'_start'=>$_REQUEST['_start']));
+							$addopts=array(
+								'-action'=>'/php/admin.php',
+								'-table'=>$_REQUEST['_table_'],
+								'_table_'=>$_REQUEST['_table_'],
+								'_menu'=>"list",
+								'_sort'=>$_REQUEST['_sort'],
+								'_start'=>$_REQUEST['_start']
+							);
+							if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+							echo addEditDBForm($addopts);
 						}
 					}
 					else{
 						echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 						echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'."\n";
-						echo addEditDBForm(array('-action'=>'/php/admin.php','-table'=>$_REQUEST['_table_'],'_table_'=>$_REQUEST['_table_'],'_menu'=>"list",'_sort'=>$_REQUEST['_sort'],'_start'=>$_REQUEST['_start']));
+						$addopts=array(
+							'-action'=>'/php/admin.php',
+							'-table'=>$_REQUEST['_table_'],
+							'_table_'=>$_REQUEST['_table_'],
+							'_menu'=>"list",
+							'_sort'=>$_REQUEST['_sort'],
+							'_start'=>$_REQUEST['_start']
+						);
+						if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+						echo addEditDBForm($addopts);
 					}
 				}
             }
