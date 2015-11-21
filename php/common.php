@@ -4375,6 +4375,9 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</div>'."\n";
 		}
 	$rtn .= '	</form>'."\n";
+	if(isset($_REQUEST['file_error'])){
+    	$rtn .= '<div class="w_danger icon-warning"> '.$_REQUEST['file_error'].'</div>'."\n";
+	}
 	$rtn .= '</div>'."\n";
 	if(!$params['-onfinish']){$params['-onfinish']='window.location=window.location;';}
 	if(count($files)==0){
