@@ -2754,7 +2754,7 @@ LIST_TABLE:
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup & Restore</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup or <span class="icon-undo w_danger w_biggest"></span> Restore</div>'."\n";
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
@@ -3686,7 +3686,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt w_big w_default"></span> SQL Prompt</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search w_big w_default"></span> Search</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=backup" onclick="return confirm(\'This will backup the database. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_backup.png').' Backup</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_grey w_big w_default"></span> Backups</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_backups w_big w_default"></span> Backup or <span class="icon-undo w_danger w_big"></span> Restore</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=schema"><img src="/wfiles/schema.gif"> Schema</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=indexes"><img src="/wfiles/indexes.gif"> Indexes</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'."\n";
