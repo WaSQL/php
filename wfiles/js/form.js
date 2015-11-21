@@ -901,15 +901,16 @@ function fielddataChange(fld){
 	//showProperties(parentObj);
 }
 //--------------------------
-function filemanagerEdit(id,page,param){
+function filemanagerEdit(id,formaction,param){
 	//build an html for for changing the name and description of file
 	var obj=getObject(id);
+	if(undefined==obj){return;}
 	var fname=obj.getAttribute('filename');
 	var desc=getText(obj);
 	var htm='';
 	htm += '<div class="w_centerpop_title">File Manager File Edit</div>'+"\n";
 	htm += '<div  style="padding:0 25px 0 25px;">'+"\n";
-	htm += '	<form method="post" action="/'+page+'" onSubmit="return submitForm(this);">'+"\n";
+	htm += '	<form method="post" action="'+formaction+'" onSubmit="return submitForm(this);">'+"\n";
 	htm += '		<div class="row">'+"\n";
 	htm += '			<label for="file_name">Name</label><input type="text" id="file_name" name="file_name" value="'+fname+'" class="form-control">'+"\n";
 	htm += '		</div>'+"\n";
