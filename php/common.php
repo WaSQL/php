@@ -1717,14 +1717,22 @@ function cmdResults($cmd,$args='',$dir=''){
     $stdout=stream_get_contents($pipes[1]);fclose($pipes[1]);
     $stderr=stream_get_contents($pipes[2]);fclose($pipes[2]);
     $rtncode=proc_close($proc);
-    return array(
+    $rtn=array(
     	'cmd'	=> $cmd,
     	'args'	=> $args,
     	'dir'	=> $dir,
 		'stdout'=>$stdout,
         'stderr'=>$stderr,
         'rtncode'=>$rtncode
-        );
+    );
+    //remove blank vals
+    foreach($rtn as $k=>$v){
+    	if(!is_array($v)){
+			if(!strlen($v)){unset($rtn[$k]);}
+    		else{$rtn[$k]=trim($v);}
+		}
+	}
+	return $rtn;
 }
 //---------- begin function copyFile--------------------
 /**
