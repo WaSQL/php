@@ -346,6 +346,7 @@ if(isAjax()){
 				foreach($srecs[0] as $sfield=>$cnt){
 					if($sfield=='_total_'){continue;}
 					$finfo[$sfield]['rec_cnt']=$cnt;
+
 					$finfo[$sfield]['null_cnt']=$tcnt-$cnt;
 					}
 				//show total records for this table
@@ -2753,7 +2754,7 @@ LIST_TABLE:
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backups</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup & Restore</div>'."\n";
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
@@ -2761,15 +2762,22 @@ LIST_TABLE:
 						$file=decodeBase64($_REQUEST['file']);
 						if(preg_match('/\.gz$/i',$file)){
                         	$ok=cmdResults("gunzip '{$file}'");
-                        	echo printValue($ok);
+                        	//echo printValue($ok);
                         	$file=preg_replace('/\.gz$/i','',$file);
 						}
 						if(is_file($file) && preg_match('/\.sql$/i',$file)){
-							$path=realpath(getWasqlPath());
-							$slash=isWindows()?'\\':'/';
-							$cmd="{$path}{$slash}sh{$slash}db_import.sh {$CONFIG['dbname']} '{$file}'";
-							echo "<div>{$cmd}</div>\n";
-							$ok=cmdResults($cmd);
+							$cmds=array(
+								"mysql -h {$CONFIG['dbhost']} --user={$CONFIG['dbuser']} -p{$CONFIG['dbpass']} --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
+								"mysql -h {$CONFIG['dbhost']} --user={$CONFIG['dbuser']} -p{$CONFIG['dbpass']} --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$file}\""
+							);
+							foreach($cmds as $cmd){
+								//echo "<div>{$cmd}</div>\n";
+								$ok=cmdResults($cmd);
+								if(isset($ok['rtncode']) && $ok['rtncode'] != 0){
+									echo printValue($ok);
+									break;
+								}
+							}
 						}
 					break;
                 	case 'backup':
