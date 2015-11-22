@@ -4432,10 +4432,12 @@ function fileManager($startdir='',$params=array()){
 		$uid=$stat['uid'];
 		$gid=$stat['gid'];
 		if(function_exists('posix_getpwuid')){
-        	$uid=@posix_getpwuid($stat['uid']);
+        	$p=@posix_getpwuid($stat['uid']);
+        	$uid=$p['name'];
 		}
 		if(function_exists('posix_getgrgid')){
-        	$gid=@posix_getgrgid($stat['uid']);
+        	$p=@posix_getgrgid($stat['uid']);
+        	$gid=$p['name'];
 		}
 		$owner="{$uid}:{$gid}";
 		//if(is_link($afile)){continue;}
