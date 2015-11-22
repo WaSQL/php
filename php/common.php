@@ -4446,7 +4446,7 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
 			$cspan=count($fields)-2;
-			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block icon-folder-open w_big" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"> '.$file.'</a></td>'."\n";
 			//owner
 			$rtn .= '		<td align="right">'.$owner.'</td>'."\n";
 			//PERMS
@@ -4454,10 +4454,10 @@ function fileManager($startdir='',$params=array()){
 			//actions
 			$rtn .= '		<td class="nowrap">'."\n";
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt="edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'."\n";
 			}
-			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/browsefolder.gif" alt="browse" /></a>'."\n";
+			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold icon-folder-open" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'."\n";
 			$rtn .= '		</td>'."\n";
 			$rtn .= '	</tr>'."\n";
 	    }
@@ -4468,20 +4468,43 @@ function fileManager($startdir='',$params=array()){
             	switch($field){
                 	case 'name':
                 	case 'filename':
+                		$class=' icon-file-doc';
 	                	$ext=strtolower(getFileExtension($file));
-						if(file_exists("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
-						elseif(is_file("{$iconpath}/{$ext}.png")){$icon="{$ext}.png";}
-						elseif(isAudioFile($file)){$icon="audio.gif";}
-						elseif(isVideoFile($file)){$icon="video.gif";}
-						else{$icon="unknown.gif";}
+						if(isImage($file)){$class=' icon-file-image';}
+						elseif(isAudioFile($file)){$class=' icon-file-audio';}
+						elseif(isVideoFile($file)){$class=' icon-file-video';}
+						else{
+                        	switch($ext){
+                            	case 'xls':
+                            	case 'xlsx':
+                            		$class=' icon-file-excel';
+                            	break;
+                            	case 'doc':
+                            	case 'docx':
+                            		$class=' icon-file-word';
+                            	break;
+                            	case 'pdf':
+                            		$class=' icon-file-pdf2';
+                            	break;
+                            	case 'zip':
+                            	case 'gz':
+                            		$class=' icon-file-zip';
+                            	break;
+                            	case 'php':
+                            	case 'pl':
+                            	case 'py':
+                            		$class=' icon-file-code';
+                            	break;
+							}
+						}
 						$previewlink='/'.$PAGE['name'].'?_pushfile='.encodeBase64($afile);
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"><img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" /> '.$file.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link'.$class.'" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"> '.$file.'</a></td>'."\n";
 			            	}
 			            else{
-							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link" href="'.$previewlink.'&-attach=0"><img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" />'.$display.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'."\n";
 			            	}
 
                 		break;
@@ -4512,10 +4535,10 @@ function fileManager($startdir='',$params=array()){
 			}
 			//actions
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap">'."\n";
-			$rtn .= '		<a title="Download" alt="Download" class="w_link" href="'.$previewlink.'"><img src="/wfiles/download.gif" alt="download" /></a>'."\n";
+			$rtn .= '		<a title="Download" alt="Download" class="w_link icon-download w_success" href="'.$previewlink.'"></a>'."\n";
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"><img src="/wfiles/edit.png" alt=edit" /></a>'."\n";
-				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"><img src="/wfiles/x_red.gif" alt="close" /></a>'."\n";
+				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'."\n";
+				$rtn .= '			<a title="Delete" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'."\n";
 				}
 			$rtn .= '		</td>'."\n";
 			}
@@ -4523,7 +4546,7 @@ function fileManager($startdir='',$params=array()){
 		}
 	$rtn .= '</table>'."\n";
 	if($params['-rights'] != 'readonly'){
-		$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'."\n";
+		$rtn .= '	<div align="center"><span class="icon-upload" style="font-size:50px;color:#CCC;"></span></div>'."\n";
 		$rtn .= '</div>'."\n";
 	}
 	$rtn .= '</div>'."\n";
