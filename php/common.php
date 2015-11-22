@@ -4436,7 +4436,7 @@ function fileManager($startdir='',$params=array()){
         	$uid=$p['name'];
 		}
 		if(function_exists('posix_getgrgid')){
-        	$p=@posix_getgrgid($stat['uid']);
+        	$p=@posix_getgrgid($stat['gid']);
         	$gid=$p['name'];
 		}
 		$owner="{$uid}:{$gid}";
