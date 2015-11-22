@@ -4446,7 +4446,7 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
 			$cspan=count($fields)-2;
-			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block icon-folder-open w_big" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"> '.$file.'</a></td>'."\n";
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block icon-folder w_big" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"> '.$file.'</a></td>'."\n";
 			//owner
 			$rtn .= '		<td align="right">'.$owner.'</td>'."\n";
 			//PERMS
@@ -4457,7 +4457,7 @@ function fileManager($startdir='',$params=array()){
 				$rtn .= '			<a title="Edit" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'."\n";
 				$rtn .= '			<a title="Delete" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'."\n";
 			}
-			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold icon-folder-open" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'."\n";
+			$rtn .= '			<a title="Browse" alt="Browse Folder" class="w_link w_bold icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'."\n";
 			$rtn .= '		</td>'."\n";
 			$rtn .= '	</tr>'."\n";
 	    }
