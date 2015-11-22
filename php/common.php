@@ -4434,8 +4434,10 @@ function fileManager($startdir='',$params=array()){
 			if(preg_match('/^(Maildir|Logs|wfiles|php|min|cgi\-bin)$/i',$file)){continue;}
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
-			$cspan=count($fields);
+			$cspan=count($fields)-1;
 			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
+			//PERMS
+			$rtn .= '		<td align="right">'.$perms.'</td>'."\n";
 			//actions
 			$rtn .= '		<td class="nowrap">'."\n";
 			if($params['-rights'] == 'all'){
