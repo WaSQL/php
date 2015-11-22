@@ -4180,7 +4180,7 @@ function fileManager($startdir='',$params=array()){
 	if(!isset($params['-view'])){$params['-view']='table';}
 	if(!isset($params['-icons'])){$params['-icons']=1;}
 	if(!isset($params['-actions'])){$params['-actions']='download,edit,delete';}
-	if(!isset($params['-fields'])){$params['-fields']='name,description,size,modified,perms';}
+	if(!isset($params['-fields'])){$params['-fields']='name,description,size,modified,owner,perms';}
 	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
 	$params['-rights']=strtolower($params['-rights']);
 
@@ -4429,13 +4429,24 @@ function fileManager($startdir='',$params=array()){
 		$fileId='f' . encodeCRC($afile);
 		$stat = @stat($afile);
 		$perms = sprintf("%o", ($stat['mode'] & 000777));
+		$uid=$stat['uid'];
+		$gid=$stat['gid'];
+		if(function_exists('posix_getpwuid')){
+        	$uid=@posix_getpwuid($stat['uid']);
+		}
+		if(function_exists('posix_getgrgid')){
+        	$gid=@posix_getgrgid($stat['uid']);
+		}
+		$owner="{$uid}:{$gid}";
 		//if(is_link($afile)){continue;}
 		if(is_dir($afile)){
 			if(preg_match('/^(Maildir|Logs|wfiles|php|min|cgi\-bin)$/i',$file)){continue;}
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'."\n";
-			$cspan=count($fields)-1;
+			$cspan=count($fields)-2;
 			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"><img src="/wfiles/icons/files/folder.gif" class="w_middle" alt="folder" /> '.$file.'</a></td>'."\n";
+			//owner
+			$rtn .= '		<td align="right">'.$owner.'</td>'."\n";
 			//PERMS
 			$rtn .= '		<td align="right">'.$perms.'</td>'."\n";
 			//actions
@@ -4479,6 +4490,10 @@ function fileManager($startdir='',$params=array()){
                 	case 'mtime':
                 	case 'modified':
                 		$rtn .= '		<td align="right" class="w_nowrap">'.date('m/d/y',$stat['mtime']).'</td>'."\n";
+                		break;
+                	case 'owner':
+                	case 'group':
+                		$rtn .= '		<td align="right">'.$owner.'</td>'."\n";
                 		break;
                 	case 'perm':
                 	case 'perms':
