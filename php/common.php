@@ -2146,9 +2146,12 @@ function arrays2CSV($recs=array(),$params=array()){
 *	csv formatted output based on the recs array passed in
 */
 function arrays2TAB($recs=array(),$params=array()){
+	//$delim=',', $enclose='"',$force=0
 	if(!is_array($recs) || !count($recs)){
 		return "No records found";
 	}
+	if(!isset($params['-delim'])){$params['-delim']="\t";}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	//get fields for header row
 	$fields=array();
 	if(isset($params['-fields'])){
@@ -2172,14 +2175,14 @@ function arrays2TAB($recs=array(),$params=array()){
 	}
 	$lines=array();
 	if(!isset($params['-noheader']) || $params['-noheader']==0){
-		$lines[]=csvImplode(array_values($fieldmap),"\t");
+		$lines[]=csvImplode(array_values($fieldmap),$params['-delim'],$params['-enclose']);
 	}
 	foreach($recs as $rec) {
 		$vals=array();
 		foreach($fieldmap as $field=>$dval){
         	$vals[]=$rec[$field];
 		}
-		$lines[]=csvImplode($vals,"\t");
+		$lines[]=csvImplode($vals,$params['-delim'],$params['-enclose']);
 	}
     return implode("\r\n",$lines);
 }
