@@ -685,7 +685,7 @@ table th a {
 /*Padding and Margin */
 .w_pad, .w_padding {padding:15px;}
 .w_padtop{padding-top:15px;}
-.w_padbot, .w_padbottom{padding-top:15px;}
+.w_padbot, .w_padbottom{padding-bottom:15px;}
 .w_padleft, .w_indent{padding-left:15px;}
 .w_padright{padding-right:15px;}
 .w_margin {margin:15px;}
