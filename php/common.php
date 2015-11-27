@@ -782,12 +782,13 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 */
 function buildFormText($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
-	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
+	$tag .= '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	//check for tvals and build a datalist if present
 	$selections=getDBFieldSelections($params);
