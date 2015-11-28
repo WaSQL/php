@@ -1,0 +1,222 @@
+Carrier,carrier_service_code,Description
+ATS,ATS 01,ATS Shipments
+ATS,ATS AUS,ATS Australia
+ATS,ATS SIN,ATS Singapore
+ATS,ATS JAP,ATS Japan
+AUS,AUS01,Aus Post Standard Sig Required
+AUS,AUS02,Aus Post Express Sig Required
+AUS,AUS03,Aus Post Standard No Sig Required
+AUS,AUS04,Aus Post Express No Sig Required
+DHL,DHL 01,DHL Same Day Service
+DHL,DHL 02,DHL 1 Day 10:30am
+DHL,DHL 02S,DHL 1 Day 10:30am Sat Delivery
+DHL,DHL 03,DHL 1 Day noon deliv
+DHL,DHL 03S,DHL 1 Day noon Sat Delivery
+DHL,DHL 04,DHL 1 Day 3pm Delivery
+DHL,DHL 04S,DHL 1 Day 3pm Sat Delivery
+DHL,DHL 05,DHL 2nd Day
+DHL,DHL 05S,DHL 2nd Day Sat Delivery
+DHL,DHL G,DHL Ground Service
+DHL,DHL 06,DHL Worldwide Priority Express
+FDX,FDX 08,FEDEX ECONOMY 2 DAY
+FDX,FDX 03,FEDERAL EXPRESS PRIORITY OVERNIGHT
+FDX,FDX MX,FedEx Ground Mexico
+FDX,FDX 19,FedEx Freight Priority International
+FDX,FDX 21,FedEx Freight Economy International
+FDX,FDX 01,FEDEX 1ST OVERNIGHT
+FDX,FDX GCA,FedEx Ground Canada
+FDX,FDX 03S,FEDEX PRIORITY SATURDAY DELIVERY
+FDX,FDX 10,FEDEX FREIGHT 2 DAY
+FDX,FDX 07,FEDEX FREIGHT OVERNIGHT
+FDX,FDX 05,FEDEX STANDARD OVERNIGHT
+FDX,FDX 11,FEDEX SAVER PACKAGE 3 DAY
+FDX,FDX SPSM,FedEx Smart Post Std Mail
+FDX,FDX G,Fedex Ground
+FDX,FDX 15,FEDEX INT'L PRIORITY
+FDX,FDX 17,FEDEX INT'L ECONOMY
+FDX,FDX SPPS,FedEx Smart Post Parcel Select
+FDX,FDX GSR,Fedex Ground Signature Required
+FDX,FDX 14,FEDEX 1ST INT'L
+FDX,FDX 12,FEDEX 3DAY FREIGHT
+FDX,FDX GC,FEDEX Ground Commercial
+FDX,FDX 05SR,FEDEX STANDARD OVERNIGHT SIGNATURE REQ
+FDX,FDX HDS,Fedex Home Delivery Saturday
+FDX,FDX 08SR,FedEx Economy 2 Day (Signature Required)
+FDX,FDX 03SR,FedEx Priority Overnight (Signature Req)
+FDX,FDX 11SR,FedEx Saver 3 Day (Signature Required)
+FDX,FDX 15SR,FedEx INT'L Priority Signature Required
+FDX,FDX 17SR,FedEx INT'L Economy Signature Required
+FDX,FDX HDSR,FedEx Home Delivery (Signature Required)
+FDX,FDX HD,Fedex Home Delivery
+FPS,FPST AUS,FreiPost Australia
+FPS,FPSX PHIL,FreiPost Philippines Express
+FPS,FPST PHIL,FreiPost Philippines
+LMG,LMG 04,Canada Post Standard Sig Req
+LMG,LMG 03,Canada stuff
+LMG,LMG 05,Landmark Shipping Expedited Sig Req
+LMG,LMG OTG1,Canada OTG
+LMG,XLMG1,LMG OTG Service 01
+LMG,LMG AUS,LMG International
+LMG,LMG 02,Landmark Expedited
+LMG,LMG LTL,Canada Ltl
+LMG,LMG 01,Canada Post Standard
+NFR,NFR RUS1,Mainbox Russia Pickup
+NFR,NFR RUS2,Mainbox Russia Standard
+NPF,NFR ATS1,ATS Method
+NPF,EP,NPF Australia EParcel Local
+NPF,NPF IntExp,NPF Australia Intl Express Courier
+NPF,NPF EXP,NPF Australia EParcel Express
+NPF,NPF AP,NPF Australia Standard Post
+NPF,NPF EP EXP,NPF Australia
+NPF,EP EXP,NPF Australia
+NPF,NPF EP,NPF Australia EParcel Local
+NPF,EXP,NPF Australia EParcel Express
+OTG,WW CPG,Direct Dist - Canada Post Ground
+OTG,WW PGR,Direct Dist - Purolator Ground
+OTG,WW PEX,Direct Dist - Purolator Express
+OTG,WW UPSG,Direct Dist - UPS Ground
+OTG,WW UPSEX,Direct Dist - UPS Expedited
+OTG,WW UPSX,Direct Dist - UPS Express Saver
+OTG,WW LTL,Direct Dist - LTL
+OTG,WW WCL,Direct Dist - Will Call
+OTG,WW PIC,Direct Dist - Pickup
+OTG,WW UPSXS,Direct Dist - UPS Express Saver - Sat
+OTG,OTG CAN1,OTG Landmark Standard
+OTG,OTG CAN2,OTG Landmark Express
+OTG,WW CPX,Direct Dist - Canada Post XpressPost
+POS,USS PF08,USPS Priority Flat Rate Box 12x3x24
+POS,USS 12,USPS Priority Mail INTL
+POS,USS 15,MEDIA MAIL
+POS,USS 04,USPS 1st CLASS REGULAR
+POS,USS 04D,USPS 1st CLASS DEL CONF
+POS,USS PI01,Int Priority Flat Rate Box 11x9x6
+POS,USS PI02,Int Priority Flat Rate Box 12x4x14
+POS,USS PI03,Int Priority Flat Rate Envelope 13x10
+POS,USS PI04,Int Priority Flat Rate Box 12x12x6
+POS,USS PI05,Int Priority Flat Rate Box 6x9x2
+POS,USS PI06,Int Priority Flat Rate Padded Envelope
+POS,USS 06,USPS Express Mail International
+POS,USS 03,USPS Express Mail
+POS,USS FL,USPS Priority Flats
+POS,USS 07,USPS Parcel Post
+POS,USS 01F,USPS PRIORITY MAIL flat rate mailer
+POS,USS 01,USPS PRIORITY MAIL
+POS,USS 05,USPS First Class Mail INTL - Max 4 lbs
+POS,USS PF06,USPS Priority Flat Rate Padded Envelope
+POS,USS PF01,USPS Priority Flat Rate Box 11x9x6
+POS,USS PF02,USPS Priority Flat Rate Box 12x4x14
+POS,USS PF03,USPS Priority Flat Rate Envelope 13x10
+POS,USS PF04,USPS Priority Flat Rate Box 12x12x6
+POS,USS PF05,USPS Priority Flat Rate Box 6x9x2
+RTE,RTE 2ND,Best Rate Group
+RTE,CST 2ND,Best Rate Group
+RTE,RTE GND,Best Rate Group
+RTE,CST 01,Best Rate Group
+RTE,CST 02,Best Rate Group
+RTE,CST 03,Best Rate Group
+RTE,CST 04,Best Rate Group
+RTE,CST 05,Best Rate Group
+RTE,CST 06,Best Rate Group
+RTE,CST 09,Best Rate Group
+RTE,CST 10,Best Rate Group
+RTE,CST 11,Best Rate Group
+RTE,CST 12,Best Rate Group
+RTE,CST 08,Best Rate Group
+RTE,CST 07,Best Rate Group
+RTX,RTX BAYN,Bay and Bay
+RTX,RTX BNLS,BNSF Logistics
+RTX,RTX INTD,Interstate Distributor
+RTX,FDX MANINT,Fedex manual shipment
+RTX,000 1R,INTEGRACORE RETURN TO INVENTORY
+RTX,RTX SM2,Sky Mail 2-6 ounces
+RTX,RTX EUR,Europe Consolidated Service
+RTX,RTX CNS,DT China Will Call
+RTX,RTX KY85,KEYSTONE DEDICATED-DINUBA
+RTX,RTX CON,Convention Pickup
+RTX,RTX ALG1,ALG WORLDWIDE
+RTX,RTX RETL,USF Reddaway
+RTX,RTX BWY,BestWay
+RTX,RTX SM1,Sky Mail below 2 ounces
+RTX,RBTW,ROBINSON TRANS SERVICES
+RTX,RTX ASAF,Associated Global Systems
+RTX,RTX AP,Amazon Prepaid Freight Order
+RTX,YAMAWEL,YAMATO - WELLOSO
+RTX,RTX FRIQ,Freight Request
+RTX,RTX FR,FTL/LTL Freight
+RTX,RTX WILL,Will Call
+RTX,RTX FRG,FR Receiving
+RTX,AM,See Account Manager
+RTX,UNKNOWN,UNKNOWN
+RTX,RTX SEKO,SEKO Freight Carrier Ground
+RTX,FDX FG,FedEx Ground LTL
+RTX,INT WILL,international will call
+RTX,DHLP DD,DHL POWERSHIP DOMESTIC DOCUMENT
+RTX,FDX FGINT,Fedex freight Ground international
+RTX,000 1,Scheduled LTL delivery
+RTX,UPS F,UPS Freight
+RTX,RTX 99,By Weight LifeVan
+RTX,MEX G,Mexico Estafeta Ground
+RTX,MEX 01,Mexico Estafeta Express
+RTX,CON CR,Consolidated Costa Rica DOTERRA
+RTX,CON MX,Consolidated Mexico DOTERRA
+RTX,DHLP IX,DHL POWERSHIP INT'L EXPRESS DOCUMENT
+RTX,DHLP ID,DHL POWERSHIP INTERNATIONAL DOCUMENT
+RTX,000 1S,INTEGRACORE SCHEDULE PICKUP
+RTX,FDX MAN,Fedex manual shipment domestic
+RTX,000 8,ASC Inventory
+RTX,WILL,WILL CALL ORDERS - WILL CALL
+RTX,RTX YMT,Yamato No Cost LifeVan
+RTX,ABF 4,ABF Freight Systems STANDARD SERVICE
+RTX,NIP1,Nippon Express
+RTX,DHLP IP,DHL POWERSHIP INT'L PACKAGE EXPRESS
+RTX,000 1I,INTEGRACORE WILL CALL
+RTX,000 7,INTEGRACORE DELIVERY
+UMI,UMI 02,UMI Expedited BPM with Delivery Confirm
+UMI,UMI 02N,UMI Expedited BPM w/o Delivery Confirm
+UMI,UMI 15,UMI International Priority
+UMI,UMI 01N,UMI without Delivery Confirmation
+UMI,UMI 14,UMI International Economy
+UMI,UMI 01,UMI with Delivery Confirmation
+UPS,UPS GSR,UPS Ground Signature Required
+UPS,UPS 03SR,UPS Next Day Air Saver Signature Require
+UPS,UPS 01S,UPS Next Day Air - Saturday Delivery
+UPS,UPS BEST,UPS Freight or Ground
+UPS,UPS 07SR,UPS 2nd Day Air Signature Required
+UPS,UPS 09SR,UPS 2nd Day Air A.M. Signature Required
+UPS,UPS 01SR,UPS Next Day Air - Signature Required
+UPS,UPS 13SR,UPS Worldwide Expedited Signature Req
+UPS,UPS DTD,UPS Trade Direct
+UPS,UPS 07S,UPS 2ND DAY PACKAGE Saturday Delivery
+UPS,UPS 13,UPS Worldwide Expedited
+UPS,UPS 14,UPS Worldwide Saver
+UPS,UPS 01,UPS NEXT DAY PACKAGE
+UPS,UPS 11,UPS 3 DAY SELECT
+UPS,UPS 09,UPS 2ND DAY AM
+UPS,UPS 03,UPS NEXT DAY AIR SAVER
+UPS,UPS 05,UPS EARLY AM
+UPS,UPS 16,UPS Worldwide Express Plus
+UPS,UPS SP1,UPS SurePost greater than 1 lb
+UPS,UPS 70,UPS NEXT DAY SATURDAY DELIVERY FREIGHT
+UPS,UPS SP,UPS SurePost
+UPS,UPS 12,UPS Standard to Canada
+UPS,UPS 07,UPS 2ND DAY PACKAGE
+UPS,UPS G,UPS GROUND
+UPS,UPS 15,UPS Worldwide Express
+UPS,UPS 12SR,UPS Standard to Canada Signature Req
+UPS,UPS 03S,UPS NEXT DAY AIR SAVER - Saturday Del
+UPS,UPS 22,UPS GROUND HUNDREDWEIGHT
+VLK,VLK 02,V-Logic Land Trucking Customer Pick-up
+VLK,VLK 03,V-Logic Will Call Orders
+VLK,VLK 04,V-Logic International Courier Delivery
+VLK,VLK 05,V-Logic Air Freight Delivery Service
+VLK,VLK 06,V-Logic Ocean Freight Delivery Service
+VLK,VLK 01,V-Logic Land Trucking Delivery Service
+VLK,VLK,V-Logic Hong Kong Distribution
+YMT,YMT QIV,Yamato Qivana
+YMT,YMT,Yamato
+YMT,YMT RAIN,Yamato Rain
+YMT,YAMXAN JAP,Yamato Japan
+YMT,YMT DT,Yamato Doterra
+YMT,YAMBEL HK,Yamato Hong Kong
+YMT,YAMBEL SIN,Yamato Singapore
+YMT,YAMBEL JAP,Yamato Japan
