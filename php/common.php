@@ -449,7 +449,7 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if($params['-value']=='NULL'){$params['-value']='';}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-
+	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -6900,7 +6900,22 @@ function isAudioFile($file=''){
 	$exts=array('aac','aif','iff','m3u','mid','midi','mp3','mpa','ra','ram','wav','wma');
 	if(in_array($ext,$exts)){return true;}
     return false;
+}
+//---------- begin function isCLI ----------
+/**
+* @describe returns true if script is running from a CLI - command line interface
+* @return boolean
+*	returns true if script is running from a command line/shell prompt
+* @usage if(isCLI()){...}
+*/
+function isCLI(){
+	$checks=array('HTTP_ACCEPT','HTTP_CONNECTION','REMOTE_ADDR','REQUEST_URI','SERVER_ADDR');
+	foreach($checks as $check){
+		if(isset($_SERVER[$check])){return false;}
 	}
+	return true;
+}
+
 //---------- begin function isDate ----------
 /**
 * @describe returns true if string is a date - uses checkdate function to validate date
@@ -8784,6 +8799,7 @@ function settingsValue($id=0,$field){
 */
 function settingsValues($id=0,$fields=array()){
 	//query the _settings table for records that are global (0) or are tied to this user
+	if(!isDBTable('_settings')){return array();}
 	$getopts=array('-table'=>'_settings','-order'=>"user_id ASC",'-nocache'=>1);
 	if(!is_array($id) && isNum($id)){$getopts['-where'] = "user_id in (0,{$id})";}
 	else{$getopts['-where'] = "user_id=0";}
