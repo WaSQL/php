@@ -6813,6 +6813,7 @@ function isDBTable($table='',$force=0){
 		}
 	$tables=getDBTables($dbname,$force);
 	$databaseCache['isDBTable'][$table]=false;
+	if(!is_array($tables)){return false;}
 	foreach($tables as $ctable){
 		$ctable=strtolower($ctable);
 		if(strlen($dbname)){$ctable="{$dbname}.{$ctable}";}
