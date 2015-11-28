@@ -43,7 +43,7 @@ if(isset($_REQUEST['phpinfo']) && count($_REQUEST)==1){
 elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
 	include_once("$progpath/user.php");
 	echo buildHtmlBegin();
-	echo '<div class="w_lblue w_bold"><img src="/wfiles/server.png" alt="server" /> REMOTE Variables</div>'."\n";
+	echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'."\n";
 	echo '<table class="table table-bordered table-striped">'."\n";
 	echo buildTableTH(array('Variable','Value'));
 	foreach($_SERVER as $key=>$val){
@@ -1305,7 +1305,7 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'env':
 			//Server Variables
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/server.png" alt="server variables" /> Server Variables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'."\n";
 			echo '<table class="table table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
@@ -1367,7 +1367,7 @@ if(isset($_REQUEST['_menu'])){
 		break;
 		case 'system':
 			//Server Variables
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/iconsets/32/server.png" alt="system info" /> System Info</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'."\n";
 			$info=getServerInfo();
 			//first show all the items that are not arrays
 			echo '<table class="table table-bordered table-striped">'."\n";
@@ -1990,7 +1990,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'addmultiple':
 			echo buildTableBegin(2,0);
 			echo '<tr valign="top"><td>'."\n";
-			echo '<div class="w_lblue w_bold w_bigger"><img src="/wfiles/iconsets/32/table_add.png" alt="add multiple tables" /> Add Multiple Tables.</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table-add w_primary"></span> Add Multiple Tables.</div>'."\n";
 			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'centerpop\');return false;">'."\n";
 			echo '		<input type="hidden" name="_menu" value="addmultiple">'."\n";
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'."\n";
@@ -3725,7 +3725,7 @@ function adminMenu(){
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list w_big"></span> List Tables</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple">'.adminMenuIcon('/wfiles/iconsets/16/table_add.png').' Add Multiple Tables</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add w_primary"></span> Add Multiple Tables</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//show wasql tables here also
 	$rtn .= $wtables;
 	//now show groups
@@ -3921,8 +3921,8 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> List Font Icons</a></li>'."\n";
     $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=env">'.adminMenuIcon('/wfiles/server.png').' List Server Vars</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=system">'.adminMenuIcon('/wfiles/iconsets/16/server.png').' List System Info</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> List Server Vars</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> List System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> WaSQL Update</a></li>'."\n";
@@ -4198,7 +4198,7 @@ function adminSettings(){
 	$rtn .= '			</tr>'."\n";
 	$rtn .= '		</table>'."\n";
 	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=mainmenu\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset" /> Reset to default settings</a></div>'."\n";
+	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=mainmenu\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
 
 	//Action Menu
 	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Action Menu</div>'."\n";
@@ -4217,7 +4217,7 @@ function adminSettings(){
 	$rtn .= '		</table>'."\n";
 	//reset
 	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=actionmenu\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset to default" /> Reset to default settings</a></div>'."\n";
+	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=actionmenu\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
 
 	//Content Settings
 	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Content Position</div>'."\n";
@@ -4226,7 +4226,7 @@ function adminSettings(){
 	$dvals="Fixed Width Center\r\nFull Width Left";
 	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"content_position",'inputtype'=>"radio",'tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
 	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=content\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset to default" /> Reset to default settings</a></div>'."\n";
+	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=content\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
 
 	//Table settings
 	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Table Colors and Shading</div>'."\n";
@@ -4241,7 +4241,7 @@ function adminSettings(){
 	$rtn .= '		</table>'."\n";
 	//reset
 	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=table\');"><img src="/wfiles/iconsets/16/reset.png" alt="reset to default" /> Reset to default settings</a></div>'."\n";
+	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=table\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
 
 	$rtn .= '</div>'."\n";
 	$rtn .= '<div align="right" class="w_pad">'.buildFormSubmit('Save Changes').'</div>'."\n";
