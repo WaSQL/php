@@ -20,18 +20,15 @@ function integracoreGetExpectedReceipts($params=array()){
 	return $rtn;
 }
 //---------------------------
-function integracoreGetShipMethods($params=array()){
-	$url='http://api.integracore.net/api';
-	$xmlpost=xmlHeader(array('encoding'=>'utf-8'));
-	$xmlpost .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">'."\n";
-	$xmlpost .= integracoreSOAPHeader($params);
-	$xmlpost .= '  <soap12:Body>'."\n";
-	$xmlpost .= '    <getShipMethods xmlns="http://www.integracoreb2b.com/API/" />'."\n";
-	$xmlpost .= '  </soap12:Body>'."\n";
-	$xmlpost .= '</soap12:Envelope>'."\n";
-	$post=postXML($url,$xmlpost,array('-ssl'=>false));
-	$rtn=$post['xml_array']['getShipMethods']['Methods']['Method'];
-	return $rtn;
+function integracoreGetShipMethods(){
+	global $csvShipMap;
+	if(!isset($csvShipMap['items'])){
+		//read in the ship methods and check them against this one.
+		$progpath=dirname(__FILE__);
+		$file="{$progpath}/integracore_ship_codes.csv";
+		$csvShipMap=getCSVFileContents($file);
+	}
+	return $csvShipMap['items'];
 }
 //---------------------------
 function integracoreAddExpectedReceipts($params=array()){
@@ -142,7 +139,7 @@ function integracoreGetMultipleOrderStatus($params=array()){
             	if($key=='Items'){continue;}
             	$corder[$key]=$val;
 			}
-			if(is_array($order['Items']['Item'])){
+			if(isset($order['Items']['Item']) && is_array($order['Items']['Item'])){
 				foreach($order['Items']['Item'] as $item){
 	            	$citem=array();
 	            	foreach($item as $key=>$val){
@@ -157,6 +154,34 @@ function integracoreGetMultipleOrderStatus($params=array()){
 		return $list;
 		}
 	return $post;
+}
+//---------------------------
+function integracoreGetOrdernumbers($params=array()){
+	if(!isset($params['begin_date'])){$params['begin_date']=date('Y-m-d',strtotime('-1 day'));}
+	if(!isset($params['custid'])){return 'NO CUSTID';}
+	if(!isset($params['user'])){return 'NO user';}
+	if(!isset($params['pass'])){return 'NO pass';}
+	$opts=array(
+		'-method'	=> 'POST',
+		'request'	=> 'ordernumbers',
+		'custid'	=> $params['custid'],
+		'user'		=> $params['user'],
+		'pass'		=> $params['pass'],
+		'begin_date'=> $params['begin_date'],
+		'-xml'		=> 1
+	);
+	$post=postURL('https://integracore.net/api',$opts);
+	//echo printValue($opts).printValue($post);exit;
+	$orders=array();
+	if(isset($post['xml_array']['catalog']['orders']['order'])){
+    	$orders=$post['xml_array']['catalog']['orders']['order'];
+    	if(!is_array($orders)){$orders=array($orders);}
+	}
+	foreach($orders as $i=>$order){
+    	$orders[$i]['status_ex']=integracoreStatusString($order['status']);
+    	ksort($orders[$i]);
+	}
+	return $orders;
 }
 //---------------------------
 function integracoreGetMultipleOrderStatusNew($params=array()){
@@ -266,7 +291,54 @@ function integracoreGetItems($params=array()){
 	$post=postXML($url,$xmlpost,array('-ssl'=>false));
 	//return $post;
 	$items=$post['xml_array']['soapBody']['getItemsResponse']['getItemsResult']['Item'];
-	return $items;
+	if(is_array($items) && !isset($items[0])){$items=array($items);}
+	$map=array(
+		'Description'		=> 'description',
+		'Description2' 		=> 'description2',
+		'Item_Status'		=> 'item_status',
+		'Revision'			=> 'revision',
+		'UPCCode'			=> 'upccode',
+		'HTS_Num'			=> 'hts_num',
+		'StandardCost'		=> 'standardcost',
+		'RetailPrice'		=> 'price',
+		'SalePrice'			=> 'saleprice',
+		'SalePrice'			=> 'sale_price',
+		'RetailPrice'		=> 'retailprice',
+		'RetailPrice'		=> 'retail_price',
+		'Country_Of_Origin'	=> 'country_of_origin',
+		'ItemWidth'			=> 'item_width',
+		'ItemLength'		=> 'item_length',
+		'ItemHeight'		=> 'item_height',
+		'ItemWeight'		=> 'item_weight',
+		'SkidWidth'			=> 'skid_width',
+		'SkidHeight'		=> 'skid_height',
+		'SkidLength'		=> 'skid_length',
+		'ItemWeight'		=> 'weight',
+		'ItemID'			=> 'itemid',
+		'SiteID'			=> 'siteid',
+		'Quantity'			=> 'quantity',
+		'QuantityOnHold'	=> 'quantity_on_hold',
+		'QuantityTotal'		=> 'quantity_total',
+		'QuantityAllocated'	=> 'quantity_allocated',
+		'QuantityRequired'	=> 'quantity_Required',
+		'QuantityScheduled'	=> 'quantity_scheduled',
+		'Ordered'			=> 'ordered',
+		'Shipped'			=> 'shipped',
+		'Backordered'		=> 'backordered',
+	);
+	//return $items;
+	$tmps=array();
+	foreach($items as $item){
+    	$tmp=array();
+    	foreach($map as $k=>$v){
+			if(isset($item[$k]) && is_array($item[$k])){$item[$k]=implode(':',$item[$k]);}
+			if(!isset($item[$k]) || !strlen($item[$k])){continue;}
+        	$tmp[$v]=$item[$k];
+		}
+		ksort($tmp);
+		$tmps[$tmp['itemid']]=$tmp;
+	}
+	return $tmps;
 }
 //---------------------------
 function integracoreAddItems($params=array()){
@@ -279,13 +351,47 @@ function integracoreAddItems($params=array()){
 		'upccode'			=> 'UPCCode',
 		'hts_num'			=> 'HTS_Num',
 		'standardcost'		=> 'StandardCost',
+		'price'				=> 'RetailPrice',
 		'saleprice'			=> 'SalePrice',
+		'sale_price'		=> 'SalePrice',
 		'retailprice'		=> 'RetailPrice',
+		'retail_price'		=> 'RetailPrice',
 		'country_of_origin'	=> 'Country_Of_Origin',
 		'item_width'		=> 'ItemWidth',
 		'item_length'		=> 'ItemLength',
 		'item_height'		=> 'ItemHeight',
-		'item_weight'		=> 'ItemWeight'
+		'item_weight'		=> 'ItemWeight',
+		'skid_width'		=> 'SkidWidth',
+		'skid_height'		=> 'SkidHeight',
+		'skid_length'		=> 'SkidLength',
+		'weight'			=> 'ItemWeight',
+		'itemid'			=> 'ItemID',
+		'siteid'			=> 'SiteID',
+		'quantity'			=> 'Quantity',
+		'quantity_on_hold'	=> 'QuantityOnHold',
+		'quantity_total'	=> 'QuantityTotal',
+		'quantity_allocated'=> 'QuantityAllocated',
+		'quantity_Required'	=> 'QuantityRequired',
+		'quantity_scheduled'=> 'QuantityScheduled',
+		'ordered'			=> 'Ordered',
+		'shipped'			=> 'Shipped',
+		'backordered'		=> 'Backordered',
+	);
+	//default items
+	$defaults=array(
+		'skid_width'		=> 1,
+		'skid_height'		=> 1,
+		'skid_length'		=> 1,
+		'siteid'			=> 1,
+		'quantity'			=> 0,
+		'quantity_on_hold'	=> 0,
+		'quantity_total'	=> 0,
+		'quantity_allocated'=> 0,
+		'quantity_Required'	=> 0,
+		'quantity_scheduled'=> 0,
+		'ordered'			=> 0,
+		'shipped'			=> 0,
+		'backordered'		=> 0
 	);
 	$xmlpost=xmlHeader(array('encoding'=>'utf-8'));
 	$xmlpost .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">'."\n";
@@ -295,18 +401,18 @@ function integracoreAddItems($params=array()){
     $xmlpost .= '	<Items>'."\n";
     foreach($params['items'] as $item){
 		$xmlpost .= '		<Item>'."\n";
-    	$xmlpost .= '			<ItemID>'.$item['itemid'].'</ItemID>'."\n";
-    	$xmlpost .= '			<SiteID>'.$item['siteid'].'</SiteID>'."\n";
-    	$xmlpost .= '			<ItemInfo>'."\n";
+    	//add defaults if missing
+    	foreach($defaults as $k=>$v){
+        	if(!strlen($item[$k])){$item[$k]=$v;}
+		}
     	//optional fields
     	foreach($item as $key=>$val){
 			if(isset($map[$key])){
 				$val=xmlEncodeCDATA($val);
 				$key=$map[$key];
-				$xmlpost .= "				<{$key}>{$val}</{$key}>\n";
+				$xmlpost .= "			<{$key}>{$val}</{$key}>\n";
             	}
 		}
-		$xmlpost .= '			</ItemInfo>'."\n";
 		$xmlpost .= '		</Item>'."\n";
 	}
     $xmlpost .= '	</Items>'."\n";
@@ -329,13 +435,22 @@ function integracoreSetItems($params=array()){
 		'upccode'			=> 'UPCCode',
 		'hts_num'			=> 'HTS_Num',
 		'standardcost'		=> 'StandardCost',
+		'price'				=> 'RetailPrice',
 		'saleprice'			=> 'SalePrice',
+		'sale_price'		=> 'SalePrice',
 		'retailprice'		=> 'RetailPrice',
+		'retail_price'		=> 'RetailPrice',
 		'country_of_origin'	=> 'Country_Of_Origin',
 		'item_width'		=> 'ItemWidth',
 		'item_length'		=> 'ItemLength',
 		'item_height'		=> 'ItemHeight',
-		'item_weight'		=> 'ItemWeight'
+		'item_weight'		=> 'ItemWeight',
+		'skid_width'		=> 'SkidWidth',
+		'skid_height'		=> 'SkidHeight',
+		'skid_length'		=> 'SkidLength',
+		'weight'			=> 'ItemWeight',
+		'itemid'			=> 'ItemID',
+		'siteid'			=> 'SiteID',
 	);
 	$xmlpost=xmlHeader(array('encoding'=>'utf-8'));
 	$xmlpost .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">'."\n";
@@ -345,18 +460,18 @@ function integracoreSetItems($params=array()){
     $xmlpost .= '	<Items>'."\n";
     foreach($params['items'] as $item){
 		$xmlpost .= '		<Item>'."\n";
-    	$xmlpost .= '			<ItemID>'.$item['itemid'].'</ItemID>'."\n";
-    	$xmlpost .= '			<SiteID>'.$item['site_id'].'</SiteID>'."\n";
-    	$xmlpost .= '			<ItemInfo>'."\n";
     	//optional fields
+    	$used=array();
     	foreach($item as $key=>$val){
 			if(isset($map[$key])){
 				$val=xmlEncodeCDATA($val);
 				$key=$map[$key];
-				$xmlpost .= "				<{$key}>{$val}</{$key}>\n";
-            	}
+				if(strlen($val) && !isset($used[$key])){
+					$used[$key]=1;
+                	$xmlpost .= "				<{$key}>{$val}</{$key}>\n";
+				}
+            }
 		}
-		$xmlpost .= '			</ItemInfo>'."\n";
 		$xmlpost .= '		</Item>'."\n";
 	}
     $xmlpost .= '	</Items>'."\n";
@@ -482,7 +597,7 @@ function integracoreGetOrderStatus($params=array()){
 	$xmlpost .= '	<soap:Body>'."\n";
 	$xmlpost .= ' 		<GetMultipleOrderStatus xmlns="http://www.integracoreb2b.com/">'."\n";
     $xmlpost .= '  			<Orders>'."\n";
-    foreach($params['orders'] as $on){
+    foreach($params['ordernumbers'] as $on){
     	$xmlpost .= '  				<string>'.$on.'</string>'."\n";
 		}
     $xmlpost .= '  			</Orders>'."\n";
@@ -556,6 +671,9 @@ function integracorePostOrders($orders=array(),$testxml=0){
 	$xmlpost .= '		<AuthHeader xmlns="http://www.integracoreb2b.com/">'."\r\n";
 	$xmlpost .= '			<Username>'.$orders['user'].'</Username>'."\r\n";
 	$xmlpost .= '      		<Password>'.$orders['pass'].'</Password>'."\r\n";
+	if($orders['test']){
+		$xmlpost .= '			<Test>1</Test>'."\r\n";
+	}
 	$xmlpost .= '    	</AuthHeader>'."\r\n";
 	$xmlpost .= '  	</soap:Header>'."\r\n";
 	$xmlpost .= '<soap:Body>'."\r\n";
@@ -572,7 +690,8 @@ function integracorePostOrders($orders=array(),$testxml=0){
 			if(isset($used['H'][$soapfield])){continue;}
 			$used['H'][$soapfield]=1;
 			if(!strlen($soapfield)){continue;}
-			$val=$order[$dbfield];
+			$val='';
+			if(isset($order[$dbfield])){$val=$order[$dbfield];}
 			if(is_array($val)){continue;}
 			if(!strlen($val) && strlen($rule['value_default'])){
 				$evalstr=preg_replace('/\&amp\;/','&',trim($rule['value_default']));
@@ -1197,6 +1316,52 @@ function integracoreParseValue($str='',$val=''){
     return $str;
   }
 function integracoreShipMethodLookup($description){
+	global $csvShipMap;
+	if(!isset($csvShipMap['items'])){
+		//read in the ship methods and check them against this one.
+		$progpath=dirname(__FILE__);
+		$file="{$progpath}/integracore_ship_codes.csv";
+		$csvShipMap=getCSVFileContents($file);
+	}
+	$desc=strtoupper($description);
+	$mdesc=metaphone($desc);
+	$sdesc=soundex($desc);
+	foreach($csvShipMap['items'] as $item){
+    	if(strtoupper($item['description'])==$desc){return $item;}
+	}
+	foreach($csvShipMap['items'] as $item){
+    	if(metaphone(strtoupper($item['description']))==$mdesc){return $item;}
+	}
+	foreach($csvShipMap['items'] as $item){
+    	if(soundex(strtoupper($item['description']))==$sdesc){return $item;}
+	}
+	//defaults
+    switch($parts[0]){
+        case 'fedex':
+            $item['carrier']='FDX';
+            $item['carrier_service_code']='FDX G';
+        break;
+        case 'ups':
+            $item['carrier']='UPS';
+            $item['carrier_service_code']='UPS G';
+        break;
+        case 'usps':
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+        case 'ground':
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+        default:
+            $item['carrier']='POS';
+            $item['carrier_service_code']='USS 01';
+        break;
+	}
+	return $item;
+
+	echo "Missing [{$description}]<br />\n";
+	return null;
 	$item=array();
 	$parts=preg_split('/\ +/',strtolower($description));
 	$index=count($parts)-1;
