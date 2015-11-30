@@ -3,22 +3,8 @@
 <div class="row">
 	<div class="hidden-xs col-sm-2">
 		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Reference</div>
-		<div class="w_borderbot"><span class="icon-html5" style="color:#e34c26;"></span>HTML5 Reference</div>
-		<div style="max-height:280px;overflow:auto;">
-		<table class="table table-condensed table-bordered table-striped">
-		<view:_htmlref>
-			<tr>
-				<td class="w_small">
-					<b><?=encodeHTML($htmlref['tag']);?></b>
-					<div class="w_padleft"><?=encodeHTML($htmlref['description']);?></div>
-				</td>
-			</tr>
-		</view:_htmlref>
-		<?=renderEach('_htmlref',$htmlref['items'],array('-alias'=>'htmlref'));?>
-		</table>
-		</div>
 		<div class="w_borderbot"><span class="icon-css3" style="color:#006eb9;"></span>CSS3 Reference</div>
-		<div style="max-height:280px;overflow:auto;">
+		<div style="max-height:250px;overflow:auto;">
 		<table class="table table-condensed table-bordered table-striped">
 		<view:_cssref>
 			<tr>
@@ -31,14 +17,31 @@
 		<?=renderEach('_cssref',$cssref['items'],array('-alias'=>'cssref'));?>
 		</table>
 		</div>
+		<div class="w_borderbot"><span class="icon-html5" style="color:#e34c26;"></span>HTML5 Reference</div>
+		<div style="max-height:350px;overflow:auto;">
+		<table class="table table-condensed table-bordered table-striped">
+		<view:_htmlref>
+			<tr>
+				<td class="w_small">
+					<b><?=encodeHTML($htmlref['tag']);?></b>
+					<div class="w_padleft"><?=encodeHTML($htmlref['description']);?></div>
+				</td>
+			</tr>
+		</view:_htmlref>
+		<?=renderEach('_htmlref',$htmlref['items'],array('-alias'=>'htmlref'));?>
+		</table>
+		</div>
 	</div>
 	<div class="col-sm-5">
-		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Edit Window</div>
-<textarea data-behavior="@raid(preview)" autofocus="true" class="form-control" style="height:600px;border:none;font-size:1.2em;font-family:arial;">
-</textarea>
+		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Edit Windows</div>
+		<div class="w_borderbot"><span class="icon-css3" style="color:#006eb9;"></span>CSS3</div>
+		<div><textarea data-behavior="@raid(customcss) tab autogrow" class="form-control" style="min-height:100px;border:none;font-size:1.2em;font-family:arial;"></textarea></div>
+		<div class="w_borderbot"><span class="icon-html5" style="color:#e34c26;"></span>HTML5</div>
+		<div><textarea data-behavior="@raid(preview) tab autogrow" autofocus="true" class="form-control" style="min-height:500px;border:none;font-size:1.2em;font-family:arial;"></textarea></div>
 	</div>
 	<div class="col-sm-5">
 		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Preview Window</div>
+		<style type="text/css" id="customcss"></style>
 		<div id="preview"></div>
 	</div>
 </div>
