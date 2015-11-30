@@ -1,5 +1,4 @@
 <?php
-	loadExtrasJs('codemirror');
 	$cpath=dirname(__FILE__);
 	switch(strtolower($_REQUEST['func'])){
         default:
