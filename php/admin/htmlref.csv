@@ -1,0 +1,90 @@
+Tag,Parent,Description
+<!--...-->,,Defines a comment
+<!DOCTYPE> ,,Defines the document type
+<a>,,Defines a hyperlink
+<b>,,Defines bold text
+<body>,<html>,Defines the document's body
+<br>,,Defines a single line break
+<button>,,Defines a clickable button
+<div>,,Defines a section in a document
+<embed>,,Defines a container for an external (non-HTML) application
+<footer>,,Defines a footer for a document or section
+<form>,,Defines an HTML form for user input
+<h1> to <h6>,,Defines HTML headings
+<head>,,Defines information about the document
+<header>,,Defines a header for a document or section
+<hr>,,Defines a thematic change in the content
+<html>,,Defines the root of an HTML document
+<i>,,Defines a part of text in an alternate voice or mood
+<iframe>,,Defines an inline frame
+<img>,,Defines an image
+<input>,<form>,Defines an input control
+<label>,,Defines a label for an <input> element
+<li>,"<ul>, <ol>, <datalist>",Defines a list item
+<meta>,<head>,Defines metadata about an HTML document
+<nav>,,Defines navigation links
+<ol>,,Defines an ordered list
+<p>,,Defines a paragraph
+<pre>,,Defines preformatted text
+<script>,"<head>, <body>",Defines a client-side script
+<select>,<form>,Defines a drop-down list
+<span>,,Defines a section in a document
+<style>,,Defines style information for a document
+<sub>,,Defines subscripted text
+<sup>,,Defines superscripted text
+<table>,,Defines a table
+<tbody>,<table>,Groups the body content in a table
+<td>,<tr>,Defines a cell in a table
+<textarea>,<form>,Defines a multiline input control (text area)
+<tfoot>,<table>,Groups the footer content in a table
+<th>,<tr>,Defines a header cell in a table
+<thead>,,Groups the header content in a table
+<title>,,Defines a title for the document
+<tr>,<table>,Defines a row in a table
+<u>,,Defines text that should be stylistically different from normal text
+<ul>,,Defines an unordered list
+<canvas>,,"Used to draw graphics, on the fly, via scripting (usually JavaScript)"
+<caption>,,Defines a table caption
+<datalist>,,Specifies a list of pre-defined options for input controls
+<legend>,,Defines a caption for a <fieldset> element
+<menu>,,Defines a list/menu of commands
+<noscript>,,Defines an alternate content for users that do not support client-side scripts
+<object>,,Defines an embedded object
+<param>,,Defines a parameter for an object
+<progress>,,Represents the progress of a task
+<strong>,,Defines important text
+<summary>,,Defines a visible heading for a <details> element
+<abbr>,,Defines an abbreviation or an acronym
+<address>,,Defines contact information for the author/owner of a document
+<area>,,Defines an area inside an image-map
+<article>,,Defines an article
+<aside>,,Defines content aside from the page content
+<audio>,,Defines sound content
+<base>,<header>,Specifies the base URL/target for all relative URLs in a document
+<blockquote>,,Defines a section that is quoted from another source
+<cite>,,Defines the title of a work
+<code>,,Defines a piece of computer code
+<col>,,Specifies column properties for each column within a <colgroup> element 
+<colgroup>,,Specifies a group of one or more columns in a table for formatting
+<del>,,Defines text that has been deleted from a document
+<details>,,Defines additional details that the user can view or hide
+<dialog>,,Defines a dialog box or window
+<em>,,Defines emphasized text 
+<fieldset>,,Groups related elements in a form
+<figcaption>,,Defines a caption for a <figure> element
+<figure>,,Specifies self-contained content
+<link>,<head>,Defines the relationship between a document and an external resource (most used to link to style sheets)
+<main>,,Specifies the main content of a document
+<map>,,Defines a client-side image-map
+<mark>,,Defines marked/highlighted text
+<menuitem>,,Defines a command/menu item that the user can invoke from a popup menu
+<optgroup>,<select>,Defines a group of related options in a drop-down list
+<option>,<select>,Defines an option in a drop-down list
+<section>,,Defines a section in a document
+<small>,,Defines smaller text
+<source>,,Defines multiple media resources for media elements (<video> and <audio>)
+<time>,,Defines a date/time
+<track>,,Defines text tracks for media elements (<video> and <audio>)
+<var>,,Defines a variable
+<video>,,Defines a video or movie
+<wbr>,,Defines a possible line-break
