@@ -1,0 +1,11 @@
+<?php
+	loadExtrasJs('codemirror');
+	$cpath=dirname(__FILE__);
+	switch(strtolower($_REQUEST['func'])){
+        default:
+        	$htmlref=getCSVFileContents("{$cpath}/admin/htmlref.csv");
+        	$cssref=getCSVFileContents("{$cpath}/admin/cssref.csv");
+			setView('default',1);
+		break;
+	}
+?>
