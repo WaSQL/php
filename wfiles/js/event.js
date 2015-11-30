@@ -1012,35 +1012,35 @@ function initBehaviors(ajaxdiv){
 				ajaxTimer(attr['id']);
 			}
 		}
-		else if(in_array("animate",behaviors)){
+		if(in_array("animate",behaviors)){
 			/* ANIMATE - get id and head */
-            navEls[n].onmouseover=function(e){
+            addEventHandler(navEls[n],'mouseover',function(e){
 				animateGrow(this.id,parseInt(this.getAttribute('min')),parseInt(this.getAttribute('max')));
-			}
-			navEls[n].onmouseout=function(e){
+			});
+			addEventHandler(navEls[n],'mouseout',function(e){
 				if(undefined == e){e = fixE(e);}
 				if(undefined != e){
 					if(checkMouseLeave(this,e)){
 						animateShrink(this.id,parseInt(this.getAttribute('max')),parseInt(this.getAttribute('min')));
 					}
 				}
-			}
+			});
         }
-        else if(in_array("autogrow",behaviors)){
+        if(in_array("autogrow",behaviors)){
 			/* AUTOGROW - textarea will auto based on content */
 			navEls[n].setAttribute('data-autogrow',navEls[n].style.height);
-            navEls[n].onfocus=function(e){
+            addEventHandler(navEls[n],'focus',function(e){
 				autoGrow(this);
-			}
-			navEls[n].onkeypress=function(e){
+			});
+			addEventHandler(navEls[n],'keypress',function(e){
 				autoGrow(this);
-			}
-			navEls[n].onblur=function(e){
+			});
+			addEventHandler(navEls[n],'blur',function(e){
 				var h=this.getAttribute('data-autogrow');
 				this.style.height=h;
-			}
+			});
         }
-        else if(in_array("chart",behaviors)){
+        if(in_array("chart",behaviors)){
 			/* Chart using Chart.js */
 			var chart_type=navEls[n].getAttribute('data-type') || 'bar';
 			chart_type=chart_type.toLowerCase();
@@ -1086,16 +1086,16 @@ function initBehaviors(ajaxdiv){
             	setText(chart_image,img);
 			}
 		}
-        else if(in_array("clock",behaviors)){
+        if(in_array("clock",behaviors)){
 			/*CLOCK - */
   			var id=navEls[n].getAttribute('id');
 			if(id){startClock(id,1);}
 		}
-		else if(in_array("clone",behaviors)){
+		if(in_array("clone",behaviors)){
 			/*CLONE DIV - */
 			cloneDiv(navEls[n]);
 		}
-		else if(in_array("utcclock",behaviors)){
+		if(in_array("utcclock",behaviors)){
 			/*UTC CLOCK - */
   			var id=navEls[n].getAttribute('id');
 			if(id){startUTCClock(id,1);}
@@ -1124,11 +1124,7 @@ function initBehaviors(ajaxdiv){
 				countDownDate(id,yr,mon,day,hr,m,t);
 			}
 		}
-		else if(in_array("csseditor",behaviors)){
-			/* EDITOR: CSSEDITOR */
-			codemirrorTextEditor(navEls[n],'text/css','csseditor');
-		}
-		else if(in_array("drag",behaviors)){
+		if(in_array("drag",behaviors)){
 			/* DRAG - Make object draggable */
 			var head=navEls[n].getAttribute('data-head');
 			if(undefined != head){head=navEls[n].getAttribute('head');}
@@ -1142,7 +1138,7 @@ function initBehaviors(ajaxdiv){
             	Drag.init(headobj,navEls[n]);
    			}
         }
-        else if(in_array("email-link",behaviors)){
+        if(in_array("email-link",behaviors)){
 			/* email link:  /info/wasql/com/  */
 			var email=getText(navEls[n]);
 			email=email.replace(/^[\/]+/,'',email);
@@ -1153,14 +1149,18 @@ function initBehaviors(ajaxdiv){
 			setText(navEls[n],email);
 			navEls[n].setAttribute('data-behavior','processed');
 		}
-		else if(in_array("markers",behaviors)){
+		if(in_array("markers",behaviors)){
 			wasqlMarkerInit(navEls[n]);
 		}
-        else if(in_array("signature",behaviors)){
+        if(in_array("signature",behaviors)){
 			/* Signature */
 			var pencolor=navEls[n].getAttribute('data-color') || '#000';
 			signaturePad = new SignaturePad(navEls[n],{penColor:pencolor});
 			//signature(navEls[n],'',pencolor);
+		}
+		if(in_array("csseditor",behaviors)){
+			/* EDITOR: CSSEDITOR */
+			codemirrorTextEditor(navEls[n],'text/css','csseditor');
 		}
 		else if(in_array("diffeditor",behaviors)){
 			/* EDITOR: DIFF Mode */
@@ -1210,7 +1210,7 @@ function initBehaviors(ajaxdiv){
 			/* EDITOR: XMLEditor */
 			codemirrorTextEditor(navEls[n],{name: "xml", alignCDATA: true},'xmleditor');
 		}
-		else if(in_array("zoom",behaviors)){
+		if(in_array("zoom",behaviors)){
 			/*zoom - optional attributes:  data-zoomsrc, id, data-zoomalwaysshow */
 			if(undefined == navEls[n].getAttribute('id')){
 				navEls[n].setAttribute('id',guid());
@@ -1221,7 +1221,7 @@ function initBehaviors(ajaxdiv){
 			}
     		MojoZoom.makeZoomable(navEls[n], navEls[n].getAttribute('data-zoomsrc'), document.getElementById(navEls[n].getAttribute("id") + "_zoom"), null, null, navEls[n].getAttribute("data-zoomalwaysshow")=="true");
 		}
-        else if(in_array("fileupload",behaviors)){
+        if(in_array("fileupload",behaviors)){
 			/*FILEUPLOAD - HTMl5 only - drag files here to upload */
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
 				//save original background color
@@ -1256,7 +1256,7 @@ function initBehaviors(ajaxdiv){
 				setText(navEls[n],'Fileupload via dragdrop is not supported in your browser.');
             }
         }
-        else if(in_array("float",behaviors)){
+        if(in_array("float",behaviors)){
 			/* FLOAT */
 			var id=navEls[n].getAttribute('id');
 			if(id){
@@ -1265,9 +1265,16 @@ function initBehaviors(ajaxdiv){
 				floatDiv(id, t);
             }
 		}
-        else if(in_array("pin",behaviors)){
+		if(in_array("marquee",behaviors)){
+			/* MARQUEE - turns text into a scrolling marquee. data-behavior="marquee" timer="2" */
+  			var attr=getAllAttributes(navEls[n]);
+  			if(undefined != attr['id']){
+               	marquee(attr['id']);
+			}
+		}
+		if(in_array("pin",behaviors)){
 			/*PIN - */
-			navEls[n].onmouseout=function(e){
+			addEventHandler(navEls[n],'mouseout',function(e){
 				if(undefined == e){e = fixE(e);}
 				if(undefined != e){
 					if(checkMouseLeave(this,e)){
@@ -1276,22 +1283,15 @@ function initBehaviors(ajaxdiv){
 						if(onhide){eval(onhide);}
 					}
 				}
-			}
+			});
         }
-		else if(in_array("marquee",behaviors)){
-			/* MARQUEE - turns text into a scrolling marquee. data-behavior="marquee" timer="2" */
-  			var attr=getAllAttributes(navEls[n]);
-  			if(undefined != attr['id']){
-               	marquee(attr['id']);
-			}
-		}
 		else if(in_array("dropdown",behaviors)){
 			/* Dropdown MENU - */
   			var dname=navEls[n].getAttribute('data-display');
   			if(undefined == dname){dname=navEls[n].getAttribute('display');}
 			if(dname){
 				navEls[n].style.position='relative';
-				navEls[n].onclick=function(e){
+				addEventHandler(navEls[n],'click',function(e){
 					var dname=this.getAttribute('data-display');
 					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
@@ -1305,8 +1305,8 @@ function initBehaviors(ajaxdiv){
 				    	dObj.style.zIndex='999999';
 				    	dObj.style.backgroundColor='#FFF';
 					}
-                }
-                navEls[n].onmouseout=function(e){
+                });
+                addEventHandler(navEls[n],'mouseout',function(e){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
@@ -1331,7 +1331,7 @@ function initBehaviors(ajaxdiv){
 							if(onhide){eval(onhide);}
 						}
 					}
-				}
+				});
             }
 		}
 		else if(in_array("menu",behaviors)){
@@ -1339,7 +1339,7 @@ function initBehaviors(ajaxdiv){
   			var dname=navEls[n].getAttribute('data-display');
   			if(undefined == dname){dname=navEls[n].getAttribute('display');}
 			if(dname){
-				navEls[n].onmouseover=function(e){
+				addEventHandler(navEls[n],'mouseover',function(e){
 					var dname=this.getAttribute('data-display');
 					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
@@ -1386,8 +1386,8 @@ function initBehaviors(ajaxdiv){
 				    	dObj.style.left=x+"px";
 				    	//window.status="Set menu postion to "+x+','+y;
                     }
-                }
-                navEls[n].onmouseout=function(e){
+                });
+                addEventHandler(navEls[n],'mouseout',function(e){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
@@ -1412,10 +1412,10 @@ function initBehaviors(ajaxdiv){
 							if(onhide){eval(onhide);}
 						}
 					}
-				}
+				});
             }
 		}
-		else if(in_array("scrolltable",behaviors)){
+		if(in_array("scrolltable",behaviors)){
 			/* SCROLLTABLE  */
 			var id=navEls[n].getAttribute('id');
   			var h=navEls[n].getAttribute('data-scrollheight');
@@ -1424,7 +1424,7 @@ function initBehaviors(ajaxdiv){
   			if(undefined == w){w=navEls[n].getAttribute('scrollwidth');}
 			if(id){scrollableTable(navEls[n],h,w);}
 		}
-		else if(in_array("slideshow",behaviors)){
+		if(in_array("slideshow",behaviors)){
 			/* SLIDESHOW */
 			var id=navEls[n].getAttribute('id');
 			if(id){
@@ -1456,7 +1456,7 @@ function initBehaviors(ajaxdiv){
 				slideShow(id,0,t);
 			}
 		}
-		else if(in_array("sticky",behaviors)){
+		if(in_array("sticky",behaviors)){
 			/* STICKY - makes menu sticky even when scrolling past it. data-behavior="sticky" */
   			var pos=getPos(navEls[n]);
   			var wh=getWidthHeight(navEls[n]);
@@ -1470,7 +1470,7 @@ function initBehaviors(ajaxdiv){
 				calledStickyMenus=1;
 			}
 		}
-		else if(in_array("stopwatch",behaviors)){
+		if(in_array("stopwatch",behaviors)){
 			/* STOPWATCH */
   			var id=navEls[n].getAttribute('id');
 			if(id){stopWatch(id,0);}
@@ -1480,57 +1480,66 @@ function initBehaviors(ajaxdiv){
   			var id=navEls[n].getAttribute('id');
 			if(id){startClock(id,0);}
 		}
-        else{
-			/*	Check for @math(..)  @sum(..)
-				@sum(one:two:three)
-				@math(one+two+three)
-				str.replace(/microsoft/, "W3Schools")
-			*/
-			for(b in behaviors){
-				var behavior=behaviors[b];
-				var id=navEls[n].getAttribute('id');
-				var re = new RegExp('^\@([a-z]+)[(](.+)[)]$', 'igm');
-	        	var res = re.exec(behavior);
-		        if (res && res.length > 0){
-	
-					var func=res[1].toLowerCase();
-					var str=res[2].toLowerCase();
-					switch (func){
-						case 'sum':
-							var result=0;
-							var sids=str.split(/[,:\s]+/);
-							for (var s=0; s<sids.length; s++) {
-								result += Math.round(getText(sids[s]));
-		                    	}
-		                    setText(navEls[n],result);
-							break
-						case 'math':
-							doMath(id);
-							break
-						case 'raid':
-							var cObj=getObject(str);
-							if(typeof(cObj)=='object'){
-								setText(cObj,getText(navEls[n]));
-								navEls[n].setAttribute('raidid',str);
-								navEls[n].onkeyup=function(){
-									var raidid = this.getAttribute('raidid');
-									setText(raidid,getText(this));
-								}
-								navEls[n].onchange=function(){
-									var raidid = this.getAttribute('raidid');
-									setText(raidid,getText(this));
-								}
-								navEls[n].onblur=function(){
-									var raidid = this.getAttribute('raidid');
-									setText(raidid,getText(this));
-								}
-	      					}
-							break
-						}
-		        	}
-				}
-	       }
+		if(in_array("tab",behaviors)){
+			/* Enable tab in box */
+			addEventHandler(navEls[n],'keydown',function(e){
+		        if(e.keyCode==9 || e.which==9){
+		            e.preventDefault();
+		            var s = this.selectionStart;
+		            this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+		            this.selectionEnd = s+1; 
+		        }
+		    });
 		}
+		/*	Check for @math(..)  @sum(..)
+			@sum(one:two:three)
+			@math(one+two+three)
+			str.replace(/microsoft/, "W3Schools")
+		*/
+		for(b in behaviors){
+			var behavior=behaviors[b];
+			//alert(behavior);
+			var id=navEls[n].getAttribute('id');
+			var re = new RegExp('\@([a-z]+)[(](.+)[)]', 'igm');
+        	var res = re.exec(behavior);
+	        if (res && res.length > 0){
+				var func=res[1].toLowerCase();
+				var str=res[2].toLowerCase();
+				switch (func){
+					case 'sum':
+						var result=0;
+						var sids=str.split(/[,:\s]+/);
+						for (var s=0; s<sids.length; s++) {
+							result += Math.round(getText(sids[s]));
+	                    	}
+	                    setText(navEls[n],result);
+						break
+					case 'math':
+						doMath(id);
+						break
+					case 'raid':
+						var cObj=getObject(str);
+						if(typeof(cObj)=='object'){
+							setText(cObj,getText(navEls[n]));
+							navEls[n].setAttribute('raidid',str);
+							addEventHandler(navEls[n],'keyup',function(){
+								var raidid = this.getAttribute('raidid');
+								setText(raidid,getText(this));
+							});
+							addEventHandler(navEls[n],'change',function(){
+								var raidid = this.getAttribute('raidid');
+								setText(raidid,getText(this));
+							});
+							addEventHandler(navEls[n],'blur',function(){
+								var raidid = this.getAttribute('raidid');
+								setText(raidid,getText(this));
+							});
+      					}
+						break
+					}
+	        	}
+			}
+       }
 	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
 	for(var i=0;i<tobs.length;i++){
 		addEventHandler(tobs[i],'mouseover', function(){tooltipDiv(this);});
@@ -2728,7 +2737,7 @@ function initDrop(tagname,tagatt,attval){
 	var navEls = GetElementsByAttribute(tagname,tagatt,attval);
 	//alert(navEls.length+" "+tagname+" "+tagatt+" "+attval);
 	for (var n=0; n<navEls.length; n++) {
-		navEls[n].onmouseout=function(e) {
+		addEventHandler(navEls[n],'mouseout',function(e) {
 			if(undefined == e){e = fixE(e);}
 			if(undefined != e){
 				if(checkMouseLeave(this,e)){
@@ -2737,11 +2746,11 @@ function initDrop(tagname,tagatt,attval){
 					var onhide=this.getAttribute('onhide');
 					//window.status="onhide="+onhide;
 					if(onhide){eval(onhide);}
-					}
-				}			
+				}
 			}
-		}
+		});
 	}
+}
 /*_marker functions */
 function wasqlMarkerForm(){
 	var centerpop=getObject('centerpop');
