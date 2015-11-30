@@ -168,6 +168,7 @@ if(isAjax()){
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
+		case 'htmlbox':
 			echo adminViewPage($_REQUEST['_menu']);
 			exit;
 		break;
@@ -1272,13 +1273,14 @@ echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
 echo '</div>'."\n";
 echo '<br clear="both" />'."\n";
 echo '<div style="clear:both;float:left;width:100%;"></div>'."\n";
-echo '<div id="admin_body" class="w_pad" style="position:relative;">'."\n";
+echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'."\n";
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
+		case 'htmlbox':
 			echo adminViewPage($_REQUEST['_menu']);
 		break;
 		case 'editor':
@@ -3915,6 +3917,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
