@@ -372,6 +372,7 @@ function ldapParseEntry($lrec=array()){
                 $parts=array();
                 foreach($tmp as $part){
 					list($k,$v)=preg_split('/\=/',$part,2);
+					if(!is_array($parts[$k])){$parts[$k]=array();}
                     if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
 				foreach($parts as $k=>$v){
