@@ -32,7 +32,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 		- php_mbstring
 		- php_mysqli
 	- add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
-		- in the ifModule section:
+		- in the "IfModule alias_module" section:
 			- Alias /php/ "d:/wasql/php/"
 			- Alias /wfiles/ "d:/wasql/wfiles/"
 		- Just below the ifModule section create the following:
@@ -44,7 +44,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 	</Directory>
 </xmp></pre>
 
-- copy sample.htaccess in the wasql folder to c:\wamp\www\.htaccess.
+- copy sample.htaccess in the wasql folder to c:\wamp\www\ folder and name it .htaccess.
 - restart Apache using the WAMP icon in the system tray.
 - using the WAMP icon in the system tray, open a MySQL console and hit ENTER (default password in blank). Type the following (changing the user and pass to match the config.xml file)
 	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
