@@ -1191,6 +1191,9 @@ input[data-type=checkbox]:checked + label, input[data-type=radio]:checked + labe
 .w_nowrap, .nowrap{
 	white-space: nowrap;
 }
+.w_pre{
+	white-space: pre-line;
+}
 .w_button {
 	padding-bottom:1px;
 	padding-left:2px;
