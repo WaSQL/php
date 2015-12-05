@@ -2184,7 +2184,14 @@ LIST_TABLE:
 				        }
 				    break;
 				}
-				echo $_REQUEST['_table_'].' table.</div>'."\n";
+				echo $_REQUEST['_table_'].' table.'."\n";
+				if(strtolower($_REQUEST['_table_'])=='_cron'){
+					echo ' <a href="/php/admin.php?_menu=list&_table_=_cronlog" class="icon-cronlog w_link w_small w_grey"> View Logs</a>'."\n";
+				}
+				elseif(strtolower($_REQUEST['_table_'])=='_cronlog'){
+					echo ' <a href="/php/admin.php?_menu=list&_table_=_cron" class="icon-cron w_link w_small w_grey"> View Crons</a>'."\n";
+				}
+				echo '</div>'."\n";
 				//special options for some tables
 				switch(strtolower($_REQUEST['_table_'])){
                 	case '_cron':
@@ -2197,7 +2204,7 @@ LIST_TABLE:
 						//format active
 						$recopts['active_checkmark']=1;
 						$recopts['active_align']="center";
-						$recopts['-fields']="_id,name,active,running,run_log,frequency,run_date,run_length,run_cmd";
+						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd";
                 	break;
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";
