@@ -1,4 +1,8 @@
 <?php
+/*
+	Run the following to fix this error: cannot open .git/FETCH_HEAD: Permission denied
+		sudo chmod g+w .git/FETCH_HEAD
+*/
 	loadExtras('git');
 	loadExtrasJs('codemirror');
 	$gitpath=getWasqlPath();
