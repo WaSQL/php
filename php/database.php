@@ -470,12 +470,15 @@ function checkDBTableSchema($wtable){
 			$ok=executeSQL($query);
 			$rtn .= " added cron_pid to _cron table<br />\n";
         }
-        if(!isset($finfo['logfile'])){
-			$query="ALTER TABLE {$wtable} ADD logfile varchar(255) NULL;";
-			$ok=executeSQL($query);
-			$query="ALTER TABLE {$wtable} ADD logfile_maxsize integer NULL;";
-			$ok=executeSQL($query);
-			$rtn .= " added logfile to _cron table<br />\n";
+        if(isset($finfo['logfile'])){
+			$ok=dropDBColumn($wtable,array('run_log','logfile','logfile_maxsize'));
+			$ok=editDBRecord(array(
+				'-table'	=> '_tabledata',
+				'-where'	=> "tablename='{$wtable}'",
+				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
+				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date"
+			));
+			$rtn .= " removed logfile from _cron table<br />\n";
         }
         //check indexes
         if(!isset($index['name'])){
@@ -485,11 +488,18 @@ function checkDBTableSchema($wtable){
     }
     if($wtable=='_cronlog'){
 		$finfo=getDBFieldInfo($wtable);
-		if(!isset($finfo['count_crons_inactive'])){
-			$query="drop TABLE {$wtable};";
-			$ok=executeSQL($query);
-			createWasqlTables(array($wtable));
-			$rtn .= " added count_crons_inactive to _cronlog table<br />\n";
+		if(isset($finfo['count_crons_inactive'])){
+			$drops=array();
+			foreach($finfo as $fld=>$field){
+            	if(preg_match('/^count/i',$fld)){$drops[]=$fld;}
+			}
+			$ok=dropDBColumn('_cronlog',$drops);
+			$ok=editDBRecord(array(
+				'-table'	=> '_tabledata',
+				'-where'	=> "tablename='_cronlog'",
+				'listfields'=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length",
+			));
+			$rtn .= " remove count fields from _cronlog table<br />\n";
         }
         //check indexes
         if(!isset($index['name'])){
@@ -2695,6 +2705,58 @@ function delDBRecord($params=array()){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   		}
 	}
+//---------- begin function dropDBColumn--------------------
+/**
+* @describe drops the specified column(s)
+* @param table string - name of table
+* @param mixed - column(s) to drop
+* @return boolean
+* @usage $ok=dropDBColumn('comments','test');
+* @usage $ok=dropDBColumn('comments',array('test','age'));
+*/
+function dropDBColumn($table,$columns){
+	if(!isDBTable($table)){return "No such table: {$table}";}
+	if(!is_array($columns)){$columns=array($columns);}
+	/*
+	Oracle:
+		ALTER TABLE table_name DROP (column_name1, column_name2);
+	MS SQL:
+		ALTER TABLE table_name DROP COLUMN column_name1, column_name2
+	MySql:
+		ALTER TABLE table_name DROP column_name1, DROP column_name2;
+	Postgre SQL
+		ALTER TABLE table_name DROP COLUMN column_name1, DROP COLUMN column_name2;
+	*/
+	if(isMysql() || isMysqli()){
+    	$query="ALTER TABLE {$table} ";
+    	foreach($columns as $column){
+        	$query .= " DROP {$column},";
+		}
+		$query=preg_replace('/\,$/','',trim($query));
+	}
+	elseif(isMssql()){
+		$table="[{$table}]";
+		$columnstr=implode(', ',$columns);
+		$query="ALTER TABLE {$table} DROP COLUMN {$columnstr}";
+	}
+	elseif(isPostgreSQL()){
+    	$query="ALTER TABLE {$table} ";
+    	foreach($columns as $column){
+        	$query .= " DROP COLUMN {$column},";
+		}
+		$query=preg_replace('/\,$/','',trim($query));
+	}
+	elseif(isOracle()){
+		$columnstr=implode(', ',$columns);
+		$query="ALTER TABLE {$table} DROP ({$columnstr})";
+	}
+	$result=executeSQL($query);
+	if(isset($result['error'])){
+		debugValue($result);
+		return false;
+    }
+    return true;
+}
 //---------- begin function dropDBTable--------------------
 /**
 * @describe drops the specified table
@@ -2954,6 +3016,7 @@ function editDBRecord($params=array()){
 				array_push($updates,"$key=$val");
 				}
 			else{
+				//echo "[{$key}]".printValue($val)."\n\n";
 				if(is_array($val)){$val=implode(':',$val);}
 				$val=databaseEscapeString($val);
 				if(strlen($val)==0){$val='NULL';}
