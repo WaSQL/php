@@ -77,7 +77,7 @@
 			<div class="col-sm-6">
 				<view:_response>
 				<label class="w_bigger">Response:</label>
-				<div style="max-height:200px;overflow:auto;"><?=$git['response'];?></div>
+				<div class="w_pre" style="max-height:200px;overflow:auto;white-space: pre-line;"><?=$git['response'];?></div>
 				</view:_response>
 				<?=renderViewIf(strlen($git['response']),'_response',$git,array('-alias'=>'git'));?>
 			</div>
