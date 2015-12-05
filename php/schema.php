@@ -138,10 +138,7 @@ function createWasqlTable($table=''){
 			$fields['run_length']="integer NULL";
 			$fields['run_result']="text NULL";
 			$fields['run_values']="varchar(255) NULL";
-			$fields['logfile']="varchar(255) NULL";
-			$fields['logfile_maxsize']="integer NULL";
 			$fields['running']=databaseDataType('tinyint')." NOT NULL Default 0";
-			$fields['run_log']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -151,8 +148,8 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name active run_log begin_date end_date\r\nfrequency run_format run_values\r\nlogfile logfile_maxsize\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
-				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrun_log\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
+				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
+				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
 				'sortfields'	=> "active desc, running desc, begin_date desc",
 				'formfields_mod'=> "name begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_date run_length\r\nrun_result",
 				'listfields_mod'=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
@@ -171,12 +168,6 @@ function createWasqlTable($table=''){
 			$fields['run_date']=databaseDataType('datetime')." NOT NULL";
 			$fields['run_result']="mediumtext NULL";
 			$fields['run_length']="integer NOT NULL Default 0";
-			$fields['count_crons']="integer NOT NULL Default 1";
-			$fields['count_cronlogs']="integer NOT NULL Default 1";
-			$fields['count_crons_active']="integer NOT NULL Default 1";
-			$fields['count_crons_inactive']="integer NOT NULL Default 1";
-			$fields['count_crons_running']="integer NOT NULL Default 1";
-			$fields['count_crons_listening']="integer NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -184,7 +175,7 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'listfields'	=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length\r\ncount_crons\r\ncount_crons_active\r\ncount_crons_inactive\r\ncount_crons_running\r\ncount_crons_listening",
+				'listfields'	=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length",
 				'sortfields'	=> "_cdate desc, name",
 				);
 			$id=addDBRecord($addopts);
