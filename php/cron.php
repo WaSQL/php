@@ -137,6 +137,11 @@ ENDOFWHERE;
             	$post=postURL($url,array('-method'=>'GET'));
             	$result=$post['body'];
 			}
+			elseif(preg_match('/^<\?\=/',$cmd)){
+            	//cron is a php command
+            	$result=evalPHP($cmd);
+            	if(is_array($result)){$result=printValue($result);}
+			}
 			elseif(preg_match('/^http/',$cmd)){
             	//cron is a URL.
             	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1));
