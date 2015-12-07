@@ -2171,7 +2171,8 @@ LIST_TABLE:
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
 				switch(strtolower($_REQUEST['_table_'])){
-					case '_cron':echo '<span class="icon-stopwatch w_success w_big"></span>';break;
+					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
+					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
 					case '_users':echo '<span class="icon-users w_info w_big"></span>';break;
 					case '_reports':echo '<span class="icon-chart-pie w_big"></span>';break;
 					case '_templates':echo '<span class="icon-file-docs w_big"></span>';break;
@@ -3858,10 +3859,10 @@ function adminMenu(){
 	if(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1){
 		if(!isDBTable('_cron')){$ok=createWasqlTable('_cron');}
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
-		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-stopwatch w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons</span></a>'."\n";
+		$rtn .= '		<li class="dir"><a href="/php/admin.php?_menu=list&_table_=_cron" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons</span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-stopwatch w_success w_big"></span> List Logs</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> List Logs</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus w_big"></span> Add New</a></li>'."\n";
 		if(is_array($crons)){
 			if(count($crons) > 15){
@@ -4781,7 +4782,7 @@ function adminCronBoard(){
 	//return printValue($recs);
 	$rtn .= buildTableBegin(2,0);
 	$rtn .= '	<tr>'."\n";
-	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-stopwatch w_success w_big"></span></a></td>'."\n";
+	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-cron w_success w_big"></span></a></td>'."\n";
 	$rtn .= '		<td colspan="5" class="w_bold w_dblue" align="center" style="font-size:1.1em;">Cron Activity Dashboard</td>'."\n";
 	$rtn .= '		<td align="right"><div title="Update Timer" data-behavior="countdown" class="w_lblue w_smaller" id="cronboard_countdown">31</div></td>'."\n";
 	$rtn .= '		<td align="right"><a href="/php/admin.php?_menu=list&_table_=_cronlog"><img src="/wfiles/_cronlog.png" class="w_middle" title="goto CronLog" alt="cron log" /></a></td>'."\n";
