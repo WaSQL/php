@@ -3526,21 +3526,20 @@ function sqlPrompt(){
 	$rtn .= '			<textarea data-gutter="true" preview="Run SQL and View Results" ajaxid="sqlprompt_results" name="sqlprompt_command" id="sqlprompt_command" style="width:100%;height:250px;" data-behavior="sqleditor" focus="1">'.$cmd.'</textarea><br>'."\n";
 	$rtn .= '		</td>'."\n";
 	$rtn .= '	</tr>'."\n";
-	$rtn .= '	<tr valign="top" id="adminmenu">'."\n";
-	$rtn .= '		<td class="w_align_left w_nowrap">'."\n";
-	$rtn .= '			<button class="btn btn-primary" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'."\n";
-	//next line inspired by Brady Barten
-	$rtn .= '			<button class="btn btn-primary" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'."\n";
+	$rtn .= '	<tr valign="top">'."\n";
+	$rtn .= '		<td class="w_align_left">'."\n";
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'."\n";
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'."\n";
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'."\n";
 	$rtn .= '		</td>'."\n";
 	$rtn .= '	</tr>'."\n";
 	$rtn .= '</table>'."\n";
 	$rtn .= '</form>'."\n";
-	$rtn .= '<form method="POST" name="sqlprompt_form2" target="_export" action="/php/admin.php" class="w_form" style="position:relative;top:-35px;left:300px;" onsubmit="setText(this.sqlprompt_command,getText(\'sqlprompt_command\'));return submitForm(this);">'."\n";
+	$rtn .= '<div class="hidden"><form method="POST" name="sqlprompt_form2" id="sqlprompt_form2" target="_export" action="/php/admin.php" onsubmit="return submitForm(this);">'."\n";
 	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
 	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'."\n";
-	$rtn .= '	<textarea name="sqlprompt_command" style="width:0px;height:0px;display:none;"></textarea>'."\n";
-	$rtn .= '	<button class="btn btn-primary" type="submit"><span class="icon-export"></span> CSV Export</button>'."\n";
-	$rtn .= '</form>'."\n";
+	$rtn .= '	<textarea _required="1" data-requiredmsg="First enter a query to export" name="sqlprompt_command" style="width:10px;height:10px;"></textarea>'."\n";
+	$rtn .= '</form></div>'."\n";
 	$rtn .= '<table class="w_nopad" width="100%">'."\n";
 	//results window
 	$rtn .= '	<tr valign="top">'."\n";
