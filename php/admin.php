@@ -3510,7 +3510,7 @@ function sqlPrompt(){
 	$rtn='';
 	$rtn .= '<table class="w_nopad" width="100%">'."\n";
 	$rtn .= '<tr valign="top">'."\n";
-	$rtn .= '<td class="nowrap">'."\n";
+	$rtn .= '<td class="nowrap hidden-xs">'."\n";
 	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-table w_grey"></span> Tables</div>'."\n";
 	$rtn .= '<div style="height:500px;overflow:auto;padding-right:30px;">'."\n";
 	$rtn .= expandAjaxTables();
@@ -3538,7 +3538,7 @@ function sqlPrompt(){
 	$rtn .= '<form method="POST" name="sqlprompt_form2" target="_export" action="/php/admin.php" class="w_form" style="position:relative;top:-35px;left:300px;" onsubmit="setText(this.sqlprompt_command,getText(\'sqlprompt_command\'));return submitForm(this);">'."\n";
 	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
 	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'."\n";
-	$rtn .= '	<textarea name="sqlprompt_command" style="width:0px;height:0px;"></textarea>'."\n";
+	$rtn .= '	<textarea name="sqlprompt_command" style="width:0px;height:0px;display:none;"></textarea>'."\n";
 	$rtn .= '	<button class="btn btn-primary" type="submit"><span class="icon-export"></span> CSV Export</button>'."\n";
 	$rtn .= '</form>'."\n";
 	$rtn .= '<table class="w_nopad" width="100%">'."\n";
