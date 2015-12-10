@@ -9349,9 +9349,16 @@ function postXML($url='',$xml='',$params=array()) {
 		curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
 		curl_setopt ($process, CURLOPT_HTTPHEADER, array("Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8"));
 	}
+	//headers
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
 		$rtn['_debug'][]='set headers' . printValue($params['-headers']);
+	}
+	if(isset($params['-authuser']) && strlen($params['-authuser']) && isset($params['-authpass']) && strlen($params['-authpass'])){
+		//try all possible authentication methods
+		//curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+		curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($process, CURLOPT_USERPWD, "{$params['-authuser']}:{$params['-authpass']}");
 	}
 	if(isset($params['-crlf']) && $params['-crlf']==1){
 		curl_setopt($process, CURLOPT_CRLF, true);
