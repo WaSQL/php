@@ -874,6 +874,10 @@ function addDBIndex($params=array()){
 	$prefix.='IDX';
 	//name
 	$fieldstr=implode('_',$params['-fields']);
+	//index names cannot be longer than 64 chars long
+	if(strlen($fieldstr) > 60){
+    	$fieldstr=substr($fieldstr,0,60);
+	}
 	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
