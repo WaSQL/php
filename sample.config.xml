@@ -12,6 +12,7 @@
 			missing_msg - Message to show if page is missing. if msg is a url it will redirect.
 			missing_template - template to use on missing pages
 			missing_page - Page to view if current page is missing (use instead of missing_msg and missing_template)
+			passthru - 1 or 0, set to 1 to allow pages to capture / page parts
 			backup_cmd - run this command when going to backup
 			authhost - authenticate and replicate this user profile
 			authldap - authenticate using this LDAP server
