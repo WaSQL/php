@@ -631,6 +631,16 @@ if(is_array($recs)){
 		}
 	}
 }
+$passthru=0;
+if(isset($CONFIG['passthru']) && $CONFIG['passthru']==1){
+	$passthru=1;
+}
+elseif(isset($CONFIG['passthru']) && strtolower($CONFIG['passthru'])=='true'){
+	$passthru=1;
+}
+elseif(isset($CONFIG['missing_page']) && $CONFIG['missing_page']=='passthru'){
+	$passthru=1;
+}
 //Check for  /page/a/b/c  /a/b/c/d/e/f
 if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
 	$parts=preg_split('/\/+/',$view);
@@ -695,7 +705,7 @@ if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
 	}
 }
 
-if(!is_array($PAGE) && stringContains($view,'/') && isset($CONFIG['missing_page']) && $CONFIG['missing_page']=='passthru'){
+if(!is_array($PAGE) && stringContains($view,'/') && $passthru==1){
 	$parts=preg_split('/\/+/',$view);
 	$view=array_shift($parts);
 	$_REQUEST['_view']=$view;
