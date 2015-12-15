@@ -177,6 +177,12 @@ function ldapGetUsers($params=array()){
 	$list=getStoredValue("return ldapGetUsersAll();",$ldapInfo['dirty'],12);
 	foreach($list as $rec){
     	$skip=0;
+    	if(isset($rec['objectguid'])){
+        	$rec['objectguid_base64']=encodeBase64($rec['objectguid']);
+		}
+		if(isset($rec['objectsid'])){
+        	$rec['objectsid_base64']=encodeBase64($rec['objectsid']);
+		}
 		foreach($params as $k=>$v){
 			if($k=='*'){
 				$found=0;
