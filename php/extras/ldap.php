@@ -184,6 +184,8 @@ function ldapGetUsers($params=array()){
         	$rec['objectsid_base64']=encodeBase64($rec['objectsid']);
 		}
 		foreach($params as $k=>$v){
+			//skip instruction params - ones that start with a dash
+			if(preg_match('/^\-/',$k)){continue;}
 			if($k=='*'){
 				$found=0;
             	foreach($rec as $rk=>$rv){
@@ -236,7 +238,15 @@ function ldapGetUsers($params=array()){
 			}
 		}
 		if($skip==1){continue;}
-		$recs[]=$rec;
+		ksort($rec);
+		//index?
+		if(isset($params['-index']) && isset($rec[$params['-index']])){
+        	$index=$rec[$params['-index']];
+        	$recs[$index]=$rec;
+		}
+		else{
+			$recs[]=$rec;
+		}
 	}
 	return $recs;
 }
