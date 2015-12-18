@@ -6,6 +6,7 @@
 		http://php.net/manual/en/function.ldap-connect.php
 		https://samjlevy.com/use-php-and-ldap-to-list-members-of-an-active-directory-group-improved/
 		http://stackoverflow.com/questions/14815142/php-ldap-bind-on-secure-remote-server-windows-fail
+		http://forums.phpfreaks.com/topic/129205-solved-disabling-account-using-ldap-and-php/
 		
         http://pear.php.net/package/Net_LDAP2/download
         http://stackoverflow.com/questions/8276682/wamp-2-2-install-pear
@@ -425,10 +426,56 @@ function ldapParseEntry($lrec=array()){
 	ksort($rec);
 	return $rec;
 }
+//---------- begin function ldapModify--------------------
+/**
+* @describe modifies set Active Directory Record with changes
+* @param objectguid string
+* @param changes array
+* @return boolean
+* @usage $ok=ldapModify($objectguid,$changes);
+*/
 function ldapModify($objectguid,$changes){
 	global $ldapInfo;
 	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
 	$dn=$recs[0]['dn'];
+	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
+	return $result;
+}
+//---------- begin function ldapEnable --------------------
+/**
+* @describe enables specified Active Directory Record
+* @param objectguid string
+* @return boolean
+* @usage $ok=ldapEnable($objectguid);
+*/
+function ldapEnable($objectguid){
+	global $ldapInfo;
+	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
+	$dn=$recs[0]['dn'];
+	$ac=$recs[0]['useraccountcontrol'];
+	//$disable=($ac |  2); // set all bits plus bit 1 (=dec2)
+	$enable =($ac & ~2); // set all bits minus bit 1 (=dec2)
+	$changes=array();
+	$changes["useraccountcontrol"][0]=$enable;
+	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
+	return $result;
+}
+//---------- begin function ldapDisable --------------------
+/**
+* @describe disables specified Active Directory Record
+* @param objectguid string
+* @return boolean
+* @usage $ok=ldapDisable($objectguid);
+*/
+function ldapDisable($objectguid){
+	global $ldapInfo;
+	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
+	$dn=$recs[0]['dn'];
+	$ac=$recs[0]['useraccountcontrol'];
+	$disable=($ac |  2); // set all bits plus bit 1 (=dec2)
+	//$enable =($ac & ~2); // set all bits minus bit 1 (=dec2)
+	$changes=array();
+	$changes["useraccountcontrol"][0]=$disable;
 	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
 	return $result;
 }
