@@ -2790,6 +2790,34 @@ LIST_TABLE:
 							}
 						}
 					break;
+					case 'rename':
+						$file=decodeBase64($_REQUEST['file']);
+						$newname=addslashes($_REQUEST['name']);
+						$newname=str_replace(' ','_',$newname);
+						$newname=preg_replace('/[^a-z0-9\_\-\.]/i','',$newname);
+						$newname=preg_replace('/\_+/','_',$newname);
+						$newname=preg_replace('/\.gz$/i','',$newname);
+						$newname=preg_replace('/\.sql$/i','',$newname);
+						if(strlen($newname)){
+							$newname=$CONFIG['dbname'].'__'.$newname;
+							//$newname=getFileName($newname,1);
+							$filename=getFileName($file);
+							if(preg_match('/\.sql\.gz$/i',$filename)){
+								$afile=str_replace($filename,"{$newname}.sql.gz",$file);
+							}
+							elseif(preg_match('/\.sql$/i',$filename)){
+								$afile=str_replace($filename,"{$newname}.sql",$file);
+							}
+							if($afile != $file){
+                            	rename($file,$afile);
+                            	echo "{$file} renamed to {$afile}<br>\n";
+							}
+						}
+						else{
+                        	echo '<div class="w_danger icon-warning"> You must specify a new name</div>';
+						}
+
+					break;
                 	case 'backup':
                 		$dump=dumpDB(requestValue('_table_'));
                 		if(!isset($dump['success'])){
@@ -2846,6 +2874,7 @@ LIST_TABLE:
 					$rec=$files[$x];
 	            	$rec['action']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
 	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=restore&file='.encodeBase64($rec['afile']).'" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\n ARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
+	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="var n=prompt(\'New name:\');if(undefined==n || !n.length || n==\'null\'){return false;}this.href+=\'&name=\'+n;" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-edit w_warning w_big"></span></a>';
 					$list[]=$rec;
 				}
 				echo '<div style="padding:15px;">'."\n";
