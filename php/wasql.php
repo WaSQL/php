@@ -772,8 +772,8 @@ function wasqlSetMinify($backend=0){
 	loadExtrasCss(array('bootstrap'));
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
-		loadExtrasCss(array('nicedit','codemirror','admin','accordian','dropdown','socialbuttons','treeview'));
-		loadExtrasJs(array('html5','nicedit','codemirror'));
+		loadExtrasCss(array('alertify','nicedit','codemirror','admin','accordian','dropdown','socialbuttons','treeview'));
+		loadExtrasJs(array('alertify','html5','nicedit','codemirror'));
 		loadExtras('system');
 		if($_SERVER['REMOTE_BROWSER']=='msie'){loadExtrasJs('html5_ie');}
 		return;
