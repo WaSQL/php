@@ -7886,6 +7886,7 @@ function loadExtrasCss($extras){
         	break;
         	case 'codemirror':
         	case 'tcal':
+        	case 'alertify':
         		//load the js required for these just in case they don't
         		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_js'])){
         			$_SESSION['w_MINIFY']['extras_js'][]=$extra;
@@ -7934,6 +7935,7 @@ function loadExtrasJs($extras){
 			break;
         	case 'codemirror':
         	case 'tcal':
+        	case 'alertify':
         		//load the css required for these just in case they don't
         		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
         			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
