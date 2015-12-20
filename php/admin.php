@@ -1258,11 +1258,12 @@ $js=<<<ENDOFJSSCRIPT
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	function renameBackup(obj){
-		alertify.backupObj=getObject(obj);
-		alertify.prompt("New Filename:", function (e, str) {
+		alertify.renameBackup=getObject(obj);
+		alertify.prompt('<span class="icon-rename w_bigger w_grey"> New Filename:</span>', function (e, str) {
 			if (e) {
-				var obj=alertify.backupObj;
+				var obj=alertify.renameBackup;
 				obj.href+='&name='+str;
+				alertify.renameBackup='';
 				window.location=obj.href;
 			}
 		});
@@ -2825,13 +2826,9 @@ LIST_TABLE:
 							}
 							if($afile != $file){
                             	rename($file,$afile);
-                            	echo "{$file} renamed to {$afile}<br>\n";
+                            	//echo "{$file} renamed to {$afile}<br>\n";
 							}
 						}
-						else{
-                        	echo '<div class="w_danger icon-warning"> You must specify a new name</div>';
-						}
-
 					break;
                 	case 'backup':
                 		$dump=dumpDB(requestValue('_table_'));
