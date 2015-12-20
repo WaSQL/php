@@ -2874,7 +2874,7 @@ LIST_TABLE:
 					$rec=$files[$x];
 	            	$rec['action']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
 	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=restore&file='.encodeBase64($rec['afile']).'" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\n ARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
-	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="var n=prompt(\'New name:\');if(undefined==n || !n.length || n==\'null\'){return false;}this.href+=\'&name=\'+n;" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-edit w_warning w_big"></span></a>';
+	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="var n=prompt(\'New name:\');if(undefined==n || !n.length || n==\'null\'){return false;}this.href+=\'&name=\'+n;" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_warning w_big"></span></a>';
 					$list[]=$rec;
 				}
 				echo '<div style="padding:15px;">'."\n";
