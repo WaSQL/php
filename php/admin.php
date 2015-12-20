@@ -1253,6 +1253,21 @@ $js=<<<ENDOFJSSCRIPT
 		setText('syncDiv',getText(sdiv));
 		return true;
 	}
+	//---------- begin function renameBackup ----
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	function renameBackup(obj){
+		alertify.backupObj=getObject(obj);
+		alertify.prompt("New Filename:", function (e, str) {
+			if (e) {
+				var obj=alertify.backupObj;
+				obj.href+='&name='+str;
+				window.location=obj.href;
+			}
+		});
+		return false;
+	}
 </script>
 ENDOFJSSCRIPT;
 $params=array(
@@ -2874,7 +2889,7 @@ LIST_TABLE:
 					$rec=$files[$x];
 	            	$rec['action']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
 	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=restore&file='.encodeBase64($rec['afile']).'" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\n ARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
-	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="var n=prompt(\'New name:\');if(undefined==n || !n.length || n==\'null\'){return false;}this.href+=\'&name=\'+n;" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_warning w_big"></span></a>';
+	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="return renameBackup(this);" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_grey w_big"></span></a>';
 					$list[]=$rec;
 				}
 				echo '<div style="padding:15px;">'."\n";
