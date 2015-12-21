@@ -47,7 +47,11 @@ function ldapAddUser($params){
 		}
 	}
 	//call ldap_add to add the entry
-	$ldapInfo['lastdn']="cn=Bob,cn=Snob,{$ldapInfo['basedn']}";
+	$cnparts=preg_split('//',$params['cn']);
+	foreach($cnparts as $part){
+		$ldapInfo['lastdn'].="cn={$part},";
+	}
+	$ldapInfo['lastdn'].= $ldapInfo['basedn'];
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['lastdn'], $params)){
 		$enum=ldap_errno($ldapInfo['connection']);
         $msg=ldap_err2str( $enum );
