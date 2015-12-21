@@ -68,11 +68,12 @@ foreach($ConfigXml as $name=>$host){
 ENDOFWHERE;
 	$recs=getDBRecords(array(
 		'-table'	=> '_cron',
+		'-fields'  	=> '_id,name,run_date,frequency,run_format,run_values,running,run_cmd',
 		'-where'	=> $wherestr
 	));
 	if(is_array($recs) && count($recs)){
 		$cnt=count($recs);
-		//echo  "[{$CONFIG['name']}] {$cnt} crons found\n";
+		echo  "[{$CONFIG['name']}] {$cnt} crons found\n";
 		foreach($recs as $rec){
 			$run=0;
 			//should this cron be run now?  check frequency...
@@ -117,9 +118,14 @@ ENDOFWHERE;
 			}
 			if($run==0){continue;}
 			//get record again to insure another process is not running it.
-			$rec=getDBRecord(array('-table'=>'_cron','_id'=>$rec['_id']));
+			$rec=getDBRecord(array(
+				'-table'	=> '_cron',
+				'_id'		=> $rec['_id'],
+				'-fields'  	=> '_id,name,run_date,frequency,run_format,run_values,running,run_cmd',
+			));
 			//skip if running
 			if($rec['running']==1){continue;}
+			echo " - running {$rec['name']}\n";
 			//update record to show wer are now running
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
