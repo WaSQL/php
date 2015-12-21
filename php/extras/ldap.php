@@ -47,7 +47,7 @@ function ldapAddUser($params){
 		}
 	}
 	//call ldap_add to add the entry
-	$cnparts=preg_split('//',$params['cn']);
+	$cnparts=preg_split('/\ /',$params['cn']);
 	foreach($cnparts as $part){
 		$ldapInfo['lastdn'].="cn={$part},";
 	}
