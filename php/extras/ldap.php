@@ -48,7 +48,10 @@ function ldapAddUser($params){
 	}
 	//call ldap_add to add the entry
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
-		return ldap_errno($ldapInfo['connection']);
+		$enum=ldap_errno($ldapInfo['connection']);
+        $msg=ldap_err2str( $enum );
+		ldap_unbind($ldapInfo['connection']); // Clean up after ourselves.
+		return "LDAP AddUser Error:{$enum}, Msg:{$msg} .. ".printValue($params);
 	}
 	return 'success';
 }
