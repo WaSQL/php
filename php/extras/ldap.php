@@ -50,7 +50,6 @@ function ldapAddUser($params){
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['basedn'], $params)){
 		$enum=ldap_errno($ldapInfo['connection']);
         $msg=ldap_err2str( $enum );
-		ldap_unbind($ldapInfo['connection']); // Clean up after ourselves.
 		return "LDAP AddUser Error:{$enum}, Msg:{$msg} .. ".printValue($params);
 	}
 	return 'success';
@@ -148,7 +147,7 @@ function ldapAuth($params=array()){
 */
 function ldapClose(){
 	global $ldapInfo;
-	ldap_unbind($ldapInfo['connection']);
+	@ldap_unbind($ldapInfo['connection']);
 	$ldapInfo=array();
 }
 //---------- begin function ldapGetRecords--------------------
