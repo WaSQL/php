@@ -116,12 +116,14 @@ function createWasqlTable($table=''){
 			break;
 		case '_changelog':
 			$fields['tablename']="varchar(255) NOT NULL";
+			$fields['method']="char(10) NOT NULL Default 'web'";
+			$fields['fieldname']="varchar(255) NOT NULL";
 			$fields['record_id']="INT NOT NULL";
-			$fields['diff']="mediumtext NULL";
+			$fields['changeval']="mediumtext NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
-			if($ok != 1){break;}
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"record_id,tablename"));
+			if($ok != 1){ return printValue($ok);break;}
+
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"record_id,tablename,fieldname"));
 			addMetaData($table);
 			return 1;
 			break;
@@ -238,6 +240,15 @@ function createWasqlTable($table=''){
 			$ok=schemaImportCSV($table,'html_entities.csv');
 			return 1;
 			break;
+		case '_posteditlog':
+			$fields['postedittables']="varchar(255) NOT NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){ return printValue($ok);break;}
+
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser"));
+			addMetaData($table);
+			return 1;
+			break;
 		case '_tiny':
 			$fields['url']="varchar(2100) NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
@@ -350,24 +361,6 @@ function createWasqlTable($table=''){
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"page_type"));
 			//insert default files for this table from the schema directory
 			schemaAddFileData($table);
-			addMetaData($table);
-			return 1;
-			break;
-		case '_pagelog':
-			$fields['page_name']="varchar(150) NOT NULL";
-			$fields['page_id']="integer NOT NULL";
-			$fields['user_id']="integer NOT NULL";
-			$fields['command']="varchar(255) NOT NULL";
-			$fields['description']="text NULL";
-			$ok = createDBTable($table,$fields,'InnoDB');
-			if($ok != 1){break;}
-			//Add tabledata
-			$addopts=array('-table'=>"_tabledata",
-				'tablename'		=> $table,
-				'listfields'	=> "_cdate,page_name\r\npage_id\r\nuser_id\r\ncommand",
-				'sortfields'	=> "_cdate desc, name",
-				);
-			$id=addDBRecord($addopts);
 			addMetaData($table);
 			return 1;
 			break;
@@ -2099,9 +2092,9 @@ function getWasqlTables(){
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
 		'_fielddata','_tabledata','countries','states','contact_form',
-		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_pagelog','_queries',
+		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_models','_sessions','_html_entities'
+		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
 	//include wpass table?
 	if($CONFIG['wpass']){$tables[]='_wpass';}
