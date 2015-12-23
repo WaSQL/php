@@ -8833,6 +8833,7 @@ function settingsValues($id=0,$fields=array()){
 *	returns xml for postedit.exe to parse
 */
 function postEditXml($pextables=array(),$dbname=''){
+	global $USER;
 	//build xml
 	if(strlen($dbname)){
         $x=$pextables;
@@ -8842,6 +8843,17 @@ function postEditXml($pextables=array(),$dbname=''){
 		}
 		$_SERVER['WaSQL_DBNAME']=$dbname;
 	}
+	//add record to posteditlog
+	if(!isDBTable('_posteditlog')){
+		include_once("$progpath/schema.php");
+		$ok=createWasqlTable('_posteditlog');
+	}
+	$ok=addDBRecord(array(
+		'-table'	=> '_posteditlog',
+		'postedittables'	=> implode(', ',$pextables)
+	));
+	$ok=cleanupDBRecords('_posteditlog',30);
+	//build XML
 	$xml=xmlHeader(array('version'=>"1.0",'encoding'=>"utf-8"));
 	$xml .= "<xmlroot>\n";
 	$xml .= "	<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>\n";
@@ -9851,40 +9863,65 @@ function processActions(){
 				if(is_array($rec)){
 					$tinymce=array();
 					$ruser=(isNum($rec['_euser']) && $rec['_euser'] > 0)?$rec['_euser']:$rec['_cuser'];
-					if($action=='POSTEDIT' && $USER['_id'] != $ruser && $ruser !=0 && isNum($_REQUEST['timestamp']) && (!isset($_REQUEST['_overwrite']) || $_REQUEST['_overwrite'] != 1)){
-						//only edit the file if timestamp matches
-						$timestamp=isNum($rec['_edate_utime'])?$rec['_edate_utime']:$rec['_cdate_utime'];
-						$uid=isNum($rec['_euser'])?$rec['_euser']:$rec['_cuser'];
-						if(isNum($uid) && isNum($timestamp) && $timestamp != $_REQUEST['timestamp']){
-							$urec=getDBUserById($uid);
+					if($action=='POSTEDIT'){
+						//Has this table and field been updated since last refresh
+						if(!isDBTable('_posteditlog')){
+							include_once("$progpath/schema.php");
+							$ok=createWasqlTable('_posteditlog');
+						}
+						//get last posteditlog rec for this user
+						$posteditlog=getDBRecord(array('-table'=>'_posteditlog','_cuser'=>$USER['_id'],'-order'=>'_id desc'));
+						//get last _changelog record for this table and field
+						if(!isDBTable('_changelog')){
+							include_once("$progpath/schema.php");
+							$ok=createWasqlTable('_changelog');
+						}
+						$flds=getDBFields('_changelog');
+						if(!in_array('fieldname',$flds)){
+							include_once("$progpath/schema.php");
+                        	executeSQL("drop table _changelog");
+                        	$ok=createWasqlTable('_changelog');
+						}
+						$changelog=getDBRecord(array(
+							'-table'	=> '_changelog',
+							'tablename'	=> $_REQUEST['_table'],
+							'fieldname'	=> $_REQUEST['_fields'],
+							'record_id'	=> $_REQUEST['_id'],
+							'-order'	=> '_id desc'
+						));
+						if(
+							isset($changelog['_cdate']) && isset($posteditlog['_cdate']) && 
+							strtotime($changelog['_cdate']) > strtotime($posteditlog['_cdate']) &&
+							$changelog['_cuser'] != $USER['_id']
+							){
+							$urec=getDBUserById($changelog['_cuser']);
 							if(strlen($urec['firstname']) && strlen($urec['lastname'])){$name="{$urec['firstname']} {$urec['lastname']}";}
 							elseif(strlen($urec['name'])){$name=$urec['name'];}
 							elseif(strlen($urec['username'])){$name=$urec['username'];}
 							else{$name="Unknown";}
-							$diff=abs(round($timestamp-$_REQUEST['timestamp']));
-							$difftime=verboseTime($diff);
-							$error="Record {$rec['_id']} in {$_REQUEST['_table']} table is out of date.\r\n";
-							$error.=" It was modified {$difftime} ago by:\r\n{$name}\r\n";
-							$error.=" - Username: {$urec['username']}\r\n";
-							if(isset($urec['phone']) && strlen($urec['phone'])){
-								$error.=" - Phone: {$urec['phone']}\r\n";
-                            	}
-                            if(isset($urec['email']) && isEmail($urec['email'])){
-								$error.=" - Email: {$urec['email']}\r\n";
-                            	}
-                            $error.=" - _id: {$uid}\r\n";
-                            $error.="Your Info:\r\n";
-                            $error.=" - username: {$USER['username']}\r\n";
-                            $error.=" - _id: {$USER['username']}\r\n";
-                            echo "<req_timestamp>{$_REQUEST['timestamp']}</req_timestamp>\r\n";
-                            echo "<rec_timestamp>{$timestamp}</rec_timestamp>\r\n";
-                            echo "<cur_userid>{$USER['_id']}</cur_userid>\r\n";
-                            echo "<rec_userid>{$ruser}</rec_userid>\r\n";
-							echo "<error>{$error}</error>\r\n";
+							$age=time()-strtotime($changelog['_cdate']);
+							$ago=verboseTime($age,0,1);
+							if(!strlen($ago)){$ago='a few seconds';}
+							$error="Table: {$changelog['tablename']}, Field:{$changelog['fieldname']}, Record {$changelog['record_id']} has been updated since you refreshed last.\r\n\r\n";
+							$error.=" You must REFRESH postEdit before submitting your change.\r\n\r\n";
+							$error.=" Last Changed by {$name} {$ago} ago.\r\n";
+							echo "<refresh_error>{$error}</refresh_error>\r\n";
 							echo "<error_code>ECR{$rec['_id']}</error_code>\r\n";
 							exit;
                         	}
-                    	}
+                        else{
+                        	//add record to _changelog
+							$ok=addDBRecord(array(
+								'-table'	=> '_changelog',
+								'tablename'	=> $_REQUEST['_table'],
+								'fieldname'	=> $_REQUEST['_fields'],
+								'record_id'	=> $_REQUEST['_id'],
+								'method'	=> 'postedit',
+								'changeval'	=> decodeBase64($_REQUEST[$_REQUEST['_fields']])
+							));
+							$ok=cleanupDBRecords('_changelog',90);
+						}
+                    }
 					$fields=explode(',',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
 					$opts=array('-table'=>$_REQUEST['_table'],'-where'=>'_id='.$_REQUEST['_id']);
