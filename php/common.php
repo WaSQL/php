@@ -8845,6 +8845,7 @@ function postEditXml($pextables=array(),$dbname=''){
 	}
 	//add record to posteditlog
 	if(!isDBTable('_posteditlog')){
+		$progpath=dirname(__FILE__);
 		include_once("$progpath/schema.php");
 		$ok=createWasqlTable('_posteditlog');
 	}
@@ -9866,6 +9867,7 @@ function processActions(){
 					if($action=='POSTEDIT'){
 						//Has this table and field been updated since last refresh
 						if(!isDBTable('_posteditlog')){
+							$progpath=dirname(__FILE__);
 							include_once("$progpath/schema.php");
 							$ok=createWasqlTable('_posteditlog');
 						}
@@ -9873,11 +9875,13 @@ function processActions(){
 						$posteditlog=getDBRecord(array('-table'=>'_posteditlog','_cuser'=>$USER['_id'],'-order'=>'_id desc'));
 						//get last _changelog record for this table and field
 						if(!isDBTable('_changelog')){
+							$progpath=dirname(__FILE__);
 							include_once("$progpath/schema.php");
 							$ok=createWasqlTable('_changelog');
 						}
 						$flds=getDBFields('_changelog');
 						if(!in_array('fieldname',$flds)){
+							$progpath=dirname(__FILE__);
 							include_once("$progpath/schema.php");
                         	executeSQL("drop table _changelog");
                         	$ok=createWasqlTable('_changelog');
