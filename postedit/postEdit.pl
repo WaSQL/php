@@ -13,10 +13,10 @@ our $OriginalFilename="postEdit.exe";
 our $InternalName="postEdit";
 #perl2exe_info ProductName=WaSQL Edit Manager
 our $ProductName="WaSQL Edit Manager";
-#perl2exe_info ProductVersion=1.997.35
-our $ProductVersion="1.997.35";
-#perl2exe_info FileVersion=1.1410.28
-our $FileVersion="1.1410.28";
+#perl2exe_info ProductVersion=1.317.41
+our $ProductVersion="1.317.41";
+#perl2exe_info FileVersion=1.1512.22
+our $FileVersion="1.1512.22";
 #perl2exe_info LegalCopyright=Copyright 2004-2012, WaSQL.com
 our $LegalCopyright="Copyright 2004-2012, WaSQL.com";
 #################################################################
@@ -1328,6 +1328,28 @@ sub fileChanged{
 		}
 		return 0;
 		}
+	elsif($body=~/<refresh_error>(.+?)<\/refresh_error>/is){
+		$err=strip($1);
+		showBalloon($balloonMsg."$err","REFRESH Needed!","error");
+		#restoreWindow();
+		appendMessage("$file\r\n$body\n\n");
+		appendMessage($err);
+		setColorBox("Fail",'REFRESH Error');
+		setColorBox("Fail");
+		my $type=0x0004 | 0x0030 | 0x0100;
+		$ok=$mw->MessageBox($err."\r\n\r\nRefresh Now?","Refresh Needed",$type);
+		if($ok==7){
+			#Do not Exit - No was pushed
+			return 0;
+			}
+		else{
+        	processButton('Refresh');
+        	$watchtable{$table}{$id}{timestamp}=time();
+        	return 0;
+		}
+
+		return 1;
+    	}
     elsif($body=~/<error>(.+?)<\/error>/is){
 		$err=strip($1);
 		showBalloon($balloonMsg."$err","Sending Changes to Server...Failed!","error");
