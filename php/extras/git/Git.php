@@ -300,7 +300,7 @@ class GitRepo {
 		}
 
 		$status = trim(proc_close($resource));
-		if ($status) throw new Exception($stderr);
+		if ($status){return $stderr;}
 
 		return $stdout;
 	}
