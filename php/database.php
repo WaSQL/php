@@ -2217,17 +2217,18 @@ function buildDBPaging($paging=array()){
 		$rtn .= buildFormBegin($action,array('-name'=>$formname,'-onsubmit'=>$onsubmit,'_start'=>$start));
 	}
 	//hide other inputs
-	$rtn .= '<div style="display:none;" id="inputs">'."\n";
-	foreach($paging as $pkey=>$pval){
-		if(preg_match('/^\-/',$pkey)){continue;}
-		if($pkey=='_action' && $pval=='multi_update'){continue;}
-		if(preg_match('/^(x|y)$/i',$pkey)){continue;}
-		if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$pkey)){continue;}
-		if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
-		$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
-    	}
-    $rtn .= '</div>'."\n";
-
+	if(!isset($paging['-formname'])){
+		$rtn .= '<div style="display:none;" id="inputs">'."\n";
+		foreach($paging as $pkey=>$pval){
+			if(preg_match('/^\-/',$pkey)){continue;}
+			if($pkey=='_action' && $pval=='multi_update'){continue;}
+			if(preg_match('/^(x|y)$/i',$pkey)){continue;}
+			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$pkey)){continue;}
+			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
+			$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
+	    	}
+	    $rtn .= '</div>'."\n";
+	}
 	//search?
 	if(isset($paging['-search'])){
 		if(isset($paging['-table'])){
