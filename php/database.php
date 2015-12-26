@@ -6305,7 +6305,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$params['-action']='';
 	}
     //remove fields that are not valid
-	if(isset($params['-table'])){
+	if(isset($params['-table']) && !isset($params['-formname'])){
 		$info=getDBFieldMeta($params['-table'],"displayname,editlist");
 		$parts=array();
 	    foreach($_REQUEST as $key=>$val){
