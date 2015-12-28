@@ -47,11 +47,7 @@ function ldapAddUser($params){
 		}
 	}
 	//call ldap_add to add the entry
-	$cnparts=preg_split('/\ /',$params['cn']);
-	foreach($cnparts as $part){
-		$ldapInfo['lastdn'].="cn={$part},";
-	}
-	$ldapInfo['lastdn'].= $ldapInfo['basedn'];
+	$ldapInfo['lastdn']= "cn={$params['cn']},{$ldapInfo['basedn']}";
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['lastdn'], $params)){
 		$enum=ldap_errno($ldapInfo['connection']);
         $msg=ldap_err2str( $enum );
@@ -285,7 +281,8 @@ function ldapGetUsersAll(){
 			//do not include Build-in accounts
 			if(isset($e['description']) && stringContains(ldapValue($e['description']),'Built-in account')){continue;}
 			//require a memberof key
-			if(!isset($e['memberof'])){continue;}
+			//echo printValue($e);
+			if(!isset($e['memberof'])){$e['memberof']='USERS';}
 			$rec=ldapParseEntry($e);
 			$recs[]=$rec;
         }
