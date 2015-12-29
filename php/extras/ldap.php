@@ -445,6 +445,39 @@ function ldapModify($objectguid,$changes){
 	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
 	return $result;
 }
+//---------- begin function ldapAddAttribute--------------------
+/**
+* @describe adds an Active Directory Record attribute to the user record
+* @param objectguid string
+* @param changes array
+* @return boolean
+* @usage $ok=ldapAddAttribute($objectguid,$changes);
+*/
+function ldapAddAttribute($objectguid,$changes){
+	global $ldapInfo;
+	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
+	$dn=$recs[0]['dn'];
+	$result = ldap_mod_add($ldapInfo['connection'], $dn, $changes);
+	return $result;
+}
+//---------- begin function ldapModifyAttribute--------------------
+/**
+* @describe modifies set Active Directory Record attribute with changes
+* @param objectguid string
+* @param changes array
+* @return boolean
+* @usage $ok=ldapModifyAttribute($objectguid,$changes);
+*/
+function ldapEditAttribute($objectguid,$changes){
+	return function ldapModifyAttribute($objectguid,$changes);
+}
+function ldapModifyAttribute($objectguid,$changes){
+	global $ldapInfo;
+	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
+	$dn=$recs[0]['dn'];
+	$result = ldap_mod_replace($ldapInfo['connection'], $dn, $changes);
+	return $result;
+}
 //---------- begin function ldapEnable --------------------
 /**
 * @describe enables specified Active Directory Record
