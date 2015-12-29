@@ -5456,7 +5456,8 @@ function getRunTime(){
 function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 	$progpath=dirname(__FILE__);
 	buildDir("{$progpath}/temp");
-	$local="{$progpath}/temp/" . md5($evalstr) . '.gsv';
+	global $CONFIG;
+	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
 	if($force && file_exists($local)){unlink($local);}
     if(file_exists($local) && filesize($local) > 50){
 		$filetime=filemtime($local);
