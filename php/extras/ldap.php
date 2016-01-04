@@ -469,7 +469,7 @@ function ldapAddAttribute($objectguid,$changes){
 * @usage $ok=ldapModifyAttribute($objectguid,$changes);
 */
 function ldapEditAttribute($objectguid,$changes){
-	return function ldapModifyAttribute($objectguid,$changes);
+	return ldapModifyAttribute($objectguid,$changes);
 }
 function ldapModifyAttribute($objectguid,$changes){
 	global $ldapInfo;
