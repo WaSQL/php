@@ -9133,7 +9133,7 @@ function postURL($url,$params=array()) {
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEFILE, $this->cookie_file);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEJAR, $this->cookie_file);
 	//curl_setopt($process, CURLOPT_ENCODING , $params['-compression']);
-	curl_setopt($process, CURLOPT_TIMEOUT, 60);
+	curl_setopt($process, CURLOPT_TIMEOUT, 600);
 	//if ($this->proxy) curl_setopt($cUrl, CURLOPT_PROXY, �proxy_ip:proxy_port�);
 	curl_setopt($process, CURLOPT_RETURNTRANSFER, 1);
 	if(isset($params['-follow'])){
