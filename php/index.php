@@ -35,7 +35,7 @@ elseif($url_parts[0]=='t'){
 include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
-//check for tiny urls - /t/B49Z  - checks the _tiny table
+//check for tiny urls - /y/B49Z  - checks the _tiny table
 if($url_parts[0]=='y' && count($url_parts)==2){
 	include_once("$progpath/schema.php");
 	loadExtras('tiny');
