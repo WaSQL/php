@@ -13,10 +13,10 @@ our $OriginalFilename="postEdit.exe";
 our $InternalName="postEdit";
 #perl2exe_info ProductName=WaSQL Edit Manager for DOS/Wine
 our $ProductName="WaSQL Edit Manager for DOS/Wine";
-#perl2exe_info ProductVersion=1.600.35
-our $ProductVersion="1.600.35";
-#perl2exe_info FileVersion=1.1404.26
-our $FileVersion="1.1404.26";
+#perl2exe_info ProductVersion=1.310.36
+our $ProductVersion="1.310.36";
+#perl2exe_info FileVersion=1.1601.05
+our $FileVersion="1.1601.05";
 #perl2exe_info LegalCopyright=Copyright 2004-2012, WaSQL.com
 our $LegalCopyright="Copyright 2004-2012, WaSQL.com";
 #################################################################
