@@ -778,6 +778,7 @@ function setObjectPos(obj,x,y){
 	}
 /* centerObject */
 function centerObject(obj,fade){
+	return;
 	//info: centers specified object or id
 	if(undefined == fade){fade=0;}
 	var sObj=getObject(obj);
