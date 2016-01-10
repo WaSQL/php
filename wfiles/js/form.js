@@ -2254,7 +2254,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
-	if(undefined == document.getElementById(sid) && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
+	if(undefined == document.getElementById(sid)&& lcsid != 'pop' && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
 		alert('Error in ajaxPost\n'+sid+' is not defined as a valid object id');
 		return false;
     	}
@@ -2309,6 +2309,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
+				else if(lname == 'pop'){
+					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
+					}
 				else if(this.showprocessing){
 					setProcessing(this.showprocessingdiv);
 					}
@@ -2324,6 +2327,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				if(cb.indexOf('centerpop') != -1 || dname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
                     }
+                else if(lname == 'pop'){
+					popText(this.popNumber,val,'timed out...');
+					}
 				else{setText(dname,val);}
 				if(undefined != theform.setprocessing){
 					setText(theform.setprocessing.value,'');
@@ -2337,6 +2343,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				if(cb.indexOf('centerpop') != -1 || dname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
                     }
+                else if(lname == 'pop'){
+					popText(this.popNumber,val,'error');
+					}
 				else{setText(dname,val);}
 				if(undefined != theform.setprocessing){
 					setText(theform.setprocessing.value,'');
@@ -2361,6 +2370,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     	}
+                    else if(lname == 'pop'){
+						popText(this.popNumber,val,this.var2);
+					}
                     else if(cb.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);
                     	}
@@ -2374,6 +2386,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     	}
+                    else if(lname == 'pop'){
+						popText(this.popNumber,val,this.var2);
+					}
                     else if(lname.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);
                     	}
@@ -2538,8 +2553,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
-	if(undefined == document.getElementById(sid) && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
-		alert('Error in ajaxGet\n'+sid+' is not defined as a valid object id');
+	if(undefined == document.getElementById(sid) && lcsid != 'pop' && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
+		alert('Error in ajaxGet\n'+sid+' is not defined as a valid object id in the DOM');
 		return false;
     }
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
@@ -2568,6 +2583,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
+				else if(lname == 'pop'){
+					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
+					}
 				else if(this.showprocessing){
 					setProcessing(this.showprocessingdiv);
 					}
@@ -2579,7 +2597,10 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var val="<b style=\"color:red\">ajaxGet Timed Out Error</b>";
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
-                    }
+                	}
+                else if(lname == 'pop'){
+					popText(this.popNumber,val,'timed out...');
+					}
 				else{setText(dname,val);}
 				},
 			'onError':function(req){
@@ -2590,6 +2611,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
                     }
+                else if(lname == 'pop'){
+					popText(this.popNumber,val,'error');
+					}
 				else{setText(dname,val);}
 				},
     		'onSuccess':function(req){
@@ -2614,6 +2638,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     }
+                    else if(lname == 'pop'){
+						popText(this.popNumber,req.responseText,this.var2);
+					}
                     else if(cb.indexOf('centerpop') != -1){
 						if(undefined != this.var2 && this.var2.length > 0){
 							setCenterPopText(dname,req.responseText,{title:this.var2});
@@ -2633,6 +2660,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     }
+                    else if(lname == 'pop'){
+						popText(this.popNumber,req.responseText,this.var2);
+					}
                     else if(lname.indexOf('centerpop') != -1){
 						if(undefined != this.var2 && this.var2.length > 0){
 							setCenterPopText(dname,req.responseText,{title:this.var2});
