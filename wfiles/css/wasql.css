@@ -741,6 +741,39 @@ table th a {
 	[firefox]background: -moz-linear-gradient(center bottom,#ff5e5e 20%,#970000 70%);
 }
 
+/* w_pop - responsive web popup used in ajaxGet when id=pop */
+.w_pop{
+	z-index:9990;
+	margin:0 auto;
+	border-radius: 6px;
+    box-shadow: 0px 5px 30px rgba(129,129,129,0.9);
+    max-width:80vw;
+}
+.w_pop .w_pop_top{
+	padding:3px 0px 3px 0px;
+	border-bottom:1px solid rgba(147,149,152,0.7);
+	background: rgb(170,170,170);
+	color:#FFF;
+	border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+}
+.w_pop .w_pop_top div.icon-cancel, .w_pop .w_pop_bot div.icon-cancel{
+	padding:3px 0 0 0;
+}
+.w_pop .w_pop_body{
+	padding:15px 15px 30px 15px;
+	background:#FFFFFF;
+	max-height:60vh;
+	overflow:auto;
+}
+.w_pop .w_pop_bot{
+	padding:3px 0px 4px 0px;
+	border-top:1px solid rgba(147,149,152,0.7);
+	background: rgb(170,170,170);
+	color:#FFF;
+	border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
 /* Popup Style*/
 .w_popup {
 	position:relative;
@@ -777,7 +810,6 @@ table th a {
 	-ms-transition: height 1s ease;
 	-o-transition: height 1s ease;
 	transition: height 1s ease;
-    
 	}
 @keyframes centerpopAnimate {
 	0% {transform: scale(0);opacity: 0;}
