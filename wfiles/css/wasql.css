@@ -742,12 +742,25 @@ table th a {
 }
 
 /* w_pop - responsive web popup used in ajaxGet when id=pop */
+.w_popmodal{
+	position: absolute;
+	top:0px;
+	left:0px;
+	width:100vw;
+	height:100vh;
+	z-index:99999;
+	background:rgba(0, 0, 0, 0.035);
+}
+
 .w_pop{
 	z-index:9990;
-	margin:0 auto;
+	position: absolute;
+  	top: 50%;
+  	left: 50%;
+  	transform: translate(-50%, -50%);
 	border-radius: 6px;
-    box-shadow: 0px 5px 30px rgba(129,129,129,0.9);
-    max-width:80vw;
+    box-shadow: 0px 5px 20px rgba(129,129,129,0.9);
+    max-width:85vw;
 }
 .w_pop .w_pop_top{
 	padding:3px 0px 3px 0px;
@@ -763,6 +776,7 @@ table th a {
 .w_pop .w_pop_body{
 	padding:15px 15px 30px 15px;
 	background:#FFFFFF;
+	min-width:275px;
 	max-height:60vh;
 	overflow:auto;
 }
