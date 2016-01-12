@@ -11,7 +11,7 @@
 use Socket;
 use MIME::Base64;
 #ppm install http://trouchelle.com/ppm/Digest-SHA.ppd
-use Digest::SHA1  qw(sha1 sha1_hex sha1_base64);
+use Digest::SHA  qw(sha1 sha1_hex sha1_base64);
 ###################
 sub getContentType{
 	my $file=shift;
