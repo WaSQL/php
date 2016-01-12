@@ -13,10 +13,10 @@ our $OriginalFilename="postEdit.exe";
 our $InternalName="postEdit";
 #perl2exe_info ProductName=WaSQL Edit Manager for DOS/Wine
 our $ProductName="WaSQL Edit Manager for DOS/Wine";
-#perl2exe_info ProductVersion=1.310.36
-our $ProductVersion="1.310.36";
-#perl2exe_info FileVersion=1.1601.05
-our $FileVersion="1.1601.05";
+#perl2exe_info ProductVersion=1.267.84
+our $ProductVersion="1.267.84";
+#perl2exe_info FileVersion=1.1601.11
+our $FileVersion="1.1601.11";
 #perl2exe_info LegalCopyright=Copyright 2004-2012, WaSQL.com
 our $LegalCopyright="Copyright 2004-2012, WaSQL.com";
 #################################################################
@@ -123,6 +123,7 @@ while(!length($group) || !length($host)){
 	}
 print "Group:$group, Host:$host\n";
 createWasqlFiles($host);
+print "Listening for changes (CTRL-C to exit)\n";
 while(1){
 	#call timer array
 	WatchDir_Timer();
@@ -217,7 +218,7 @@ sub createWasqlFiles{
 	if($xml{$host}{alias}){$newtitle=$xml{$host}{alias};}
 	if($xml{$host}{group}){$newtitle .= ' ('.$xml{$host}{group}.')';}
 	setTitle($newtitle);
-	print " - Cleaning $filesDir\n";
+	#print " - Cleaning $filesDir\n";
 	my $cdir=$xml{$host}{alias} || $chost;
 	$cdir=~s/[^a-z0-9\s\.\(\)\_\-]+//ig;
 	$filesDir="$baseDir/$cdir";
@@ -248,7 +249,7 @@ sub createWasqlFiles{
 		$url="http://$chost/php/index.php";
     	}
     setColorBox('working','Calling API...');
-	print "calling $url\n";
+	#print "calling $url\n";
 	#$postopts{_debug}=1;
 	#print hashValues(\%postopts);
 	my ($head,$body,$code)=postURL($url,%postopts);
@@ -304,8 +305,8 @@ sub createWasqlFiles{
                 }
             }
         #write the page files
-        setColorBox('working','Writing...');
-        appendMessage("Writing local files");
+        #setColorBox('working','Writing...');
+        appendMessage("Writing local files to $filesDir\n");
         foreach my $table (keys(%watchtable)){
 			foreach my $id (keys(%{$watchtable{$table}})){
 				my $fname=$watchtable{$table}{$id}{name};
@@ -324,7 +325,7 @@ sub createWasqlFiles{
 						my @parts=split(/[\\\/]+/,$pfile);
 						$pfile=join($slash,@parts);
 					}
-					print "Writing $pfile\n";
+					#print "Writing $pfile\n";
 					if(open(FH,">$pfile")){
 						binmode(FH);
 						print FH strip($watchtable{$table}{$id}{$field}) . "\r\n";
@@ -338,23 +339,23 @@ sub createWasqlFiles{
 						elsif($watchtable{$table}{$id}{mtime}){
 							utime(time(),$watchtable{$table}{$id}{mtime},$pfile);
 							}
-						appendMessage(" - $filename");
+						#appendMessage(" - $filename");
 						my %stat=fileStats(-file=>$pfile);
                     	$Watch{$pfile}=$stat{mtime};
                     	}
 					else{
-                    	print " - Unable to write file\n";
+                    	#print " - Unable to write file\n";
 					}
 					}
 				}
         	}
-        setColorBox('success','Completed.');
- 		appendMessage("Update Complete.",1000);
+        #setColorBox('success','Completed.');
+ 		#appendMessage("Update Complete.",1000);
  		}
  	else{
 		#Update Failed - show error
-		setColorBox("Fail",'Error');
-		appendMessage($body);
+		#setColorBox("Fail",'Error');
+		#appendMessage($body);
 		appendMessage("Update Error - $url");
 		print hashValues(\%postopts);
     	}
@@ -647,13 +648,5 @@ BEGIN {
 		$isexe=1;
 		$progexe=$progname . '.exe';
 		}
-	#log output to a log file
-	$LogFile="$progpath/postedit.log";
-	open(STDOUT, "> $LogFile");
-	select(STDOUT);
-	$|=1;
-	open(STDERR, "> $LogFile");
-	select(STDERR);
-	$|=1;
 	if(-e "$progpath/$progname\_exit\.txt"){unlink("$progpath/$progname\_exit\.txt");}
 	}
