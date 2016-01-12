@@ -882,9 +882,13 @@ function popWindow(txt_body,txt_title){
     	popText(popNumber,txt_body,txt_title);
     	return popNumber;
 	}
+	var modaldiv = document.createElement("div");
+	modaldiv.className='w_popmodal';
+	modaldiv.id='w_pop_'+popNumber;
 	//w_pop
 	var popdiv = document.createElement("div");
-	popdiv.id='w_pop_'+popNumber
+	modaldiv.appendChild(popdiv);
+	//popdiv.id='w_pop_'+popNumber
 	popdiv.className='w_pop';
 	//w_pop_top
 	var poptopdiv = document.createElement("div");
@@ -957,7 +961,8 @@ function popWindow(txt_body,txt_title){
 	popbotc1div.onmouseover=function(){this.style.color='#ba200a';}
 	popbotc1div.onmouseout=function(){this.style.color='';}
 	popbotdiv.appendChild(popbotc1div);
-	document.body.appendChild(popdiv);
+	document.body.appendChild(modaldiv);
+	//document.body.insertAdjacentElement('afterBegin',popdiv);
 	return popNumber;
 }
 function popClose(x){
