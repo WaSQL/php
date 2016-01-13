@@ -1108,7 +1108,49 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
     	}
     $rtn .= '</select>'."\n";
     return $rtn;
-	}
+}
+//---------- begin function buildFormSelectMonth--------------------
+/**
+* @describe creates an Month selection field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectMonth('cc_expire_month',$params);
+*/
+function buildFormSelectMonth($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$opts=array(
+		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
+		7=>'Jul',8=>'Aug',9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
+	);
+	return buildFormSelect($name,$opts,$params);
+}
+//---------- begin function buildFormSelectYear--------------------
+/**
+* @describe creates an Year selection field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectYear('cc_expire_year',$params);
+*/
+function buildFormSelectYear($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-years'])){$params['-years']=10;}
+	if(!isset($params['-backwards'])){$params['-backwards']=0;}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$tvals=selectYears($params['years'],2,$params['-backwards']);
+	$dvals=selectYears($params['years'],4,$params['-backwards']);
+	$opts=array();
+	foreach($tvals as $i=>$tval){$opts[$tval]=$dvals[$i];}
+	return buildFormSelect($name,$opts,$params);
+}
 //---------- begin function buildFormSignature--------------------------------------
 /**
 * @describe creates an HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
@@ -4076,7 +4118,7 @@ function evalInsertPage($str=''){
 * @param digits integer - 2 or 4 - defaults to 2
 * @param backwards boolean - backwards or forwards - defaults to false
 * @return array - array of years
-* @usage $yrs=selectYears(10,4,true); - will return an array with current year and previous 9 years
+* @usage $yrs=selectYears(10,4,0); - will return an array with current year and previous 9 years
 */
 function selectYears($cnt=10,$digits=2,$backwards=0){
 	$format=$digits==2?'y':'Y';
