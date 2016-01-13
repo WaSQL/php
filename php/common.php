@@ -1145,8 +1145,8 @@ function buildFormSelectYear($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	$tvals=selectYears($params['years'],2,$params['-backwards']);
-	$dvals=selectYears($params['years'],4,$params['-backwards']);
+	$tvals=selectYears($params['-years'],2,$params['-backwards']);
+	$dvals=selectYears($params['-years'],4,$params['-backwards']);
 	$opts=array();
 	foreach($tvals as $i=>$tval){$opts[$tval]=$dvals[$i];}
 	return buildFormSelect($name,$opts,$params);
