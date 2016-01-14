@@ -885,11 +885,14 @@ function popWindow(txt_body,txt_title){
 	var modaldiv = document.createElement("div");
 	modaldiv.className='w_popmodal';
 	modaldiv.id='w_pop_'+popNumber;
+	modaldiv.popNumber=popNumber
+	modaldiv.style.cursor='not-allowed';
 	//w_pop
 	var popdiv = document.createElement("div");
 	modaldiv.appendChild(popdiv);
 	//popdiv.id='w_pop_'+popNumber
 	popdiv.className='w_pop';
+	popdiv.style.cursor='default';
 	//w_pop_top
 	var poptopdiv = document.createElement("div");
 	poptopdiv.id='w_pop_top_'+popNumber
