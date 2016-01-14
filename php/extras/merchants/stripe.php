@@ -51,7 +51,7 @@ function stripeCharge($params=array()){
     	if(!isset($params[$key]) || !strlen($params[$key])){
 			$response=array(
 				'status'	=> 'failed',
-				'response_reason_text' => "stripeCharge Error: Missing required param '{$key}'",
+				'response_reason_text' => "Error: Missing required param '{$key}'",
 				'approved'	=> false
 				);
 			$response['message']=$response['response_reason_text'];
@@ -164,7 +164,7 @@ function stripeRefund($params=array()){
 	);
 	foreach($required as $key){
     	if(!isset($params[$key]) || !strlen($params[$key])){
-        	return "stripeRefund Error: Missing required param '{$key}'";
+        	return "Error: Missing required param '{$key}'";
 		}
 	}
 	if(!isset($params['currency'])){$params['currency']='usd';}
