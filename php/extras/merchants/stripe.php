@@ -54,6 +54,7 @@ function stripeCharge($params=array()){
 				'response_reason_text' => "stripeCharge Error: Missing required param '{$key}'",
 				'approved'	=> false
 				);
+			$response['message']=$response['response_reason_text'];
 			ksort($response);
 			return $response;
 		}
@@ -113,6 +114,7 @@ function stripeCharge($params=array()){
     	$response['status']='failed';
 		$response['approved']=false;
 		if(isset($response['message'])){$response['response_reason_text']=$response['message'];}
+		$response['message']=$response['response_reason_text'];
     	ksort($response);
     	return $response;
 	}
@@ -149,8 +151,10 @@ function stripeCharge($params=array()){
             	$response[$key]=$val['values'];
 			}
 		}
+		if(!isset($response['message'])){$response['message']=$response['response_reason_text'];}
 		return $response;
 	}
+	if(!isset($response['message'])){$response['message']=$response['response_reason_text'];}
 	return $response;
 }
 function stripeRefund($params=array()){
