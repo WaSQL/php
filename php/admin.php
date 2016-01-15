@@ -2216,6 +2216,9 @@ LIST_TABLE:
 						$recopts['run_date_dateage']=1;
 						$recopts['run_date_displayname']="Last Run";
 						//format the frequency
+						$recopts['frequency_eval']="\$t=%frequency%*60;return 'every '.verboseTime(round(\$t,0));";
+						$recopts['frequency_align']="right";
+						//format the run length
 						$recopts['run_length_eval']="\$t='%run_length%';return verboseTime(round(\$t,0));";
 						$recopts['run_length_align']="right";
 						//format active
