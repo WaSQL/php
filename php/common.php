@@ -5944,7 +5944,7 @@ function fopen_utf8($filename){
 * @describe returns the contents of a CSV file as an array
 * @param file string - file name and path
 * @param params array
-*	[maxrows] - defaults to 20000
+*	[maxrows] - defaults to 2000000
 *	[maxlen] - defaults to 4096
 *	[separator] - defaults to ,
 *	[fields] - if not supplied uses the first rows as field names
@@ -5954,7 +5954,7 @@ function fopen_utf8($filename){
 * @usage $csv=getCSVFileContents($file);
 */
 function getCSVFileContents($file,$params=array()){
-	if(!isset($params['maxrows'])){$params['maxrows']=20000;}
+	if(!isset($params['maxrows'])){$params['maxrows']=2000000;}
 	if(!isset($params['maxlen'])){$params['maxlen']=4096;}
 	$results=array('file'=>$file,'params'=>$params);
 	if(!file_exists($file)){
