@@ -62,7 +62,10 @@ table.sortable thead tr th {
 table th a {
 	display:block;
 	}
-
+/* Change default hover color for bootstrap */
+.table-hover tr:hover td, .table-hover tr:hover th {
+  background-color: #fef8f1 !important;
+}
 /* resizable */
 .w_resize {
      overflow: hidden;
