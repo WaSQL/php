@@ -174,8 +174,8 @@ if(isAjax()){
 		break;
 
 		case 'datasync':
-			echo '<div class="w_centerpop_title"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records in '.$_REQUEST['tablename'].'</div>'."\n";
-			echo '<div class="w_centerpop_content">'."\n";
+			//echo '<div class="w_centerpop_title"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records in '.$_REQUEST['tablename'].'</div>'."\n";
+			//echo '<div class="w_centerpop_content">'."\n";
 			global $SETTINGS;
 			//synchronize must be turned on
 			if($SETTINGS['wasql_synchronize'] != 1){
@@ -222,15 +222,15 @@ if(isAjax()){
             	break;
 			}
 			if(count($queries)){
-				echo '<div style="width:600px;">'."\n";
+				//echo '<div style="width:600px;">'."\n";
             	foreach($queries as $query){
 	    			$ok=executeSQL($query);
-	    			echo "Result: [{$ok['result']}] {$query} <br />\n";
+	    			//echo "Result: [{$ok['result']}] {$query} <br />\n";
 				}
-				echo '<div>Done. Refresh to see changes</div>'."\n";
-				echo '</div>'."\n";
+				echo '<span class="icon-mark w_success w_bold"></span> Done. Refresh to see changes'."\n";
+				//echo '</div>'."\n";
 			}
-			echo '</div>'."\n";
+			//echo '</div>'."\n";
 			exit;
 			break;
     	case 'admin_settings':
@@ -3400,7 +3400,7 @@ LIST_TABLE:
 				$info[$tablename][$dbname]['fields'][$field]=$rec['type'];
 			}
 			//Table Name, Rec Cnt (Stage|Live), Action (stage to live, live to stage)
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<table class="table table-bordered table-striped table-hover">'."\n";
 			echo '<tr>'."\n";
 			echo '	<th rowspan="2">Table Name</th>'."\n";
 			echo '	<th colspan="2">Record Counts</th>'."\n";
@@ -3463,8 +3463,9 @@ LIST_TABLE:
 				}
 				else{
                 	//same fields - allow actions
-                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync to live\\r\\nDescription: Drop all records on LIVE and move all records on STAGE to LIVE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=push&tablename='.$tablename.'\');}return false;" href="#push" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-push w_big w_warning"></span> sync to live</a>'."\n";
-                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync from live\\r\\nDescription: Drop all records on STAGE and move all records on LIVE to STAGE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=datasync&func=pull&tablename='.$tablename.'\');}return false;" href="#pull" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-pull w_big w_danger"></span> sync from live</a>'."\n";
+                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync to live\\r\\nDescription: Drop all records on LIVE and move all records on STAGE to LIVE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\''.$tablename.'_sync\',\'_menu=datasync&func=push&tablename='.$tablename.'\');}return false;" href="#push" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-push w_big w_warning"></span> sync to live</a>'."\n";
+                	echo '<a onclick="if(confirm(\'Table: '.$tablename.'\\r\\nAction: sync from live\\r\\nDescription: Drop all records on STAGE and move all records on LIVE to STAGE.\\r\\n\\r\\nAre you sure? This CANNOT be undone!\')){ajaxGet(\'/php/admin.php\',\''.$tablename.'_sync\',\'_menu=datasync&func=pull&tablename='.$tablename.'\');}return false;" href="#pull" class="w_link w_lblue" style="margin-left:15px;"><span class="icon-sync-pull w_big w_danger"></span> sync from live</a>'."\n";
+					echo '<div style="display:inline" id="'.$tablename.'_sync"></div>'."\n";
 				}
 				echo '	</td>'."\n";
             	echo '</tr>'."\n";
