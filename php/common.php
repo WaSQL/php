@@ -240,7 +240,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	}
 	$tag='';
 	$class=isset($params['class'])?$params['class']:'';
-	$tag .= '<div class="btn-group" style="white-space: nowrap;" data-toggle="buttons">'."\n";
+	$tag .= '<div class="btn-group w_nowrap" data-toggle="buttons">'."\n";
 	foreach($opts as $tval=>$dval){
 		$class=$params['-button'];
 		$checked='';
@@ -249,7 +249,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$checked=' checked';
 		}
 		if(isset($params["{$tval}_class"])){$class.=' '.$params["{$tval}_class"];}
-	    $tag .= '	<label class="btn '.$class.'" style="float:none;display:inline:block;">'."\n";
+	    $tag .= '	<label class="btn '.$class.'">'."\n";
 	    $tag .= '   	<input type="radio" name="'.$name.'" value="'.$tval.'"';
 		$tag .= setTagAttributes($params);
 		$tag .= $checked.' /> '.$dval."\n";
