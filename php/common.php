@@ -8507,6 +8507,8 @@ function getAgentOS($agent=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function parseEnv() {
+	//CLI scripts will not have a user agent - just return
+	if(!isset($_SERVER['HTTP_USER_AGENT'])){return;}
 	$agent=$_SERVER['HTTP_USER_AGENT'];
 	//REMOTE_BROWSER and REMOTE_BROWSER_VERSION
 	$browser=getAgentBrowser($agent);
