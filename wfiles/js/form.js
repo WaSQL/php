@@ -2279,7 +2279,14 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	else if(undefined != theform.setprocessing){
 		showprocessingdiv=theform.setprocessing.value;
 	}
-
+	//cp_title
+	var cp_title='';
+	if(undefined != theform.cp_title){
+		cp_title=theform.cp_title.value;
+	}
+	else if(undefined != theform.centerpop_title){
+		cp_title=theform.centerpop_title.value;
+	}
     //Set the ajax ID
 	var AJUid=new Date().getTime() + "";
 	//add AjaxRequestUniqueId as a hidden value to the form
@@ -2294,6 +2301,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 			'groupName':sid
 			,'timeout':tmeout
 			,'callback':callback
+			,'var2':cp_title
 			,'abort_callback':abort_callback
 			,'showprocessing':showprocessing
 			,'showprocessingdiv':showprocessingdiv
