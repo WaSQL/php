@@ -2513,7 +2513,10 @@ function renderView($view, $params=array(), $opts=array()){
 	global $VIEWS;
 	global $VIEW_PARAMS;
 	global $VIEW_KEY;
-	
+	//allow you to shortcut opts and just pass in the alias
+	if(isset($opts) && !is_array($opts) && strlen($opts)){
+    	$opts=array('-alias'=>$opts);
+	}
 	if(!count($opts) && isset($params['-format'])){
         $opts=$params;
 	}
@@ -2662,8 +2665,10 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 * @author Jeremy Despain, jeremy.despain@gmail.com
 */
 function renderEach($view, $rows, $opts=array()){
-	//if this param is not an array, then the value will be set as -alias
-	if(!is_array($opts)){$opts=array('-alias'=>$opts);}
+	//allow you to shortcut opts and just pass in the alias
+	if(isset($opts) && !is_array($opts) && strlen($opts)){
+    	$opts=array('-alias'=>$opts);
+	}
 	$rtn = '';
 	foreach($rows as $key=>$params){
 		$opts['-key']=$key;
