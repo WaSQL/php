@@ -142,7 +142,44 @@ function arraySearchKeys( $needle, $arr ){
     }
 	return $vals;
 }
-
+//---------- begin function asciiArt ----------
+/**
+* @describe created asciiArt from and image
+* @param file string - full path to image file
+* @param [force] boolean - force a redraw
+* @return string
+* @usage <?=asciiArt($logo);?>
+* @author https://donatstudios.com/Damn-Simple-PHP-ASCII-Art-Generator
+*/
+function asciiArt($file,$force=false){
+	$path=getWasqlPath();
+	$temp="{$path}/php/temp";
+	$cfile=sha1($file).'.ascii';
+	$afile="{$temp}/{$cfile}";
+	if(is_file($afile) && !$force){
+    	return getFileContents($afile);
+	}
+	$img = imagecreatefromstring(file_get_contents($file));
+	list($width, $height) = getimagesize($file);
+	$scale = 10;
+	$chars = array(' ', '\'', '.', ':','|', 'T',  'X', '0','#',);
+	$chars = array_reverse($chars);
+	$c_count = count($chars);
+	$ascii='';
+	for($y = 0; $y <= $height - $scale - 1; $y += $scale) {
+		for($x = 0; $x <= $width - ($scale / 2) - 1; $x += ($scale / 2)) {
+			$rgb = imagecolorat($img, $x, $y);
+			$r = (($rgb >> 16) & 0xFF);
+			$g = (($rgb >> 8) & 0xFF);
+			$b = ($rgb & 0xFF);
+			$sat = ($r + $g + $b) / (255 * 3);
+			$ascii .= $chars[ (int)( $sat * ($c_count - 1) ) ];
+		}
+		$ascii .= PHP_EOL;
+	}
+	setFileContents($afile,$ascii);
+	return $ascii;
+}
 //---------- begin function asciiEncode--------------------------------------
 /**
 * @deprecated use encodeAscii instead
