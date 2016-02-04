@@ -1922,6 +1922,95 @@ function createDBTable($table='',$fields=array(),$engine=''){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   		}
 	}
+function createDBTableFromFile($afile,$params=array()){
+	if(!isset($params['-delimiter'])){$params['-delimiter']=',';}
+	if(!isset($params['-enclosure'])){$params['-enclosure']='"';}
+	if(!isset($params['-escape'])){$params['-escape']="\\";}
+	if(!isset($params['-table'])){$params['-table']=getFileName($afile,1);}
+	//only allow csv and txt files
+	$ext=getFileExtension($afile);
+	switch(strtolower($ext)){
+    	case 'txt':$params['-delimiter']="\t";break;
+	}
+	//get the fields
+	$fields=array(
+		'_id'	=> databasePrimaryKeyFieldString(),
+		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
+		'_cuser'=> "int NOT NULL",
+		'_edate'=> databaseDataType('datetime')." NULL",
+		'_euser'=> "int NULL",
+	);
+	//$lines=file($afile);echo printValue($lines);
+	$handle = fopen_utf8($afile, "rb");
+	if(!$handle){return 'Unable to open file';}
+	if(!isset($params['-fields']) || !is_array($params['-fields'])){
+		$params['-fields'] = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape']);
+	}
+	//clean up the field names
+	foreach($params['-fields'] as $i=>$field){
+    	$field=preg_replace('/[^a-z0-9\_\ ]+/','',trim(strtolower($field)));
+    	$field=preg_replace('/\ +/','_',$field);
+    	$params['-fields'][$i]=$field;
+	}
+	//determine the datatype and length of each field
+	$params['-stats']=array();
+	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
+		$cnt=count($line);
+		for($x=0;$x<$cnt;$x++){
+        	$key=$params['-fields'][$x];
+        	$val=$line[$x];
+        	$len=strlen($val);
+        	//min
+        	if(!isset($params['-stats'][$key]['min']) || $len < $params['-stats'][$key]['min']){
+            	$params['-stats'][$key]['min']=$len;
+			}
+			//max
+        	if(!isset($params['-stats'][$key]['max']) || $len > $params['-stats'][$key]['max']){
+            	$params['-stats'][$key]['max']=$len;
+			}
+			//types
+			if(isNum($val)){
+				if(stringContains($val,'.')){
+                	//real
+					$params['-stats'][$key]['types'][]='real';
+					$parts=preg_split('/\./',$val,2);
+					if(!isset($params['-stats'][$key]['decimals']) || strlen($parts[1]) > $params['-stats'][$key]['decimals']){
+		            	$params['-stats'][$key]['decimals']=strlen($parts[1]);
+					}
+				}
+				elseif(!isset($params['-stats'][$key]['types']) || !in_array('int',$params['-stats'][$key]['types'])){
+					$params['-stats'][$key]['types'][]='int';
+				}
+			}
+			elseif(isDateTime($val) && !in_array('datetime',$params['-stats'][$key]['types'])){$params['-stats'][$key]['types'][]='datetime';}
+			elseif(isDate($val) && !in_array('date',$params['-stats'][$key]['types'])){$params['-stats'][$key]['types'][]='date';}
+			elseif(!in_array('varchar',$params['-stats'][$key]['types'])){$params['-stats'][$key]['types'][]='varchar';}
+			//null
+			if(!$len){$params['-stats'][$key]['nulls']=1;}
+		}
+	}
+	//setup fields
+	fclose($handle);echo printValue($params);exit;
+	foreach($params['-stats'] as $field=>$stat){
+    	if(count($stat['types'])==1){$type=$stat['types'][0];}
+    	elseif($stat['max'] <= 10){$type='char';}
+    	elseif($stat['max'] > 65535){$type='mediumtext';}
+    	elseif($stat['max'] > 255){$type='text';}
+    	else{$type='varchar';}
+	}
+	rewind($handle);
+	//load the data
+	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
+		$cnt=count($line);
+		for($x=0;$x<$cnt;$x++){
+        	$key=$params['-fields'][$x];
+        	$val=$line[$x];
+		}
+	}
+	fclose($handle);
+	echo printValue($cfields);exit;
+
+}
 //---------- begin function insertDBFile
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
