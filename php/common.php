@@ -161,7 +161,7 @@ function asciiArt($file,$force=false){
 	}
 	$img = imagecreatefromstring(file_get_contents($file));
 	list($width, $height) = getimagesize($file);
-	$scale = 10;
+	$scale = 20;
 	$chars = array(' ', '\'', '.', ':','|', 'T',  'X', '0','#',);
 	$chars = array_reverse($chars);
 	$c_count = count($chars);
