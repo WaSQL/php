@@ -1936,6 +1936,8 @@ function createDBTableFromFile($afile,$params=array()){
 	if(!isset($params['-enclosure'])){$params['-enclosure']='"';}
 	if(!isset($params['-escape'])){$params['-escape']="\\";}
 	if(!isset($params['-table'])){$params['-table']=getFileName($afile,1);}
+	$params['-table']=preg_replace('/[^a-z0-9\-\ \_]+/','',strtolower($params['-table']));
+	$params['-table']=preg_replace('/[\-\ \_]+/','_',$params['-table']);
 	//only allow csv and txt files
 	$ext=getFileExtension($afile);
 	switch(strtolower($ext)){
@@ -1952,7 +1954,9 @@ function createDBTableFromFile($afile,$params=array()){
 	//$lines=file($afile);echo printValue($lines);
 	$handle = fopen_utf8($afile, "rb");
 	if(!$handle){return 'Unable to open file';}
+	$removefirst=false;
 	if(!isset($params['-fields']) || !is_array($params['-fields'])){
+		$removefirst=true;
 		$params['-fields'] = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape']);
 	}
 	//clean up the field names
@@ -1963,9 +1967,9 @@ function createDBTableFromFile($afile,$params=array()){
 	}
 	//determine the datatype and length of each field
 	$params['-stats']=array();
-	$params['-count']=0;
+	$params['count']=0;
 	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
-		$params['-count']+=1;
+		$params['count']+=1;
 		$cnt=count($line);
 		for($x=0;$x<$cnt;$x++){
         	$key=$params['-fields'][$x];
@@ -2013,7 +2017,7 @@ function createDBTableFromFile($afile,$params=array()){
     	else{$type='varchar';}
     	switch($type){
         	case 'int':
-        		if($stat['max'] <= 5){
+        		if($stat['max'] <= 4){
 					$type="tinyint({$stat['max']})";
 				}
 				else{
@@ -2037,19 +2041,53 @@ function createDBTableFromFile($afile,$params=array()){
 		else{$type.=' NOT NULL';}
 		$fields[$field]=$type;
 	}
-	fclose($handle);echo printValue($fields).printValue($params);exit;
+	//unset($params['-stats']);
+	$params['-schema']=$fields;
+	ksort($params['-schema']);
+	//fclose($handle);echo printValue($fields).printValue($params);exit;
 	rewind($handle);
+	if($removefirst){
+		//remove the first line again.
+		fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape']);
+	}
+	//create the table
+	if(!isDBTable($params['-table'])){
+		$ok = createDBTable($params['-table'],$fields);
+			if(!isNum($ok)){
+	    	$params['error']=$ok;
+	    	return $params;
+		}
+	}
+	else{
+		$ok=alterDBTable($params['-table'],$fields);
+		if($ok != 1 && $ok != 'Nothing changed'){
+			$params['error']=$ok;
+	    	return $params;
+		}
+	}
 	//load the data
 	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
 		$cnt=count($line);
+		$opts=array();
 		for($x=0;$x<$cnt;$x++){
-        	$key=$params['-fields'][$x];
-        	$val=$line[$x];
+			if(isset($params['-fields'][$x])){
+	        	$key=$params['-fields'][$x];
+	        	$val=trim($line[$x]);
+	        	if(strlen($val)){$opts[$key]=$val;}
+			}
+		}
+		if(count($opts)){
+        	$opts['-table']=$params['-table'];
+        	$id=addDBRecord($opts);
+        	if(!isNum($id)){
+            	$params['-errors'][]=$id.printValue($opts);
+            	echo printValue($params);exit;
+			}
 		}
 	}
 	fclose($handle);
-	echo printValue($cfields);exit;
-
+	ksort($params);
+	return $params;
 }
 //---------- begin function roundToNearestMultiple--------------------
 /**
