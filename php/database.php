@@ -1922,6 +1922,15 @@ function createDBTable($table='',$fields=array(),$engine=''){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   		}
 	}
+//---------- begin function createDBTableFromFile--------------------
+/**
+* @describe creates a new table from the data in given file
+* @param file string - full path to file to import
+* @param params array - list of field/attributes to add
+* @return info array - returns an array with filename and count values
+* @usage
+*	$ok=createDBTableFromFile($afile);
+*/
 function createDBTableFromFile($afile,$params=array()){
 	if(!isset($params['-delimiter'])){$params['-delimiter']=',';}
 	if(!isset($params['-enclosure'])){$params['-enclosure']='"';}
@@ -1954,7 +1963,9 @@ function createDBTableFromFile($afile,$params=array()){
 	}
 	//determine the datatype and length of each field
 	$params['-stats']=array();
+	$params['-count']=0;
 	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
+		$params['-count']+=1;
 		$cnt=count($line);
 		for($x=0;$x<$cnt;$x++){
         	$key=$params['-fields'][$x];
@@ -1972,7 +1983,9 @@ function createDBTableFromFile($afile,$params=array()){
 			if(isNum($val)){
 				if(stringContains($val,'.')){
                 	//real
-					$params['-stats'][$key]['types'][]='real';
+                	if(!isset($params['-stats'][$key]['types']) || !in_array('real',$params['-stats'][$key]['types'])){
+						$params['-stats'][$key]['types'][]='real';
+					}
 					$parts=preg_split('/\./',$val,2);
 					if(!isset($params['-stats'][$key]['decimals']) || strlen($parts[1]) > $params['-stats'][$key]['decimals']){
 		            	$params['-stats'][$key]['decimals']=strlen($parts[1]);
@@ -1990,14 +2003,41 @@ function createDBTableFromFile($afile,$params=array()){
 		}
 	}
 	//setup fields
-	fclose($handle);echo printValue($params);exit;
 	foreach($params['-stats'] as $field=>$stat){
-    	if(count($stat['types'])==1){$type=$stat['types'][0];}
+    	if(count($stat['types'])==1){
+			$type=$stat['types'][0];
+		}
     	elseif($stat['max'] <= 10){$type='char';}
     	elseif($stat['max'] > 65535){$type='mediumtext';}
     	elseif($stat['max'] > 255){$type='text';}
     	else{$type='varchar';}
+    	switch($type){
+        	case 'int':
+        		if($stat['max'] <= 5){
+					$type="tinyint({$stat['max']})";
+				}
+				else{
+					$type='integer';
+				}
+        	break;
+        	case 'real':
+        		$len=roundToNearestMultiple($stat['max'],5);
+        		if($len==0){$len=5;}
+        		$dec=roundToNearestMultiple($stat['decimals'],2);
+        		$type="real({$len},{$dec})";
+        	break;
+        	case 'char':
+        	case 'varchar':
+        		$len=roundToNearestMultiple($stat['max'],25);
+        		if($len==0){$len=10;}
+        		$type="{$type}({$len})";
+        	break;
+		}
+		if($stat['nulls']==1){$type.=' NULL';}
+		else{$type.=' NOT NULL';}
+		$fields[$field]=$type;
 	}
+	fclose($handle);echo printValue($fields).printValue($params);exit;
 	rewind($handle);
 	//load the data
 	while (($line = fgetcsv($handle, 9000, $params['-delimiter'],$params['-enclosure'],$params['-escape'])) !== false) {
@@ -2010,6 +2050,18 @@ function createDBTableFromFile($afile,$params=array()){
 	fclose($handle);
 	echo printValue($cfields);exit;
 
+}
+//---------- begin function roundToNearestMultiple--------------------
+/**
+* @describe 50 outputs 50, 52 outputs 55, 50.25 outputs 55
+* @param num number - number to round
+* @param multiple integer - round up to what? defaults to 5
+* @return num integer - 50 outputs 50, 52 outputs 55, 50.25 outputs 55
+* @usage
+*	$ok=roundToNearestMultiple(7,5); - returns 10
+*/
+function roundToNearestMultiple($n,$x=5) {
+    return (ceil($n)%$x === 0) ? ceil($n) : round(($n+$x/2)/$x)*$x;
 }
 //---------- begin function insertDBFile
 /**
