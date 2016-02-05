@@ -923,6 +923,9 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		}
 	}
 	elseif(isset($_SERVER['_template']) && strlen($_SERVER['_template'])){$tid=$_SERVER['_template'];}
+	elseif(strtolower($_SERVER['SUBDOMAIN']) != 'www' && getDBCount(array('-table'=>'_templates','name'=>$_SERVER['SUBDOMAIN']))){
+    	$tid=$_SERVER['SUBDOMAIN'];
+	}
 	elseif($_REQUEST['_viewfield'] != 'body'){$tid=1;}
 	elseif(isset($PAGE['template']) && strlen($PAGE['template'])){$tid=$PAGE['template'];}
 	elseif(isset($PAGE['_template']) && strlen($PAGE['_template'])){$tid=$PAGE['_template'];}
