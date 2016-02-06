@@ -8581,6 +8581,10 @@ function parseEnv() {
 	if(!isset($_SERVER['UNIQUE_HOST'])){
 		$_SERVER['UNIQUE_HOST']=getUniqueHost($_SERVER['HTTP_HOST']);
 	}
+	//Unique Host
+	if(!isset($_SERVER['HTTP_REFERER'])){
+		$_SERVER['UNIQUE_REFERER']=getUniqueHost($_SERVER['HTTP_REFERER']);
+	}
 	//Subdomain
 	if(!isset($_SERVER['SUBDOMAIN'])){
 		$_SERVER['SUBDOMAIN']=getSubdomain($_SERVER['HTTP_HOST']);
