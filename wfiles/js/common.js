@@ -512,6 +512,10 @@ function cloneDiv(div,c){
 			if(undefined != list[i].getAttribute('data-clear')){
 				setText(list[i],'');
 			}
+			//data-display
+			if(undefined != list[i].getAttribute('data-display')){
+				setStyle(list[i],'display',list[i].getAttribute('data-display'));
+			}
 		}
 
 		//hide all but the last clone button
