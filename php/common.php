@@ -8583,7 +8583,7 @@ function parseEnv() {
 	}
 	//Unique Host
 	if(isset($_SERVER['HTTP_REFERER']) && !isset($_SERVER['UNIQUE_REFERER'])){
-		$_SERVER['UNIQUE_REFERER']=getUniqueHost($_SERVER['HTTP_REFERER']);
+		$_SERVER['UNIQUE_REFERER']=getUniqueHost(parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST));
 	}
 	//Subdomain
 	if(!isset($_SERVER['SUBDOMAIN'])){
