@@ -506,7 +506,7 @@ function buildFormDate($name,$params=array()){
 	$tag .= '	<input type="date"';
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
-	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'."\n";
+	$tag .= '	<span data-id="'.$params['id'].'" class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"></span>'."\n";
 	$tag .= '</div>'."\n";
 	return $tag;
 }
