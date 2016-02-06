@@ -514,6 +514,9 @@ function cloneDiv(div,c){
 				if (list[i].type && list[i].type === 'checkbox') {
                 	list[i].checked=false;
 				}
+				else if (list[i].type && list[i].type === 'radio') {
+                	list[i].checked=false;
+				}
 				else{
 					setText(list[i],'');
 				}
