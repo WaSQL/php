@@ -498,6 +498,11 @@ function cloneDiv(div,c){
         		var cfor=list[i].getAttribute('for');
 				if(cfor.length){list[i].setAttribute('for',cfor+'_'+count);}
 			}
+			//data-id
+			if(undefined != list[i].getAttribute('data-id')){
+        		var cv=list[i].getAttribute('data-id');
+				if(cv.length){list[i].setAttribute('data-id',cv+'_'+count);}
+			}
 			//data-behavior
 			if(undefined != list[i].getAttribute('data-behavior')){
         		var att=list[i].getAttribute('data-behavior');
