@@ -510,7 +510,13 @@ function cloneDiv(div,c){
 			}
 			//data-clear
 			if(undefined != list[i].getAttribute('data-clear')){
-				setText(list[i],'');
+				//uncheck checkboxes or clear values
+				if (list[i].type && list[i].type === 'checkbox') {
+                	list[i].checked=false;
+				}
+				else{
+					setText(list[i],'');
+				}
 			}
 			//data-display
 			if(undefined != list[i].getAttribute('data-display')){
