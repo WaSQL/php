@@ -510,7 +510,7 @@ function cloneDiv(div,c){
 			}
 			//data-clear
 			if(undefined != list[i].getAttribute('data-clear')){
-				//uncheck checkboxes or clear values
+				//uncheck checkboxes on clear request
 				if (list[i].type && list[i].type === 'checkbox') {
                 	list[i].checked=false;
 				}
