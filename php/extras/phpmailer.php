@@ -72,9 +72,9 @@ function phpmailerSendMail($params=array()){
 		if(!isset($params[$key]) || strlen($params[$key])==0){return "phpmailerSendMail Error - missing required parameter: ". $key;}
     }
 	$mail = new PHPMailer;
-	if(isset($params['debug'])){
+/* 	if(isset($params['debug'])){
 		$mail->SMTPDebug = $params['debug'];  // debugging: 1 = errors and messages, 2 = messages only
-	}
+	} */
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
 	//custom SMTP?
 	if(isset($params['smtp'])){
@@ -232,7 +232,7 @@ function phpmailerSendMail($params=array()){
 			}
 		}
 	}
-	//echo printValue($params). printValue($mail);exit;
+	if(isset($params['debug'])){echo printValue($params). printValue($mail);exit;}
 	if(!$mail->Send()){return "phpmailerSendMail Error -". $mail->ErrorInfo;}
 	return 1;
 }
