@@ -2564,7 +2564,7 @@ function renderView($view, $params=array(), $opts=array()){
 	}
 	foreach($opts as $k=>$v){
         if(!stringBeginsWith($k,'-') && !strlen($params[$k])){
-			if(strtolower($opts['-format'])=='email' && in_array($k,array('to','from','subject'))){continue;}
+			if(strtolower($opts['-format'])=='email' && in_array($k,array('to','from','subject','inline','debug','attach','maildebug'))){continue;}
 			$params[$k]=$v;
 		}
 	}
