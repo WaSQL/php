@@ -2582,6 +2582,9 @@ function renderView($view, $params=array(), $opts=array()){
 
 	$view_data .= $view_code;
 	$rtn= evalPHP($view_data);
+	//remove leading and trailing carriage returns
+	$rtn=preg_replace('/^[\r\n]+/','',$rtn);
+	$rtn=preg_replace('/[\r\n]+$/','',$rtn);
 	//render view as a pdf?
 	switch(strtolower($opts['-format'])){
 		case 'pdf':
@@ -2601,7 +2604,7 @@ function renderView($view, $params=array(), $opts=array()){
 			$rtn=markdown2html($rtn);
 		break;
 		case 'email':
-			$fields=array('to','from','subject','inline','debug');
+			$fields=array('to','from','subject');
 			foreach($fields as $field){
 				if(!isset($opts[$field]) && isset($params[$field])){$opts[$field]=$params[$field];}
 			}
@@ -2630,9 +2633,6 @@ function renderView($view, $params=array(), $opts=array()){
 			$rtn=addEditDBForm($opts);
 		break;
 	}
-	//remove leading and trailing carriage returns
-	$rtn=preg_replace('/^[\r\n]+/','',$rtn);
-	$rtn=preg_replace('/[\r\n]+$/','',$rtn);
 	return $rtn;
 }
 
