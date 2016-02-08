@@ -2601,9 +2601,9 @@ function renderView($view, $params=array(), $opts=array()){
 			$rtn=markdown2html($rtn);
 		break;
 		case 'email':
-			$fields=array('to','from','subject');
+			$fields=array('to','from','subject','inline','debug');
 			foreach($fields as $field){
-				if(!isset($opts[$field]) && isset($params[$field])){$opts['to']=$params[$field];}
+				if(!isset($opts[$field]) && isset($params[$field])){$opts[$field]=$params[$field];}
 			}
 			$opts['message']=trim($rtn);
 			unset($opts['-alias']);
