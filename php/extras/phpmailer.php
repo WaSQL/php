@@ -232,7 +232,7 @@ function phpmailerSendMail($params=array()){
 			}
 		}
 	}
-	if(isset($params['debug'])){echo printValue($params). printValue($mail);exit;}
+	if(isset($params['maildebug'])){echo printValue($params). printValue($mail);exit;}
 	if(!$mail->Send()){return "phpmailerSendMail Error -". $mail->ErrorInfo;}
 	return 1;
 }
