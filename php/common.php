@@ -2581,6 +2581,7 @@ function renderView($view, $params=array(), $opts=array()){
 	$view_data .= '$params '.$alias.' = $VIEW_PARAMS;'."\n?>\n\n";
 
 	$view_data .= $view_code;
+	if(isset($params['debug'])){echo $view_data;exit;}
 	$rtn= evalPHP($view_data);
 	//remove leading and trailing carriage returns
 	$rtn=preg_replace('/^[\r\n]+/','',$rtn);
