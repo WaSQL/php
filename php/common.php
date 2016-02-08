@@ -2605,10 +2605,12 @@ function renderView($view, $params=array(), $opts=array()){
 			foreach($fields as $field){
 				if(!isset($opts[$field]) && isset($params[$field])){$opts['to']=$params[$field];}
 			}
-			$opts['message']=$rtn;
+			$opts['message']=trim($rtn);
+			unset($opts['-alias']);
+			unset($opts['-format']);
+			unset($opts['-key']);
 			//echo printValue($opts);exit;
 			if(isExtra('phpmailer')){
-				//echo 'here';exit;
 				$ok=phpmailerSendMail($opts);
 			}
 			else{
