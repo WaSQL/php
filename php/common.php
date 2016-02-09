@@ -285,8 +285,10 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$class.=' active';
 			$checked=' checked';
 		}
-		if(isset($params["{$tval}_class"])){$class.=' '.$params["{$tval}_class"];}
-	    $tag .= '	<label class="btn '.$class.'">'."\n";
+	    $tag .= '	<label class="btn '.$class.'">';
+		if(isset($params["{$tval}_class"])){
+			$tag .= '<span class="'.$params["{$tval}_class"].'"></span>'."\n";
+		}
 	    $tag .= '   	<input type="radio" name="'.$name.'" value="'.$tval.'"';
 		$tag .= setTagAttributes($params);
 		$tag .= $checked.' /> '.$dval."\n";
