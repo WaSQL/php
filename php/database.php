@@ -2059,6 +2059,7 @@ function createDBTableFromFile($afile,$params=array()){
 		}
 	}
 	else{
+		if(isset($params['-clean']) && $params['-clean']){truncateDBTable($params['-table']);}
 		$ok=alterDBTable($params['-table'],$fields);
 		if($ok != 1 && $ok != 'Nothing changed'){
 			$params['error']=$ok;
