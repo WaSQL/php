@@ -2017,12 +2017,7 @@ function createDBTableFromFile($afile,$params=array()){
     	else{$type='varchar';}
     	switch($type){
         	case 'int':
-        		if($stat['max'] <= 4){
-					$type="tinyint({$stat['max']})";
-				}
-				else{
-					$type='integer';
-				}
+				$type='integer';
         	break;
         	case 'real':
         		$len=roundToNearestMultiple($stat['max'],5);
