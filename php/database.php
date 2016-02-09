@@ -2037,8 +2037,8 @@ function createDBTableFromFile($afile,$params=array()){
         		$type="{$type}({$len})";
         	break;
 		}
-		if($stat['nulls']==1){$type.=' NULL';}
-		else{$type.=' NOT NULL';}
+		//if($stat['nulls']==1){$type.=' NULL';}
+		//else{$type.=' NOT NULL';}
 		$fields[$field]=$type;
 	}
 	//unset($params['-stats']);
