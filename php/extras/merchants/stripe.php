@@ -39,8 +39,40 @@
 */
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/stripe/Stripe.php");
-
-
+//---------- begin function stripeBalance--------------------
+/**
+* @describe returns stripe balances
+* @param params array
+* @return array
+* @usage $balances=stripeBalance(array('apikey'=>$apikey));
+*/
+function stripeBalance($params=array()){
+	//auth tokens are required
+	$required=array(
+		'apikey'
+	);
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$response=Stripe_Balance::retrieve();
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	return $response;
+}
+//---------- begin function stripeCharge--------------------
+/**
+* @describe attempts a charge
+* @param params array - required fields are apikey, amount, card_num, and description
+* @return array
+* @usage $auth=stripeCharge($auth);
+*/
 function stripeCharge($params=array()){
 	//auth tokens are required
 	$required=array(
