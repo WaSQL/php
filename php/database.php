@@ -2017,12 +2017,7 @@ function createDBTableFromFile($afile,$params=array()){
     	else{$type='varchar';}
     	switch($type){
         	case 'int':
-        		if($stat['max'] <= 4){
-					$type="tinyint({$stat['max']})";
-				}
-				else{
-					$type='integer';
-				}
+				$type='integer';
         	break;
         	case 'real':
         		$len=roundToNearestMultiple($stat['max'],5);
@@ -2037,8 +2032,8 @@ function createDBTableFromFile($afile,$params=array()){
         		$type="{$type}({$len})";
         	break;
 		}
-		if($stat['nulls']==1){$type.=' NULL';}
-		else{$type.=' NOT NULL';}
+		//if($stat['nulls']==1){$type.=' NULL';}
+		//else{$type.=' NOT NULL';}
 		$fields[$field]=$type;
 	}
 	//unset($params['-stats']);
@@ -2059,6 +2054,7 @@ function createDBTableFromFile($afile,$params=array()){
 		}
 	}
 	else{
+		if(isset($params['-clean']) && $params['-clean']){truncateDBTable($params['-table']);}
 		$ok=alterDBTable($params['-table'],$fields);
 		if($ok != 1 && $ok != 'Nothing changed'){
 			$params['error']=$ok;
