@@ -322,6 +322,7 @@ function simulateEvent(element, eventName){
     return true;
 }
 function isDate(str){
+	//fix for safare
 	var d = new Date(str.replace(/-/g, "/"));
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
   		// it is a date
