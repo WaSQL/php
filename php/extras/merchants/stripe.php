@@ -57,6 +57,7 @@ function stripeBalance($params=array()){
 		}
 	}
 	try{
+		$auth=Stripe::setApiKey($params['apikey']);
 		$response=Stripe_Balance::retrieve();
 	}
 	catch (Exception $e){
@@ -64,7 +65,14 @@ function stripeBalance($params=array()){
     	return $response;
 	}
 	$response=stripeObject2Array($response);
-	return $response;
+	$balances=array();
+	if(isset($response['values']['available'][0]['values'])){
+        $balances['available']=$response['values']['available'][0]['values'];
+	}
+	if(isset($response['values']['pending'][0]['values'])){
+        $balances['pending']=$response['values']['pending'][0]['values'];
+	}
+	return $balances;
 }
 //---------- begin function stripeCharge--------------------
 /**
