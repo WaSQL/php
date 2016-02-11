@@ -1972,20 +1972,11 @@ function convertString ( $source, $target_encoding ){
 */
 function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 	ob_start(); // buffer the output ...
-	$fp = fopen('php://output', 'w'); // this file actual writes to php output
-    fputcsv($fp, $parts, $delim, $enclose);
-    fclose($fp);
-    return trim(ob_get_clean()); // ... then return it as a string!
-
-	//create a csv string from an array
-	$cnt=count($parts);
-	for($x=0;$x<$cnt;$x++){
-		$parts[$x]=fixMicrosoft($parts[$x]);
-		$parts[$x]=str_replace($enclose,$enclose.$enclose,$parts[$x]);
-		if($force || stringContains($parts[$x],$delim)){$parts[$x]=$enclose . $parts[$x] . $enclose;}
-    	}
-    return implode($delim,$parts);
-	}
+	$csvImplodeFH = fopen('php://output', 'w'); // this file actual writes to php output
+    fputcsv($csvImplodeFH, $parts, $delim, $enclose);
+    fclose($csvImplodeFH);
+    return rtrim(ob_get_clean()); // ... then return it as a string!
+}
 
 //---------- begin function csvParseLine--------------------------------------
 /**
