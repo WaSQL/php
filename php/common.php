@@ -287,6 +287,12 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		}
 	    $tag .= '	<label class="btn '.$class.'">';
 		if(isset($params["{$tval}_class"])){
+			switch(strtolower($params['-size'])){
+            	case 'lg':
+            	case 'large':
+            		$params["{$tval}_class"] .= " w_biggest";
+            	break;
+			}
 			$tag .= '<span class="'.$params["{$tval}_class"].'"></span>'."\n";
 		}
 	    $tag .= '   	<input type="radio" name="'.$name.'" value="'.$tval.'"';
