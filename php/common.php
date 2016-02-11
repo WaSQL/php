@@ -1975,7 +1975,10 @@ function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 	$csvImplodeFH = fopen('php://output', 'w'); // this file actual writes to php output
     fputcsv($csvImplodeFH, $parts, $delim, $enclose);
     fclose($csvImplodeFH);
-    return rtrim(ob_get_clean()); // ... then return it as a string!
+    $line=ob_get_clean();
+    $line=rtrim($line);
+    $line=preg_replace('/[\r\n]+$/','',$line);
+    return rtrim($line); // ... then return it as a string!
 }
 
 //---------- begin function csvParseLine--------------------------------------
