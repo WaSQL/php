@@ -1652,7 +1652,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//date
 				if(isDate(theForm[i].value) == false){
 					//invalid date
-                    var msg = dname+" must be of valid date ";
+                    var msg = dname+" must be a valid date ";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
