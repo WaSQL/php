@@ -236,6 +236,12 @@ foreach($files as $file){
 		echo "{$file}<br>\n";
 		continue;
 	}
+	if(strtolower($file)=='stripe'){
+		echo "\r\n/* BEGIN {$file} */\r\n";
+    	echo "loadJsCss('https://js.stripe.com/v1/','js')\n";
+    	echo "\n\n";
+    	continue;
+	}
 	if(preg_match('/^http/i',$file)){
      	//remote file - expire every week
      	$evalstr="return minifyGetExternal('{$file}');";
