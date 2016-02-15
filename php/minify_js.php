@@ -360,6 +360,9 @@ function minifyFiles($path,$names){
 	    	$file="{$path}/{$name}.js";
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
+		elseif(strtolower($name)=='stripe'){
+			$files[]=$name;
+		}
 		else{echo "/* Minify_js Error: NO SUCH NAME:{$name} */\n";}
 	}
 	return false;
