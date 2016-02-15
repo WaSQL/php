@@ -8025,6 +8025,14 @@ function loadExtrasJs($extras){
         			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
 				}
         	break;
+        	case 'stripe':
+        		if($CONFIG['minify_js']){
+        			$extra='https://js.stripe.com/v1/';
+				}
+				else{
+        			$extra='https://js.stripe.com/v1/';
+				}
+        	break;
         	case 'signature':
 			case 'file':
 				$extra='html5';
