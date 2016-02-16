@@ -83,10 +83,7 @@ function stripeBalance($params=array()){
 */
 function stripeCharge($params=array()){
 	//auth tokens are required
-	$required=array(
-		'apikey','amount',
-		'description'
-	);
+	$required=array('apikey','amount','description');
 	foreach($required as $key){
     	if(!isset($params[$key]) || !strlen($params[$key])){
 			$response=array(
@@ -105,7 +102,7 @@ function stripeCharge($params=array()){
 			'status'	=> 'failed',
 			'response_reason_text' => "Error: Missing required param - cc_num or source",
 			'approved'	=> false
-			);
+		);
 		$response['message']=$response['response_reason_text'];
 		ksort($response);
 		return $response;
