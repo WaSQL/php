@@ -97,7 +97,10 @@ function stripeCharge($params=array()){
 		}
 	}
 	//either cc_num or source is required
-	if(!isset($params['cc_num']) && !isset($params['source'])){
+	$ok=0;
+	if(isset($params['cc_num']) && strlen($params['cc_num'])){$ok=1;}
+	elseif(isset($params['source']) && strlen($params['source'])){$ok=1;}
+	if($ok==0){
 		$response=array(
 			'status'	=> 'failed',
 			'response_reason_text' => "Error: Missing required param - cc_num or source",
