@@ -84,7 +84,7 @@ function stripeBalance($params=array()){
 function stripeCharge($params=array()){
 	//auth tokens are required
 	$required=array(
-		'apikey','amount','card_num',
+		'apikey','amount',
 		'description'
 	);
 	foreach($required as $key){
@@ -99,19 +99,33 @@ function stripeCharge($params=array()){
 			return $response;
 		}
 	}
+	//either cc_num or source is required
+	if(!isset($params['cc_num']) && !isset($params['source'])){
+		$response=array(
+			'status'	=> 'failed',
+			'response_reason_text' => "Error: Missing required param - cc_num or source",
+			'approved'	=> false
+			);
+		$response['message']=$response['response_reason_text'];
+		ksort($response);
+		return $response;
+	}
 	if(!isset($params['currency'])){$params['currency']='usd';}
 	else{$params['currency']=strtolower($params['currency']);}
 
 	$auth=Stripe::setApiKey($params['apikey']);
 	//echo printValue($params);exit;
-	$card=array(
-		'number'	=> $params['card_num'],
-		'exp_month'	=> $params['card_exp_month'],
-		'exp_year'	=> $params['card_exp_year']
-	);
-	if(isset($params['card_cvc'])){$card['cvc']=$params['card_cvc'];}
-	elseif(isset($params['card_cvv2'])){$card['cvc']=$params['card_cvv2'];}
-	elseif(isset($params['cc_cvv2'])){$card['cvc']=$params['cc_cvv2'];}
+	$card=array();
+	if(isset($params['card_num'])){
+		$card['number']=$params['card_num'];
+		$card['exp_month']=$params['card_exp_month'];
+		$card['exp_year']=$params['card_exp_year'];
+		if(isset($params['card_cvc'])){$card['cvc']=$params['card_cvc'];}
+		elseif(isset($params['card_cvv2'])){$card['cvc']=$params['card_cvv2'];}
+		elseif(isset($params['cc_cvv2'])){$card['cvc']=$params['cc_cvv2'];}
+	}
+
+
 	if(isset($params['billtoname'])){$card['name']=$params['billtoname'];}
 	elseif(isset($params['name'])){$card['name']=$params['name'];}
 	if(isset($params['billtozipcode'])){$card['address_zip']=$params['billtozipcode'];}
@@ -128,9 +142,22 @@ function stripeCharge($params=array()){
 	$charge=array(
 		"amount" => $params['amount'],
 		"currency" => $params['currency'],
-		"card" => $card,
 		"description" => $params['description']
 	);
+	if(count($card)){
+    	$charge['card'] = $card;
+	}
+	else{
+    	$charge['source']=$params['source'];
+	}
+	//statement_descriptor - what to show on customers credit card statement - up to 22 characters
+	if(isset($params['statement_descriptor'])){
+    	$charge['statement_descriptor']=$params['statement_descriptor'];
+	}
+	if(isset($params['receipt_email'])){
+    	$charge['receipt_email']=$params['receipt_email'];
+	}
+
 	$meta=array();
 	if(isset($params['email'])){$meta['email']=$params['email'];}
 	if(isset($params['ordernumber'])){$meta['ordernumber']=$params['ordernumber'];}
@@ -138,7 +165,8 @@ function stripeCharge($params=array()){
 	foreach($params as $key=>$val){
     	if(isset($card[$key]) || isset($charge[$key]) || isset($meta[$key])){continue;}
     	if(preg_match('/^[\-\_]/',$key)){continue;}
-    	if(preg_match('/^(card)_/',$key)){continue;}
+    	if(preg_match('/^(card)_/i',$key)){continue;}
+    	if(preg_match('/^(source|statement_descriptor|receipt_email)$/i',$key)){continue;}
     	$meta[$key]=$val;
     	//meta can only support up to 10 keys
     	if(count($meta)==10){break;}
