@@ -1136,8 +1136,10 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
 		$params['class'] .= ' form-control';
 	}
+	$skip=array();
+	if(isset($params['-noname'])){$skip[]='name';}
 	$rtn = '<select data-value="'.$sval.'"';
-	$rtn .= setTagAttributes($params);
+	$rtn .= setTagAttributes($params,$skip);
 	$rtn .= '>';
 	if(isset($params['message'])){
 		$rtn .= '	<option value="">'.$params['message'].'</option>'."\n";
@@ -1305,7 +1307,9 @@ function buildFormSlider($name, $params=array()){
         	if(isset($json[$val])){$val=$json[$val];}
 		}
 	}
-	$rtn .= setTagAttributes($params);
+	$skip=array();
+	if(isset($params['-noname'])){$skip[]='name';}
+	$rtn .= setTagAttributes($params,$skip);
 	$rtn .= ' value="'.$params['value'].'" /> '.$params['max_displayname'].'</div>'."\n";
 	$rtn .= '	<div class="input_range_text" id="'.$params['label'].'" align="center">'.$val.'</div>'."\n";
     //$rtn .= printValue($params);
