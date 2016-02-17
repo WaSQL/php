@@ -1145,12 +1145,12 @@ function Html5Chart(canvasElementId){
                 return;
             }
         }
-        dataSum = dataSum.toFixed(this.numberOfDecimals);
+        dataSum = parseFloat(dataSum).toFixed(this.numberOfDecimals);
         
         var yAxisValues = new Array();
         yAxisValues.push(0);
         for (var i = 1; i < 10; i++){
-            yAxisValues.push((dataSum * i/10).toFixed(this.numberOfDecimals));
+            yAxisValues.push(parseFloat(dataSum * i/10).toFixed(this.numberOfDecimals));
         }
         yAxisValues.push(dataSum);
         
