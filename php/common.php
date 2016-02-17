@@ -12385,7 +12385,7 @@ function xml2Object($xmlstring){
 *	$array =  xml2array(file_get_contents('feed.xml', 1, 'attribute'));
 */
 function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
-	if (file_exists($contents)){$contents = file_get_contents($contents);}
+	if (strlen($contents) < PHP_MAXPATHLEN && file_exists($contents)){$contents = file_get_contents($contents);}
     if(!strlen($contents)){return array('No contents');}
     if(!function_exists('xml_parser_create')) {
         //print "'xml_parser_create()' function not found!";
