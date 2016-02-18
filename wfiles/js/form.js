@@ -2510,6 +2510,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     	if(undefined != xparams.callback){callback=xparams.callback;}
 		if(undefined != xparams.abort_callback){abort_callback=xparams.abort_callback;}
     	if(undefined != xparams.timeout){tmeout=xparams.timeout;}
+    	if(undefined != xparams.url){newurl=xparams.url;}
+    	if(undefined != xparams.title){newtitle=xparams.title;}
     	if(undefined != xparams.nosetprocess){
 			if(xparams.nosetprocess){showprocessing=false;}
 		}
