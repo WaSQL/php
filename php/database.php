@@ -1128,6 +1128,10 @@ function addEditDBForm($params=array(),$customcode=''){
 							}
 						}
 					}
+					if(isset($params[$field.'_checkall'])){
+						$opts['-checkall']=1;
+						$used[$field.'_checkall']=1;
+					}
 					if(isset($params[$field.'_tvals'])){
 						$opts['tvals']=$params[$field.'_tvals'];
 						$used[$field.'_tvals']=1;
@@ -1208,6 +1212,10 @@ function addEditDBForm($params=array(),$customcode=''){
 							$used[$field.'_'.$okey]=1;
 							}
 					}
+				}
+				if(isset($params[$field.'_checkall'])){
+					$opts['-checkall']=1;
+					$used[$field.'_checkall']=1;
 				}
 				//column
 				//add to displayname class
@@ -1399,6 +1407,10 @@ function addEditDBForm($params=array(),$customcode=''){
 					$used[$field.'_options']=1;
 					if(in_array($okey,$forcedatts)){$opts[$okey]=$oval;}
 				}
+			}
+			if(isset($params[$field.'_checkall'])){
+				$opts['-checkall']=1;
+				$used[$field.'_checkall']=1;
 			}
 			if(!is_array($rec) && strlen($info['fieldinfo'][$field]['defaultval'])){
 				$opts['value']=$info['fieldinfo'][$field]['defaultval'];
