@@ -1784,16 +1784,20 @@ function cleanDir($dir='') {
 //---------- begin function cmdResults--------------------------------------
 /**
 * @describe executes command and returns results
-* @param cmd string
-*	the command to execute
-* @param args string
-*	arguements to pass to the command
+* @param cmd string - the command to execute
+* @param [args] string - arguements to pass to the command
+* @param [dir] string - directory
+* @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
 * @return string
 *	returns the results of executing the command
 */
-function cmdResults($cmd,$args='',$dir=''){
+function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=null;}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
+	if($timeout != 0 && isNum($timeout) && !isWindows()){
+		//this will kill the process if it goes longer than timeout
+    	$cmd="($cmd) & WPID=\$!; sleep {$timeout} && kill \$WPID > /dev/null 2>&1 & wait \$WPID";
+	}
 	$proc=proc_open($cmd,
 		array(
 			0=>array('pipe', 'r'), //stdin
