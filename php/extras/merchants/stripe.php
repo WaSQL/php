@@ -74,6 +74,74 @@ function stripeBalance($params=array()){
 	}
 	return $balances;
 }
+//---------- begin function stripeRetrieve--------------------
+/**
+* @describe returns stripe charge info
+* @param params array
+* @return array
+* @usage $charge=stripeRetrieve(array('apikey'=>$apikey,'id'=>$id));
+*/
+function stripeRetrieve($params=array()){
+	//auth tokens are required
+	$required=array(
+		'apikey','id'
+	);
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=Stripe::setApiKey($params['apikey']);
+		$response=Stripe_Charge::retrieve($params['id']);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$charge=array();
+	if(isset($response['values']['amount'])){
+        $charge['amount']=round($response['values']['amount']/100,2);
+	}
+	if(isset($response['values']['amountrefunded'])){
+        $charge['refunded']=round($response['values']['amountrefunded']/100,2);
+	}
+	if(isset($response['values']['id'])){
+        $charge['id']=$response['values']['id'];
+	}
+	if(isset($response['values']['description'])){
+        $charge['description']=$response['values']['description'];
+	}
+	if(isset($response['values']['paid'])){
+        $charge['paid']=$response['values']['paid'];
+	}
+	if(isset($response['values']['status'])){
+        $charge['status']=$response['values']['status'];
+	}
+	if(!isset($response['values']['livemode']) || $response['values']['livemode'] != 1){
+        $charge['status'] .= ' TEST MODE';
+	}
+	if(isset($response['values']['currency'])){
+        $charge['currency']=$response['values']['currency'];
+	}
+	if(isset($response['values']['created'])){
+        $charge['charge_date']=date('Y-m-d H:i:s',$response['values']['created']);
+	}
+	if(isset($response['values']['source']['values'])){
+        $charge['cc_type']=$response['values']['source']['values']['brand'];
+        $charge['cc_last4']=$response['values']['source']['values']['last4'];
+        $charge['cc_month']=$response['values']['source']['values']['expmonth'];
+        $charge['cc_year']=$response['values']['source']['values']['expyear'];
+	}
+	if(isset($response['values']['metadata']['values'])){
+        foreach($response['values']['metadata']['values'] as $k=>$v){
+        	$charge[$k]=$v;
+		}
+	}
+	ksort($charge);
+	return $charge;
+}
 //---------- begin function stripeCharge--------------------
 /**
 * @describe attempts a charge
