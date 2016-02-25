@@ -28,6 +28,7 @@ global $allhost;
 global $dbh;
 global $sel;
 global $CONFIG;
+$_SERVER['HTTP_HOST']='localhost';
 include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
@@ -140,7 +141,7 @@ ENDOFWHERE;
 			if(isset($pages[$cmd])){
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
-            	$post=postURL($url,array('-method'=>'GET'));
+            	$post=postURL($url,array('-method'=>'GET','-follow'=>1,'-ssl'=>1));
             	$result=$post['body'];
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
