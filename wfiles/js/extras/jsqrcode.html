@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>JSQRCode Scanner Demo</title>
+        <script type="text/javascript" src="jsqrcode/jquery-1.7.2.min.js"></script>
+
+        <!-- <script type="text/javascript" src="jsqrcode/grid.js"></script>
+        <script type="text/javascript" src="jsqrcode/version.js"></script>
+        <script type="text/javascript" src="jsqrcode/detector.js"></script>
+        <script type="text/javascript" src="jsqrcode/formatinf.js"></script>
+        <script type="text/javascript" src="jsqrcode/errorlevel.js"></script>
+        <script type="text/javascript" src="jsqrcode/bitmat.js"></script>
+        <script type="text/javascript" src="jsqrcode/datablock.js"></script>
+        <script type="text/javascript" src="jsqrcode/bmparser.js"></script>
+        <script type="text/javascript" src="jsqrcode/datamask.js"></script>
+        <script type="text/javascript" src="jsqrcode/rsdecoder.js"></script>
+        <script type="text/javascript" src="jsqrcode/gf256poly.js"></script>
+        <script type="text/javascript" src="jsqrcode/gf256.js"></script>
+        <script type="text/javascript" src="jsqrcode/decoder.js"></script>
+        <script type="text/javascript" src="jsqrcode/QRCode.js"></script>
+        <script type="text/javascript" src="jsqrcode/findpat.js"></script>
+        <script type="text/javascript" src="jsqrcode/alignpat.js"></script>
+        <script type="text/javascript" src="jsqrcode/databr.js"></script> -->
+
+		<script type="text/javascript" src="jsqrcode/jsqrcode.js"></script>
+        <script type="text/javascript" src="jsqrcode/qr.js"></script>
+        <script type="text/javascript" src="jsqrcode/camera.js"></script>
+        <script type="text/javascript" src="jsqrcode/init.js"></script>
+    </head>
+    <body>
+        <h1>JSQRCode Scanner Demo</h1>
+        <p>Hold a QR Code in front of your webcam.</p>
+        <video  id="camsource" autoplay width="320" height="240">Put your fallback message here.</video>
+        <canvas id="qr-canvas" width="320" height="240" style="display:none"></canvas>
+        <h3 id="qr-value"></h3>
+    </body>
+</html>
