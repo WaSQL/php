@@ -5887,6 +5887,7 @@ function getDBRecords($params=array()){
 	//Free the resources associated with the result set
 	databaseFreeResult($query_result);
 	//determine fields returned
+	$fields=array();
 	foreach($list as $i=>$r){
 		$fields=array_keys($r);
 		break;
