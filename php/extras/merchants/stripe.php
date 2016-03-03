@@ -317,7 +317,7 @@ function stripeRefund($params=array()){
 	$charge=array(
 		"amount" => $params['amount'],
 		"currency" => $params['currency'],
-		"id" => $params['id']
+		"charge" => $params['charge']
 	);
 	$meta=array();
 	if(isset($params['description'])){$meta['description']=$params['description'];}
@@ -332,7 +332,7 @@ function stripeRefund($params=array()){
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
     	$response['status']='failed';
-
+		$response['params']=$charge;
     	ksort($response);
     	return $response;
 	}
