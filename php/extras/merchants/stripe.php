@@ -233,8 +233,8 @@ function stripeCharge($params=array()){
 	foreach($params as $key=>$val){
     	if(isset($card[$key]) || isset($charge[$key]) || isset($meta[$key])){continue;}
     	if(preg_match('/^[\-\_]/',$key)){continue;}
-    	if(preg_match('/^(card|apikey)_/i',$key)){continue;}
-    	if(preg_match('/^(source|statement_descriptor|receipt_email)$/i',$key)){continue;}
+    	if(preg_match('/^(card)_/i',$key)){continue;}
+    	if(preg_match('/^(apikey|source|statement_descriptor|receipt_email)$/i',$key)){continue;}
     	$meta[$key]=$val;
     	//meta can only support up to 10 keys
     	if(count($meta)==10){break;}
