@@ -327,7 +327,7 @@ function stripeRefund($params=array()){
     	$charge['metadata']=$meta;
 	}
 	try{
-		$response=Stripe_Charge::create($charge);
+		$response=Stripe_Refund::create($charge);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
