@@ -233,7 +233,7 @@ function stripeCharge($params=array()){
 	foreach($params as $key=>$val){
     	if(isset($card[$key]) || isset($charge[$key]) || isset($meta[$key])){continue;}
     	if(preg_match('/^[\-\_]/',$key)){continue;}
-    	if(preg_match('/^(card)_/i',$key)){continue;}
+    	if(preg_match('/^(card|apikey)_/i',$key)){continue;}
     	if(preg_match('/^(source|statement_descriptor|receipt_email)$/i',$key)){continue;}
     	$meta[$key]=$val;
     	//meta can only support up to 10 keys
@@ -295,8 +295,12 @@ function stripeCharge($params=array()){
 }
 function stripeRefund($params=array()){
 	//auth tokens are required
+	if(isset($params['id']) && !isset($params['charge'])){
+    	$params['charge']=$params['id'];
+    	unset($params['id']);
+	}
 	$required=array(
-		'apikey','amount','id',
+		'apikey','amount','charge',
 	);
 	foreach($required as $key){
     	if(!isset($params[$key]) || !strlen($params[$key])){
