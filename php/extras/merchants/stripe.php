@@ -341,11 +341,11 @@ function stripeRefund($params=array()){
 		$response=$response['values'];
 		if(isNum($response['created'])){
         	$response['created_date']=date('Y-m-d H:i:s',$response['created']);
+        	$response['status']='success';
 		}
 		if($params['currency']=='usd'){
     		$response['amount']=round(($response['amount']/100),2);
 		}
-		if($response['captured'] && $response['paid']){$response['status']='success';}
 		ksort($response);
 		foreach($response as $key=>$val){
         	if(is_array($val) && count($val)==1 && isset($val['values'])){
