@@ -2496,7 +2496,7 @@ function ajaxAbort(sid){
 	return false;
 }
 //--------------------------
-function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle,newurl,abort_callback){
+function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle,newurl,abort_callback,append){
 	//info: makes an AJAX request and returns request page contents to sid
 	//get GUID cookie and pass it in
 	//if params is a json string, use it instead of the other params...
@@ -2512,6 +2512,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     	if(undefined != xparams.timeout){tmeout=xparams.timeout;}
     	if(undefined != xparams.url){newurl=xparams.url;}
     	if(undefined != xparams.title){newtitle=xparams.title;}
+    	if(undefined != xparams.append){append=xparams.append;}
     	if(undefined != xparams.nosetprocess){
 			if(xparams.nosetprocess){showprocessing=false;}
 		}
@@ -2531,6 +2532,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 			//skip keys that start with a dash - these are configuration settings
 			if(key.indexOf("-")==0){continue;}
 			if(key == 'callback'){continue;}
+			if(key == 'append'){continue;}
 			if(key == 'abort_callback'){continue;}
 			if(key == 'timeout'){continue;}
 			if(key == 'nosetprocess'){continue;}
@@ -2581,6 +2583,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     		'var2':cp_title,
     		'var3':newtitle,
     		'var4':newurl,
+    		'var5':append,
 			'groupName':sid,
 			'prevValue':getText(sid),
 			'onGroupBegin':function(req){
@@ -2665,8 +2668,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						}
                 	}
 				else{
+					var val=req.responseText;
 					if(lname.indexOf('popupdiv') != -1){
-						var val=req.responseText;
+
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     }
@@ -2691,6 +2695,10 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						var id=obj.getAttribute('id');
 						if(undefined != behavior && (behavior=='wysiwyg' || behavior=='richtext' || behavior=='tinymce' || behavior=='nicedit') && undefined != nicEditors[id]){
             				nicEditors.findEditor(id).setContent(val);
+						}
+						//append?
+						if(this.var5){
+                        	val=getText(dname)+val;
 						}
 						setText(dname,val);
 						//center object if onshow="center"
