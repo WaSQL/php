@@ -2329,6 +2329,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				}
           	,'onTimeout':function(req){
 				var dname = this.groupName;
+				var lname=dname.toLowerCase();
 				var cb=this.callback;
 				cb=cb.toLowerCase();
 				var val="<b style=\"color:red\">ajaxPost Timed Out Error</b>";
@@ -2345,6 +2346,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				}
 			,'onError':function(req){
 				var dname = this.groupName;
+				var lname=dname.toLowerCase();
 				var cb=this.callback;
 				cb=cb.toLowerCase();
 				var val='<div style="display:none" id="ajaxOnError">'+req.responseText+'</div>';
