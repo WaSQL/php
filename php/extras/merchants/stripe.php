@@ -297,7 +297,6 @@ function stripeRefund($params=array()){
 	//auth tokens are required
 	if(isset($params['id']) && !isset($params['charge'])){
     	$params['charge']=$params['id'];
-    	unset($params['id']);
 	}
 	$required=array(
 		'apikey','amount','charge',
@@ -317,7 +316,7 @@ function stripeRefund($params=array()){
 	$charge=array(
 		"amount" => $params['amount'],
 		"currency" => $params['currency'],
-		"charge" => $params['charge']
+		"charge" => $params['charge'],
 	);
 	$meta=array();
 	if(isset($params['description'])){$meta['description']=$params['description'];}
@@ -326,8 +325,11 @@ function stripeRefund($params=array()){
 	if(count($meta)){
     	$charge['metadata']=$meta;
 	}
+	//echo printValue($charge);exit;
+
 	try{
-		$response=Stripe_Refund::create($charge);
+		$stripe_charge = Stripe_Charge::retrieve($charge['charge']);
+		$response = $stripe_charge->refund(array("amount" => $charge['amount']));
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -336,6 +338,7 @@ function stripeRefund($params=array()){
     	ksort($response);
     	return $response;
 	}
+	//echo printValue($response);exit;
 	$response=stripeObject2Array($response);
 	if(isset($response['values'])){
 		$response=$response['values'];
@@ -358,9 +361,11 @@ function stripeRefund($params=array()){
 }
 function stripeObject2Array($obj) {
 	if(is_object($obj)){ $obj = (array) $obj;}
+	//echo printValue($obj);exit;
 	if(is_array($obj)) {
 		$new = array();
 		foreach($obj as $key => $val){
+			if(is_object($val)){ $val = (array) $val;}
 			if(is_array($val)){
 				if(!count($val)){continue;}
 			}
