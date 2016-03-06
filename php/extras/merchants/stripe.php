@@ -164,14 +164,19 @@ function stripeCharge($params=array()){
 			return $response;
 		}
 	}
-	//either cc_num or source is required
+	//backward compatibility
+	if(isset($params['cc_num']) && !isset($params['card_num'])){$params['card_num']=$params['cc_num'];}
+	if(isset($params['cc_exp_month']) && !isset($params['card_exp_month'])){$params['card_exp_month']=$params['cc_exp_month'];}
+	if(isset($params['cc_exp_year']) && !isset($params['card_exp_year'])){$params['card_exp_year']=$params['cc_exp_year'];}
+	if(isset($params['cc_cvv2']) && !isset($params['card_cvc'])){$params['card_cvc']=$params['cc_cvv2'];}
+	//either card_num or source is required
 	$ok=0;
-	if(isset($params['cc_num']) && strlen($params['cc_num'])){$ok=1;}
+	if(isset($params['card_num']) && strlen($params['card_num'])){$ok=1;}
 	elseif(isset($params['source']) && strlen($params['source'])){$ok=1;}
 	if($ok==0){
 		$response=array(
 			'status'	=> 'failed',
-			'response_reason_text' => "Error: Missing required param - cc_num or source",
+			'response_reason_text' => "Error: Missing required param - card_num or source",
 			'approved'	=> false
 		);
 		$response['message']=$response['response_reason_text'];
