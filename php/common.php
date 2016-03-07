@@ -386,24 +386,39 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     	$tag .= '</div>'."\n";
 	}
 	$tag.='<div class="row">'."\n";
+	$class='';
+	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
+	if(isset($params['size'])){
+		switch(strtolower($params['size'])){
+	    	case 'small':$class='w_small';break;
+	    	case 'smaller':$class='w_smaller';break;
+	    	case 'smallest':$class='w_smallest';break;
+	    	case 'tiny':$class='w_tiny';break;
+	    	case 'big':$class='w_big';break;
+	    	case 'bigger':$class='w_bigger';break;
+	    	case 'biggest':$class='w_biggest';break;
+	    	case 'huge':$class='w_huge';break;
+	    	default:$class='';break;
+		}
+	}
+	if(strlen($class)){$class=' '.trim($class);}
 	foreach($cols as $opts){
     	$tag .= '	<div class="col-xs-'.$colsize.'">'."\n";
     	foreach($opts as $tval=>$dval){
-
 			$id=$params['id'].'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
-			$tag .= '		<div style="min-width:'.$minwidth.'px;">'."\n";
-			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
+			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
-			$tag .= '>'."\n";
+			$tag .= '> <span class="icon-mark'.$class.'"></span>'."\n";
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
-				$tag .= '			<label for="'.$id.'"> '.$dval.'</label>'."\n";
+				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'."\n";
 			}
-			$tag .= '		</div>'."\n";
+			$tag .= '</div>'."\n";
 		}
     	$tag .= '	</div>'."\n";
 	}
