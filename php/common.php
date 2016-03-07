@@ -4877,6 +4877,20 @@ function formatMoney($number=0,$cents = 1){
   		}
   	return $number;
 	}
+//---------- begin function toFixed ----------
+/**
+* @describe returns number with specified decimal places - just like javascript toFixed
+* @param number numeric - number to format as currency, invalid numbers will be set to 0.00
+* @param decimals - number of decimals - defaults to 2
+* @return number numeric -  value with specified decimals
+* @usage $num=toFixed($num,2);
+*/
+function toFixed($number=0,$decimals = 2){
+	$number=preg_replace('/[^0-9\.]+/','',$number);
+	if(!isNum($number)){$number=0;}
+	$num= number_format($number, $decimals, ".", "");
+	return $num;
+	}
 //---------- begin function formatPre ----------
 /**
 * @describe wrapper for nl2br - converts end of line characters to <br> tags
