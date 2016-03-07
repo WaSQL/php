@@ -1155,9 +1155,33 @@ input[list]{
 	background-position:right;
 	background-origin: content-box;
 }
-input[data-type=checkbox] + label, input[data-type=radio] + label { 
+/* checkbox formatting */
+input[data-type=checkbox] + span[class*=icon-mark], input[data-type=radio] + span[class*=icon-mark] {
+	padding:2px 2px 2px 2px;
+	border:1px solid #ccc;
+	color:#FFF;
+	border-radius: 3px;
+	font-weight:900;
+}
+input[data-type=checkbox]:checked + span[class*=icon-mark], input[data-type=radio] + span[class*=icon-mark] {
+	color:#15891b;
+}
+input[data-type=checkbox] + span[class*=icon-mark] + label, input[data-type=radio] + span[class*=icon-mark] + label {
 	cursor:pointer;
-	padding:0 4px 0 2px;
+	padding:2px 4px 0 2px;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	white-space: nowrap;
+}
+input[data-type=checkbox]:checked + span[class*=icon-mark] + label, input[data-type=radio]:checked + span[class*=icon-mark] + label {
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset, 0 0 1px rgba(162, 162, 162, 0.6);
+
+}
+/* checkboxes */
+input[data-type=checkbox] + label, input[data-type=radio] + label {
+	cursor:pointer;
+	padding:1px 4px 0 2px;
 	[safari|chrome]-webkit-border-radius: 3px;
 	-khtml-border-radius: 3px;
 	border-radius: 3px;
@@ -1165,7 +1189,7 @@ input[data-type=checkbox] + label, input[data-type=radio] + label {
 }
 input[data-type=checkbox]:checked + label, input[data-type=radio]:checked + label {
 	background: #ffffc6;
-	border:1px solid #ccc;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset, 0 0 2px rgba(162, 162, 162, 0.6);
 
 }
 
