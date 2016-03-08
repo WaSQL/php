@@ -2950,7 +2950,7 @@ LIST_TABLE:
 				$recs=getDBRecords($recopts);
 				echo '		<tr class="w_align_left"><th colspan="2">'.count($recs).' email addresses found.</td></tr>'."\n";
 				if(!isset($_REQUEST['_from_']) && isEmail($USER['email'])){$_REQUEST['_from_']=$USER['email'];}
-				echo '		<tr class="w_align_left"><th colspan="2">From: <input type="text" style="width:300px;" name="_from_" pattern="email" data-data-pattern-msg="From must be a valid email address" data-required="1" data-requiredmsg="From is required" value="'.$_REQUEST['_from_'].'"></td></tr>'."\n";
+				echo '		<tr class="w_align_left"><th colspan="2">From: <input type="email" style="width:300px;" name="_from_" mask="email" maskmsg="From must be a valid email address" data-required="1" data-requiredmsg="From is required" value="'.$_REQUEST['_from_'].'"></td></tr>'."\n";
 				echo '		<tr class="w_align_left"><th colspan="2">Subject: <input type="text" style="width:285px;" name="_subject_" data-required="1" data-requiredmsg="Subject is required" value="'.$_REQUEST['_subject_'].'"></td></tr>'."\n";
 				echo '		<tr class="w_align_left"><th colspan="2">Message<br><textarea name="message" style="width:350px;height:100px;">'.$_REQUEST['message'].'</textarea></td></tr>'."\n";
 
