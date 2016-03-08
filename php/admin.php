@@ -2943,7 +2943,7 @@ LIST_TABLE:
 			if(isset($_REQUEST['_table_']) && isset($_REQUEST['_field_'])){
 				$field=$_REQUEST['_field_'];
 				echo '		<tr class="w_align_left"><th colspan="2">Where: <input type="text" style="width:300px;" name="_search_" value="'.$_REQUEST['_search_'].'"></td></tr>'."\n";
-				$recopts=array('-query'=>"select {$field} from {$_REQUEST['_table_']} where not({$field} is null) and not({$field}='')");
+				$recopts=array('-query'=>"select distinct {$field} from {$_REQUEST['_table_']} where not({$field} is null) and not({$field}='')");
 				if(isset($_REQUEST['_search_']) && strlen($_REQUEST['_search_'])){
 					$recopts['-query'] .= " and ({$_REQUEST['_search_']})";
                 	}
