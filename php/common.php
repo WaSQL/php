@@ -413,7 +413,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
-			$tag .= '> <span class="icon-mark'.$class.'"></span>'."\n";
+			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
 				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'."\n";
