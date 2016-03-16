@@ -1477,7 +1477,7 @@ function setText(obj,txt){
 	//usage: setText('div2','test');
 	var cObj=getObject(obj);
     if(undefined == cObj){
-		console.log('setText: no object found for '.obj);
+		console.log('setText: no object found for '+obj);
 		return null;
 	}
     var previous_value=getText(cObj);
