@@ -240,6 +240,7 @@ function buildFakeContent($title='FAKE for'){
 * @param opts array - true value/display value pairs.
 * @param params array 
 *	[value] - sets default selection
+*	[name] - name override
 *	[-button'] - btn-default, btn-primary, btn-warning, btn-danger, btn-info - defaults to btn-default
 * @return string
 * @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
@@ -250,6 +251,10 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	}
 	if(!isset($params['-button'])){
 		$params['-button']='btn-default';
+	}
+	//override name
+	if(isset($params['name'])){
+		$name=$params['name'];
 	}
 	//check for size option
 	if(!isset($params['-size'])){$params['-size']='';}
@@ -588,7 +593,7 @@ function buildFormGender($name='gender',$params=array()){
 	);
 	$params['M_class']='icon-user-male';
 	$params['F_class']='icon-user-female';
-	return buildFormButtonSelect('gender',$opts,$params);
+	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormHidden--------------------
 /**
