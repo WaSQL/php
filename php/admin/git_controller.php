@@ -5,7 +5,13 @@
 */
 	loadExtras('git');
 	loadExtrasJs('codemirror');
-	$gitpath=getWasqlPath();
+	if(isset($_REQUEST['gitpath']) && is_dir($_REQUEST['gitpath'])){
+    	$_SESSION['gitpath']=$_REQUEST['gitpath'];
+	}
+	if(isset($_SESSION['gitpath']) && is_dir($_SESSION['gitpath'])){
+    	$gitpath=$_SESSION['gitpath'];
+	}
+	else{$gitpath=getWasqlPath();}
 	$config=gitConfigList($gitpath);
 	$git=gitStatus($gitpath);
 	//echo printValue($git);exit;
