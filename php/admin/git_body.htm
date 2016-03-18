@@ -1,9 +1,18 @@
 <view:default>
+<script language="javascript">
+function gitChangePath(){
+	var p=prompt('New git path');
+	window.location='/php/admin.php?_menu=git&gitpath='+p
+}
+</script>
 <div class="container-fluid">
 	<div class="row-sm-12">
 		<div>
 			<div class="w_right w_lblue"><?=$git['status'];?></div>
-			<div class="w_bigger w_lblue w_bold"><span class="icon-git w_bigger"></span> WaSQL Repository Manager - <?=$git['repo_path'];?></div>
+			<div class="w_bigger w_lblue w_bold">
+				<span class="icon-git w_bigger"></span> WaSQL Repository Manager - <?=$git['repo_path'];?>
+				<span class="icon-edit w_big w_grey w_pointer" onclick="gitChangePath();"></span>
+			</div>
 		</div>
 	</div>
 	<div class="row-sm-12">
