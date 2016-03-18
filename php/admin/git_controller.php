@@ -5,6 +5,7 @@
 */
 	loadExtras('git');
 	loadExtrasJs('codemirror');
+	//allow them to change the git path
 	if(isset($_REQUEST['gitpath']) && is_dir($_REQUEST['gitpath'])){
     	$_SESSION['gitpath']=$_REQUEST['gitpath'];
 	}
