@@ -5615,6 +5615,34 @@ function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 	}
 	return $data;
 }
+//---------- begin function setStoredValue ----------
+/**
+* @describe sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
+* @param eval_code string - php code to evaluate - THE SAME you used in getStoredValue
+* @param data mixed - data to set
+* @param [serialize] boolean - set to true to serialize data. defaults true
+* @return boolean
+* @usage
+*	<?php
+*	$recs=getStoredValue('return pageData();',0,3);
+*	$recs[0]['color']='red';
+*	$recs=setStoredValue('return pageData();',$recs);
+*	?>
+*/
+function setStoredValue($evalstr,$data,$serialize=1){
+	$progpath=dirname(__FILE__);
+	buildDir("{$progpath}/temp");
+	global $CONFIG;
+	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
+	if(file_exists($local)){unlink($local);}
+    if($serialize){
+		setFileContents($local,serialize($data));
+	}
+	else{
+		setFileContents($local,$data);
+	}
+	return true;
+}
 //---------- begin function buildImage
 /**
 * @depreciated  - use getStoredValue instead 
