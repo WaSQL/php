@@ -330,11 +330,9 @@ function ldapMapField($field){
     	case 'firstname':return 'givenname';break;
     	case 'name':return 'displayname';break;
     	case 'email':return 'mail';break;
-    	case 'zip':return 'postalcode';break;
     	case 'state':return 'st';break;
     	case 'address1':return 'streetaddress';break;
     	case 'phone':return 'telephonenumber';break;
-    	case 'zip':return 'postalcode';break;
     	case 'zip':return 'postalcode';break;
 
 	}

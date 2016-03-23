@@ -5634,6 +5634,7 @@ function setStoredValue($evalstr,$data,$serialize=1){
 	buildDir("{$progpath}/temp");
 	global $CONFIG;
 	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
+	echo $local;exit;
 	if(file_exists($local)){unlink($local);}
     if($serialize){
 		setFileContents($local,serialize($data));
