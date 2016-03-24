@@ -50,8 +50,10 @@ function ldapAddUser($params){
 	$ldapInfo['lastdn']= "cn={$params['cn']},{$ldapInfo['basedn']}";
 	if(!ldap_add($ldapInfo['connection'], $ldapInfo['lastdn'], $params)){
 		$enum=ldap_errno($ldapInfo['connection']);
-        $msg=ldap_err2str( $enum );
-		return "LDAP AddUser Error:{$enum}, Msg:{$msg}, DN:{$ldapInfo['lastdn']}".printValue($params);
+		if(isNum($enum)){
+        	$msg=ldap_err2str( $enum );
+			return "ldapAddUser {$enum} -{$msg}";
+		}
 	}
 	return 'success';
 }
@@ -440,8 +442,14 @@ function ldapModify($objectguid,$changes){
 	global $ldapInfo;
 	$recs=ldapGetUsers(array('objectguid'=>$objectguid));
 	$dn=$recs[0]['dn'];
-	$result = ldap_modify($ldapInfo['connection'], $dn, $changes);
-	return $result;
+	if(!ldap_modify($ldapInfo['connection'], $dn, $changes)){
+    	$enum=ldap_errno($ldapInfo['connection']);
+    	if(isNum($enum)){
+        	$msg=ldap_err2str( $enum );
+			return "ldapModify Error {$enum} -{$msg}";
+		}
+	}
+	return '';
 }
 //---------- begin function ldapAddAttribute--------------------
 /**
