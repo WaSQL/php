@@ -3957,6 +3957,7 @@ function adminMenu(){
 	$rtn .= '		<li class="dir"><a href="#profile" onclick="return false;" class="w_topmenu"><span class="icon-user"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'</span></a>'."\n";
 	$rtn .= '			<ul style="width:110px;">'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_logout=1"><span class="icon-user" style="color:#CCC;"></span> Log Off</a></li>'."\n";
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
@@ -3968,7 +3969,6 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
