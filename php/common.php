@@ -299,12 +299,12 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
             		$params["{$tval}_class"] .= " w_biggest";
             	break;
 			}
-			$tag .= '<span class="'.$params["{$tval}_class"].'"></span>'."\n";
+			$tag .= '<span class="'.$params["{$tval}_class"].'"></span>';
 		}
-	    $tag .= '   	<input type="radio" name="'.$name.'" value="'.$tval.'"';
+	    $tag .= '<input type="radio" name="'.$name.'" value="'.$tval.'"';
 		$tag .= setTagAttributes($params);
-		$tag .= $checked.' /> '.$dval."\n";
-	    $tag .= '   </label>'."\n";
+		$tag .= $checked.' /> '.$dval;
+	    $tag .= '</label>'."\n";
 	}
     $tag .= '</div>'."\n";
 	return $tag;
