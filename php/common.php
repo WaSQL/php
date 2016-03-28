@@ -255,6 +255,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	//override name
 	if(isset($params['name'])){
 		$name=$params['name'];
+		unset($params['name']);
 	}
 	//check for size option
 	if(!isset($params['-size'])){$params['-size']='';}
