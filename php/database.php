@@ -6320,9 +6320,7 @@ function listDBRecords($params=array(),$customcode=''){
 				$params['-where']=implode(' and ',$wheres);
 				}
         	}
-        if(!isset($_REQUEST['_sort']) && !isset($_REQUEST['-order']) && !isset($params['-order'])){
-			$params['-order']="{$idfield} desc";
-        	}
+
         if(isset($_REQUEST['_filters'])){
         	$params['-filters']=$_REQUEST['_filters'];
 		}
@@ -6403,6 +6401,10 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
 			$tinfo=getDBTableInfo(array('-table'=>$params['-table']));
+			if(!in_array($idfield,$tinfo['fields']) && in_array('id',$tinfo['fields'])){
+				$idfield='id';
+			}
+			//echo $idfield.printValue($tinfo);exit;
 			if(is_array($tinfo)){
 				$xfields=array();
 				if(isset($tinfo['listfields']) && is_array($tinfo['listfields'])){
@@ -6412,21 +6414,27 @@ function listDBRecords($params=array(),$customcode=''){
 					$xfields=$tinfo['default_listfields'];
 					}
 				if(count($xfields)){
-					array_unshift($xfields,$idfield);
-					$params['-fields']=implode(',',$xfields);
+					if(in_array($idfield,$tinfo['fields']) && !in_array($idfield,$xfields)){
+						array_unshift($xfields,$idfield);
 					}
-	            }
+					$params['-fields']=implode(',',$xfields);
+				}
+	        }
 	        if(isset($params['-fields'])){
 				$params['-fields']=preg_replace('/\,+$/','',$params['-fields']);
 				$params['-fields']=preg_replace('/^\,+/','',$params['-fields']);
 	        	$params['-fields']=preg_replace('/\,+/',',',$params['-fields']);
 				}
 	        }
+	    if(!isset($_REQUEST['_sort']) && !isset($_REQUEST['-order']) && !isset($params['-order'])){
+			$params['-order']="{$idfield} desc";
+        }
 		//secondary sort
 		if(isset($params['-order']) && isset($params['-order2'])){
 			$params['-orderX']=$params['-order'];
 	    	$params['-order'] .= ", {$params['-order2']}";
 		}
+		//echo printValue($params);exit;
 		$list=getDBRecords($params);
 		if(isset($params['-orderX'])){
 			$params['-order']=$params['-orderX'];
