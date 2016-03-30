@@ -4144,7 +4144,7 @@ function getDBFieldSelections($info=array()){
 			$selections['dvals']=$dvals;
 			return $selections;
 		}
-		if(preg_match('/^select\ /i',$tvals)){
+		if(preg_match('/^select[\ \r\n]/i',$tvals)){
 			$tvalresults=getDBRecords(array('-query'=>$tvals));
 			if(is_array($tvalresults)){
                 $dvalresults=getDBRecords(array('-query'=>$dvals));
