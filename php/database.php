@@ -6401,7 +6401,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
 			$tinfo=getDBTableInfo(array('-table'=>$params['-table']));
-			if(!in_array($idfield,$tinfo['fields']) && in_array('id',$tinfo['fields'])){
+			 if(!in_array($idfield,$tinfo['fields']) && in_array('id',$tinfo['fields'])){
 				$idfield='id';
 			}
 			//echo $idfield.printValue($tinfo);exit;
@@ -6414,9 +6414,10 @@ function listDBRecords($params=array(),$customcode=''){
 					$xfields=$tinfo['default_listfields'];
 					}
 				if(count($xfields)){
-					if(in_array($idfield,$tinfo['fields']) && !in_array($idfield,$xfields)){
+					if($idfield == '_id' || !in_array($idfield,$xfields)){
 						array_unshift($xfields,$idfield);
 					}
+					//echo printValue($tinfo['fields']);exit;
 					$params['-fields']=implode(',',$xfields);
 				}
 	        }
