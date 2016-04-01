@@ -2450,6 +2450,20 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	if(isset($atts['readonly']) && $atts['readonly'] != 0){$attstring .= ' READONLY';}
 	return $attstring;
 	}
+//---------- begin function getView--------------------
+/**
+* @describe gets the value of the specified view
+* @param str string
+* @return string
+* @usage $txt=getView('email');
+*/
+function getView($name){
+	global $PAGE;
+	if(preg_match('/\<view\:'.$name.'\>(.+?)\<\/view\:'.$name.'\>/ism',$PAGE['body'],$m)){
+		return $m[1];
+	}
+	return '';
+}
 //---------- begin function setValue--------------------
 /**
 * @describe sets the value to the first valid value passed in
@@ -2522,7 +2536,7 @@ function setView($name='',$clear=0){
 function removeViews($htm){
 	global $PAGE;
 	global $CONFIG;
-	global $VIEWS; //
+	global $VIEWS;
 	$depth=0;
 	$sha='none';
 	while($depth < 50 && stringContains($htm,'<view:')){
