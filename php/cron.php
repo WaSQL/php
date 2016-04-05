@@ -32,6 +32,7 @@ $_SERVER['HTTP_HOST']='localhost';
 include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
+include_once("$progpath/user.php");
 foreach($ConfigXml as $name=>$host){
 	//allhost, then, sameas, then hostname
 	$CONFIG=$allhost;
@@ -141,7 +142,22 @@ ENDOFWHERE;
 			if(isset($pages[$cmd])){
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
-            	$post=postURL($url,array('-method'=>'GET','-follow'=>1,'-ssl'=>1));
+            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+            	//if they have specified a runas then login as that person
+            	if(isset($rec['runas']) && isNum($rec['runas'])){
+                	$urec=getDBRecord(array(
+						'-table'=>'_users',
+						'_id'	=> $rec['runas'],
+						'-fields'=>'_id,username'
+					));
+					if(isset($urec['_id'])){
+                    	$postopts['apikey']=encodeUserAuthCode($urec['_id']);
+                    	$postopts['_noguid']=1;
+                    	$postopts['_auth']=1;
+                    	$postopts['username']=$urec['username'];
+					}
+				}
+            	$post=postURL($url,$postopts);
             	$result=$post['body'];
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
