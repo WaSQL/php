@@ -33,6 +33,7 @@ include_once("$progpath/config.php");
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/user.php");
+global $databaseCache;
 foreach($ConfigXml as $name=>$host){
 	//allhost, then, sameas, then hostname
 	$CONFIG=$allhost;
@@ -51,6 +52,7 @@ foreach($ConfigXml as $name=>$host){
 	ksort($CONFIG);
 	//echo printValue($CONFIG);
 	//connect to this database.
+	echo "connecting to {$CONFIG['name']}<br>\n";
 	$ok=cronDBConnect();
 	if($ok != 1){
     	echo "[{$CONFIG['name']}] {$ok}\n";
@@ -63,16 +65,20 @@ foreach($ConfigXml as $name=>$host){
 		'-index'	=> 'name'
 	));
 	//echo "Checking {$CONFIG['name']}\n";
-	$wherestr=<<<ENDOFWHERE
-	active=1 and running != 1 and run_cmd is not null
+$wherestr=<<<ENDOFWHERE
+active=1 and running != 1 and run_cmd is not null
 	and (date(begin_date) >= date(now()) or begin_date is null)
 	and (date(end_date) <= date(now()) or end_date is null)
 ENDOFWHERE;
-	$recs=getDBRecords(array(
+	$recopts=array(
 		'-table'	=> '_cron',
-		'-fields'  	=> '_id,name,run_date,frequency,run_format,run_values,running,run_cmd',
+		'-fields'	=> '_id,name,run_cmd,running,run_date,frequency,run_format,run_values',
 		'-where'	=> $wherestr
-	));
+	);
+	$cronfields=getDBFields('_cron');
+	if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
+	$recs=getDBRecords($recopts);
+	//echo printValue($recs);exit;
 	if(is_array($recs) && count($recs)){
 		$cnt=count($recs);
 		echo  "[{$CONFIG['name']}] {$cnt} crons found\n";
@@ -122,8 +128,7 @@ ENDOFWHERE;
 			//get record again to insure another process is not running it.
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
-				'_id'		=> $rec['_id'],
-				'-fields'  	=> '_id,name,run_date,frequency,run_format,run_values,running,run_cmd',
+				'_id'		=> $rec['_id']
 			));
 			//skip if running
 			if($rec['running']==1){continue;}
@@ -143,11 +148,11 @@ ENDOFWHERE;
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
             	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
-            	//if they have specified a runas then login as that person
-            	if(isset($rec['runas']) && isNum($rec['runas'])){
+            	//if they have specified a run_as then login as that person
+            	if(isset($rec['run_as']) && isNum($rec['run_as'])){
                 	$urec=getDBRecord(array(
 						'-table'=>'_users',
-						'_id'	=> $rec['runas'],
+						'_id'	=> $rec['run_as'],
 						'-fields'=>'_id,username'
 					));
 					if(isset($urec['_id'])){
@@ -157,8 +162,10 @@ ENDOFWHERE;
                     	$postopts['username']=$urec['username'];
 					}
 				}
+				//echo $url.printValue($postopts);
             	$post=postURL($url,$postopts);
             	$result=$post['body'];
+            	//echo $result;exit;
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
