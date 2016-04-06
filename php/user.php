@@ -825,7 +825,7 @@ function userProfileForm($params=array()){
 function encodeUserAuthCode($id=0){
 	global $USER;
 	if($id==0 || $id==$USER['_id']){$rec=$USER;}
-	else{$rec=getDBRecord(array('-table'=>'_users','_id'=>$id));}
+	else{$rec=getDBRecord(array('-table'=>'_users','_id'=>$id,'-fields'=>'password,username,_id'));}
 	$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 	$auth=array(
 		str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$rec['username'])),
