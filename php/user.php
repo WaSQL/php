@@ -814,13 +814,7 @@ function userProfileForm($params=array()){
 
 //---------- begin function encodeUserAuthCode ----
 /**
-* returns a single string that can be used for user authorization for a particular server.
-* @return string
-* @usage
-*	$userAuthCode = encodeUserAuthCode();
-* @author slloyd
 * @exclude  - this function is for internal use only and thus excluded from the manual
-* @history - bbarten 2014-01-02 added documentation
 */
 function encodeUserAuthCode($id=0){
 	global $USER;
@@ -834,7 +828,6 @@ function encodeUserAuthCode($id=0){
 	    str_replace(':','',crypt($pw,$rec['username']))
 	    );
 	$code=encodeBase64(implode(':',$auth));
-	//echo "HOST:{$_SERVER['UNIQUE_HOST']}, PW:{$pw} [{$code}]<br>\n";
 	return $code;
 }
 
