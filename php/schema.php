@@ -134,6 +134,7 @@ function createWasqlTable($table=''){
 			$fields['frequency']="integer NOT NULL Default 0";
 			$fields['name']="varchar(150) NULL";
 			$fields['cron_pid']="integer NOT NULL Default 0";
+			$fields['run_as']="integer NOT NULL Default 0";
 			$fields['run_cmd']="varchar(255) NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NULL";
 			$fields['run_format']="varchar(255) NULL";
@@ -150,7 +151,7 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
+				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_as running run_date run_length\r\nrun_result",
 				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
 				'sortfields'	=> "active desc, running desc, begin_date desc",
 				'formfields_mod'=> "name begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_date run_length\r\nrun_result",
@@ -1835,6 +1836,15 @@ function addMetaData($table=''){
 				'tvals'			=> 1,
 				'editlist'		=> 1,
 				'required'		=> 0
+				));
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> '_cron',
+				'fieldname'		=> 'run_as',
+				'inputtype'		=> 'select',
+				'required'		=> 0,
+				'displayname'	=> "Run As",
+				'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
+				'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
