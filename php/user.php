@@ -383,7 +383,7 @@ elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_
 	if(is_array($rec)){
 		$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 		$auth=array(
-			str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$rec['username'])),
+			str_replace(':','',crypt($CONFIG['dbname'],$rec['username'])),
 			str_replace(':','',crypt($rec['username'],$pw)),
 		    str_replace(':','',crypt($pw,$rec['username']))
 		);
@@ -403,7 +403,7 @@ elseif(isset($_SESSION['apikey']) && isset($_SESSION['username']) &&  strtoupper
 	if(is_array($rec)){
 		$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 		$auth=array(
-			str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$pw)),
+			str_replace(':','',crypt($CONFIG['dbname'],$pw)),
 			str_replace(':','',crypt($rec['username'],$pw)),
 		    str_replace(':','',crypt($pw,$rec['username']))
 		);
@@ -824,21 +824,18 @@ function userProfileForm($params=array()){
 */
 function encodeUserAuthCode($id=0){
 	global $USER;
+	global $CONFIG;
 	if($id==0 || $id==$USER['_id']){$rec=$USER;}
 	else{$rec=getDBRecord(array('-table'=>'_users','_id'=>$id,'-fields'=>'password,username,_id'));}
 	$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 	$auth=array(
-		str_replace(':','',crypt($_SERVER['UNIQUE_HOST'],$rec['username'])),
+		str_replace(':','',crypt($CONFIG['dbname'],$rec['username'])),
 		str_replace(':','',crypt($rec['username'],$pw)),
 	    str_replace(':','',crypt($pw,$rec['username']))
 	    );
 	$code=encodeBase64(implode(':',$auth));
-	//echo "PW:{$pw} [{$code}]<br>\n";
+	//echo "HOST:{$_SERVER['UNIQUE_HOST']}, PW:{$pw} [{$code}]<br>\n";
 	return $code;
-	//generate a user auth code  GUIDUsernamePasswordMM
-	$raw='Wa6QI' .':'. $rec['username'] .':'. $pw;
-	$string=encodeBase64($raw);
-	return $string;
 }
 
 //---------- begin function userLoginForm ----
