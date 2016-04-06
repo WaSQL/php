@@ -470,6 +470,27 @@ function checkDBTableSchema($wtable){
 			$ok=executeSQL($query);
 			$rtn .= " added cron_pid to _cron table<br />\n";
         }
+        if(!isset($finfo['run_as'])){
+			$query="ALTER TABLE {$wtable} ADD run_as integer NOT NULL Default 0;";
+			$ok=executeSQL($query);
+			$rtn .= " added run_as to _cron table<br />\n";
+			$ok=editDBRecord(array(
+				'-table'		=> '_tabledata',
+				'-where'		=> "tablename='{$wtable}'",
+				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_as running run_date run_length\r\nrun_result"
+			));
+			echo $ok."updated run_as tabledata<br>\n";
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> '_cron',
+				'fieldname'		=> 'run_as',
+				'inputtype'		=> 'select',
+				'required'		=> 0,
+				'displayname'	=> "Run As",
+				'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
+				'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
+			));
+			echo $id."added run_as fieldinfo<br>\n";
+        }
         if(isset($finfo['logfile'])){
 			$ok=dropDBColumn($wtable,array('run_log','logfile','logfile_maxsize'));
 			$ok=editDBRecord(array(
@@ -5805,6 +5826,7 @@ function getDBRecords($params=array()){
 		}
 	}
 	// Perform Query
+	//echo "-----------------------\n{$query}\n---------------------------\n";
 	$query_result=@databaseQuery($query);
   	if(!$query_result){
 		$e=getDBError();
@@ -5814,7 +5836,7 @@ function getDBRecords($params=array()){
 			$ok=executeSQL($query);
 			return getDBRecords($params);
 		}
-		echo printValue($e).printValue($params);exit;
+		echo printValue($e).printValue($params).$query;exit;
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){
 				return setWasqlError(debug_backtrace(),getDBError(),$query);
@@ -7138,6 +7160,9 @@ function databaseAffectedRows($resource=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseConnect($host,$user,$pass,$dbname=''){
+	//clear the cache so we are not getting false cached data from another database
+	global $databaseCache;
+	$databaseCache=array();
 	//Open a connection to a dabase Server - supports multiple database types
 	if(isMysqli()){return mysqli_connect($host, $user, $pass, $dbname);}
 	elseif(isMysql()){return mysql_connect($host, $user, $pass);}
