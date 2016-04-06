@@ -44,9 +44,9 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
-		$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username']));
+		$rec=getDBRecord(array('-table'=>'_users','username'=>addslashes($_REQUEST['username'])));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
-			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
+			$_REQUEST['password']=userEncryptPW(addslashes($_REQUEST['password']));
 		}
 	}
 	if(isUser()){
@@ -179,7 +179,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 				$authkey=encodeCRC($_REQUEST['username'].time());
 				$authcode=encrypt("{$_REQUEST['username']}:{$_REQUEST['password']}",$authkey);
 				$url="http://{$CONFIG['authhost']}/php/index.php";
-				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>$_REQUEST['_pwe']);
+				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>addslashes($_REQUEST['_pwe']));
 				$post=postURL($url,$authopts);
 				if(!isset($post['body']) && isset($post['error'])){
 					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
@@ -258,13 +258,13 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 			}
     	}
     else{
-		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>$_REQUEST['username'],'password'=>$_REQUEST['password']);
+		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username']),'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
     }
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['email']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost'])){
-		$rec=getDBRecord(array('-table'=>'_users','email'=>$_REQUEST['email']));
+		$rec=getDBRecord(array('-table'=>'_users','email'=>addslashes($_REQUEST['email'])));
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
 		}
@@ -283,7 +283,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				$authkey=encodeCRC($_REQUEST['username'].time());
 				$authcode=encrypt("{$_REQUEST['username']}:{$_REQUEST['password']}",$authkey);
 				$url="http://{$CONFIG['authhost']}/php/index.php";
-				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>$_REQUEST['_pwe']);
+				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>addslashes($_REQUEST['_pwe']));
 				$post=postURL($url,$authopts);
 				if(!isset($post['body']) && isset($post['error'])){
 					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
@@ -362,16 +362,16 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			}
     	}
 	else{
-		$getopts=array('-table'=>'_users','-relate'=>1,'email'=>$_REQUEST['email'],'password'=>$_REQUEST['password']);
+		$getopts=array('-table'=>'_users','-relate'=>1,'email'=>addslashes($_REQUEST['email']),'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
     }
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['facebook_email']) && isset($_REQUEST['password'])){
-	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>$_REQUEST['facebook_email'],'facebook_id'=>$_REQUEST['password']);
+	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>addslashes($_REQUEST['facebook_email']),'facebook_id'=>addslashes($_REQUEST['password']));
 	$USER=getDBRecord($getopts);
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['google_email']) && isset($_REQUEST['password'])){
-	$getopts=array('-table'=>'_users','-relate'=>1,'google_email'=>$_REQUEST['google_email'],'google_id'=>$_REQUEST['password']);
+	$getopts=array('-table'=>'_users','-relate'=>1,'google_email'=>addslashes($_REQUEST['google_email']),'google_id'=>addslashes($_REQUEST['password']));
 	$USER=getDBRecord($getopts);
 }
 elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1) || strtoupper($_SERVER['REQUEST_METHOD'])=='POST')){
@@ -379,7 +379,7 @@ elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_
 		$num=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>"NULL"));
 	}
 	//apikey login request - requires a POST for security
-	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>$_REQUEST['username']));
+	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username'])));
 	if(is_array($rec)){
 		$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
 		$auth=array(
