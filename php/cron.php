@@ -147,7 +147,7 @@ ENDOFWHERE;
 			if(isset($pages[$cmd])){
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
-            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID());
             	//if they have specified a run_as then login as that person
             	if(isset($rec['run_as']) && isNum($rec['run_as'])){
                 	$urec=getDBRecord(array(
@@ -165,7 +165,6 @@ ENDOFWHERE;
 				//echo $url.printValue($postopts);
             	$post=postURL($url,$postopts);
             	$result=$post['body'];
-            	//echo $result;exit;
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
@@ -174,15 +173,8 @@ ENDOFWHERE;
 			}
 			elseif(preg_match('/^http/',$cmd)){
             	//cron is a URL.
-            	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1));
-            	$result="CURL INFO:\r\n";
-            	foreach($post['curl_info'] as $k=>$v){
-                	if(is_array($v)){$v=implode("\r\n",$v);}
-                	$v=trim($v);
-                	$result .="\t{$k} = {$v}\r\n";
-				}
-				$result .= "\r\nRETURN RESULT:\r\n";
-				$result .= $post['body'];
+            	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
+				$result = $post['body'];
 			}
 			else{
             	//cron is a command
