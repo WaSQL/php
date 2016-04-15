@@ -119,8 +119,13 @@ function stripeRetrieve($params=array()){
 	if(isset($response['values']['status'])){
         $charge['status']=$response['values']['status'];
 	}
+	//has this been disputed?
+	if(isset($response['values']['dispute']['values'])){
+		$charge['status'].=' ** DISPUTED **';
+	}
+	//are we in test mode?
 	if(!isset($response['values']['livemode']) || $response['values']['livemode'] != 1){
-        $charge['status'] .= ' TEST MODE';
+        $charge['status'] .= ' ** TEST MODE **';
 	}
 	if(isset($response['values']['currency'])){
         $charge['currency']=$response['values']['currency'];
