@@ -9390,7 +9390,7 @@ function postJSON($url='',$json='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
 	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: application/json; charset=UTF-8","Accept-Charset: UTF-8';}
 	if(!isset($params['-json'])){$params['-json']=1;}
-	return postBody($url,$xml,$params);
+	return postBody($url,$json,$params);
 }
 
 //---------- begin function postXML--------------------
