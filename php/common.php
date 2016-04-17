@@ -9463,7 +9463,7 @@ function postBody($url='',$body='',$params=array()) {
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
-    curl_setopt($process,CURLOPT_POSTFIELDS,$xml);
+    curl_setopt($process,CURLOPT_POSTFIELDS,$body);
     $return=curl_exec($process);
     $blank_count=0;
 	//Process the result
