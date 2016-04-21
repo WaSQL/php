@@ -246,9 +246,12 @@ function ldapGetUsers($params=array()){
 		if($skip==1){continue;}
 		ksort($rec);
 		//index?
-		if(isset($params['-index']) && isset($rec[$params['-index']]) && strlen($rec[$params['-index']])){
-        	$index=$rec[$params['-index']];
-        	$recs[$index]=$rec;
+		if(isset($params['-index'])){
+			$index_field=$params['-index'];
+			if(isset($rec[$params['-index']]) && strlen($rec[$params['-index']])){
+        		$index_value=$rec[$index_field];
+        		$recs[$index]=$rec;
+			}
 		}
 		else{
 			$recs[]=$rec;
