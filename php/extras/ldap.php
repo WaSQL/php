@@ -250,7 +250,7 @@ function ldapGetUsers($params=array()){
 			$index_field=$params['-index'];
 			if(isset($rec[$params['-index']]) && strlen($rec[$params['-index']])){
         		$index_value=$rec[$index_field];
-        		$recs[$index]=$rec;
+        		$recs[$index_value]=$rec;
 			}
 		}
 		else{
