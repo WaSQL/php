@@ -76,13 +76,13 @@ table th a {
 
 /*alignment classes*/
 .w_top{
-	vertical-align:middle;
+	vertical-align:top;
 	}
 .w_middle{
 	vertical-align:middle;
 	}
 .w_bottom{
-	vertical-align:middle;
+	vertical-align:bottom;
 	}
 /* horizontal center */
 .w_hcenter{
