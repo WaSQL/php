@@ -656,6 +656,20 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
+	//check for size
+	switch(strtolower($params['-size'])){
+    	case 'sm':
+    	case 'small':
+			$params['-size']='btn-sm';
+		break;
+		case 'lg':
+		case 'large':
+			$params['-size']='btn-lg';
+		break;
+		default:
+			$params['-size']='';
+		break;
+	}
 	$mid=$name.'_options';
 	if(isset($params['value'])){
       if(!is_array($params['value']) && strlen($params['value'])){
@@ -718,9 +732,9 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 	$tag='';
 	$tag .= '<div class="dropdown" id="'.$dropdown_classid.'">'."\n";
-	$tag .= '	<div class="btn-group  dropdown-toggle" data-toggle="dropdown">'."\n";
-	$tag .= ' 		<button class="btn btn-sm btn-default" type="button">'.$dname."</button>\n";
-	$tag .= '		<button type="button" class="btn btn-sm btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span><span class="caret"></span></button>'."\n";
+	$tag .= '	<div class="btn-group dropdown-toggle" data-toggle="dropdown">'."\n";
+	$tag .= ' 		<button class="btn '.$params['-size'].' btn-default" type="button">'.$dname."</button>\n";
+	$tag .= '		<button type="button" class="btn '.$params['-size'].' btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span><span class="caret"></span></button>'."\n";
 	$tag .= ' 	</div>'."\n";
 	$tag .= ' 	<div class="dropdown-menu" style="background:#FFF;z-index:9999;">'."\n";
 	//checkall
