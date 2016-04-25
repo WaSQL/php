@@ -1009,6 +1009,48 @@ function buildFormYesNo($name='yesno',$params=array()){
 	$params['N_class']='icon-thumbs-down';
 	return buildFormButtonSelect($name,$opts,$params);
 }
+//---------- begin function buildFormToggleButton--------------------
+/**
+* @describe creates an toggle Button Field for two choices only -  yes/no, Y/N, on/off, T/F, etc
+*	Note: only the first tval is stored so default your field schema to the off value - yesno char(1) NOT NULL Default 'n'
+* @param name string
+* @param opts array - specifies the value when on and off. for example, array('y'=>'Yes','n'=>'No')
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[-format] string - specify toggle format - flip or round - defaults to round
+*	[-value] string - specify the current value
+*	[-required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string
+* @usage echo buildFormToggleButton('yesno',array('Y'=>'Yes','N'=>'No'),$params);
+*/
+function buildFormToggleButton($name,$opts=array(),$params=array()){
+	if(!is_array($opts) || !count($opts)){
+    	$opts=array('y'=>'Yes','n'=>'No');
+	}
+	$tvals=array_keys($opts);
+	$dvals=array_values($opts);
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if(strtolower($params['-value'])==strtolower($tvals[0])){$checked=' checked';}
+	else{$checked='';}
+	if($params['required']){$required=' required';}
+	else{$required='';}
+	switch(strtolower($params['-format'])){
+    	case 'flip':$format='flip';break;
+    	default:$format='round';break;
+	}
+	$tag=<<<ENDOFTAG
+	<div class="switch">
+        <input id="{$params['id']}" name="{$name}" value="{$tvals[0]}" class="w_toggle w_toggle-{$format}" type="checkbox"{$required}{$checked}>
+        <label for="{$params['id']}" data-on="{$dvals[0]}" data-off="{$dvals[1]}"></label>
+    </div>
+ENDOFTAG;
+	//echo "{$name}<xmp>{$tag}</xmp><hr>";
+	return $tag;
+}
 //---------- begin function buildFormBegin-------------------
 /**
 * @describe creates a beginning HTML form tag
