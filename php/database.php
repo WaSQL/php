@@ -584,15 +584,15 @@ function checkDBTableSchema($wtable){
     if($wtable=='_fielddata'){
 		$finfo=getDBFieldInfo($wtable,1);
 		//check for slider control
-		if(!stringContains($finfo['inputtype']['tvals'],'slider')){
+		if(!stringContains($finfo['inputtype']['tvals'],'wasqlGetInputtypes')){
 			$id=editDBRecord(array('-table'=>'_fielddata',
 				'-where'		=> "tablename='_fielddata' and fieldname='inputtype'",
-				'tvals'			=> "checkbox\r\ncolor\r\ncombo\r\ndate\r\ndatetime\r\nfile\r\nformula\r\nhidden\r\nmultiselect\r\npassword\r\nradio\r\nselect\r\nslider\r\ntext\r\ntextarea\r\ntime",
-				'dvals'			=> "Checkbox\r\nColor\r\nComboBox\r\nDate\r\nDate&Time\r\nFileUpload\r\nFormula\r\nHidden\r\nMultiSelect\r\nPassword\r\nRadio\r\nSelect\r\nSlider\r\nText\r\nTextarea\r\nTime",
+				'tvals'			=> '<?='.'wasqlGetInputtypes();'.'?>',
+				'dvals'			=> '<?='.'wasqlGetInputtypes(1);'.'?>',
 				'onchange'		=> "fielddataChange(this);"
 			));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " updated dvals and dvals of inputtype field in _fielddata table<br />\n";
+			$rtn .= " updated dvals and dvals of inputtype field in _fielddata table to be dynamic<br />\n";
 		}
 		if(!isset($finfo['synchronize'])){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -3973,7 +3973,7 @@ function getDBFieldTag($params=array()){
     	}
     if(isExtraCss('bootstrap') && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 	$tag='';
-	switch ($info[$field]['inputtype']){
+	switch(strtolower($info[$field]['inputtype'])){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
 		case 'checkbox':
 			$selections=getDBFieldSelections($info[$field]);
@@ -4092,6 +4092,25 @@ function getDBFieldTag($params=array()){
             $dname=ucwords(str_replace('_',' ',$name));
             $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelect($name,$options,$info[$field]);
+			break;
+		case 'toggle_f':
+		case 'toggle_r':
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+				if(count($options)==2){break;}
+            }
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            switch(strtolower($info[$field]['inputtype'])){
+            	case 'toggle_f':$info[$field]['-format']='flip';break;
+            	default:$info[$field]['-format']='round';break;
+			}
+            $tag=buildFormToggleButton($name,$options,$info[$field]);
 			break;
 		case 'signature':
 			$tag=buildFormSignature($info[$field]['name'],$info[$field]);
