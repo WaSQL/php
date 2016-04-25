@@ -1232,6 +1232,8 @@ function wasqlGetInputtypes($d=0){
 		'text'		=> 'Text',
 		'textarea'	=> 'Textarea',
 		'time'		=> 'Time',
+		'toggle_r'	=> 'Toggle Round',
+		'toggle_f'	=> 'Toggle Flip',
 		'signature'	=> 'Signature'
 	);
 	ksort($types);
