@@ -1033,8 +1033,8 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
-	if(strtolower($params['-value'])==strtolower($tvals[0])){$checked=' checked';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if(strtolower($params['value'])==strtolower($tvals[0])){$checked=' checked';}
 	else{$checked='';}
 	if($params['required']){$required=' required';}
 	else{$required='';}
