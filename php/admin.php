@@ -2799,8 +2799,8 @@ LIST_TABLE:
 						}
 						if(is_file($file) && preg_match('/\.sql$/i',$file)){
 							$cmds=array(
-								"mysql -h {$CONFIG['dbhost']} --user={$CONFIG['dbuser']} -p{$CONFIG['dbpass']} --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
-								"mysql -h {$CONFIG['dbhost']} --user={$CONFIG['dbuser']} -p{$CONFIG['dbpass']} --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$file}\""
+								"mysql -h {$CONFIG['dbhost']} --user='{$CONFIG['dbuser']}' --password='{$CONFIG['dbpass']}' --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
+								"mysql -h {$CONFIG['dbhost']} --user='{$CONFIG['dbuser']}' --password='{$CONFIG['dbpass']}' --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$file}\""
 							);
 							foreach($cmds as $cmd){
 								//echo "<div>{$cmd}</div>\n";
@@ -2895,6 +2895,10 @@ LIST_TABLE:
 	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="return renameBackup(this);" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_grey w_big"></span></a>';
 					$list[]=$rec;
 				}
+				//echo printValue($list);
+				//sort by newest first
+				$list=sortArrayByKey($list,'_cdate_age',SORT_ASC);
+				//display list
 				echo '<div style="padding:15px;">'."\n";
 				echo listDBRecords(array(
 					'-list'					=>$list,
