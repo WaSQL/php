@@ -55,67 +55,69 @@ if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 //check for valid_hosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_hosts'])){
 	$valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_hosts'])));
-    if(!count($valid_hosts)){break;}
-    $valid=0;
-    $host=strtolower(trim($_SERVER['HTTP_HOST']));
-    if(!in_array($host,$valid_hosts)){
-		$msg="Unauthorized host";
-		$defmsg='';
-		$exts=array('','_1','_2','_3','_4','_5','_6','_7','_8','_9');
-		foreach($exts as $ext){
-			$key='invalid_host_msg'.$ext;
-			if(isset($CONFIG[$key])){
-				$found=0;
-				$pairs=preg_split('/\;+/',$CONFIG[$key]);
-	            foreach($pairs as $pair){
-	            	list($k,$v)=preg_split('/\=/',$pair,2);
-	                if(!strlen($v) && !strlen($defmsg)){$defmsg=$k;}
-					if(stringContains($host,$k)){
-						$msg=$v;
-						$found=1;
+    if(count($valid_hosts)){
+	    $valid=0;
+	    $host=strtolower(trim($_SERVER['HTTP_HOST']));
+	    if(!in_array($host,$valid_hosts)){
+			$msg="Unauthorized host";
+			$defmsg='';
+			$exts=array('','_1','_2','_3','_4','_5','_6','_7','_8','_9');
+			foreach($exts as $ext){
+				$key='invalid_host_msg'.$ext;
+				if(isset($CONFIG[$key])){
+					$found=0;
+					$pairs=preg_split('/\;+/',$CONFIG[$key]);
+		            foreach($pairs as $pair){
+		            	list($k,$v)=preg_split('/\=/',$pair,2);
+		                if(!strlen($v) && !strlen($defmsg)){$defmsg=$k;}
+						if(stringContains($host,$k)){
+							$msg=$v;
+							$found=1;
+						}
+						if($found==1){break;}
 					}
-					if($found==1){break;}
 				}
 			}
+			if(strlen($defmsg) && $msg=='Unauthorized host'){$msg=$defmsg;}
+			header('HTTP/1.0 403 Forbidden');
+			echo "{$msg}<br>\n";
+			error_log("Unauthorized WaSQL host:{$host}, [{$_SERVER['REQUEST_URI']}] [{$msg}]",4);
+		    exit;
 		}
-		if(strlen($defmsg) && $msg=='Unauthorized host'){$msg=$defmsg;}
-		header('HTTP/1.0 403 Forbidden');
-		echo "{$msg}<br>\n";
-		error_log("Unauthorized WaSQL host:{$host}, [{$_SERVER['REQUEST_URI']}] [{$msg}]",4);
-	    exit;
 	}
 }
 //check for valid_uhosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_uhosts'])){
     $valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_uhosts'])));
-    if(!count($valid_hosts)){break;}
-    $valid=0;
-    $host=strtolower(trim($_SERVER['UNIQUE_HOST']));
-    if(!in_array($host,$valid_hosts)){
-		$msg="Unauthorized host";
-		$defmsg='';
-		$exts=array('','_1','_2','_3','_4','_5','_6','_7','_8','_9');
-		foreach($exts as $ext){
-			$key='invalid_host_msg'.$ext;
-			if(isset($CONFIG[$key])){
-				$found=0;
-				$pairs=preg_split('/\;+/',$CONFIG[$key]);
-                foreach($pairs as $pair){
-                    list($k,$v)=preg_split('/\=/',$pair,2);
-                    if(!strlen($v) && !strlen($defmsg)){$defmsg=$k;}
-					if(stringContains($host,$k)){
-						$msg=$v;
-						$found=1;
+    if(count($valid_hosts)){
+	    $valid=0;
+	    $host=strtolower(trim($_SERVER['UNIQUE_HOST']));
+	    if(!in_array($host,$valid_hosts)){
+			$msg="Unauthorized host";
+			$defmsg='';
+			$exts=array('','_1','_2','_3','_4','_5','_6','_7','_8','_9');
+			foreach($exts as $ext){
+				$key='invalid_host_msg'.$ext;
+				if(isset($CONFIG[$key])){
+					$found=0;
+					$pairs=preg_split('/\;+/',$CONFIG[$key]);
+	                foreach($pairs as $pair){
+	                    list($k,$v)=preg_split('/\=/',$pair,2);
+	                    if(!strlen($v) && !strlen($defmsg)){$defmsg=$k;}
+						if(stringContains($host,$k)){
+							$msg=$v;
+							$found=1;
+						}
+						if($found==1){break;}
 					}
-					if($found==1){break;}
 				}
 			}
+			if(strlen($defmsg) && $msg=='Unauthorized host'){$msg=$defmsg;}
+			header('HTTP/1.0 403 Forbidden');
+			echo "{$msg}<br>\n";
+			error_log("Unauthorized WaSQL uhost:{$host}, [{$_SERVER['REQUEST_URI']}] [{$msg}]",4);
+	        exit;
 		}
-		if(strlen($defmsg) && $msg=='Unauthorized host'){$msg=$defmsg;}
-		header('HTTP/1.0 403 Forbidden');
-		echo "{$msg}<br>\n";
-		error_log("Unauthorized WaSQL uhost:{$host}, [{$_SERVER['REQUEST_URI']}] [{$msg}]",4);
-        exit;
 	}
 }
 //push file?
