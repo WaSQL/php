@@ -507,7 +507,7 @@ function debugValue($m,$name=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function gracefulShutdown(){
-	session_write_close();
+	//session_write_close();
 	global $USER;
 	//if(!isAdmin() || isset($_SERVER['IGNORE_ERRORS'])){return true;}
 	$error = error_get_last();
