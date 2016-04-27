@@ -769,7 +769,7 @@ function wasqlSetMinify($backend=0){
 		$_SESSION['facebook_id']=$USER['facebook_id'];
 	}
 	//bootstrap for everyone
-	loadExtrasCss(array('bootstrap'));
+	loadExtrasCss(array('bootstrap','dropdown'));
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
 		loadExtrasCss(array('alertify','nicedit','codemirror','admin','accordian','dropdown','socialbuttons','treeview'));
