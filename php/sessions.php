@@ -95,15 +95,17 @@ function sessionRead($session_id) {
 */
 function sessionWrite($session_id, $session_data) {
 	//decode the data and then store it as json instead so other programs can also share the session data
-	session_decode($session_data);
-    $session_data = json_encode($_SESSION);
-
-	$table=sessionTable();
-	$ctime = time();
-	$session_data=databaseEscapeString($session_data);
-	$query="UPDATE {$table} SET session_data = '{$session_data}', touchtime = {$ctime}, json=1 WHERE session_id = '{$session_id}';";
-	executeSQL($query);
-    return true;
+	if(sessionIsActive()){
+		session_decode($session_data);
+	    $session_data = json_encode($_SESSION);
+	
+		$table=sessionTable();
+		$ctime = time();
+		$session_data=databaseEscapeString($session_data);
+		$query="UPDATE {$table} SET session_data = '{$session_data}', touchtime = {$ctime}, json=1 WHERE session_id = '{$session_id}';";
+		executeSQL($query);
+	    return true;
+	}
 }
 /**
  * @author slloyd
@@ -128,4 +130,8 @@ function sessionGarbageCollect($sess_maxlifetime) {
     $ctime = time();
     executeSQL("DELETE FROM {$table} WHERE touchtime + {$sess_maxlifetime} < {$ctime};");
     return true;
+}
+
+function sessionIsActive(){
+	return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
 }
