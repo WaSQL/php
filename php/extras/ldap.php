@@ -130,9 +130,10 @@ function ldapAuth($params=array()){
 	if (FALSE !== $result){
 		$entries = ldap_get_entries($ldapInfo['connection'], $result);
 	    if ($entries['count'] == 1){
-	    	$rec=ldapParseEntry($entries[0]);
+	    	$rec=ldapParseEntry($entries[0],1);
 	    	//echo printValue($rec);ldapClose();exit;
 	    	if(is_array($rec)){return $rec;}
+	    	return 'LDAP Auth Error 2: unable to parse LDAP entry'.printValue($rec).printValue($entries[0]);
 		}
 		ldapClose();
 		//ldap_unbind($ldap_connection); // Clean up after ourselves.
@@ -300,7 +301,7 @@ function ldapGetUsersAll(){
 function ldapConvert2UserRecord($rec){
 	return $rec;
 }
-//---------- begin function ldapParseEntry--------------------
+//---------- begin function ldapIsActiveRecord--------------------
 /**
 * @describe determines if an ldap record is active or not
 * @param ldaprec array
@@ -318,12 +319,12 @@ function ldapIsActiveRecord($lrec=array()){
 	if(!$bool){return 1;}
 	return 0;
 }
-//---------- begin function ldapParseEntry--------------------
+//---------- begin function ldapMapField--------------------
 /**
 * @describe parses an ldap entry and returns a more human friendly record set
 * @param ldaprec array
 * @return array
-* @usage $lrec=ldapParseEntry($lrec);
+* @usage $lrec=ldapMapField($lrec);
 */
 function ldapMapField($field){
 	switch(strtolower(trim($field))){
@@ -350,13 +351,13 @@ function ldapMapField($field){
 * @return array
 * @usage $lrec=ldapParseEntry($lrec);
 */
-function ldapParseEntry($lrec=array()){
+function ldapParseEntry($lrec=array(),$checkmemberof=1){
 	//lowercase the keys, if not already
 	if(!isset($lrec['memberof'])){
 		$lrec=array_change_key_case($lrec,CASE_LOWER);
 	}
 	//require a memberof key
-	if(!isset($lrec['memberof'])){return null;}
+	if($checkmemberof==1 && !isset($lrec['memberof'])){return null;}
 	$rec=array('active'=>ldapIsActiveRecord($lrec));
 	$skipkeys=array(
 		'logonhours','msexchsafesendershash','count','usercertificate',
