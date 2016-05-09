@@ -9271,7 +9271,6 @@ function postEditCheck($tables=array()){
 *	-cookiefile - cookiefile to use
 *	-fresh - fresh connect
 *	-user_agent - USER AGENT to pose as
-*	-compression - user GZIP compression
 *	-headers - headers to set
 *	-ssl - if true set both SSL options to false (ignore)
 *	-authuser - auth username
@@ -9330,9 +9329,6 @@ function postURL($url,$params=array()) {
 	if(!isset($params['-user_agent'])){
 		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
 		}
-	if(!isset($params['-compression'])){
-		$params['-compression'] = 'gzip';
-		}
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
 		}
@@ -9369,7 +9365,6 @@ function postURL($url,$params=array()) {
 	curl_setopt($process, CURLINFO_HEADER_OUT, true);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEFILE, $this->cookie_file);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEJAR, $this->cookie_file);
-	//curl_setopt($process, CURLOPT_ENCODING , $params['-compression']);
 	curl_setopt($process, CURLOPT_TIMEOUT, 600);
 	//if ($this->proxy) curl_setopt($cUrl, CURLOPT_PROXY, �proxy_ip:proxy_port�);
 	curl_setopt($process, CURLOPT_RETURNTRANSFER, 1);
@@ -9473,12 +9468,15 @@ function postBody($url='',$body='',$params=array()) {
 	//defaults
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
 	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8';}
+	if(!isset($params['-user_agent'])){
+		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
+	}
 	//init
 	$rtn=array('_debug'=>array(),'body'=>'','headers'=>array());
 	$process = curl_init($url);
 	//user agent
 	if(isset($params['-user_agent'])){
-		$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
+		//$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
 	//encodeing
@@ -9506,9 +9504,10 @@ function postBody($url='',$body='',$params=array()) {
 	if(isset($params['-port']) && isNum($params['-port'])){
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
 	}
+
     curl_setopt($process, CURLOPT_HEADER, 1);
     curl_setopt($process,CURLOPT_POST,1);
-    curl_setopt($process,CURLOPT_TIMEOUT, 60);
+    curl_setopt($process,CURLOPT_TIMEOUT, 600);
     curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);
@@ -9519,6 +9518,7 @@ function postBody($url='',$body='',$params=array()) {
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
+
     curl_setopt($process,CURLOPT_POSTFIELDS,$body);
     $return=curl_exec($process);
     $blank_count=0;
@@ -9599,10 +9599,16 @@ function postBody($url='',$body='',$params=array()) {
         	$rtn['error'] = "Invalid XML: " . printValue($e);
         }
 	}
-    if(isset($params['-json']) && $params['-json']==1 && strlen($rtn['body'])){
-        $rtn['json_array']=json_decode($rtn['body'],true);
+    if(isset($params['-json']) && $params['-json']==1){
+		$rtn['json_in']=$body;
+		if(strlen($rtn['body'])){
+        	$rtn['json_array']=json_decode($rtn['body'],true);
+		}
     }
-	$rtn['xml_in']=$xml;
+    if(isset($params['-xml']) && $params['-xml']==1){
+		$rtn['xml_in']=$body;
+    }
+
 	$rtn['params_in']=$params;
 	$rtn['raw']=trim($return);
 	ksort($rtn);

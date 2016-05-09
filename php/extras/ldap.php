@@ -88,9 +88,11 @@ function ldapAuth($params=array()){
 	if($params['-secure']){
 		$params['-host']='ldaps://'.$params['-host'];
 	}
-
+	else{
+    	$params['-host']='ldap://'.$params['-host'];
+	}
 	//connect
-	$params['-host']='ldap://'.$params['-host'];
+
 	global $ldapInfo;
 	$ldapInfo=array('dirty'=>0);
 	$ldapInfo['connection'] = ldap_connect($params['-host']);
