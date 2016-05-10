@@ -203,7 +203,47 @@ function buildIECompatible($version=0){
 	}
 	return '<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE'.$version.'" />';
 	}
-
+//---------- begin function buildChartJsData--------------------
+/**
+* @describe
+*	returns a JSON data structure to use with ChartJs charts
+* @param recs array - array of record sets. each record set needs three fields: xval, yval, and setval
+* @return json string
+* @usage $buildChartJsData($recs);
+*/
+function buildChartJsData($recs,$params=array()){
+	//if the first parameter is a string, assume it is a query
+	if(!is_array($recs) || !count($recs)){
+    	return 'buildChartJsData Error: no recs';
+	}
+	//each record set needs three fields: xval, yval, and setval
+	if(!isset($recs[0]['xval']) || !isset($recs[0]['xval']) || !isset($recs[0]['setval'])){
+    	return 'buildChartJsData Error: each record set needs three fields: xval, yval, and setval';
+	}
+	/*
+		labels: xvals array
+		data in datasets: yvals array
+		label in datasets: set
+	*/
+	$data=array(
+		'labels'	=> array(),
+		'datasets'	=> array()
+	);
+	//group into setval groups
+	$vrecs=array();
+	foreach($recs as $rec){
+    	$vrecs[$rec['setval']][]=$rec;
+    	if(!in_array($rec['xval'],$data['labels'])){$data['labels'][]=$rec['xval'];}
+	}
+	foreach($vrecs as $setval=>$recs){
+    	$dataset=array('label'=>$setval);
+    	foreach($recs as $rec){
+        	$dataset['data'][]=$rec['yval'];
+		}
+		$data['datasets'][]=$dataset;
+	}
+	return json_encode($data);
+}
 //---------- begin function buildDir ----------
 /**
 * @describe recursive folder generator
@@ -11942,47 +11982,7 @@ function soap2XML($soapstr){
 	$soapstr=soap2Soap($soapstr);
 	return simplexml_load_string($soapstr);
 	}
-//---------- begin function buildChartJsData--------------------
-/**
-* @describe
-*	returns a JSON data structure to use with ChartJs charts
-* @param recs array - array of record sets. each record set needs three fields: xval, yval, and setval
-* @return json string
-* @usage $buildChartJsData($recs);
-*/
-function buildChartJsData($recs,$params=array()){
-	//if the first parameter is a string, assume it is a query
-	if(!is_array($recs) || !count($recs)){
-    	return 'buildChartJsData Error: no recs';
-	}
-	//each record set needs three fields: xval, yval, and setval
-	if(!isset($recs[0]['xval']) || !isset($recs[0]['xval']) || !isset($recs[0]['setval'])){
-    	return 'buildChartJsData Error: each record set needs three fields: xval, yval, and setval';
-	}
-	/*
-		labels: xvals array
-		data in datasets: yvals array
-		label in datasets: set
-	*/
-	$data=array(
-		'labels'	=> array(),
-		'datasets'	=> array()
-	);
-	//group into setval groups
-	$vrecs=array();
-	foreach($recs as $rec){
-    	$vrecs[$rec['setval']][]=$rec;
-    	if(!in_array($rec['xval'],$data['labels'])){$data['labels'][]=$rec['xval'];}
-	}
-	foreach($vrecs as $setval=>$recs){
-    	$dataset=array('label'=>$setval);
-    	foreach($recs as $rec){
-        	$dataset['data'][]=$rec['yval'];
-		}
-		$data['datasets'][]=$dataset;
-	}
-	return json_encode($data);
-}
+
 //---------- begin function buildImage
 /**
 * @exclude  - this function will be depreciated and thus excluded from the manual
