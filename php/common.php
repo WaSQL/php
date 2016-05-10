@@ -229,16 +229,25 @@ function buildChartJsData($recs,$params=array()){
 		'labels'	=> array(),
 		'datasets'	=> array()
 	);
+	$xkeys=array();
 	//group into setval groups
 	$vrecs=array();
 	foreach($recs as $rec){
     	$vrecs[$rec['setval']][]=$rec;
-    	if(!in_array($rec['xval'],$data['labels'])){$data['labels'][]=$rec['xval'];}
+    	if(!in_array($rec['xval'],$xkeys)){$xkeys[]=$rec['xval'];}
 	}
+	$xkeys=array_flip($xkeys);
 	foreach($vrecs as $setval=>$recs){
     	$dataset=array('label'=>$setval);
+    	$cdata=array();
+    	//fill in in case
+    	foreach($xkeys as $i){
+			$dataset['data'][$i]=0;
+		}
     	foreach($recs as $rec){
-        	$dataset['data'][]=$rec['yval'];
+			if(!isset($xkeys[$rec['xval']])){continue;}
+			$i=$xkeys[$rec['xval']];
+        	$dataset['data'][$i]=$rec['yval'];
 		}
 		$data['datasets'][]=$dataset;
 	}
