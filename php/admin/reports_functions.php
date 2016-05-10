@@ -1,7 +1,7 @@
 <?php
 	function reportsRenderOption($option){
 		if(isset($option['value']) && !isset($_REQUEST[$option['key']]) && $_REQUEST['status'] != 'ready'){$_REQUEST[$option['key']]=$option['value'];}
-    	if(isset($option['values']) && is_array($option['values'])){
+		if(isset($option['values']) && is_array($option['values'])){
 			if($option['multi']){
             	return buildFormMultiSelect($option['key'],$option['values'],array('message'=>" -- {$option['key']} --"));
 			}
@@ -26,9 +26,7 @@
 			'-table'=>'_reports',
 			'-action'=>'/php/admin.php',
 			'_menu'=>'reports',
-			'-focus'=>'name',
-			'options_style'=>'white-space: nowrap;',
-			'query_style'=>'white-space: nowrap;',
+			'-focus'=>'name'
 		));
 	}
 	function reportsEditReport($id){
@@ -37,8 +35,6 @@
 			'-action'=>'/php/admin.php',
 			'_menu'=>'reports',
 			'-focus'=>'name',
-			'options_style'=>'white-space: nowrap;',
-			'query_style'=>'white-space: nowrap;',
 			'_id'=>$id
 		));
 	}
