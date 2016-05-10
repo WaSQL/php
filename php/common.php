@@ -234,9 +234,9 @@ function buildChartJsData($recs,$params=array()){
 	$vrecs=array();
 	foreach($recs as $rec){
     	$vrecs[$rec['setval']][]=$rec;
-    	if(!in_array($rec['xval'],$xkeys)){$xkeys[]=$rec['xval'];}
+    	if(!in_array($rec['xval'],$data['labels'])){$data['labels'][]=$rec['xval'];}
 	}
-	$xkeys=array_flip($xkeys);
+	$xkeys=array_flip($data['labels']);
 	foreach($vrecs as $setval=>$recs){
     	$dataset=array('label'=>$setval);
     	$cdata=array();
