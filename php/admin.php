@@ -3708,17 +3708,35 @@ function adminMenu(){
 	$rtn .= '	<div style="width:400px;">'."\n";
 	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'."\n";
 	$rtn .= '<table class="table table-striped table-bordered">'."\n";
-	$info=array(
-		'Server Host'	=> $_SERVER['HTTP_HOST'],
-		'<span class="icon-database w_success"></span> Database Host'	=> $CONFIG['dbhost'],
-		'<span class="icon-database w_success"></span> Database Name'	=> $CONFIG['dbname'],
-		'<span class="icon-database w_success"></span> Database Type'	=> $CONFIG['dbtype'],
-		'waSQL Path'	=> getWasqlPath(),
-		'<span class="icon-user w_grey"></span> Username'	=> $USER['username'],
-		'PHP User'	=> get_current_user(),
-		'Server'	=> php_uname()
-	);
-	foreach($info as $key=>$val){
+	if(!isset($_SESSION['wasql_info'])){
+		$_SESSION['wasql_info']=array(
+			'Server Host'	=> $_SERVER['HTTP_HOST'],
+			'waSQL Path'	=> getWasqlPath(),
+			'<span class="icon-user w_grey"></span> Username'	=> $USER['username'],
+			'PHP User'	=> get_current_user(),
+			'Server'	=> php_uname(),
+			'<span class="icon-database w_success"></span> Database Host'	=> $CONFIG['dbhost'],
+			'<span class="icon-database w_success"></span> Database Name'	=> $CONFIG['dbname'],
+			'<span class="icon-database w_success"></span> Database Type'	=> $CONFIG['dbtype'],
+		);
+		$_SESSION['wasql_info']['PHP Version']=phpversion();
+		if(isMysqli() || isMysql()){
+			global $dbh;
+	    	$_SESSION['wasql_info']['<span class="icon-database w_success"></span> MySQL Version']=mysqli_get_server_info($dbh);
+		}
+		elseif(isOracle()){
+	    	global $dbh;
+	    	$_SESSION['wasql_info']['<span class="icon-database w_success"></span> Oracle Server']=oci_server_version($dbh);
+	    	$_SESSION['wasql_info']['<span class="icon-database w_success"></span> Oracle Client']=oci_client_version($dbh);
+		}
+		elseif(isPostgreSQL()){
+	    	global $dbh;
+	    	$v=pg_version($dbh);
+	    	$_SESSION['wasql_info']['<span class="icon-database w_success"></span> PostgreSQL Client']=$v['client'];
+	    	$_SESSION['wasql_info']['<span class="icon-database w_success"></span> PostgreSQL Server']=$v['server'];
+		}
+	}
+	foreach($_SESSION['wasql_info'] as $key=>$val){
     	$rtn .= '	<tr><th class="w_align_left w_nowrap">'.$key.'</th><td>'.$val.'</td></tr>'."\n";
 	}
 	$rtn .= buildTableEnd();
