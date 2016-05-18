@@ -4620,6 +4620,7 @@ function getDBFields($table='',$allfields=0){
 	if(isMssql()){$tablename="[{$tablename}]";}
 	$query="SELECT * FROM {$dbname}{$tablename} where 1=0";
 	$query_result=@databaseQuery($query);
+	//echo $query.printValue($query_result);exit;
   	if(!$query_result){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   	}
@@ -4715,6 +4716,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		    12=>'datetime',
 		    13=>'year',
 		    16=>'bit',
+		    245=>'json',
 		    252=>'blob',
 		    253=>'varchar',
 		    254=>'char',
@@ -5273,7 +5275,6 @@ function getDBSiteStats(){
 * @usage $info=getDBTableInfo(array('-table'=>'note'));
 */
 function getDBTableInfo($params=array()){
-
     if(!isset($params['-table'])){return 'getDBTableInfo Error: No table' . printValue($params);}
     global $USER;
     $table_parts=preg_split('/\./', $params['-table']);
@@ -5845,8 +5846,9 @@ function getDBRecords($params=array()){
 		}
 	}
 	// Perform Query
-	//echo "-----------------------\n{$query}\n---------------------------\n";
+	//echo "{$query}<hr>\n";
 	$query_result=@databaseQuery($query);
+	//echo "{$query}<hr>\n";
   	if(!$query_result){
 		$e=getDBError();
 		//check to see if we can fix the error
@@ -7183,7 +7185,10 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	global $databaseCache;
 	$databaseCache=array();
 	//Open a connection to a dabase Server - supports multiple database types
-	if(isMysqli()){return mysqli_connect($host, $user, $pass, $dbname);}
+	if(isMysqli()){
+		//echo "mysqli_connect({$host}, {$user}, {$pass}, {$dbname})<br>\n";
+		return mysqli_connect($host, $user, $pass, $dbname);
+	}
 	elseif(isMysql()){return mysql_connect($host, $user, $pass);}
 	elseif(isMssql()){return mssql_connect($host, $user, $pass);}
 	elseif(isOracle()){
@@ -7487,8 +7492,8 @@ function databaseIndexes($table){
 	//Get the ID generated in the last query - supports multiple database types
 	if(isMysqli() || isMysql()){
 		return getDBRecords(array('-query'=>"show index from {$table}"));
-    	}
-    	elseif(isOracle()){
+    }
+    elseif(isOracle()){
     	$query="
 		SELECT
  			table_name as name,
@@ -7499,7 +7504,7 @@ function databaseIndexes($table){
 			table_name='{$table}'
 			ORDER BY column_position
 		";
-	return getDBRecords(array('-query'=>$query));
+		return getDBRecords(array('-query'=>$query));
 	}
     elseif(isPostgreSQL()){
     	$query="
