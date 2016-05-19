@@ -26,11 +26,13 @@ function uspsServices($params=array()){
 		if(!isset($params['-service'])){$params['-service']='ALL';}
 		if(!isset($params['-zip_orig'])){return "No zip_orig";}
 		if(!isset($params['-zip_dest'])){return "No zip_dest";}
-    	}
+    }
+	$weight_lbs=floor($params['-weight']/16);
+	$weight_oz=$params['-weight']-($weight_lbs*16);
 	$xml = '<'.$request.' USERID="'.$params['-userid'].'">';
 	$xml .= 	'<Package ID="1ST">';
-	$xml .= 		'<Pounds>'.$params['-weight'].'</Pounds>';
-	$xml .= 		'<Ounces>0</Ounces>';
+	$xml .= 		'<Pounds>'.$weight_lbs.'</Pounds>';
+	$xml .= 		'<Ounces>'.$weight_oz.'</Ounces>';
 	$xml .= 		'<MailType>Package</MailType>';
 	if($request=='RateV3Request'){
 		$xml .= 		'<Service>'.$params['-service'].'</Service>';
