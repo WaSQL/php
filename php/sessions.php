@@ -95,7 +95,11 @@ function sessionRead($session_id) {
 */
 function sessionWrite($session_id, $session_data) {
 	//decode the data and then store it as json instead so other programs can also share the session data
+	try{
 	@session_decode($session_data);
+	}
+	catch(Exception $e){
+	}
 	$session_data = json_encode($_SESSION);
 	
 	$table=sessionTable();
