@@ -541,7 +541,7 @@ function gracefulShutdown(){
 			}
 		}
 	}
-	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
+	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|session_decode|Session is not active|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
 	$debug=debug_backtrace();
 	foreach($error as $key=>$val){
 		$debug[0][$key]=$val;
