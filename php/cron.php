@@ -107,12 +107,12 @@ ENDOFWHERE;
 				}
 
 			}
-			//skip if it has been run in the last 5 minutes
+			//skip if it has been run in the last minute
 			if(strlen($rec['run_date'])){
 				$ctime=time();
             	$lastruntime=strtotime($rec['run_date']);
             	$diff=$ctime-$lastruntime;
-            	if($diff < 300){$run=0;}
+            	if($diff < 60){$run=0;}
 			}
 			//reset running if it has been over an hour
 			if($rec['running']==1){
