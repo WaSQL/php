@@ -100,8 +100,9 @@ ENDOFWHERE;
 			}
 			elseif(strlen($rec['run_format']) && strlen($rec['run_values'])){
 				$cvalue=date($rec['run_format']);
-				$values=preg_split('//',$rec['run_values']);
+				$values=preg_split('/\,/',$rec['run_values']);
 				foreach($values as $value){
+					//echo "cron name:{$rec['name']} run value:{$value}, current value:{$cvalue}<br>\n";
                 	if($cvalue==$value){$run=1;break;}
 				}
 
