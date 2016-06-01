@@ -30,6 +30,9 @@ global $sel;
 global $CONFIG;
 $_SERVER['HTTP_HOST']='localhost';
 include_once("$progpath/config.php");
+if(isset($CONFIG['timezone'])){
+	@date_default_timezone_set($CONFIG['timezone']);
+}
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/user.php");
