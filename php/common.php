@@ -3726,6 +3726,12 @@ function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
 			$mtime=filemtime($dir.'/'.$file);
 			$ttime=time();
 			switch(strtolower($unit)){
+				case 'yr':
+				case 'yrs':
+				case 'year':
+				case 'years':
+					$ctime=(integer)($num *31536000);
+					break;
 				case 'mon':
 				case 'month':
 				case 'months':
