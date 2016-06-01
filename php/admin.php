@@ -3708,13 +3708,14 @@ function adminMenu(){
 	$rtn .= '	<div style="width:400px;">'."\n";
 	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'."\n";
 	$rtn .= '<table class="table table-striped table-bordered">'."\n";
-	if(!isset($_SESSION['wasql_info'])){
+	if(!isset($_SESSION['wasql_info']) || isset($_REQUEST['refresh'])){
 		$_SESSION['wasql_info']=array(
 			'Server Host'	=> $_SERVER['HTTP_HOST'],
 			'waSQL Path'	=> getWasqlPath(),
 			'<span class="icon-user w_grey"></span> Username'	=> $USER['username'],
 			'PHP User'	=> get_current_user(),
 			'Server'	=> php_uname(),
+			'Timezone'	=> date_default_timezone_get(),
 			'<span class="icon-database w_success"></span> Database Host'	=> $CONFIG['dbhost'],
 			'<span class="icon-database w_success"></span> Database Name'	=> $CONFIG['dbname'],
 			'<span class="icon-database w_success"></span> Database Type'	=> $CONFIG['dbtype'],
