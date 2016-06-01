@@ -7,7 +7,11 @@ $progpath=dirname(__FILE__);
 date_default_timezone_set('America/Denver');
 //includes
 include_once("$progpath/common.php");
+global $CONFIG;
 include_once("$progpath/config.php");
+if(isset($CONFIG['timezone'])){
+	@date_default_timezone_set($CONFIG['timezone']);
+}
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
