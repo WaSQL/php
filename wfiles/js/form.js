@@ -1573,6 +1573,12 @@ function submitForm(theForm,popup,debug,ajax){
 		if(undefined != theForm[i].getAttribute('_required')){required=theForm[i].getAttribute('_required');}
 		else if(undefined != theForm[i].getAttribute('data-required')){required=theForm[i].getAttribute('data-required');}
 		else if(undefined != theForm[i].getAttribute('required')){required=theForm[i].getAttribute('required');}
+		//check for requiredif attribute
+        var requiredif='';
+		if(undefined != theForm[i].getAttribute('_requiredif')){requiredif=theForm[i].getAttribute('_requiredif');}
+		else if(undefined != theForm[i].getAttribute('data-requiredif')){requiredif=theForm[i].getAttribute('data-requiredif');}
+		else if(undefined != theForm[i].getAttribute('requiredif')){requiredif=theForm[i].getAttribute('requiredif');}
+        if(requiredif.length > 0 && formFieldHasValue(requiredif)){required=1;}
         if(required == 1){
 			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
 			if(undefined == requiredmsg){requiredmsg=theForm[i].getAttribute('requiredmsg');}
@@ -1588,30 +1594,30 @@ function submitForm(theForm,popup,debug,ajax){
 				for(var c=0;c<checkboxlist.length;c++){
 					if(checkboxlist[c].type=='checkbox' && checkboxlist[c].checked){isChecked++;}
 					else if(checkboxlist[c].type=='text' && checkboxlist[c].value != ''){isChecked++;}
-                	}
+                }
                 if(isChecked==0){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	submitFormAlert(msg,popup,5);
 		            theForm[i].focus();
 		            return false;
-                	}
-            	}
+                }
+            }
             else if(theForm[i].type=='radio'){
 				var checkboxlist=GetElementsByAttribute('input', 'name', theForm[i].name);
 				var isChecked=0;
 				for(var c=0;c<checkboxlist.length;c++){
 					if(checkboxlist[c].type=='radio' && checkboxlist[c].checked){isChecked++;}
 					else if(checkboxlist[c].type=='text' && checkboxlist[c].value != ''){isChecked++;}
-                	}
+                }
                 if(isChecked==0){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	submitFormAlert(msg,popup,5);
 		            theForm[i].focus();
 		            return false;
-                	}
-            	}
+                }
+            }
             else if(theForm[i].type=='textarea'){
             	var cval=trim(getText(theForm[i]));
             	if(cval.length==0){
@@ -1628,8 +1634,8 @@ function submitForm(theForm,popup,debug,ajax){
 			 	submitFormAlert(msg,popup,5);
 	            theForm[i].focus();
 	            return false;
-				}
-            }
+			}
+        }
         //check for mask attribute - a filter to test input against
         var mask=theForm[i].getAttribute('pattern');
         if(undefined == mask){mask=theForm[i].getAttribute('mask');}
@@ -1811,6 +1817,35 @@ function submitForm(theForm,popup,debug,ajax){
 		}
     return true;
 	}
+function formFieldHasValue(fld){
+	fld=getObject(fld);
+	if(undefined == fld){return false;}
+	if(undefined == fld.type){
+		return false;
+	}
+	if(fld.type=='checkbox' || fld.type=='radio'){
+		var checkname='name';
+		if(theForm[i].getAttribute('checkname')){checkname=theForm[i].getAttribute('checkname');}
+		var checkval=theForm[i].getAttribute(checkname);
+		//alert(checkname+'='+checkval);
+		var checkboxlist=GetElementsByAttribute('input', checkname, checkval);
+		//alert(checkboxlist.length+' elements found with a '+checkname+' of '+checkval);
+		var isChecked=0;
+		for(var c=0;c<checkboxlist.length;c++){
+			if(checkboxlist[c].type=='checkbox' && checkboxlist[c].checked){isChecked++;}
+			else if(checkboxlist[c].type=='text' && checkboxlist[c].value != ''){isChecked++;}
+        }
+        if(isChecked > 0){return true;}
+	}
+    else if(fld.type=='textarea'){
+        var cval=trim(getText(theForm[i]));
+        if(cval.length){return true;}
+	}
+	else if(theForm[i].value != ''){
+		return true;
+	}
+	return false;
+}
 //--------------------------
 function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
