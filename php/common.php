@@ -357,6 +357,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$params['-button'].=' btn-block';
 		break;
 	}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$tag='';
 	$class=isset($params['class'])?$params['class']:'';
 	$tag .= '<div class="btn-group w_nowrap" data-toggle="buttons">'."\n";
@@ -409,6 +410,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	$onclick='';
 	if(isset($params['onchange'])){$onclick=$params['onchange'];unset($params['onchange']);}
 	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);{$onclick};";
 	$tag='<input type="checkbox"';
 	unset($params[$att]);
@@ -495,6 +497,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
+			if($params['required']){$tag .= ' data-required="1"';}
+			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
@@ -523,6 +527,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$iconid=$params['id'].'_icon';
 	//force witdh
 	$params['width']=115;
@@ -559,6 +564,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['list']=$params['id'].'_datalist';
 	if(!isset($params['value'])){
 		$params['value']=$_REQUEST[$name];
@@ -592,6 +598,7 @@ function buildFormDate($name,$params=array()){
 	if($params['-value']=='NULL'){$params['-value']='';}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -631,7 +638,7 @@ function buildFormDateTime($name,$params=array()){
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	//$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -686,6 +693,7 @@ function buildFormHidden($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value'])){
 		$params['value']=$_REQUEST[$name];
 	}
@@ -709,6 +717,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
@@ -730,6 +739,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	//check for size
@@ -884,6 +894,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=6;}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['value'])){
       if(!is_array($params['value'])){
         $params['-values']=preg_split('/\:/',trim($params['value']));
@@ -921,6 +932,8 @@ function buildFormRadio($name, $opts=array(), $params=array()){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
+			if($params['required']){$tag .= ' data-required="1"';}
+			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'"> '.$dval.'</label></div>'."\n";
 		}
     	$tag .= '	</div>'."\n";
@@ -943,6 +956,7 @@ function buildFormText($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['name']=$name;
 	$tag .= '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -981,6 +995,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['height'])){
 		if(isNum($params['height'])){$params['height'].='px';}
 		$params['style'].=";height:{$params['height']}";
@@ -1044,7 +1059,7 @@ function buildFormTime($name,$params=array()){
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	//$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -1101,6 +1116,7 @@ function buildFormYesNo($name='yesno',$params=array()){
 * @usage echo buildFormToggleButton('yesno',array('Y'=>'Yes','N'=>'No'),$params);
 */
 function buildFormToggleButton($name,$opts=array(),$params=array()){
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(!is_array($opts) || !count($opts)){
     	$opts=array('y'=>'Yes','n'=>'No');
 	}
@@ -1278,6 +1294,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['value'])){
 		if(strlen($params['value'])){$sval=$params['value'];}
 	}
@@ -2538,7 +2555,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'_behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
-		'lang','autocorrect','list'
+		'lang','autocorrect','list','data-requiredif'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
