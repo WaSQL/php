@@ -1578,7 +1578,12 @@ function submitForm(theForm,popup,debug,ajax){
 		if(undefined != theForm[i].getAttribute('_requiredif')){requiredif=theForm[i].getAttribute('_requiredif');}
 		else if(undefined != theForm[i].getAttribute('data-requiredif')){requiredif=theForm[i].getAttribute('data-requiredif');}
 		else if(undefined != theForm[i].getAttribute('requiredif')){requiredif=theForm[i].getAttribute('requiredif');}
-        if(requiredif.length > 0 && formFieldHasValue(requiredif)){required=1;}
+        if(requiredif.length > 0){
+			if(formFieldHasValue(requiredif)){
+				//console.log(requiredif+' is checked');
+				required=1;
+			}
+		}
         if(required == 1){
 			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
 			if(undefined == requiredmsg){requiredmsg=theForm[i].getAttribute('requiredmsg');}
@@ -1824,18 +1829,7 @@ function formFieldHasValue(fld){
 		return false;
 	}
 	if(fld.type=='checkbox' || fld.type=='radio'){
-		var checkname='name';
-		if(fld.getAttribute('checkname')){checkname=fld.getAttribute('checkname');}
-		var checkval=fld.getAttribute(checkname);
-		//alert(checkname+'='+checkval);
-		var checkboxlist=GetElementsByAttribute('input', checkname, checkval);
-		//alert(checkboxlist.length+' elements found with a '+checkname+' of '+checkval);
-		var isChecked=0;
-		for(var c=0;c<checkboxlist.length;c++){
-			if(checkboxlist[c].type=='checkbox' && checkboxlist[c].checked){isChecked++;}
-			else if(checkboxlist[c].type=='text' && checkboxlist[c].value != ''){isChecked++;}
-        }
-        if(isChecked > 0){return true;}
+		if(fld.checked){return true;}
 	}
     else if(fld.type=='textarea'){
         var cval=trim(getText(fld));
