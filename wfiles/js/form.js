@@ -1825,8 +1825,8 @@ function formFieldHasValue(fld){
 	}
 	if(fld.type=='checkbox' || fld.type=='radio'){
 		var checkname='name';
-		if(theForm[i].getAttribute('checkname')){checkname=theForm[i].getAttribute('checkname');}
-		var checkval=theForm[i].getAttribute(checkname);
+		if(fld.getAttribute('checkname')){checkname=fld.getAttribute('checkname');}
+		var checkval=fld.getAttribute(checkname);
 		//alert(checkname+'='+checkval);
 		var checkboxlist=GetElementsByAttribute('input', checkname, checkval);
 		//alert(checkboxlist.length+' elements found with a '+checkname+' of '+checkval);
@@ -1838,10 +1838,10 @@ function formFieldHasValue(fld){
         if(isChecked > 0){return true;}
 	}
     else if(fld.type=='textarea'){
-        var cval=trim(getText(theForm[i]));
+        var cval=trim(getText(fld));
         if(cval.length){return true;}
 	}
-	else if(theForm[i].value != ''){
+	else if(fld.value != ''){
 		return true;
 	}
 	return false;
