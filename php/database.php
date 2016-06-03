@@ -1860,9 +1860,16 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		if($query_result==true){return 1;}
 		return 0;
 	}
+	ksort($params);
+	//echo $table.printValue($current).printValue($params);exit;
 	$sets=array();
 	$changed=array();
 	foreach($params as $field=>$type){
+		//handle virtual generated fields shortcut
+		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.id')),
+		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
+            $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$m[2]},'$.{$field}')))";
+		}
 		if(isset($current[$field])){
 			if(isWasqlField($field) && stringBeginsWith($current[$field],'int') && stringBeginsWith($type,'int')){
 				unset($current[$field]);
@@ -1931,7 +1938,12 @@ function createDBTable($table='',$fields=array(),$engine=''){
 	$ori_table=$table;
 	if(isMssql()){$table="[{$table}]";}
 	$query="create table {$table} (";
+	//echo printValue($fields);exit;
 	foreach($fields as $field=>$attributes){
+		//handle virual generated json field shortcut
+		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
+            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$m[2]},'$.{$field}')))";
+		}
 		//lowercase the fieldname and replace spaces with underscores
 		$field=strtolower(trim($field));
 		$field=str_replace(' ','_',$field);
@@ -4702,6 +4714,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	$cnt = databaseNumFields($query_result);
 	//mysqli does not have a mysqli_field_name function
 	if(isMysqli()){
+		//$info=mysqlTableInfo($table);
 		$dbtypemap = array(
 		    1=>'tinyint',
 		    2=>'smallint',
@@ -4838,6 +4851,45 @@ function postgresTableInfo($table){
         else{
         	$info[$field]['_dblength']=$rec['len'];
         }
+	}
+	return $info;
+}
+//---------- begin function mysqlTableInfo
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function mysqlTableInfo($table){
+	global $CONFIG;
+	/*
+		in 5.7+ need to convert generated column to 
+			GENERATED ALWAYS AS (JSON_EXTRACT(params, "$.block_message"))
+				generation_expression holds the additional generated info:
+					json_extract(jdoc,'$.post_status')
+				extra is virtual generated
+				column_key is MUL
+	*/
+    $query="SELECT
+    	*
+    FROM
+		information_schema.columns
+    WHERE
+		table_schema='{$CONFIG['dbname']}'
+		and table_catalog='def'
+		and table_name='{$table}'
+	";
+    $recs=getDBRecords(array('-query'=>$query,'-index'=>'column_name'));
+    //echo $query.printValue($recs);exit;
+    $info=array();
+    foreach($recs as $field=>$rec){
+    	$info[$field]=array(
+			'_dbtable' => $table,
+			'_dbtype'	=> $rec['data_type'],
+			'_dbcoltype'=> $rec['column_type'],
+			'_dbsize'	=> strlen($rec['character_maximum_size'])?$rec['character_maximum_size']:$rec['numeric_precision']
+		);
+		if(strtolower($rec['is_nullable'])=='no'){$info[$field]['_dbflags']='not_null';}
+		$rec['_dblength']=$rec['_dbsize'];
+		
 	}
 	return $info;
 }
