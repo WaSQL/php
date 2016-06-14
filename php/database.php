@@ -1867,8 +1867,12 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	foreach($params as $field=>$type){
 		//handle virtual generated fields shortcut
 		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.id')),
+		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.profile.name')),
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
-            $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$m[2]},'$.{$field}')))";
+			list($efield,$jfield)=preg_split('/\./',$m[2],2);
+			if(!strlen($jfield)){$jfield=$field;}
+			//echo printValue(array($m,$efield,$jfield));exit;
+            $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}')))";
 		}
 		if(isset($current[$field])){
 			if(isWasqlField($field) && stringBeginsWith($current[$field],'int') && stringBeginsWith($type,'int')){
@@ -1942,7 +1946,9 @@ function createDBTable($table='',$fields=array(),$engine=''){
 	foreach($fields as $field=>$attributes){
 		//handle virual generated json field shortcut
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
-            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$m[2]},'$.{$field}')))";
+			list($efield,$jfield)=preg_split('/\./',$m[2],2);
+			if(!strlen($jfield)){$jfield=$field;}
+            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}')))";
 		}
 		//lowercase the fieldname and replace spaces with underscores
 		$field=strtolower(trim($field));
