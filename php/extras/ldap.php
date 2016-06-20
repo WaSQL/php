@@ -187,6 +187,13 @@ function ldapGetUsers($params=array()){
 	$recs=array();
 	$list=getStoredValue("return ldapGetUsersAll();",$ldapInfo['dirty'],12);
 	foreach($list as $rec){
+		if(isset($params['-index'])){
+			$index_field=$params['-index'];
+			if(!isset($rec[$index_field]) || !strlen($rec[$index_field])){
+            	$rec[$index_field]='?';
+			}
+		}
+
     	$skip=0;
     	if(isset($rec['objectguid'])){
         	$rec['objectguid_base64']=encodeBase64($rec['objectguid']);
@@ -265,9 +272,6 @@ function ldapGetUsers($params=array()){
 		//index?
 		if(isset($params['-index'])){
 			$index_field=$params['-index'];
-			if(!isset($rec[$index_field]) || !strlen($rec[$index_field])){
-            	$rec[$index_field]='?';
-			}
 			if(isset($rec[$index_field]) && strlen($rec[$index_field])){
         		$index_value=$rec[$index_field];
         		if(isset($recs[$index_value])){
