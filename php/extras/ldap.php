@@ -254,13 +254,13 @@ function ldapGetUsers($params=array()){
 		if(isset($params['-fields'])){
         	if(!is_array($params['-fields'])){
             	$params['-fields']=preg_split('/\,+/',$params['-fields']);
-            	$xrec=array();
-            	foreach($params['-fields'] as $field){
-                	if(isset($rec[$field])){$xrec[$field]=$rec[$field];}
-				}
-				$rec=$xrec;
-				unset($xrec);
 			}
+            $xrec=array();
+            foreach($params['-fields'] as $field){
+                if(isset($rec[$field])){$xrec[$field]=$rec[$field];}
+			}
+			$rec=$xrec;
+			unset($xrec);
 		}
 		//index?
 		if(isset($params['-index'])){
