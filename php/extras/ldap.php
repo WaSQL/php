@@ -265,6 +265,9 @@ function ldapGetUsers($params=array()){
 		//index?
 		if(isset($params['-index'])){
 			$index_field=$params['-index'];
+			if(!isset($rec[$index_field]) || !strlen($rec[$index_field])){
+            	$rec[$index_field]='?';
+			}
 			if(isset($rec[$index_field]) && strlen($rec[$index_field])){
         		$index_value=$rec[$index_field];
         		if(isset($recs[$index_value])){
