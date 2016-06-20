@@ -281,6 +281,7 @@ function ldapGetUsers($params=array()){
 					}
 					$index_value="{$index_value}_{$x}";
 				}
+				ksort($rec);
         		$recs[$index_value]=$rec;
 			}
 		}
