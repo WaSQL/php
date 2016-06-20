@@ -166,6 +166,8 @@ function ldapClose(){
 *	lastname=>%jon%  lastname much contain jon
 *	lastname=>~jon  lastname must contain jon (same as %jon%)
 *	lastname=>jones lastname must equal jones
+*	[-index]=>{field} returns array with {field} value as the index
+*	[-fields]=list of fields - limits fields returned to this list. Either an array or a comma separated list of fields.
 * @return array or null if blank
 * @usage $recs=ldapGetRecords($params);
 * @exclude - not ready yet
@@ -248,6 +250,18 @@ function ldapGetUsers($params=array()){
 		}
 		if($skip==1){continue;}
 		ksort($rec);
+		//fields
+		if(isset($params['-fields'])){
+        	if(!is_array($params['-fields'])){
+            	$params['-fields']=preg_split('/\,+/',$params['-fields']);
+            	$xrec=array();
+            	foreach($params['-fields'] as $field){
+                	if(isset($rec[$field])){$xrec[$field]=$rec[$field];}
+				}
+				$rec=$xrec;
+				unset($xrec);
+			}
+		}
 		//index?
 		if(isset($params['-index'])){
 			$index_field=$params['-index'];
