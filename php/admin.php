@@ -2669,6 +2669,7 @@ LIST_TABLE:
             	if($height < 300){$height=300;}
 			}
 			echo '		<textarea name="_schema" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'."\n";
+			//echo printValue($list);
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
 				$type=$field['_dbtype_ex'];
@@ -2677,7 +2678,13 @@ LIST_TABLE:
 				if($field['_dbkey']=='PRI'){$type .= ' Primary Key';}
 				elseif($field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
 				if(strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
-				if(strlen($field['_dbextra'])){$type .= ' '.$field['_dbextra'];}
+				if(strlen($field['_dbextra'])){
+					if(stringContains($field['_dbextra'],'virtual generated')){
+                    	$j=getDBExpression($currentTable,$field['_dbfield']);
+                    	if(strlen($j)){$field['_dbextra']=$j;}
+					}
+					$type .= ' '.$field['_dbextra'];
+				}
 				if(strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
 				echo "{$field['_dbfield']} {$type}\r\n";
                 }
