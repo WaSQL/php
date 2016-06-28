@@ -1867,7 +1867,7 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	foreach($params as $field=>$type){
 		//handle virtual generated fields shortcut
 		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.id')),
-		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.profile.name')),
+		//post_status varchar(25) GENERATED ALWAYS AS (TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))),
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
@@ -1910,6 +1910,28 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   		}
 	}
+function getDBExpression($table,$field,$schema=''){
+	global $CONFIG;
+	if(!strlen($schema)){$schema=$CONFIG['dbname'];}
+$query=<<<ENDOFSQL
+	SELECT
+		generation_expression as exp
+	FROM
+		information_schema.columns
+	WHERE
+		table_schema='{$schema}'
+		and table_name='{$table}'
+		and column_name='{$field}'
+ENDOFSQL;
+	$rec=getDBRecord(array('-query'=>$query));
+	//echo $query.printValue($rec);exit;
+	if(!isset($rec['exp'])){return '';}
+	//TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))
+	if(preg_match('/json\_extract\((.+?)\,\'\$\.(.+?)\'\)/i',$rec['exp'],$m)){
+    	return " from {$m[1]}.{$m[2]}";
+	}
+	return '';
+}
 //---------- begin function createDBTable--------------------
 /**
 * @describe creates table with specified fields
