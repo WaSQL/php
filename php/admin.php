@@ -2681,7 +2681,11 @@ LIST_TABLE:
 				if(strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],'virtual generated')){
                     	$j=getDBExpression($currentTable,$field['_dbfield']);
-                    	if(strlen($j)){$field['_dbextra']=$j;}
+                    	if(strlen($j)){
+							$field['_dbextra']=$j;
+							$type=str_replace(' NOT NULL','',$type);
+							$type=str_replace(' NULL','',$type);
+						}
 					}
 					$type .= ' '.$field['_dbextra'];
 				}
