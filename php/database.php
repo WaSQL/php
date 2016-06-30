@@ -1863,6 +1863,7 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	ksort($params);
 	//echo $table.printValue($current).printValue($params);exit;
 	$sets=array();
+	$vsets=array();
 	$changed=array();
 	foreach($params as $field=>$type){
 		//handle virtual generated fields shortcut
@@ -1881,7 +1882,9 @@ function alterDBTable($table='',$params=array(),$engine=''){
 				}
 			if(strtolower($current[$field]) != strtolower($type)){
 				if(isPostgreSQL()){$sets[]="ALTER COLUMN {$field} TYPE {$type}";}
-				else{$sets[]="modify {$field} {$type}";}
+				else{
+					$sets[]="modify {$field} {$type}";
+					}
 				$changed[$field]=$type;
 				}
 			unset($current[$field]);
@@ -1899,6 +1902,15 @@ function alterDBTable($table='',$params=array(),$engine=''){
 	$query .= implode(",",$sets);
 	if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
+	//vsets
+	if(count($vsets)){
+		$vquery = "alter table {$table} ";
+		$vquery .= implode(",",$vsets);
+		$vquery_result=@databaseQuery($vquery);
+		if(!$vquery_result){
+        	setWasqlError(debug_backtrace(),getDBError(),$vquery);
+		}
+	}
 	//echo $query.printValue($query_result);
   	if($query_result==true){
 		foreach($changed as $field=>$attributes){
