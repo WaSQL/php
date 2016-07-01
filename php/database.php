@@ -1660,6 +1660,44 @@ function addDBRecord($params=array()){
 	unset($info);
 	$info=getDBFieldInfo($params['-table'],1);
 	if(!is_array($info)){return $info;}
+	
+	//check for virtual fields
+	$jsonfields=array();
+	foreach($info as $k=>$i){
+    	if($i['_dbtype']=='json' && isset($params[$k])){
+        	$jsonfields[]=$k;
+		}
+	}
+	//echo printValue($jsonfields).printValue($params).printValue($info);exit;
+	if(count($jsonfields)){
+		foreach($params as $key=>$val){
+			if(stringContains($info[$key]['_dbextra'],'virtual generated')){
+				unset($params[$key]);
+			    $j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
+			    if(strlen($j)){
+					$j=str_replace(' from ','',$j);
+			        $parts=preg_split('/\./',$j);
+			        $jfield=array_shift($parts);
+			        if(in_array($jfield,$jsonfields) && isset($params[$jfield])){
+                    	$jarray=json_decode(trim($params[$jfield]),true);
+                    	//echo printValue($parts).printValue($jarray);
+                        switch(count($parts)){
+							case 1:$jarray[$parts[0]]=$val;break;
+							case 2:$jarray[$parts[0]][$parts[1]]=$val;break;
+							case 3:$jarray[$parts[0]][$parts[1]][$parts[2]]=$val;break;
+							case 4:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]]=$val;break;
+							case 5:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]]=$val;break;
+							case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$val;break;
+						}
+						$params[$jfield]=json_encode($jarray);
+					}
+
+				}
+			}
+		}
+	}
+
+
 	if(isset($info['_cuser']) && !isset($params['_cuser'])){
 		$params['_cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
     	}
@@ -3226,6 +3264,69 @@ function editDBRecord($params=array()){
 		}
 	/* Filter the query based on params */
 	$updates=array();
+	//if($params['-table']=='jsontest'){echo printValue($info);exit;}
+	//check for virtual fields
+	$jsonfields=array();
+	foreach($info as $k=>$i){
+    	if($i['_dbtype']=='json' && !isset($params[$k])){
+        	$jsonfields[]=$k;
+		}
+	}
+	if(count($jsonfields)){
+		$jsonfields[]='_id';
+		$recs=getDBRecords(array(
+			'-table'=>$params['-table'],
+			'-where'=>$params['-where'],
+			'-fields'=>implode(',',$jsonfields)
+		));
+		if(isset($recs[0]) && count($recs) < 1000){
+			foreach($recs as $i=>$rec){
+				$jchanges=array();
+				foreach($params as $key=>$val){
+					if(stringContains($info[$key]['_dbextra'],'virtual generated')){
+						unset($params[$key]);
+			        	$j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
+			        	if(strlen($j)){
+							$j=str_replace(' from ','',$j);
+			            	$parts=preg_split('/\./',$j);
+			            	$jfield=array_shift($parts);
+			            	if(isset($info[$jfield])){
+								$jkey=implode('.',$parts);
+								$jchanges[$jfield][$jkey]=$val;
+							}
+						}
+					}
+				}
+				if(count($jchanges)){
+					$rchanges=array();
+                	foreach($jchanges as $jfield=>$jchange){
+                    	$jarray=json_decode(trim($rec[$jfield]),true);
+                    	if(is_array($jarray)){
+							foreach($jchange as $jkey=>$jval){
+                        		$parts=preg_split('/\./',$jkey);
+                        		switch(count($parts)){
+									case 1:
+										$jarray[$parts[0]]=$jval;
+									break;
+									case 2:$jarray[$parts[0]][$parts[1]]=$jval;break;
+									case 3:$jarray[$parts[0]][$parts[1]][$parts[2]]=$jval;break;
+									case 4:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]]=$jval;break;
+									case 5:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]]=$jval;break;
+									case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$jval;break;
+								}
+							}
+							$rchanges[$jfield]=json_encode($jarray);
+						}
+					}
+					if(count($rchanges)){
+                    	$rchanges['-table']=$params['-table'];
+                    	$rchanges['-where']="_id={$rec['_id']}";
+                    	$ok=editDBRecord($rchanges);
+					}
+				}
+			}
+		}
+	}
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype'])){continue;}
