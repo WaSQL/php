@@ -18,6 +18,7 @@
 *	[donut] - donut hole percent. defaults to .4
 *	[padding] - defaults to 60. Need padding for labels
 * 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
 * @return false
 */
 function wd3PieChart(p,params){
@@ -34,9 +35,12 @@ function wd3PieChart(p,params){
 	if(undefined==params){params={};}
 	if(undefined==params.width){params.width=getWidth(pObj);}
 	if(undefined==params.height){params.height=getHeight(pObj);}
+	if(undefined==params.padding){params.padding=60;}
+	if(undefined!=params.debug){console.log(params);}
 	var color = d3.scale.category20();
 	//check to see if it already exists
 	if(undefined == document.querySelector(p+' svg')){
+		if(undefined!=params.debug){console.log('new chart - adding svg');}
 		// draw and append the container
 		var svg = d3.select(p).append("svg")
 			.attr("width", params.width)
@@ -68,10 +72,11 @@ function wd3PieChart(p,params){
 
 	}
 	else{
+		if(undefined!=params.debug){console.log('existing chart - updating');}
 		var svg = d3.select(p+' svg');
 	}
 	//calculate radius
-	if(undefined == params.padding){params.padding=60;}
+
 	var radius = Math.round(Math.min(params.width, params.height) / 2)-params.padding;
 	//define arc for chart
 	if(undefined != params.type && params.type=='donut'){
@@ -108,6 +113,7 @@ function wd3PieChart(p,params){
         data.forEach(function(d) {
     		d.percent = Math.round((d.value/totals)*100,1);
 		});
+		if(undefined!=params.debug){console.log(data);}
 		/* ------- PIE SLICES -------*/
 		var slice = svg.select(".slices").selectAll("path.slice")
 			.data(pie(data), key);
