@@ -37,6 +37,9 @@ function wd3PieChart(p,params){
 	if(undefined==params.height){params.height=getHeight(pObj);}
 	if(undefined==params.padding){params.padding=60;}
 	if(undefined!=params.debug){console.log(params);}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=200;}
+	if(params.width < 20){params.width=200;}
 	var color = d3.scale.category20();
 	//check to see if it already exists
 	if(undefined == document.querySelector(p+' svg')){
@@ -206,7 +209,7 @@ function wd3PieChart(p,params){
 		
 		polyline.enter()
 			.append("polyline");
-	
+
 		polyline.transition().duration(1000)
 			.attrTween("points", function(d){
 				this._current = this._current || d;
