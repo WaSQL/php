@@ -38,8 +38,8 @@ function wd3PieChart(p,params){
 	if(undefined==params.padding){params.padding=60;}
 	if(undefined!=params.debug){console.log(params);}
 	//do not allow zero height or width
-	if(params.height < 20){params.height=200;}
-	if(params.width < 20){params.width=200;}
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
 	var color = d3.scale.category20();
 	//check to see if it already exists
 	if(undefined == document.querySelector(p+' svg')){
@@ -116,14 +116,17 @@ function wd3PieChart(p,params){
         data.forEach(function(d) {
     		d.percent = Math.round((d.value/totals)*100,1);
 		});
-		if(undefined!=params.debug){console.log(data);}
+		//if(undefined!=params.debug){console.log(data);}
 		/* ------- PIE SLICES -------*/
 		var slice = svg.select(".slices").selectAll("path.slice")
 			.data(pie(data), key);
 
 		slice.enter()
 			.insert("path")
-			.style("fill", function(d,i) { return color(i); })
+			.style("fill", function(d,i) {
+				if(undefined!=params.debug){console.log('new slice:i='+i+',color='+color(i)+', label='+d.data.label);}
+				return color(i);
+			})
 			.attr("class", "slice");
 		slice.attr("data-percent", function(d) { return d.data.percent; });
 		slice.attr("data-value", function(d) { return d.data.value; });
