@@ -224,15 +224,19 @@ function wd3PieChart(p,params){
 	}
 	//pass in the data
 	if(undefined != params.csv){
+		if(undefined!=params.debug){console.log('loading csv');}
 		d3.csv(params.csv, loadpie);
 	}
 	else if(undefined != params.tsv){
+		if(undefined!=params.debug){console.log('loading tsv');}
 		d3.tsv(params.tsv, loadpie);
 	}
 	else if(undefined != params.json){
+		if(undefined!=params.debug){console.log('loading json');}
 		d3.json(params.json, loadpie);
 	}
 	else if(undefined != params.data){
+		if(undefined!=params.debug){console.log('loading data');}
 		loadpie(params.data);
 	}
 	return false;
