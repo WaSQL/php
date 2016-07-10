@@ -1761,6 +1761,24 @@ div.mojozoom_imgctr {
 	margin-left : 20px;
 	border : 1px solid black;
 }
+/* wd3 styles */
+.svg g {
+	fill: black;
+	font: 10px sans-serif;
+	font-weight: bold;
+	text-anchor: start;
+}
+
+path.slice{
+	stroke-width:1px;
+	stroke:#FFF;
+}
+polyline{
+	opacity: .3;
+	stroke: black;
+	stroke-width: 2px;
+	fill: none;
+}
 
 /* print only styles */
 @media print {
