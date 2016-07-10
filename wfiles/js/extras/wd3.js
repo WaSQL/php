@@ -124,8 +124,8 @@ function wd3PieChart(p,params){
 		slice.enter()
 			.insert("path")
 			.style("fill", function(d,i) {
-				if(undefined!=params.debug){console.log('new slice:i='+i+',color='+color(i)+', label='+d.data.label);}
-				return color(i);
+				if(undefined!=params.debug){console.log('new slice:i='+i+',color='+color.range()[i]+', label='+d.data.label);}
+				return color.range()[i];
 			})
 			.attr("class", "slice");
 		slice.attr("data-percent", function(d) { return d.data.percent; });
@@ -253,9 +253,9 @@ function wd3PieChart(p,params){
 * @return json  label,value
 */
 function wd3RandomPieData(){
-	var color = d3.scale.ordinal()
+	var x = d3.scale.ordinal()
 		.domain(["Lorem ipsum", "dolor sit", "amet", "consectetur", "adipisicing", "eiusmod", "tempor", "incididunt"]);
-	var labels = color.domain();
+	var labels = x.domain();
 	return labels.map(function(label){
 		return { label: label, value: Math.random() }
 	});
