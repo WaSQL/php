@@ -19,10 +19,6 @@
 *	[padding] - defaults to 60. Need padding for labels
 * 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
 * @return false
-* @usage 
-*	<?=loadExtrasJs('dropdown');?>
-*	---
-*	<?=loadExtrasJs(array('iefix','html5','custom'));?>
 */
 function wd3PieChart(p,params){
 	if(undefined == d3){
@@ -235,6 +231,11 @@ function wd3PieChart(p,params){
 	}
 	return false;
 }
+//---------- begin function wd3RandomPieData--------------------
+/**
+* @describe generates random pie chart data to be used in testing
+* @return json  label,value
+*/
 function wd3RandomPieData(){
 	var color = d3.scale.ordinal()
 		.domain(["Lorem ipsum", "dolor sit", "amet", "consectetur", "adipisicing", "eiusmod", "tempor", "incididunt"]);
