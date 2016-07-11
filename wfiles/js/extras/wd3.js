@@ -1,7 +1,187 @@
-/*d3.js - addon functions for d3 at https://d3js.org/d3.v3.min.js */
-//load the d3 library
-//piechart and donutchart:  Data Format:  label,value,tooltip
+/*
+	d3.js addon functions for d3 at https://d3js.org/d3.v3.min.js
+	wd3PieChart for pie and donut charts - label,value
+	wd3LineChart for line and multiple lines chart - label,value1,value2,value3,.... each value is a new line
+	wd3BarChart for bar chart - label,value1,value2,value3,... each value is a new bar
 
+*/
+//---------- begin function wd3LineChart--------------------
+/**
+* @describe creates[or updates] a line chart using d3
+* @param p selector string - specifies the parent element to append the chart to
+* @param params json
+*	data - data
+*	csv - url to csv data to load
+*	tsv - url to tsv data to load
+*	json - url to json data to load
+*	label - defines the column to use as the x value
+*	[width] - specifies width. If not specified, parent width is used
+*	[height] - specifies height. If not specified, parent height is used
+*	[padding] - defaults to 1
+*	[duration] - defaults to 1000 milliseconds
+* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
+* @return false
+*/
+function wd3LineChart(p,params){
+	if(undefined == d3){
+		alert('d3 library is not loaded');
+		return false;
+	}
+	if(undefined==p){p='body';}
+	var pObj=document.querySelector(p);
+	if(undefined == pObj){
+		console.log('wd3PieChart Error: undefined parent');
+		return;
+	}
+	if(undefined==params){params={};}
+	if(undefined==params.width){params.width=getWidth(pObj);}
+	if(undefined==params.height){params.height=getHeight(pObj);}
+	if(undefined==params.padding){params.padding=1;}
+	if(undefined==params.label){params.label='label';}
+	if(undefined==params.duration){params.padding=1000;}
+	if(undefined!=params.debug){console.log(params);}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
+	var color = d3.scale.category20();
+	//check to see if it already exists
+	if(undefined == document.querySelector(p+' svg')){
+		if(undefined!=params.debug){console.log('new chart - adding svg');}
+		//title - place on bottom if pie, middle if donut
+		d3.select(p).append("div")
+	      		.attr("class", "title text-center")
+	      		.text("");
+		// draw and append the container
+		var svg = d3.select(p).append("svg")
+			.attr("width", params.width)
+			.attr("height", params.height)
+			.append("g");
+
+		//add containers for slices, labels and lines
+		svg.append("g")
+			.attr("class", "slices");
+		svg.append("g")
+			.attr("class", "labels");
+		svg.append("g")
+			.attr("class", "lines");
+
+		//set transform for svg
+		svg.attr("transform", "translate(" + params.width / 2 + "," + params.height / 2 + ")");
+
+	}
+	else{
+		if(undefined!=params.debug){console.log('existing chart - updating');}
+		var svg = d3.select(p+' svg');
+	}
+	//scale x and y
+	var	x = d3.scale.linear().range([0, params.width]);
+	var	y = d3.scale.linear().range([params.height, 0]);
+	//x axis ticks and optional format
+	var	xAxis = d3.svg.axis().scale(x)
+		.orient("bottom").ticks(params.xticks);
+	if(undefined != xformat){
+    	xAxis.tickFormat(d3.format(xformat));
+	}
+	//y axis ticks and optional format
+	var	yAxis = d3.svg.axis().scale(y)
+		.orient("left").ticks(params.yticks);
+	if(undefined != yformat){
+    	yAxis.tickFormat(d3.format(yformat));
+	}
+
+	var valueline=new Array();
+	for(var z=0;z<10;z++){
+		valueline[z] = d3.svg.line()
+			.interpolate("basis")
+			.x(function(d) { return x(d.xval); })
+			.y(function(d,z) {var ykey=ykeys[z]; return y(d[ykey]); });
+	}
+
+	function loadline(data){
+		var keys = Object.keys(data[0]);
+		ykeys=new Array();
+		for(i=0;i<keys.length;i++){
+        	var ckey=keys[i];
+        	if(ckey!=params.label){ykeys.push(ckey);}
+		}
+		data.forEach(function(d) {
+			d.xval 	= +d[params.label];
+			for(i=0;i<ykeys.length;i++){
+				var ykey=ykeys[i];
+				d[ykey]=+d[ykey];
+			}
+		});
+
+		// Scale the range of the data
+		x.domain(d3.extent(data, function(d) { return d.xval; }));
+		y.domain([
+			d3.min(data, function(d) {
+				var ydata=new Array();
+				for(i=0;i<ykeys.length;i++){
+					var ykey=ykeys[i];
+					ydata.push(+d[ykey]);
+				}
+				return Math.min.apply(null,ydata); })+-1,
+			d3.max(data, function(d) {
+				var ydata=new Array();
+				for(i=0;i<ykeys.length;i++){
+					var ykey=ykeys[i];
+					ydata.push(+d[ykey]);
+				}
+				return Math.max.apply(null,ydata);
+				 })+1
+		]);
+		// Add the valueline for each ykey
+		for(z=0;z<ykeys.length;z++){
+			svg.append("path")
+				.attr("class", "line")
+				.style("stroke", colors.range(z))
+				.attr("d", valueline[z](data));
+		}
+		// Add the X Axis
+		svg.append("g")
+			.attr("class", "x-axis kpi")
+			.attr("transform", "translate(0," + height + ")")
+			.call(xAxis);
+		// Add the Y Axis
+		svg.append("g")
+			.attr("class", "y-axis kpi")
+			.call(yAxis);
+
+	 	// Add the legends
+	 	for(z=0;z<ykeys.length;z++){
+			svg.append("text")
+				.attr("x", 50*z)
+				.attr("y", height + margin.top+5)
+				.attr("class", "legend")
+				.style("fill", colors.range(z))
+				.text(ykeys[z]);
+		}
+	}
+	//pass in the data
+	if(undefined != params.csv){
+		if(undefined!=params.debug){console.log('loading csv');}
+		d3.csv(params.csv, loadline);
+	}
+	else if(undefined != params.tsv){
+		if(undefined!=params.debug){console.log('loading tsv');}
+		d3.tsv(params.tsv, loadline);
+	}
+	else if(undefined != params.json){
+		if(undefined!=params.debug){console.log('loading json');}
+		d3.json(params.json, loadline);
+	}
+	else if(undefined != params.data){
+		if(undefined!=params.debug){console.log('loading data');}
+		loadline(params.data);
+	}
+	else{
+		if(undefined!=params.debug){console.log('loading random data');}
+    	loadline(wd3RandomLineData());
+	}
+	return false;
+}
 
 //---------- begin function wd3PieChart--------------------
 /**
@@ -244,6 +424,10 @@ function wd3PieChart(p,params){
 	else if(undefined != params.data){
 		if(undefined!=params.debug){console.log('loading data');}
 		loadpie(params.data);
+	}
+	else{
+		if(undefined!=params.debug){console.log('loading random data');}
+    	loadpie(wd3RandomPieData());
 	}
 	return false;
 }
