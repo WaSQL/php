@@ -801,7 +801,7 @@ function wd3PieChart(p,params){
 		
 			var polyline = svg.select(".lines").selectAll("polyline")
 				.data(pie(data), key);
-			
+
 			polyline.enter()
 				.append("polyline");
 	
