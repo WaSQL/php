@@ -14,11 +14,8 @@
 *	csv - url to csv data to load
 *	tsv - url to tsv data to load
 *	json - url to json data to load
-*	label - defines the column to use as the x value
 *	[width] - specifies width. If not specified, parent width is used
 *	[height] - specifies height. If not specified, parent height is used
-*	[padding] - defaults to 1
-*	[duration] - defaults to 1000 milliseconds
 * 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
 *	[debug] - writes console.log messages for debugging purposes
 * @return false
@@ -38,17 +35,10 @@ function wd3MapChart(p,params){
 	if(undefined==params){params={};}
 	if(undefined==params.width){params.width=getWidth(pObj);}
 	if(undefined==params.height){params.height=getHeight(pObj);}
-	if(undefined==params.top){params.top=30;}
-	if(undefined==params.right){params.right=55;}
-	if(undefined==params.bottom){params.bottom=50;}
-	if(undefined==params.left){params.left=80;}
-	if(undefined==params.padding){params.padding=1;}
-	if(undefined==params.label){params.label='label';}
-	if(undefined==params.duration){params.duration=300;}
 	if(undefined!=params.debug){console.log(params);}
 	//do not allow zero height or width
-	if(params.height < 20){params.height=300;}
-	if(params.width < 20){params.width=300;}
+	if(params.height < 20){params.height=250;}
+	if(params.width < 20){params.width=350;}
 	var fills={
 			"1st": "#3399ff",
 			"2nd": "#805393",
@@ -58,12 +48,12 @@ function wd3MapChart(p,params){
 			"6th": "#d9c8e0",
 			"defaultFill": "#e5e5e5"
 		};
-	console.log(p);
 	if(undefined == document.querySelector(p+' .datamap')){
 		var chartParams = {
 			"width":    params.width,
 			"height":    params.height,
 			"scope": "usa",
+			"class": "haha",
 			"fills": fills,
 			"element":document.querySelector(p),
 	    	data: {},
@@ -71,6 +61,7 @@ function wd3MapChart(p,params){
 			"labels": true,
 			"id": "map",
 			"geographyConfig": {
+
 	 			"popupTemplate":  function(geography, data){
 	    			return '<div class=hoverinfo><strong>' + geography.properties.name +': ' + wd3NumberWithCommas(data.value) + '</strong></div>';
 	  			}
@@ -81,13 +72,18 @@ function wd3MapChart(p,params){
 	  	if(chartParams.legend){wd3MapChartMaps[p].legend();}
 	  	//add labels
 	  	if(chartParams.labels){wd3MapChartMaps[p].labels();}
+	  	if(undefined != params.onclick){
+			d3.selectAll(p+' .datamaps-subunit').on('click', function(geography) {
+				var args=new Array();
+				args.push(d3.select(this).attr("data-label"));
+				args.push(d3.select(this).attr("data-value"));
+				window[params.onclick].apply(this,args);
+			});
+		}
 	  	//add legend
-	  	d3.select(p).append("div")
-	      	.attr("class", "legend")
-	      	.text("");
+	  	d3.select(p).append("div").attr("class", "legend").text("");
 	    d3.select(p+' .legend').append("span").text('Most');
 	  	for (var key in fills) {
-  			console.log(key, fills[key]);
   			d3.select(p+' .legend').append("span")
 	      		.attr("class", "icon-blank")
 	      		.attr("style", "color:"+fills[key]);
@@ -105,7 +101,15 @@ function wd3MapChart(p,params){
                 delete  cdata[i] ;
             }
 			wd3MapChartMaps[p].updateChoropleth(cdata);
-			});
+			//add data-id and data-value to path attribute so we can access it via this
+			if(undefined != params.onclick){
+				for (var key in cdata) {
+					d3.select(p+' .datamaps-subunit.'+key)
+						.attr("data-value",+cdata[key].value)
+						.attr("data-label",+key);
+				}
+			}
+		});
 	}
 	else if(undefined != params.tsv){
 		if(undefined!=params.debug){console.log('loading tsv');}
@@ -117,7 +121,15 @@ function wd3MapChart(p,params){
                 delete  cdata[i] ;
             }
 			wd3MapChartMaps[p].updateChoropleth(cdata);
-			});
+			//add data-id and data-value to path attribute so we can access it via this
+			if(undefined != params.onclick){
+				for (var key in cdata) {
+					d3.select(p+' .datamaps-subunit.'+key)
+						.attr("data-value",+cdata[key].value)
+						.attr("data-label",+key);
+				}
+			}
+		});
 	}
 	else if(undefined != params.json){
 		if(undefined!=params.debug){console.log('loading json');}
@@ -129,7 +141,15 @@ function wd3MapChart(p,params){
                 delete  cdata[i] ;
             }
 			wd3MapChartMaps[p].updateChoropleth(cdata);
-			});
+			//add data-id and data-value to path attribute so we can access it via this
+			if(undefined != params.onclick){
+				for (var key in cdata) {
+					d3.select(p+' .datamaps-subunit.'+key)
+						.attr("data-value",+cdata[key].value)
+						.attr("data-label",+key);
+				}
+			}
+		});
 	}
 	else if(undefined != params.data){
 		if(undefined!=params.debug){console.log('loading data');}
@@ -205,6 +225,23 @@ function wd3BarChart(p,params){
     	yAxis.tickFormat(d3.format(params.yformat));
 	}
 
+	if(undefined != params.rightvalue){
+		var linecolor=color.range()[2];
+		var	rightline = d3.svg.line()
+			.x(function(d) { return x(d.label)+10; })
+			.y(function(d) { return yLine(d.linevalue); });
+			
+		var	yLine = d3.scale.linear().range([params.height, 0]);
+
+		if(undefined==params.rightticks){params.rightticks=10;}
+		var	yAxisLine = d3.svg.axis().scale(yLine)
+			.orient("right").ticks(params.rightticks);
+		if(undefined != params.rightformat){
+	    	yAxisLine.tickFormat(d3.format(params.rightformat));
+		}
+	}
+
+
 	if(undefined == document.querySelector(p+' svg')){
 		if(undefined!=params.debug){console.log('new bar chart - adding svg');}
 		//title - place on bottom if pie, middle if donut
@@ -229,6 +266,17 @@ function wd3BarChart(p,params){
     			.attr("y", 6)
     			.attr("dy", ".71em")
     			.style("text-anchor", "end");
+    	
+    	if(undefined != params.rightvalue){
+			svg.append("g")
+    		.attr("class", "y axisline")
+    		.attr("transform", "translate(" + params.width + " ,0)")
+  			.append("text") // just for the title (ticks are automatic)
+    			.attr("transform", "rotate(-90)") // rotate the text!
+    			.attr("y", 6)
+    			.attr("dy", ".71em")
+    			.style("text-anchor", "start");
+		}
 	}
 	else{
 		if(undefined!=params.debug){console.log('existing chart - updating');}
@@ -238,11 +286,18 @@ function wd3BarChart(p,params){
 	function loadbar(data){
 		data.forEach(function(d) {
 			d.value 	= +d.value;
-			});
+			if(undefined != params.rightvalue){
+				d.linevalue = +d[params.rightvalue];
+			}
+		});
+		//console.log(data);
 		// measure the domain (for x, unique letters) (for y [0,maxFrequency])
   		// now the scales are finished and usable
   		x.domain(data.map(function(d) { return d.label; }));
   		y.domain([0, d3.max(data, function(d) { return d.value; })]);
+  		if(undefined != params.rightvalue){
+			yLine.domain([0, d3.max(data, function(d) { return d.linevalue; })]);
+		}
 
 		// another g element, this time to move the origin to the bottom of the svg element
   		// someSelection.call(thing) is roughly equivalent to thing(someSelection[i])
@@ -257,11 +312,15 @@ function wd3BarChart(p,params){
     			.style("text-anchor", "start");
 
   		// same for yAxis but with more transform and a title
-  		svg.select(".y.axis").transition().duration(300).call(yAxis)
+  		svg.select(".y.axis").transition().duration(300).call(yAxis);
+
+  		if(undefined != params.rightvalue){
+  			svg.select(".y.axisline").transition().duration(300).call(yAxisLine);
+		}
 
   		// THIS IS THE ACTUAL WORK!
   		var bars = svg.selectAll("rect").data(data, function(d) { return d.label; }); // (data) is an array/iterable thing, second argument is an ID generator function
-
+		//exit
   		bars.exit()
     		.transition()
       			.duration(300)
@@ -274,7 +333,27 @@ function wd3BarChart(p,params){
   		bars.enter().append("rect")
     		.attr("fill", color.range()[0])
     		.attr("y", y(0))
-    		.attr("height", params.height - y(0));
+    		.attr("height", params.height - y(0))
+    		.attr("data-value", function(d) { return d.value; })
+			.attr("data-label", function(d) { return d.label; })
+			.on("mouseover", function(){
+				var fill=d3.select(this).style("fill");
+				d3.select(this).attr("fill_ori",fill);
+				d3.select(this).style("fill", d3.rgb(fill).darker(0.3));
+				})
+			.on("mouseout", function() {
+				var fill=d3.select(this).attr("fill_ori");
+		  			d3.select(this).style("fill", fill);
+				})
+			.on("click", function() {
+				if(undefined != params.onclick){
+					var args=new Array();
+					args.push(d3.select(this).attr("data-label"));
+					args.push(d3.select(this).attr("data-value"));
+					window[params.onclick].apply(this,args);
+				}
+			});;
+    	//darken the slice on hover (mouseover) and restore the original color on mouseout
 
   		// the "UPDATE" set:
   		bars.transition().duration(300)
@@ -282,6 +361,25 @@ function wd3BarChart(p,params){
     		.attr("width", x.rangeBand()) // constant, so no callback function(d) here
     		.attr("y", function(d) { return y(d.value); })
     		.attr("height", function(d) { return params.height - y(d.value); }); // flip the height, because y's domain is bottom up, but SVG renders top down
+	
+		if(undefined != params.rightvalue){
+        var line= svg.selectAll("path.line").data(data, function(d) { return d.label; });
+        line.exit()
+    		.transition()
+      			.duration(300)
+    		.remove();
+
+  		// data that needs DOM = enter() (a set/selection, not an event!)
+  		line.enter().append("path")
+			.attr("class", "line")
+			.attr("style","fill:none;stroke:"+linecolor+";stroke-width:3;z-index:999;")
+			.attr("d", rightline(data));
+
+  		// the "UPDATE" set:
+  		line.transition().duration(300)
+            .attr("d", rightline(data));
+
+		}
 	}
 	//pass in the data
 	if(undefined != params.csv){
@@ -300,6 +398,7 @@ function wd3BarChart(p,params){
 		if(undefined!=params.debug){console.log('loading data');}
 		loadbar(params.data);
 	}
+
 	return false;
 
 }
@@ -514,7 +613,9 @@ function wd3PieChart(p,params){
 	if(undefined==params){params={};}
 	if(undefined==params.width){params.width=getWidth(pObj);}
 	if(undefined==params.height){params.height=getHeight(pObj);}
-	if(undefined==params.padding){params.padding=60;}
+	if(undefined==params.padding){params.padding=20;}
+	if(undefined==params.labels){params.labels=1;}
+	if(undefined==params.legend){params.legend=1;}
 	if(undefined!=params.debug){console.log(params);}
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
@@ -544,11 +645,19 @@ function wd3PieChart(p,params){
 		//add containers for slices, labels and lines
 		svg.append("g")
 			.attr("class", "slices");
-		svg.append("g")
-			.attr("class", "labels");
-		svg.append("g")
-			.attr("class", "lines");
-
+		//labels?
+		if(params.labels==1){
+			svg.append("g")
+				.attr("class", "labels");
+			svg.append("g")
+				.attr("class", "lines");
+		}
+		//legend?
+		if(params.legend==1){
+			d3.select(p).append("div")
+				.attr("class", "legend")
+				.text("");
+		}
 		//set transform for svg
 		svg.attr("transform", "translate(" + params.width / 2 + "," + params.height / 2 + ")");
 
@@ -572,10 +681,12 @@ function wd3PieChart(p,params){
 			.outerRadius(radius * 0.85)
 			.innerRadius(0);
 	}
-	//construct arc for labels
-	var outerArc = d3.svg.arc()
-    	.innerRadius(radius * 0.9)
-		.outerRadius(radius * 0.9);
+	if(params.labels==1){
+		//construct arc for labels
+		var outerArc = d3.svg.arc()
+	    	.innerRadius(radius * 0.9)
+			.outerRadius(radius * 0.9);
+	}
 
 	//create key function since it will be used several places
 	var key = function(d){ return d.data.label; };
@@ -606,6 +717,8 @@ function wd3PieChart(p,params){
 				if(undefined!=params.debug){console.log('new slice:i='+i+',color='+color.range()[i]+', label='+d.data.label);}
 				return color.range()[i];
 			})
+			.style("stroke","#FFF")
+			.style("stroke-width","1px")
 			.attr("class", "slice");
 		slice.attr("data-percent", function(d) { return d.data.percent; });
 		slice.attr("data-value", function(d) { return d.data.value; });
@@ -644,68 +757,93 @@ function wd3PieChart(p,params){
 			});
 		//exit point
 		slice.exit().remove();
-	
-		/* ------- TEXT LABELS -------*/
-		var text = svg.select(".labels").selectAll("text")
-			.data(pie(data), key);
-		text.enter()
-			.append("text")
-			.attr("dy", ".35em")
-			.text(function(d) {
-				return d.data.label;
-			});
-		function midAngle(d){
-			return d.startAngle + (d.endAngle - d.startAngle)/2;
-		}
-	
-		text.transition().duration(1000)
-			.attrTween("transform", function(d) {
-				this._current = this._current || d;
-				var interpolate = d3.interpolate(this._current, d);
-				this._current = interpolate(0);
-				return function(t) {
-					var d2 = interpolate(t);
-					var pos = outerArc.centroid(d2);
-					if(midAngle(d2) < Math.PI){pos[0]=radius-12;}
-					else{pos[0]=(radius*-1)+12;}
-					//pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1)-10;
-					return "translate("+ pos +")";
-				};
-			})
-			.styleTween("text-anchor", function(d){
-				this._current = this._current || d;
-				var interpolate = d3.interpolate(this._current, d);
-				this._current = interpolate(0);
-				return function(t) {
-					var d2 = interpolate(t);
-					return midAngle(d2) < Math.PI ? "start":"end";
-				};
-			});
-	
-		text.exit().remove();
-	
-		/* ------- SLICE TO TEXT POLYLINES -------*/
-	
-		var polyline = svg.select(".lines").selectAll("polyline")
-			.data(pie(data), key);
+		if(params.labels==1){
+			/* ------- TEXT LABELS -------*/
+			var text = svg.select(".labels").selectAll("text")
+				.data(pie(data), key);
+			text.enter()
+				.append("text")
+				.attr("dy", ".35em")
+				.text(function(d) {
+					return d.data.label;
+				});
+			function midAngle(d){
+				return d.startAngle + (d.endAngle - d.startAngle)/2;
+			}
 		
-		polyline.enter()
-			.append("polyline");
-
-		polyline.transition().duration(1000)
-			.attrTween("points", function(d){
-				this._current = this._current || d;
-				var interpolate = d3.interpolate(this._current, d);
-				this._current = interpolate(0);
-				return function(t) {
-					var d2 = interpolate(t);
-					var pos = outerArc.centroid(d2);
-					pos[0] = radius * 0.91 * (midAngle(d2) < Math.PI ? 1 : -1);
-					return [arc.centroid(d2), outerArc.centroid(d2), pos];
-				};			
-			});
-
-		polyline.exit().remove();
+			text.transition().duration(1000)
+				.attrTween("transform", function(d) {
+					this._current = this._current || d;
+					var interpolate = d3.interpolate(this._current, d);
+					this._current = interpolate(0);
+					return function(t) {
+						var d2 = interpolate(t);
+						var pos = outerArc.centroid(d2);
+						if(midAngle(d2) < Math.PI){pos[0]=radius-12;}
+						else{pos[0]=(radius*-1)+12;}
+						//pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1)-10;
+						return "translate("+ pos +")";
+					};
+				})
+				.styleTween("text-anchor", function(d){
+					this._current = this._current || d;
+					var interpolate = d3.interpolate(this._current, d);
+					this._current = interpolate(0);
+					return function(t) {
+						var d2 = interpolate(t);
+						return midAngle(d2) < Math.PI ? "start":"end";
+					};
+				});
+		
+			text.exit().remove();
+		
+			/* ------- SLICE TO TEXT POLYLINES -------*/
+		
+			var polyline = svg.select(".lines").selectAll("polyline")
+				.data(pie(data), key);
+			
+			polyline.enter()
+				.append("polyline");
+	
+			polyline.transition().duration(1000)
+				.attrTween("points", function(d){
+					this._current = this._current || d;
+					var interpolate = d3.interpolate(this._current, d);
+					this._current = interpolate(0);
+					return function(t) {
+						var d2 = interpolate(t);
+						var pos = outerArc.centroid(d2);
+						pos[0] = radius * 0.91 * (midAngle(d2) < Math.PI ? 1 : -1);
+						return [arc.centroid(d2), outerArc.centroid(d2), pos];
+					};			
+				});
+	
+			polyline.exit().remove();
+		}
+		if(params.legend==1){
+			/* ------- TEXT legend -------*/
+			var legend = d3.select(p+" div.legend").selectAll("span.item")
+				.data(pie(data), key).enter()
+					.append("span")
+					.attr("class", "item")
+					.style("min-width","150px")
+					.attr("data-percent", function(d) { return d.data.percent; })
+					.attr("data-value", function(d) { return d.data.value; })
+					.attr("data-label", function(d) { return d.data.label; });
+			legend.append("span")
+					.attr("class", "icon-blank")
+					.style("color",function(d,i) {return color.range()[i];});
+			legend.insert("span")
+					.text(function(d) {return d.data.label;});
+			legend.on("mouseover", function() {
+					d3.select(p+' .title').text(d3.select(this).attr("data-percent")+'%');
+					});
+			legend.on("mouseout", function() {
+					d3.select(p+' .title').text("");
+					});
+			d3.select(p+" div.legend").selectAll("span.item")
+				.data(pie(data), key).exit().remove();
+		}
 	}
 	//pass in the data
 	if(undefined != params.csv){
