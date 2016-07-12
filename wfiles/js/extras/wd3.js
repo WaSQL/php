@@ -5,6 +5,304 @@
 	wd3BarChart for bar chart - label,value1,value2,value3,... each value is a new bar
 
 */
+//---------- begin function wd3MapChart--------------------
+/**
+* @describe creates[or updates] a map chart using d3
+* @param p selector string - specifies the parent element to append the chart to
+* @param params json
+*	data - data
+*	csv - url to csv data to load
+*	tsv - url to tsv data to load
+*	json - url to json data to load
+*	label - defines the column to use as the x value
+*	[width] - specifies width. If not specified, parent width is used
+*	[height] - specifies height. If not specified, parent height is used
+*	[padding] - defaults to 1
+*	[duration] - defaults to 1000 milliseconds
+* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
+* @return false
+*/
+var wd3MapChartMaps=new Array();
+function wd3MapChart(p,params){
+	if(undefined == d3){
+		alert('d3 library is not loaded');
+		return false;
+	}
+	if(undefined==p){p='body';}
+	var pObj=document.querySelector(p);
+	if(undefined == pObj){
+		console.log('wd3BarChart Error: undefined parent');
+		return;
+	}
+	if(undefined==params){params={};}
+	if(undefined==params.width){params.width=getWidth(pObj);}
+	if(undefined==params.height){params.height=getHeight(pObj);}
+	if(undefined==params.top){params.top=30;}
+	if(undefined==params.right){params.right=55;}
+	if(undefined==params.bottom){params.bottom=50;}
+	if(undefined==params.left){params.left=80;}
+	if(undefined==params.padding){params.padding=1;}
+	if(undefined==params.label){params.label='label';}
+	if(undefined==params.duration){params.duration=300;}
+	if(undefined!=params.debug){console.log(params);}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
+	var fills={
+			"1st": "#3399ff",
+			"2nd": "#805393",
+			"3rd": "#9c71ae",
+			"4th": "#ae8cbd",
+			"5th": "#c8afd2",
+			"6th": "#d9c8e0",
+			"defaultFill": "#e5e5e5"
+		};
+	console.log(p);
+	if(undefined == document.querySelector(p+' .datamap')){
+		var chartParams = {
+			"width":    params.width,
+			"height":    params.height,
+			"scope": "usa",
+			"fills": fills,
+			"element":document.querySelector(p),
+	    	data: {},
+	    	"legend": false,
+			"labels": true,
+			"id": "map",
+			"geographyConfig": {
+	 			"popupTemplate":  function(geography, data){
+	    			return '<div class=hoverinfo><strong>' + geography.properties.name +': ' + wd3NumberWithCommas(data.value) + '</strong></div>';
+	  			}
+			}
+		}
+	  	wd3MapChartMaps[p] = new Datamap(chartParams);
+	  	//add legend
+	  	if(chartParams.legend){wd3MapChartMaps[p].legend();}
+	  	//add labels
+	  	if(chartParams.labels){wd3MapChartMaps[p].labels();}
+	  	//add legend
+	  	d3.select(p).append("div")
+	      	.attr("class", "legend")
+	      	.text("");
+	    d3.select(p+' .legend').append("span").text('Most');
+	  	for (var key in fills) {
+  			console.log(key, fills[key]);
+  			d3.select(p+' .legend').append("span")
+	      		.attr("class", "icon-blank")
+	      		.attr("style", "color:"+fills[key]);
+		}
+		d3.select(p+' .legend').append("span").text('Least');
+ 	}
+	//pass in the data
+	if(undefined != params.csv){
+		if(undefined!=params.debug){console.log('loading csv');}
+		d3.csv(params.csv, function(error, data) {
+			var cdata = data;
+			for (var i=0;i<data.length;i++){
+                cdata[ cdata[i].id] = cdata[i] ;
+                delete  cdata[i].id;
+                delete  cdata[i] ;
+            }
+			wd3MapChartMaps[p].updateChoropleth(cdata);
+			});
+	}
+	else if(undefined != params.tsv){
+		if(undefined!=params.debug){console.log('loading tsv');}
+		d3.tsv(params.tsv, function(error, data) {
+			var cdata = data;
+			for (var i=0;i<data.length;i++){
+                cdata[ cdata[i].id] = cdata[i] ;
+                delete  cdata[i].id;
+                delete  cdata[i] ;
+            }
+			wd3MapChartMaps[p].updateChoropleth(cdata);
+			});
+	}
+	else if(undefined != params.json){
+		if(undefined!=params.debug){console.log('loading json');}
+		d3.json(params.json, function(error, data) {
+			var cdata = data;
+			for (var i=0;i<data.length;i++){
+                cdata[ cdata[i].id] = cdata[i] ;
+                delete  cdata[i].id;
+                delete  cdata[i] ;
+            }
+			wd3MapChartMaps[p].updateChoropleth(cdata);
+			});
+	}
+	else if(undefined != params.data){
+		if(undefined!=params.debug){console.log('loading data');}
+		wd3MapChartMaps[p].updateChoropleth(params.data);
+	}
+	return false;
+
+}
+function wd3NumberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+//---------- begin function wd3BarChart--------------------
+/**
+* @describe creates[or updates] a bar chart using d3
+* @param p selector string - specifies the parent element to append the chart to
+* @param params json
+*	data - data
+*	csv - url to csv data to load
+*	tsv - url to tsv data to load
+*	json - url to json data to load
+*	label - defines the column to use as the x value
+*	[width] - specifies width. If not specified, parent width is used
+*	[height] - specifies height. If not specified, parent height is used
+*	[padding] - defaults to 1
+*	[duration] - defaults to 1000 milliseconds
+* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
+* @return false
+*/
+function wd3BarChart(p,params){
+	if(undefined == d3){
+		alert('d3 library is not loaded');
+		return false;
+	}
+	if(undefined==p){p='body';}
+	var pObj=document.querySelector(p);
+	if(undefined == pObj){
+		console.log('wd3BarChart Error: undefined parent');
+		return;
+	}
+	if(undefined==params){params={};}
+	if(undefined==params.width){params.width=getWidth(pObj);}
+	if(undefined==params.height){params.height=getHeight(pObj);}
+	if(undefined==params.top){params.top=30;}
+	if(undefined==params.right){params.right=55;}
+	if(undefined==params.bottom){params.bottom=50;}
+	if(undefined==params.left){params.left=80;}
+	if(undefined==params.padding){params.padding=1;}
+	if(undefined==params.yticks){params.yticks=10;}
+	if(undefined==params.label){params.label='label';}
+	if(undefined==params.duration){params.duration=300;}
+	if(undefined!=params.debug){console.log(params);}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
+	params.width =params.width - params.left - params.right,
+	params.height = params.height - params.top - params.bottom;
+	var color = d3.scale.category20();
+	//scale x and y
+	var	x = d3.scale.ordinal().rangeRoundBands([0, params.width], .1);
+	var	y = d3.scale.linear().range([params.height, 0]);
+	//x axis ticks and optional format
+	var	xAxis = d3.svg.axis().scale(x)
+		.orient("bottom")
+		.ticks(params.xticks);
+	if(undefined != params.xformat){
+    	xAxis.tickFormat(d3.format(params.xformat));
+	}
+	//y axis ticks and optional format
+	var	yAxis = d3.svg.axis().scale(y)
+		.orient("left").ticks(params.yticks);
+	if(undefined != params.yformat){
+    	yAxis.tickFormat(d3.format(params.yformat));
+	}
+
+	if(undefined == document.querySelector(p+' svg')){
+		if(undefined!=params.debug){console.log('new bar chart - adding svg');}
+		//title - place on bottom if pie, middle if donut
+		d3.select(p).append("div")
+	      		.attr("class", "title text-center")
+	      		.text("");
+		// draw and append the container
+		var svg = d3.select(p).append("svg")
+    		.attr("width", params.width + params.left + params.right)
+    		.attr("height", params.height + params.top + params.bottom)
+  			.append("g")
+    			.attr("transform", "translate(" + params.left + "," + params.top + ")");
+
+		svg.append("g")
+    		.attr("class", "x axis")
+    		.attr("transform", "translate(0," + params.height + ")")
+
+		svg.append("g")
+    		.attr("class", "y axis")
+  			.append("text") // just for the title (ticks are automatic)
+    			.attr("transform", "rotate(-90)") // rotate the text!
+    			.attr("y", 6)
+    			.attr("dy", ".71em")
+    			.style("text-anchor", "end");
+	}
+	else{
+		if(undefined!=params.debug){console.log('existing chart - updating');}
+		var svg = d3.select(p+' svg');
+	}
+	//load the chart
+	function loadbar(data){
+		data.forEach(function(d) {
+			d.value 	= +d.value;
+			});
+		// measure the domain (for x, unique letters) (for y [0,maxFrequency])
+  		// now the scales are finished and usable
+  		x.domain(data.map(function(d) { return d.label; }));
+  		y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+		// another g element, this time to move the origin to the bottom of the svg element
+  		// someSelection.call(thing) is roughly equivalent to thing(someSelection[i])
+  		//   for everything in the selection\
+  		// the end result is g populated with text and lines!
+  		svg.select('.x.axis').transition().duration(300).call(xAxis)
+		  .selectAll("text") /* rotate x axis labels */
+    			.attr("y", 0)
+    			.attr("x", 9)
+    			.attr("dy", ".35em")
+    			.attr("transform", "rotate(90)")
+    			.style("text-anchor", "start");
+
+  		// same for yAxis but with more transform and a title
+  		svg.select(".y.axis").transition().duration(300).call(yAxis)
+
+  		// THIS IS THE ACTUAL WORK!
+  		var bars = svg.selectAll("rect").data(data, function(d) { return d.label; }); // (data) is an array/iterable thing, second argument is an ID generator function
+
+  		bars.exit()
+    		.transition()
+      			.duration(300)
+    		.attr("y", y(0))
+    		.attr("height", params.height - y(0))
+    		.style('fill-opacity', 1e-6)
+    		.remove();
+
+  		// data that needs DOM = enter() (a set/selection, not an event!)
+  		bars.enter().append("rect")
+    		.attr("fill", color.range()[0])
+    		.attr("y", y(0))
+    		.attr("height", params.height - y(0));
+
+  		// the "UPDATE" set:
+  		bars.transition().duration(300)
+		  	.attr("x", function(d) { return x(d.label); }) // (d) is one item from the data array, x is the scale object from above
+    		.attr("width", x.rangeBand()) // constant, so no callback function(d) here
+    		.attr("y", function(d) { return y(d.value); })
+    		.attr("height", function(d) { return params.height - y(d.value); }); // flip the height, because y's domain is bottom up, but SVG renders top down
+	}
+	//pass in the data
+	if(undefined != params.csv){
+		if(undefined!=params.debug){console.log('loading csv');}
+		d3.csv(params.csv, loadbar);
+	}
+	else if(undefined != params.tsv){
+		if(undefined!=params.debug){console.log('loading tsv');}
+		d3.tsv(params.tsv, loadbar);
+	}
+	else if(undefined != params.json){
+		if(undefined!=params.debug){console.log('loading json');}
+		d3.json(params.json, loadbar);
+	}
+	else if(undefined != params.data){
+		if(undefined!=params.debug){console.log('loading data');}
+		loadbar(params.data);
+	}
+	return false;
+
+}
 //---------- begin function wd3LineChart--------------------
 /**
 * @describe creates[or updates] a line chart using d3
@@ -38,6 +336,7 @@ function wd3LineChart(p,params){
 	if(undefined==params.width){params.width=getWidth(pObj);}
 	if(undefined==params.height){params.height=getHeight(pObj);}
 	if(undefined==params.padding){params.padding=1;}
+	if(undefined==params.yticks){params.yticks=10;}
 	if(undefined==params.label){params.label='label';}
 	if(undefined==params.duration){params.padding=1000;}
 	if(undefined!=params.debug){console.log(params);}
@@ -80,14 +379,14 @@ function wd3LineChart(p,params){
 	//x axis ticks and optional format
 	var	xAxis = d3.svg.axis().scale(x)
 		.orient("bottom").ticks(params.xticks);
-	if(undefined != xformat){
-    	xAxis.tickFormat(d3.format(xformat));
+	if(undefined != params.xformat){
+    	xAxis.tickFormat(d3.format(params.xformat));
 	}
 	//y axis ticks and optional format
 	var	yAxis = d3.svg.axis().scale(y)
 		.orient("left").ticks(params.yticks);
-	if(undefined != yformat){
-    	yAxis.tickFormat(d3.format(yformat));
+	if(undefined != params.yformat){
+    	yAxis.tickFormat(d3.format(params.yformat));
 	}
 
 	var valueline=new Array();
@@ -136,13 +435,13 @@ function wd3LineChart(p,params){
 		for(z=0;z<ykeys.length;z++){
 			svg.append("path")
 				.attr("class", "line")
-				.style("stroke", colors.range(z))
+				.style("stroke", color.range()[z])
 				.attr("d", valueline[z](data));
 		}
 		// Add the X Axis
 		svg.append("g")
 			.attr("class", "x-axis kpi")
-			.attr("transform", "translate(0," + height + ")")
+			.attr("transform", "translate(0," + params.height + ")")
 			.call(xAxis);
 		// Add the Y Axis
 		svg.append("g")
@@ -153,9 +452,9 @@ function wd3LineChart(p,params){
 	 	for(z=0;z<ykeys.length;z++){
 			svg.append("text")
 				.attr("x", 50*z)
-				.attr("y", height + margin.top+5)
+				.attr("y", params.height + params.top+5)
 				.attr("class", "legend")
-				.style("fill", colors.range(z))
+				.style("fill", color.range()[z])
 				.text(ykeys[z]);
 		}
 	}
