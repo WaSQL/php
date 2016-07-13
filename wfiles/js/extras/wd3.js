@@ -205,8 +205,8 @@ function wd3BarChart(p,params){
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
 	if(params.width < 20){params.width=300;}
-	params.width =params.width - params.left - params.right,
-	params.height = params.height - params.top - params.bottom;
+	//params.width =params.width - params.left - params.right,
+	//params.height = params.height - params.top - params.bottom;
 	var color = d3.scale.category20();
 	//scale x and y
 	var	x = d3.scale.ordinal().rangeRoundBands([0, params.width], .1);
@@ -257,7 +257,7 @@ function wd3BarChart(p,params){
 
 		svg.append("g")
     		.attr("class", "x axis")
-    		.attr("transform", "translate(0," + params.height + ")")
+    		.attr("transform", "translate(0," + params.height + ")");
 
 		svg.append("g")
     		.attr("class", "y axis")
@@ -266,7 +266,7 @@ function wd3BarChart(p,params){
     			.attr("y", 6)
     			.attr("dy", ".71em")
     			.style("text-anchor", "end");
-    	
+
     	if(undefined != params.rightvalue){
 			svg.append("g")
     		.attr("class", "y axisline")
@@ -372,7 +372,10 @@ function wd3BarChart(p,params){
   		// data that needs DOM = enter() (a set/selection, not an event!)
   		line.enter().append("path")
 			.attr("class", "line")
-			.attr("style","fill:none;stroke:"+linecolor+";stroke-width:3;z-index:999;")
+			.style("fill","none")
+			.style("stroke",linecolor)
+			.style("stroke-width","3")
+			.style("z-index","999")
 			.attr("d", rightline(data));
 
   		// the "UPDATE" set:
