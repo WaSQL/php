@@ -205,8 +205,8 @@ function wd3BarChart(p,params){
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
 	if(params.width < 20){params.width=300;}
-	//params.width =params.width - params.left - params.right,
-	//params.height = params.height - params.top - params.bottom;
+	params.width =params.width - params.left - params.right,
+	params.height = params.height - params.top - params.bottom;
 	var color = d3.scale.category20();
 	//scale x and y
 	var	x = d3.scale.ordinal().rangeRoundBands([0, params.width], .1);
