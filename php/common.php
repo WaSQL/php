@@ -951,6 +951,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 */
 function buildFormText($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['inputtype'])){$params['-type']=$params['inputtype'];}
 	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
