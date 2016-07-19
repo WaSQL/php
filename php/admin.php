@@ -1534,6 +1534,7 @@ if(isset($_REQUEST['_menu'])){
 				echo buildTableTD(array("<b>{$key}</b>",$val),array('valign'=>'top'));
             	}
             echo buildTableTD(array("<b>SessionID</b>",session_id()),array('valign'=>'top'));
+			echo buildTableTD(array("<b>Auth Key</b>",$USER['_auth']),array('valign'=>'top'));
             echo buildTableEnd();
 			break;
 		case 'settings':
