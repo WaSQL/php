@@ -8266,7 +8266,12 @@ function loadExtrasJs($extras){
 				$extra='html5';
 			break;
 			case 'wd3':
-				$_SESSION['w_MINIFY']['extras_js'][]='https://d3js.org/d3.v3.min.js';
+				if($CONFIG['minify_js']){
+					$_SESSION['w_MINIFY']['extras_js'][]='https://d3js.org/d3.v3.min.js';
+				}
+				else{
+                	$_SESSION['w_MINIFY']['extras_js'][]='https://d3js.org/d3.v3.js';
+				}
 			break;
         	case 'codemirror':
         	case 'tcal':

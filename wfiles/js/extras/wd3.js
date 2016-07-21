@@ -5,6 +5,215 @@
 	wd3BarChart for bar chart - label,value1,value2,value3,... each value is a new bar
 
 */
+//---------- begin function wd3LineChart--------------------
+/**
+* @describe creates[or updates] a line chart using d3
+* @param p selector string - specifies the parent element to append the chart to
+* @param params json
+*	data - data
+*	csv - url to csv data to load
+*	tsv - url to tsv data to load
+*	json - url to json data to load
+*	label - defines the column to use as the x value
+*	[width] - specifies width. If not specified, parent width is used
+*	[height] - specifies height. If not specified, parent height is used
+*	[padding] - defaults to 1
+*	[duration] - defaults to 1000 milliseconds
+* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
+* @return false
+*/
+function wd3LineChart(p,params){
+	if(undefined==p){p='body';}
+	var pObj=document.querySelector(p);
+	if(undefined == pObj){
+		console.log('wd3PieChart Error: undefined parent');
+		return;
+	}
+	if(undefined==params){params={};}
+	if(undefined==params.top){params.top=20;}
+	if(undefined==params.right){params.right=20;}
+	if(undefined==params.bottom){params.bottom=30;}
+	if(undefined==params.left){params.left=50;}
+	if(undefined==params.width){params.width=getWidth(pObj)-params.left-params.right;}
+	if(undefined==params.height){params.height=getHeight(pObj)-params.top-params.bottom;}
+	if(undefined==params.padding){params.padding=1;}
+	if(undefined==params.yticks){params.yticks=Math.round(params.height/30);}
+	if(undefined==params.xticks){params.xticks=Math.round(params.width/30);}
+	if(undefined==params.xtype){params.xtype='date';}
+	if(undefined==params.label){params.label='label';}
+	if(undefined==params.duration){params.padding=10;}
+	if(undefined!=params.debug){console.log(params);}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
+	//load colors
+	var color = d3.scale.category10();
+
+    var yAxisLabelOffset = 40;
+
+    var innerWidth  = params.width  - params.left - params.right;
+    var innerHeight = params.height - params.top  - params.bottom;
+	//console.log(p,innerWidth,innerHeight,params);
+	if(undefined == document.querySelector(p+' svg')){
+	    var svg = d3.select(p).append("svg")
+	    	.attr("width", params.width)
+	        .attr("height", params.height);
+	    var g = svg.append("g")
+        	.attr("transform", "translate(" + params.left + "," + params.top + ")")
+			.attr("data-g","one");
+		var legend = d3.select(p).append("div")
+			.attr("class","legend")
+			.style("margin-left",params.left+'px')
+			.style("margin-right",params.right+'px');
+
+      	var xAxisG = g.append("g")
+        	.attr("class", "x axis")
+        	.attr("transform", "translate(0," + innerHeight + ")")
+
+      	var yAxisG = g.append("g")
+        	.attr("class", "y axis");
+      	var yAxisLabel = yAxisG.append("text")
+        	.style("text-anchor", "middle")
+        	.attr("transform", "translate(-" + yAxisLabelOffset + "," + (innerHeight / 2) + ") rotate(-90)")
+        	.attr("class", "label")
+        	.text(params.label)
+				.attr("fill","grey");
+		}
+		else{
+			var svg = d3.select(p+' svg');
+			var legend = d3.select(p+' div.legend');
+			var g = d3.select(p+' svg g[data-g=one]');
+			var path = d3.select(p+' svg g[data-g=one] path');
+			var xAxisG = d3.select(p+' svg g.x.axis');
+			var xAxisLabel = d3.select(p+' svg g.x.axis text');
+			var yAxisG = d3.select(p+' svg g.y.axis');
+			var yAxisLabel = d3.select(p+' svg g.y.axis text');
+
+		}
+      var xScale = d3.time.scale().range([0, innerWidth]);
+      var yScale = d3.scale.linear().range([innerHeight, 0]);
+
+      var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
+        .ticks(5)
+        .outerTickSize(0);
+      var yAxis = d3.svg.axis().scale(yScale).orient("left")
+        .ticks(5)
+        .tickFormat(d3.format("s"))
+        .outerTickSize(0);
+
+  	//render function
+	function loadline(data){
+		var keys=Object.keys(data[0]);
+		var ykeys=new Array();
+		for(var z=0;z<keys.length;z++){
+			var ckey=keys[z];
+			if(keys[z] != params.label){ykeys.push(keys[z]);}
+		}
+		data.forEach(function(d) {
+			d[params.label] = new Date(d[params.label]);
+			for(var z=0;z<ykeys.length;z++){
+				var ykey=ykeys[z];
+				d[ykey]=+d[ykey];
+			}
+		});
+		var lines=new Array();
+	  	for(var z=0;z<ykeys.length;z++){
+			var ykey=ykeys[z];
+    		lines[ykey] = d3.svg.line()
+    			.interpolate("basis")
+        		.x(function(d) { return xScale(d[params.label]); })
+        		.y(function(d) { return yScale(+d[ykey]); });
+	  	}
+
+		//extent gets the min and max from the data
+		xScale.domain(d3.extent(data, function (d){ return d[params.label]; }));
+        yScale.domain([
+			d3.min(data, function(d) {
+				var ydata=new Array();
+				for(var z=0;z<ykeys.length;z++){
+					var ykey=ykeys[z];
+					ydata.push(+d[ykey]);
+				}
+				return Math.min.apply(null,ydata);
+				})+-1,
+			d3.max(data, function(d) {
+				var ydata=new Array();
+				for(var z=0;z<ykeys.length;z++){
+					var ykey=ykeys[z];
+					ydata.push(+d[ykey]);
+				}
+				return Math.max.apply(null,ydata);
+				})+1
+		]);
+
+        xAxisG.call(xAxis);
+        yAxisG.call(yAxis);
+        //get all existing lines so we can remove the ones no longer in the data
+        var plines=g.selectAll("path.line")[0];
+        legend.selectAll("span").remove();
+        for(var z=0;z<ykeys.length;z++){
+			var ykey=ykeys[z];
+			//add legend
+			var clegend=legend.append("span");
+			clegend.append("span")
+				.attr("class","icon-blank")
+				.style("color",color.range()[z]);
+			clegend.append("span")
+					.text(' '+ykey+' ');
+			var linegraph = g.selectAll("path.line."+ykey);
+			//remove this line from the plines array that we will remove below
+			for(var b=0;b<plines.length;b++){
+				if(undefined == plines[b].getAttribute('class')){continue;}
+				var val=plines[b].getAttribute('class');
+				if(undefined == val){continue;}
+				var s=val.indexOf(ykey);
+            	if(s != -1){plines.splice(b,1);}
+			}
+			//add lines that do not exist yet
+			if(linegraph.empty()){
+				linegraph = g.append("path")
+					.attr("class", "line "+ykey)
+					.style("stroke",color.range()[z])
+					.style("fill","none")
+					.style("stroke-width","2px");
+			}
+			//transition the lines with the new data
+ 			linegraph
+		        .transition()
+		        .ease("linear")
+		        .duration(500)
+		        .attr("d", lines[ykey](data));
+		}
+		//remove lines no longer in the data
+		for(var b=0;b<plines.length;b++){
+        	plines[b].remove();
+		}
+	}
+	//pass in the data
+	if(undefined != params.csv){
+		if(undefined!=params.debug){console.log('loading csv');}
+		d3.csv(params.csv, loadline);
+	}
+	else if(undefined != params.tsv){
+		if(undefined!=params.debug){console.log('loading tsv');}
+		d3.tsv(params.tsv, loadline);
+	}
+	else if(undefined != params.json){
+		if(undefined!=params.debug){console.log('loading json');}
+		d3.json(params.json, loadline);
+	}
+	else if(undefined != params.data){
+		if(undefined!=params.debug){console.log('loading data');}
+		loadline(params.data);
+	}
+	else{
+		if(undefined!=params.debug){console.log('loading random data');}
+    	loadline(wd3RandomLineData());
+	}
+	return false;
+}
+
 //---------- begin function wd3MapChart--------------------
 /**
 * @describe creates[or updates] a map chart using d3
@@ -404,184 +613,6 @@ function wd3BarChart(p,params){
 
 	return false;
 
-}
-//---------- begin function wd3LineChart--------------------
-/**
-* @describe creates[or updates] a line chart using d3
-* @param p selector string - specifies the parent element to append the chart to
-* @param params json
-*	data - data
-*	csv - url to csv data to load
-*	tsv - url to tsv data to load
-*	json - url to json data to load
-*	label - defines the column to use as the x value
-*	[width] - specifies width. If not specified, parent width is used
-*	[height] - specifies height. If not specified, parent height is used
-*	[padding] - defaults to 1
-*	[duration] - defaults to 1000 milliseconds
-* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
-*	[debug] - writes console.log messages for debugging purposes
-* @return false
-*/
-function wd3LineChart(p,params){
-	if(undefined == d3){
-		alert('d3 library is not loaded');
-		return false;
-	}
-	if(undefined==p){p='body';}
-	var pObj=document.querySelector(p);
-	if(undefined == pObj){
-		console.log('wd3PieChart Error: undefined parent');
-		return;
-	}
-	if(undefined==params){params={};}
-	if(undefined==params.width){params.width=getWidth(pObj);}
-	if(undefined==params.height){params.height=getHeight(pObj);}
-	if(undefined==params.padding){params.padding=1;}
-	if(undefined==params.yticks){params.yticks=10;}
-	if(undefined==params.label){params.label='label';}
-	if(undefined==params.duration){params.padding=1000;}
-	if(undefined!=params.debug){console.log(params);}
-	//do not allow zero height or width
-	if(params.height < 20){params.height=300;}
-	if(params.width < 20){params.width=300;}
-	var color = d3.scale.category20();
-	//check to see if it already exists
-	if(undefined == document.querySelector(p+' svg')){
-		if(undefined!=params.debug){console.log('new chart - adding svg');}
-		//title - place on bottom if pie, middle if donut
-		d3.select(p).append("div")
-	      		.attr("class", "title text-center")
-	      		.text("");
-		// draw and append the container
-		var svg = d3.select(p).append("svg")
-			.attr("width", params.width)
-			.attr("height", params.height)
-			.append("g");
-
-		//add containers for slices, labels and lines
-		svg.append("g")
-			.attr("class", "slices");
-		svg.append("g")
-			.attr("class", "labels");
-		svg.append("g")
-			.attr("class", "lines");
-
-		//set transform for svg
-		svg.attr("transform", "translate(" + params.width / 2 + "," + params.height / 2 + ")");
-
-	}
-	else{
-		if(undefined!=params.debug){console.log('existing chart - updating');}
-		var svg = d3.select(p+' svg');
-	}
-	//scale x and y
-	var	x = d3.scale.linear().range([0, params.width]);
-	var	y = d3.scale.linear().range([params.height, 0]);
-	//x axis ticks and optional format
-	var	xAxis = d3.svg.axis().scale(x)
-		.orient("bottom").ticks(params.xticks);
-	if(undefined != params.xformat){
-    	xAxis.tickFormat(d3.format(params.xformat));
-	}
-	//y axis ticks and optional format
-	var	yAxis = d3.svg.axis().scale(y)
-		.orient("left").ticks(params.yticks);
-	if(undefined != params.yformat){
-    	yAxis.tickFormat(d3.format(params.yformat));
-	}
-
-	var valueline=new Array();
-	for(var z=0;z<10;z++){
-		valueline[z] = d3.svg.line()
-			.interpolate("basis")
-			.x(function(d) { return x(d.xval); })
-			.y(function(d,z) {var ykey=ykeys[z]; return y(d[ykey]); });
-	}
-
-	function loadline(data){
-		var keys = Object.keys(data[0]);
-		ykeys=new Array();
-		for(i=0;i<keys.length;i++){
-        	var ckey=keys[i];
-        	if(ckey!=params.label){ykeys.push(ckey);}
-		}
-		data.forEach(function(d) {
-			d.xval 	= +d[params.label];
-			for(i=0;i<ykeys.length;i++){
-				var ykey=ykeys[i];
-				d[ykey]=+d[ykey];
-			}
-		});
-
-		// Scale the range of the data
-		x.domain(d3.extent(data, function(d) { return d.xval; }));
-		y.domain([
-			d3.min(data, function(d) {
-				var ydata=new Array();
-				for(i=0;i<ykeys.length;i++){
-					var ykey=ykeys[i];
-					ydata.push(+d[ykey]);
-				}
-				return Math.min.apply(null,ydata); })+-1,
-			d3.max(data, function(d) {
-				var ydata=new Array();
-				for(i=0;i<ykeys.length;i++){
-					var ykey=ykeys[i];
-					ydata.push(+d[ykey]);
-				}
-				return Math.max.apply(null,ydata);
-				 })+1
-		]);
-		// Add the valueline for each ykey
-		for(z=0;z<ykeys.length;z++){
-			svg.append("path")
-				.attr("class", "line")
-				.style("stroke", color.range()[z])
-				.attr("d", valueline[z](data));
-		}
-		// Add the X Axis
-		svg.append("g")
-			.attr("class", "x-axis kpi")
-			.attr("transform", "translate(0," + params.height + ")")
-			.call(xAxis);
-		// Add the Y Axis
-		svg.append("g")
-			.attr("class", "y-axis kpi")
-			.call(yAxis);
-
-	 	// Add the legends
-	 	for(z=0;z<ykeys.length;z++){
-			svg.append("text")
-				.attr("x", 50*z)
-				.attr("y", params.height + params.top+5)
-				.attr("class", "legend")
-				.style("fill", color.range()[z])
-				.text(ykeys[z]);
-		}
-	}
-	//pass in the data
-	if(undefined != params.csv){
-		if(undefined!=params.debug){console.log('loading csv');}
-		d3.csv(params.csv, loadline);
-	}
-	else if(undefined != params.tsv){
-		if(undefined!=params.debug){console.log('loading tsv');}
-		d3.tsv(params.tsv, loadline);
-	}
-	else if(undefined != params.json){
-		if(undefined!=params.debug){console.log('loading json');}
-		d3.json(params.json, loadline);
-	}
-	else if(undefined != params.data){
-		if(undefined!=params.debug){console.log('loading data');}
-		loadline(params.data);
-	}
-	else{
-		if(undefined!=params.debug){console.log('loading random data');}
-    	loadline(wd3RandomLineData());
-	}
-	return false;
 }
 
 //---------- begin function wd3PieChart--------------------
