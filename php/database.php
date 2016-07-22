@@ -6001,6 +6001,10 @@ function getDBRecords($params=array()){
 	$function='getDBRecords';
 	global $CONFIG;
 	global $databaseCache;
+	//check for just a query instead of a params array and convert it getDBRecords($query)
+	if(!is_array($params) && is_string($params)){
+    	$params=array('-query'=>$params);
+	}
 	//change database if requested
 	if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 		if(!databaseSelectDb($params['-dbname'])){
