@@ -7,6 +7,24 @@ $progpath=dirname(__FILE__);
 //http://code.google.com/apis/analytics/docs/gdata/1.0/gdataProtocol.html#retrievingData
 //http://code.google.com/apis/analytics/docs/gdata/gdataReferenceDimensionsMetrics.html
 include_once("$progpath/google/GoogleCalendarWrapper.php");
+
+/*
+	go to https://console.developers.google.com for an apikey
+*/
+function googleTranslate($apikey,$text,$target,$source='en'){
+	if(!isset($params['-apikey'])){return "No apikey";}
+	if(!isset($params['-text'])){return "No text";}
+	if(!isset($params['-target'])){return "No target";}
+	//default source to en
+	if(!isset($params['-source'])){$params['-source']='en';}
+    $url = "https://www.googleapis.com/language/translate/v2?key={$params['-apikey']}&q=".rawurlencode($params['-text'])."&source={$params['-source']}&target={$params['-target']}";
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($handle);
+    $responseDecoded = json_decode($response, true);
+    curl_close($handle);
+	return $responseDecoded['data']['translations'][0]['translatedText'];
+}
 //------------------
 function googleGetLatLon($address){
 	//info: return the Latitude and Longitude of the address specified.
