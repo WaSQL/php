@@ -27,7 +27,7 @@ function wd3LineChart(p,params){
 	if(undefined==p){p='body';}
 	var pObj=document.querySelector(p);
 	if(undefined == pObj){
-		console.log('wd3PieChart Error: undefined parent');
+		console.log('wd3LineChart Error: undefined parent');
 		return;
 	}
 	if(undefined==params){params={};}
@@ -97,10 +97,15 @@ function wd3LineChart(p,params){
       var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
         .ticks(5)
         .outerTickSize(0);
+      if(undefined != params.xformat){
+    		xAxis.tickFormat(d3.format(params.xformat));
+		}
       var yAxis = d3.svg.axis().scale(yScale).orient("left")
         .ticks(5)
-        .tickFormat(d3.format("s"))
         .outerTickSize(0);
+        if(undefined != params.yformat){
+    		yAxis.tickFormat(d3.format(params.yformat));
+		}
 
   	//render function
 	function loadline(data){
@@ -238,7 +243,7 @@ function wd3MapChart(p,params){
 	if(undefined==p){p='body';}
 	var pObj=document.querySelector(p);
 	if(undefined == pObj){
-		console.log('wd3BarChart Error: undefined parent');
+		console.log('wd3MapChart Error: undefined parent');
 		return;
 	}
 	if(undefined==params){params={};}
