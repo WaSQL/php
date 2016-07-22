@@ -1606,7 +1606,8 @@ function showHide(id,scr){
 		}
     else{cObj.style.display='none';}
     if(undefined != scr && scr==1){showOnScreen(id);}
-	}
+    return false;
+}
 function showHideMobile(divid){
 	var s=document.getElementById(divid).style;
 	if(s.display=='block'){s.display='none';}
