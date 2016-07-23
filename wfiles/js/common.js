@@ -1584,7 +1584,8 @@ function hideId(id){
 	var cObj=getObject(id);
     if(undefined == cObj){return abort("undefined object passed to hideId:"+id);}
     cObj.style.display='none';
-	}
+	return false;
+}
 /* showDrop */
 function showDrop(oid,h){
 	var navEls = GetElementsByAttribute('div','id',oid);
@@ -1612,7 +1613,8 @@ function showHideMobile(divid){
 	var s=document.getElementById(divid).style;
 	if(s.display=='block'){s.display='none';}
 	else{s.display='block';}
-	}
+	return false;
+}
 
 // showProperties - shows the properties of any element
 function showProperties(obj,id,v){
