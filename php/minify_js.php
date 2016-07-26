@@ -291,7 +291,11 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] > 0){
 	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field));
 	$content=evalPHP($rec[$field]);
-	if(strlen(trim($content)) > 10){
+	$error='';
+	if($field=='js_min' && preg_match('/Error\: Unexpected token/',$content)){
+		$error=' -- ERROR Minifying Js on Page';
+	}
+	if(!strlen($error) && strlen(trim($content)) > 10){
 		$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
 		echo "\r\n/* BEGIN _pages {$field} */\r\n";
 		echo minifyLines($content);
@@ -301,7 +305,7 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
-			echo "\r\n/* BEGIN _pages {$field2} */\r\n";
+			echo "\r\n/* BEGIN _pages {$field2} {$error} */\r\n";
 			echo minifyLines($content);
 		}
 	}
