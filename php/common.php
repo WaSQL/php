@@ -1073,7 +1073,7 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
-    	$params['-value']=date('h:i:s',strtotime($params['-value']));
+    	$params['-value']=date('H:i:s',strtotime($params['-value']));
 	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
