@@ -932,66 +932,68 @@ function initBehaviors(ajaxdiv){
 			addClass(this,'active');
 		}
 	}
-	//look for data-toggle modal
-	var navbars=document.querySelectorAll('[data-toggle="modal"]');
-	for (var n=0; n<navbars.length; n++){
-    	navbars[n].onclick=function(e){
-			cancel(e);
-        	var t=this.getAttribute('data-target');
-        	var tdiv=getObject(t);
-        	var state=tdiv.getAttribute('aria-hidden');
-        	switch(state.toLowerCase()){
-            	case 'f':
-            	case 'false':
-            	case 0:
-            		tdiv.setAttribute('aria-hidden','true');
-            		removeClass(tdiv,'in');
-            	break;
-            	default:
-            		tdiv.setAttribute('aria-hidden','false');
-            		addClass(tdiv,'in');
-            	break;
-			}
-			return false;
-		};
-	}
-	//look for data-toggle modal
-	var navbars=document.querySelectorAll('[data-toggle="dropdown"]');
-	for (var n=0; n<navbars.length; n++){
-    	navbars[n].onclick=function(e){
-			cancel(e);
-        	var p=getParent(this);
-        	if(undefined != p){
-            	if(p.className.indexOf('open')==-1){
-                	addClass(p,'open');
+	if(!window.jQuery){
+		//look for data-toggle modal
+		var navbars=document.querySelectorAll('[data-toggle="modal"]');
+		for (var n=0; n<navbars.length; n++){
+	    	navbars[n].onclick=function(e){
+				cancel(e);
+	        	var t=this.getAttribute('data-target');
+	        	var tdiv=getObject(t);
+	        	var state=tdiv.getAttribute('aria-hidden');
+	        	switch(state.toLowerCase()){
+	            	case 'f':
+	            	case 'false':
+	            	case 0:
+	            		tdiv.setAttribute('aria-hidden','true');
+	            		removeClass(tdiv,'in');
+	            	break;
+	            	default:
+	            		tdiv.setAttribute('aria-hidden','false');
+	            		addClass(tdiv,'in');
+	            	break;
 				}
-				else{
-					removeClass(p,'open');
+				return false;
+			};
+		}
+		//look for data-toggle modal
+		var navbars=document.querySelectorAll('[data-toggle="dropdown"]');
+		for (var n=0; n<navbars.length; n++){
+	    	navbars[n].onclick=function(e){
+				cancel(e);
+	        	var p=getParent(this);
+	        	if(undefined != p){
+	            	if(p.className.indexOf('open')==-1){
+	                	addClass(p,'open');
+					}
+					else{
+						removeClass(p,'open');
+					}
 				}
-			}
-			return false;
-		};
-	}
-	//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
-	var navbars=document.querySelectorAll('[data-toggle="collapse"]');
-	for (var n=0; n<navbars.length; n++){
-    	navbars[n].onclick=function(){
-        	var t=this.getAttribute('data-target');
-        	var tdiv=document.querySelector(t);
-        	var state=this.getAttribute('aria-expanded');
-        	switch(state.toLowerCase()){
-            	case 'f':
-            	case 'false':
-            	case 0:
-            		this.setAttribute('aria-expanded','true');
-            		addClass(tdiv,'in');
-            	break;
-            	default:
-            		this.setAttribute('aria-expanded','false');
-            		removeClass(tdiv,'in');
-            	break;
-			}
-		};
+				return false;
+			};
+		}
+		//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
+		var navbars=document.querySelectorAll('[data-toggle="collapse"]');
+		for (var n=0; n<navbars.length; n++){
+	    	navbars[n].onclick=function(){
+	        	var t=this.getAttribute('data-target');
+	        	var tdiv=document.querySelector(t);
+	        	var state=this.getAttribute('aria-expanded');
+	        	switch(state.toLowerCase()){
+	            	case 'f':
+	            	case 'false':
+	            	case 0:
+	            		this.setAttribute('aria-expanded','true');
+	            		addClass(tdiv,'in');
+	            	break;
+	            	default:
+	            		this.setAttribute('aria-expanded','false');
+	            		removeClass(tdiv,'in');
+	            	break;
+				}
+			};
+		}
 	}
 	var navEls = GetElementsByAttribute('*', 'data-behavior', '.+');
 	var navEls2 = GetElementsByAttribute('*', '_behavior', '.+');
