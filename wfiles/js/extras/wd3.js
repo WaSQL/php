@@ -78,11 +78,9 @@ function wd3LineChart(p,params){
       	var yAxisLabel = yAxisG.append("text")
         	.style("text-anchor", "middle")
         	.attr("transform", "translate(-" + yAxisLabelOffset + "," + (innerHeight / 2) + ") rotate(-90)")
-        	.attr("class", "label")
-        	.text(params.label)
-				.attr("fill","grey");
+        	.attr("class", "label");
 		}
-		else{
+	else{
 			var svg = d3.select(p+' svg');
 			var legend = d3.select(p+' div.legend');
 			var g = d3.select(p+' svg g[data-g=one]');
@@ -92,7 +90,7 @@ function wd3LineChart(p,params){
 			var yAxisG = d3.select(p+' svg g.y.axis');
 			var yAxisLabel = d3.select(p+' svg g.y.axis text');
 
-		}
+	}
 	  if(undefined != params.xtype && params.xtype=='date'){
 	  		var xScale = d3.time.scale().range([0, innerWidth]);
 	  }
