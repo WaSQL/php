@@ -91,28 +91,29 @@ function wd3LineChart(p,params){
 			var yAxisLabel = d3.select(p+' svg g.y.axis text');
 
 	}
-	  if(undefined != params.xtype && params.xtype=='date'){
-	  		var xScale = d3.time.scale().range([0, innerWidth]);
-	  }
-	  else{
-	  		var xScale = d3.scale.linear().range([0, innerWidth]);
-		}
-	  var yScale = d3.scale.linear().range([innerHeight, 0]);
-
-
-      var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
+	//x and y axis scale
+	switch(params.xtype.toLowerCase()){
+		case 'num':
+			var xScale = d3.scale.linear().range([0, innerWidth]);
+		break;
+		default:
+			var xScale = d3.time.scale().range([0, innerWidth]);
+		break;
+	}
+	var yScale = d3.scale.linear().range([innerHeight, 0]);
+	
+	var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
         .ticks(5)
         .outerTickSize(0);
-      if(undefined != params.xformat){
-    		xAxis.tickFormat(d3.format(params.xformat));
-		}
-      var yAxis = d3.svg.axis().scale(yScale).orient("left")
+    if(undefined != params.xformat){
+    	xAxis.tickFormat(d3.format(params.xformat));
+	}
+    var yAxis = d3.svg.axis().scale(yScale).orient("left")
         .ticks(5)
         .outerTickSize(0);
-        if(undefined != params.yformat){
-    		yAxis.tickFormat(d3.format(params.yformat));
-		}
-
+    if(undefined != params.yformat){
+    	yAxis.tickFormat(d3.format(params.yformat));
+	}
   	//render function
 	function loadline(data){
 		var keys=Object.keys(data[0]);
@@ -122,9 +123,15 @@ function wd3LineChart(p,params){
 			if(keys[z] != params.label){ykeys.push(keys[z]);}
 		}
 		data.forEach(function(d) {
-			if(undefined != params.xtype && params.xtype=='date'){
-				d[params.label] = new Date(d[params.label]);
+			switch(params.xtype.toLowerCase()){
+				case 'num':
+					d[params.label]=+d[params.label];
+				break;
+				case 'date':
+					d[params.label] = new Date(d[params.label]);
+				break;
 			}
+
 			for(var z=0;z<ykeys.length;z++){
 				var ykey=ykeys[z];
 				d[ykey]=+d[ykey];
