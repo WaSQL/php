@@ -93,9 +93,14 @@ function wd3LineChart(p,params){
 			var yAxisLabel = d3.select(p+' svg g.y.axis text');
 
 		}
-	  var xScale = d3.scale.linear().range([0, innerWidth]);
-      //var xScale = d3.time.scale().range([0, innerWidth]);
-      var yScale = d3.scale.linear().range([innerHeight, 0]);
+	  if(undefined != params.xtype && params.xtype=='date'){
+	  		var xScale = d3.time.scale().range([0, innerWidth]);
+	  }
+	  else{
+	  		var xScale = d3.scale.linear().range([0, innerWidth]);
+		}
+	  var yScale = d3.scale.linear().range([innerHeight, 0]);
+
 
       var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
         .ticks(5)
@@ -112,22 +117,26 @@ function wd3LineChart(p,params){
 
   	//render function
 	function loadline(data){
-		if(undefined!=params.debug){console.log('loadline function:',data);}
 		var keys=Object.keys(data[0]);
-		if(undefined!=params.debug){console.log('keys:',keys);}
 		var ykeys=new Array();
 		for(var z=0;z<keys.length;z++){
 			var ckey=keys[z];
 			if(keys[z] != params.label){ykeys.push(keys[z]);}
 		}
 		data.forEach(function(d) {
-			d[params.label] = new Date(d[params.label]);
+			if(undefined != params.xtype && params.xtype=='date'){
+				d[params.label] = new Date(d[params.label]);
+			}
 			for(var z=0;z<ykeys.length;z++){
 				var ykey=ykeys[z];
 				d[ykey]=+d[ykey];
 			}
 		});
-		if(undefined!=params.debug){console.log('data:',data);}
+		if(undefined!=params.debug){
+			console.log('data:',data);
+			console.log('ykeys:',ykeys);
+			console.log('label:',params.label);
+		}
 		var lines=new Array();
 	  	for(var z=0;z<ykeys.length;z++){
 			var ykey=ykeys[z];
