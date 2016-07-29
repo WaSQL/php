@@ -43,10 +43,10 @@ function wd3LineChart(p,params){
 	if(undefined==params.xtype){params.xtype='date';}
 	if(undefined==params.label){params.label='label';}
 	if(undefined==params.duration){params.padding=10;}
-	if(undefined!=params.debug){console.log(params);}
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
 	if(params.width < 20){params.width=300;}
+	if(undefined!=params.debug){console.log('Params:',params);}
 	//load colors
 	var color = d3.scale.category10();
 
@@ -54,6 +54,8 @@ function wd3LineChart(p,params){
 
     var innerWidth  = params.width  - params.left - params.right;
     var innerHeight = params.height - params.top  - params.bottom;
+    if(undefined!=params.debug){console.log('innerWidth:',innerWidth);}
+    if(undefined!=params.debug){console.log('innerHeight:',innerHeight);}
 	//console.log(p,innerWidth,innerHeight,params);
 	if(undefined == document.querySelector(p+' svg')){
 	    var svg = d3.select(p).append("svg")
@@ -91,7 +93,8 @@ function wd3LineChart(p,params){
 			var yAxisLabel = d3.select(p+' svg g.y.axis text');
 
 		}
-      var xScale = d3.time.scale().range([0, innerWidth]);
+	  var xScale = d3.scale.linear().range([0, innerWidth]);
+      //var xScale = d3.time.scale().range([0, innerWidth]);
       var yScale = d3.scale.linear().range([innerHeight, 0]);
 
       var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
@@ -109,7 +112,9 @@ function wd3LineChart(p,params){
 
   	//render function
 	function loadline(data){
+		if(undefined!=params.debug){console.log('loadline function:',data);}
 		var keys=Object.keys(data[0]);
+		if(undefined!=params.debug){console.log('keys:',keys);}
 		var ykeys=new Array();
 		for(var z=0;z<keys.length;z++){
 			var ckey=keys[z];
@@ -122,6 +127,7 @@ function wd3LineChart(p,params){
 				d[ykey]=+d[ykey];
 			}
 		});
+		if(undefined!=params.debug){console.log('data:',data);}
 		var lines=new Array();
 	  	for(var z=0;z<ykeys.length;z++){
 			var ykey=ykeys[z];
