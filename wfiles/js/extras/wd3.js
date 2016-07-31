@@ -48,7 +48,7 @@ function wd3LineChart(p,params){
 	if(params.width < 20){params.width=300;}
 	if(undefined!=params.debug){console.log('Params:',params);}
 	//load colors
-	var color = d3.scale.category10();
+	var color = d3.scale.category20();
 
     var yAxisLabelOffset = 40;
 
@@ -70,11 +70,17 @@ function wd3LineChart(p,params){
 			.style("margin-right",params.right+'px');
 
       	var xAxisG = g.append("g")
-        	.attr("class", "x axis")
+        	.style("stroke",'grey')
+			.style("fill","none")
+			.style("stroke-width","1px")
+			.attr("class","x-axis")
         	.attr("transform", "translate(0," + innerHeight + ")")
 
       	var yAxisG = g.append("g")
-        	.attr("class", "y axis");
+        	.attr("class", "y-axis")
+			.style("stroke",'grey')
+			.style("fill","none")
+			.style("stroke-width","1px");
       	var yAxisLabel = yAxisG.append("text")
         	.style("text-anchor", "middle")
         	.attr("transform", "translate(-" + yAxisLabelOffset + "," + (innerHeight / 2) + ") rotate(-90)")
@@ -85,10 +91,10 @@ function wd3LineChart(p,params){
 			var legend = d3.select(p+' div.legend');
 			var g = d3.select(p+' svg g[data-g=one]');
 			var path = d3.select(p+' svg g[data-g=one] path');
-			var xAxisG = d3.select(p+' svg g.x.axis');
-			var xAxisLabel = d3.select(p+' svg g.x.axis text');
-			var yAxisG = d3.select(p+' svg g.y.axis');
-			var yAxisLabel = d3.select(p+' svg g.y.axis text');
+			var xAxisG = d3.select(p+' svg g.x-axis');
+			var xAxisLabel = d3.select(p+' svg g.x-axis text');
+			var yAxisG = d3.select(p+' svg g.y-axis');
+			var yAxisLabel = d3.select(p+' svg g.y-axis text');
 
 	}
 	//x and y axis scale
@@ -118,9 +124,13 @@ function wd3LineChart(p,params){
 	function loadline(data){
 		var keys=Object.keys(data[0]);
 		var ykeys=new Array();
+		var ykeysClass={};
 		for(var z=0;z<keys.length;z++){
 			var ckey=keys[z];
-			if(keys[z] != params.label){ykeys.push(keys[z]);}
+			if(keys[z] != params.label){
+				ykeys.push(keys[z]);
+				ykeysClass[keys[z]]=keys[z].replace(' ','');
+			}
 		}
 		data.forEach(function(d) {
 			switch(params.xtype.toLowerCase()){
@@ -139,10 +149,11 @@ function wd3LineChart(p,params){
 		});
 		if(undefined!=params.debug){
 			console.log('data:',data);
+			console.log('keys:',keys);
 			console.log('ykeys:',ykeys);
 			console.log('label:',params.label);
 		}
-		var lines=new Array();
+		var lines={};
 	  	for(var z=0;z<ykeys.length;z++){
 			var ykey=ykeys[z];
     		lines[ykey] = d3.svg.line()
@@ -150,7 +161,7 @@ function wd3LineChart(p,params){
         		.x(function(d) { return xScale(d[params.label]); })
         		.y(function(d) { return yScale(+d[ykey]); });
 	  	}
-
+		if(undefined!=params.debug){console.log('lines: ',lines);}
 		//extent gets the min and max from the data
 		xScale.domain(d3.extent(data, function (d){ return d[params.label]; }));
         yScale.domain([
@@ -176,6 +187,7 @@ function wd3LineChart(p,params){
         yAxisG.call(yAxis);
         //get all existing lines so we can remove the ones no longer in the data
         var plines=g.selectAll("path.line")[0];
+        if(undefined!=params.debug){console.log('plines: ',plines);}
         legend.selectAll("span").remove();
         for(var z=0;z<ykeys.length;z++){
 			var ykey=ykeys[z];
@@ -186,19 +198,20 @@ function wd3LineChart(p,params){
 				.style("color",color.range()[z]);
 			clegend.append("span")
 					.text(' '+ykey+' ');
-			var linegraph = g.selectAll("path.line."+ykey);
+			var linegraph = g.selectAll("path.line."+ykeysClass[ykey]);
+			if(undefined!=params.debug){console.log('linegraph: ',linegraph);}
 			//remove this line from the plines array that we will remove below
 			for(var b=0;b<plines.length;b++){
 				if(undefined == plines[b].getAttribute('class')){continue;}
 				var val=plines[b].getAttribute('class');
 				if(undefined == val){continue;}
-				var s=val.indexOf(ykey);
+				var s=val.indexOf(ykeysClass[ykey]);
             	if(s != -1){plines.splice(b,1);}
 			}
 			//add lines that do not exist yet
 			if(linegraph.empty()){
 				linegraph = g.append("path")
-					.attr("class", "line "+ykey)
+					.attr("class", "line "+ykeysClass[ykey])
 					.style("stroke",color.range()[z])
 					.style("fill","none")
 					.style("stroke-width","2px");
@@ -208,12 +221,16 @@ function wd3LineChart(p,params){
 		        .transition()
 		        .ease("linear")
 		        .duration(500)
+		        .style("stroke",color.range()[z])
 		        .attr("d", lines[ykey](data));
 		}
+		if(undefined!=params.debug){console.log('remove plines: ',plines);}
 		//remove lines no longer in the data
 		for(var b=0;b<plines.length;b++){
         	plines[b].remove();
 		}
+		params={};
+		lines={};
 	}
 	//pass in the data
 	if(undefined != params.csv){
@@ -765,7 +782,6 @@ function wd3PieChart(p,params){
         data.forEach(function(d) {
     		d.percent = Math.round((d.value/totals)*100,1);
 		});
-		//if(undefined!=params.debug){console.log(data);}
 		/* ------- PIE SLICES -------*/
 		var slice = svg.select(".slices").selectAll("path.slice")
 			.data(pie(data), key);
@@ -891,9 +907,10 @@ function wd3PieChart(p,params){
 					.attr("data-label", function(d) { return d.data.label; });
 			legend.append("span")
 					.attr("class", "icon-blank")
+					.style("margin-left","3px")
 					.style("color",function(d,i) {return color.range()[i];});
 			legend.insert("span")
-					.text(function(d) {return d.data.label;});
+					.text(function(d) {return ' '+d.data.label;});
 			legend.on("mouseover", function() {
 					d3.select(p+' .title').text(d3.select(this).attr("data-percent")+'%');
 					});
