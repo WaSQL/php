@@ -798,6 +798,9 @@ function wd3PieChart(p,params){
 		slice.attr("data-percent", function(d) { return d.data.percent; });
 		slice.attr("data-value", function(d) { return d.data.value; });
 		slice.attr("data-label", function(d) { return d.data.label; });
+		if(undefined != params.onclick){
+			slice.attr("data-onclick", params.onclick);
+		}
 		//darken the slice on hover (mouseover) and restore the original color on mouseout
 		slice.on("mouseover", function() {
 				var fill=d3.select(this).style("fill");
@@ -817,7 +820,8 @@ function wd3PieChart(p,params){
 				args.push(d3.select(this).attr("data-label"));
 				args.push(d3.select(this).attr("data-value"));
 				args.push(d3.select(this).attr("data-percent"));
-				window[params.onclick].apply(this,args);
+				var func=d3.select(this).attr("data-onclick");
+				window[func].apply(this,args);
 			});
 		}
 		//transition
