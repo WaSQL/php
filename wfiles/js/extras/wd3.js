@@ -325,6 +325,10 @@ function wd3MapChart(p,params){
 	  	if(chartParams.labels){wd3MapChartMaps[p].labels();}
 	  	if(undefined != params.onclick){
 			d3.selectAll(p+' .datamaps-subunit').on('click', function(geography) {
+				if(undefined == window[params.onclick]){
+                	console.log('wd3MapChart onclick error: "'+params.onclick+'" is not a valid function');
+                	return false;
+				}
 				var args=new Array();
 				args.push(d3.select(this).attr("data-label"));
 				args.push(d3.select(this).attr("data-value"));
@@ -598,10 +602,17 @@ function wd3BarChart(p,params){
 				})
 			.on("click", function() {
 				if(undefined != params.onclick){
+					if(undefined == window[params.onclick]){
+	                	console.log('wd3MapChart onclick error: "'+params.onclick+'" is not a valid function');
+	                	return false;
+					}
 					var args=new Array();
 					args.push(d3.select(this).attr("data-label"));
 					args.push(d3.select(this).attr("data-value"));
 					window[params.onclick].apply(this,args);
+				}
+				else{
+                	return false;
 				}
 			});;
     	//darken the slice on hover (mouseover) and restore the original color on mouseout
@@ -798,9 +809,6 @@ function wd3PieChart(p,params){
 		slice.attr("data-percent", function(d) { return d.data.percent; });
 		slice.attr("data-value", function(d) { return d.data.value; });
 		slice.attr("data-label", function(d) { return d.data.label; });
-		if(undefined != params.onclick){
-			slice.attr("data-onclick", params.onclick);
-		}
 		//darken the slice on hover (mouseover) and restore the original color on mouseout
 		slice.on("mouseover", function() {
 				var fill=d3.select(this).style("fill");
@@ -816,12 +824,15 @@ function wd3PieChart(p,params){
 		//onclick?
 		if(undefined != params.onclick){
 			slice.on("click", function() {
+				if(undefined == window[params.onclick]){
+                	console.log('wd3MapChart onclick error: "'+params.onclick+'" is not a valid function');
+                	return false;
+				}
 				var args=new Array();
 				args.push(d3.select(this).attr("data-label"));
 				args.push(d3.select(this).attr("data-value"));
 				args.push(d3.select(this).attr("data-percent"));
-				var func=d3.select(this).attr("data-onclick");
-				window[func].apply(this,args);
+				window[params.onclick].apply(this,args);
 			});
 		}
 		//transition
