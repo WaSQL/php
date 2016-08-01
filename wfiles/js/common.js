@@ -1057,7 +1057,9 @@ function anchorExists(aname){
 function GetElementsByAttribute(tag, att, val){
 	//info: GetElementsByAttribute - returns an array of tags that have an attribute of value.
     //usage: GetElementsByAttribute(tagname, attributename,stringtomatch)
-        val=val.replace(/\[(.*)\]$/,"\\\[$1\\\]");
+        if(undefined == val){return new Array();}
+        if(val.length==0){return new Array();}
+		val=val.replace(/\[(.*)\]$/,"\\\[$1\\\]");
         var a, list, found = new Array(), re = new RegExp(val, 'i');
         //if(undefined != document.getElementsByTagName(tag)){return found;}
         list = document.getElementsByTagName(tag);
