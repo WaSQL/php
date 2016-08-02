@@ -1123,7 +1123,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			for($ex=0;$ex<$cnt;$ex++){
 				$cfield=$cm[1][$ex];
 				//make sure cfield is not a pattern
-				if(!preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
+				if(preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
 				if(isset($params[$cfield.'_viewonly'])){
 					$cval=nl2br($value);
