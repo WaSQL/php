@@ -4386,7 +4386,7 @@ function syncGetChanges($stables=array()){
 			echo "	No namefield specified in stage for {$table}:".implode(', ',$fields)."<br />\n";
 			echo "	One of the following fields must be in the table and marked as syncronize in the meta data:".implode(', ',$checkfields)."<br />\n";
 			echo '</div>'."\n";
-			echo "<div>Synchronize Fields: ".implode(', ',$checkfields)."</div>\n";
+			echo "<div>Synchronize Fields: ".implode(', ',$fields)."</div>\n";
 			continue;
 			}
 		$fparts=array();
