@@ -129,9 +129,10 @@ function wd3LineChart(p,params){
 			var ckey=keys[z];
 			if(keys[z] != params.label){
 				ykeys.push(keys[z]);
-				ykeysClass[keys[z]]=keys[z].replace(' ','');
+				ykeysClass[keys[z]]='cls_'+keys[z].replace(/[^a-z0-9]/ig,'');;
 			}
 		}
+		//console.log(ykeysClass);
 		data.forEach(function(d) {
 			switch(params.xtype.toLowerCase()){
 				case 'num':
