@@ -779,7 +779,7 @@ function cleanupDBRecords($table,$length=30,$field='_cdate'){
     $then=date($format,strtotime("-{$length} Days"));
     $opts=array(
 		'-table'	=> $table,
-		'-where'	=> "{$field} between '{$now}' and '{$then}'"
+		'-where'	=> "date({$field}) < '{$then}'"
 	);
     return delDBRecord($opts);
 }
