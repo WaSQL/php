@@ -15,7 +15,7 @@ use Automattic\WooCommerce\HttpClient\HttpClient;
  *
  * @package Automattic/WooCommerce
  */
-class Client
+class WooCommerceClient
 {
 
     /**
