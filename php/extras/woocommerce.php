@@ -4,7 +4,7 @@
 
 */
 $progpath=dirname(__FILE__);
-require_once("{$progpath}/woocommerce/WooCommerceClient.php");
+require_once("{$progpath}/woocommerce/woocommerce-api.php");
 
 
 ?>
