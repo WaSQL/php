@@ -5935,7 +5935,10 @@ function getDBFiltersString($table,$filters){
 * @usage $rec=getDBRecord(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecord($params=array()){
-	if(!isset($params['-table']) && !isSet($params['-query'])){return "getDBRecord Error: no table or query defined" . printValue($params);}
+	if(!is_array($params) && is_string($params)){
+    	$params=array('-query'=>$params);
+	}
+	if(!isset($params['-table']) && !isset($params['-query'])){return "getDBRecord Error: no table or query defined" . printValue($params);}
 	//if(isset($params['-table'])){echo printValue($params);}
 	if(isset($params['-random'])){
 		$params['-random']=1;
