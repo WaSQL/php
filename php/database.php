@@ -1562,7 +1562,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     elseif(is_array($rec) && isNum($rec['_id'])){
 		$class=isset($params['-save_class'])?$params['-save_class']:'';
-		if($params['-bootstrap'] && !stringContains($class,'btn btn-primary')){$class .= 'btn btn-primary';}
+		if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 		if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$action=isset($params['-nosave'])?'':'Edit';
 			//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
