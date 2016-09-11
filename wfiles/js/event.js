@@ -978,12 +978,17 @@ function initBehaviors(ajaxdiv){
 		for (var n=0; n<navbars.length; n++){
 	    	navbars[n].onclick=function(){
 	        	var t=this.getAttribute('data-target');
+	        	if(undefined == t){return false;}
 	        	var tdiv=document.querySelector(t);
+	        	if(undefined == tdiv){return false;}
 	        	var state=this.getAttribute('aria-expanded');
+	        	if(undefined == 'state'){state='';}
+	        	if(state==null){state='';}
 	        	switch(state.toLowerCase()){
 	            	case 'f':
 	            	case 'false':
-	            	case 0:
+	            	case '0':
+	            	case '':
 	            		this.setAttribute('aria-expanded','true');
 	            		addClass(tdiv,'in');
 	            	break;
