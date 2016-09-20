@@ -4693,7 +4693,7 @@ function editorFileEdit($file){
     	case 'js':$behavior='jseditor';break;
     	case 'css':$behavior='csseditor';break;
     	case 'php':$behavior='phpeditor';break;
-    	case 'xml':$behavior='xmleditor';break;
+    	case 'xml':$behavior='txteditor';break;
     	default:$behavior='phpeditor';break;
 	}
 	$content=getFileContents($file);
