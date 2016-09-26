@@ -521,7 +521,8 @@ function wd3BarChart(p,params){
 		svg.append("g")
     		.attr("class", "y axis")
   			.append("text") // just for the title (ticks are automatic)
-    			.attr("transform", "rotate(-90)") // rotate the text!
+  				.attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            	.attr("transform", "translate("+ (params.padding/2) +","+(params.height/2)+")rotate(-90)")
     			.attr("y", 6)
     			.attr("dy", ".71em")
     			.style("text-anchor", "end")
