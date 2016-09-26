@@ -458,6 +458,9 @@ function wd3BarChart(p,params){
 	if(undefined==params.label){params.label='label';}
 	if(undefined==params.duration){params.duration=300;}
 	if(undefined!=params.debug){console.log(params);}
+	if(undefined == params.ylabel){params.ylabel='';}
+	if(undefined == params.xlabel){params.xlabel='';}
+	if(undefined == params.rightlabel){params.rightlabel='';}
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
 	if(params.width < 20){params.width=300;}
@@ -521,9 +524,11 @@ function wd3BarChart(p,params){
     			.attr("transform", "rotate(-90)") // rotate the text!
     			.attr("y", 6)
     			.attr("dy", ".71em")
-    			.style("text-anchor", "end");
+    			.style("text-anchor", "end")
+				.text("params.ylabel");
 
     	if(undefined != params.rightvalue){
+			if(undefined == params.rightlabel){params.rightlabel='';}
 			svg.append("g")
     		.attr("class", "y axisline")
     		.attr("transform", "translate(" + params.width + " ,0)")
@@ -531,7 +536,8 @@ function wd3BarChart(p,params){
     			.attr("transform", "rotate(-90)") // rotate the text!
     			.attr("y", 6)
     			.attr("dy", ".71em")
-    			.style("text-anchor", "start");
+    			.style("text-anchor", "start")
+				.text(params.rightlabel);
 		}
 	}
 	else{
