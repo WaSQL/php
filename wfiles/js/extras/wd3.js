@@ -460,6 +460,7 @@ function wd3BarChart(p,params){
 	if(undefined!=params.debug){console.log(params);}
 	if(undefined == params.ylabel){params.ylabel='';}
 	if(undefined == params.xlabel){params.xlabel='';}
+	if(undefined == params.ylabeloffset){params.ylabeloffset=-50;}
 	if(undefined == params.rightlabel){params.rightlabel='';}
 	//do not allow zero height or width
 	if(params.height < 20){params.height=300;}
@@ -522,8 +523,8 @@ function wd3BarChart(p,params){
     		.attr("class", "y axis")
   			.append("text") // just for the title (ticks are automatic)
   				.attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-            	.attr("transform", "translate("+ (params.padding/2) +","+(params.height/2)+")rotate(-90)")
-    			.attr("y", 6)
+            	.attr("transform", "translate("+params.padding+","+(params.height/2)+")rotate(-90)")
+    			.attr("y", params.ylabeloffset)
     			.attr("dy", ".71em")
     			.style("text-anchor", "end")
 				.text(params.ylabel);
