@@ -525,7 +525,7 @@ function wd3BarChart(p,params){
     			.attr("y", 6)
     			.attr("dy", ".71em")
     			.style("text-anchor", "end")
-				.text("params.ylabel");
+				.text(params.ylabel);
 
     	if(undefined != params.rightvalue){
 			if(undefined == params.rightlabel){params.rightlabel='';}
