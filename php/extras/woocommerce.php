@@ -23,7 +23,7 @@ function woocommerceNewClient($params){
 function woocommerceGetWebhooks($params){
 	$client=woocommerceNewClient($params);
 	if(!is_object($client)){
-		return $client;
+		return array($client,$params);
 	}
 	$rtn=$client->webhooks->get();
 	$rtn=json_decode(json_encode($rtn), true);
