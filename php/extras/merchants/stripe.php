@@ -39,6 +39,142 @@
 */
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/stripe/Stripe.php");
+//---------- begin function stripeListCustomers--------------------
+/**
+* @describe returns stripe customers
+* @param params array.  Options are apikey, ending_before, starting_after, limit (default is 10, max is 1000)
+* @return array
+* @usage $balances=stripeBalance(array('apikey'=>$apikey));
+* @reference https://stripe.com/docs/api?lang=php#list_customers
+*/
+function stripeListCustomers($params=array()){
+	if(!isset($params['limit'])){
+    	$params['limit']=1000;
+	}
+	//auth tokens are required
+	$required=array('apikey');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=Stripe_Customer::all($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			if(isset($rec['values']['sources']['values']['totalcount'])){
+            	$crec['sources']=$rec['values']['sources']['values']['totalcount'];
+			}
+			if(isset($rec['values']['subscriptions']['values']['totalcount'])){
+            	$crec['subscriptions']=$rec['values']['subscriptions']['values']['totalcount'];
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
+//---------- begin function stripeListProducts--------------------
+/**
+* @describe returns stripe products
+* @param params array.  Options are apikey, active, ids, , shippable, url, ending_before, starting_after, limit (default is 10, max is 1000)
+* @return array
+* @usage $balances=stripeBalance(array('apikey'=>$apikey));
+* @reference https://stripe.com/docs/api?lang=php#list_products
+*/
+function stripeListProducts($params=array()){
+	if(!isset($params['limit'])){$params['limit']=1000;}
+	if(!isset($params['active'])){$params['active']=true;}
+	//auth tokens are required
+	$required=array('apikey');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=Stripe_Product::all($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
+
+//---------- begin function stripeListSKUs--------------------
+/**
+* @describe returns stripe skus
+* @param params array.  Options are apikey, active, attributes, in_stock, product, ending_before, starting_after, limit (default is 10, max is 1000)
+* @return array
+* @usage $skus=stripeListSKUs(array('apikey'=>$apikey));
+* @reference https://stripe.com/docs/api?lang=php#list_skus
+*/
+function stripeListSKUs($params=array()){
+	if(!isset($params['limit'])){$params['limit']=1000;}
+	if(!isset($params['active'])){$params['active']=true;}
+	//auth tokens are required
+	$required=array('apikey');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=Stripe_SKU::all($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
+
+
 //---------- begin function stripeBalance--------------------
 /**
 * @describe returns stripe balances
