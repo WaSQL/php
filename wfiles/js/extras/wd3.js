@@ -895,7 +895,7 @@ function wd3PieChart(p,params){
 				});
 		
 			text.exit().remove();
-		
+
 			/* ------- SLICE TO TEXT POLYLINES -------*/
 		
 			var polyline = svg.select(".lines").selectAll("polyline")
@@ -936,11 +936,28 @@ function wd3PieChart(p,params){
 			legend.insert("span")
 					.text(function(d) {return ' '+d.data.label;});
 			legend.on("mouseover", function() {
-					d3.select(p+' .title').text(d3.select(this).attr("data-percent")+'%');
-					});
+				d3.select(p+' .title').text(d3.select(this).attr("data-percent")+'%');
+    			if(undefined != params.onclick){
+					this.style.cursor='pointer';
+				}
+			});
 			legend.on("mouseout", function() {
 					d3.select(p+' .title').text("");
 					});
+			if(undefined != params.onclick){
+				legend.on("click", function() {
+					if(undefined == window[params.onclick]){
+	                	console.log('wd3MapChart onclick error: "'+params.onclick+'" is not a valid function');
+	                	return false;
+					}
+					var args=new Array();
+					args.push(d3.select(this).attr("data-label"));
+					args.push(d3.select(this).attr("data-value"));
+					args.push(d3.select(this).attr("data-percent"));
+					window[params.onclick].apply(this,args);
+				});
+			}
+
 			d3.select(p+" div.legend").selectAll("span.item")
 				.data(pie(data), key).exit().remove();
 		}
