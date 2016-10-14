@@ -1101,17 +1101,16 @@ function changeModelType(srcObj){
 function remindMeForm(){
 	var dname="remindMePopup";
 	var txt='';
-	txt +=  '	<div class="w_centerpop_content" id="remindmediv" style="width:300px;">'+"\n";
+	txt +=  '	<div class="w_centerpop_content" id="remindmediv" style="width:350px;padding:0 30px 0 30px;">'+"\n";
 	txt +=	'		<form method="POST" name="remindMe" class="w_form" action="/php/index.php" onSubmit="ajaxSubmitForm(this,\'remindmediv\');return false;">'+"\n";
 	txt +=  '			<input type="hidden" name="_remind" value="1">'+"\n";
 	txt +=  '			<input type="hidden" name="tname" value="remind me">'+"\n";
-	txt +=	'			<div class="w_gray"> Enter the email address tied to your account profile to have your username and password emailed to you.</div>'+"\n";
-	txt +=	'			<div><span class="icon-mail"></span> <b>Email Address</b></div>'+"\n";
-	txt +=	' 			<div><input type="text" maxlength="255" name="email" placeholder="email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control"></div>'+"\n";
-	txt +=	'			<div align="right" style="margin-right:2px;margin-top:5px;"><button type="submit" class="btn btn-primary w_formsubmit">Remind Me</button></div>'+"\n";
+	txt +=	'			<label for="remind_me_email" class="w_bigger w_grey" style="font-weight:300;"><span class="icon-mail"></span> Enter the email address.</label>'+"\n";
+	txt +=	' 			<div><input type="text" maxlength="255" id="remind_me_email" name="email" placeholder="your email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control input-lg"></div>'+"\n";
+	txt +=	'			<div class="text-right w_padtop"><button type="submit" class="btn btn-default w_formsubmit btn-lg">Remind Me</button></div>'+"\n";
 	txt +=  '		</form>';
 	txt +=	'	</div>'+"\n";
-	var rtitle='<span class="icon-info"></span> Remind Me Form';
+	var rtitle='Remind Me';
 	popUpDiv('',{id:dname,width:300,height:50,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 	setCenterPopText(dname,txt,{title:rtitle});
 	document.remindMe.email.focus();
