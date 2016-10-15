@@ -252,6 +252,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
             	$sendopts=array('to'=>$to,'subject'=>$subject,'message'=>$message,'smtp'=>$CONFIG['smtp']);
             	if(isset($CONFIG['smtpuser'])){$sendopts['smtpuser']=$CONFIG['smtpuser'];}
 				if(isset($CONFIG['smtppass'])){$sendopts['smtppass']=$CONFIG['smtppass'];}
+				if(isset($CONFIG['email_from'])){$sendopts['from']=$CONFIG['email_from'];}
 				$ok=phpmailerSendMail($sendopts);
 			}
 			else{
