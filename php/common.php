@@ -11778,6 +11778,19 @@ function sendMail($params=array()){
 			'attach'=>array($file,$file2...)
 			));
 	*/
+	global $CONFIG;
+	if(isset($CONFIG['phpmailer'])){
+        loadExtras('phpmailer');
+        if(isset($CONFIG['smtp'])){$params['smtp']=$CONFIG['smtp'];}
+        if(isset($CONFIG['smtpuser'])){$params['smtpuser']=$CONFIG['smtpuser'];}
+		if(isset($CONFIG['smtppass'])){$params['smtppass']=$CONFIG['smtppass'];}
+		if(isset($CONFIG['smtpport'])){$params['smtpport']=$CONFIG['smtpport'];}
+		if(isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
+		if(isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
+		if(isset($CONFIG['email_debug'])){$params['maildebug']=1;}
+		return phpmailerSendMail($params);
+	}
+
 	$attachincluded=array();
 	/* Required options */
 	$reqopts=array('to','from','subject','message');
