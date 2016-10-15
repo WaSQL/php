@@ -247,7 +247,16 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		@trigger_error("");
 		//attempt to send the email
 		if(isset($CONFIG['smtp'])){
-			$ok=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
+			if(isset($CONFIG['phpmailer'])){
+            	loadExtras('phpmailer');
+            	$sendopts=array('to'=>$to,'subject'=>$subject,'message'=>$message,'smtp'=>$CONFIG['smtp']);
+            	if(isset($CONFIG['smtpuser'])){$sendopts['smtpuser']=$CONFIG['smtpuser'];}
+				if(isset($CONFIG['smtppass'])){$sendopts['smtppass']=$CONFIG['smtppass'];}
+				$ok=phpmailerSendMail($sendopts);
+			}
+			else{
+				$ok=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
+			}
 			if($ok==true || $ok==1){
 				echo '<img src="/wfiles/success.gif" border="0" style="vertical-align:middle;">  <b class="w_green">Account found! ['.$ok.']</b><br /><br />'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
