@@ -224,20 +224,20 @@ if(isset($xmlpost)){
 //remind Me Form?
 if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['email'])){
 	if(!isEmail($_REQUEST['email'])){
-		echo '<h3 class="w_danger"><span class="icon-warning w_warning"></span> Invalid email address.</h3>'."\n";
+		echo '<h4 class="w_danger"><span class="icon-warning w_warning"></span> Invalid email address.</h4>'."\n";
 		echo ' Please enter a valid email address.'."\n";
 		exit;
     }
 	$ruser=getDBRecord(array('-table'=>'_users','email'=>$_REQUEST['email']));
 	if(!is_array($ruser)){
-		echo '<h3 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Invalid account.</h3>'."\n";
+		echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Invalid account.</h4>'."\n";
 		echo "The email address you entered does not have an account with us.";
 		exit;
     }
     else{
 		//send the email.
 		$to=$ruser['email'];
-		$subject='RE:Remind Request from ' . $_SERVER['HTTP_HOST'];
+		$subject='Remind Request from ' . $_SERVER['HTTP_HOST'];
 		$message = 'We just received a request to remind you of your login information '. "\n\n";
 		$message .= '<p>Username: '. $ruser['username']. "<br>\n";
 		$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
@@ -262,13 +262,13 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 				$ok=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
 			}
 			if($ok==true || (isNum($ok) && $ok==1)){
-				echo '<span class="icon-mark w_success w_bigger"></span>  <b class="w_success">Account found!</b><br /><br />'."\n";
+				echo '<h4 class="w_success"><span class="icon-mark w_success w_bigger"></span> Account found!</h4>'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
 				exit;
             }
             else{
-				echo '<span class="icon-warning w_warning w_bigger"></span>  <b class="w_danger">Technical failure.</b><br /><br />'."\n";
-				echo 'Due to technical errors, we were unable to send you a reminder.<br /><br />'."\n";
+				echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Technical failure.</h4>'."\n";
+				echo 'Due to technical errors, we were unable to send you a reminder.<br />'."\n";
 				echo printValue($ok);
 				exit;
             }
@@ -279,18 +279,19 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 			$headers .= "MIME-Version: 1.0\r\n";
 			$headers .= "Content-type: text/html; charset=iso-8859-1\r\n";
 			if(@mail($ruser['email'], $subject, $message, $headers)){
-				echo '<img src="/wfiles/success.gif" border="0" style="vertical-align:middle;">  <b class="w_green">Account found!</b><br /><br />'."\n";
+				echo '<h4 class="w_success"><span class="icon-mark w_success w_bigger"></span> Account found!</h4>'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
 				exit;
             }
             else{
-				echo '<img src="/wfiles/warn.gif" border="0" style="vertical-align:middle;">  <b class="w_red">Technical failure.</b><br /><br />'."\n";
-				echo 'Due to technical errors, we were unable to send you a reminder.<br /><br />'."\n";
+				echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Technical failure.</h4>'."\n";
+				echo 'Due to technical errors, we were unable to send you a reminder.<br />'."\n";
+				echo printValue($ok);
 				exit;
             }
 		}
     }
-	echo '<img src="/wfiles/warn.gif" border="0" style="vertical-align:middle;">  <b class="w_red">Invalid request.</b><br /><br />'."\n";
+	echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Invalid request.</h4>'."\n";
 	echo 'We did not understand your request.'."\n";
 	exit;
 }
