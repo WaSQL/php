@@ -261,13 +261,13 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 			else{
 				$ok=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
 			}
-			if($ok==true || $ok==1){
-				echo '<img src="/wfiles/success.gif" border="0" style="vertical-align:middle;">  <b class="w_green">Account found! ['.$ok.']</b><br /><br />'."\n";
+			if($ok==true || (isNum($ok) && $ok==1)){
+				echo '<span class="icon-mark w_success w_bigger"></span>  <b class="w_success">Account found!</b><br /><br />'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
 				exit;
             }
             else{
-				echo '<img src="/wfiles/warn.gif" border="0" style="vertical-align:middle;">  <b class="w_red">Technical failure.</b><br /><br />'."\n";
+				echo '<span class="icon-warning w_warning w_bigger"></span>  <b class="w_danger">Technical failure.</b><br /><br />'."\n";
 				echo 'Due to technical errors, we were unable to send you a reminder.<br /><br />'."\n";
 				echo printValue($ok);
 				exit;
