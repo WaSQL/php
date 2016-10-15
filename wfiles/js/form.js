@@ -1105,8 +1105,8 @@ function remindMeForm(){
 	txt +=	'		<form method="POST" name="remindMe" class="w_form" action="/php/index.php" onSubmit="ajaxSubmitForm(this,\'remindmediv\');return false;">'+"\n";
 	txt +=  '			<input type="hidden" name="_remind" value="1">'+"\n";
 	txt +=  '			<input type="hidden" name="tname" value="remind me">'+"\n";
-	txt +=	'			<label for="remind_me_email" class="w_bigger w_grey" style="font-weight:300;"><span class="icon-mail"></span> Enter the email address.</label>'+"\n";
-	txt +=	' 			<div><input type="text" maxlength="255" id="remind_me_email" name="email" placeholder="your email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" data-required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control input-lg"></div>'+"\n";
+	txt +=	'			<label for="remind_me_email" class="w_bigger w_grey" style="font-weight:300;"><span class="icon-mail"></span> Enter your email address.</label>'+"\n";
+	txt +=	' 			<div><input type="email" maxlength="255" id="remind_me_email" name="email" placeholder="your email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control input-lg"></div>'+"\n";
 	txt +=	'			<div class="text-right w_padtop"><button type="submit" class="btn btn-default w_formsubmit btn-lg">Remind Me</button></div>'+"\n";
 	txt +=  '		</form>';
 	txt +=	'	</div>'+"\n";
