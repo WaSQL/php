@@ -224,13 +224,13 @@ if(isset($xmlpost)){
 //remind Me Form?
 if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['email'])){
 	if(!isEmail($_REQUEST['email'])){
-		echo '<img src="/wfiles/warn.gif" border="0" style="vertical-align:middle;">  <b class="w_red">Invalid email address.</b><br /><br />'."\n";
+		echo '<h3 class="w_danger"><span class="icon-warning w_warning"></span> Invalid email address.</h3>'."\n";
 		echo ' Please enter a valid email address.'."\n";
 		exit;
     }
 	$ruser=getDBRecord(array('-table'=>'_users','email'=>$_REQUEST['email']));
 	if(!is_array($ruser)){
-		echo '<img src="/wfiles/warn.gif" border="0" style="vertical-align:middle;">  <b class="w_red">Invalid account.</b><br /><br />'."\n";
+		echo '<h3 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Invalid account.</h3>'."\n";
 		echo "The email address you entered does not have an account with us.";
 		exit;
     }
