@@ -693,6 +693,7 @@ function wd3BarChart(p,params){
 *	[padding] - defaults to 60. Need padding for labels
 * 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
 *	[debug] - writes console.log messages for debugging purposes
+*	[legend_block] - disables wrapping in legend
 * @return false
 */
 function wd3PieChart(p,params){
@@ -818,6 +819,7 @@ function wd3PieChart(p,params){
 		slice.attr("data-percent", function(d) { return d.data.percent; });
 		slice.attr("data-value", function(d) { return d.data.value; });
 		slice.attr("data-label", function(d) { return d.data.label; });
+		slice.attr("id", function(d,i) { return 'slice'+i; });
 		//darken the slice on hover (mouseover) and restore the original color on mouseout
 		slice.on("mouseover", function() {
 				var fill=d3.select(this).style("fill");
@@ -928,22 +930,30 @@ function wd3PieChart(p,params){
 					.style("min-width","150px")
 					.attr("data-percent", function(d) { return d.data.percent; })
 					.attr("data-value", function(d) { return d.data.value; })
-					.attr("data-label", function(d) { return d.data.label; });
+					.attr("data-label", function(d) { return d.data.label; })
+					.attr("data-color", function(d,i) {return color.range()[i];})
+					.attr("data-id", function(d,i) {return 'slice'+i;});
+			if(undefined != params.legend_block){
+				legend.style("display",'block');
+			}
 			legend.append("span")
-					.attr("class", "icon-blank")
+					.attr("class", "icon-blank w_big")
 					.style("margin-left","3px")
 					.style("color",function(d,i) {return color.range()[i];});
 			legend.insert("span")
 					.text(function(d) {return ' '+d.data.label;});
 			legend.on("mouseover", function() {
+				var c=d3.rgb(this.getAttribute('data-color')).darker(0.3);
 				d3.select(p+' .title').text(d3.select(this).attr("data-percent")+'%');
+				this.style.color=c;
     			if(undefined != params.onclick){
 					this.style.cursor='pointer';
 				}
 			});
 			legend.on("mouseout", function() {
-					d3.select(p+' .title').text("");
-					});
+				d3.select(p+' .title').text("");
+				this.style.color='';
+				});
 			if(undefined != params.onclick){
 				legend.on("click", function() {
 					if(undefined == window[params.onclick]){
