@@ -11758,19 +11758,27 @@ function truncateWords($wordstr,$maxlen,$dots=0){
 * @return array
 */
 function splitWords($sentence,$maxlen){
-	$words=preg_split('/\ /+',$sentence);
+	//return strlen($sentence);
+	$words=preg_split('/\ +/',$sentence);
 	if(!is_array($words)){return array($sentence);}
 	$rtn='';
 	$parts=array();
-	foreach($words as $word){
-		$rtn .= trim(" {$word}");
-		if(strlen($rtn) >= $maxlen){
-        	$parts[]=$rtn;
+	$wordcount=count($words);
+	for($x=0;$x<$wordcount;$x++){
+		$word=$words[$x];
+		$rtn .= rtrim(" {$word}");
+		$len=strlen($rtn);
+		$n=$x+1;
+		if(isset($words[$n])){
+			$len+=strlen(" {$words[$n]}");
+		}
+		if($len >= $maxlen){
+        	$parts[]=trim($rtn);
         	$rtn='';
 		}
 	}
 	if(strlen(trim($rtn))){
-    	$parts[]=$rtn;
+    	$parts[]=trim($rtn);
 	}
 	return $parts;
 }
