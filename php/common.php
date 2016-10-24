@@ -11748,6 +11748,31 @@ function truncateWords($wordstr,$maxlen,$dots=0){
 	if($dots && !preg_match('/(\.|\?|\!)$/',$rtn)){$rtn .= "...";}
 	return $rtn;
 }
+//---------- begin function splitWords
+/**
+* @describe splits a string of words (sentence) by $maxlen but does not leave partial words
+* @param wordstr string
+*	the string or sentence you want to turncate
+* @param maxlen int
+*	the maximum length
+* @return array
+*/
+function splitWords($wordstr,$maxlen){
+	$words=preg_split('/\ /',$wordstr);
+	//echo printValue($words);exit;
+	if(!is_array($words)){return array($wordstr);}
+	$rtn='';
+	$parts=array();
+	foreach($words as $word){
+		$rtn .= " {$word}";
+		$rtn=trim($rtn);
+		if(strlen("{$rtn}  {$word}") >= $maxlen){
+        	$parts[]=$rtn;
+        	$rtn='';
+		}
+	}
+	return $parts;
+}
 //---------- begin function sendMail---------------------------------------
 /**
 * @describe sends an email and returns null on success or the error string
