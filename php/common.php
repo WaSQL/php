@@ -10255,6 +10255,7 @@ function processActions(){
 						if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
 						elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 						elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
+						elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 						if($info[$field]['inputtype']=='file'){
 							//skip file field if used did not check to remove current value
 							if(isset($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
