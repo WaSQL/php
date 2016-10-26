@@ -10459,6 +10459,7 @@ function processActions(){
 					if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
+					elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 					//css_min minifycode
 					if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
 						$opts['css_min']=minifyCode($_REQUEST[$field],'css');
