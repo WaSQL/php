@@ -7103,7 +7103,7 @@ function listDBRecords($params=array(),$customcode=''){
             	}
             elseif(isset($params[$fld."_dateage"]) && $params[$fld."_dateage"]==1){
 				if(isNum($rec["{$fld}_utime"])){
-					$age=time()-$rec["{$fld}_utime"];
+					$age=time()-strtotime($rec[$fld]);
 					$val=verboseTime($age);
 					}
 				else{$val='';}
