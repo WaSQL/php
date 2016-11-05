@@ -3949,7 +3949,7 @@ function adminMenu(){
 		$rtn .= '		<li class="dir"><a href="#crons" onclick="return false;" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons</span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> List Logs</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> Run History</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus w_big"></span> Add New</a></li>'."\n";
 		if(is_array($crons)){
 			if(count($crons) > 15){
