@@ -2230,7 +2230,7 @@ LIST_TABLE:
 						//format active
 						$recopts['active_checkmark']=1;
 						$recopts['active_align']="center";
-						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd";
+						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as";
                 	break;
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";
