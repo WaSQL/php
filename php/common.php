@@ -1347,6 +1347,23 @@ function buildFormSelectMonth($name,$params=array()){
 	);
 	return buildFormSelect($name,$opts,$params);
 }
+//---------- begin function buildFormSelectTimezone--------------------
+/**
+* @describe creates an timezone selection field
+* @param name string - field name. defaults to 'timezone'
+* @param params array
+* @return string
+* @usage echo buildFormSelectTimezone('timezone',$params);
+*/
+function buildFormSelectTimezone($name='timezone',$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$opts=timezoneList($params);
+	return buildFormSelect($name,$opts,$params);
+}
 //---------- begin function buildFormSelectYear--------------------
 /**
 * @describe creates an Year selection field
@@ -5068,6 +5085,40 @@ function formatMoney($number=0,$cents = 1){
   		}
   	return $number;
 	}
+//---------- begin function timezoneList ----------
+/**
+* @describe returns an array of all timezones
+* @param params array - options
+*	[-groupby] string - region or timezone, defaults to region. becomes the array index
+*	[-regions] mixed - DateTimeZone regions
+* @return array - an array of all timezones
+* @usage $zones=timezoneList(array('-regions'=>DateTimeZone::AMERICA));
+*/function timezoneList($params=array()){
+	global $timezoneList;
+	ksort($params);
+	$key=sha1(printValue($params));
+	if(is_array($timezoneList[$key])){return $timezoneList[$key];}
+    $timezones = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
+	//echo printValue($timezones);exit;
+    $timezone_offsets = array();
+    foreach( $timezones as $timezone ){
+        $tz = new DateTimeZone($timezone);
+        $timezone_offsets[$timezone] = $tz->getOffset(new DateTime);
+    }
+    // sort timezone by timezone name
+    ksort($timezone_offsets);
+    $timezoneList[$key] = array();
+    foreach( $timezone_offsets as $timezone => $offset ){
+        $offset_prefix = $offset < 0 ? '-' : '+';
+        $offset_formatted = gmdate( 'H:i', abs($offset) );
+        $utc = "UTC{$offset_prefix}{$offset_formatted}";
+        $t = new DateTimeZone($timezone);
+        $c = new DateTime(null, $t);
+        $current_time = $c->format('D g:i A');
+        $timezoneList[$key][$timezone]="{$timezone} - {$current_time}";
+    }
+    return $timezoneList[$key];
+}
 //---------- begin function toFixed ----------
 /**
 * @describe returns number with specified decimal places - just like javascript toFixed
