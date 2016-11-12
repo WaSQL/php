@@ -4191,6 +4191,10 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'formula':
 		break;
+		case 'timezone':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Time Zone --';}
+			$tag=buildFormSelectTimezone($info[$field]['name'],$info[$field]);
+		break;
 		case 'hidden':
 			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
