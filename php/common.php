@@ -8642,10 +8642,21 @@ function minifyCode($code,$type) {
 * @return string - month name
 * @usage $monthName=monthName(3); - returns March
 */
-function monthName($month){
+function monthName($month,$format='F'){
+	switch(strtoupper($format)){
+    	case 'M':
+    	case 'SHORT':
+    	case '3':
+    	case 'ABBR':
+    		$format='M';
+    	break;
+    	default:
+    		$format='F';
+    	break;
+	}
 	//convert a month number to a month name
 	if(!isNum($month)){return $month;}
-	return date("F", mktime(0, 0, 0, $month, 10));
+	return date($format, mktime(0, 0, 0, $month, 10));
 }
 //---------- begin function mysqlDate---------------------------------------
 /**
