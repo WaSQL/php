@@ -419,9 +419,9 @@ function wd3MapChart(p,params){
 	var fillcolor=params.color;
 	for(var i=0;i<50;i++){
     	var r=i+1;
-    	var key='rank'+r;
+    	var key='fill'+r;
     	fills[key]=fillcolor;
-    	fillcolor=d3.rgb(fillcolor).brighter(0.02);
+    	fillcolor=d3.rgb(fillcolor).brighter(0.1);
 	}
 	fills['defaultFill']='#f0f0f0';
 	if(undefined == document.querySelector(p+' .datamap')){
