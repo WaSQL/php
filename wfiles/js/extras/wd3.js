@@ -5,6 +5,128 @@
 	wd3BarChart for bar chart - label,value1,value2,value3,... each value is a new bar
 
 */
+//---------- begin function wd3TreeMap--------------------
+/**
+* @reference http://bl.ocks.org/mbostock/4063582  and http://bl.ocks.org/maw246/7303963
+* @reference  http://bl.ocks.org/jasondavies/1319738
+* @describe creates[or updates] a treemap chart using d3
+* @param p selector string - specifies the parent element to append the chart to
+* @param params json
+*	data - data
+*	csv - url to csv data to load
+*	tsv - url to tsv data to load
+*	json - url to json data to load
+*	label - defines the column to use as the x value
+*	[width] - specifies width. If not specified, parent width is used
+*	[height] - specifies height. If not specified, parent height is used
+*	[padding] - defaults to 1
+*	[duration] - defaults to 1000 milliseconds
+* 	[onclick] - set to function name to call onclick. Passes in this, label,value,percent
+*	[debug] - writes console.log messages for debugging purposes
+* @return false
+*/
+function wd3TreeMap(p,params){
+	if(undefined==p){p='body';}
+	var pObj=document.querySelector(p);
+	if(undefined == pObj){
+		console.log('wd3TreeMap Error: undefined parent');
+		return;
+	}
+	if(undefined==params){params={};}
+	if(undefined==params.top){params.top=20;}
+	if(undefined==params.right){params.right=20;}
+	if(undefined==params.bottom){params.bottom=30;}
+	if(undefined==params.left){params.left=50;}
+	if(undefined==params.width){params.width=getWidth(pObj)-params.left-params.right;}
+	if(undefined==params.height){params.height=getHeight(pObj)-params.top-params.bottom;}
+	//do not allow zero height or width
+	if(params.height < 20){params.height=300;}
+	if(params.width < 20){params.width=300;}
+	if(undefined!=params.debug){console.log('Params:',params);}
+	//init vars
+	var w = params.width,
+    h = params.height,
+    x = d3.scale.linear().range([0, params.width]),
+    y = d3.scale.linear().range([0, params.height]),
+    color = d3.scale.category20c(),
+    root,
+    node;
+
+	var treemap = d3.layout.treemap()
+    	.round(false)
+    	.size([w, h])
+    	.sticky(true)
+    	.children(function(d) { return d.values; })
+    	.value(function(d) { return d.size; });
+	console.log(treemap);
+	if(undefined == document.querySelector(p+' div')){
+		var div = d3.select(p).append("div")
+		    .style("position", "relative")
+		    .style("width", (params.width) + "px")
+		    .style("height", (params.height) + "px")
+		    .style("left", params.left + "px")
+		    .style("top", params.top + "px")
+			.style("border","1px solid blue");
+	}
+	else{
+    	var div = d3.select(p);
+
+	}
+
+	d3.csv(params.csv, function(data) {
+  		node = root = {values: d3.nest()
+      	.key(function(d) { return d.parent; })
+      	.rollup(function(d) {
+        	return d.map(function(d) {
+          		return {key: d.name};
+        	});
+      	})
+      	.entries(data)};
+
+      	
+      	var node = div.datum(root).selectAll(".node")
+      		.data(treemap.nodes)
+    		.enter().append("div")
+      			.attr("class", "node")
+      			.call(position)
+      			.style("background", function(d) { return d.children ? color(d.name) : null; })
+      			.text(function(d) { return d.children ? null : d.name; });
+
+  		d3.selectAll("input").on("change", function change() {
+    		var value = this.value === "count"
+        		? function() { return 1; }
+        		: function(d) { return d.size; };
+
+     node
+        	.data(treemap.value(value).nodes)
+      		.transition()
+        		.duration(1500)
+        		.call(position);
+  		});
+	});
+
+	function position() {
+  		this.style("left", function(d) { return d.x + "px"; })
+      		.style("top", function(d) { return d.y + "px"; })
+      		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+      		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; })
+			.style("border","1px solid white")
+			.style("font","10px sans-serif")
+			.style("line-height","12px")
+			.style("overflow","hidden")
+			.style("position","absolute")
+			.style("text-indent","2px");
+	}
+}
+
+
+
+
+
+
+
+
+
 //---------- begin function wd3LineChart--------------------
 /**
 * @describe creates[or updates] a line chart using d3
@@ -291,15 +413,17 @@ function wd3MapChart(p,params){
 	//do not allow zero height or width
 	if(params.height < 20){params.height=250;}
 	if(params.width < 20){params.width=350;}
-	var fills={
-			"1st": "#3399ff",
-			"2nd": "#805393",
-			"3rd": "#9c71ae",
-			"4th": "#ae8cbd",
-			"5th": "#c8afd2",
-			"6th": "#d9c8e0",
-			"defaultFill": "#e5e5e5"
-		};
+	//shade from dark color to lighter.  d3.rgb(fill).darker(0.3)
+	if(undefined==params.color){params.color='#006400'}
+	var fills={}
+	var fillcolor=params.color;
+	for(var i=0;i<50;i++){
+    	var r=i+1;
+    	var key='rank'+r;
+    	fills[key]=fillcolor;
+    	fillcolor=d3.rgb(fillcolor).lighter(0.02);
+	}
+	fills['defaultFill']='#f0f0f0';
 	if(undefined == document.querySelector(p+' .datamap')){
 		var chartParams = {
 			"width":    params.width,
