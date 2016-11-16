@@ -421,7 +421,7 @@ function wd3MapChart(p,params){
     	var r=i+1;
     	var key='rank'+r;
     	fills[key]=fillcolor;
-    	fillcolor=d3.rgb(fillcolor).lighter(0.02);
+    	fillcolor=d3.rgb(fillcolor).brighter(0.02);
 	}
 	fills['defaultFill']='#f0f0f0';
 	if(undefined == document.querySelector(p+' .datamap')){
