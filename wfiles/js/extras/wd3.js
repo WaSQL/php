@@ -417,11 +417,14 @@ function wd3MapChart(p,params){
 	if(undefined==params.color){params.color='#006400'}
 	var fills={}
 	var fillcolor=params.color;
+	var most=fillcolor;
+	var least='';
 	for(var i=0;i<50;i++){
     	var r=i+1;
     	var key='fill'+r;
     	fills[key]=fillcolor;
     	fillcolor=d3.rgb(fillcolor).brighter(0.1);
+    	least=fillcolor;
 	}
 	fills['defaultFill']='#f0f0f0';
 	if(undefined == document.querySelector(p+' .datamap')){
@@ -437,7 +440,6 @@ function wd3MapChart(p,params){
 			"labels": true,
 			"id": "map",
 			"geographyConfig": {
-
 	 			"popupTemplate":  function(geography, data){
 	    			return '<div class=hoverinfo><strong>' + geography.properties.name +': ' + wd3NumberWithCommas(data.value) + '</strong></div>';
 	  			}
@@ -461,14 +463,10 @@ function wd3MapChart(p,params){
 			});
 		}
 	  	//add legend
-	  	d3.select(p).append("div").attr("class", "legend").text("");
-	    d3.select(p+' .legend').append("span").text('Most');
-	  	for (var key in fills) {
-  			d3.select(p+' .legend').append("span")
-	      		.attr("class", "icon-blank")
-	      		.attr("style", "color:"+fills[key]);
-		}
-		d3.select(p+' .legend').append("span").text('Least');
+	  	var txt='<div><span class="icon-blank" style="color:'+most+'"></span> Most <span id="most"></span></div>';
+	  	txt +='<div><span class="icon-blank" style="color:'+least+'"></span> Least <span id="least"></span></div>';
+	  	txt +='<div><span class="icon-blank" style="color:'+fills['defaultFill']+'"></span> None <span id="none"></span></div>';
+	  	d3.select(p).append("div").attr("class", "legend w_big").html(txt);
  	}
 	//pass in the data
 	if(undefined != params.csv){
@@ -480,6 +478,16 @@ function wd3MapChart(p,params){
                 delete  cdata[i].id;
                 delete  cdata[i] ;
             }
+            //most
+            for (var key in cdata){
+            	d3.select(p+' #most').text(key+' ('+wd3NumberWithCommas(cdata[key].value)+')');
+            	break;
+			}
+			//least
+			for (var key in cdata){
+				if(cdata[key].value > 0){lkey=key;}
+			}
+			d3.select(p+' #least').text(lkey+' ('+wd3NumberWithCommas(cdata[lkey].value)+')');
 			wd3MapChartMaps[p].updateChoropleth(cdata);
 			//add data-id and data-value to path attribute so we can access it via this
 			if(undefined != params.onclick){
