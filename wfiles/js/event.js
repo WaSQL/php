@@ -1346,7 +1346,55 @@ function initBehaviors(ajaxdiv){
   			var dname=navEls[n].getAttribute('data-display');
   			if(undefined == dname){dname=navEls[n].getAttribute('display');}
 			if(dname){
-				addEventHandler(navEls[n],'mouseover',function(e){
+				addEventHandler(navEls[n],'click',function(e){
+					var dname=this.getAttribute('data-display');
+					if(undefined == dname){dname=this.getAttribute('display');}
+					dObj=getObject(dname);
+					if(dObj){
+						if(dObj.style.display == 'block'){return true;}
+						dObj.style.display='block';
+					}
+					var dmouse=this.getAttribute('mouse');
+					var dx=this.getAttribute('x');
+					var dy=this.getAttribute('y');
+					if(undefined != dmouse){
+						//position
+						var x=0;
+						var y=0;
+						if(dmouse.indexOf('x') != -1){
+							//only center x - make y MouseY
+							x=MouseX;
+				        }
+				        else if(dmouse.indexOf('y') != -1){
+							//only center y - make x MouseX
+							y=MouseY;
+				        }
+				        else{
+                            x=MouseX;
+                            y=MouseY;
+                        }
+						//check for x and y
+						if(undefined != dx){
+							//if x begins with a + or -, then add it
+							xvalue=dx+'';
+							if(xvalue.indexOf('+') != -1){x=Math.round(MouseX+parseInt(xvalue));}
+							else if(xvalue.indexOf('-') != -1){x=Math.round(MouseX-Math.abs(parseInt(xvalue)));}
+							else{x=Math.round(Math.abs(parseInt(xvalue)));}
+						}
+						if(undefined != dy){
+							//if y begins with a + or -, then add it
+							yvalue=dy+'';
+							if(yvalue.indexOf('+') != -1){y=Math.round(MouseY+parseInt(yvalue));}
+							else if(yvalue.indexOf('-') != -1){y=Math.round(MouseY-Math.abs(parseInt(yvalue)));}
+							else{y=Math.round(Math.abs(parseInt(yvalue)));}
+						}
+                        dObj.style.position='absolute';
+				    	dObj.style.top=y+"px";
+				    	dObj.style.left=x+"px";
+				    	//window.status="Set menu postion to "+x+','+y;
+                    }
+                });
+                addEventHandler(navEls[n],'mouseover',function(e){
 					var dname=this.getAttribute('data-display');
 					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
