@@ -7123,7 +7123,12 @@ function listDBRecords($params=array(),$customcode=''){
 			if(isset($params[$fld."_align"])){$rtn .= ' align="'.$params[$fld."_align"].'"';}
 			if(isset($params[$fld."_valign"])){$rtn .= ' valign="'.$params[$fld."_valign"].'"';}
 			if(isset($params[$fld."_bgcolor"])){$rtn .= ' bgcolor="'.$params[$fld."_bgcolor"].'"';}
-			if(isset($params[$fld."_class"])){$rtn .= ' class="'.$params[$fld."_class"].'"';}
+			if(isset($params[$fld."_class"])){
+				$class=$params[$fld."_class"];
+				//check to see if the class value matches a field
+				if(isset($rec[$class])){$class=$rec[$class];}
+				$rtn .= ' class="'.$class.'"';
+			}
 			elseif(isset($params[$fld."_style"])){$rtn .= ' style="'.$params[$fld."_style"].'"';}
 			if(isset($params[$fld."_nowrap"]) && $params[$fld."_nowrap"]==1){$rtn .= ' nowrap';}
 			$rtn .= ">" . $val . "</td>\n";
