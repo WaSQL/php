@@ -579,7 +579,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	}
 	$tag .= '</datalist>'."\n";
 	return $tag;
-	}
+}
 //---------- begin function buildFormDate-------------------
 /**
 * @describe creates an HTML date control
@@ -1331,6 +1331,51 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
     $rtn .= '</select>'."\n";
     return $rtn;
 }
+//---------- begin function buildFormSelectCountry--------------------
+/**
+* @describe creates an Selection list for Country
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectCountry('country',$params);
+*/
+function buildFormSelectCountry($name='country',$params=array('message'=>'-- country --')){
+	//get a list of country codes that exist in the states table - place these first
+	$query="select distinct(country) as code from states";
+	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
+	$codes=array_keys($codes);
+	//echo printValue($codes);exit;
+	//get countries
+	$recopts=array(
+		'-table'=>'countries',
+		'-order'=>'name,_id',
+		'-fields'=>'_id,name,code'
+	);
+	$recs=getDBRecords($recopts);
+	if(!is_array($recs)){return $recs;}
+
+	//build the list - placing countries found in the states table first.
+	foreach($recs as $i=>$rec){
+    	if(in_array($rec['code'],$codes)){
+        	$recs[$i]['sort']=0;
+		}
+		else{
+        	$recs[$i]['sort']=1;
+		}
+	}
+	//sort by sort field
+	$recs=sortArrayByKeys($recs,array('sort'=>SORT_ASC,'name'=>SORT_ASC));
+	$opts=array();
+	$line=0;
+	foreach($recs as $i=>$rec){
+		if($line==0 && $rec['sort']==1){
+        	$line=1;
+        	$opts['']='----------------';
+		}
+		$opts[$rec['code']]=$rec['name'];
+	}
+	return buildFormSelect($name,$opts,$params);
+}
 //---------- begin function buildFormSelectMonth--------------------
 /**
 * @describe creates an Month selection field
@@ -1349,6 +1394,33 @@ function buildFormSelectMonth($name,$params=array()){
 		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
 		7=>'Jul',8=>'Aug',9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
 	);
+	return buildFormSelect($name,$opts,$params);
+}
+//---------- begin function buildFormSelectState--------------------
+/**
+* @describe creates an Selection list for State selection
+* @param name string - name of field
+* @param country string - country code of country
+* @param params array
+* @return string
+* @usage echo buildFormSelectState('state','US',$params);
+*/
+function buildFormSelectState($name='state',$country='US',$params=array('message'=>'-- state --')){
+	//get a list of country codes that exist in the states table - place these first
+	$recopts=array(
+		'-table'=>"states",
+		'country'=>$country,
+		'-order'=>"name,_id",
+		'-fields'=>"_id,name,code",
+		'-index'=>'code'
+	);
+	$recs=getDBRecords($recopts);
+	if(!is_array($recs)){return $recs;}
+	$opts=array();
+	$line=0;
+	foreach($recs as $i=>$rec){
+		$opts[$rec['code']]=$rec['name'];
+	}
 	return buildFormSelect($name,$opts,$params);
 }
 //---------- begin function buildFormSelectTimezone--------------------
@@ -9668,7 +9740,7 @@ function postJSON($url='',$json='',$params=array()) {
 */
 function postXML($url='',$xml='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-type: text/xml; charset=UTF-8","Accept-Charset: UTF-8';}
 	if(!isset($params['-xml'])){$params['-xml']=1;}
 	return postBody($url,$xml,$params);
 }
