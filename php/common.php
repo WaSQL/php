@@ -1340,6 +1340,11 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 * @usage echo buildFormSelectCountry('country',$params);
 */
 function buildFormSelectCountry($name='country',$params=array('message'=>'-- country --')){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
@@ -1406,6 +1411,11 @@ function buildFormSelectMonth($name,$params=array()){
 * @usage echo buildFormSelectState('state','US',$params);
 */
 function buildFormSelectState($name='state',$country='US',$params=array('message'=>'-- state --')){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	//get a list of country codes that exist in the states table - place these first
 	$recopts=array(
 		'-table'=>"states",
