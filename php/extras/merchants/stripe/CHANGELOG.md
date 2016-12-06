@@ -1,3 +1,21 @@
+### 4.1.1 2016-10-21
+
+* Add docblock with model properties for `Plan`
+
+### 4.1.0 2016-10-18
+
+* Support for 403 status codes (permission denied)
+
+### 4.0.1 2016-10-17
+
+* Fix transfer reversal materialization
+* Fixes for some property definitions in docblocks
+
+### 4.0.0 2016-09-28
+
+* Support for subscription items
+* Drop attempt to force TLS 1.2: please note that this could be breaking if you're using old OS distributions or packages and upgraded recently (so please make sure to test your integration!)
+
 ### 3.23.0 2016-09-15
 
 * Add support for Apple Pay domains
