@@ -38,7 +38,214 @@
 		exit;
 */
 $progpath=dirname(__FILE__);
-require_once("{$progpath}/stripe/Stripe.php");
+//require_once("{$progpath}/stripe/Stripe.php");
+require_once("{$progpath}/stripe/init.php");
+//---------- begin function stripeCreateCustomer--------------------
+/**
+* @describe creates a customer
+* @param params array.  apikey, description, email, metadata, plan, qty,
+*	address_line1,address_line2,address_city,address_state,address_zip,address_country
+*	shipto_name,shipto_address,shipto_phone
+*	cc_name,cc_number,cc_month,cc_year,cc_cvc
+*	tax_percent, trial_end (timestamp)
+*	coupon
+* @return array
+* @usage $ok=stripeCreateCustomer(array('apikey'=>$apikey,'email'=>"bob@nob.com","description" => "Bob Nob from Norway"));
+* @reference https://stripe.com/docs/api?lang=php#create_customer
+*/
+function stripeCreateCustomer($params=array()){
+	//auth tokens are required
+	$required=array('apikey');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	$valid=array('apikey','account_balance','business_vat_id','coupon','description','email','metadata','plan','qty','shipping','source','tax_percent','trial_end');
+	//look for shipping fields and put in shipping
+	foreach($params as $k=>$v){
+    	if(preg_match('/^shipto\_(name|address|phone)$/i',$k)){
+        	$params['shipping'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	//look for credit card fields and put in source
+	foreach($params as $k=>$v){
+    	if(preg_match('/^address\_(line1|line2|city|state|zip|country)$/i',$k)){
+        	$params['source'][$k]=$v;
+        	unset($params[$k]);
+		}
+		if(preg_match('/^cc\_(month|year)$/i',$k,$m)){
+        	$params['source']["exp_{$m[1]}"]=$v;
+        	unset($params[$k]);
+		}
+		if(preg_match('/^cc\_(name|number|cvc)$/i',$k,$m)){
+        	$params['source'][$m[1]]=$v;
+        	unset($params[$k]);
+		}
+	}
+	if(isset($params['source']['number'])){
+    	$params['source']['object']='card';
+	}
+	//add any other invalid keys as meta data
+	foreach($params as $k=>$v){
+		if(!in_array($k,$valid)){
+        	$params['metadata'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	//return $params;
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=\Stripe\Customer::create($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+
+	$response=stripeObject2Array($response);
+	$rec=array();
+	if(isset($response['values']['id'])){
+		foreach($response['values'] as $k=>$v){
+			if(!is_array($v)){$rec[$k]=$v;}
+			else{
+            	switch($k){
+                	case 'metadata':$rec[$k]=$v['values'];break;
+                	case 'sources':
+                		$rec['card']=$v['values']['data'][0]['values'];
+                		unset($rec['card']['metadata']);
+                	break;
+					case 'subscriptions':
+                		$rec['subscription']=$v['values']['data'][0]['values'];
+                		unset($rec['subscription']['metadata']);
+                		$rec['plan']=$rec['subscription']['plan']['values'];
+                		unset($rec['plan']['metadata']);
+                		unset($rec['subscription']['plan']);
+                	break;
+				}
+			}
+		}
+		return $rec;
+	}
+	return $response;
+}
+//---------- begin function stripeGetCustomer--------------------
+/**
+* @describe creates a customer
+* @param params array.  apikey, customer_id
+* @return array
+* @usage $ok=stripeGetCustomer(array('apikey'=>$apikey,'customer_id'=>"cus_9UzTvTLy7OVRP1"));
+* @reference https://stripe.com/docs/api?lang=php#retrieve_customer
+*/
+function stripeGetCustomer($params=array()){
+	//auth tokens are required
+	$required=array('apikey','customer_id');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		$response=\Stripe\Customer::retrieve($params['customer_id']);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	if(isset($response['values'])){
+		return $response['values'];
+	}
+	return $response;
+}
+//---------- begin function stripeDeleteCustomer--------------------
+/**
+* @describe creates a customer
+* @param params array.  apikey, customer_id
+* @return boolean
+* @usage $ok=stripeDeleteCustomer(array('apikey'=>$apikey,'customer_id'=>"cus_9UzTvTLy7OVRP1"));
+* @reference https://stripe.com/docs/api?lang=php#delete_customer
+*/
+function stripeDeleteCustomer($params=array()){
+	//auth tokens are required
+	$required=array('apikey','customer_id');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		$cu=\Stripe\Customer::retrieve($params['customer_id']);
+		$cu->delete();
+		return true;
+	}
+	catch (Exception $e){
+		return false;
+	}
+	return true;
+}
+//---------- begin function stripeEditCustomer--------------------
+/**
+* @describe edits a customer
+* @param params array.  apikey, customer_id
+*	description, email, metadata, plan, qty,
+*	address_line1,address_line2,address_city,address_state,address_zip,address_country
+*	shipto_name,shipto_address,shipto_phone
+*	tax_percent, trial_end (timestamp)
+*	coupon
+* @return array
+* @usage $ok=stripeEditCustomer(array('apikey'=>$apikey,'customer_id'=>"cus_9UzTvTLy7OVRP1","plan" => "TSTPLN50Y"));
+* @reference https://stripe.com/docs/api?lang=php#create_subscription
+*/
+function stripeEditCustomer($params=array()){
+	//auth tokens are required
+	$required=array('apikey','customer_id');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	$valid=array('apikey','account_balance','business_vat_id','coupon','description','email','metadata','plan','qty','shipping','source','tax_percent','trial_end');
+	//look for shipping fields and put in shipping
+	foreach($params as $k=>$v){
+    	if(preg_match('/^shipto\_(name|address|phone)$/i',$k)){
+        	$params['shipping'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	//add any other invalid keys as meta data
+	foreach($params as $k=>$v){
+		if(!in_array($k,$valid) && !in_array($k,$required)){
+        	$params['metadata'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	//return $params;
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$cu=\Stripe\Customer::retrieve($params['customer_id']);
+		//echo "cu".printValue($cu);
+		unset($params['customer_id']);
+		//echo printValue($params);
+		foreach($params as $k=>$v){
+			if(in_array($k,$valid) && !in_array($k,$required)){
+            	$cu->{$k}=$v;
+            	//echo "setting {$k} to {$v}<br>\n";
+			}
+		}
+		$cu->save();
+		return true;
+	}
+	catch (Exception $e){
+    	return false;
+	}
+	return false;
+}
 //---------- begin function stripeListCustomers--------------------
 /**
 * @describe returns stripe customers
@@ -48,6 +255,7 @@ require_once("{$progpath}/stripe/Stripe.php");
 * @reference https://stripe.com/docs/api?lang=php#list_customers
 */
 function stripeListCustomers($params=array()){
+	//echo printValue(get_declared_classes());exit;
 	if(!isset($params['limit'])){
     	$params['limit']=1000;
 	}
@@ -59,9 +267,9 @@ function stripeListCustomers($params=array()){
 		}
 	}
 	try{
-		$auth=Stripe::setApiKey($params['apikey']);
+		$auth=\Stripe\Stripe\Stripe::setApiKey($params['apikey']);
 		unset($params['apikey']);
-		$response=Stripe_Customer::all($params);
+		$response=\Stripe\Customer::all($params);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -88,6 +296,137 @@ function stripeListCustomers($params=array()){
 	}
 	return $recs;
 }
+//---------- begin function stripeListPlans--------------------
+/**
+* @describe returns stripe plans
+* @param params array.  Options are apikey, active, ids, , shippable, url, ending_before, starting_after, limit (default is 10, max is 1000)
+* @return array
+* @usage $balances=stripeBalance(array('apikey'=>$apikey));
+* @reference https://stripe.com/docs/api?lang=php#list_products
+*/
+function stripeListPlans($params=array()){
+	if(!isset($params['limit'])){$params['limit']=1000;}
+	//auth tokens are required
+	$required=array('apikey');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=\Stripe\Plan::all($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
+
+//---------- begin function stripeCreatePlan--------------------
+/**
+* @describe creates a subscription
+* @param params array.  Options are apikey, id, amount, currency, interval, name
+* @return array
+* @usage $ok=stripeCreatePlan(array('apikey'=>$apikey,'customer'=>"cus_9UzTvTLy7OVRP1","plan" => "TSTPLN50Y"));
+* @reference https://stripe.com/docs/api?lang=php#create_subscription
+*/
+function stripeCreatePlan($params=array()){
+	//auth tokens are required
+	$required=array('apikey','id','amount','currency','interval','name');
+	$optional=array('interval_count','metadata','statement_descriptor','trial_period_days');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	//add any other fields to metadata
+	foreach($params as $k=>$v){
+    	if(!in_array($k,$required) && !in_array($k,$optional)){
+        	$params['metadata'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=\Stripe\Plan::create($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	return $response;
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
+//---------- begin function stripeCreateSubscription--------------------
+/**
+* @describe creates a subscription
+* @param params array.  Options are apikey, customer, plan
+* @return array
+* @usage $ok=stripeCreateSubscription(array('apikey'=>$apikey,'customer'=>"cus_9UzTvTLy7OVRP1","plan" => "TSTPLN50Y"));
+* @reference https://stripe.com/docs/api?lang=php#create_subscription
+*/
+function stripeCreateSubscription($params=array()){
+	//auth tokens are required
+	$required=array('apikey','customer','plan');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$response=\Stripe\Subscription::create($params);
+	}
+	catch (Exception $e){
+    	$response=stripeObject2Array($e);
+    	return $response;
+	}
+	$response=stripeObject2Array($response);
+	$recs=array();
+	if(isset($response['values']['data'][0]['values'])){
+        foreach($response['values']['data'] as $rec){
+			$crec=array();
+        	foreach($rec['values'] as $key=>$val){
+				if(is_array($val)){continue;}
+				if(!strlen($val)){continue;}
+				$crec[$key]=$val;
+			}
+			$recs[]=$crec;
+		}
+	}
+	return $recs;
+}
 //---------- begin function stripeListProducts--------------------
 /**
 * @describe returns stripe products
@@ -107,9 +446,9 @@ function stripeListProducts($params=array()){
 		}
 	}
 	try{
-		$auth=Stripe::setApiKey($params['apikey']);
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
 		unset($params['apikey']);
-		$response=Stripe_Product::all($params);
+		$response=\Stripe\Product::all($params);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -150,9 +489,9 @@ function stripeListSKUs($params=array()){
 		}
 	}
 	try{
-		$auth=Stripe::setApiKey($params['apikey']);
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
 		unset($params['apikey']);
-		$response=Stripe_SKU::all($params);
+		$response=\Stripe\SKU::all($params);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -193,8 +532,8 @@ function stripeBalance($params=array()){
 		}
 	}
 	try{
-		$auth=Stripe::setApiKey($params['apikey']);
-		$response=Stripe_Balance::retrieve();
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		$response=\Stripe\Balance::retrieve();
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -228,8 +567,8 @@ function stripeRetrieve($params=array()){
 		}
 	}
 	try{
-		$auth=Stripe::setApiKey($params['apikey']);
-		$response=Stripe_Charge::retrieve($params['id']);
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		$response=\Stripe\Charge::retrieve($params['id']);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -327,7 +666,7 @@ function stripeCharge($params=array()){
 	if(!isset($params['currency'])){$params['currency']='usd';}
 	else{$params['currency']=strtolower($params['currency']);}
 
-	$auth=Stripe::setApiKey($params['apikey']);
+	$auth=\Stripe\Stripe::setApiKey($params['apikey']);
 	//echo printValue($params);exit;
 	$card=array();
 	if(isset($params['card_num'])){
@@ -389,7 +728,7 @@ function stripeCharge($params=array()){
     	$charge['metadata']=$meta;
 	}
 	try{
-		$response=Stripe_Charge::create($charge);
+		$response=\Stripe\Charge::create($charge);
 	}
 	catch (Exception $e){
     	$response=stripeObject2Array($e);
@@ -455,7 +794,7 @@ function stripeRefund($params=array()){
 	if(!isset($params['currency'])){$params['currency']='usd';}
 	else{$params['currency']=strtolower($params['currency']);}
 
-	$auth=Stripe::setApiKey($params['apikey']);
+	$auth=\Stripe\Stripe::setApiKey($params['apikey']);
 	if($params['currency']=='usd' && strpos($params['amount'], ".")){
     	$params['amount']=round(($params['amount']*100),0);
 	}
@@ -474,7 +813,7 @@ function stripeRefund($params=array()){
 	//echo printValue($charge);exit;
 
 	try{
-		$stripe_charge = Stripe_Charge::retrieve($charge['charge']);
+		$stripe_charge = \Stripe\Charge::retrieve($charge['charge']);
 		$response = $stripe_charge->refund(array("amount" => $charge['amount']));
 	}
 	catch (Exception $e){
