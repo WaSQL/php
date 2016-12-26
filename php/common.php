@@ -12220,12 +12220,27 @@ function sendSMTPMail($params=array()){
 * @describe wrapper for file_put_contents
 * @param file string - file to write
 * @param data string - data to write
+* @param [append] - set to true to append
 * @return boolean
 * @usage $ok=setFileContents($file,$data);
 */
-function setFileContents($file,$data){
-	return file_put_contents($file,$data);
+function setFileContents($file,$data,$append=0){
+	if($append){
+		return file_put_contents($file,$data,FILE_APPEND);
 	}
+	return file_put_contents($file,$data);
+}
+//---------- begin function appendFileContents--------------------
+/**
+* @describe wrapper for file_put_contents with append
+* @param file string - file to write
+* @param data string - data to write
+* @return boolean
+* @usage $ok=setFileContents($file,$data);
+*/
+function appendFileContents($file,$data){
+	return file_put_contents($file,$data,FILE_APPEND);
+}
 //---------- begin function showErrors
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
