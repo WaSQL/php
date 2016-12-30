@@ -123,6 +123,10 @@ while(!length($group) || !length($host)){
 	}
 print "Group:$group, Host:$host\n";
 createWasqlFiles($host);
+#if the user specifid quit on the cmd line then quit instead of listen
+if(length($input{quit}) && $input{quit}==1){
+	exit(0);
+}
 print "Listening for changes (CTRL-C to exit)\n";
 while(1){
 	#call timer array
