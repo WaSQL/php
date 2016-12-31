@@ -16,11 +16,10 @@ function wsSendDBRecord($table,$rec=array()){
 		if(!in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){
         	$params[$field]=$rec[$field];
 		}
-
 	}
 	$params['type']='table';
 	//$msg=implode("<br />\n",$lines);
-	$msg=json_encode($params);
+	$msg='B64:'.base64_encode(json_encode($params));
 	//echo $table.$msg;exit;
 	$params['source']=isDBStage()?'db_stage':'db_live';
 	$params['name']=$table;
