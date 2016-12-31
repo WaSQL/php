@@ -175,7 +175,8 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 					$msg .="</tr>";
 					$msg .= '<tr>';
 					foreach($Server->wsClients[$id]['fields'] as $field){
-						$msg .= "<td>{$json[$field]}</td>";
+						$cval=isset($json[$field])?$json[$field]:'';
+						$msg .= "<td>{$cval}</td>";
 					}
 					$msg.='</table>';
 					$json['message']=$msg;
