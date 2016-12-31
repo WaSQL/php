@@ -73,6 +73,11 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 				}
 				return;
 			break;
+			case 'fields':
+				$Server->wsClients[$clientID]['fields']=preg_split('/\,/',$cmd_msg);
+				$Server->wsSend($clientID, "fields to display set to {$cmd_msg}");
+				return;
+			break;
 	    	case 'who':
 	    		$msg='';
 	    		foreach ( $Server->wsClients as $id => $client ){
@@ -140,22 +145,41 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		echo printValue($json);
 		//message
 		if(!isset($json['message'])){$json['message']=$message;}
-		$msg="{$json['name']}:{$json['message']}";
+		//prefix
+		$prefix="{$json['name']}:";
 		if(isset($json['icon'])){
-            $msg='<span class="'.$json['icon'].'"></span> '.$msg;
+            $prefix='<span class="'.$json['icon'].'"></span> '.$prefix;
 		}
 		elseif(isset($json['color'])){
-            $msg='<span class="icon-user" style="color:'.$json['color'].'"></span> '.$msg;
+            $prefix='<span class="icon-user" style="color:'.$json['color'].'"></span> '.$prefix;
 		}
 		elseif(isset($json['class'])){
-            $msg='<span class="icon-user '.$json['class'].'"></span> '.$msg;
+            $prefix='<span class="icon-user '.$json['class'].'"></span> '.$prefix;
 		}
 		//prepend the time
 		$msgdate=date('F j, Y, g:i a');
 		$msgtime=date('g:i a');
-		$msg='<span style="margin-right:15px" title="'.$msgdate.'">'.$msgtime.'</span>'.$msg;
+		$prefix='<span style="margin-right:15px" title="'.$msgdate.'">'.$msgtime.'</span>'.$prefix;
 		foreach ( $Server->wsClients as $id => $client ){
 			if ( $id != $clientID ){
+				//look for fields
+				if(isset($Server->wsClients[$id]['fields'][0])){
+					if(count($Server->wsClients[$id]['fields'])==1 && strtolower($Server->wsClients[$id]['fields'][0])=='all'){
+						$Server->wsClients[$id]['fields']=array_keys($json);
+					}
+					$msg='<table class="table table-condensed table-striped">';
+					$msg .= '<tr>';
+					foreach($Server->wsClients[$id]['fields'] as $field){
+						$msg .= "<th>{$field}</th>";
+					}
+					$msg .="</tr>";
+					$msg .= '<tr>';
+					foreach($Server->wsClients[$id]['fields'] as $field){
+						$msg .= "<td>{$json[$field]}</td>";
+					}
+					$msg.='</table>';
+					$json['message']=$msg;
+				}
 				//look for filters
 				if(isset($Server->wsClients[$id]['filters'])){
 					//echo "Applying Filters for client {$id}\n";
@@ -197,7 +221,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 					}
 					if($skip > 0){continue;}
 				}
-				$Server->wsSend($id, $msg);
+				$Server->wsSend($id, "{$prefix} {$json['message']}");
 			}
 		}
 	}
