@@ -9,17 +9,20 @@
 */
 function wsSendDBRecord($table,$rec=array()){
 	$fieldinfo=getDBFieldInfo($table);
+	//echo printValue($fieldinfo);exit;
 	$params=array();
 	foreach($rec as $field=>$val){
 		if(!strlen($rec[$field])){continue;}
-		if($fieldinfo[$field]['_dbtype'] != 'text'){
+		if(!in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){
         	$params[$field]=$rec[$field];
 		}
+
 	}
+	$params['type']='table';
+	//$msg=implode("<br />\n",$lines);
 	$msg=json_encode($params);
-	$msg=stripslashes($msg);
-	//echo $table.printValue($rec).printValue($params);exit;
-	$params['source']='db';
+	//echo $table.$msg;exit;
+	$params['source']=isDBStage()?'db_stage':'db_live';
 	$params['name']=$table;
 	$params['icon']='icon-table w_grey';
 	$ok=wsSendMessage($msg,$params);
@@ -85,13 +88,13 @@ function wsGetFileName($file='',$stripext=0){
 function wsSendMessage($message,$params=array()){
 	global $CONFIG;
 	if(!isset($params['-host'])){
-		if(isset($CONFIG['websocket_host']){
+		if(isset($CONFIG['websocket_host'])){
 			$params['-host']=$CONFIG['websocket_host'];
 		}
 		else{$params['-host']='127.0.0.1';}
 	}
 	if(!isset($params['-port'])){
-		if(isset($CONFIG['websocket_port']){
+		if(isset($CONFIG['websocket_port'])){
 			$params['-port']=$CONFIG['websocket_port'];
 		}
 		else{$params['-port']='9300';}
@@ -100,12 +103,14 @@ function wsSendMessage($message,$params=array()){
 	if(!isset($params['name'])){$params['name']='wsSendMessage';}
 	if(!isset($params['source'])){$params['source']='wasql';}
 	if(!isset($params['icon'])){$params['icon']='icon-server w_warning';}
-	$data =json_encode(array(
-		'name'=>$params['name'],
-		'icon'=>$params['icon'],
-		'source'=>$params['source'],
-		'message'=>$message
-	));
+	$params['message']=$message;
+	$data=array();
+	foreach($params as $k=>$v){
+    	if(!preg_match('/^\-(origin|port|host)/',$k)){
+        	$data[$k]=$v;
+		}
+	}
+	$data =json_encode($data);
 	$data =wsHybi10Encode($data);
 	$key = wsGenerateKey();
 	//create the header needed to talk to the websocket server
