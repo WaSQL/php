@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link type="text/css" rel="stylesheet" href="/wfiles/css/extras/bootstrap.min.css" />
+	<script type="text/javascript" src="/php/minify_js.php"></script>
+	<link type="text/css" rel="stylesheet" href="/php/minify_css.php" />
+ 	<script src="websockets.js" type="text/javascript"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-8 col-sm-offset-2">
+				<h2>Chat Window</h2>
+				<div id="chat" data-user="test"></div>
+				<img src="/wfiles/clear.gif" onload="websocketClient('chat','ws://127.0.0.1:9300',{filter:'source eq user',sound:'notify'});" alt="" />
+			</div>
+		</div>
+	</div>
+</body>
+</html>

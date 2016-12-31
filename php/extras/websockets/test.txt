@@ -1,0 +1,4 @@
+#!/bin/bash
+while read line; do
+    php websockets_client.php $line
+done

@@ -1,0 +1,39 @@
+
+/* Border & background */
+
+.svg-holder-multi {
+  font: 10px sans-serif;
+  background:white;
+}
+
+
+/* Axes */
+
+.svg-holder-multi .axis {
+  font: 10px sans-serif;
+}
+
+.svg-holder-multi .axis path,
+.svg-holder-multi .axis line {
+  fill: none;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+
+/* Lines */
+
+.svg-holder-multi .line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+
+/* Labels */
+
+.svg-holder-multi .label {
+  font-size:14px;
+  font-weight:normal;
+  fill:#999;
+  stroke:none;
+}

@@ -122,8 +122,6 @@ var websocketConnection = function(url){
 	this.logmessage = function(txt){
     	if(undefined == this.logwindow){return false;}
 		var cline = document.createElement('div');
-		cline.style.borderBottom='1px dashed #ccc';
-		cline.style.marginBottom='3px';
 		cline.innerHTML=txt;
 		//send to logwindow as you
 		this.logwindow.appendChild(cline);

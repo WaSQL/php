@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<meta charset="utf-8">
+<html>
+<head>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+<style>
+body {
+  font: 10px sans-serif;
+}
+div {
+  padding-left: 100px;
+  padding-top: 10px;
+  width: 30%;
+  margin: 0 auto;
+  font: 14px;
+}
+</style>
+
+<body>
+<div style="width:500px;height:500px;background-color:grey;" id="mytest">
+</div>
+<div style="width:500px;height:500px;background-color:cream;" id="mytest2">
+</div>
+
+<script>
+function d3CreatePieChart(p){
+	if(undefined==p){p='body';}
+	var width = 500, height = 500 - 29; // adjust for height of input bar div
+	var color = d3.scale.category20();
+	// draw and append the container
+	var svg = d3.select(p).append("svg")
+		.attr("width", width)
+		.attr("height", height);
+	// set the thickness of the inner and outer radii
+	var min = Math.min(width, height);
+	var oRadius = min / 2 * 0.9;
+	var iRadius = min / 2 * 0.02;
+	// construct default pie laoyut
+	var pie = d3.layout.pie().value(function(d){ return d; }).sort(null);
+	// construct arc generator
+	var arc = d3.svg.arc()
+		.outerRadius(oRadius)
+		.innerRadius(iRadius);
+	// creates the pie chart container
+	//var g = svg.append('g')
+	var g = svg.append('g')
+		.attr('transform', function(){
+	    	if ( window.innerWidth >= 960 ) var shiftWidth = width / 2;
+	    	if ( window.innerWidth < 960 ) var shiftWidth = width / 3;
+	    	return 'translate(' + shiftWidth + ',' + height / 2 + ')';
+	  	})
+	// generate random data
+	var data = makeData();
+	
+	// enter data and draw pie chart
+	var path = g.datum(data).selectAll("path")
+		.data(pie)
+		.enter().append("path")
+	    	.attr("class","piechart")
+	    	.attr("fill", function(d,i){ return color(i); })
+	    	.attr("d", arc)
+	    	.each(function(d){ this._current = d; });
+}
+function d3UpdatePieChart(p){
+	if(undefined==p){p='body';}
+	var color = d3.scale.category20();
+	var svg = d3.select(p+" svg");
+	var width=svg.attr("width");
+	var height=svg.attr("height");
+	// set the thickness of the inner and outer radii
+	var min = Math.min(width, height);
+	var oRadius = min / 2 * 0.9;
+	var iRadius = min / 2 * 0.02;
+	// construct default pie laoyut
+	var pie = d3.layout.pie().value(function(d){ return d; }).sort(null);
+	// construct arc generator
+	var arc = d3.svg.arc()
+		.outerRadius(oRadius)
+		.innerRadius(iRadius);
+	// creates the pie chart container
+	//var g = svg.append('g')
+	var g = svg.select('g');
+	// generate new random data array; [63.555678058754324, 21.49766804895411, 2.2837091829956857]
+	data = makeData();
+	// add transition to path
+	g.datum(data).selectAll("path")
+		.data(pie).transition()
+		.duration(1000)
+		.attr("fill", function(d,i){return color(i); })
+		.attrTween("d", function(a){
+			// Store the displayed angles in _current.
+			// Then, interpolate from _current to the new angles.
+			// During the transition, _current is updated in-place by d3.interpolate.
+			var i = d3.interpolate(this._current, a);
+	  		this._current = i(0);
+	  		return function(t) {
+	    		return arc(i(t));
+	  		};
+		});
+	// add any new paths
+	g.datum(data).selectAll("path")
+    	.data(pie).enter().append("path")
+    		.attr("class","piechart")
+    		.attr("fill", function(d,i){return color(i); })
+    		.attr("d", arc)
+    		.each(function(d){ this._current = d; });
+	// remove data not being used
+  	g.datum(data).selectAll("path")
+		.data(pie).exit().remove();
+}
+
+ 	d3CreatePieChart('#mytest');
+ 	//d3UpdatePieChart();
+	setInterval(function (d){d3UpdatePieChart('#mytest');},5000);
+	d3CreatePieChart('#mytest2');
+ 	//d3UpdatePieChart();
+	setInterval(function (d){d3UpdatePieChart('#mytest2');},7000);
+	
+	function makeData(){
+		var size=Math.floor((Math.random() * 10) + 1);
+		//size=7;
+	  	var md= d3.range(size).map(function(item){
+	   		return Math.round(Math.random()*100,2);
+	  	});
+	  	console.log(md);
+	  	return md;
+	};
+
+</script>
+</body>
+</html>

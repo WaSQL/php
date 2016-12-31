@@ -1,0 +1,40 @@
+
+/* Border & background */
+
+.svg-holder-interpolation {
+  font: 10px sans-serif;
+  background:white;
+}
+
+
+/* Axes */
+
+.svg-holder-interpolation .axis {
+  font: 10px sans-serif;
+}
+
+.svg-holder-interpolation .axis path,
+.svg-holder-interpolation .axis line {
+  fill: none;
+  stroke: #ccc;
+  shape-rendering: crispEdges;
+}
+
+
+/* Lines */
+
+.svg-holder-interpolation .line {
+  fill: none;
+  stroke:orange;
+  stroke-width: 1.5px;
+}
+
+
+/* Labels */
+
+.svg-holder-interpolation .label {
+  font-size:14px;
+  font-weight:normal;
+  fill:#999;
+  stroke:none;
+}
