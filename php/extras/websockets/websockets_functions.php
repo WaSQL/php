@@ -17,6 +17,7 @@ function wsSendDBRecord($table,$rec=array()){
 		}
 	}
 	$msg=json_encode($params);
+	$msg=stripslashes($msg);
 	//echo $table.printValue($rec).printValue($params);exit;
 	$params['source']='db';
 	$params['name']=$table;
@@ -82,11 +83,19 @@ function wsGetFileName($file='',$stripext=0){
 * @usage $ok=wsSendMessage($message);
 */
 function wsSendMessage($message,$params=array()){
+	global $CONFIG;
 	if(!isset($params['-host'])){
-		$params['-host']=$_SERVER['SERVER_ADDR'];
-		if($params['-host']=='::1'){$params['-host']='127.0.0.1';}
+		if(isset($CONFIG['websocket_host']){
+			$params['-host']=$CONFIG['websocket_host'];
+		}
+		else{$params['-host']='127.0.0.1';}
 	}
-	if(!isset($params['-port'])){$params['-port']='9300';}
+	if(!isset($params['-port'])){
+		if(isset($CONFIG['websocket_port']){
+			$params['-port']=$CONFIG['websocket_port'];
+		}
+		else{$params['-port']='9300';}
+	}
 	if(!isset($params['-origin'])){$params['-origin']="http://{$params['-host']}";}
 	if(!isset($params['name'])){$params['name']='wsSendMessage';}
 	if(!isset($params['source'])){$params['source']='wasql';}
