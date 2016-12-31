@@ -4,6 +4,7 @@ function websocketNotify(file){
 	if(undefined != obj){
     	obj.currentTime=0;
     	obj.play();
+    	console.log(obj);
     	return;
 	}
 	var a=document.createElement('audio');
@@ -63,10 +64,17 @@ function websocketClient(obj,url,params){
 			if(key=='inp'){continue;}
 			if(key=='sound'){continue;}
 			if(wsc.params[key].length==0){continue;}
-			var vals=wsc.params[key].split(',');
-			for(var i=0;i<vals.length;i++){
+			if(key=='filter'){
+				var vals=wsc.params[key].split(',');
+				for(var i=0;i<vals.length;i++){
+					var msg={};
+					msg.message='/'+key+' '+vals[i];
+					wsc.send('message',JSON.stringify(msg));
+				}
+			}
+			else{
 				var msg={};
-				msg.message='/'+key+' '+vals[i];
+				msg.message='/'+key+' '+wsc.params[key];
 				wsc.send('message',JSON.stringify(msg));
 			}
 		}
