@@ -45,7 +45,7 @@ function amazonSendMail($params=array()){
 	$m->setMessageFromString(strip_tags($params['message']),$params['message']);
 	$rtn = $ses->sendEmail($m);
 	if(isset($rtn['MessageId'])){return 1;}
-	return printValue($rtn);
+	return printValue(array('failed',$rtn));
 
 }
 //---------- begin function

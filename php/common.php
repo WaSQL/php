@@ -8398,6 +8398,9 @@ function loadExtrasJs($extras){
         			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.js';
 				}
         	break;
+        	case 'websockets':
+        		$_SESSION['w_MINIFY']['extras_js'][]='/php/extras/websockets/websockets.js';
+        	break;
         	case 'signature':
 			case 'file':
 				$extra='html5';
