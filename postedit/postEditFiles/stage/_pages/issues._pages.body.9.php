@@ -1,0 +1,3 @@
+<view:default>
+
+</view:default>

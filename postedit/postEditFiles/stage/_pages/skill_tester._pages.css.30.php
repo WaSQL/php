@@ -1,0 +1,3 @@
+#gridimg{
+	cursor:crosshair;
+}

@@ -1,0 +1,2 @@
+<view:register>
+</view:register>
