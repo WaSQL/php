@@ -1,28 +1,34 @@
 function websocketNotify(file){
 	if(undefined == file){file='notify';}
-	var obj=getObject('websocketAudio_'+file);
+	var cid='websocketAudio_'+file.replace(/\//g,'');
+	var obj=getObject(cid);
 	if(undefined != obj){
     	obj.currentTime=0;
     	obj.play();
-    	console.log(obj);
     	return;
 	}
 	var a=document.createElement('audio');
-	a.id='websocketAudio_'+file;
+	a.id=cid;
+	console.log(cid);
 	var s=document.createElement('source');
 	s.src=file+'.ogg';
 	s.type='audio/ogg';
 	a.appendChild(s);
+	s=document.createElement('source');
 	s.src=file+'.webm';
 	s.type='audio/webm';
 	a.appendChild(s);
+	s=document.createElement('source');
 	s.src=file+'.mp3';
 	s.type='audio/mpeg';
 	a.appendChild(s);
+	s=document.createElement('source');
 	s.src=file+'.wav';
 	s.type='audio/wav';
 	a.appendChild(s);
 	document.body.appendChild(a);
+	a.currentTime=0;
+	a.play();
 }
 function websocketClient(obj,url,params){
 	if(undefined == params){params={};}
