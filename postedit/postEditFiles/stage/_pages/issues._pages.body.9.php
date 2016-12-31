@@ -1,3 +1,0 @@
-<view:default>
-
-</view:default>

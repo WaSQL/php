@@ -1,2 +1,0 @@
-<view:default>
-<view:/default>
