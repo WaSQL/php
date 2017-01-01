@@ -35,7 +35,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
     	$message=base64_decode($m[1]);
 	}
 	$json=@json_decode($message,true);
-	echo "json".printValue($json);
+	//echo "json".printValue($json);
 	//handle custom command messages
 	if(preg_match('/^\/(.+)$/',$json['message'],$m)){
 		$parts=preg_split('/\ +/',$m[1],2);
@@ -145,7 +145,6 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
             $json['name']=$Server->wsClients[$clientID]['name'];
 		}
 		elseif(!isset($json['name'])){$json['name']="Visitor {$clientID} ({$ip})";}
-		echo printValue($json);
 		//message
 		if(!isset($json['message'])){$json['message']=$message;}
 		//prefix
