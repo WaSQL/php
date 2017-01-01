@@ -14,11 +14,11 @@ function wsSendDBRecord($table,$rec=array()){
 	foreach($rec as $field=>$val){
 		if(is_array($val)){continue;}
 		if(!strlen($rec[$field])){continue;}
-		$params[$field]=$rec[$field];
+		$params[$field]='B64:'.base64_encode($rec[$field]);
 	}
 	$params['type']='table';
 	//$msg=implode("<br />\n",$lines);
-	$msg='B64:'.base64_encode(json_encode($params));
+	$msg=json_encode($params);
 	//echo $table.$msg;exit;
 	$params['source']=isDBStage()?'db_stage':'db_live';
 	$params['name']=$table;
