@@ -12,10 +12,9 @@ function wsSendDBRecord($table,$rec=array()){
 	//echo printValue($fieldinfo);exit;
 	$params=array();
 	foreach($rec as $field=>$val){
+		if(is_array($val)){continue;}
 		if(!strlen($rec[$field])){continue;}
-		if(!in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){
-        	$params[$field]=$rec[$field];
-		}
+		$params[$field]=$rec[$field];
 	}
 	$params['type']='table';
 	//$msg=implode("<br />\n",$lines);
