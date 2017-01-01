@@ -31,7 +31,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		$Server->wsClose($clientID);
 		return;
 	}
-	if(preg_match('/&B64\:(.+)$/i',$message,$m)){
+	if(preg_match('/^B64\:(.+)$/i',$message,$m)){
     	$message=base64_decode($m[1]);
 	}
 	$json=@json_decode($message,true);
