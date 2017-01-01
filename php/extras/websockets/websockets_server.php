@@ -5,7 +5,9 @@ set_time_limit(0);
 // include the web sockets server class
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/class.websockets.php");
-
+global $logfile;
+$logfile="{$progpath}/websockets_server.log";
+if(is_file($logfile)){unlink($logfile);}
 // start the server
 $Server = new PHPWebSocket();
 $Server->bind('message', 'wsOnMessage');
@@ -24,6 +26,7 @@ $Server->wsStartServer('0.0.0.0', 9300);
 */
 function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
+	global $logfile;
 	$ip = long2ip( $Server->wsClients[$clientID][6] );
 
 	// check if message length is 0
@@ -37,6 +40,10 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	    	$json[$k]=base64_decode($m[1]);
 		}
 	}
+	//only keep the last 9MB of logs
+	if(is_file($logfile) || filesize($logfile) > 9000000){unlink($logfile);}
+	//log
+	file_put_contents($logfile,printValue($json),FILE_APPEND);
 	//echo "json".printValue($json);
 	//handle custom command messages
 	if(preg_match('/^\/(.+)$/',$json['message'],$m)){
