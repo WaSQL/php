@@ -15,10 +15,6 @@ function websocketNotify(file){
 	s.type='audio/ogg';
 	a.appendChild(s);
 	s=document.createElement('source');
-	s.src=file+'.webm';
-	s.type='audio/webm';
-	a.appendChild(s);
-	s=document.createElement('source');
 	s.src=file+'.mp3';
 	s.type='audio/mpeg';
 	a.appendChild(s);
