@@ -31,10 +31,12 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		$Server->wsClose($clientID);
 		return;
 	}
-	if(preg_match('/^B64\:(.+)$/i',$message,$m)){
-    	$message=base64_decode($m[1]);
-	}
 	$json=@json_decode($message,true);
+	foreach($json as $k=>$v){
+		if(preg_match('/^B64\:(.+)$/i',$v,$m)){
+	    	$json[$k]=base64_decode($m[1]);
+		}
+	}
 	//echo "json".printValue($json);
 	//handle custom command messages
 	if(preg_match('/^\/(.+)$/',$json['message'],$m)){
