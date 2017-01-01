@@ -41,7 +41,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		}
 	}
 	//only keep the last 9MB of logs
-	if(is_file($logfile) || filesize($logfile) > 9000000){unlink($logfile);}
+	if(is_file($logfile) && filesize($logfile) > 9000000){unlink($logfile);}
 	//log
 	file_put_contents($logfile,printValue($json),FILE_APPEND);
 	//echo "json".printValue($json);
