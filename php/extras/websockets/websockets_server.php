@@ -46,7 +46,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	file_put_contents($logfile,printValue($json),FILE_APPEND);
 	//echo "json".printValue($json);
 	//handle custom command messages
-	if(preg_match('/^\/(.+)$/',$json['message'],$m)){
+	if(isset($json['message']) && preg_match('/^\/(.+)$/',$json['message'],$m)){
 		$parts=preg_split('/\ +/',$m[1],2);
 		$command=$parts[0];
 		$cmd_msg=$parts[1];
