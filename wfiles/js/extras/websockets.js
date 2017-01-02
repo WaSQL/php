@@ -158,6 +158,7 @@ var websocketConnection = function(url){
         	this.logwindow.style.height='300px';
 		}
 		this.logwindow.style.overflow='auto';
+		this.logwindow.style.resize='both';
 		this.logwindow.style.backgroundColor='#FFF';
 		this.logwindow.style.border='1px solid #ccc';
 		this.logwindow.style.padding='6px 12px';
