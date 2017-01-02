@@ -127,28 +127,32 @@ function wsSendMessage($message,$params=array()){
         "Origin: {$params['-origin']}\r\n".
         "Sec-WebSocket-Key: {$key}\r\n".
         "Sec-WebSocket-Version: 13\r\n\r\n";
-	if($sock = fsockopen($params['-host'], $params['-port'], $errno, $errstr)){
-    	fwrite($sock, $head);
-    	$header = fread($sock, 2000);
-    	$lines=preg_split('/[\r\n]+/',trim($header));
-    	$headers=array();
-		foreach($lines as $line){
-			$parts=preg_split('/\:/',trim($line),2);
-			if(count($parts)==2){
-				$headers[$parts[0]]=$parts[1];
+    try{
+		if($sock = @fsockopen($params['-host'], $params['-port'], $errno, $errstr)){
+	    	fwrite($sock, $head);
+	    	$header = fread($sock, 2000);
+	    	$lines=preg_split('/[\r\n]+/',trim($header));
+	    	$headers=array();
+			foreach($lines as $line){
+				$parts=preg_split('/\:/',trim($line),2);
+				if(count($parts)==2){
+					$headers[$parts[0]]=$parts[1];
+				}
 			}
+			if(isset($headers['Sec-WebSocket-Accept']) && strlen($headers['Sec-WebSocket-Accept'])){
+				if(!fwrite($sock, $data )){return false;}
+				fclose($sock);
+				return true;
+			}
+	    	fclose($sock);
+	    	return false;
 		}
-		if(isset($headers['Sec-WebSocket-Accept']) && strlen($headers['Sec-WebSocket-Accept'])){
-			if(!fwrite($sock, $data )){return false;}
-			fclose($sock);
-			return true;
+		else{
+			return false;
 		}
-    	fclose($sock);
-    	return false;
 	}
-	else{
-    	echo "Unable to connect";
-    	exit;
+	catch(Exception $e){
+    	return false;
 	}
 }
 //---------- begin function wsGenerateKey---------------------------------------
