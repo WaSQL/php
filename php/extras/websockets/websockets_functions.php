@@ -14,6 +14,7 @@ function wsSendDBRecord($table,$rec=array()){
 	foreach($rec as $field=>$val){
 		if(is_array($val)){continue;}
 		if(!strlen($rec[$field])){continue;}
+		if(in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){continue;}
 		$params[$field]='B64:'.base64_encode($rec[$field]);
 	}
 	$params['type']='table';
@@ -105,6 +106,7 @@ function wsSendMessage($message,$params=array()){
     	foreach($json as $k=>$v){
         	$params[$k]=$v;
 		}
+		unset($params['message']);
 	}
 	else{$params['message']=$message;}
 	$data=array();
@@ -113,6 +115,7 @@ function wsSendMessage($message,$params=array()){
         	$data[$k]=$v;
 		}
 	}
+	//echo printValue($data);exit;
 	$data =json_encode($data);
 	$data =wsHybi10Encode($data);
 	$key = wsGenerateKey();
