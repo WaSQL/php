@@ -150,13 +150,19 @@ var websocketConnection = function(url){
 		}
 		//create an log window
 		this.logwindow = document.createElement('div');
-		this.logwindow.style.height='400px';
+		if(undefined != obj.getAttribute('data-height')){
+			var h=obj.getAttribute('data-height');
+			this.logwindow.style.height=h+'px';
+		}
+		else{
+        	this.logwindow.style.height='300px';
+		}
 		this.logwindow.style.overflow='auto';
 		this.logwindow.style.backgroundColor='#FFF';
 		this.logwindow.style.border='1px solid #ccc';
 		this.logwindow.style.padding='6px 12px';
 		this.logwindow.style.borderRadius='4px';
-		this.logwindow.style.boxShadow='0 1px 1px rgba(0, 0, 0, 0.075) inset';
+		//this.logwindow.style.boxShadow='0 1px 1px rgba(0, 0, 0, 0.075) inset';
 		obj.appendChild(this.logwindow);
 		if(inp==1){
 			//create an input window
