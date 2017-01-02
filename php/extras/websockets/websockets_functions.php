@@ -17,7 +17,6 @@ function wsSendDBRecord($table,$rec=array()){
 		$params[$field]='B64:'.base64_encode($rec[$field]);
 	}
 	$params['type']='table';
-	//$msg=implode("<br />\n",$lines);
 	$msg=json_encode($params);
 	//echo $table.$msg;exit;
 	$params['source']=isDBStage()?'db_stage':'db_live';
@@ -101,7 +100,13 @@ function wsSendMessage($message,$params=array()){
 	if(!isset($params['name'])){$params['name']='wsSendMessage';}
 	if(!isset($params['source'])){$params['source']='wasql';}
 	if(!isset($params['icon'])){$params['icon']='icon-server w_warning';}
-	$params['message']=$message;
+	if(preg_match('/^\{/',$message)){
+    	$json=json_decode($message,true);
+    	foreach($json as $k=>$v){
+        	$params[$k]=$v;
+		}
+	}
+	else{$params['message']=$message;}
 	$data=array();
 	foreach($params as $k=>$v){
     	if(!preg_match('/^\-(origin|port|host)/',$k)){
