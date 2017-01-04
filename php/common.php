@@ -498,6 +498,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
         		$checked_cnt++;
 			}
 			if($params['required']){$tag .= ' data-required="1"';}
+			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
@@ -3259,12 +3260,6 @@ function getCalendar($monthyear='',$params=array()){
 		$cdate['date']			= "{$cdate['year']}-{$cdate['mon']}-{$cdate['mday']}";
 		$cdate['month']			= $calendar['current']['month'];
 		$cdate['previous_month']=1;
-		if($calendar['current']['mday']==$cdate['mday']){
-           $cdate['current_day']=1;
-        }
-        if($calendar['current']['month']==$cdate['month']){
-           $cdate['current_month']=1;
-        }
 		$cdate['events']=array();
 		$calendar['weeks'][1][]=$cdate;
 		$d++;
