@@ -3259,11 +3259,11 @@ function getCalendar($monthyear='',$params=array()){
 		$cdate['date']			= "{$cdate['year']}-{$cdate['mon']}-{$cdate['mday']}";
 		$cdate['month']			= $calendar['current']['month'];
 		$cdate['previous_month']=1;
-		if($calendar['current']['mday']==$cdate['mday'] && $calendar['current']['month']==$cdate['month']){
-           $cdate['current_day']==1;
+		if($calendar['current']['mday']==$cdate['mday']){
+           $cdate['current_day']=1;
         }
         if($calendar['current']['month']==$cdate['month']){
-           $cdate['current_month']==1;
+           $cdate['current_month']=1;
         }
 		$cdate['events']=array();
 		$calendar['weeks'][1][]=$cdate;
