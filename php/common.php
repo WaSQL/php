@@ -1860,43 +1860,51 @@ function buildShareLinks($params=array()){
         	case 'facebook':
         		$icon='icon-site-facebook';
         		if(isset($params['facebook_icon'])){$icon=$params['facebook_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.facebook.com/sharer.php?m2w&s=100&p[url]='.$params['-url'].'&p[images][0]=&p[title]='.$params['-title'].'" title="facebook"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'twitter':
         		$icon='icon-site-twitter-bird';
         		if(isset($params['twitter_icon'])){$icon=$params['twitter_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://twitter.com/share?text='.$params['-title'].'&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'linkedin':
         	case 'linked in':
         		$icon='icon-site-linkedin';
         		if(isset($params['linkedin_icon'])){$icon=$params['linkedin_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.linkedin.com/shareArticle?title='.$params['-title'].'&mini=true&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'reddit':
         		$icon='icon-site-reddit';
         		if(isset($params['facebook_icon'])){$icon=$params['facebook_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.reddit.com/submit?title='.$blogt.'&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'tumblr':
         		$icon='icon-site-tumblr';
         		if(isset($params['tumblr_icon'])){$icon=$params['tumblr_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.tumblr.com/share/link?url='.$params['-url'].'&name='.$params['-title'].'&description='.$params['-title'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'google+':
         	case 'google plus':
         		$icon='icon-site-gplus';
         		if(isset($params['google_icon'])){$icon=$params['google_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="https://plus.google.com/share?url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
 			case 'pinterest':
         		$icon='icon-site-pinterest';
         		if(isset($params['pinterest_icon'])){$icon=$params['pinterest_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://pinterest.com/pin/create/button/?url='.$params['-url'].'&description='.$params['-title'].'&media="><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'email':
         		$icon='icon-mail';
         		if(isset($params['mail_icon'])){$icon=$params['mail_icon'];}
+        		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
         		$rtn .= '		<a href="mailto:?subject='.$params['-title'].'&body'.$params['-url'].'" class="blog_color w_link"><span class="'.$icon.'"><span></a>'."\n";
         	break;
 		}
