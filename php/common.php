@@ -1898,6 +1898,8 @@ function buildShareLinks($params=array()){
 			case 'pinterest':
 				/*
 					NOTE: Pinterest requires the following script to be in your template:
+					Reference Link: https://developers.pinterest.com/docs/widgets/save/?
+					Script:
 					<script type="text/javascript" async defer src="//assets.pinterest.com/js/pinit.js"></script>
 				*/
         		$icon='icon-site-pinterest';
