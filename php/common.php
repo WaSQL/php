@@ -1803,6 +1803,106 @@ function buildShareButtons($params=array()){
 	$rtn .= '</div>'."\n";
 	return $rtn;
 }
+//---------- begin function buildShareLinks
+/**
+* @describe build share links for facebook, twitter, linkedin, reddit, tumblr, google+, pinterest, email
+* @param opts array
+*	options array - possible values are -url,-size,-show,-hide,-title
+*	-url - url to share. defaults to current page.
+*	-class - class to pass to all buttons
+*	-show - buttons to show. defaults to all. comma separate values. Possible values are facebook,twitter,email,linkedin,google+,reddit
+*	-hide - buttons to hide. defaults to none. comma separate values. Possible values are facebook,twitter,email,linkedin,google+,reddit
+*	-title - title to share. default to none
+* @return
+*	links with buttons
+* @usage <?=buildShareButtons();?>
+*/
+function buildShareLinks($params=array()){
+	//set defaults
+	if(!isset($params['-url'])){
+		$prefix=isSecure()?'https://':'http://';
+		$params['-url']=$prefix.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		}
+	if(!isset($params['-class'])){$params['-class']='';}
+	if(!isset($params['-show'])){$params['-show']='facebook,twitter,linkedin,reddit,tumblr,google+,pinterest,email';}
+	if(!isset($params['-hide'])){$params['-hide']='';}
+	if(!isset($params['-title'])){$params['-title']='';}
+	$params['-title']=encodeURL($params['-title']);
+	$params['-url']=encodeURL($params['-url']);
+
+	//show
+	$show=array();
+	if(!is_array($params['-show'])){
+		$params['-show']=preg_split('/\,/',trim(strtolower($params['-show'])));
+	}
+	foreach($params['-show'] as $button){
+		$button=trim(strtolower($button));
+		if(!strlen($button)){continue;}
+		$show[]=$button;
+	}
+	//hide
+	$hide=array();
+	if(!is_array($params['-hide'])){
+		$params['-hide']=preg_split('/\,/',trim(strtolower($params['-hide'])));
+	}
+	foreach($params['-hide'] as $button){
+		$button=trim(strtolower($button));
+		if(!strlen($button)){continue;}
+		$hide[]=$button;
+	}
+	//echo "show".printValue($show)."hide".printValue($hide);
+	$rtn='';
+	foreach($show as $button){
+		//skip buttons set to hide
+		if(in_array($button,$hide)){continue;}
+		//echo "[{$button}]";
+		switch($button){
+        	case 'facebook':
+        		$icon='icon-site-facebook';
+        		if(isset($params['facebook_icon'])){$icon=$params['facebook_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.facebook.com/sharer.php?m2w&s=100&p[url]='.$params['-url'].'&p[images][0]=&p[title]='.$params['-title'].'" title="facebook"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'twitter':
+        		$icon='icon-site-twitter-bird';
+        		if(isset($params['twitter_icon'])){$icon=$params['twitter_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://twitter.com/share?text='.$params['-title'].'&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'linkedin':
+        	case 'linked in':
+        		$icon='icon-site-linkedin';
+        		if(isset($params['linkedin_icon'])){$icon=$params['linkedin_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.linkedin.com/shareArticle?title='.$params['-title'].'&mini=true&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'reddit':
+        		$icon='icon-site-reddit';
+        		if(isset($params['facebook_icon'])){$icon=$params['facebook_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.reddit.com/submit?title='.$blogt.'&url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'tumblr':
+        		$icon='icon-site-tumblr';
+        		if(isset($params['tumblr_icon'])){$icon=$params['tumblr_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.tumblr.com/share/link?url='.$params['-url'].'&name='.$params['-title'].'&description='.$params['-title'].'"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'google+':
+        	case 'google plus':
+        		$icon='icon-site-gplus';
+        		if(isset($params['google_icon'])){$icon=$params['google_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="https://plus.google.com/share?url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+			case 'pinterest':
+        		$icon='icon-site-pinterest';
+        		if(isset($params['pinterest_icon'])){$icon=$params['pinterest_icon'];}
+        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://pinterest.com/pin/create/button/?url='.$params['-url'].'&description='.$params['-title'].'&media="><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+        	case 'email':
+        		$icon='icon-mail';
+        		if(isset($params['mail_icon'])){$icon=$params['mail_icon'];}
+        		$rtn .= '		<a href="mailto:?subject='.$params['-title'].'&body'.$params['-url'].'" class="blog_color w_link"><span class="'.$icon.'"><span></a>'."\n";
+        	break;
+		}
+	}
+	return $rtn;
+}
 //---------- begin function buildSocialButtons
 /**
 * @describe build social buttons for facebook, twitter, email, google +, etc.  Uses a sprite
