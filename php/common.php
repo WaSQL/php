@@ -1896,10 +1896,14 @@ function buildShareLinks($params=array()){
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="https://plus.google.com/share?url='.$params['-url'].'"><span class="'.$icon.'"><span></a>'."\n";
         	break;
 			case 'pinterest':
+				/*
+					NOTE: Pinterest requires the following script to be in your template:
+					<script type="text/javascript" async defer src="//assets.pinterest.com/js/pinit.js"></script>
+				*/
         		$icon='icon-site-pinterest';
         		if(isset($params['pinterest_icon'])){$icon=$params['pinterest_icon'];}
         		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
-        		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://pinterest.com/pin/create/button/?url='.$params['-url'].'&description='.$params['-title'].'&media=" data-pin-custom="true"><span class="'.$icon.'"><span></a>'."\n";
+        		$rtn .= '		<a href="http://pinterest.com/pin/create/button/?url='.$params['-url'].'&description='.$params['-title'].'&media=" data-pin-custom="true"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'email':
         		$icon='icon-mail';
