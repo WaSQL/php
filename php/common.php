@@ -1301,6 +1301,12 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	//return printValue($pairs);
+	$pcnt=count($pairs);
+	if($pcnt==0 || ($pcnt==1 && $pairs[0]=='')){
+    	return buildFormText($name,$params);
+	}
+	//return $pcnt;
 	if(isset($params['value'])){
 		if(strlen($params['value'])){$sval=$params['value'];}
 	}
@@ -1308,6 +1314,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
 	}
 	else{$sval='';}
+
 	$params['name']=$name;
 	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
 		$params['class'] .= ' form-control';
