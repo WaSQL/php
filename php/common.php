@@ -1908,10 +1908,11 @@ function buildShareLinks($params=array()){
         		$rtn .= '		<a href="http://pinterest.com/pin/create/button/?url='.$params['-url'].'&description='.$params['-title'].'&media=" data-pin-custom="true"><span class="'.$icon.'"><span></a>'."\n";
         	break;
         	case 'email':
+        		//mailto allows subject, cc, bcc, and body as parameters
         		$icon='icon-mail';
         		if(isset($params['mail_icon'])){$icon=$params['mail_icon'];}
         		if(isset($params['-class'])){$icon.=" {$params['-class']}";}
-        		$rtn .= '		<a href="mailto:?subject='.$params['-title'].'&body'.$params['-url'].'" class="blog_color w_link"><span class="'.$icon.'"><span></a>'."\n";
+        		$rtn .= '		<a href="mailto:?subject='.encodeURL($params['-title']).'&body='.encodeURL($params['-url']).'" class="blog_color w_link"><span class="'.$icon.'"><span></a>'."\n";
         	break;
 		}
 	}
