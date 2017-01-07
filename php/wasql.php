@@ -1284,11 +1284,8 @@ function wasqlGetMasks($d=0){
 */
 function wasqlGetStates($d=0,$country='US'){
 	//see if they have passed in country
-	foreach($_REQUEST as $k=>$v){
-		if(preg_match('/country$/i',$k)){
-			$country=strtoupper(trim($v));
-			break;
-		}
+	if(isset($_REQUEST['opt_0']) && preg_match('/country/i',$_REQUEST['opt_0'])){
+    	$country=strtoupper(trim($_REQUEST['val_0']));
 	}
 	if($country=='USA'){$country='US';}
 	$recopts=array(
