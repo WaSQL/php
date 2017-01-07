@@ -1283,14 +1283,12 @@ function wasqlGetMasks($d=0){
 * @usage <?=wasqlGetStates(true,'US');?>
 */
 function wasqlGetStates($d=0,$country='US'){
-	if(isset($_REQUEST['country']) && strlen(trim($_REQUEST['country']))){
-    	$country=strtoupper(trim($_REQUEST['country']));
-	}
-	elseif(isset($_REQUEST['shiptocountry']) && strlen(trim($_REQUEST['shiptocountry']))){
-    	$country=strtoupper(trim($_REQUEST['shiptocountry']));
-	}
-	elseif(isset($_REQUEST['billtocountry']) && strlen(trim($_REQUEST['billtocountry']))){
-    	$country=strtoupper(trim($_REQUEST['billtocountry']));
+	//see if they have passed in country
+	foreach($_REQUEST as $k=>$v){
+		if(preg_match('/country$/i',$k)){
+			$country=strtoupper(trim($v));
+			break;
+		}
 	}
 	if($country=='USA'){$country='US';}
 	$recopts=array(
