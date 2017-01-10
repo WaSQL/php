@@ -89,11 +89,17 @@ function wsSendMessage($message,$params=array()){
 		if(isset($CONFIG['websocket_host'])){
 			$params['-host']=$CONFIG['websocket_host'];
 		}
+		elseif(isset($CONFIG['websockets_host'])){
+			$params['-host']=$CONFIG['websockets_host'];
+		}
 		else{$params['-host']='127.0.0.1';}
 	}
 	if(!isset($params['-port'])){
 		if(isset($CONFIG['websocket_port'])){
 			$params['-port']=$CONFIG['websocket_port'];
+		}
+		elseif(isset($CONFIG['websockets_port'])){
+			$params['-port']=$CONFIG['websockets_port'];
 		}
 		else{$params['-port']='9300';}
 	}
@@ -127,6 +133,7 @@ function wsSendMessage($message,$params=array()){
         "Origin: {$params['-origin']}\r\n".
         "Sec-WebSocket-Key: {$key}\r\n".
         "Sec-WebSocket-Version: 13\r\n\r\n";
+        //echo printValue($params).printValue($CONFIG);
     try{
 		if($sock = @fsockopen($params['-host'], $params['-port'], $errno, $errstr)){
 	    	fwrite($sock, $head);
@@ -148,10 +155,12 @@ function wsSendMessage($message,$params=array()){
 	    	return false;
 		}
 		else{
+			//echo "Failed to open socket".printValue($params);
 			return false;
 		}
 	}
 	catch(Exception $e){
+		//echo "Failed to connect".printValue($params).printValue($e);
     	return false;
 	}
 }

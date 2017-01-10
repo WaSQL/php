@@ -1,5 +1,18 @@
 <?php
 $progpath=dirname(__FILE__);
+$confpath=realpath("{$progpath}/../../");
+//load the config.xml file
+include_once("$confpath/common.php");
+global $ConfigXml;
+global $allhost;
+global $dbh;
+global $sel;
+global $CONFIG;
+$_SERVER['HTTP_HOST']='localhost';
+$_SERVER['UNIQUE_HOST']='localhost';
+$_SERVER['SERVER_NAME']='localhost';
+include_once("$confpath/config.php");
+$progpath=dirname(__FILE__);
 require_once("{$progpath}/websockets_functions.php");
 //get command line arguments, removing the first one since it is the filename
 array_shift($argv);
