@@ -574,6 +574,18 @@ function checkDBTableSchema($wtable){
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
 			$rtn .= " added synchronize to _tabledata table<br />\n";
         }
+        if(!isset($finfo['websockets'])){
+			$query="ALTER TABLE {$wtable} ADD websockets ".databaseDataType('tinyint')." NOT NULL Default 0";
+			$ok=executeSQL($query);
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> $wtable,
+				'fieldname'		=> 'websockets',
+				'description'	=> 'if checked then send changes to the websocket server',
+				'inputtype'		=> 'checkbox',
+				'tvals'			=> '1'
+				));
+			$rtn .= " added websockets to _tabledata table<br />\n";
+        }
         if(!isset($finfo['tabledesc'])){
 			$query="ALTER TABLE {$wtable} ADD tabledesc varchar(500) NULL;";
 			$ok=executeSQL($query);
@@ -1818,12 +1830,24 @@ function addDBRecord($params=array()){
 	$start=microtime(true);
 	$query_result=@databaseQuery($query);
   	if($query_result){
-    	$id=databaseInsertId($query_result);
+		//get the ID
+		$id=databaseInsertId($query_result);
     	databaseFreeResult($query_result);
+    	//get table info
+		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
+		if($tinfo['websockets'] || isset($model['functions'])){
+			$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
+		}
+		//check for websockets
+		if($tinfo['websockets']){
+        	loadExtras('websockets');
+        	$wrec=$params['-record'];
+        	$wrec['_action']='add';
+        	wsSendDBRecord($params['-table'],$wrec);
+		}
     	if(isset($model['functions'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}AddSuccess")){
-				$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
 				unset($params['-error']);
 	        	$params=call_user_func("{$model_table}AddSuccess",$params);
 	        	if(isset($params['-error'])){
@@ -3427,11 +3451,24 @@ function editDBRecord($params=array()){
     	databaseFreeResult($query_result);
     	logDBQuery($query,$start,$function,$params['-table']);
     	//addDBHistory('edit',$params['-table'],$params['-where']);
+    	//get table info
+		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
+		if($tinfo['websockets'] || isset($model['functions'])){
+			$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
+		}
+		//check for websockets
+		if($tinfo['websockets']){
+        	loadExtras('websockets');
+        	$wrec=$params;
+        	$wrec['_action']='edit';
+        	$wrec['where']=$params['-where'];
+        	wsSendDBRecord($params['-table'],$wrec);
+		}
     	if(isset($model['functions'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}EditSuccess")){
 				unset($params['-error']);
-				$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
+
 	        	$params=call_user_func("{$model_table}EditSuccess",$params);
 	        	if(isset($params['-error'])){
 					debugValue($params['-error']);
