@@ -203,6 +203,7 @@ class waChat implements MessageComponentInterface {
                 	$skip=0;
                 	foreach($info['filters'] as $filter){
 						$key=$filter['key'];
+						if(!isset($json[$key])){continue;}
                     	switch($filter['op']){
                         	case 'eq':
                         		if(strtolower($json[$key])!=strtolower($filter['val'])){$skip++;}
