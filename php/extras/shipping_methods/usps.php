@@ -1,21 +1,14 @@
 <?php
 /*
-	References:
-		http://www.usps.com/webtools/htm/Address-Information.htm#_Toc131231416
-		http://www.marksanborn.net/php/calculating-usps-shipping-rates-with-php/
-		United States Postal Service Web Tools: 
-			Main site: 	http://www.usps.com/webtools/
-			Tracking: 	http://www.usps.com/webtools/htm/Track-Confirm.htm
-			Address:	http://www.usps.com/webtools/htm/Address-Information.htm
-
-
-
+	Reference:
+		https://www.usps.com/business/web-tools-apis/documentation-updates.htm
 */
 function uspsServices($params=array()){
 	if(!isset($params['-userid'])){return "No userid";}
 	if(!isset($params['-weight'])){return "No weight";}
-	$api='RateV3';
-	$request='RateV3Request';
+
+	$api='RateV4';
+	$request='RateV4Request';
 	if(isset($params['-intl']) && $params['-intl']){
 		//International rate request
 		if(!isset($params['-country'])){return "No country. Required for intl requests";}
@@ -29,27 +22,31 @@ function uspsServices($params=array()){
     }
 	$weight_lbs=floor($params['-weight']/16);
 	$weight_oz=$params['-weight']-($weight_lbs*16);
-	$xml = '<'.$request.' USERID="'.$params['-userid'].'">';
-	$xml .= 	'<Package ID="1ST">';
-	$xml .= 		'<Pounds>'.$weight_lbs.'</Pounds>';
-	$xml .= 		'<Ounces>'.$weight_oz.'</Ounces>';
-	$xml .= 		'<MailType>Package</MailType>';
-	if($request=='RateV3Request'){
-		$xml .= 		'<Service>'.$params['-service'].'</Service>';
-		$xml .= 		'<ZipOrigination>'.$params['-zip_orig'].'</ZipOrigination>';
-		$xml .= 		'<ZipDestination>'.$params['-zip_dest'].'</ZipDestination>';
-		$xml .= 		'<Size>REGULAR</Size>';
-		$xml .= 		'<Machinable>false</Machinable>';
-		}
+	$countryxml='';
 	if(isset($params['-country'])){
-		$xml .= 		'<Country>'.$params['-country'].'</Country>';
-		}
-	$xml .= 	'</Package>';
-	$xml .= '</'.$request.'>';
+		$countryxml ="<Country>{$params['-country']}</Country>";
+	}
+	$xml=<<<ENDOFXML
+<RateV4Request USERID="{$params['-userid']}">
+    <Revision>2</Revision>
+    <Package ID="1ST">
+        <Service>{$params['-service']}</Service>
+        <ZipOrigination>{$params['-zip_orig']}</ZipOrigination>
+        <ZipDestination>{$params['-zip_dest']}</ZipDestination>
+        <Pounds>{$weight_lbs}</Pounds>
+        <Ounces>{$weight_oz}</Ounces>
+        <Container/>
+        <Size>REGULAR</Size>
+        <Machinable>true</Machinable>
+        {$countryxml}
+    </Package>
+</RateV4Request>
+ENDOFXML;
 	$opts = array(
 		'API'=>$api,
 		'XML'=>$xml,
-		'-ssl'=>false
+		'-ssl'=>false,
+		'-xml'=>1
 		);
 	//Note:they provide you a secure url but this is only used with Label printing
 	$urls=array(
@@ -65,37 +62,22 @@ function uspsServices($params=array()){
 		$result=postURL($urls['test'],$opts);
 		}
 	else{$result=postURL($urls['live'],$opts);}
-
-	if(preg_match('/^\<\?xml version=\"1\.0\"\?\>/i',$result['body'])){
-		$xml=new SimpleXmlElement($result['body']);
-		//Check for errors
-		if($xml->Package->Error->Description){
-			$rtn['error']=(string)$xml->Package->Error->Description;
-        	}
-		$rates=array();
-		if($request=='IntlRateRequest'){
-			//International
-			foreach($xml->Package->Service as $rate){
-				//return $rate;
-				$servicetype=(string)$rate->SvcDescription;
-				$cost=(real)$rate->Postage;
-				$rates[$servicetype]=$cost;
-	        	}
-	        $rtn['Prohibitions']=(string)$xml->Package->Prohibitions;
-        	}
-        else{
-			foreach($xml->Package->Postage as $rate){
-				//return $rate;
-				$servicetype=(string)$rate->MailService;
-				$cost=(real)$rate->Rate;
-				$rates[$servicetype]=$cost;
-	        	}
-			}
-        if(count($rates)>0){
-			asort($rates);
-			$rtn['rates']=$rates;
-        	}
-		}
+	//echo printValue($result['xml_array']);exit;
+	if(!isset($result['xml_array']['RateV4Response']['Package']['Postage'])){
+		return printValue($result);
+	}
+	$rates=array();
+	foreach($result['xml_array']['RateV4Response']['Package']['Postage'] as $rate){
+		if(!isset($rate['Rate'])){continue;}
+		$key=html_entity_decode($rate['MailService'], ENT_QUOTES, 'UTF-8');
+		$key = preg_replace('#\<sup>.+\</sup>#', "", $key);
+		$key=strip_tags($key);
+		$rates[$key]=$rate['Rate'];
+	}
+	if(count($rates)>0){
+		asort($rates);
+		$rtn['rates']=$rates;
+    }
 	if(isset($xml)){$rtn['xml']=$xml;}
 	$rtn['result']=$result;
 	return $rtn;
