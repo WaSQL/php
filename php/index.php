@@ -154,6 +154,31 @@ if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo buildOnLoad("scheduleHeartbeat('{$div}',{$t});");
 	exit;
 }
+//Check for websocket
+if(isset($_REQUEST['_websocket']) && count($_REQUEST)==1){
+	loadExtras('websockets');
+	$params=array(
+		'type'=>'access',
+		'site'=>$_SERVER['HTTP_REFERER']
+	);
+	foreach($_SERVER as $k=>$v){
+		if(preg_match('/^REMOTE_(.+)$/i',$k,$m)){
+			$k=strtolower($m[1]);
+    		$params[$k]=$v;
+		}
+	}
+	$msg=json_encode($params);
+	//echo $table.$msg;exit;
+	$params['source']=isDBStage()?'db_stage':'db_live';
+	$params['name']=$table;
+	$params['icon']='icon-website w_success';
+	$ok=wsSendMessage($msg,$params);
+	//set correct header
+	$ctype=getFileContentType("x.{$_REQUEST['_websocket']}");
+	header("Content-type: {$ctype}");
+	echo '';
+	exit;
+}
 //check for favicon request
 if(!isset($_REQUEST['_view']) || strlen(trim($_REQUEST['_view']))==0){
 	if(isset($_REQUEST['favicon.ico'])){
@@ -350,7 +375,7 @@ if(isAjax() && isset($_REQUEST['_redraw'])){
 		}
 	}
 	if(isset($att['data-value']) && !strlen($att['value'])){$att['value']=$att['data-value'];}
-	echo buildFormField($tablename,$fieldname,$att);
+ 	echo buildFormField($tablename,$fieldname,$att);
 	exit;
 }
 //execute SQL Preview
