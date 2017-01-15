@@ -444,6 +444,7 @@ function createWasqlTable($table=''){
 			$fields['tablename']="varchar(255) NOT NULL";
 			$fields['tablegroup']="varchar(255) NULL";
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 0";
+			$fields['websockets']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['tabledesc']="varchar(500) NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
