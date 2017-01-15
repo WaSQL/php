@@ -2544,16 +2544,25 @@ LIST_TABLE:
 			$dirty=0;
 			if(isset($_REQUEST['do']) && strtolower($_REQUEST['do'])=='save changes'){
                 //Tabledata edits
-                $fields=array('synchronize','tablegroup','tabledesc','listfields','sortfields','formfields','listfields_mod','sortfields_mod','formfields_mod');
+                //echo printValue($_REQUEST);
+                $fields=array('websockets','synchronize','tablegroup','tabledesc','listfields','sortfields','formfields','listfields_mod','sortfields_mod','formfields_mod');
                 $editopts=array();
                 foreach($fields as $field){
-					if($_REQUEST[$field] && array2String($_REQUEST[$field]) != array2String($tinfo[$field])){
-						$editopts[$field]=$_REQUEST[$field];
-						}
-					elseif((!$_REQUEST[$field] || !strlen(trim($_REQUEST[$field]))) && $tinfo[$field]){
-						$editopts[$field]=$field=='synchronize'?0:'NULL';
-						}
+					$val=array2String($_REQUEST[$field]);
+					$cval=array2String($tinfo[$field]);
+					switch($field){
+                    	case 'websockets':
+                    	case 'synchronize':
+                    		//checkbox fields
+							$editopts[$field]=strlen($val)?$val:0;
+                    	break;
+                    	default:
+                    		if($cval != $val){
+                            	$editopts[$field]=$val;
+							}
+                    	break;
 					}
+				}
                 if(count($editopts)){
 					$editopts['-table']='_tabledata';
 					$editopts['-where']="tablename = '{$currentTable}'";
@@ -2707,18 +2716,27 @@ LIST_TABLE:
             echo '	<tr valign="top">'."\n";
 			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'."\n";
 			echo '	</tr>'."\n";
-			//synchronize
+			//synchronize and websockets
 			$_REQUEST['synchronize']=$tinfo['synchronize'];
+			$_REQUEST['websockets']=$tinfo['websockets'];
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
+			//echo '<table>';
 			echo buildTableRow(array(
 				'<span class="icon-sync w_warning w_big w_bold"></span> ',
 				buildFormField('_tabledata','synchronize'),
 				' Synchronize'
 			));
+			echo buildTableRow(array(
+				'<span class="icon-transfer w_info w_big w_bold"></span> ',
+				buildFormField('_tabledata','websockets'),
+				' Websockets'
+			));
+			//echo '</table>';
 			echo '		</td>'."\n";
 			echo '		<td>'."\n";
 			echo '			<div class="w_dblue">Check to synchronize this table</div>'."\n";
+			echo '			<div class="w_dblue">Check to enable websocket events this table</div>'."\n";
 			echo '		</td>'."\n";
 			echo '	</tr>'."\n";
 			//table group and description
