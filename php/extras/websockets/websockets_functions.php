@@ -15,13 +15,14 @@ function wsSendDBRecord($table,$rec=array()){
 		if(is_array($val)){continue;}
 		if(!strlen($rec[$field])){continue;}
 		if(in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){continue;}
+		if(in_array($table,array('_pages','_templates')) && in_array($field,array('body','js','css','_env'))){continue;}
 		$params[$field]='B64:'.base64_encode($rec[$field]);
 	}
 	$params['type']='table';
 	$msg=json_encode($params);
 	//echo $table.$msg;exit;
 	$params['source']=isDBStage()?'db_stage':'db_live';
-	$params['name']=$table;
+	$params['tablename']=$table;
 	$params['icon']='icon-table w_grey';
 	$ok=wsSendMessage($msg,$params);
 	return $ok;
@@ -104,9 +105,9 @@ function wsSendMessage($message,$params=array()){
 		else{$params['-port']='9300';}
 	}
 	if(!isset($params['-origin'])){$params['-origin']="http://{$params['-host']}";}
-	if(!isset($params['name'])){$params['name']='wsSendMessage';}
-	if(!isset($params['source'])){$params['source']='wasql';}
-	if(!isset($params['icon'])){$params['icon']='icon-server w_warning';}
+	//if(!isset($params['name'])){$params['name']='wsSendMessage';}
+	//if(!isset($params['source'])){$params['source']='wasql';}
+	//if(!isset($params['icon'])){$params['icon']='icon-server w_warning';}
 	if(preg_match('/^\{/',$message)){
     	$json=json_decode($message,true);
     	foreach($json as $k=>$v){
