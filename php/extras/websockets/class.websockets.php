@@ -24,7 +24,7 @@ class PHPWebSocket
 
 	// amount of seconds a client has to send data to the server, before a ping request is sent to the client,
 	// if the client has not completed the opening handshake, the ping request is skipped and the client connection is closed
-	const WS_TIMEOUT_RECV = 30;
+	const WS_TIMEOUT_RECV = 60;
 
 	// amount of seconds a client has to reply to a ping request, before the client connection is closed
 	const WS_TIMEOUT_PONG = 5;
