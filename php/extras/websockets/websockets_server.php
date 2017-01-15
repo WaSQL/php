@@ -28,7 +28,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
 	global $logfile;
 	$ip = long2ip( $Server->wsClients[$clientID][6] );
-
+	echo "Msg: {$message}\n\n";
 	// check if message length is 0
 	if ($messageLength == 0) {
 		$Server->wsClose($clientID);
