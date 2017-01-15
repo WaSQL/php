@@ -8066,13 +8066,13 @@ function isSpider($agent='',$return_name=0){
 		'Zeus'
 		);
 	foreach($bots_contains as $bot){
-		if(stringContains($_SERVER['HTTP_USER_AGENT'],$bot)){
+		if(stringContains($agent,$bot)){
 			if($return_name==1){return $bot;}
 			return true;
 		}
 	}
 	foreach($bots_beginswith as $bot){
-		if(stringBeginsWith($_SERVER['HTTP_USER_AGENT'],$bot)){
+		if(stringBeginsWith($agent,$bot)){
         	if($return_name==1){return $bot;}
 			return true;
 		}
