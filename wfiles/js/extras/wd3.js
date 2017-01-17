@@ -485,10 +485,11 @@ function wd3MapChart(p,params){
             	break;
 			}
 			//least
+			var lkey='';
 			for (var key in cdata){
 				if(cdata[key].value > 0){lkey=key;}
 			}
-			if(undefined != lkey){
+			if(lkey.length){
 				d3.select(p+' #least').text(lkey+' ('+wd3NumberWithCommas(cdata[lkey].value)+')');
 			}
 			wd3MapChartMaps[p].updateChoropleth(cdata);
