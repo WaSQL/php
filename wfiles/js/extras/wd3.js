@@ -488,6 +488,7 @@ function wd3MapChart(p,params){
 			for (var key in cdata){
 				if(cdata[key].value > 0){lkey=key;}
 			}
+			if(undefined == cdata[lkey]){return;}
 			d3.select(p+' #least').text(lkey+' ('+wd3NumberWithCommas(cdata[lkey].value)+')');
 			wd3MapChartMaps[p].updateChoropleth(cdata);
 			//add data-id and data-value to path attribute so we can access it via this
