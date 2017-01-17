@@ -244,6 +244,7 @@ function wd3LineChart(p,params){
 	}
   	//render function
 	function loadline(data){
+		if(undefined == data[0]){return;}
 		var keys=Object.keys(data[0]);
 		var ykeys=new Array();
 		var ykeysClass={};
