@@ -1,10 +1,6 @@
 <?php
 /*
-	ways to call this script
-		actions: 
-			getfiles {name}
-			push
-  		php postedit.php action
+	replacement for posteditd.pl to handle secure sites
 */
 global $progpath;
 global $hosts;
@@ -28,58 +24,8 @@ if(!isset($chost)){
 	$chost=selectHost();
 }
 //get the files
-$tables=isset($hosts[$chost]['apikey'])?$hosts[$chost]['apikey']:'_pages,_templates,_models';
-$postopts=array(
-	'apikey'	=>$hosts[$chost]['apikey'],
-	'username'	=>$hosts[$chost]['username'],
-	'_noguid'	=>1,
-	'postedittables'=>$tables,
-	'apimethod'	=>"posteditxml",
-	'-ssl'=>1
-);
-$url=buildHostUrl();
-//echo "{$url}".PHP_EOL;
-$post=postURL($url,$postopts);
-$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
-$xml=(array)$xml;
-$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
-cleanDir("{$progpath}/postEditFiles/{$folder}");
-foreach($xml['WASQL_RECORD'] as $rec){
-	$rec=(array)$rec;
-	$info=$rec['@attributes'];
-	//echo printValue($info);exit;
-	unset($rec['@attributes']);
-	foreach($rec as $name=>$content){
-    	if(!strlen($content)){continue;}
-
-    	$path="{$progpath}/postEditFiles/{$folder}/{$info['table']}";
-    	if(!is_dir($path)){buildDir($path);}
-    	//determine extension
-    	$parts=preg_split('/\_/',$name);
-    	$field=array_pop($parts);
-    	switch(strtolower($field)){
-        	case 'js':$ext='js';break;
-        	case 'css':$ext='css';break;
-        	case 'controller':
-			case 'functions':
-				$ext='php';
-			break;
-        	default:
-        		$ext='html';
-        	break;
-		}
-    	$afile="{$path}/{$info['name']}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
-    	echo "{$afile}".PHP_EOL;
-    	setFileContents($afile,$content);
-    	chmod($afile,0777);
-    	$mtimes[$afile]=1;
-	}
-}
-echo "Listening to {$folder} for changes...".PHP_EOL;
-sleep(2);
-foreach($mtimes as $afile=>$mtime){
-	$mtimes[$afile]=filemtime($afile);
-}
+$afolder=writeFiles();
+echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
 while(1){
 	usleep(250);
 	foreach($mtimes as $afile=>$mtime){
@@ -91,9 +37,85 @@ while(1){
 		}
 	}
 }
-
-//echo printValue($xml);
 exit;
+function writeFiles(){
+	global $hosts;
+	global $chost;
+	global $progpath;
+	global $mtimes;
+	$tables=isset($hosts[$chost]['apikey'])?$hosts[$chost]['apikey']:'_pages,_templates,_models';
+	$postopts=array(
+		'apikey'	=>$hosts[$chost]['apikey'],
+		'username'	=>$hosts[$chost]['username'],
+		'_noguid'	=>1,
+		'postedittables'=>$tables,
+		'apimethod'	=>"posteditxml",
+		'-ssl'=>1
+	);
+	$url=buildHostUrl();
+	echo "Calling {$url}...".PHP_EOL;
+	$post=postURL($url,$postopts);
+	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
+	$xml=(array)$xml;
+	$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
+	$afolder="{$progpath}/postEditFiles/{$folder}";
+	if(is_dir($afolder)){cleanDir($afolder);}
+	else{
+		mkdir($afolder,0777,true);
+		//set permissions on windows
+		if(isWindows()){
+			$user=get_current_user();
+	        $cmd="icacls.exe '{$afolder}' /grant {$user}:(OI)(CI)F /T";
+	        echo "  setting perms: {$cmd}".PHP_EOL;
+	        $out=cmdResults($cmd);
+		}
+	}
+	foreach($xml['WASQL_RECORD'] as $rec){
+		$rec=(array)$rec;
+		$info=$rec['@attributes'];
+		//echo printValue($info);exit;
+		unset($rec['@attributes']);
+		foreach($rec as $name=>$content){
+	    	if(!strlen(trim($content))){continue;}
+	    	$path="{$afolder}/{$info['table']}";
+	    	if(!is_dir($path)){
+				mkdir($path,0777,true);
+				//set permissions on windows
+				if(isWindows()){
+					$user=get_current_user();
+	            	$cmd="icacls.exe '{$path}' /grant {$user}:(OI)(CI)F /T";
+	            	echo "  setting perms: {$cmd}".PHP_EOL;
+	            	$out=cmdResults($cmd);
+	            	//echo printValue($out);
+				}
+			}
+	    	//determine extension
+	    	$parts=preg_split('/\_/',$name);
+	    	$field=array_pop($parts);
+	    	switch(strtolower($field)){
+	        	case 'js':$ext='js';break;
+	        	case 'css':$ext='css';break;
+	        	case 'controller':
+				case 'functions':
+					$ext='php';
+				break;
+	        	default:
+	        		$ext='html';
+	        	break;
+			}
+	    	$afile="{$path}/{$info['name']}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
+	    	//echo "{$afile}".PHP_EOL;
+	    	file_put_contents($afile,trim($content));
+	    	$mtimes[$afile]=1;
+		}
+	}
+	sleep(3);
+	echo "  setting baseline modify times.".PHP_EOL;
+	foreach($mtimes as $afile=>$x){
+		$mtimes[$afile]=filemtime($afile);
+	}
+	return $afolder;
+}
 function buildHostUrl(){
 	global $hosts;
 	global $chost;
@@ -106,14 +128,13 @@ function fileChanged($afile){
 	global $hosts;
 	global $chost;
 	global $mtimes;
-	$afile=fixSlashes($afile);
 	//echo $afile;exit;
 	$filename=getFileName($afile);
-	echo "File changed: {$afile}".PHP_EOL;
+	echo "  {$filename}";
 	//exit;
 	$content=file_get_contents($afile);
 	if(!strlen($content)){
-    	echo "failed to get content".PHP_EOL;
+    	echo " - failed to get content".PHP_EOL;
     	return;
 	}
 	$content=encodeBase64($content);
@@ -134,15 +155,43 @@ function fileChanged($afile){
 	);
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
-	setFileContents('postedit_filechanged.last',printValue($post));
+POSTFILE:
+	$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
+	$json=json_encode($xml);
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
+    	echo " - {$post['curl_info']['http_code']} error posting".PHP_EOL;
+    	echo "{$json}".PHP_EOL;
+    	exit;
+	}
+	elseif(isset($xml['fatal_error'])){
+    	echo " - Fatal error posting".PHP_EOL;
+    	echo "{$json}".PHP_EOL;
+    	exit;
+	}
+	elseif(isset($xml['refresh_error'])){
+    	echo " - Refresh error posting".PHP_EOL;
+    	echo "   {$xml['refresh_error']}".PHP_EOL;
+    	echo "   Refresh Now? Y or N: ";
+		$s = stream_get_line(STDIN, 1024, PHP_EOL);
+		$s=strtolower($s);
+		if($s != 'n'){
+        	writeFiles();
+		}
+	}
+	elseif(isset($xml['error'])){
+    	echo " - Error posting".PHP_EOL;
+    	echo "   {$xml['error']}".PHP_EOL;
+    	echo "   Overwrite Anyway? Y or N: ";
+		$s = stream_get_line(STDIN, 1024, PHP_EOL);
+		$s=strtolower($s);
+		if($s == 'y'){
+			$postopts['_overwrite']=1;
+        	$post=postURL($url,$postopts);
+        	goto POSTFILE;
+		}
+	}
+	echo " - Successfully updated".PHP_EOL;
 	return true;
-}
-###############
-function fixSlashes($str){
-	if(isWindows()){$slash="\\";}
-	else{$slash="/";}
-	$tmp=preg_split('/[\\/]+/',$str);
-	return implode($slash,$tmp);
 }
 function selectHost(){
 	global $cgroup;
