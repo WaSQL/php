@@ -55,6 +55,7 @@ function writeFiles(){
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	file_put_contents('postedit_pages.result',$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
@@ -155,6 +156,7 @@ function fileChanged($afile){
 	);
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
+	file_put_contents('postedit_change.result',$post['body']);
 POSTFILE:
 	$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
 	$json=json_encode($xml);
