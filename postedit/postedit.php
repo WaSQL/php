@@ -50,6 +50,7 @@ function writeFiles(){
 		'_noguid'	=>1,
 		'postedittables'=>$tables,
 		'apimethod'	=>"posteditxml",
+		'encoding'	=>"base64",
 		'-ssl'=>1
 	);
 	$url=buildHostUrl();
@@ -106,7 +107,8 @@ function writeFiles(){
 			}
 	    	$afile="{$path}/{$info['name']}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	//echo "{$afile}".PHP_EOL;
-	    	file_put_contents($afile,trim($content));
+	    	$content=base64_decode(trim($content));
+	    	file_put_contents($afile,$content);
 	    	$mtimes[$afile]=1;
 		}
 	}
