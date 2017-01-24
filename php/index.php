@@ -551,7 +551,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 			header('Content-type: text/xml');
 			header('X-Platform: WaSQL');
 
-			echo postEditXml($tables,$_REQUEST['dbname']);
+			echo postEditXml($tables,$_REQUEST['dbname'],$_REQUEST['encoding']);
 			exit;
 			break;
 		case 'posteditupload':
