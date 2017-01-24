@@ -9486,7 +9486,7 @@ function settingsValues($id=0,$fields=array()){
 * @return string xml
 *	returns xml for postedit.exe to parse
 */
-function postEditXml($pextables=array(),$dbname=''){
+function postEditXml($pextables=array(),$dbname='',$encoding=''){
 	global $USER;
 	//build xml
 	if(strlen($dbname)){
@@ -9564,7 +9564,12 @@ function postEditXml($pextables=array(),$dbname=''){
                         	continue;
 						}
 					}
-					if(isXML($val)){$val="<![CDATA[\n" . $val . "\n]]>";}
+					switch(strtolower($encoding)){
+                    	case 'base64':$val=encodeBase64($val);break;
+                    	default:
+                    		if(isXML($val)){$val="<![CDATA[\n" . $val . "\n]]>";}
+						break;
+					}
 					$recxml .= "		<{$table}_{$key}>{$val}</{$table}_{$key}>\n";
 					array_push($fields,$key);
 					}
