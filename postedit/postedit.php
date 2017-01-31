@@ -64,13 +64,6 @@ function writeFiles(){
 	if(is_dir($afolder)){cleanDir($afolder);}
 	else{
 		mkdir($afolder,0777,true);
-		//set permissions on windows
-		if(isWindows()){
-			$user=get_current_user();
-	        $cmd="icacls.exe '{$afolder}' /grant {$user}:(OI)(CI)F /T";
-	        echo "  setting perms: {$cmd}".PHP_EOL;
-	        $out=cmdResults($cmd);
-		}
 	}
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
@@ -82,14 +75,6 @@ function writeFiles(){
 	    	$path="{$afolder}/{$info['table']}";
 	    	if(!is_dir($path)){
 				mkdir($path,0777,true);
-				//set permissions on windows
-				if(isWindows()){
-					$user=get_current_user();
-	            	$cmd="icacls.exe '{$path}' /grant {$user}:(OI)(CI)F /T";
-	            	echo "  setting perms: {$cmd}".PHP_EOL;
-	            	$out=cmdResults($cmd);
-	            	//echo printValue($out);
-				}
 			}
 	    	//determine extension
 	    	$parts=preg_split('/\_/',$name);
@@ -112,10 +97,14 @@ function writeFiles(){
 	    	$mtimes[$afile]=1;
 		}
 	}
-	sleep(3);
+	sleep(1);
 	echo "  setting baseline modify times.".PHP_EOL;
 	foreach($mtimes as $afile=>$x){
 		$mtimes[$afile]=filemtime($afile);
+	}
+	if(isWindows()){
+		$afolder=preg_replace('/\//',"\\",$afolder);
+		cmdResults("EXPLORER /E,\"{$afolder}\"");
 	}
 	return $afolder;
 }
@@ -135,10 +124,13 @@ function fileChanged($afile){
 	$filename=getFileName($afile);
 	echo "  {$filename}";
 	//exit;
-	$content=file_get_contents($afile);
-	if(!strlen($content)){
-    	echo " - failed to get content".PHP_EOL;
-    	return;
+	$content=@file_get_contents($afile);
+	if(!strlen($content) && isWindows()){
+		$content=getContents($afile);
+		if(!strlen($content)){
+    		echo " - failed to get content".PHP_EOL;
+    		return;
+		}
 	}
 	$content=encodeBase64($content);
 	list($fname,$table,$field,$id,$ext)=preg_split('/\./',$filename);
@@ -195,7 +187,16 @@ POSTFILE:
 		}
 	}
 	echo " - Successfully updated".PHP_EOL;
+	//beep once on windows for success;
+	if(isWindows()){echo "\x07";}
 	return true;
+}
+function getContents($file){
+	$file=preg_replace('/\//',"\\",$file);
+	$cmd="file_get_contents.exe \"{$file}\"";
+	//echo $cmd.PHP_EOL;
+	$out=cmdResults($cmd);
+	return $out['stdout'];
 }
 function selectHost(){
 	global $cgroup;
