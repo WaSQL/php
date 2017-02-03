@@ -969,45 +969,6 @@ sub removeHtml{
 	return $str;
 	}
 ###############
-sub removeBadHtml{
-	#usage: my $nohtml=removeHtml($html);
-	#info: tries to remove malicious HTML only
-	#tags: parse, strip
-	# Try to remove malicious HTML
-	# (code originally by John D. Hardin)
-	my $txt = shift;
-	my($saved, $char);
-	$_ = $txt;
-	# First things first, unobfuscate, e.g. "&#116;" -> "t"
-	if (/["\047][^"\047\s]*&#x?[1-9][0-9a-f]/i) {
-    	while (/["\047][^"\047\s]*&#((4[6-9]|5[0-8]|6[4-9]|[78][0-9]|9[07-9]|1[0-1][0-9]|12[0-2]))/) {
-	    	$char = chr($1);
-	     	s/&#$1;?/$char/g;
-	   		}
-      	while (/["\047][^"\047\s]*&#(x(2[ef]|3[0-9a]|4[0-9a-f]|5[0-9a]|6[1-9a-f]|7[0-9a]))/i) {
-	    	$char = chr(hex("0$1"));
-	     	s/&#$1;?/$char/gi;
-	   		}
-    	}
-	if (/["\047][^"\047\s]*%[2-7][0-9a-f]/i) {
-    	while (/["\047][^"\047\s]*%((2[ef]|3[0-9a]|4[0-9a-f]|5[0-9a]|6[1-9a-f]|7[0-9a]))/i) {
-      		$char = chr(hex("0x$1"));
-      		s/%$1/$char/gi;
-    		}
-  		}
-	# Now we can look for hostile tags
-  	if (/</) {
-    	s/<(META|APP|SCRIPT|OBJECT|EMBED|FRAME|IFRAME|STYLE)(\s|>)/<DEFANGED_$1$2/gi;
-		s/STYLE\s*=/DEFANGED_STYLE=/gi;
-		s/On(Abort|Blur|Change|Click|DblClick|DragDrop|Error|Focus|KeyDown|KeyPress|KeyUp|Load|MouseDown|MouseMove|MouseOut|MouseOver|MouseUp|Move|Reset|Resize|Select|Submit|Unload)/DEFANGED_On$1/gi;
-  		}
-	s/(["\047])([a-z]+script|mocha|position|visibility):/${1}DEFANGED_$2:/gi;
-  	s/(["\047])&{/${1}DEFANGED_&{/g;
-	# mailto/news/about/chrome/wysiwyg URLs in IMG SRC tags
-  	s/\<img\b(.*?\bsrc\s*?\=\s*)(mailto|news|about|chrome|wysiwyg)(\:.*?\>)/<IMG ${1}defanged_${2}${3}/gi;
-	return $_;
-	}
-###############
 sub underMaintenance{
 	my $note=shift;
 	#usage: returns a under maintenance banner
