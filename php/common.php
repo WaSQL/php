@@ -929,7 +929,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
 			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
-			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'[]" value="'.$tval.'"';
+			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
