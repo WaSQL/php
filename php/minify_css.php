@@ -61,6 +61,16 @@ $files=array();
 //add wasql CSS file
 minifyFiles($csspath,'wasql');
 minifyFiles($csspath,'wasql_icons');
+//check for ?bootstrap
+if(isset($_REQUEST['bootstrap'])){
+	$extra='bootstrap/css/bootstrap';
+	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
+    	$_SESSION['w_MINIFY']['extras_css']=array();
+	}
+	if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        $_SESSION['w_MINIFY']['extras_css'][]=$extra;
+	}
+}
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY']['extras_css'])){
 	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
