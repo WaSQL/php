@@ -928,14 +928,21 @@ function buildFormRadio($name, $opts=array(), $params=array()){
     	foreach($opts as $tval=>$dval){
 			$id=$params['-formname'].'_'.$name.'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
-			$tag .= '		<div style="min-width: '.$minwidth.'px;"><input id="'.$id.'" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
+			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
+			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'[]" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
 			if($params['required']){$tag .= ' data-required="1"';}
+			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-			$tag .= '> <label for="'.$id.'"> '.$dval.'</label></div>'."\n";
+			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
+			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
+			else{
+				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'."\n";
+			}
+			$tag .= '</div>'."\n";
 		}
     	$tag .= '	</div>'."\n";
 	}
