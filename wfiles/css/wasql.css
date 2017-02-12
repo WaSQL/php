@@ -1156,14 +1156,25 @@ input[list]{
 	background-origin: content-box;
 }
 /* checkbox formatting */
-input[data-type=checkbox] + label[class*=icon-mark], input[data-type=radio] + label[class*=icon-mark] {
+input[data-type=checkbox] + label[class*=icon-mark]{
 	padding:2px 2px 2px 2px;
 	border:1px solid #ccc;
 	color:#FFF;
+	[safari|chrome]-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
 	border-radius: 3px;
 	font-weight:900;
 }
-input[data-type=checkbox]:checked + label[class*=icon-mark], input[data-type=radio] + label[class*=icon-mark] {
+input[data-type=radio] + label[class*=icon-mark] {
+	padding:2px 2px 2px 2px;
+	border:1px solid #ccc;
+	color:#FFF;
+	[safari|chrome]-webkit-border-radius: 9px;
+	-khtml-border-radius: 9px;
+	border-radius: 9px;
+	font-weight:900;
+}
+input[data-type=checkbox]:checked + label[class*=icon-mark], input[data-type=radio]:checked + label[class*=icon-mark] {
 	color:#15891b;
 }
 input[data-type=checkbox] + label[class*=icon-mark] + label, input[data-type=radio] + label[class*=icon-mark] + label {
@@ -1175,7 +1186,7 @@ input[data-type=checkbox] + label[class*=icon-mark] + label, input[data-type=rad
 	white-space: nowrap;
 }
 input[data-type=checkbox]:checked + label[class*=icon-mark] + label, input[data-type=radio]:checked + label[class*=icon-mark] + label {
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset, 0 0 1px rgba(162, 162, 162, 0.6);
+
 
 }
 /* checkboxes */
