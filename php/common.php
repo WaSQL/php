@@ -1310,7 +1310,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	//return printValue($pairs);
 	$pcnt=count($pairs);
-	if($pcnt==0 || ($pcnt==1 && $pairs[0]=='')){
+	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
     	return buildFormText($name,$params);
 	}
 	//return $pcnt;
