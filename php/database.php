@@ -4157,7 +4157,10 @@ function getDBFieldTag($params=array()){
  	$stylekeys=array('width','height');
  	foreach($stylekeys as $stylekey){
 		if(!isset($styles[$stylekey]) && isset($info[$field][$stylekey]) && $info[$field][$stylekey] != 0){
-            $styles[$stylekey]=$info[$field][$stylekey] . 'px';
+			if(!preg_match('/(\%|px)$/i',$info[$field][$stylekey])){
+				$info[$field][$stylekey].='px';
+			}
+            $styles[$stylekey]=$info[$field][$stylekey];
         	}
     	}
     $info[$field]['style']=setStyleAttribues($styles);
