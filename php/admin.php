@@ -21,6 +21,12 @@ if(isset($CONFIG['timezone'])){
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
+include_once("$progpath/schema.php");
+global $wtables;
+$wtables=getWasqlTables();
+foreach($wtables as $wtable){
+	if(!isDBTable($wtable)){$ok=createWasqlTable($wtable);}
+}
 if(isset($_REQUEST['_pushfile'])){
  	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
    	}
@@ -82,11 +88,7 @@ if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv exp
     exit;
 }
 
-global $wtables;
-$wtables=getWasqlTables();
-foreach($wtables as $wtable){
-	if(!isDBTable($wtable)){$ok=createWasqlTable($wtable);}
-}
+
 
 //get_magic_quotes_gpc fix if it is on
 wasqlMagicQuotesFix();
@@ -204,7 +206,7 @@ if(isAjax()){
             	break;
 			}
 			$table=$_REQUEST['tablename'];
-			$fields=getDBFields($_REQUEST['tablename'],1);
+			$fields=getDBFields($_REQUEST['tablename'],1,0);
 			$fieldstr=join(', ',$fields);
 			$queries=array();
 			switch(strtolower($_REQUEST['func'])){
@@ -227,6 +229,7 @@ if(isAjax()){
             	break;
 			}
 			if(count($queries)){
+				//echo printValue($fields).printValue($queries);exit;
 				//echo '<div style="width:600px;">'."\n";
             	foreach($queries as $query){
 	    			$ok=executeSQL($query);
@@ -2690,6 +2693,10 @@ LIST_TABLE:
 				if(strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
 				if(strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],'virtual generated')){
+						$genex=$field['_dbgeneration_expression'];
+						$type="GENERATED ALWAYS AS {$genex}";
+						echo "{$field['_dbfield']} {$type}\r\n";
+						continue;
                     	$j=getDBExpression($currentTable,$field['_dbfield']);
                     	if(strlen($j)){
 							$field['_dbextra']=$j;
@@ -2701,7 +2708,7 @@ LIST_TABLE:
 				}
 				if(strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
 				echo "{$field['_dbfield']} {$type}\r\n";
-                }
+            }
 			echo '		</textarea><br clear="both" />'."\n";
 			echo '<div align="right">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'."\n";
 			echo buildFormEnd();
@@ -3418,14 +3425,17 @@ LIST_TABLE:
             	$tablename=$rec['tablename'];
             	$info[$tablename][$dbname]['cnt']=$rec['cnt'];
 			}
-			$query="SELECT
-				table_name tablename,
-				column_name field,
-				column_type type,
-				table_schema as dbname
+			$query="
+				SELECT
+					table_name tablename,
+					column_name field,
+					column_type type,
+					table_schema as dbname
 				FROM information_schema.columns
-				WHERE table_schema in ('{$stage_db}','{$live_db}')
-				order by field
+				WHERE
+					table_schema in ('{$stage_db}','{$live_db}')
+					and extra not like '%virtual%'
+				ORDER BY field
 			";
 			$recs=getDBRecords(array('-query'=>$query));
 			if(!is_array($recs) && strlen($recs)){
