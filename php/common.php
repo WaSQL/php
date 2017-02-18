@@ -1257,7 +1257,9 @@ function buildFormFile($name,$params=array()){
 		$tag .= '</div>'."\n";
 	}
     //remove style attribute since it is not supported
-    $params['style']="border:0px;box-shadow:none;";
+    if(!isset($params['style'])){
+		$params['style']="border:0px;box-shadow:none;";
+	}
     $params['size']=intval((string)$params['width']/8);
 	$tag .= '	<input type="file"';
 	$tag .= setTagAttributes($params);
