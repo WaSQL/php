@@ -1175,7 +1175,19 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts['dvals']=$params[$field.'_dvals'];
 						$used[$field.'_dvals']=1;
 					}
-					if(isset($params['-bootstrap'])){$opts['width']='100%';}
+					if(isset($params['-bootstrap'])){
+						switch(strtolower($info['fieldinfo'][$field]['inputtype'])){
+							case 'text':
+							case 'textarea':
+							case 'password':
+							case 'select':
+							case 'combo':
+							case 'multiselect':
+							case 'signature':
+								$opts['width']='100%';
+							break;
+						}
+					}
 					if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 					if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 					if(!isset($params['-focus'])){$params['-focus']=$field;}
@@ -1209,7 +1221,6 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($dataopts[$field])){
 					foreach($dataopts[$field] as $k=>$v){$opts[$k]=$v;}
 				}
-				if(isset($params['-bootstrap'])){$opts['width']='100%';}
 				if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
 				if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 				if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
