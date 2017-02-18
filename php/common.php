@@ -84,7 +84,7 @@ function arrayAverage($arr=array(),$decimal=2){
 *	an array of c length, each with an equal number of items from arr
 */
 function arrayColumns( $list, $c=2, $preserve_keys=false ) {
-	if(!isNum($c) || $c < 1){return "arrayCoumns error: invalid columns number";}
+	if(!isNum($c) || $c < 1){return "arrayColumns error: invalid number of colums".printValue($c);}
 	//use array_chunk instead
 	$cnt=count($list);
 	$x=ceil($cnt/$c);
@@ -461,6 +461,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
+	//return printValue($opts).printValue($params);
 	$cols=arrayColumns($opts,$params['width'],true);
 	$colsize=floor(12/count($cols));
 	$tag='';
@@ -1250,9 +1251,15 @@ function buildFormFile($name,$params=array()){
     }
     if(strlen($params['value']) && $params['value'] != $params['defaultval']){
 		$val=encodeHtml($params['value']);
+		/*
+		<input id="addedit_synchronize_1" data-group="addedit_synchronize_group" style="display:none;" data-type="checkbox" name="synchronize[]" value="1" type="checkbox">
+		<label class="icon-mark " for="addedit_synchronize_1"></label>
+		*/
 		$tag .= '<div class="w_smallest w_lblue">'."\n";
 		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" id="'.$name.'_remove"> <label for="'.$name.'_remove"> Remove</label>'."\n";
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'."\n"; 
+		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'."\n";
+		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'."\n";
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
 		$tag .= '</div>'."\n";
 	}
