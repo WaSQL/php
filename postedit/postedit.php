@@ -27,7 +27,7 @@ if(!isset($chost)){
 $afolder=writeFiles();
 echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
 while(1){
-	usleep(250);
+	sleep(1);
 	foreach($mtimes as $afile=>$mtime){
 		$cmtime=filemtime($afile);
     	if($cmtime != $mtime){
@@ -59,6 +59,18 @@ function writeFiles(){
 	file_put_contents('postedit_pages.result',$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
+    	echo " - {$post['curl_info']['http_code']} error retrieving".PHP_EOL;
+    	echo "{$post['body']}".PHP_EOL;
+    	exit;
+	}
+	elseif(isset($xml['fatal_error'])){
+    	echo " - Fatal error retrieving files".PHP_EOL;
+    	echo "{$xml['fatal_error']}".PHP_EOL;
+    	exit;
+	}
+
+
 	$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
 	$afolder="{$progpath}/postEditFiles/{$folder}";
 	if(is_dir($afolder)){cleanDir($afolder);}
@@ -197,6 +209,14 @@ function getContents($file){
 	//echo $cmd.PHP_EOL;
 	$out=cmdResults($cmd);
 	return $out['stdout'];
+	$tries=0;
+	while(!isset($out['stdout']) && $tries < 5){
+    	sleep(1);
+    	$out=cmdResults($cmd);
+    	$tries++;
+	}
+	return $out['stdout'];
+
 }
 function selectHost(){
 	global $cgroup;
