@@ -3152,7 +3152,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " --user='{$CONFIG['dbuser']}'";
 			}
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --password='{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3169,7 +3169,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " --user='{$CONFIG['dbuser']}'";
 			}
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --password='{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3188,13 +3188,14 @@ function dumpDB($table=''){
 			$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
 		}
 	}
-	if(!isWindows() || $CONFIG['gzip']=1){
+	$dump['iswindows']=isWindows();
+	if(!isWindows() || $CONFIG['gzip']==1){
     	$dump['command'] .= " | gzip -9";
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
 	$dump['command'] .= "  > \"{$dump['afile']}\"";
 	$dump['result']=cmdResults($dump['command']);
-/* 		
+/* 		;
 	ob_start();
 	passthru($dump['command']);
 	$dump['result'] = ob_get_contents();
@@ -3204,11 +3205,19 @@ function dumpDB($table=''){
     	unlink($dump['afile']);
 	}
 	if(is_file($dump['afile'])){
-		$sql=getFileContents($dump['afile']);
-		if(preg_match('/^Usage\:/i',$sql)){$dump['error']=$sql;}
-		else{$dump['success']=1;}
+		if($handle = fopen($dump['afile'],"r")){
+			$sql .= fgets($handle);
+			$sql .= fgets($handle);
+			fclose($handle);
+			if(preg_match('/^Usage\:/i',$sql)){$dump['error']=$sql;}
+			else{$dump['success']=1;}
 		}
+		else{
+        	$dump['error']="unable to read sql file";
+		}
+	}
 	else{$dump['error']='Unable to create database dump.';}
+	//echo printValue($dump);exit;
 	return $dump;
 	}
 //---------- begin function dumpDB--------------------
