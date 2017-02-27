@@ -23,6 +23,34 @@ if(!isset($chost)){
 	if(!isset($cgroup)){$cgroup=selectGroup();}
 	$chost=selectHost();
 }
+// acquire an exclusive lock
+$lock=preg_replace('/[^a-z0-9]+/i','',$chost);
+$lockfile="{$progpath}/{$lock}_lock.txt";
+if(!is_file($lockfile)){
+	file_put_contents($lockfile,time());
+}
+echo "Obtained the Lock: {$lockfile}".PHP_EOL;
+global $lockhandle;
+$lockhandle = fopen($lockfile, "r+");
+
+$count = 0;
+$timeout_secs = 2; //number of seconds of timeout
+$got_lock = true;
+while (!flock($lockhandle, LOCK_EX | LOCK_NB, $wouldblock)) {
+    if ($wouldblock && $count++ < $timeout_secs) {
+        sleep(1);
+    } else {
+        $got_lock = false;
+        break;
+    }
+}
+if (!$got_lock) {
+	echo "{$chost} is Already locked".PHP_EOL;
+	exit;
+}
+
+register_shutdown_function('shutdown');
+
 //get the files
 $afolder=writeFiles();
 echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
@@ -38,6 +66,14 @@ while(1){
 	}
 }
 exit;
+function shutdown(){
+	global $lockhandle;
+	echo "Releasing the Lock".PHP_EOL;
+	// release the lock
+	flock($lockhandle, LOCK_UN);
+	fclose($lockhandle);
+}
+
 function writeFiles(){
 	global $hosts;
 	global $chost;
@@ -56,6 +92,10 @@ function writeFiles(){
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	if(isset($post['error']) && strlen($post['error'])){
+    	echo PHP_EOL."!!ERROR!! - {$post['error']}".PHP_EOL.PHP_EOL;
+    	exit;
+	}
 	file_put_contents('postedit_pages.result',$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
