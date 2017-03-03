@@ -1,7 +1,7 @@
 <?php
 // prevent the server from timing out
 set_time_limit(0);
-
+date_default_timezone_set('America/Denver');
 // include the web sockets server class
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/class.websockets.php");
@@ -28,7 +28,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
 	global $logfile;
 	$ip = long2ip( $Server->wsClients[$clientID][6] );
-	echo "Msg: {$message}\n\n";
+	//echo "Msg: {$message}\n\n";
 	// check if message length is 0
 	if ($messageLength == 0) {
 		$Server->wsClose($clientID);
@@ -132,6 +132,8 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	    	break;
 		}
 	}
+	if($message=='exit'){exit;}
+	elseif(isset($json['message']) && $json['message']=='exit'){exit;}
 	//The speaker is the only person in the room. Don't let them feel lonely.
 	if (sizeof($Server->wsClients) == 1){
 		//$Server->wsSend($clientID, "You are the first one here.");
@@ -173,6 +175,7 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		$prefix='<span style="margin-right:15px" title="'.$msgdate.'">'.$msgtime.'</span>'.$prefix;
 		foreach ( $Server->wsClients as $id => $client ){
 			if ( $id != $clientID ){
+				//$Server->log( "{$id} != {$clientID}" );
 				//look for fields
 				if(isset($Server->wsClients[$id]['fields'][0])){
 					if(count($Server->wsClients[$id]['fields'])==1 && strtolower($Server->wsClients[$id]['fields'][0])=='all'){
@@ -185,12 +188,31 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 					}
 					$msg .="</tr>";
 					$msg .= '<tr>';
+					$fieldcnt=count($Server->wsClients[$id]['fields']);
+					$skipcnt=0;
 					foreach($Server->wsClients[$id]['fields'] as $field){
-						$cval=isset($json[$field])?$json[$field]:'';
+						if(isset($json[$field])){
+							$cval=$json[$field];
+						}
+						else{
+							$cval='';
+							$skipcnt++;
+						}
+						if(preg_match('/^http/i',$cval)){
+							$cval="<a href=\"{$cval}\">{$cval}</a>";
+						}
+						elseif(isEmail($cval)){
+							$cval="<a href=\"mailto:{$cval}\">{$cval}</a>";
+						}
 						$msg .= "<td>{$cval}</td>";
 					}
 					$msg.='</table>';
-					$json['message']=$msg;
+					if($skipcnt==$fieldcnt){
+                    	$json['message']=isset($json['message'])?$json['message']:$message;
+					}
+					else{
+						$json['message']=$msg;
+					}
 				}
 				//look for filters
 				if(isset($Server->wsClients[$id]['filters'])){
@@ -289,7 +311,7 @@ function wsOnOpen($clientID){
 	global $Server;
 	$visitorCount=sizeof($Server->wsClients);
 	$ip = long2ip( $Server->wsClients[$clientID][6] );
-	//$Server->log( "$ip ($clientID) has connected." );
+	//$Server->log( "{$ip} ({$clientID}) has connected." );
 	//Send a join notice to everyone but the person who joined
 	foreach ( $Server->wsClients as $id => $client ){
 		if ( $id != $clientID ){
@@ -307,13 +329,17 @@ function wsOnClose($clientID, $status) {
 	global $Server;
 	$visitorCount=sizeof($Server->wsClients);
 	$ip = long2ip( $Server->wsClients[$clientID][6] );
-	//$Server->log( "$ip ($clientID) has disconnected." );
+	//$Server->log( "{$ip} ({$clientID}) has disconnected." );
 	//Send a user left notice to everyone in the room
 	foreach ( $Server->wsClients as $id => $client ){
 		//$Server->wsSend($id, "Visitor $clientID ($ip) has left the room.");
 		//$Server->wsSend($id, "{$visitorCount} people are now in the room.");
 	}
 }
-
+function isEmail($str=''){
+	if(strlen($str)==0){return false;}
+	if(preg_match('/^.+@.+\..{2,6}$/',$str)){return true;}
+	return false;
+	}
 
 ?>
