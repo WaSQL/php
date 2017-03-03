@@ -137,6 +137,9 @@ function wsSendMessage($message,$params=array()){
         //echo printValue($params).printValue($CONFIG);
     try{
 		if($sock = @fsockopen($params['-host'], $params['-port'], $errno, $errstr)){
+			if(!is_resource($sock)){
+            	return;
+			}
 	    	fwrite($sock, $head);
 	    	$header = fread($sock, 2000);
 	    	$lines=preg_split('/[\r\n]+/',trim($header));
