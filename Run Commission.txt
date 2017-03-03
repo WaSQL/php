@@ -1,0 +1,2 @@
+call comm_clear(2);
+call comm_run(2);

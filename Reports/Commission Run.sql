@@ -1,0 +1,9 @@
+call commission_history_run(1,1);
+call commission_history_run(2,1);
+call commission_history_run(3,1);
+call commission_history_run(4,1);
+call commission_history_run(5,1);
+call commission_history_run(6,1);
+call commission_history_run(7,1);
+call commission_history_run(8,1);
+call commission_history_run(9,1);
