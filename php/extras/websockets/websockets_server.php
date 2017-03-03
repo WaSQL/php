@@ -220,6 +220,10 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
                 	$skip=0;
                 	foreach($Server->wsClients[$id]['filters'] as $filter){
 						$key=$filter['key'];
+						if(!isset($json[$key])){
+                        	$skip++;
+                        	continue;
+						}
                     	switch($filter['op']){
                         	case 'eq':
                         		if(strtolower($json[$key])!=strtolower($filter['val'])){$skip++;}
