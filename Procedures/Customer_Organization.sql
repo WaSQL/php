@@ -6,6 +6,10 @@ create procedure Commissions.Customer_Organization(
 					, pn_Type_id			integer
 					, pn_Levels				integer
 					, out pt_Org			table (Customer_Root_id	integer
+												  ,Org_Type_id		integer
+												  ,Org_Type			varchar(50)
+												  ,Direction_id		integer
+												  ,Direction		varchar(50)
 												  ,Customer_id		integer
 												  ,Customer_name	varchar(50)
 												  ,Level_id			integer
@@ -27,6 +31,6 @@ begin
 
 	pt_Org = 
 		select * 
-		from Commissions.Organization(:pn_Customer_id, :pn_Period_id, :pn_Direction_id, :pn_Type_id, :pn_Levels);
+		from Commissions.fn_Customer_Organization(:pn_Customer_id, :pn_Period_id, :pn_Direction_id, :pn_Type_id, :pn_Levels);
 
 end;

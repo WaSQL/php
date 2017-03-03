@@ -15,8 +15,6 @@ begin
 	declare ld_Current_Timestamp	timestamp = current_timestamp;
 	declare ln_Count				integer;
 	declare ln_Validate				integer = 0;
-	declare ln_Val_Spon				integer = 0;
-	declare ln_Val_Enroll			integer = 0;
 	declare ln_Realtime_Trans 		integer;
 	declare ln_Realtime_Rank 		integer;
 	declare ln_Customer_log_type_id	integer;
@@ -33,21 +31,9 @@ begin
 	declare ld_Processed_date		timestamp;
 	declare ln_Vol_1				double;
 	declare ln_Vol_12				double;
-	declare lt_Result 				table (pn_Validate	integer);
- 	declare le_Error 				nvarchar(200);
- 	
- 	declare exit handler for sqlexception 
-		begin
-			le_Error = 'Error!';
-			pt_Result = select 0 as pn_validate from dummy;
-		end;
 	
 	-- Validate Move Request
-	call Customer_Validate(:pn_Customer_id, :pn_Sponsor_id, :pn_Enroller_id, :lt_Result);
-	
-	select pn_Validate
-	into ln_Validate
-	from :lt_Result;
+	ln_Validate = fn_Customer_Validate(:pn_Customer_id, :pn_Sponsor_id, :pn_Enroller_id);
 	
 	-- Change is Valid
 	if :ln_Validate = 1 then
@@ -218,6 +204,6 @@ begin
 		
 	end if;
 	
-	pt_Result = select :ln_Validate as pn_validate from dummy;
+	pt_Result = select :ln_Validate as validate from dummy;
 
 end;

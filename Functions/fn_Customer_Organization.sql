@@ -1,11 +1,15 @@
-drop function Commissions.Organization;
-create function Commissions.Organization(
+drop function Commissions.fn_Customer_Organization;
+create function Commissions.fn_Customer_Organization(
 					  pn_Customer_id 		integer
 					, pn_Period_id 			integer
 					, pn_Direction_id 		integer
 					, pn_Type_id			integer
 					, pn_Levels				integer)
 returns table (Customer_Root_id	integer
+			  ,Org_Type_id		integer
+			  ,Org_Type			varchar(50)
+			  ,Direction_id		integer
+			  ,Direction		varchar(50)
 			  ,Customer_id		integer
 			  ,Customer_name	varchar(50)
 			  ,Level_id			integer
@@ -32,6 +36,10 @@ begin
 			return 
 				select
 					 cust_root_id		as Customer_Root_id
+					,0					as Org_Type_id
+					,'Sponsor'			as Org_Type 
+					,0					as Direction_id
+					,'Upline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -59,6 +67,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,0					as Org_Type_id
+					,'Sponsor'			as Org_Type 
+					,1					as Direction_id
+					,'Downline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -87,6 +99,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,1					as Org_Type_id
+					,'Enroller'			as Org_Type 
+					,0					as Direction_id
+					,'Upline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -114,6 +130,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,1					as Org_Type_id
+					,'Enroller'			as Org_Type 
+					,1					as Direction_id
+					,'Downline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -143,6 +163,10 @@ begin
 			return 
 				select
 					 cust_root_id		as Customer_Root_id
+					,0					as Org_Type_id
+					,'Sponsor'			as Org_Type 
+					,0					as Direction_id
+					,'Upline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -172,6 +196,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,0					as Org_Type_id
+					,'Sponsor'			as Org_Type 
+					,1					as Direction_id
+					,'Downline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -202,6 +230,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,1					as Org_Type_id
+					,'Enroller'			as Org_Type 
+					,0					as Direction_id
+					,'Upline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id
@@ -231,6 +263,10 @@ begin
 			return
 				select
 					 cust_root_id		as Customer_Root_id
+					,1					as Org_Type_id
+					,'Enroller'			as Org_Type 
+					,1					as Direction_id
+					,'Downline'			as Direction 
 					,customer_id		as Customer_id
 					,'Customer_name'	as Customer_name
 					,hierarchy_level	as Level_id

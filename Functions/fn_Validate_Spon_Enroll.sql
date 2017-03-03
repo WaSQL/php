@@ -1,5 +1,5 @@
-drop function Commissions.Validate_Spon_Enroll;
-create function Commissions.Validate_Spon_Enroll(
+drop function Commissions.fn_Validate_Spon_Enroll;
+create function Commissions.fn_Validate_Spon_Enroll(
 					  pn_Sponsor_id 	integer
 					, pn_Enroller_id 	integer)
 returns result_id integer
