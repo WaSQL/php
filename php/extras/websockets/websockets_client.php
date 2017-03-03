@@ -20,6 +20,17 @@ array_shift($argv);
 if(is_file($argv[0])){
 	wsTailFile($argv[0]);
 }
+elseif($argv[0]=='-test'){
+	$messages=array(
+		'hello',
+		'{"love":"this is a love test","big":"http://www.disney.com"}'
+	);
+	foreach($messages as $message){
+		$ok=wsSendMessage($message);
+		sleep(1);
+	}
+
+}
 else{
 	//send the args as a string to the websocket
 	$ok=wsSendMessage(implode(' ',$argv));
