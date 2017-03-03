@@ -11,8 +11,7 @@
 ini_set('max_execution_time', 7200);
 set_time_limit(7200);
 error_reporting(E_ALL & ~E_NOTICE);
-global $TIME_START;
-$TIME_START=microtime(true);
+$_SERVER['TIME_START']=microtime(true);
 $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
