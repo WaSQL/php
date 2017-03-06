@@ -427,6 +427,60 @@ function stripeCreateSubscription($params=array()){
 	}
 	return $recs;
 }
+//---------- begin function stripeEditSubscription--------------------
+/**
+* @describe edits a Subscription
+* @param params array.  apikey, customer_id
+*	description, email, metadata, plan, qty,
+*	address_line1,address_line2,address_city,address_state,address_zip,address_country
+*	shipto_name,shipto_address,shipto_phone
+*	tax_percent, trial_end (timestamp)
+*	coupon
+* @return array
+* @usage $ok=stripeEditSubscription(array('apikey'=>$apikey,'customer_id'=>"cus_9UzTvTLy7OVRP1","plan" => "TSTPLN50Y"));
+* @reference https://stripe.com/docs/api?lang=php#create_subscription
+*/
+function stripeEditSubscription($params=array()){
+	//auth tokens are required
+	$required=array('apikey','subscription_id');
+	foreach($required as $key){
+    	if(!isset($params[$key]) || !strlen($params[$key])){
+        	return "Error: Missing required param '{$key}'";
+		}
+	}
+	$valid=array(
+		'apikey','subscription_id','coupon','metadata','plan','quantity','prorate','prorate_date','source'
+	);
+
+	//add any other invalid keys as meta data
+	foreach($params as $k=>$v){
+		if(!in_array($k,$valid) && !in_array($k,$required)){
+        	$params['metadata'][$k]=$v;
+        	unset($params[$k]);
+		}
+	}
+	//return $params;
+	try{
+		$auth=\Stripe\Stripe::setApiKey($params['apikey']);
+		unset($params['apikey']);
+		$cu=\Stripe\Subscription::retrieve($params['subscription_id']);
+		//echo "cu".printValue($cu);
+		unset($params['subscription_id']);
+		//echo printValue($params);
+		foreach($params as $k=>$v){
+			if(in_array($k,$valid) && !in_array($k,$required)){
+            	$cu->{$k}=$v;
+            	//echo "setting {$k} to {$v}<br>\n";
+			}
+		}
+		$cu->save();
+		return true;
+	}
+	catch (Exception $e){
+    	return false;
+	}
+	return false;
+}
 //---------- begin function stripeListProducts--------------------
 /**
 * @describe returns stripe products
