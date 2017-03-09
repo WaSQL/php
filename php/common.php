@@ -437,6 +437,9 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=6;}
+	//make sure width is a number
+	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
+	if(!isNum($params['width'])){$params['width']=6;}
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(isset($params['value'])){
       if(!is_array($params['value'])){
