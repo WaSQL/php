@@ -4196,6 +4196,7 @@ function getDBFieldTag($params=array()){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
 		case 'checkbox':
 			$selections=getDBFieldSelections($info[$field]);
+			//echo printValue($info[$field]);exit;
 			$options=array();
 			$cnt=count($selections['tvals']);
 			for($x=0;$x<$cnt;$x++){
@@ -4408,11 +4409,14 @@ function getDBFieldSelections($info=array()){
 			return $selections;
 		}
 		if(preg_match('/^select[\ \r\n]/i',$tvals)){
-			$tvalresults=getDBRecords(array('-query'=>$tvals));
+			$tvalresults=getDBRecords($tvals);
 			if(is_array($tvalresults)){
-                $dvalresults=getDBRecords(array('-query'=>$dvals));
+				if($tvals==$dvals){$dvalresults=$tvalresults;}
+				else{
+                	$dvalresults=getDBRecords($dvals);
+				}
+				//if($info['fieldname']=='email'){echo $tvals.printValue($tvalresults);exit;}
 				if(is_array($dvalresults)){
-					//if($info['fieldname']=='user_id'){echo $tvals . printValue($tvalresults) . $dvals . printValue($dvalresults);}
 					//parse through the results and build the tval/dval array.
 	                $tvalues=array();
 	                foreach($tvalresults as $tvalresult){
@@ -4422,7 +4426,7 @@ function getDBFieldSelections($info=array()){
                         }
 						$val=implode(' ',$vals);
 						unset($vals);
-						array_push($tvalues,$val);
+						$tvalues[]=$val;
                     }
                     $dvalues=array();
 	                foreach($dvalresults as $dvalresult){
@@ -4432,10 +4436,11 @@ function getDBFieldSelections($info=array()){
                         }
 						$val=implode(' ',$vals);
 						unset($vals);
-						array_push($dvalues,$val);
+						$dvalues[]=$val;
                     }
 					$selections['tvals']=$tvalues;
 					$selections['dvals']=$dvalues;
+					//if($info['fieldname']=='email'){echo printValue($dvalresults);exit;}
 	            }
             }
 
