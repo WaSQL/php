@@ -1120,7 +1120,9 @@ if(isset($_REQUEST['_menu'])){
 							}
 							elseif($id=='schema'){
                             	//sync table schema
+                            	//echo $table.$txt_stage;exit;
                             	$txt_stage=trim(getDBSchemaText("{$db_stage}.{$table}"));
+                            	//echo nl2br($txt_stage);exit;
                             	$tables_live=getDBTables($db_live,1);
                             	if(in_array($table,$tables_live)){
 									//update table schema
@@ -2693,18 +2695,9 @@ LIST_TABLE:
 				if(strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
 				if(strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],'virtual generated')){
-						$genex=$field['_dbgeneration_expression'];
-						$type="GENERATED ALWAYS AS {$genex}";
-						echo "{$field['_dbfield']} {$type}\r\n";
+						echo "{$field['_dbfield']} {$type} {$field['_dbextra']}\r\n";
 						continue;
-                    	$j=getDBExpression($currentTable,$field['_dbfield']);
-                    	if(strlen($j)){
-							$field['_dbextra']=$j;
-							$type=str_replace(' NOT NULL','',$type);
-							$type=str_replace(' NULL','',$type);
-						}
 					}
-					$type .= ' '.$field['_dbextra'];
 				}
 				if(strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
 				echo "{$field['_dbfield']} {$type}\r\n";
@@ -4995,6 +4988,7 @@ function adminGetSynchronizeFields($table){
 	);
 	//echo printValue($recopts);exit;
 	$recs=getDBRecords($recopts);
+	//echo $table.printValue($recs);
 	if(!is_array($recs)){return $recs;}
 	$flds=array();
 	$fields=getDBFields("{$db_stage}.{$table}",1);
