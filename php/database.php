@@ -2017,6 +2017,7 @@ ENDOFSQL;
 	$rec=getDBRecord(array('-query'=>$query));
 	//echo $query.printValue($rec);exit;
 	if(!isset($rec['exp'])){return '';}
+	return $rec['exp'];
 	//TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))
 	if(preg_match('/json\_extract\((.+?)\,\'\$\.(.+?)\'\)/i',$rec['exp'],$m)){
     	return " from {$m[1]}.{$m[2]}";
@@ -6435,6 +6436,7 @@ function getDBSchemaText($table,$force=0){
 	if(!is_array($table)){$table=array($table);}
 	$list=getDBSchema($table,$force);
 	$txt='';
+	//echo printValue($list);
 	foreach($list as $field){
 		if(preg_match('/^\_/',$field['field'])){continue;}
 		$type=$field['type'];
@@ -6446,6 +6448,7 @@ function getDBSchemaText($table,$force=0){
 			$type .= ' Default '.$field['default'];
 			}
 		if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
+		//if(strlen($field['expression'])){$type .= ' '.$field['expression'];}
 		$txt .= trim("{$field['field']} {$type}")."\r\n";
         }
     return $txt;
@@ -6495,6 +6498,8 @@ function updateDBSchema($table,$schema,$new=0){
 			$cfields['_auser']="integer NOT NULL Default 0";
 			break;
     }
+    //remove virtual columns and add them in after.
+    $virtual=array();
 	$fields=array();
 	foreach($lines as $line){
 		if(!strlen(trim($line))){continue;}
@@ -6502,22 +6507,51 @@ function updateDBSchema($table,$schema,$new=0){
 		if(!strlen($type)){continue;}
 		if(!strlen($name)){continue;}
 		if(preg_match('/^\_/',$name)){continue;}
+		if(preg_match('/^(.+?)VIRTUAL GENERATED(.*)$/i',$type,$m)){
+			$type=preg_replace('/VIRTUAL GENERATED/i','',$type);
+			$type=preg_replace('/NULL/i','',$type);
+			$type=trim($type);
+			$exp=getDBExpression($table,$name);
+        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS ({$exp})";
+        	continue;
+		}
+		//virtual from jdoc.Report.value
+		if(preg_match('/^(.+?)VIRTUAL FROM(.*)$/i',$type,$m)){
+			//GENERATED ALWAYS AS (TRIM(BOTH '"' FROM json_extract(jdoc,'$.shipping.address.city')));
+			$type=preg_replace('/NULL/i','',$m[1]);
+			$type=trim($type);
+			$parts=preg_split('/\./',$m[2]);
+			$field=array_shift($parts);
+			$exp=implode('.',$parts);
+        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$field},'\$.{$exp}')))";
+        	continue;
+		}
 		$fields[$name]=$type;
-        }
+    }
+    //echo printValue($fields).printValue($virtual);exit;
+    $rtn=0;
     if(count($fields)){
 		//add common fields
 		foreach($cfields as $key=>$val){$fields[$key]=$val;}
 		if($new==1){
         	$ok = createDBTable($updatetable,$fields);
-			}
+		}
 		else{
         	$ok = alterDBTable($updatetable,$fields);
-			}
-        //echo $ok . "alterDBTable({$updatetable})" . printValue($fields);
-        return 1;
-        }
-    return 0;
+		}
+		$rtn++;
+    }
+    if(count($virtual)){
+    	foreach($virtual as $field=>$sql){
+			$ok=executeSQL("ALTER table {$updatetable} DROP {$field}");
+        	//echo printValue($ok).printValue($sql);
+			$ok=executeSQL($sql);
+        	//echo printValue($ok).printValue($sql);
+		}
+		$rtn++;
 	}
+    return $rtn;
+}
 
 //---------- begin function getDBVersion--------------------
 /**
@@ -7550,8 +7584,17 @@ function databaseDescribeTable($table){
 	if(isMysqli() || isMysql()){
 		//$query="desc {$table}";
 		$query="show full columns from {$table}";
-		$recs=getDBRecords(array('-query'=>$query));
+		if(preg_match('/^(.+?)\.(.+)$/',$table,$m)){
+        	$vtable=$m[2];
 		}
+		else{$vtable=$table;}
+		$recs=getDBRecords(array('-query'=>$query));
+		foreach($recs as $i=>$rec){
+        	if(preg_match('/VIRTUAL GENERATED/i',$rec['extra'])){
+				$recs[$i]['expression']=getDBExpression($vtable,$rec['field']);
+			}
+		}
+	}
 	elseif(isOracle()){
 		//SELECT owner,column_name,data_type,data_length,data_precision,nullable,default_length,data_default,character_set_name,default_on_null FROM dba_tab_columns where owner='DOT_DATA' and  table_name='ASH'
     		$query="
