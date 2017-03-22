@@ -3334,7 +3334,7 @@ function editDBRecord($params=array()){
 			foreach($recs as $i=>$rec){
 				$jchanges=array();
 				foreach($params as $key=>$val){
-					if(stringContains($info[$key]['_dbextra'],'virtual generated')){
+					if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],'virtual generated')){
 						unset($params[$key]);
 			        	$j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
 			        	if(strlen($j)){
