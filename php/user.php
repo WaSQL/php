@@ -1049,7 +1049,9 @@ function userLoginForm($params=array()){
     }
     $form .= '</div>'."\n";
 	$form .= '</form>'."\n";
-	$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
+	if(!isset($params['-focus']) || $params['-focus'] != false || $params['-focus'] != 'none'){
+		$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
+	}
 	$form .= '</div>'."\n";
 	//$form .=printValue($_REQUEST);
     return $form;
