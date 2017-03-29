@@ -9566,6 +9566,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
         	$recopts['postedit']=1;
 		}
 		$recs=getDBRecords($recopts);
+		if(!is_array($recs)){continue;}
 		$xml .= "<!-- {$table} has ".count($recs)." records -->\n";
 		foreach($recs as $rec){
 			$recxml='';
