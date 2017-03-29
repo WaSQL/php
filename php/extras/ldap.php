@@ -392,7 +392,7 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
 	$rec=array('active'=>ldapIsActiveRecord($lrec));
 	$skipkeys=array(
 		'logonhours','msexchsafesendershash','count','usercertificate',
-		'msexchblockedsendershash','msexchsaferecipientshash','thumbnailphoto'
+		'msexchblockedsendershash','msexchsaferecipientshash','msrtcsip-userroutinggroupid'
 	);
 	//echo printValue($lrec);exit;
 	foreach($lrec as $key=>$val){
@@ -400,7 +400,16 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
     	if(is_numeric($key)){continue;}
     	//skip keys
     	if(in_array($key,$skipkeys)){continue;}
+
         switch(strtolower($key)){
+			case 'thumbnailphoto':
+			case 'jpegphoto':
+			case 'photo':
+				if(isset($val[0]) && strlen($val[0])){
+					$rec['photo']="data:image/jpeg;base64,".base64_encode($val[0]);
+					//echo "<img src=\"{$rec['photo']}\" title=\"{$lrec['samaccountname'][0]}\" style=\"max-width:200px;max-height:200px;\" />".PHP_EOL;
+				}
+			break;
 			case 'objectguid':
 			case 'objectsid':
 				//binary ojects - base64 encode them
