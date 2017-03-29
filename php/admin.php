@@ -69,7 +69,7 @@ include_once("$progpath/config.php");
 global $CONFIG;
 //is SSL required for admin?
 if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'true')) && !isSecure()){
-	header("Location: https://{$_SERVER['HTTP_HOST']}/admin",true,301);
+	header("Location: https://{$_SERVER['HTTP_HOST']}/php/admin.php",true,301);
 	exit;
 }
 

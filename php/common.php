@@ -7850,11 +7850,18 @@ function isSecure(){return isSSL();}
 */
 function isSSL(){
 	/* Apache */
-	if($_SERVER['https'] == 1){return true;}
-	/* IIS */
-	if ($_SERVER['https'] == 'on'){return true;}
+	//echo "HERE".printValue($_SERVER);exit;
+	if(isset($_SERVER['https']) && in_array($_SERVER['https'],array(1,'on'))){
+		return true;
+	}
+	if(isset($_SERVER['HTTPS']) && in_array($_SERVER['HTTPS'],array(1,'on'))){
+		return true;
+	}
+	if(isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME']=='https'){
+		return true;
+	}
 	/* others */
-	if ($_SERVER['SERVER_PORT'] == 443){return true;}
+	if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443){return true;}
 	return false;
 }
 //---------- begin function isStrongPassword ----------
