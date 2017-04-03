@@ -15,7 +15,7 @@ begin
    	
    	commit;
    
-	replace customer_history (period_id, batch_id, customer_id, vol_10)
+	replace customer_history (period_id, batch_id, customer_id, vol_11)
 	select 
 		 c.period_id
 	    ,c.batch_id
@@ -23,8 +23,8 @@ begin
 		,sum(ifnull(c.vol_1,0) + ifnull(c.vol_4,0)) + 
 			(select sum(ifnull(vol_1,0) + ifnull(vol_4,0))
 			from customer_history 
-			where period_id = :pn_Period_id
-   			and batch_id = :pn_Period_Batch_id
+			where period_id = c.period_id
+   			and batch_id = c.batch_id
 			and rank_high_id < 5
 			and enroller_id = c.customer_id) as pv_egv
 	from customer_history c

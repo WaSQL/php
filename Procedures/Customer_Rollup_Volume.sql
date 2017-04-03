@@ -70,10 +70,10 @@ begin
 		
 		-- Set EGV
 		if :ls_Enroll_Country = 'KOR' and :ln_Rank_High_id < 5 then
-			replace customer (customer_id, vol_10)
+			replace customer (customer_id, vol_11)
 			select 
 				 e.customer_id
-				,e.vol_10 + :pn_PV as vol_10
+				,e.vol_11 + :pn_PV as vol_11
 			from customer a, customer e
 			where a.enroller_id = e.customer_id
 			and a.customer_id = :ln_Customer_id;
@@ -86,10 +86,10 @@ begin
 			end if;
 			
 			-- Update Org Volume by rolling up PV
-	    	replace customer (customer_id, vol_12)
+	    	replace customer (customer_id, vol_13)
 	        select
 	            customer_id       	as customer_id
-	           ,vol_12 + :pn_PV		as vol_12
+	           ,vol_13 + :pn_PV		as vol_13
 	        from customer c
 			Where type_id = 1
 			and customer_id = :ln_Customer_id;

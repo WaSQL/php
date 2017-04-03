@@ -20,7 +20,7 @@ Begin
    	
    	-- Get Period Tree Snapshot
    	lc_Period_Tree =
-		select customer_id, sponsor_id, period_id, batch_id, vol_1
+		select customer_id, sponsor_id, period_id, batch_id, round(vol_1+vol_4,2) as vol_1
 		from customer_history
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
@@ -37,7 +37,7 @@ Begin
 			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, period_id, batch_id, vol_1
 			             from :lc_Period_Tree
 			             order by customer_id)
-	    		Start where sponsor_id = 3);
+	    		Start where customer_id = 3);
         
     -- Get Max Level
     select max(level_id)
@@ -47,12 +47,12 @@ Begin
     -- Loop through all tree levels from bottom to top
     for ln_x in reverse 0..:ln_max do
     	-- Update Org Volume by rolling up PV
-    	replace customer_history (period_id, batch_id, customer_id, vol_12)
+    	replace customer_history (period_id, batch_id, customer_id, vol_13)
         select
-            d.period_id             						as period_id
-           ,d.batch_id 			 							as batch_id
-           ,d.customer_id            						as customer_id
-           ,sum(ifnull(o.vol_12,0)) + ifnull(d.vol_1,0)		as vol_12
+            d.period_id             							as period_id
+           ,d.batch_id 			 								as batch_id
+           ,d.customer_id            							as customer_id
+           ,sum(ifnull(o.vol_13,0)) + ifnull(d.vol_1,0)			as vol_13
         from :lc_dist d
 			left outer join customer_history o 
 			on d.customer_id = o.sponsor_id 

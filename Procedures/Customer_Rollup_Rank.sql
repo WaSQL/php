@@ -28,8 +28,8 @@ begin
    	And c.type_id = 1
    	and c.status_id in (1, 4)
    	and c.customer_id = :pn_Customer_id
-	and ((c.vol_1 + c.vol_4) >= q.vol_1 or (c.vol_10 >= q.vol_3 and v.version_id = 2))
-	and c.vol_12 >= q.vol_2
+	and ((c.vol_1 + c.vol_4) >= q.vol_1 or (c.vol_11 >= q.vol_3 and v.version_id = 2))
+	and c.vol_13 >= q.vol_2
 	and (select count(*)
 		 from (
 			 select customer_id, sponsor_id, max(leg_rank_id) as leg_rank_id 

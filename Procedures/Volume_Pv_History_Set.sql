@@ -28,7 +28,6 @@ begin
 	And c.period_id = :pn_Period_id
    	and c.batch_id = :pn_Period_Batch_id
    	and ifnull(t.transaction_type_id,4) <> 0
-   	--and c.status_id in (1, 4)
     Group By c.period_id, c.batch_id, c.customer_id
     having (Sum(ifnull(t.value_2,0)) != 0
 		or  Sum(ifnull(t.value_4,0)) != 0);

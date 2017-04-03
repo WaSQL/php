@@ -1,5 +1,5 @@
-drop procedure Commissions.Payout_2_Clear;
-create procedure Commissions.Payout_2_Clear(
+drop procedure Commissions.Payout_Unilevel_Clear;
+create procedure Commissions.Payout_Unilevel_Clear(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
    LANGUAGE SQLSCRIPT
@@ -8,7 +8,7 @@ AS
 
 begin
 	delete
-	from payout_unilevel
+	from Payout_Unilevel
 	where period_id = :pn_Period_id
 	and batch_id = :pn_Period_Batch_id;
 	  

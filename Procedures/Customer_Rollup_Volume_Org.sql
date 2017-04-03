@@ -22,10 +22,10 @@ begin
 		end if;
 		
 		-- Update Org Volume by rolling up PV
-    	replace customer (customer_id, vol_12)
+    	replace customer (customer_id, vol_13)
         select
             customer_id       	as customer_id
-           ,vol_12 + :pn_Org	as vol_12
+           ,vol_13 + :pn_Org	as vol_13
         from customer c
 		Where type_id = 1
 		and customer_id = :ln_Customer_id;

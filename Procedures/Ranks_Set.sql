@@ -32,8 +32,8 @@ begin
 			,c.status_id					as status_id
 			,c.vol_1						as vol_1
 			,c.vol_4						as vol_4
-			,c.vol_10						as vol_10
-			,c.vol_12						as vol_12
+			,c.vol_11						as vol_11
+			,c.vol_13						as vol_13
 			,ifnull(v.version_id,1)			as version_id
 			,ifnull(w.req_waiver_type_id,0)	as waiver_type_id
 			,ifnull(w.value_1,0)			as waiver_value
@@ -65,8 +65,8 @@ begin
 			,status_id			as status_id
 			,vol_1				as vol_1
 			,vol_4				as vol_4
-			,vol_10				as vol_10
-			,vol_12				as vol_12
+			,vol_11				as vol_11
+			,vol_13				as vol_13
 			,version_id			as version_id
 			,waiver_type_id		as waiver_type_id
 			,waiver_value		as waiver_value
@@ -76,7 +76,7 @@ begin
 			             from :lc_Customer t
 			             --order by customer_id
 			           )
-	    		Start where sponsor_id = 3);
+	    		Start where customer_id = 3);
 	    		        
     select max(level_id)
     into ln_max_level
@@ -104,8 +104,8 @@ begin
 		   	And h.type_id = 1
 		   	and h.status_id in (1, 4)
 		   	and h.level_id = :ln_dst_level
-			and ((h.vol_1 + h.vol_4) >= q.vol_1 or (h.vol_10 >= q.vol_3 and h.version_id = 2))
-			and h.vol_12 >= q.vol_2
+			and ((h.vol_1 + h.vol_4) >= q.vol_1 or (h.vol_11 >= q.vol_3 and h.version_id = 2))
+			and h.vol_13 >= q.vol_2
 			and (select count(*)
 				 from (
 					 select customer_id, sponsor_id, max(leg_rank_id) as leg_rank_id 

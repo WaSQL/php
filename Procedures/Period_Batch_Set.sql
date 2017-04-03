@@ -8,7 +8,7 @@ AS
 begin
 	insert into period_batch
 	select
-		(select ifnull(max(batch_id)+1,1) 
+		(select ifnull(max(batch_id)+1,0) 
 		 from period_batch 
 		 where period_id = p.period_id)	as batch_id
 		,p.period_id					as period_id

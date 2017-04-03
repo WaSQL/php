@@ -10,6 +10,5 @@ begin
 	call period_batch_clear(:pn_Period_id, :pn_Period_Batch_id);
 	call customer_history_clear(:pn_Period_id, :pn_Period_Batch_id);
 	call customer_history_qual_leg_clear(:pn_Period_id, :pn_Period_Batch_id);
-	call payout_2_clear(:pn_Period_id, :pn_Period_Batch_id);
 	
 end;

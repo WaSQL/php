@@ -2,16 +2,18 @@ select
 	   b.period_id
 	  ,b.batch_id 
 	  ,(select count(*) 
-	    from customer_history 
-	    where period_id = b.period_id 
-	    and batch_id = b.batch_id 
-	    and type_id = 1)															as Cust_Count
-	  ,(select count(*)
-	    from customer_history 
+	    from commissions.customer_history 
 	    where period_id = b.period_id 
 	    and batch_id = b.batch_id 
 	    and type_id = 1
-	    and rank_id<>rank_high_type_id)															as Rank_Diff
+	    and sponsor_id <> 4)															as Cust_Count
+	  ,(select count(*)
+	    from commissions.customer_history 
+	    where period_id = b.period_id 
+	    and batch_id = b.batch_id 
+	    and type_id = 1
+	    and rank_id<>rank_high_type_id
+	    and sponsor_id <> 4)												as Rank_Diff
 	  ,p.beg_date
 	  ,b.beg_date_run
       --,b.end_date_run
@@ -39,13 +41,16 @@ select
       ,seconds_between(
        to_seconddate(b.beg_date_rank, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_rank, 'yyyy-mm-dd hh24:mi:ss.ff7')) 				as Rank_Sec
-from period p, period_batch b
+      ,seconds_between(
+       to_seconddate(b.beg_date_payout_1, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+       to_seconddate(b.end_date_payout_1, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_1
+from commissions.period p, commissions.period_batch b
 where p.period_id = b.period_id
 and b.beg_date_run is not null
 order by b.period_id desc, b.batch_id desc, p.beg_date;
 
 with l_Cust as (
-	select * from customer_history where period_id <> 0 and period_id in (select period_id from period_batch where beg_date_run is not null and end_date_run is null)
+	select * from commissions.customer_history where period_id <> 0 and period_id in (select period_id from commissions.period_batch where beg_date_run is not null and end_date_run is null)
 )
 select period_id, rank_id, rank_qual, count(*) as count
 from l_Cust
@@ -63,8 +68,9 @@ where rank_id <> rank_high_id
 order by rank_high_id desc, customer_id, period_id;
 */
 
+/*
 with l_Cust as (
-	select * from customer_history where period_id <> 0 and period_id in (select period_id from period_batch where beg_date_run is not null and end_date_run is null)
+	select * from commissions.customer_history where period_id <> 0 and period_id in (select period_id from commissions.period_batch where beg_date_run is not null and end_date_run is null)
 )
 select
 	   c.period_id
@@ -79,3 +85,9 @@ from l_Cust c
 where c.customer_id = t.node_id
 and c.rank_qual <> 0
 group by c.period_id;
+*/
+
+select lvl_paid, count(*)
+from commissions.payout_unilevel
+group by lvl_paid
+order by lvl_paid

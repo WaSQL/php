@@ -47,20 +47,21 @@ begin
 		
 		-- Set FS
 		if days_between(:ld_Entry_date,:ld_Transaction_date) <= 60 then
-			replace customer (customer_id, vol_5)
+			replace customer (customer_id, vol_5, vol_10)
 			Select 
 				  customer_id
 			     ,vol_5 + :ln_PV As pv
+			     ,vol_10 + :ln_CV As cv
 			From customer
 			Where customer_id = :ln_Customer_id;
 		end if;
 		
 		-- Set EGV
 		if :ls_Enrol_Country = 'KOR' and :ln_Rank_High_id < 5 then
-			replace customer (customer_id, vol_10)
+			replace customer (customer_id, vol_11)
 			select 
 				 e.customer_id
-				,e.vol_10 + :ln_PV as vol_10
+				,e.vol_11 + :ln_PV as vol_11
 			from customer a, customer e
 			where a.enroller_id = e.customer_id
 			and a.customer_id = :ln_Customer_id;
@@ -82,10 +83,10 @@ begin
 			end if;
 			
 			-- Update Org Volume by rolling up PV
-	    	replace customer (customer_id, vol_12)
+	    	replace customer (customer_id, vol_13)
 	        select
 	            customer_id       	as customer_id
-	           ,vol_12 + :ln_PV		as vol_12
+	           ,vol_13 + :ln_PV		as vol_13
 	        from customer c
 			Where type_id = 1
 			and customer_id = :ln_Customer_id;
@@ -110,8 +111,8 @@ begin
 		   	And c.type_id = 1
 		   	and c.status_id in (1, 4)
 		   	and c.customer_id = :ln_Customer_id
-			and (c.vol_1 >= q.vol_1 or (c.vol_10 >= q.vol_3 and v.version_id = 2))
-			and c.vol_12 >= q.vol_2
+			and (c.vol_1 >= q.vol_1 or (c.vol_11 >= q.vol_3 and v.version_id = 2))
+			and c.vol_13 >= q.vol_2
 			and (select count(*)
 				 from (
 					 select customer_id, sponsor_id, max(leg_rank_id) as leg_rank_id 

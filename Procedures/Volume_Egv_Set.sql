@@ -5,15 +5,7 @@ create procedure Commissions.Volume_Egv_Set()
 AS
 
 begin
-	Update period_batch
-	Set beg_date_volume_egv = current_timestamp
-      ,end_date_volume_egv = Null
-   	Where period_id = 0
-   	and batch_id = 0;
-   	
-   	commit;
-   	
-	replace customer (customer_id, vol_10)
+	replace customer (customer_id, vol_11)
 	select 
 		 c.customer_id
 		,sum(ifnull(c.vol_1,0) + ifnull(c.vol_4,0)) + 
@@ -24,13 +16,6 @@ begin
 	from customer c
 	where c.country = 'KOR'
 	group by c.customer_id;
-   	
-   	commit;
-   
-   	Update period_batch
-   	Set end_date_volume_egv = current_timestamp
-   	Where period_id = 0
-   	and batch_id = 0;
    	
    	commit;
 

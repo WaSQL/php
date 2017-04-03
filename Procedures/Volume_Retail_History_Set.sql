@@ -33,8 +33,15 @@ Begin
 	And a.type_id In (2,3)
 	And d.type_id = 1
 	Group By d.period_id,d.batch_id,d.customer_id
-	having (ifnull(sum(a.vol_1),0) > 0
-	    or  ifnull(sum(a.vol_6),0) > 0);
+	having (ifnull(sum(a.vol_1),0) != 0
+	    or  ifnull(sum(a.vol_6),0) != 0);
+	    
+	update customer_history
+	set vol_1 = 0
+	  , vol_6 = 0
+	where type_id In (2,3)
+	and period_id = :pn_Period_id
+   	and batch_id = :pn_Period_Batch_id;
    	
    	commit;
    

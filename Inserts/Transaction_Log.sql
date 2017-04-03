@@ -1,5 +1,5 @@
---truncate table transaction_log;
---truncate table orabth;
+--truncate table commissions.transaction_log;
+--truncate table commissions.orabth;
 
 --select distinct order_source
 --from orabth
@@ -23,27 +23,29 @@ from (
 where period_id is not null;
 */
 
-insert into transaction_log
+insert into commissions.transaction_log
 select
-	transaction_log_id.nextval						as transaction_log_id
+	 commissions.transaction_log_id.nextval			as transaction_log_id
 	,ifnull(o.rma_record_number,0)					as transaction_log_ref_id
 	,o.dist_id										as customer_id
 	,o.record_number								as source_key_id
 	,1												as source_id
 	,(select period_id 
-	  from period 
+	  from commissions.period 
 	  where beg_date <= to_date(o.pv_date,'yyyymm')
-	  and end_date >= to_date(o.pv_date,'yyyymm'))	as period_id
+	  and end_date >= to_date(o.pv_date,'yyyymm')
+	  and period_type_id = 1
+	  and period_id != 0)	as period_id
 	,o.transaction_date								as transaction_date
 	,(select transaction_type_id
-	  from transaction_type_mapping
+	  from commissions.transaction_type_mapping
 	  where type_legacy = o.order_type)				as transaction_type_id
 	,(select transaction_category_id
-	  from transaction_category_mapping
+	  from commissions.transaction_category_mapping
 	  where source_legacy = o.order_source)			as transaction_category_id
-	,(select country
-	  from customer_country_mapping
-	  where country_legacy = o.country_code)		as country_code
+	,(select currency_code
+	  from commissions.country
+	  where country_code = o.country_code)		    as currency_code
 	,price_1										as value_1
 	,price_2										as value_2
 	,price_3										as value_3
@@ -65,14 +67,15 @@ select
 	,0												as flag_4
 	,0												as flag_5
 	,null											as note
-from orabth o;
+	,null											as processed_date
+from commissions.orabth o;
 
 --where dist_bus_ctr = 1
 --and pv_date >= 201604
 --and pv_date <= 201701;
 
-update transaction_log t
-set t.transaction_log_ref_id = (select transaction_log_id from transaction_log where t.transaction_log_ref_id = source_key_id)
+update commissions.transaction_log t
+set t.transaction_log_ref_id = (select transaction_log_id from commissions.transaction_log where t.transaction_log_ref_id = source_key_id)
 where t.transaction_log_ref_id <> 0;
 
 --truncate table orabth;

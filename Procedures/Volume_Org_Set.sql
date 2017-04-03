@@ -8,17 +8,9 @@ Begin
     declare ln_max      integer;
     declare ln_x        integer;
     
-	Update period_batch
-	Set beg_date_volume_org = current_timestamp
-      ,end_date_volume_org = Null
-   	Where period_id = 0
-   	and batch_id = 0;
-   	
-   	commit;
-    
 	-- Get Period Tree Snapshot
    	lc_Period_Tree =
-		select customer_id, sponsor_id, vol_1
+		select customer_id, sponsor_id, round(vol_1+vol_4,2) as vol_1
 		from customer;
     
     -- Add Tree Level to Snaphot
@@ -31,7 +23,7 @@ Begin
 			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, vol_1
 			             from :lc_Period_Tree
 			             order by customer_id)
-	    		Start where sponsor_id = 3);
+	    		Start where customer_id = 3);
         
     -- Get Max Level
     select max(level_id)
@@ -41,10 +33,10 @@ Begin
     -- Loop through all tree levels from bottom to top
     for ln_x in reverse 0..:ln_max do
     	-- Update Org Volume by rolling up PV
-    	replace customer (customer_id, vol_12)
+    	replace customer (customer_id, vol_13)
         select
-            d.customer_id            						as customer_id
-           ,sum(ifnull(o.vol_12,0)) + ifnull(d.vol_1,0)		as vol_12
+            d.customer_id            					as customer_id
+           ,sum(ifnull(o.vol_13,0)) + ifnull(d.vol_1,0)	as vol_13
         from :lc_dist d
 			left outer join customer o 
 			on d.customer_id = o.sponsor_id
@@ -54,12 +46,5 @@ Begin
         commit;
         
     end for;
-   
-   	Update period_batch
-   	Set end_date_volume_org = current_timestamp
-   	Where period_id = 0
-   	and batch_id = 0;
-   	
-   	commit;
    	
 End;

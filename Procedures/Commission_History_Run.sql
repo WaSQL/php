@@ -61,7 +61,7 @@ Begin
 
 	-- Clear Commission
 	if ln_Clear = 1 then
-		call commission_history_clear(:pn_Period_id, pn_Period_Batch_id);
+		call commission_history_clear(:pn_Period_id, :pn_Period_Batch_id);
 	end if;
    
    Update period_batch
@@ -74,13 +74,13 @@ Begin
    commit;
 	
    -- Set Volumes
-   If ln_Set_Volume = 1 Then
-      call volume_pv_history_set(:pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Volume = 1 Then
+      call volume_pv_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
       
    -- Set Retail Volumes
-   If ln_Set_Volume_Retail = 1 Then
-      call volume_retail_history_set(:pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Volume_Retail = 1 Then
+      call volume_retail_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
          
    -- Set LRP Volumes
@@ -89,24 +89,29 @@ Begin
    --End If;
         
    -- Set Fast Start Volumes
-   If ln_Set_Volume_FS = 1 Then
-      volume_fs_history_set(:pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Volume_FS = 1 Then
+      volume_fs_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
       
    -- Set EGV Volumes
-   If ln_Set_Volume_EGV = 1 Then
-      call volume_egv_history_set(:pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Volume_EGV = 1 Then
+      call volume_egv_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
          
    -- Set Org Volumes
-   If ln_Set_Volume_Org = 1 Then
-      call volume_org_history_set(:pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Volume_Org = 1 Then
+      call volume_org_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
          
    -- Set Ranks
-   If ln_Set_Rank = 1 Then
-      call ranks_history_set(pn_Period_id, pn_Period_Batch_id);
+   If :ln_Set_Rank = 1 Then
+      call ranks_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
+   
+   -- Set Payout 1 --Unilevel
+	if :ln_Set_Payout_1 = 1 then
+		call Payout_Unilevel_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
    
    Update period_batch
    Set end_date_run = current_timestamp

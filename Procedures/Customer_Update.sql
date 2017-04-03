@@ -16,9 +16,9 @@ begin
 	declare ln_Count				integer;
 	declare ln_Validate				integer = 0;
 	declare ln_Realtime_Trans 		integer;
-	declare ln_Realtime_Rank 		integer;
 	declare ln_Customer_log_type_id	integer;
 	declare ln_Source_Key_id		integer;
+	declare ln_S_Source_Key_id		integer;
 	declare ln_Source_id			integer;
 	declare ln_Type_id				integer;
 	declare ln_Status_id			integer;
@@ -28,17 +28,34 @@ begin
 	declare ld_Comm_status_date		timestamp;
 	declare ld_Termination_date		timestamp;
 	declare ld_Entry_date			timestamp;
-	declare ld_Processed_date		timestamp;
 	declare ln_Vol_1				double;
-	declare ln_Vol_12				double;
+	declare ln_Vol_4				double;
+	declare ln_Vol_13				double;
+	declare ln_S_Source_id			integer;
+	declare ln_S_Type_id			integer;
+	declare ln_S_Status_id			integer;
+	declare ln_S_Sponsor_id			integer = :pn_Sponsor_id;
+	declare ln_S_Enroller_id		integer = :pn_Enroller_id;
+	declare ln_S_Country			varchar(5);
+	declare ld_S_Comm_status_date	timestamp;
+	declare ld_S_Termination_date	timestamp;
+	declare ld_S_Entry_date			timestamp;
+	declare ln_S_Vol_1				double;
+	declare ln_S_Vol_4				double;
+	declare ln_S_Vol_13				double;
+	declare ld_Processed_date		timestamp;
 	
 	-- Validate Move Request
-	ln_Validate = fn_Customer_Validate(:pn_Customer_id, :pn_Sponsor_id, :pn_Enroller_id);
+	if ifnull(pn_Swap_id,0) = 1 then
+		ln_Validate = 1;
+	else
+		ln_Validate = fn_Customer_Validate(:pn_Customer_id, :ln_S_Sponsor_id, :ln_S_Enroller_id);
+	end if;
 	
 	-- Change is Valid
 	if :ln_Validate = 1 then
-		select realtime_trans, realtime_rank
-		into ln_Realtime_Trans, ln_Realtime_Rank
+		select realtime_trans
+		into ln_Realtime_Trans
 		from period 
 		where period_id = 0;
 		
@@ -47,17 +64,19 @@ begin
 			ld_Processed_date = :ld_Current_Timestamp;
 		end if;
 		
-		-- Get Customer Info
-		select  source_key_id,    source_id,    type_id,    status_id,    sponsor_id,    enroller_id,    country,    comm_status_date,    entry_date,    termination_date,    vol_1,    vol_12
-		into ln_Source_Key_id, ln_Source_id, ln_Type_id, ln_Status_id, ln_Sponsor_id, ln_Enroller_id, ln_Country, ld_Comm_status_date, ld_Entry_date, ld_Termination_date, ln_Vol_1, ln_Vol_12
+		-- Get Main Customer Info
+		select  source_key_id,    source_id,    type_id,    status_id,    sponsor_id,    enroller_id,    country,    comm_status_date,    entry_date,    termination_date,    vol_1,    vol_4,    vol_13
+		into ln_Source_Key_id, ln_Source_id, ln_Type_id, ln_Status_id, ln_Sponsor_id, ln_Enroller_id, ln_Country, ld_Comm_status_date, ld_Entry_date, ld_Termination_date, ln_Vol_1, ln_Vol_4, ln_Vol_13
 		from customer
 		where customer_id = :pn_Customer_id;
 		
-		-- Remove Qual Legs Entries
-		delete from customer_qual_leg
-		where customer_id = :pn_Customer_id;
-		
-		commit;
+		-- Get Swap Customer Info
+		if ifnull(:pn_Swap_id,0) <> 0 then
+			select    source_key_id,      source_id,      type_id,      status_id,      sponsor_id,      enroller_id,      country,      comm_status_date,      entry_date,      termination_date,      vol_1,    vol_4,      vol_13
+			into ln_S_Source_Key_id, ln_S_Source_id, ln_S_Type_id, ln_S_Status_id, ln_S_Sponsor_id, ln_S_Enroller_id, ln_S_Country, ld_S_Comm_status_date, ld_S_Entry_date, ld_S_Termination_date, ln_S_Vol_1, ln_Vol_4, ln_S_Vol_13
+			from customer
+			where customer_id = :pn_Swap_id;
+		end if;
 		
 		--===================================================================================================
 		-- Single Move with Downline
@@ -67,8 +86,8 @@ begin
 			if :ln_Realtime_Trans = 1 then
 				-- Update Customer
 				update customer
-				set Sponsor_id = :pn_Sponsor_id
-				   ,Enroller_id = :pn_Enroller_id
+				set Sponsor_id = :ln_S_Sponsor_id
+				   ,Enroller_id = :ln_S_Enroller_id
 				where customer_id = :pn_Customer_id;
 				
 				-- Retail Customer
@@ -79,18 +98,18 @@ begin
 					
 					update customer
 					set vol_4 = vol_4 + :ln_Vol_1
-					where customer_id = :pn_Sponsor_id;
+					where customer_id = :ln_S_Sponsor_id;
 				end if;
 					
 				-- Remove Org Volume from Old upline
 				call Commissions.Customer_Rollup_Volume_Org(
 					:ln_Sponsor_id,
-					(:ln_Vol_12 * -1));
+					(:ln_Vol_13 * -1));
 				
 				-- Add Org Volume to New upline
 				call Commissions.Customer_Rollup_Volume_Org(
-					:pn_Sponsor_id,
-					:ln_Vol_12);
+					:ln_S_Sponsor_id,
+					:ln_Vol_13);
 			end if;
 		end if;
 		
@@ -102,8 +121,8 @@ begin
 			if :ln_Realtime_Trans = 1 then
 				-- Update Customer
 				update customer
-				set Sponsor_id = :pn_Sponsor_id
-				   ,Enroller_id = :pn_Enroller_id
+				set Sponsor_id = :ln_S_Sponsor_id
+				   ,Enroller_id = :ln_S_Enroller_id
 				   ,vol_12 = vol_1
 				where customer_id = :pn_Customer_id;
 				
@@ -115,7 +134,7 @@ begin
 					
 					update customer
 					set vol_4 = vol_4 + :ln_Vol_1
-					where customer_id = :pn_Sponsor_id;
+					where customer_id = :ln_S_Sponsor_id;
 				end if;
 				
 				-- Update Downline
@@ -131,7 +150,7 @@ begin
 				
 				-- Add PV Volume to New upline
 				call Commissions.Customer_Rollup_Volume_Org(
-					:pn_Sponsor_id,
+					:ln_S_Sponsor_id,
 					:ln_Vol_1);
 			end if;
 				
@@ -155,6 +174,158 @@ begin
 				,:ld_Processed_date
 			from customer
 			where Sponsor_id = :pn_Customer_id;
+		end if;
+		
+		--===================================================================================================
+		-- Swap
+		if ifnull(:pn_Swap_id,0) <> 0 then
+			ln_Customer_log_type_id = 3;
+				
+			if :ln_Realtime_Trans = 1 then
+				-- Update Customers
+				update customer
+				set Sponsor_id = :ln_S_Sponsor_id
+				   ,Enroller_id = :ln_S_Enroller_id
+				   ,vol_4 = ln_S_Vol_4
+				where customer_id = :pn_Customer_id;
+				
+				update customer
+				set Sponsor_id = :ln_Sponsor_id
+				   ,Enroller_id = :ln_Enroller_id
+				   ,vol_4 = ln_Vol_4
+				where customer_id = :pn_Swap_id;
+				
+				select vol_4
+				into ln_Vol_4
+				from customer
+				where customer_id = :ln_Sponsor_id;
+				
+				select vol_4
+				into ln_S_Vol_4
+				from customer
+				where customer_id = :ln_S_Sponsor_id;
+				
+				update customer
+				set vol_4 = ln_S_Vol_4
+				where customer_id = :ln_Sponsor_id;
+				
+				update customer
+				set vol_4 = ln_Vol_4
+				where customer_id = :ln_S_Sponsor_id;
+				
+				-- Swap Downlines
+				update customer
+				set Sponsor_id = :ln_S_Sponsor_id
+				   ,Enroller_id = :ln_S_Enroller_id
+				where Sponsor_id = :pn_Customer_id;
+				
+				update customer
+				set Sponsor_id = :ln_Sponsor_id
+				   ,Enroller_id = :ln_Enroller_id
+				where Sponsor_id = :pn_Swap_id;
+				
+				-- Remove PV Volume from Old upline
+				call Commissions.Customer_Rollup_Volume_Org(
+					:ln_Sponsor_id,
+					(:ln_Vol_1 * -1));
+					
+				call Commissions.Customer_Rollup_Volume_Org(
+					:ln_S_Sponsor_id,
+					(:ln_S_Vol_1 * -1));
+				
+				-- Add PV Volume to New upline
+				call Commissions.Customer_Rollup_Volume_Org(
+					:ln_Sponsor_id,
+					:ln_S_Vol_1);
+					
+				call Commissions.Customer_Rollup_Volume_Org(
+					:ln_S_Sponsor_id,
+					:ln_Vol_1);
+					
+				-- Log Downline Swap
+				insert into customer_log
+				select
+					 customer_log_id.nextval
+					,4
+					,customer_id
+					,source_key_id
+					,source_id
+					,type_id
+					,status_id
+					,:ln_S_Sponsor_id
+					,:ln_S_Enroller_id
+					,country
+					,comm_status_date
+					,entry_date
+					,termination_date
+					,:ld_Current_Timestamp
+					,:ld_Processed_date
+				from customer
+				where Sponsor_id = :pn_Customer_id;
+				
+				insert into customer_log
+				select
+					 customer_log_id.nextval
+					,4
+					,customer_id
+					,source_key_id
+					,source_id
+					,type_id
+					,status_id
+					,:ln_Sponsor_id
+					,:ln_Enroller_id
+					,country
+					,comm_status_date
+					,entry_date
+					,termination_date
+					,:ld_Current_Timestamp
+					,:ld_Processed_date
+				from customer
+				where Sponsor_id = :pn_Swap_id;
+			
+			end if;
+			
+			-- Log Swap Request
+			if ifnull(:pn_Log,1) = 1 then
+				select count(*)
+				into ln_Count
+				from customer_log
+				where customer_id = :pn_Swap_id;
+				
+				if :ln_Count = 0 then
+					call Customer_Log_Add(
+								 :pn_Swap_id
+								,5
+								,:ln_S_Source_Key_id
+								,:ln_S_Source_id
+								,:ln_S_Type_id
+								,:ln_S_Status_id
+								,:ln_S_Sponsor_id
+								,:ln_S_Enroller_id
+								,:ln_S_Country
+								,:ld_S_Comm_status_date
+								,:ld_S_Entry_date
+								,:ld_S_Termination_date
+								,:ld_Current_Timestamp
+								,:ld_Processed_date);
+				end if;
+				
+				call Customer_Log_Add(
+							 :pn_Swap_id
+							,:ln_Customer_log_type_id
+							,:ln_Source_Key_id
+							,:ln_Source_id
+							,:ln_Type_id
+							,:ln_Status_id
+							,:ln_Sponsor_id
+							,:ln_Enroller_id
+							,:ln_Country
+							,:ld_Comm_status_date
+							,:ld_Entry_date
+							,:ld_Termination_date
+							,:ld_Current_Timestamp
+							,:ld_Processed_date);
+			end if;
 		end if;
 			
 		--===================================================================================================
@@ -190,8 +361,8 @@ begin
 						,:ln_Source_id
 						,:ln_Type_id
 						,:ln_Status_id
-						,:pn_Sponsor_id
-						,:pn_Enroller_id
+						,:ln_S_Sponsor_id
+						,:ln_S_Enroller_id
 						,:ln_Country
 						,:ld_Comm_status_date
 						,:ld_Entry_date
