@@ -1140,7 +1140,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
 				if(isset($params['-readonly']) || isset($params[$cfield.'_viewonly'])){
-					$cval=nl2br($value);
+					$cval='<span class="w_viewonly">'.nl2br($value).'</span>';
 				}
 				else{
 					$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
