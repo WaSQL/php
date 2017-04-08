@@ -1704,7 +1704,7 @@ function addDBRecord($params=array()){
 	//echo printValue($jsonfields).printValue($params).printValue($info);exit;
 	if(count($jsonfields)){
 		foreach($params as $key=>$val){
-			if(stringContains($info[$key]['_dbextra'],'virtual generated')){
+			if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],'virtual generated')){
 				unset($params[$key]);
 			    $j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
 			    if(strlen($j)){
