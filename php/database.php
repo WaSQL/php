@@ -959,6 +959,7 @@ function dropDBIndex($params=array()){
 *	[-save] string - name of the submit button - defaults to Save
 *	[-hide] string - comma separated list of submit buttons to hide. i.e reset, delete, clone
 *	[-focus] string - field name to set focus to
+*	[-readonly] boolean - show values but not form
 * @return string - HTML form
 * @usage <?=addEditDBForm(array('-table'=>"comments"));?>
 */
