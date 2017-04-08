@@ -1,4 +1,5 @@
 <?php
+/* Last Updated: 2017-04-08 */
 $progpath=dirname(__FILE__);
 //create a global variable for storing queries that have already happened
 global $databaseCache;
