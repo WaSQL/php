@@ -1137,7 +1137,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				//make sure cfield is not a pattern
 				if(preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
-				if(isset($params[$cfield.'_viewonly'])){
+				if(isset($params['-readonly']) || isset($params[$cfield.'_viewonly'])){
 					$cval=nl2br($value);
 				}
 				else{
@@ -1194,7 +1194,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$cval=getDBFieldTag($opts);
 				}
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
-				if(!isset($params[$cfield.'_viewonly'])){$fieldlist[]=$cfield;}
+				if(!isset($params['-readonly']) && !isset($params[$cfield.'_viewonly'])){$fieldlist[]=$cfield;}
 				if(!isset($used[$cfield])){$used[$cfield]=1;}
 				else{$used[$cfield]+=1;}
             }
@@ -1225,7 +1225,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 				if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 				if(isset($params[$field])){$opts['value']=$params[$field];}
-				if(!isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
+				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
 				if($params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
 				if(isset($params[$field.'_dname'])){
@@ -1375,7 +1375,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 				$field_dname=$opts['id'].'_dname';
 				$field_content=$opts['id'].'_content';
-				if(isset($params[$field.'_viewonly'])){
+				if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
 					$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
                 	$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 					$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
@@ -1424,7 +1424,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 			if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
-			if(!isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
+			if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 			if(isset($params[$field.'_dname'])){
 				$dname=$params[$field.'_dname'];
 				$used[$field.'_dname']=1;
@@ -1492,7 +1492,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			}
 			$field_dname=$opts['id'].'_dname';
 			$field_content=$opts['id'].'_content';
-			if(isset($params[$field.'_viewonly'])){
+			if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
 				$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
                 $rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 				$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
@@ -1580,42 +1580,44 @@ function addEditDBForm($params=array(),$customcode=''){
 	    }
 	}
     $rtn .= '</div>'."\n";
-    //buttons
-    $rtn .= '<table class="w_table">'."\n";
-	$rtn .= '	<tr>'."\n";
-    $save=isset($params['-save'])?$params['-save']:'Save';
-    if(isset($params['-savebutton'])){
-		$rtn .= '		<td>'.$params['-savebutton'].'</td>'."\n";
-	}
-    elseif(is_array($rec) && isNum($rec['_id'])){
-		$class=isset($params['-save_class'])?$params['-save_class']:'';
-		if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
-		if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
-			$action=isset($params['-nosave'])?'':'Edit';
-			//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
-			$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
-			}
-		if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
-			$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">Reset</button></td>'."\n";
-			}
-		if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
-			$action=isset($params['-nosave'])?'':'Delete';
-			$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">Delete</button></td>'."\n";
-			}
-		if(!isset($params['-hide']) || !preg_match('/clone/i',$params['-hide'])){
-			$action=isset($params['-nosave'])?'':'Add';
-			$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">Clone</button></td>'."\n";
-			}
+    if(!isset($params['-readonly'])){
+	    //buttons
+	    $rtn .= '<table class="w_table">'."\n";
+		$rtn .= '	<tr>'."\n";
+	    $save=isset($params['-save'])?$params['-save']:'Save';
+	    if(isset($params['-savebutton'])){
+			$rtn .= '		<td>'.$params['-savebutton'].'</td>'."\n";
 		}
-	elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
-		$class=isset($params['-save_class'])?$params['-save_class']:'';
-		if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
-		$action=isset($params['-nosave'])?'':'Add';
-    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
-    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
-    	}
-    $rtn .= '	</tr>'."\n";
-    $rtn .= '</table>'."\n";
+	    elseif(is_array($rec) && isNum($rec['_id'])){
+			$class=isset($params['-save_class'])?$params['-save_class']:'';
+			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
+			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
+				$action=isset($params['-nosave'])?'':'Edit';
+				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
+				}
+			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
+				$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">Reset</button></td>'."\n";
+				}
+			if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
+				$action=isset($params['-nosave'])?'':'Delete';
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">Delete</button></td>'."\n";
+				}
+			if(!isset($params['-hide']) || !preg_match('/clone/i',$params['-hide'])){
+				$action=isset($params['-nosave'])?'':'Add';
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">Clone</button></td>'."\n";
+				}
+			}
+		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
+			$class=isset($params['-save_class'])?$params['-save_class']:'';
+			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
+			$action=isset($params['-nosave'])?'':'Add';
+	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
+	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
+	    	}
+	    $rtn .= '	</tr>'."\n";
+	    $rtn .= '</table>'."\n";
+	}
     $rtn .= $customcode;
     $rtn .= '</form>'."\n";
     //initBehaviors?
