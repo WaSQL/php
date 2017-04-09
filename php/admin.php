@@ -1500,6 +1500,15 @@ if(isset($_REQUEST['_menu'])){
 			clearDBCache(array('databaseTables','isDBTable'));
 			echo '<div>Complete</div>'."\n";
     		break;
+    	case 'rebuild_meta':
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'."\n";
+			if(isset($_REQUEST['_table_'])){
+				$table=addslashes(trim($_REQUEST['_table_']));
+				addMetaData($table);
+			}
+			$_REQUEST['_menu']='list';
+			goto LIST_TABLE;
+		break;
 		case 'manual':
 			global $Manual;
 			if(isset($_REQUEST['rebuild']) || !is_file("{$progpath}/temp/manual.json")){
@@ -4035,7 +4044,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild">'.adminMenuIcon('/wfiles/rebuild.png').' Rebuild waSQL Tables</a></li><li></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> List Font Icons</a></li>'."\n";
@@ -4094,7 +4103,7 @@ function tableOptions($table='',$params=array()){
 	*/
 	global $wtables;
 	if(!isset($params['-format'])){$params['-format']='li';}
-	if(!isset($params['-options'])){$params['-options']='drop,rebuild,truncate,backup,grep,model,indexes,properties,list,add';}
+	if(!isset($params['-options'])){$params['-options']='drop,rebuild,rebuild_meta,truncate,backup,grep,model,indexes,properties,list,add';}
 	if(!is_array($params['-options'])){$params['-options']=preg_split('/[\,\:]+/',$params['-options']);}
 	global $PAGE;
 	//Bootstrap Colors: default, primary, success, info, warning, danger, black, grey
@@ -4111,10 +4120,10 @@ function tableOptions($table='',$params=array()){
 		'add'		=> array("Add New Record",'icon-plus w_success w_big')
 		);
 	if(in_array($table,$wtables) && !in_array($table,array('_pages','_fielddata','_tabledata','_users','_templates'))){
-    	$tableoptions['rebuild']=array('Rebuild','icon-refresh w_info w_big');
+    	$tableoptions['rebuild']=array('Rebuild Table','icon-refresh w_info w_big');
 	}
-	if(isWasqlTable($table)){
-    	unset($tableoptions['drop']);
+	if(in_array($table,$wtables)){
+    	$tableoptions['rebuild_meta']=array('Rebuild Meta','icon-refresh w_warning w_big');
 	}
 	//check for _models for this table
 	$model=getDBTableModel($table);
