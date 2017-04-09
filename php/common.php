@@ -11244,8 +11244,8 @@ function processActions(){
 						case 'blob':
 							if($info[$fieldname]['_dblength']>255){
 								$_REQUEST['inputtype']="textarea";
-								$_REQUEST['width']=400;
-								$_REQUEST['height']=125;
+								$_REQUEST['width']=600;
+								$_REQUEST['height']=75;
 								}
 							else{
 								$_REQUEST['inputtype']="text";
@@ -11253,6 +11253,13 @@ function processActions(){
 									$_REQUEST['width']=200;
 									}
 								}
+							break;
+						case 'json':
+							$_REQUEST['displayname']=ucfirst($fieldname).' (JSON)';
+							$_REQUEST['inputmax']="";
+							$_REQUEST['inputtype']="textarea";
+							$_REQUEST['width']=600;
+							$_REQUEST['height']=125;
 							break;
 						case 'int':
 							$_REQUEST['mask']="integer";
@@ -11273,7 +11280,16 @@ function processActions(){
 						case 'datetime':
 						case 'date':
 							$_REQUEST['inputtype']="date";
-							break;
+							$_REQUEST['width']='';
+						break;
+						case 'time':
+							$_REQUEST['inputtype']="time";
+							$_REQUEST['width']='';
+						break;
+						default:
+							$_REQUEST['inputtype']="text";
+							$_REQUEST['width']=200;
+						break;
 	                }
 					if(preg_match('/email/i',$fieldname)){
 						$_REQUEST['mask']="email";
