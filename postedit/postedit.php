@@ -29,7 +29,7 @@ $lockfile="{$progpath}/{$lock}_lock.txt";
 if(!is_file($lockfile)){
 	file_put_contents($lockfile,time());
 }
-echo "Obtained the Lock: {$lockfile}".PHP_EOL;
+echo "Obtaining the Lock: {$lockfile}".PHP_EOL;
 global $lockhandle;
 $lockhandle = fopen($lockfile, "r+");
 
@@ -79,7 +79,7 @@ function writeFiles(){
 	global $chost;
 	global $progpath;
 	global $mtimes;
-	$tables=isset($hosts[$chost]['apikey'])?$hosts[$chost]['apikey']:'_pages,_templates,_models';
+	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
 		'username'	=>$hosts[$chost]['username'],
@@ -157,6 +157,7 @@ function writeFiles(){
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
 		cmdResults("EXPLORER /E,\"{$afolder}\"");
+		cmdResults("start /B http://{$hosts[$chost]['name']}");
 	}
 	return $afolder;
 }
