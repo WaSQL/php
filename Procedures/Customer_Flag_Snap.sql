@@ -16,24 +16,22 @@ begin
 	if :ln_Batch_id = 0 then
 		insert into customer_history_flag
 		select
-			 :pn_Period_id				as period_id
-			,:ln_Batch_id				as batch_id
-			,customer_id				as customer
-			,flag_type_id				as flag_type_id
-			,flag_value					as flag_value
-			,beg_date					as beg_date
-			,end_date					as end_date
-		from customer_flag;
+			 customer_history_flag_id.nextval	as customer_history_flag_id
+			,:pn_Period_id						as period_id
+			,:ln_Batch_id						as batch_id
+			,customer_id						as customer
+			,flag_type_id						as flag_type_id
+			,flag_value							as flag_value
+		from fn_customer_flags();
 	else
 		insert into customer_history_flag
 		select
-			 :pn_Period_id				as period_id
-			,:ln_Batch_id				as batch_id
-			,customer_id				as customer
-			,flag_type_id				as flag_type_id
-			,flag_value					as flag_value
-			,beg_date					as beg_date
-			,end_date					as end_date
+			 customer_history_flag_id.nextval	as customer_history_flag_id
+			,:pn_Period_id						as period_id
+			,:ln_Batch_id						as batch_id
+			,customer_id						as customer
+			,flag_type_id						as flag_type_id
+			,flag_value							as flag_value
 		from customer_history_flag
 		where period_id = :pn_Period_id
 		and batch_id = 0;

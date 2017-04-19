@@ -12,17 +12,18 @@ begin
 	replace customer (customer_id, rank_id, rank_qual)
 	select -- Find Distributors matching requirments
 		   c.customer_id
-		 , case w.req_waiver_type_id
-		 		when 1 then	greatest(w.value_1,max(q.rank_id))
-		 		when 2 then least(w.value_1,max(q.rank_id))
-		 		when 3 then w.value_1
+		 , case w.flag_type_id
+		 		when 3 then	greatest(to_number(w.flag_value),max(q.rank_id))
+		 		when 4 then least(to_number(w.flag_value),max(q.rank_id))
+		 		when 5 then to_number(w.flag_value)
 		 		else max(q.rank_id) end as rank_id
 		 , 1 as rank_qual
 	from customer c
 			left outer join req_qual_leg_version v
 				on c.country = v.country
-			left outer join req_waiver w
+			left outer join customer_flag w
 				on c.customer_id = w.customer_id
+				and w.flag_type_id in (3,4,5)
 		, req_qual_leg q
 	where q.version_id = ifnull(v.version_id,1)
    	And c.type_id = 1
@@ -38,7 +39,7 @@ begin
 			 and sponsor_id = leg_enroller_id
 			 and leg_rank_id >= q.leg_rank_id
 			 group by customer_id, sponsor_id)) >= q.leg_rank_count
-	group by c.customer_id, c.sponsor_id, c.enroller_id, w.req_waiver_type_id, w.value_1;
+	group by c.customer_id, c.sponsor_id, c.enroller_id, w.flag_type_id, w.flag_value;
 		
 	-- Write Ranks To Qual Leg Table
 	replace customer_qual_leg (customer_id, leg_customer_id, sponsor_id, leg_enroller_id, leg_rank_id) 

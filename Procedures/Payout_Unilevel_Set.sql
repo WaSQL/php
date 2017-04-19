@@ -26,13 +26,15 @@ Begin
     		select 
 				 c.customer_id
 				,c.type_id
-				,c.comm_status_date
+				,ifnull(c.comm_status_date,
+					case when c.type_id in (1,4,5) then c.entry_date								-- Type Wellness, Professional and Wholesale default to entry_date
+					else to_date('1/1/2000','mm/dd/yyyy') end) 					as comm_status_date -- All other default to 1/1/2000
 				,c.entry_date
 				,c.sponsor_id
 				,c.period_id
 				,c.batch_id
 				,c.country
-				,map(ifnull(f.flag_type_id,0),2,f.flag_value,co.currency_code) as currency
+				,map(ifnull(f.flag_type_id,0),2,f.flag_value,co.currency_code) 	as currency			-- Use currency of flag 2 - Comm Payto Currency
 				,c.rank_id
 				,c.rank_qual
 			from customer_history c
@@ -44,37 +46,40 @@ Begin
 				  left outer join country co
 				  	  on c.country = co.country_code
 			where c.period_id = :pn_Period_id
-			and c.batch_id = :pn_Period_Batch_id)
+			and c.batch_id = :pn_Period_Batch_id
+			and c.type_id not in (6))
 		select
-			 h.customer_id				as customer_id
-			,h.period_id				as period_id 
-			,h.batch_id					as batch_id
-			,h.type_id					as type_id
-			,h.country					as country
-			,h.currency					as currency
-			,h.comm_status_date			as comm_status_date
-			,h.entry_date				as entry_date
-			,h.rank_id					as rank_id
-			,h.rank_qual				as rank_qual
+			 c.customer_id				as customer_id
+			,c.period_id				as period_id 
+			,c.batch_id					as batch_id
+			,c.type_id					as type_id
+			,c.country					as country
+			,c.currency					as currency
+			,c.comm_status_date			as comm_status_date
+			,c.entry_date				as entry_date
+			,c.rank_id					as rank_id
+			,c.rank_qual				as rank_qual
 			,s.customer_id				as sponsor_id
 			,ifnull(s.rank_id,1)		as sponsor_rank_id
 			,ifnull(s.rank_qual,0)		as sponsor_rank_qual
 			,s.currency					as sponsor_currency_code
+			,s.country					as sponsor_country_code
 			,h.hierarchy_level			as level_id
 		from HIERARCHY ( 
-			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, a.*
+			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, a.customer_id, a.sponsor_id
 			             from lc_Customers a
 			             order by customer_id)
 	    		Start where sponsor_id = 3) h
+	    	, lc_Customers c
 	    	, lc_Customers s 
-	    where h.sponsor_id = s.customer_id;
+	    where h.customer_id = c.customer_id
+	    and h.sponsor_id = s.customer_id;
 		
 	-- Get Period Transactions
 	lc_Transactions = 
 		select
-			  t.transaction_log_id
-			 ,t.transaction_log_ref_id 
-			 ,t.transaction_date
+			  t.transaction_id
+			 ,ifnull(r.transaction_date,t.transaction_date) 		as transaction_date		-- Return orders use ref transaction_date
 			 ,c.period_id
 			 ,c.batch_id
 		     ,t.customer_id
@@ -82,7 +87,9 @@ Begin
 		     ,ifnull(t.value_2,0) 									As pv
 		     ,ifnull(t.value_4,0) 									As cv
 		     ,ifnull(t.currency_code,co.currency_code)				as currency
-		From transaction_log t
+		From transaction t
+			  left outer join transaction r
+			  	on t.transaction_ref_id = r.transaction_id
 			,:lc_Customers_Level c
 			  left outer join country co
 			  	on c.country = co.country_code
@@ -98,7 +105,7 @@ Begin
 	-- Get Exchange Rates
 	lc_Exchange = 
 		select *
-		from fn_Exchange();
+		from fn_Exchange(:pn_Period_id);
 		
 	-- Get Requirements for Unilevel
 	lc_Req_Unilevel = 
@@ -114,7 +121,7 @@ Begin
 		,t.period_id					as period_id
 		,t.batch_id						as batch_id
 		,c.sponsor_id					as customer_id
-		,t.transaction_log_id			as transaction_id
+		,t.transaction_id				as transaction_id
 		,t.customer_id					as transaction_customer_id
 		,t.transaction_type_id			as transaction_type_id
 		,s.rank_qual					as qual_flag
@@ -122,12 +129,13 @@ Begin
 		,t.cv							as cv
 		,t.currency						as from_currency
 	    ,case 
-	     	when upper(c.country) = 'KOR' 
+	     	when upper(c.country) = 'KOR'
+	     	and upper(s.country) = 'KOR' 
 	     	and upper(t.currency) <> 'KRW' then
 	     		'USD'
 	     	else
 	     		s.currency
-	      end							as to_currency
+	      end							as to_currency				-- Exception for KOR to KOR NFR orders
 		,1								as exchange_rate
 		,2								as percentage
 		,1								as lvl
@@ -136,15 +144,14 @@ Begin
 		,0								as bonus_exchanged
 	from :lc_Req_Unilevel req
 	   , :lc_Transactions t
-		  left outer join :lc_Transactions r
-		  	on t.transaction_log_ref_id = r.transaction_log_id
 	   , :lc_Customers_Level c
 	   , :lc_Customers_Level s
 	Where t.customer_id = c.customer_id
 	and c.sponsor_id = s.customer_id
 	and c.type_id not in (2,3)
-   	and ifnull(t.transaction_type_id,4) <> 0
-   	and days_between(ifnull(c.comm_status_date,c.entry_date),ifnull(r.transaction_date,t.transaction_date)) > map(c.type_id,1,60,5,60,-1)
+   	and days_between(c.comm_status_date,t.transaction_date) > 
+   		case when c.type_id in (1,4,5) then 60
+   		else -1 end
 	and t.period_id = req.period_id
 	and t.batch_id = req.batch_id
 	and req.level_id = 1;
@@ -156,7 +163,7 @@ Begin
 		,t.period_id					as period_id
 		,t.batch_id						as batch_id
 		,s1.sponsor_id					as customer_id
-		,t.transaction_log_id			as transaction_id
+		,t.transaction_id				as transaction_id
 		,s1.customer_id					as transaction_customer_id
 		,t.transaction_type_id			as transaction_type_id
 		,s2.rank_qual					as qual_flag
@@ -165,11 +172,12 @@ Begin
 		,t.currency						as from_currency
 	    ,case 
 	     	when upper(c.country) = 'KOR'
+	     	and upper(s2.country) = 'KOR'
 	     	and upper(t.currency) <> 'KRW' then
 	     		'USD'
 	     	else
 	     		s2.currency
-	      end							as to_currency
+	      end							as to_currency					-- Exception for KOR to KOR NFR orders
 		,1								as exchange_rate
 		,2								as percentage
 		,1								as lvl
@@ -185,7 +193,6 @@ Begin
 	and c.sponsor_id = s1.customer_id
 	and s1.sponsor_id = s2.customer_id
 	and c.type_id in (2,3)
-   	and ifnull(t.transaction_type_id,4) <> 0
 	and t.period_id = req.period_id
 	and t.batch_id = req.batch_id
 	and req.level_id = 1;
@@ -206,27 +213,27 @@ Begin
 			,case 
 			 	when p.lvl_paid+map(p.qual_flag,1,1,0) <= d.sponsor_rank_id 
 			 	and d.sponsor_rank_qual = 1 then 1
-			 	else 0 end														as qual_flag
+			 	else 0 end														as qual_flag					-- Sponsor's Qualified Rank must be at least the Paid Level
 			,p.pv																as pv
 			,p.cv																as cv
 			,p.from_currency													as from_currency
 		    ,case 
 		     	when upper(t.country) = 'KOR'
+		     	and upper(d.sponsor_country_code) = 'KOR'
 		     	and upper(p.from_currency) <> 'KRW' then 'USD'
 		     	else d.sponsor_currency_code
-		      end																as to_currency
-			--,d.sponsor_currency_code											as to_currency
+		      end																as to_currency					-- Exception for KOR to KOR NFR orders
 			,1																	as exchange_rate
 			,case 
 			 	when p.lvl_paid+map(p.qual_flag,1,1,0) <= d.sponsor_rank_id 
 			 	and d.sponsor_rank_qual = 1 then u.value_1*100
-			 	else 0 end														as percentage
+			 	else 0 end														as percentage					-- Increment Level
 			,p.lvl+1															as lvl
-			,p.lvl_paid+map(p.qual_flag,1,1,0)									as lvl_paid
+			,p.lvl_paid+map(p.qual_flag,1,1,0)									as lvl_paid						-- Increment Paid Level when Sponsor Qualifies
 			,cv*case 
 			 	when p.lvl_paid+map(p.qual_flag,1,1,0) <= d.sponsor_rank_id 
 			 	and d.sponsor_rank_qual = 1 then u.value_1
-			 	else 0 end														as bonus
+			 	else 0 end														as bonus						-- Bonus is CV * Level payout percent
 			,0																	as bonus_exchanged
 		from :lc_Customers_Level d, :lc_Req_Unilevel u, payout_unilevel p, :lc_Customers_Level t
 		where p.transaction_customer_id = t.customer_id
@@ -235,7 +242,7 @@ Begin
 		and d.level_id = :ln_x
 		and p.period_id = :pn_period_id
 		and p.batch_id = :pn_Period_Batch_id
-		and (p.lvl_paid < 7 or p.qual_flag = 0);
+		and (p.lvl_paid < 7 or p.qual_flag = 0);																-- Bubble up Transactions that are less than paid Level 7 or when qual_flag is zero
 		
         commit;
     end for;
@@ -304,21 +311,9 @@ Begin
    			and p.qual_flag = 1
    	where h.period_id = :pn_Period_id
 	and h.batch_id = :pn_Period_Batch_id
-	and c.currency_code = p.to_currency
+	and 1 = case when h.country = 'KOR' and p.to_currency = 'USD' then 0
+			else 1 end														-- Exclude Korean NFR Payouts
 	group by h.customer_id,h.period_id,h.batch_id;
-	
-	/*
-    select 
-    	 customer_id
-    	,period_id
-   		,batch_id
-   		,sum(bonus_exchanged)
-   	from payout_unilevel
-   	where period_id = :pn_period_id
-	and batch_id = :pn_Period_Batch_id
-   	and qual_flag = 1
-	group by customer_id,period_id,batch_id;
-	*/
 	
    	Update period_batch
    	Set end_date_payout_1 = current_timestamp

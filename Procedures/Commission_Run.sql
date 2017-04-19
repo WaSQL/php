@@ -16,13 +16,16 @@ Begin
 	call volume_retail_set();
          
 	-- Set LRP Volumes
-	--Set_Volume_Lrp();
+	call volume_lrp_set();
         
 	-- Set Fast Start Volumes
 	call volume_fs_set();
       
 	-- Set EGV Volumes
 	call volume_egv_set();
+	
+	-- Set TV Volumes
+	call volume_tv_set();
          
 	-- Set Org Volumes
 	call volume_org_set();

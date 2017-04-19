@@ -21,6 +21,8 @@ begin
 	  ,end_date_volume_retail = Null
 	  ,beg_date_volume_egv = Null
 	  ,end_date_volume_egv = Null
+	  ,beg_date_volume_tv = Null
+	  ,end_date_volume_tv = Null
 	  ,beg_date_volume_org = Null
 	  ,end_date_volume_org = Null
 	  ,beg_date_rank = Null

@@ -1,4 +1,4 @@
---truncate table commissions.transaction_log;
+--truncate table commissions.transaction;
 --truncate table commissions.orabth;
 
 --select distinct order_source
@@ -23,9 +23,9 @@ from (
 where period_id is not null;
 */
 
-insert into commissions.transaction_log
+insert into commissions.transaction
 select
-	 commissions.transaction_log_id.nextval			as transaction_log_id
+	 commissions.transaction_id.nextval				as transaction_id
 	,ifnull(o.rma_record_number,0)					as transaction_log_ref_id
 	,o.dist_id										as customer_id
 	,o.record_number								as source_key_id
@@ -35,7 +35,7 @@ select
 	  where beg_date <= to_date(o.pv_date,'yyyymm')
 	  and end_date >= to_date(o.pv_date,'yyyymm')
 	  and period_type_id = 1
-	  and period_id != 0)	as period_id
+	  and period_id != 0)							as period_id
 	,o.transaction_date								as transaction_date
 	,(select transaction_type_id
 	  from commissions.transaction_type_mapping
@@ -67,15 +67,14 @@ select
 	,0												as flag_4
 	,0												as flag_5
 	,null											as note
-	,null											as processed_date
 from commissions.orabth o;
 
 --where dist_bus_ctr = 1
 --and pv_date >= 201604
 --and pv_date <= 201701;
 
-update commissions.transaction_log t
-set t.transaction_log_ref_id = (select transaction_log_id from commissions.transaction_log where t.transaction_log_ref_id = source_key_id)
-where t.transaction_log_ref_id <> 0;
+update commissions.transaction t
+set t.transaction_ref_id = (select transaction_id from commissions.transaction where t.transaction_ref_id = source_key_id and period_id = 13)
+where t.transaction_ref_id <> 0;
 
 --truncate table orabth;

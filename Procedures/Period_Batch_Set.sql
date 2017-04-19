@@ -13,14 +13,14 @@ begin
 		 where period_id = p.period_id)	as batch_id
 		,p.period_id					as period_id
 		,current_timestamp				as entry_date
-		,0								as viewable
-		,0								as promoted
+		,1								as viewable
 		,t.clear_flag					as clear_flag
 		,t.set_volume					as set_volume
 		,t.set_volume_lrp				as set_volume_lrp
 		,t.set_volume_fs				as set_volume_fs
 		,t.set_volume_retail			as set_volume_retail
 		,t.set_volume_egv				as set_volume_egv
+		,t.set_volume_tv				as set_volume_tv
 		,t.set_volume_org				as set_volume_org
 		,t.set_rank						as set_rank
 		,t.set_payout_1					as set_payout_1
@@ -42,6 +42,8 @@ begin
 		,null							as end_date_volume_retail
 		,null							as beg_date_volume_egv
 		,null							as end_date_volume_egv
+		,null							as beg_date_volume_tv
+		,null							as end_date_volume_tv
 		,null							as beg_date_volume_org
 		,null							as end_date_volume_org
 		,null							as beg_date_rank

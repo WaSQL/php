@@ -32,22 +32,25 @@ begin
 			where period_type_id = :pn_Period_Type_id
 			and closed_date is null;
 			
-			-- Close Current Open Period and create batch zero
+			-- Close Current Open Period 
+			-- Open New and create batch zero
 			call Period_Close(:ln_Period_id);
+			call Period_Open(:ln_Period_id);
 			call Period_Batch_Set(:ln_Period_id);
 			
 			-- Snapshot Customer and all supporting tables
 			call Customer_Snap(:ln_Period_id);
 			call Customer_Flag_Snap(:ln_Period_id);
+			call Req_Qual_Leg_Snap(:ln_Period_id);
+			call Req_Unilevel_Snap(:ln_Period_id);
+			call Req_Power3_Snap(:ln_Period_id);
 		
 			-- Special Maintenance For Primary Bonus Type
 			if :pn_Period_Type_id = 1 then
-				call Req_Qual_Leg_History_Set(:ln_Period_id);
 				call Customer_Clear();
 			end if;
-				
-			-- Create The New Period
-			call Period_Open(:ln_Period_id);
+			
+			commit;
 		end if;
 	end if;
 

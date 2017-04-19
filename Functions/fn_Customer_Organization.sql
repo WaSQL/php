@@ -26,6 +26,18 @@ returns table (Customer_Root_id	integer
    	DEFAULT SCHEMA Commissions
 
 AS
+/* --------------------------------------------------------------------------------
+Created by: Larry Cardon
+Date:		15-Mar-2017
+
+Purpose:	Returns resultset of a customer's upine/downline
+
+Inputs:
+		pn_Direction_id: 0 Upline; 1 Downline
+		pn_Type_id: 0 Sponsor Tree; 1 Enroller Tree
+		pn_Levels: Number of levels to retrieve
+
+-------------------------------------------------------------------------------- */
 
 begin
 	--=============================================================================================================================

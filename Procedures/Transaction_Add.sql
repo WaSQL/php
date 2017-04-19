@@ -74,7 +74,6 @@ begin
 		,:pn_Customer_id									as customer_id
 		,:pn_Source_Key_id									as source_Key_id
 		,:pn_Source_id										as source_id
-		,:pn_Period_id										as period_id
 		,:pd_Transaction_date								as transaction_date
 		,:pn_Transaction_type_id							as transaction_type_id
 		,:pn_Transaction_Category_id						as transaction_category_id

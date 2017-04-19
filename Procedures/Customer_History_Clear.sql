@@ -25,6 +25,7 @@ begin
 	  , vol_13 = 0
 	  , vol_14 = 0
 	  , payout_1 = 0
+	  , payout_2 = 0
 	where period_id = :pn_Period_id
 	and batch_id = :pn_Period_Batch_id;
 	  

@@ -39,7 +39,7 @@ begin
 			, rank_id
 		from :lc_Cust;
 		
-		replace customer_rank (customer_id, rank_id, period_id, entry_date, customer_rank_type_id)
+		replace customer_history_rank (customer_id, rank_id, period_id, entry_date, customer_rank_type_id)
 		select
 			  customer_id
 			, rank_id

@@ -1,5 +1,5 @@
-drop procedure Commissions.Volume_Pv_History_Set;
-create procedure Commissions.Volume_Pv_History_Set(
+drop procedure Commissions.Volume_Lrp_History_Set;
+create procedure Commissions.Volume_Lrp_History_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
    LANGUAGE SQLSCRIPT
@@ -8,14 +8,14 @@ AS
 
 begin
 	Update period_batch
-	Set beg_date_volume = current_timestamp
-      ,end_date_volume = Null
+	Set beg_date_volume_lrp = current_timestamp
+      ,end_date_volume_lrp = Null
    	Where period_id = :pn_Period_id
    	and batch_id = :pn_Period_Batch_id;
    	
    	commit;
-   
-	replace customer_history (period_id, batch_id, customer_id, vol_1, vol_6)
+	
+	replace customer_history (period_id, batch_id, customer_id, vol_2, vol_7)
 	Select 
 	      :pn_Period_id
 	     ,:pn_Period_Batch_id
@@ -23,7 +23,12 @@ begin
 	     ,Sum(ifnull(t.value_2,0)) As pv
 	     ,Sum(ifnull(t.value_4,0)) As cv
 	From transaction t
-	Where t.period_id = :pn_Period_id
+	Where period_id = :pn_Period_id
+   	and case when t.transaction_type_id = 2 then 
+   		(select ifnull(a.transaction_category_id,1)
+   		 from transaction a
+   		 where a.transaction_id = t.transaction_ref_id)
+   		 else ifnull(t.transaction_category_id,1) end in (3,6)
    	and ifnull(t.transaction_type_id,4) <> 0
     Group By t.customer_id
     having (Sum(ifnull(t.value_2,0)) != 0
@@ -32,7 +37,7 @@ begin
    	commit;
    
    	Update period_batch
-   	Set end_date_volume = current_timestamp
+   	Set end_date_volume_lrp = current_timestamp
    	Where period_id = :pn_Period_id
    	and batch_id = :pn_Period_Batch_id;
    	

@@ -49,6 +49,7 @@ begin
 			,vol_13						as vol_13
 			,vol_14						as vol_14
 			,0							as payout_1
+			,0							as payout_2
 		from customer;
 	else
 		insert into customer_history
@@ -86,6 +87,7 @@ begin
 			,vol_13						as vol_13
 			,vol_14						as vol_14
 			,0							as payout_1
+			,0							as payout_2
 		from customer_history
 		where period_id = :pn_Period_id
 		and batch_id = 0;

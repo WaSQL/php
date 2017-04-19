@@ -27,6 +27,9 @@ select
        to_seconddate(b.beg_date_volume, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_volume, 'yyyy-mm-dd hh24:mi:ss.ff7')) 				as Volume_Sec
       ,seconds_between(
+       to_seconddate(b.beg_date_volume_lrp, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+       to_seconddate(b.end_date_volume_lrp, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Volume_Lrp_Sec
+      ,seconds_between(
        to_seconddate(b.beg_date_volume_fs, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_volume_fs, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Volume_FS_Sec
       ,seconds_between(
@@ -36,6 +39,9 @@ select
        to_seconddate(b.beg_date_volume_egv, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_volume_egv, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Volume_EGV_Sec
       ,seconds_between(
+       to_seconddate(b.beg_date_volume_tv, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+       to_seconddate(b.end_date_volume_tv, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Volume_TV_Sec
+      ,seconds_between(
        to_seconddate(b.beg_date_volume_org, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_volume_org, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Volume_Org_Sec
       ,seconds_between(
@@ -44,6 +50,9 @@ select
       ,seconds_between(
        to_seconddate(b.beg_date_payout_1, 'yyyy-mm-dd hh24:mi:ss.ff7'),
        to_seconddate(b.end_date_payout_1, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_1
+      ,seconds_between(
+       to_seconddate(b.beg_date_payout_2, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+       to_seconddate(b.end_date_payout_2, 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_2
 from commissions.period p, commissions.period_batch b
 where p.period_id = b.period_id
 and b.beg_date_run is not null
@@ -90,4 +99,9 @@ group by c.period_id;
 select lvl_paid, count(*)
 from commissions.payout_unilevel
 group by lvl_paid
-order by lvl_paid
+order by lvl_paid;
+
+select paid_lvl_id, lvl_id, count(*)
+from commissions.payout_power3
+group by lvl_id, paid_lvl_id
+order by paid_lvl_id, lvl_id

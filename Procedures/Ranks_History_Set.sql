@@ -21,28 +21,29 @@ begin
    		
 	lc_Customer =
 		select
-			 c.period_id    				as period_id
-			,c.batch_id 					as batch_id
-			,c.customer_id					as customer_id
-			,c.sponsor_id					as sponsor_id
-			,c.enroller_id					as enroller_id
-			,c.rank_id						as rank_id
-			,c.type_id						as type_id
-			,c.status_id					as status_id
-			,c.vol_1						as vol_1
-			,c.vol_4						as vol_4
-			,c.vol_11						as vol_11
-			,c.vol_13						as vol_13
-			,ifnull(v.version_id,1)			as version_id
-			,ifnull(w.req_waiver_type_id,0)	as waiver_type_id
-			,ifnull(w.value_1,0)			as waiver_value
+			 c.period_id    						as period_id
+			,c.batch_id 							as batch_id
+			,c.customer_id							as customer_id
+			,c.sponsor_id							as sponsor_id
+			,c.enroller_id							as enroller_id
+			,c.rank_id								as rank_id
+			,c.type_id								as type_id
+			,c.status_id							as status_id
+			,c.vol_1								as vol_1
+			,c.vol_4								as vol_4
+			,c.vol_11								as vol_11
+			,c.vol_13								as vol_13
+			,ifnull(v.version_id,1)					as version_id
+			,ifnull(w.flag_type_id,0)				as flag_type_id
+			,ifnull(to_number(w.flag_value),0)		as flag_value
 		from customer_history c
 			left outer join req_qual_leg_version v
 				on c.country = v.country
-			left outer join req_waiver_history w
+			left outer join customer_history_flag w
 				on c.customer_id = w.customer_id
 				and c.period_id = w.period_id
 				and c.batch_id = w.batch_id
+				and w.flag_type_id in (3,4,5)
 		where c.period_id = :pn_Period_id
 		and c.batch_id = :pn_Period_Batch_id;
 		
@@ -62,22 +63,22 @@ begin
 		
 	lc_Cust_Level = 
 		select
-			 period_id    		as period_id
-			,batch_id 			as batch_id
-			,node_id 			as customer_id
-			,parent_id 			as sponsor_id
-			,enroller_id		as enroller_id
-			,rank_id			as rank_id
-			,type_id			as type_id
-			,status_id			as status_id
-			,vol_1				as vol_1
-			,vol_4				as vol_4
-			,vol_11				as vol_11
-			,vol_13				as vol_13
-			,version_id			as version_id
-			,waiver_type_id		as waiver_type_id
-			,waiver_value		as waiver_value
-			,hierarchy_level	as level_id
+			 period_id    					as period_id
+			,batch_id 						as batch_id
+			,node_id 						as customer_id
+			,parent_id 						as sponsor_id
+			,enroller_id					as enroller_id
+			,rank_id						as rank_id
+			,type_id						as type_id
+			,status_id						as status_id
+			,vol_1							as vol_1
+			,vol_4							as vol_4
+			,vol_11							as vol_11
+			,vol_13							as vol_13
+			,version_id						as version_id
+			,flag_type_id					as flag_type_id
+			,flag_value						as flag_value
+			,hierarchy_level				as level_id
 		from HIERARCHY ( 
 			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, t.*
 			             from :lc_Customer t
@@ -104,10 +105,10 @@ begin
 				 , h.customer_id
 				 , h.sponsor_id
 				 , h.enroller_id
-				 , case h.waiver_type_id
-				 		when 1 then	greatest(h.waiver_value,max(q.rank_id))
-				 		when 2 then least(h.waiver_value,max(q.rank_id))
-				 		when 3 then h.waiver_value
+				 , case h.flag_type_id
+				 		when 3 then	greatest(h.flag_value,max(q.rank_id))
+				 		when 4 then least(h.flag_value,max(q.rank_id))
+				 		when 5 then h.flag_value
 				 		else max(q.rank_id) end as new_rank_id
 				 , 1 as rank_qual
 			from :lc_Cust_Level h, :lc_Require_Leg q
@@ -126,7 +127,7 @@ begin
 					 --and leg_rank_id >= 1
 					 and leg_rank_id >= q.leg_rank_id
 					 group by customer_id, sponsor_id)) >= q.leg_rank_count
-			group by h.period_id, h.batch_id, h.customer_id, h.sponsor_id, h.enroller_id, h.waiver_type_id, h.waiver_value;
+			group by h.period_id, h.batch_id, h.customer_id, h.sponsor_id, h.enroller_id, h.flag_type_id, h.flag_value;
 			
 		-- Update Level with Calculated New Ranks	
 		replace customer_history (period_id,batch_id,customer_id, rank_id, rank_qual)
@@ -166,7 +167,7 @@ begin
 		delete
 		from customer_history_qual_leg
 		where sponsor_id in (select customer_id from :lc_Cust_Level where level_id = :ln_dst_level)
-		and (leg_enroller_id <> sponsor_id or customer_id in (select customer_id from :lc_Cust_Flag where flag_type_id > 0))
+		and (leg_enroller_id <> sponsor_id or customer_id in (select customer_id from :lc_Cust_Flag))
 		and period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 

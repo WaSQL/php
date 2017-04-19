@@ -13,6 +13,7 @@ Begin
    declare ln_Set_Volume_FS        	Integer;
    declare ln_Set_Volume_Retail    	Integer;
    declare ln_Set_Volume_EGV       	Integer;
+   declare ln_Set_Volume_TV       	Integer;
    declare ln_Set_Volume_Org       	Integer;
    declare ln_Set_Rank             	Integer;
    declare ln_Set_Payout_1  		Integer;
@@ -30,6 +31,7 @@ Begin
       , set_volume_fs
       , set_volume_retail
       , set_volume_egv
+      , set_volume_tv
       , set_volume_org
       , set_rank
       , set_payout_1
@@ -46,6 +48,7 @@ Begin
       , ln_Set_Volume_FS
       , ln_Set_Volume_Retail
       , ln_Set_Volume_EGV
+      , ln_Set_Volume_TV
       , ln_Set_Volume_Org
       , ln_Set_Rank
       , ln_Set_Payout_1
@@ -84,9 +87,9 @@ Begin
    End If;
          
    -- Set LRP Volumes
-   --If ln_Set_Volume_Lrp = 1 Then
-   --   Set_Volume_Lrp(pn_Period_id);
-   --End If;
+   If ln_Set_Volume_Lrp = 1 Then
+      call volume_lrp_history_set(:pn_Period_id, :pn_Period_Batch_id);
+   End If;
         
    -- Set Fast Start Volumes
    If :ln_Set_Volume_FS = 1 Then
@@ -96,6 +99,11 @@ Begin
    -- Set EGV Volumes
    If :ln_Set_Volume_EGV = 1 Then
       call volume_egv_history_set(:pn_Period_id, :pn_Period_Batch_id);
+   End If;
+   
+   -- Set TV Volumes
+   If :ln_Set_Volume_TV = 1 Then
+      call volume_tv_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
          
    -- Set Org Volumes
@@ -111,6 +119,11 @@ Begin
    -- Set Payout 1 --Unilevel
 	if :ln_Set_Payout_1 = 1 then
 		call Payout_Unilevel_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 2 --Unilevel
+	if :ln_Set_Payout_2 = 1 then
+		call Payout_Power3_Set(:pn_Period_id, :pn_Period_Batch_id);
 	end if;
    
    Update period_batch

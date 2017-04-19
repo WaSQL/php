@@ -10,9 +10,9 @@ begin
 		  c.customer_id
 	     ,Sum(ifnull(t.value_2,0)) As pv
 	     ,Sum(ifnull(t.value_4,0)) As cv
-	From transaction_log t
-		left outer join transaction_log r
-			on t.transaction_log_ref_id = r.transaction_log_id
+	From transaction t
+		left outer join transaction r
+			on t.transaction_ref_id = r.transaction_id
 		, customer c
    	Where t.customer_id = c.customer_id
    	And t.period_id = 0
