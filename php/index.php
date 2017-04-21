@@ -846,8 +846,11 @@ if(!is_array($PAGE)){
     			exit;
 		}
 		else{
-			header("HTTP/1.1 404 Not Found");
-    		abort('No page found');
+			$PAGE=getDBRecord(array('-table'=>'_pages','name'=>'index'));
+			if(!isset($PAGE['_id'])){
+				header("HTTP/1.1 404 Not Found");
+	    		abort('No page found (3)');
+			}
 		}
 	}
 	else{
