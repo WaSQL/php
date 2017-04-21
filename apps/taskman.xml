@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="stage" timestamp="1492742255">
+<xmlschema name="tasks">
+	<field name="_cdate" type="datetime NOT NULL" />
+	<field name="_cuser" type="int(11) NOT NULL" />
+	<field name="_edate" type="datetime NULL" />
+	<field name="_euser" type="int(11) NULL" />
+	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
+	<field name="details" type="varchar(2000) NULL" />
+	<field name="owner" type="int(11) NOT NULL" />
+	<field name="status" type="char(15) NOT NULL Default 'new'" />
+	<field name="title" type="varchar(150) NOT NULL" />
+</xmlschema>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:45:04</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1247</_id>
+	<fieldname>details</fieldname>
+	<height>150</height>
+	<inputmax>2000</inputmax>
+	<inputtype>textarea</inputtype>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:21:00</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2017-04-20 16:39:57</_edate>
+	<_euser>1</_euser>
+	<_id>1241</_id>
+	<defaultval><![CDATA[
+&lt;?=userValue('_id');?&gt;
+]]></defaultval>
+	<dvals>select lastname,firstname from _users where active=1 order by lastname,firstname</dvals>
+	<fieldname>owner</fieldname>
+	<inputtype>select</inputtype>
+	<mask>integer</mask>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+	<tvals>select _id from _users where active=1 order by lastname,firstname</tvals>
+	<width>120</width>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:38:35</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1246</_id>
+	<displayname>Status</displayname>
+	<fieldname>status</fieldname>
+	<inputmax>15</inputmax>
+	<inputtype>select</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+	<tvals>new
+progress
+complete
+archive</tvals>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:38:01</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1245</_id>
+	<displayname>Title</displayname>
+	<fieldname>title</fieldname>
+	<inputmax>150</inputmax>
+	<inputtype>text</inputtype>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:21:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1243</_id>
+	<defaultval>NOW()</defaultval>
+	<fieldname>_cdate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:21:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1244</_id>
+	<fieldname>_edate</fieldname>
+	<inputtype>datetime</inputtype>
+	<postedit>1</postedit>
+	<required>0</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+</xmlmeta>
+<xmlmeta name="_fielddata">
+	<_cdate>2017-04-20 16:21:00</_cdate>
+	<_cuser>1</_cuser>
+	<_id>1242</_id>
+	<fieldname>_id</fieldname>
+	<inputtype>text</inputtype>
+	<mask>integer</mask>
+	<postedit>1</postedit>
+	<required>1</required>
+	<synchronize>1</synchronize>
+	<tablename>tasks</tablename>
+	<width>120</width>
+</xmlmeta>
+
+
+<xmldata name="_pages">
+	<_cache>0</_cache>
+	<_cdate>2017-04-20 16:08:43</_cdate>
+	<_counter>205</_counter>
+	<_cuser>1</_cuser>
+	<_edate>2017-04-20 20:35:29</_edate>
+	<_euser>1</_euser>
+	<_id>126</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:default&gt;
+&lt;div class=&quot;row&quot; style=&quot;padding:0px;&quot;&gt;
+	&lt;div class=&quot;col-xs-12 text-left&quot;&gt;&lt;a href=&quot;#new&quot; onclick=&quot;return pageNewTask();&quot; class=&quot;btn btn-primary&quot;&gt;&lt;span class=&quot;icon-plus&quot;&gt;&lt;/span&gt; new task&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;row&quot;&gt;
+	&lt;div class=&quot;col-xs-4&quot;&gt;
+		&lt;h2 class=&quot;text-center&quot;&gt;New&lt;/h2&gt;
+		&lt;div id=&quot;tasks_new&quot; style=&quot;min-height:500px;&quot; data-status=&quot;new&quot; class=&quot;well&quot; ondrop=&quot;dropObject(event);pageSetHover(this,0);&quot; ondragover=&quot;allowDropObject(event);pageSetHover(this,1);&quot; ondragleave=&quot;pageSetHover(this,0);&quot;&gt;
+			&lt;?=renderView('tasks',$tasks['new'],'tasks');?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;col-xs-4&quot;&gt;
+		&lt;h2 class=&quot;text-center&quot;&gt;In Progress&lt;/h2&gt;
+		&lt;div id=&quot;tasks_progress&quot; style=&quot;min-height:500px;&quot; data-status=&quot;progress&quot; class=&quot;well&quot; ondrop=&quot;dropObject(event);pageSetHover(this,0);&quot; ondragover=&quot;allowDropObject(event);pageSetHover(this,1);&quot; ondragleave=&quot;pageSetHover(this,0);&quot;&gt;
+			&lt;?=renderView('tasks',$tasks['progress'],'tasks');?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;col-xs-3&quot;&gt;
+		&lt;h2 class=&quot;text-center&quot;&gt;Completed&lt;/h2&gt;
+		&lt;div id=&quot;tasks_complete&quot; style=&quot;min-height:500px;&quot; data-status=&quot;complete&quot; class=&quot;well&quot; ondrop=&quot;dropObject(event);pageSetHover(this,0);&quot; ondragover=&quot;allowDropObject(event);pageSetHover(this,1);&quot; ondragleave=&quot;pageSetHover(this,0);&quot;&gt;
+			&lt;?=renderView('tasks',$tasks['complete'],'tasks');?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;col-xs-1&quot;&gt;
+		&lt;h2 class=&quot;text-center&quot;&gt;Abyss&lt;/h2&gt;
+		&lt;div id=&quot;tasks_archive&quot; style=&quot;min-height:500px;background:#7f8a26;&quot; data-status=&quot;archive&quot; class=&quot;well&quot; ondrop=&quot;dropObject(event);pageSetHover(this,0);&quot; ondragover=&quot;allowDropObject(event);pageSetHover(this,1);&quot; ondragleave=&quot;pageSetHover(this,0);&quot;&gt;
+
+		&lt;/div&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+&lt;/view:default&gt;
+
+&lt;view:addedit&gt;
+&lt;div class=&quot;w_centerpop_title&quot;&gt;Add/Edit Task&lt;/div&gt;
+&lt;div class=&quot;w_centerpop_content&quot;&gt;
+	&lt;?=pageAddEditTask($id);?&gt;
+&lt;/div&gt;
+&lt;/view:addedit&gt;
+
+&lt;view:addedit_fields&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;col-sm-5 text-center&quot;&gt;[title]&lt;/div&gt;
+		&lt;div class=&quot;col-sm-3 text-center&quot;&gt;[status]&lt;/div&gt;
+		&lt;div class=&quot;col-sm-3 text-center&quot;&gt;[owner]&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;row&quot;&gt;
+		&lt;div class=&quot;col-sm-11 text-center&quot;&gt;[details]&lt;/div&gt;
+	&lt;/div&gt;
+&lt;/view:addedit_fields&gt;
+
+&lt;view:tasks&gt;
+	&lt;view:task&gt;
+		&lt;div class=&quot;task grabbable&quot; id=&quot;task_&lt;?=$task['_id'];?&gt;&quot; data-status=&quot;&lt;?=$task['status'];?&gt;&quot; data-id=&quot;&lt;?=$task['_id'];?&gt;&quot; onclick=&quot;pageEditTask(&lt;?=$task['_id'];?&gt;);&quot; draggable=&quot;true&quot; ondragstart=&quot;dragObject(event)&quot;&gt;
+			&lt;div class=&quot;row&quot;&gt;
+				&lt;div class=&quot;col-sm-2 text-center&quot;&gt;
+					&lt;img src=&quot;&lt;?=$task['photo'];?&gt;&quot; class=&quot;img img-responsive&quot; /&gt;
+					&lt;div class=&quot;owner&quot;&gt;&lt;?=$task['username'];?&gt;&lt;/div&gt;
+				&lt;/div&gt;
+				&lt;div class=&quot;col-sm-8 text-left&quot;&gt;
+					&lt;div class=&quot;title&quot;&gt;&lt;?=$task['title'];?&gt;&lt;/div&gt;
+					&lt;div class=&quot;details&quot;&gt;&lt;?=$task['details'];?&gt;&lt;/div&gt;
+				&lt;/div&gt;
+				&lt;div class=&quot;col-sm-2 text-center age&quot; title=&quot;Days Old&quot;&gt;&lt;?=$task['age'];?&gt;&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/view:task&gt;
+	&lt;?=renderEach('task',$tasks,'task');?&gt;
+&lt;/view:tasks&gt;
+
+&lt;view:login&gt;
+	&lt;?=userLoginForm(array('-action'=&gt;'/tasks'));?&gt;
+&lt;/view:login&gt;
+
+]]></body>
+	<controller><![CDATA[
+&lt;?php
+	if(!isUser()){
+		setView('login',1);
+		return;
+	}
+	switch(strtolower($_REQUEST['passthru'][0])){
+		case 'new':
+			$id=0;
+			setView('addedit',1);
+			return;
+		break;
+		case 'edit':
+			$id=addslashes($_REQUEST['passthru'][1]);
+			setView('addedit',1);
+			return;
+		break;
+		case 'move':
+			$id=addslashes($_REQUEST['passthru'][1]);
+			$status=addslashes($_REQUEST['passthru'][2]);
+			$tasks=pageUpdateTasks($id,$status);
+			setView('tasks',1);
+			return;
+		break;
+		default:
+			setView('default',1);
+			$tasks=pageAllTasks();
+		break;
+	}
+?&gt;
+
+]]></controller>
+	<css>.well{
+	padding-top:50px !important;
+}
+.task{
+	border:1px dashed #a4a4a4;
+	padding:3px;
+	border-radius:4px;
+	min-height:40px;
+	margin-bottom:3px;
+}
+.task .title{
+	color: #000;
+}
+.task .owner{
+	color: #a4a4a4;
+	font-size:.8em;
+}
+.task .details{
+	color: #a4a4a4;
+	font-size:.8em;
+	max-height:24px;
+	overflow:hidden;
+	margin-left:20px;
+}
+.task .age{
+	margin-top:3px;
+	font-size:2em;
+}
+.task img{
+	margin-top:3px;
+	border-radius:10px;
+}
+.grabbable {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Required to make elements draggable in old WebKit */
+  -khtml-user-drag: element;
+  -webkit-user-drag: element;
+}
+.hover{
+	-moz-box-shadow:    inset 0 0 5px #ce0000;
+	-webkit-box-shadow: inset 0 0 5px #ce0000;
+	box-shadow:         inset 0 0 5px #ce0000;
+}
+
+</css>
+	<css_min>.well{padding-top:50px !important}.task{border:1px dashed #a4a4a4;padding:3px;border-radius:4px;min-height:40px;margin-bottom:3px}.task .title{color:#000}.task .owner{color:#a4a4a4;font-size:.8em}.task .details{color:#a4a4a4;font-size:.8em;max-height:24px;overflow:hidden;margin-left:20px}.task .age{margin-top:3px;font-size:2em}.task img{margin-top:3px;border-radius:10px}.grabbable{cursor:move;cursor:grab;cursor:-moz-grab;cursor:-webkit-grab}[draggable]{-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none;user-select:none;-khtml-user-drag:element;-webkit-user-drag:element}.hover{-moz-box-shadow:inset 0 0 5px #ce0000;-webkit-box-shadow:inset 0 0 5px #ce0000;box-shadow:inset 0 0 5px #ce0000}</css_min>
+	<functions><![CDATA[
+&lt;?php
+function pageAddEditTask($id=0){
+	global $USER;
+	$opts=array(
+		'-table'=&gt;'tasks',
+		'-fields'=&gt;getView('addedit_fields'),
+		'-focus'=&gt;'title',
+		'-action'=&gt;'/tasks'
+	);
+	if($id &gt; 0){
+		$opts['_id']=$id;
+	}
+	else{
+		$opts['status']='new';
+		$opts['owner']=$USER['_id'];
+		$opts['title_placeholder']='Task Title';
+		$opts['details_placeholder']='Optional Details';
+	}
+	return addEditDBForm($opts);
+}
+function pageUpdateTasks($id,$status){
+	$ok=editDBRecord(array(
+		'-table'=&gt;'tasks',
+		'-where'=&gt;&quot;_id={$id}&quot;,
+		'status'=&gt;$status
+	));
+	$recs=getDBRecords(array(
+		'-table'=&gt;'tasks',
+		'-where'=&gt;&quot;status='{$status}' and status != 'archive'&quot;
+	));
+	foreach($recs as $i=&gt;$rec){
+		$recs[$i]['age']=verboseDays(time()-strtotime($rec['_cdate']));
+		$info=pageUserInfo($rec['owner']);
+		foreach($info as $k=&gt;$v){$recs[$i][$k]=$v;}
+	}
+	return $recs;
+}
+function pageAllTasks(){
+	$recs=getDBRecords(array(
+		'-table'=&gt;'tasks',
+		'-where'=&gt;&quot;status != 'archive'&quot;
+	));
+	$tasks=array();
+	foreach($recs as $rec){
+		$status=$rec['status'];
+		$info=pageUserInfo($rec['owner']);
+		foreach($info as $k=&gt;$v){$rec[$k]=$v;}
+		$rec['age']=verboseDays(time()-strtotime($rec['_cdate']));
+		$tasks[$status][]=$rec;
+	}
+	return $tasks;
+}
+function verboseDays($seconds){
+	return floor($seconds/86400);
+}
+function pageUserInfo($id){
+	global $pageUserPhotoCache;
+	if(isset($pageUserPhotoCache[$id])){
+		return $pageUserPhotoCache[$id];
+	}
+	$rec=getDBRecord(array(
+		'-table'=&gt;'_users',
+		'-fields'=&gt;'photo,firstname,lastname,username',
+		'_id'=&gt;$id
+	));
+	$pageUserPhotoCache[$id]=$rec;
+	return $pageUserPhotoCache[$id];
+}
+?&gt;
+
+]]></functions>
+	<js>var mouse={};
+document.addEventListener(&quot;dragover&quot;, function(e){
+    e = e || window.event;
+    mouse.x = e.pageX;
+	mouse.y = e.pageY;
+}, false);
+
+function pageNewTask(){
+	return ajaxGet('/t/1/tasks/new','centerpop');
+}
+
+function pageEditTask(id){
+	return ajaxGet('/t/1/tasks/edit/'+id,'centerpop');
+}
+
+function pageSetHover(obj,c){
+	if(c==1){
+		if(obj.className.indexOf('hover')!=-1){return;}
+		obj.className='well hover';
+		return;
+	}
+	if(obj.className.indexOf('hover')==-1){return;}
+	obj.className='well';
+	return;
+}
+function allowDropObject(ev) {
+    ev.preventDefault();
+}
+
+function dragObject(ev) {
+	//set the ID as info to get when dropped
+    ev.dataTransfer.setData(&quot;text&quot;, ev.target.id);
+}
+
+function dropObject(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData(&quot;text&quot;);
+    var task=document.getElementById(data);
+    var task_id=task.getAttribute('data-id');
+    var from_status=task.getAttribute('data-status');
+    var target=document.getElementById(ev.srcElement.id);
+    var to_status=target.getAttribute('data-status');
+    //remove the old one
+    task.parentNode.removeChild(task);
+    return ajaxGet('/t/1/tasks/move/'+task_id+'/'+to_status,'tasks_'+to_status,{setprocessing:0});
+
+
+}
+</js>
+	<js_min>var mouse={};
+document.addEventListener(&quot;dragover&quot;, function(e){
+    e = e || window.event;
+    mouse.x = e.pageX;
+	mouse.y = e.pageY;
+}, false);
+
+function pageNewTask(){
+	return ajaxGet('/t/1/tasks/new','centerpop');
+}
+
+function pageEditTask(id){
+	return ajaxGet('/t/1/tasks/edit/'+id,'centerpop');
+}
+
+function pageSetHover(obj,c){
+	if(c==1){
+		if(obj.className.indexOf('hover')!=-1){return;}
+		obj.className='well hover';
+		return;
+	}
+	if(obj.className.indexOf('hover')==-1){return;}
+	obj.className='well';
+	return;
+}
+function allowDropObject(ev) {
+    ev.preventDefault();
+}
+
+function dragObject(ev) {
+	//set the ID as info to get when dropped
+    ev.dataTransfer.setData(&quot;text&quot;, ev.target.id);
+}
+
+function dropObject(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData(&quot;text&quot;);
+    var task=document.getElementById(data);
+    var task_id=task.getAttribute('data-id');
+    var from_status=task.getAttribute('data-status');
+    var target=document.getElementById(ev.srcElement.id);
+    var to_status=target.getAttribute('data-status');
+    //remove the old one
+    task.parentNode.removeChild(task);
+    return ajaxGet('/t/1/tasks/move/'+task_id+'/'+to_status,'tasks_'+to_status,{setprocessing:0});
+
+
+}
+</js_min>
+	<kpi>0</kpi>
+	<name>tasks</name>
+	<page_type>0</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>tasks</title>
+</xmldata>
+</export>
