@@ -96,6 +96,11 @@ function writeFiles(){
     	echo PHP_EOL."!!ERROR!! - {$post['error']}".PHP_EOL.PHP_EOL;
     	exit;
 	}
+	//check for login form
+	if(preg_match('/\"\_login\"/is',$post['body'])){
+    	echo PHP_EOL."!!ERROR!! - INVALID LOGIN CREDENTIALS".PHP_EOL.PHP_EOL;
+    	exit;
+	}
 	file_put_contents('postedit_pages.result',$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
@@ -157,7 +162,8 @@ function writeFiles(){
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
 		cmdResults("EXPLORER /E,\"{$afolder}\"");
-		cmdResults("start /B http://{$hosts[$chost]['name']}");
+		cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}");
+		cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}/a");
 	}
 	return $afolder;
 }
