@@ -122,9 +122,9 @@ function arrayColumns( $list, $c=2, $preserve_keys=false ) {
 //---------- begin function arraySearchKeys--------------------------------------
 /**
 * @describe searches keys of an array for a value
-* @param needle string 
+* @param needle string
 *	string to search for
-* @param arr array 
+* @param arr array
 *	array to search in
 * @return
 *	returns an array where the value is now the key and the count of the times it was found is the value.
@@ -314,7 +314,7 @@ function buildFakeContent($title='FAKE for'){
 * @describe creates an button selection field
 * @param name string
 * @param opts array - true value/display value pairs.
-* @param params array 
+* @param params array
 *	[value] - sets default selection
 *	[name] - name override
 *	[-button'] - btn-default, btn-primary, btn-warning, btn-danger, btn-info - defaults to btn-default
@@ -1260,7 +1260,7 @@ function buildFormFile($name,$params=array()){
 		*/
 		$tag .= '<div class="w_smallest w_lblue">'."\n";
 		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'."\n"; 
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'."\n";
 		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'."\n";
 		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'."\n";
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
@@ -2114,7 +2114,7 @@ function buildTableTD($vals=array(),$params=array()){
 	}
 ///---------- begin function buildUrl ----------
 /**
-* @describe 
+* @describe
 *	converts an array into a URL-encoded query string
 * @param arr array
 *	a key/value pair array
@@ -2328,7 +2328,7 @@ function streamCmdResults($cmd,$func='',$errfunc=''){
         /* we can trust the retval of proc_close() */
         if ($pstatus["running"]){proc_terminate($ptr);}
         $ret = proc_close($ptr);
-    } 
+    }
 	else {
         if ((($first_exitcode + 256) % 256) == 255 && (($pstatus["exitcode"] + 256) % 256) != 255){
             $ret = $pstatus["exitcode"];
@@ -2487,7 +2487,7 @@ function array2XML($buffer=array(),$main='main',$item='item',$skip=0){
 			$val=xmlEncodeCDATA($val);
             $xml .= "        <{$key}>".$val."</{$key}>\n";
         	}
-        
+
         $xml .= "    </$item>\n";
     	}
     $xml .= "</$main>\n";
@@ -2495,7 +2495,7 @@ function array2XML($buffer=array(),$main='main',$item='item',$skip=0){
 	}
 //---------- begin function arrays2RSS ----------
 /**
-* @describe 
+* @describe
 *	converts getDBRecords results into an rss feed
 *	RSS feeds must have 'title','link','description','pubDate' for the main and each record
 * @param recs array
@@ -2977,7 +2977,7 @@ function removeViews($htm){
 *	optional parameters as follows:
 *		<li>-alias - String - name of the variable you want to use inside the view instead of $params. Do Not include the $</li>
 *		<li>-key - String/PHP Object - will create a variable called $key available to the view with this value</li>
-*		<li>-format - pdf|pdfx|email|addeditdbform 
+*		<li>-format - pdf|pdfx|email|addeditdbform
 *			- create a pdf from the rendered view
 *			- sends email with the view as the message.  You must pass in to, from, subject as options also or have those fields in the $params array.
 *			- renders an addEditDBForm with the view as the formfields. you must pass in -table as options or have it and -format in the params array.
@@ -3315,13 +3315,13 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['current']['seconds']);
 	unset($calendar['current']['minutes']);
 	unset($calendar['current']['hours']);
-	
+
 	//first_week_day
 	$calendar['current']['first_week_day']=getdate($calendar['current']['0']-($calendar['current']['wday']*86400));
 	unset($calendar['next_day']['seconds']);
 	unset($calendar['next_day']['minutes']);
 	unset($calendar['next_day']['hours']);
-	
+
 	//last_week_day
 	$calendar['current']['last_week_day']=getdate($calendar['current']['first_week_day'][0]+(6*86400));
 	unset($calendar['next_day']['last_week_day']['seconds']);
@@ -3355,7 +3355,7 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['this_month']['seconds']);
 	unset($calendar['this_month']['minutes']);
 	unset($calendar['this_month']['hours']);
-	
+
 	$calendar['nextnext_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] + 2, 1, $calendar['current']['year']));
 	$calendar['nextnext_month']['days_in_this_month'] = getDaysInMonth($calendar['nextnext_month'][0]);
 	unset($calendar['nextnext_month']['seconds']);
@@ -3374,7 +3374,7 @@ function getCalendar($monthyear='',$params=array()){
 	unset($calendar['prev_month']['seconds']);
 	unset($calendar['prev_month']['minutes']);
 	unset($calendar['prev_month']['hours']);
-	
+
 	//Find out when this month starts and ends.
 	$calendar['current']['first_month_day'] = $calendar['this_month']['wday'];
 
@@ -4386,22 +4386,22 @@ function encodeQP($data , $line_max = 76){
 			$dec  = ord($char);
 			if (($dec == 32) AND ($i == ($linlen - 1))){    // convert space at eol only
 				$char = '=20';
-				} 
+				}
 			elseif(($dec == 9) AND ($i == ($linlen - 1))) {  // convert tab at eol only
 				$char = '=09';
-				} 
+				}
 			elseif($dec == 9) {
 				// Do nothing if a tab.
-				} 
+				}
 			elseif(($dec == 61) OR ($dec < 32 ) OR ($dec > 126)) {
 				$char = $escape . strtoupper(sprintf('%02s', dechex($dec)));
-				} 
+				}
 			elseif (($dec == 46) AND ($newline == '')) {
                 //Bug #9722: convert full-stop at bol
                 //Some Windows servers need this, won't break anything (cipri)
 				$char = '=2E';
 				}
-			if ((strlen($newline) + strlen($char)) >= $line_max) {        
+			if ((strlen($newline) + strlen($char)) >= $line_max) {
 				// MAIL_MIMEPART_CRLF is not counted
 				$output  .= $newline . $escape . $eol;                    // soft line break; " =\r\n" is okay
 				$newline  = '';
@@ -4428,7 +4428,7 @@ function encryptSalt($val){
 * @param str string
 *	string to encrypt
 * @param salt string
-*	salt value to use for the encryption.  
+*	salt value to use for the encryption.
 *	You must use the same salt value in the decrypt function to decrypt the encrypted string
 * @return
 *	encrypted string
@@ -4494,7 +4494,7 @@ function evalPHP_ob($string, $flags) {
 	}
 //---------- begin function evalPHP
 /**
-* @describe 
+* @describe
 *	evaluates PHP code or php embeded html and returns eval result or errors
 *	supports return value, echo and = functions
 * @param str string or array of strings
@@ -5380,7 +5380,7 @@ function formatPre($str=''){
 * @return string
 * @author Jeremy Despain
 * @date January 27, 2011
-* @usage 
+* @usage
 *	friendlyName("camelCase") returns "Camel Case";
 *	friendlyName("underscore_separated") returns "Underscore Separated";
 */
@@ -6029,7 +6029,7 @@ function getRunTime(){
 * @param serialize boolean - set to true to serialize data
 * @return
 *	sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
-* @usage 
+* @usage
 *	<?php
 *	$data=getStoredValue('return pageData();',0,3);
 *	?>
@@ -6096,7 +6096,7 @@ function setStoredValue($evalstr,$data,$serialize=1){
 }
 //---------- begin function buildImage
 /**
-* @depreciated  - use getStoredValue instead 
+* @depreciated  - use getStoredValue instead
 * @exclude - this function will be depreciated and thus excluded from the manual
 */
 function getStoredData($evalstr,$force=0,$hrs=1,$debug=0){
@@ -6149,7 +6149,7 @@ function importXmlData($items=array(),$params=array()){
 					$rec['-table']=$table;
 					if($table=='_users'){unset($rec['guid']);}
 					$merged=0;
-					//set _id or not.  
+					//set _id or not.
 					if(is_array($params['_options'])){
 						if(!in_array('ids',$params['_options'])){unset($rec['_id']);}
 						}
@@ -6319,7 +6319,7 @@ function getFileContentId($file){
 * @param regex string
 *	regular expression to filter line count by so that it only counts lines if they match
 * @return string number of lines in a file - efficient even for very large files
-* @usage 
+* @usage
 *	$line_cnt=getFileLineCount($afile);
 */
 function getFileLineCount($file,$regex='',$i=1){
@@ -6351,7 +6351,7 @@ function getFileLineCount($file,$regex='',$i=1){
 * @param begin integer - line to start with - default is 0
 * @param end integer - line to end with - default is 200
 * @return string partial contents of file
-* @usage 
+* @usage
 *	$sample=getFileContentsPartial($afile,0,300);
 */
 function getFileContentsPartial($file,$begin=0,$end=200){
@@ -6383,7 +6383,7 @@ function getFileContentsPartial($file,$begin=0,$end=200){
 *		line_number - line number in file
 *		line - line contents
 * @return number of lines processed
-* @usage 
+* @usage
 *	$num=processFileLines($afile,'processLine');
 */
 function processFileLines($file,$func_name){
@@ -6427,7 +6427,7 @@ function processFileLines($file,$func_name){
 *	fields - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
-* @usage 
+* @usage
 *	$num=processCSVFileLines($afile,'processLine');
 */
 function processCSVFileLines($file,$func_name,$params=array()){
@@ -6490,7 +6490,7 @@ function fopen_utf8($filename){
 	$handle = fopen($filename, 'rb');
 	$bom = fread($handle, 2);
 	rewind($handle);
-	
+
 	if($bom === chr(0xff).chr(0xfe)  || $bom === chr(0xfe).chr(0xff)){
 		// UTF16 Byte Order Mark present
 		$encoding = 'UTF-16';
@@ -6498,7 +6498,7 @@ function fopen_utf8($filename){
 		$file_sample = fread($handle, 1000) + 'e'; //read first 1000 bytes
 		// + e is a workaround for mb_string bug
 		rewind($handle);
-	
+
 		$encoding = mb_detect_encoding($file_sample , 'UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
 	}
 	if ($encoding  && strtoupper($encoding) != 'UTF-8'){
@@ -6852,7 +6852,7 @@ function getEncodedFileContents($filename,$return_encoding=0){
 	if($bom === chr(0xff).chr(0xfe)  || $bom === chr(0xfe).chr(0xff)){
         // UTF16 Byte Order Mark present
         $encoding = 'UTF-16';
-    } 
+    }
 	else{
         $file_sample = fread($handle, 1000) + 'e'; //read first 1000 bytes + e as a workaround for mb_string bug
         rewind($handle);
@@ -7016,7 +7016,7 @@ function getRandomColor($showpound=1) {
 * @param num int
 *	length of the string you want returned
 * @param charset string
-*	charset type: alpha|alphanum|num - defaults to alphanum 
+*	charset type: alpha|alphanum|num - defaults to alphanum
 * @return string
 *	returns a random string of specified length
 * @usage $str=getRandomString(20);
@@ -7033,7 +7033,7 @@ function getRandomString($length = 40, $charset = 'alphanum') {
             break;
         case 'num':
             $chars = $num;
-            break;            
+            break;
     	}
     $randstring='';
     $maxvalue=strlen($chars)-1;
@@ -7225,7 +7225,7 @@ function htmlTidy($tidy_in=''){
 * @param file string
 *	absolute path and filename of the file to include
 * @param params array
-*	additional $_REQUEST key/value pairs you want sent to the page 
+*	additional $_REQUEST key/value pairs you want sent to the page
 * @return string
 *	returns the contents of the specified file and processes any php in the file. File cannot include php functions
 * @usage echo includeFile('/var/www/testfile.php',array('foo'=>25));
@@ -8417,7 +8417,7 @@ function listFilesEx($dir='.',$params=array()){
 *	to load a single extra just pass in the extra name
 *	to load multiple extras pass in an array of names
 * @return null
-* @usage 
+* @usage
 *	loadExtras('system');
 * ---
 *	loadExtras(array('fedex','usps','ups));
@@ -8484,7 +8484,7 @@ function loadExtras($extras){
 *	to load a single extra just pass in the extra name
 *	to load multiple extras pass in an array of names
 * @return null
-* @usage 
+* @usage
 *	<?=loadExtrasCss('dropdown');?>
 *	---
 *	<?=loadExtrasCss(array('tcal','dropdown','custom'));?>
@@ -8523,7 +8523,7 @@ function loadExtrasCss($extras){
 *	to load a single extra just pass in the extra name
 *	to load multiple extras pass in an array of names
 * @return null
-* @usage 
+* @usage
 *	<?=loadExtrasJs('dropdown');?>
 *	---
 *	<?=loadExtrasJs(array('iefix','html5','custom'));?>
@@ -8555,17 +8555,23 @@ function loadExtrasJs($extras){
 				$extra='html5';
 			break;
 			case 'wd3':
-				if($CONFIG['minify_js']){
-					$_SESSION['w_MINIFY']['extras_js'][]='https://d3js.org/d3.v3.min.js';
-				}
-				else{
-                	$_SESSION['w_MINIFY']['extras_js'][]='https://d3js.org/d3.v3.js';
+				if(!in_array('d3',$_SESSION['w_MINIFY']['extras_js'])){
+        			$_SESSION['w_MINIFY']['extras_js'][]='d3';
 				}
 			break;
         	case 'codemirror':
         	case 'tcal':
         	case 'alertify':
         		//load the css required for these just in case they don't
+        		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
+				}
+        	break;
+        	case 'c3':
+        		//load the d3 and css
+        		if(!in_array('d3',$_SESSION['w_MINIFY']['extras_js'])){
+        			$_SESSION['w_MINIFY']['extras_js'][]='d3';
+				}
         		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
         			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
 				}
@@ -8583,7 +8589,7 @@ function loadExtrasJs($extras){
 *	to load a single file just pass in the file name
 *	to load multiple files pass in an array of files
 * @return null
-* @usage 
+* @usage
 *	loadJsFile('nicedit');
 *	loadJsFile(array('jquery','jqueryui'));
 */
@@ -8696,7 +8702,7 @@ function getFilePerms($file=''){
 	if (($perms & 0xC000) == 0xC000) {
     	// Socket
     	$info['all'] = 's';
-		} 
+		}
 	elseif (($perms & 0xA000) == 0xA000) {
     	// Symbolic Link
     	$info['all'] = 'l';
@@ -8708,15 +8714,15 @@ function getFilePerms($file=''){
 	elseif (($perms & 0x6000) == 0x6000) {
     	// Block special
     	$info['all'] = 'b';
-		} 
+		}
 	elseif (($perms & 0x4000) == 0x4000) {
     	// Directory
     	$info['all'] = 'd';
-		} 
+		}
 	elseif (($perms & 0x2000) == 0x2000) {
     	// Character special
     	$info['all'] = 'c';
-		} 
+		}
 	elseif (($perms & 0x1000) == 0x1000) {
     	// FIFO pipe
     	$info['all'] = 'p';
@@ -8797,7 +8803,7 @@ function niftyPlayer($params=array()){
 	}
 //---------- begin function minifyCode--------------------
 /**
-* @describe minifies javascript and CSS code.  
+* @describe minifies javascript and CSS code.
 *	Js is minified using http://javascript-minifier.com/raw service
 *	Css is minified using http://cssminifier.com/raw service
 * @param code string - code to minify
@@ -8808,7 +8814,7 @@ function niftyPlayer($params=array()){
 function minifyCode($code,$type) {
 	if(!strlen($code)){return 'no code';}
 	if(!strlen($type)){return 'no type';}
-	
+
 
 	switch(strtolower($type)){
 		case 'js':
@@ -9363,7 +9369,7 @@ function grepFiles($q, $path,$recurse=1){
 			foreach($tmps as $f=>$tmp){
 				foreach($tmp as $t=>$c){$rtn[$f][$t]=$c;}
 				}
-			} 
+			}
 		elseif(is_file($afile)){
 			if(stristr(file_get_contents($afile),$q)){
 				$row=0;
@@ -9557,7 +9563,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
     }
     // JDESPAIN/IntegraCore expanded information for editing user and datetime stamps
 	$edit_users = getDBRecords(array(
-		'-table'	=> '_users', 
+		'-table'	=> '_users',
 		'-fields'	=> "_id,username,email",
 		'-index'	=> '_id'
 		));
@@ -10082,7 +10088,7 @@ function sgml2XML($sgml){
  * @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
 * @return string
 *	returns an html block showing the contents of the object,array,or variable specified.
-* @usage 
+* @usage
 *	echo printValue($sampleArray);
  * printValue($str,1);
 * @author slloyd
@@ -10108,7 +10114,7 @@ function printValue($v='',$exit=0){
 * @param $v mixed The Variable to be examined.
 * @return string
 *	returns a hidden html block showing the contents of the object,array,or variable specified.
-* @usage 
+* @usage
 *	echo printValue($sampleArray);
 * @author slloyd
 * @history bbarten 2014-01-07 added documentation
@@ -10471,7 +10477,7 @@ function processActions(){
 							'-order'	=> '_id desc'
 						));
 						if(
-							isset($changelog['_cdate']) && isset($posteditlog['_cdate']) && 
+							isset($changelog['_cdate']) && isset($posteditlog['_cdate']) &&
 							strtotime($changelog['_cdate']) > strtotime($posteditlog['_cdate']) &&
 							$changelog['_cuser'] != $USER['_id']
 							){
@@ -11099,7 +11105,7 @@ function processActions(){
 				}
 			break;
 		case 'API':
-			/*	
+			/*
 				API request require the following:
 					- Must be a POST
 					- Must be a valid user authentication
@@ -11566,7 +11572,7 @@ function mergeChunkedFiles($chunks,$name){
 *  	the filename.  If no filename is given, it creates a unique filename based on the data
 * @return
 * 	pushes the data to the browser and exits
-* @usage 
+* @usage
 *	pushData($csvlines,'csv','mylist.csv');
 * @author slloyd
 * @history slloyd 2014-01-07 added documentation
@@ -11607,7 +11613,7 @@ function pushData($data='',$ext='txt',$name=''){
 *	-ctype string - content-type of filename.  If not set, it gets it based on file extension
 * @return
 * 	pushes the file to the browser and exits
-* @usage 
+* @usage
 *	pushFile($csvfile);
 * @author slloyd
 * @history slloyd 2014-01-07 added documentation
@@ -11666,7 +11672,7 @@ function pushFile($file='',$params=array()){
 *	link - required - main link
 *	description - required - main description
 *	pubdate - required - main pubdate
-* @usage 
+* @usage
 *	$rss=readRSS($url);
 * @author slloyd
 * @history slloyd 2014-01-07 added documentation
@@ -11795,7 +11801,7 @@ function readXML($file){
 	}
 //---------- begin function arrayToXML ----------
 /**
-* @describe 
+* @describe
 *	converts getDBRecords results into an rss feed
 *	RSS feeds must have 'title','link','description','pubDate' for the main and each record
 * @param recs array
@@ -11841,7 +11847,7 @@ function arrayToXML($data, $rootNodeName = 'data', $xml=null){
 /**
 * @describe removes CDATA tags from an xml/xhtml string
 * @param xml string
-*	xml/xhmtl string 
+*	xml/xhmtl string
 * @return string
 *	xml/xhtml
 * @usage $str=removeCdata($str);
@@ -12022,7 +12028,7 @@ function request2XMLSimple($request=array()){
 *	name of the field you wish to return
 * @return str value
 *	returns the $_REQUEST value of the field specified or null
-* @usage 
+* @usage
 *	<?=requestValue('name');?>
 */
 function requestValue($k){
@@ -12120,7 +12126,7 @@ function splitWords($sentence,$maxlen){
 *	[attach] - an array of files (full path required) to attach to the message
 * @return str value
 *	returns the error message or null on success
-* @usage 
+* @usage
 *	$errmsg=sendMail(array(
 *		'to'		=> 'john@doe.com',
 *		'from'		=> 'jane@doe.com',
@@ -12560,7 +12566,7 @@ function swfChart($recs=array(),$params=array(),$crc=''){
 *	[attach] - an array of files (full path required) to attach to the message
 * @return str value
 *	returns the error message or null on success
-* @usage 
+* @usage
 *	$errmsg=wasqlMail(array(
 *		'to'		=> 'john@doe.com',
 *		'from'		=> 'jane@doe.com',
@@ -13004,7 +13010,7 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
                 if(isset($current[$tag][0])) {//If there is a 0th element it is already an array
                     $current[$tag][$repeated_tag_index[$tag.'_'.$level]] = $result;
                     $repeated_tag_index[$tag.'_'.$level]++;
-                	} 
+                	}
 				else {//This section will make the value an array if multiple tags with the same name appear together
                     $current[$tag] = array($current[$tag],$result);//This will combine the existing item and the new item together to make an array
                     $repeated_tag_index[$tag.'_'.$level] = 2;
@@ -13048,7 +13054,7 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
                     $repeated_tag_index[$tag.'_'.$level]++; //0 and 1 index is already taken
                 	}
             	}
-        	} 
+        	}
 		elseif($type == 'close') { //End of tag '</tag>'
             $current = &$parent[$level-1];
         	}
