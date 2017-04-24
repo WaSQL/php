@@ -398,7 +398,7 @@ function minifyGoogleFiles(){
 function minifyGetExternal($url){
 	if(!strlen($url)){return '';}
 	//validate we can actually connect to the internet and that the file exists
-	if(!isLiveUrl($url)){return '';}
+	if(!isLiveUrl($url)){return "/* UNABLE TO CONNECT: {$url} */";}
 	$lines=file($url);
 	$rtn='';
 	if(is_array($lines)){
