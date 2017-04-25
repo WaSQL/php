@@ -301,6 +301,14 @@ if(isAjax()){
 			echo '</div>'."\n";
 			exit;
     		break;
+    	case 'json':
+			$json=json_decode(trim($_REQUEST['json']),1);
+			if(!is_array($json)){
+				$json=json_last_error_msg();
+			}
+			echo printValue($json);
+			exit;
+    	break;
     	case 'manual':
 			//echo '<div class="w_centerpop_title">Documentation</div>'."\n";
 			//echo '<div class="w_centerpop_content" style="height:600px;overflow:auto;">'."\n";
@@ -477,7 +485,7 @@ if(isAjax()){
 						echo contentManager();
 						echo '	</div>'."\n";
 						echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
-		
+
 					}
 		    		break;
 		    	default:
@@ -617,7 +625,7 @@ if(isAjax()){
 		            	echo editorNavigation();
 		            	echo '</div>'."\n";
 		            	echo buildOnLoad("setText('w_editor_nav',getText('navigation_refresh'));");
-		
+
 					}
 					else{
 		            	echo 'invalid request';
@@ -635,7 +643,7 @@ if(isAjax()){
 						echo editorNavigation();
 						echo '	</div>'."\n";
 						echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
-		
+
 					}
 		    		break;
 		    	default:
@@ -1452,7 +1460,7 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'entities':
 			/*
-				Best Lists on web: 
+				Best Lists on web:
 					http://www.danshort.com/HTMLentities/index.php?w=punct
 					http://www.amp-what.com/unicode/search/
 			*/
@@ -1508,6 +1516,24 @@ if(isset($_REQUEST['_menu'])){
 			}
 			$_REQUEST['_menu']='list';
 			goto LIST_TABLE;
+		break;
+		case 'json':
+			echo <<<ENDOFJSONFORM
+				<div class="row">
+					<div class="col-sm-12 w_bigger w_bold"><span class="icon-json"></span> JSON Viewer</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-4">
+						<form method="POST" name="json_viewer" action="/{$PAGE['name']}" onsubmit="return ajaxSubmitForm(this,'json_decoded');">
+							<input type="hidden" name="_menu" value="json">
+							<textarea cols="7" rows="15" autofocus="true" name="json" class="form-control" placeholder="Enter JSON here"></textarea>
+							<div class="w_padtop text-right"><button class="btn btn-primary" type="submit">Decode JSON</button></div>
+						</form>
+					</div>
+					<div class="col-sm-8" id="json_decoded">
+					</div>
+				</div>
+ENDOFJSONFORM;
 		break;
 		case 'manual':
 			global $Manual;
@@ -3798,7 +3824,7 @@ function adminMenu(){
 	$rtn .= '     		'.buildFormEnd()."</div>\n";
 	//show wpass in menu?
 	if($CONFIG['wpass']){$rtn .= wpassModule();}
-	$rtn .= '	</div>'."\n"; 
+	$rtn .= '	</div>'."\n";
 */
 	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'."\n";
@@ -4036,6 +4062,7 @@ function adminMenu(){
 	$rtn .= '        	<ul>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=json"><span class="icon-json w_big w_grey"></span> JSON Debugger</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
@@ -4860,7 +4887,7 @@ function editorNavigation(){
 	$expand .= '	</tbody>'."\n";
 	$expand .= buildTableEnd();
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
-	
+
 	//Custom CSS
 	$expand='';
 	$files=listFilesEx('../wfiles/css/custom',array('ext'=>"css"));
@@ -4872,7 +4899,7 @@ function editorNavigation(){
     	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
 	}
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
-	
+
 	//Custom Js
 	$expand='';
 	$files=listFilesEx('../wfiles/js/custom',array('ext'=>"js"));
@@ -4884,7 +4911,7 @@ function editorNavigation(){
     	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
 	}
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
-	
+
 	$rtn .= '</div>'."\n";
 	return $rtn;
 }
