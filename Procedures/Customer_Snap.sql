@@ -27,6 +27,7 @@ begin
 			,sponsor_id					as sponsor_id
 			,enroller_id				as enroller_id
 			,country					as country
+			,currency					as currency
 			,comm_status_date			as comm_status_date
 			,entry_date					as entry_date
 			,termination_date			as termination_date
@@ -48,6 +49,7 @@ begin
 			,vol_12						as vol_12
 			,vol_13						as vol_13
 			,vol_14						as vol_14
+			,0							as payout_1_cap
 			,0							as payout_1
 			,0							as payout_2
 		from customer;
@@ -65,6 +67,7 @@ begin
 			,sponsor_id					as sponsor_id
 			,enroller_id				as enroller_id
 			,country					as country
+			,currency					as currency
 			,comm_status_date			as comm_status_date
 			,entry_date					as entry_date
 			,termination_date			as termination_date
@@ -86,6 +89,7 @@ begin
 			,vol_12						as vol_12
 			,vol_13						as vol_13
 			,vol_14						as vol_14
+			,0							as payout_1_cap
 			,0							as payout_1
 			,0							as payout_2
 		from customer_history

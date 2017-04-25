@@ -6,6 +6,11 @@ create procedure Commissions.Period_Batch_Set(
 AS
 
 begin
+	update period_batch
+	set viewable = 0
+	where period_id = :pn_Period_id;
+	
+	-- Create New Batch
 	insert into period_batch
 	select
 		(select ifnull(max(batch_id)+1,0) 
@@ -64,8 +69,16 @@ begin
 		,null							as end_date_payout_7
 	from period p, period_template t
 	where p.period_type_id = t.period_type_id
-	and p.period_id = pn_Period_id;
+	and p.period_id = :pn_Period_id;
 			
 	commit;
+			
+	-- Snapshot Customer and all supporting tables
+	call Customer_Snap(:pn_Period_id);
+	call Customer_Flag_Snap(:pn_Period_id);
+	call Req_Qual_Leg_Snap(:pn_Period_id);
+	call Req_Cap_Snap(:pn_Period_id);
+	call Req_Unilevel_Snap(:pn_Period_id);
+	call Req_Power3_Snap(:pn_Period_id);
 
 end;

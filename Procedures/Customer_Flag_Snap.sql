@@ -22,7 +22,7 @@ begin
 			,customer_id						as customer
 			,flag_type_id						as flag_type_id
 			,flag_value							as flag_value
-		from fn_customer_flags();
+		from fn_customer_flags(:pn_Period_id);
 	else
 		insert into customer_history_flag
 		select

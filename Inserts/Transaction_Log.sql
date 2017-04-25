@@ -28,6 +28,10 @@ select
 	 commissions.transaction_id.nextval				as transaction_id
 	,ifnull(o.rma_record_number,0)					as transaction_log_ref_id
 	,o.dist_id										as customer_id
+	,(select type_id
+	  from commissions.customer_status_mapping 
+	  where status_legacy = o.dist_status
+	  and source_id = 1)							as type_id
 	,o.record_number								as source_key_id
 	,1												as source_id
 	,(select period_id 
@@ -43,9 +47,12 @@ select
 	,(select transaction_category_id
 	  from commissions.transaction_category_mapping
 	  where source_legacy = o.order_source)			as transaction_category_id
-	,(select currency_code
-	  from commissions.country
-	  where country_code = o.country_code)		    as currency_code
+	,(select country
+	  from commissions.currency_mapping
+	  where currency_legacy = o.country_code)		as country
+	,(select currency
+	  from commissions.currency_mapping
+	  where currency_legacy = o.country_code)		as currency
 	,price_1										as value_1
 	,price_2										as value_2
 	,price_3										as value_3

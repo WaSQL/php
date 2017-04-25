@@ -9,7 +9,7 @@ begin
 	declare ln_Batch_id			integer;
 	declare ln_Period_Type_id	integer;
 	
-	select period_id
+	select period_type_id
 	into ln_Period_Type_id
 	from Period
 	where period_id = :pn_Period_id;

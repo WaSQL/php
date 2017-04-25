@@ -121,9 +121,14 @@ Begin
 		call Payout_Unilevel_Set(:pn_Period_id, :pn_Period_Batch_id);
 	end if;
    
-   -- Set Payout 2 --Unilevel
+   -- Set Payout 2 --Power3
 	if :ln_Set_Payout_2 = 1 then
 		call Payout_Power3_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 3 --Retail
+	if :ln_Set_Payout_3 = 1 then
+		call Payout_Retail_Set(:pn_Period_id, :pn_Period_Batch_id);
 	end if;
    
    Update period_batch

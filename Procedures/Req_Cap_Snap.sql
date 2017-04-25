@@ -1,5 +1,5 @@
-drop procedure Commissions.Req_Unilevel_Snap;
-create procedure Commissions.Req_Unilevel_Snap(
+drop procedure Commissions.Req_Cap_Snap;
+create procedure Commissions.Req_Cap_Snap(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
@@ -23,23 +23,25 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_unilevel_history
+			insert into req_cap_history
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
-				,version_id
-				,level_id
+				,rank_id
+				,req_cap_type_id
 				,value_1
-			from req_unilevel;
+				,value_2
+			from req_cap;
 		else
-			insert into req_unilevel_history
+			insert into req_cap_history
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
-				,version_id
-				,level_id
+				,rank_id
+				,req_cap_type_id
 				,value_1
-			from req_unilevel_history
+				,value_2
+			from req_cap_history
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

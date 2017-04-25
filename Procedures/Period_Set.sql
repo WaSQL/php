@@ -37,13 +37,6 @@ begin
 			call Period_Close(:ln_Period_id);
 			call Period_Open(:ln_Period_id);
 			call Period_Batch_Set(:ln_Period_id);
-			
-			-- Snapshot Customer and all supporting tables
-			call Customer_Snap(:ln_Period_id);
-			call Customer_Flag_Snap(:ln_Period_id);
-			call Req_Qual_Leg_Snap(:ln_Period_id);
-			call Req_Unilevel_Snap(:ln_Period_id);
-			call Req_Power3_Snap(:ln_Period_id);
 		
 			-- Special Maintenance For Primary Bonus Type
 			if :pn_Period_Type_id = 1 then

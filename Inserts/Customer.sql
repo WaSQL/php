@@ -1,10 +1,8 @@
 truncate table commissions.customer;
 
-insert into commissions.customer_history
+insert into commissions.customer
 select 
 	 to_integer(dist_id)						as customer_id
-	,12
-	,0
 	,customer_name								as customer_name
 	,to_integer(dist_id)						as source_key_id
 	,1											as source_id
@@ -19,9 +17,13 @@ select
 	,sponsor_id									as sponsor_id
 	,enroller_id								as enroller_id
 	,(select country
-	  from commissions.customer_country_mapping
+	  from commissions.country_mapping
 	  where country_legacy = o.country
 	  and source_id = 1)						as country
+	,(select currency
+	  from commissions.country_mapping
+	  where country_legacy = o.country
+	  and source_id = 1)						as currency
 	,to_date(comm_status_date, 'dd-Mon-yyyy')	as comm_status_date
 	,to_date(entry_date, 'dd-Mon-yyyy')			as entry_date
 	,to_date(terminate_date, 'dd-Mon-yyyy')		as termination_date
@@ -43,30 +45,6 @@ select
 	,0					as vol_12
 	,0					as vol_13
 	,0					as vol_14
-	,0					as payout_1
 from commissions.orabwt o
 where dist_id < 2000000000
---and dist_id >= 1001
---and sponsor_id <> 4
 order by dist_id;
-
-delete from commissions.customer_history
-where period_id = 12;
-
---call Commissions.Period_Set(1);
---call customer_snap(1,1);
---call Commission_History_Run(1,1);
---call ranks_high_history_set(1);
-
-truncate table commissions.orabwt;
-
-select c.period_id, p.beg_date, count(c.customer_id)
-from customer_history c, period p
-where c.period_id = p.period_id
-group by c.period_id, p.beg_date
-order by c.period_id;
-
-select *
-from customer_rank
-where customer_id in (select customer_id from (select customer_id, count(*) from customer_rank group by customer_id having count(*) > 4))
-order by customer_id, period_id;

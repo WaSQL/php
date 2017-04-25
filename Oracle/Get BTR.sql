@@ -2,6 +2,7 @@ select
 	201703	as commperiod
 	,dist_id
 	,sold_dist_id
+	,bonus_type
 	,target_country
 	,source_country
 	,"percent" as percent_amt

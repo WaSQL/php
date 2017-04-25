@@ -15,6 +15,7 @@ select
 	,vol3				as ov
 	,case when upper(qflg2) = 'X' then 1 else 0 end					as qflg2
 	,bnc3
-from admin.bwt201702
+	,case when upper(lf33) = 'X' then 1 else 0 end		as lf33
+from admin.bwt201703
 where dist_bus_ctr = 1
 and dist_id < 2000000000

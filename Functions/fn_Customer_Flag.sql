@@ -18,7 +18,7 @@ AS
 Created by: Larry Cardon
 Date:		10-Apr-2017
 
-Purpose:	Returns a resultset of all active customer flags
+Purpose:	Returns a resultset of all active customer flags for a given customer
 
 -------------------------------------------------------------------------------- */
 

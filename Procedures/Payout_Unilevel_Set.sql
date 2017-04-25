@@ -20,6 +20,26 @@ Begin
    	
    	commit;
    	
+    -- Set Elephant Leg Flag
+	replace customer_history (customer_id, period_id, batch_id, payout_1_cap)
+	select
+		 c.customer_id
+		,c.period_id
+		,c.batch_id
+		,r.value_2
+	from customer_history c, req_cap_history r
+	where c.rank_id = r.rank_id
+	and c.period_id = r.period_id
+   	and c.batch_id = r.batch_id
+	and c.period_id = :pn_period_id
+   	and c.batch_id = :pn_Period_Batch_id
+   	and c.vol_13 <> 0
+   	and c.type_id = 1
+   	and (select count(*) from customer_history where period_id = c.period_id and batch_id = c.batch_id and sponsor_id = c.customer_id) > 0
+   	and round((select max(vol_13) from customer_history where period_id = c.period_id and batch_id = c.batch_id and sponsor_id = c.customer_id) / c.vol_13,2)*100 >= r.value_1;
+   	
+   	commit;
+   	
    	-- Get Period Customers
     lc_Customers_Level = 
     	with lc_Customers as (
@@ -34,17 +54,16 @@ Begin
 				,c.period_id
 				,c.batch_id
 				,c.country
-				,map(ifnull(f.flag_type_id,0),2,f.flag_value,co.currency_code) 	as currency			-- Use currency of flag 2 - Comm Payto Currency
+				,map(ifnull(f.flag_type_id,0),2,f.flag_value,c.currency) 		as currency			-- Use currency of flag 2 - Comm Payto Currency
 				,c.rank_id
 				,c.rank_qual
+				,c.payout_1_cap
 			from customer_history c
 				  left outer join customer_history_flag f
 					  on c.customer_id = f.customer_id
 					  and c.period_id = f.period_id
 					  and c.batch_id = f.batch_id
 					  and f.flag_type_id = 2
-				  left outer join country co
-				  	  on c.country = co.country_code
 			where c.period_id = :pn_Period_id
 			and c.batch_id = :pn_Period_Batch_id
 			and c.type_id not in (6))
@@ -59,6 +78,7 @@ Begin
 			,c.entry_date				as entry_date
 			,c.rank_id					as rank_id
 			,c.rank_qual				as rank_qual
+			,c.payout_1_cap				as payout_1_cap
 			,s.customer_id				as sponsor_id
 			,ifnull(s.rank_id,1)		as sponsor_rank_id
 			,ifnull(s.rank_qual,0)		as sponsor_rank_qual
@@ -79,20 +99,19 @@ Begin
 	lc_Transactions = 
 		select
 			  t.transaction_id
-			 ,ifnull(r.transaction_date,t.transaction_date) 		as transaction_date		-- Return orders use ref transaction_date
+			 ,ifnull(r.transaction_date,t.transaction_date) 	as transaction_date		-- Return orders use ref transaction_date
 			 ,c.period_id
 			 ,c.batch_id
 		     ,t.customer_id
+		     ,t.type_id
 		     ,t.transaction_type_id
-		     ,ifnull(t.value_2,0) 									As pv
-		     ,ifnull(t.value_4,0) 									As cv
-		     ,ifnull(t.currency_code,co.currency_code)				as currency
+		     ,ifnull(t.value_2,0) 								As pv
+		     ,ifnull(t.value_4,0) 								As cv
+		     ,ifnull(t.currency,c.currency)						as currency
 		From transaction t
 			  left outer join transaction r
 			  	on t.transaction_ref_id = r.transaction_id
 			,:lc_Customers_Level c
-			  left outer join country co
-			  	on c.country = co.country_code
 		Where t.customer_id = c.customer_id
 	   	and ifnull(t.transaction_type_id,4) <> 0
 	   	and t.period_id = :pn_Period_id;
@@ -150,7 +169,7 @@ Begin
 	and c.sponsor_id = s.customer_id
 	and c.type_id not in (2,3)
    	and days_between(c.comm_status_date,t.transaction_date) > 
-   		case when c.type_id in (1,4,5) then 60
+   		case when t.type_id in (1,4,5) then 60
    		else -1 end
 	and t.period_id = req.period_id
 	and t.batch_id = req.batch_id
@@ -251,7 +270,9 @@ Begin
     delete from payout_unilevel
     where  period_id = :pn_period_id
 	and batch_id = :pn_Period_Batch_id
-	and (ifnull(qual_flag,0) = 0 or bonus = 0);
+	and (ifnull(qual_flag,0) = 0 
+	 or bonus = 0
+	 or lvl = 0);
     
     commit;
     
@@ -266,7 +287,7 @@ Begin
     replace payout_unilevel (payout_unilevel_id, exchange_rate, bonus, bonus_exchanged)
     select 
     	 p.payout_unilevel_id
-   		,round(et.rate / ef.rate,5)
+   		,round(et.rate / ef.rate,7)
    		,round(p.bonus,ef.round_factor)
    		,round(p.bonus * (et.rate / ef.rate),et.round_factor)
    	from :lc_Payout_Unilevel p
@@ -293,6 +314,55 @@ Begin
    	where from_currency = to_currency;
 	
 	commit;
+	
+	-- Insert Elephant Leg Caps
+	insert into payout_unilevel
+	select 
+		 payout_unilevel_id.nextval					as payout_unilevel_id
+	    ,period_id									as period_id
+	   	,batch_id									as batch_id
+	   	,customer_id								as customer_id
+	   	,0											as transaction_id
+	   	,customer_id								as transaction_customer_id
+	   	,4											as transaction_type_id
+	   	,1											as qual_flag
+	   	,0											as pv
+	   	,0											as cv
+	   	,to_currency								as from_currency
+	   	,to_currency								as to_currency
+	   	,rate										as exchange_rate
+	   	,0											as percentage
+	   	,0											as lvl
+	   	,0											as lvl_paid
+	   	,payout_1_cap_exchanged - bonus_exchanged	as bonus
+	   	,payout_1_cap_exchanged - bonus_exchanged	as bonus_exchanged
+	from (
+		select 
+		    	 h.customer_id
+		    	,h.period_id
+		   		,h.batch_id
+		   		,x.rate
+		   		,x.round_factor
+		   		,p.to_currency
+		   		,(h.payout_1_cap*x.rate) as payout_1_cap_exchanged
+		   		,sum(ifnull(p.bonus_exchanged,0)) as bonus_exchanged
+		   	from customer_history h
+		   		left outer join payout_unilevel p
+		   			on h.customer_id = p.customer_id
+		   			and h.period_id = p.period_id
+		   			and h.period_id = p.period_id
+		   			and p.qual_flag = 1
+		   		,:lc_Exchange x
+		   	where p.to_currency = x.currency
+		   	and h.period_id = :pn_Period_id
+			and h.batch_id = :pn_Period_Batch_id
+			and h.payout_1_cap <> 0 
+			and 1 = case when h.country = 'KOR' and p.to_currency = 'USD' then 0
+					else 1 end														-- Exclude Korean NFR Payouts
+			group by h.customer_id,h.period_id,h.batch_id,x.rate,x.round_factor,h.payout_1_cap,p.to_currency)
+	where payout_1_cap_exchanged < bonus_exchanged;
+	
+	commit;
     
     -- Aggregate Bonus values for each customer
     replace customer_history (customer_id, period_id, batch_id, payout_1)
@@ -302,8 +372,6 @@ Begin
    		,h.batch_id
    		,sum(ifnull(p.bonus_exchanged,0))
    	from customer_history h
-   		left outer join country c
-   			on h.country = c.country_code
    		left outer join payout_unilevel p
    			on h.customer_id = p.customer_id
    			and h.period_id = p.period_id
@@ -314,6 +382,8 @@ Begin
 	and 1 = case when h.country = 'KOR' and p.to_currency = 'USD' then 0
 			else 1 end														-- Exclude Korean NFR Payouts
 	group by h.customer_id,h.period_id,h.batch_id;
+	
+	commit;
 	
    	Update period_batch
    	Set end_date_payout_1 = current_timestamp
