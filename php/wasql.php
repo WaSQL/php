@@ -528,7 +528,7 @@ function gracefulShutdown(){
 				    if (strpos($buffer, "function {$function}(") !== false) {
 				        $found = TRUE;
 				        break; // Once you find the string, you should break out the loop.
-				    }      
+				    }
 				}
 				fclose($handle);
 				if($found){
@@ -620,12 +620,12 @@ function minifyFilename($ext=''){
 	global $CONFIG;
 	if(!isNum($PAGE['_id'])){return '';}
 	if(!isNum($TEMPLATE['_id'])){return '';}
-	list($url,$params)=preg_split('/\?/',$_SERVER['REQUEST_URI'],2);
+	$uparts=preg_split('/\?/',$_SERVER['REQUEST_URI'],2);
 	$parts=array(
 		$CONFIG['dbname'],
 		$_SERVER['REMOTE_BROWSER'],
 		$_SERVER['REMOTE_BROWSER_VERSION'],
-		$url
+		$uparts[0]
 	);
 /* 	if(isset($_REQUEST['passthru']) && is_array($_REQUEST['passthru']) && count($_REQUEST['passthru'])){
 		$parts=array_merge($parts,$_REQUEST['passthru']);
@@ -1136,43 +1136,53 @@ function showWasqlErrors($top=50,$right=50,$close=2){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 * @usage set_error_handler("wasqlErrorHandler");
 */
-function wasqlErrorHandler($errno, $errstr, $errfile, $errline, $args){
-	$debug=array(
-		'file'		=> $errfile,
-		'line'		=> $errline,
-		//'args'	=> $args,
-		'errno'		=> $errno,
-		'error'		=> $errstr,
-		);
-	//
+function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
+	global $dbh;
+	if(!is_object($dbh) && !is_resource($dbh)){
+		//no database handle so let PHP handle this one.
+		//echo "HRE".printValue($dbh);exit(1);
+		return false;
+	}
+	//ignore undefined index errors
+	if(preg_match('/^Undefined\ index/i',$errstr)){return false;}
 	if(!strlen($errstr)){return false;}
-	//echo "Here [{$errno}][{$errstr}]<br>\n".printValue($debug);
-	switch ($errno) {
-    	case E_USER_ERROR:
-    		$_SERVER['WASQL_ERRORS'][]=$debug;
-    		echo showWasqlErrors();
-    		exit(1);
-    		break;
-    	case E_USER_WARNING:
+	if(!isDBTable('_errors')){
+		$ok=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_errors',
+			'fieldname'		=> 'archived',
+			'description'	=> 'check to archive',
+			'inputtype'		=> 'checkbox',
+			'tvals'			=> 1,
+			'editlist'		=> 1
+		));
+		$ok = createDBTable('_errors',array(
+			'errno'	=> 'integer NOT NULL',
+			'errstr'=> 'varchar(255) NULL',
+			'errfile'=>'varchar(255) NULL',
+			'errline'=>'integer NULL',
+			'errdate'=>'date NOT NULL',
+			'archived'=>'tinyint(1) NOT NULL Default 0'
+		),'InnoDB');
+		$ok=addDBIndex(array('-table'=>'_errors','-fields'=>"errdate,errfile,errline",'-unique'=>true));
 
-    	case E_USER_NOTICE:
-    		$_SERVER['WASQL_ERRORS'][]=$debug;
-    		return false;
-    		break;
-    	case E_WARNING:
-    	case E_NOTICE:
-    	case E_CORE_WARNING:
-    	case E_COMPILE_WARNING:
-    		$_SERVER['WASQL_ERRORS'][]=$debug;
-    		//echo showWasqlErrors();
-    		//echo "C" . printValue($debug);
-    		return false;
-        	break;
-    	default:
-    		$_SERVER['WASQL_ERRORS'][]=$debug;
-    		//echo showWasqlErrors();
-        break;
-    	}
+	}
+	if(!isDBTable('_errors')){return true;}
+	if(getDBCount(array(
+		'-table'=>'_errors',
+		'errfile'=>$errfile,
+		'errline'=>$errline,
+		'errdate'=>date('Y-m-d'),
+		))){return true;}
+	$ok=addDBRecord(array(
+		'-table'=>'_errors',
+		'errno'=>$errno,
+		'errstr'=>$errstr,
+		'errfile'=>$errfile,
+		'errline'=>$errline,
+		'errdate'=>date('Y-m-d'),
+		'archived'=>0
+	));
+	$ok=cleanupDBRecords('_errors',10);
     /* Don't execute PHP internal error handler */
     return false;
 	}
@@ -1398,7 +1408,7 @@ function wasqlVersion(){
 /**
  * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
-*/	
+*/
 function wasqlFontIcons($x=''){
 	$wfiles_path=getWfilesPath();
 	$file="{$wfiles_path}/css/wasql_icons{$x}.css";
