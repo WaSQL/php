@@ -684,7 +684,7 @@ function getUserInfo($cuser,$size=16){
     	}
     $utypes=mapDBDvalsToTvals("_users","utype");
     $info=array(
-    	'type'=>$utypes[$cuser['utype']],
+    	'type'=>isset($utypes[$cuser['utype']])?$utypes[$cuser['utype']]:'unknown',
     	'username'=>$cuser['username']
 		);
 	//set user icon based on admin or not
