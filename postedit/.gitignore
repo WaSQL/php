@@ -1,4 +1,5 @@
 postedit.xml
 wasql_*.lock
+*_lock.txt
 postEditXML
 postEditFiles
