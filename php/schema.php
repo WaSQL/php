@@ -86,7 +86,7 @@ function createWasqlTable($table=''){
 			$fields['description']="varchar(255) NULL";
 			$fields['rowcount']="integer NOT NULL Default 0";
 			$fields['runtime']="integer NOT NULL Default 0";
-			$fields['icon']="varchar(50) NULL"; 
+			$fields['icon']="varchar(50) NULL";
 			$fields['query']="text NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['options']="text NULL";
@@ -471,7 +471,7 @@ function createWasqlTable($table=''){
 				'sortfields'	=> 'tablename, fieldname, inputtype',
 				'synchronize'	=> 1
 				));
-			
+
 			//_forms
 			$id=addDBRecord(array('-table'=>$table,
 				'tablename'		=> '_forms',
@@ -2102,13 +2102,13 @@ function getWasqlTables(){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','countries','states','contact_form',
+		'_fielddata','_tabledata','countries','states','contact_form','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
 	//include wpass table?
-	if($CONFIG['wpass']){$tables[]='_wpass';}
+	if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
 	return $tables;
 	}
 //---------- begin function schemaAddFileData
