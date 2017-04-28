@@ -410,12 +410,15 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	$onclick='';
 	if(isset($params['onchange'])){$onclick=$params['onchange'];unset($params['onchange']);}
 	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
-	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);{$onclick};";
-	$tag='<input type="checkbox"';
+	if(isset($params['requiredif']) && strlen($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);";
+	if(strlen($onclick)){$params['onclick'].="{$onclick};";}
+	$id='checkall_'.substr(sha1($att.$attval),0,10);
+	$tag='<input id="'.$id.'" type="checkbox" style="display:none;" data-type="checkbox" ';
 	unset($params[$att]);
 	$tag .= setTagAttributes($params);
 	$tag .= ' />';
+	$tag .= '<label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'">checkall</label>';
 	return $tag;
 	}
 //---------- begin function buildFormCheckbox--------------------------------------
@@ -469,9 +472,9 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$colsize=floor(12/count($cols));
 	$tag='';
 	if(isset($params['-checkall'])){
-		$tag .= '<div class="row">'."\n";
+		$tag .= '<div class="row"><div class="col-sm-12 text-left">'."\n";
     	$tag .= buildFormCheckAll('data-group',$params['group']);
-    	$tag .= '</div>'."\n";
+    	$tag .= '</div></div>'."\n";
 	}
 	$tag.='<div class="row">'."\n";
 	$class='';
@@ -499,13 +502,13 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     		if(in_array($tval,$params['-values'])){
         		$tag .= ' checked';
-        		$checked_cnt++;
+        		//$checked_cnt++;
 			}
-			if($params['required']){$tag .= ' data-required="1"';}
+			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+			elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
-			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
+			if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
 				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'."\n";
 			}
@@ -599,11 +602,11 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['width']=155;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
-	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
+	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
 	if($params['-value']=='NULL'){$params['-value']='';}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -722,10 +725,11 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
 	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
-	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
+	$tag = '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'."\n";
 	return $tag;
@@ -744,10 +748,11 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['requiredif']) && strlen($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	//check for size
+	$params['-size']='';
 	switch(strtolower($params['-size'])){
     	case 'sm':
     	case 'small':
@@ -756,9 +761,6 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		case 'lg':
 		case 'large':
 			$params['-size']='btn-lg';
-		break;
-		default:
-			$params['-size']='';
 		break;
 	}
 	$mid=$name.'_options';
@@ -786,7 +788,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
     	$params['-values']=array();
 	}
 	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
-	$icon=$checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
+	$icon=isset($checked_cnt) && $checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	$group=$params['id'];
@@ -804,7 +806,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		//$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
 
     	$litags .= '<input data-group="'.$group.'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-    	if($params['required'] || $params['_required']){$tag.=' data-required="1"';}
+    	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$tag.=' data-required="1"';}
     	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
 			$onclick .= $params['onchange'];
@@ -968,10 +970,11 @@ function buildFormText($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+	if(isset($params['requiredif']) && $params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['name']=$name;
-	$tag .= '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
+	if(!isset($params['value'])){$params['value']='';}
+	$tag = '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	//check for tvals and build a datalist if present
 	$selections=getDBFieldSelections($params);
@@ -1007,14 +1010,16 @@ function buildFormTextarea($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['value'])){
+		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['height'])){
 		if(isNum($params['height'])){$params['height'].='px';}
 		$params['style'].=";height:{$params['height']}";
 	}
 	$white_wrap=0;
-	if(strlen($params['behavior'])){
+	if(isset($params['behavior']) && strlen($params['behavior'])){
 		$params['data-behavior']=strtolower($params['behavior']);
 		$params['wrap']="off";
 		switch(strtolower($params['behavior'])){
@@ -1039,6 +1044,7 @@ function buildFormTextarea($name,$params=array()){
 		}
 	}
 	$params['name']=$name;
+	$tag='';
 	if($white_wrap==1){$tag.='<div style="background:#FFF;">'."\n";}
 	$tag .= '	<textarea';
 	$tag .= setTagAttributes($params);
@@ -1185,7 +1191,7 @@ function buildFormBegin($action='',$params=array()){
 	elseif(isset($params['-enctype'])){$rtn .= ' enctype="'.$params['-enctype'].'"';}
 	if(isset($params['-charset'])){$rtn .= ' accept-charset="'.$params['-charset'].'"';}
 	$rtn .= ' class="'.$params['-class'].'" onsubmit="'.$params['-onsubmit'].'">'."\n";
-	if($params['-auth_required']){
+	if(isset($params['-auth_required']) && $params['-auth_required']){
 		$rtn .= '	<input type="hidden" name="_auth_required" value="1">'."\n";
 	}
 	foreach($params as $key=>$val){
@@ -1196,7 +1202,7 @@ function buildFormBegin($action='',$params=array()){
 		$rtn .= '	<input type="hidden" name="'.$key.'" value="'.$val.'">'."\n";
     	}
     //populate $_REQUEST array if _table and _id are set and _action equals EDIT
-    if(isset($params['_table']) && isNum($params['_id']) && isset($params['_action']) && strtolower($params['_action'])=='edit'){
+    if(isset($params['_table']) && isset($params['_id']) && isNum($params['_id']) && isset($params['_action']) && strtolower($params['_action'])=='edit'){
 		$getopts=array('-table'=>$params['_table'],'_id'=>$params['_id']);
 		if(isset($params['_fields'])){$getopts['-fields']=$params['_fields'];}
     	$rec=getDBRecord($getopts);
@@ -1319,7 +1325,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['requiredif']) && $params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	//return printValue($pairs);
 	$pcnt=count($pairs);
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
@@ -1332,7 +1338,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	elseif(isset($_REQUEST[$name])){
 		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
 	}
-	else{$sval='';}
+	$sval=isset($sval)?$sval:'';
 
 	$params['name']=$name;
 	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
@@ -1657,11 +1663,11 @@ function buildHtmlBegin($params=array()){
 	$rtn .= ' 	<meta name="viewport" content="width=device-width, initial-scale=1" />'."\n";
 	//set the order of compatibility view for IE - dumb I know, but it works.
 	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="'.minifyCssFile().'" />'."\n";
-	if(strlen($params['css'])){
+	if(isset($params['css']) && strlen($params['css'])){
 		$rtn .= $params['css'] ."\n";
 	}
 	$rtn .= ' 	<script type="text/javascript" src="'.minifyJsFile().'"> </script>'."\n";
-	if(strlen($params['js'])){
+	if(isset($params['js'])){
 		$rtn .= $params['js'] ."\n";
 	}
 	$rtn .= '</head>'."\n";
@@ -2920,6 +2926,7 @@ function setView($name='',$clear=0){
     	unset($PAGE['setView']);
 	}
 	if(!isset($PAGE['setView']) || !is_array($PAGE['setView'])){$PAGE['setView']=array();}
+	if(!isset($PAGE['setView'][$name])){$PAGE['setView'][$name]=0;}
 	$PAGE['setView'][$name]+=1;
 	return 1;
 }
@@ -3027,6 +3034,7 @@ function renderView($view, $params=array(), $opts=array()){
 	$rtn=preg_replace('/^[\r\n]+/','',$rtn);
 	$rtn=preg_replace('/[\r\n]+$/','',$rtn);
 	//render view as a pdf?
+	$opts['-format']=isset($opts['-format'])?$opts['-format']:'';
 	switch(strtolower($opts['-format'])){
 		case 'pdf':
 		case 'htmlpdf':
@@ -4546,6 +4554,7 @@ function evalPHP($strings){
 	    		$strings[$sIndex]=str_replace($evalmatches[0][$ex],$error,$strings[$sIndex]);
 			}
 			else{
+				@trigger_error('');
 				$val=@eval($evalcode);
 				$ob=ob_get_contents();
 				ob_clean();
@@ -4916,7 +4925,7 @@ function fileManager($startdir='',$params=array()){
     	$rtn .= '<div class="w_danger icon-warning"> '.$_REQUEST['file_error'].'</div>'."\n";
 	}
 	$rtn .= '</div>'."\n";
-	if(!$params['-onfinish']){$params['-onfinish']='window.location=window.location;';}
+	if(!isset($params['-onfinish'])){$params['-onfinish']='window.location=window.location;';}
 	if(count($files)==0){
 		if($params['-rights'] != 'readonly'){
 	    	//HTML5 file upload
@@ -5038,16 +5047,16 @@ function fileManager($startdir='',$params=array()){
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link'.$class.'" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"> '.$file.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"> '.$file.'</a></td>'."\n";
 			            	}
 			            else{
-							$rtn .= '		<td class="w_align_left w_nowrap"><a title="'.$vsize.'" class="w_link'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'."\n";
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'."\n";
 			            	}
 
                 		break;
                 	case 'desc':
                 	case 'description':
-                		$rtn .= '		<td class="w_align_left" style="padding:2px;"><div id="'.$fileId.'" filename="'.$file.'">'.$description[$file].'</div></td>'."\n";
+                		$rtn .= '		<td class="w_align_left" style="padding:2px;"><div id="'.$fileId.'" filename="'.$file.'">'.isset($description[$file])?$description[$file]:''.'</div></td>'."\n";
                 		break;
                 	case 'mtime':
                 	case 'modified':
@@ -6679,19 +6688,23 @@ function getCSVFileContents($file,$params=array()){
 		            //field_properties
 					foreach($row as $field=>$val){
 						//maxlength
-						if(!isNum($results['field_properties'][$field]['maxlength']) || strlen($val) > $results['field_properties'][$field]['maxlength']){
-							$results['field_properties'][$field]['maxlength']=strlen($val);
-							$results['field_properties'][$field]['maxlength_rownum']=count($rows);
-							$results['field_properties'][$field]['maxlength_value']=$val;
+						if(isset($results['field_properties'][$field]['maxlength'])){
+							if(!isNum($results['field_properties'][$field]['maxlength']) || strlen($val) > $results['field_properties'][$field]['maxlength']){
+								$results['field_properties'][$field]['maxlength']=strlen($val);
+								$results['field_properties'][$field]['maxlength_rownum']=count($rows);
+								$results['field_properties'][$field]['maxlength_value']=$val;
 							}
+						}
 						//minlength
-						if(!isNum($results['field_properties'][$field]['minlength']) || strlen($val) < $results['field_properties'][$field]['minlength']){
-							$results['field_properties'][$field]['minlength']=strlen($val);
-							$results['field_properties'][$field]['minlength_rownum']=count($rows);
-							$results['field_properties'][$field]['minlength_value']=$val;
+						if(isset($results['field_properties'][$field]['minlength'])){
+							if(!isNum($results['field_properties'][$field]['minlength']) || strlen($val) < $results['field_properties'][$field]['minlength']){
+								$results['field_properties'][$field]['minlength']=strlen($val);
+								$results['field_properties'][$field]['minlength_rownum']=count($rows);
+								$results['field_properties'][$field]['minlength_value']=$val;
 							}
+						}
 		            	//numeric vs text
-		            	if(!isset($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']=isNum($results['field_properties'][$field]['type'])?'numeric':'text';}
+		            	if(!isset($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']='text';}
 						else{
 							if($results['field_properties'][$field]['type']=='numeric' && !isNum($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']='text';}
 
@@ -6741,7 +6754,7 @@ function getCSVFileContents($file,$params=array()){
 				$fields[$fld]="date NULL";
 				break;
 			default:
-				$max=$info['maxlength'];
+				$max=isset($info['maxlength'])?$info['maxlength']:255;
 				if($max > 2000){$fields[$fld]="text NULL";}
 				elseif($max < 11){$fields[$fld]="char({$max}) NULL";}
 				else{$fields[$fld]="varchar({$max}) NULL";}
@@ -7366,7 +7379,7 @@ function includePage($val='',$params=array()){
 	//Disallow recursive calls - pages that call themselves
 	global $PAGE;
 	$table='_pages';
-	if($params['-dbname']){$table="{$params['-dbname']}._pages";}
+	if(isset($params['-dbname'])){$table="{$params['-dbname']}._pages";}
 	if(strtolower($PAGE['name'])==strtolower($val) && $table=='_pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$fields="_id,controller,body,functions,name";
 	$fieldname="body";
@@ -7402,8 +7415,8 @@ function includePage($val='',$params=array()){
 		}
 	}
 	//prep to load js and css from minify
-	if(!$params['-dbname'] && !$params['-pageonly'] && isset($rec['_id'])){
-		if(!is_array($_SESSION['w_MINIFY']['includepages'])){$_SESSION['w_MINIFY']['includepages']=array();}
+	if(!isset($params['-dbname']) && !isset($params['-pageonly']) && isset($rec['_id'])){
+		if(!isset($_SESSION['w_MINIFY']['includepages'])){$_SESSION['w_MINIFY']['includepages']=array();}
 		if(!in_array($rec['_id'],$_SESSION['w_MINIFY']['includepages'])){
     		$_SESSION['w_MINIFY']['includepages'][]=$rec['_id'];
 		}
@@ -8154,13 +8167,13 @@ function getBrowserInfo(){
 * @usage if(isImage($filename)){...}
 */
 function isImage($file=''){
-	$mimetype=getFileMimeType($afile);
+	$mimetype=getFileMimeType($file);
 	if(stringContains($mimetype,'image')){return true;}
 	$exts=array('jpg','jpeg','gif','png','bmp','tif','tiff');
     $ext=getFileExtension($file);
     if(in_array($ext,$exts)){return true;}
     //if getimagesize succeeds then it is an image
-    if(function_exists('getimagesize') && getimagesize($file)){return true;}
+    if(function_exists('getimagesize') && is_file($file) && getimagesize($file)){return true;}
     return false;
 	}
 //---------- begin function isNum ----------
@@ -8427,7 +8440,7 @@ function listFilesEx($dir='.',$params=array()){
 function loadExtras($extras){
 	global $databaseCache;
 	if(!is_array($extras)){$extras=array($extras);}
-	if(!is_array($_SESSION['w_MINIFY']['extras'])){
+	if(!isset($_SESSION['w_MINIFY']['extras']) || !is_array($_SESSION['w_MINIFY']['extras'])){
     	$_SESSION['w_MINIFY']['extras']=array();
 	}
 	foreach($extras as $extra){
@@ -8491,10 +8504,10 @@ function loadExtras($extras){
 */
 function loadExtrasCss($extras){
 	if(!is_array($extras)){$extras=array($extras);}
-	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_css']) || !is_array($_SESSION['w_MINIFY']['extras_css'])){
     	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
-	if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_js']) || !is_array($_SESSION['w_MINIFY']['extras_js'])){
     	$_SESSION['w_MINIFY']['extras_js']=array();
 	}
 	foreach($extras as $extra){
@@ -8680,6 +8693,7 @@ function loremIpsum($length=300,$end='.'){
     	for($i=0;$i<$sentance_word_count;$i++){
 			if($charcnt > $length){break;}
 			$word_index=rand(0,count($words));
+			if(!isset($words[$word_index])){continue;}
 			$word=$words[$word_index];
 			if($i==0){$word=ucfirst($word);}
 			$sentence_words[]=$word;
@@ -9556,7 +9570,8 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
 			if(preg_match('/^\./i',$file['name'])){continue;}
 			if(preg_match('/^(Maildir|Logs|wfiles|php|min|cgi\-bin)$/i',$file['name'])){continue;}
 			//skip dirs that we do not have permissiong to write to
-			if(!$file['perm_read'] && !$file['perm_write']){continue;}
+			if(!isset($file['perm_read']) || !$file['perm_read']){continue;}
+			if(!isset($file['perm_write']) || !$file['perm_write']){continue;}
 			$listdirs[]=$file['name'];
         }
         $xml .= '	<wasql_dirs>'.implode(',',$listdirs).'</wasql_dirs>'."\n";
@@ -9589,7 +9604,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
 				if(preg_match('/^(template|name|css_min|js_min)$/i',$key)){continue;}
 				//if(preg_match('/\_mdml$/i',$key)){continue;}
 				if(!strlen($val)){continue;}
-				if((strlen($finfo[$key]['inputtype']) && $finfo[$key]['inputtype'] == 'textarea') || $finfo[$key]['_dbtype']=='blob'){
+				if((isset($finfo[$key]['inputtype']) && strlen($finfo[$key]['inputtype']) && $finfo[$key]['inputtype'] == 'textarea') || $finfo[$key]['_dbtype']=='blob'){
 					//skip this one if there is a filter and it does not match
 					if(isset($_REQUEST['filter']) && strlen(trim($_REQUEST['filter']))){
                 		$filename="{$rec['name']}.{$table}.{$key}.{$rec['_id']}";
@@ -9624,8 +9639,12 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
                 if(isNum($rec['_adate_utime'])){$atts['atime']=$rec['_adate_utime'];}
                 if(isNum($rec['_cdate_utime'])){
                     $atts['ctime']=$rec['_cdate_utime'];
-                    $atts['cusername'] = $edit_users[$rec['_cuser']]['username'];
-                	$atts['cuseremail'] = $edit_users[$rec['_cuser']]['email'];
+                    if(isset($edit_users[$rec['_cuser']]['username'])){
+						$atts['cusername'] = $edit_users[$rec['_cuser']]['username'];
+					}
+					if(isset($edit_users[$rec['_cuser']]['email'])){
+						$atts['cuseremail'] = $edit_users[$rec['_cuser']]['email'];
+					}
                 }
                 /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 				$xml .= '	<WASQL_RECORD';
@@ -11324,7 +11343,7 @@ function processActions(){
 			}
             //echo buildTableBegin(4);
             //echo "<tr><td>\n";
-			$title=isNum($_REQUEST['_id'])?'Edit Record':'Add Record';
+			$title=isset($_REQUEST['_id']) && isNum($_REQUEST['_id'])?'Edit Record':'Add Record';
             echo '<div class="w_centerpop_title">'.$title.'</div>'."\n";
 			echo '<div class="w_centerpop_content">'."\n";
 			echo addEditDBForm($_REQUEST);
