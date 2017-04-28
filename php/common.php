@@ -4151,6 +4151,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function simpleDiff($old, $new){
+	$maxlen=0;
 	foreach($old as $oindex => $ovalue){
 		$nkeys = array_keys($new, $ovalue);
 		foreach($nkeys as $nindex){
@@ -10785,6 +10786,7 @@ function processActions(){
 				$fields=array_keys($info);
 				$opts=array('-table'=>$_REQUEST['_table']);
 				$tinymce=array();
+				$key=array();
 				foreach($fields as $field){
 					if(preg_match('/^\_(c|e)(user|date)$/i',$key)){continue;}
 					if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
