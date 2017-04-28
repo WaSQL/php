@@ -91,7 +91,7 @@
 					$file['msg']=trim($file['msg']);
 					if(strlen($file['msg'])){
 						$log=gitCommit($gitpath,$file['msg'],$file['name']);
-						$response.=nl2br($long);
+						$response.=nl2br($log);
 					}
 					else{
                     	$response.="ERROR: Missing Message for {$file['name']}<br>\n";
@@ -118,7 +118,7 @@
 					}
 					if(strlen($file['msg'])){
 						$log=gitCommit($gitpath,$file['msg'],$file['name']);
-						$response.=nl2br($long);
+						$response.=nl2br($log);
 					}
 					else{
                     	$response.="ERROR: Missing Message for {$file['name']}<br>\n";
