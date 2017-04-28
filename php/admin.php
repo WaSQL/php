@@ -22,6 +22,7 @@ include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
+set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 global $wtables;
 $wtables=getWasqlTables();
 foreach($wtables as $wtable){
@@ -291,10 +292,10 @@ if(isAjax()){
 					'-action'=>'/php/admin.php',
 					'-table'=>$_REQUEST['_table_'],
 					'_table_'=>$_REQUEST['_table_'],
-					'_menu'=>'list',
-					'_sort'=>$_REQUEST['_sort'],
-					'_start'=>$_REQUEST['_start']
+					'_menu'=>'list'
 				);
+				if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
+				if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
 				//echo printValue($addopts);
 	    		echo addEditDBForm($addopts);
 			}
@@ -1435,11 +1436,11 @@ if(isset($_REQUEST['_menu'])){
 				foreach($val as $x=>$subval){
 					$svals=array();
 					if(is_array($subval)){
-						foreach($fields as $field=>$cnt){$svals[]=$subval[$field];}
+						foreach($fields as $field=>$cnt){$svals[]=isset($subval[$field])?$subval[$field]:'';}
 						echo buildTableTD($svals);
 						}
 					else{
-						foreach($fields as $field=>$cnt){$svals[]=$val[$field];}
+						foreach($fields as $field=>$cnt){$svals[]=isset($val[$field])?$val[$field]:'';}
 						echo buildTableTD($svals);
 						break;
                     	}
@@ -1548,7 +1549,7 @@ ENDOFJSONFORM;
 			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
 			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
 			echo '			<input type="hidden" name="_type" value="user">'."\n";
-			echo '			<input type="text" class="form-control" name="_search" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
+			echo '			<input type="text" class="form-control" name="_search" value="'.isset($_REQUEST['_search'])?$_REQUEST['_search']:''.'" onFocus="this.select();">'."\n";
 			echo '			<button type="submit" class="btn btn-primary">Search</button>'."\n";
 			echo '		</form><br />'."\n";
 			echo buildOnLoad("document.documentation_searchform._search.focus();");
@@ -1556,7 +1557,7 @@ ENDOFJSONFORM;
 			break;
 		case 'profile':
 			//My Profile
-			$img=$USER['utype']==0?$rtn .= 'admin.gif':'user.gif';
+			$img=$USER['utype']==0?'admin.gif':'user.gif';
 			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'."\n";
 			echo '<table class="table table-bordered table-striped">'."\n";
 			echo buildTableTH(array('Field','Value'));
@@ -1829,10 +1830,10 @@ ENDOFJSONFORM;
 				$rec=array(
 					'name'=>$table,
 					'records'=>getDBCount(array('-table'=>$table)),
-					'fields'=>count($fields),
-					'group'=>$tablegroup[$table]['tablegroup'],
-					'desc'=>$tablegroup[$table]['tabledesc']
+					'fields'=>count($fields)
 					);
+				if(isset($tablegroup[$table]['tablegroup'])){$rec['group']=$tablegroup[$table]['tablegroup'];}
+				if(isset($tablegroup[$table]['tabledesc'])){$rec['desc']=$tablegroup[$table]['tabledesc'];}
 				$recs[]=$rec;
             	}
             //echo printValue($recs);
@@ -1857,6 +1858,8 @@ ENDOFJSONFORM;
 						));
 				}
 				else{
+					if(!isset($rec['group'])){$rec['group']='';}
+					if(!isset($rec['desc'])){$rec['desc']='';}
                 	echo buildTableTD(array(
                 		tableOptions($table,array('-format'=>'none','-options'=>'list,properties','-notext'=>1)),
 						'<a style="display:block;" class="w_link w_lblue" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
@@ -1937,7 +1940,7 @@ ENDOFJSONFORM;
 				if($_REQUEST['_table_']=='_new_' || isset($_REQUEST['_schema'])){
 					//add new table
 					$error=0;
-					if(is_array($_SESSION['admin_errors']) && count($_SESSION['admin_errors'])){
+					if(isset($_SESSION['admin_errors']) && is_array($_SESSION['admin_errors']) && count($_SESSION['admin_errors'])){
 						echo '<div class="w_padding w_left">'."\n";
 						echo '	<div class="w_bold"><span class="icon-warning w_danger w_bold"></span> Error Adding Table:</div>'."\n";
 						foreach($_SESSION['admin_errors'] as $adderror){
@@ -2041,10 +2044,10 @@ ENDOFJSONFORM;
 							'-action'=>'/php/admin.php',
 							'-table'=>$_REQUEST['_table_'],
 							'_table_'=>$_REQUEST['_table_'],
-							'_menu'=>"list",
-							'_sort'=>$_REQUEST['_sort'],
-							'_start'=>$_REQUEST['_start']
+							'_menu'=>"list"
 						);
+						if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
+						if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
 						if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
 						echo addEditDBForm($addopts);
 					}
@@ -2058,7 +2061,8 @@ ENDOFJSONFORM;
 			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'centerpop\');return false;">'."\n";
 			echo '		<input type="hidden" name="_menu" value="addmultiple">'."\n";
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'."\n";
-			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$_REQUEST['_schema'].'</textarea>'."\n";
+			$val=isset($_REQUEST['_schema'])?$_REQUEST['_schema']:'';
+			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$val.'</textarea>'."\n";
 			echo '		<div><input type="submit" value="Create"></div>'."\n";
 			echo '	</form>'."\n";
 			echo '</td><td>'."\n";
@@ -2147,15 +2151,17 @@ ENDOFJSONFORM;
 				}
 				echo '</div>'."\n";
 				$menu=isset($_REQUEST['_menu2'])?$_REQUEST['_menu2']:'list';
-				echo addEditDBForm(array(
+				$addopts=array(
 					'-action'=>'/php/admin.php',
 					'-table'=>$_REQUEST['_table_'],
 					'_table_'=>$_REQUEST['_table_'],
 					'_menu'=>$menu,
-					'_id'=>$_REQUEST['_id'],
-					'_sort'=>$_REQUEST['_sort'],
-					'_start'=>$_REQUEST['_start']
-				));
+					'_id'=>$_REQUEST['_id']
+				);
+				if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
+				if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
+
+				echo addEditDBForm($addopts);
             }
 			break;
 		case 'sandbox':
@@ -2661,10 +2667,10 @@ LIST_TABLE:
 				echo '	<tr onclick="'.$onclick.'">'."\n";
 
 				$extras=array();
-				if(strlen($tinfo['fieldinfo'][$field]['_dbextra'])){
+				if(isset($tinfo['fieldinfo'][$field]['_dbextra']) && strlen($tinfo['fieldinfo'][$field]['_dbextra'])){
 					$extras[]=$tinfo['fieldinfo'][$field]['_dbextra'];
 				}
-				if(strlen($tinfo['fieldinfo'][$field]['_dbcomment'])){
+				if(isset($tinfo['fieldinfo'][$field]['_dbcomment']) && strlen($tinfo['fieldinfo'][$field]['_dbcomment'])){
 					$extras[]=$tinfo['fieldinfo'][$field]['_dbcomment'];
 				}
 				$extra=implode('/',$extras);
@@ -2674,21 +2680,27 @@ LIST_TABLE:
 				else{
 					echo '		<td class="w_lblue w_bold w_smaller">'.$field.'</td>'."\n";
 					}
-				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbtype'].'</td>'."\n";
-				echo '		<td class="w_gray w_smaller" align="right">'.$tinfo['fieldinfo'][$field]['_dblength'].'</td>'."\n";
-				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbnull'].'</td>'."\n";
-				echo '		<td class="w_gray w_smaller">'.$tinfo['fieldinfo'][$field]['_dbkey'].'</td>'."\n";
-				echo '		<td class="w_gray w_smaller" align="right">'.$tinfo['fieldinfo'][$field]['_dbdefault'].'</td>'."\n";
+				$val=isset($tinfo['fieldinfo'][$field]['_dbtype'])?$tinfo['fieldinfo'][$field]['_dbtype']:'';
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				$val=isset($tinfo['fieldinfo'][$field]['_dblength'])?$tinfo['fieldinfo'][$field]['_dblength']:'';
+				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'."\n";
+				$val=isset($tinfo['fieldinfo'][$field]['_dbnull'])?$tinfo['fieldinfo'][$field]['_dbnull']:'';
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				$val=isset($tinfo['fieldinfo'][$field]['_dbkey'])?$tinfo['fieldinfo'][$field]['_dbkey']:'';
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				$val=isset($tinfo['fieldinfo'][$field]['_dbdefault'])?$tinfo['fieldinfo'][$field]['_dbdefault']:'';
+				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'."\n";
 				echo '		<td class="w_gray w_smaller">'.$extra.'</td>'."\n";
-				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$tinfo['fieldinfo'][$field]['displayname'].'</td>'."\n";
-				if(strlen($tinfo['fieldinfo'][$field]['inputtype'])){
+				$val=isset($tinfo['fieldinfo'][$field]['displayname'])?$tinfo['fieldinfo'][$field]['displayname']:'';
+				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$val.'</td>'."\n";
+				if(isset($tinfo['fieldinfo'][$field]['inputtype']) && strlen($tinfo['fieldinfo'][$field]['inputtype'])){
 					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"></td>'."\n";
 				}
 				else{
                 	echo '		<td></td>'."\n";
 				}
 				foreach($formfields as $formfield){
-					$val=$tinfo['fieldinfo'][$field][$formfield];
+					$val=isset($tinfo['fieldinfo'][$field][$formfield])?$tinfo['fieldinfo'][$field][$formfield]:'';
 					if(isNum($val)){
 						if($val==1){
 							if($formfield=='required'){$val='<span class="icon-mark"></span>';}
@@ -2725,16 +2737,16 @@ LIST_TABLE:
 				$type=$field['_dbtype_ex'];
 				if($field['_dbnull']=='NO'){$type .= ' NOT NULL';}
 				else{$type .= ' NULL';}
-				if($field['_dbkey']=='PRI'){$type .= ' Primary Key';}
-				elseif($field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
-				if(strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
-				if(strlen($field['_dbextra'])){
+				if(isset($field['_dbkey']) && $field['_dbkey']=='PRI'){$type .= ' Primary Key';}
+				elseif(isset($field['_dbkey']) && $field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
+				if(isset($field['_dbdefault']) && strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
+				if(isset($field['_dbextra']) && strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],'virtual generated')){
 						echo "{$field['_dbfield']} {$type} {$field['_dbextra']}\r\n";
 						continue;
 					}
 				}
-				if(strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
+				if(isset($field['_dbcomment']) && strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
 				echo "{$field['_dbfield']} {$type}\r\n";
             }
 			echo '		</textarea><br clear="both" />'."\n";
@@ -2752,30 +2764,30 @@ LIST_TABLE:
 			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'."\n";
 			echo '	</tr>'."\n";
 			//synchronize and websockets
-			$_REQUEST['synchronize']=$tinfo['synchronize'];
-			$_REQUEST['websockets']=$tinfo['websockets'];
+			if(isset($tinfo['synchronize']) && $tinfo['synchronize']){$_REQUEST['synchronize']=$tinfo['synchronize'];}
+			if(isset($tinfo['websockets']) && $tinfo['websockets']){$_REQUEST['websockets']=$tinfo['websockets'];}
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			//echo '<table>';
 			echo buildTableRow(array(
 				'<span class="icon-sync w_warning w_big w_bold"></span> ',
-				buildFormField('_tabledata','synchronize'),
+				buildFormCheckbox('synchronize',array(1=>1)),
 				' Synchronize'
 			));
 			echo buildTableRow(array(
 				'<span class="icon-transfer w_info w_big w_bold"></span> ',
-				buildFormField('_tabledata','websockets'),
+				buildFormCheckbox('websockets',array(1=>1)),
 				' Websockets'
 			));
 			//echo '</table>';
 			echo '		</td>'."\n";
 			echo '		<td>'."\n";
 			echo '			<div class="w_dblue">Check to synchronize this table</div>'."\n";
-			echo '			<div class="w_dblue">Check to enable websocket events this table</div>'."\n";
+			echo '			<div class="w_dblue">Check to enable websocket events for this table</div>'."\n";
 			echo '		</td>'."\n";
 			echo '	</tr>'."\n";
 			//table group and description
-			$_REQUEST['tablegroup']=$tinfo['tablegroup'];
+			if(isset($tinfo['tablegroup'])){$_REQUEST['tablegroup']=$tinfo['tablegroup'];}
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue">'."\n";
 			echo '			<div style="width:150px">'."\n";
@@ -2783,7 +2795,7 @@ LIST_TABLE:
 			echo '					'.buildFormField('_tabledata','tablegroup')."\n";
 			echo '			</div>'."\n";
 			echo '		</td>'."\n";
-			$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);
+			if(isset($tinfo['tabledesc']) && is_array($tinfo['tabledesc'])){$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);}
 			echo '		<td>'."\n";
 			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'."\n";
 			echo '					'.buildFormField('_tabledata','tabledesc')."\n";
@@ -2795,18 +2807,18 @@ LIST_TABLE:
 			echo '	</tr>'."\n";
             echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
-			$_REQUEST['listfields']=array2String($tinfo['listfields']);
+			if(isset($tinfo['listfields']) && is_array($tinfo['listfields'])){$_REQUEST['listfields']=array2String($tinfo['listfields']);}
 			echo '		<td>'.buildFormField('_tabledata','listfields').'</td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
-			$_REQUEST['sortfields']=array2String($tinfo['sortfields']);
+			if(isset($tinfo['sortfields']) && is_array($tinfo['sortfields'])){$_REQUEST['sortfields']=array2String($tinfo['sortfields']);}
 			echo '		<td>'.buildFormField('_tabledata','sortfields').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form</div></td>'."\n";
-			$_REQUEST['formfields']=array2String($tinfo['formfields']);
+			if(isset($tinfo['formfields']) && is_array($tinfo['formfields'])){$_REQUEST['formfields']=array2String($tinfo['formfields']);}
 			echo '		<td>'.buildFormField('_tabledata','formfields').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
@@ -2816,19 +2828,19 @@ LIST_TABLE:
 			echo '	</tr>'."\n";
             echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
-			$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);
+			if(isset($tinfo['listfields_mod']) && is_array($tinfo['listfields_mod'])){$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);}
 			echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
-			$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);
+			if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);}
 			echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
 			echo '	<tr valign="top">'."\n";
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'."\n";
-			$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);
+			if(isset($tinfo['formfields_mod']) && is_array($tinfo['formfields_mod'])){$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);}
 			echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'."\n";
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'."\n";
 			echo '	</tr>'."\n";
@@ -2840,7 +2852,7 @@ LIST_TABLE:
 			break;
 		case 'sqlprompt':
 			//echo '<div class="w_lblue w_bold w_bigger"> SQL Prompt</div>'."\n";
-			if(isNum($_REQUEST['_qid'])){
+			if(isset($_REQUEST['_qid']) && isNum($_REQUEST['_qid'])){
             	$rec=getDBRecord(array('-table'=>"_queries",'_id'=>$_REQUEST['_qid']));
             	if(is_array($rec)){$_REQUEST['sqlprompt_command']="EXPLAIN\r\n".$rec['query'];}
 			}
@@ -3031,7 +3043,7 @@ LIST_TABLE:
 				}
 			echo '</table>'."\n";
 			echo '<input type="submit" name="do" value="Refresh">'."\n";
-			if(is_array($recs)){
+			if(isset($recs) && is_array($recs)){
 				if(strlen($_REQUEST['message'])){
 					echo '<input type="submit" name="do" value="Send Email" onclick="return confirm(\'Send Email Now to recipients shown?\');">'."\n";
 					}
@@ -3493,19 +3505,22 @@ LIST_TABLE:
 			foreach($info as $tablename=>$rec){
 				$diffs=array();
 				$stage_field_count=count($info[$tablename][$stage_db]['fields']);
-				$live_field_count=count($info[$tablename][$live_db]['fields']);
+				$live_field_count=isset($info[$tablename][$live_db]['fields'])?count($info[$tablename][$live_db]['fields']):0;
 				if(!is_array($info[$tablename][$stage_db]['fields'])){
                 	$diffs[]="\"{$tablename}\" table is missing on STAGE";
                 	$info[$tablename][$stage_db]['cnt']='n/a';
                 	$stage_field_count='n/a';
 				}
-				elseif(!is_array($info[$tablename][$live_db]['fields'])){
+				elseif(isset($info[$tablename][$live_db]['fields']) && !is_array($info[$tablename][$live_db]['fields'])){
                 	$diffs[]="\"{$tablename}\" table is missing on LIVE";
                 	$info[$tablename][$live_db]['cnt']='n/a';
                 	$live_field_count='n/a';
 				}
 				elseif($stage_field_count==0 && $live_field_count==0){
                 	$diffs[]="No fields";
+				}
+				elseif(!isset($info[$tablename][$stage_db]['cnt']) || !isset($info[$tablename][$live_db]['cnt'])){
+                	$diffs[]="";
 				}
 				elseif($info[$tablename][$stage_db]['cnt']==0 && $info[$tablename][$live_db]['cnt']==0){
                 	$diffs[]="";
@@ -3528,6 +3543,8 @@ LIST_TABLE:
 				$actions='';
             	echo '<tr>'."\n";
             	echo '	<td>'.$tablename.'</td>'."\n";
+            	if(!isset($info[$tablename][$stage_db]['cnt'])){$info[$tablename][$stage_db]['cnt']='n/a';}
+            	if(!isset($info[$tablename][$live_db]['cnt'])){$info[$tablename][$live_db]['cnt']='n/a';}
             	echo '	<td align="right">'.$info[$tablename][$stage_db]['cnt'].'</td>'."\n";
             	echo '	<td align="right">'.$info[$tablename][$live_db]['cnt'].'</td>'."\n";
             	echo '	<td align="right">'.$stage_field_count.'</td>'."\n";
@@ -3631,7 +3648,7 @@ function adminClearSessionLog($sessionID){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function sqlPrompt(){
-	$cmd=stripslashes($_REQUEST['sqlprompt_command']);
+	$cmd=isset($_REQUEST['sqlprompt_command'])?stripslashes($_REQUEST['sqlprompt_command']):'';
 	$rtn='';
 	$rtn .= '<table class="w_nopad" width="100%">'."\n";
 	$rtn .= '<tr valign="top">'."\n";
@@ -4046,7 +4063,17 @@ function adminMenu(){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Database Records</a></li>'."\n";
 		$rtn .= '			</ul>'."\n";
 		$rtn .= '		</li>'."\n";
+	}
+	//errors
+	if(isDBTable('_errors')){
+		$error_count=getDBCount(array('-table'=>'_errors','archived'=>0));
+		//echo "Errors: {$error_count}";exit;
+		if($error_count >0){
+			$rtn .= '		<li>'."\n";
+			$rtn .= '			<a href="/php/admin.php?_menu=list&_table_=_errors" class="w_topmenu w_danger"><span class="w_badge w_badge-error">'.$error_count.'</span><span class="w_danger hidden-xs hidden-sm"> Errors</span></a>'."\n";
+			$rtn .= '		</li>'."\n";
 		}
+	}
 	$rtn .= '	</ul>'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'."\n";
 	//My Profile
@@ -4070,7 +4097,7 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
@@ -4196,13 +4223,13 @@ function tableOptions($table='',$params=array()){
 			}
 		    else{
 			    $query="select distinct(tablegroup) from _tabledata";
-			    if(strlen($params['-group'])){$query .= " where tablegroup != '{$params['-group']}'";}
+			    if(isset($params['-group']) && strlen($params['-group'])){$query .= " where tablegroup != '{$params['-group']}'";}
 				$query .= " order by tablegroup";
 		        $recs=getDBRecords(array('-query'=>$query));
 				$_SERVER['waSQL_Tablegroups']=$recs;
 		        }
 		    if(is_array($recs) && count($recs)){
-	        	$menu=$_REQUEST['_menu'];
+	        	$menu=isset($_REQUEST['_menu'])?$_REQUEST['_menu']:'';
 	        	$rtn .= '						<li class="dir"><a class="w_link" href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> Group with</a>'."\n";
 	        	$rtn .= '							<ul>'."\n";
 	        	foreach($recs as $rec){
@@ -4689,7 +4716,7 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .= '	</div>'."\n";
 	$rtn .= '	</div>'."\n";
 	//show the first table or the one they sorted by
-	$showtable=setValue(array($_REQUEST['synctab'],$first_table));
+	$showtable=isset($_REQUEST['synctab'])?$_REQUEST['synctab']:$first_table;
 	$syncTableTab='sync'.$showtable.'tab';
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
@@ -5122,9 +5149,9 @@ function adminSynchronizeRecord($table,$id,$stage=1){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function adminSetHeaders(){
-	@header("Pragma: public");
-	@header("Cache-Control: maxage={$expire}");
-	@header("Expires: {$expire} GMT");
+	@header("Pragma: no-cache");
+	@header("Cache-Control: no-cache, no-store, must-revalidate");
+	@header("Expires: 0");
 	@header('X-Platform: WaSQL');
 	@header('X-Frame-Options: SAMEORIGIN');
 }
