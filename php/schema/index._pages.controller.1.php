@@ -1,7 +1,7 @@
 <?php
 
-	if(isset($_REQUEST[passthru][0])){
-		$_REQUEST['func']=$_REQUEST[passthru][0];
+	if(isset($_REQUEST['passthru'][0])){
+		$_REQUEST['func']=$_REQUEST['passthru'][0];
 	}
 	//check for table. create it if needed
 	if(!isDBTable('email_list')){
@@ -11,6 +11,7 @@
 			'email'			=> 'varchar(255) NOT NULL UNIQUE'
 		));
 	}
+	if(!isset($_REQUEST['func'])){$_REQUEST['func']='';}
 	//based on func show different views
 	switch(strtolower($_REQUEST['func'])){
     	case 'signup':
@@ -44,10 +45,6 @@
 			else{
             	setView(array('default','confirm_error'),1);
 			}
-		break;
-		default:
-			echo printValue($_REQUEST);exit;
-			setView('default',1);
 		break;
 		case 'unsubscribe':
 			$rec=pageUnsubscribeSignup($_REQUEST[passthru][1]);
