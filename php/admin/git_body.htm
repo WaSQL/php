@@ -19,7 +19,7 @@ function gitChangePath(){
 		<form method="post" name="gitform" action="/php/admin.php">
 		<input type="hidden" name="_menu" value="git" />
 		<input type="hidden" name="func" value="" />
-		<input type="hidden" name="sort" value="<?=$_REQUEST['sort'];?>" />
+		<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
 		<table class="table table-striped table-bordered table-hover table-condensed">
 			<tr>
 				<th><?=buildFormCheckAll('class','file');?></th>
@@ -46,7 +46,7 @@ function gitChangePath(){
 				<td class="text-right"><?=$file['size_verbose'];?></td>
 				<td class="text-right"><?=$file['_edate_age_verbose'];?></td>
 				<td class="text-right"><?=$file['lines'];?></td>
-				<td><input type="text" name="msg_<?=$file['guid'];?>" value="<?$key='msg_'.$file['guid'];return $_REQUEST[$key];?>" class="form-control input-sm" placeholder="commit message" /></td>
+				<td><input type="text" name="msg_<?=$file['guid'];?>" value="<?$key='msg_'.$file['guid'];return isset($_REQUEST[$key])?$_REQUEST[$key]:'';?>" class="form-control input-sm" placeholder="commit message" /></td>
 			</tr>
 			</view:_file>
 			<?=renderEach('_file',$git['files'],array('-alias'=>'file'));?>
