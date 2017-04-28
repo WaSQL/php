@@ -34,6 +34,7 @@
 			);
 		}
 	}
+	if(!isset($_REQUEST['func'])){$_REQUEST['func']='';}
 	switch(strtolower($_REQUEST['func'])){
         case 'log':
         	setView('log',1);
