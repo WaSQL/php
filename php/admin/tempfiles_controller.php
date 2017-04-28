@@ -38,6 +38,9 @@
 	}
 	setView('default',1);
 	$files=listFilesEx($tempdir);
-	$sortkey=isset($_REQUEST['sort'])?$_REQUEST['sort']:name;
+	foreach($files as $i=>$file){
+		$files[$i]['sha_name']=sha1($file['name']);
+	}
+	$sortkey=isset($_REQUEST['sort'])?$_REQUEST['sort']:'name';
 	$files=sortArrayByKey($files,$sortkey,SORT_ASC);
 ?>
