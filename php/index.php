@@ -497,7 +497,7 @@ if(!is_array($rec)){
         }
 	}
 }
-//set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
+set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 global $CONFIG;
 //Handle file uploads
 if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
@@ -549,8 +549,9 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
                 }
 			header('Content-type: text/xml');
 			header('X-Platform: WaSQL');
-
-			echo postEditXml($tables,$_REQUEST['dbname'],$_REQUEST['encoding']);
+			$dbname=isset($_REQUEST['dbname'])?$_REQUEST['dbname']:'';
+			$encoding=isset($_REQUEST['encoding'])?$_REQUEST['encoding']:'';
+			echo postEditXml($tables,$dbname,$encoding);
 			exit;
 			break;
 		case 'posteditupload':
@@ -723,7 +724,7 @@ if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
     		//permalink first, then name, then id
     		$found=0;
     		foreach($recs as $rec){
-            	if(strlen($rec['permalink']) && strtolower($rec['permalink'])==strtolower($view)){
+            	if(isset($rec['permalink']) && strlen($rec['permalink']) && strtolower($rec['permalink'])==strtolower($view)){
                 	$PAGE=$rec;
                 	$found=1;
                 	break;
@@ -731,7 +732,7 @@ if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
 			}
 			if($found==0){
             	foreach($recs as $rec){
-	            	if(strlen($rec['name']) && strtolower($rec['name'])==strtolower($view)){
+	            	if(isset($rec['name']) && strlen($rec['name']) && strtolower($rec['name'])==strtolower($view)){
 	                	$PAGE=$rec;
 	                	$found=1;
 	                	break;
