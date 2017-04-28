@@ -14,6 +14,7 @@ function wsSendDBRecord($table,$rec=array()){
 	foreach($rec as $field=>$val){
 		if(is_array($val)){continue;}
 		if(!strlen($rec[$field])){continue;}
+		if(!isset($fieldinfo[$field])){continue;}
 		if(in_array($fieldinfo[$field]['_dbtype'],array('text','json'))){continue;}
 		if(in_array($table,array('_pages','_templates')) && in_array($field,array('body','js','css','_env'))){continue;}
 		$params[$field]='B64:'.base64_encode($rec[$field]);
@@ -209,8 +210,8 @@ function wsHybi10Decode($data){
         }
         else{
             $mask = substr($bytes, 2, 4);
-            $coded_data = substr($bytes, 6);        
-        }   
+            $coded_data = substr($bytes, 6);
+        }
         for($i = 0; $i < strlen($coded_data); $i++){
             $decodedData .= $coded_data[$i] ^ $mask[$i % 4];
         }
@@ -224,7 +225,7 @@ function wsHybi10Decode($data){
         }
         else{
             $decodedData = substr($bytes, 2);
-        }       
+        }
     }
     return $decodedData;
 }
