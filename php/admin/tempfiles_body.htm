@@ -6,7 +6,7 @@
 	<div class="row-sm-12">
 		<form method="post" action="/php/admin.php">
 		<input type="hidden" name="_menu" value="tempfiles" />
-		<input type="hidden" name="sort" value="<?$_REQUEST['sort'];?>" />
+		<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
 		<table class="table table-striped table-bordered table-hover table-condensed">
 			<tr>
 				<th><?=buildFormCheckAll('class','file');?></th>
@@ -20,7 +20,7 @@
 			</tr>
 			<view:_file>
 			<tr>
-				<td><input type="checkbox" class="file" name="delete[]" value="<?=encodeBase64($file['name']);?>" /></td>
+				<td><input style="display:none;" data-type="checkbox" type="checkbox" class="file" name="delete[]" value="<?=encodeBase64($file['name']);?>" id="<?=$file['sha_name'];?>" /><label for="<?=$file['sha_name'];?>" class="icon-mark"></label> <label for="<?=$file['sha_name'];?>"></label></td>
 				<td><a href="#" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',file:'<?=encodeBase64($file['name']);?>'});"><?=getFileName($file['name'],1);?></a></td>
 				<td><?=$file['ext'];?></td>
 				<td class="text-right"><?=$file['size_verbose'];?></td>
