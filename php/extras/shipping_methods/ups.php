@@ -43,6 +43,44 @@ $progpath=dirname(__FILE__);
 		The last and final character is the check digit.
 */
 //-----------------------
+function upsAddressValidate($params=array()){
+	if(!isset($params['-userid'])){return "No userid";}
+	if(!isset($params['-accesskey'])){return "No accesskey";}
+	if(!isset($params['-password'])){return "No password";}
+	if(!isset($params['-account'])){return "No account";}
+	//defaults
+	if(!isset($params['country'])){$params['country']='US';}
+	$request=<<<ENDOFREQUEST
+<?xml version="1.0" ?>
+	<AccessRequest xml:lang='en-US'>
+		<AccessLicenseNumber>{$params['-accesskey']}</AccessLicenseNumber>
+		<UserId>{$params['-userid']}</UserId>
+		<Password>{$params['-password']}</Password>
+	</AccessRequest>
+<?xml version="1.0" ?>
+	<AddressValidationRequest xml:lang='en-US'>
+		<Request>
+			<TransactionReference>
+				<CustomerContext>Your Customer Context</CustomerContext>
+				<XpciVersion>1.0</XpciVersion>
+			</TransactionReference>
+			<RequestAction>XAV</RequestAction>
+			<RequestOption>1</RequestOption>
+		</Request>
+		<AddressKeyFormat>
+			<AddressLine>{$params['address']}</AddressLine>
+			<Region>{$params['city']} {$params['state']} {$params['zip']}</Region>
+			<PoliticalDivision2>{$params['city']}</PoliticalDivision2>
+			<PoliticalDivision1>{$params['state']}</PoliticalDivision1>
+			<PostcodePrimaryLow>{$params['zip']}</PostcodePrimaryLow>
+			<CountryCode>{$params['country']}</CountryCode
+		</AddressKeyFormat>
+	</AddressValidationRequest>
+ENDOFREQUEST;
+	$url="https://www.ups.com/ups.app/xml/XAV";
+    $result=postXML($url,$xml_out,array('-ssl'=>false));
+    echo printValue($result);exit;
+}
 function upsServices($params=array()){
 	if(!isset($params['-userid'])){return "No userid";}
 	if(!isset($params['-accesskey'])){return "No accesskey";}
