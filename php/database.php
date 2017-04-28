@@ -685,7 +685,7 @@ function checkDBTableSchema($wtable){
 /**
 * @describe clears the database cache array used so the same query does not happen twice
 * @exclude  - this function is for internal use only and thus excluded from the manual
-* @usage 
+* @usage
 *	clearDBCache();
 *	clearDBCache('getDBRecords');
 */
@@ -1003,7 +1003,7 @@ function addEditDBForm($params=array(),$customcode=''){
     if(isExtraCss('bootstrap')){$params['-bootstrap'] = 1;}
 
     //if formfields is not set - use the default in the backend table metadata
-    if(!is_array($info['formfields']) || count($info['formfields'])==0){
+    if(!isset($info['formfields']) || !is_array($info['formfields']) || count($info['formfields'])==0){
 		$info['formfields']=$info['default_formfields'];
 	}
     //Build the form fields
@@ -1028,13 +1028,13 @@ function addEditDBForm($params=array(),$customcode=''){
     foreach($info['formfields'] as $fields){
 		if(is_array($fields)){
 			foreach($fields as $field){
-				if($info['fieldinfo'][$field]['inputtype']=='file'){
+				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='file'){
 	                $enctype="multipart/form-data";
 	                break;
 	            	}
 	        	}
 			}
-		elseif($info['fieldinfo'][$fields]['inputtype']=='file'){
+		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && $info['fieldinfo'][$fields]['inputtype']=='file'){
 	        $enctype="multipart/form-data";
 	        break;
 	        }
@@ -1042,7 +1042,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
     $rtn .= '<form name="'.$formname.'" class="'.$formclass.'" method="'.$method.'" action="'.$action.'" ';
     //id
-    if($params['-id']){
+    if(isset($params['-id']) && $params['-id']){
 		$rtn .= ' id="'.$params['-id'].'"';
 	}
 
@@ -1052,10 +1052,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     //charset - if not set, look at the database and see what it is using to set charset
     //charset reference: http://www.w3schools.com/tags/ref_charactersets.asp
-	if($params['-utf8']){
+	if(isset($params['-utf8'])){
 		$rtn .= ' accept-charset="utf-8"';
 	}
-	elseif($params['-accept-charset']){
+	elseif(isset($params['-accept-charset'])){
 		$rtn .= ' accept-charset="'.$params['-accept-charset'].'"';
 	}
 	else{
@@ -1089,8 +1089,9 @@ function addEditDBForm($params=array(),$customcode=''){
     $rtn .= '<input type="hidden" name="_table" value="'.$params['-table'].'">'."\n";
     $rtn .= '<input type="hidden" name="_formname" value="'.$formname.'">'."\n";
     $rtn .= '<input type="hidden" name="_enctype" value="'.$enctype.'">'."\n";
+    if(!isset($params['_action'])){$params['_action']='';}
     $rtn .= '<input type="hidden" name="_action" value="'.$params['_action'].'">'."\n";
-	if($params['-auth_required']){
+	if(isset($params['-auth_required'])){
 		$rtn .= '<input type="hidden" name="_auth_required" value="1">'."\n";
 	}
     if(strlen($preview)){$rtn .= '<input type="hidden" name="_preview" value="'.$preview.'">'."\n";}
@@ -1229,6 +1230,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params[$field])){$opts['value']=$params[$field];}
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
+				if(!isset($opts['class'])){$opts['class']='';}
 				if($params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
@@ -1243,7 +1245,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$dname=str_replace('_',' ',ucfirst($field));
 					}
 				//if it is a slider control build a data map from tvals and dvals if given
-				if($info['fieldinfo'][$field]['inputtype']=='slider'){
+				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){
                 	if(strlen($info['fieldinfo'][$field]['tvals']) && strlen($info['fieldinfo'][$field]['tvals'])){
                     	$opts['data-labelmap']=mapDBDvalsToTvals($params['-table'],$field);
 					}
@@ -1277,7 +1279,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 				elseif(isset($params['-class'])){$class=$params['-class'];}
 				else{$class="w_arial w_smaller";}
-				if($info['fieldinfo'][$field]['inputtype']=='slider'){}
+				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){}
 				elseif(isset($info['fieldinfo'][$field]['_required']) && $info['fieldinfo'][$field]['_required']==1){
 	                $class .= ' w_required';
 	            }
@@ -1292,15 +1294,16 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts['value']=$params[$field.'_defaultval'];
 						$used[$field.'_defaultval']=1;
 					}
-					elseif(strlen($info['fieldinfo'][$field]['defaultval'])){
+					elseif(isset($info['fieldinfo'][$field]['defaultval']) && strlen($info['fieldinfo'][$field]['defaultval'])){
 						$opts['value']=$info['fieldinfo'][$field]['defaultval'];
 						if(preg_match('/^\<\?(.+?)\?\>$/is',$opts['value'])){$opts['value'] = trim(evalPHP($opts['value']));}
 					}
                 }
 	            //behaviors?
-	            $current_value=strlen($opts['value'])?$opts['value']:'';
+	            $current_value=isset($opts['value']) && strlen($opts['value'])?$opts['value']:'';
 	            if(!strlen($current_value) && isset($_REQUEST[$field])){$current_value=$_REQUEST[$field];}
-	            if(strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
+	            if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
+		     	if(!isset($opts['behavior'])){$opts['behavior']='';}
 		     	if(!strlen($opts['behavior']) && strlen($current_value)){
 					//echo $info[$field]['value'];exit;
 					if(stringContains($current_value,'/*filetype:css*/')){
@@ -1356,7 +1359,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				//debugValue($dname);
 				//debugValue($opts);
 				if(strlen($preview)){$opts['-preview']=$preview;}
-	            if(strlen($info['fieldinfo'][$field]['behavior'])){
+	            if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){
 					$hasBehaviors++;
 	            	if($info['fieldinfo'][$field]['behavior']=='html'){
 						//show html preview
@@ -1372,7 +1375,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$opts['dvals']=$params[$field.'_dvals'];
 					$used[$field.'_dvals']=1;
 					}
-				if(!strlen($opts['id'])){
+				if(!isset($opts['id']) || !strlen($opts['id'])){
 					$opts['id']="{$formname}_{$field}";
 				}
 				$field_dname=$opts['id'].'_dname';
@@ -1406,7 +1409,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$rtn .= '		</div>'."\n";
 					}
 				else{
-					if($info['fieldinfo'][$field]['inputtype']!='signature'){
+					if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype']!='signature'){
 						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
@@ -1422,7 +1425,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(!strlen($field)){continue;}
 			$includeFields[$field]=1;
 			$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
-			if(isNum($params['_id'])){$opts['-editmode']=true;}
+			if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
 			if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 			if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
@@ -1464,14 +1467,14 @@ function addEditDBForm($params=array(),$customcode=''){
 				$opts['-checkall']=1;
 				$used[$field.'_checkall']=1;
 			}
-			if(!is_array($rec) && strlen($info['fieldinfo'][$field]['defaultval'])){
+			if((!isset($rec) || !is_array($rec)) && isset($info['fieldinfo'][$field]['defaultval']) && strlen($info['fieldinfo'][$field]['defaultval'])){
 				$opts['value']=$info['fieldinfo'][$field]['defaultval'];
 				if(preg_match('/^\<\?(.+?)\?\>$/is',$opts['value'])){$opts['value'] = trim(evalPHP($opts['value']));}
-                }
+            }
 			//column
 			$class="w_arial w_smaller";
 			if(isset($params['-class'])){$class=$params['-class'];}
-			elseif($info['fieldinfo'][$field]['inputtype']=='slider'){}
+			elseif(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){}
 			elseif(isset($info['fieldinfo'][$field]['_required']) && $info['fieldinfo'][$field]['_required']==1){
                 $class .= ' w_required';
             }
@@ -1480,7 +1483,7 @@ function addEditDBForm($params=array(),$customcode=''){
             }
 			$rtn .= '		<td class="'.$class.'">'."\n";
             //behaviors?
-            if(strlen($info['fieldinfo'][$field]['behavior'])){
+            if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){
 				$hasBehaviors++;
             	if($info['fieldinfo'][$field]['behavior']=='html'){
 					//show html preview
@@ -1489,7 +1492,7 @@ function addEditDBForm($params=array(),$customcode=''){
                     }
 				}
 
-			if(!strlen($opts['id'])){
+			if(!isset($opts['id']) || !strlen($opts['id'])){
 				$opts['id']="{$formname}_{$field}";
 			}
 			$field_dname=$opts['id'].'_dname';
@@ -1523,20 +1526,20 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		</div>'."\n";
 				}
 			else{
-				if($info['fieldinfo'][$field]['inputtype']!='signature'){
+				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
 					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
 				}
 			$rtn .= '		</td>'."\n";
+			if(!isset($used[$field])){$used[$field]=1;}
 			$used[$field]+=1;
 			if(!isset($params['-focus'])){$params['-focus']=$field;}
             }
         $rtn .= '	</tr>'."\n";
         $rtn .= '</table>'."\n";
     	}
-    if(is_array($rec) && isNum($rec['_id'])){
-
+    if(isset($rec['_id']) && isNum($rec['_id'])){
 		$rtn .= '<input type="hidden" name="_id" value="'.$rec['_id'].'">'."\n";
 		if(isset($params['-editfields'])){
         	if(is_array($params['-editfields'])){$params['-editfields']=implode(',',$params['-editfields']);}
@@ -1590,7 +1593,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	    if(isset($params['-savebutton'])){
 			$rtn .= '		<td>'.$params['-savebutton'].'</td>'."\n";
 		}
-	    elseif(is_array($rec) && isNum($rec['_id'])){
+	    elseif(isset($rec['_id']) && isNum($rec['_id'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'';
 			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
@@ -1693,7 +1696,7 @@ function addDBRecord($params=array()){
 	unset($info);
 	$info=getDBFieldInfo($params['-table'],1);
 	if(!is_array($info)){return $info;}
-	
+
 	//check for virtual fields
 	$jsonfields=array();
 	foreach($info as $k=>$i){
@@ -1854,11 +1857,11 @@ function addDBRecord($params=array()){
     	databaseFreeResult($query_result);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if($tinfo['websockets'] || isset($model['functions'])){
+		if(isset($tinfo['websockets']) || isset($model['functions'])){
 			$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
 		}
 		//check for websockets
-		if($tinfo['websockets']){
+		if(isset($tinfo['websockets'])){
         	loadExtras('websockets');
         	$wrec=$params['-record'];
         	$wrec['_action']='add';
@@ -2539,7 +2542,7 @@ function buildDBPaging($paging=array()){
 	//_sort
 	if(isset($paging['-order'])){$paging['_sort']=$paging['-order'];}
 	elseif(isset($_REQUEST['_sort']) && strlen($_REQUEST['_sort'])){$paging['_sort']=$_REQUEST['_sort'];}
-	$start=isNum($_REQUEST['start'])?$_REQUEST['start']:0;
+	$start=isset($_REQUEST['start']) && isNum($_REQUEST['start'])?$_REQUEST['start']:0;
 	//formname
 	if(isset($paging['-formname'])){
 		$formname=$paging['-formname'];
@@ -2582,7 +2585,7 @@ function buildDBPaging($paging=array()){
             	//new options to allow user to set multiple filters
             	$rtn .= '<div class="row padtop">'."\n";
             	$rtn .= '<div style="display:none;">'."\n";
-				$rtn .= '	<textarea name="_filters">'.$_REQUEST['_filters'].'</textarea>'."\n";
+				$rtn .= '	<textarea name="_filters">'.$paging['-filters'].'</textarea>'."\n";
 				if(isset($paging['-bulkedit'])){
 					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'."\n";
 				}
@@ -3194,18 +3197,13 @@ function dumpDB($table=''){
 		}
 	}
 	$dump['iswindows']=isWindows();
-	if(!isWindows() || $CONFIG['gzip']==1){
+	if(!isWindows() || (isset($CONFIG['gzip']) && $CONFIG['gzip']==1)){
     	$dump['command'] .= " | gzip -9";
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
 	$dump['command'] .= "  > \"{$dump['afile']}\"";
 	$dump['result']=cmdResults($dump['command']);
-/* 		;
-	ob_start();
-	passthru($dump['command']);
-	$dump['result'] = ob_get_contents();
-*/
-	//echo printValue($dump);
+
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);
 	}
@@ -3482,11 +3480,11 @@ function editDBRecord($params=array()){
     	//addDBHistory('edit',$params['-table'],$params['-where']);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if($tinfo['websockets'] || isset($model['functions'])){
+		if((isset($tinfo['websockets']) && $tinfo['websockets']) || isset($model['functions'])){
 			$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
 		}
 		//check for websockets
-		if($tinfo['websockets']){
+		if(isset($tinfo['websockets']) && $tinfo['websockets']){
         	loadExtras('websockets');
         	$wrec=$params;
         	$wrec['_action']='edit';
@@ -3823,7 +3821,7 @@ function getDBAdminSettings(){
 	//Defaults
 	$defaults=getDBAdminDefaultSettings();
 	foreach($defaults as $key=>$val){
-		if(!strlen($settings[$key])){$settings[$key]=$val;}
+		if(!isset($settings[$key]) || !strlen($settings[$key])){$settings[$key]=$val;}
 	}
 	//mainmenu
 	$settings['mainmenu_icons']=1;
@@ -3969,7 +3967,7 @@ function getDBCount($params=array()){
 		if($query_result){
     		$cnt=databaseNumRows($query_result);
     		databaseFreeResult($query_result);
-    		logDBQuery($query,$start,$function,$params['-table']);
+    		logDBQuery($query,$start,$function,isset($params['-table'])?$params['-table']:'');
 			}
 		}
     return $cnt;
@@ -4118,7 +4116,7 @@ function getDBFieldTag($params=array()){
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
 	//LOAD form-control if bootstrap is loaded
-	if($params['-bootstrap'] && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
+	if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
 		//Checkbox
@@ -4191,10 +4189,11 @@ function getDBFieldTag($params=array()){
     $info[$field]['style']=setStyleAttribues($styles);
 	//Build the HTML tag
 	//change the required attribute to _required since it messes up HTML5
-	if(isNum($info[$field]['required']) && $info[$field]['required']==1){
+	if(isset($info[$field]['required']) && $info[$field]['required']==1){
 		unset($info[$field]['required']);
 		$info[$field]['_required']=1;
     	}
+    if(!isset($info[$field]['class'])){$info[$field]['class']='';}
     if(isExtraCss('bootstrap') && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 	$tag='';
 	switch(strtolower($info[$field]['inputtype'])){
@@ -4247,7 +4246,7 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-value'])){$tagopts['-value']=$params['-value'];}
 			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
 			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
-			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];} 
+			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];}
 			//set prefix to formname
 			if(isset($params['-formname'])){$tagopts['-formname']=$params['-formname'];}
 			//check for required
@@ -4383,15 +4382,19 @@ function getDBFieldTag($params=array()){
 */
 function getDBFieldSelections($info=array()){
 	$selections=array();
-	if(strtolower(trim($info['tvals']))=='&getdbtables'){
+	if(isset($info['tvals']) && strtolower(trim($info['tvals']))=='&getdbtables'){
 		$selections['tvals']=getDBTables();
 		$selections['dvals']=$selections['tvals'];
 		return $selections;
     }
-	if(is_array($info['dvals'])){
+	if(isset($info['dvals']) && is_array($info['dvals'])){
 		if(!count($info['dvals'])){$info['dvals']=$info['tvals'];}
 	}
-	elseif(!strlen($info['dvals'])){$info['dvals']=$info['tvals'];}
+	elseif(!isset($info['dvals']) || !strlen($info['dvals'])){
+		if(isset($info['tvals'])){
+			$info['dvals']=$info['tvals'];
+		}
+	}
     if(isset($info['tvals'])){
 		if(is_array($info['tvals'])){$tvals=$info['tvals'];}
 		else{
@@ -4549,7 +4552,7 @@ function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 *  	page field to be loaded
 * @return string
 * 	returns an html comment showing the load times for each loaded page.
-* @usage 
+* @usage
 *	loadDBFunctions('sampleFunctionsPage'); //This would load and process the body segment of 'sampleFunctionsPage'.
 * 	loadFunctions('locations','functions'); //This would load and process the functions segment of the 'locations' page.
 * @author slloyd
@@ -4598,7 +4601,7 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	if(preg_match('/\_(queries|fielddata)/i',$query)){return;}
 	if(preg_match('/^desc /i',$query)){return;}
 	//only run if user?
-	if(isNum($SETTINGS['wasql_queries_user']) && (!isset($USER['_id']) || $SETTINGS['wasql_queries_user'] != $USER['_id'])){return;}
+	if(isset($SETTINGS['wasql_queries_user']) && isNum($SETTINGS['wasql_queries_user']) && (!isset($USER['_id']) || $SETTINGS['wasql_queries_user'] != $USER['_id'])){return;}
 	$stop=microtime(true);
 	$run_length=round(($stop-$start),3);
 	if(isNum($SETTINGS['wasql_queries_time']) && $run_length < $SETTINGS['wasql_queries_time']){return;}
@@ -4647,7 +4650,7 @@ function includeDBOnce($params=array()){
 	$content=preg_replace('/^\<\?/is','',$content);
 	$content=preg_replace('/\?\>$/s','',$content);
 	$content="<?php\r\n{$content}";
-	
+
 	$where=preg_replace('/[^a-z0-9]+/i','_',$params['-where']);
 	$where=preg_replace('/\_+$/','',$where);
 	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
@@ -4704,7 +4707,7 @@ function includeDBOnce($params=array()){
 * @describe returns a key/value array map so if you know a tval you can derive the dval
 * @param table string - table name
 * @param field string - field name in table
-* @param params array - filters to apply 
+* @param params array - filters to apply
 * @param [min] - skip tval if less than min
 * @param [max] - skip tval if more than max
 * @param [contains] - skip if tval does not contain
@@ -4747,7 +4750,7 @@ function mapDBDvalsToTvals($table,$field,$params=array()){
 * @describe returns a key/value array map so if you know a dval you can derive the tval
 * @param table string - table name
 * @param field string - field name in table
-* @param params array - filters to apply 
+* @param params array - filters to apply
 * @param [min] - skip dval if less than min
 * @param [max] - skip dval if more than max
 * @param [contains] - skip if dval does not contain
@@ -4958,18 +4961,18 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		);
 		/*
 		       NOT_NULL_FLAG = 1
-		       PRI_KEY_FLAG = 2                                                                              
-		       UNIQUE_KEY_FLAG = 4                                                                           
-		       BLOB_FLAG = 16                                                                                
-		       UNSIGNED_FLAG = 32                                                                            
-		       ZEROFILL_FLAG = 64                                                                            
-		       BINARY_FLAG = 128                                                                             
-		       ENUM_FLAG = 256                                                                               
-		       AUTO_INCREMENT_FLAG = 512                                                                     
-		       TIMESTAMP_FLAG = 1024                                                                         
-		       SET_FLAG = 2048                                                                               
-		       NUM_FLAG = 32768                                                                              
-		       PART_KEY_FLAG = 16384                                                                         
+		       PRI_KEY_FLAG = 2
+		       UNIQUE_KEY_FLAG = 4
+		       BLOB_FLAG = 16
+		       UNSIGNED_FLAG = 32
+		       ZEROFILL_FLAG = 64
+		       BINARY_FLAG = 128
+		       ENUM_FLAG = 256
+		       AUTO_INCREMENT_FLAG = 512
+		       TIMESTAMP_FLAG = 1024
+		       SET_FLAG = 2048
+		       NUM_FLAG = 32768
+		       PART_KEY_FLAG = 16384
 		       GROUP_FLAG = 32768
 		       UNIQUE_FLAG = 65536
 		*/
@@ -5044,12 +5047,12 @@ function postgresTableInfo($table){
 	    'timestamp'	=> 'datetime'
 	);
     $query="SELECT
-		a.attname AS name, 
+		a.attname AS name,
 		t.typname AS type,
 		a.attlen AS size,
 		a.atttypmod AS len,
 		a.attnotnull as notnull
-    FROM 
+    FROM
 		pg_attribute a , pg_class c, pg_type t
     WHERE
 		c.relname = '{$table}'
@@ -5082,7 +5085,7 @@ function postgresTableInfo($table){
 function mysqlTableInfo($table){
 	global $CONFIG;
 	/*
-		in 5.7+ need to convert generated column to 
+		in 5.7+ need to convert generated column to
 			GENERATED ALWAYS AS (JSON_EXTRACT(params, "$.block_message"))
 				generation_expression holds the additional generated info:
 					json_extract(jdoc,'$.post_status')
@@ -5110,7 +5113,7 @@ function mysqlTableInfo($table){
 		);
 		if(strtolower($rec['is_nullable'])=='no'){$info[$field]['_dbflags']='not_null';}
 		$rec['_dblength']=$rec['_dbsize'];
-		
+
 	}
 	return $info;
 }
@@ -5295,7 +5298,7 @@ function getDBRelatedTable($rfield,$dbname=''){
 function getDBSiteStats(){
 	$rtn='';
 	$currentDay=date("Y-m-d");
-	$currentWeek=date("W"); 
+	$currentWeek=date("W");
 	$currentMonth=date("m");
 	$quarters=array(
 		'1'=>1,'2'=>1,'3'=>1,
@@ -5873,7 +5876,7 @@ function getDBFiltersString($table,$filters){
 		}
         else{$fields=array($field);}
 		switch($oper){
-        	case 'ct': 
+        	case 'ct':
         		//contains
         		$ors=array();
         		foreach($fields as $field){
@@ -5965,7 +5968,7 @@ function getDBFiltersString($table,$filters){
 					$wheres[]="{$field} < '{$val}'";
 				}
 			break;
-			case 'egt': 
+			case 'egt':
 				//Equals or Greater than
 				foreach($fields as $field){
 					$wheres[]="{$field} >= '{$val}'";
@@ -6388,7 +6391,7 @@ function getDBRecords($params=array()){
 * @param tables array - if not specifed then all tables are returned
 * @param force boolean - force cache to be cleared
 * @return array
-* @usage 
+* @usage
 *	$schema=getDBSchema('comments');
 *	$schema=getDBSchema(array('comments','notes'));
 */
@@ -6581,7 +6584,7 @@ function getDBUser($params=array()){
 * @param id integer - record ID to return
 * @param [fields] array - array of fields to return. return values are separated by a space
 * @return mixed
-* @usage 
+* @usage
 *	$fullname=getDBUserById(10,array('firstname','lastname')); - returns "jon doe";
 *	$user_rec=getDBUserById(10); - returns the entire record array
 */
@@ -6608,7 +6611,7 @@ function getDBUserById($id=0,$fields=array()){
 *	other field/value pairs filter the query results
 * @param [customcode] string - html code to append to end - defaults to blank
 * @return string - html table to display
-* @usage 
+* @usage
 *	<?=listDBRecords(array('-table'=>'notes'));?>
 *	<?=listDBRecords(array('-list'=>$recs));?>
 */
@@ -6632,17 +6635,19 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'."\n";
 	}
     //determine sort
-    $possibleSortVals=array($params['-order'],$params['-orderby'],$_REQUEST['_sort'],'none');
-    $sort=setValue($possibleSortVals);
+    $sort='none';
+    if(isset($params['-order']) && strlen($params['-order'])){$sort=$params['-order'];}
+    elseif(isset($params['-orderby']) && strlen($params['-orderby'])){$sort=$params['-orderby'];}
+    elseif(isset($_REQUEST['_sort']) && strlen($_REQUEST['_sort'])){$sort=$_REQUEST['_sort'];}
     if($sort=='none'){
 		$sort='';
     	if(isset($params['-table'])){
 			$tinfo=getDBTableInfo(array('-table'=>$params['-table']));
 			if(isAdmin()){
-				if(is_array($tinfo['sortfields'])){$sort=implode(',',$tinfo['sortfields']);}
+				if(isset($tinfo['sortfields']) && is_array($tinfo['sortfields'])){$sort=implode(',',$tinfo['sortfields']);}
 				}
 			else{
-				if(is_array($tinfo['sortfields_mod'])){$sort=implode(',',$tinfo['sortfields_mod']);}
+				if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$sort=implode(',',$tinfo['sortfields_mod']);}
             	}
 			}
 		}
@@ -7120,13 +7125,14 @@ function listDBRecords($params=array(),$customcode=''){
 			if($listform==1 && $editlist_field==1 ){
 				$rtn .= '<td>'."\n";
 				$fldopts=array('-table'=>$params['-table'],'-field'=>$fld,'name'=>"{$fld}_{$rec[$idfield]}",'value'=>$rec[$fld]);
-				if(isExtraCss('bootstrap') && !stringContains($fldopts['class'],'form-control')){$fldopts['class'] .= ' form-control';}
 				foreach($params as $pkey=>$pval){
 					if(preg_match('/^'.$fld.'_(.+)$/',$pkey,$m)){
 						if($m[1]=='tabindex'){$pval += $tabindex;$tabindex++;}
 						$fldopts[$m[1]]=$pval;
 					}
                 }
+                if(!isset($fldopts['class'])){$fldopts['class']='form-control';}
+                if(isExtraCss('bootstrap') && !stringContains($fldopts['class'],'form-control')){$fldopts['class'] .= ' form-control';}
 				$rtn .= '<div style="display:none"><textarea name="'."{$fld}_{$rec[$idfield]}_prev".'">'.$rec[$fld].'</textarea></div>'."\n";
 				$rtn .= getDBFieldTag($fldopts);
 				$rtn .= '</td>'."\n";
@@ -7309,7 +7315,7 @@ function listDBRecords($params=array(),$customcode=''){
 *	other field/value pairs filter the query results
 * @param [customcode] string - html code to append to end - defaults to blank
 * @return string - html table to display
-* @usage 
+* @usage
 *	<?=listDBResults('select title,note_date from notes');?>
 */
 function listDBResults($query='',$params=array()){
@@ -7468,7 +7474,7 @@ function truncateDBTable($table){
 	}
 
 /*  ############################################################################
-	Database Independant function calls 
+	Database Independant function calls
 	- currently supports MySQL, PostgreSQL, and MS SQL
 	############################################################################
 */
@@ -7622,17 +7628,17 @@ function databaseDescribeTable($table){
 	elseif(isPostgreSQL()){
 		//field,type,null,key,default,extra
     		$query="
-			SELECT 
-				a.attname as field, 
-				format_type(a.atttypid, a.atttypmod) as type, 
+			SELECT
+				a.attname as field,
+				format_type(a.atttypid, a.atttypmod) as type,
 				d.adsrc as extra,
 		    	a.attnotnull as null
-			FROM 
+			FROM
 				pg_attribute a LEFT JOIN pg_attrdef d
-			ON 
+			ON
 				A.attrelid = d.adrelid AND a.attnum = d.adnum
 			WHERE
-				a.attrelid = '{$table}'::regclass AND a.attnum > 0 AND NOT a.attisdropped 
+				a.attrelid = '{$table}'::regclass AND a.attnum > 0 AND NOT a.attisdropped
 			ORDER BY a.attnum
 		";
 		$recs=getDBRecords(array('-query'=>$query));
@@ -7837,11 +7843,11 @@ function databaseIndexes($table){
     	$query="
 		SELECT n.nspname as schema,
  		c.relname as name,
-		CASE c.relkind 
+		CASE c.relkind
 			WHEN 'r' THEN 'table'
-			WHEN 'v' THEN 'view' 
-			WHEN 'i' THEN 'index' 
-			WHEN 'S' THEN 'sequence' 
+			WHEN 'v' THEN 'view'
+			WHEN 'i' THEN 'index'
+			WHEN 'S' THEN 'sequence'
 			WHEN 's' THEN 'special'
 			END as type,
 	 	u.usename as owner,
