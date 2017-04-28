@@ -4724,8 +4724,9 @@ function mapDBDvalsToTvals($table,$field,$params=array()){
 		return $databaseCache['mapDBDvalsToTvals'][$cachekey];
 	}
 	$info=getDBFieldMeta($table,"tvals,dvals",$field);
+	if(!isset($info[$field])){return '';}
 	$selections=getDBFieldSelections($info[$field]);
-	if(is_array($selections['tvals'])){
+	if(isset($selections['tvals']) && is_array($selections['tvals'])){
 		$tdmap=array();
 		$tcount=count($selections['tvals']);
 		for($x=0;$x<$tcount;$x++){
