@@ -308,7 +308,7 @@ function getServerInfoWindows(){
             	}
         	}
 		//uptime
-		$context['uptime'] = $info['system_up_time'];
+		$context['uptime'] = isset($info['system_up_time'])?$info['system_up_time']:'unknown';
 		//memory
 		$context['memory_usage'] = array();
 		$context['memory_usage']['total'] = windows_memsize($info['total_physical_memory']);
