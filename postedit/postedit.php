@@ -49,7 +49,6 @@ if (!$got_lock) {
 	exit;
 }
 
-register_shutdown_function('shutdown');
 
 //get the files
 $afolder=writeFiles();
