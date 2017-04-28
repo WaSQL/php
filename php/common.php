@@ -10786,9 +10786,8 @@ function processActions(){
 				$fields=array_keys($info);
 				$opts=array('-table'=>$_REQUEST['_table']);
 				$tinymce=array();
-				$key=array();
 				foreach($fields as $field){
-					if(preg_match('/^\_(c|e)(user|date)$/i',$key)){continue;}
+					if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 					if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
