@@ -74,6 +74,28 @@ table th a {
      min-height: 10px;
 }
 
+/* badge classes */
+.w_badge {
+  padding: 3px 6px 2px 6px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: #999999;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  border-radius: 11px;
+}
+.w_badge:hover {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.w_badge-error {
+  background-color: #d9534f;
+}
+
+
 /*alignment classes*/
 .w_top{
 	vertical-align:top;
@@ -267,7 +289,7 @@ table th a {
 	}
 .w_round_topright {
 	[safari|chrome]-webkit-border-top-right-radius: 13px;
-	-khtml-border-radius-topright: 13px;	
+	-khtml-border-radius-topright: 13px;
 	border-top-right-radius: 13px;
 	}
 .w_round_botleft {
@@ -282,7 +304,7 @@ table th a {
 	}
 .w_roundsmall_topleft {
 	[safari|chrome]-webkit-border-top-left-radius: 7px;
-	-khtml-border-radius-topleft: 7px;	
+	-khtml-border-radius-topleft: 7px;
 	border-top-left-radius: 7px;
 	}
 .w_roundsmall_topright {
@@ -488,7 +510,7 @@ table th a {
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 50% 100%;
 	-ms-transform-origin: 50% 100%;
-	-webkit-transform-origin: 50% 100%; 		
+	-webkit-transform-origin: 50% 100%;
 }
 @keyframes pullUp {
 	0% {z-index:0;transform: scaleY(0.1);}
@@ -508,7 +530,7 @@ table th a {
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 50% 0%;
 	-ms-transform-origin: 50% 0%;
-	-webkit-transform-origin: 50% 0%; 		
+	-webkit-transform-origin: 50% 0%;
 }
 @keyframes pullDown {
 	0% {z-index:0;transform: scaleY(0.1);}
@@ -528,7 +550,7 @@ table th a {
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 100% 0%;
 	-ms-transform-origin: 100% 0%;
-	-webkit-transform-origin: 100% 0%; 
+	-webkit-transform-origin: 100% 0%;
 }
 @keyframes stretchLeft {
 	0% {z-index:0;transform: scaleX(0.3);}
@@ -548,7 +570,7 @@ table th a {
 	-webkit-animation-timing-function: ease-out;
 	transform-origin: 0% 0%;
 	-ms-transform-origin: 0% 0%;
-	-webkit-transform-origin: 0% 0%; 		
+	-webkit-transform-origin: 0% 0%;
 }
 @keyframes stretchRight {
 	0% {z-index:0;transform: scaleX(0.3);}
@@ -1084,7 +1106,7 @@ table th a {
 	-khtml-border-radius: 3px;
 	border-radius: 3px;
 	}
-	
+
 .w_paging{
 	width:185px;
 	font-size:11pt;
@@ -1659,10 +1681,10 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
   }
 #tab_header li.tab, #tab_header li.tab_blue, #tab_header li.tab_red {
 	[safari|chrome]-webkit-border-top-left-radius: 7px;
-	-khtml-border-radius-topleft: 7px;	
+	-khtml-border-radius-topleft: 7px;
 	border-top-left-radius: 7px;
 	[safari|chrome]-webkit-border-top-right-radius: 7px;
-	-khtml-border-radius-topright: 7px;	
+	-khtml-border-radius-topright: 7px;
 	border-top-right-radius: 7px;
 	border:1px solid #000;
 	border-bottom:0px;
@@ -1741,7 +1763,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 /* mojozoom styles for zoom behavior on images */
 div.mojozoom_marker {
 	position : absolute;
-	cursor : none; 
+	cursor : none;
 }
 div.mojozoom_border {
 	position : absolute;
@@ -1853,7 +1875,7 @@ polyline{
 		text-decoration:none;
 		font-size:16pt;
 	}
-	
+
 	.w_form input[type="text"],.w_form input[type="password"],.w_form select, .w_form textarea {
 	   	font-size:16pt;
 	   	margin:2px;
