@@ -16,17 +16,17 @@ function templateMetaEtag(){
 }
 function templateMetaTitle(){
 	global $PAGE;
-	if(strlen($PAGE['title'])){return $PAGE['title'];}
+	if(isset($PAGE['title']) && strlen($PAGE['title'])){return $PAGE['title'];}
 	return '';
 }
 function templateMetaDescription(){
 	global $PAGE;
-	if(strlen($PAGE['meta_description'])){return $PAGE['meta_description'];}
+	if(isset($PAGE['meta_description']) && strlen($PAGE['meta_description'])){return $PAGE['meta_description'];}
 	return '';
 }
 function templateMetaKeywords(){
 	global $PAGE;
-	if(strlen($PAGE['meta_keywords'])){return $PAGE['meta_keywords'];}
+	if(isset($PAGE['meta_keywords']) && strlen($PAGE['meta_keywords'])){return $PAGE['meta_keywords'];}
 	return '';
 }
 
