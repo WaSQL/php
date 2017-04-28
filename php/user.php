@@ -489,7 +489,7 @@ else{
 }
 global $SETTINGS;
 if(!isDBTable('_settings')){$ok=createWasqlTable('_settings');}
-$uid=setValue(array($USER['_id'],0));
+$uid=isset($USER['_id'])?$USER['_id']:0;
 $SETTINGS=settingsValues($uid);
 /************************************************************************************/
 
