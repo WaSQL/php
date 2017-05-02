@@ -3132,6 +3132,7 @@ function renderEach($view, $rows, $opts=array()){
     	$opts=array('-alias'=>$opts);
 	}
 	$rtn = '';
+	if(!is_array($rows) || !count($rows)){return $rtn;}
 	foreach($rows as $key=>$params){
 		$opts['-key']=$key;
 		foreach($opts as $k=>$v){
