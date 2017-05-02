@@ -4042,7 +4042,16 @@ function adminMenu(){
 	//Queries
 	if(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li><a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu"><span class="icon-database-empty w_danger w_big"></span><span class="hidden-xs hidden-sm"> Queries</span></a></li>'."\n";
+		$query_count=getDBCount(array('-table'=>'_queries'));
+		$rtn .= '		<li>';
+		$rtn .= '<a href="/php/admin.php?_menu=list&_table_=_queries" class="w_topmenu w_warning">';
+		if($query_count > 0){
+			$rtn .= '<span class="w_badge w_badge-warning">'.$query_count.'</span>';
+		}
+		else{
+			$rtn .= '<span class="icon-database-empty w_warning w_big"></span>';
+		}
+		$rtn .= '<span class="hidden-xs hidden-sm"> Queries</span></a></li>'."\n";
 		}
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
@@ -4071,7 +4080,7 @@ function adminMenu(){
 		//echo "Errors: {$error_count}";exit;
 		if($error_count >0){
 			$rtn .= '		<li>'."\n";
-			$rtn .= '			<a href="/php/admin.php?_menu=list&_table_=_errors" class="w_topmenu w_danger"><span class="w_badge w_badge-error">'.$error_count.'</span><span class="w_danger hidden-xs hidden-sm"> Errors</span></a>'."\n";
+			$rtn .= '			<a href="/php/admin.php?_menu=list&_table_=_errors" class="w_topmenu"><span class="w_badge w_badge-danger">'.$error_count.'</span><span class="hidden-xs hidden-sm"> Errors</span></a>'."\n";
 			$rtn .= '		</li>'."\n";
 		}
 	}
