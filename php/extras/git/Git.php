@@ -52,7 +52,7 @@ class Git {
 		}
 		return self::$bin;
 	}
-	
+
 	/**
 	 * Sets up library for use in a default Windows environment
 	 */
@@ -86,13 +86,13 @@ class Git {
 	public static function open($repo_path) {
 		return new GitRepo($repo_path);
 	}
-	
+
 	/**
 	 * Clones a remote repo into a directory and then returns a GitRepo object
 	 * for the newly created local repo
-	 * 
+	 *
 	 * Accepts a creation path and a remote to clone from
-	 * 
+	 *
 	 * @access  public
 	 * @param   string  repository path
 	 * @param   string  remote source
@@ -349,7 +349,7 @@ class GitRepo {
 	 * Runs a 'git status' call
 	 *
 	 * Accept a convert to HTML bool
-	 * 
+	 *
 	 * @access public
 	 * @param bool  return string with <br />
 	 * @return string
@@ -397,10 +397,11 @@ class GitRepo {
 			else{
 				$rtn[$marker][]=trim($line);
 			}
-	
+
 		}
 		//clean up duplicates caused by newfile
 		$modified=array();
+		if(!is_array($rtn['files'])){$rtn['files']=array();}
 		foreach($rtn['files'] as $i=>$file){
 			if($file['status']=='modified'){$modified[]=$file['name'];}
 		}
@@ -482,7 +483,7 @@ class GitRepo {
 		}
 		return $this->run("add $files -v");
 	}
-	
+
 	/**
 	 * Runs a `git rm` call
 	 *
