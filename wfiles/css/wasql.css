@@ -91,10 +91,18 @@ table th a {
   text-decoration: none;
   cursor: pointer;
 }
-.w_badge-error {
-  background-color: #d9534f;
-}
 
+.w_badge-black {background-color:#000;}
+.w_badge-white {color:#000;background-color:#FFF;}
+.w_badge-dblue, .w_badge-primary {background-color:#428bca;}
+.w_badge-lblue, .w_badge-info {background-color:#5bc0de;}
+.w_badge-red, .w_badge-danger {background-color:#d9534f;}
+.w_badge-orange, .w_badge-warning {background-color:#f0ad4e;}
+.w_badge-green, .w_badge-success {background-color:#5cb85c;}
+.w_badge-gray, .w_badge-grey {background-color:#939393;}
+.w_badge-lgray, .w_badge-lgrey {background-color:#f4f4f4;}
+.w_badge-required {background-color:#970000;}
+.w_badge-gold {background-color:#ffd700;}
 
 /*alignment classes*/
 .w_top{
