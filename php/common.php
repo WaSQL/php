@@ -747,10 +747,11 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif']) && strlen($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	//check for size
 	$params['-size']='';
 	switch(strtolower($params['-size'])){
@@ -791,21 +792,35 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$icon=isset($checked_cnt) && $checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
-	$group=$params['id'];
+	//class
+	$class='';
+	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
+	if(isset($params['size'])){
+		switch(strtolower($params['size'])){
+	    	case 'small':$class='w_small';break;
+	    	case 'smaller':$class='w_smaller';break;
+	    	case 'smallest':$class='w_smallest';break;
+	    	case 'tiny':$class='w_tiny';break;
+	    	case 'big':$class='w_big';break;
+	    	case 'bigger':$class='w_bigger';break;
+	    	case 'biggest':$class='w_biggest';break;
+	    	case 'huge':$class='w_huge';break;
+	    	default:$class='';break;
+		}
+	}
+	if(strlen($class)){$class=' '.trim($class);}
 	$dropdown_classid=$params['id'].'_dropdown';
 	$checked_cnt=0;
 	$litags='';
 	//return printValue($pairs);
 	foreach($pairs as $tval=>$dval){
-		$id=$name.'_'.$tval;
+		$id=$params['id'].'_'.$tval;
     	$litags .= '		<li style="white-space:nowrap;">';
     	if(!isNum($tval) && $tval=='--'){
 			$litags .= '--------</li>'."\n";
 			continue;
 		}
-		//$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-
-    	$litags .= '<input data-group="'.$group.'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	$litags .= '<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$tag.=' data-required="1"';}
     	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
@@ -819,7 +834,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$litags .= ' checked';
         	$checked_cnt++;
 		}
-    	$litags .= ' /><label for="'.$id.'" style="cursor:pointer;font-weight:normal;"> '.$dval.'</label></li>'."\n";
+    	$litags .= ' /><label for="'.$id.'" class="icon-mark'.$class.'"></label> <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label></li>'."\n";
 	}
 
 
@@ -827,58 +842,17 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag .= '<div class="dropdown" id="'.$dropdown_classid.'">'."\n";
 	$tag .= '	<div class="btn-group dropdown-toggle" data-toggle="dropdown">'."\n";
 	$tag .= ' 		<button class="btn '.$params['-size'].' btn-default" type="button">'.$dname."</button>\n";
-	$tag .= '		<button type="button" class="btn '.$params['-size'].' btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span><span class="caret"></span></button>'."\n";
+	$tag .= '		<button type="button" class="btn '.$params['-size'].' btn-default"><span data-group="'.$params['group'].'" class="'.$icon.'"></span><span class="caret"></span></button>'."\n";
 	$tag .= ' 	</div>'."\n";
 	$tag .= ' 	<div class="dropdown-menu" style="background:#FFF;z-index:9999;">'."\n";
 	//checkall
-	$tag .= '		<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;margin-left:5px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'name'=>$params['id'].'_checkall','onchange'=>"formSetMultiSelectStatus(this);return false;"))." {$params['-checkall']}</label></div>\n";
-	$tag .= '		<ul style="max-height:200px;list-style-type:none;overflow:auto;padding-right:18px;padding-left:18px;border-bottom:1px solid #d9d9d9;">'."\n";
+	$tag .= '		<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;padding-left:10px;margin-left:10px;text-align:left;">'.buildFormCheckAll('data-group',$params['group'])."</div>\n";
+	$tag .= '		<ul style="max-height:300px;list-style-type:none;overflow:auto;padding-right:25px;padding-left:10px;text-align:left;margin:10px;border-bottom:1px solid #d9d9d9;">'."\n";
 	$tag .= $litags;
 	$tag .= '  		</ul>'."\n";
 	$tag .= '	<div class="text-right icon-cancel w_grey w_smaller w_pointer" onclick="removeClass(\''.$dropdown_classid.'\',\'open\');" style="margin:3px 10px 3px 0">close</div>'."\n";
 	$tag .= '</div>'."\n";
 	$tag .= '</div>'."\n";
-	return $tag;
-	//the rest can be deleted once we make sure this new control works everywhere
-	$tag .= '<div class="dropdown">'."\n";
-	$tag.='		<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
-	$tag.='		<button type="button" class="btn btn-sm btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span></button>'."\n";
-	$tag.='	</div>'."\n";
-	$tag.='<div class="btn-group" role="group" onclick="setStyle(\''.$mid.'\',\'display\',\'inline\');">'."\n";
-	$tag.='	<div style="display:none;float:left;" id ="'.$mid.'">'."\n";
-	$tag.='	<div class="w_dropdown">'."\n";
-	$group=$params['id'];
-    $tag .= '<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;"><label style="cursor:pointer">'.buildFormCheckAll('data-group',$group,array('data-group'=>$group,'name'=>$params['id'].'_checkall','onchange'=>"formSetMultiSelectStatus(this);return false;"))." {$params['-checkall']}</label></div>\n";
-	$tag .= '<div style="max-height:200px;overflow:auto;padding-right:18px;">'."\n";
-	$checked_cnt=0;
-	foreach($pairs as $tval=>$dval){
-		$id=$name.'_'.$tval;
-    	$tag .= '	<div style="white-space:nowrap;"><label style="cursor:pointer;font-weight:normal;">';
-    	$tag .= '<input data-group="'.$group.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-    	if($params['required'] || $params['_required']){$tag.=' data-required="1"';}
-    	$onclick="formSetMultiSelectStatus(this);";
-    	if(isset($params['onchange']) && strlen($params['onchange'])){
-			$onclick .= $params['onchange'];
-		}
-		elseif(isset($params['onclick']) && strlen($params['onclick'])){
-        	$onclick .= $params['onchange'];
-		}
-		$tag .= ' onclick="'.$onclick.'"';
-    	if(in_array($tval,$params['-values'])){
-        	$tag .= ' checked';
-        	$checked_cnt++;
-		}
-    	$tag .= '> '.$dval.'</label></div>'."\n";
-	}
-	$tag.='	</div>'."\n";
-	$tag.='	</div>'."\n";
-	$tag.='	</div>'."\n";
-	$icon=$checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
-	if(isset($params['displayname'])){$dname=$params['displayname'];}
-	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
-	$tag.='	<button type="button" class="btn btn-sm btn-default">'.$dname.'</button>'."\n";
-	$tag.='	<button type="button" class="btn btn-sm btn-default"><span data-group="'.$group.'" class="'.$icon.'"></span></button>'."\n";
-	$tag.='</div>'."\n";
 	return $tag;
 }
 //---------- begin function buildFormRadio--------------------------------------
