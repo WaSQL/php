@@ -1356,11 +1356,19 @@ function checkAllElements(att,val,ck){
     //usage: <input type="checkbox" onclick="checkAllElements('cid','mylist', this.checked);">
     var cust=GetElementsByAttribute('input',att,'^'+val+'$');
     var cnt = 0;
+    //console.log(cust.length,att,val,ck);
     for(var i=0;i<cust.length;i++){
-		if(cust[i].type=='checkbox'){cust[i].checked=ck;cnt++;}
+		if(cust[i].type=='checkbox'){
+			//process any onclick attribute
+			if(undefined != cust[i].getAttribute('onclick')){
+				simulateEvent(cust[i], 'click');
+				console.log(cust[i], 'click');
+			}
+			cust[i].checked=ck;
+			cnt++;
+			}
     	}
-    if (ck){return cnt;}
-	return 0;
+	return false;
     }
 //--------------------------
 function setTimeField(frmname,fldname){
@@ -1475,7 +1483,7 @@ function textboxSelect (oTextbox, iStart, iEnd) {
                	oRange.moveStart("character", iStart);
                	oRange.moveEnd("character", -oTextbox.value.length + iEnd);
                	oRange.select();
-           		} 
+           		}
 			else if (isMoz){
             	oTextbox.setSelectionRange(iStart, iEnd);
            		}
@@ -1489,7 +1497,7 @@ function textboxReplaceSelect (oTextbox, sText) {
 		oRange.text = sText;
 		oRange.collapse(true);
 		oRange.select();
-		} 
+		}
 	else if (isMoz) {
 		var iStart = oTextbox.selectionStart;
 		oTextbox.value = oTextbox.value.substring(0, iStart) + sText + oTextbox.value.substring(oTextbox.selectionEnd, oTextbox.value.length);
@@ -1956,7 +1964,7 @@ function pagingClearFilters(){
 
 
 //--------------------------
-//submitSurveyForm appends additional info to the form 
+//submitSurveyForm appends additional info to the form
 //  like question, section, etc
 //	usage: onSubmit="return submitSurveyForm(this,{question:1,section:1,group:1,order:1});"
 function submitSurveyForm(theForm,opts){
@@ -2022,7 +2030,7 @@ function checkInternationalPhone(strPhone){
 	return (isInteger(s) && s.length >= minDigitsInIPhoneNumber);
 	}
 //--------------------------
-function isInteger(s){ 
+function isInteger(s){
 	//info: returns true if s is an integer
 	var i;
     for (i = 0; i < s.length; i++){
@@ -2043,7 +2051,7 @@ function trim(str){
 	else{return "";}
 	}
 //--------------------------
-function stripCharsInBag(s, bag){   
+function stripCharsInBag(s, bag){
 	var i;
     var returnString = "";
     // Search through string's characters one by one.
@@ -2783,7 +2791,7 @@ function wpassInput(v){
 // Parts Taken from  http://www.AjaxToolbox.com/
 function AjaxRequest() {
 	var req = new Object();
-	
+
 	// -------------------
 	// Instance properties
 	// -------------------
@@ -2793,7 +2801,7 @@ function AjaxRequest() {
 	 * the onTimeout function will be called
 	 */
 	req.timeout = null;
-	
+
 	/**
 	 *	Since some browsers cache GET requests via XMLHttpRequest, an
 	 * additional parameter called AjaxRequestUniqueId will be added to
@@ -2801,34 +2809,34 @@ function AjaxRequest() {
 	 * URL will not be cached.
 	 */
 	req.generateUniqueUrl = true;
-	
+
 	/**
-	 * The url that the request will be made to, which defaults to the current 
+	 * The url that the request will be made to, which defaults to the current
 	 * url of the window
 	 */
 	req.url = window.location.href;
-	
+
 	/**
 	 * The method of the request, either GET (default), POST, or HEAD
 	 */
 	req.method = "GET";
-	
+
 	/**
-	 * Whether or not the request will be asynchronous. In general, synchronous 
+	 * Whether or not the request will be asynchronous. In general, synchronous
 	 * requests should not be used so this should rarely be changed from true
 	 */
 	req.async = true;
-	
+
 	/**
 	 * The username used to access the URL
 	 */
 	req.username = null;
-	
+
 	/**
 	 * The password used to access the URL
 	 */
 	req.password = null;
-	
+
 	/**
 	 * Generic fields for user to pass through data
 	 */
@@ -2840,33 +2848,33 @@ function AjaxRequest() {
 	req.prevValue = null;
 
 	/**
-	 * The parameters is an object holding name/value pairs which will be 
+	 * The parameters is an object holding name/value pairs which will be
 	 * added to the url for a GET request or the request content for a POST request
 	 */
 	req.parameters = new Object();
-	
+
 	/**
 	 * The sequential index number of this request, updated internally
 	 */
 	req.requestIndex = AjaxRequest.numAjaxRequests++;
-	
+
 	/**
 	 * Indicates whether a response has been received yet from the server
 	 */
 	req.responseReceived = false;
-	
+
 	/**
 	 * Indicates whether to show processing message
 	 */
 	req.showprocessing = true;
-	
+
 	/**
 	 * div to show processing in if showprocessing is true
 	 */
 	req.showprocessingdiv = null;
 
 	/**
-	 * The name of the group that this request belongs to, for activity 
+	 * The name of the group that this request belongs to, for activity
 	 * monitoring purposes
 	 */
 	req.groupName = null;
@@ -2878,32 +2886,32 @@ function AjaxRequest() {
 	req.var4 = null;
 	req.var5 = null;
 	req.AjaxRequestUniqueId = null;
-	
+
 	/**
-	 * The query string to be added to the end of a GET request, in proper 
+	 * The query string to be added to the end of a GET request, in proper
 	 * URIEncoded format
 	 */
 	req.queryString = "";
-	
+
 	/**
-	 * After a response has been received, this will hold the text contents of 
+	 * After a response has been received, this will hold the text contents of
 	 * the response - even in case of error
 	 */
 	req.responseText = null;
-	
+
 	/**
 	 * After a response has been received, this will hold the XML content
 	 */
 	req.responseXML = null;
-	
+
 	/**
-	 * After a response has been received, this will hold the status code of 
+	 * After a response has been received, this will hold the status code of
 	 * the response as returned by the server.
 	 */
 	req.status = null;
-	
+
 	/**
-	 * After a response has been received, this will hold the text description 
+	 * After a response has been received, this will hold the text description
 	 * of the response code
 	 */
 	req.statusText = null;
@@ -2912,7 +2920,7 @@ function AjaxRequest() {
 	 * An internal flag to indicate whether the request has been aborted
 	 */
 	req.aborted = false;
-	
+
 	/**
 	 * The XMLHttpRequest object used internally
 	 */
@@ -2921,13 +2929,13 @@ function AjaxRequest() {
 	// --------------
 	// Event handlers
 	// --------------
-	
+
 	/**
-	 * If a timeout period is set, and it is reached before a response is 
+	 * If a timeout period is set, and it is reached before a response is
 	 * received, a function reference assigned to onTimeout will be called
 	 */
-	req.onTimeout = null; 
-	
+	req.onTimeout = null;
+
 	/**
 	 * A function reference assigned will be called when readyState=1
 	 */
@@ -2953,23 +2961,23 @@ function AjaxRequest() {
 	 * the statusCode=200
 	 */
 	req.onSuccess = null;
-	
+
 
 	/**
-	 * A function reference assigned will be called after onComplete, if 
+	 * A function reference assigned will be called after onComplete, if
 	 * the statusCode != 200
 	 */
 	req.onError = null;
-	
+
 	/**
-	 * If this request has a group name, this function reference will be called 
-	 * and passed the group name if this is the first request in the group to 
+	 * If this request has a group name, this function reference will be called
+	 * and passed the group name if this is the first request in the group to
 	 * become active
 	 */
 	req.onGroupBegin = null;
 
 	/**
-	 * If this request has a group name, and this request is the last request 
+	 * If this request has a group name, and this request is the last request
 	 * in the group to complete, this function reference will be called
 	 */
 	req.onGroupEnd = null;
@@ -2977,11 +2985,11 @@ function AjaxRequest() {
 	// Get the XMLHttpRequest object itself
 	req.xmlHttpRequest = AjaxRequest.getXmlHttpRequest();
 	if (req.xmlHttpRequest==null) { return null; }
-	
+
 	// -------------------------------------------------------
 	// Attach the event handlers for the XMLHttpRequest object
 	// -------------------------------------------------------
-	req.xmlHttpRequest.onreadystatechange = 
+	req.xmlHttpRequest.onreadystatechange =
 	function() {
 		if (req==null || req.xmlHttpRequest==null) { return; }
 		if (req.xmlHttpRequest.readyState==1) { req.onLoadingInternal(req); }
@@ -2989,18 +2997,18 @@ function AjaxRequest() {
 		if (req.xmlHttpRequest.readyState==3) { req.onInteractiveInternal(req); }
 		if (req.xmlHttpRequest.readyState==4) { req.onCompleteInternal(req); }
 	};
-	
+
 	// ---------------------------------------------------------------------------
 	// Internal event handlers that fire, and in turn fire the user event handlers
 	// ---------------------------------------------------------------------------
-	// Flags to keep track if each event has been handled, in case of 
-	// multiple calls (some browsers may call the onreadystatechange 
+	// Flags to keep track if each event has been handled, in case of
+	// multiple calls (some browsers may call the onreadystatechange
 	// multiple times for the same state)
 	req.onLoadingInternalHandled = false;
 	req.onLoadedInternalHandled = false;
 	req.onInteractiveInternalHandled = false;
 	req.onCompleteInternalHandled = false;
-	req.onLoadingInternal = 
+	req.onLoadingInternal =
 		function() {
 			if (req.onLoadingInternalHandled) { return; }
 			AjaxRequest.numActiveAjaxRequests++;
@@ -3026,7 +3034,7 @@ function AjaxRequest() {
 			}
 			req.onLoadingInternalHandled = true;
 		};
-	req.onLoadedInternal = 
+	req.onLoadedInternal =
 		function() {
 			if (req.onLoadedInternalHandled) { return; }
 			if (typeof(req.onLoaded)=="function") {
@@ -3034,7 +3042,7 @@ function AjaxRequest() {
 			}
 			req.onLoadedInternalHandled = true;
 		};
-	req.onInteractiveInternal = 
+	req.onInteractiveInternal =
 		function() {
 			if (req.onInteractiveInternalHandled) { return; }
 			if (typeof(req.onInteractive)=="function") {
@@ -3042,9 +3050,9 @@ function AjaxRequest() {
 			}
 			req.onInteractiveInternalHandled = true;
 		};
-	req.onCompleteInternal = 
+	req.onCompleteInternal =
 		function() {
-			if (req.onCompleteInternalHandled || req.aborted) { 
+			if (req.onCompleteInternalHandled || req.aborted) {
 				return;
 			}
 			req.onCompleteInternalHandled = true;
@@ -3078,7 +3086,7 @@ function AjaxRequest() {
 			delete req.xmlHttpRequest['onreadystatechange'];
 			req.xmlHttpRequest = null;
 		};
-	req.onTimeoutInternal = 
+	req.onTimeoutInternal =
 		function() {
 			if (req!=null && req.xmlHttpRequest!=null && !req.onCompleteInternalHandled) {
 				req.aborted = true;
@@ -3097,7 +3105,7 @@ function AjaxRequest() {
 				if (typeof(req.onTimeout)=="function") {
 					req.onTimeout(req);
 				}
-			// Opera won't fire onreadystatechange after abort, but other browsers do. 
+			// Opera won't fire onreadystatechange after abort, but other browsers do.
 			// So we can't rely on the onreadystate function getting called. Clean up here!
 			delete req.xmlHttpRequest['onreadystatechange'];
 			req.xmlHttpRequest = null;
@@ -3110,10 +3118,10 @@ function AjaxRequest() {
 	/**
 	 * The process method is called to actually make the request. It builds the
 	 * querystring for GET requests (the content for POST requests), sets the
-	 * appropriate headers if necessary, and calls the 
+	 * appropriate headers if necessary, and calls the
 	 * XMLHttpRequest.send() method
 	*/
-	req.process = 
+	req.process =
 		function() {
 			if (req.xmlHttpRequest!=null) {
 				// Some logic to get the real request URL
@@ -3148,7 +3156,7 @@ function AjaxRequest() {
 	 * An internal function to handle an Object argument, which may contain
 	 * either AjaxRequest field values or parameter name/values
 	 */
-	req.handleArguments = 
+	req.handleArguments =
 		function(args) {
 			for (var i in args) {
 				// If the AjaxRequest object doesn't have a property which was passed, treat it as a url parameter
@@ -3176,7 +3184,7 @@ function AjaxRequest() {
 		};
 
 	/**
-	 * Returns the the value of a response header as returned by 
+	 * Returns the the value of a response header as returned by
 	 * XMLHttpRequest,getResponseHeader().
 	 * Only available after a response has been returned
 	 */
@@ -3198,7 +3206,7 @@ function AjaxRequest() {
 // ---------------------------------------
 
 /**
- * Returns an XMLHttpRequest object, either as a core object or an ActiveX 
+ * Returns an XMLHttpRequest object, either as a core object or an ActiveX
  * implementation. If an object cannot be instantiated, it will return null;
  */
 AjaxRequest.getXmlHttpRequest = function() {
@@ -3233,9 +3241,9 @@ AjaxRequest.isActive = function() {
 };
 
 /**
- * Make a GET request. Pass an object containing parameters and arguments as 
+ * Make a GET request. Pass an object containing parameters and arguments as
  * the second argument.
- * These areguments may be either AjaxRequest properties to set on the request 
+ * These areguments may be either AjaxRequest properties to set on the request
  * object or name/values to set in the request querystring.
  */
 AjaxRequest.get = function(args) {
@@ -3243,9 +3251,9 @@ AjaxRequest.get = function(args) {
 };
 
 /**
- * Make a POST request. Pass an object containing parameters and arguments as 
+ * Make a POST request. Pass an object containing parameters and arguments as
  * the second argument.
- * These arguments may be either AjaxRequest properties to set on the request 
+ * These arguments may be either AjaxRequest properties to set on the request
  * object or name/values to set in the request querystring.
  */
 AjaxRequest.post = function(args) {
@@ -3265,10 +3273,10 @@ AjaxRequest.doRequest = function(method,args) {
 }	;
 
 /**
- * Submit a form. The requested URL will be the form's ACTION, and the request 
+ * Submit a form. The requested URL will be the form's ACTION, and the request
  * method will be the form's METHOD.
- * Returns true if the submittal was handled successfully, else false so it 
- * can easily be used with an onSubmit event for a form, and fallback to 
+ * Returns true if the submittal was handled successfully, else false so it
+ * can easily be used with an onSubmit event for a form, and fallback to
  * submitting the form normally.
  */
 AjaxRequest.submit = function(theform, args) {
@@ -3284,9 +3292,9 @@ AjaxRequest.submit = function(theform, args) {
 };
 
 /**
- * Serialize a form into a format which can be sent as a GET string or a POST 
- * content.It correctly ignores disabled fields, maintains order of the fields 
- * as in the elements[] array. The 'file' input type is not supported, as 
+ * Serialize a form into a format which can be sent as a GET string or a POST
+ * content.It correctly ignores disabled fields, maintains order of the fields
+ * as in the elements[] array. The 'file' input type is not supported, as
  * its content is not available to javascript. This method is used internally
  * by the submit class method.
  */
@@ -3295,9 +3303,9 @@ AjaxRequest.serializeForm = function(theform) {
 	if(undefined==els){alert('Ajax Request serializeForm failed');return false;}
 	var len = els.length;
 	var queryString = "";
-	this.addField = 
-		function(name,value) { 
-			if (queryString.length>0) { 
+	this.addField =
+		function(name,value) {
+			if (queryString.length>0) {
 				queryString += "&";
 			}
 			queryString += encodeURIComponent(name) + "=" + encodeURIComponent(value);
@@ -3322,9 +3330,9 @@ AjaxRequest.serializeForm = function(theform) {
 				case 'week':
 				//Standard HTML input types
 				case 'text':
-				case 'password': 
-				case 'submit': 
-				case 'hidden': 
+				case 'password':
+				case 'submit':
+				case 'hidden':
 				case 'textarea':
 					this.addField(el.name,el.value);
 					break;
@@ -3340,7 +3348,7 @@ AjaxRequest.serializeForm = function(theform) {
 						}
 					}
 					break;
-				case 'checkbox': 
+				case 'checkbox':
 				case 'radio':
 					if (el.checked) {
 						this.addField(el.name,el.value);
@@ -3410,7 +3418,7 @@ THE SOFTWARE.
 			//already supported - break out
 			return;
 		}
-	} 
+	}
 	catch (e) {
 		//showProperties(e);
 		return;
@@ -3493,7 +3501,7 @@ THE SOFTWARE.
 	    });
 	    document.mozSetImageElement('__sliderthumb__', scale);
 	  }
-	
+
 	  // reimplement value and type properties
 	  var getValue = function() { return '' + value; };
 	  var setValue = function setValue(val) {
@@ -3508,7 +3516,7 @@ THE SOFTWARE.
 	  slider.__defineGetter__('value', getValue);
 	  slider.__defineSetter__('value', setValue);
 	  slider.__defineGetter__('type', function() { return 'range'; });
-	
+
 	  // sync properties with attributes
 	  ['min', 'max', 'step'].forEach(function(prop) {
 	    if (slider.hasAttribute(prop))
@@ -3520,12 +3528,12 @@ THE SOFTWARE.
 	      val === null ? this.removeAttribute(prop) : this.setAttribute(prop, val);
 	    });
 	  });
-	
+
 	  // initialize slider
 	  slider.readOnly = true;
 	  style(slider, styles);
 	  update();
-	
+
 	  new MutationObserver(function(mutations) {
 	    mutations.forEach(function(mutation) {
 	      if (mutation.attributeName != 'value') {
@@ -3539,12 +3547,12 @@ THE SOFTWARE.
 	      }
 	    });
 	  }).observe(slider, options);
-	
+
 	  slider.addEventListener('mousedown', onDragStart, true);
 	  slider.addEventListener('keydown', onKeyDown, true);
 	  slider.addEventListener('focus', onFocus, true);
 	  slider.addEventListener('blur', onBlur, true);
-	
+
 	  function onDragStart(e) {
 	    isClick = true;
 	    setTimeout(function() { isClick = false; }, 0);
@@ -3567,7 +3575,7 @@ THE SOFTWARE.
 	    this.addEventListener('mousemove', onDrag, true);
 	    this.addEventListener('mouseup', onDragEnd, true);
 	  }
-	
+
 	  function onDrag(e) {
 	    var width = parseFloat(getComputedStyle(this, 0).width);
 	    var multiplier = (width - thumb.width) / range;
@@ -3578,12 +3586,12 @@ THE SOFTWARE.
 	    isChanged = true;
 	    this.value = rawValue;
 	  }
-	
+
 	  function onDragEnd() {
 	    this.removeEventListener('mousemove', onDrag, true);
 	    this.removeEventListener('mouseup', onDragEnd, true);
 	  }
-	
+
 	  function onKeyDown(e) {
 	    if (e.keyCode > 36 && e.keyCode < 41) { // 37-40: left, up, right, down
 	      onFocus.call(this);
@@ -3591,22 +3599,22 @@ THE SOFTWARE.
 	      this.value = value + (e.keyCode == 38 || e.keyCode == 39 ? step : -step);
 	    }
 	  }
-	
+
 	  function onFocus() {
 	    if (!isClick)
 	      this.style.boxShadow = !isMac ? '0 0 0 2px #fb0' :
 	        'inset 0 0 20px rgba(0,127,255,.1), 0 0 1px rgba(0,127,255,.4)';
 	  }
-	
+
 	  function onBlur() {
 	    this.style.boxShadow = '';
 	  }
-	
+
 	  // determines whether value is valid number in attribute form
 	  function isAttrNum(value) {
 	    return !isNaN(value) && +value == parseFloat(value);
 	  }
-	
+
 	  // validates min, max, and step attributes and redraws
 	  function update() {
 	    min = isAttrNum(slider.min) ? +slider.min : 0;
@@ -3617,7 +3625,7 @@ THE SOFTWARE.
 	    range = max - min;
 	    draw(true);
 	  }
-	
+
 	  // recalculates value property
 	  function calc() {
 	    if (!isValueSet && !areAttrsSet)
@@ -3631,7 +3639,7 @@ THE SOFTWARE.
 	    else if (value > max)
 	      value = min + ~~(range / step) * step;
 	  }
-	
+
 	  // renders slider using CSS background ;)
 	  function draw(attrsModified) {
 	    calc();
@@ -3645,7 +3653,7 @@ THE SOFTWARE.
 	    var bg = '-moz-element(#__sliderthumb__) ' + position + '% no-repeat, ';
 	    style(slider, { background: bg + track });
 	  }
-	
+
 	}
 	//-----
 	function style(element, styles) {
