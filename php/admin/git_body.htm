@@ -22,7 +22,7 @@ function gitChangePath(){
 		<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
 		<table class="table table-striped table-bordered table-hover table-condensed">
 			<tr>
-				<th><?=buildFormCheckAll('class','file');?></th>
+				<th><?=buildFormCheckAll('data-class','file');?></th>
 				<th><a href="/php/admin.php?_menu=git&sort=name">File Name</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=ext">Type</a></th>
 				<th><a href="/php/admin.php?_menu=git&sort=status">Status</a></th>
@@ -33,15 +33,18 @@ function gitChangePath(){
 			</tr>
 			<view:_file>
 			<tr>
-				<td><input type="checkbox" data-type="<?=$file['type'];?>" data-status="<?=$file['status'];?>" data class="file" name="files[]" value="<?=encodeBase64($file['name']);?>" /></td>
+				<td>
+					<input type="checkbox" data-type="checkbox" style="display:none;" id="id_<?=sha1($file['name']);?>" data-filetype="<?=$file['type'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=encodeBase64($file['name']);?>" />
+					<label for="id_<?=sha1($file['name']);?>" class="icon-mark"></label>
+				</td>
 				<td>
 					<div class="w_right">
 						<a href="#" class="w_link w_pad" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=encodeBase64($file['name']);?>'});" title="diff"><span class="icon-hash"></span></a>
 						<a href="#" class="w_link w_pad" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=encodeBase64($file['name']);?>'});"  title="log"><span class="icon-list"></span></a>
 					</div>
-					<?=$file['name'];?>
+					<label for="id_<?=sha1($file['name']);?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=$file['name'];?></label>
 				</td>
-				<td><a href="#" title="Check all off this type" onclick="return checkAllElements('data-type','<?=$file['type'];?>',1);"><?=$file['type'];?></a></td>
+				<td><a href="#" title="Check all off this type" onclick="return checkAllElements('data-filetype','<?=$file['type'];?>',1);"><?=$file['type'];?></a></td>
 				<td><a href="#" title="Check all off this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=$file['status'];?></a></td>
 				<td class="text-right"><?=$file['size_verbose'];?></td>
 				<td class="text-right"><?=$file['_edate_age_verbose'];?></td>
