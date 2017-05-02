@@ -9971,7 +9971,7 @@ function postBody($url='',$body='',$params=array()) {
 			else{
 				$rtn['ssl_error']="missing cert: {$params['-ssl_cert']}";
 				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 0);
 			}
 		}
 		else{
@@ -9984,7 +9984,7 @@ function postBody($url='',$body='',$params=array()) {
 			else{
 				$rtn['ssl_error']="missing cert: {$rtn['ssl_cert']}";
 				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 0);
 			}
 		}
 
