@@ -9961,10 +9961,33 @@ function postBody($url='',$body='',$params=array()) {
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);
     if(stringBeginsWith($url,'https') || $params['-ssl']){
-		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
-		curl_setopt($process, CURLOPT_CAINFO, $cacert);
-		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+		if(isset($params['-ssl_cert'])){
+			if(is_file($params['-ssl_cert'])){
+				curl_setopt($process, CURLOPT_CAINFO, $params['-ssl_cert']);
+				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+				$rtn['ssl_cert']=$params['-ssl_cert'];
+			}
+			else{
+				$rtn['ssl_error']="missing cert: {$params['-ssl_cert']}";
+				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+			}
+		}
+		else{
+			$rtn['ssl_cert']=dirname(__FILE__) . '/curl-ca-bundle.crt';
+			if(is_file($rtn['ssl_cert'])){
+				curl_setopt($process, CURLOPT_CAINFO, $rtn['ssl_cert']);
+				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+			}
+			else{
+				$rtn['ssl_error']="missing cert: {$rtn['ssl_cert']}";
+				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 2);
+			}
+		}
+
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
 
