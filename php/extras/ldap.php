@@ -120,6 +120,8 @@ function ldapAuth($params=array()){
 	foreach($params as $k=>$v){
     	$ldapInfo[$k]=$v;
 	}
+	//set cookie to blank - used for paging results
+	$cookie='';
 	//set paging to 1000
 	ldap_control_paged_result($ldapInfo['connection'], 500, true, $cookie);
     //now get this users record and return it
