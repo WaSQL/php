@@ -161,8 +161,8 @@ function writeFiles(){
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
 		cmdResults("EXPLORER /E,\"{$afolder}\"");
-		cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}");
-		cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}/a");
+		//cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}");
+		//cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}/a");
 	}
 	return $afolder;
 }
