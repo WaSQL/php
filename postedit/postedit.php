@@ -215,11 +215,13 @@ POSTFILE:
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
     	echo " - {$post['curl_info']['http_code']} error posting".PHP_EOL;
     	echo "{$json}".PHP_EOL;
+    	if(isWindows()){echo "\x07\x07\x07\x07\x07";}
     	exit;
 	}
 	elseif(isset($xml['fatal_error'])){
     	echo " - Fatal error posting".PHP_EOL;
     	echo "{$json}".PHP_EOL;
+    	if(isWindows()){echo "\x07\x07\x07\x07\x07";}
     	exit;
 	}
 	elseif(isset($xml['refresh_error'])){
@@ -231,6 +233,7 @@ POSTFILE:
 		if($s != 'n'){
         	writeFiles();
 		}
+		if(isWindows()){echo "\x07\x07\x07\x07\x07";}
 	}
 	elseif(isset($xml['error'])){
     	echo " - Error posting".PHP_EOL;
@@ -243,6 +246,7 @@ POSTFILE:
         	$post=postURL($url,$postopts);
         	goto POSTFILE;
 		}
+		if(isWindows()){echo "\x07\x07\x07\x07\x07";}
 	}
 	echo " - Successfully updated".PHP_EOL;
 	//beep once on windows for success;
