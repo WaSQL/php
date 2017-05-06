@@ -2772,12 +2772,12 @@ LIST_TABLE:
 			//echo '<table>';
 			echo buildTableRow(array(
 				'<span class="icon-sync w_warning w_big w_bold"></span> ',
-				buildFormCheckbox('synchronize',array(1=>1)),
+				buildFormCheckbox('synchronize',array(1=>1),array('id'=>'prop_synchronize')),
 				' Synchronize'
 			));
 			echo buildTableRow(array(
 				'<span class="icon-transfer w_info w_big w_bold"></span> ',
-				buildFormCheckbox('websockets',array(1=>1)),
+				buildFormCheckbox('websockets',array(1=>1),array('id'=>'prop_websockets')),
 				' Websockets'
 			));
 			//echo '</table>';
