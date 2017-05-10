@@ -7818,7 +7818,7 @@ function databaseFreeResult($query_result){
 	elseif(isMssql()){return mssql_free_result($query_result);}
 	return null;
 	}
-//---------- begin function
+//---------- begin function databaseIndexes ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -7878,7 +7878,7 @@ AND sys.tables.name = '."'{$table}'";
     	}
     return null;
 	}
-//---------- begin function
+//---------- begin function databaseInsertId ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -7901,7 +7901,7 @@ function databaseInsertId($query_result=''){
     	}
     return null;
 	}
-//---------- begin function
+//---------- begin function databaseListDbs ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -7934,7 +7934,7 @@ function databaseListDbs(){
 		}
 	}
 	elseif(isOracle()){
-    		$query="select distinct owner from dba_tab_columns WHERE table_name not like '%$&'";
+    	$query="select distinct owner from dba_tab_columns WHERE table_name not like '%$&'";
 		$recs=getDBRecords(array('-query'=>$query));
 		foreach($recs as $rec){$dbs[]=$rec['name'];}
 	}
@@ -7946,7 +7946,7 @@ function databaseListDbs(){
 	sort($dbs);
 	return $dbs;
 }
-//---------- begin function
+//---------- begin function databaseListProcesses ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -7974,7 +7974,7 @@ function databaseListProcesses(){
 		}
 	return null;
 	}
-//---------- begin function
+//---------- begin function databaseNumFields ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -7987,7 +7987,7 @@ function databaseNumFields($query_result){
 	elseif(isMssql()){return mssql_num_fields($query_result);}
 	return null;
 	}
-//---------- begin function
+//---------- begin function databaseNumRows ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8010,7 +8010,7 @@ function databasePrimaryKeyFieldString(){
 	elseif(isPostgreSQL()){return "serial PRIMARY KEY";}
 	elseif(isMssql()){return "INT NOT NULL IDENTITY(1,1)";}
 	}
-//---------- begin function
+//---------- begin function databaseQuery ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8027,7 +8027,7 @@ function databaseQuery($query){
 	elseif(isPostgreSQL()){return pg_query($dbh,$query);}
 	elseif(isMssql()){return mssql_query($query);}
 	}
-//---------- begin function
+//---------- begin function databaseRestoreDb ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8035,7 +8035,7 @@ function databaseRestoreDb(){
 	global $CONFIG;
 	return databaseSelectDb($CONFIG['dbname']);
 	}
-//---------- begin function
+//---------- begin function databaseSelectDb ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8053,7 +8053,7 @@ function databaseSelectDb($dbname){
 	if($rtn){$CONFIG['_current_dbname_']=$dbname;}
 	return $rtn;
 	}
-//---------- begin function
+//---------- begin function databaseTables ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8092,7 +8092,7 @@ function databaseTables($dbname='',$force=0){
 	$databaseCache['databaseTables'][$dbcachekey]=$tables;
 	return $tables;
 	}
-//---------- begin function
+//---------- begin function databaseVersion ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -8209,6 +8209,7 @@ function isODBC(){
 	if($dbtype=='odbc'){return true;}
 	return false;
 	}
+//---------- begin function setDBSettings ----------
 /**
 * setDBSettings - sets a value in the settings table
 * @param key_name string
@@ -8230,6 +8231,7 @@ function setDBSettings($name,$value,$userid){
 		return addDBRecord(array('-table'=>'_settings','key_name'=>$name,'user_id'=>$userid,'key_value'=>$value));
 	}
 }
+//---------- begin function getDBSettings ----------
 /**
 * getDBSettings - retrieves a value in the settings table
 * @param key_name string
@@ -8262,6 +8264,86 @@ function getDBSettings($name,$userid,$collapse=0){
 		else{$settings=$rec['key_value'];}
     }
     return $settings;
+}
+//---------- begin function grepDBTables ----------
+/**
+* grepDBTables - searches across tables for a specified value
+* @param search string
+* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @return  array of arrays - tablename,_id,fieldname,search_count
+* @usage $results=grepDBTables('searchstring');
+*/
+function grepDBTables($search,$tables=array(),$dbname=''){
+	if(!is_array($tables)){
+		if(strlen($tables)){$tables=array($tables);}
+		else{$tables=array();}
+	}
+	if(!count($tables)){
+		$tables=getDBTables($dbname);
+		//ignore _changelog
+		foreach($tables as $i=>$table){
+			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
+		}
+	}
+	//return $tables;
+	$search=trim($search);
+	if(!search){return "grepDBTables Error: no search value";}
+	$results=array();
+	$search=str_replace("'","''",$search);
+	$search=strtolower($search);
+	foreach($tables as $table){
+		if(strlen($dbname)){$table=$dbname.'.'.$table;}
+		if(!isDBTable($table)){return "grepDBTables Error: {$table} is not a table";}
+		$info=getDBFieldInfo($table);
+		$wheres=array();
+		$fields=array();
+		foreach($info as $field=>$finfo){
+			switch($info[$field]['_dbtype']){
+				case 'int':
+				case 'integer':
+				case 'number':
+				case 'float':
+					if(isNum($grep['string'])){
+						$wheres[]="{$field}={$search}";
+						$fields[]=$field;
+					}
+				break;
+				case 'varchar':
+				case 'char':
+				case 'string':
+				case 'blob':
+				case 'text':
+				case 'mediumtext':
+					$wheres[]="{$field} like '%{$search}%'";
+					$fields[]=$field;
+				break;
+			}
+		}
+		if(!count($wheres)){continue;}
+		if(!in_array('_id',$fields)){array_unshift($fields,'_id');}
+		$where=implode(' or ',$wheres);
+		$fields=implode(',',$fields);
+		$recopts=array('-table'=>$table,'-where'=>$where,'-fields'=>$fields);
+		//echo printValue($recopts);exit;
+		$recs=getDBRecords($recopts);
+		if(is_array($recs)){
+			$cnt=count($recs);
+			foreach($recs as $rec){
+				$vals=array();
+				foreach($rec as $key=>$val){
+					if(stringContains($val,$search)){
+						$results[]=array(
+							'tablename'=>$table,
+							'_id'		=> $rec['_id'],
+							'fieldname' => $key,
+							'search_count'=> substr_count(strtolower($val),$search)
+						);
+					}
+				}
+			}
+		}
+	}
+	return $results;
 }
 //---------- begin function showDBCronPanel ----
 /**
