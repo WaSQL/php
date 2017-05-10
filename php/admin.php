@@ -180,7 +180,10 @@ if(isAjax()){
 			echo adminViewPage($_REQUEST['_menu']);
 			exit;
 		break;
-
+		case 'export':
+			echo adminViewPage('export');
+			exit;
+		break;
 		case 'datasync':
 			//echo '<div class="w_centerpop_title"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records in '.$_REQUEST['tablename'].'</div>'."\n";
 			//echo '<div class="w_centerpop_content">'."\n";
@@ -760,94 +763,10 @@ elseif($USER['utype'] != 0){
 	}
 //
 
-if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isset($_REQUEST['export']) && is_array($_REQUEST['export'])){
-	$isapp=isset($_REQUEST['isapp']) && $_REQUEST['isapp']==1?true:false;
-	//echo $isapp . printValue($_REQUEST);exit;
-	$xmldata=xmlHeader();
-	global $CONFIG;
-	$xmldata.='<export dbname="'.$CONFIG['dbname'].'" timestamp="'.time().'">'."\r\n";
-	foreach($_REQUEST['export'] as $table){
-		//$xmldata .= '<!-- Export for '.$table.' table -->'."\r\n";
-		if(isset($_REQUEST[$table.'_Schema']) && $_REQUEST[$table.'_Schema']==1){
-			//export Schema
-			$fields=getDBSchema(array($table));
-			$xmldata .= '<xmlschema name="'.$table.'">'."\r\n";
-			$fields=sortArrayByKey($fields,'field');
-			foreach($fields as $field){
-				$type=$field['type'];
-				if($field['null']=='NO'){$type .= ' NOT NULL';}
-				else{$type .= ' NULL';}
-				if($field['key']=='PRI'){$type .= ' Primary Key';}
-				elseif($field['key']=='UNI'){$type .= ' UNIQUE';}
-				if(strlen($field['default'])){$type .= ' Default '.$field['default'];}
-				if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
-				$type=xmlEncodeCDATA($type);
-				$xmldata .= '	<field name="'.$field['field'].'" type="'.$type.'" />'."\r\n";
-                }
-            $xmldata .= '</xmlschema>'."\r\n";
-            }
-        if(isset($_REQUEST[$table.'_Meta']) && $_REQUEST[$table.'_Meta']==1){
-			//export Meta data from _tabledata and _fielddata tables
-			$mtables=array('_tabledata','_fielddata');
-			foreach($mtables as $mtable){
-				$recs=getDBRecords(array('-table'=>$mtable,'tablename'=>$table));
-				if(is_array($recs)){
-					$fields=getDBFields($mtable,1);
-					foreach($recs as $rec){
-						$xmldata .= '<xmlmeta name="'.$mtable.'">'."\r\n";
-						foreach($fields as $field){
-							if(!strlen($rec[$field])){continue;}
-							if($isapp && stringBeginsWith($field,'_')){continue;}
-							$xmldata .= "	<{$field}>".xmlEncodeCDATA($rec[$field])."</{$field}>\r\n";
-	                        }
-						$xmldata .= '</xmlmeta>'."\r\n";
-	                    }
-					}
-				}
-            }
-        if(isset($_REQUEST[$table.'_Data']) && $_REQUEST[$table.'_Data']==1){
-			//export table record
-			$recs=getDBRecords(array('-table'=>$table,'-order'=>'_id'));
-			if(is_array($recs)){
-				$fields=getDBFields($table,1);
-				foreach($recs as $rec){
-					$xmldata .= '<xmldata name="'.$table.'">'."\r\n";
-					foreach($fields as $field){
-						if(!strlen($rec[$field])){continue;}
-						if($isapp && stringBeginsWith($field,'_')){continue;}
-						$xmldata .= "	<{$field}>".xmlEncodeCDATA($rec[$field])."</{$field}>\r\n";
-		                }
-					$xmldata .= '</xmldata>'."\r\n";
-		            }
-				}
-	        }
-        $xmldata .= "\r\n\r\n";
-        }
-    //specific records?
-	$tables=array('_pages','_templates');
-	foreach($tables as $table){
-	    if(!isset($_REQUEST[$table.'_Data']) && is_array($_REQUEST[$table.'_recs'])){
-			//export table record
-			$ids=implode(',',$_REQUEST[$table.'_recs']);
-			$recs=getDBRecords(array('-table'=>$table,'-where'=>"_id in ({$ids})",'-order'=>'_id'));
-			if(is_array($recs)){
-				$fields=getDBFields($table,1);
-				foreach($recs as $rec){
-					$xmldata .= '<xmldata name="'.$table.'">'."\r\n";
-					foreach($fields as $field){
-						if(!strlen($rec[$field])){continue;}
-						if($isapp && stringBeginsWith($field,'_')){continue;}
-						$xmldata .= "	<{$field}>".xmlEncodeCDATA($rec[$field])."</{$field}>\r\n";
-		                }
-					$xmldata .= '</xmldata>'."\r\n";
-		            }
-				}
-	        }
-	    }
-    $xmldata.='</export>'."\r\n";
-    pushData($xmldata,'xml');
-    exit;
-    }
+if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isset($_REQUEST['func']) && $_REQUEST['func']=='export'){
+	echo adminViewPage('export');
+	exit;
+}
 //Create new table?
 if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='add' && isset($_REQUEST['_table_']) && isset($_REQUEST['_schema'])){
 	$_SESSION['admin_errors']=array();
@@ -1317,6 +1236,10 @@ if(isset($_REQUEST['_menu'])){
 		case 'reports':
 		case 'htmlbox':
 			echo adminViewPage($_REQUEST['_menu']);
+		break;
+		case 'export':
+			echo adminViewPage('export');
+			exit;
 		break;
 		case 'editor':
 			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'."\n";
@@ -3159,56 +3082,20 @@ LIST_TABLE:
                 	}
                 //grep records?
                 if($grep['records']==1){
-                	echo '<div class="w_bold w_big w_dblue">Record Results</div>'."\n";
-					echo '<table class="table table-striped table-bordered">'."\n";
-                	echo '	<tr><th>Table</th><th>Record</th><th>Fields</th></tr>'."\n";
-					foreach($tables as $table){
-						if(strlen($grep['table']) && $table != $grep['table']){continue;}
-						$info=getDBFieldInfo($table);
-						//echo printValue($info);
-						$wheres=array();
-						$fields=array();
-						foreach($info as $field=>$finfo){
-							switch($info[$field]['_dbtype']){
-								case 'int':
-									if(isNum($grep['string'])){
-										$wheres[]="{$field}={$grep['string']}";
-										$fields[]=$field;
-										}
-									break;
-								case 'char':
-								case 'string':
-								case 'blob':
-								case 'text':
-									$wheres[]="{$field} like '%{$grep['string']}%'";
-									$fields[]=$field;
-									break;
-                            	}
-							}
-						if(!count($wheres)){continue;}
-						if(!in_array('_id',$fields)){array_unshift($fields,'_id');}
-						$where=implode(' or ',$wheres);
-						$recopts=array('-table'=>$table,'-where'=>$where,'-fields'=>$fields);
-						//echo printValue($recopts);
-						$recs=getDBRecords($recopts);
-						if(is_array($recs)){
-							$cnt=count($recs);
-							//echo "<b>{$cnt} records in {$table}</b><br>\n";
-							foreach($recs as $rec){
-								$vals=array();
-								foreach($rec as $key=>$val){
-									if(stringContains($val,$grep['string'])){$vals[]=$key;}
-                                	}
-								if(count($vals)){
-									echo '	<tr valign="top"><td>'.$table.'</td><td align="right"><a class="w_link" style="display:block" href="/php/admin.php?'."_table_={$table}&_menu=edit&_id={$rec['_id']}\">{$rec['_id']}</a></td><td>".implode(', ',$vals).'</td></tr>'."\n";
-									}
-                            	}
-                        	}
-                    	}
-                    echo '</table>'."\n";
-                	}
+					$results=grepDBTables($grep['string']);
+					if(is_array($results)){
+						echo '<div class="w_bold w_big w_dblue">Record Results</div>'.PHP_EOL;
+						echo listDBRecords(array(
+							'-list'=>$results,
+							'_id_href'=>"/php/admin.php?_table_=%tablename%&_menu=edit&_id=%_id%"
+						));
+					}
+					else{
+						echo $results;
+					}
             	}
-			break;
+			}
+		break;
 		case 'import':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'."\n";
 			$importmsg='';
@@ -3372,6 +3259,10 @@ LIST_TABLE:
 			//echo printValue($_REQUEST);
 			//echo printValue($_FILES);
 			break;
+		case 'export':
+			echo adminViewPage('export');
+			exit;
+		break;
 		case 'export':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-export w_biggest w_warning"></span> Export to xml</div>'."\n";
 			echo buildFormBegin('/php/admin.php',array('_menu'=>"export"));
