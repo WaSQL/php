@@ -8287,7 +8287,7 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 	}
 	//return $tables;
 	$search=trim($search);
-	if(!search){return "grepDBTables Error: no search value";}
+	if(!strlen($search)){return "grepDBTables Error: no search value";}
 	$results=array();
 	$search=str_replace("'","''",$search);
 	$search=strtolower($search);
@@ -8303,7 +8303,7 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 				case 'integer':
 				case 'number':
 				case 'float':
-					if(isNum($grep['string'])){
+					if(isNum($search)){
 						$wheres[]="{$field}={$search}";
 						$fields[]=$field;
 					}
