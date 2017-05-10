@@ -1,0 +1,111 @@
+<view:default>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="w_bigger w_lblue w_bold"><span class="icon-export"></span> Export</div>
+		</div>
+	</div>
+	<form method="post" action="/php/admin.php" onsubmit="return submitForm(this);">
+		<input type="hidden" name="_menu" value="export" />
+		<input type="hidden" name="func" value="export" />
+	<div class="row">
+		<div class="col-sm-6">
+			<h4><?=buildFormCheckall('data-export','table',array('-label'=>'User Tables'));?></h4>
+			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
+				<table class="table table-striped">
+					<tr>
+						<th>Table</th>
+						<th>Schema</th>
+						<th>Meta</th>
+						<th>Data</th>
+					</tr>
+					<view:table>
+					<tr>
+						<td>
+							<?=buildFormCheckall('data-table',$table,array('-label'=>$table));?>
+						</td>
+						<td>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_schema[]" id="ck_<?=$table;?>_schema" value="<?=$table;?>" />
+							<label for="ck_<?=$table;?>_schema" class="icon-mark"></label>
+							<label for="ck_<?=$table;?>_schema"></label>
+						</td>
+						<td>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_meta[]" id="ck_<?=$table;?>_meta" value="<?=$table;?>" />
+							<label for="ck_<?=$table;?>_meta" class="icon-mark"></label>
+							<label for="ck_<?=$table;?>_meta"></label>
+						</td>
+						<td>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_data[]" id="ck_<?=$table;?>_data" value="<?=$table;?>" />
+							<label for="ck_<?=$table;?>_data" class="icon-mark"></label>
+							<label for="ck_<?=$table;?>_data"></label>
+						</td>
+					</tr>
+					</view:table>
+					<?=renderEach('table',$tables,'table');?>
+				</table>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<h4><?=buildFormCheckall('data-export','page',array('-label'=>'Pages'));?></h4>
+			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
+				<table class="table table-striped">
+					<tr>
+						<th>ID</th>
+						<th>Name</th>
+					</tr>
+					<view:epage>
+					<tr>
+						<td><?=$epage['_id'];?></td>
+						<td>
+							<input data-export="page" type="checkbox" style="display:none;" data-type="checkbox" name="export_pages[]" id="ck_<?=$epage['_id'];?>_page" value="<?=$epage['_id'];?>" />
+							<label for="ck_<?=$epage['_id'];?>_page" class="icon-mark"></label>
+							<label for="ck_<?=$epage['_id'];?>_page"><?=$epage['name'];?></label>
+						</td>
+					</tr>
+					</view:epage>
+					<?=renderEach('epage',$epages,'epage');?>
+				</table>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<h4><?=buildFormCheckall('data-export','template',array('-label'=>'Templates'));?></h4>
+			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
+				<table class="table table-striped">
+					<tr>
+						<th>ID</th>
+						<th>Name</th>
+					</tr>
+					<view:et>
+					<tr>
+						<td><?=$et['_id'];?></td>
+						<td>
+							<input data-export="template" type="checkbox" style="display:none;" data-type="checkbox" name="export_templates[]" id="ck_<?=$et['_id'];?>_template" value="<?=$et['_id'];?>" />
+							<label for="ck_<?=$et['_id'];?>_template" class="icon-mark"></label>
+							<label for="ck_<?=$et['_id'];?>_template"><?=$et['name'];?></label>
+						</td>
+					</tr>
+					</view:et>
+					<?=renderEach('et',$etemplates,'et');?>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<?=buildFormText('name',array('placeholder'=>'name of export file','required'=>1));?>
+		</div>
+		<div class="col-sm-3">
+			<button type="submit" class="btn btn-default"><span class="icon-export"></span> Export to File</button>
+		</div>
+	</div>
+	</form>
+</div>
+</view:default>
+
+<view:export>
+	<div class="w_centerpop_title"><span class="icon-export"></span> Export</div>
+	<div class="w_centerpop_content" style="max-width:600px;max-height:400px;overflow:auto;">
+		<?=printValue($_REQUEST);?>
+	</div>
+</view:export>
+
