@@ -8282,7 +8282,7 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 		$tables=getDBTables($dbname);
 		//ignore _changelog
 		foreach($tables as $i=>$table){
-			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
+			if(in_array($table,array('_changelog','_cronlog','_errors','admin_assert'))){unset($tables[$i]);}
 		}
 	}
 	//return $tables;
