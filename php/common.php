@@ -407,6 +407,7 @@ function buildFormCalendar($name,$params=array()){
 * @usage echo buildFormCheckAll('id','users');
 */
 function buildFormCheckAll($att,$attval,$params=array()){
+	if(!isset($params['-label'])){$params['-label']='checkall';}
 	$onclick='';
 	if(isset($params['onchange'])){$onclick=$params['onchange'];unset($params['onchange']);}
 	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
@@ -418,7 +419,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	unset($params[$att]);
 	$tag .= setTagAttributes($params);
 	$tag .= ' />';
-	$tag .= '<label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'">checkall</label>';
+	$tag .= '<label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'">'.$params['-label'].'</label>';
 	return $tag;
 	}
 //---------- begin function buildFormCheckbox--------------------------------------
