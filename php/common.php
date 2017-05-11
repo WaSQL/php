@@ -9914,6 +9914,10 @@ function postXML($url='',$xml='',$params=array()) {
 	if(!isset($params['-xml'])){$params['-xml']=1;}
 	return postBody($url,$xml,$params);
 }
+//---------- begin function postBody
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function postBody($url='',$body='',$params=array()) {
 	//defaults
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
