@@ -2008,6 +2008,11 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
   		}
 	}
+//---------- begin function getDBExpression
+/**
+* @describe gets field expression for json type fields
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function getDBExpression($table,$field,$schema=''){
 	global $CONFIG;
 	if(!strlen($schema)){$schema=$CONFIG['dbname'];}
