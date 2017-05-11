@@ -213,7 +213,10 @@ ENDOFWHERE;
 	}
 }
 exit;
-
+//---------- begin function cronUpdate
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function cronUpdate($id,$params){
 	$params['-table']='_cron';
 	$params['-where']="_id={$id}";
@@ -221,6 +224,10 @@ function cronUpdate($id,$params){
 	//echo "cronUpdate".printValue($ok).printValue($params);
 	return $ok;
 }
+//---------- begin function cronUpdate
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function cronDBConnect(){
 	global $CONFIG;
 	global $dbh;
