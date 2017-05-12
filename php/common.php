@@ -2778,11 +2778,12 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	$attstring='';
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
-		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur',
-		'_behavior','display','onfocus','title','alt','tabindex',
-		'accesskey','_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
+		'id','name','class','style','title','alt','accesskey','tabindex',
+		'onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','onfocus',
+		'_behavior','display',
+		'_required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
-		'lang','autocorrect','list','data-requiredif'
+		'lang','autocorrect','list','data-requiredif','autofocus'
 		);
 	//change the required attribute to _required since it messes up HTML5
 	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
