@@ -37,6 +37,13 @@ include_once("$progpath/config.php");
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
 }
+//set encoding to UTF-8 by default, unless overridden in the config
+if(isset($CONFIG['encoding'])){
+	@mb_internal_encoding($CONFIG['encoding']);
+}
+else{
+	mb_internal_encoding("UTF-8");
+}
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 
