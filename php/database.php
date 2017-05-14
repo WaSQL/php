@@ -6622,6 +6622,10 @@ function getDBUserById($id=0,$fields=array()){
 *	<?=listDBRecords(array('-list'=>$recs));?>
 */
 function listDBRecords($params=array(),$customcode=''){
+	if(isset($params[0])){
+		//they are passing in the list without any other params.
+		$params=array('-list'=>$params);
+	}
 	global $PAGE;
 	global $USER;
 	global $CONFIG;
@@ -6781,7 +6785,7 @@ function listDBRecords($params=array(),$customcode=''){
 					$xfields=$tinfo['default_listfields'];
 					}
 				if(count($xfields)){
-					if($idfield == '_id' || !in_array($idfield,$xfields)){
+					if(!isset($params['-list']) && ($idfield == '_id' || !in_array($idfield,$xfields))){
 						array_unshift($xfields,$idfield);
 					}
 					//echo printValue($tinfo['fields']);exit;
@@ -6822,7 +6826,12 @@ function listDBRecords($params=array(),$customcode=''){
 		}
 	$list_cnt=count($list);
 	$listform=0;
-	$fields=array($idfield);
+	if(!isset($params['-list'])){
+		$fields=array($idfield);
+	}
+	else{
+		$fields=array();
+	}
 	if(isset($params['-fields'])){
 		if(is_array($params['-fields'])){$fields=$params['-fields'];}
 		else{$fields=explode(',',$params['-fields']);}
@@ -6852,7 +6861,9 @@ function listDBRecords($params=array(),$customcode=''){
 					//echo "default";
 					$fields=$tinfo['default_listfields'];
 					}
-				array_unshift($fields,$idfield);
+				if(!isset($params['-list'])){
+					array_unshift($fields,$idfield);
+				}
 				$tdata=1;
             	}
             }
