@@ -35,13 +35,17 @@ function wasqlRebuildManual(){
 	);
 	//add any custom js files found in ../wfiles/js/custom folder
 	$cfiles=listFiles('../wfiles/js/custom');
-	foreach($cfiles as $cfile){
-		if(preg_match('/\.js$/i',$cfile)){$files[]="../wfiles/js/custom/{$cfile}";}
+	if(is_array($cfiles)){
+		foreach($cfiles as $cfile){
+			if(preg_match('/\.js$/i',$cfile)){$files[]="../wfiles/js/custom/{$cfile}";}
+		}
 	}
 	//add extras $phpdir/extras
 	$cfiles=listFiles("{$phpdir}/extras");
-	foreach($cfiles as $cfile){
-		if(preg_match('/\.php$/i',$cfile)){$files[]="{$phpdir}/extras/{$cfile}";}
+	if(is_array($cfiles)){
+		foreach($cfiles as $cfile){
+			if(preg_match('/\.php$/i',$cfile)){$files[]="{$phpdir}/extras/{$cfile}";}
+		}
 	}
 	foreach($files as $file){
 		if(stringContains($file,'/')){
