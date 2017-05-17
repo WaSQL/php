@@ -238,9 +238,9 @@ function abortMessage($msg){
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	echo $progpath;
 	if(isWindows()){
-		if(isset($settings['sound']['fail'])){
-			if(is_file("{$progpath}/{$settings['sound']['fail']}")){
-				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['fail']}";
+		if(isset($settings['sound']['abort'])){
+			if(is_file("{$progpath}/{$settings['sound']['abort']}")){
+				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['abort']}";
 				$ok=exec($cmd);
 				exit;
 			}
@@ -248,10 +248,10 @@ function abortMessage($msg){
 				switch(strtolower($settings['sound']['gender'])){
 					case 'f':
 					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['fail']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['abort']}\"";
 					break;
 					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['fail']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['abort']}\"";
 					break;
 				}
 				$ok=exec($cmd);
@@ -271,9 +271,9 @@ function errorMessage($msg){
 	echo "Success: {$msg}".PHP_EOL;
 	echo $progpath;
 	if(isWindows()){
-		if(isset($settings['sound']['success'])){
-			if(is_file("{$progpath}/{$settings['sound']['fail']}")){
-				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['fail']}";
+		if(isset($settings['sound']['error'])){
+			if(is_file("{$progpath}/{$settings['sound']['error']}")){
+				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['error']}";
 				$ok=exec($cmd);
 				return;
 			}
@@ -281,10 +281,10 @@ function errorMessage($msg){
 				switch(strtolower($settings['sound']['gender'])){
 					case 'f':
 					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['fail']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['error']}\"";
 					break;
 					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['fail']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['error']}\"";
 					break;
 				}
 				$ok=exec($cmd);
@@ -315,10 +315,10 @@ function successMessage($msg){
 				switch(strtolower($settings['sound']['gender'])){
 					case 'f':
 					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['success']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['success']}\"";
 					break;
 					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['success']} - {$msg}\"";
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['success']}\"";
 					break;
 				}
 				$ok=exec($cmd);
