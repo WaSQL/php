@@ -4,6 +4,7 @@
 */
 global $progpath;
 global $hosts;
+global $settings;
 global $cgroup;
 global $chost;
 global $argv;
@@ -15,6 +16,7 @@ $mds=array();
 $progpath=dirname(__FILE__);
 include_once("$progpath/../php/common.php");
 getHosts();
+getSettings();
 $groups=getGroups();
 if(isset($argv[1])){
 	if(isset($hosts[$argv[1]])){$chost=$argv[1];}
@@ -45,8 +47,7 @@ while (!flock($lockhandle, LOCK_EX | LOCK_NB, $wouldblock)) {
     }
 }
 if (!$got_lock) {
-	echo "{$chost} is Already locked".PHP_EOL;
-	exit;
+	abortMessage("{$chost} is Already locked");
 }
 
 
@@ -92,26 +93,20 @@ function writeFiles(){
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
 	if(isset($post['error']) && strlen($post['error'])){
-    	echo PHP_EOL."!!ERROR!! - {$post['error']}".PHP_EOL.PHP_EOL;
-    	exit;
+		abortMessage($post['error']);
 	}
 	//check for login form
 	if(preg_match('/\"\_login\"/is',$post['body'])){
-    	echo PHP_EOL."!!ERROR!! - INVALID LOGIN CREDENTIALS".PHP_EOL.PHP_EOL;
-    	exit;
+    	abortMessage("INVALID LOGIN CREDENTIALS");
 	}
 	file_put_contents('postedit_pages.result',$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
-    	echo " - {$post['curl_info']['http_code']} error retrieving".PHP_EOL;
-    	echo "{$post['body']}".PHP_EOL;
-    	exit;
+    	abortMessage("{$post['curl_info']['http_code']} error retrieving files");
 	}
 	elseif(isset($xml['fatal_error'])){
-    	echo " - Fatal error retrieving files".PHP_EOL;
-    	echo "{$xml['fatal_error']}".PHP_EOL;
-    	exit;
+    	abortMessage($xml['fatal_error']);
 	}
 
 
@@ -124,7 +119,6 @@ function writeFiles(){
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
 		$info=$rec['@attributes'];
-		//echo printValue($info);exit;
 		unset($rec['@attributes']);
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
@@ -161,8 +155,6 @@ function writeFiles(){
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
 		cmdResults("EXPLORER /E,\"{$afolder}\"");
-		//cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}");
-		//cmdResults("start /B \"link\" http://{$hosts[$chost]['name']}/a");
 	}
 	return $afolder;
 }
@@ -178,15 +170,13 @@ function fileChanged($afile){
 	global $hosts;
 	global $chost;
 	global $mtimes;
-	//echo $afile;exit;
 	$filename=getFileName($afile);
 	echo "  {$filename}";
-	//exit;
 	$content=@file_get_contents($afile);
 	if(!strlen($content) && isWindows()){
 		$content=getContents($afile);
 		if(!strlen($content)){
-    		echo " - failed to get content".PHP_EOL;
+    		$ok=errorMessage(" - failed to get content");
     		return;
 		}
 	}
@@ -213,31 +203,22 @@ POSTFILE:
 	$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
 	$json=json_encode($xml);
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
-    	echo " - {$post['curl_info']['http_code']} error posting".PHP_EOL;
-    	echo "{$json}".PHP_EOL;
-    	if(isWindows()){echo "\x07\x07\x07\x07\x07";}
-    	exit;
+    	abortMessage("{$post['curl_info']['http_code']} error posting file to server");
 	}
 	elseif(isset($xml['fatal_error'])){
-    	echo " - Fatal error posting".PHP_EOL;
-    	echo "{$json}".PHP_EOL;
-    	if(isWindows()){echo "\x07\x07\x07\x07\x07";}
-    	exit;
+    	abortMessage(" - Fatal error posting");
 	}
 	elseif(isset($xml['refresh_error'])){
-    	echo " - Refresh error posting".PHP_EOL;
-    	echo "   {$xml['refresh_error']}".PHP_EOL;
+		$ok=errorMessage($xml['refresh_error']." attention required");
     	echo "   Refresh Now? Y or N: ";
 		$s = stream_get_line(STDIN, 1024, PHP_EOL);
 		$s=strtolower($s);
 		if($s != 'n'){
         	writeFiles();
 		}
-		if(isWindows()){echo "\x07\x07\x07\x07\x07";}
 	}
 	elseif(isset($xml['error'])){
-    	echo " - Error posting".PHP_EOL;
-    	echo "   {$xml['error']}".PHP_EOL;
+		$ok=errorMessage($xml['error']. "attention required");
     	echo "   Overwrite Anyway? Y or N: ";
 		$s = stream_get_line(STDIN, 1024, PHP_EOL);
 		$s=strtolower($s);
@@ -246,12 +227,110 @@ POSTFILE:
         	$post=postURL($url,$postopts);
         	goto POSTFILE;
 		}
-		if(isWindows()){echo "\x07\x07\x07\x07\x07";}
 	}
-	echo " - Successfully updated".PHP_EOL;
-	//beep once on windows for success;
-	if(isWindows()){echo "\x07";}
+	$ok=successMessage(" - Successfully updated");
 	return true;
+}
+function abortMessage($msg){
+	global $settings;
+	global $progpath;
+	$msg=trim($msg);
+	echo "Fatal Error: {$msg}".PHP_EOL;
+	echo $progpath;
+	if(isWindows()){
+		if(isset($settings['sound']['fail'])){
+			if(is_file("{$progpath}/{$settings['sound']['fail']}")){
+				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['fail']}";
+				$ok=exec($cmd);
+				exit;
+			}
+			elseif(isset($settings['sound']['gender'])){
+				switch(strtolower($settings['sound']['gender'])){
+					case 'f':
+					case 'female':
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['fail']} - {$msg}\"";
+					break;
+					default:
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['fail']} - {$msg}\"";
+					break;
+				}
+				$ok=exec($cmd);
+				exit;
+			}
+			else{
+				echo "\x07\x07\x07\x07\x07";
+			}
+		}
+	}
+	exit;
+}
+function errorMessage($msg){
+	global $settings;
+	global $progpath;
+	$msg=trim($msg);
+	echo "Success: {$msg}".PHP_EOL;
+	echo $progpath;
+	if(isWindows()){
+		if(isset($settings['sound']['success'])){
+			if(is_file("{$progpath}/{$settings['sound']['fail']}")){
+				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['fail']}";
+				$ok=exec($cmd);
+				return;
+			}
+			elseif(isset($settings['sound']['gender'])){
+				switch(strtolower($settings['sound']['gender'])){
+					case 'f':
+					case 'female':
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['fail']} - {$msg}\"";
+					break;
+					default:
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['fail']} - {$msg}\"";
+					break;
+				}
+				$ok=exec($cmd);
+				return;;
+			}
+			else{
+				echo "\x07";
+				return;
+			}
+		}
+	}
+	return;
+}
+function successMessage($msg){
+	global $settings;
+	global $progpath;
+	$msg=trim($msg);
+	echo "Success: {$msg}".PHP_EOL;
+	echo $progpath;
+	if(isWindows()){
+		if(isset($settings['sound']['success'])){
+			if(is_file("{$progpath}/{$settings['sound']['success']}")){
+				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['success']}";
+				$ok=exec($cmd);
+				return;
+			}
+			elseif(isset($settings['sound']['gender'])){
+				switch(strtolower($settings['sound']['gender'])){
+					case 'f':
+					case 'female':
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['success']} - {$msg}\"";
+					break;
+					default:
+						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['success']} - {$msg}\"";
+					break;
+				}
+				$ok=exec($cmd);
+				return;;
+			}
+			else{
+				echo "\x07";
+				return;
+			}
+		}
+	}
+	return;
 }
 function getContents($file){
 	$file=preg_replace('/\//',"\\",$file);
@@ -353,12 +432,8 @@ function getGroups(){
 function getHosts(){
 	global $progpath;
 	global $hosts;
-	if(!file_exists("$progpath/postedit.xml")){
-		echo "Unable to find postedit.xml file";
-		exit;
-	}
-	$xmldata=getFileContents("$progpath/postedit.xml");
-	$xml = (array)readXML("<postedit>{$xmldata}</postedit>");
+	global $xml;
+	if(!isset($xml['hosts'])){getXml();}
 	$hosts=array();
 	foreach($xml['hosts']->host as $xhost){
 	    	$xhost=(array)$xhost;
@@ -370,6 +445,35 @@ function getHosts(){
             	$hosts[$alias]=$hosts[$name];
 			}
 		}
+	}
+	return;
+}
+function getSettings(){
+	global $progpath;
+	global $settings;
+	global $xml;
+	if(!isset($xml['hosts'])){getXml();}
+	$settings=array();
+	if(!isset($xml['settings'])){
+		return;
+	}
+	foreach($xml['settings']->sound as $set){
+	    	$set=(array)$set;
+	    	foreach($set['@attributes'] as $k=>$v){
+			$settings['sound'][$k]=$v;
+		}
+	}
+	return;
+}
+function getXml(){
+	global $progpath;
+	global $xml;
+	if(!isset($xml['hosts'])){
+		if(!file_exists("$progpath/postedit.xml")){
+			abortMessage("Unable to find postedit.xml file");
+		}
+		$xmldata=getFileContents("$progpath/postedit.xml");
+		$xml = (array)readXML("<postedit>{$xmldata}</postedit>");
 	}
 	return;
 }
