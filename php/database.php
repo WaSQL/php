@@ -2315,6 +2315,12 @@ function insertDBFile($params,$e=false){
 */
 function instantDBMeta($tablename,$fieldname,$attributes){
 	if(stringContains($tablename,'.')){return false;}
+	if(!isDBTable('_tabledata')){
+		createWasqlTable('_tabledata');
+	}
+	if(!isDBTable('_fielddata')){
+		createWasqlTable('_fielddata');
+	}
 	//skip if already exists
 	if(getDBCount(array('-table'=>"_fielddata",'tablename'=>$tablename,'fieldname'=>$fieldname))){return 0;}
 	//required value
@@ -7527,8 +7533,30 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	$databaseCache=array();
 	//Open a connection to a dabase Server - supports multiple database types
 	if(isMysqli()){
-		//echo "mysqli_connect({$host}, {$user}, {$pass}, {$dbname})<br>\n";
-		return mysqli_connect($host, $user, $pass, $dbname);
+		try{
+			$dbh=mysqli_connect($host, $user, $pass, $dbname);
+		}
+		catch(Exception $e){
+			$dbh=false;
+		}
+		if(!$dbh && strlen($dbname)){
+			//try connecting without specifiying dbname
+			try{
+				$dbh=mysqli_connect($host, $user, $pass);
+			}
+			catch(Exception $e){
+				$dbh=false;
+			}
+			if($dbh){
+				//try creating the database
+				$sql = "CREATE DATABASE {$dbname}";
+				if(mysqli_query($dbh, $sql)){
+					mysqli_select_db($dbh,$dbname);
+					return $dbh;
+				}
+			}
+		}
+		return $dbh;
 	}
 	elseif(isMysql()){return mysql_connect($host, $user, $pass);}
 	elseif(isMssql()){return mssql_connect($host, $user, $pass);}
