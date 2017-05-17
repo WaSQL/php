@@ -23,7 +23,7 @@ Begin
 			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, vol_1
 			             from :lc_Period_Tree
 			             order by customer_id)
-	    		Start where customer_id = 3);
+	    		Start where customer_id = 1);
         
     -- Get Max Level
     select max(level_id)

@@ -30,6 +30,6 @@ from (select c.customer_id, c.country, c.currency, b.pv,round(b.pv,2)-round(c.ag
 	from HIERARCHY ( 
 		 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, a.*, round(a.vol_1+a.vol_4,2) as agg_pv, round(a.vol_6+a.vol_9,2) as agg_cv
 		             from (select * from commissions.customer_history where period_id = 13) a)
-			Start where customer_id = 3) c, commissions.orabwt b
+			Start where customer_id = 1) c, commissions.orabwt b
 	where c.customer_id = b.dist_id
 	and round(c.agg_pv,2) <> round(b.pv,2))

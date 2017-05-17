@@ -49,9 +49,18 @@ begin
 			,vol_12						as vol_12
 			,vol_13						as vol_13
 			,vol_14						as vol_14
+			,vol_15						as vol_15
 			,0							as payout_1_cap
 			,0							as payout_1
 			,0							as payout_2
+			,0							as payout_3
+			,0							as payout_4
+			,0							as payout_5
+			,0							as payout_6
+			,0							as payout_7
+			,0							as payout_8
+			,0							as payout_9
+			,0							as payout_10
 		from customer;
 	else
 		insert into customer_history
@@ -89,9 +98,18 @@ begin
 			,vol_12						as vol_12
 			,vol_13						as vol_13
 			,vol_14						as vol_14
+			,vol_15						as vol_15
 			,0							as payout_1_cap
 			,0							as payout_1
 			,0							as payout_2
+			,0							as payout_3
+			,0							as payout_4
+			,0							as payout_5
+			,0							as payout_6
+			,0							as payout_7
+			,0							as payout_8
+			,0							as payout_9
+			,0							as payout_10
 		from customer_history
 		where period_id = :pn_Period_id
 		and batch_id = 0;

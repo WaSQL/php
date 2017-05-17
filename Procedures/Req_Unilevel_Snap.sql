@@ -23,23 +23,23 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_unilevel_history
+			insert into req_unilevel
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
 				,level_id
 				,value_1
-			from req_unilevel;
+			from req_unilevel_template;
 		else
-			insert into req_unilevel_history
+			insert into req_unilevel
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
 				,level_id
 				,value_1
-			from req_unilevel_history
+			from req_unilevel
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

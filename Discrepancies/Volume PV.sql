@@ -28,7 +28,7 @@ from HIERARCHY (
 	                   from commissions.customer_history a, lc_period z
 	                   where a.period_id = z.period_id
 	                   and a.batch_id = z.batch_id) a)
-		Start where customer_id = 3) c
+		Start where customer_id = 1) c
 	, commissions.orabwt b
 where c.customer_id = b.dist_id
 and round(c.agg_pv,2) <> round(b.pv,2);

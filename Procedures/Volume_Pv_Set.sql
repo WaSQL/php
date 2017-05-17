@@ -14,6 +14,14 @@ begin
 	and end_date >= current_date;
 	
 	replace customer (customer_id, vol_1, vol_6)
+	select
+		 customer_id
+		,sum(pv)
+		,sum(cv)
+	from fn_Volume_Pv_Detail(:ln_Period_id)
+	group by customer_id;
+	
+	/*
 	Select 
 	      t.customer_id
 	     ,Sum(ifnull(t.value_2,0)) As pv
@@ -24,6 +32,7 @@ begin
     Group By t.customer_id
     having (Sum(ifnull(t.value_2,0)) != 0
 		or  Sum(ifnull(t.value_4,0)) != 0);
+	*/
    	
    	commit;
 

@@ -7,7 +7,7 @@ with lc_period as (
 	and a.closed_date is not null
 	and a.final_date is null)
 select 
-	c.customer_id
+	  c.customer_id
 	, c.customer_name
 	, c.country
 	, c.status_id
@@ -20,6 +20,9 @@ select
 	, c.vol_6
 	, b.cv
 	, round(b.cv,2)-round(c.agg_cv,2) as cv_diff
+	, c.vol_13
+	, b.ov
+	, round(b.ov,2)-round(c.vol_13,2) as ov_diff
 	, c.rank_id
 	, c.rank_id-c.rank_high_type_id as rank_diff
 from HIERARCHY ( 
@@ -28,6 +31,7 @@ from HIERARCHY (
 	             	   from commissions.customer_history a , lc_period p
 	                   where a.period_id = p.period_id
 	                   and a.batch_id = p.batch_id) a)
-		Start where customer_id = 3) c, commissions.orabwt b
+		Start where customer_id = 1) c, commissions.orabwt b
 where c.customer_id = b.dist_id
-and round(c.vol_13,2) <> round(b.ov,2);
+and round(c.vol_13,2) <> round(b.ov,2)
+order by c.customer_id;

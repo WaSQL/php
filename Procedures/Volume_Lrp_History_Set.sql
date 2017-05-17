@@ -16,6 +16,16 @@ begin
    	commit;
 	
 	replace customer_history (period_id, batch_id, customer_id, vol_2, vol_7)
+	select
+		 t.period_id
+		,t.batch_id 
+		,t.customer_id
+		,sum(t.pv)
+		,sum(t.cv)
+	from fn_Volume_Pv_Lrp_Detail(:pn_Period_id, :pn_Period_Batch_id) t
+	Group By t.period_id, t.batch_id , t.customer_id;
+	
+	/*
 	Select 
 	      :pn_Period_id
 	     ,:pn_Period_Batch_id
@@ -33,6 +43,7 @@ begin
     Group By t.customer_id
     having (Sum(ifnull(t.value_2,0)) != 0
 		or  Sum(ifnull(t.value_4,0)) != 0);
+	*/
    	
    	commit;
    

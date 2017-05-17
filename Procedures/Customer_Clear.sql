@@ -1,3 +1,4 @@
+drop procedure Commissions.Customer_Clear;
 create procedure Commissions.Customer_Clear
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
@@ -20,7 +21,8 @@ begin
 	  , vol_11 = 0
 	  , vol_12 = 0
 	  , vol_13 = 0
-	  , vol_14 = 0;
+	  , vol_14 = 0
+	  , vol_15 = 0;
 	  
 	commit;
 	

@@ -37,8 +37,9 @@ begin
 			,ifnull(w.flag_type_id,0)				as flag_type_id
 			,ifnull(to_number(w.flag_value),0)		as flag_value
 		from customer_history c
-			left outer join req_qual_leg_version v
+			left outer join version v
 				on c.country = v.country
+				and v.version_id in (1,2)
 			left outer join customer_history_flag w
 				on c.customer_id = w.customer_id
 				and c.period_id = w.period_id
@@ -57,7 +58,7 @@ begin
 		
 	lc_Require_Leg =
 		select *
-		from req_qual_leg_history
+		from req_qual_leg
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 		

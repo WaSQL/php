@@ -26,6 +26,7 @@ begin
 		,t.set_volume_retail			as set_volume_retail
 		,t.set_volume_egv				as set_volume_egv
 		,t.set_volume_tv				as set_volume_tv
+		,t.set_volume_tw_cv				as set_volume_tw_cv
 		,t.set_volume_org				as set_volume_org
 		,t.set_rank						as set_rank
 		,t.set_payout_1					as set_payout_1
@@ -35,6 +36,11 @@ begin
 		,t.set_payout_5					as set_payout_5
 		,t.set_payout_6					as set_payout_6
 		,t.set_payout_7					as set_payout_7
+		,t.set_payout_8					as set_payout_8
+		,t.set_payout_9					as set_payout_9
+		,t.set_payout_10				as set_payout_10
+		,null							as beg_date_clear
+		,null							as end_date_clear
 		,null							as beg_date_run
 		,null							as end_date_run
 		,null							as beg_date_volume
@@ -49,24 +55,32 @@ begin
 		,null							as end_date_volume_egv
 		,null							as beg_date_volume_tv
 		,null							as end_date_volume_tv
+		,null							as beg_date_volume_tw_cv
+		,null							as end_date_volume_tw_cv
 		,null							as beg_date_volume_org
 		,null							as end_date_volume_org
 		,null							as beg_date_rank
 		,null							as end_date_rank
 		,null							as beg_date_payout_1
-		,null							as beg_date_payout_2
-		,null							as beg_date_payout_3
-		,null							as beg_date_payout_4
-		,null							as beg_date_payout_5
-		,null							as beg_date_payout_6
-		,null							as beg_date_payout_7
 		,null							as end_date_payout_1
+		,null							as beg_date_payout_2
 		,null							as end_date_payout_2
+		,null							as beg_date_payout_3
 		,null							as end_date_payout_3
+		,null							as beg_date_payout_4
 		,null							as end_date_payout_4
+		,null							as beg_date_payout_5
 		,null							as end_date_payout_5
+		,null							as beg_date_payout_6
 		,null							as end_date_payout_6
+		,null							as beg_date_payout_7
 		,null							as end_date_payout_7
+		,null							as beg_date_payout_8
+		,null							as end_date_payout_8
+		,null							as beg_date_payout_9
+		,null							as end_date_payout_9
+		,null							as beg_date_payout_10
+		,null							as end_date_payout_10
 	from period p, period_template t
 	where p.period_type_id = t.period_type_id
 	and p.period_id = :pn_Period_id;
@@ -80,5 +94,6 @@ begin
 	call Req_Cap_Snap(:pn_Period_id);
 	call Req_Unilevel_Snap(:pn_Period_id);
 	call Req_Power3_Snap(:pn_Period_id);
+	call Req_Pool_Snap(:pn_Period_id);
 
 end;

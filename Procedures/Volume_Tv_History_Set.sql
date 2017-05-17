@@ -27,8 +27,6 @@ begin
    	and c.batch_id = :pn_Period_Batch_id
 	and s.period_id = c.period_id
    	and s.batch_id = c.batch_id
-   	--and c.type_id = 1
-   	--and s.type_id in (1,5)
     Group By c.period_id, c.batch_id, c.customer_id, c.vol_1, c.vol_4;
    	
    	commit;

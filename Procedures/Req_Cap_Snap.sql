@@ -23,7 +23,7 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_cap_history
+			insert into req_cap
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -31,9 +31,9 @@ begin
 				,req_cap_type_id
 				,value_1
 				,value_2
-			from req_cap;
+			from req_cap_template;
 		else
-			insert into req_cap_history
+			insert into req_cap
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -41,7 +41,7 @@ begin
 				,req_cap_type_id
 				,value_1
 				,value_2
-			from req_cap_history
+			from req_cap
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

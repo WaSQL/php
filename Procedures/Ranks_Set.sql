@@ -38,8 +38,9 @@ begin
 			,ifnull(w.flag_type_id,0)				as flag_type_id
 			,ifnull(w.flag_value,0)					as flag_value
 		from customer c
-			left outer join req_qual_leg_version v
+			left outer join version v
 				on c.country = v.country
+				and v.version_id in (1,2)
 			left outer join customer_flag w
 				on c.customer_id = w.customer_id
 				and w.flag_type_id in (3,4,5);
@@ -54,7 +55,7 @@ begin
 		
 	lc_Require_Leg =
 		select *
-		from req_qual_leg;
+		from req_qual_leg_template;
 		
 	lc_Cust_Level = 
 		select

@@ -12,8 +12,6 @@ Begin
     declare ln_x        integer = 1;
     declare ln_y        integer;
     
-	call Payout_Power3_Clear(:pn_Period_id, :pn_Period_Batch_id);
-    
 	Update period_batch
 	Set beg_date_payout_2 = current_timestamp
       ,end_date_payout_2 = Null
@@ -26,6 +24,16 @@ Begin
 	lc_Exchange = 
 		select *
 		from fn_Exchange(:pn_Period_id);
+		
+	-- Get Customer Type
+	lc_Customer_Type =
+		select *
+		from customer_type;
+		
+	-- Get Customer Status
+	lc_Customer_Status =
+		select *
+		from customer_status;
    	
    	-- Get Period Customers
     lc_Customers_Level = 
@@ -52,10 +60,14 @@ Begin
 		from HIERARCHY ( 
 			 	SOURCE (select customer_id AS node_id, sponsor_id AS parent_id, a.*
 			            from customer_history a
+						   	 left outer join :lc_Customer_Type t1
+						   		on a.type_id = t1.type_id
+						   	 left outer join :lc_Customer_Status s1
+						   		on a.status_id = s1.status_id
 			            where period_id = :pn_Period_id
 						and batch_id = :pn_Period_Batch_id
-						and type_id in (1,5)
-						and status_id in (1,4)
+						and ifnull(t1.has_power3,-1) = 1
+						and ifnull(s1.has_earnings,-1) = 1
 			            order by customer_id)
 	    		Start where sponsor_id = 3) c
 			  left outer join customer_history_flag f
@@ -69,7 +81,7 @@ Begin
 	-- Get Requirements for Power3
 	lc_Req_Power3 =
 		select *
-		from req_power3_history
+		from req_power3
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 		
@@ -82,7 +94,7 @@ Begin
 			
 	    -- Loop through all tree levels from bottom to top
 	    for ln_y in 1..:ln_Max_Lvl do
-			replace payout_power3 (period_id, batch_id, sponsor_id, customer_id, lvl_id, paid_lvl_id, from_currency, to_currency, exchange_rate)
+			replace payout_02 (period_id, batch_id, sponsor_id, customer_id, lvl_id, paid_lvl_id, from_currency, to_currency, exchange_rate)
 	    	select 
 	    		 c.period_id
 	    		,c.batch_id 
@@ -100,7 +112,7 @@ Begin
 		   	and (c.pv_lrp >= (r.value_1 * :ln_x) or c.pv_lrp_waiver = 1 or case when :ln_x > 1 then c.pv else c.pv_lrp end >= (r.value_1 * :ln_x))
 		   	and (c.tv >= (r.value_2 * :ln_x) or c.tv_waiver = 1)
 		   	and (select count(*)
-		   		 from payout_power3
+		   		 from payout_02
 		   		 where period_id = :pn_Period_id
 				 and batch_id = :pn_Period_Batch_id
 				 and sponsor_id = c.customer_id
@@ -115,7 +127,7 @@ Begin
 	    	from :lc_Customers_Level
 	    	where customer_id in (
 	    		select customer_id		  
-			    from payout_power3
+			    from payout_02
 			    where period_id = :pn_Period_id
 				and batch_id = :pn_Period_Batch_id
 				and paid_lvl_id = :ln_x
@@ -129,7 +141,7 @@ Begin
     end while;
     
     -- Set Payout Amounts
-	replace payout_power3 (period_id, batch_id, sponsor_id, customer_id, bonus, bonus_exchanged)
+	replace payout_02 (period_id, batch_id, sponsor_id, customer_id, bonus, bonus_exchanged)
 	select 
 		 p.period_id
 		,p.batch_id
@@ -147,7 +159,7 @@ Begin
 		 + (select value_3
 		 	from :lc_Req_Power3
 			where level_id = p.lvl_id)) * p.exchange_rate, x.round_factor) 	as bonus_exchanged
-	from payout_power3 p, :lc_Exchange x
+	from payout_02 p, :lc_Exchange x
 	where p.period_id = :pn_Period_id
 	and p.batch_id = :pn_Period_Batch_id
 	and p.to_currency = x. currency;
@@ -161,7 +173,7 @@ Begin
     	,period_id
    		,batch_id
    		,bonus_exchanged
-   	from payout_power3
+   	from payout_02
 	where period_id = :pn_Period_id
 	and batch_id = :pn_Period_Batch_id;
 	

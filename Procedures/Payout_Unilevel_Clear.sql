@@ -14,7 +14,7 @@ begin
 	and batch_id = :pn_Period_Batch_id;
 	
 	delete
-	from Payout_Unilevel
+	from Payout_01
 	where period_id = :pn_Period_id
 	and batch_id = :pn_Period_Batch_id;
 	  

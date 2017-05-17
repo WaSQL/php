@@ -18,26 +18,21 @@ Begin
    	
    	commit;
    	
-   	-- Get Period Tree Snapshot
-   	lc_Period_Tree =
-		select customer_id, sponsor_id, period_id, batch_id, round(vol_1+vol_4,2) as vol_1
-		from customer_history
-		where period_id = :pn_Period_id
-		and batch_id = :pn_Period_Batch_id;
-    
-    -- Add Tree Level to Snaphot
+   	-- Add Tree Level to Snaphot
     lc_dist = 
 		select
-			 node_id 			as customer_id
+			 customer_id		as customer_id
 			,period_id    		as period_id
 			,batch_id 			as batch_id
 			,vol_1				as vol_1
 			,hierarchy_level	as level_id
 		from HIERARCHY ( 
-			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, period_id, batch_id, vol_1
-			             from :lc_Period_Tree
+			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, customer_id, sponsor_id, period_id, batch_id, round(vol_1+vol_4,2) as vol_1
+			             from customer_history
+						 where period_id = :pn_Period_id
+						 and batch_id = :pn_Period_Batch_id
 			             order by customer_id)
-	    		Start where customer_id = 3);
+	    		Start where customer_id = 1);
         
     -- Get Max Level
     select max(level_id)
@@ -64,6 +59,23 @@ Begin
         commit;
         
     end for;
+    
+    -- Delete Non Distributor Tree Org Volume
+	replace customer_history (period_id, batch_id, customer_id, vol_13)
+	select period_id, batch_id, customer_id, 0
+	from customer_history
+	where period_id = :pn_Period_id
+	and batch_id = :pn_Period_Batch_id
+	and customer_id <> 1
+	minus
+	select period_id, batch_id, customer_id, 0
+	from HIERARCHY ( 
+			 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, customer_id, period_id, batch_id
+			             from customer_history
+						 where period_id = :pn_Period_id
+						 and batch_id = :pn_Period_Batch_id
+			             order by customer_id)
+	    		Start where customer_id = 3);
    
    	Update period_batch
    	Set end_date_volume_org = current_timestamp

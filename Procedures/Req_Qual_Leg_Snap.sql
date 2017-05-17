@@ -23,7 +23,7 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_qual_leg_history
+			insert into req_qual_leg
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -35,9 +35,9 @@ begin
 				,vol_2
 				,vol_3
 				,vol_4
-			from req_qual_leg;
+			from req_qual_leg_template;
 		else
-			insert into req_qual_leg_history
+			insert into req_qual_leg
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -49,7 +49,7 @@ begin
 				,vol_2
 				,vol_3
 				,vol_4
-			from req_qual_leg_history
+			from req_qual_leg
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

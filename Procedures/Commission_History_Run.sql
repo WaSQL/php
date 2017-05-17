@@ -14,6 +14,7 @@ Begin
    declare ln_Set_Volume_Retail    	Integer;
    declare ln_Set_Volume_EGV       	Integer;
    declare ln_Set_Volume_TV       	Integer;
+   declare ln_Set_Volume_TW_CV     	Integer;
    declare ln_Set_Volume_Org       	Integer;
    declare ln_Set_Rank             	Integer;
    declare ln_Set_Payout_1  		Integer;
@@ -23,6 +24,12 @@ Begin
    declare ln_Set_Payout_5         	Integer;
    declare ln_Set_Payout_6         	Integer;
    declare ln_Set_Payout_7         	Integer;
+   declare ln_Set_Payout_8         	Integer;
+   declare ln_Set_Payout_9         	Integer;
+   declare ln_Set_Payout_10        	Integer;
+   declare ln_Set_Payout_11        	Integer;
+   declare ln_Set_Payout_12        	Integer;
+   declare ln_Set_Payout_13        	Integer;
    
    Select 
         clear_flag
@@ -32,6 +39,7 @@ Begin
       , set_volume_retail
       , set_volume_egv
       , set_volume_tv
+      , set_volume_tw_cv
       , set_volume_org
       , set_rank
       , set_payout_1
@@ -41,6 +49,12 @@ Begin
       , set_payout_5
       , set_payout_6
       , set_payout_7
+      , set_payout_8
+      , set_payout_9
+      , set_payout_10
+      , set_payout_11
+      , set_payout_12
+      , set_payout_13
    Into 
         ln_Clear
       , ln_Set_Volume
@@ -49,6 +63,7 @@ Begin
       , ln_Set_Volume_Retail
       , ln_Set_Volume_EGV
       , ln_Set_Volume_TV
+      , ln_Set_Volume_TW_CV
       , ln_Set_Volume_Org
       , ln_Set_Rank
       , ln_Set_Payout_1
@@ -58,14 +73,18 @@ Begin
       , ln_Set_Payout_5
       , ln_Set_Payout_6
       , ln_Set_Payout_7
+      , ln_Set_Payout_8
+      , ln_Set_Payout_9
+      , ln_Set_Payout_10
+      , ln_Set_Payout_11
+      , ln_Set_Payout_12
+      , ln_Set_Payout_13
    From  period_batch
    Where period_id = :pn_Period_id
    and batch_id = :pn_Period_Batch_id;
 
 	-- Clear Commission
-	if ln_Clear = 1 then
-		call commission_history_clear(:pn_Period_id, :pn_Period_Batch_id);
-	end if;
+	call commission_history_clear(:pn_Period_id, :pn_Period_Batch_id);
    
    Update period_batch
    Set
@@ -105,6 +124,11 @@ Begin
    If :ln_Set_Volume_TV = 1 Then
       call volume_tv_history_set(:pn_Period_id, :pn_Period_Batch_id);
    End If;
+   
+   -- Set Taiwan Volumes
+   If :ln_Set_Volume_TW_CV = 1 Then
+      call volume_tw_cv_history_set(:pn_Period_id, :pn_Period_Batch_id);
+   End If;
          
    -- Set Org Volumes
    If :ln_Set_Volume_Org = 1 Then
@@ -129,6 +153,56 @@ Begin
    -- Set Payout 3 --Retail
 	if :ln_Set_Payout_3 = 1 then
 		call Payout_Retail_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 4 --Preferred
+	if :ln_Set_Payout_4 = 1 then
+		call Payout_Preferred_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 5 --Leadership Performance
+	if :ln_Set_Payout_5 = 1 then
+		call Payout_Leadership_Perform_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 6 --Diamond Performance
+	if :ln_Set_Payout_6 = 1 then
+		call Payout_Diamond_Perform_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 7 --Diamond
+	if :ln_Set_Payout_7 = 1 then
+		call Payout_Diamond_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 8 --Blue Diamond
+	if :ln_Set_Payout_8 = 1 then
+		call Payout_Blue_Diamond_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 9 --Presidential Diamond
+	if :ln_Set_Payout_9 = 1 then
+		call Payout_Pres_Diamond_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 10 --Taiwan
+	if :ln_Set_Payout_10 = 1 then
+		call Payout_Taiwan_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 11 --Empowerment
+	if :ln_Set_Payout_11 = 1 then
+		call Payout_Empowerment_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 12 --Professional
+	if :ln_Set_Payout_12 = 1 then
+		--call Payout_Professional_Set(:pn_Period_id, :pn_Period_Batch_id);
+	end if;
+   
+   -- Set Payout 13 --Faststart
+	if :ln_Set_Payout_13 = 1 then
+		--call Payout_Faststart_Set(:pn_Period_id, :pn_Period_Batch_id);
 	end if;
    
    Update period_batch

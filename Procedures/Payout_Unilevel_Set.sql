@@ -10,8 +10,6 @@ Begin
     declare ln_max      integer;
     declare ln_x        integer;
     
-	call Payout_Unilevel_Clear(:pn_Period_id, :pn_Period_Batch_id);
-    
 	Update period_batch
 	Set beg_date_payout_1 = current_timestamp
       ,end_date_payout_1 = Null
@@ -27,14 +25,15 @@ Begin
 		,c.period_id
 		,c.batch_id
 		,r.value_2
-	from customer_history c, req_cap_history r
+	from customer_history c, req_cap r, customer_type t
 	where c.rank_id = r.rank_id
+	and c.type_id = t.type_id
 	and c.period_id = r.period_id
    	and c.batch_id = r.batch_id
 	and c.period_id = :pn_period_id
    	and c.batch_id = :pn_Period_Batch_id
    	and c.vol_13 <> 0
-   	and c.type_id = 1
+   	and t.has_downline = 1
    	and (select count(*) from customer_history where period_id = c.period_id and batch_id = c.batch_id and sponsor_id = c.customer_id) > 0
    	and round((select max(vol_13) from customer_history where period_id = c.period_id and batch_id = c.batch_id and sponsor_id = c.customer_id) / c.vol_13,2)*100 >= r.value_1;
    	
@@ -103,7 +102,7 @@ Begin
 			 ,c.period_id
 			 ,c.batch_id
 		     ,t.customer_id
-		     ,t.type_id
+		     ,t.customer_type_id
 		     ,t.transaction_type_id
 		     ,ifnull(t.value_2,0) 								As pv
 		     ,ifnull(t.value_4,0) 								As cv
@@ -129,12 +128,17 @@ Begin
 	-- Get Requirements for Unilevel
 	lc_Req_Unilevel = 
 		select *
-		from req_unilevel_history
+		from req_unilevel
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 		
+	-- Get Customer Type
+	lc_Customer_Type =
+		select *
+		from customer_type;
+		
 	-- Insert non retail transactions
-	insert into payout_unilevel
+	insert into payout_01
 	select 
 		 payout_unilevel_id.nextval		as payout_unilevel_id
 		,t.period_id					as period_id
@@ -163,20 +167,24 @@ Begin
 		,0								as bonus_exchanged
 	from :lc_Req_Unilevel req
 	   , :lc_Transactions t
+	   	 left outer join :lc_Customer_Type t1
+	   		on t.customer_type_id = t1.type_id
 	   , :lc_Customers_Level c
+	   	 left outer join :lc_Customer_Type t2
+	   		on c.type_id = t2.type_id
 	   , :lc_Customers_Level s
 	Where t.customer_id = c.customer_id
 	and c.sponsor_id = s.customer_id
-	and c.type_id not in (2,3)
+	and ifnull(t2.has_retail,-1) = 0
    	and days_between(c.comm_status_date,t.transaction_date) > 
-   		case when t.type_id in (1,4,5) then 60
+   		case when ifnull(t1.has_faststart,-1) = 1 then 60
    		else -1 end
 	and t.period_id = req.period_id
 	and t.batch_id = req.batch_id
 	and req.level_id = 1;
 		
 	-- Insert retail transactions
-	insert into payout_unilevel
+	insert into payout_01
 	select 
 		 payout_unilevel_id.nextval		as payout_unilevel_id
 		,t.period_id					as period_id
@@ -206,12 +214,14 @@ Begin
 	from :lc_Req_Unilevel req
 	   , :lc_Transactions t
 	   , :lc_Customers_Level c
+	   	 left outer join :lc_Customer_Type t2
+	   		on c.type_id = t2.type_id
 	   , :lc_Customers_Level s1
 	   , :lc_Customers_Level s2 
 	Where t.customer_id = c.customer_id
 	and c.sponsor_id = s1.customer_id
 	and s1.sponsor_id = s2.customer_id
-	and c.type_id in (2,3)
+	and ifnull(t2.has_retail,-1) = 1
 	and t.period_id = req.period_id
 	and t.batch_id = req.batch_id
 	and req.level_id = 1;
@@ -220,7 +230,7 @@ Begin
     
     -- Loop through all tree levels from bottom to top
     for ln_x in reverse 0..:ln_max do
-    	insert into payout_unilevel
+    	insert into payout_01
     	select 
     		 payout_unilevel_id.nextval											as payout_unilevel_id
 			,p.period_id														as period_id
@@ -254,7 +264,7 @@ Begin
 			 	and d.sponsor_rank_qual = 1 then u.value_1
 			 	else 0 end														as bonus						-- Bonus is CV * Level payout percent
 			,0																	as bonus_exchanged
-		from :lc_Customers_Level d, :lc_Req_Unilevel u, payout_unilevel p, :lc_Customers_Level t
+		from :lc_Customers_Level d, :lc_Req_Unilevel u, payout_01 p, :lc_Customers_Level t
 		where p.transaction_customer_id = t.customer_id
 		and d.customer_id = p.customer_id
 		and p.lvl_paid+map(p.qual_flag,1,1,0) = u.level_id
@@ -267,7 +277,7 @@ Begin
     end for;
     
     -- Delete all non qualified entries
-    delete from payout_unilevel
+    delete from payout_01
     where  period_id = :pn_period_id
 	and batch_id = :pn_Period_Batch_id
 	and (ifnull(qual_flag,0) = 0 
@@ -279,12 +289,12 @@ Begin
     -- Get Payout Records
     lc_Payout_Unilevel = 
     	select *
-    	from payout_unilevel
+    	from payout_01
     	where period_id = :pn_period_id
 		and batch_id = :pn_Period_Batch_id;
     
     -- Set Currency Rates when From/To not equal
-    replace payout_unilevel (payout_unilevel_id, exchange_rate, bonus, bonus_exchanged)
+    replace payout_01 (payout_unilevel_id, exchange_rate, bonus, bonus_exchanged)
     select 
     	 p.payout_unilevel_id
    		,round(et.rate / ef.rate,7)
@@ -300,7 +310,7 @@ Begin
 	commit;
     
     -- Set Currency Rates when From/To equal
-    replace payout_unilevel (payout_unilevel_id, exchange_rate, bonus, bonus_exchanged)
+    replace payout_01 (payout_unilevel_id, exchange_rate, bonus, bonus_exchanged)
     select 
     	 p.payout_unilevel_id
     	,1
@@ -316,7 +326,7 @@ Begin
 	commit;
 	
 	-- Insert Elephant Leg Caps
-	insert into payout_unilevel
+	insert into payout_01
 	select 
 		 payout_unilevel_id.nextval					as payout_unilevel_id
 	    ,period_id									as period_id
@@ -347,7 +357,7 @@ Begin
 		   		,(h.payout_1_cap*x.rate) as payout_1_cap_exchanged
 		   		,sum(ifnull(p.bonus_exchanged,0)) as bonus_exchanged
 		   	from customer_history h
-		   		left outer join payout_unilevel p
+		   		left outer join payout_01 p
 		   			on h.customer_id = p.customer_id
 		   			and h.period_id = p.period_id
 		   			and h.period_id = p.period_id
@@ -372,7 +382,7 @@ Begin
    		,h.batch_id
    		,sum(ifnull(p.bonus_exchanged,0))
    	from customer_history h
-   		left outer join payout_unilevel p
+   		left outer join payout_01 p
    			on h.customer_id = p.customer_id
    			and h.period_id = p.period_id
    			and h.period_id = p.period_id

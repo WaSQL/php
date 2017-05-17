@@ -102,7 +102,7 @@ begin
 				 		else max(q.rank_id) end as rank_id
 				 , 1 as rank_qual
 			from customer c
-					left outer join req_qual_leg_version v
+					left outer join version v
 						on c.country = v.country
 					left outer join customer_flag w
 						on c.customer_id = w.customer_id

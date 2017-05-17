@@ -23,7 +23,7 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_power3_history
+			insert into req_power3
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -34,9 +34,9 @@ begin
 				,value_1
 				,value_2
 				,value_3
-			from req_power3;
+			from req_power3_template;
 		else
-			insert into req_power3_history
+			insert into req_power3
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
@@ -47,7 +47,7 @@ begin
 				,value_1
 				,value_2
 				,value_3
-			from req_power3_history
+			from req_power3
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;
