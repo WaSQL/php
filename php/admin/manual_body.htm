@@ -1,0 +1,73 @@
+<view:default>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="w_bigger w_dblue w_bold"><span class="icon-help-circled"></span> WaSQL Documentation</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
+				<input type="hidden" name="_menu" value="manual" />
+				<input type="hidden" name="func" value="search" />
+				<div class="input-group">
+					<input type="text" autofocus="true" class="form-control" name="search" placeholder="search for what ..." />
+					<div class="input-group-btn">
+						<button type="submit" class="btn btn-default">Search</button>
+					</div>
+				</div>
+			</form>
+			<div class="table-responsive well" style="background-color:inherit;margin-top:15px;padding-left:0px;padding-right:0px;max-height:600px;overflow:auto;">
+				<h3>Categories</h3>
+				<ul class="nav">
+					<li><a href="#">cat 1</a>
+						<ul>
+							<li><a href="#">subcat1</a></li>
+						</ul>
+					</li>
+				</ul>
+				<h3>Files</h3>
+				<ul class="nav" id="ul_files">
+					<view:file>
+					<li><a href="#" data-toggle="collapse" data-target="#filenav_<?=sha1($file['name']);?>" data-parent="#ul_files" class="collapsed">
+						<?=$file['name'];?><span class="caret w_right" style="margin-top:8px;"></span></a>
+					  <div class="collapse" style="background:#FFF;padding-left:15px;border-left:1px solid #ccc;border-bottom:1px solid #ccc;margin-left:10px;" id="filenav_<?=sha1($file['name']);?>" style="height: 0px;">
+						<ul class="nav nav-list">
+						  <li><a href="#">ProfileSubMenu1</a></li>
+						  <li><a href="#">ProfileSubMenu2</a></li>
+						  <li><a href="#">ProfileSubMenu3</a></li>
+						</ul>
+					  </div>
+					</li>
+					</view:file>
+					<?=renderEach('file',$files,'file');?>
+				</ul>
+			</div>
+		</div>
+		<div class="col-sm-9" id="results">
+			<pre>
+				file
+					name
+					id
+					function_count
+					functions[]
+						name
+						id
+						description
+						author
+						category
+						params[]
+							name
+							required
+							type
+							description
+			</pre>
+		</div>
+	</div>
+</div>
+</view:default>
+
+<view:search>
+	<?=printValue($_REQUEST);?>
+</view:search>
+
