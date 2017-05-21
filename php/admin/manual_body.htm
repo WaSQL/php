@@ -18,56 +18,66 @@
 				</div>
 			</form>
 			<div class="table-responsive well" style="background-color:inherit;margin-top:15px;padding-left:0px;padding-right:0px;max-height:600px;overflow:auto;">
-				<h3>Categories</h3>
-				<ul class="nav">
-					<li><a href="#">cat 1</a>
-						<ul>
-							<li><a href="#">subcat1</a></li>
-						</ul>
-					</li>
-				</ul>
-				<h3>Files</h3>
+				<h4>PHP Files</h4>
 				<ul class="nav" id="ul_files">
 					<view:file>
-					<li><a href="#" data-toggle="collapse" data-target="#filenav_<?=sha1($file['name']);?>" data-parent="#ul_files" class="collapsed">
-						<?=$file['name'];?><span class="caret w_right" style="margin-top:8px;"></span></a>
-					  <div class="collapse" style="background:#FFF;padding-left:15px;border-left:1px solid #ccc;border-bottom:1px solid #ccc;margin-left:10px;" id="filenav_<?=sha1($file['name']);?>" style="height: 0px;">
+					<li><a href="#" data-toggle="collapse" data-target="#filenav_<?=sha1($key);?>" data-parent="#ul_files" class="collapsed">
+						<?=getFileName(getFilePath($key));?>::<?=getFileName($key);?> (<?=count($functions);?>)<span class="icon-dir-down w_right" style="margin-top:8px;"></span></a>
+					  <div class="collapse" style="background:#FFF;padding-left:15px;border-left:1px solid #ccc;border-bottom:1px solid #ccc;margin-left:10px;" id="filenav_<?=sha1($key);?>" style="height: 0px;">
 						<ul class="nav nav-list">
-						  <li><a href="#">ProfileSubMenu1</a></li>
-						  <li><a href="#">ProfileSubMenu2</a></li>
-						  <li><a href="#">ProfileSubMenu3</a></li>
+							<view:function>
+							<li><a href="#" onclick="return ajaxGet('/php/admin.php','results',{_menu:'manual',func:'search',search:'<?=$function['name'];?>'})" style="padding:5px 10px;"><span class="w_right icon-dir-right"></span><?=$function['name'];?></a></li>
+							</view:function>
+							<?=renderEach('function',$functions,'function');?>
 						</ul>
 					  </div>
 					</li>
 					</view:file>
-					<?=renderEach('file',$files,'file');?>
+					<?=renderEach('file',$docs,'functions');?>
 				</ul>
 			</div>
 		</div>
-		<div class="col-sm-9" id="results">
-			<pre>
-				file
-					name
-					id
-					function_count
-					functions[]
-						name
-						id
-						description
-						author
-						category
-						params[]
-							name
-							required
-							type
-							description
-			</pre>
+		<div class="col-sm-9">
+			<div class="table-responsive well" id="results" style="background-color:inherit;margin-top:15px;max-height:600px;overflow:auto;">
+				<div>WaSQL Documention Results go here</div>
+			</div>
 		</div>
 	</div>
 </div>
 </view:default>
 
 <view:search>
-	<?=printValue($_REQUEST);?>
+	<view:function>
+	<div class="row w_padtop">
+		<div class="col-sm-12">
+			<div class="w_grey w_small w_right">
+				found on line <?=$function['line'];?> in <?=$function['file'];?>
+			</div>
+			<div class="w_big w_bold"><?=$function['name'];?></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="w_padleft"><?=implode(' '.PHP_EOL,$function['describe']);?></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="w_padleft"><?=$function['call'];?></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="w_marginleft well">
+				<?=implode('<br />'.PHP_EOL,$function['comments']);?>
+				<div class="w_padtop">
+					<view:usage><div><?=$value;?></div></view:usage>
+					<?=renderEach('usage',$function['usage'],'value');?>
+				</div>
+			</div>
+		</div>
+	</div>
+	</view:function>
+	<?=renderEach('function',$sdocs,'function');?>
 </view:search>
 
