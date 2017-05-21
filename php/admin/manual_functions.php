@@ -1,4 +1,59 @@
 <?php
+function manualParseFile($file){
+	global $docs;
+	$lines=file($file);
+	$cnt=count($lines);
+	for($x=0;$x<$cnt;$x++){
+		$line=trim($lines[$x]);
+		if(preg_match('/^function\ (.+?)\(\$(.+?)\)\ *\{/',$line,$m)){
+			$doc=array(
+				'file'=>$file,
+				'folder'=>getFileName(getFilePath($file)),
+				'line'=>$x+1,
+				'name'=>$m[1],
+				'call'=>$m[0].'}'
+			);
+			//backup to read phpdoc comments before the function name
+			$p=$x-1;
+			$comments=array();
+			while(1){
+				$pline=trim($lines[$p]);
+				if(!strlen($pline)){break;}
+				if(preg_match('/^\}/',$pline)){break;}
+				$comments[]=encodeHtml($pline);
+				if($p==0){break;}
+				$p--;
+			}
+			$doc['comments']=array_reverse($comments);
+			$key='';
+			foreach($doc['comments'] as $cline){
+				$cline=trim($cline);
+				if(preg_match('/\@([a-z]+)(.*)$/i',$cline,$c)){
+					$key=$c[1];
+					$v=trim($c[2]);
+					if(strlen($v)){
+						$doc[$key][]=removeHtml($v);
+					}
+				}
+				elseif(strlen($key) && preg_match('/^\*(.+)$/',$cline,$c)){
+					$v=trim($c[1]);
+					if($v != '/' && strlen($v)){
+						$doc[$key][]=removeHtml($v);
+					}
+				}
+			}
+			if(!isset($doc['exclude'])){
+				$docs[$file][]=$doc;
+			}
+		}
+	}
+	//sort docs by file and by function name
+	foreach($docs as $k=>$v){
+		$docs[$k]=sortArrayByKey($docs[$k],'name');
+	}
+}
+
+
 //---------- begin function wasqlParseHelp
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
