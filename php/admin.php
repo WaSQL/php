@@ -313,10 +313,10 @@ if(isAjax()){
 			echo printValue($json);
 			exit;
     	break;
-    	case 'manual2':
+    	case 'manual':
 			echo adminViewPage('manual');
 			exit;
-    	case 'manual':
+    	case 'manual_old':
 			//echo '<div class="w_centerpop_title">Documentation</div>'."\n";
 			//echo '<div class="w_centerpop_content" style="height:600px;overflow:auto;">'."\n";
     		if(isset($_REQUEST['examples'])){
@@ -1462,10 +1462,10 @@ if(isset($_REQUEST['_menu'])){
 				</div>
 ENDOFJSONFORM;
 		break;
-		case 'manual2':
+		case 'manual':
 			echo adminViewPage('manual');
 			exit;
-		case 'manual':
+		case 'manual_old':
 			global $Manual;
 			if(isset($_REQUEST['rebuild']) || !is_file("{$progpath}/temp/manual.json")){
 				wasqlRebuildManual();
