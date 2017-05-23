@@ -1474,9 +1474,9 @@ ENDOFJSONFORM;
             	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
 			}
 			echo '<div class="w_lblue w_bold w_bigger" style="color:#1b68ae;"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
-			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual&rebuild=1" class="w_link w_success w_smallest"><span class="icon-refresh"></span> Rebuild</a></div>'."\n";
+			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual_old&rebuild=1" class="w_link w_success w_smallest"><span class="icon-refresh"></span> Rebuild</a></div>'."\n";
 			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
-			echo '			<input type="hidden" name="_menu" value="manual">'."\n";
+			echo '			<input type="hidden" name="_menu" value="manual_old">'."\n";
 			echo '			<input type="hidden" name="_type" value="user">'."\n";
 			$val=isset($_REQUEST['_search'])?$_REQUEST['_search']:'';
 			echo '			<input type="text" class="form-control" name="_search" value="'.$val.'" onFocus="this.select();">'."\n";
