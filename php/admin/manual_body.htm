@@ -53,24 +53,28 @@
 			<div class="w_grey w_small w_right">
 				found on line <?=$function['line'];?> in <?=$function['file'];?>
 			</div>
-			<div class="w_big w_bold"><?=$function['name'];?></div>
+			<div class="w_big w_bold w_dblue"><?=$function['name'];?></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12 w_grey">
+			<div style="margin-left:25px;border-left:1px solid #ccc;padding-left:10px;"><?=implode(' '.PHP_EOL,$function['describe']);?></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12 w_grey">
+			<div style="margin-left:25px;border-left:1px solid #ccc;padding-left:10px;"><?=$function['call'];?></div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<div class="w_padleft"><?=implode(' '.PHP_EOL,$function['describe']);?></div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-sm-12">
-			<div class="w_padleft"><?=$function['call'];?></div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-sm-12">
-			<div class="w_marginleft well">
+			<div style="margin-left:35px;">
+				<label>Comments</label>
+				<div class="well">
 				<?=implode('<br />'.PHP_EOL,$function['comments']);?>
-				<div class="w_padtop">
+				</div>
+				<label>Usage</label>
+				<div class="well">
 					<view:usage><div><?=$value;?></div></view:usage>
 					<?=renderEach('usage',$function['usage'],'value');?>
 				</div>
