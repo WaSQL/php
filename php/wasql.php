@@ -363,7 +363,7 @@ function wasqlBuildManualTree(){
 	foreach($Manual['tree'] as $treenode=>$files){
     	$rtn .= '		<div class="w_bold w_big w_dblue" style="border-bottom:1px solid #000;">'.$treenode."\n";
 		if(strtolower($lang)=='javascript'){
-        	$rtn .= ' - <a class="w_link w_dblue" href="#examples" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'centerpop2\',\'_menu=manual&examples=js\');"> examples</a>'."\n";
+        	$rtn .= ' - <a class="w_link w_dblue" href="#examples" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'centerpop2\',\'_menu=manual_old&examples=js\');"> examples</a>'."\n";
 		}
 		$rtn .= '</div>'."\n";
     	ksort($files);
@@ -380,7 +380,7 @@ function wasqlBuildManualTree(){
 			$expand='';
 			foreach($functions as $function){
 				$color_class=$function['documented']==0?'w_red':'w_lblue';
-				$expand .= '			<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'manual_content\',\'_menu=manual&index='.$function['index'].'\');" class="w_link '.$color_class.'">'.$function['name'].'</a></div>'."\n";
+				$expand .= '			<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'manual_content\',\'_menu=manual_old&index='.$function['index'].'\');" class="w_link '.$color_class.'">'.$function['name'].'</a></div>'."\n";
 			}
 			$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 		}
