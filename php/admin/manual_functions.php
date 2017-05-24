@@ -26,25 +26,35 @@ function manualParseFile($file){
 			}
 			$doc['comments']=array_reverse($comments);
 			$key='';
+			//if($doc['name']=='arrayAverage'){echo printValue($doc);}
 			foreach($doc['comments'] as $cline){
 				$cline=trim($cline);
+
 				if(preg_match('/\@([a-z]+)(.*)$/i',$cline,$c)){
+					//if($doc['name']=='arrayAverage'){echo $key.printValue($c);}
 					$key=$c[1];
 					$v=trim($c[2]);
 					if(strlen($v)){
-						$doc[$key][]=removeHtml($v);
+						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
+						$v=preg_replace('/^\*/','&nbsp;',$v);
+						$doc[$key][]=$v;
 					}
 				}
-				elseif(strlen($key) && preg_match('/^\*(.+)$/',$cline,$c)){
+				elseif(strlen($key) && preg_match('/^\*(.*)$/',$cline,$c)){
+					//if($doc['name']=='arrayAverage'){echo $key.printValue($c);}
 					$v=trim($c[1]);
 					if($v != '/' && strlen($v)){
-						$doc[$key][]=removeHtml($v);
+						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
+						$v=preg_replace('/^\*/','&nbsp;',$v);
+						$doc[$key][]=$v;
 					}
 				}
 			}
+			//if($doc['name']=='arrayAverage'){echo printValue($doc);exit;}
 			if(!isset($doc['exclude'])){
 				$docs[$file][]=$doc;
 			}
+
 		}
 	}
 	//sort docs by file and by function name
