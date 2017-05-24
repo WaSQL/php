@@ -2554,15 +2554,16 @@ function arrays2RSS($recs=array(),$params=array()){
 //---------- begin function arrays2CSV--------------------
 /**
 * @describe converts getDBRecords results into CSV file
-* @param arr array
-*	the array you want to convert
-* @param param array
-*	optional parameters as follows:
-*		<li>-fields - comma semarated list of fields to include in the csv</li>
-*		<li>-fieldmap - field=>mapname array of fieldmaps to change the name on the first line</li>
-*		<li>-noheader - do not include a header row</li>
-* @return string
-*	csv formatted output based on the recs array passed in
+* @param arr array - the array you want to convert
+* @param param array - optional parameters as follows:
+*	-fields - comma separated list of fields to include in the csv
+*	-fieldmap - field=>mapname array of fieldmaps to change the name on the first line
+*	-noheader - do not include a header row
+* @usage
+* 	$csv=arrays2CSV($recs,array(
+* 		'-fields'=>'name,age,color'
+* 	));
+* @return string - csv formatted output based on the recs array passed in
 */
 function arrays2CSV($recs=array(),$params=array()){
 	if(!is_array($recs) || !count($recs)){
