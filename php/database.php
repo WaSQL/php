@@ -7058,6 +7058,7 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-table']) && $params['-table']=='_cron'){
 			if($rec['active']==1 && $rec['running']==0 && isNum($rec['frequency'])){
 				$frequency=$rec['frequency']*60;
+				$age=time()-strtotime($rec['run_date']);
 				if($age > $frequency){
 					$cronalert=1;
             	}
