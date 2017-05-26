@@ -1153,12 +1153,6 @@ if(isset($_REQUEST['_menu'])){
 			 	$dropResult = dropDBTable($_REQUEST['_table_'],1);
 				}
 			break;
-		case 'postedit_exe':
-			pushfile("$progpath/../postedit/postedit.exe");
-			break;
-		case 'postedit_zip':
-			pushfile("$progpath/../postedit/postedit.zip");
-			break;
 		case 'postedit_xml':
 			$xml='';
 			$xml .= xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
@@ -2450,39 +2444,33 @@ LIST_TABLE:
 			//echo printValue($list);
 			break;
 		case 'postedit':
-			$psize=filesize("$progpath/../postedit/postedit.exe");
 			echo '<div class="w_bigger w_lblue w_bold"><span class="icon-postedit w_bigger"></span> PostEdit Manager</div>'."\n";
 			echo '<div style="width:800px;">'."\n";
-			echo '<p><b>PostEdit Manager</b> is a windows application that WaSQL pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
+			echo '<p><b>PostEdit Manager</b> is a php application that WaSQL uses to create pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
 			echo 'This allows you to use any editor you wish to update your pages and templates.'."\n";
 			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to your WaSQL database.'."\n";
 			echo '</p>'."\n";
 			echo '<p>'."\n";
-			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, '."\n";
-			echo ' <a class="w_link icon-download" href="/'.$PAGE['name'].'?_menu=postedit_zip"> Download PostEdit</a>'."\n";
-			echo ' <span style="font-size:9pt;">('.verboseSize($psize).')</span><br>';
+			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, you will need to download it via git. '."\n";
 			echo '</p>'."\n";
 			echo '<p>'."\n";
-			echo '	If you need a good free text editor try '."\n";
-			echo ' <a class="w_link icon-download" href="http://www.contexteditor.org/ConTEXTv0_986.exe"> ConTEXT Freeware Text Editor</a> <span style="font-size:9pt;">(1.57 Mb)</span>'."\n";
+			echo '	If you need a good free text editor try geany.  It runs on linux, macs, and windows. '."\n";
+			echo ' <a class="w_link icon-download" href="https://www.geany.org/Download"> https://www.geany.org/Download</a>'."\n";
 			echo '</p><p>'."\n";
 			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'."\n";
 			echo 'This file contains authentication information for each domain/website you want to connect to.'."\n";
-			echo 'Add the following entry to postedit.xml to authenticate to this domain as the current user:'."\n";
+			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'."\n";
 			echo '<pre><xmp>'."\n";
 			echo '<host'."\n";
 			echo '	name="'.$_SERVER['HTTP_HOST'].'"'."\n";
 			echo '	alias="'.$_SERVER['HTTP_HOST'].'"'."\n";
-			echo '	group="'.$_SERVER['UNIQUE_HOST'].'"'."\n";
 			echo '	apikey="'.$USER['apikey'].'"'."\n";
 			echo '	username="'.$USER['username'].'"'."\n";
 			echo '/>'."\n";
 			echo '</xmp></pre>'."\n";
-			echo 'The xml download below contains the above entry. Make sure postedit.xml and postedit.exe are in the same folder.'."\n";
 			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'."\n";
 			echo '<ul>'."\n";
 			echo '	<li><b class="w_red">name</b> - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>'."\n";
-			echo '	<li><b class="w_red">group</b> - this is the group name. You can group like hostnames together or group them by client, etc.</li>'."\n";
 			echo '	<li><b class="w_red">username</b> - the username to authenticate as. This must be a valid username for this domain.</li>'."\n";
 			echo '	<li><b class="w_red">apikey</b> - the apikey for the authenticating user. This is found in the user profile menu after logging in.'."\n";
 			echo '		<ul>'."\n";
@@ -2491,19 +2479,8 @@ LIST_TABLE:
 			echo '	</li>'."\n";
 			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, stage.domain.com may have an alias of domain.com (Stage).</li>'."\n";
 			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'."\n";
-			echo '	<li><b>checks</b> - default checks to perform when a file change is detected before uploading change to website.'."\n";
-			echo '		<ul>'."\n";
-			echo '			<li> You must have PHP installed locally and in your PATH to check PHP syntax.'."\n";
-			echo '			<li> You must have Perl installed and in your PATH to check Perl syntax.'."\n";
-			echo '		</ul>'."\n";
-			echo '	</li>'."\n";
 			echo '</ul>'."\n";
 			echo '</p><p>'."\n";
-			echo '<div><b>Sample postedit.xml File</b></div>'."\n";
-			echo '<pre><xmp>'."\n";
-			echo getFileContents(realpath('../postedit/sample.postedit.xml'));
-			echo '</xmp></pre>'."\n";
-			echo '	<a class="w_link icon-download" href="/'.$PAGE['name'].'?_menu=postedit_xml"> Download a sample PostEdit XML file</b></a>'."\n";
 			echo '</p><br /><br /><br /><br />'."\n";
 			echo '</div>'."\n";
 		break;
