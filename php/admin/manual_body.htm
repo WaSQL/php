@@ -56,11 +56,14 @@
 			<div class="w_big w_bold w_dblue"><?=$function['name'];?></div>
 		</div>
 	</div>
+	<view:describe>
 	<div class="row">
 		<div class="col-sm-12 w_grey">
 			<div style="margin-left:25px;border-left:1px solid #ccc;padding-left:10px;"><?=implode(' '.PHP_EOL,$function['describe']);?></div>
 		</div>
 	</div>
+	</view:describe>
+	<?=renderViewIf(isset($function['describe']),'describe',$function,'function');?>
 	<div class="row">
 		<div class="col-sm-12">
 			<div style="margin-left:35px;">
@@ -82,11 +85,13 @@
 				</view:returndiv>
 				<?=renderViewIf(isset($function['return']),'returndiv',$function,'function');?>
 
+				<view:comments>
 				<label>Comments</label>
 				<div class="well">
 				<?=implode('<br />'.PHP_EOL,$function['comments']);?>
 				</div>
-
+				</view:comments>
+				<?=renderViewIf(isset($function['comments']),'comments',$function,'function');?>
 			</div>
 		</div>
 	</div>
