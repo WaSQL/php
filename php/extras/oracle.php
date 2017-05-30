@@ -7,7 +7,7 @@ global $oracle;
 /**
 * @describe returns connection resource
 * @param params array
-*	-host - mssql server to connect to
+*	-host - oracle server to connect to
 *	-user - username
 *	-pass - password
 *	-name - name of database to connect to
@@ -16,10 +16,10 @@ global $oracle;
 * @return connection resource and sets the global $oracle variables, conn and mssqlDBConnect.
 */
 function oracleDBConnect($params=array()){
-	if(!isset($params['-host'])){return "mssqlDBConnect Error: no host specified";}
-	if(!isset($params['-user'])){return "mssqlDBConnect Error: no user specified";}
-	if(!isset($params['-pass'])){return "mssqlDBConnect Error: no pass specified";}
-	if(!isset($params['-name'])){return "mssqlDBConnect Error: no pass specified";}
+	if(!isset($params['-host'])){return "oracleDBConnect Error: no host specified";}
+	if(!isset($params['-user'])){return "oracleDBConnect Error: no user specified";}
+	if(!isset($params['-pass'])){return "oracleDBConnect Error: no pass specified";}
+	if(!isset($params['-name'])){return "oracleDBConnect Error: no pass specified";}
 	if(!isset($params['-port'])){$params['-port']=1521;}
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	global $oracle;
@@ -199,9 +199,9 @@ function oracleGetDBRecords($params){
 		$wherestr='WHERE '.implode(' and ',$ands);
 	}
     $query=<<<ENDOFQUERY
-		SELECT 
+		SELECT
 			{$params['-fields']}
-		FROM 
+		FROM
 			{$params['-table']}
 		{$wherestr}
 ENDOFQUERY;
@@ -212,10 +212,10 @@ ENDOFQUERY;
 	}
 function oracleGetActiveSessionCount($seconds=0){
 	$query="
-		SELECT 
+		SELECT
 			count(*) cnt
 		FROM v\$session sess
-		WHERE 
+		WHERE
 			sess.type='USER'
 			and sess.status='ACTIVE'
 	";
@@ -234,11 +234,11 @@ function oracleGetActiveSessionCount($seconds=0){
 */
 function oracleGetDBTables(){
 	$query="
-		SELECT 
-			distinct table_name,owner 
-		FROM 
+		SELECT
+			distinct table_name,owner
+		FROM
 			dba_tab_columns
-		ORDER BY 
+		ORDER BY
 			owner,table_name
 	";
 	$query .= ' ';
@@ -270,7 +270,7 @@ function oracleGetDBTablePrimaryKeys($table,$owner){
 		,cons.status
 		,cons.owner
 	FROM all_constraints cons, all_cons_columns cols
-	WHERE 
+	WHERE
 		upper(cols.table_name) = '{$table}'
 		AND upper(cols.owner) = '{$owner}'
 		AND cons.constraint_type = 'P'
