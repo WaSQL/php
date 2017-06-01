@@ -27,14 +27,17 @@ function hanaDBConnect($params=array()){
 	global $CONFIG;
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['dbname_hana'])){$params['-dbname']=$CONFIG['dbname_hana'];}
+		elseif(isset($CONFIG['hana_dbname'])){$params['-dbname']=$CONFIG['hana_dbname'];}
 		else{return 'hanaDBConnect Error: No dbname set';}
 	}
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_hana'])){$params['-dbuser']=$CONFIG['dbuser_hana'];}
+		elseif(isset($CONFIG['hana_dbuser'])){$params['-dbuser']=$CONFIG['hana_dbuser'];}
 		else{return 'hanaDBConnect Error: No dbuser set';}
 	}
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_hana'])){$params['-dbpass']=$CONFIG['dbpass_hana'];}
+		elseif(isset($CONFIG['hana_dbpass'])){$params['-dbpass']=$CONFIG['hana_dbpass'];}
 		else{return 'hanaDBConnect Error: No dbpass set';}
 	}
 	try{
@@ -155,7 +158,7 @@ function hanaExecuteSQL($query,$params=array()){
 function hanaAddDBRecord($params){
 	global $USER;
 	if(!isset($params['-table'])){return 'hanaAddRecord error: No table specified.';}
-	$fields=hanaGetTableFields($params['-table'],$params);
+	$fields=hanaGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['cdate'])){
 		$opts['fields'][]='CDATE';
@@ -191,8 +194,9 @@ function hanaAddDBRecord($params){
 	$valstr=implode(',',$opts['values']);
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
-		("{$fieldstr}")
-		values({$valstr})
+			("{$fieldstr}")
+		VALUES
+			({$valstr})
 ENDOFQUERY;
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
@@ -208,7 +212,7 @@ ENDOFQUERY;
 				'query'	=> $query
 			);
 			debugValue($err);
-			return "hanaAddDBRecord Error".printValue($err).$query;
+			return "hanaAddDBRecord Error".printValue($err);
 		}
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 CURRENT_IDENTITY_VALUE() as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
@@ -248,7 +252,7 @@ function hanaEditDBRecord($params){
 	if(!isset($params['-table'])){return 'hanaEditDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'hanaEditDBRecord error: No where specified.';}
 	global $USER;
-	$fields=hanaGetTableFields($params['-table'],$params);
+	$fields=hanaGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['edate'])){
 		$opts['edate']=strtoupper(date('Y-M-d H:i:s'));
@@ -274,6 +278,89 @@ function hanaEditDBRecord($params){
 		WHERE {$params['-where']}
 ENDOFQUERY;
 	return hanaExecuteSQL($query,$params);
+}
+//---------- begin function hanaReplaceDBRecord ----------
+/**
+* @describe updated or adds a record from params passed in.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+*   -table - name of the table to add to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return integer returns the autoincriment key
+* @usage $id=hanaReplaceDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+*/
+function hanaReplaceDBRecord($params){
+	global $USER;
+	if(!isset($params['-table'])){return 'hanaAddRecord error: No table specified.';}
+	$fields=hanaGetDBFieldInfo($params['-table'],$params);
+	$opts=array();
+	if(isset($fields['cdate'])){
+		$opts['fields'][]='CDATE';
+		$opts['values'][]=strtoupper(date('d-M-Y  H:i:s'));
+	}
+	if(isset($fields['cuser'])){
+		$opts['fields'][]='CUSER';
+		$opts['values'][]=$USER['username'];
+	}
+	$valstr='';
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		//skip cuser and cdate - already set
+		if($k=='cuser' || $k=='cdate'){continue;}
+		//fix array values
+		if(is_array($v)){$v=implode(':',$v);}
+		//take care of single quotes in value
+		$v=str_replace("'","''",$v);
+		switch(strtolower($fields[$k]['type'])){
+        	case 'integer':
+        	case 'number':
+        		$opts['values'][]=$v;
+        	break;
+        	default:
+        		$opts['values'][]="'{$v}'";
+        	break;
+		}
+        $opts['fields'][]=trim(strtoupper($k));
+	}
+	$fieldstr=implode('","',$opts['fields']);
+	$valstr=implode(',',$opts['values']);
+    $query=<<<ENDOFQUERY
+		REPLACE {$params['-table']}
+		("{$fieldstr}")
+		values({$valstr})
+		WITH PRIMARY KEY
+ENDOFQUERY;
+	$dbh_hana=hanaDBConnect($params);
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaReplaceDBRecord Connect Error",$e));
+    	return;
+	}
+	try{
+		$result=odbc_exec($dbh_hana,$query);
+		if(!$result){
+        	$err=array(
+        		'error'	=> odbc_errormsg($dbh_hana),
+				'query'	=> $query
+			);
+			debugValue($err);
+			return "hanaReplaceDBRecord Error".printValue($err).$query;
+		}
+	}
+	catch (Exception $e) {
+		$err=$e->errorInfo;
+		$err['query']=$query;
+		odbc_free_result($result);
+		debugValue(array("hanaReplaceDBRecord Connect Error",$e));
+		return "hanaReplaceDBRecord Error".printValue($err);
+	}
+	odbc_free_result($result);
+	return true;
 }
 //---------- begin function hanaManageDBSessions ----------
 /**
@@ -430,12 +517,13 @@ function hanaGetDBFieldInfo($table,$params=array()){
     	debugValue(array("hanaGetDBSchemas Connect Error",$e));
     	return;
 	}
-	$query="select top 1 * from {$table}";
+	$query="select * from {$table} where 1=0";
 	try{
 		$result=odbc_exec($dbh_hana,$query);
 		if(!$result){
         	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana)
+        		'error'	=> odbc_errormsg($dbh_hana),
+        		'query'	=> $query
 			);
 			echo "hanaGetDBFieldInfo error: No result".printValue($err);
 			exit;
@@ -497,16 +585,19 @@ function hanaQueryResults($query,$params=array()){
 	try{
 		$result=odbc_exec($dbh_hana,$query);
 		if(!$result){
+			$errstr=odbc_errormsg($dbh_hana);
+			if(!strlen($errstr)){return array();}
         	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana)
+        		'error'	=> $errstr,
+        		'query' => $query
 			);
-			echo "hanaGetDBFieldInfo error: No result".printValue($err);
+			echo "hanaQueryResults error: No result".printValue($err);
 			exit;
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "hanaGetDBFieldInfo error: exception".printValue($err);
+		echo "hanaQueryResults error: exception".printValue($err);
 		exit;
 	}
 	if(isset($params['-count'])){
@@ -556,11 +647,13 @@ function hanaQueryResults($query,$params=array()){
 * @describe creates the query needed for a prepared Insert Statement
 * @param $table string - tablename
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
-* @param $primary_keys array - array of primary keys
 * @return $query string
 * @usage $query=hanaBuildPreparedInsertStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$keys=array()){
+function hanaBuildPreparedInsertStatement($table,$fieldinfo=array()){
+	if(!is_array($fieldinfo)){
+		$fieldinfo=hanaGetDBFieldInfo($table);
+	}
 	$fields=array();
 	$binds=array();
 	foreach($fieldinfo as $field=>$info){
@@ -576,16 +669,23 @@ function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$keys=array(
 	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ({$bindstr})";
 	return $query;
 }
-//---------- begin function hanaBuildPreparedUpsertStatement ----------
+//---------- begin function hanaBuildPreparedReplaceStatement ----------
 /**
 * @describe creates the query needed for a prepared Upsert Statement
 * @param $table string - tablename
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @param $primary_keys array - array of primary keys
 * @return $query string
-* @usage $query=hanaBuildPreparedUpsertStatement($table,$fieldinfo,$primary_keys);
+* @usage $query=hanaBuildPreparedReplaceStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedUpsertStatement($table,$fieldinfo=array(),$keys=array()){
+function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array()){
+	if(!is_array($keys) || !count($keys)){
+		echo "hanaBuildPreparedReplaceStatement error - missing keys.  Table: {$table}";
+		exit;
+	}
+	if(!is_array($fieldinfo)){
+		$fieldinfo=hanaGetDBFieldInfo($table);
+	}
 	$sets=array();
 	$wheres=array();
 	foreach($fieldinfo as $field=>$info){
@@ -603,7 +703,7 @@ function hanaBuildPreparedUpsertStatement($table,$fieldinfo=array(),$keys=array(
 	$fieldstr=implode(', ',$fields);
 	$bindstr=implode(', ',$binds);
 	$wherestr=implode(' and ',$wheres);
-	$query="UPSERT {$table} ({$fieldstr}) VALUES ({$bindstr}) WHERE {$wherestr}";
+	$query="REPLACE {$table} ({$fieldstr}) VALUES ({$bindstr}) WHERE {$wherestr}";
 	return $query;
 }
 //---------- begin function hanaBuildPreparedUpdateStatement ----------
@@ -616,6 +716,13 @@ function hanaBuildPreparedUpsertStatement($table,$fieldinfo=array(),$keys=array(
 * @usage $query=hanaBuildPreparedUpdateStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array()){
+	if(!is_array($keys) || !count($keys)){
+		echo "hanaBuildPreparedUpdateStatement error - missing keys.  Table: {$table}";
+		exit;
+	}
+	if(!is_array($fieldinfo)){
+		$fieldinfo=hanaGetDBFieldInfo($table);
+	}
 	$sets=array();
 	$wheres=array();
 	foreach($fieldinfo as $field=>$info){
@@ -646,6 +753,13 @@ function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(
 * @usage $query=hanaBuildPreparedDeleteStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array()){
+	if(!is_array($keys) || !count($keys)){
+		echo "hanaBuildPreparedDeleteStatement error - missing keys.  Table: {$table}";
+		exit;
+	}
+	if(!is_array($fieldinfo)){
+		$fieldinfo=hanaGetDBFieldInfo($table);
+	}
 	$wheres=array();
 	foreach($fieldinfo as $field=>$info){
 		$bind='?';
