@@ -26,19 +26,46 @@ function hanaDBConnect($params=array()){
 	if(is_resource($dbh_hana)){return $dbh_hana;}
 	global $CONFIG;
 	if(!isset($params['-dbname'])){
-		if(isset($CONFIG['dbname_hana'])){$params['-dbname']=$CONFIG['dbname_hana'];}
-		elseif(isset($CONFIG['hana_dbname'])){$params['-dbname']=$CONFIG['hana_dbname'];}
+		if(isset($CONFIG['dbname_hana'])){
+			$params['-dbname']=$CONFIG['dbname_hana'];
+			$params['-dbname_source']="CONFIG dbname_hana";
+		}
+		elseif(isset($CONFIG['hana_dbname'])){
+			$params['-dbname']=$CONFIG['hana_dbname'];
+			$params['-dbname_source']="CONFIG hana_dbname";
+		}
 		else{return 'hanaDBConnect Error: No dbname set';}
 	}
+	else{
+		$params['-dbname_source']="passed in";
+	}
 	if(!isset($params['-dbuser'])){
-		if(isset($CONFIG['dbuser_hana'])){$params['-dbuser']=$CONFIG['dbuser_hana'];}
-		elseif(isset($CONFIG['hana_dbuser'])){$params['-dbuser']=$CONFIG['hana_dbuser'];}
+		if(isset($CONFIG['dbuser_hana'])){
+			$params['-dbuser']=$CONFIG['dbuser_hana'];
+			$params['-dbuser_source']="CONFIG dbuser_hana";
+		}
+		elseif(isset($CONFIG['hana_dbuser'])){
+			$params['-dbuser']=$CONFIG['hana_dbuser'];
+			$params['-dbuser_source']="CONFIG hana_dbuser";
+		}
 		else{return 'hanaDBConnect Error: No dbuser set';}
 	}
+	else{
+		$params['-dbuser_source']="passed in";
+	}
 	if(!isset($params['-dbpass'])){
-		if(isset($CONFIG['dbpass_hana'])){$params['-dbpass']=$CONFIG['dbpass_hana'];}
-		elseif(isset($CONFIG['hana_dbpass'])){$params['-dbpass']=$CONFIG['hana_dbpass'];}
+		if(isset($CONFIG['dbpass_hana'])){
+			$params['-dbpass']=$CONFIG['dbpass_hana'];
+			$params['-dbpass_source']="CONFIG dbpass_hana";
+		}
+		elseif(isset($CONFIG['hana_dbpass'])){
+			$params['-dbpass']=$CONFIG['hana_dbpass'];
+			$params['-dbpass_source']="CONFIG hana_dbpass";
+		}
 		else{return 'hanaDBConnect Error: No dbpass set';}
+	}
+	else{
+		$params['-dbpass_source']="passed in";
 	}
 	try{
 		$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
