@@ -66,14 +66,25 @@ function hanaDBConnect($params=array()){
 * @return boolean returns true if table exists
 * @usage if(hanaIsDBTable('abc','abcschema')){...}
 */
-function hanaIsDBTable($table,$schema,$params=array()){
+function hanaIsDBTable($table,$params=array()){
 	if(!strlen($table)){
 		echo "hanaIsDBTable error: No table";
 		exit;
 	}
-	if(!strlen($schema)){
-		echo "hanaIsDBTable error: No schema";
-		exit;
+	//split out table and schema
+	$parts=preg_split('/\./',$table);
+	switch(count($parts)){
+		case 1:
+			echo "hanaIsDBTable error: no schema defined in tablename";
+			exit;
+		break;
+		case 2:
+			$schema=$parts[0];
+			$table=$parts[1];
+		break;
+		default:
+			echo "hanaIsDBTable error: to many parts";
+		break;
 	}
 	$dbh_hana=hanaDBConnect($params);
 	if(!is_resource($dbh_hana)){
