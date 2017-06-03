@@ -6522,6 +6522,7 @@ function updateDBSchema($table,$schema,$new=0){
 	$fields=array();
 	foreach($lines as $line){
 		if(!strlen(trim($line))){continue;}
+		$line=strtolower($line);
 		list($name,$type)=preg_split('/[\s\t]+/',$line,2);
 		if(!strlen($type)){continue;}
 		if(!strlen($name)){continue;}
