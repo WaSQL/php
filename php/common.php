@@ -12211,7 +12211,7 @@ function sendMail($params=array()){
     	array_push($headers,"Reply-To: {$params['from']}");
 	}
     //add X-Mailer with current php verson
-    array_push($headers,'X-Mailer: WaSQL Powered PHP ' . getPHPVersion());
+    array_push($headers,'X-Mailer: WaSQL On ' . $_SERVER['UNIQUE_HOST']);
 	//add language
     array_push($headers,'Content-Language: en-us');
     //check for custoom headers
