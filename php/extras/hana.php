@@ -76,7 +76,7 @@ function hanaDBConnect($params=array()){
 		return $dbh_hana;
 	}
 	catch (Exception $e) {
-		echo "hanaDBConnect error" . printValue($e);
+		echo "hanaDBConnect exception" . printValue($e);
 		exit;
 
 	}
