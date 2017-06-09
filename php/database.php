@@ -6962,6 +6962,13 @@ function listDBRecords($params=array(),$customcode=''){
 	foreach($listfields as $fld){
 		if(isset($info[$fld]['displayname']) && strlen($info[$fld]['displayname'])){$col=$info[$fld]['displayname'];}
 		elseif(isset($params[$fld."_displayname"])){$col=$params[$fld."_displayname"];}
+		elseif(isset($params['header_eval'])){
+				$evalstr=$params['header_eval'];
+				$replace='%'.$fld.'%';
+                $evalstr=str_replace($replace,$fld,$evalstr);
+                $col=evalPHP('<?' . $evalstr .'?>');
+				}
+		
 		else{
 			$col=preg_replace('/\_+/',' ',$fld);
 			$col=ucwords($col);
