@@ -947,6 +947,7 @@ function dropDBIndex($params=array()){
 *	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row
 *	[-method] string - POST or GET - defaults to POST
 *	[-class] string - class attribute for form tag - defaults to w_form
+* 	[-bootstrap] boolean - sets width to 100% on tag fields
 *	[-name] string - name attribute for form tag - defaults to addedit
 *	[-action] string - action attribute for form tag - defaults to $PAGE['name']
 *	[-onsubmit] string - onsubmit attribute for form tag - defaults to 'return submitForm(this);'
@@ -1166,20 +1167,21 @@ function addEditDBForm($params=array(),$customcode=''){
 							}
 						}
 					}
-					if(isset($params[$field.'_checkall'])){
+					if(isset($params[$cfield.'_checkall'])){
 						$opts['-checkall']=1;
-						$used[$field.'_checkall']=1;
+						$used[$cfield.'_checkall']=1;
 					}
-					if(isset($params[$field.'_tvals'])){
-						$opts['tvals']=$params[$field.'_tvals'];
-						$used[$field.'_tvals']=1;
+					if(isset($params[$cfield.'_tvals'])){
+						$opts['tvals']=$params[$cfield.'_tvals'];
+						$used[$cfield.'_tvals']=1;
 					}
-					if(isset($params[$field.'_dvals'])){
+					if(isset($params[$cfield.'_dvals'])){
 						$opts['dvals']=$params[$field.'_dvals'];
 						$used[$field.'_dvals']=1;
 					}
 					if(isset($params['-bootstrap'])){
-						switch(strtolower($info['fieldinfo'][$field]['inputtype'])){
+						//echo $cfield.printValue($info['fieldinfo'][$cfield]);
+						switch(strtolower($info['fieldinfo'][$cfield]['inputtype'])){
 							case 'text':
 							case 'textarea':
 							case 'password':
@@ -4381,6 +4383,9 @@ function getDBFieldTag($params=array()){
 		//Text
 		case 'text':
 		default:
+			if(isset($params['-bootstrap'])){
+				$info[$field]['-bootstrap']=$params['-bootstrap'];
+			}
 			$tag=buildFormText($info[$field]['name'],$info[$field]);
 			break;
     	}
@@ -6879,8 +6884,11 @@ function listDBRecords($params=array(),$customcode=''){
 			//echo "table:{$table}" . printValue($list);
 			foreach ($list[0] as $field=>$val){
 				if(preg_match('/^\_/',$field)){continue;}
-				$fields[]=$field;
+					$fields[]=$field;
 		    	}
+		    	if(isset($list[0]['_id'])){
+					array_unshift($fields,'_id');
+				}
 			}
     	}
     if(!isset($params['-action'])){
