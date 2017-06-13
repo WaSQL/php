@@ -2406,10 +2406,13 @@ LIST_TABLE:
 				$list=getDBIndexes(array($_REQUEST['_table_']));
 				$cnt=count($list);
 				for($i=0;$i<$cnt;$i++){
-					if(preg_match('/Primary/i',$list[$i]['key_name'])){continue;}
+					if(preg_match('/Primary/i',$list[$i]['key_name'])){
+						$list[$i]['_id']='';
+						continue;
+					}
 					$list[$i]['_id']='<a title="Drop index" onclick="return confirm(\'Drop index for column \\\''.$list[$i]['key_name'].'\\\'?\');" href="/'.$PAGE['name'].'?_menu=indexes&_table_='.$_REQUEST['_table_'].'&_index_drop='.$list[$i]['key_name'].'"><img src="/wfiles/drop.gif" alt="drop" /></a>';
-                	}
-				//echo printValue($list);
+                }
+				//echo printValue($list);exit;
 				echo buildFormBegin('',array('_menu'=>"indexes",'_table_'=>$_REQUEST['_table_']));
 				$used=array();
 				$tfields=getDBFields($_REQUEST['_table_'],1);
@@ -2425,21 +2428,22 @@ LIST_TABLE:
 				}
 				echo buildFormCheckbox('_indexfields_',$opts,array('width'=>6));
 				echo '</div>'."\n";
-				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid"><label for="fulltextid"> FullText</label>'."\n";
-				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid"><label for="uniqueid"> Unique</label>'."\n";
+				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid" style="display:none;"><label for="fulltextid" class="icon-mark"></label><label for="fulltextid"> FullText</label>'."\n";
+				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid" style="display:none;"><label for="uniqueid" class="icon-mark"></label><label for="uniqueid"> Unique</label>'."\n";
 				echo buildFormSubmit("Create Index");
 				echo buildFormEnd();
 				//echo printValue($_REQUEST);
-				}
+			}
 			else{
 				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/indexes.gif" alt="all indexes" /> Indexes for All Tables</div>'."\n";
 				$list=getDBIndexes();
-				}
+			}
 			echo listDBRecords(array(
 				'_menu'			=>$_REQUEST['_menu'],
 				'_table_'		=>$_REQUEST['_table_'],
 				'-tableclass'	=>"table table-striped table-bordered",
-				'-list'			=>$list
+				'-list'			=>$list,
+
 			));
 			//echo printValue($list);
 			break;
