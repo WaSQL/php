@@ -10,32 +10,32 @@ elseif(file_exists("$progpath/../config.xml")){
 	$xml = readXML("$progpath/../config.xml");
 	}
 else{abort("Configuration Error: No config.xml configuration file found.");}
+//convert object to array
+$json=json_encode($xml);
+$xml=json_decode($json,true);
+//echo printValue($xml);exit;
 global $CONFIG;
 $CONFIG=array();
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
 /* Load Global configurations from allhost if it exists */
 $ConfigXml=array();
 $allhost=array();
-if(is_object($xml->allhost)){
-	foreach($xml->allhost->attributes() as $okey=>$oval){
-		$key=(string) trim($okey);
-		$val=(string) trim($oval);
-		$allhost[$key]=$val;
-        }
-    }
-if(is_object($xml->host)){
-	foreach($xml->host as $host){
+if(isset($xml['allhost']['@attributes'])){
+	foreach($xml['allhost']['@attributes'] as $k=>$v){
+		$allhost[$k]=$v;
+	}
+}
+if(isset($xml['host'][0]['@attributes'])){
+	foreach($xml['host'] as $host){
 		$chost=array();
-		foreach($host->attributes() as $okey=>$oval){
-			$key=strtolower((string) trim($okey));
-			$val=(string) trim($oval);
-			$chost[$key]=$val;
-        	}
-        $name=(string)$chost['name'];
-        //foreach($allhost as $key=>$val){$ConfigXml[$name][$key]=$val;}
-        foreach($chost as $key=>$val){$ConfigXml[$name][$key]=$val;}
- 		}
-    }
+		foreach($host['@attributes'] as $k=>$v){
+			$k=strtolower(trim($k));
+			$chost[$k]=trim($v);
+		}
+        $name=$chost['name'];
+        foreach($chost as $k=>$v){$ConfigXml[$name][$k]=$v;}
+	}
+}
 //Check for HTTP_HOST
 $checkhosts=array('HTTP_HOST','UNIQUE_HOST','SERVER_NAME');
 $chost='';
