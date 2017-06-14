@@ -1859,11 +1859,11 @@ function addDBRecord($params=array()){
     	databaseFreeResult($query_result);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if(isset($tinfo['websockets']) || isset($model['functions'])){
+		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($model['functions'])){
 			$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
 		}
 		//check for websockets
-		if(isset($tinfo['websockets'])){
+		if(isset($tinfo['websockets']) && $tinfo['websockets']==1){
         	loadExtras('websockets');
         	$wrec=$params['-record'];
         	$wrec['_action']='add';
@@ -3493,11 +3493,11 @@ function editDBRecord($params=array()){
     	//addDBHistory('edit',$params['-table'],$params['-where']);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if((isset($tinfo['websockets']) && $tinfo['websockets']) || isset($model['functions'])){
+		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($model['functions'])){
 			$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
 		}
 		//check for websockets
-		if(isset($tinfo['websockets']) && $tinfo['websockets']){
+		if(isset($tinfo['websockets']) && $tinfo['websockets']==1){
         	loadExtras('websockets');
         	$wrec=$params;
         	$wrec['_action']='edit';
