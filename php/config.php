@@ -13,6 +13,10 @@ else{abort("Configuration Error: No config.xml configuration file found.");}
 //convert object to array
 $json=json_encode($xml);
 $xml=json_decode($json,true);
+//check for single host
+if(isset($xml['host']['@attributes'])){
+	$xml['host']=array($xml['host']);
+}
 //echo printValue($xml);exit;
 global $CONFIG;
 $CONFIG=array();
@@ -25,6 +29,7 @@ if(isset($xml['allhost']['@attributes'])){
 		$allhost[$k]=$v;
 	}
 }
+
 if(isset($xml['host'][0]['@attributes'])){
 	foreach($xml['host'] as $host){
 		$chost=array();
