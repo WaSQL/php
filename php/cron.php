@@ -54,12 +54,19 @@ foreach($ConfigXml as $name=>$host){
 	ksort($CONFIG);
 	//echo printValue($CONFIG);
 	//connect to this database.
+	$dbh='';
 	echo "connecting to {$CONFIG['name']}<br>\n";
 	$ok=cronDBConnect();
 	if($ok != 1){
     	echo "[{$CONFIG['name']}] {$ok}\n";
     	continue;
 	}
+	//if any crons are set to active and running and have been running for over 3 hours then they are not running anymore
+	$ok=editDBRecord(array(
+		'-table'	=> '_cron',
+		'-where'	=> "running=1 and active=1 and run_date < (NOW() - INTERVAL 4 HOUR)",
+		'running'	=> 0
+	));
 	//get page names to determine if cron is a page
 	$pages=getDBRecords(array(
 		'-table'	=> '_pages',
