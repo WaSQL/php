@@ -1128,10 +1128,10 @@ function setProcessing(id,msg,cancel){
 function getProcessingDiv(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
 	if(undefined == msg){msg='Processing. Please Wait ...';}
-	var str='<div style="display:table-cell;">';
-	str+='<div><img id="processing_img" src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
+	var str='<div id="processing_div" style="display:table-cell;">';
+	str += '	<div><img id="processing_img" src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
 	if(cancel==1){
-    	str+='<div align="right" id="processing_cancel"><a href="#cancel" onclick="return ajaxAbort(\''+id+'\');" class="btn btn-default btn-sm">Cancel <span class="icon-cancel-circled" style="font-size:18px;"></span></a></div>';
+    	str+='	<div align="right" id="processing_cancel"><a href="#cancel" onclick="return ajaxAbort(\''+id+'\');" class="btn btn-default btn-sm">Cancel <span class="icon-cancel-circled" style="font-size:18px;"></span></a></div>';
 	}
 	str+='</div>';
 	return str;
