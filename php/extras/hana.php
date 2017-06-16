@@ -632,8 +632,9 @@ function hanaQueryResults($query,$params=array()){
         		'error'	=> $errstr,
         		'query' => $query
 			);
-			if(stringContains($errstr,'not connected')){
+			if(stringContains($errstr,'session not connected')){
 				$dbh_hana='';
+				sleep(1);
 				$dbh_hana=hanaDBConnect($params);
 				$result=odbc_exec($dbh_hana,$query);
 				if(!$result){
@@ -641,7 +642,8 @@ function hanaQueryResults($query,$params=array()){
 					if(!strlen($errstr)){return array();}
 					$err=array(
 						'error'	=> $errstr,
-						'query' => $query
+						'query' => $query,
+						'retry'	=> 1
 					);
 					echo "hanaQueryResults error: No result".printValue($err);
 					exit;
