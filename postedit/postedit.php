@@ -198,10 +198,15 @@ function fileChanged($afile){
 	);
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
+	file_put_contents('postedit_change.post',printValue($post));
 	file_put_contents('postedit_change.result',$post['body']);
 POSTFILE:
-	$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
-	$json=json_encode($xml);
+	$xml=array();
+	$json=array();
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] == 200){
+		$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
+		$json=json_encode($xml);
+	}
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
     	abortMessage("{$post['curl_info']['http_code']} error posting file to server");
 	}
