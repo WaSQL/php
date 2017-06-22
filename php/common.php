@@ -8816,7 +8816,7 @@ function minifyCode($code,$type) {
 
 	switch(strtolower($type)){
 		case 'js':
-			$url='http://javascript-minifier.com/raw';
+			$url='https://javascript-minifier.com/raw';
 			break;
 			$code=trim($code);
 			// remove comments
@@ -8840,7 +8840,7 @@ function minifyCode($code,$type) {
 			require_once("min-js.php");
 			$parser = new JSqueeze;
     		return $parser->squeeze($code);
-			$url='http://javascript-minifier.com/raw';
+			$url='https://javascript-minifier.com/raw';
 			break;
 		case 'css':
 			require_once("min-css.php");
@@ -8853,9 +8853,17 @@ function minifyCode($code,$type) {
 			// Remove whitespace
 			$code = str_replace(array("\r\n", "\r", "\n", "\t", ' ', ' ', ' '), '', $code);
 			return $code;
-			$url='http://cssminifier.com/raw';
+			$url='https://cssminifier.com/raw';
 			break;
 	}
+	//changed to post to handle ssl urls now
+	$post=postURL($url,array('input'=>$code));
+	if(preg_match('/^HTTP/',$post['body'])){
+		$parts=preg_split('/\r\n\r\n/',trim($post['body']));
+		return $parts[1];
+	}
+	return $post['body'];
+
 	$process = curl_init($url);
 	curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
     curl_setopt($process, CURLOPT_HEADER, 0);
@@ -8868,9 +8876,9 @@ function minifyCode($code,$type) {
     curl_setopt($process,CURLOPT_POSTFIELDS,$postfields);
     $rtn=curl_exec($process);
 	curl_close($process);
-	if(strlen($code) && !strlen(trim($rtn))){return $code;}
+	if(strlen($code) && !strlen(trim($rtn))){return "/*{$url}*/".PHP_EOL.$code;}
 	//check to see if the service failed
-	if(stringContains($rtn,'502 Bad Gateway')){return "/*MinifyCode Service Failed*/\n".$code;}
+	if(stringContains($rtn,'502 Bad Gateway')){return "/*{$url}*/".PHP_EOL."/*MinifyCode Service Failed*/".PHP_EOL.$code;}
 	return $rtn;
 }
 //---------- begin function monthName--------------------
