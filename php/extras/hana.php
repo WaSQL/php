@@ -614,7 +614,10 @@ function hanaGetDBCount($query,$params){
 * @usage $recs=hanaQueryResults('select top 50 * from abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
-	$dbh_hana=hanaDBConnect($params);
+	global $dbh_hana;
+	if(!is_resource($dbh_hana)){
+		$dbh_hana=hanaDBConnect($params);
+	}
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
     	debugValue(array("hanaQueryResults Connect Error",$e));
@@ -629,8 +632,27 @@ function hanaQueryResults($query,$params=array()){
         		'error'	=> $errstr,
         		'query' => $query
 			);
-			echo "hanaQueryResults error: No result".printValue($err);
-			exit;
+			if(stringContains($errstr,'session not connected')){
+				$dbh_hana='';
+				sleep(1);
+				$dbh_hana=hanaDBConnect($params);
+				$result=odbc_exec($dbh_hana,$query);
+				if(!$result){
+					$errstr=odbc_errormsg($dbh_hana);
+					if(!strlen($errstr)){return array();}
+					$err=array(
+						'error'	=> $errstr,
+						'query' => $query,
+						'retry'	=> 1
+					);
+					echo "hanaQueryResults error: No result".printValue($err);
+					exit;
+				}
+			}
+			else{
+				echo "hanaQueryResults error: No result".printValue($err);
+				exit;
+			}
 		}
 	}
 	catch (Exception $e) {
