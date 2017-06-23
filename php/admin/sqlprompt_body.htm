@@ -1,0 +1,42 @@
+<view:default>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-3">
+			<div class="w_bold w_big">Tables & Fields</div>
+			<div  style="max-height:85vh;overflow:auto;">
+			<ul class="nav nav-pills nav-stacked">
+				<view:table>
+					<li role="presentation"><a href="#" style="padding:5px 0px 3px 10px;" onclick="var t=getText('<?=$table;?>_fields');if(t.length){setText('<?=$table;?>_fields','');}else{return ajaxGet('/php/admin.php','<?=$table;?>_fields',{_menu:'sqlprompt',func:'fields',table:'<?=$table;?>'});}"><?=$table;?></a>
+						<ul id="<?=$table;?>_fields" class="nav nav-pills nav-stacked" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></ul>
+					</li>
+				</view:table>
+				<?=renderEach('table',$tables,'table');?>
+			</ul>
+			</div>
+		</div>
+		<div class="col-xs-9">
+			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="this.sql_select.value=getSelText(this.sql_full);return ajaxSubmitForm(this,'sqlprompt_results');">
+				<input type="hidden" name="_menu" value="sqlprompt">
+				<input type="hidden" name="func" value="sql">
+				<input type="hidden" name="sql_select" value="">
+				<textarea class="form-control" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+				<div><button type="submit" class="btn btn-primary btn-sm">Run</button></div>
+			</form>
+			<div id="sqlprompt_results"></div>
+		</div>
+	</div>
+</div>
+</view:default>
+
+<view:results>
+	<div class="text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>
+	<?=listDBRecords($recs);?>
+</view:results>
+
+<view:fields>
+	<view:field>
+		<li><a href="#" style="padding:3px 0px 2px 10px;" data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?>" onclick="return false;"><?=$field['_dbfield'];?></a></li>
+	</view:field>
+	<?=renderEach('field',$fields,'field');?>
+</view:fields>
+
