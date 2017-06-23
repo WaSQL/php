@@ -179,7 +179,7 @@ function setFloatDiv(id, sx, sy){
 	el.sP=function(x,y){this.style.left=x+px;this.style.top=y+px;};
 	el.floatIt=function(){
 		var pX, pY;
-		pX = (this.sx >= 0) ? 0 : ns ? innerWidth : 
+		pX = (this.sx >= 0) ? 0 : ns ? innerWidth :
 		document.documentElement && document.documentElement.clientWidth?document.documentElement.clientWidth:document.body.clientWidth;
 		pY = ns?pageYOffset : document.documentElement && document.documentElement.scrollTop?document.documentElement.scrollTop : document.body.scrollTop;
 		if(this.sy<0){
@@ -271,9 +271,6 @@ function iframePopup(url,opts){
 	}
 function w_shareButton(url,t){
 	window.open(url,'_blank','scrollbars=no, location=no, width=600, height=400, status=no, toolbar=no, menubar=no',false);
-	return false;
-	//can't use iframes since google+ and twitter forbid it.
-	iframePopup(url);
 	return false;
 }
 function ajaxPopup(url,params,useropts){
@@ -504,7 +501,7 @@ function popUpDiv(content,param){
 
 		//body -end
 	    t.appendChild(tb);
-	    
+
 		masterdiv.style.display='block';
 	    //append table to masterdiv
 	    masterdiv.appendChild(t);
@@ -1542,7 +1539,7 @@ function initBehaviors(ajaxdiv){
 		            e.preventDefault();
 		            var s = this.selectionStart;
 		            this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
-		            this.selectionEnd = s+1; 
+		            this.selectionEnd = s+1;
 		        }
 		    });
 		}
@@ -1659,7 +1656,7 @@ function addEventHandler(elem,evnt, func){
    		// IE DOM
    		elem.attachEvent("on"+evnt, func);
    }
-   else { 
+   else {
    		// Not IE or W3C - try generic
 		elem['on'+evnt] = func;
    }
@@ -1677,7 +1674,7 @@ function removeEventHandler(elem,evnt, func){
    		// IE DOM
    		elem.detachEvent("on"+evnt, func);
    }
-   else { 
+   else {
    		// Not IE or W3C - try generic
 		elem['on'+evnt] = {};
    }
@@ -1786,7 +1783,7 @@ function codemirrorTextEditor(obj,mode,behavior){
 		            	scrollerElement.style.height = "100%";
 		            	scrollerElement.style.width = "100%";
 		            	cm.refresh();
-		        } 
+		        }
 				else{
 					editorElement.setAttribute('isfullscreen',0);
 		            	editorElement.style.position='relative';
@@ -2061,7 +2058,7 @@ function storeCaret(text)
 	// Only bother if it will be useful.
 	if (typeof(text.createTextRange) != 'undefined'){
 		text.caretPos = document.selection.createRange().duplicate();
-		}	
+		}
 }
 
 // Replaces the currently selected text with the passed text.
@@ -2505,7 +2502,7 @@ function detectLeftButton(evt) {
     return button == 1;
 }
 function doMath(id){
-	/* 
+	/*
 		@math(one+two+three)  @math(one+(two*3))             one+(two*3)
 	*/
 	var behavior=document.getElementById(id).getAttribute('data-behavior').toLowerCase();
@@ -2553,7 +2550,7 @@ function checkMouseEnter (element, evt) {
 // checkMouseLeave - returns true if the mouse is no longer over the element
 function checkMouseLeave (element, evt) {
 	   //window.status=evt;
-	   //return; 
+	   //return;
 	   if (element.contains && undefined != evt.toElement) {
 	        return !element.contains(evt.toElement);
 		   }
@@ -2602,7 +2599,7 @@ var Drag = {
 		if (o.vmode  && isNaN(parseInt(o.root.style.top   ))){o.root.style.top    = "0px";}
 		if (!o.hmode && isNaN(parseInt(o.root.style.right ))){o.root.style.right  = "0px";}
 		if (!o.vmode && isNaN(parseInt(o.root.style.bottom))){o.root.style.bottom = "0px";}
-		
+
 		var y = parseInt(o.vmode ? o.root.style.top  : o.root.style.bottom);
 		var x = parseInt(o.hmode ? o.root.style.left : o.root.style.right );
 		o.startX=x;
@@ -2615,7 +2612,7 @@ var Drag = {
 
 		o.xMapper = fXMapper ? fXMapper : null;
 		o.yMapper = fYMapper ? fYMapper : null;
-		
+
 		o.onmouseover= function(){this.style.cursor='move';}
 
 		o.root.onDragStart	= new Function();
