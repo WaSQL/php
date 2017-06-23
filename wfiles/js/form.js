@@ -874,31 +874,6 @@ function formSetMultiSelectStatus(fld){
 function fielddataChange(fld){
 	var parentObj=getParentForm(fld);
 	return false;
-	var pname=parentObj.name;
-	var fname=fld.name;
-	var val=fld.value;
-	var requiredObj=parentObj["required"];
-	switch(fname){
-    	case 'inputtype':
-    		switch(val){
-            	case 'slider':
-            		setText(pname+'_height_dname','Min');
-            		setText(pname+'_inputmax_dname','Max');
-            		setText(pname+'_required_dname','Step');
-            		requiredObj.type='text';
-            		requiredObj.style.width='25px';
-            	break;
-            	default:
-            		setText(pname+'_height_dname','Height');
-            		setText(pname+'_inputmax_dname','Inputmax');
-            		setText(pname+'_required_dname','Required');
-            		requiredObj.type='checkbox';
-            		requiredObj.style.width='';
-            	break;
-			}
-    	break;
-	}
-	//showProperties(parentObj);
 }
 //--------------------------
 function filemanagerEdit(id,formaction,param){
