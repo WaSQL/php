@@ -1668,6 +1668,69 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	[safari|chrome]background: -webkit-linear-gradient(top, #eeeeee 1%,#cccccc 99%); /* Chrome10+,Safari5.1+ */
 	[opera]background: -o-linear-gradient(top, #eeeeee 1%,#cccccc 99%); /* Opera 11.10+ */
 }
+/*treeview CSS */
+.w_tree {
+    min-height:20px;
+    padding:19px;
+    margin-bottom:20px;
+    background-color:#fbfbfb;
+    border:1px solid #999;
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+}
+.w_tree li {
+    list-style-type:none;
+    margin:0;
+    padding:10px 5px 0 5px;
+    position:relative
+}
+.w_tree li::before, .w_tree li::after {
+    content:'';
+    left:-20px;
+    position:absolute;
+    right:auto
+}
+.w_tree li::before {
+    border-left:1px solid #999;
+    bottom:50px;
+    height:100%;
+    top:0;
+    width:1px;
+}
+.w_tree li::after {
+    border-top:1px solid #999;
+    height:20px;
+    top:25px;
+    width:25px;
+    margin-top:4px;
+}
+.w_tree li .box {
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border:1px solid #999;
+    border-radius:5px;
+    display:inline-block;
+    padding:3px 8px;
+    text-decoration:none
+}
+.w_tree li.parent_li>span {
+    cursor:pointer
+}
+.w_tree>ul>li::before, .w_tree>ul>li::after {
+    border:0
+}
+.w_tree li:last-child::before {
+    height:30px
+}
+.w_tree li.parent_li>.box:hover, .w_tree li.parent_li>.box:hover+ul li span {
+    background:#eee;
+    xborder:1px solid #94a0b4;
+    color:#000
+}
 /* CSS for Tabbed Content */
 #tab_header {
   float:left;
