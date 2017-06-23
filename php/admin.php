@@ -346,6 +346,9 @@ if(isAjax()){
     		exit;
     		break;
     	case 'sqlprompt':
+			echo adminViewPage('sqlprompt');
+			exit;
+		break;
     	case 'tabledetails':
     		if(isset($_REQUEST['table'])){
 				//echo '<div style="margin-left:15px;">'."\n";
@@ -2762,6 +2765,8 @@ LIST_TABLE:
 			echo '</table>'."\n";
 			break;
 		case 'sqlprompt':
+			echo adminViewPage('sqlprompt');
+			exit;
 			//echo '<div class="w_lblue w_bold w_bigger"> SQL Prompt</div>'."\n";
 			if(isset($_REQUEST['_qid']) && isNum($_REQUEST['_qid'])){
             	$rec=getDBRecord(array('-table'=>"_queries",'_id'=>$_REQUEST['_qid']));
