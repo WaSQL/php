@@ -4175,6 +4175,21 @@ function encodeAscii($str=''){
     	}
     return $outstr;
 	}
+//---------- begin function encodeJson
+/**
+* @describe wrapper for json_encode, if it failes it encodes the structure in utf-8 and tries again
+* @param arr array or object - array or object to encode
+* @return str json string
+* @usage $json_string=encodeJson($arr);
+*/
+function encodeJson($arr){
+	$str=json_encode($arr);
+	if(!strlen($str)){
+		$arr=array_map('utf8_encode', $arr);
+		$str=json_encode($arr);
+	}
+	return $str;
+}
 //---------- begin function encodeBase64
 /**
 * @describe wrapper for base64_encode
