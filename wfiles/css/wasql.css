@@ -158,6 +158,22 @@ table th a {
 .w_tile:hover{
 	background:#f5f5f5;
 }
+/*w_loader*/
+.w_loader {
+    border: 0.17em solid #f3f3f3; /* Light grey */
+    border-top: 0.17em solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 1.05em;
+    height: 1.05em;
+    animation: w_loader_animation 1s linear infinite;
+    display:inline-block;
+}
+
+@keyframes w_loader_animation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 
 /*drowdown menu*/
 .w_dropdown{
