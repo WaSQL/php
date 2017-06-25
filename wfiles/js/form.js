@@ -1102,13 +1102,15 @@ function setProcessing(id,msg,cancel){
 //--------------------------
 function getProcessingDiv(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
-	if(undefined == msg){msg='Processing. Please Wait ...';}
-	var str='<div id="processing_div" style="display:table-cell;">';
-	str += '	<div><img id="processing_img" src="/wfiles/loading_blu.gif" alt="loading" /> '+msg+'</div>';
+	if(undefined == msg){msg='Processing ...';}
+	var str='';
+	str += '<span id="processing_div">';
+	str += '<span class="w_loader"></span>';
+	str += '<span class="w_grey">'+msg+'</span>';
 	if(cancel==1){
-    	str+='	<div align="right" id="processing_cancel"><a href="#cancel" onclick="return ajaxAbort(\''+id+'\');" class="btn btn-default btn-sm">Cancel <span class="icon-cancel-circled" style="font-size:18px;"></span></a></div>';
+		str += '<span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
 	}
-	str+='</div>';
+	str += '</span>';
 	return str;
 	}
 //--------------------------
