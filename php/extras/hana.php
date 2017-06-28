@@ -70,8 +70,10 @@ function hanaDBConnect($params=array()){
 	try{
 		$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
 		if(!is_resource($dbh_hana)){
-			echo "hanaDBConnect error".printValue($params);
+			$err=odbc_errormsg();
+			echo "hanaDBConnect error:{$err}".printValue($params);
 			exit;
+			
 		}
 		return $dbh_hana;
 	}
