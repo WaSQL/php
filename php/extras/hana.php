@@ -31,6 +31,7 @@ function hanaAddDBRecordsFromCSV($table,$csvfile){
 		RECORD DELIMITED BY '\n'
 		FIELD DELIMITED BY ','
 	BATCH 1000
+	FAIL ON INVALID DATA
 	ERROR LOG '$error_log'
 ENDOFQUERY;
 	setFileContents($error_log,'');
@@ -38,20 +39,7 @@ ENDOFQUERY;
 	return file($error_log);
 
 }
-
-//---------- begin function hanaDBConnect ----------
-/**
-* @describe connects to a HANA database via odbc and returns the odbc resource
-* @param $param array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return $dbh_hana resource - returns the odbc connection resource
-* @usage $dbh_hana=hanaDBConnect($params);
-*/
-function hanaDBConnect($params=array()){
-	global $dbh_hana;
-	if(is_resource($dbh_hana)){return $dbh_hana;}
+function hanaParseConnectParams($params=array()){
 	global $CONFIG;
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['dbname_hana'])){
@@ -62,7 +50,7 @@ function hanaDBConnect($params=array()){
 			$params['-dbname']=$CONFIG['hana_dbname'];
 			$params['-dbname_source']="CONFIG hana_dbname";
 		}
-		else{return 'hanaDBConnect Error: No dbname set';}
+		else{return 'hanaParseConnectParams Error: No dbname set';}
 	}
 	else{
 		$params['-dbname_source']="passed in";
@@ -76,7 +64,7 @@ function hanaDBConnect($params=array()){
 			$params['-dbuser']=$CONFIG['hana_dbuser'];
 			$params['-dbuser_source']="CONFIG hana_dbuser";
 		}
-		else{return 'hanaDBConnect Error: No dbuser set';}
+		else{return 'hanaParseConnectParams Error: No dbuser set';}
 	}
 	else{
 		$params['-dbuser_source']="passed in";
@@ -90,11 +78,38 @@ function hanaDBConnect($params=array()){
 			$params['-dbpass']=$CONFIG['hana_dbpass'];
 			$params['-dbpass_source']="CONFIG hana_dbpass";
 		}
-		else{return 'hanaDBConnect Error: No dbpass set';}
+		else{return 'hanaParseConnectParams Error: No dbpass set';}
 	}
 	else{
 		$params['-dbpass_source']="passed in";
 	}
+	return $params;
+}
+//---------- begin function hanaDBConnect ----------
+/**
+* @describe connects to a HANA database via odbc and returns the odbc resource
+* @param $param array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return $dbh_hana resource - returns the odbc connection resource
+* @usage $dbh_hana=hanaDBConnect($params);
+*/
+function hanaDBConnect($params=array()){
+	$params=hanaParseConnectParams($params);
+	if(!isset($params['-dbname'])){return $params['-dbname'];}
+	if(isset($params['-single'])){
+		$dbh_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
+		if(!is_resource($dbh_single)){
+			$err=odbc_errormsg();
+			echo "hanaDBConnect single connect error:{$err}".printValue($params);
+			exit;
+		}
+		return $dbh_single;
+	}
+	global $dbh_hana;
+	if(is_resource($dbh_hana)){return $dbh_hana;}
+	
 	try{
 		$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
 		if(!is_resource($dbh_hana)){
