@@ -1,4 +1,5 @@
 <?php
+
 /*
 	HANA System Tables
 		http://sapbw.optimieren.de/hana/hana/html/monitor_views.html
@@ -10,6 +11,33 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+
+//---------- begin function hanaAddDBRecordsFromCSV ----------
+/**
+* @describe imports data from csv into a HANA table
+* @param $table string - table to import into
+* @param $csv - csvfile to import (path visible by the HANA server)
+* @return $errors array
+* @usage $ok=hanaAddDBRecordsFromCSV('stgschema.testtable','/mnt/dtxhana/test.csv');
+*/
+function hanaAddDBRecordsFromCSV($table,$csvfile){
+	$progpath=dirname(__FILE__);
+	$logfile= preg_replace('/[^\p{L}\p{N}\s]/u', '', $table).'.log';
+	$error_log = "{$progpath}/$logfile";
+	$query=<<<ENDOFQUERY
+	IMPORT FROM CSV FILE '$csvfile' 
+	INTO {$table}
+	WITH 
+		RECORD DELIMITED BY '\n'
+		FIELD DELIMITED BY ','
+	BATCH 1000
+	ERROR LOG '$error_log'
+ENDOFQUERY;
+	setFileContents($error_log,'');
+	$ok=hanaExecuteSQL($query);
+	return file($error_log);
+
+}
 
 //---------- begin function hanaDBConnect ----------
 /**
