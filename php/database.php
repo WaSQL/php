@@ -16,10 +16,10 @@ catch(Exception $e){
 if(!$dbh){
 	$error=databaseError();
 	if(isPostgreSQL()){$error .= "<br>PostgreSQL does not allow CREATE DATABASE inside a transaction block. Create the database first.";}
-	$msg = '<div>'."\n";
-	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to connect to the <b>'.$CONFIG['dbtype'].'</b> service on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
-	$msg .= "	<div>{$error}</div>\n";
-	$msg .= '</div>'."\n";
+	$msg = '<div>'.PHP_EOL;
+	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to connect to the <b>'.$CONFIG['dbtype'].'</b> service on <b>'.$CONFIG['dbhost'].'</b></div>'.PHP_EOL;
+	$msg .= "	<div>{$error}</div>".PHP_EOL;
+	$msg .= '</div>'.PHP_EOL;
 	echo $msg;
 	exit;
 	}
@@ -36,10 +36,10 @@ if(!$sel){
 }
 if(!$sel){
 	$error=databaseError();
-	$msg = '<div>'."\n";
-	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to select database named <b>'.$CONFIG['dbname'].'</b> in <b>'.$CONFIG['dbtype'].'</b> on <b>'.$CONFIG['dbhost'].'</b></div>'."\n";
-	$msg .= "	<div>{$error}</div>\n";
-	$msg .= '</div>'."\n";
+	$msg = '<div>'.PHP_EOL;
+	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to select database named <b>'.$CONFIG['dbname'].'</b> in <b>'.$CONFIG['dbtype'].'</b> on <b>'.$CONFIG['dbhost'].'</b></div>'.PHP_EOL;
+	$msg .= "	<div>{$error}</div>".PHP_EOL;
+	$msg .= '</div>'.PHP_EOL;
 	abort($msg);
 	}
 //up the memory limit to resolve the "allowed memory" error
@@ -77,27 +77,27 @@ function checkDBTableSchema($wtable){
 		if(!isset($finfo['_amem'])){
 			$query="ALTER TABLE {$wtable} ADD _amem ".databaseDataType('bigint')." NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _amem to _pages table<br />\n";
+			$rtn .= " added _amem to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['_counter'])){
 			$query="ALTER TABLE {$wtable} ADD _counter integer NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added _amem to _pages table<br />\n";
+			$rtn .= " added _amem to _pages table<br />".PHP_EOL;
         }
         if(isset($CONFIG['minify_css']) && $CONFIG['minify_css']==1 && !isset($finfo['css_min'])){
 			$query="ALTER TABLE {$wtable} ADD css_min text NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added css_min to {$wtable} table<br />\n";
+			$rtn .= " added css_min to {$wtable} table<br />".PHP_EOL;
         }
         if(isset($CONFIG['minify_js']) && $CONFIG['minify_js']==1 && !isset($finfo['js_min'])){
 			$query="ALTER TABLE {$wtable} ADD js_min text NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added js_min to {$wtable} table<br />\n";
+			$rtn .= " added js_min to {$wtable} table<br />".PHP_EOL;
         }
         if(!isset($finfo['_cache'])){
 			$query="ALTER TABLE {$wtable} ADD _cache ".databaseDataType('tinyint')." NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added _cache to _pages table<br />\n";
+			$rtn .= " added _cache to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['controller'])){
 			$query="ALTER TABLE {$wtable} ADD controller text NULL;";
@@ -108,7 +108,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>700,'height'=>100,'behavior'=>"phpeditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added controller to _pages table<br />\n";
+			$rtn .= " added controller to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['functions'])){
 			$query="ALTER TABLE {$wtable} ADD functions ".databaseDataType('mediumtext')." NULL;";
@@ -119,7 +119,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>700,'height'=>100,'behavior'=>"phpeditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added functions to _pages table<br />\n";
+			$rtn .= " added functions to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['permalink'])){
 			$query="ALTER TABLE {$wtable} ADD permalink varchar(255) NULL;";
@@ -130,7 +130,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'text','width'=>700,'inputmax'=>255
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added permalink to _pages table<br />\n";
+			$rtn .= " added permalink to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['js'])){
 			$query="ALTER TABLE {$wtable} ADD js text NULL;";
@@ -141,7 +141,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>700,'height'=>120,'behavior'=>"jseditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added js to _pages table<br />\n";
+			$rtn .= " added js to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['css'])){
 			$query="ALTER TABLE {$wtable} ADD css text NULL;";
@@ -152,7 +152,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>700,'height'=>120,'behavior'=>"csseditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added css to _pages table<br />\n";
+			$rtn .= " added css to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['title'])){
 			$query="ALTER TABLE {$wtable} ADD title varchar(255) NULL;";
@@ -163,7 +163,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'text','width'=>200,'inputmax'=>255
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added title to _pages table<br />\n";
+			$rtn .= " added title to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['sort_order'])){
 			$query="ALTER TABLE {$wtable} ADD sort_order int NOT NULL Default 0;";
@@ -175,7 +175,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'text','width'=>200,'inputmax'=>255,'mask'=>'integer'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added sort_order to _pages table<br />\n";
+			$rtn .= " added sort_order to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['parent'])){
 			$query="ALTER TABLE {$wtable} ADD parent int NOT NULL Default 0;";
@@ -188,7 +188,7 @@ function checkDBTableSchema($wtable){
 				'dvals'=>"select name,permalink from _pages order by permalink,name,_id"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added parent to _pages table<br />\n";
+			$rtn .= " added parent to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['user_content'])){
 			$query="ALTER TABLE {$wtable} ADD user_content text NULL;";
@@ -203,7 +203,7 @@ function checkDBTableSchema($wtable){
 				'height'		=> '120'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added user_content to _pages table<br />\n";
+			$rtn .= " added user_content to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['postedit'])){
 			$query="ALTER TABLE {$wtable} ADD postedit ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -216,7 +216,7 @@ function checkDBTableSchema($wtable){
 				'tvals'=>1
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added postedit to _pages table<br />\n";
+			$rtn .= " added postedit to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['synchronize'])){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -229,7 +229,7 @@ function checkDBTableSchema($wtable){
 				'tvals'=>1
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added synchronize to _pages table<br />\n";
+			$rtn .= " added synchronize to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['_env'])){
 			$query="ALTER TABLE {$wtable} ADD _env text NULL;";
@@ -240,7 +240,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>500,'height'=>100
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added _env to _pages table<br />\n";
+			$rtn .= " added _env to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['_adate'])){
 			$query="ALTER TABLE {$wtable} ADD _adate ".databaseDataType('datetime')." NULL;";
@@ -251,22 +251,22 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'datetime'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added _adate to _pages table<br />\n";
+			$rtn .= " added _adate to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['_auser'])){
 			$query="ALTER TABLE {$wtable} ADD _auser integer NOT NULL Default 0;";
 			$ok=executeSQL($query);;
-			$rtn .= " added _auser to _pages table<br />\n";
+			$rtn .= " added _auser to _pages table<br />".PHP_EOL;
         }
         if(!isset($finfo['_aip'])){
 			$query="ALTER TABLE {$wtable} ADD _aip char(45) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _aip to _pages table<br />\n";
+			$rtn .= " added _aip to _pages table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['permalink'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>"permalink"));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
 	}
 	//make sure _templates table has functions
@@ -274,12 +274,12 @@ function checkDBTableSchema($wtable){
 		if(isset($CONFIG['minify_css']) && $CONFIG['minify_css']==1 && !isset($finfo['css_min'])){
 			$query="ALTER TABLE {$wtable} ADD css_min text NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added css_min to {$wtable} table<br />\n";
+			$rtn .= " added css_min to {$wtable} table<br />".PHP_EOL;
         }
         if(isset($CONFIG['minify_js']) && $CONFIG['minify_js']==1 && !isset($finfo['js_min'])){
 			$query="ALTER TABLE {$wtable} ADD js_min text NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added js_min to {$wtable} table<br />\n";
+			$rtn .= " added js_min to {$wtable} table<br />".PHP_EOL;
         }
         if(!isset($finfo['functions'])){
 			$query="ALTER TABLE {$wtable} ADD functions ".databaseDataType('mediumtext')." NULL;";
@@ -290,7 +290,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>400,'height'=>100,'behavior'=>"phpeditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added functions to _templates table<br />\n";
+			$rtn .= " added functions to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['js'])){
 			$query="ALTER TABLE {$wtable} ADD js text NULL;";
@@ -301,7 +301,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>400,'height'=>120,'behavior'=>"jseditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added js to _templates table<br />\n";
+			$rtn .= " added js to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['css'])){
 			$query="ALTER TABLE {$wtable} ADD css text NULL;";
@@ -312,7 +312,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>400,'height'=>120,'behavior'=>"csseditor"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added css to _templates table<br />\n";
+			$rtn .= " added css to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['_adate'])){
 			$query="ALTER TABLE {$wtable} ADD _adate ".databaseDataType('datetime')." NULL;";
@@ -323,17 +323,17 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'datetime'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added _adate to _templates table<br />\n";
+			$rtn .= " added _adate to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['_auser'])){
 			$query="ALTER TABLE {$wtable} ADD _auser integer NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added _auser to _templates table<br />\n";
+			$rtn .= " added _auser to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['_aip'])){
 			$query="ALTER TABLE {$wtable} ADD _aip char(45) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _aip to _templates table<br />\n";
+			$rtn .= " added _aip to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['postedit'])){
 			$query="ALTER TABLE {$wtable} ADD postedit ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -346,7 +346,7 @@ function checkDBTableSchema($wtable){
 				'tvals'=>1
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added postedit to _templates table<br />\n";
+			$rtn .= " added postedit to _templates table<br />".PHP_EOL;
         }
         if(!isset($finfo['synchronize'])){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -359,7 +359,7 @@ function checkDBTableSchema($wtable){
 				'tvals'=>1
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added synchronize to _templates table<br />\n";
+			$rtn .= " added synchronize to _templates table<br />".PHP_EOL;
         }
 	}
 	//make sure _users table has _env
@@ -373,37 +373,37 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'textarea','width'=>500,'height'=>100
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added _env to _users table<br />\n";
+			$rtn .= " added _env to _users table<br />".PHP_EOL;
         }
         if(isset($CONFIG['facebook_appid'])){
         	if(!isset($finfo['facebook_id'])){
 				$query="ALTER TABLE {$wtable} ADD facebook_id varchar(50) NULL;";
 				$ok=executeSQL($query);
-				$rtn .= " added facebook_id to _users table<br />\n";
+				$rtn .= " added facebook_id to _users table<br />".PHP_EOL;
 	        }
 	        if(!isset($finfo['facebook_email'])){
 				$query="ALTER TABLE {$wtable} ADD facebook_email varchar(255) NULL;";
 				$ok=executeSQL($query);
-				$rtn .= " added facebook_email to _users table<br />\n";
+				$rtn .= " added facebook_email to _users table<br />".PHP_EOL;
 	        }
 		}
 		if(isset($CONFIG['google_appid'])){
         	if(!isset($finfo['google_id'])){
 				$query="ALTER TABLE {$wtable} ADD google_id varchar(500) NULL;";
 				$ok=executeSQL($query);
-				$rtn .= " added google_id to _users table<br />\n";
+				$rtn .= " added google_id to _users table<br />".PHP_EOL;
 	        }
 	        if(!isset($finfo['google_email'])){
 				$query="ALTER TABLE {$wtable} ADD google_email varchar(255) NULL;";
 				$ok=executeSQL($query);
-				$rtn .= " added google_email to _users table<br />\n";
+				$rtn .= " added google_email to _users table<br />".PHP_EOL;
 	        }
 		}
 
         if(!isset($finfo['_sid'])){
 			$query="ALTER TABLE {$wtable} ADD _sid varchar(150) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _sid to _users table<br />\n";
+			$rtn .= " added _sid to _users table<br />".PHP_EOL;
         }
         if(!isset($finfo['_adate'])){
 			$query="ALTER TABLE {$wtable} ADD _adate ".databaseDataType('datetime')." NULL;";
@@ -414,22 +414,22 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'datetime'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added _adate to _users table<br />\n";
+			$rtn .= " added _adate to _users table<br />".PHP_EOL;
         }
         if(!isset($finfo['_aip'])){
 			$query="ALTER TABLE {$wtable} ADD _aip char(45) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _aip to _users table<br />\n";
+			$rtn .= " added _aip to _users table<br />".PHP_EOL;
         }
         if(!isset($finfo['_apage'])){
 			$query="ALTER TABLE {$wtable} ADD _apage INT NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added _apage to _users table<br />\n";
+			$rtn .= " added _apage to _users table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['guid'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>"active,guid"));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
 	}
 	//make sure _synchronize table has review_user, review_pass, review_user_id
@@ -444,7 +444,7 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'text','width'=>140
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added review_user to _synchronize table<br />\n";
+			$rtn .= " added review_user to _synchronize table<br />".PHP_EOL;
         }
         if(!isset($finfo['review_pass'])){
 			$query="ALTER TABLE {$wtable} ADD review_pass varchar(25) NULL;";
@@ -455,12 +455,12 @@ function checkDBTableSchema($wtable){
 				'inputtype'=>'password','width'=>140
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added review_pass to _synchronize table<br />\n";
+			$rtn .= " added review_pass to _synchronize table<br />".PHP_EOL;
         }
         if(!isset($finfo['review_user_id'])){
 			$query="ALTER TABLE {$wtable} ADD review_user_id int NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added review_user_id to _synchronize table<br />\n";
+			$rtn .= " added review_user_id to _synchronize table<br />".PHP_EOL;
         }
 	}
 	//make sure _cron table has a cron_pid field
@@ -469,18 +469,18 @@ function checkDBTableSchema($wtable){
 		if(!isset($finfo['cron_pid'])){
 			$query="ALTER TABLE {$wtable} ADD cron_pid integer NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added cron_pid to _cron table<br />\n";
+			$rtn .= " added cron_pid to _cron table<br />".PHP_EOL;
         }
         if(!isset($finfo['run_as'])){
 			$query="ALTER TABLE {$wtable} ADD run_as integer NOT NULL Default 0;";
 			$ok=executeSQL($query);
-			$rtn .= " added run_as to _cron table<br />\n";
+			$rtn .= " added run_as to _cron table<br />".PHP_EOL;
 			$ok=editDBRecord(array(
 				'-table'		=> '_tabledata',
 				'-where'		=> "tablename='{$wtable}'",
 				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_as running run_date run_length\r\nrun_result"
 			));
-			echo $ok."updated run_as tabledata<br>\n";
+			echo $ok."updated run_as tabledata<br>".PHP_EOL;
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
 				'fieldname'		=> 'run_as',
@@ -490,7 +490,7 @@ function checkDBTableSchema($wtable){
 				'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
 				'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
 			));
-			echo $id."added run_as fieldinfo<br>\n";
+			echo $id."added run_as fieldinfo<br>".PHP_EOL;
         }
         if(isset($finfo['logfile'])){
 			$ok=dropDBColumn($wtable,array('run_log','logfile','logfile_maxsize'));
@@ -500,12 +500,12 @@ function checkDBTableSchema($wtable){
 				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrunning run_date run_length\r\nrun_result",
 				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date"
 			));
-			$rtn .= " removed logfile from _cron table<br />\n";
+			$rtn .= " removed logfile from _cron table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['name'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'active,name'));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
     if($wtable=='_cronlog'){
@@ -521,12 +521,12 @@ function checkDBTableSchema($wtable){
 				'-where'	=> "tablename='_cronlog'",
 				'listfields'=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length",
 			));
-			$rtn .= " remove count fields from _cronlog table<br />\n";
+			$rtn .= " remove count fields from _cronlog table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['name'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'name'));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
     //make sure _queries table has a tablename field
@@ -535,12 +535,12 @@ function checkDBTableSchema($wtable){
 		if(!isset($finfo['tablename'])){
 			$query="ALTER TABLE {$wtable} ADD tablename varchar(255) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added tablename to _queries table<br />\n";
+			$rtn .= " added tablename to _queries table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['tablename'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'tablename'));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
     //make sure _tabledata table has a tablename field
@@ -549,7 +549,7 @@ function checkDBTableSchema($wtable){
 		if(!isset($finfo['tablegroup'])){
 			$query="ALTER TABLE {$wtable} ADD tablegroup varchar(255) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added tablegroup to _tabledata table<br />\n";
+			$rtn .= " added tablegroup to _tabledata table<br />".PHP_EOL;
         }
 		if(!isset($finfo['synchronize'])){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 0";
@@ -573,7 +573,7 @@ function checkDBTableSchema($wtable){
 				'tvals'			=> '1'
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added synchronize to _tabledata table<br />\n";
+			$rtn .= " added synchronize to _tabledata table<br />".PHP_EOL;
         }
         if(!isset($finfo['websockets'])){
 			$query="ALTER TABLE {$wtable} ADD websockets ".databaseDataType('tinyint')." NOT NULL Default 0";
@@ -585,12 +585,12 @@ function checkDBTableSchema($wtable){
 				'inputtype'		=> 'checkbox',
 				'tvals'			=> '1'
 				));
-			$rtn .= " added websockets to _tabledata table<br />\n";
+			$rtn .= " added websockets to _tabledata table<br />".PHP_EOL;
         }
         if(!isset($finfo['tabledesc'])){
 			$query="ALTER TABLE {$wtable} ADD tabledesc varchar(500) NULL;";
 			$ok=executeSQL($query);
-			$rtn .= " added tabledesc to _tabledata table<br />\n";
+			$rtn .= " added tabledesc to _tabledata table<br />".PHP_EOL;
         }
     }
     //make sure _fielddata table has a description field
@@ -605,7 +605,7 @@ function checkDBTableSchema($wtable){
 				'onchange'		=> "fielddataChange(this);"
 			));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " updated dvals and dvals of inputtype field in _fielddata table to be dynamic<br />\n";
+			$rtn .= " updated dvals and dvals of inputtype field in _fielddata table to be dynamic<br />".PHP_EOL;
 		}
 		if(!isset($finfo['synchronize'])){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 1;";
@@ -627,7 +627,7 @@ function checkDBTableSchema($wtable){
 				'listfields'	=> "tablename\r\nfieldname\r\ninputtype\r\nwidth\r\nheight\r\ninputmax\r\neditlist\r\nsynchronize\r\ndescription"
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added synchronize to _fielddata table<br />\n";
+			$rtn .= " added synchronize to _fielddata table<br />".PHP_EOL;
         }
 		if(!isset($finfo['description'])){
 			$query="ALTER TABLE {$wtable} ADD description varchar(255) NULL;";
@@ -649,12 +649,12 @@ function checkDBTableSchema($wtable){
 				'inputmax'		=> 255,
 				));
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added description to _fielddata table<br />\n";
+			$rtn .= " added description to _fielddata table<br />".PHP_EOL;
         }
         //check indexes
         if(!isset($index['tablename'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'tablename,fieldname','-unique'=>true));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
     //make sure _queries table has a tablename field
@@ -670,13 +670,13 @@ function checkDBTableSchema($wtable){
 				$query="ALTER TABLE {$wtable} MODIFY key_value varchar(5000) NULL;";
 			}
 			$ok=executeSQL($query);
-			$rtn .= " changed key_value field length from {$finfo['key_value']['_dblength']} to 5000 in _settings table<br />\n";
+			$rtn .= " changed key_value field length from {$finfo['key_value']['_dblength']} to 5000 in _settings table<br />".PHP_EOL;
 			$rtn .= $query;
         }
         //check indexes
         if(!isset($index['key_name'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'key_name,user_id'));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />\n";
+        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
     return $rtn;
@@ -1008,7 +1008,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$info['formfields']=$info['default_formfields'];
 	}
     //Build the form fields
-    $rtn .= "\n";
+    $rtn .= "".PHP_EOL;
     $method=isset($params['-method'])?$params['-method']:'POST';
     //form class
     $formclass=isset($params['-class'])?$params['-class']:'w_form';
@@ -1080,35 +1080,35 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 	}
 	$rtn .= ' onsubmit="'.$onsubmit.'"';
-	$rtn .= '>'."\n";
+	$rtn .= '>'.PHP_EOL;
 	if(isset($params['-template'])){
-		$rtn .= '<input type="hidden" name="_template" value="'.$params['-template'].'">'."\n";
+		$rtn .= '<input type="hidden" name="_template" value="'.$params['-template'].'">'.PHP_EOL;
 		}
 	elseif(isset($params['_template'])){
-		$rtn .= '<input type="hidden" name="_template" value="'.$params['_template'].'">'."\n";
+		$rtn .= '<input type="hidden" name="_template" value="'.$params['_template'].'">'.PHP_EOL;
 		}
-    $rtn .= '<input type="hidden" name="_table" value="'.$params['-table'].'">'."\n";
-    $rtn .= '<input type="hidden" name="_formname" value="'.$formname.'">'."\n";
-    $rtn .= '<input type="hidden" name="_enctype" value="'.$enctype.'">'."\n";
+    $rtn .= '<input type="hidden" name="_table" value="'.$params['-table'].'">'.PHP_EOL;
+    $rtn .= '<input type="hidden" name="_formname" value="'.$formname.'">'.PHP_EOL;
+    $rtn .= '<input type="hidden" name="_enctype" value="'.$enctype.'">'.PHP_EOL;
     if(!isset($params['_action'])){$params['_action']='';}
-    $rtn .= '<input type="hidden" name="_action" value="'.$params['_action'].'">'."\n";
+    $rtn .= '<input type="hidden" name="_action" value="'.$params['_action'].'">'.PHP_EOL;
 	if(isset($params['-auth_required'])){
-		$rtn .= '<input type="hidden" name="_auth_required" value="1">'."\n";
+		$rtn .= '<input type="hidden" name="_auth_required" value="1">'.PHP_EOL;
 	}
-    if(strlen($preview)){$rtn .= '<input type="hidden" name="_preview" value="'.$preview.'">'."\n";}
+    if(strlen($preview)){$rtn .= '<input type="hidden" name="_preview" value="'.$preview.'">'.PHP_EOL;}
     $fieldlist=array();
 
     $used=array();
     if(isset($_REQUEST['_sort'])){
-    	$rtn .= '<input type="hidden" name="_sort" value="'.$_REQUEST['_sort'].'">'."\n";
+    	$rtn .= '<input type="hidden" name="_sort" value="'.$_REQUEST['_sort'].'">'.PHP_EOL;
 
     	$used['_sort']=1;
 		}
 	$hasBehaviors=0;
 	if(isset($params['-honeypot'])){
 		$honeypot=$params['-honeypot'];
-		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'."\n";
-		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'."\n";
+		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
+		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'.PHP_EOL;
 		}
 	$forcedatts=array(
 		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
@@ -1208,16 +1208,20 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 		//set required string
 		$required_char=isset($params['-required'])?$params['-required']:'*';
-		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'."\n";
+		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'.PHP_EOL;
 		//row
-		if(isset($params['-tableclass'])){
-        	$rtn .= '<table class="'.$params['-tableclass'].'">'."\n";
-		}
-		else{
-			$rtn .= '<table class="w_table">'."\n";
-		}
-		$rtn .= '	<tr valign="top">'."\n";
+
 		if(is_array($fields)){
+			if(isset($params['-tableclass'])){
+				$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+			}
+			else{
+				$rtn .= '<table class="w_table">'.PHP_EOL;
+			}
+			$rtn .= '	<tr valign="top">'.PHP_EOL;
+			if(!count($fields)){
+					$rtn .= '<td></td>'.PHP_EOL;
+			}
 			foreach($fields as $field){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
@@ -1288,7 +1292,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	            elseif(isset($info['fieldinfo'][$field]['required']) && $info['fieldinfo'][$field]['required']==1){
 	                $class .= ' w_required';
 	            }
-				$rtn .= '		<td class="'.$class.'">'."\n";
+				$rtn .= '		<td class="'.$class.'">'.PHP_EOL;
 	            //default value for add forms
 	            if((!isset($rec) || !is_array($rec))){
 					if(isset($params[$field])){$opts['value']=$params[$field];}
@@ -1384,8 +1388,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				$field_content=$opts['id'].'_content';
 				if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
 					$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                	$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'."\n";
-					$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
+                	$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+					$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
 				}
 				elseif(isset($params[$field.'_group_id'])){
 					$group_id = $params[$field.'_group_id'];
@@ -1399,30 +1403,39 @@ function addEditDBForm($params=array(),$customcode=''){
 						$rtn .= ' class="'.$params[$field.'_group_class'].'"';
 						$used[$field.'_group_class']=1;
 						}
-					$rtn .= '>'."\n";
+					$rtn .= '>'.PHP_EOL;
 					if(isset($params[$field.'_group_custom'])){
 						$rtn .= $params[$field.'_group_custom'];
 						$used[$field.'_group_custom']=1;
 						}
 					if($info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
+						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
-					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
-					$rtn .= '		</div>'."\n";
+					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
+					$rtn .= '		</div>'.PHP_EOL;
 					}
 				else{
 					if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
+						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
-					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
+					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
                 	}
-				$rtn .= '		</td>'."\n";
+				$rtn .= '		</td>'.PHP_EOL;
 				if(!isset($used[$field])){$used[$field]=1;}
 				else{$used[$field]+=1;}
 				if(!isset($params['-focus'])){$params['-focus']=$field;}
 	        	}
+	        $rtn .= '</tr>'.PHP_EOL;
+	        $rtn .= '</table>'.PHP_EOL;
         	}
         else{
+			if(isset($params['-tableclass'])){
+        	$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+			}
+			else{
+				$rtn .= '<table class="w_table">'.PHP_EOL;
+			}
+			$rtn .= '	<tr valign="top">'.PHP_EOL;
 			$field=(string)$fields;
 			if(!strlen($field)){continue;}
 			$includeFields[$field]=1;
@@ -1483,7 +1496,7 @@ function addEditDBForm($params=array(),$customcode=''){
             elseif(isset($info['fieldinfo'][$field]['required']) && $info['fieldinfo'][$field]['required']==1){
                 $class .= ' w_required';
             }
-			$rtn .= '		<td class="'.$class.'">'."\n";
+			$rtn .= '		<td class="'.$class.'">'.PHP_EOL;
             //behaviors?
             if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){
 				$hasBehaviors++;
@@ -1501,8 +1514,8 @@ function addEditDBForm($params=array(),$customcode=''){
 			$field_content=$opts['id'].'_content';
 			if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
 				$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                $rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'."\n";
-				$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'."\n";
+                $rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+				$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
 			}
             elseif(isset($params[$field.'_group_id'])){
 				$used[$field.'_group_id']=1;
@@ -1516,117 +1529,117 @@ function addEditDBForm($params=array(),$customcode=''){
 					$rtn .= ' class="'.$params[$field.'_group_class'].'"';
 					$used[$field.'_group_class']=1;
 					}
-				$rtn .= '>'."\n";
+				$rtn .= '>'.PHP_EOL;
 				if(isset($params[$field.'_group_custom'])){
 					$rtn .= $params[$field.'_group_custom'];
 					$used[$field.'_group_custom']=1;
 					}
 				if($info['fieldinfo'][$field]['inputtype']!='signature'){
-					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
+					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
-				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
-				$rtn .= '		</div>'."\n";
+				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
+				$rtn .= '		</div>'.PHP_EOL;
 				}
 			else{
 				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
-					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'."\n";
+					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
-				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'."\n";
+				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
 				}
-			$rtn .= '		</td>'."\n";
+			$rtn .= '		</td>'.PHP_EOL;
 			if(!isset($used[$field])){$used[$field]=1;}
 			$used[$field]+=1;
 			if(!isset($params['-focus'])){$params['-focus']=$field;}
+			$rtn .= '	</tr>'.PHP_EOL;
+			$rtn .= '</table>'.PHP_EOL;
             }
-        $rtn .= '	</tr>'."\n";
-        $rtn .= '</table>'."\n";
     	}
     if(isset($rec['_id']) && isNum($rec['_id'])){
-		$rtn .= '<input type="hidden" name="_id" value="'.$rec['_id'].'">'."\n";
+		$rtn .= '<input type="hidden" name="_id" value="'.$rec['_id'].'">'.PHP_EOL;
 		if(isset($params['-editfields'])){
         	if(is_array($params['-editfields'])){$params['-editfields']=implode(',',$params['-editfields']);}
-        	$rtn .= '<input type="hidden" name="_fields" value="'.$params['-editfields'].'">'."\n";
+        	$rtn .= '<input type="hidden" name="_fields" value="'.$params['-editfields'].'">'.PHP_EOL;
 		}
 		else{
-			$rtn .= '<input type="hidden" name="_fields" value="'.implode(',',$fieldlist).'">'."\n";
+			$rtn .= '<input type="hidden" name="_fields" value="'.implode(',',$fieldlist).'">'.PHP_EOL;
 		}
     }
     //Add any other valid inputs
-    $rtn .= '<div id="other_inputs" style="display:none;">'."\n";
+    $rtn .= '<div id="other_inputs" style="display:none;">'.PHP_EOL;
     if(is_array($params)){
 	    foreach($params as $key=>$val){
 			if(isset($used[$key])){
-				//$rtn .= '<!--Skipped Used:'.$key.'-->'."\n";
+				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
-				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'."\n";
+				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^(GUID|PHPSESSID|AjaxRequestUniqueId)$/i',$key)){
-				//$rtn .= '<!--Skipped PHPID:'.$key.'-->'."\n";
+				//$rtn .= '<!--Skipped PHPID:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(!is_array($val) && strlen(trim($val))==0){
-				$rtn .= '	<!--skipped '.$key.': blank value -->'."\n";
+				$rtn .= '	<!--skipped '.$key.': blank value -->'.PHP_EOL;
 				continue;
 				}
 			if(!isset($used[$key])){$used[$key]=1;}
 			else{$used[$key]+=1;}
 			if(is_array($val)){
             	foreach($val as $cval){
-                	$rtn .= '	<input type="hidden" name="'.$key.'[]" value="'.$cval.'">'."\n";
+                	$rtn .= '	<input type="hidden" name="'.$key.'[]" value="'.$cval.'">'.PHP_EOL;
 				}
 			}
 			elseif(isNum($val)){
-            	$rtn .= '	<input type="hidden" name="'.$key.'" value="'.$val.'">'."\n";
+            	$rtn .= '	<input type="hidden" name="'.$key.'" value="'.$val.'">'.PHP_EOL;
 			}
 			else{
-				$rtn .= '	<textarea name="'.$key.'">'.$val.'</textarea>'."\n";
+				$rtn .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
 			}
 	    }
 	}
-    $rtn .= '</div>'."\n";
+    $rtn .= '</div>'.PHP_EOL;
     if(!isset($params['-readonly'])){
 	    //buttons
-	    $rtn .= '<table class="w_table">'."\n";
-		$rtn .= '	<tr>'."\n";
+	    $rtn .= '<table class="w_table">'.PHP_EOL;
+		$rtn .= '	<tr>'.PHP_EOL;
 	    $save=isset($params['-save'])?$params['-save']:'Save';
 	    if(isset($params['-savebutton'])){
-			$rtn .= '		<td>'.$params['-savebutton'].'</td>'."\n";
+			$rtn .= '		<td>'.$params['-savebutton'].'</td>'.PHP_EOL;
 		}
 	    elseif(isset($rec['_id']) && isNum($rec['_id'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'';
 			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
-				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'."\n";
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
+				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
-				$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">Reset</button></td>'."\n";
+				$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">Reset</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Delete';
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">Delete</button></td>'."\n";
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">Delete</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/clone/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Add';
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">Clone</button></td>'."\n";
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">Clone</button></td>'.PHP_EOL;
 				}
 			}
 		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'';
 			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 			$action=isset($params['-nosave'])?'':'Add';
-	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'."\n";
-	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'."\n";
+	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
 	    	}
-	    $rtn .= '	</tr>'."\n";
-	    $rtn .= '</table>'."\n";
+	    $rtn .= '	</tr>'.PHP_EOL;
+	    $rtn .= '</table>'.PHP_EOL;
 	}
     $rtn .= $customcode;
-    $rtn .= '</form>'."\n";
+    $rtn .= '</form>'.PHP_EOL;
     //initBehaviors?
     if($hasBehaviors && isset($_REQUEST['AjaxRequestUniqueId'])){
 		$rtn .= buildOnLoad("initBehaviors();");
@@ -2306,7 +2319,7 @@ function insertDBFile($params,$e=false){
 		//build an html5 upload window to replace this image - exclude IE since they do not support it.
 		if(isset($params['-edit']) && $params['-edit']==true && $_SERVER['REMOTE_BROWSER'] != 'msie'){
 			$path=getFilePath($rec['file']);
-        	$rtn .= '<div id="fileupload" data-behavior="fileupload" _table="_files" _action="EDIT" _onsuccess="location.reload(true);" file_remove="1" _id="'.$rec['_id'].'"  path="'.$path.'" style="width:'.round(($params['width']-5),0).'px;height:30px;border:1px inset #000;background:#eaeaea;">Upload to Replace</div>'."\n";
+        	$rtn .= '<div id="fileupload" data-behavior="fileupload" _table="_files" _action="EDIT" _onsuccess="location.reload(true);" file_remove="1" _id="'.$rec['_id'].'"  path="'.$path.'" style="width:'.round(($params['width']-5),0).'px;height:30px;border:1px inset #000;background:#eaeaea;">Upload to Replace</div>'.PHP_EOL;
 		}
 	}
 	return $rtn;
@@ -2559,7 +2572,7 @@ function buildDBPaging($paging=array()){
 	//formname
 	if(isset($paging['-formname'])){
 		$formname=$paging['-formname'];
-		$rtn .= '<input type="hidden" name="_start" value="'.$start.'">'."\n";
+		$rtn .= '<input type="hidden" name="_start" value="'.$start.'">'.PHP_EOL;
 	}
 	elseif(isset($paging['-ajaxid'])){
 		if(isset($paging['-pagingformname'])){$formname=$paging['-pagingformname'];}
@@ -2578,16 +2591,16 @@ function buildDBPaging($paging=array()){
 	}
 	//hide other inputs
 	if(!isset($paging['-formname'])){
-		$rtn .= '<div style="display:none;" id="inputs">'."\n";
+		$rtn .= '<div style="display:none;" id="inputs">'.PHP_EOL;
 		foreach($paging as $pkey=>$pval){
 			if(preg_match('/^\-/',$pkey)){continue;}
 			if($pkey=='_action' && $pval=='multi_update'){continue;}
 			if(preg_match('/^(x|y)$/i',$pkey)){continue;}
 			if(preg_match('/^\_(start|id\_href|search|filters|bulkedit|export|viewfield)$/i',$pkey)){continue;}
 			if(preg_match('/\_(onclick|href|eval|editlist)$/i',$pkey)){continue;}
-			$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'."\n";
+			$rtn .= '	<textarea name="'.$pkey.'">'.$pval.'</textarea>'.PHP_EOL;
 	    	}
-	    $rtn .= '</div>'."\n";
+	    $rtn .= '</div>'.PHP_EOL;
 	}
 	//search?
 	if(isset($paging['-search'])){
@@ -2596,15 +2609,15 @@ function buildDBPaging($paging=array()){
 			if(isset($paging['-bulkedit']) && !isset($paging['-filters'])){$paging['-filters']=1;}
 			if(isset($paging['-filters'])){
             	//new options to allow user to set multiple filters
-            	$rtn .= '<div class="row padtop">'."\n";
-            	$rtn .= '<div style="display:none;">'."\n";
-				$rtn .= '	<textarea name="_filters">'.$paging['-filters'].'</textarea>'."\n";
+            	$rtn .= '<div class="row padtop">'.PHP_EOL;
+            	$rtn .= '<div style="display:none;">'.PHP_EOL;
+				$rtn .= '	<textarea name="_filters">'.$paging['-filters'].'</textarea>'.PHP_EOL;
 				if(isset($paging['-bulkedit'])){
-					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'."\n";
+					$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'.PHP_EOL;
 				}
-				$rtn .= '	<input type="hidden" name="_export" value="" />'."\n";
-				$rtn .= '</div>'."\n";
-            	//$rtn .= '	<b>Filters:</b>'."\n";
+				$rtn .= '	<input type="hidden" name="_export" value="" />'.PHP_EOL;
+				$rtn .= '</div>'.PHP_EOL;
+            	//$rtn .= '	<b>Filters:</b>'.PHP_EOL;
             	//fields
             	$vals=array('*'=>'Any Field');
 				foreach($fields as $field){
@@ -2633,14 +2646,14 @@ function buildDBPaging($paging=array()){
 				$opts=array('class'=>'form-control input-sm');
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
-				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'."\n";
-				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search"> Search</button>'."\n";
-				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'."\n";
+				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="form-control input-sm" />'.PHP_EOL;
+				$rtn .= '	<button type="submit" class="btn btn-default btn-sm icon-search"> Search</button>'.PHP_EOL;
+				$rtn .= '	<button type="button" class="btn btn-default btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 				if(isset($paging['-bulkedit'])){
-                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'."\n";
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
 				}
 				if(!isset($paging['-noexport'])){
-                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');"> export</a>'."\n";
+                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');"> export</a>'.PHP_EOL;
                 	//export
 					if(isset($_REQUEST['_export']) && $_REQUEST['_export']==1){
 			        	$where=getDBWhere($paging);
@@ -2678,14 +2691,14 @@ function buildDBPaging($paging=array()){
 			        		$file="{$params['-table']}_export_{$sha}.csv";
 			        		$afile="{$progpath}/temp/{$file}";
 			        		setFileContents($afile,$csv);
-			        		$rtn .= '<a href="/php/temp/'.$file.'" class="icon-file-excel w_success w_bold">file</a>'."\n";
+			        		$rtn .= '<a href="/php/temp/'.$file.'" class="icon-file-excel w_success w_bold">file</a>'.PHP_EOL;
 			        		//exit;
 						}
 					}
 				}
-				$rtn .= '</div>'."\n";
-				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'."\n";
-				$rtn .= '	<div id="send_to_filters">'."\n";
+				$rtn .= '</div>'.PHP_EOL;
+				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'.PHP_EOL;
+				$rtn .= '	<div id="send_to_filters">'.PHP_EOL;
 				if(strlen($paging['-filters']) && $paging['-filters'] != 1){
                 	//field-oper-value
                 	$sets=preg_split('/[\r\n]+/',$paging['-filters']);
@@ -2714,12 +2727,12 @@ function buildDBPaging($paging=array()){
 							case 'nb': $doper='Is Not Blank';$dval='';break;
 						}
 						$dstr="{$dfield} {$doper} {$dval}";
-                    	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'."\n";
+                    	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 					}
-					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'."\n";
+					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
 				}
-				$rtn .= '	</div>'."\n";
-				$rtn .= '</div>'."\n";
+				$rtn .= '	</div>'.PHP_EOL;
+				$rtn .= '</div>'.PHP_EOL;
 			}
 			else{
 				$indexes=getDBIndexes(array($paging['-table']));
@@ -2731,42 +2744,42 @@ function buildDBPaging($paging=array()){
 					$dval=ucwords(trim($dval));
 	            	$opts[$tval]=$dval;
 				}
-				$rtn .= '<table class="w_nopad"><tr>'."\n";
-				$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'."\n";
-				$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'."\n";
-				$rtn .= '	<td><button type="submit" class="btn btn-default icon-search">Search</button></td>'."\n";
-				$rtn .= '</tr></table>'."\n";
+				$rtn .= '<table class="w_nopad"><tr>'.PHP_EOL;
+				$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'.PHP_EOL;
+				$rtn .= '	<td><input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'.PHP_EOL;
+				$rtn .= '	<td><button type="submit" class="btn btn-default icon-search">Search</button></td>'.PHP_EOL;
+				$rtn .= '</tr></table>'.PHP_EOL;
 			}
 		}
 		else{
-        	$rtn .= '<input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:250px;" value="'.requestValue('_search').'">'."\n";
+        	$rtn .= '<input type="text" class="form-control" name="_search" onFocus="this.select();" style="width:250px;" value="'.requestValue('_search').'">'.PHP_EOL;
 			$rtn .= buildFormSubmit('Search');
 		}
 
 		if(isset($paging['-daterange']) && $paging['-daterange']==1){
 			$rangeid='dr'.time();
-			$rtn .= '<table class="w_nopad"><tr><td>'."\n";
+			$rtn .= '<table class="w_nopad"><tr><td>'.PHP_EOL;
 			$checked=(isset($_REQUEST['date_range']) && $_REQUEST['date_range']==1)?' checked':'';
-			$rtn .= '<div style="font-size:9pt;"><input type="checkbox" name="date_range" value="1"'.$checked.' onClick="showHide(\''.$rangeid.'\',this.checked);"> Filter by Date Range</div>'."\n";
+			$rtn .= '<div style="font-size:9pt;"><input type="checkbox" name="date_range" value="1"'.$checked.' onClick="showHide(\''.$rangeid.'\',this.checked);"> Filter by Date Range</div>'.PHP_EOL;
 			if(strlen($checked)){
-				$rtn .= '<div style="font-size:9pt;" align="center" id="'.$rangeid.'">'."\n";
+				$rtn .= '<div style="font-size:9pt;" align="center" id="'.$rangeid.'">'.PHP_EOL;
 				}
 			else{
-				$rtn .= '<div style="font-size:9pt;display:none;" align="center" id="'.$rangeid.'">'."\n";
+				$rtn .= '<div style="font-size:9pt;display:none;" align="center" id="'.$rangeid.'">'.PHP_EOL;
 	        	}
-			$rtn .= '<table class="w_nopad">'."\n";
-			$rtn .= '	<tr>'."\n";
+			$rtn .= '<table class="w_nopad">'.PHP_EOL;
+			$rtn .= '	<tr>'.PHP_EOL;
 			if(is_array($paging['-datefield'])){
 				$paging['-formname']=$formname;
-				$rtn .= '		<td>'.getDBFieldTag($paging['-datefield']).'</td>'."\n";
+				$rtn .= '		<td>'.getDBFieldTag($paging['-datefield']).'</td>'.PHP_EOL;
 	        	}
-			$rtn .= '		<td>'.getDBFieldTag(array('-formname'=>$formname,'-table'=>'_users','inputtype'=>'date',"-field"=>'_cdate','name'=>'date_from')).'</td>'."\n";
-			$rtn .= '		<td>To</td>'."\n";
-			$rtn .= '		<td>'.getDBFieldTag(array('-formname'=>$formname,'-table'=>'_users','inputtype'=>'date',"-field"=>'_cdate','name'=>'date_to')).'</td>'."\n";
-			$rtn .= '	</tr>'."\n";
-			$rtn .= '</table>'."\n";
-			$rtn .= '</div>'."\n";
-			$rtn .= '</td></tr></table>'."\n";
+			$rtn .= '		<td>'.getDBFieldTag(array('-formname'=>$formname,'-table'=>'_users','inputtype'=>'date',"-field"=>'_cdate','name'=>'date_from')).'</td>'.PHP_EOL;
+			$rtn .= '		<td>To</td>'.PHP_EOL;
+			$rtn .= '		<td>'.getDBFieldTag(array('-formname'=>$formname,'-table'=>'_users','inputtype'=>'date',"-field"=>'_cdate','name'=>'date_to')).'</td>'.PHP_EOL;
+			$rtn .= '	</tr>'.PHP_EOL;
+			$rtn .= '</table>'.PHP_EOL;
+			$rtn .= '</div>'.PHP_EOL;
+			$rtn .= '</td></tr></table>'.PHP_EOL;
 			}
     	}
     //limit?
@@ -2775,7 +2788,7 @@ function buildDBPaging($paging=array()){
     	$onsubmit=str_replace('(this',"(document.{$formname}",$onsubmit);
 	}
 	if(isset($paging['-limit'])){
-		$rtn .= '<table class="w_nopad" ><tr valign="middle">'."\n";
+		$rtn .= '<table class="w_nopad" ><tr valign="middle">'.PHP_EOL;
 		$rtn .= '	<th><div style="width:35px;">';
 		if(isset($paging['-first'])){
 			$arr=array();
@@ -2788,9 +2801,9 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        	}
 			$arr['_start']=$paging['-first'];
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
-        $rtn .= '</div></th>'."\n";
+        $rtn .= '</div></th>'.PHP_EOL;
 		$rtn .= '	<th><div style="width:35px;">';
 		if(isset($paging['-prev'])){
 			$arr=array();
@@ -2802,12 +2815,12 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'."\n";
+			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
-        $rtn .= '</div></th>'."\n";
+        $rtn .= '</div></th>'.PHP_EOL;
 
         if(isset($paging['-text'])){
-            $rtn .= '		<td align="center"><div class="w_paging">'.$paging['-text'].' records</div></td>'."\n";
+            $rtn .= '		<td align="center"><div class="w_paging">'.$paging['-text'].' records</div></td>'.PHP_EOL;
 		}
         if(isset($paging['-next'])){
 			$arr=array();
@@ -2819,8 +2832,8 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        }
-			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'."\n";
-			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
+			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
         if(isset($paging['-last'])){
 			$arr=array();
@@ -2832,13 +2845,13 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        }
-			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'."\n";
-			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'."\n";
+			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
-        $rtn .= '</tr></table>'."\n";
+        $rtn .= '</tr></table>'.PHP_EOL;
 	}
 	elseif(isset($paging['-text'])){
-        $rtn .= '	<div class="w_paging">'.$paging['-text'].' records</div>'."\n";
+        $rtn .= '	<div class="w_paging">'.$paging['-text'].' records</div>'.PHP_EOL;
 	}
 	if(!isset($paging['-formname'])){
 		$rtn .= buildFormEnd();
@@ -2885,65 +2898,65 @@ function buildDBProgressChart($params=array()){
 		$height=setValue($params['-height'],20);
 		$width=setValue($params['-width'],200);
 		//if target is specified
-		$rtn .= '<div id="'.$id.'">'."\n";
-		$rtn .= '	<div>'."\n";
+		$rtn .= '<div id="'.$id.'">'.PHP_EOL;
+		$rtn .= '	<div>'.PHP_EOL;
 		if(isset($params['-addlink'])){
-			$rtn .= '		<a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a>'."\n";
+			$rtn .= '		<a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a>'.PHP_EOL;
 			}
 		if(isset($params['-listlink'])){
-			$rtn .= '		<a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a>'."\n";
+			$rtn .= '		<a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a>'.PHP_EOL;
 			}
-		if(isset($params['-title'])){$rtn .= '		<b>'.$params['-title'].'</b>'."\n";}
-		$rtn .= '	</div>'."\n";
+		if(isset($params['-title'])){$rtn .= '		<b>'.$params['-title'].'</b>'.PHP_EOL;}
+		$rtn .= '	</div>'.PHP_EOL;
 		if(isNum($params['-target'])){
 			$pcnt=round(($sum/$params['-target']),2);
 			$pwidth=round($pcnt*$width,0);
 			if($format=='money'){$sum="$" . formatMoney($sum);}
-			$rtn .= '<div style="position:relative;width:'."{$width}px;height:{$height}px;border:{$border};background:{$background};".'">'."\n";
-			$rtn .= '	<div style="position:absolute;left:0px;bottom:0px;width:'."{$pwidth}px;background:{$forground};height:{$height}px;color:{$color}".'" align="center">'.$sum.'</div>'."\n";
-			$rtn .= '</div>'."\n";
+			$rtn .= '<div style="position:relative;width:'."{$width}px;height:{$height}px;border:{$border};background:{$background};".'">'.PHP_EOL;
+			$rtn .= '	<div style="position:absolute;left:0px;bottom:0px;width:'."{$pwidth}px;background:{$forground};height:{$height}px;color:{$color}".'" align="center">'.$sum.'</div>'.PHP_EOL;
+			$rtn .= '</div>'.PHP_EOL;
 			}
 		else{
 			$pcnt=round(($sum/$width),2);
 			$pwidth=round($pcnt*$width,0);
-			$rtn .= '	<div style="width:'."{$pwidth}px;background:{$forground};height:{$height}px;".'"></div>'."\n";
+			$rtn .= '	<div style="width:'."{$pwidth}px;background:{$forground};height:{$height}px;".'"></div>'.PHP_EOL;
 			}
-		$rtn .= '</div>'."\n";
+		$rtn .= '</div>'.PHP_EOL;
     	}
     else{
 		//vertical bar
 		$height=setValue($params['-height'],200);
 		$width=setValue($params['-width'],20);
 		$rwidth=$width+20;
-		$rtn .= '<div id="'.$id.'" style="position:relative;width:'.$rwidth.'px;height:'.$height.'px;">'."\n";
+		$rtn .= '<div id="'.$id.'" style="position:relative;width:'.$rwidth.'px;height:'.$height.'px;">'.PHP_EOL;
 		$bottom=0;
 		if(isset($params['-listlink'])){
-			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a></div>'."\n";
+			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="List" href="#" onclick="'.$params['-listlink'].'return false;"><img src="/wfiles/iconsets/16/list.png" alt="list" /></a></div>'.PHP_EOL;
 			$bottom+=18;
 			}
 		if(isset($params['-addlink'])){
-			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a></div>'."\n";
+			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:18px;width:18px;"><a title="Add" href="#" onclick="'.$params['-addlink'].'return false;"><img src="/wfiles/iconsets/16/plus.png" alt="add" /></a></div>'.PHP_EOL;
 			$bottom+=18;
 			}
 		if(isset($params['-title'])){
 			$pheight=$height-$bottom;
-			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:'.$pheight.'px;width:18px;"><b class="w_rotatetext w_bold">'.$params['-title'].'</b></div>'."\n";
+			$rtn .= '		<div style="position:absolute;bottom:'.$bottom.'px;left:2px;height:'.$pheight.'px;width:18px;"><b class="w_rotatetext w_bold">'.$params['-title'].'</b></div>'.PHP_EOL;
 			$bottom+=18;
 			}
 		//if target is specified
 		if(isNum($params['-target'])){
 			$pcnt=round(($sum/$params['-target']),2);
 			$pheight=round($pcnt*$height,0);
-			$rtn .= '<div id="progresscontrol" style="position:absolute;bottom:0px;left:20px;width:'."{$width}px;height:{$height}px;border:{$border};background:{$background};".'">'."\n";
-			$rtn .= '	<div style="position:absolute;bottom:0px;left:0px;width:'."{$width}px;background:{$forground};height:{$pheight}px;".'"></div>'."\n";
-			$rtn .= '</div>'."\n";
+			$rtn .= '<div id="progresscontrol" style="position:absolute;bottom:0px;left:20px;width:'."{$width}px;height:{$height}px;border:{$border};background:{$background};".'">'.PHP_EOL;
+			$rtn .= '	<div style="position:absolute;bottom:0px;left:0px;width:'."{$width}px;background:{$forground};height:{$pheight}px;".'"></div>'.PHP_EOL;
+			$rtn .= '</div>'.PHP_EOL;
 			}
 		else{
 			$pcnt=round((($sum/$width)*100),2);
 			$pwidth=round($pcnt*$width,0);
-			$rtn .= '	<div style="width:'."{$width}px;background:{$forground};height:{$pheight}px;".'"></div>'."\n";
+			$rtn .= '	<div style="width:'."{$width}px;background:{$forground};height:{$pheight}px;".'"></div>'.PHP_EOL;
 			}
-		$rtn .= '</div>'."\n";
+		$rtn .= '</div>'.PHP_EOL;
     	}
     return $rtn;
 	}
@@ -3448,7 +3461,7 @@ function editDBRecord($params=array()){
 				array_push($updates,"$key=$val");
 				}
 			else{
-				//echo "[{$key}]".printValue($val)."\n\n";
+				//echo "[{$key}]".printValue($val)."\n".PHP_EOL;
 				if(is_array($val)){$val=implode(':',$val);}
 				$val=databaseEscapeString($val);
 				if(strlen($val)==0){$val='NULL';}
@@ -3556,7 +3569,7 @@ function editDBUser($id='',$opts=array()){
 */
 function executeSQL($query=''){
 	$rtn=array();
-	$rtn['query'] = '<div style="font-size:9pt;margin-left:15px;"><pre><xmp>'.$query.'</xmp></pre></div>'."\n";
+	$rtn['query'] = '<div style="font-size:9pt;margin-left:15px;"><pre><xmp>'.$query.'</xmp></pre></div>'.PHP_EOL;
 	$function='executeSQL';
 	$query_result=@databaseQuery($query);
   	if($query_result){
@@ -4579,7 +4592,7 @@ function loadDBFunctions($names,$field='body'){
 	elseif(strlen($names)){$names=array($names);}
 	else{$names=array('functions');}
 	$errors=array();
-	$rtn='<!-- loadDBFunctions'."\n";
+	$rtn='<!-- loadDBFunctions'.PHP_EOL;
 	foreach($names as $name){
 		$start=microtime(1);
 		$table="_pages";
@@ -4596,12 +4609,12 @@ function loadDBFunctions($names,$field='body'){
 		$stop=microtime(1);
 		$loadtime=$stop-$start;
 		if(!isNum($ok)){
-			$rtn .= "	{$tname} ERRORS: {$ok}\n";
+			$rtn .= "	{$tname} ERRORS: {$ok}".PHP_EOL;
 			debugValue($ok);
 		}
-		else{$rtn .= "	{$tname} took {$loadtime} seconds\n";}
+		else{$rtn .= "	{$tname} took {$loadtime} seconds".PHP_EOL;}
     }
-    $rtn .= ' -->'."\n";
+    $rtn .= ' -->'.PHP_EOL;
 	return $rtn;
 }
 //---------- begin function logDBQuery
@@ -4685,7 +4698,7 @@ function includeDBOnce($params=array()){
 	}
 	//write the php file if needed
 	if(!file_exists($phpfile)){
-		//echo "Writing {$phpfile}<br>\n";
+		//echo "Writing {$phpfile}<br>".PHP_EOL;
 		$fp = fopen($phpfile, "w");
 		fwrite($fp, $content);
 		fclose($fp);
@@ -4694,13 +4707,13 @@ function includeDBOnce($params=array()){
 	if(file_exists($phpfile)){
 		//echo $phpfile;exit;
 		@trigger_error("");
-		//$evalstring='error_reporting(E_ERROR | E_PARSE);'."\n";
-		$evalstring='showErrors();'."\n";
-		$evalstring .= 'try{'."\n";
-		$evalstring .= '	include_once(\''.$phpfile.'\');'."\n";
-		$evalstring .= '	}'."\n";
-		$evalstring .= 'catch(Exception $e){'."\n";
-		$evalstring .= '	}'."\n";
+		//$evalstring='error_reporting(E_ERROR | E_PARSE);'.PHP_EOL;
+		$evalstring='showErrors();'.PHP_EOL;
+		$evalstring .= 'try{'.PHP_EOL;
+		$evalstring .= '	include_once(\''.$phpfile.'\');'.PHP_EOL;
+		$evalstring .= '	}'.PHP_EOL;
+		$evalstring .= 'catch(Exception $e){'.PHP_EOL;
+		$evalstring .= '	}'.PHP_EOL;
 		//return $evalstring;
 
 		@eval($evalstring);
@@ -5326,11 +5339,11 @@ function getDBSiteStats(){
 	$currentQuarter=$quarters[(integer)$currentMonth];
 	$currentYear=date("Y");
 	if(!isDBTable('_access')){
-		return '<div class="w_bold w_big">No access table found</div>'."\n";
+		return '<div class="w_bold w_big">No access table found</div>'.PHP_EOL;
 		}
 	$recs=getDBRecords(array('-table'=>"_access",'-where'=>"YEAR(_cdate)=YEAR(NOW())"));
 	if(!is_array($recs) || !count($recs)){
-		return '<div class="w_bold w_big">No access records yet</div>'."\n";
+		return '<div class="w_bold w_big">No access records yet</div>'.PHP_EOL;
 		}
 	$fields=getDBFields("_access");
 	$stats=array();
@@ -5415,34 +5428,34 @@ function getDBSiteStats(){
 		}
 	$rowdates=array();
 	$days=array(6,5,4,3,2,1,0);
-	$rtn .= '<table class="w_table w_pad w_border">'."\n";
+	$rtn .= '<table class="w_table w_pad w_border">'.PHP_EOL;
 	//Table Header Row
-	$rtn .= '	<tr valign="top">'."\n";
-	$rtn .= '		<th colspan="2">Stats</th>'."\n";
+	$rtn .= '	<tr valign="top">'.PHP_EOL;
+	$rtn .= '		<th colspan="2">Stats</th>'.PHP_EOL;
 	//show the last 7 days
 	foreach($days as $num){
 		$ctime=strtotime("{$num} days ago");
 		$cdate=date('D\<\b\r\>d',$ctime);
-		$rtn .= '		<th>'.$cdate.'</th>'."\n";
+		$rtn .= '		<th>'.$cdate.'</th>'.PHP_EOL;
 		array_push($rowdates,date("Y-m-d",$ctime));
 		}
 	//Week
-	$rtn .= '		<th>Week<br>'.$currentWeek.'</th>'."\n";
+	$rtn .= '		<th>Week<br>'.$currentWeek.'</th>'.PHP_EOL;
 	//show last three months
 	$months=array(2,1,0);
 	foreach($months as $month){
 		$ctime=strtotime("{$month} months ago");
 		$cdate=date('M',$ctime);
-		$rtn .= '		<th>'.$cdate.'</th>'."\n";
+		$rtn .= '		<th>'.$cdate.'</th>'.PHP_EOL;
 		}
 	//show quarters
 	$quarters=array(1,2,3,4);
 	foreach($quarters as $quarter){
-		$rtn .= '		<th>QTD<br>Q'.$quarter.'</th>'."\n";
+		$rtn .= '		<th>QTD<br>Q'.$quarter.'</th>'.PHP_EOL;
 		}
 	//Year
-	$rtn .= '		<th>YTD<br>'.$currentYear.'</th>'."\n";
-	$rtn .= '	</tr>'."\n";
+	$rtn .= '		<th>YTD<br>'.$currentYear.'</th>'.PHP_EOL;
+	$rtn .= '	</tr>'.PHP_EOL;
 	//Rows
 	$types=array_keys($stats);
 	sort($types);
@@ -5455,12 +5468,12 @@ function getDBSiteStats(){
 			$row++;
 			$rtn .= '	<tr align="right"';
 			if(isFactor($row,2)){$rtn .= ' bgcolor="#e8e8e8"';}
-			$rtn .= '>'."\n";
+			$rtn .= '>'.PHP_EOL;
 			$xtype=ucwords($type);
 			if($ctype==$type){$xtype='';}
 			$ctype=$type;
-			$rtn .= '		<td class="w_align_left"><b>'.$xtype.'</b></td>'."\n";
-			$rtn .= '		<td class="w_align_left">'.$title.'</td>'."\n";
+			$rtn .= '		<td class="w_align_left"><b>'.$xtype.'</b></td>'.PHP_EOL;
+			$rtn .= '		<td class="w_align_left">'.$title.'</td>'.PHP_EOL;
 			//days
 			foreach($rowdates as $rdate){
 				$rtn .= '		<td';
@@ -5469,7 +5482,7 @@ function getDBSiteStats(){
 				if(isset($stats[$type][$title]['day'][$rdate])){
 					$rtn .= numberFormat($stats[$type][$title]['day'][$rdate]);
 					}
-				$rtn .= '</td>'."\n";
+				$rtn .= '</td>'.PHP_EOL;
 				}
 			//week
 			$rtn .= '<td>';
@@ -5487,7 +5500,7 @@ function getDBSiteStats(){
 				if(isset($stats[$type][$title]['month'][$cmonth])){
 					$rtn .= numberFormat($stats[$type][$title]['month'][$cmonth]);
 					}
-				$rtn .= '</td>'."\n";
+				$rtn .= '</td>'.PHP_EOL;
 				}
 			//quarters
 			foreach($quarters as $quarter){
@@ -5497,22 +5510,22 @@ function getDBSiteStats(){
 				if(isset($stats[$type][$title]['quarter'][$quarter])){
 					$rtn .= numberFormat($stats[$type][$title]['quarter'][$quarter]);
 					}
-				$rtn .= '</td>'."\n";
+				$rtn .= '</td>'.PHP_EOL;
 				}
 			//Year
 			$rtn .= '		<td>';
 			if(isset($stats[$type][$title]['year'][$currentYear])){
 				$rtn .= numberFormat($stats[$type][$title]['year'][$currentYear]);
 				}
-			$rtn .= '</td>'."\n";
-			$rtn .= '	</tr>'."\n";
+			$rtn .= '</td>'.PHP_EOL;
+			$rtn .= '	</tr>'.PHP_EOL;
 			}
 		//total row for this type
 		$rtn .= '	<tr align="right>"';
 		$xtype=ucwords($type);
 		if($ctype==$type){$xtype='';}
 		$ctype=$type;
-		$rtn .= '		<th align="right" colspan="2" align="right">'.ucwords($type).' Totals</th>'."\n";
+		$rtn .= '		<th align="right" colspan="2" align="right">'.ucwords($type).' Totals</th>'.PHP_EOL;
 		//days
 		foreach($rowdates as $rdate){
 			$rtn .= '		<th align="right"';
@@ -5521,7 +5534,7 @@ function getDBSiteStats(){
 			if(isset($totals[$type]['day'][$rdate])){
 				$rtn .= numberFormat($totals[$type]['day'][$rdate]);
 				}
-			$rtn .= '</th>'."\n";
+			$rtn .= '</th>'.PHP_EOL;
 			}
 		//week
 		$rtn .= '<th align="right">';
@@ -5539,7 +5552,7 @@ function getDBSiteStats(){
 			if(isset($totals[$type]['month'][$cmonth])){
 				$rtn .= numberFormat($totals[$type]['month'][$cmonth]);
 				}
-			$rtn .= '</th>'."\n";
+			$rtn .= '</th>'.PHP_EOL;
 			}
 		//quarters
 		foreach($quarters as $quarter){
@@ -5549,13 +5562,13 @@ function getDBSiteStats(){
 			if(isset($totals[$type]['quarter'][$quarter])){
 				$rtn .= numberFormat($totals[$type]['quarter'][$quarter]);
 				}
-			$rtn .= '</th>'."\n";
+			$rtn .= '</th>'.PHP_EOL;
 			}
 		//Year
-		$rtn .= '		<th align="right">'.numberFormat($totals[$type]['year'][$currentYear]).'</th>'."\n";
-		$rtn .= '	</tr>'."\n";
+		$rtn .= '		<th align="right">'.numberFormat($totals[$type]['year'][$currentYear]).'</th>'.PHP_EOL;
+		$rtn .= '	</tr>'.PHP_EOL;
 		}
-	$rtn .= '</table>'."\n";
+	$rtn .= '</table>'.PHP_EOL;
 	return $rtn;
 	}
 //---------- begin function getDBTableInfo
@@ -5659,18 +5672,18 @@ function getDBTableStatus(){
 		$totals['size']+=$rec['data_length'];
 		$totals['indexes']+=$rec['indexes'];
 		$totals['fields']+=$rec['fields'];
-		$rtn .= '	<tr align="right">'."\n";
-		$rtn .= '		<td class="w_align_left">'.$rec['name'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['records'].'</td>'."\n";
-		$rtn .= '		<td>'.verboseSize($rec['data_length']).'</td>'."\n";
-		$rtn .= '		<td>'.$rec['fields'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['indexes'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['create'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['update_time'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['auto_increment'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['row_format'].'</td>'."\n";
-		$rtn .= '		<td>'.$rec['collation'].'</td>'."\n";
-		$rtn .= '	</tr>'."\n";
+		$rtn .= '	<tr align="right">'.PHP_EOL;
+		$rtn .= '		<td class="w_align_left">'.$rec['name'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['records'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.verboseSize($rec['data_length']).'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['fields'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['indexes'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['create'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['update_time'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['auto_increment'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['row_format'].'</td>'.PHP_EOL;
+		$rtn .= '		<td>'.$rec['collation'].'</td>'.PHP_EOL;
+		$rtn .= '	</tr>'.PHP_EOL;
     }
     $rtn .= buildTableTH(array('Totals:',$totals['records'],verboseSize($totals['size']),$totals['fields'],$totals['indexes'],'','','','',''),array('align'=>"right"));
 	$rtn .= buildTableEnd();
@@ -6146,9 +6159,9 @@ function getDBRecords($params=array()){
 		}
 	}
 	// Perform Query
-	//echo "{$query}<hr>\n";
+	//echo "{$query}<hr>".PHP_EOL;
 	$query_result=@databaseQuery($query);
-	//echo "{$query}<hr>\n";
+	//echo "{$query}<hr>".PHP_EOL;
   	if(!$query_result){
 		$e=getDBError();
 		//check to see if we can fix the error
@@ -6473,7 +6486,7 @@ function getDBSchemaText($table,$force=0){
 			}
 		if(strlen($field['extra'])){$type .= ' '.$field['extra'];}
 		//if(strlen($field['expression'])){$type .= ' '.$field['expression'];}
-		$txt .= trim("{$field['field']} {$type}")."\r\n";
+		$txt .= trim("{$field['field']} {$type}")."".PHP_EOL;
         }
     return $txt;
 	}
@@ -6648,13 +6661,13 @@ function listDBRecords($params=array(),$customcode=''){
 		);
 	$idfield=isset($params['-id'])?$params['-id']:'_id';
 	$rtn='';
-	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'."\n";}
+	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'.PHP_EOL;}
 	elseif(isset($params['-ajax']) && (integer)$params['-ajax']==1){
 		$params['-ajaxid']='list_'.sha1(json_encode($params));
-		$rtn .= '<div id="'.$params['-ajaxid'].'">'."\n";
+		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
 	elseif(isset($params['-ajaxid'])){
-		$rtn .= '<div id="'.$params['-ajaxid'].'">'."\n";
+		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
     //determine sort
     $sort='none';
@@ -6833,7 +6846,7 @@ function listDBRecords($params=array(),$customcode=''){
 			$rtn .= $list;
 			//$rtn .= printValue($params);
 			}
-		if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '</div>'."\n";}
+		if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '</div>'.PHP_EOL;}
 		return $rtn;
 		}
 	$list_cnt=count($list);
@@ -6953,13 +6966,13 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableid'])){
 		$tablestyle=' id="'.$params['-tableid'].'"';
 	}
-	$rtn .= '<div class="table-responsive">'."\n";
-	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'."\n";
+	$rtn .= '<div class="table-responsive">'.PHP_EOL;
+	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'.PHP_EOL;
 
     //build header row
-    $rtn .= "	<thead><tr>\n";
+    $rtn .= "	<thead><tr>".PHP_EOL;
     if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
-		$rtn .= '		<td><img src="/wfiles/icons/users/users.gif" alt="users" /></td>'."\n";
+		$rtn .= '		<td><img src="/wfiles/icons/users/users.gif" alt="users" /></td>'.PHP_EOL;
     	}
     //allow user to pass in what fields to display as -listfields
     if(isset($params['-listfields'])){
@@ -7031,33 +7044,33 @@ function listDBRecords($params=array(),$customcode=''){
         	}
         $title=isset($params[$fld."_title"])?' title="'.$params[$fld."_title"].'"':'';
         if(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'."\n";
+        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'.PHP_EOL;
 		}
         elseif(isset($params['-nosort']) || isset($params[$fld."_nolink"])){
-			$rtn .= '		<th'.$title.' class="w_nowrap">' . "{$col}</th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap">' . "{$col}</th>".PHP_EOL;
         	}
         elseif(isset($params['-sortlink'])){
 			$href=$params['-sortlink'];
 			$replace='%col%';
             $href=str_replace($replace,$col,$href);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "</a></th>".PHP_EOL;
         	}
         elseif(isset($params['-sortclick'])){
 			$onclick=$params['-sortclick'];
 			$replace='%col%';
             $onclick=str_replace($replace,$col,$onclick);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>".PHP_EOL;
         	}
         else{
 	        if(preg_match('/\.(php|htm|phtm)$/i',$PAGE['name'])){$href=$PAGE['name'].'?'.buildURL($arr);}
 	        else{$href=$PAGE['name'].'/?'.buildURL($arr);}
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "{$arrow}</a></th>\n";
+			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "{$arrow}</a></th>".PHP_EOL;
 			}
 		}
 	if(isset($params['-row_actions'])){
-    	$rtn .= '		<th class="w_nowrap">Actions</th>'."\n";
+    	$rtn .= '		<th class="w_nowrap">Actions</th>'.PHP_EOL;
 	}
-	$rtn .= "\t</tr></thead><tbody>\n";
+	$rtn .= "\t</tr></thead><tbody>".PHP_EOL;
 	$row=0;
 	$editlist=0;
 	if(isset($params['-sumfields']) && !is_array($params['-sumfields'])){
@@ -7088,20 +7101,20 @@ function listDBRecords($params=array(),$customcode=''){
         if($cronalert==1){
 			//overdue to run
 			$bgcolor=isFactor($row,2)?'#ffd2d2':'#ffa6a6';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'."\n";
+			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
         elseif($cronalert==2){
 			//Not Active - grey out
 			$bgcolor=isFactor($row,2)?'#d2d2d2':'#e9e9e9';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'."\n";
+			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
         elseif($cronalert==3){
 			//Currently running
 			$bgcolor=isFactor($row,2)?'#ffffc1':'#ffff9f';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'."\n";
+			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
 		elseif(isset($params['-altcolor']) && isFactor($row,2)){
-			$rtn .= '	<tr valign="top" bgcolor="'.$params['-altcolor'].'">'."\n";
+			$rtn .= '	<tr valign="top" bgcolor="'.$params['-altcolor'].'">'.PHP_EOL;
 		}
 		else{
 			//check for row params
@@ -7142,12 +7155,12 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowstyle=evalPHP($rowstyle);
             	$rowstyle=' style="'.$rowstyle.'"';
 			}
-			$rtn .= '	<tr valign="top"'.$rowid.$rowclass.$rowstyle.'>'."\n";
+			$rtn .= '	<tr valign="top"'.$rowid.$rowclass.$rowstyle.'>'.PHP_EOL;
 		}
 		if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
 			//echo "rec:".printValue($rec);
 			$uinfo=getUserInfo($rec);
-			$rtn .= '		<td><img src="'.$uinfo['icon'].'" title="user:'.$uinfo['username'].', status:'.$uinfo['status'].'" alt="" /></td>'."\n";
+			$rtn .= '		<td><img src="'.$uinfo['icon'].'" title="user:'.$uinfo['username'].', status:'.$uinfo['status'].'" alt="" /></td>'.PHP_EOL;
     		}
     	if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
 			foreach($params['-sumfields'] as $sumfield){
@@ -7162,7 +7175,7 @@ function listDBRecords($params=array(),$customcode=''){
 			if(isset($info[$fld]['editlist']) && $info[$fld]['editlist']==1){$editlist_field=1;}
 			if(isset($params["{$fld}_editlist"])){$editlist_field=$params["{$fld}_editlist"];}
 			if($listform==1 && $editlist_field==1 ){
-				$rtn .= '<td>'."\n";
+				$rtn .= '<td>'.PHP_EOL;
 				$fldopts=array('-table'=>$params['-table'],'-field'=>$fld,'name'=>"{$fld}_{$rec[$idfield]}",'value'=>$rec[$fld]);
 				foreach($params as $pkey=>$pval){
 					if(preg_match('/^'.$fld.'_(.+)$/',$pkey,$m)){
@@ -7172,9 +7185,9 @@ function listDBRecords($params=array(),$customcode=''){
                 }
                 if(!isset($fldopts['class'])){$fldopts['class']='form-control';}
                 if(isExtraCss('bootstrap') && !stringContains($fldopts['class'],'form-control')){$fldopts['class'] .= ' form-control';}
-				$rtn .= '<div style="display:none"><textarea name="'."{$fld}_{$rec[$idfield]}_prev".'">'.$rec[$fld].'</textarea></div>'."\n";
+				$rtn .= '<div style="display:none"><textarea name="'."{$fld}_{$rec[$idfield]}_prev".'">'.$rec[$fld].'</textarea></div>'.PHP_EOL;
 				$rtn .= getDBFieldTag($fldopts);
-				$rtn .= '</td>'."\n";
+				$rtn .= '</td>'.PHP_EOL;
 				$editlist++;
 				continue;
             }
@@ -7234,7 +7247,7 @@ function listDBRecords($params=array(),$customcode=''){
                 foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
 					$replace='%'.$xfld.'%';
-					//echo "replacing {$replace} with {$rec[$xfld]}<br>\n";
+					//echo "replacing {$replace} with {$rec[$xfld]}<br>".PHP_EOL;
                     $href=str_replace($replace,$rec[$xfld],$href);
                 	}
 				$val='<a class="w_link w_block" title="CLICK" href="#" onClick="'.$href.'">'.$val.'</a>';
@@ -7283,10 +7296,10 @@ function listDBRecords($params=array(),$customcode=''){
 			}
 			elseif(isset($params[$fld."_style"])){$rtn .= ' style="'.$params[$fld."_style"].'"';}
 			if(isset($params[$fld."_nowrap"]) && $params[$fld."_nowrap"]==1){$rtn .= ' nowrap';}
-			$rtn .= ">" . $val . "</td>\n";
+			$rtn .= ">" . $val . "</td>".PHP_EOL;
 			}
 		if(isset($params['-row_actions']) && is_array($params['-row_actions']) && count($params['-row_actions'])){
-			$rtn .= '	<td align="right">'."\n";
+			$rtn .= '	<td align="right">'.PHP_EOL;
 			foreach($params['-row_actions'] as $action){
             	if(!is_array($action)){$action=array($action);}
             	$action_value=array_shift($action);
@@ -7305,25 +7318,25 @@ function listDBRecords($params=array(),$customcode=''){
 						$replace='%'.$xfld.'%';
                     	$action_value=str_replace($replace,$rec[$xfld],$action_value);
                 	}
-                	$rtn .='		'.$action_value." \n";
+                	$rtn .='		'.$action_value." ".PHP_EOL;
 				}
 			}
-			$rtn .= '	</td>'."\n";
+			$rtn .= '	</td>'.PHP_EOL;
 		}
-		$rtn .= "\t</tr>\n";
+		$rtn .= "\t</tr>".PHP_EOL;
     	}
-    $rtn .= '</tbody>'."\n";
+    $rtn .= '</tbody>'.PHP_EOL;
     if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
-		$rtn .= '	<tfoot><tr>'."\n";
+		$rtn .= '	<tfoot><tr>'.PHP_EOL;
 		foreach($fields as $fld){
         	if(isset($sums[$fld])){$val=$sums[$fld];}
         	else{$val='';}
-        	$rtn .= '		<th align="right">'.$val.'</th>'."\n";
+        	$rtn .= '		<th align="right">'.$val.'</th>'.PHP_EOL;
 		}
-		$rtn .= '	</tr></tfoot>'."\n";
+		$rtn .= '	</tr></tfoot>'.PHP_EOL;
 	}
-    $rtn .= "</table>\n";
-    $rtn .= '</div>'."\n";
+    $rtn .= "</table>".PHP_EOL;
+    $rtn .= '</div>'.PHP_EOL;
     if($listform==1){
 		if($editlist > 0){$rtn .= buildFormSubmit("Update");}
 		$rtn .= $customcode;
@@ -7334,9 +7347,9 @@ function listDBRecords($params=array(),$customcode=''){
     	$rtn .= buildFormEnd();
 	}
 	else{$rtn .= $customcode;}
-	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '</div>'."\n";}
+	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '</div>'.PHP_EOL;}
 	elseif(isset($params['-ajaxid'])){
-		$rtn .= '</div>'."\n";
+		$rtn .= '</div>'.PHP_EOL;
 	}
 	return $rtn;
 	}
@@ -8415,14 +8428,14 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 function showDBCronPanel($ajax=0,$frequency=60){
 	$rtn='';
 	if($ajax==0){
-		$rtn .= '<div class="w_pad w_round w_smaller w_right w_border w_tip" style="width:170px;z-index:999;position:absolute;top:5px;right:10px;">'."\n";
-		$rtn .= '	<div class="w_right"><img src="/wfiles/iconsets/16/close.png" style="cursor:pointer;" onclick="removeId(\'cronpanel\');" alt="close" /></div>'."\n";
-		$rtn .= '	<div class="w_bold"><img src="/wfiles/_cron.png" width="16" height="16" style="vertical-align:middle;" alt="cron info panel" /> Cron Information Panel</div>'."\n";
-		$rtn .= '	<div id="cronpanel">'."\n";
+		$rtn .= '<div class="w_pad w_round w_smaller w_right w_border w_tip" style="width:170px;z-index:999;position:absolute;top:5px;right:10px;">'.PHP_EOL;
+		$rtn .= '	<div class="w_right"><img src="/wfiles/iconsets/16/close.png" style="cursor:pointer;" onclick="removeId(\'cronpanel\');" alt="close" /></div>'.PHP_EOL;
+		$rtn .= '	<div class="w_bold"><img src="/wfiles/_cron.png" width="16" height="16" style="vertical-align:middle;" alt="cron info panel" /> Cron Information Panel</div>'.PHP_EOL;
+		$rtn .= '	<div id="cronpanel">'.PHP_EOL;
 		}
 	//show date updated
-	$rtn .= '			<table class="w_table w_nopad"><tr><td><div style="color:#CCC;font-size:10pt;" align="center">'.date("F j, Y, g:i a").'</div></td><td style="padding-left:5px;"><div style="color:#CCC;font-size:10pt;padding:1px 2px 1px 2px;border:1px solid #CCC;" id="crontimer" data-behavior="countdown">'.$frequency.'</div></td></tr></table>'."\n";
-	$rtn .= '			<hr size="1">'."\n";
+	$rtn .= '			<table class="w_table w_nopad"><tr><td><div style="color:#CCC;font-size:10pt;" align="center">'.date("F j, Y, g:i a").'</div></td><td style="padding-left:5px;"><div style="color:#CCC;font-size:10pt;padding:1px 2px 1px 2px;border:1px solid #CCC;" id="crontimer" data-behavior="countdown">'.$frequency.'</div></td></tr></table>'.PHP_EOL;
+	$rtn .= '			<hr size="1">'.PHP_EOL;
 	$recs=getDBRecords(array('-table'=>"_cron"));
 	//collect some stats
 	$stats=array('cron_pid'=>array(),'active'=>0,'running'=>array());
@@ -8434,32 +8447,32 @@ function showDBCronPanel($ajax=0,$frequency=60){
 		}
 	//how many crons are running?
 	if(!count($stats['cron_pid'])){
-		$rtn .= '		<div><img src="/wfiles/iconsets/16/warning.png" style="vertical-align:middle" alt="warning" /><b class="w_red">WARNING!</b> NO cron servers are listening. At least one cron server must be running in order for cron jobs to work.</div>'."\n";
+		$rtn .= '		<div><img src="/wfiles/iconsets/16/warning.png" style="vertical-align:middle" alt="warning" /><b class="w_red">WARNING!</b> NO cron servers are listening. At least one cron server must be running in order for cron jobs to work.</div>'.PHP_EOL;
 		}
 	else{
-		$rtn .= '		<div><img src="/wfiles/iconsets/16/checkmark.png" width="16" height="16" style="vertical-align:bottom;" alt="" /> '.count($stats['cron_pid']).' Cron servers listening</div>'."\n";
+		$rtn .= '		<div><img src="/wfiles/iconsets/16/checkmark.png" width="16" height="16" style="vertical-align:bottom;" alt="" /> '.count($stats['cron_pid']).' Cron servers listening</div>'.PHP_EOL;
 		}
 	//last run
 	if(is_array($stats['lastrun'])){
 		$elapsed=time()-$stats['lastrun']['run_date_utime'];
-		$rtn .= '		<div class="w_bold w_pad">"'.$stats['lastrun']['name'].'" ran '.verboseTime($elapsed).' ago</div>'."\n";
+		$rtn .= '		<div class="w_bold w_pad">"'.$stats['lastrun']['name'].'" ran '.verboseTime($elapsed).' ago</div>'.PHP_EOL;
 		}
 	//running crons list
 	if(count($stats['running'])){
-		$rtn .= '		<div class="w_bold w_pad">'.count($recs).' Cron Jobs Running</div>'."\n";
+		$rtn .= '		<div class="w_bold w_pad">'.count($recs).' Cron Jobs Running</div>'.PHP_EOL;
 		foreach($stats['running'] as $rec){
-			$rtn .= '		<div style="margin-left:15px;">'."\n";
+			$rtn .= '		<div style="margin-left:15px;">'.PHP_EOL;
 			$rtn .= "			{$rec['_id']}.  {$rec['name']}";
-			$rtn .= '		</div>'."\n";
+			$rtn .= '		</div>'.PHP_EOL;
             }
 		}
-    else{$rtn .= '		<div class="w_bold w_pad">NO Cron Jobs Running</div>'."\n";}
+    else{$rtn .= '		<div class="w_bold w_pad">NO Cron Jobs Running</div>'.PHP_EOL;}
 	$frequency=$frequency*1000;
 	$sort=encodeURL($_REQUEST['_sort']);
 	$rtn .= '			' . buildOnLoad("initBehaviors();scheduleAjaxGet('cronpanel','php/index.php','cronpanel','_action=cronpanel&_sort={$sort}&freq={$frequency}',{$frequency},1);");
 	if($ajax==0){
-		$rtn .= '	</div>'."\n";
-		$rtn .= '</div>'."\n";
+		$rtn .= '	</div>'.PHP_EOL;
+		$rtn .= '</div>'.PHP_EOL;
 		}
 	return $rtn;
 	}
