@@ -17,10 +17,14 @@
 * @describe imports data from csv into a HANA table
 * @param $table string - table to import into
 * @param $csv - csvfile to import (path visible by the HANA server)
+* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
 * @return $errors array
 * @usage $ok=hanaAddDBRecordsFromCSV('stgschema.testtable','/mnt/dtxhana/test.csv');
 */
-function hanaAddDBRecordsFromCSV($table,$csvfile){
+function hanaAddDBRecordsFromCSV($table,$csvfile,$params=array()){
 	$progpath=dirname(__FILE__);
 	$logfile= preg_replace('/[^\p{L}\p{N}\s]/u', '', $table).'.log';
 	$error_log = "{$progpath}/$logfile";
@@ -35,10 +39,33 @@ function hanaAddDBRecordsFromCSV($table,$csvfile){
 	ERROR LOG '$error_log'
 ENDOFQUERY;
 	setFileContents($error_log,'');
-	$ok=hanaExecuteSQL($query);
+	//set to a single so we can turn off autocommit
+	$params['-single']=1;
+	$conn=hanaDBConnect($params);
+	odbc_autocommit($conn, FALSE);
+	
+	odbc_exec($conn, $query);
+
+	if (!odbc_error()){
+		odbc_commit($conn);
+	}
+	else{
+		odbc_rollback($conn);
+	}
+	odbc_close($conn);
 	return file($error_log);
 
 }
+//---------- begin function hanaParseConnectParams ----------
+/**
+* @describe parses the params array and checks in the CONFIG if missing
+* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return $params array
+* @usage $params=hanaParseConnectParams($params);
+*/
 function hanaParseConnectParams($params=array()){
 	global $CONFIG;
 	if(!isset($params['-dbname'])){
@@ -92,10 +119,28 @@ function hanaParseConnectParams($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+*   [-single] - if you pass in -single it will connect using odbc_connect instead of odbc_pconnect and return the connection
 * @return $dbh_hana resource - returns the odbc connection resource
 * @usage $dbh_hana=hanaDBConnect($params);
+* @usage  example of using -single
+* 	
+	$conn=hanaDBConnect(array('-single'=>1));
+	odbc_autocommit($conn, FALSE);
+	
+	odbc_exec($conn, $query1);
+	odbc_exec($conn, $query2);
+
+	if (!odbc_error()){
+		odbc_commit($conn);
+	}
+	else{
+		odbc_rollback($conn);
+	}
+	odbc_close($conn);
+* 
 */
 function hanaDBConnect($params=array()){
+	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=hanaParseConnectParams($params);
 	if(!isset($params['-dbname'])){return $params['-dbname'];}
 	if(isset($params['-single'])){
@@ -755,9 +800,9 @@ function hanaQueryResults($query,$params=array()){
 * @return $query string
 * @usage $query=hanaBuildPreparedInsertStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedInsertStatement($table,$fieldinfo=array()){
+function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$params=array()){
 	if(!is_array($fieldinfo)){
-		$fieldinfo=hanaGetDBFieldInfo($table);
+		$fieldinfo=hanaGetDBFieldInfo($table,$params);
 	}
 	$fields=array();
 	$binds=array();
@@ -783,13 +828,13 @@ function hanaBuildPreparedInsertStatement($table,$fieldinfo=array()){
 * @return $query string
 * @usage $query=hanaBuildPreparedReplaceStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array()){
+function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
 		echo "hanaBuildPreparedReplaceStatement error - missing keys.  Table: {$table}";
 		exit;
 	}
 	if(!is_array($fieldinfo)){
-		$fieldinfo=hanaGetDBFieldInfo($table);
+		$fieldinfo=hanaGetDBFieldInfo($table,$params);
 	}
 	$sets=array();
 	$wheres=array();
@@ -820,13 +865,13 @@ function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array
 * @return $query string
 * @usage $query=hanaBuildPreparedUpdateStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array()){
+function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
 		echo "hanaBuildPreparedUpdateStatement error - missing keys.  Table: {$table}";
 		exit;
 	}
 	if(!is_array($fieldinfo)){
-		$fieldinfo=hanaGetDBFieldInfo($table);
+		$fieldinfo=hanaGetDBFieldInfo($table,$params);
 	}
 	$sets=array();
 	$wheres=array();
@@ -857,13 +902,13 @@ function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(
 * @return $query string
 * @usage $query=hanaBuildPreparedDeleteStatement($table,$fieldinfo,$primary_keys);
 */
-function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array()){
+function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
 		echo "hanaBuildPreparedDeleteStatement error - missing keys.  Table: {$table}";
 		exit;
 	}
 	if(!is_array($fieldinfo)){
-		$fieldinfo=hanaGetDBFieldInfo($table);
+		$fieldinfo=hanaGetDBFieldInfo($table,$params);
 	}
 	$wheres=array();
 	foreach($fieldinfo as $field=>$info){
