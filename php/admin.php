@@ -3004,12 +3004,16 @@ LIST_TABLE:
 				$recs[$i]['created']=verboseTime($ctime-$recs[$i]['_cdate_utime']);
 				if(isNum($recs[$i]['_cuser']) && $recs[$i]['_cuser'] > 0){
 					$crec=getDBUserById($recs[$i]['_cuser'],array('username'));
-                	$recs[$i]['created'] .= " by {$crec['username']}" ;
+					if(isset($crec['username'])){
+						$recs[$i]['created'] .= " by {$crec['username']}" ;
+					}
 				}
 				$recs[$i]['edited']=verboseTime($ctime-$recs[$i]['_edate_utime']);
 				if(isNum($recs[$i]['_euser']) && $recs[$i]['_euser'] > 0){
 					$erec=getDBUserById($recs[$i]['_euser'],array('username'));
-                	$recs[$i]['edited'] .= " by {$erec['username']}" ;
+					if(isset($erec['username'])){
+						$recs[$i]['edited'] .= " by {$erec['username']}" ;
+					}
 				}
 				$recs[$i]['accessed']=verboseTime($ctime-$recs[$i]['_adate_utime']);
 				$recs[$i]['type']=$recs[$i]['utype']==0?'<span class="icon-user-admin w_red"></span>':'<span class="icon-user w_grey"></span>';
