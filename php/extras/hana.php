@@ -21,22 +21,113 @@
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+* 	[-localfile] - path to localfile if different than csvfile that DB can see.
+* 	[-delim] - delimiter. Default is ,
+* 	[-enclose] - enclosed by. Default is "
+* 	[-eol] - end of line char.  Default is \n
+* 	[-threads] - number of threads. Default is 10
+* 	[-batch] - number of records to commit in batch. Default is 10,000
+* 	[-skip] - number of top rows to skip if any
+* 	[-columns] - comma separated list of column name list. Defaults to use first row as column name list
+* 	[-date] - format of date columns in csv file. Y=year, MM=month, MON=name of month, DD=day
+* 	[-time] - format of time columns in csv file. HH24=hour, MI=minute, SS=second
+* 	[-timestamp] format of timestamp columns in csv file. Y=year, MM=month, MON=name of month, DD=day, HH24=hour, MI=minute, SS=second
+* 	[-nofail] - continue instead of failing on errors. Defaults to failing on errors.
+* 	[-checktype] - check data types on insert. Defaults to not check.
 * @return $errors array
 * @usage $ok=hanaAddDBRecordsFromCSV('stgschema.testtable','/mnt/dtxhana/test.csv');
 */
 function hanaAddDBRecordsFromCSV($table,$csvfile,$params=array()){
-	$progpath=dirname(__FILE__);
-	$logfile= preg_replace('/[^\p{L}\p{N}\s]/u', '', $table).'.log';
-	$error_log = "{$progpath}/$logfile";
+	//error log with same name as csvfile in same path so HANA can write to it.
+	$error_log= preg_replace('/\.csv$/i', '.errors', $csvfile);
+	if(!isset($params['-localfile'])){$params['-localfile']=$csvfile;}
+	$local_error_log= preg_replace('/\.csv$/i', '.errors', $params['-localfile']);
+	/*
+	 * References
+	 * 	https://help.sap.com/viewer/4fe29514fd584807ac9f2a04f6754767/2.0.00/en-US/20f712e175191014907393741fadcb97.html
+	 * 	https://blogs.sap.com/2013/04/08/best-practices-for-sap-hana-data-loads/
+	 * 	https://blogs.sap.com/2014/02/12/8-tips-on-pre-processing-flat-files-with-sap-hana/
+	 * 
+	 * THREADS and BATCH provide high loading performance by enabling parallel loading and also by committing many records at once. 
+	 * In general, for column tables, a good setting to use is 10 parallel loading threads, with a commit frequency of 10,000 records or greater
+	 * 
+	THREADS <number_of_threads>  
+	* 	Specifies the number of threads that can be used for concurrent import. The default value is 1 and maximum allowed is 256
+	BATCH <number_of_records_of_each_commit> 
+	* 	Specifies the number of records to be inserted in each commit
+	TABLE LOCK  
+	* 	Provides faster data loading for column store tables. Use this option carefully as it incurs table locks in exclusive mode as well as explicit hard merges and save points after data loading is finished. 
+	NO TYPE CHECK 
+	* 	Specifies that the records are inserted without checking the type of each field.
+	SKIP FIRST <number_of_rows_to_skip> 
+	* 	Skips the specified number of rows in the import file.
+	COLUMN LIST IN FIRST ROW [<with_schema_flexibility>]  
+	* 	Indicates that the column list is stored in the first row of the CSV import file. 
+	* 	WITH SCHEMA FLEXIBILITY creates missing columns in flexible tables during CSV imports, as specified in the header (first row) of the CSV file or column list. 
+	* 	By default, missing columns in flexible tables are not created automatically during data imports.
+	COLUMN LIST ( <column_name_list> ) [<with_schema_flexibility>] 
+	* 	Specifies the column list for the data being imported.
+	* 	WITH SCHEMA FLEXIBILITY creates missing columns in flexible tables during CSV imports, as specified in the header (first row) of the CSV file or column list.
+	RECORD DELIMITED BY <string_for_record_delimiter> 
+	* 	Specifies the record delimiter used in the CSV file being imported.
+	FIELD DELIMITED BY <string_for_field_delimiter>
+	* 	Specifies the field delimiter of the CSV file.
+	OPTIONALLY ENCLOSED BY <character_for_optional_enclosure>
+	* 	Specifies the optional enclosure character used to delimit field data.
+	DATE FORMAT <string_for_date_format>
+	* 	Specifies the format that date strings are encoded with in the import data.
+	* 	Y : year, MM : month, MON : name of month, DD : day
+	TIME FORMAT <string_for_time_format>
+	* 	Specifies the format that time strings are encoded with in the import data.
+	* 	HH24 : hour, MI : minute, SS : second
+	TIMESTAMP FORMAT <string_for_timestamp_format>
+	* 	Specifies the format that timestamp strings are encoded with in the import data.  (YYYY-MM-DD HH24:MI:SS)
+	ERROR LOG <file_path_of_error_log>
+	* 	Specifies that a log file of errors generated is stored in this file. Ensure the file path you use is writable by the database.
+	FAIL ON INVALID DATA
+	* 	Specifies that the IMPORT FROM command fails unless all the entries import successfully.
+	 * */
+	if(!isset($params['-delim'])){$params['-delim']=',';}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
+	if(!isset($params['-eol'])){$params['-eol']='\\n';}
+	if(!isset($params['-threads'])){$params['-threads']=10;}
+	if(!isset($params['-batch'])){$params['-batch']=10000;}
+	$with='';
+	if(isset($params['-skip'])){
+		$with.= "SKIP FIRST ({$params['-skip']}) ".PHP_EOL;
+	}
+	if(isset($params['-columns'])){
+		$with.= "COLUMN LIST '{$params['-columns']}' WITH SCHEMA FLEXIBILITY ".PHP_EOL;
+	}
+	else{
+		$with.= "COLUMN LIST IN FIRST ROW WITH SCHEMA FLEXIBILITY ". PHP_EOL;
+	}
+	if(isset($params['-date'])){
+		$with.= "DATE FORMAT ({$params['-date']}) ".PHP_EOL;
+	}
+	if(isset($params['-time'])){
+		$with.= "TIME FORMAT '{$params['-time']}' ".PHP_EOL;
+	}
+	if(isset($params['-timestamp'])){
+		$with.= "TIMESTAMP FORMAT '{$params['-timestamp']}' ".PHP_EOL;
+	}
+	if(!isset($params['-nofail'])){
+		$with.= "FAIL ON INVALID DATA ".PHP_EOL;
+	}
+	if(!isset($params['-checktype'])){
+		$with.= "NO TYPE CHECK ".PHP_EOL;
+	}
 	$query=<<<ENDOFQUERY
-	IMPORT FROM CSV FILE '$csvfile' 
+	IMPORT FROM CSV FILE '{$csvfile}' 
 	INTO {$table}
 	WITH 
-		RECORD DELIMITED BY '\n'
-		FIELD DELIMITED BY ','
-	BATCH 1000
-	FAIL ON INVALID DATA
-	ERROR LOG '$error_log'
+		RECORD DELIMITED BY '{$params['-eol']}'
+		FIELD DELIMITED BY '{$params['-delim']}'
+		OPTIONALLY ENCLOSED BY '{$params['-enclose']}'
+		{$with}
+	THREADS {$params['-threads']}
+	BATCH {$params['-batch']}
+	ERROR LOG '{$error_log}'
 ENDOFQUERY;
 	setFileContents($error_log,'');
 	//set to a single so we can turn off autocommit
@@ -53,7 +144,7 @@ ENDOFQUERY;
 		odbc_rollback($conn);
 	}
 	odbc_close($conn);
-	return file($error_log);
+	return file($local_error_log);
 
 }
 //---------- begin function hanaParseConnectParams ----------
