@@ -2790,14 +2790,25 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus'
 		);
-	//change the required attribute to _required since it messes up HTML5
-	if(isset($atts['required']) && isNum($atts['required']) && $atts['required']==1){
-		unset($atts['required']);
-		$atts['_required']=1;
-    	}
-    if(isset($atts['disabled']) && isNum($atts['disabled']) && $atts['disabled']==0){
-		unset($atts['disabled']);
+	//required
+	if(isset($atts['required']) && $atts['required']==1){
+		$atts['required']="required";
     }
+    if(isset($atts['_required']) && $atts['_required']==1){
+		$atts['required']="required";
+		unset($atts['_required']);
+    }
+    //inputmax
+    if(isset($atts['inputmax'])){
+		$atts['maxlength']=$atts['inputmax'];
+		unset($atts['inputmax']);
+    }
+    //displayname
+    if(isset($atts['displayname'])){
+		$atts['data-displayname']=$atts['displayname'];
+		unset($atts['displayname']);
+    }
+	//behavior
 	if(isset($atts['_behavior'])){
 		$atts['data-behavior']=$atts['_behavior'];
 		unset($atts['_behavior']);
@@ -2806,9 +2817,25 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		$atts['data-behavior']=$atts['behavior'];
 		unset($atts['behavior']);
     }
-    if(isset($atts['readonly']) && isNum($atts['readonly']) && $atts['readonly']==0){
-		unset($atts['readonly']);
+    //readonly
+    if(isset($atts['readonly'])){
+		if(isNum($atts['readonly']) && $atts['readonly']==0){
+			unset($atts['readonly']);
+		}
+		else{
+			$atts['readonly']='readonly';
+		}
     }
+    //disabled
+    if(isset($atts['disabled'])){
+		if(isNum($atts['disabled']) && $atts['disabled']==0){
+			unset($atts['disabled']);
+		}
+		else{
+			$atts['disabled']='disabled';
+		}
+    }
+    //build the string
 	foreach($htmlatts as $att){
 		if(in_array($att,$skipatts)){continue;}
 		if(isset($atts[$att]) && strlen($atts[$att])){
@@ -2826,10 +2853,6 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 			$attstring .= ' ' . $key . '="'.$val.'"';
 		}
     }
-	//special case attributes
-	if(isset($atts['inputmax']) && $atts['inputmax'] > 0){$attstring .= ' maxlength="'.$atts['inputmax'].'"';}
-	if(isset($atts['disabled']) && $atts['disabled'] != 0){$attstring .= ' DISABLED';}
-	if(isset($atts['readonly']) && $atts['readonly'] != 0){$attstring .= ' READONLY';}
 	return $attstring;
 	}
 //---------- begin function getView--------------------
