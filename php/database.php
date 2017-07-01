@@ -1210,18 +1210,20 @@ function addEditDBForm($params=array(),$customcode=''){
 		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'.PHP_EOL;
 		//row
-
+		if(is_array($fields) && count($fields)==1 && !strlen($fields[0])){
+			$fields=array();
+		}
 		if(is_array($fields)){
-			if(isset($params['-tableclass'])){
-				$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+			if(count($fields)){
+				if(isset($params['-tableclass'])){
+					$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+				}
+				else{
+					$rtn .= '<table class="w_table">'.PHP_EOL;
+				}
+				$rtn .= '	<tr valign="top">'.PHP_EOL;
 			}
-			else{
-				$rtn .= '<table class="w_table">'.PHP_EOL;
-			}
-			$rtn .= '	<tr valign="top">'.PHP_EOL;
-			if(!count($fields)){
-					$rtn .= '<td></td>'.PHP_EOL;
-			}
+
 			foreach($fields as $field){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
@@ -1425,9 +1427,11 @@ function addEditDBForm($params=array(),$customcode=''){
 				else{$used[$field]+=1;}
 				if(!isset($params['-focus'])){$params['-focus']=$field;}
 	        	}
-	        $rtn .= '</tr>'.PHP_EOL;
-	        $rtn .= '</table>'.PHP_EOL;
-        	}
+				if(count($fields)){
+					$rtn .= '</tr>'.PHP_EOL;
+					$rtn .= '</table>'.PHP_EOL;
+				}
+			}
         else{
 			if(isset($params['-tableclass'])){
         	$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
