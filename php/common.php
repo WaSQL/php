@@ -2790,6 +2790,10 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus'
 		);
+	//autofocus
+	if(isset($atts['autofocus'])){
+		$atts['autofocus']="autofocus";
+    }
 	//required
 	if(isset($atts['required']) && $atts['required']==1){
 		$atts['required']="required";
