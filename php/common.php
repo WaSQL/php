@@ -2807,6 +2807,11 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		$atts['maxlength']=$atts['inputmax'];
 		unset($atts['inputmax']);
     }
+    //mask
+    if(isset($atts['mask'])){
+		$atts['data-mask']=$atts['mask'];
+		unset($atts['mask']);
+    }
     //displayname
     if(isset($atts['displayname'])){
 		$atts['data-displayname']=$atts['displayname'];
