@@ -1221,7 +1221,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				else{
 					$rtn .= '<table class="w_table">'.PHP_EOL;
 				}
-				$rtn .= '	<tr valign="top">'.PHP_EOL;
+				$rtn .= '	<tr class="w_top">'.PHP_EOL;
 			}
 
 			foreach($fields as $field){
@@ -1439,7 +1439,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			else{
 				$rtn .= '<table class="w_table">'.PHP_EOL;
 			}
-			$rtn .= '	<tr valign="top">'.PHP_EOL;
+			$rtn .= '	<tr class="w_top">'.PHP_EOL;
 			$field=(string)$fields;
 			if(!strlen($field)){continue;}
 			$includeFields[$field]=1;
@@ -2792,7 +2792,7 @@ function buildDBPaging($paging=array()){
     	$onsubmit=str_replace('(this',"(document.{$formname}",$onsubmit);
 	}
 	if(isset($paging['-limit'])){
-		$rtn .= '<table class="w_nopad" ><tr valign="middle">'.PHP_EOL;
+		$rtn .= '<table class="w_nopad" ><tr class="w_middle">'.PHP_EOL;
 		$rtn .= '	<th><div style="width:35px;">';
 		if(isset($paging['-first'])){
 			$arr=array();
@@ -5434,7 +5434,7 @@ function getDBSiteStats(){
 	$days=array(6,5,4,3,2,1,0);
 	$rtn .= '<table class="w_table w_pad w_border">'.PHP_EOL;
 	//Table Header Row
-	$rtn .= '	<tr valign="top">'.PHP_EOL;
+	$rtn .= '	<tr class="w_top">'.PHP_EOL;
 	$rtn .= '		<th colspan="2">Stats</th>'.PHP_EOL;
 	//show the last 7 days
 	foreach($days as $num){
@@ -7105,20 +7105,20 @@ function listDBRecords($params=array(),$customcode=''){
         if($cronalert==1){
 			//overdue to run
 			$bgcolor=isFactor($row,2)?'#ffd2d2':'#ffa6a6';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
+			$rtn .= '	<tr class="w_top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
         elseif($cronalert==2){
 			//Not Active - grey out
 			$bgcolor=isFactor($row,2)?'#d2d2d2':'#e9e9e9';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
+			$rtn .= '	<tr class="w_top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
         elseif($cronalert==3){
 			//Currently running
 			$bgcolor=isFactor($row,2)?'#ffffc1':'#ffff9f';
-			$rtn .= '	<tr valign="top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
+			$rtn .= '	<tr class="w_top" bgcolor="'.$bgcolor.'">'.PHP_EOL;
         }
 		elseif(isset($params['-altcolor']) && isFactor($row,2)){
-			$rtn .= '	<tr valign="top" bgcolor="'.$params['-altcolor'].'">'.PHP_EOL;
+			$rtn .= '	<tr class="w_top" bgcolor="'.$params['-altcolor'].'">'.PHP_EOL;
 		}
 		else{
 			//check for row params
@@ -7133,7 +7133,7 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowid=evalPHP($rowid);
                 $rowid=' id="'.$rowid.'"';
 			}
-			$rowclass='';
+			$rowclass='w_top ';
 			if(isset($params['-rowclass'])){
 				$rowclass=$params['-rowclass'];
             	foreach($list[0] as $xfld=>$xval){
@@ -7159,7 +7159,7 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowstyle=evalPHP($rowstyle);
             	$rowstyle=' style="'.$rowstyle.'"';
 			}
-			$rtn .= '	<tr valign="top"'.$rowid.$rowclass.$rowstyle.'>'.PHP_EOL;
+			$rtn .= '	<tr '.$rowid.$rowclass.$rowstyle.'>'.PHP_EOL;
 		}
 		if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
 			//echo "rec:".printValue($rec);
