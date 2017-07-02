@@ -8824,7 +8824,7 @@ function niftyPlayer($params=array()){
 	//events:
 	$npevents=array('onPlay', 'onStop', 'onPause', 'onError', 'onSongOver', 'onBufferingComplete', 'onBufferingStarted');
 	$npJs=0;
-	$npTxt .= '<script language="javascript" type="text/javascript">'."\n";
+	$npTxt .= '<script type="text/javascript">'."\n";
 	$npTxt .= '	function niftyStart(){'."\n";
 	foreach($npevents as $npevent){
 		if(isset($params[$npevent]) && strlen($params[$npevent])){
@@ -12747,7 +12747,7 @@ function getRemoteImage($remote_url, $target){
 */
 function writeJavascript($js=''){
 	$rtn='';
-	$rtn .= '<script language="javascript" type="text/javascript">'."\n";
+	$rtn .= '<script type="text/javascript">'."\n";
 	$rtn .= '	'. $js ."\n";
 	$rtn .= '</script>'."\n";
 	return $rtn;
