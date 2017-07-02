@@ -1027,17 +1027,19 @@ function userLoginForm($params=array()){
 				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'."\n";
 			}
 			$form .= '</table>'."\n";
-			$form .= '<table><tr>'."\n";
-			if(isset($CONFIG['facebook_appid'])){
-				loadExtrasJs('facebook_login');
-				checkDBTableSchema('_users');
-				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<td style="margin-top:15px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
+			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
+				$form .= '<table><tr>'."\n";
+				if(isset($CONFIG['facebook_appid'])){
+					loadExtrasJs('facebook_login');
+					checkDBTableSchema('_users');
+					if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
+					$form .= '<td style="margin-top:15px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
+				}
+				if(isset($CONFIG['google_appid'])){
+					$form .= '<td style="margin-top:15px;padding-left:10px;"><div id="google_login"></div></td>';
+				}
+				$form .= '</tr></table>'."\n";
 			}
-			if(isset($CONFIG['google_appid'])){
-    			$form .= '<td style="margin-top:15px;padding-left:10px;"><div id="google_login"></div></td>';
-			}
-			$form .= '</tr></table>'."\n";
 			$form .= '</div>'."\n";
 			break;
 	}
