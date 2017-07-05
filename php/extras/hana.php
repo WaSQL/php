@@ -47,28 +47,28 @@ function hanaAddDBRecordsFromCSV($table,$csvfile,$params=array()){
 	 * 	https://help.sap.com/viewer/4fe29514fd584807ac9f2a04f6754767/2.0.00/en-US/20f712e175191014907393741fadcb97.html
 	 * 	https://blogs.sap.com/2013/04/08/best-practices-for-sap-hana-data-loads/
 	 * 	https://blogs.sap.com/2014/02/12/8-tips-on-pre-processing-flat-files-with-sap-hana/
-	 * 
-	 * THREADS and BATCH provide high loading performance by enabling parallel loading and also by committing many records at once. 
+	 *
+	 * THREADS and BATCH provide high loading performance by enabling parallel loading and also by committing many records at once.
 	 * In general, for column tables, a good setting to use is 10 parallel loading threads, with a commit frequency of 10,000 records or greater
-	 * 
-	THREADS <number_of_threads>  
+	 *
+	THREADS <number_of_threads>
 	* 	Specifies the number of threads that can be used for concurrent import. The default value is 1 and maximum allowed is 256
-	BATCH <number_of_records_of_each_commit> 
+	BATCH <number_of_records_of_each_commit>
 	* 	Specifies the number of records to be inserted in each commit
-	TABLE LOCK  
-	* 	Provides faster data loading for column store tables. Use this option carefully as it incurs table locks in exclusive mode as well as explicit hard merges and save points after data loading is finished. 
-	NO TYPE CHECK 
+	TABLE LOCK
+	* 	Provides faster data loading for column store tables. Use this option carefully as it incurs table locks in exclusive mode as well as explicit hard merges and save points after data loading is finished.
+	NO TYPE CHECK
 	* 	Specifies that the records are inserted without checking the type of each field.
-	SKIP FIRST <number_of_rows_to_skip> 
+	SKIP FIRST <number_of_rows_to_skip>
 	* 	Skips the specified number of rows in the import file.
-	COLUMN LIST IN FIRST ROW [<with_schema_flexibility>]  
-	* 	Indicates that the column list is stored in the first row of the CSV import file. 
-	* 	WITH SCHEMA FLEXIBILITY creates missing columns in flexible tables during CSV imports, as specified in the header (first row) of the CSV file or column list. 
+	COLUMN LIST IN FIRST ROW [<with_schema_flexibility>]
+	* 	Indicates that the column list is stored in the first row of the CSV import file.
+	* 	WITH SCHEMA FLEXIBILITY creates missing columns in flexible tables during CSV imports, as specified in the header (first row) of the CSV file or column list.
 	* 	By default, missing columns in flexible tables are not created automatically during data imports.
-	COLUMN LIST ( <column_name_list> ) [<with_schema_flexibility>] 
+	COLUMN LIST ( <column_name_list> ) [<with_schema_flexibility>]
 	* 	Specifies the column list for the data being imported.
 	* 	WITH SCHEMA FLEXIBILITY creates missing columns in flexible tables during CSV imports, as specified in the header (first row) of the CSV file or column list.
-	RECORD DELIMITED BY <string_for_record_delimiter> 
+	RECORD DELIMITED BY <string_for_record_delimiter>
 	* 	Specifies the record delimiter used in the CSV file being imported.
 	FIELD DELIMITED BY <string_for_field_delimiter>
 	* 	Specifies the field delimiter of the CSV file.
@@ -118,9 +118,9 @@ function hanaAddDBRecordsFromCSV($table,$csvfile,$params=array()){
 		$with.= "NO TYPE CHECK ".PHP_EOL;
 	}
 	$query=<<<ENDOFQUERY
-	IMPORT FROM CSV FILE '{$csvfile}' 
+	IMPORT FROM CSV FILE '{$csvfile}'
 	INTO {$table}
-	WITH 
+	WITH
 		RECORD DELIMITED BY '{$params['-eol']}'
 		FIELD DELIMITED BY '{$params['-delim']}'
 		OPTIONALLY ENCLOSED BY '{$params['-enclose']}'
@@ -134,7 +134,7 @@ ENDOFQUERY;
 	$params['-single']=1;
 	$conn=hanaDBConnect($params);
 	odbc_autocommit($conn, FALSE);
-	
+
 	odbc_exec($conn, $query);
 
 	if (!odbc_error()){
@@ -214,10 +214,10 @@ function hanaParseConnectParams($params=array()){
 * @return $dbh_hana resource - returns the odbc connection resource
 * @usage $dbh_hana=hanaDBConnect($params);
 * @usage  example of using -single
-* 	
+*
 	$conn=hanaDBConnect(array('-single'=>1));
 	odbc_autocommit($conn, FALSE);
-	
+
 	odbc_exec($conn, $query1);
 	odbc_exec($conn, $query2);
 
@@ -228,31 +228,31 @@ function hanaParseConnectParams($params=array()){
 		odbc_rollback($conn);
 	}
 	odbc_close($conn);
-* 
+*
 */
 function hanaDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=hanaParseConnectParams($params);
-	if(!isset($params['-dbname'])){return $params['-dbname'];}
+	if(!isset($params['-dbname'])){return $params;}
 	if(isset($params['-single'])){
-		$dbh_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
-		if(!is_resource($dbh_single)){
+		$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
+		if(!is_resource($dbh_hana_single)){
 			$err=odbc_errormsg();
 			echo "hanaDBConnect single connect error:{$err}".printValue($params);
 			exit;
 		}
-		return $dbh_single;
+		return $dbh_hana_single;
 	}
 	global $dbh_hana;
 	if(is_resource($dbh_hana)){return $dbh_hana;}
-	
+
 	try{
 		$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
 		if(!is_resource($dbh_hana)){
 			$err=odbc_errormsg();
 			echo "hanaDBConnect error:{$err}".printValue($params);
 			exit;
-			
+
 		}
 		return $dbh_hana;
 	}
@@ -500,14 +500,14 @@ ENDOFQUERY;
 }
 //---------- begin function hanaReplaceDBRecord ----------
 /**
-* @describe updated or adds a record from params passed in.
+* @describe updates or adds a record from params passed in.
 *  if cdate, and cuser exists as fields then they are populated with the create date and create username
 * @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
 *   -table - name of the table to add to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
+* 	other field=>value pairs to add/edit to the record
 * @return integer returns the autoincriment key
 * @usage $id=hanaReplaceDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
@@ -623,7 +623,6 @@ ENDOFQUERY;
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to edit
 * @return boolean returns true on success
 * @usage $systemtables=hanaGetDBSystemTables();
 */
@@ -638,7 +637,6 @@ function hanaGetDBSystemTables($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to edit
 * @return boolean returns true on success
 * @usage $schemas=hanaGetDBSchemas();
 */
@@ -681,7 +679,6 @@ function hanaGetDBSchemas($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to edit
 * @return boolean returns true on success
 * @usage $tables=hanaGetDBTables();
 */
@@ -725,7 +722,6 @@ function hanaGetDBTables($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to edit
 * @return boolean returns true on success
 * @usage $fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
 */
