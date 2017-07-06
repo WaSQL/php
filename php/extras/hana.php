@@ -327,6 +327,17 @@ function hanaIsDBTable($table,$params=array()){
 	odbc_free_result($result);
     return false;
 }
+//---------- begin function hanaClearConnection ----------
+/**
+* @describe clears the hana database connection
+* @return boolean returns true if query succeeded
+* @usage $ok=hanaClearConnection();
+*/
+function hanaClearConnection(){
+	global $dbh_hana;
+	$dbh_hana='';
+	return true;
+}
 //---------- begin function hanaExecuteSQL ----------
 /**
 * @describe executes a query and returns without parsing the results
@@ -591,7 +602,7 @@ ENDOFQUERY;
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $id=hanaEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
+* @usage $cnt=hanaManageDBSessions('all');
 */
 function hanaManageDBSessions($username='',$idle=1800000,$params=array()){
 	global $USER;
