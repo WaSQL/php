@@ -45,6 +45,13 @@ select
 	,0					as vol_12
 	,0					as vol_13
 	,0					as vol_14
+	,0					as vol_15
 from commissions.orabwt o
 where dist_id < 2000000000
 order by dist_id;
+
+replace commissions.customer (customer_id, customer_name)
+select
+	customer_id
+	,customer_name
+from commissions.orabwt_a;

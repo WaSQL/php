@@ -7,6 +7,7 @@ returns table (
 			,Flag_Type_Value		nvarchar(50)
 			,Flag_Type_Description	nvarchar(100))
 	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
 /* --------------------------------------------------------------------------------

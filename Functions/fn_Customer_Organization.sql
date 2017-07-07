@@ -4,25 +4,20 @@ create function Commissions.fn_Customer_Organization(
 					, pn_Period_id 			integer
 					, pn_Direction_id 		integer
 					, pn_Type_id			integer
-					, pn_Levels				integer)
+					, pn_Levels				integer default 2)
 returns table (Customer_Root_id	integer
-			  ,Org_Type_id		integer
-			  ,Org_Type			varchar(50)
-			  ,Direction_id		integer
-			  ,Direction		varchar(50)
 			  ,Customer_id		integer
 			  ,Customer_name	varchar(50)
 			  ,Level_id			integer
 			  ,Sponsor_id		integer
-			  ,Sponsor_name		varchar(50)
 			  ,Enroller_id		integer
-			  ,Enroller_name	varchar(50)
 			  ,PV				decimal(18,8)
 			  ,OV				decimal(18,8)
 			  ,Rank_id			integer
 			  ,Rank_Title		integer
 			  ,count_sub		bigint)
 	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 
 AS
@@ -40,174 +35,107 @@ Inputs:
 -------------------------------------------------------------------------------- */
 
 begin
-	--=============================================================================================================================
-	-- Check for Current Customer Tree of Historical Customer Tree
-	if ifnull(:pn_Period_id,0) = 0 then
-		-- Upline Sponsor Tree
-		if ifnull(:pn_Direction_id,1) = 0 and ifnull(:pn_Type_id,0) = 0 then
-			return 
-				select
-					 h.cust_root_id					as Customer_Root_id
-					,0								as Org_Type_id
-					,'Sponsor'						as Org_Type 
-					,0								as Direction_id
-					,'Upline'						as Direction 
-					,h.customer_id					as Customer_id
-					,ifnull(h.customer_name,'******na')	as Customer_name
-					,h.hierarchy_level				as Level_id
-					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
-					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
-					,h.rank_id						as Rank_id
-					,h.rank_high_id					as Rank_Title
-					,(select count(*)
-					  from customer
-					  where sponsor_id = h.customer_id)	as count_sub
-				from HIERARCHY ( 
-					 	SOURCE ( select sponsor_id AS node_id, customer_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer
-					             order by customer_id)
-			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
-			    order by h.hierarchy_rank;
-		end if;
+	lc_Customer =
+		select *
+		from gl_Customer(:pn_Period_id, 0); --gl_Period_Viewable(:pn_Period_id));
 		
-		-- Downline Sponsor Tree
-		if ifnull(:pn_Direction_id,1) = 1 and ifnull(:pn_Type_id,0) = 0 then
-			return
-				select
-					 h.cust_root_id					as Customer_Root_id
-					,0								as Org_Type_id
-					,'Sponsor'						as Org_Type 
-					,1								as Direction_id
-					,'Downline'						as Direction 
-					,h.customer_id					as Customer_id
-					,ifnull(h.customer_name,'******na')	as Customer_name
-					,h.hierarchy_level				as Level_id
-					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
-					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
-					,h.rank_id						as Rank_id
-					,h.rank_high_id					as Rank_Title
-					,(select count(*)
-					  from customer
-					  where sponsor_id = h.customer_id)	as count_sub
-				from HIERARCHY ( 
-					 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer
-					             order by customer_id)
-			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
-			    order by h.hierarchy_rank;
-		
-		end if;
-		
-		-- Upline Enroller Tree
+	--if ifnull(:pn_Levels,2) = 2 then
+	if 1 = 1 then
+		-- Upline Sponsor Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 0 and ifnull(:pn_Type_id,0) = 1 then
 			return
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,1								as Org_Type_id
-					,'Enroller'						as Org_Type 
-					,0								as Direction_id
-					,'Upline'						as Direction 
-					,h.customer_id					as Customer_id
-					,ifnull(h.customer_name,'******na')	as Customer_name
-					,h.hierarchy_level				as Level_id
-					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
-					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
-					,h.rank_id						as Rank_id
-					,h.rank_high_id					as Rank_Title
-					,(select count(*)
-					  from customer
-					  where sponsor_id = h.customer_id)	as count_sub
-				from HIERARCHY ( 
-					 	SOURCE ( select enroller_id AS node_id, customer_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer
-					             order by customer_id)
-			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
-			    order by h.hierarchy_rank;
+					 null as Customer_Root_id
+					,null as Customer_id
+					,null as Customer_name
+					,null as Level_id
+					,null as Sponsor_id
+					,null as Enroller_id
+					,null as PV
+					,null as OV
+					,null as Rank_id
+					,null as Rank_Title
+					,0	  as count_sub
+				from dummy;
 		end if;
 		
-		-- Downline Enroller Tree
+		-- Downline Sponsor Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 1 and ifnull(:pn_Type_id,0) = 1 then
 			return
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,1								as Org_Type_id
-					,'Enroller'						as Org_Type 
-					,1								as Direction_id
-					,'Downline'						as Direction 
-					,h.customer_id					as Customer_id
-					,ifnull(h.customer_name,'******na')	as Customer_name
-					,h.hierarchy_level				as Level_id
-					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
-					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
-					,h.rank_id						as Rank_id
-					,h.rank_high_id					as Rank_Title
+					 to_integer(:pn_Customer_id)		as Customer_Root_id
+					,h.customer_id						as Customer_id
+					,h.customer_name					as Customer_name
+					,h.hier_level						as Level_id
+					,h.sponsor_id						as Sponsor_id
+					,h.enroller_id						as Enroller_id
+					,round(h.pv,2)						as PV
+					,round(h.ov,2)						as OV
+					,h.rank_id							as Rank_id
+					,h.rank_high_id						as Rank_Title
 					,(select count(*)
-					  from customer
+					  from :lc_Customer
 					  where sponsor_id = h.customer_id)	as count_sub
-				from HIERARCHY ( 
-					 	SOURCE ( select customer_id AS node_id, enroller_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer
-					             order by customer_id)
-			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
-			    order by h.hierarchy_rank;
+				from :lc_Customer h
+			    where h.sponsor_id = :pn_Customer_id
+			    order by h.hier_rank;
 		end if;
-	
-	--=============================================================================================================================
+		
+		-- Upline Enroller Tree --------------------------------------------------------------------------------------------------------
+		if ifnull(:pn_Direction_id,1) = 0 and ifnull(:pn_Type_id,0) = 1 then
+			return
+				select
+					 null as Customer_Root_id
+					,null as Customer_id
+					,null as Customer_name
+					,null as Level_id
+					,null as Sponsor_id
+					,null as Enroller_id
+					,null as PV
+					,null as OV
+					,null as Rank_id
+					,null as Rank_Title
+					,0	  as count_sub
+				from dummy;
+		end if;
+		
+		-- Downline Enroller Tree --------------------------------------------------------------------------------------------------------
+		if ifnull(:pn_Direction_id,1) = 1 and ifnull(:pn_Type_id,0) = 1 then
+			return
+				select
+					 to_integer(:pn_Customer_id)		as Customer_Root_id
+					,h.customer_id						as Customer_id
+					,h.customer_name					as Customer_name
+					,h.hier_level						as Level_id
+					,h.sponsor_id						as Sponsor_id
+					,h.enroller_id						as Enroller_id
+					,round(h.pv,2)						as PV
+					,round(h.ov,2)						as OV
+					,h.rank_id							as Rank_id
+					,h.rank_high_id						as Rank_Title
+					,(select count(*)
+					  from :lc_Customer
+					  where enroller_id = h.customer_id)	as count_sub
+				from :lc_Customer h
+			    where h.enroller_id = :pn_Customer_id
+			    order by h.hier_rank;
+		end if;
+	-- ============================================================================================================================================================================
 	else
-		-- Upline Sponsor Tree
+		-- Upline Sponsor Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 0 and ifnull(:pn_Type_id,0) = 0 then
 			return 
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,0								as Org_Type_id
-					,'Sponsor'						as Org_Type 
-					,0								as Direction_id
-					,'Upline'						as Direction 
+					 to_integer(:pn_Customer_id)	as Customer_Root_id
 					,h.customer_id					as Customer_id
 					,ifnull(h.customer_name,'******na')	as Customer_name
 					,h.hierarchy_level				as Level_id
 					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
+					--,ifnull(s.customer_name,'******na')	as Sponsor_name
 					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
+					--,ifnull(e.customer_name,'******na')	as Enroller_name
+					,round(h.pv,2)					as PV
+					,round(h.ov,2)					as OV
 					,h.rank_id						as Rank_id
 					,h.rank_high_id					as Rank_Title
 					,(select count(*)
@@ -215,37 +143,32 @@ begin
 					  where period_id = :pn_Period_id
 					  and sponsor_id = h.customer_id)	as count_sub
 				from HIERARCHY ( 
-					 	SOURCE ( select sponsor_id AS node_id, customer_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer_history
-					             where period_id = :pn_Period_id
+					 	SOURCE ( select sponsor_id AS node_id, customer_id AS parent_id, *
+					             from :lc_Customer
 					             order by customer_id)
 			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
+			    	 left outer join :lc_Customer s
 			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
+			    	 left outer join :lc_Customer e
 			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
+			    where h.hierarchy_level <= case ifnull(:pn_Levels,2) when 0 then h.hierarchy_level else :pn_Levels end
 			    order by h.hierarchy_rank;
 		end if;
 		
-		-- Downline Sponsor Tree
+		-- Downline Sponsor Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 1 and ifnull(:pn_Type_id,0) = 0 then
 			return
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,0								as Org_Type_id
-					,'Sponsor'						as Org_Type 
-					,1								as Direction_id
-					,'Downline'						as Direction 
+					 to_integer(:pn_Customer_id)	as Customer_Root_id
 					,h.customer_id					as Customer_id
 					,ifnull(h.customer_name,'******na')	as Customer_name
 					,h.hierarchy_level				as Level_id
 					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
+					--,ifnull(s.customer_name,'******na')	as Sponsor_name
 					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
+					--,ifnull(e.customer_name,'******na')	as Enroller_name
+					,round(h.pv,2)					as PV
+					,round(h.ov,2)					as OV
 					,h.rank_id						as Rank_id
 					,h.rank_high_id					as Rank_Title
 					,(select count(*)
@@ -253,38 +176,33 @@ begin
 					  where period_id = :pn_Period_id
 					  and sponsor_id = h.customer_id)	as count_sub
 				from HIERARCHY ( 
-					 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer_history
-					             where period_id = :pn_Period_id
+					 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, *
+					             from :lc_Customer
 					             order by customer_id)
 			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
+			    	 left outer join :lc_Customer s
 			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
+			    	 left outer join :lc_Customer e
 			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
+			    where h.hierarchy_level <= case ifnull(:pn_Levels,2) when 0 then h.hierarchy_level else :pn_Levels end
 			    order by h.hierarchy_rank;
 		
 		end if;
 		
-		-- Upline Enroller Tree
+		-- Upline Enroller Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 0 and ifnull(:pn_Type_id,0) = 1 then
 			return
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,1								as Org_Type_id
-					,'Enroller'						as Org_Type 
-					,0								as Direction_id
-					,'Upline'						as Direction 
+					 to_integer(:pn_Customer_id)	as Customer_Root_id
 					,h.customer_id					as Customer_id
 					,ifnull(h.customer_name,'******na')	as Customer_name
 					,h.hierarchy_level				as Level_id
 					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
+					--,ifnull(s.customer_name,'******na')	as Sponsor_name
 					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
+					--,ifnull(e.customer_name,'******na')	as Enroller_name
+					,round(h.pv,2)					as PV
+					,round(h.ov,2)					as OV
 					,h.rank_id						as Rank_id
 					,h.rank_high_id					as Rank_Title
 					,(select count(*)
@@ -292,37 +210,32 @@ begin
 					  where period_id = :pn_Period_id
 					  and enroller_id = h.customer_id)	as count_sub
 				from HIERARCHY ( 
-					 	SOURCE ( select enroller_id AS node_id, customer_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer_history
-					             where period_id = :pn_Period_id
+					 	SOURCE ( select enroller_id AS node_id, customer_id AS parent_id, *
+					             from :lc_Customer
 					             order by customer_id)
 			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
+			    	 left outer join :lc_Customer s
+			    	 	on s.customer_id = h.sponsor_id
+			    	 left outer join :lc_Customer e
+			    	 	on e.customer_id = h.enroller_id
+			    where h.hierarchy_level <= case ifnull(:pn_Levels,2) when 0 then h.hierarchy_level else :pn_Levels end
 			    order by h.hierarchy_rank;
 		end if;
 		
-		-- Downline Enroller Tree
+		-- Downline Enroller Tree --------------------------------------------------------------------------------------------------------
 		if ifnull(:pn_Direction_id,1) = 1 and ifnull(:pn_Type_id,0) = 1 then
 			return
 				select
-					 h.cust_root_id					as Customer_Root_id
-					,1								as Org_Type_id
-					,'Enroller'						as Org_Type 
-					,1								as Direction_id
-					,'Downline'						as Direction 
+					 to_integer(:pn_Customer_id)	as Customer_Root_id
 					,h.customer_id					as Customer_id
 					,ifnull(h.customer_name,'******na')	as Customer_name
 					,h.hierarchy_level				as Level_id
 					,h.sponsor_id					as Sponsor_id
-					,ifnull(s.customer_name,'******na')	as Sponsor_name
+					--,ifnull(s.customer_name,'******na')	as Sponsor_name
 					,h.enroller_id					as Enroller_id
-					,ifnull(e.customer_name,'******na')	as Enroller_name
-					,round(h.vol_1,2)				as PV
-					,round(h.vol_12,2)				as OV
+					--,ifnull(e.customer_name,'******na')	as Enroller_name
+					,round(h.pv,2)					as PV
+					,round(h.ov,2)					as OV
 					,h.rank_id						as Rank_id
 					,h.rank_high_id					as Rank_Title
 					,(select count(*)
@@ -330,19 +243,17 @@ begin
 					  where period_id = :pn_Period_id
 					  and enroller_id = h.customer_id)	as count_sub
 				from HIERARCHY ( 
-					 	SOURCE ( select customer_id AS node_id, enroller_id AS parent_id, to_integer(:pn_Customer_id) as cust_root_id, customer_id, customer_name, sponsor_id, enroller_id, vol_1,vol_12,rank_id,rank_high_id
-					             from customer_history
-					             where period_id = :pn_Period_id
+					 	SOURCE ( select customer_id AS node_id, enroller_id AS parent_id, *
+					             from :lc_Customer
 					             order by customer_id)
 			    		Start where customer_id = :pn_Customer_id) h
-			    	 left outer join customer s
-			    	 on s.customer_id = h.sponsor_id
-			    	 left outer join customer e
-			    	 on e.customer_id = h.enroller_id
-			    where h.hierarchy_level <= case when :pn_Levels = 0 then h.hierarchy_level else :pn_Levels end
+			    	 left outer join :lc_Customer s
+			    	 	on s.customer_id = h.sponsor_id
+			    	 left outer join :lc_Customer e
+			    	 	on e.customer_id = h.enroller_id
+			    where h.hierarchy_level <= case ifnull(:pn_Levels,2) when 0 then h.hierarchy_level else :pn_Levels end
 			    order by h.hierarchy_rank;
 		end if;
-	
 	end if;
 	
 end;

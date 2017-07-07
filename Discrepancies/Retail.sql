@@ -6,16 +6,16 @@ select
 	, c.rank_id
 	, c.country
 	, c.currency
-	, round(c.payout_3,2)					as payout_3
+	, round(c.Earning_3,2)					as Earning_3
 	, round(b.bnc1,2) 						as bnc1
-	, round(b.bnc1,2)-round(c.payout_3,2)	as diff
+	, round(b.bnc1,2)-round(c.Earning_3,2)	as diff
 from commissions.orabwt b
 	left outer join commissions.customer_history c
 	on c.customer_id = b.dist_id
-where c.period_id = 13
+where c.period_id = 15
 and c.batch_id = 0
-and (c.payout_3 <> 0 or b.bnc1 <> 0)
-and round(b.bnc1,2)-round(c.payout_3,2) <> 0
+and (c.Earning_3 <> 0 or b.bnc1 <> 0)
+and round(b.bnc1,2)-round(c.Earning_3,2) <> 0
 order by c.customer_id;
 
 /*

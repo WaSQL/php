@@ -17,16 +17,16 @@ select
 	, c.agg_pv
 	, b.pv
 	, round(b.pv,2)-round(c.agg_pv,2) as pv_diff
-	, c.vol_6
+	, c.agg_cv
 	, b.cv
 	, round(b.cv,2)-round(c.agg_cv,2) as cv_diff
-	, c.vol_13
+	, c.agg_ov
 	, b.ov
-	, round(b.ov,2)-round(c.vol_13,2) as ov_diff
+	, round(b.ov,2)-round(c.agg_ov,2) as ov_diff
 	, c.rank_id
 	, c.rank_id-c.rank_high_type_id as rank_diff
 from HIERARCHY ( 
-	 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, a.*, round(a.vol_1+a.vol_4,2) as agg_pv, round(a.vol_6+a.vol_9,2) as agg_cv
+	 	SOURCE ( select customer_id AS node_id, sponsor_id AS parent_id, a.*, round(a.vol_1+a.vol_4,2) as agg_pv, round(a.vol_6+a.vol_9,2) as agg_cv, a.vol_13 as agg_ov
 	             from (select a.* 
 	             	   from commissions.customer_history a , lc_period p
 	                   where a.period_id = p.period_id

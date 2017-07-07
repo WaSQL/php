@@ -17,6 +17,7 @@ select
 	    and sponsor_id <> 4)														as Cust_Count
 	   ,floor(Clear/60) || ':' || lpad(mod(Clear,60),2,0)							as Clear
 	   ,floor(Run_Sec/60) || ':' || lpad(mod(Run_Sec,60),2,0)						as Run_Time
+	   ,floor(Level_id/60) || ':' || lpad(mod(Level_id,60),2,0)						as Level_id
 	   ,floor(PV/60) || ':' || lpad(mod(PV,60),2,0)									as PV
 	   ,floor(PV_Retail/60) || ':' || lpad(mod(PV_Retail,60),2,0)					as PV_Retail
 	   ,floor(PV_LRP/60) || ':' || lpad(mod(PV_LRP,60),2,0)							as PV_LRP
@@ -26,17 +27,19 @@ select
 	   ,floor(TW_CV/60) || ':' || lpad(mod(TW_CV,60),2,0)							as TW_CV
 	   ,floor(OV/60) || ':' || lpad(mod(OV,60),2,0)									as OV
 	   ,floor(Rank/60) || ':' || lpad(mod(Rank,60),2,0)								as Rank
-	   ,floor(Payout_1/60) || ':' || lpad(mod(Payout_1,60),2,0)						as Payout_1
-	   ,floor(Payout_2/60) || ':' || lpad(mod(Payout_2,60),2,0)						as Payout_2
-	   ,floor(Payout_3/60) || ':' || lpad(mod(Payout_3,60),2,0)						as Payout_3
-	   ,floor(Payout_4/60) || ':' || lpad(mod(Payout_4,60),2,0)						as Payout_4
-	   ,floor(Payout_5/60) || ':' || lpad(mod(Payout_5,60),2,0)						as Payout_5
-	   ,floor(Payout_6/60) || ':' || lpad(mod(Payout_6,60),2,0)						as Payout_6
-	   ,floor(Payout_7/60) || ':' || lpad(mod(Payout_7,60),2,0)						as Payout_7
-	   ,floor(Payout_8/60) || ':' || lpad(mod(Payout_8,60),2,0)						as Payout_8
-	   ,floor(Payout_9/60) || ':' || lpad(mod(Payout_9,60),2,0)						as Payout_9
-	   ,floor(Payout_10/60) || ':' || lpad(mod(Payout_10,60),2,0)					as Payout_10
-	   ,floor(Payout_11/60) || ':' || lpad(mod(Payout_11,60),2,0)					as Payout_11
+	   ,floor(Earning_1/60) || ':' || lpad(mod(Earning_1,60),2,0)					as Earning_1
+	   ,floor(Earning_2/60) || ':' || lpad(mod(Earning_2,60),2,0)					as Earning_2
+	   ,floor(Earning_3/60) || ':' || lpad(mod(Earning_3,60),2,0)					as Earning_3
+	   ,floor(Earning_4/60) || ':' || lpad(mod(Earning_4,60),2,0)					as Earning_4
+	   ,floor(Earning_5/60) || ':' || lpad(mod(Earning_5,60),2,0)					as Earning_5
+	   ,floor(Earning_6/60) || ':' || lpad(mod(Earning_6,60),2,0)					as Earning_6
+	   ,floor(Earning_7/60) || ':' || lpad(mod(Earning_7,60),2,0)					as Earning_7
+	   ,floor(Earning_8/60) || ':' || lpad(mod(Earning_8,60),2,0)					as Earning_8
+	   ,floor(Earning_9/60) || ':' || lpad(mod(Earning_9,60),2,0)					as Earning_9
+	   ,floor(Earning_10/60) || ':' || lpad(mod(Earning_10,60),2,0)					as Earning_10
+	   ,floor(Earning_11/60) || ':' || lpad(mod(Earning_11,60),2,0)					as Earning_11
+	   ,floor(Earning_12/60) || ':' || lpad(mod(Earning_12,60),2,0)					as Earning_12
+	   ,floor(Earning_13/60) || ':' || lpad(mod(Earning_13,60),2,0)					as Earning_13
 from (
 	select 
 		   b.period_id
@@ -49,6 +52,9 @@ from (
 	      ,seconds_between(
 	       to_seconddate(b.beg_date_run, 'yyyy-mm-dd hh24:mi:ss.ff7'),
 	       to_seconddate(ifnull(b.end_date_run,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 				as Run_Sec
+	      ,seconds_between(
+	       to_seconddate(b.beg_date_level, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_level,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 				as Level_id
 	      ,seconds_between(
 	       to_seconddate(b.beg_date_volume, 'yyyy-mm-dd hh24:mi:ss.ff7'),
 	       to_seconddate(ifnull(b.end_date_volume,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as PV
@@ -77,38 +83,44 @@ from (
 	       to_seconddate(b.beg_date_rank, 'yyyy-mm-dd hh24:mi:ss.ff7'),
 	       to_seconddate(ifnull(b.end_date_rank,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 				as Rank
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_1, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_1,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_1
+	       to_seconddate(b.beg_date_Earning_1, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_1,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_1
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_2, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_2,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_2
+	       to_seconddate(b.beg_date_Earning_2, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_2,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_2
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_3, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_3,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_3
+	       to_seconddate(b.beg_date_Earning_3, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_3,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_3
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_4, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_4,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_4
+	       to_seconddate(b.beg_date_Earning_4, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_4,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_4
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_5, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_5,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_5
+	       to_seconddate(b.beg_date_Earning_5, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_5,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_5
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_6, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_6,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_6
+	       to_seconddate(b.beg_date_Earning_6, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_6,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_6
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_7, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_7,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_7
+	       to_seconddate(b.beg_date_Earning_7, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_7,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_7
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_8, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_8,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_8
+	       to_seconddate(b.beg_date_Earning_8, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_8,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_8
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_9, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_9,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_9
+	       to_seconddate(b.beg_date_Earning_9, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_9,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Earning_9
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_10, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_10,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_10
+	       to_seconddate(b.beg_date_Earning_10, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_10,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 		as Earning_10
 	      ,seconds_between(
-	       to_seconddate(b.beg_date_payout_11, 'yyyy-mm-dd hh24:mi:ss.ff7'),
-	       to_seconddate(ifnull(b.end_date_payout_11,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 			as Payout_11
+	       to_seconddate(b.beg_date_Earning_11, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_11,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 		as Earning_11
+	      ,seconds_between(
+	       to_seconddate(b.beg_date_Earning_12, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_12,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 		as Earning_12
+	      ,seconds_between(
+	       to_seconddate(b.beg_date_Earning_13, 'yyyy-mm-dd hh24:mi:ss.ff7'),
+	       to_seconddate(ifnull(b.end_date_Earning_13,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 		as Earning_13
 	from commissions.period p, commissions.period_batch b
 	where p.period_id = b.period_id
 	and p.period_type_id = 1
@@ -140,8 +152,8 @@ and c.type_id = 1
 group by c.period_id, c.batch_id, c.rank_id, c.rank_qual
 order by c.period_id, c.batch_id, c.rank_id, c.rank_qual;
 
--- Unilevel Payout ----------------------------------------------------------------------------------------------------
-with lc_period as ( -- Payout Unilevel
+-- Unilevel Earning ----------------------------------------------------------------------------------------------------
+with lc_period as ( -- Earning Unilevel
 	select a.period_id, b.batch_id
 	from commissions.period a, commissions.period_batch b
 	where a.period_id = b.period_id
@@ -153,15 +165,15 @@ select
 	  u.period_id || ' - ' || u.batch_id as period
 	, u.lvl_paid
 	, count(*)
-from commissions.payout_01 u, lc_period z
+from commissions.Earning_01 u, lc_period z
 where u.period_id = z.period_id
 and u.batch_id = z.batch_id
 and u.qual_flag = 1
 group by u.period_id, u.batch_id, u.lvl_paid
 order by u.period_id, u.batch_id, u.lvl_paid;
 
--- Power of 3 Payout ----------------------------------------------------------------------------------------------------
-with lc_period as ( -- Payout Power of 3
+-- Power of 3 Earning ----------------------------------------------------------------------------------------------------
+with lc_period as ( -- Earning Power of 3
 	select a.period_id, b.batch_id
 	from commissions.period a, commissions.period_batch b
 	where a.period_id = b.period_id
@@ -174,14 +186,14 @@ select
 	, p.paid_lvl_id							as paid_lvl_id
 	, p.lvl_id
 	, count(*)
-from commissions.payout_02 p, lc_period z
+from commissions.Earning_02 p, lc_period z
 where p.period_id = z.period_id
 and p.batch_id = z.batch_id
 group by p.period_id, p.batch_id, p.lvl_id, p.paid_lvl_id
 order by p.period_id, p.batch_id, p.paid_lvl_id, p.lvl_id;
 
--- Retail Payout ----------------------------------------------------------------------------------------------------
-with lc_period as ( -- Payout Retail
+-- Retail Earning ----------------------------------------------------------------------------------------------------
+with lc_period as ( -- Earning Retail
 	select a.period_id, b.batch_id
 	from commissions.period a, commissions.period_batch b
 	where a.period_id = b.period_id
@@ -194,14 +206,14 @@ select
 	, p.qual_flag							as qual_flag
 	, p.to_currency							as currency
 	, count(*)								as count
-from commissions.payout_03 p, lc_period z
+from commissions.Earning_03 p, lc_period z
 where p.period_id = z.period_id
 and p.batch_id = z.batch_id
 and p.qual_flag = 1
 group by p.period_id, p.batch_id, p.qual_flag, p.to_currency;
 
--- Preferred Payout ----------------------------------------------------------------------------------------------------
-with lc_period as ( -- Payout Preferred
+-- Preferred Earning ----------------------------------------------------------------------------------------------------
+with lc_period as ( -- Earning Preferred
 	select a.period_id, b.batch_id
 	from commissions.period a, commissions.period_batch b
 	where a.period_id = b.period_id
@@ -214,7 +226,7 @@ select
 	, p.qual_flag							as qual_flag
 	, p.to_currency							as currency
 	, count(*)								as count
-from commissions.payout_04 p, lc_period z
+from commissions.Earning_04 p, lc_period z
 where p.period_id = z.period_id
 and p.batch_id = z.batch_id
 and p.qual_flag = 1

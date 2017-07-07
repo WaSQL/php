@@ -1,5 +1,5 @@
-/*truncate table customer_rank_history
-insert into customer_rank_history
+/*truncate table commissions.customer_rank_history
+insert into commissions.customer_rank_history
 select
 	 o.dist_id									as customer_id
 	,o.rank_id
@@ -7,7 +7,7 @@ select
 	,to_date(o.effective_date,'yyyy-mm-dd hh:mi:ss.ff3')		as effective_date
 	,to_date(o.entry_date,'yyyy-mm-dd hh:mi:ss.ff3')			as entry_date
 	,map(o.bonus_flag,'X',1,2)					as customer_rank_type_id
-from orapdf o
+from commissions.orapdf o
 	left outer join period p
 	on p.beg_date <= to_date(map(o.pv_date,0,'200001',o.pv_date),'yyyymm')
 	and p.end_date >= to_date(map(o.pv_date,0,'200001',o.pv_date),'yyyymm')
@@ -17,32 +17,32 @@ order by o.dist_id,o.rank_id;
 */
 
 select *
-from orapdf
+from commissions.orapdf
 where dist_id = 2172231
 order by rank_id;
 
 select *
-from orabrd
+from commissions.orabrd
 where dist_id = 2172231
 order by rank_id;
 
 select *
-from customer_rank_history
+from commissions.customer_rank_history
 where customer_id = 2172231
 order by rank_id;
 
 select customer_id, rank_id
-from customer_history
+from commissions.customer_history
 where period_id = 13
 and batch_id = 0
 and customer_id = 2172231;
 
 select customer_id, enroller_id, rank_id
 ,(select max(rank_id)
-           from customer_rank_history
+           from commissions.customer_rank_history
            where period_id < c.period_id
            and customer_id = c.customer_id) as max_rank_id
-  from customer_history c
+  from commissions.customer_history c
   where period_id = 13
   and batch_id = 0
   and enroller_id = 1612

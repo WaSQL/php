@@ -23,9 +23,8 @@ select
 	,null				as modifiy_date
 from admin.bth1_file_1
 where dist_bus_ctr = 1
-and pv_date >= 201604
-and pv_date <= 201701
-union
+and pv_date = 201705
+union all
 select 
 	 dist_id
 	,dist_bus_ctr
@@ -51,9 +50,8 @@ select
 	,null				as modifiy_date
 from admin.bth2_file_1
 where dist_bus_ctr = 1
-and pv_date >= 201604
-and pv_date <= 201701
-union
+and pv_date = 201705
+union all
 select 
 	 dist_id
 	,dist_bus_ctr
@@ -79,9 +77,8 @@ select
 	,null				as modifiy_date
 from admin.bth3_file_1
 where dist_bus_ctr = 1
-and pv_date >= 201604
-and pv_date <= 201701
-union
+and pv_date = 201705
+union all
 select 
 	 dist_id
 	,dist_bus_ctr
@@ -107,5 +104,4 @@ select
 	,null				as modifiy_date
 from admin.bth4_file_1
 where dist_bus_ctr = 1
-and pv_date >= 201604
-and pv_date <= 201701
+and pv_date = 201705
