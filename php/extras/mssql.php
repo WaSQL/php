@@ -447,7 +447,7 @@ function mssqlQueryResults($query='',$params=array()){
 			sqlsrv_free_stmt( $stmt);
 			return $id;
 		}
-		$results = mssqlEnumQueryResults($data,$showblank);
+		$results = mssqlEnumQueryResults($data);
 		return $results;
 	}
 	mssql_query("SET ANSI_NULLS ON",$dbh_mssql);
@@ -460,7 +460,7 @@ function mssqlQueryResults($query='',$params=array()){
     	mssql_close($dbh_mssql);
     	return $id;
 	}
-	$results = mssqlEnumQueryResults($data,$showblank);
+	$results = mssqlEnumQueryResults($data);
 	mssql_close($dbh_mssql);
 	return $results;
 }
