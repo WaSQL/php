@@ -2,8 +2,8 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'sql':
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
-			$sql_select=addslashes($_REQUEST['sql_select']);
-			$sql_full=addslashes($_REQUEST['sql_full']);
+			$sql_select=stripslashes($_REQUEST['sql_select']);
+			$sql_full=stripslashes($_REQUEST['sql_full']);
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
 				$recs=getDBRecords($sql_select);
