@@ -3683,13 +3683,15 @@ function adminMenu(){
     //admin info
     global $CONFIG;
     $rtn .= '<div id="admin_info" style="display:none">'."\n";
-	$rtn .= '	<div style="width:400px;">'."\n";
+	$rtn .= '	<div style="float:left;max-width:500px;overflow:auto;">'."\n";
 	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'."\n";
 	$rtn .= '<table class="table table-striped table-bordered">'."\n";
 	if(!isset($_SESSION['wasql_info']) || isset($_REQUEST['refresh'])){
 		$_SESSION['wasql_info']=array(
 			'Server Host'	=> $_SERVER['HTTP_HOST'],
+			'Document Root'	=> $_SERVER['DOCUMENT_ROOT'],
 			'waSQL Path'	=> getWasqlPath(),
+
 			'<span class="icon-user w_grey"></span> Username'	=> $USER['username'],
 			'PHP User'	=> get_current_user(),
 			'Server'	=> php_uname(),
