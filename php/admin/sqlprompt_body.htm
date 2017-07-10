@@ -1,4 +1,18 @@
 <view:default>
+<script type="text/javascript">
+	function sqlpromptCheckKey(e){
+		e = e || window.event;
+		console.log(e.keyCode);
+        if (e.keyCode == 119) {
+			return sqlpromptSubmit(document.sqlprompt);
+        }
+	}
+	function sqlpromptSubmit(frm){
+		frm.sql_select.value=getSelText(frm.sql_full);
+		return ajaxSubmitForm(frm,'sqlprompt_results');
+	}
+	document.onkeydown = sqlpromptCheckKey;
+</script>
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-xs-3">
@@ -15,12 +29,12 @@
 			</div>
 		</div>
 		<div class="col-xs-9">
-			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="this.sql_select.value=getSelText(this.sql_full);return ajaxSubmitForm(this,'sqlprompt_results');">
+			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="sqlpromptSubmit(this);">
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="func" value="sql">
 				<input type="hidden" name="sql_select" value="">
 				<textarea class="form-control" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
-				<div><button type="submit" class="btn btn-primary btn-sm">Run</button></div>
+				<div><button type="submit" class="btn btn-primary btn-sm">Execute</button> <span class="w_small w_grey">(or press F8)</span></div>
 			</form>
 			<div id="sqlprompt_results"></div>
 		</div>
