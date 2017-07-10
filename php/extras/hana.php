@@ -391,20 +391,22 @@ function hanaAddDBRecord($params){
 	$fields=hanaGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['cdate'])){
-		$opts['fields'][]='CDATE';
-		$opts['values'][]=strtoupper(date('d-M-Y  H:i:s'));
+		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+	}
+	elseif(isset($fields['_cdate'])){
+		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
 	if(isset($fields['cuser'])){
-		$opts['fields'][]='CUSER';
-		$opts['values'][]=$USER['username'];
+		$params['cuser']=$USER['username'];
+	}
+	elseif(isset($fields['_cuser'])){
+		$params['_cuser']=$USER['username'];
 	}
 	$valstr='';
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
 		if(!isset($fields[$k])){continue;}
-		//skip cuser and cdate - already set
-		if($k=='cuser' || $k=='cdate'){continue;}
 		//fix array values
 		if(is_array($v)){$v=implode(':',$v);}
 		//take care of single quotes in value
@@ -485,16 +487,20 @@ function hanaEditDBRecord($params){
 	$fields=hanaGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['edate'])){
-		$opts['edate']=strtoupper(date('Y-M-d H:i:s'));
+		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
+	}
+	elseif(isset($fields['_edate'])){
+		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
 	}
 	if(isset($fields['euser'])){
-		$opts['euser']=$USER['username'];
+		$params['euser']=$USER['username'];
+	}
+	elseif(isset($fields['_euser'])){
+		$params['_euser']=$USER['username'];
 	}
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
-		//skip euser and edate - already set
-		if($k=='euser' || $k=='edate'){continue;}
 		//fix array values
 		if(is_array($v)){$v=implode(':',$v);}
 		//take care of single quotes in value
