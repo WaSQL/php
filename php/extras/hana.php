@@ -416,6 +416,12 @@ function hanaAddDBRecord($params){
         	case 'number':
         		$opts['values'][]=$v;
         	break;
+        	case 'date':
+				if($k=='cdate' || $k=='_cdate'){
+					$v=date('Y-m-d',strtotime($v));
+				}
+				$opts['values'][]="'{$v}'";
+        	break;
         	default:
         		$opts['values'][]="'{$v}'";
         	break;
@@ -505,6 +511,14 @@ function hanaEditDBRecord($params){
 		if(is_array($v)){$v=implode(':',$v);}
 		//take care of single quotes in value
 		$v=str_replace("'","''",$v);
+		switch(strtolower($fields[$k]['type'])){
+        	case 'date':
+				if($k=='edate' || $k=='_edate'){
+					$v=date('Y-m-d',strtotime($v));
+				}
+        	break;
+		}
+		
         $updates[]="{$k}='{$v}'";
 	}
 	$updatestr=implode(', ',$updates);
