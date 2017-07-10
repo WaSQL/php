@@ -102,11 +102,11 @@ begin
 	-- Snapshot Customer and all supporting tables
 	call sp_Customer_Snap(:pn_Period_id);
 	call sp_Customer_Flag_Snap(:pn_Period_id);
-	call sp_Req_Qual_Leg_Snap(:pn_Period_id);
-	call sp_Req_Cap_Snap(:pn_Period_id);
-	call sp_Req_Unilevel_Snap(:pn_Period_id);
-	call sp_Req_Power3_Snap(:pn_Period_id);
-	call sp_Req_Pool_Snap(:pn_Period_id);
-	call sp_Req_Preferred_Snap(:pn_Period_id);
+	call sp_Rank_Req_Snap(:pn_Period_id);
+	call sp_Cap_Req_Snap(:pn_Period_id);
+	call sp_Earning_01_Req_Snap(:pn_Period_id);
+	call sp_Earning_02_Req_Snap(:pn_Period_id);
+	call sp_Earning_04_Req_Snap(:pn_Period_id);
+	call sp_Pool_Req_Snap(:pn_Period_id);
 
 end;

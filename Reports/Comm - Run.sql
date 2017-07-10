@@ -30,4 +30,4 @@ set
 where period_id in (12, 13, 14, 15)
 and batch_id = 0;
 
-call commissions.sp_Period_Final(16);
+call commissions.sp_Rank_High_Set(15);

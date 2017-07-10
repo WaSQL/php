@@ -27,10 +27,18 @@ returns table (
 			,cv							decimal(18,8)
 			,qv							decimal(19,8)
 			,pv_lrp						decimal(18,8)
+			,pv_lrp_template			decimal(18,8)
+			,pv_retail					decimal(18,8)
+			,pv_fs						decimal(18,8)
+			,cv_lrp						decimal(18,8)
+			,cv_lrp_template			decimal(18,8)
+			,cv_retail					decimal(18,8)
+			,cv_fs						decimal(18,8)
 			,egv						decimal(18,8)
 			,egv_lrp					decimal(18,8)
 			,tv							decimal(18,8)
 			,ov							decimal(18,8)
+			,tw_cv						decimal(18,8)
 			,tv_waiver					integer
 			,pv_lrp_waiver				integer
 			,has_downline				integer
@@ -51,6 +59,7 @@ Purpose:	Returns a resultset of cusomters
 -------------------------------------------------------------------------------- */
 
 begin
+	declare ln_Customer_id	integer = ifnull(:pn_Customer_id, 0);
 		
 	-- Get Exchange Rates
 	lc_Exchange = 
@@ -106,10 +115,18 @@ begin
 			,vol_6															as cv
 			,vol_1+vol_4													as qv
 			,vol_2															as pv_lrp
+			,vol_3															as pv_lrp_template
+			,vol_4															as pv_retail
+			,vol_5															as pv_fs
+			,vol_7															as cv_lrp
+			,vol_8															as cv_lrp_template
+			,vol_9															as cv_retail
+			,vol_10															as cv_fs
 			,vol_11															as egv
 			,vol_12															as egv_lrp
 			,vol_14															as tv
 			,vol_13															as ov
+			,vol_15															as tw_cv
 			,map(ifnull(f7.flag_type_id,0),7,1,0)							as tv_waiver
 			,map(ifnull(f6.flag_type_id,0),6,1,0)							as pv_lrp_waiver
 			,ifnull(t1.has_downline,0)										as has_downline
@@ -135,7 +152,7 @@ begin
 										  from :lc_Customer_Flag
 										  where customer_id = c.customer_id
 										  and flag_type_id = 2),c.currency)
-    	where c.customer_id = map(ifnull(:pn_Customer_id,0),0, c.customer_id, :pn_Customer_id);
+    	where c.customer_id = map(:ln_Customer_id,0, c.customer_id, :ln_Customer_id);
 	else
 		-- if period is closed use customer_history table
 		return
@@ -165,10 +182,18 @@ begin
 			,vol_6															as cv
 			,vol_1+vol_4													as qv
 			,vol_2															as pv_lrp
+			,vol_3															as pv_lrp_template
+			,vol_4															as pv_retail
+			,vol_5															as pv_fs
+			,vol_7															as cv_lrp
+			,vol_8															as cv_lrp_template
+			,vol_9															as cv_retail
+			,vol_10															as cv_fs
 			,vol_11															as egv
 			,vol_12															as egv_lrp
 			,vol_14															as tv
 			,vol_13															as ov
+			,vol_15															as tw_cv
 			,map(ifnull(f7.flag_type_id,0),7,1,0)							as tv_waiver
 			,map(ifnull(f6.flag_type_id,0),6,1,0)							as pv_lrp_waiver
 			,ifnull(t1.has_downline,0)										as has_downline
@@ -196,7 +221,7 @@ begin
 										  and flag_type_id = 2),c.currency)
 		Where c.period_id = :pn_Period_id
 		and c.batch_id = :pn_Period_Batch_id
-		and c.customer_id = map(ifnull(:pn_Customer_id,0),0, c.customer_id, :pn_Customer_id);
+		and c.customer_id = map(:ln_Customer_id,0, c.customer_id, :ln_Customer_id);
 	end if;
 	
 end;

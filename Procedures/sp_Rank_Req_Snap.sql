@@ -1,5 +1,5 @@
-drop procedure Commissions.sp_Req_Unilevel_Snap;
-create procedure Commissions.sp_Req_Unilevel_Snap(
+drop procedure Commissions.sp_Rank_Req_Snap;
+create procedure Commissions.sp_Rank_Req_Snap(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
@@ -23,23 +23,33 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_unilevel
+			insert into rank_req
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
-				,level_id
-				,value_1
-			from req_unilevel_template;
+				,rank_id
+				,leg_rank_id
+				,leg_rank_count
+				,vol_1
+				,vol_2
+				,vol_3
+				,vol_4
+			from rank_req_template;
 		else
-			insert into req_unilevel
+			insert into rank_req
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
-				,level_id
-				,value_1
-			from req_unilevel
+				,rank_id
+				,leg_rank_id
+				,leg_rank_count
+				,vol_1
+				,vol_2
+				,vol_3
+				,vol_4
+			from rank_req
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

@@ -32,7 +32,7 @@ Begin
 	-- Get Pool Requirements
 	lc_Require =
 		select *
-		from req_pool
+		from pool_req
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id
 		and version_id = 1

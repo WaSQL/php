@@ -45,7 +45,7 @@ Begin
 			, 'USD'									as Currency
 			--, t.currency							as Currency
 			, round(t.value_1*(q.value_1/100),2)	as Bonus
-   		from transaction t, customer_history c, req_preferred q
+   		from transaction t, customer_history c, earning_04_req q
    		where t.customer_id = c.customer_id
    		and c.period_id = :pn_Period_id
    		and c.batch_id = :pn_Period_Batch_id

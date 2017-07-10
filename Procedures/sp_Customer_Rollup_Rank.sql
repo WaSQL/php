@@ -24,7 +24,7 @@ begin
 			left outer join customer_flag w
 				on c.customer_id = w.customer_id
 				and w.flag_type_id in (3,4,5)
-		, req_qual_leg q
+		, rank_req q
 	where q.version_id = ifnull(v.version_id,1)
    	And c.type_id = 1
    	and c.status_id in (1, 4)

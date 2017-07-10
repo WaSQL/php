@@ -25,7 +25,7 @@ Begin
 		,c.period_id
 		,c.batch_id
 		,r.value_2
-	from customer_history c, req_cap r, customer_type t
+	from customer_history c, cap_req r, customer_type t
 	where c.rank_id = r.rank_id
 	and c.type_id = t.type_id
 	and c.period_id = r.period_id
@@ -179,7 +179,7 @@ Begin
 	-- Get Requirements for Unilevel
 	lc_Req_Unilevel = 
 		select *
-		from req_unilevel
+		from earning_01_req
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 		

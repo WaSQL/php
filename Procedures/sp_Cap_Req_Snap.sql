@@ -1,5 +1,5 @@
-drop procedure Commissions.sp_Req_Power3_Snap;
-create procedure Commissions.sp_Req_Power3_Snap(
+drop procedure Commissions.sp_Cap_Req_Snap;
+create procedure Commissions.sp_Cap_Req_Snap(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
@@ -23,33 +23,25 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_power3
+			insert into cap_req
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
-				,version_id
-				,level_id
-				,structure_level
-				,structure_count
+				,rank_id
+				,cap_type_id
 				,value_1
 				,value_2
-				,value_3
-				,value_4
-			from req_power3_template;
+			from cap_req_template;
 		else
-			insert into req_power3
+			insert into cap_req
 			select
 				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
-				,version_id
-				,level_id
-				,structure_level
-				,structure_count
+				,rank_id
+				,cap_type_id
 				,value_1
 				,value_2
-				,value_3
-				,value_4
-			from req_power3
+			from cap_req
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

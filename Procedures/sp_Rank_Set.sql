@@ -58,7 +58,7 @@ begin
 			
 		lc_Require_Leg =
 			select *
-			from req_qual_leg_template;
+			from rank_req_template;
 			
 		lc_Cust_Level = 
 			select
@@ -275,7 +275,7 @@ begin
 					 		when 5 then h.flag_value
 					 		else max(q.rank_id) end as new_rank_id
 					 , 1 as rank_qual
-				from :lc_Cust_Level_Hist h, req_qual_leg q
+				from :lc_Cust_Level_Hist h, rank_req q
 				where q.period_id = h.period_id
 				and q.batch_id = h.batch_id
 				and q.version_id = h.version_id

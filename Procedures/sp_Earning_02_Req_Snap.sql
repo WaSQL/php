@@ -1,5 +1,5 @@
-drop procedure Commissions.sp_Req_Pool_Snap;
-create procedure Commissions.sp_Req_Pool_Snap(
+drop procedure Commissions.sp_Earning_02_Req_Snap;
+create procedure Commissions.sp_Earning_02_Req_Snap(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
@@ -23,29 +23,33 @@ begin
 		where period_id = :pn_Period_id;
 		
 		if :ln_Batch_id = 0 then
-			insert into req_pool
+			insert into earning_02_req
 			select
-				 req_pool_id.nextval	as req_pool_id
-				,:pn_Period_id			as period_id
+				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
-				,pool_id
-				,type_id
+				,level_id
+				,structure_level
+				,structure_count
 				,value_1
 				,value_2
-			from req_pool_template;
+				,value_3
+				,value_4
+			from earning_02_req_template;
 		else
-			insert into req_pool
+			insert into earning_02_req
 			select
-				 req_pool_id.nextval	as req_pool_id
-				,:pn_Period_id			as period_id
+				 :pn_Period_id			as period_id
 				,:ln_Batch_id			as batch_id
 				,version_id
-				,pool_id
-				,type_id
+				,level_id
+				,structure_level
+				,structure_count
 				,value_1
 				,value_2
-			from req_pool
+				,value_3
+				,value_4
+			from earning_02_req
 			where period_id = :pn_Period_id
 			and batch_id = 0;
 		end if;

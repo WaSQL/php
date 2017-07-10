@@ -123,7 +123,7 @@ from (
 	       to_seconddate(ifnull(b.end_date_Earning_13,current_timestamp), 'yyyy-mm-dd hh24:mi:ss.ff7')) 		as Earning_13
 	from commissions.period p, commissions.period_batch b
 	where p.period_id = b.period_id
-	and p.period_type_id = 1
+	--and p.period_type_id = 1
 	and b.viewable = 1) a
 order by a.period_id desc, a.batch_id desc, a.beg_date;
 

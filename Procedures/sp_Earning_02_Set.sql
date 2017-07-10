@@ -96,7 +96,7 @@ Begin
 	-- Get Requirements for Power3
 	lc_Req_Power3 =
 		select *
-		from req_power3
+		from earning_02_req
 		where period_id = :pn_Period_id
 		and batch_id = :pn_Period_Batch_id;
 		
