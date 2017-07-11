@@ -14,20 +14,6 @@ ini_set('oci8.statement_cache_size',50);
 */
 function oracleParseConnectParams($params=array()){
 	global $CONFIG;
-	if(!isset($params['-dbname'])){
-		if(isset($CONFIG['dbname_oracle'])){
-			$params['-dbname']=$CONFIG['dbname_oracle'];
-			$params['-dbname_source']="CONFIG dbname_oracle";
-		}
-		elseif(isset($CONFIG['oracle_dbname'])){
-			$params['-dbname']=$CONFIG['oracle_dbname'];
-			$params['-dbname_source']="CONFIG oracle_dbname";
-		}
-		else{return 'oracleParseConnectParams Error: No dbname set';}
-	}
-	else{
-		$params['-dbname_source']="passed in";
-	}
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_oracle'])){
 			$params['-dbuser']=$CONFIG['dbuser_oracle'];
@@ -56,6 +42,71 @@ function oracleParseConnectParams($params=array()){
 	else{
 		$params['-dbpass_source']="passed in";
 	}
+	//connect
+	if(!isset($params['-connect'])){
+		if(isset($CONFIG['oracle_connect'])){
+			$params['-connect']=$CONFIG['oracle_connect'];
+			$params['-connect_source']="CONFIG oracle_connect";
+		}
+		elseif(isset($CONFIG['connect_oracle'])){
+			$params['-connect']=$CONFIG['connect_oracle'];
+			$params['-connect_source']="CONFIG connect_oracle";
+		}
+		else{
+			//build connect
+			$host='';
+			if(isset($params['-host'])){$host=$params['-host'];}
+			elseif(isset($CONFIG['oracle_host'])){$host=$CONFIG['oracle_host'];}
+			elseif(isset($CONFIG['host_oracle'])){$host=$CONFIG['host_oracle'];}
+			if(!strlen($host)){return $params;}
+			$tcp='TCP';
+			if(isset($params['-tcp'])){$tcp=$params['-tcp'];}
+			elseif(isset($CONFIG['oracle_tcp'])){$tcp=$CONFIG['oracle_tcp'];}
+			elseif(isset($CONFIG['tcp_oracle'])){$tcp=$CONFIG['tcp_oracle'];}
+			$port='1521';
+			if(isset($params['-port'])){$port=$params['-port'];}
+			elseif(isset($CONFIG['oracle_port'])){$port=$CONFIG['oracle_port'];}
+			elseif(isset($CONFIG['port_oracle'])){$port=$CONFIG['port_oracle'];}
+			$connect_data='';
+			//sid - identify the Oracle8 database instance by its Oracle System Identifier (SID)
+			if(isset($params['-sid'])){$connect_data.="(SID={$params['-sid']})";}
+			elseif(isset($CONFIG['oracle_sid'])){$connect_data.="(SID={$CONFIG['oracle_sid']})";}
+			elseif(isset($CONFIG['sid_oracle'])){$connect_data.="(SID={$CONFIG['sid_oracle']})";}
+			//service_name - identify the Oracle9i or Oracle8 database service to access
+			if(isset($params['-service_name'])){$connect_data.="(SERVICE_NAME={$params['-service_name']})";}
+			elseif(isset($CONFIG['oracle_service_name'])){$connect_data.="(SERVICE_NAME={$CONFIG['oracle_service_name']})";}
+			elseif(isset($CONFIG['service_name_oracle'])){$connect_data.="(SERVICE_NAME={$CONFIG['service_name_oracle']})";}
+			//instance_name - identify the database instance to access
+			if(isset($params['-instance_name'])){$connect_data.="(INSTANCE_NAME={$params['-instance_name']})";}
+			elseif(isset($CONFIG['oracle_instance_name'])){$connect_data.="(INSTANCE_NAME={$CONFIG['oracle_instance_name']})";}
+			elseif(isset($CONFIG['instance_name_oracle'])){$connect_data.="(INSTANCE_NAME={$CONFIG['instance_name_oracle']})";}
+			//server_name
+			if(isset($params['-server_name'])){$connect_data.="(SERVER_NAME={$params['-server_name']})";}
+			elseif(isset($CONFIG['oracle_server_name'])){$connect_data.="(SERVER_NAME={$CONFIG['oracle_server_name']})";}
+			elseif(isset($CONFIG['server_name_oracle'])){$connect_data.="(SERVER_NAME={$CONFIG['server_name_oracle']})";}
+			//global_name - identify the Oracle Rdb database.
+			if(isset($params['-global_name'])){$connect_data.="(GLOBAL_NAME={$params['-global_name']})";}
+			elseif(isset($CONFIG['oracle_global_name'])){$connect_data.="(GLOBAL_NAME={$CONFIG['oracle_global_name']})";}
+			elseif(isset($CONFIG['global_name_oracle'])){$connect_data.="(GLOBAL_NAME={$CONFIG['global_name_oracle']})";}
+			//server - instruct the listener to connect the client to a specific type of service handler, dedicated or shared
+			if(isset($params['-server'])){$connect_data.="(SERVER={$params['-server']})";}
+			elseif(isset($CONFIG['oracle_server'])){$connect_data.="(SERVER={$CONFIG['oracle_server']})";}
+			elseif(isset($CONFIG['server_oracle'])){$connect_data.="(SERVER={$CONFIG['server_oracle']})";}
+			//rdb_database - specify the file name of an Oracle Rdb database
+			if(isset($params['-rdb_database'])){$connect_data.="(RDB_DATABASE={$params['-rdb_database']})";}
+			elseif(isset($CONFIG['oracle_rdb_database'])){$connect_data.="(RDB_DATABASE={$CONFIG['oracle_rdb_database']})";}
+			elseif(isset($CONFIG['rdb_database_oracle'])){$connect_data.="(RDB_DATABASE={$CONFIG['rdb_database_oracle']})";}
+
+			if(!strlen($connect_data)){return $params;}
+			$params['-connect']="(DESCRIPTION=(ADDRESS=(PROTOCOL = {$tcp})(HOST = {$host})(PORT={$port}))(CONNECT_DATA={$connect_data}))";
+			$params['-connect_source']="tcp,host,port";
+		}
+	}
+	else{
+		$params['-connect_source']="passed in";
+	}
+	
+	
 	return $params;
 }
 //---------- begin function oracleDBConnect ----------
@@ -73,10 +124,12 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-port'])){$params['-port']=1521;}
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	$params=oracleParseConnectParams($params);
-	if(!isset($params['-dbname'])){return $params;}
+	if(!isset($params['-connect'])){
+		echo "oracleDBConnect error: no connect params".printValue($params);
+		exit;
+		}
 	if(isset($params['-single'])){
-		$connection_str="(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={$params['-dbhost']})(PORT={$params['-port']}))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME={$params['-dbname']})))";
-		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$connection_str);
+		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],'AL32UTF8');
 		if(!is_resource($dbh_single)){
 			$err=json_encode(oci_error());
 			echo "oracleDBConnect single connect error:{$err}".printValue($params);
@@ -87,8 +140,7 @@ function oracleDBConnect($params=array()){
 	global $dbh_oracle;
 	if(is_resource($dbh_oracle)){return $dbh_oracle;}
 	try{
-		$connection_str="(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={$params['-dbhost']})(PORT={$params['-port']}))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME={$params['-dbname']})))";
-		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$connection_str);
+		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],'AL32UTF8');
 		if(!is_resource($dbh_oracle)){
 			$err=json_encode(oci_error());
 			echo "oracleDBConnect error:{$err}".printValue($params);
@@ -101,6 +153,48 @@ function oracleDBConnect($params=array()){
 		echo "oracleDBConnect exception" . printValue($e);
 		exit;
 	}
+}
+//---------- begin function oracleAutoCommit ----------
+/**
+* @describe turn autocommit on or off
+* @param $stid resource - statement id
+* @param $onoff boolean - set to 0 or 'off' to turn autocommit off
+* @return connection resource and sets the global $dbh_oracle variable
+* @usage $ok=oracleAutoCommit($stid,'off');
+*/
+function oracleAutoCommit($stid,$onoff=0){
+	switch(strtolower($onoff)){
+		case 0:
+		case 'off':
+			//turn OFF autocommit
+			$r = oci_execute($stid, OCI_NO_AUTO_COMMIT);
+		break;
+		default:
+			//turn ON autocommit
+			$r = oci_execute($stid, OCI_COMMIT_ON_SUCCESS );
+		break;
+	}
+	if (!$r) {    
+		$err=json_encode(oci_error($stid));
+		echo "oracleAutoCommit error:{$err}";
+		exit;
+	}
+	return true;
+}
+
+//---------- begin function oracleCommit ----------
+/**
+* @describe commit any transactions that have not been committed
+* @param [$conn] resource - connection. defaults to $dbh_oracle global
+* @return boolean
+* @usage $ok=oracleCommit();
+*/
+function oracleCommit($conn=''){
+	if(is_resource($conn)){
+		global $dbh_oracle;
+		$conn=$dbh_oracle;
+	}
+	return oci_commit($conn);
 }
 //---------- begin function oracleAddDBRecord ----------
 /**
@@ -448,7 +542,7 @@ function oracleQueryResults($query='',$params=array()){
 	$id=0;
 	while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
 		$rec=array();
-		if($params['-idcolumn']){$rec['_id']=$id;}
+		if(isset($params['-idcolumn'])){$rec['_id']=$id;}
 		foreach ($row as $field=>$val){
 			$field=strtolower($field);
 			$rec[$field]=$val;
