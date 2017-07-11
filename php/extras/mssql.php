@@ -7,16 +7,16 @@ ini_set ( 'mssql.textlimit' , '65536' );
 ini_set ( 'mssql.textsize' , '65536' );
 global $mssql;
 $mssql=array();
-//---------- begin function hanaParseConnectParams ----------
+//---------- begin function mssqlParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
-* @param [$params] array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
 *	[-host] - mssql server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return $params array
-* @usage $params=hanaParseConnectParams($params);
+* @usage $params=mssqlParseConnectParams($params);
 */
 function mssqlParseConnectParams($params=array()){
 	global $CONFIG;
@@ -84,7 +84,8 @@ function mssqlParseConnectParams($params=array()){
 * 	[-dbname] - name of database.
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* @return connection resource and sets the global $mssql variables, conn and mssqlDBConnect.
+* @return connection resource and sets the global $dbh_mssql variable.
+* @usage $dbh_mssql=mssqlDBConnect($params);
 */
 function mssqlDBConnect($params=array()){
 	$params=mssqlParseConnectParams($params);
@@ -185,19 +186,22 @@ function mssqlAddDBRecord($params=array()){
 	}
 	$opts=array();
 	if(isset($fields['cdate'])){
-		$opts['fields'][]='CDATE';
-		$opts['values'][]=strtoupper(date('d-M-Y'));
+		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+	}
+	elseif(isset($fields['_cdate'])){
+		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
 	if(isset($fields['cuser'])){
-		$opts['fields'][]='CUSER';
-		$opts['values'][]=$USER['username'];
+		$params['cuser']=$USER['username'];
+	}
+	elseif(isset($fields['_cuser'])){
+		$params['_cuser']=$USER['username'];
 	}
 	$valstr='';
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
 		if(!isset($fields[$k])){continue;}
-		if($k=='cuser' || $k=='cdate'){continue;}
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
@@ -207,6 +211,9 @@ function mssqlAddDBRecord($params=array()){
         		$opts['values'][]=$params[$k];
         	break;
         	case 'date':
+				if($k=='cdate' || $k=='_cdate'){
+					$params[$k]=date('Y-m-d',strtotime($v));
+				}
         		$opts['values'][]="todate('{$params[$k]}')";
         	break;
         	default:
@@ -250,10 +257,16 @@ function mssqlEditDBRecord($params=array()){
 	$fields=mssqlGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['edate'])){
-		$opts['edate']=strtoupper(date('d-M-Y'));
+		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
+	}
+	elseif(isset($fields['_edate'])){
+		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
 	}
 	if(isset($fields['euser'])){
-		$opts['euser']=$USER['username'];
+		$params['euser']=$USER['username'];
+	}
+	elseif(isset($fields['_euser'])){
+		$params['_euser']=$USER['username'];
 	}
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
@@ -261,10 +274,17 @@ function mssqlEditDBRecord($params=array()){
 		if(!isset($fields[$k])){continue;}
 		if($k=='cuser' || $k=='cdate'){continue;}
 		if(is_array($params[$k])){
-            	$params[$k]=implode(':',$params[$k]);
+            $params[$k]=implode(':',$params[$k]);
 		}
-        	$params[$k]=str_replace("'","''",$params[$k]);
-        	$updates[]="upper({$k})=upper('{$params[$k]}')";
+		switch(strtolower($fields[$k]['type'])){
+        	case 'date':
+				if($k=='edate' || $k=='_edate'){
+					$params[$k]=date('Y-m-d',strtotime($v));
+				}
+        	break;
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+        $updates[]="upper({$k})=upper('{$params[$k]}')";
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
@@ -373,6 +393,16 @@ function mssqlGetDBTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo',$
     }
 	return $keys;
 }
+//---------- begin function mssqlGetDBFieldInfo ----------
+/**
+* @describe returns an array of field info. fieldname is the key, Each field returns name, type, length, num, default
+* @param $params array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return boolean returns true on success
+* @usage $fieldinfo=mssqlGetDBFieldInfo('abcschema.abc');
+*/
 function mssqlGetDBFieldInfo($table,$catalog='TASKEAssist',$owner='dbo'){
 	$query="
 		SELECT
@@ -393,14 +423,14 @@ function mssqlGetDBFieldInfo($table,$catalog='TASKEAssist',$owner='dbo'){
 	$fields=array();
 	foreach($recs as $rec){
 		$name=strtolower($rec['column_name']);
+		//name, type, length, num, default
 		$fields[$name]=array(
-			'_dbseq'	=> $rec['ordinal_position'],
-		 	'_dbname'	=> $name,
-		 	'_dbdefault'=> $rec['column_default'],
-			'_dbnull'	=> $rec['is_nullable'],
-			'_dbmax'	=> $rec['character_maximum_length'],
-			'_dbtype'	=> $rec['data_type'],
-			'_dblen'	=> $rec['character_maximum_length'],
+		 	'name'		=> $name,
+		 	'type'		=> $rec['data_type'],
+			'length'	=> $rec['character_maximum_length'],
+			'num'		=> $rec['ordinal_position'],
+			'default'	=> $rec['column_default'],
+			'nullable'	=> $rec['is_nullable']
 			);
 		}
     ksort($fields);
