@@ -1,10 +1,12 @@
 <?php
-
-ini_set('mssql.charset', 'UTF-8');
-ini_set('mssql.max_persistent',5);
-ini_set('mssql.secure_connection ',0);
-ini_set ( 'mssql.textlimit' , '65536' );
-ini_set ( 'mssql.textsize' , '65536' );
+//settings for old PHP versions that use mssql_connect
+if((integer)phpversion() < 7){
+	ini_set('mssql.charset', 'UTF-8');
+	ini_set('mssql.max_persistent',5);
+	ini_set('mssql.secure_connection ',0);
+	ini_set ( 'mssql.textlimit' , '65536' );
+	ini_set ( 'mssql.textsize' , '65536' );
+}
 global $mssql;
 $mssql=array();
 //---------- begin function mssqlParseConnectParams ----------
@@ -20,6 +22,7 @@ $mssql=array();
 */
 function mssqlParseConnectParams($params=array()){
 	global $CONFIG;
+	//dbhost
 	if(!isset($params['-dbhost'])){
 		if(isset($CONFIG['dbhost_mssql'])){
 			$params['-dbhost']=$CONFIG['dbhost_mssql'];
@@ -33,19 +36,8 @@ function mssqlParseConnectParams($params=array()){
 	else{
 		$params['-dbhost_source']="passed in";
 	}
-	if(!isset($params['-dbname'])){
-		if(isset($CONFIG['dbname_mssql'])){
-			$params['-dbname']=$CONFIG['dbname_mssql'];
-			$params['-dbname_source']="CONFIG dbname_mssql";
-		}
-		elseif(isset($CONFIG['mssql_dbname'])){
-			$params['-dbname']=$CONFIG['mssql_dbname'];
-			$params['-dbname_source']="CONFIG mssql_dbname";
-		}
-	}
-	else{
-		$params['-dbname_source']="passed in";
-	}
+	$CONFIG['mssql_dbhost']=$params['-dbhost'];
+	//dbuser
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_mssql'])){
 			$params['-dbuser']=$CONFIG['dbuser_mssql'];
@@ -59,6 +51,7 @@ function mssqlParseConnectParams($params=array()){
 	else{
 		$params['-dbuser_source']="passed in";
 	}
+	//dbpass
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_mssql'])){
 			$params['-dbpass']=$CONFIG['dbpass_mssql'];
@@ -72,6 +65,91 @@ function mssqlParseConnectParams($params=array()){
 	else{
 		$params['-dbpass_source']="passed in";
 	}
+
+	//connect
+	if(!isset($params['-connect'])){
+		if(isset($CONFIG['mssql_connect'])){
+			$params['-connect']=$CONFIG['mssql_connect'];
+			$params['-connect_source']="CONFIG mssql_connect";
+		}
+		elseif(isset($CONFIG['connect_mssql'])){
+			$params['-connect']=$CONFIG['connect_mssql'];
+			$params['-connect_source']="CONFIG connect_mssql";
+		}
+		else{
+			//build connect - https://docs.microsoft.com/en-us/sql/connect/php/connection-options
+			//database - dbname
+			$dbname='';
+			if(isset($params['-dbname'])){$dbname=$params['-dbname'];}
+			elseif(isset($CONFIG['mssql_dbname'])){$dbname=$CONFIG['mssql_dbname'];}
+			elseif(isset($CONFIG['dbname_mssql'])){$dbname=$CONFIG['dbname_mssql'];}
+			$CONFIG['mssql_dbname']=$dbname;
+			if(!strlen($dbname)){return $params;}
+			//character_set
+			$character_set='UTF-8';
+			if(isset($params['-character_set'])){$character_set=$params['-character_set'];}
+			elseif(isset($CONFIG['mssql_character_set'])){$character_set=$CONFIG['mssql_character_set'];}
+			elseif(isset($CONFIG['character_set_mssql'])){$character_set=$CONFIG['character_set_mssql'];}
+			//return_dates_as_strings
+			$return_dates_as_strings=true;
+			if(isset($params['-return_dates_as_strings'])){$return_dates_as_strings=$params['-return_dates_as_strings'];}
+			elseif(isset($CONFIG['mssql_return_dates_as_strings'])){$return_dates_as_strings=$CONFIG['mssql_return_dates_as_strings'];}
+			elseif(isset($CONFIG['return_dates_as_strings_mssql'])){$return_dates_as_strings=$CONFIG['return_dates_as_strings_mssql'];}
+			$connect_data = array(
+				'Database'				=> $dbname,
+				'CharacterSet' 			=> $character_set,
+				'ReturnDatesAsStrings' 	=> $return_dates_as_strings
+			);
+			//application_intent - ReadOnly or readWrite - Defaults to ReadWrite
+			if(isset($params['-application_intent'])){$connect_data['ApplicationIntent']=$params['-application_intent'];}
+			elseif(isset($CONFIG['mssql_application_intent'])){$connect_data['ApplicationIntent']=$CONFIG['mssql_application_intent'];}
+			elseif(isset($CONFIG['application_intent_mssql'])){$connect_data['ApplicationIntent']=$CONFIG['application_intent_mssql'];}
+			//Encrypt - communication with SQL Server is encrypted (1 or true) or unencrypted (0 or false) - defaults to 0
+			if(isset($params['-encrypt'])){$connect_data['Encrypt']=$params['-encrypt'];}
+			elseif(isset($CONFIG['mssql_encrypt'])){$connect_data['Encrypt']=$CONFIG['mssql_encrypt'];}
+			elseif(isset($CONFIG['encrypt_mssql'])){$connect_data['Encrypt']=$CONFIG['encrypt_mssql'];}
+			//LoginTimeout - Specifies the number of seconds to wait before failing the connection attempt - defaults to no timeout
+			if(isset($params['-login_timeout'])){$connect_data['LoginTimeout']=$params['-login_timeout'];}
+			elseif(isset($CONFIG['mssql_login_timeout'])){$connect_data['LoginTimeout']=$CONFIG['mssql_login_timeout'];}
+			elseif(isset($CONFIG['login_timeout_mssql'])){$connect_data['LoginTimeout']=$CONFIG['login_timeout_mssql'];}
+			//TraceFile - Specifies the path for the file used for trace data
+			if(isset($params['-trace_file'])){$connect_data['TraceFile']=$params['-trace_file'];}
+			elseif(isset($CONFIG['mssql_trace_file'])){$connect_data['TraceFile']=$CONFIG['mssql_trace_file'];}
+			elseif(isset($CONFIG['trace_file_mssql'])){$connect_data['TraceFile']=$CONFIG['trace_file_mssql'];}
+			//TraceOn - ODBC tracing is enabled (1 or true) or disabled (0 or false) - defaults to false
+			if(isset($params['-trace_on'])){$connect_data['TraceOn']=$params['-trace_on'];}
+			elseif(isset($CONFIG['mssql_trace_on'])){$connect_data['TraceOn']=$CONFIG['mssql_trace_on'];}
+			elseif(isset($CONFIG['trace_on_mssql'])){$connect_data['TraceOn']=$CONFIG['trace_on_mssql'];}
+			//WSID - the name of the computer for tracing.
+			if(isset($params['-wsid'])){$connect_data['WSID']=$params['-wsid'];}
+			elseif(isset($CONFIG['mssql_wsid'])){$connect_data['WSID']=$CONFIG['mssql_wsid'];}
+			elseif(isset($CONFIG['wsid_mssql'])){$connect_data['WSID']=$CONFIG['wsid_mssql'];}
+			//TrustServerCertificate - trust (1 or true) or reject (0 or false) a self-signed server certificate - defaults to false
+			if(isset($params['-trust_server_certificate'])){$connect_data['TrustServerCertificate']=$params['-trust_server_certificate'];}
+			elseif(isset($CONFIG['mssql_trust_server_certificate'])){$connect_data['TrustServerCertificate']=$CONFIG['mssql_trust_server_certificate'];}
+			elseif(isset($CONFIG['trust_server_certificate_mssql'])){$connect_data['TrustServerCertificate']=$CONFIG['trust_server_certificate_mssql'];}
+			$params['-connect']=$connect_data;
+			$params['-connect_source']="manual";
+		}
+	}
+	else{
+		$params['-connect_source']="passed in";
+	}
+	if(isset($params['-connect']) && !is_array($params['-connect']) && strlen($params['-connect'])){
+		//turn string into an array - key=value;key=value;
+		$parts=preg_split('/[\;\,\&]+/',$params['-connect']);
+		$params['-connect']=array();
+		foreach($parts as $part){
+			list($k,$v)=preg_split('/\=/',$part);
+			$k=trim($k);
+			$v=trim($v);
+			$params['-connect'][$k]=$v;
+		}
+	}
+	if(!isset($CONFIG['mssql_dbname']) && isset($params['-dbname'])){
+		$CONFIG['mssql_dbname']=$params['-dbname'];
+	}
+	$CONFIG['mssql_dbname']=$dbname;
 	return $params;
 }
 
@@ -89,26 +167,30 @@ function mssqlParseConnectParams($params=array()){
 */
 function mssqlDBConnect($params=array()){
 	$params=mssqlParseConnectParams($params);
-	if(!isset($params['-dbname'])){return $params;}
+	if(!isset($params['-dbname']) && !isset($params['-connect'])){
+		echo "mssqlDBConnect error: no connect params".printValue($params);
+		exit;
+	}
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		//$serverName = "serverName\sqlexpress"; //serverName\instanceName
 		//If values for the UID and PWD keys are not specified, the connection will be attempted using Windows Authentication.
-		$connectionInfo = array(
-			'Database'				=> $params['-dbname'],
-			'CharacterSet' 			=> 'UTF-8',
-			'ReturnDatesAsStrings' 	=> true
-			);
+		if(!isset($params['-connect'])){
+			echo "mssqlDBConnect error: no connect params".printValue($params);
+			exit;
+		}
+		$params['phpversion']=phpversion();
 		if(isset($params['-dbuser']) && strlen($params['-dbuser'])){
-			$connectionInfo['UID']=$params['-dbuser'];
+			$params['-connect']['UID']=$params['-dbuser'];
 		}
 		if(isset($params['-dbpass']) && strlen($params['-dbpass'])){
-			$connectionInfo['PWD']=$params['-dbpass'];
+			$params['-connect']['PWD']=$params['-dbpass'];
+		}
+		if(isset($params['-single'])){
+			$params['-connect']['ConnectionPooling']=false;
 		}
 		try{
-			//echo $params['-dbhost'].printValue($connectionInfo);
-			$dbh_mssql = sqlsrv_connect( $params['-dbhost'], $connectionInfo);
-			//echo "here".printValue($dbh_mssql);exit;
+			$dbh_mssql = sqlsrv_connect( $params['-dbhost'], $params['-connect']);
 			if(!is_resource($dbh_mssql)){
 				$errs=sqlsrv_errors();
 				echo "mssqlDBConnect error:".printValue($errs).printValue($params);
@@ -342,6 +424,45 @@ function mssqlGetDBDatabases($params=array()){
 	$recs = mssqlQueryResults($query,$params);
 	return $recs;
 }
+//---------- begin function mssqlGetSpaceUsed ----------
+/**
+* @describe returns an array of database_name,database_size,unallocated space as keys
+* @param [$table] - returns name,rows,reserved,data,index_size,unused as keys if table is passed in
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
+*	[-host] - mssql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array returns array of databases
+* @usage $info=mssqlGetSpaceUsed();
+*/
+function mssqlGetSpaceUsed($table='',$params=array()){
+	$query="exec sp_spaceused";
+	if(strlen($table)){$query .= " {$table}";}
+	$recs = mssqlQueryResults($query,$params);
+	return $recs[0];
+}
+//---------- begin function mssqlGetServerInfo ----------
+/**
+* @describe returns an array of server info
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
+*	[-host] - mssql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array returns a recordset of server info
+* @usage $info=mssqlGetServerInfo();
+*/
+function mssqlGetServerInfo($params=array()){
+	$query="exec sp_server_info";
+	$recs = mssqlQueryResults($query,$params);
+	$info=array();
+	foreach($recs as $rec){
+		$k=strtolower($rec['attribute_name']);
+		$info[$k]=$rec['attribute_value'];
+	}
+	return $info;
+}
 //---------- begin function mssqlGetDBTables ----------
 /**
 * @describe returns an array of tables
@@ -354,6 +475,7 @@ function mssqlGetDBDatabases($params=array()){
 * @usage $tables=mssqlGetDBTables();
 */
 function mssqlGetDBTables($params=array()){
+	global $CONFIG;
 	$query="
 	SELECT
 		table_catalog as dbname
@@ -362,15 +484,20 @@ function mssqlGetDBTables($params=array()){
         ,table_type as type
 	FROM
 		information_schema.tables
+	WHERE
+		table_type='BASE TABLE'
+		and table_catalog='{$CONFIG['mssql_dbname']}'
 	ORDER BY
 		table_name
 	";
 	$recs = mssqlQueryResults($query,$params);
-	//echo $query.printValue($recs);exit;
-	return $recs;
+	$tables=array();
+	foreach($recs as $rec){$tables[]=$rec['name'];}
+	return $tables;
 }
 
-function mssqlGetDBTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo',$params){
+function mssqlGetDBTablePrimaryKeys($table,$params=array()){
+	global $CONFIG;
 	$query="
 	SELECT
 		ccu.column_name
@@ -381,8 +508,8 @@ function mssqlGetDBTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo',$
 		information_schema.constraint_column_usage as ccu
 		ON tc.constraint_name = ccu.constraint_name
 	WHERE
-		tc.table_catalog = '{$catalog}'
-    	and tc.table_schema = '{$owner}'
+		tc.table_catalog = '{$CONFIG['mssql_dbname']}'
+    	and tc.table_schema = 'dbo'
     	and tc.table_name = '{$table}'
     	and tc.constraint_type = 'PRIMARY KEY'
 	";
@@ -401,9 +528,10 @@ function mssqlGetDBTablePrimaryKeys($table,$catalog='TASKEAssist',$owner='dbo',$
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $fieldinfo=mssqlGetDBFieldInfo('abcschema.abc');
+* @usage $fieldinfo=mssqlGetDBFieldInfo('test');
 */
-function mssqlGetDBFieldInfo($table,$catalog='TASKEAssist',$owner='dbo'){
+function mssqlGetDBFieldInfo($table,$params=array()){
+	global $CONFIG;
 	$query="
 		SELECT
 			COLUMN_NAME
@@ -415,12 +543,13 @@ function mssqlGetDBFieldInfo($table,$catalog='TASKEAssist',$owner='dbo'){
 		FROM
 			INFORMATION_SCHEMA.COLUMNS (nolock)
 		WHERE
-			table_catalog = '{$catalog}'
-    		and table_schema = '{$owner}'
+			table_catalog = '{$CONFIG['mssql_dbname']}'
+    		and table_schema = 'dbo'
 			and table_name = '{$table}'
 		";
 	$recs=mssqlQueryResults($query,$params);
 	$fields=array();
+	$pkeys=mssqlGetDBTablePrimaryKeys($table,$params);
 	foreach($recs as $rec){
 		$name=strtolower($rec['column_name']);
 		//name, type, length, num, default
@@ -431,8 +560,15 @@ function mssqlGetDBFieldInfo($table,$catalog='TASKEAssist',$owner='dbo'){
 			'num'		=> $rec['ordinal_position'],
 			'default'	=> $rec['column_default'],
 			'nullable'	=> $rec['is_nullable']
-			);
+		);
+		//add primary_key flag
+		if(in_array($name,$pkeys)){
+			$fields[$name]['primary_key']=true;
 		}
+		else{
+			$fields[$name]['primary_key']=false;
+		}
+	}
     ksort($fields);
 	return $fields;
 }
