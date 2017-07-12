@@ -54,15 +54,15 @@ function oracleParseConnectParams($params=array()){
 		}
 		else{
 			//build connect
-			$host='';
-			if(isset($params['-host'])){$host=$params['-host'];}
-			elseif(isset($CONFIG['oracle_host'])){$host=$CONFIG['oracle_host'];}
-			elseif(isset($CONFIG['host_oracle'])){$host=$CONFIG['host_oracle'];}
-			if(!strlen($host)){return $params;}
-			$tcp='TCP';
-			if(isset($params['-tcp'])){$tcp=$params['-tcp'];}
-			elseif(isset($CONFIG['oracle_tcp'])){$tcp=$CONFIG['oracle_tcp'];}
-			elseif(isset($CONFIG['tcp_oracle'])){$tcp=$CONFIG['tcp_oracle'];}
+			$dbhost='';
+			if(isset($params['-dbhost'])){$dbhost=$params['-dbhost'];}
+			elseif(isset($CONFIG['oracle_dbhost'])){$dbhost=$CONFIG['oracle_dbhost'];}
+			elseif(isset($CONFIG['dbhost_oracle'])){$dbhost=$CONFIG['dbhost_oracle'];}
+			if(!strlen($dbhost)){return $params;}
+			$protocol='TCP';
+			if(isset($params['-protocol'])){$tcp=$params['-protocol'];}
+			elseif(isset($CONFIG['oracle_protocol'])){$tcp=$CONFIG['oracle_protocol'];}
+			elseif(isset($CONFIG['protocol_oracle'])){$tcp=$CONFIG['protocol_oracle'];}
 			$port='1521';
 			if(isset($params['-port'])){$port=$params['-port'];}
 			elseif(isset($CONFIG['oracle_port'])){$port=$CONFIG['oracle_port'];}
@@ -97,7 +97,7 @@ function oracleParseConnectParams($params=array()){
 			elseif(isset($CONFIG['oracle_rdb_database'])){$connect_data.="(RDB_DATABASE={$CONFIG['oracle_rdb_database']})";}
 			elseif(isset($CONFIG['rdb_database_oracle'])){$connect_data.="(RDB_DATABASE={$CONFIG['rdb_database_oracle']})";}
 			if(!strlen($connect_data)){return $params;}
-			$params['-connect']="(DESCRIPTION=(ADDRESS=(PROTOCOL = {$tcp})(HOST = {$host})(PORT={$port}))(CONNECT_DATA={$connect_data}))";
+			$params['-connect']="(DESCRIPTION=(ADDRESS=(PROTOCOL = {$protocol})(HOST = {$dbhost})(PORT={$port}))(CONNECT_DATA={$connect_data}))";
 			$params['-connect_source']="tcp,host,port";
 		}
 	}
@@ -116,6 +116,14 @@ function oracleParseConnectParams($params=array()){
 * 	[-dbpass] - password
 * @return connection resource and sets the global $dbh_oracle variable
 * @usage $dbh_oracle=oracleDBConnect($params);
+* @usage singe query usage
+* 	$conn=oracleDBConnect(array('-single'=>1));
+* 		$stid = oci_parse($conn, 'select 1,2,3 from dual');
+* 		oci_execute($stid);
+* 		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+* 			echo printValue($row);
+* 		}
+* 	oci_close($conn);
 */
 function oracleDBConnect($params=array()){
 	if(!isset($params['-port'])){$params['-port']=1521;}
@@ -209,7 +217,6 @@ function oracleCommit($conn=''){
 */
 function oracleAddDBRecord($params){
 	global $USER;
-	global $dbh_oracle;
 	if(!isset($params['-table'])){return 'oracleAddRecord error: No table specified.';}
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$sequence='';
@@ -348,7 +355,7 @@ ENDOFQUERY;
 	return oracleQueryResults($query,$params);
 }
 
-function oracleGetActiveSessionCount($seconds=0){
+function oracleGetActiveSessionCount($params=array()){
 	$query="
 		SELECT
 			count(*) cnt
@@ -357,10 +364,10 @@ function oracleGetActiveSessionCount($seconds=0){
 			sess.type='USER'
 			and sess.status='ACTIVE'
 	";
-	if($seconds > 0){
-		$query .= " AND sess.LAST_CALL_ET >= {$seconds}";
+	if(isset($params['-seconds']) && isNum($params['-seconds'])){
+		$query .= " AND sess.LAST_CALL_ET >= {$params['-seconds']}";
 	}
-	$recs=oracleQueryResults($query);
+	$recs=oracleQueryResults($query,$params);
 	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
 	return $query;
 }
@@ -370,38 +377,40 @@ function oracleGetActiveSessionCount($seconds=0){
 * @return array
 *	dbname, owner, name, type
 */
-function oracleGetDBTables(){
-	$query="
-		SELECT
-			distinct table_name,owner
-		FROM
-			dba_tab_columns
-		ORDER BY
+function oracleGetDBTables($params=array()){
+	global $CONFIG;
+	$query=<<<ENDOFQUERY
+		SELECT 
+			owner,table_name,last_analyzed,num_rows,pct_free 
+		FROM 
+			all_tables 
+		WHERE 
+			owner not in ('SYS','SYSTEM') 
+			and tablespace_name not in ('SYS','SYSAUX','SYSTEM') 
+			and status='VALID'
+		ORDER BY 
 			owner,table_name
-	";
-	$query .= ' ';
-	$tmp = oracleQueryResults($query);
-	$tmp2=array();
-	foreach($tmp as $rec){
-     	if(preg_match('/\$/i',$rec['table_name'])){continue;}
-     	if(!isset($recs[$rec['owner']]['name'])){
-          	$tmp2[$rec['owner']]['owner']=$rec['owner'];
-		}
-     	$tmp2[$rec['owner']]['tables'][]=array(
-		 	'owner'	=> $rec['owner'],
-		 	'name'	=> $rec['table_name']
-		 );
+ENDOFQUERY;
+	$recs = oracleQueryResults($query,$params);
+	$tables=array();
+	foreach($recs as $rec){
+		$tables[]="{$rec['owner']}.{$rec['table_name']}";
 	}
-	$recs=array();
-	foreach($tmp2 as $tmp){$recs[]=$tmp;}
-	return $recs;
+	return $tables;
 }
-function oracleGetDBTablePrimaryKeys($table,$owner){
+function oracleGetDBTablePrimaryKeys($table,$params=array()){
+	$parts=preg_split('/\./',$table);
+	$table=array_pop($parts);
 	$table=str_replace("'","''",$table);
 	$table=strtoupper($table);
-	$owner=str_replace("'","''",$owner);
-	$owner=strtoupper($owner);
-	$query="
+	if(count($parts)){
+		$owner=array_pop($parts);
+		$owner=str_replace("'","''",$owner);
+		$owner=strtoupper($owner);
+		$owner_filter="AND upper(cols.owner) = '{$owner}'";
+	}
+	else{$owner_filter=='';}
+	$query=<<<ENDOFQUERY
 	SELECT
   		cols.column_name
 		,cols.position
@@ -410,12 +419,12 @@ function oracleGetDBTablePrimaryKeys($table,$owner){
 	FROM all_constraints cons, all_cons_columns cols
 	WHERE
 		upper(cols.table_name) = '{$table}'
-		AND upper(cols.owner) = '{$owner}'
+		{$owner_filter}
 		AND cons.constraint_type = 'P'
 		AND cons.constraint_name = cols.constraint_name
 		AND cons.owner = cols.owner
 	ORDER BY cols.position
-	";
+ENDOFQUERY;
 	$tmp = oracleQueryResults($query);
 	$keys=array();
 	foreach($tmp as $rec){
@@ -423,23 +432,18 @@ function oracleGetDBTablePrimaryKeys($table,$owner){
     }
 	return $keys;
 }
-function oracleGetDBFieldInfo($table,$owner=''){
-	$table=str_replace("'","''",$table);
-	$table=strtoupper($table);
-	global $oracle;
-	if(!$oracle['oracleDBConnect']){
-		return "oracleQueryResults Error: No connection. call oracleDBConnect first.";
+function oracleGetDBFieldInfo($table,$params=array()){
+	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
 	}
-	$dbh_oracle=oracleDBConnect($oracle['oracleDBConnect']);
 	if(!$dbh_oracle){
-		return "oracleQueryResults Error: No connection. call oracleDBConnect first.";
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleQueryResults Connect Error",$e));
+    	return;
 	}
-	if(strlen($owner)){
-		$owner=str_replace("'","''",$owner);
-		$owner=strtoupper($owner);
-		$owner.='.';
-		}
-	$stid = oci_parse($dbh_oracle, "select * from {$owner}{$table} where 1=0");
+	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
+	$stid = oci_parse($dbh_oracle, "select * from {$table} where 1=0");
 	oci_execute($stid, OCI_DESCRIBE_ONLY);
 	$ncols = oci_num_fields($stid);
 	$fields=array();
@@ -447,7 +451,6 @@ function oracleGetDBFieldInfo($table,$owner=''){
 		$name=oci_field_name($stid, $i);
 		$field=array(
 			'table'	=> $table,
-			'owner'	=> $owner,
 			'name'	=> $name,
 			'type'	=> oci_field_type($stid, $i),
 			'precision'	=> oci_field_precision($stid, $i),
@@ -455,6 +458,12 @@ function oracleGetDBFieldInfo($table,$owner=''){
 			'length'	=> oci_field_size($stid, $i),
 			//'type_raw'	=> oci_field_type_raw($stid, $i),
 		);
+		if(in_array($name,$pkeys)){
+			$field['primary_key']=true;
+		}
+		else{
+			$field['primary_key']=false;
+			}
 		$name=strtolower($name);
 	    $fields[$name]=$field;
 	}
@@ -493,7 +502,7 @@ function oracleQueryResults($query='',$params=array()){
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if (!$stid) {
-    	$e = oci_error($dbh_oracle);
+    	$e = json_encode(oci_error($dbh_oracle));
 		debugValue(array('OracleQueryResults Parse Error',$e));
 		oci_close($dbh_oracle);
     	return;
@@ -523,7 +532,7 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	$r = oci_execute($stid);
 	if (!$r) {
-		$e = oci_error($stid);
+		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e));
 	    oci_free_statement($stid);
 	    if($params['setmodule']){
@@ -555,4 +564,79 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	oci_close($dbh_oracle);
 	return $recs;
+}
+//---------- begin function oracleExecuteSQL ----------
+/**
+* @describe executes query and returns succes or error
+* @param $query string - SQL query to execute
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
+*	[-host] - mssql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	[module] - module to set query against. Defaults to 'waSQL'
+* 	[action] - action to set query against. Defaults to 'oracleExecuteSQL'
+* 	[id] - identifier to set query against. Defaults to current user
+* 	[setmodule] boolean - set to false to not set module, action, and id. Defaults to true
+* 	[-idcolumn] boolean - set to true to include row number as _id column
+* @return array - returns boolean or error
+* @usage $ok=oracleExecuteSQL($query);
+*/
+function oracleExecuteSQL($query='',$params=array()){
+	global $USER;
+	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleQueryResults Connect Error",$e));
+    	return;
+	}
+	oci_rollback($dbh_oracle);
+	if(!isset($params['setmodule'])){$params['setmodule']=true;}
+	$stid = oci_parse($dbh_oracle, $query);
+	if (!$stid) {
+    	$e = json_encode(oci_error($dbh_oracle));
+		debugValue(array('OracleQueryResults Parse Error',$e));
+		oci_close($dbh_oracle);
+    	return;
+	}
+	if($params['setmodule']){
+		if(!isset($params['module'])){$params['module']='waSQL';}
+		if(!isset($params['action'])){
+			if(isset($_REQUEST['AjaxRequestUniqueId'])){$params['action']='oracleExecuteSQL (AJAX): '.$_REQUEST['AjaxRequestUniqueId'];}
+			else{$params['action']='oracleExecuteSQL';}
+		}
+		if(!isset($params['id'])){$params['id']=$USER['username'];}
+		oci_set_module_name($dbh_oracle, $params['module']);
+		oci_set_action($dbh_oracle, $params['action']);
+		oci_set_client_identifier($dbh_oracle, $params['id']);
+	}
+	// check for non-select query
+	if(preg_match('/^(update|insert|alter)/is',trim($query))){
+		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
+    	oci_free_statement($stid);
+    	if($params['setmodule']){
+			oci_set_module_name($dbh_oracle, 'idle');
+			oci_set_action($dbh_oracle, 'idle');
+			oci_set_client_identifier($dbh_oracle, 'idle');
+		}
+		oci_close($dbh_oracle);
+    	return;
+	}
+	$r = oci_execute($stid);
+	if (!$r) {
+		$e = json_encode(oci_error($stid));
+	    
+	    oci_free_statement($stid);
+	    if($params['setmodule']){
+			oci_set_module_name($dbh_oracle, 'idle');
+			oci_set_action($dbh_oracle, 'idle');
+			oci_set_client_identifier($dbh_oracle, 'idle');
+		}
+		oci_close($dbh_oracle);
+    	return;
+	}
+	return true;
 }
