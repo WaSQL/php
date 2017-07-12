@@ -6309,7 +6309,7 @@ function getGUID($force=0){
 		$guid=sha1($t1+$t2+$t3);
 		}
 	elseif(function_exists('session_id')){
-    	$t1 = session_id();
+    	$t1 = (integer)session_id();
     	$t2=(integer)(rand(0,round((microtime(true)/1000),0)));
 		$t3=microtime(true);
 		$guid=sha1($t1+$t2+$t3);
