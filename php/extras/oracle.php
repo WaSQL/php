@@ -96,7 +96,6 @@ function oracleParseConnectParams($params=array()){
 			if(isset($params['-rdb_database'])){$connect_data.="(RDB_DATABASE={$params['-rdb_database']})";}
 			elseif(isset($CONFIG['oracle_rdb_database'])){$connect_data.="(RDB_DATABASE={$CONFIG['oracle_rdb_database']})";}
 			elseif(isset($CONFIG['rdb_database_oracle'])){$connect_data.="(RDB_DATABASE={$CONFIG['rdb_database_oracle']})";}
-
 			if(!strlen($connect_data)){return $params;}
 			$params['-connect']="(DESCRIPTION=(ADDRESS=(PROTOCOL = {$tcp})(HOST = {$host})(PORT={$port}))(CONNECT_DATA={$connect_data}))";
 			$params['-connect_source']="tcp,host,port";
@@ -105,8 +104,6 @@ function oracleParseConnectParams($params=array()){
 	else{
 		$params['-connect_source']="passed in";
 	}
-	
-	
 	return $params;
 }
 //---------- begin function oracleDBConnect ----------
@@ -127,7 +124,7 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-connect'])){
 		echo "oracleDBConnect error: no connect params".printValue($params);
 		exit;
-		}
+	}
 	if(isset($params['-single'])){
 		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],'AL32UTF8');
 		if(!is_resource($dbh_single)){
@@ -174,7 +171,7 @@ function oracleAutoCommit($stid,$onoff=0){
 			$r = oci_execute($stid, OCI_COMMIT_ON_SUCCESS );
 		break;
 	}
-	if (!$r) {    
+	if (!$r) {
 		$err=json_encode(oci_error($stid));
 		echo "oracleAutoCommit error:{$err}";
 		exit;
