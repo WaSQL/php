@@ -198,7 +198,7 @@ function fileChanged($afile){
 	);
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
-	file_put_contents('postedit_change.post',printValue($post));
+	file_put_contents('postedit_change.post',json_encode($post));
 	file_put_contents('postedit_change.result',$post['body']);
 POSTFILE:
 	$xml=array();
@@ -273,8 +273,7 @@ function errorMessage($msg){
 	global $settings;
 	global $progpath;
 	$msg=trim($msg);
-	echo "Success: {$msg}".PHP_EOL;
-	echo $progpath;
+	echo " - Error: {$msg}".PHP_EOL;
 	if(isWindows()){
 		if(isset($settings['sound']['error'])){
 			if(is_file("{$progpath}/{$settings['sound']['error']}")){
@@ -307,8 +306,7 @@ function successMessage($msg){
 	global $settings;
 	global $progpath;
 	$msg=trim($msg);
-	echo "Success: {$msg}".PHP_EOL;
-	echo $progpath;
+	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
 		if(isset($settings['sound']['success'])){
 			if(is_file("{$progpath}/{$settings['sound']['success']}")){
