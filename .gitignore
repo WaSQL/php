@@ -1,3 +1,4 @@
 config.xml
 .htaccess
 *.result
+*.post
