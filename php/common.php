@@ -10183,13 +10183,20 @@ function printValue($v='',$exit=0){
 	$type=strtolower(gettype($v));
 	$plaintypes=array('string','integer');
 	if(in_array($type,$plaintypes)){return $v;}
-	$rtn='';
-	if($exit != -1){$rtn .= '<pre class="w_times" type="'.$type.'">'."\n";}
-	ob_start();
-	print_r($v);
-	$rtn .= ob_get_contents();
-	ob_clean();
-	if($exit != -1){$rtn .= "\n</pre>\n";}
+	$type=ucfirst($type);
+	$rtn="{$type} object:";
+	if(!isCLI()){$rtn .= '<pre class="w_times" type="'.$type.'">'."\n";}
+	$j=json_encode($v,JSON_PRETTY_PRINT);
+	if(strlen($j)){
+		$rtn .= stripslashes($j);
+	}
+	else{
+		ob_start();
+		print_r($v);
+		$rtn .= ob_get_contents();
+		ob_clean();
+	}
+	if(isCLI()){$rtn .= "\n</pre>\n";}
     if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
