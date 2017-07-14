@@ -54,6 +54,7 @@ if (!$got_lock) {
 //get the files
 $afolder=writeFiles();
 echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
+$ok=soundAlarm('ready');
 while(1){
 	sleep(1);
 	foreach($mtimes as $afile=>$mtime){
@@ -99,7 +100,7 @@ function writeFiles(){
 	if(preg_match('/\"\_login\"/is',$post['body'])){
     	abortMessage("INVALID LOGIN CREDENTIALS");
 	}
-	file_put_contents('postedit_pages.result',$post['body']);
+	file_put_contents("{$progpath}/postedit_pages.result",$post['body']);
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
@@ -167,6 +168,7 @@ function buildHostUrl(){
 	return $url;
 }
 function fileChanged($afile){
+	global $progpath;
 	global $hosts;
 	global $chost;
 	global $mtimes;
@@ -198,8 +200,8 @@ function fileChanged($afile){
 	);
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
-	file_put_contents('postedit_change.post',json_encode($post));
-	file_put_contents('postedit_change.result',$post['body']);
+	file_put_contents("{$progpath}/postedit_change.post",printValue($post));
+	file_put_contents("{$progpath}/postedit_change.result",$post['body']);
 POSTFILE:
 	$xml=array();
 	$json=array();
@@ -243,62 +245,15 @@ function abortMessage($msg){
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	echo $progpath;
 	if(isWindows()){
-		if(isset($settings['sound']['abort'])){
-			if(is_file("{$progpath}/{$settings['sound']['abort']}")){
-				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['abort']}";
-				$ok=exec($cmd);
-				exit;
-			}
-			elseif(isset($settings['sound']['gender'])){
-				switch(strtolower($settings['sound']['gender'])){
-					case 'f':
-					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['abort']}\"";
-					break;
-					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['abort']}\"";
-					break;
-				}
-				$ok=exec($cmd);
-				exit;
-			}
-			else{
-				echo "\x07\x07\x07\x07\x07";
-			}
-		}
+		$ok=soundAlarm('abort');
 	}
 	exit;
 }
 function errorMessage($msg){
-	global $settings;
-	global $progpath;
 	$msg=trim($msg);
 	echo " - Error: {$msg}".PHP_EOL;
 	if(isWindows()){
-		if(isset($settings['sound']['error'])){
-			if(is_file("{$progpath}/{$settings['sound']['error']}")){
-				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['error']}";
-				$ok=exec($cmd);
-				return;
-			}
-			elseif(isset($settings['sound']['gender'])){
-				switch(strtolower($settings['sound']['gender'])){
-					case 'f':
-					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['error']}\"";
-					break;
-					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['error']}\"";
-					break;
-				}
-				$ok=exec($cmd);
-				return;;
-			}
-			else{
-				echo "\x07";
-				return;
-			}
-		}
+		$ok=soundAlarm('error');
 	}
 	return;
 }
@@ -308,32 +263,37 @@ function successMessage($msg){
 	$msg=trim($msg);
 	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
-		if(isset($settings['sound']['success'])){
-			if(is_file("{$progpath}/{$settings['sound']['success']}")){
-				$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound']['success']}";
-				$ok=exec($cmd);
-				return;
-			}
-			elseif(isset($settings['sound']['gender'])){
-				switch(strtolower($settings['sound']['gender'])){
-					case 'f':
-					case 'female':
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound']['success']}\"";
-					break;
-					default:
-						$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound']['success']}\"";
-					break;
-				}
-				$ok=exec($cmd);
-				return;;
-			}
-			else{
-				echo "\x07";
-				return;
-			}
-		}
+		$ok=soundAlarm('success');
 	}
 	return;
+}
+function soundAlarm($type='success'){
+	global $settings;
+	global $progpath;
+	if(isset($settings['sound'][$type])){
+		if(is_file("{$progpath}/{$settings['sound'][$type]}")){
+			$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound'][$type]}";
+			$ok=exec($cmd);
+			return;
+		}
+		elseif(isset($settings['sound']['gender'])){
+			switch(strtolower($settings['sound']['gender'])){
+				case 'f':
+				case 'female':
+					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound'][$type]}\"";
+				break;
+				default:
+					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound'][$type]}\"";
+				break;
+			}
+			$ok=exec($cmd);
+			return;;
+		}
+		else{
+			echo "\x07";
+			return;
+		}
+	}
 }
 function getContents($file){
 	$file=preg_replace('/\//',"\\",$file);
