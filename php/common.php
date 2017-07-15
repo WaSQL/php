@@ -1505,6 +1505,7 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
 	if(!isset($params['width'])){$params['width']=300;}
 	if(!isset($params['height'])){$params['height']=75;}
+	if(isset($params['value']) && strlen($params['value'])){$params['-value']=$params['value'];}
 	$canvas_id=$name.'_canvas';
 	$clear_id=$name.'_clear';
 	$base64image='';
@@ -1515,6 +1516,7 @@ function buildFormSignature($name,$params=array()){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" value="'.$params['-value'].'" />'."\n";
 		$rtn .= '			<input type="button" id="'.$reset_id.'" value="Reset" />'."\n";
+		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" onload="loadSignatureField(this,\''.$canvas_id.'\');" alt="signature" /></div>'.PHP_EOL;
 	}
 	$rtn .= '			<input type="button" id="'.$clear_id.'" value="Clear" />'."\n";
 	$rtn .= '		</div>'."\n";
