@@ -2804,7 +2804,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		$atts['required']="required";
 		unset($atts['_required']);
     }
-    if(isset($atts['required']) && $atts['required']==0){
+    if(isset($atts['required']) && $atts['required']!='required'){
 		unset($atts['required']);
     }
     //inputmax
