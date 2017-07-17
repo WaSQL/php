@@ -2884,3 +2884,16 @@ function wasqlMarkerInit(el,cl){
 		return false;
 	});
 }
+function resizeSignatureWidthHeight(){
+	var list=document.querySelectorAll('.w_signature');
+	for(var i=0;i<list.length;i++){
+		var pwh=getWidthHeight(list[i]);
+		list[i].width=pwh[0];
+		list[i].height=pwh[1];
+	}
+}
+/*
+ * add event handler to resize any signature canvas
+ * */
+ console.log('adding resize');
+addEventHandler(window,'resize',function(){resizeSignatureWidthHeight();});
