@@ -1491,9 +1491,10 @@ function buildFormSelectYear($name,$params=array()){
 *	The name of the field
 * @param params array
 *	options are as follows
-*	- displayname. Defaults to "Please Sign Below:"
-*	- width. Defaults to 300
-*	- height. Defaults to 75
+*	- [displayname]. Defaults to "Please Sign Below:"
+*	- [width]. Defaults to 300
+*	- [height]. Defaults to 75
+* 	- [style] - set width or height in style to override defaults
 * @return
 *	HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
 */
@@ -1522,7 +1523,17 @@ function buildFormSignature($name,$params=array()){
 	$rtn .= '		</div>'."\n";
 	$rtn .= '		'.$params['displayname']."\n";
 	$rtn .= '	</div>'."\n";
-	$rtn .= '    <canvas width="'.$params['width'].'" height="'.$params['height'].'" id="'.$canvas_id.'" data-behavior="signature" class="w_signature"></canvas>'."\n";
+	$rtn .= '    <canvas';
+	if(isset($params['style'])){
+		$rtn .= ' style="'.$params['style'].'"';
+	}
+	if(!isset($params['style']) || !preg_match('/width/i',$params['style'])){
+		$rtn .= ' width="'.$params['width'].'"';
+	}
+	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
+		$rtn .= ' height="'.$params['height'].'"';
+	}
+	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" class="w_signature"></canvas>'."\n";
 	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'."\n";
 	$rtn .= '    <input type="hidden" name="'.$name.'_inline" value="1" />'."\n";
 	return $rtn;
