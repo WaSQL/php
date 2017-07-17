@@ -1510,7 +1510,8 @@ function buildFormSignature($name,$params=array()){
 	$canvas_id=$name.'_canvas';
 	$clear_id=$name.'_clear';
 	$base64image='';
-	$rtn .= '	<div>'."\n";
+	$barid=$params['id'].'_topbar';
+	$rtn .= '	<div id="'.$barid.'">'."\n";
 	//show clear button on right
 	$rtn .= '		<div class="w_right">'."\n";
 	if(isset($params['-value']) && strlen($params['-value'])){
@@ -1533,9 +1534,10 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
 		$rtn .= ' height="'.$params['height'].'"';
 	}
-	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" class="w_signature"></canvas>'."\n";
+	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" data-barid="'.$barid.'" class="w_signature"></canvas>'."\n";
 	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'."\n";
 	$rtn .= '    <input type="hidden" name="'.$name.'_inline" value="1" />'."\n";
+	$rtn .= buildOnLoad("resizeSignatureWidthHeight();");
 	return $rtn;
 }
 //---------- begin function buildFormSlider--------------------------------------
