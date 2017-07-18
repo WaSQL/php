@@ -3743,7 +3743,7 @@ function adminMenu(){
 	$rtn .= '</li>'."\n";
 	//Database
 	$color_class=isDBStage()?'w_warning':'w_success';
-	$rtn .= '		<li class="dir"><a href="#database" onclick="return false;" class="w_topmenu"><span class="icon-database '.$color_class.'"></span><span class="hidden-xs"> Database</span></a>'."\n";
+	$rtn .= '		<li><a href="#database" onclick="return false;" class="w_topmenu"><span class="icon-database w_big '.$color_class.'"></span><span class="hidden-xs"> Database<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt w_big w_default"></span> SQL Prompt</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search w_big w_default"></span> Search</a></li>'."\n";
@@ -3783,7 +3783,7 @@ function adminMenu(){
 	ksort($group_tables);
 	sort($non_group_tables);
 	$list_table_count=count($group_tables) + count($non_group_tables);
-	$rtn .= '		<li class="dir"><a href="#tables" onclick="return false;" class="w_topmenu"><span class="icon-table w_grey w_big"></span><span class="hidden-xs"> Tables</span></a>'."\n";
+	$rtn .= '		<li><a href="#tables" onclick="return false;" class="w_topmenu"><span class="icon-table w_grey w_big"></span><span class="hidden-xs"> Tables<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list w_big"></span> List Tables</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
@@ -3835,7 +3835,7 @@ function adminMenu(){
  	//Pages
 	if(!isDBTable('_pages')){$ok=createWasqlTable('_pages');}
 	$pages=getDBRecords(array('-table'=>'_pages','-limit'=>15,'-order'=>'_edate desc,_cdate desc'));
-	$rtn .= '		<li class="dir"><a href="#pages" onclick="return false;" class="w_topmenu"><span class="icon-file-doc w_grey"></span><span class="hidden-xs"> Pages</span></a>'."\n";
+	$rtn .= '		<li><a href="#pages" onclick="return false;" class="w_topmenu"><span class="icon-file-doc w_grey w_big"></span><span class="hidden-xs"> Pages<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list w_big"></span> List Pages</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
@@ -3851,7 +3851,7 @@ function adminMenu(){
 	//Templates
 	if(!isDBTable('_templates')){$ok=createWasqlTable('_templates');}
 	$templates=getDBRecords(array('-table'=>'_templates','-limit'=>15,'-order'=>"_edate desc,_cdate desc"));
-	$rtn .= '		<li class="dir"><a href="#templates" onclick="return false;" class="w_topmenu"><span class="icon-file-docs w_big w_grey"></span><span class="hidden-xs"> Templates</span></a>'."\n";
+	$rtn .= '		<li><a href="#templates" onclick="return false;" class="w_topmenu"><span class="icon-file-docs w_big w_grey"></span><span class="hidden-xs"> Templates<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list w_big"></span> List Templates</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
@@ -3869,7 +3869,7 @@ function adminMenu(){
 	//Reports
 	if(!isDBTable('_reports')){$ok=createWasqlTable('_reports');}
 	$reports=getDBRecords(array('-table'=>'_reports','active'=>1,'menu'=>'_reports','-limit'=>15,'-order'=>'name'));
-	$rtn .= '		<li class="dir"><a href="#reports" onclick="return false;" class="w_topmenu"><span class="icon-chart-pie"></span><span class="hidden-xs hidden-sm"> Reports</span></a>'."\n";
+	$rtn .= '		<li><a href="#reports" onclick="return false;" class="w_topmenu"><span class="icon-chart-pie w_big"></span><span class="hidden-xs hidden-sm"> Reports<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul >'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list w_big"></span> List Reports</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line w_big"></span> Run Reports</a></li>'."\n";
@@ -3887,7 +3887,7 @@ function adminMenu(){
 	//Users
 	if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
 	$users=getDBRecords(array('-table'=>'_users','-limit'=>15,'-where'=>'_adate is not null','-order'=>"utype,_adate desc"));
-	$rtn .= '		<li class="dir"><a href="#users" onclick="return false;" class="w_topmenu"><span class="icon-users w_info w_big"></span><span class="hidden-xs"> Users</span></a>'."\n";
+	$rtn .= '		<li><a href="#users" onclick="return false;" class="w_topmenu"><span class="icon-users w_info w_big"></span><span class="hidden-xs"> Users<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list w_big"></span> List Users</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'."\n";
@@ -3911,7 +3911,7 @@ function adminMenu(){
 	if(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1){
 		if(!isDBTable('_cron')){$ok=createWasqlTable('_cron');}
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
-		$rtn .= '		<li class="dir"><a href="#crons" onclick="return false;" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons</span></a>'."\n";
+		$rtn .= '		<li><a href="#crons" onclick="return false;" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons<span class="icon-dir-down"></span></span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> Run History</a></li>'."\n";
@@ -3947,7 +3947,7 @@ function adminMenu(){
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li class="dir"><a href="#access" onclick="return false;" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').' Access</a>'."\n";
+		$rtn .= '		<li><a href="#access" onclick="return false;" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').'<span class="hidden-xs hidden-sm"> Access<span class="icon-dir-down"></span></span></a>'."\n";
 		$rtn .= '			<ul>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access_summary" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').' Summary</a></li>'."\n";
 		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access" class="w_topmenu">'.adminMenuIcon('/wfiles/_access_summary.gif').' Details</a></li>'."\n";
@@ -3978,7 +3978,7 @@ function adminMenu(){
 	$rtn .= '	</ul>'."\n";
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'."\n";
 	//My Profile
-	$rtn .= '		<li class="dir"><a href="#profile" onclick="return false;" class="w_topmenu"><span class="icon-user"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'</span></a>'."\n";
+	$rtn .= '		<li><a href="#profile" onclick="return false;" class="w_topmenu"><span class="icon-user w_big"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '			<ul style="width:110px;">'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
@@ -3986,7 +3986,7 @@ function adminMenu(){
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	//WaSQL
-	$rtn .= '		<li class="dir"><a href="#help" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help</span></a>'."\n";
+	$rtn .= '		<li><a href="#help" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help<span class="icon-dir-down"></span></span></a>'."\n";
 	$rtn .= '        	<ul>'."\n";
 	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
