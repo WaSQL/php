@@ -6355,7 +6355,7 @@ function getDBRecords($params=array()){
 						else{$r["{$rfield}_ex"][$xrval]=$recs[$xrval];}
                     }
 				}
-				else{
+				elseif(isset($recs[$rval])){
 					$r["{$rfield}_ex"]=$recs[$rval];
 				}
 				ksort($r);
