@@ -1,0 +1,106 @@
+<view:default>
+<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'set_process');">
+<input type="hidden" name="_menu" value="settings" />
+<input type="hidden" name="func" value="process" />
+<div class="container">
+	<div class="row">
+		<div class="col-sm-12">
+			<h2><span class="icon-gear"></span> Settings</h2>
+		</div>
+	</div>
+	<div class="row well">
+		<div class="col-sm-4">
+			<h3 class="w_nowrap">
+				<input type="checkbox" data-type="checkbox" id="wasql_crons" style="display:none;" name="wasql_crons" value="1"<?=$recs['wasql_crons']['checked'];?> />
+				<label class="icon-mark" for="wasql_crons"></label>
+				<label for="wasql_crons"><span class="hidden-xs">WaSQL</span> Crons <span class="icon-cron"></span></label>
+			</h3>
+				WaSQL crons allow you to schedule and manage externals processes - when and how often they run.
+				It also records the results of such processes.
+		</div>
+		<div class="col-sm-8">
+			<div class="row">
+				<div class="col-xs-8">
+					<h3 class="w_nowrap">
+						<input type="checkbox" data-type="checkbox" id="wasql_queries" style="display:none;" name="wasql_queries" value="1"<?=$recs['wasql_queries']['checked'];?> />
+						<label class="icon-mark" for="wasql_queries"></label>
+						<label for="wasql_queries"><span class="hidden-xs">Query</span> Monitor <span class="icon-database"></span></label>
+					</h3>
+				</div>
+				<div class="col-xs-2" style="padding:0px;">
+					<label>Days</label>
+					<input type="text" class="form-control" name="wasql_queries_days" value="<?=$recs['wasql_queries_days']['key_value'];?>" />
+				</div>
+				<div class="col-xs-2" style="padding:0px;">
+					<label>RunTime</label>
+					<input type="text" class="form-control" name="wasql_queries_time" value="<?=$recs['wasql_queries_time']['key_value'];?>" />
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12">
+				Turn Status ON to log all database queries into the _queries table.
+				Used optimize queries and determine if you need change queries, add indexes to tables, or make other adjustments to increase page load speed.
+				Set Days to the number of days to record.
+				Set Time to the minimum number of seconds before recording - 0 logs all.
+				Setting User will limit the queries to only run when that user is logged in.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row well">
+		<div class="col-sm-4">
+			<h3 class="w_nowrap">
+				<input type="checkbox" data-type="checkbox" id="wasql_access" style="display:none;" name="wasql_access" value="1"<?=$recs['wasql_access']['checked'];?> />
+				<label class="icon-mark" for="wasql_access"></label>
+				<label for="wasql_access"><span class="hidden-xs">WaSQL</span> Analytics <span class="icon-chart-line"></span></label>
+			</h3>
+				Turn Status ON to log all page views into the _access table. This is normally turned OFF. Turning it on also populate the _access_summary table.
+				Turn Search Bots on in log search bot requests. Otherwise, hits from search bots will be ignored.
+				Set dbname if you are want to write the access logs to a different database.
+		</div>
+		<div class="col-sm-8">
+			<div class="row">
+				<div class="col-xs-6">
+					<h3 class="w_nowrap">
+						<input type="checkbox" data-type="checkbox" id="wasql_synchronize" style="display:none;" name="wasql_synchronize" value="1"<?=$recs['wasql_queries']['checked'];?> />
+						<label class="icon-mark" for="wasql_synchronize"></label>
+						<label for="wasql_synchronize">Sync<span class="hidden-xs">hronize Sites</span> <span class="icon-sync"></span></label>
+					</h3>
+				</div>
+				<div class="col-xs-3" style="padding:0px;">
+					<label>Stage Site</label>
+					<?=settingsSyncSites('wasql_synchronize_master',$recs['wasql_synchronize_master']['key_value']);?>
+				</div>
+				<div class="col-xs-3" style="padding:0px;">
+					<label>Live Site</label>
+					<?=settingsSyncSites('wasql_synchronize_slave',$recs['wasql_synchronize_slave']['key_value']);?>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12">
+				Turn ON to enable synchronize manager between two databases.
+				Tables that have synchronize selected by default are _pages,_templates,_fielddata,_tabledata,_cron, and _reports.
+				The synchronize checkbox is found in the properties window of each table.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<button type="submit" class="btn btn-default btn-lg">Save Settings</button>
+		</div>
+		<div class="col-sm-8" id="set_process">
+
+		</div>
+	</div>
+</div>
+</form>
+</view:default>
+
+
+<view:processed>
+	<h4 class="w_success"><span class="icon-mark"></span> Saved</h4>
+</view:processed>
+
+
+
