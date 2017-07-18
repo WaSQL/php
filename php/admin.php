@@ -177,6 +177,7 @@ if(isAjax()){
 		case 'git':
 		case 'reports':
 		case 'htmlbox':
+		case 'settings':
 			echo adminViewPage($_REQUEST['_menu']);
 			exit;
 		break;
@@ -1506,6 +1507,7 @@ ENDOFJSONFORM;
             echo buildTableEnd();
 			break;
 		case 'settings':
+			echo adminViewPage('settings');exit;
 			global $SETTINGS;
 			echo '<div style="width:800px;padding:10px;">'."\n";
 			//update
@@ -3986,7 +3988,7 @@ function adminMenu(){
 	//WaSQL
 	$rtn .= '		<li class="dir"><a href="#help" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help</span></a>'."\n";
 	$rtn .= '        	<ul>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
+	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=json"><span class="icon-json w_big w_grey"></span> JSON Debugger</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
@@ -4013,7 +4015,8 @@ function adminMenu(){
 	$rtn .= '			</ul>'."\n";
 	$rtn .= '		</li>'."\n";
 	//Settings Link
-	//$rtn .= '     	<li style="margin-left:15px;"><a href="/php/admin.php?_menu=admin_settings" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=admin_settings\');"><span class="icon-gear"></span></a></li>'."\n";
+	$rtn .= '     	<li><a style="padding:0px 10px 0px 10px;" title="Settings" href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span></a></li>'."\n";
+	//$rtn .= '     	<li style="margin-left:15px;"><a href="/php/admin.php?_menu=settings" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=admin_settings\');"><span class="icon-gear"></span></a></li>'."\n";
 
 	//end menu
 	$rtn .= '	</ul>'."\n";
