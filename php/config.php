@@ -19,6 +19,7 @@ if(isset($xml['host']['@attributes'])){
 }
 //echo printValue($xml);exit;
 global $CONFIG;
+global $ALLCONFIG;
 $CONFIG=array();
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
 /* Load Global configurations from allhost if it exists */
@@ -57,18 +58,24 @@ foreach($checkhosts as $env){
 foreach($allhost as $key=>$val){
 	$CONFIG[$key]=$val;
 }
-if(strlen($chost)){
-	//ksort($CONFIG);echo printValue($CONFIG);exit;
-	$sameas='';
-	if(isset($ConfigXml[$chost]['sameas']) && isset($ConfigXml[$ConfigXml[$chost]['sameas']])){
-		$sameas=$ConfigXml[$chost]['sameas'];
+foreach($ConfigXml as $name=>$host){
+	foreach($allhost as $key=>$val){
+		$ALLCONFIG[$name][$key]=$val;
+	}
+	if(isset($ConfigXml[$name]['sameas']) && isset($ConfigXml[$ConfigXml[$name]['sameas']])){
+		$sameas=$ConfigXml[$name]['sameas'];
 		foreach($ConfigXml[$sameas] as $key=>$val){
-			$CONFIG[$key]=$val;
+			$ALLCONFIG[$name][$key]=$val;
+			if(strlen($chost) && $name==$chost){
+				$CONFIG[$key]=$val;
+			}
 		}
 	}
-	//ksort($CONFIG);echo printValue($CONFIG);exit;
-	foreach($ConfigXml[$chost] as $key=>$val){
-		$CONFIG[$key]=$val;
+	foreach($ConfigXml[$name] as $key=>$val){
+		$ALLCONFIG[$name][$key]=$val;
+		if(strlen($chost) && $name==$chost){
+			$CONFIG[$key]=$val;
+		}
 	}
 }
 
