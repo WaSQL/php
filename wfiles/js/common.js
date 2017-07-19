@@ -13,10 +13,10 @@ Date.prototype.stdTimezoneOffset = function() {
     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 /*
-		In the United States Daylight Saving Time begins at 2:00 a.m. local time 
+		In the United States Daylight Saving Time begins at 2:00 a.m. local time
 		on the second Sunday in March. On the first Sunday in November areas on
 		Daylight Saving Time return to Standard Time at 2:00 a.m.
-		
+
 		if mon==2 && hr > 2 then true
 		else if mon==10 && hr < 2 then true
 		else if mon >1 && mon < 11  then true
@@ -110,7 +110,7 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 	var tableEl=getObject(tableId);
 	if(undefined == tableHeight){tableHeight=400;}
 	this.initIEengine = function () {
- 
+
 		this.containerEl.style.overflowY = 'auto';
 		if (this.tableEl.parentElement.clientHeight - this.tableEl.offsetHeight < 0) {
 			this.tableEl.style.width = this.newWidth - this.scrollWidth +'px';
@@ -118,7 +118,7 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 			this.containerEl.style.overflowY = 'hidden';
 			this.tableEl.style.width = this.newWidth +'px';
 		}
- 
+
 		if (this.thead) {
 			var trs = this.thead.getElementsByTagName('tr');
 			for (x=0; x<trs.length; x++) {
@@ -126,7 +126,7 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 				trs[x].style.setExpression("top",  "this.parentElement.parentElement.parentElement.scrollTop + 'px'");
 			}
 		}
- 
+
 		if (this.tfoot) {
 			var trs = this.tfoot.getElementsByTagName('tr');
 			for (x=0; x<trs.length; x++) {
@@ -134,15 +134,15 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 				trs[x].style.setExpression("bottom",  "(this.parentElement.parentElement.offsetHeight - this.parentElement.parentElement.parentElement.clientHeight - this.parentElement.parentElement.parentElement.scrollTop) + 'px'");
 			}
 		}
- 
+
 		eval("window.attachEvent('onresize', function () { document.getElementById('" + this.tableEl.id + "').style.visibility = 'hidden'; document.getElementById('" + this.tableEl.id + "').style.visibility = 'visible'; } )");
 	};
- 
- 
+
+
 	this.initFFengine = function () {
 		this.containerEl.style.overflow = 'hidden';
 		this.tableEl.style.width = this.newWidth + 'px';
- 
+
 		var headHeight = (this.thead) ? this.thead.clientHeight : 0;
 		var footHeight = (this.tfoot) ? this.tfoot.clientHeight : 0;
 		var bodyHeight = this.tbody.clientHeight;
@@ -156,36 +156,36 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 		} else {
 			this.tbody.style.overflow = '-moz-scrollbars-none';
 		}
- 
+
 		var cellSpacing = (this.tableEl.offsetHeight - (this.tbody.clientHeight + headHeight + footHeight)) / 4;
 		this.tbody.style.height = (this.newHeight - (headHeight + cellSpacing * 2) - (footHeight + cellSpacing * 2)) + 'px';
- 
+
 	};
- 
+
 	this.tableEl = tableEl;
 	this.scrollWidth = 16;
- 
+
 	this.originalHeight = this.tableEl.clientHeight;
 	this.originalWidth = this.tableEl.clientWidth;
- 
+
 	this.newHeight = parseInt(tableHeight);
 	this.newWidth = tableWidth ? parseInt(tableWidth) : this.originalWidth;
 
 	this.tableEl.style.height = 'auto';
 	this.tableEl.removeAttribute('height');
- 
+
 	this.containerEl = this.tableEl.parentNode.insertBefore(document.createElement('div'), this.tableEl);
 	this.containerEl.appendChild(this.tableEl);
 	this.containerEl.style.height = this.newHeight + 'px';
 	this.containerEl.style.width = this.newWidth + 'px';
- 
- 
+
+
 	var thead = this.tableEl.getElementsByTagName('thead');
 	this.thead = (thead[0]) ? thead[0] : null;
- 
+
 	var tfoot = this.tableEl.getElementsByTagName('tfoot');
 	this.tfoot = (tfoot[0]) ? tfoot[0] : null;
- 
+
 	var tbody = this.tableEl.getElementsByTagName('tbody');
 	this.tbody = (tbody[0]) ? tbody[0] : null;
 
@@ -321,6 +321,13 @@ function simulateEvent(element, eventName){
     }
     return true;
 }
+//isDate
+/**
+* @describe returns true if string is a date
+* @param text string  - the date string to check
+* @return boolean
+* @usage if(isDate(txt)){...}
+*/
 function isDate(str){
 	//fix for safare
 	var d = new Date(str.replace(/-/g, "/"));
@@ -340,6 +347,13 @@ function isDate(str){
   		return false;
 	}
 }
+//isFutureDate
+/**
+* @describe returns true if string is a date in the future
+* @param text string  - the date string to check
+* @return boolean
+* @usage if(isFutureDate(txt)){...}
+*/
 function isFutureDate(str){
 	var d = new Date(str);
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
@@ -360,6 +374,13 @@ function isFutureDate(str){
   		return false;
 	}
 }
+//isPastDate
+/**
+* @describe returns true if string is a date in the past
+* @param text string  - the date string to check
+* @return boolean
+* @usage if(isPastDate(txt)){...}
+*/
 function isPastDate(str){
 	var d = new Date(str);
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
@@ -381,8 +402,12 @@ function isPastDate(str){
 	}
 }
 /* isDST - returns true if Daylight Savings Time */
+/**
+* @describe returns true if Daylight Savings Time
+* @return boolean
+* @usage if(isDST(txt)){...}
+*/
 function isDST(){
-	//info: returns true if Daylight Savings Time
 	var today = new Date;
 	var yr = today.getFullYear();
 	// 2nd Sunday in March can't occur after the 14th
@@ -654,13 +679,23 @@ function delTableRow(source,tid){
     document.getElementById(tid).deleteRow(oRow.rowIndex);
 }
 //containsHtml - returns true if txt contains HTML tags
+/**
+* @describe returns true if txt contains HTML tags
+* @param txt string  - the text string to check
+* @return boolean
+* @usage if(containsHtml(txt)){...}
+*/
 function containsHtml(txt){
-	//info: returns true if txt contains HTML tags
 	return (/[\<\>]/.test(txt));
 	}
-//containsHtml - returns true if txt contains HTML tags
+//containsSpaces - returns true if txt contains spaces
+/**
+* @describe returns true if txt contains spaces
+* @param txt string  - the text string to check
+* @return boolean
+* @usage if(containsSpaces(txt)){...}
+*/
 function containsSpaces(txt){
-	//info: returns true if txt contains spaces
 	return (/[\ ]/.test(trim(txt)));
 	}
 //setActiveTab
@@ -673,7 +708,38 @@ function setActiveTab(t){
     	else{setClassName(lis[i],'tab');}
 	}
 }
+//setActiveNav
+/**
+* @describe add active class to the tab clicked on and removed active class from its siblings. Use with bootstrap nav nav-tabs or nav-pills
+* @param tabobject object  - the tab you clicked on
+* @param [ajaxurl] string optional ajax url to call when clicked
+* @param [ajaxdiv] string optional ajax divid
+* @param [ajaxparams] string optional ajax params
+* @return false boolean
+* @usage onclick="return setActiveNav(this,'/t/1/mypage','results',{showprocessing:false});"
+*/
+function setActiveNav(aobj,ajaxurl,ajaxdiv,ajaxparams){
+	var liobj=getParent(aobj);
+	var ulobj=getParent(liobj);
+	var lis=ulobj.children;
+	for(var i=0;i<lis.length;i++){
+		removeClass(lis[i],'active');
+	}
+	addClass(liobj,'active');
+	//call a func if passed in
+	if(undefined != ajaxurl){
+		ajaxGet(ajaxurl,ajaxdiv,ajaxparams);
+	}
+	return false;
+}
 //setOpacity
+/**
+* @describe sets the transparency level of object or id specified. Level is in pcnt
+* @param obj mixed  - the object or id
+* @param level integer percent of opacity to set
+* @return false boolean
+* @usage onclick="return setOpacity(this,40);"
+*/
 function setOpacity(obj,level) {
 	//info: sets the transparency level of object or id specified. Level is in pcnt
 	var cObj=getObject(obj);
@@ -681,7 +747,7 @@ function setOpacity(obj,level) {
 	cObj.style.MozOpacity = level;
 	cObj.style.KhtmlOpacity = level;
 	cObj.style.filter = "alpha(opacity=" + (level * 100) + ");";
-
+	return false;
 	}
 function fadeIn(id){
 	for (i = 0; i <= 1; i += (1 / 20)) {
@@ -694,6 +760,7 @@ function fadeOut(id) {
 		setTimeout("setOpacity('"+id+"'," + (1 - i) + ")", i * 200);
 	}
 }
+//fontIconCursor
 /**
  * sets the cursor to the specfied wasql_icon font
  * @param element mixed - object or id of the element to set the cursor in
@@ -718,13 +785,25 @@ function fontIconCursor(el,cl){
     el=getObject(el);
     el.style.cursor='url('+dataURL+'), auto';
 }
+//formatCurrency
+/**
+* @describe sets number to a 2 decimal number
+* @param num number  - the number
+* @return decimal
+* @usage formatCurrency(total)
+*/
 function formatCurrency(num) {
     num = isNaN(num) || num === '' || num === null ? 0.00 : num;
     return parseFloat(num).toFixed(2);
 }
 //stripHtml - removes all html tags from string
+/**
+* @describe removes all html tags from string
+* @param str string  - string with html to strip
+* @return string
+* @usage stripHtml(str)
+*/
 function stripHtml(str){
-	//info: removes all html tags from string
 	var re = /(<([^>]+)>)/gi;
 	newstr=str.replace(re, "");
 	return newstr;
@@ -785,12 +864,12 @@ function getBrowserHeight() {
 	var myHeight = 0;
 	if( typeof( window.innerWidth ) == 'number' ) {
 		myHeight = window.innerHeight;
-		} 
+		}
 	else {
 		if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
 			//IE 6+ in 'standards compliant mode'
 		    myHeight = document.documentElement.clientHeight;
-		    } 
+		    }
 		else{
 			if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
 		        myHeight = document.body.clientHeight;
@@ -1179,7 +1258,13 @@ function getScrollPercent(){
     var pcnt = Math.floor(d.scrollTop / (d.scrollHeight - d.clientHeight) * 100);
     return pcnt?pcnt:0;
 }
-//getText - returns object text
+//getObject
+/**
+* @describe returns the object identified by the object or id passed in
+* @param obj mixed  - the object or id
+* @return object
+* @usage var obj=getObject(divid);
+*/
 function getObject(obj){
 	//info: returns the object identified by the object or id passed in
 	if(typeof(obj)=='object'){return obj;}
@@ -1194,8 +1279,13 @@ function getObject(obj){
     return null;
 	}
 /* getParent - gets parent object or its parent if parent is P or FORM */
+/**
+* @describe returns the parent object
+* @param obj mixed  - the object or id
+* @return object
+* @usage var obj=getParent(divid);
+*/
 function getParent(obj){
-	//info: gets parent object
 	var cObj=getObject(obj);
 	if(undefined == cObj){return abort("undefined object passed to getParent");}
 	if(undefined == cObj.parentNode){return cObj;}
@@ -1414,7 +1504,7 @@ function animateShrink(divid, begin,end){
 function addClass(element, classToAdd) {
 	element=getObject(element);
     var currentClassValue = element.className;
-     
+
     if (currentClassValue.indexOf(classToAdd) == -1) {
         if ((currentClassValue == null) || (currentClassValue === "")) {
             element.className = classToAdd;
@@ -1428,7 +1518,7 @@ function removeClass(element, classToRemove) {
 	element=getObject(element);
 	if(undefined == element.className){return;}
     var currentClassValue = element.className;
-     
+
     // removing a class value when there is more than one class value present
     // and the class you want to remove is not the first one
     if (currentClassValue.indexOf(" " + classToRemove) != -1) {
@@ -1442,7 +1532,7 @@ function removeClass(element, classToRemove) {
         element.className = element.className.replace(classToRemove + " ", "");
         return;
     }
-     
+
     // removing the first class value when there is only one class value
     // present
     if (currentClassValue.indexOf(classToRemove) != -1) {
@@ -1646,16 +1736,16 @@ function showProperties(obj,id,v){
 		setText(id,str);
     	}
   	}
-function str_replace(search, replace, str) { 
+function str_replace(search, replace, str) {
     var f = search, r = replace, s = str;
     var ra = r instanceof Array, sa = s instanceof Array, f = [].concat(f), r = [].concat(r), i = (s = [].concat(s)).length;
- 
+
     while (j = 0, i--) {
         if (s[i]) {
             while (s[i] = s[i].split(f[j]).join(ra ? r[j] || "" : r[0]), ++j in f){};
         }
     };
- 
+
     return sa ? s : s[0];
 }
 //toggleClass(id,class1,class2){
@@ -1769,11 +1859,11 @@ function array_values (arr) {
     //source: http://phpjs.org/functions
     var tmp_arr = [],
         cnt = 0;    var key = '';
- 
+
     for (key in arr) {
         tmp_arr[cnt] = arr[key];
         cnt++;    }
- 
+
     return tmp_arr;
 	}
 function array_keys (arr, search_value, argStrict) {
@@ -1785,10 +1875,10 @@ function array_keys (arr, search_value, argStrict) {
         key = '';
 	//walk the array
     for (key in arr) {
-        if (arr.hasOwnProperty(key)) {            
+        if (arr.hasOwnProperty(key)) {
 			include = true;
             if (searchstr) {
-                if (strict && arr[key] !== search_value) {include = false;}                
+                if (strict && arr[key] !== search_value) {include = false;}
 				else if (arr[key] != search_value) {include = false;}
             	}
              if (include) {tmp_arr[tmp_arr.length] = key;}
@@ -1807,9 +1897,9 @@ function in_array (needle, haystack, argStrict) {
         for (key in haystack) {
             if (haystack[key] === needle) {return true;}
         	}
-    	} 
+    	}
 	else {
-        for (key in haystack) {            
+        for (key in haystack) {
 			if (haystack[key] == needle) {return true;}
         	}
     	}
@@ -1825,7 +1915,7 @@ function array_walk (array, funcname, userdata) {
     for (key in array) {
         if (typeof(userdata) !== 'undefined') {
             eval(funcname + '( array [key] , key , userdata  )');
-        	} 
+        	}
 		else{
 			eval(funcname + '(  userdata ) ');
         	}
@@ -1845,19 +1935,19 @@ function implode (glue, pieces) {
     if (arguments.length === 1) {
         pieces = glue;
         glue = '';
-    	}    
+    	}
 	if (typeof(pieces) === 'object') {
         if (pieces instanceof Array) {
 			return pieces.join(glue);
-    		} 
+    		}
 		else {
-            for (i in pieces) {                
+            for (i in pieces) {
 				retVal += tGlue + pieces[i];
                 tGlue = glue;
             	}
             return retVal;
-        	}    
-		} 
+        	}
+		}
 	else {
         return pieces;
     	}
