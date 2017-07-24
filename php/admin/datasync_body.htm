@@ -94,8 +94,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-sm-9">
-			<h2 style="margin:0px;"><span class="icon-sync w_warning"></span> Synchronize Manager</h2>
-			<div><?=implode(', ',$synctables);?></div>
+			<h2 style="margin:0px;"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
 		</div>
 		<div class="col-sm-3 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -121,7 +120,10 @@
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
-
+		<div class="col-sm-9">
+			<view:noauth><h3 class="w_danger"><span class="icon-warning w_warning"></span> <?=$rec['error'];?></h3></view:noauth>
+			<?=renderViewIf(isset($json['error']),'noauth',$json,'rec');?>
+		</div>
 	</div>
 </div>
 </view:sync_auth>
