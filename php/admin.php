@@ -14,6 +14,11 @@ date_default_timezone_set('America/Denver');
 include_once("$progpath/common.php");
 global $CONFIG;
 include_once("$progpath/config.php");
+//is SSL required for admin?
+if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'true')) && !isSecure()){
+	header("Location: https://{$_SERVER['HTTP_HOST']}/php/admin.php",true,301);
+	exit;
+}
 //change timezone if set
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
@@ -23,16 +28,250 @@ include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
+$_REQUEST['debug']=1;
+global $USER;
+include_once("$progpath/user.php");
 global $wtables;
 $wtables=getWasqlTables();
 foreach($wtables as $wtable){
 	if(!isDBTable($wtable)){$ok=createWasqlTable($wtable);}
 }
 if(isset($_REQUEST['_pushfile'])){
- 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
-   	}
-//load our own session handling routines
-include_once("$progpath/sessions.php");
+	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
+}
+if($_SERVER['HTTP_HOST']=='locallive'){
+	//echo printValue($_REQUEST);exit;
+}
+//check for synchronize get_changes call
+if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' || strtolower($_REQUEST['_menu'])=='datasync') && isset($_REQUEST['load'])){
+	$json=json_decode(base64_decode($_REQUEST['load']),true);
+	if(!isset($json['func'])){
+		echo json_encode(array('error'=>'invalid request'));
+		exit;
+	}
+	//echo printValue($json);exit;
+	switch(strtolower($json['func'])){
+		case 'auth':
+			if(!isAdmin()){
+				echo json_encode(array('error'=>'not authorized','request'=>$json));
+				exit;
+			}
+			//send them the _auth
+			global $USER;
+			echo base64_encode(json_encode(array('auth'=>$USER['_auth'])));
+			exit;
+		break;
+		case 'get_tables':
+			global $USER;
+			global $CONFIG;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			$query=<<<ENDOFQUERY
+				SELECT
+					table_name tablename
+					,table_rows records
+				FROM information_schema.tables
+				WHERE
+					table_schema='{$CONFIG['dbname']}'
+				ORDER BY table_name
+ENDOFQUERY;
+			$recs=getDBRecords(array('-query'=>$query,'-index'=>'tablename'));
+			if(!is_array($recs)){$recs=array();}
+			foreach($recs as $table=>$rec){
+				$recs[$table]['fields']=array();
+				$frecs=getDBFieldInfo($table);
+				foreach($frecs as $field=>$frec){
+					$recs[$table]['fields'][$field]=$frec['_dbtype_ex'];
+				}
+			}
+			echo base64_encode(json_encode($recs));
+			exit;
+		break;
+		case 'get_record':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table']) || !isset($json['id']) || !isset($json['fields'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$rec=getDBRecord(array('-table'=>$json['table'],'_id'=>$json['id'],'-fields'=>$json['fields']));
+			if(!is_array($recs)){$rec=array();}
+			echo base64_encode(json_encode($rec));
+			exit;
+		break;
+		case 'get_records':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table']) || !isset($json['limit']) || !isset($json['offset'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$recs=getDBRecords(array('-table'=>$json['table'],'-limit'=>$json['limit'],'-offset'=>$json['offset'],'-order'=>'_id'));
+			if(!is_array($recs)){$recs=array();}
+			echo base64_encode(json_encode($recs));
+			exit;
+		break;
+		case 'datasync_records':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table']) || !isset($json['records']) || !isset($json['offset'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			if($json['offset']==0){
+				$ok=truncateDBTable($json['table']);
+			}
+			$cnt=0;
+			foreach($json['records'] as $rec){
+				$opts=array();
+				foreach($rec as $k=>$v){
+					if(!strlen($v)){continue;}
+					$opts[$k]=$v;
+				}
+				$opts['-table']=$json['table'];
+				$id=addDBRecord($opts);
+				if(!isNum($id)){
+					echo base64_encode(json_encode(array('error'=>$id)));
+					exit;
+				}
+				$cnt++;
+			}
+			echo base64_encode(json_encode(array('count'=>$cnt)));
+			exit;
+		break;
+		case 'update_schemas':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table']) || !isset($json['records'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$out=array();
+			foreach($json['records'] as $table=>$fields){
+				$new=isDBTable($table)?0:1;
+				$ok=updateDBSchema($table,$fields,$new);
+				if($new==1){
+					$out[]="<span class=\"icon-mark w_success\"></span> added table {$table} ".printValue($ok);
+				}
+				else{
+					$out[]="<span class=\"icon-mark w_success\"></span> updated table {$table} ".printValue($ok);
+				}
+			}
+			echo base64_encode(json_encode($out));
+			exit;
+		break;
+		case 'update_records':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table']) || !isset($json['records'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			//get ids
+			$ids=array();
+			foreach($json['records'] as $id=>$rec){$ids[]=$id;}
+			$idstr=implode(',',$ids);
+			$recs=getDBRecords(array('-table'=>$json['table'],'-index'=>'_id','-where'=>"_id in ({$idstr})"));
+			$out=array();
+			foreach($json['records'] as $id=>$rec){
+				if(!isset($recs[$id])){
+					//new record - add it
+					$opts=array();
+					foreach($rec as $k=>$v){
+						if(isWasqlField($k)){continue;}
+						if(!strlen($v) || $v=='null'){continue;}
+						$opts[$k]=$v;
+					}
+					$opts['-table']=$json['table'];
+					$opts['-nodebug']=true;
+					$nid=addDBRecord($opts);
+					if(isNum($nid)){
+						$out[]="<span class=\"icon-mark w_success\"></span> added record {$id} success: ";
+					}
+					else{
+						$out[]="<span class=\"icon-warning w_danger\"></span>  adding record {$id} failed: ".$nid;
+					}
+				}
+				else{
+					//existing record - edit it
+					$opts=array();
+					foreach($rec as $k=>$v){
+						if(isWasqlField($k)){continue;}
+						if(sha1($v) != sha1($recs[$id][$k])){
+							$opts[$k]=$v;
+						}
+					}
+					$opts['-table']=$json['table'];
+					$opts['-where']="_id={$id}";
+					$ok=editDBRecord($opts);
+					if(!isNum($ok)){
+						$out[]="<span class=\"icon-warning w_danger\"></span> edited record {$id} failed: ".printValue($ok);
+					}
+					else{
+						$out[]="<span class=\"icon-mark w_success\"></span> edited record {$id}";
+					}
+				}
+			}
+			echo base64_encode(json_encode($out));
+			exit;
+		break;
+		case 'get_changes':
+			if(!isset($json['fields']) || !isset($json['username'])){
+				echo base64_encode(json_encode(array('error'=>'missing info')));
+				exit;
+			}
+			//request to get sync changes
+			//confirm user is an admin in this system
+			$urec=getDBRecord(array(
+				'-table'=>'_users',
+				'username'=>addslashes($json['username']),
+				'_utype'=>0,
+				'-fields'=>'username'
+			));
+			if(!isset($urec['username'])){
+				echo base64_encode(json_encode(array('error'=>'Not authorized')));
+				exit;
+			}
+			$rtn=array();
+			$fields=$json['fields'];
+			foreach($fields as $table=>$fieldset){
+				if(!in_array('_id',$fieldset)){$fieldset[]='_id';}
+				$fieldstr=implode(',',$fieldset);
+				$rtn[$table]=getDBRecords(array('-table'=>$table,'-fields'=>$fieldstr,'-eval'=>'md5','-noeval'=>'_id,_cuser,_cdate,_euser,_edate,_marker_','-index'=>'_id'));
+			}
+			//schema
+			//get _dbtype_ex
+			$tables=getDBTables();
+			foreach($tables as $table){
+				//if(isWasqlField($table)){continue;}
+				$info=getDBFieldInfo($table);
+				foreach($info as $field=>$f){
+				$rtn['_schema_'][$table][$field]=$f['_dbtype_ex'];
+				}
+			}
+			echo base64_encode(json_encode($rtn));
+			exit;
+		break;
+	}
+}
+
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){
 	if(is_array($val)){continue;}
@@ -66,21 +305,7 @@ elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
     echo buildHtmlEnd();
 	exit;
 }
-include_once("$progpath/config.php");
-global $CONFIG;
-//is SSL required for admin?
-if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'true')) && !isSecure()){
-	header("Location: https://{$_SERVER['HTTP_HOST']}/php/admin.php",true,301);
-	exit;
-}
 
-$_REQUEST['debug']=1;
-
-include_once("$progpath/user.php");
-include_once("$progpath/database.php");
-
-include_once("$progpath/wasql.php");
-include_once("$progpath/schema.php");
 if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv export'){
     //export the query to csv
     $recs=getDBRecords(array('-query'=>stripslashes($_REQUEST['sqlprompt_command'])));
@@ -94,7 +319,7 @@ if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv exp
 //get_magic_quotes_gpc fix if it is on
 wasqlMagicQuotesFix();
 //require user
-global $USER;
+
 global $PAGE;
 global $TEMPLATE;
 global $databaseCache;
@@ -178,6 +403,8 @@ if(isAjax()){
 		case 'reports':
 		case 'htmlbox':
 		case 'settings':
+		case 'synchronize':
+		case 'datasync':
 			echo adminViewPage($_REQUEST['_menu']);
 			exit;
 		break;
@@ -196,8 +423,8 @@ if(isAjax()){
             	exit;
 				break;
 			}
-			$stage_db=$SETTINGS['wasql_synchronize_master'];
-	        $live_db=$SETTINGS['wasql_synchronize_slave'];
+			$stage_db='test_a';
+	        $live_db='locallive';
 			if(!strlen($stage_db) || !strlen($live_db)){
 				echo '	<div class="w_red w_bold">Synchronize is turned on but databases are not selected. Go to settings to fix this.</div>'."\n";
             	echo '</div>'."\n";
@@ -2240,6 +2467,7 @@ LIST_TABLE:
             	}
 			break;
 		case 'synchronize':
+			echo adminViewPage('synchronize');exit;
 			if(!isset($SETTINGS['wasql_synchronize']) || $SETTINGS['wasql_synchronize']==0){
 				echo '<div class="w_bigger w_lblue w_bold"><span class="icon-sync w_warning w_big w_bold"></span> Synchronize Manager</div>'."\n";
 				//currently turned off
@@ -3320,6 +3548,8 @@ LIST_TABLE:
 			//echo printValue($_REQUEST);
 			break;
 		case 'datasync':
+			echo adminViewPage($_REQUEST['_menu']);
+			exit;
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-sync w_danger w_big w_bold"></span> Synchronize Database Records</div>'."\n";
 			echo '<div class="w_lblue w_smaller">Tool to transfer data between matching tables on stage and live.</div>'."\n";
 			global $SETTINGS;
@@ -3328,8 +3558,8 @@ LIST_TABLE:
             	echo '<div class="w_red w_bold">Synchronize must be turned on for this feature. To to settings to turn on.</div>'."\n";
             	break;
 			}
-			$stage_db=$SETTINGS['wasql_synchronize_master'];
-			$live_db=$SETTINGS['wasql_synchronize_slave'];
+			$stage_db='test_a';
+	        $live_db='locallive';
 			if(!strlen($stage_db) || !strlen($live_db)){
 				echo '	<div class="w_red w_bold">Synchronize is turned on but databases are not selected. Go to settings to fix this.</div>'."\n";
             	echo '</div>'."\n";
@@ -3339,7 +3569,7 @@ LIST_TABLE:
   				table_name tablename,
   				table_rows cnt,
   				table_schema as dbname
-				FROM information_schema.TABLES
+				FROM information_schema.tables
 				WHERE table_schema in ('{$stage_db}','{$live_db}')
 				order by tablename
 			";
@@ -4943,11 +5173,10 @@ function adminGetSynchronizeTables($dbname=''){
  */
 function adminGetSynchronizeFields($table){
 	global $SETTINGS;
-	$db_stage=$SETTINGS['wasql_synchronize_master'];
-	$db_live=$SETTINGS['wasql_synchronize_slave'];
 	$recopts=array(
 		'-table'=>"_fielddata",
 		'tablename'	=> $table,
+		'synchronize'=>1,
 		'-index'	=> "fieldname",
 		'-fields'	=> "fieldname,synchronize"
 	);
@@ -4956,17 +5185,14 @@ function adminGetSynchronizeFields($table){
 	//echo $table.printValue($recs);
 	if(!is_array($recs)){return $recs;}
 	$flds=array();
-	$fields=getDBFields("{$db_stage}.{$table}",1);
-	$fields_live=getDBFields("{$db_live}.{$table}",1);
-	//echo "{$table}:::".printValue($fields_live).printValue($fields);
-	$wfields=array('_cdate','_cuser','_edate','_euser','_auser','_amem','_id','_aip','_adate');
+	$fields=getDBFields($table);
+	$skip=array('css_min','js_min');
 	foreach($fields as $field){
     	if(isset($recs[$field]) && $recs[$field]['synchronize'] !=1){continue;}
-    	if(in_array($field,$wfields)){continue;}
-    	if(!in_array($field,$fields_live)){continue;}
+    	if(isWasqlField($field)){continue;}
+    	if(in_array($field,$skip)){continue;}
 		$flds[]=$field;
 	}
-	//if($table=='_pages'){echo $table.printValue($flds).printValue($fields).printValue($recs);}
 	return $flds;
 }
 
