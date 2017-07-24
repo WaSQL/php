@@ -936,11 +936,18 @@ table th a {
 	z-index:9993;
 	color:#58595a;
 }
-
+.printvalue{
+	max-width:800px;
+	max-height:800px;
+	overflow:auto;
+}
 .w_centerpop .w_centerpop_content{
 	position:relative;
 	top:-15px;
 	padding:0px 10px 0px 10px;
+	max-width:800px;
+	max-height:800px;
+	overflow:auto;
 }
 .w_centerpop_close_bot{
 	position:absolute;
