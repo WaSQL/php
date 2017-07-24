@@ -585,14 +585,11 @@ function createWasqlTable($table=''){
 			break;
 		case '_synchronize':
 			//sync_action,diff_table,diff_id,sync_items
-			$fields['sync_action']="char(15) NOT NULL";
-			$fields['user_id']="INT NOT NULL";
-			$fields['note']="varchar(500) NULL";
-			$fields['sync_items']="varchar(500) NULL";
-			//code review fields
-			$fields['review_pass']="varchar(25) NULL";
-			$fields['review_user']="varchar(255) NULL";
-			$fields['review_user_id']="integer NOT NULL Default 0";
+			$fields['tablename']="varchar(100) NOT NULL";
+			$fields['ids']="varchar(255) NOT NULL";
+			$fields['notes']="text NULL";
+			$fields['target']="varchar(100) NULL";
+			$fields['results']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			addMetaData($table);
@@ -1721,52 +1718,49 @@ function addMetaData($table=''){
 		case '_synchronize':
 			$id=addDBRecord(array('-table'=>"_tabledata",
 				'tablename'		=> '_synchronize',
-				'formfields'	=> "user_id\r\nnote",
-				'listfields'	=> "_cdate\r\nuser_id\r\nsync_items\r\n",
+				'formfields'	=> "tablename\r\ntarget\r\nids\r\nnotes\r\nresults",
+				'listfields'	=> "_cdate\r\n_cuser\r\ntarget\r\ntablename\r\nids",
 				'sortfields'	=> '_cdate desc'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
-				'fieldname'		=> 'note',
-				'inputtype'		=> 'textarea',
-				'width'			=> '300',
-				'height'		=> '100',
-				'inputmax'		=> 500,
-				'required'		=> 1
-				));
-			$id=addDBRecord(array('-table'=>"_fielddata",
-				'tablename'		=> '_synchronize',
-				'fieldname'		=> 'sync_items',
-				'inputtype'		=> 'textarea',
-				'width'			=> '300',
-				'height'		=> '100',
-				'inputmax'		=> 500,
-				'required'		=> 1
-				));
-			$id=addDBRecord(array('-table'=>'_fielddata',
-				'tablename'		=> '_synchronize',
-				'fieldname'		=> 'user_id',
-				'inputtype'		=> 'select',
-				'required'		=> 0,
-				'displayname'	=> "User",
-				'tvals'			=> "select _id from _users order by firstname,lastname,_id",
-				'dvals'			=> "select firstname,lastname from _users order by firstname,lastname,_id"
-				));
-			$id=addDBRecord(array('-table'=>"_fielddata",
-				'tablename'		=> '_synchronize',
-				'fieldname'		=> 'review_user',
+				'fieldname'		=> 'tablename',
 				'inputtype'		=> 'text',
-				'width'			=> '140',
-				'inputmax'		=> 255,
-				'displayname'	=> "Username",
+				'width'			=> '300',
+				'inputmax'		=> 100,
+				'required'		=> 1
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
-				'fieldname'		=> 'review_pass',
-				'inputtype'		=> 'password',
-				'width'			=> '140',
-				'inputmax'		=> 25,
-				'displayname'	=> "Password",
+				'fieldname'		=> 'target',
+				'inputtype'		=> 'text',
+				'width'			=> '300',
+				'inputmax'		=> 100,
+				'required'		=> 1
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_synchronize',
+				'fieldname'		=> 'ids',
+				'inputtype'		=> 'textarea',
+				'width'			=> '500',
+				'height'		=> '40',
+				'required'		=> 1
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_synchronize',
+				'fieldname'		=> 'notes',
+				'inputtype'		=> 'textarea',
+				'width'			=> '500',
+				'height'		=> '100',
+				'required'		=> 1
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_synchronize',
+				'fieldname'		=> 'results',
+				'inputtype'		=> 'textarea',
+				'width'			=> '500',
+				'height'		=> '100',
+				'required'		=> 1
 				));
 			break;
 		//_history
