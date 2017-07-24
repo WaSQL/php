@@ -34,7 +34,7 @@ if(isset($_REQUEST['username'])){
 	$_REQUEST['username']=preg_replace('/\'/',"\\'",$_REQUEST['username']);
 }
 $userfieldinfo=getDBFieldInfo("_users");
-if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth']) &&  strtoupper($_SERVER['REQUEST_METHOD'])=='GET'){
+if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])){
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_auth'],2);
 	$decoded=decrypt($encoded,$key);
 	//abort($decoded);
@@ -473,7 +473,7 @@ if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['activ
 	}
 elseif(isUser()){
 	if($guid != $oldguid && isset($_REQUEST['_noguid']) && $_REQUEST['_noguid']==1){$guid=$oldguid;}
-	//echo "HERE{$guid}";
+	//echo json_encode(array('error'=>'debug','x'=>$_REQUEST));exit;
 	setUserInfo($guid);
 	}
 else{
