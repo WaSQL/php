@@ -68,17 +68,13 @@
 					</h3>
 				</div>
 				<div class="col-xs-3" style="padding:0px;">
-					<label>Stage Site</label>
-					<?=settingsSyncSites('wasql_synchronize_master',$recs['wasql_synchronize_master']['key_value']);?>
-				</div>
-				<div class="col-xs-3" style="padding:0px;">
-					<label>Live Site</label>
+					<label>Target Host:</label>
 					<?=settingsSyncSites('wasql_synchronize_slave',$recs['wasql_synchronize_slave']['key_value']);?>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-xs-12">
-				Turn ON to enable synchronize manager between two databases.
+				Turn ON to synchronize this host to a target host.
 				Tables that have synchronize selected by default are _pages,_templates,_fielddata,_tabledata,_cron, and _reports.
 				The synchronize checkbox is found in the properties window of each table.
 				</div>
