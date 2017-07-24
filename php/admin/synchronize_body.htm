@@ -137,7 +137,10 @@
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
-
+		<div class="col-sm-9">
+			<view:noauth><h3 class="w_danger"><span class="icon-warning w_warning"></span> <?=$rec['error'];?></h3></view:noauth>
+			<?=renderViewIf(isset($json['error']),'noauth',$json,'rec');?>
+		</div>
 	</div>
 </div>
 </view:sync_auth>
