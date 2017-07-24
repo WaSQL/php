@@ -1,0 +1,214 @@
+<view:default>
+<form method="post" name="syncform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+<input type="hidden" name="_menu" value="synchronize" />
+<input type="hidden" name="func" value="sync" />
+<div class="container">
+	<div class="row">
+		<div class="col-sm-9">
+			<h2 style="margin:0px;"><span class="icon-sync w_warning"></span> Synchronize Manager</h2>
+			<div><?=implode(', ',$synctables);?></div>
+		</div>
+		<div class="col-sm-3 text-right">
+			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
+				<tr>
+					<th class="text-left">Target Site</th>
+				</tr>
+				<tr>
+					<td class="text-left">
+						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn btn-danger btn-sm w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
+						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
+						<?=$_SESSION['sync_target'];?>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav nav-tabs">
+				<view:tab>
+				<li class="<?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
+				</view:tab>
+				<?=renderEach('tab',$changes,'recs');?>
+			</ul>
+			<div id="synchronize_results">
+				<?=renderViewIf(strlen($setactive),'details',$changes[$setactive],'recs');?>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<button class="btn btn-default btn-lg" type="submit"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+		</div>
+	</div>
+</div>
+</form>
+<div style="display:none;">
+	<view:change>
+		<div id="changes_<?=$key;?>">
+			<?=renderView('details',$change,'recs');?>
+		</div>
+	</view:change>
+	<?=renderEach('change',$changes,'change');?>
+</div>
+</view:default>
+<view:switch>
+	<?=buildOnLoad("setText('synchronize_results',getText('changes_{$table}'));");?>
+</view:switch>
+
+<view:switch_field>
+	<?=buildOnLoad("setText('diff_details',getText('diff_details_{$field}'));");?>
+</view:switch_field>
+
+<view:details>
+<input type="hidden" name="table" value="<?=$recs[0]['tabname'];?>" />
+<table class="table table-condensed table-striped table-bordered">
+	<tr>
+		<th><?=buildFormCheckAll('data-table',$recs[0]['tabname'],array('-label'=>''));?> ID</th>
+		<th>Tablename</th>
+		<th>Marker</th>
+		<th>Changes</th>
+		<th>Changed By</th>
+		<th>Changed Date</th>
+		<th>Age</th>
+		<th>Action</th>
+	</tr>
+	<view:rec>
+	<tr>
+		<td class="action">
+			<input type="checkbox" name="id[]" value="<?=$rec['id'];?>" data-table="<?=$rec['tabname'];?>" data-type="checkbox" style="display:none" id="check_<?=$rec['tablename'];?>_<?=$rec['id'];?>" style="display:none;" />
+			<label class="icon-mark" for="check_<?=$rec['tablename'];?>_<?=$rec['id'];?>"></label>
+			<label for="check_<?=$rec['tablename'];?>_<?=$rec['id'];?>"><?=$rec['id'];?></label>
+		</td>
+		<td><?=$rec['tablename'];?></td>
+		<td><?=$rec['marker'];?></td>
+		<td><?=$rec['changes'];?></td>
+		<td><?=$rec['changed_by'];?></td>
+		<td><?=$rec['changed_date'];?></td>
+		<td><?=$rec['changed_age'];?></td>
+		<td class="text-right w_nowrap">
+			<view:action_diff>
+			<a href="#" title="Diff" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
+			</view:action_diff>
+			<?=renderViewIf(!preg_match('/^NEW/',$rec['changes']),'action_diff',$rec,'rec');?>
+			<a href="#" title="Sync" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
+			<view:action_edit>
+			<a href="#" title="Edit" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'edit',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-edit w_bigger w_grey"></span></a>
+			</view:action_edit>
+			<view:action_properties>
+			<a href="/php/admin.php?_menu=properties&_table_=<?=$rec['tablename'];?>" title="Properties" ><span class="icon-properties w_bigger w_primary"></span></a>
+			</view:action_properties>
+			<?=renderViewIfElse($rec['marker']=='schema','action_properties','action_edit',$rec,'rec');?>
+		</td>
+	</tr>
+	</view:rec>
+	<?=renderEach('rec',$recs,'rec');?>
+</table>
+</view:details>
+
+<view:sync_auth>
+<div class="container">
+	<div class="row">
+		<div class="col-sm-9">
+			<h2 style="margin:0px;"><span class="icon-sync w_warning"></span> Synchronize Manager</h2>
+			<div><?=implode(', ',$synctables);?></div>
+		</div>
+		<div class="col-sm-3 text-right">
+			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
+				<tr>
+					<th class="text-left">Target Site</th>
+				</tr>
+				<tr>
+					<td class="text-left"><?=$_SESSION['sync_target'];?></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<form method="post" name="diffform" action="/php/admin.php" onsubmit="return submitForm(this);">
+				<input type="hidden" name="_menu" value="synchronize" />
+				<h4>Authorization on Target Site</h4>
+				<div style="max-width:300px;">Provide authorization on the target system in order to push changes. <span class="w_danger">User MUST have admin access.</span></div>
+				<label>Username</label>
+				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_SESSION['sync_target_user'];?>" />
+				<label>Password</label>
+				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_SESSION['sync_target_pass'];?>"  />
+				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
+			</form>
+		</div>
+
+	</div>
+</div>
+</view:sync_auth>
+
+<view:sync_diffs>
+<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff</div>
+<div class="w_centerpop_content" style="padding-bottom:20px;">
+	<ul class="nav nav-tabs">
+		<view:field_tab>
+			<li class="<?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','diff_details',{_menu:'synchronize','func':'diff_details',field:'<?=$key;?>',showprocessing:false});"><?=$key;?></a></li>
+		</view:field_tab>
+		<?=renderEach('field_tab',$diffs,'diff');?>
+	</ul>
+	<div id="diff_details">
+		<?=$diffs[$setactive];?>
+	</div>
+	<div style="display:none">
+		<view:diff_details>
+		<div id="diff_details_<?=$key;?>">
+			<?=$diff;?>
+		</div>
+		</view:diff_details>
+		<?=renderEach('diff_details',$diffs,'diff');?>
+	</div>
+</div>
+</view:sync_diffs>
+
+<view:sync_verify>
+<div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verification</div>
+<div class="w_centerpop_content">
+	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
+		<tr><th><span class="icon-user w_black"></span> Pushed by</th><td><?=userValue('username');?></td></tr>
+		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
+		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
+		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
+	</table>
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+		<input type="hidden" name="_menu" value="synchronize" />
+		<input type="hidden" name="func" value="sync_verified" />
+		<input type="hidden" name="table" value="<?=$table;?>" />
+		<view:sync_id><input type="hidden" name="id[]" value="<?=$id;?>" /></view:sync_id>
+		<?=renderEach('sync_id',$ids,'id');?>
+		<label for="sync_verify_notes">Notes/Explanation</label>
+		<textarea name="notes" required="required" class="form-control" autofocus="autofocus"><?=$_SESSION['sync_notes'];?></textarea>
+		<div class="w_padtop text-right"><button type="submit" class="btn btn-default"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
+	</form>
+	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
+</div>
+</view:sync_verify>
+
+<view:sync_verified>
+<div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verified</div>
+<div class="w_centerpop_content" style="max-width:800px;overflow:auto;">
+	<div class="w_success"><?=implode('<br>',$results);?></div>
+	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="btn btn-default">Refresh</a></div>
+</div>
+</view:sync_verified>
+
+<view:edit_record>
+<div class="w_centerpop_title"><span class="icon-edit w_white"></span> Edit  <?=$table;?>  <?=$id;?></div>
+<div class="w_centerpop_content">
+	<?=addEditDBForm(array('-table'=>$table,'_id'=>$id,'_menu'=>'synchronize','-action'=>'/php/admin.php'));?>
+</div>
+</view:edit_record>
+
+<view:error>
+<div class="w_centerpop_title"><span class="icon-warning w_white"></span> Error</div>
+<div class="w_centerpop_content">
+	<h3 class="w_danger"><?=$error;?></h3>
+</div>
+</view:error>
+
+
+
