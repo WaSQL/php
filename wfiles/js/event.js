@@ -1160,7 +1160,8 @@ function initBehaviors(ajaxdiv){
 			/* Signature */
 			var pencolor=navEls[n].getAttribute('data-color') || '#000';
 			signaturePad = new SignaturePad(navEls[n],{penColor:pencolor});
-			//signature(navEls[n],'',pencolor);
+			//console.log(navEls[n]);
+
 		}
 		if(in_array("csseditor",behaviors)){
 			/* EDITOR: CSSEDITOR */
@@ -2895,5 +2896,5 @@ function resizeSignatureWidthHeight(){
 /*
  * add event handler to resize any signature canvas
  * */
- console.log('adding resize');
+ //console.log('adding resize');
 addEventHandler(window,'resize',function(){resizeSignatureWidthHeight();});
