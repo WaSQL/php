@@ -157,9 +157,10 @@ function datasyncPost($load,$plain=0){
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	$json=json_decode(base64_decode($post['body']),true);
 	if(!is_array($json)){
-		//unset($post['body']);
-		//unset($_SESSION['sync_target_auth']);
-		echo '<h3>datasyncPost ERROR</h3>'.$post['body'];exit;
+		$json=json_decode($post['body'],true);
+		if(!is_array($json)){
+			echo '<h3>datasyncPost ERROR</h3>'.$post['body'];exit;
+		}
 	}
 	//return $post['body'];
 	return $json;
