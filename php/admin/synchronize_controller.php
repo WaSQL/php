@@ -20,6 +20,7 @@
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
 		else{
+			$synctables=adminGetSynchronizeTables();
 			setView('sync_auth',1);
 			return;
 		}
@@ -27,6 +28,7 @@
 	if(!isset($_SESSION['sync_target_auth'])){
 		//check the log table once
 		checkDBTableSchema('_synchronize');
+		$synctables=adminGetSynchronizeTables();
 		setView('sync_auth',1);
 		return;
 	}
@@ -34,6 +36,7 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
 			unset($_SESSION['sync_target_auth']);
+			$synctables=adminGetSynchronizeTables();
 			setView('sync_auth',1);
 			return;
 		break;
