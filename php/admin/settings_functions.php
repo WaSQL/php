@@ -18,7 +18,7 @@ function settingsSyncSites($n,$v){
 	$opts=array();
 	global $ALLCONFIG;
 	foreach($ALLCONFIG as $name=>$conf){
-		$opts[$conf['dbname']]="{$name} ({$conf['dbname']})";
+		$opts[$name]="{$name} ({$conf['dbname']})";
 	}
 	return buildFormSelect($n,$opts,array('message'=>'---select---','value'=>$v));
 }
