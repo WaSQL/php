@@ -1516,11 +1516,12 @@ function buildFormSignature($name,$params=array()){
 	$rtn .= '		<div class="w_right">'."\n";
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
-		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" value="'.$params['-value'].'" />'."\n";
-		$rtn .= '			<input type="button" id="'.$reset_id.'" value="Reset" />'."\n";
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" onload="loadSignatureField(this,\''.$canvas_id.'\');" alt="signature" /></div>'.PHP_EOL;
+		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'."\n";
+		$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'."\n";
+		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
+		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'."\n";
 	}
-	$rtn .= '			<input type="button" id="'.$clear_id.'" value="Clear" />'."\n";
+	$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'."\n";
 	$rtn .= '		</div>'."\n";
 	$rtn .= '		'.$params['displayname']."\n";
 	$rtn .= '	</div>'."\n";
@@ -9852,7 +9853,10 @@ function postURL($url,$params=array()) {
 	if(isset($params['-cookiefile'])){
 		curl_setopt ($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
 		curl_setopt ($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
-		}
+	}
+	elseif(isset($params['-cookie'])){
+		curl_setopt ($process, CURLOPT_COOKIE, $params['-cookie']);
+	}
 	if(isset($params['-fresh'])){
 		curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
 		}
@@ -9919,6 +9923,12 @@ function postURL($url,$params=array()) {
 		$parts=preg_split('/\r\n\r\n/',trim($return),2);
 		$rtn['header']=trim($parts[0]);
 		$rtn['body']=trim($parts[1]);
+		//check for redirect cases with two headers
+		if(preg_match('/^HTTP\//s',$rtn['body'])){
+			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
+			$rtn['header']=trim($parts[0]);
+			$rtn['body']=trim($parts[1]);
+		}
 		//parse the header into an array
 		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
 		$headers=array();
@@ -10202,11 +10212,13 @@ function printValue($v='',$exit=0){
 	$plaintypes=array('string','integer');
 	if(in_array($type,$plaintypes)){return $v;}
 	$type=ucfirst($type);
-	$rtn="{$type} object:";
-	if(!isCLI()){$rtn .= '<pre class="w_times" type="'.$type.'">'."\n";}
+	$rtn='';
+	if(!isCLI()){$rtn .= '<pre class="printvalue" type="'.$type.'">'."\n";}
 	$j=json_encode($v,JSON_PRETTY_PRINT);
 	if(strlen($j)){
-		$rtn .= stripslashes($j);
+		$rtn .= "{$type} object:".PHP_EOL;
+		//$j = preg_replace('/\\\//',"/",$j);
+		$rtn .= $j;
 	}
 	else{
 		ob_start();
@@ -10332,9 +10344,10 @@ function processWysiwygPost($table,$id,$fields=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function processInlineImage($img,$fld='inline'){
+	if(!strlen($img)){return;}
 	list($data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$img,4);
     //make sure it is an extension we support
-    unset($ext);
+    $ext='';
     switch(strtolower($type)){
 		case 'image/jpeg':
 		case 'image/jpg':
@@ -10350,7 +10363,7 @@ function processInlineImage($img,$fld='inline'){
 			$ext='bmp';
 			break;
 	}
-	if(!isset($ext)){return;}
+	if(!strlen($ext)){return;}
     $file=$fld.'_'.encodeCRC(sha1($encodedString)).".{$ext}";
 	$decoded=base64_decode($encodedString);
 	//make sure the path exists or create it.
