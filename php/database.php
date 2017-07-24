@@ -435,32 +435,13 @@ function checkDBTableSchema($wtable){
 	//make sure _synchronize table has review_user, review_pass, review_user_id
     if($wtable=='_synchronize'){
 		$finfo=getDBFieldInfo($wtable);
-        if(!isset($finfo['review_user'])){
-			$query="ALTER TABLE {$wtable} ADD review_user varchar(255) NULL;";
+        if(isset($finfo['review_user'])){
+			$query="DROP TABLE {$wtable}";
 			$ok=executeSQL($query);
-			$ok=delDBRecord(array('-table'=>'_fielddata','-where'=>"tablename='{$wtable}' and fieldname='review_user'"));
-			$id=addDBRecord(array('-table'=>'_fielddata','tablename'=>$wtable,
-				'fieldname'=>'review_user','displayname'=>'Username',
-				'inputtype'=>'text','width'=>140
-				));
-			adminSynchronizeRecord('_fielddata',$id,isDBStage());
+			$ok=delDBRecord(array('-table'=>'_fielddata','-where'=>"tablename='{$wtable}'"));
+			$ok=delDBRecord(array('-table'=>'_tabledata','-where'=>"tablename='{$wtable}'"));
+			$ok=createWasqlTable($wtable);
 			$rtn .= " added review_user to _synchronize table<br />".PHP_EOL;
-        }
-        if(!isset($finfo['review_pass'])){
-			$query="ALTER TABLE {$wtable} ADD review_pass varchar(25) NULL;";
-			$ok=executeSQL($query);
-			$ok=delDBRecord(array('-table'=>'_fielddata','-where'=>"tablename='{$wtable}' and fieldname='review_pass'"));
-			$id=addDBRecord(array('-table'=>'_fielddata','tablename'=>$wtable,
-				'fieldname'=>'review_pass','displayname'=>'Password',
-				'inputtype'=>'password','width'=>140
-				));
-			adminSynchronizeRecord('_fielddata',$id,isDBStage());
-			$rtn .= " added review_pass to _synchronize table<br />".PHP_EOL;
-        }
-        if(!isset($finfo['review_user_id'])){
-			$query="ALTER TABLE {$wtable} ADD review_user_id int NOT NULL Default 0;";
-			$ok=executeSQL($query);
-			$rtn .= " added review_user_id to _synchronize table<br />".PHP_EOL;
         }
 	}
 	//make sure _cron table has a cron_pid field
@@ -1701,7 +1682,9 @@ function addDBRecord($params=array()){
 			unset($params['-error']);
         	$params=call_user_func("{$model_table}AddBefore",$params);
         	if(isset($params['-error'])){
-				debugValue($params['-error']);
+				if(!isset($params['-nodebug'])){
+					debugValue($params['-error']);
+				}
 				return $params['-error'];
 			}
         	if(!isset($params['-table'])){return "{$model_table}AddBefore Error: No Table".printValue($params);}
@@ -1892,7 +1875,9 @@ function addDBRecord($params=array()){
 				unset($params['-error']);
 	        	$params=call_user_func("{$model_table}AddSuccess",$params);
 	        	if(isset($params['-error'])){
-					debugValue($params['-error']);
+					if(!isset($params['-nodebug'])){
+						debugValue($params['-error']);
+					}
 				}
 			}
 		}
@@ -1911,9 +1896,14 @@ function addDBRecord($params=array()){
 	        	$params=call_user_func("{$model_table}AddFailure",$params);
 			}
 		}
-		return setWasqlError(debug_backtrace(),$error,$query);
-  		}
-	}
+		if(!isset($params['-nodebug'])){
+			return setWasqlError(debug_backtrace(),$error,$query);
+		}
+		else{
+			return $error;
+		}
+  	}
+}
 //---------- begin function alterDBTable--------------------
 /**
 * @describe alters fields in given table
@@ -5757,6 +5747,8 @@ function getDBQuery($params=array()){
     if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
     //Set limit if defined
     if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
+    //Set offset if defined
+    if((isMysql() || isMysqli()) && isset($params['-offset'])){$query .= ' offset '.$params['-offset'];}
     return $query;
 }
 //---------- begin function getDBWhere--------------------
@@ -6214,6 +6206,20 @@ function getDBRecords($params=array()){
         }
 		foreach($row as $key=>$val){
 			if(!isset($params['-lowercase']) || $params['-lowercase'] != false){$key=strtolower($key);}
+			if(isset($params['-eval']) && is_callable($params['-eval'])){
+				if(isset($params['-noeval'])){
+					if(!is_array($params['-noeval'])){$params['-noeval']=preg_split('/\,/',$params['-noeval']);}
+					if(!in_array($key,$params['-noeval'])){
+						$val=call_user_func($params['-eval'],$val);
+					}
+				}
+				else{
+					$val=call_user_func($params['-eval'],$val);
+				}
+			}
+			elseif(isset($params["-eval_{$key}"]) && is_callable($params["-eval_{$key}"])){
+				$val=call_user_func($params["-eval_{$key}"],$val);
+			}
 			if(isset($params['-index'])){
 				if(is_array($params['-index']) && count($params['-index'])){
 					$indexes=array();
@@ -6498,8 +6504,10 @@ function getDBSchemaText($table,$force=0){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function updateDBSchema($table,$schema,$new=0){
-	$lines=preg_split('/[\r\n]+/',trim($schema));
+function updateDBSchema($table,$lines,$new=0){
+	if(!is_array($lines)){
+		$lines=preg_split('/[\r\n]+/',trim($lines));
+	}
 	$cfields=array(
 		'_id'	=> databasePrimaryKeyFieldString(),
 		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
@@ -6542,6 +6550,7 @@ function updateDBSchema($table,$schema,$new=0){
     //remove virtual columns and add them in after.
     $virtual=array();
 	$fields=array();
+	//echo printValue($lines);exit;
 	foreach($lines as $line){
 		if(!strlen(trim($line))){continue;}
 		$line=strtolower($line);
