@@ -173,7 +173,7 @@ var SignaturePad = function (t) {
             var n = a._canvas.id.replace("_canvas", "_clear"),
                 r = getObject(n);
             void 0 != r && r.addEventListener("click", function () {
-                return signaturePad.clear(), !1
+                return signaturePad.clear(), !1;
             });
             var s = a._canvas.id.replace("_canvas", "_dataurl"),
                 r = getObject(s);
@@ -186,6 +186,13 @@ var SignaturePad = function (t) {
                     e = getObject(t);
                 return void 0 != e && e.value.length > 0 && a.fromDataURL(e.value), !1
             })
+        }
+		//load signature into textarea if in edit mode
+        var q = a._canvas.id.replace("_canvas", "_edit"), qObj = getObject(q);
+        if(undefined != qObj){
+			var edit = a.toDataURL("image/png");
+			var tedit = a._canvas.id.replace("_canvas", "");
+			setText(tedit, edit);
         }
         e.addEventListener("touchstart", function (t) {
             a._reset();
