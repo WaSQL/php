@@ -1,11 +1,6 @@
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
-function loadSignature(img,cvs){
-	cvs=getObject(ctx);
-	cvs.drawImage(img,0,0,cvs.width,cvs.height)
-}
-
 /** attachDropFiles **/
 /** https://thiscouldbebetter.wordpress.com/2013/07/03/converting-a-file-to-a-base64-dataurl-in-javascript/ **/
 function attachDropFiles(fld){
