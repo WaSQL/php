@@ -275,6 +275,7 @@ function simulateEvent(element, eventName){
 	//usage: simulateEvent(divid,'mouseover');
 	element=getObject(element);
 	if(undefined == element){return false;}
+	//console.log('simulateEvent',element);
 	var options = arguments[2] || {};
     var oEvent, eventType = null;
     var eventMatchers = {'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/}
@@ -302,6 +303,7 @@ function simulateEvent(element, eventName){
 	}
     if (document.createEvent){
     	oEvent = document.createEvent(eventType);
+    	//console.log('createEvent',oEvent,options);
     	if (eventType == 'HTMLEvents'){
         	oEvent.initEvent(eventName, options.bubbles, options.cancelable);
         }
@@ -317,6 +319,7 @@ function simulateEvent(element, eventName){
         options.clientY = options.pointerY;
         var evt = document.createEventObject();
         oEvent = extend(evt, options);
+        //console.log('fireEvent',eventName,oEvent);
         element.fireEvent('on' + eventName, oEvent);
     }
     return true;
