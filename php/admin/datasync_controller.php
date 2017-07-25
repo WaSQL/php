@@ -19,7 +19,7 @@
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
 		else{
-			unset($_SESSION['sync_target']);
+			$_SESSION['sync_target']=datasyncGetTarget();
 			unset($_SESSION['sync_target_auth']);
 			unset($_SESSION['sync_target_url']);
 			setView('sync_auth',1);
@@ -27,7 +27,7 @@
 		}
 	}
 	if(!isset($_SESSION['sync_target_auth'])){
-		unset($_SESSION['sync_target']);
+		$_SESSION['sync_target']=datasyncGetTarget();
 		unset($_SESSION['sync_target_auth']);
 		unset($_SESSION['sync_target_url']);
 		$json=array();
@@ -36,7 +36,7 @@
 	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
-			unset($_SESSION['sync_target']);
+			$_SESSION['sync_target']=datasyncGetTarget();
 			unset($_SESSION['sync_target_auth']);
 			unset($_SESSION['sync_target_url']);
 			setView('sync_auth',1);
