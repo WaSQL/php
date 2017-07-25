@@ -21,7 +21,7 @@
 		}
 		else{
 			$synctables=adminGetSynchronizeTables();
-			unset($_SESSION['sync_target']);
+			$_SESSION['sync_target']=syncronizeGetTarget();
 			unset($_SESSION['sync_target_auth']);
 			unset($_SESSION['sync_target_url']);
 			$json=array();
@@ -33,7 +33,7 @@
 		//check the log table once
 		checkDBTableSchema('_synchronize');
 		$synctables=adminGetSynchronizeTables();
-		unset($_SESSION['sync_target']);
+		$_SESSION['sync_target']=syncronizeGetTarget();
 		unset($_SESSION['sync_target_auth']);
 		unset($_SESSION['sync_target_url']);
 		setView('sync_auth',1);
@@ -42,7 +42,7 @@
 	global $setactive;
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
-			unset($_SESSION['sync_target']);
+			$_SESSION['sync_target']=syncronizeGetTarget();
 			unset($_SESSION['sync_target_auth']);
 			unset($_SESSION['sync_target_url']);
 			$synctables=adminGetSynchronizeTables();
