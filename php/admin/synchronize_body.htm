@@ -4,20 +4,23 @@
 <input type="hidden" name="func" value="sync" />
 <div class="container">
 	<div class="row">
-		<div class="col-sm-9">
+		<div class="col-sm-7">
 			<h2 style="margin:0px;"><span class="icon-sync w_warning"></span> Synchronize Manager</h2>
 			<div><?=implode(', ',$synctables);?></div>
 		</div>
-		<div class="col-sm-3 text-right">
+		<div class="col-sm-5 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
 				<tr>
 					<th class="text-left">Target Site</th>
 				</tr>
 				<tr>
-					<td class="text-left">
+					<td class="text-left w_big">
 						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn btn-danger btn-sm w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
 						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
-						<?=$_SESSION['sync_target'];?>
+						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
+						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
+						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
+						<?=$_SESSION['sync_target_url'];?>
 					</td>
 				</tr>
 			</table>
@@ -119,7 +122,7 @@
 					<th class="text-left">Target Site</th>
 				</tr>
 				<tr>
-					<td class="text-left"><?=$_SESSION['sync_target'];?></td>
+					<td class="text-left">~ not set yet ~</td>
 				</tr>
 			</table>
 		</div>
@@ -131,9 +134,9 @@
 				<h4>Authorization on Target Site</h4>
 				<div style="max-width:300px;">Provide authorization on the target system in order to push changes. <span class="w_danger">User MUST have admin access.</span></div>
 				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_SESSION['sync_target_user'];?>" />
+				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="" autocomplete="new-username" />
 				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_SESSION['sync_target_pass'];?>"  />
+				<input type="password" name="sync_target_pass" required="required" class="form-control" value="" autocomplete="new-password" />
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
