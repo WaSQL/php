@@ -19,18 +19,26 @@
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
 		else{
+			unset($_SESSION['sync_target']);
+			unset($_SESSION['sync_target_auth']);
+			unset($_SESSION['sync_target_url']);
 			setView('sync_auth',1);
 			return;
 		}
 	}
 	if(!isset($_SESSION['sync_target_auth'])){
-		//check the log table once
+		unset($_SESSION['sync_target']);
+		unset($_SESSION['sync_target_auth']);
+		unset($_SESSION['sync_target_url']);
+		$json=array();
 		setView('sync_auth',1);
 		return;
 	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
+			unset($_SESSION['sync_target']);
 			unset($_SESSION['sync_target_auth']);
+			unset($_SESSION['sync_target_url']);
 			setView('sync_auth',1);
 			return;
 		break;
@@ -80,10 +88,15 @@
 				$recs[$table]=array(
 					'name'=>$table,
 					'source_records'=>$rec['records'],
-					'source_fields'=>count($rec['fields'])
+					'source_fields'=>count($rec['fields']),
+					'internal'=>isWasqlField($table)?1:0
 				);
 			}
 			foreach($target_tables as $table=>$rec){
+				if(!isset($recs[$table]['name'])){
+					$recs[$table]['name']=$table;
+					$recs[$table]['internal']=isWasqlField($table)?1:0;
+				}
 				$recs[$table]['target_records']=$rec['records'];
 				$recs[$table]['target_fields']=count($rec['fields']);
 			}
@@ -106,6 +119,7 @@
 					}
 				}
 			}
+			$recs=sortArrayByKeys($recs, array('internal'=>SORT_ASC,'name'=>SORT_ASC));
 			setView('default',1);
 		break;
 	}
