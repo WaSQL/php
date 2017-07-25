@@ -80,17 +80,24 @@ function synchronizePost($load,$plain=0){
 			'_auth'		=> $_SESSION['sync_target_auth']
 		);
 	}
-	//request a sha of from the target for each record in each table.  Send in username to confirm that this user is admin on the target
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
-	$json=json_decode(base64_decode($post['body']),true);
-	if(!is_array($json)){
-		$json=json_decode($post['body'],true);
-		if(!is_array($json)){
-			echo '<h3>datasyncPost ERROR</h3>'.$post['body'];exit;
-		}
+	if(isset($post['error'])){
+		return array('error'=>$post['error']);
 	}
-	//return $post['body'];
-	return $json;
+	elseif(!strlen($post['body'])){
+		return array('error'=>printValue($post));
+	}
+	else{
+		$json=json_decode(base64_decode($post['body']),true);
+		if(!is_array($json)){
+			$json=json_decode($post['body'],true);
+			if(!is_array($json)){
+				return array('error'=>$post['body']);
+			}
+		}
+		return $json;
+	}
+	return array('error'=>json_encode($post));
 }
 function synchronizeGetChanges($tables){
 	global $USER;
