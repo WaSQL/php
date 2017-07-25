@@ -471,7 +471,7 @@ if(isAjax()){
 			echo '</div>'."\n";
 			exit;
     		break;
-    	case 'json':
+    	case 'decode':
 			$json=json_decode(trim($_REQUEST['json']),1);
 			if(!is_array($json)){
 				$json=json_last_error_msg();
@@ -1279,20 +1279,19 @@ if(isset($_REQUEST['_menu'])){
 			$_REQUEST['_menu']='list';
 			goto LIST_TABLE;
 		break;
-		case 'json':
+		case 'decode':
 			echo <<<ENDOFJSONFORM
 				<div class="row">
-					<div class="col-sm-12 w_bigger w_bold"><span class="icon-json"></span> JSON Viewer</div>
-				</div>
-				<div class="row">
 					<div class="col-sm-4">
-						<form method="POST" name="json_viewer" action="/{$PAGE['name']}" onsubmit="return ajaxSubmitForm(this,'json_decoded');">
-							<input type="hidden" name="_menu" value="json">
+						<h3><span class="icon-json"></span> JSON Decoder</h3>
+						<form method="POST" name="json_decoder_form" action="/{$PAGE['name']}" onsubmit="return ajaxSubmitForm(this,'json_decoder');">
+							<input type="hidden" name="_menu" value="decode">
+							<input type="hidden" name="func" value="json">
 							<textarea cols="7" rows="15" autofocus="true" name="json" class="form-control" placeholder="Enter JSON here"></textarea>
 							<div class="w_padtop text-right"><button class="btn btn-primary" type="submit">Decode JSON</button></div>
 						</form>
 					</div>
-					<div class="col-sm-8" id="json_decoded">
+					<div class="col-sm-8" id="json_decoder">
 					</div>
 				</div>
 ENDOFJSONFORM;
@@ -3661,10 +3660,10 @@ function adminMenu(){
 	$rtn .= '        	<ul>'."\n";
 	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=json"><span class="icon-json w_big w_grey"></span> JSON Debugger</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
+	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
@@ -3673,10 +3672,10 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> List Font Icons</a></li>'."\n";
-    $rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> List Server Vars</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> List System Info</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> Font Icons</a></li>'."\n";
+    //$rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> Server Vars</a></li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> WaSQL Update</a></li>'."\n";
