@@ -1,19 +1,22 @@
 <view:default>
 <div class="container">
 	<div class="row">
-		<div class="col-sm-9">
+		<div class="col-sm-7">
 			<h2 style="margin:0px;"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
 		</div>
-		<div class="col-sm-3 text-right">
+		<div class="col-sm-5 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
 				<tr>
 					<th class="text-left">Target Site</th>
 				</tr>
 				<tr>
-					<td class="text-left">
+					<td class="text-left w_big">
 						<view:unauth><a href="/php/admin.php?_menu=datasync&func=unauth" class="btn btn-danger btn-sm w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
 						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
-						<?=$_SESSION['sync_target'];?>
+						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
+						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
+						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
+						<?=$_SESSION['sync_target_url'];?>
 					</td>
 				</tr>
 			</table>
@@ -44,8 +47,10 @@
 					<td><div id="actions_<?=$rec['name'];?>" class="w_grey">
 						<view:error><?=$rec['error'];?></view:error>
 						<view:actions>
-							<a href="#" class="w_grey" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a>
-							<a href="#" class="w_grey w_padleft" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a>
+							<a href="#" class="w_grey" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a>
+							<view:sync_to_target><a href="#" class="w_grey w_padleft" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
+							<?=renderViewIf($rec['source_records']>0,'sync_to_target',$rec,'rec');?>
+
 						</view:actions>
 						<?=renderViewIfElse(isset($rec['error']),'error','actions',$rec,'rec');?>
 						</div>
@@ -102,7 +107,7 @@
 					<th class="text-left">Target Site</th>
 				</tr>
 				<tr>
-					<td class="text-left"><?=$_SESSION['sync_target'];?></td>
+					<td class="text-left">~ not set yet ~</td>
 				</tr>
 			</table>
 		</div>
@@ -112,11 +117,11 @@
 			<form method="post" name="diffform" action="/php/admin.php" onsubmit="return submitForm(this);">
 				<input type="hidden" name="_menu" value="datasync" />
 				<h4>Authorization on Target Site</h4>
-				<div style="max-width:300px;">Provide authorization on the target system in order to synchronize data. <span class="w_danger">User MUST have admin access.</span></div>
+				<div style="max-width:300px;">Provide authorization on the target system in order to synchronize database records. <span class="w_danger">User MUST have admin access.</span></div>
 				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_SESSION['sync_target_user'];?>" />
+				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="" autocomplete="new-username" />
 				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_SESSION['sync_target_pass'];?>"  />
+				<input type="password" name="sync_target_pass" required="required" class="form-control" value="" autocomplete="new-password" />
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
