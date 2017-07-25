@@ -28,7 +28,6 @@ include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
-$_REQUEST['debug']=1;
 global $USER;
 include_once("$progpath/user.php");
 global $wtables;
@@ -42,7 +41,7 @@ if(isset($_REQUEST['_pushfile'])){
 if($_SERVER['HTTP_HOST']=='locallive'){
 	//echo printValue($_REQUEST);exit;
 }
-//check for synchronize get_changes call
+//check for synchronize calls
 if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' || strtolower($_REQUEST['_menu'])=='datasync') && isset($_REQUEST['load'])){
 	$json=json_decode(base64_decode($_REQUEST['load']),true);
 	if(!isset($json['func'])){
@@ -313,7 +312,7 @@ if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv exp
     pushData($data,'csv','sqlprompt_export.csv');
     exit;
 }
-
+$_REQUEST['debug']=1;
 
 
 //get_magic_quotes_gpc fix if it is on
