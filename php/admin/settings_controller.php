@@ -26,6 +26,9 @@
 				else{$v=$_REQUEST[$key];}
 				$ok=editDBRecord(array('-table'=>'_settings','-where'=>"_id={$rec['_id']}",'key_value'=>$v));
 			}
+			unset($_SESSION['sync_target']);
+			unset($_SESSION['sync_target_auth']);
+			unset($_SESSION['sync_target_url']);
 			setView('processed',1);
 			return;
 		break;
