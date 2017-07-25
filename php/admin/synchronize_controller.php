@@ -14,13 +14,17 @@
 	if(isset($_REQUEST['sync_target_user']) && isset($_REQUEST['sync_target_pass'])){
 		 $user=addslashes($_REQUEST['sync_target_user']);
 		 $pass=addslashes($_REQUEST['sync_target_pass']);
+		 //echo printValue(array($user,$pass));exit;
 		 $json=synchronizeGetAuth($user,$pass);
-		 //echo printValue($json);exit;
 		 if(isset($json['auth'])){
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
 		else{
 			$synctables=adminGetSynchronizeTables();
+			unset($_SESSION['sync_target']);
+			unset($_SESSION['sync_target_auth']);
+			unset($_SESSION['sync_target_url']);
+			$json=array();
 			setView('sync_auth',1);
 			return;
 		}
@@ -29,13 +33,18 @@
 		//check the log table once
 		checkDBTableSchema('_synchronize');
 		$synctables=adminGetSynchronizeTables();
+		unset($_SESSION['sync_target']);
+		unset($_SESSION['sync_target_auth']);
+		unset($_SESSION['sync_target_url']);
 		setView('sync_auth',1);
 		return;
 	}
 	global $setactive;
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
+			unset($_SESSION['sync_target']);
 			unset($_SESSION['sync_target_auth']);
+			unset($_SESSION['sync_target_url']);
 			$synctables=adminGetSynchronizeTables();
 			setView('sync_auth',1);
 			return;
