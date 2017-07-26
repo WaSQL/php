@@ -115,6 +115,7 @@ function synchronizeGetChanges($tables){
 			}
 		}
 	}
+	//echprintValue($fields);exit;
 	$xfields[]='_marker_';
 	//get source
 	$source_recs=array();
