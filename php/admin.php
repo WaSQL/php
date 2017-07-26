@@ -4623,15 +4623,25 @@ function adminGetSynchronizeFields($table){
 	//echo printValue($recopts);exit;
 	$recs=getDBRecords($recopts);
 	//echo $table.printValue($recs);
-	if(!is_array($recs)){return $recs;}
+	//if(!is_array($recs)){return $recs;}
 	$flds=array();
-	$fields=getDBFields($table);
+	$fields=getDBFieldInfo($table);
 	$skip=array('css_min','js_min');
-	foreach($fields as $field){
+	foreach($fields as $field=>$info){
     	if(isset($recs[$field]) && $recs[$field]['synchronize'] !=1){continue;}
     	if(isWasqlField($field)){continue;}
     	if(in_array($field,$skip)){continue;}
-		$flds[]=$field;
+    	switch(strtolower($info['_dbtype'])){
+			case 'text':
+			case 'mediumtext':
+			case 'largetext':
+			case 'blob':
+			case 'varchar':
+			case 'char':
+				$flds[]=$field;
+			break;
+		}
+
 	}
 	return $flds;
 }
