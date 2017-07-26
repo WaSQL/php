@@ -1,7 +1,33 @@
 drop function Commissions.gl_Volume_Qual_Detail;
-CREATE function Commissions.gl_Volume_Qual_Detail(
-					 pn_Period_id		integer
-					,pn_Period_Batch_id	integer)
+CREATE function Commissions.gl_Volume_Qual_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			12-May-2017
+*
+* @describe		Returns a resultset of Translations detailing Qual PV/CV
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @return		table		
+*					integer		period_id
+*					integer		batch_id
+*					integer		customer_id
+*					varchar		country
+*					integer		sponsor_id
+*					integer		enroller_id
+*					integer		rank_id
+*					integer		rank_high_id
+*					integer		transaction_id
+*					integer		transaction_customer_id
+*		    		integer		order_number
+*					decimal		pv
+*
+* @example		select * from Commissions.gl_Volume_Qual_Detail(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		integer
+,pn_Period_Batch_id	integer)
 returns table (
 			 period_id 					integer
 			,batch_id					integer
@@ -19,21 +45,10 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		12-May-2017
-
-Purpose:	Returns a resultset of Translations detailing PV/CV
-
--------------------------------------------------------------------------------- */
 
 begin
+	/*
 	if gl_Period_isOpen(:pn_Period_id) = 1 then
-		-- if period is open use customer table
-	   	lc_Cust =
-	   		select *
-	   		from customer;
-	   		
 		return
 		Select 
 			  ct.period_id
@@ -48,7 +63,7 @@ begin
 			 ,ct.customer_id 		as transaction_customer_id
 			 ,ct.order_number
 			 ,ifnull(ct.pv,0)		as pv
-		From :lc_Cust c
+		From :lc_Customer c
 			,gl_Volume_Pv_Detail(:pn_Period_id, :pn_Period_Batch_id) ct
 			,customer_type t
 		where c.customer_id = ct.customer_id
@@ -68,17 +83,11 @@ begin
 			 ,rt.customer_id 		as transaction_customer_id
 			 ,rt.order_number
 			 ,ifnull(rt.pv,0)		as pv
-		From :lc_Cust r
+		From :lc_Customer r
 			,gl_Volume_Retail_Detail(:pn_Period_id, :pn_Period_Batch_id) rt
 		where r.customer_id = rt.customer_id;
 	else
-		-- if period is closed use customer_history table
-	   	lc_Cust_Hist =
-	   		select *
-	   		from customer_history
-	   		where period_id = :pn_Period_id
-	   		and batch_id = :pn_Period_Batch_id;
-		
+	*/
 		return
 		Select 
 			  ct.period_id
@@ -93,7 +102,7 @@ begin
 			 ,ct.customer_id 		as transaction_customer_id
 			 ,ct.order_number
 			 ,ifnull(ct.pv,0)		as pv
-		From :lc_Cust_Hist c
+		From gl_Customer(:pn_Period_id, :pn_Period_Batch_id) c
 			,gl_Volume_Pv_Detail(:pn_Period_id, :pn_Period_Batch_id) ct
 			,customer_type t
 		where c.customer_id = ct.customer_id
@@ -113,9 +122,9 @@ begin
 			 ,rt.transaction_customer_id
 			 ,rt.order_number
 			 ,ifnull(rt.pv,0)		as pv
-		From :lc_Cust_Hist r
+		From gl_Customer(:pn_Period_id, :pn_Period_Batch_id) r
 			,gl_Volume_Retail_Detail(:pn_Period_id, :pn_Period_Batch_id) rt
 		where r.customer_id = rt.customer_id;
-	end if;
+	--end if;
 	
 end;

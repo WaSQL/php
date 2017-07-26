@@ -1,8 +1,30 @@
 drop function Commissions.gl_Customer_Flag;
-CREATE function Commissions.gl_Customer_Flag(
-								 pn_Customer_id		integer
-								,pn_Period_id		integer
-								,pn_See_All			integer default 0)
+CREATE function Commissions.gl_Customer_Flag
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			10-Apr-2017
+*
+* @describe		Returns a resultset of all active customer flags for a given customer
+*
+* @param		integer pn_Customer_id 		Customer id
+* @param		integer pn_Period_id 		Commission Period
+* @param		integer [pn_See_All] 		1 - See All ; 0 - See Only Active
+*
+* @return		table
+*					integer		customer_flag_id
+*					integer		customer_id
+*					integer		flag_type_id
+*					nvarchar	flag_type
+*					nvarchar	flag_value
+*					date		beg_date
+*					date		end_date
+*
+* @example		select * from gl_Customer_Flag(1001, 10, 1);
+-------------------------------------------------------*/
+(pn_Customer_id		integer
+,pn_Period_id		integer
+,pn_See_All			integer default 0)
 returns table (
 			 customer_flag_id 	integer
 			,customer_id		integer 
@@ -14,13 +36,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		10-Apr-2017
-
-Purpose:	Returns a resultset of all active customer flags for a given customer
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ld_Current_Date		date;

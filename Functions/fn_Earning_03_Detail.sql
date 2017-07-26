@@ -1,8 +1,36 @@
 drop function Commissions.fn_Earning_03_Detail;
-CREATE function Commissions.fn_Earning_03_Detail(
-						 pn_Customer_id	integer
-						,pn_Period_id	integer
-						,ps_Locale		varchar(7) default 'en-US')
+CREATE function Commissions.fn_Earning_03_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			2-Jun-2017
+*
+* @describe		Returns a resultset of Retail Translations Detail
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+*
+* @return		table
+*					integer		id 
+*					nvarchar	name
+*					integer		rank_id
+*					integer		order_id
+*					nvarchar	trans_type
+*					decimal		pv
+*					decimal		cv
+*					integer		lvl
+*					integer		lvl_paid
+*					decimal		rate
+*					varchar		bonus
+*					varchar		bonus_ex
+*					decimal		bonus_sub
+*
+* @example		select * from fn_Earning_03_Detail(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id	integer
+,pn_Period_id	integer
+,ps_Locale		varchar(7) default 'en-US')
 returns table (
 			 id 				integer
 			,name				nvarchar(900) 
@@ -11,7 +39,6 @@ returns table (
 			,trans_type			nvarchar(20)
 			,pv					decimal(18,2)
 			,cv					decimal(18,2)
-			--,pct				integer
 			,lvl				integer
 			,lvl_paid			integer
 			,rate				decimal(18,5)
@@ -21,13 +48,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: 	Larry Cardon
-Created Date:	2-Jun-2017
-
-Purpose:		Returns a resultset of Retail Translations Detail
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Period_Batch_id	integer = gl_Period_Viewable(:pn_Period_id);
@@ -46,7 +66,6 @@ begin
 			,null as trans_type
 			,null as pv
 			,null as cv
-			--,null as pct
 			,null as lvl
 			,null as lvl_paid
 			,null as rate
@@ -64,7 +83,6 @@ begin
 			,a.trans_type
 			,a.pv
 			,a.cv
-			--,a.pct
 			,a.lvl
 			,a.lvl_paid
 			,a.rate

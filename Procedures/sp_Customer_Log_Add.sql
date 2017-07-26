@@ -36,7 +36,7 @@ begin
 		,entry_date
 		,processed_date)
 	values
-		(customer_log_id.nextval
+		(customer_id.nextval
 		,:pn_Customer_Log_Type_id
 		,:pn_Customer_id
 		,:pn_Source_Key_id

@@ -27,7 +27,7 @@ select
 	,create_time
 from sys.procedures
 where schema_name = upper('commissions')
-and lower(definition) like lower('%gl_exchange%')
+and lower(definition) like lower('%REQ_PREFERRED%')
 union all
 select 
 	 function_name	as object_name
@@ -37,6 +37,6 @@ select
 	,create_time
 from sys.functions
 where schema_name = upper('commissions')
-and lower(definition) like lower('%gl_exchange%')
-and lower(function_name) <> lower('gl_exchange')
+and lower(definition) like lower('%REQ_PREFERRED%')
+and lower(function_name) <> lower('REQ_PREFERRED')
 order by 1;

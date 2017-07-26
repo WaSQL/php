@@ -1,5 +1,22 @@
 drop function Commissions.fn_Customer_Flag_Type;
-CREATE function Commissions.fn_Customer_Flag_Type()
+CREATE function Commissions.fn_Customer_Flag_Type
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			19-May-2017
+*
+* @describe		Returns a resultset of all customer flag types and values
+*
+* @return		table
+*					integer		Flag_Type_id
+*					nvarchar	Flag_Description
+*					integer		Flag_Type_value_id
+*					nvarchar	Flag_Type_Value
+*					nvarchar	Flag_Type_Description
+*
+* @example		select * from fn_Customer_Flag_Type();
+-------------------------------------------------------*/
+()
 returns table (
 			 Flag_Type_id 			integer
 			,Flag_Description		nvarchar(50)
@@ -10,13 +27,6 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		18-Apr-2017
-
-Purpose:	Returns a resultset of all customer flag types and values
-
--------------------------------------------------------------------------------- */
 
 begin
 	return

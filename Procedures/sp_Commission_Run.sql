@@ -1,17 +1,22 @@
 drop Procedure Commissions.sp_Commission_Run;
-create Procedure Commissions.sp_Commission_Run(
-					 pn_Period_id		int
-					,pn_Period_Batch_id	int)
+create Procedure Commissions.sp_Commission_Run
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Stored Procedure
+* @date			5-Jul-2017
+*
+* @describe		Runs all commission engines according to flags set for the period batch
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @example		call Commissions.sp_Cap_Req_Snap(10);
+-------------------------------------------------------*/
+(pn_Period_id		integer
+,pn_Period_Batch_id	integer)
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		5-Jul-2017
-
-Purpose:	Runs all commission engines according to flags set for the period batch
-
--------------------------------------------------------------------------------- */
 
 Begin
 	declare ln_Clear				   	Integer;

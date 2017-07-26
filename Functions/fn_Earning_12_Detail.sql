@@ -1,8 +1,33 @@
 drop function Commissions.fn_Earning_12_Detail;
-CREATE function Commissions.fn_Earning_12_Detail(
-						 pn_Customer_id	integer
-						,pn_Period_id	integer
-						,ps_Locale		varchar(7) default 'en-US')
+CREATE function Commissions.fn_Earning_12_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			2-Jun-2017
+*
+* @describe		Returns a resultset of Professional Translations Detail
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+*
+* @return		table
+*					integer		id
+*					nvarchar	name
+*					nvarchar	type
+*					integer		order_id
+*					decimal		pv
+*					decimal		cv
+*					decimal		rate
+*					varchar		bonus
+*					varchar		bonus_ex
+*					decimal		bonus_sub
+*
+* @example		select * from fn_Earning_12_Detail(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id	integer
+,pn_Period_id	integer
+,ps_Locale		varchar(7) default 'en-US')
 returns table (
 			 id 				integer
 			,name				nvarchar(900) 
@@ -10,7 +35,6 @@ returns table (
 			,order_id			integer
 			,pv					decimal(18,2)
 			,cv					decimal(18,2)
-			--,pct				integer
 			,rate				decimal(18,5)
 			,bonus				varchar(50)
 			,bonus_ex			varchar(50)
@@ -18,13 +42,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: 	Larry Cardon
-Created Date:	2-Jun-2017
-
-Purpose:		Returns a resultset of Professional Translations Detail
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Period_Batch_id	integer = gl_Period_Viewable(:pn_Period_id);

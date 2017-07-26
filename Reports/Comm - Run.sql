@@ -1,3 +1,4 @@
+call commissions.sp_Commission_Run(13, 0);
 call commissions.sp_Commission_Run(14, 0);
 call commissions.sp_Commission_Run(15, 0);
 

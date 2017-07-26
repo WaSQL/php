@@ -1,19 +1,17 @@
-drop function commissions.gl_Period_isOpen;
-create function commissions.gl_Period_isOpen
+drop function commissions.gl_Period_Type;
+create function commissions.gl_Period_Type
 /*-------------------------------------------------------
 * @author		Larry Cardon
 * @category		Global Function
-* @date			22-May-2017
+* @date			20-Jul-2017
 *
-* @describe		Returns a boolean value:
-*				1 - Open
-*				0 - Closed
+* @describe		Returns the period type for a given period
 *
 * @param		integer		pn_Period_id 		Commission Period
 *
-* @return		Boolean		isOpen
+* @return		integer		Period_Type_id
 *
-* @example		call Commissions.gl_Period_isOpen(10);
+* @example		call Commissions.gl_Period_Type(10);
 -------------------------------------------------------*/
 (pn_Period_id	integer)
 returns ln_Result integer
@@ -23,9 +21,9 @@ returns ln_Result integer
 AS
 
 BEGIN
-	select map(count(*),0,0,1)
+	select period_type_id
 	into ln_Result
-	from period
-	where period_id = :pn_Period_id
-	and closed_date is null;
+	from Period
+	where period_id = :pn_Period_id;
+	
 END;

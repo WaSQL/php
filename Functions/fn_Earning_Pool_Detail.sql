@@ -1,8 +1,30 @@
 drop function commissions.fn_Earning_Pool_Detail;
-create function commissions.fn_Earning_Pool_Detail(
-								  pn_Customer_id 	integer
-								, pn_Period_id 		integer
-								, pn_Pool_type 		integer)
+create function commissions.fn_Earning_Pool_Detail
+/*--------------------------------------------------
+* @author       Del Stirling
+* @category     function
+* @date			5-Jun-2017
+*
+* @describe     returns drilldown data for the total pool payouts
+*
+* @param		integer pn_customer_id
+* @param		integer pn_period_id
+* @param		integer pn_pool_type
+*
+* @returns 		table
+*				nvarchar description
+*				integer shares
+*				integer shares_extra
+*				decimal share_value
+*				decimal rate
+*				varchar bonus
+*				varchar bonus_ex
+*
+* @example      select * from commissions.fn_Earning_Pool_Detail(1001, 10, 5)
+-------------------------------------------------------*/
+(pn_Customer_id 	integer
+,pn_Period_id 		integer
+,pn_Pool_type 		integer)
 returns table (
 	  description		nvarchar(50)
 	, shares 			integer
@@ -13,11 +35,6 @@ returns table (
 	, bonus_ex 			varchar(50))
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
-/*---------------------------------------------------------------
-by Del Stirling
-6/5/2017
-returns drilldown data for the total pool payouts
----------------------------------------------------------------*/
 as
 begin
 	declare ln_Period_Batch_id	integer;

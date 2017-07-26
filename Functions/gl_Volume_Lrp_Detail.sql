@@ -1,7 +1,40 @@
 drop function Commissions.gl_Volume_Lrp_Detail;
-CREATE function Commissions.gl_Volume_Lrp_Detail(
-					 pn_Period_id		integer
-					,pn_Period_Batch_id	integer)
+CREATE function Commissions.gl_Volume_Lrp_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			12-May-2017
+*
+* @describe		Returns a resultset of Translations detailing LRP PV/CV
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @return		table		
+*					integer		period_id
+*					integer		batch_id
+*					integer		customer_id
+*					integer		rank_id
+*					integer		rank_high_id
+*					integer		sponsor_id
+*					integer		enroller_id
+*					varchar		country
+*					integer		transaction_id
+*					integer		transaction_ref_id
+*					integer		type_id
+*					integer		category_id
+*					date		entry_date
+*					integer		order_number
+*					varchar		from_country
+*		    		varchar		from_currency
+*		    		varchar		to_currency
+*					decimal		pv
+*					decimal		cv
+*
+* @example		select * from Commissions.gl_Volume_Lrp_Detail(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		integer
+,pn_Period_Batch_id	integer)
 returns table (
 			 period_id 					integer
 			,batch_id					integer
@@ -26,13 +59,6 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		12-May-2017
-
-Purpose:	Returns a resultset of Translations detailing PV/CV
-
--------------------------------------------------------------------------------- */
 
 begin
 	return

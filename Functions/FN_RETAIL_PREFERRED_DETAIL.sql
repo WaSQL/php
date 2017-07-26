@@ -1,3 +1,4 @@
+-- DEPRICATED ----------------------------------------------------------------
 drop function commissions.FN_RETAIL_PREFERRED_DETAIL;
 create function commissions.FN_RETAIL_PREFERRED_DETAIL(
 	pn_customer_id 				integer

@@ -1,6 +1,22 @@
 drop function Commissions.gl_Exchange;
-CREATE function Commissions.gl_Exchange(
-						pn_Period_id	integer default 0)
+CREATE function Commissions.gl_Exchange
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			29-Mar-2017
+*
+* @describe		Returns the exchange rates of all currencies, given a period
+*
+* @param		integer [pn_Period_id] 		Commission Period
+*
+* @return		table
+*					varchar		Currency
+*					decimal		Rate
+*					integer		Round_Factor
+*
+* @example		select * from gl_Exchange();
+-------------------------------------------------------*/
+(pn_Period_id	integer default 0)
 returns table (
 			 Currency			varchar(5)
 			,Rate				decimal(18,8)
@@ -9,13 +25,6 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		29-Mar-2017
-
-Purpose:	Returns the exchange rates of all currencies, given a period
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ld_End_date		date;

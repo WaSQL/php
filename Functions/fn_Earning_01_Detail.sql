@@ -1,10 +1,41 @@
 drop function Commissions.fn_Earning_01_Detail;
-CREATE function Commissions.fn_Earning_01_Detail(
-						 pn_Customer_id	integer
-						,pn_Period_id	integer
-						,ps_Locale		varchar(7) default 'en-US'
-						,pn_Limit		integer default 100
-						,pn_Offset		integer	default 0)
+CREATE function Commissions.fn_Earning_01_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			2-Jun-2017
+*
+* @describe		Returns a resultset of Unilevel Translations Detail
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+* @param		varchar		[pn_Limit]			Number of Records to Return
+* @param		varchar		[pn_Offset]			Page Offset
+*
+* @return		table
+*					integer		id
+*					nvarchar	name
+*					integer		rank_id
+*					integer		trans_id
+*					nvarchar	trans_type
+*					decimal		pv
+*					decimal		cv
+*					integer		pct
+*					integer		lvl
+*					integer		lvl_paid
+*					decimal		rate
+*					varchar		bonus
+*					varchar		bonus_ex
+*					decimal		bonus_sub
+*
+* @example		select * from fn_Earning_01_Detail(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id	integer
+,pn_Period_id	integer
+,ps_Locale		varchar(7) default 'en-US'
+,pn_Limit		integer default 100
+,pn_Offset		integer	default 0)
 returns table (
 			 id 				integer
 			,name				nvarchar(900) 
@@ -23,13 +54,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: 	Larry Cardon
-Created Date:	2-Jun-2017
-
-Purpose:		Returns a resultset of Unilevel Translations Detail
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Period_Batch_id		integer = gl_Period_Viewable(:pn_Period_id);

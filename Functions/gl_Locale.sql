@@ -1,5 +1,19 @@
 drop function Commissions.gl_Locale;
-CREATE function Commissions.gl_Locale()
+CREATE function Commissions.gl_Locale
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			17-May-2017
+*
+* @describe		Returns a resultset of Locales
+*
+* @return		table
+*					varchar		locale
+*					nvarchar	display_name
+*
+* @example		select * from gl_Locale();
+-------------------------------------------------------*/
+()
 returns table (
 			 locale				varchar(7) 
 			,display_name		nvarchar(100))
@@ -7,13 +21,6 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		17-May-2017
-
-Purpose:	Returns a resultset of Locales
-
--------------------------------------------------------------------------------- */
 
 begin
 	return

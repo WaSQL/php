@@ -1,8 +1,38 @@
 drop function commissions.fn_Earning_02_Detail;
-create function commissions.fn_Earning_02_Detail(
-						  pn_Customer_id 	integer
-						, pn_Period_id 		integer
-						, ps_Locale			varchar(7) default 'en-US')
+create function commissions.fn_Earning_02_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			2-Jun-2017
+*
+* @describe		Returns a resultset of PO3 Translations Detail
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+*
+* @return		table
+*					integer		id
+*					nvarchar	name
+*					integer		rank_id
+*					decimal		qv
+*					decimal		pv_lrp
+*					decimal		egv_lrp
+*					decimal		tv
+*					integer		struct
+*					integer		lvl
+*					integer		cnt_lvl_1
+*					integer		cnt_lvl_2
+*					integer		cnt_lvl_3
+*					decimal		rate
+*					varchar		bonus
+*					varchar		bonus_ex
+*
+* @example		select * from fn_Earning_02_Detail(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id 	integer
+,pn_Period_id 		integer
+,ps_Locale			varchar(7) default 'en-US')
 	returns table (
 		  id 			integer
 		, name 			nvarchar(900)
@@ -21,17 +51,8 @@ create function commissions.fn_Earning_02_Detail(
 		, bonus_ex 		varchar(50))
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
-/* --------------------------------------------------------------------------------
-Created by: 	Del Stirling
-Created Date:	6/5/2017
+As 
 
-Purpose:		returns data for power of 3 dropdown
-
-Note:			6-Jun-2017 LTC	I reworked this function to meet basic stardards
-								and to return correct results.
-
--------------------------------------------------------------------------------- */
-as 
 begin
 	declare ln_Period_Batch_id		integer = gl_Period_Viewable(:pn_Period_id);
 	

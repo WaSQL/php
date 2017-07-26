@@ -1,8 +1,36 @@
 drop function Commissions.fn_Earning_01_Paid_to;
-CREATE function Commissions.fn_Earning_01_Paid_to(
-						 pn_Customer_id	integer
-						,pn_Period_id	integer
-						,ps_Locale		varchar(7) default 'en-US')
+CREATE function Commissions.fn_Earning_01_Paid_to
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			19-May-2017
+*
+* @describe		Returns a resultset of Unilevel Translations that are paid up 7 compressed levels
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+*
+* @return		table
+*					integer		id
+*					nvarchar	name
+*					integer		trans_id
+*					nvarchar	trans_type
+*					decimal		pv
+*					decimal		cv
+*					integer		pct
+*					integer		lvl
+*					integer		lvl_paid
+*					decimal		rate
+*					varchar		bonus
+*					varchar		bonus_ex
+*					decimal		bonus_sub
+*
+* @example		select * from fn_Earning_01_Paid_to(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id	integer
+,pn_Period_id	integer
+,ps_Locale		varchar(7) default 'en-US')
 returns table (
 			 id 			integer
 			,name			nvarchar(900) 
@@ -20,13 +48,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		19-May-2017
-
-Purpose:	Returns a resultset of Unilevel Translations that are paid up 7 compressed levels
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Period_Batch_id		integer = gl_Period_Viewable(:pn_Period_id);

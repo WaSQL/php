@@ -1,6 +1,26 @@
 drop function Commissions.gl_Validate_Enroller_Org;
-create function Commissions.gl_Validate_Enroller_Org(
-					  pn_Customer_id 	integer)
+create function Commissions.gl_Validate_Enroller_Org
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			12-May-2017
+*
+* @describe		Returns a resultset of any customer in the given org where the enroller is not within the org
+*
+* @param		integer	pn_Customer_id 		Customer id
+*
+* @return		table
+*					integer		Customer_id
+*					varchar		Customer
+*					integer		Sponsor_id
+*					varchar		Sponsor
+*					integer		Enroller_id
+*					varchar		Enroller
+*					integer		Level_id
+*
+* @example		select * from gl_Validate_Enroller_Org(1001);
+-------------------------------------------------------*/
+(pn_Customer_id 	integer)
 returns table (
 			 Customer_id 	integer
 			,Customer		varchar(50)

@@ -1,7 +1,19 @@
 drop procedure Commissions.sp_Customer_Clear;
-create procedure Commissions.sp_Customer_Clear(
-					 pn_Period_id		Integer
-					,pn_Period_Batch_id	Integer)
+create procedure Commissions.sp_Customer_Clear
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Stored Procedure
+* @date			20-Jul-2017
+*
+* @describe		Clears Customer summary values according to flags set for the period batch
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @example		call Commissions.sp_Customer_Clear(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		Integer
+,pn_Period_Batch_id	Integer)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
 AS
@@ -15,16 +27,9 @@ begin
     declare ln_Set_Volume_TV       		Integer;
     declare ln_Set_Volume_TW_CV     	Integer;
     declare ln_Set_Volume_Org       	Integer;
-    declare ln_isOpen					integer;
+    declare ln_isOpen					integer = gl_Period_isOpen(:pn_Period_id);
     
-    select map(count(*),0,0,1)
-    into ln_isOpen
-    from period
-    where period_id = :pn_Period_id
-    and closed_date is null;
-
-	--if gl_Period_isOpen(:pn_Period_id) = 1 then
-	if :ln_isOpen = 1 then
+    if :ln_isOpen = 1 then
 		update customer
 		set vol_1 = 0
 		  , vol_2 = 0

@@ -1,7 +1,46 @@
 drop function Commissions.gl_Volume_Pv_Detail;
-CREATE function Commissions.gl_Volume_Pv_Detail(
-					 pn_Period_id		integer
-					,pn_Period_Batch_id	integer)
+CREATE function Commissions.gl_Volume_Pv_Detail
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			12-May-2017
+*
+* @describe		Returns a resultset of Translations detailing PV/CV
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @return		table		
+*					integer		period_id
+*					integer		batch_id
+*					integer		source_id
+*					varchar		source
+*					integer		customer_id
+*					nvarchar	customer_name
+*					integer		customer_type_id
+*					varchar		customer_type
+*					integer		rank_id
+*					integer		rank_high_id
+*					integer		sponsor_id
+*					integer		enroller_id
+*					varchar		country
+*					integer		transaction_id
+*					integer		transaction_ref_id
+*					integer		type_id
+*					integer		category_id
+*					date		entry_date
+*		    		integer		order_number
+*					varchar		from_country
+*		    		varchar		from_currency
+*		    		varchar		to_currency
+*					decimal		pv
+*					decimal		cv
+*					decimal		sales_amt
+*
+* @example		select * from Commissions.gl_Volume_Pv_Detail(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		integer
+,pn_Period_Batch_id	integer)
 returns table (
 			 period_id 					integer
 			,batch_id					integer
@@ -32,20 +71,9 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		12-May-2017
-
-Purpose:	Returns a resultset of Translations detailing PV/CV
-
--------------------------------------------------------------------------------- */
 
 begin
-	-- Get Period Exchange Rates
-	lc_Exchange =
-		select *
-		from gl_Exchange(:pn_Period_id);
-		
+	/*
 	if gl_Period_isOpen(:pn_Period_id) = 1 then
 		-- if period is open use customer table
 		return
@@ -80,7 +108,7 @@ begin
 			 	on x1.currency = t.currency
 			 left outer join source s
 			 	on t.source_id = s.source_id
-		   , customer c
+		   , :lc_Customer c
 			 left outer join :lc_Exchange x2
 			 	on x2.currency = c.currency
 			 left outer join customer_type ct
@@ -91,6 +119,7 @@ begin
 	   	and (ifnull(t.value_1,0) != 0
 	   	 or  ifnull(t.value_2,0) != 0);
 	else
+	*/
 		-- if period is closed use customer_history table
 		return
 		Select 
@@ -120,12 +149,12 @@ begin
 		     ,ifnull(t.value_2,0 * (x2.rate / x1.rate))			as cv
 		     ,ifnull(t.value_3,0)								as sales_amt
 		From transaction t
-			 left outer join :lc_Exchange x1
+			 left outer join gl_Exchange(:pn_Period_id) x1
 			 	on x1.currency = t.currency
 			 left outer join source s
 			 	on t.source_id = s.source_id
-		   , customer_history c
-			 left outer join :lc_Exchange x2
+		   , gl_Customer(:pn_Period_id, :pn_Period_Batch_id) c
+			 left outer join gl_Exchange(:pn_Period_id) x2
 			 	on x2.currency = c.currency
 			 left outer join customer_type ct
 			 	on ct.type_id = c.type_id
@@ -136,6 +165,6 @@ begin
 	   	and ifnull(t.type_id,4) <> 0
 	   	and (ifnull(t.value_1,0) != 0
 	   	 or  ifnull(t.value_2,0) != 0);
-	end if;
+	--end if;
 	
 end;

@@ -1,7 +1,19 @@
 drop procedure Commissions.sp_Customer_Hier_Set;
-create procedure Commissions.sp_Customer_Hier_Set(
-					 pn_Period_id		int
-					,pn_Period_Batch_id	int)
+create procedure Commissions.sp_Customer_Hier_Set
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Stored Procedure
+* @date			20-Jul-2017
+*
+* @describe		Sets all Customer Hierarchy values
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @example		call Commissions.sp_Customer_Hier_Set(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		int
+,pn_Period_Batch_id	int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
 AS

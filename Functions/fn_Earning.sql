@@ -1,8 +1,28 @@
 drop function Commissions.fn_Earning;
-CREATE function Commissions.fn_Earning(
-						 pn_Customer_id	integer
-						,pn_Period_id	integer
-						,ps_Locale		varchar(7) default 'en-US')
+CREATE function Commissions.fn_Earning
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			19-May-2017
+*
+* @describe		Returns a resultset of Earning Totals
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		varchar		[ps_Locale]			Locale to Translate to
+*
+* @return		table
+*					integer		Earning_id
+*					nvarchar	display_name
+*					decimal		amount
+*					varchar		currency
+*					varchar		detail_function
+*
+* @example		select * from fn_Earning(1001, 10);
+-------------------------------------------------------*/
+(pn_Customer_id	integer
+,pn_Period_id	integer
+,ps_Locale		varchar(7) default 'en-US')
 returns table (
 			 Earning_id 		integer
 			,display_name		nvarchar(900) 
@@ -12,13 +32,6 @@ returns table (
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		19-May-2017
-
-Purpose:	Returns a resultset of Earning Totals
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Period_Batch_id		integer = gl_Period_Viewable(:pn_Period_id);

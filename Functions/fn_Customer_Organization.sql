@@ -1,10 +1,32 @@
 drop function Commissions.fn_Customer_Organization;
-create function Commissions.fn_Customer_Organization(
-					  pn_Customer_id 		integer
-					, pn_Period_id 			integer
-					, pn_Direction_id 		integer
-					, pn_Type_id			integer
-					, pn_Levels				integer default 2)
+create function Commissions.fn_Customer_Organization
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			15-Mar-2017
+*
+* @describe		Returns resultset of a customer's upine/downline
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Direction_id 	0 - Upline ; 1 - Downline
+* @param		integer		pn_Type_id 			0 - Sponsor Tree ; 1 - Enroller Tree
+* @param		varchar		[pn_Levels]			Number of levels to retrieve
+*
+* @return		table
+*					integer		Earning_id
+*					nvarchar	display_name
+*					decimal		amount
+*					varchar		currency
+*					varchar		detail_function
+*
+* @example		select * from fn_Customer_Organization(1001, 10, 1, 0, 3);
+-------------------------------------------------------*/
+(pn_Customer_id 		integer
+,pn_Period_id 			integer
+,pn_Direction_id 		integer
+,pn_Type_id				integer
+,pn_Levels				integer default 2)
 returns table (Customer_Root_id	integer
 			  ,Customer_id		integer
 			  ,Customer_name	varchar(50)
@@ -21,18 +43,6 @@ returns table (Customer_Root_id	integer
    	DEFAULT SCHEMA Commissions
 
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		15-Mar-2017
-
-Purpose:	Returns resultset of a customer's upine/downline
-
-Inputs:
-		pn_Direction_id: 0 Upline; 1 Downline
-		pn_Type_id: 0 Sponsor Tree; 1 Enroller Tree
-		pn_Levels: Number of levels to retrieve
-
--------------------------------------------------------------------------------- */
 
 begin
 	lc_Customer =

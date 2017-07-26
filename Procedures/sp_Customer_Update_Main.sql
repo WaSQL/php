@@ -148,7 +148,7 @@ begin
 			,TERMINATION_DATE
 			,PROCESSED_DATE)
 		select
-			 customer_log_id.nextval
+			 customer_id.nextval
 			,4
 			,customer_id
 			,source_key_id
@@ -250,7 +250,7 @@ begin
 			,TERMINATION_DATE
 			,PROCESSED_DATE)
 		select
-			 customer_log_id.nextval
+			 customer_id.nextval
 			,4
 			,customer_id
 			,source_key_id
@@ -285,7 +285,7 @@ begin
 			,TERMINATION_DATE
 			,PROCESSED_DATE)
 		select
-			 customer_log_id.nextval
+			 customer_id.nextval
 			,4
 			,customer_id
 			,source_key_id

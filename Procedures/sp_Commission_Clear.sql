@@ -1,17 +1,22 @@
 drop procedure Commissions.sp_Commission_Clear;
-create procedure Commissions.sp_Commission_Clear(
-					 pn_Period_id		Integer
-					,pn_Period_Batch_id	Integer)
+create procedure Commissions.sp_Commission_Clear
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Stored Procedure
+* @date			20-Jul-2017
+*
+* @describe		Clears Commission and Customer earning values according to flags set for the period batch
+*
+* @param		integer		pn_Period_id 		Commission Period
+* @param		integer		pn_Period_Batch_id 	Commission Batch
+*
+* @example		call Commissions.sp_Commission_Clear(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		Integer
+,pn_Period_Batch_id	Integer)
 	LANGUAGE SQLSCRIPT
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		5-Jul-2017
-
-Purpose:	Clears all commission and customer earning values according to flags set for the period batch
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Set_Level           	Integer;

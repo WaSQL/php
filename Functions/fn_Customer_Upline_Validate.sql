@@ -1,8 +1,28 @@
 drop function Commissions.fn_Customer_Upline_Validate;
-create function Commissions.fn_Customer_Upline_Validate(
-					  pn_Customer_id 		integer
-					, pn_Sponsor_id 		integer
-					, pn_Enroller_id 		integer)
+create function Commissions.fn_Customer_Upline_Validate
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Function
+* @date			19-May-2017
+*
+* @describe		Returns a Boolean value indicating a move/change is possible
+*				1) Customer can not be their own sponsor or enroller
+*				2) Customer signed up less than 14 days ago
+*				3) All Enrollers must be within the org
+*
+* @param		integer		pn_Customer_id 		Customer id
+* @param		integer		pn_Sponsor_id 		Sponsor id
+* @param		integer		pn_Enroller_id		Enroller id
+*
+* @return		Boolean Value
+*				0 - False
+*				1 - True
+*
+* @example		select * from fn_Customer_Upline_Validate();
+-------------------------------------------------------*/
+(pn_Customer_id 		integer
+,pn_Sponsor_id 			integer
+,pn_Enroller_id 		integer)
 returns result	integer
 					   	
 	LANGUAGE SQLSCRIPT 

@@ -1,8 +1,65 @@
 drop function Commissions.gl_Customer;
-CREATE function Commissions.gl_Customer(
-					 pn_Period_id		integer
-					,pn_Period_Batch_id	integer
-					,pn_Customer_id		integer default 0)
+CREATE function Commissions.gl_Customer
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			12-May-2017
+*
+* @describe		Returns a resultset of cusomters
+*
+* @param		integer pn_Period_id 		Commission Period
+* @param		integer pn_Period_Batch_id	Commission Batch
+* @param		integer [pn_Customer_id]	Customer id
+*
+* @return		table
+*					integer		period_id
+*					integer		batch_id
+*					integer		customer_id
+*					nvarchar	customer_name
+*					integer		hier_level
+*					integer		hier_rank
+*					integer		type_id
+*					integer		status_id
+*					integer		rank_id
+*					integer		rank_high_id
+*					integer		sponsor_id
+*					integer		enroller_id
+*					varchar		country
+*					nvarchar	currency
+*					decimal		exchange_rate
+*					integer		round_factor
+*					timestamp	comm_status_date
+*					timestamp	entry_date
+*					integer		version_id
+*					decimal		pv
+*					decimal		cv
+*					decimal		qv
+*					decimal		pv_lrp
+*					decimal		pv_lrp_template
+*					decimal		pv_retail
+*					decimal		pv_fs
+*					decimal		cv_lrp
+*					decimal		cv_lrp_template
+*					decimal		cv_retail
+*					decimal		cv_fs
+*					decimal		egv
+*					decimal		egv_lrp
+*					decimal		tv
+*					decimal		ov
+*					decimal		tw_cv
+*					integer		tv_waiver
+*					integer		pv_lrp_waiver
+*					integer		has_downline
+*					integer		has_faststart
+*					integer		has_retail
+*					integer		has_power3
+*					integer		has_earnings
+*
+* @example		select * from gl_Customer(10, 0);
+-------------------------------------------------------*/
+(pn_Period_id		integer
+,pn_Period_Batch_id	integer
+,pn_Customer_id		integer default 0)
 returns table (
 			 period_id 					integer
 			,batch_id					integer
@@ -50,13 +107,6 @@ returns table (
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		12-May-2017
-
-Purpose:	Returns a resultset of cusomters
-
--------------------------------------------------------------------------------- */
 
 begin
 	declare ln_Customer_id	integer = ifnull(:pn_Customer_id, 0);

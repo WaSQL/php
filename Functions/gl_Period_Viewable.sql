@@ -1,18 +1,24 @@
 drop function commissions.gl_Period_Viewable;
-create function commissions.gl_Period_Viewable(
-						 pn_Period_id	integer)
+create function commissions.gl_Period_Viewable
+/*-------------------------------------------------------
+* @author		Larry Cardon
+* @category		Global Function
+* @date			22-May-2017
+*
+* @describe		Returns the viewable batchid
+*
+* @param		integer		pn_Period_id 		Commission Period
+*
+* @return		integer		Batch_id
+*
+* @example		call Commissions.gl_Period_Viewable(10);
+-------------------------------------------------------*/
+(pn_Period_id	integer)
 returns ln_Result integer
 	LANGUAGE SQLSCRIPT
 	SQL SECURITY INVOKER
    	DEFAULT SCHEMA Commissions
 AS
-/* --------------------------------------------------------------------------------
-Created by: Larry Cardon
-Date:		22-May-2017
-
-Purpose:	Returns viewable batchid
-
--------------------------------------------------------------------------------- */
 
 BEGIN
 	declare exit handler for sqlexception 
