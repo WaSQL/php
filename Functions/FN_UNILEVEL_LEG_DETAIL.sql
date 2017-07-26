@@ -1,11 +1,38 @@
 drop function commissions.FN_UNILEVEL_LEG_DETAIL;
-create function commissions.FN_UNILEVEL_LEG_DETAIL(
-	pn_customer_id 			integer
-	, pn_leg_customer_id 	integer
-	, pn_period_id 			integer
-	, pn_target_rank_id		integer
-	, ls_locale				varchar(20) default 'en-US'
-	)
+create function commissions.FN_UNILEVEL_LEG_DETAIL
+/*--------------------------------------------------
+* @author       Del Stirling
+* @category     function
+* @date			5/18/2017
+*
+* @describe     returns the qualifiers and potential qualifiers for the specified customer in their specified leg
+*
+* @param		integer pn_customer_id
+* @param		integer pn_leg_customer_id
+* @param		integer pn_period_id
+* @param		integer pn_target_rank_id
+* @param		varchar [ps_locale]
+*
+* @returns 		table
+*				integer customer_id
+*				nvarchar cusotmer_name
+*				decimal pv
+*				decimal ov
+*				integer level
+*				integer rank_id
+*				varchar country
+*				varchar rank_description
+*				integer qualifier_flag
+*
+* @example      select * from commissions.fn_unilevel_leg_detail(1001, 1004, 14, 12)
+-------------------------------------------------------*/
+(
+pn_customer_id 			integer
+, pn_leg_customer_id 	integer
+, pn_period_id 			integer
+, pn_target_rank_id		integer
+, ps_locale				varchar(20) default 'en-US'
+)
 	returns table(
 		CUSTOMER_ID 		integer
 		, CUSTOMER_NAME 	nvarchar(900)
