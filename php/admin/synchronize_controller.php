@@ -160,7 +160,9 @@
 			global $target;
 			global $setactive;
 			$synctables=adminGetSynchronizeTables();
+
 			$changes=synchronizeGetChanges($synctables);
+			//echo printValue($changes);exit;
 			if(isset($changes['error'])){
 				$error=$changes['error'];
 				setView('error',1);
