@@ -885,7 +885,7 @@ function hanaQueryResults($query,$params=array()){
 			$field=strtolower(odbc_field_name($result,$i));
 	        $rec[$field]=odbc_result($result,$i);
 	    }
-	    if($fh){
+	    if(isset($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -904,7 +904,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 	}
 	odbc_free_result($result);
-	if($fh){
+	if(isset($fh)){
 		@fclose($fh);
 		return 1;
 	}
