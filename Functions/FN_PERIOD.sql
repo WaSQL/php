@@ -41,7 +41,17 @@ as
 BEGIN
 	return
 	select per.period_id PERIOD_ID
-		, per.period_id || ') ' || case when period_type_id = 1 then to_char(beg_date, 'yyyy-Mon') else extract(year from beg_date) || ' Wk ' || week(beg_date) end as DISPLAY_NAME
+		, per.period_id || ') ' || 
+			case period_type_id
+				when 1 then 
+					to_char(beg_date, 'yyyy-Mon') 
+				when 2 then
+					extract(year from beg_date) || ' Wk ' || week(beg_date)
+				when 3 then
+					to_char(beg_date, 'yyyy')
+				else 
+					to_char(beg_date, 'yyyy-Mon') 
+			end as DISPLAY_NAME
 		, per.BEG_DATE
 		, per.END_DATE
 		, per.CLOSED_DATE

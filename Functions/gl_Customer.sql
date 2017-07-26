@@ -7,9 +7,9 @@ CREATE function Commissions.gl_Customer
 *
 * @describe		Returns a resultset of cusomters
 *
-* @param		integer pn_Period_id 		Commission Period
-* @param		integer pn_Period_Batch_id	Commission Batch
-* @param		integer [pn_Customer_id]	Customer id
+* @param		integer [pn_Period_id] 			Commission Period
+* @param		integer [pn_Period_Batch_id]	Commission Batch
+* @param		integer [pn_Customer_id]		Customer id
 *
 * @return		table
 *					integer		period_id
@@ -57,8 +57,8 @@ CREATE function Commissions.gl_Customer
 *
 * @example		select * from gl_Customer(10, 0);
 -------------------------------------------------------*/
-(pn_Period_id		integer
-,pn_Period_Batch_id	integer
+(pn_Period_id		integer default null
+,pn_Period_Batch_id	integer default null
 ,pn_Customer_id		integer default 0)
 returns table (
 			 period_id 					integer
@@ -110,11 +110,29 @@ AS
 
 begin
 	declare ln_Customer_id	integer = ifnull(:pn_Customer_id, 0);
+	declare ln_Period_id	integer = :pn_Period_id;
+	declare ln_Period_Batch_id	integer = :pn_Period_Batch_id;
+	
+	-- If no period is given set to current open period
+	if :ln_Period_id is null then
+		select period_id
+		into ln_Period_id
+		from period
+		where closed_date is null
+		and period_type_id = 1;
+		
+		ln_Period_Batch_id = gl_Period_Viewable(:ln_Period_id);
+	end if;
+	
+	-- If no batch is given set to viewable batch
+	if :ln_Period_Batch_id is null then
+		ln_Period_Batch_id = gl_Period_Viewable(:ln_Period_id);
+	end if;
 		
 	-- Get Exchange Rates
 	lc_Exchange = 
 		select *
-		from gl_Exchange(:pn_Period_id);
+		from gl_Exchange(:ln_Period_id);
 		
 	-- Get Customer Type
 	lc_Customer_Type =
@@ -129,19 +147,19 @@ begin
 	-- Get Customer Flags
 	lc_Customer_Flag =
 		select *
-		from gl_Customer_Flag(0, :pn_Period_id);
+		from gl_Customer_Flag(0, :ln_Period_id);
 		
 	-- Get Versions
 	lc_Version =
 		select *
 		from version;
 		
-	if gl_Period_isOpen(:pn_Period_id) = 1 then
+	if gl_Period_isOpen(:ln_Period_id) = 1 then
 		-- if period is open use customer table
 		return
 		Select
-			 :pn_Period_id													as period_id
-			,:pn_Period_Batch_id											as batch_id
+			 :ln_Period_id													as period_id
+			,:ln_Period_Batch_id											as batch_id
 			,c.customer_id													as customer_id
 			,c.customer_name												as customer_name
 			,0																as hier_level
@@ -269,8 +287,8 @@ begin
 										  from :lc_Customer_Flag
 										  where customer_id = c.customer_id
 										  and flag_type_id = 2),c.currency)
-		Where c.period_id = :pn_Period_id
-		and c.batch_id = :pn_Period_Batch_id
+		Where c.period_id = :ln_Period_id
+		and c.batch_id = :ln_Period_Batch_id
 		and c.customer_id = map(:ln_Customer_id,0, c.customer_id, :ln_Customer_id);
 	end if;
 	

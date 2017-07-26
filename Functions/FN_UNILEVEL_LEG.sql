@@ -1,5 +1,4 @@
--- DEPRICATED ----------------------------------------------------------------
-drop function commissions.FN_UNILEVEL_LEG;
+DROP FUNCTION COMMISSIONS.FN_UNILEVEL_LEG;
 create function commissions.FN_UNILEVEL_LEG (
 	pn_customer_id 		integer
 	, pn_rank_id 		integer

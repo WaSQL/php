@@ -1,4 +1,3 @@
--- DEPRICATED ----------------------------------------------------------------
 drop function commissions.FN_UNILEVEL_LEG_DETAIL;
 create function commissions.FN_UNILEVEL_LEG_DETAIL(
 	pn_customer_id 			integer
