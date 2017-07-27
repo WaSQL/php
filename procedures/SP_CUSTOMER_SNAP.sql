@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_SNAP;
+drop procedure Commissions.sp_Customer_Snap;
 create procedure Commissions.sp_Customer_Snap(
 					  pn_Period_id		int)
    LANGUAGE SQLSCRIPT
