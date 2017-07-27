@@ -5,14 +5,26 @@
 */
 	loadExtras('git');
 	loadExtrasJs('codemirror');
-	//allow them to change the git path
-	if(isset($_REQUEST['gitpath']) && is_dir($_REQUEST['gitpath'])){
-    	$_SESSION['gitpath']=$_REQUEST['gitpath'];
+	unset($_SESSION['gitpath']);
+	//get path
+	if(!isset($_SESSION['gitpath'])){
+		$recs=getDBRecords(array(
+			'-table'=>'_settings',
+			'-where'=>"user_id=0 and key_name like 'wasql_git%'",
+			'-index'=>'key_name',
+			'-fields'=>'_id,key_name,key_value'
+		));
+		if(!isset($recs['wasql_git']['key_value']) || $recs['wasql_git']['key_value'] != 1){
+			setView('not_enabled',1);
+			return;
+		}
+		if(!isset($recs['wasql_git_path']['key_value']) || !is_dir($recs['wasql_git_path']['key_value'])){
+			setView('invalid_path',1);
+			return;
+		}
+		$_SESSION['gitpath']=$recs['wasql_git_path']['key_value'];
 	}
-	if(isset($_SESSION['gitpath']) && is_dir($_SESSION['gitpath'])){
-    	$gitpath=$_SESSION['gitpath'];
-	}
-	else{$gitpath=getWasqlPath();}
+	$gitpath=$_SESSION['gitpath'];
 	$config=gitConfigList($gitpath);
 	$git=gitStatus($gitpath);
 	//echo printValue($git);exit;
