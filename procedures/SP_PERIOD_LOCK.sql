@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_PERIOD_LOCK;
+drop procedure Commissions.sp_Period_Lock;
 create procedure Commissions.sp_Period_Lock(pn_Period_id	int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
