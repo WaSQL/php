@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_EARNING_07_CLEAR;
+drop procedure Commissions.sp_Earning_07_Clear;
 create procedure Commissions.sp_Earning_07_Clear(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
