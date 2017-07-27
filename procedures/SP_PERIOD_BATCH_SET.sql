@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_PERIOD_BATCH_SET;
+drop procedure Commissions.sp_Period_Batch_Set;
 create procedure Commissions.sp_Period_Batch_Set(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
