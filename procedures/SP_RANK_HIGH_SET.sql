@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_RANK_HIGH_SET;
+drop procedure Commissions.sp_Rank_High_Set;
 create procedure Commissions.sp_Rank_High_Set(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
