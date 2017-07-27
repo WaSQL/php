@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_CLEAR;
+drop procedure Commissions.sp_Customer_Clear;
 create procedure Commissions.sp_Customer_Clear
 /*-------------------------------------------------------
 * @author		Larry Cardon
