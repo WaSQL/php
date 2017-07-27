@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_ROLLUP_RANK;
+drop procedure Commissions.sp_Customer_Rollup_Rank;
 create procedure Commissions.sp_Customer_Rollup_Rank(
 						pn_Customer_id	integer)
 	LANGUAGE SQLSCRIPT
