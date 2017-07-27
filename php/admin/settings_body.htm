@@ -20,24 +20,24 @@
 		</div>
 		<div class="col-sm-8">
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-sm-6">
 					<h3 class="w_nowrap">
 						<input type="checkbox" data-type="checkbox" id="wasql_queries" style="display:none;" name="wasql_queries" value="1"<?=$recs['wasql_queries']['checked'];?> />
 						<label class="icon-mark" for="wasql_queries"></label>
 						<label for="wasql_queries"><span class="hidden-xs">Query</span> Monitor <span class="icon-database"></span></label>
 					</h3>
 				</div>
-				<div class="col-xs-2" style="padding:0px;">
+				<div class="col-sm-2" style="padding:0px;">
 					<label>Days</label>
 					<input type="text" class="form-control" name="wasql_queries_days" value="<?=$recs['wasql_queries_days']['key_value'];?>" />
 				</div>
-				<div class="col-xs-2" style="padding:0px;">
+				<div class="col-sm-2" style="padding:0px;">
 					<label>RunTime</label>
 					<input type="text" class="form-control" name="wasql_queries_time" value="<?=$recs['wasql_queries_time']['key_value'];?>" />
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 				Turn Status ON to log all database queries into the _queries table.
 				Used optimize queries and determine if you need change queries, add indexes to tables, or make other adjustments to increase page load speed.
 				Set Days to the number of days to record.
@@ -60,20 +60,20 @@
 		</div>
 		<div class="col-sm-8">
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-sm-6">
 					<h3 class="w_nowrap">
 						<input type="checkbox" data-type="checkbox" id="wasql_synchronize" style="display:none;" name="wasql_synchronize" value="1"<?=$recs['wasql_synchronize']['checked'];?> />
 						<label class="icon-mark" for="wasql_synchronize"></label>
 						<label for="wasql_synchronize">Sync<span class="hidden-xs">hronize Sites</span> <span class="icon-sync"></span></label>
 					</h3>
 				</div>
-				<div class="col-xs-3" style="padding:0px;">
+				<div class="col-sm-3" style="padding:0px;">
 					<label>Target Host:</label>
 					<?=settingsSyncSites('wasql_synchronize_slave',$recs['wasql_synchronize_slave']['key_value']);?>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 				Turn ON to synchronize this host to a target host.
 				Tables that have synchronize selected by default are _pages,_templates,_fielddata,_tabledata,_cron, and _reports.
 				The synchronize checkbox is found in the properties window of each table.
@@ -83,23 +83,29 @@
 	</div>
 	<div class="row well">
 		<div class="col-sm-4">
-			</div>
+			<h3 class="w_nowrap">
+				<input type="checkbox" data-type="checkbox" id="wasql_errors" style="display:none;" name="wasql_errors" value="1"<?=$recs['wasql_errors']['checked'];?> />
+				<label class="icon-mark" for="wasql_errors"></label>
+				<label for="wasql_errors"><span class="hidden-xs">Capture</span> Errors <span class="badge w_dangerback">12</span></label>
+			</h3>
+			Capture code errors into the _errors table and errors to the menu when errors exist.
+		</div>
 		<div class="col-sm-8">
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-sm-6">
 					<h3 class="w_nowrap">
 						<input type="checkbox" data-type="checkbox" id="wasql_git" style="display:none;" name="wasql_git" value="1"<?=$recs['wasql_git']['checked'];?> />
 						<label class="icon-mark" for="wasql_git"></label>
 						<label for="wasql_git"><span class="icon-git w_biggest"></span> <span class="hidden-xs">Repo</span></label>
 					</h3>
 				</div>
-				<div class="col-xs-6" style="padding:0px;">
+				<div class="col-sm-6" style="padding:0px;">
 					<label>Repository Path</label>
 					<input type="text" class="form-control" name="wasql_git_path" value="<?=$recs['wasql_git_path']['key_value'];?>" />
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 				Turn Git Repo and set the path to use WaSQL as your interface a <span class="icon-git"></span> repository.
 				</div>
 			</div>
