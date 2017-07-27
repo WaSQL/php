@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_STATUS_UPDATE;
+drop procedure commissions.sp_customer_status_update;
 create procedure commissions.sp_customer_status_update
 /*------------------------------------------------------------------------------------
 * @author       Del Stirling
