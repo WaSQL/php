@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_VOLUME_TV_SET;
+drop procedure Commissions.sp_Volume_Tv_Set;
 create procedure Commissions.sp_Volume_Tv_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
