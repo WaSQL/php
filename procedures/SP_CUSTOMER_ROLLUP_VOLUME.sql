@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_ROLLUP_VOLUME;
+drop procedure Commissions.sp_Customer_Rollup_Volume;
 create procedure Commissions.sp_Customer_Rollup_Volume(
 						 pn_Customer_id 		integer
 						,pn_PV					double
