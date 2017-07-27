@@ -3404,9 +3404,12 @@ function adminMenu(){
 	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
+		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'."\n";
+	}
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repository</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
