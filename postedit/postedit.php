@@ -260,6 +260,7 @@ function errorMessage($msg){
 function successMessage($msg){
 	global $settings;
 	global $progpath;
+	global $chost;
 	$msg=trim($msg);
 	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
@@ -270,6 +271,7 @@ function successMessage($msg){
 function soundAlarm($type='success'){
 	global $settings;
 	global $progpath;
+	global $chost;
 	if(isset($settings['sound'][$type])){
 		if(is_file("{$progpath}/{$settings['sound'][$type]}")){
 			$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound'][$type]}";
@@ -277,13 +279,15 @@ function soundAlarm($type='success'){
 			return;
 		}
 		elseif(isset($settings['sound']['gender'])){
+			$soundmsg=$settings['sound'][$type];
+			$soundmsg=str_replace('%name%',$chost,$soundmsg);
 			switch(strtolower($settings['sound']['gender'])){
 				case 'f':
 				case 'female':
-					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$settings['sound'][$type]}\"";
+					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$soundmsg}\"";
 				break;
 				default:
-					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$settings['sound'][$type]}\"";
+					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$soundmsg}\"";
 				break;
 			}
 			$ok=exec($cmd);
