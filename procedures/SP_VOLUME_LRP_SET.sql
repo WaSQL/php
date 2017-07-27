@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_VOLUME_LRP_SET;
+drop procedure Commissions.sp_Volume_Lrp_Set;
 create procedure Commissions.sp_Volume_Lrp_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
