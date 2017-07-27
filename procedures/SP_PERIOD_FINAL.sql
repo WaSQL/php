@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_PERIOD_FINAL;
+drop procedure Commissions.sp_Period_Final;
 create procedure Commissions.sp_Period_Final(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
