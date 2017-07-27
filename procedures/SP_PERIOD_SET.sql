@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_PERIOD_SET;
+drop procedure Commissions.sp_Period_Set;
 create procedure Commissions.sp_Period_Set(pn_Period_Type_id	int)
    LANGUAGE SQLSCRIPT
    DEFAULT SCHEMA Commissions
