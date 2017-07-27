@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_EARNING_01_REQ_SNAP;
+drop procedure Commissions.sp_Earning_01_Req_Snap;
 create procedure Commissions.sp_Earning_01_Req_Snap(
 					 pn_Period_id		int)
    LANGUAGE SQLSCRIPT
