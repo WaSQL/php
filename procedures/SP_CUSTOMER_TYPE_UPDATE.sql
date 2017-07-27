@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_TYPE_UPDATE;
+drop procedure commissions.sp_customer_type_update;
 create procedure commissions.sp_customer_type_update
 /*------------------------------------------------------------------------------------
 * @author       Del Stirling
