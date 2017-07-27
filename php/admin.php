@@ -3662,7 +3662,8 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repository</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
@@ -3678,7 +3679,6 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'."\n";
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> WaSQL Update</a></li>'."\n";
 	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'."\n";
 	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
