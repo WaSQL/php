@@ -32,14 +32,12 @@ global $USER;
 include_once("$progpath/user.php");
 global $wtables;
 $wtables=getWasqlTables();
+//check WaSQL tables
 foreach($wtables as $wtable){
 	if(!isDBTable($wtable)){$ok=createWasqlTable($wtable);}
 }
 if(isset($_REQUEST['_pushfile'])){
 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
-}
-if($_SERVER['HTTP_HOST']=='locallive'){
-	//echo printValue($_REQUEST);exit;
 }
 //check for synchronize calls
 if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' || strtolower($_REQUEST['_menu'])=='datasync') && isset($_REQUEST['load'])){
@@ -351,21 +349,9 @@ if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTEN
  	if(isset($_REQUEST['processFileUploads']) && $_REQUEST['processFileUploads']=='off'){}
  	else{processFileUploads();}
     }
-if(isset($_REQUEST['_action']) && $_REQUEST['_action']=='settings' && $_REQUEST['_setfield']=='_admin_settings_'){
-	$PrevConfigSettings=getDBAdminSettings();
-	if($PrevConfigSettings['logo'] && !$_REQUEST['logo_remove']){
-    	foreach($PrevConfigSettings as $key=>$val){
-        	if(preg_match('/^logo/i',$key) && !strlen($_REQUEST[$key])){$_REQUEST[$key]=$val;}
-		}
-		unset($_REQUEST['logo_error']);
-		unset($_REQUEST['logo_prev']);
-	}
-}
 if(isset($_REQUEST['_action'])){
  	$ok=processActions();
    	}
-
-
 //get rid of some dumb Requests keys like __ktv
 foreach($_REQUEST as $key=>$val){
 	if(preg_match('/^\_\_[a-z]{2,4}$/',$key)){unset($_REQUEST[$key]);}
@@ -404,17 +390,11 @@ if(isAjax()){
 		case 'settings':
 		case 'synchronize':
 		case 'datasync':
-			echo adminViewPage($_REQUEST['_menu']);
-			exit;
+			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');
-			exit;
+			echo adminViewPage('export');exit;
 		break;
-    	case 'admin_settings':
-    		echo adminSettings();
-    		exit;
-    		break;
     	case 'cronboard':
     		echo adminCronBoard();
     		exit;
@@ -480,40 +460,10 @@ if(isAjax()){
 			exit;
     	break;
     	case 'manual':
-			echo adminViewPage('manual');
-			exit;
-    	case 'manual_old':
-			//echo '<div class="w_centerpop_title">Documentation</div>'."\n";
-			//echo '<div class="w_centerpop_content" style="height:600px;overflow:auto;">'."\n";
-    		if(isset($_REQUEST['examples'])){
-            	switch(strtolower($_REQUEST['examples'])){
-                	case 'js':
-                		$jspath=realpath("{$progpath}/../wfiles/js");
-                		//echo "jspath:{$jspath}";
-                		$html=getFileContents("{$jspath}/examples.html");
-                		if(preg_match('/<body>(.+)<\/body>/is',$html,$m)){
-                        	$html=$m[1];
-						}
-                		echo evalPHP($html);
-                		echo '</div>'."\n";
-                		exit;
-                	break;
-				}
-			}
-    		if(!is_file("{$progpath}/temp/manual.json")){
-				global $Manual;
-				wasqlRebuildManual();
-			}
-			else{
-            	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
-			}
-            echo wasqlBuildManualList();
-			echo '</div>'."\n";
-    		exit;
-    		break;
+			echo adminViewPage('manual');exit;
+		break;
     	case 'sqlprompt':
-			echo adminViewPage('sqlprompt');
-			exit;
+			echo adminViewPage('sqlprompt');exit;
 		break;
     	case 'tabledetails':
     		if(isset($_REQUEST['table'])){
@@ -1073,11 +1023,10 @@ if(isset($_REQUEST['_menu'])){
 		case 'git':
 		case 'reports':
 		case 'htmlbox':
-			echo adminViewPage($_REQUEST['_menu']);
+			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');
-			exit;
+			echo adminViewPage('export');exit;
 		break;
 		case 'editor':
 			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'."\n";
@@ -1297,27 +1246,7 @@ if(isset($_REQUEST['_menu'])){
 ENDOFJSONFORM;
 		break;
 		case 'manual':
-			echo adminViewPage('manual');
-			exit;
-		case 'manual_old':
-			global $Manual;
-			if(isset($_REQUEST['rebuild']) || !is_file("{$progpath}/temp/manual.json")){
-				wasqlRebuildManual();
-			}
-			else{
-            	$Manual=json_decode(getFileContents("{$progpath}/temp/manual.json"),true);
-			}
-			echo '<div class="w_lblue w_bold w_bigger" style="color:#1b68ae;"><span class="icon-help-circled w_bigger w_bold"></span> WaSQL Documentation</div>'."\n";
-			echo '<div class="w_lblue w_small" style="margin-left:50px;"> as of '.date('F j, Y, g:i a',$Manual['timestamp']).' <a href="?_menu=manual_old&rebuild=1" class="w_link w_success w_smallest"><span class="icon-refresh"></span> Rebuild</a></div>'."\n";
-			echo '		<form method="POST" name="documentation_searchform" action="/'.$PAGE['name'].'" class="w_form form-inline" onsubmit="ajaxSubmitForm(this,\'manual_content\');return false;">'."\n";
-			echo '			<input type="hidden" name="_menu" value="manual_old">'."\n";
-			echo '			<input type="hidden" name="_type" value="user">'."\n";
-			$val=isset($_REQUEST['_search'])?$_REQUEST['_search']:'';
-			echo '			<input type="text" class="form-control" name="_search" value="'.$val.'" onFocus="this.select();">'."\n";
-			echo '			<button type="submit" class="btn btn-primary">Search</button>'."\n";
-			echo '		</form><br />'."\n";
-			echo buildOnLoad("document.documentation_searchform._search.focus();");
-			echo wasqlBuildManualTree();
+			echo adminViewPage('manual');exit;
 			break;
 		case 'profile':
 			//My Profile
@@ -1344,153 +1273,6 @@ ENDOFJSONFORM;
 			break;
 		case 'settings':
 			echo adminViewPage('settings');exit;
-			global $SETTINGS;
-			echo '<div style="width:800px;padding:10px;">'."\n";
-			//update
-			echo buildFormBegin('',array('_menu'=>'settings','-name'=>'settingsform','_action'=>'settings'));
-			echo '<table class="table table-bordered table-striped">'."\n";
-			echo '	<tr><th colspan="3" class="w_align_left w_big"><span class="icon-gear"></span> Global Settings</th></tr>'."\n";
-			//Wasql Crons
-			$key='wasql_crons';
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
-			$help='Turn ON to use WaSQL crons.  WaSQL crons allow you to schedule and manage externals processes - when and how often they run. It also records the result of such processes.';
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo '			<span class="icon-cron w_big w_warning"></span> <b class="w_big w_warning">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" title="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			else{
-				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			echo '		</td>'."\n";
-			echo '		<td>'.$formfield.'</td>'."\n";
-			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
-			echo '	</tr>'."\n";
-			//Wasql Queries
-			$key='wasql_queries';
-			$help='Turn Status ON to log all database queries into the _queries table.  This is normally turned OFF.  Turning it on should help you optimize queries and determine if you need change queries, add indexes to tables, or make other adjustments to increase page load speed.';
-			$help .= '<br><span class="icon-info"></span> Set Days to the number of days to record.';
-			$help .= '<br><span class="icon-info"></span> Set Time to the minimum number of seconds before recording - 0 logs all.';
-			$help .= '<br><span class="icon-info"></span> Setting User will limit the queries to only run when that user is logged in.';
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo '			<span class="icon-database-empty w_danger"></span>'."\n";
-			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			else{
-				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			echo '		</td>'."\n";
-			echo '		<td>'."\n";
-			echo buildTableBegin(2,0);
-			//status,days,time,user
-			echo '			<tr>'."\n";
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
-			echo '				<td>Status<br>'.$formfield.'</td>'."\n";
-			$key='wasql_queries_days';
-			$SETTINGS[$key]=setValue(array($SETTINGS[$key],10));
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'text','mask'=>'integer','requiredmsg'=>'Enter the number of days to keep the query log','maskmsg'=>'Must be a valid integer','width'=>40));
-			echo '				<td>Days<br>'.$formfield.'</td>'."\n";
-			$key='wasql_queries_time';
-			$SETTINGS[$key]=setValue(array($SETTINGS[$key],.25));
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'text','mask'=>'number','requiredmsg'=>'Enter the minimum run length in seconds to record to the query log','maskmsg'=>'Must be a valid integer','width'=>40));
-			echo '				<td>Time<br>'.$formfield.'</td>'."\n";
-
-			echo '			</tr><tr>'."\n";
-			$key='wasql_queries_user';
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>'select _id from _users order by firstname,lastname,_id','dvals'=>'select firstname,lastname from _users order by firstname,lastname,_id'));
-			echo '				<td colspan="2">Limit to Specific User<br>'.$formfield.'</td>'."\n";
-			echo '			</tr>'."\n";
-			echo buildTableEnd();
-			echo '		</td><td><span class="icon-help-circled"></span> '.$help.'</td></tr>'."\n";
-			//Wasql Stats Logs
-			$help='Turn Status ON to log all page views into the _access table.  This is normally turned OFF.  Turning it on also populate the _access_summary table.';
-			$help .= '<br><span class="icon-info"></span> Turn Search Bots on in log search bot requests. Otherwise, hits from search bots will be ignored.';
-			$help .= '<br><span class="icon-info"></span> Set dbname if you are want to write the access logs to a different database.';
-			$help .= '<div class="w_bold w_red w_big"><span class="icon-warning"></span> Warning: Turning this feature on may slow down high traffic sites.</div>';
-			$key='wasql_access';
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo '			<img src="/wfiles/_access.gif" style="vertical-align:middle;" alt="" />'."\n";
-			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			else{
-				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}			echo '		</td>'."\n";
-			echo '		<td>'."\n";
-			echo buildTableBegin(2,0);
-			//status
-			echo '				<tr>'."\n";
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
-			echo '					<td>Status<br>'.$formfield.'</td>'."\n";
-			$key='wasql_access_bot';
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON"));
-			echo '					<td>Search Bots<br>'.$formfield.'</td>'."\n";
-			echo '				</tr>'."\n";
-			$dbs=getDBRecords(array('-query'=>"show databases"));
-			$tvals=array();
-			foreach($dbs as $db){
-				if(strtolower($CONFIG['dbname']) != strtolower($db['database'])){$tvals[]=$db['database'];}
-				}
-			sort($tvals);
-			$tvalstr=implode("\r\n",$tvals);
-			$key='wasql_access_dbname';
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>$tvalstr,'dvals'=>$tvalstr));
-			echo '				<tr><td colspan="2">Alt DBName<br>'.$formfield.'</td></tr>'."\n";
-			echo '			</tr>'."\n";
-			echo buildTableEnd();
-			echo '		</td><td><span class="icon-help-circled"></span> '.$help.'</td></tr>'."\n";
-			//Wasql synchronize
-			$key='wasql_synchronize';
-			$formfield=getDBFieldTag(array('-table'=>'_settings','-field'=>'key_value','name'=>"set_global_{$key}",'value'=>$SETTINGS[$key],'inputtype'=>'select','width'=>'','tvals'=>"0\r\n1",'dvals'=>"OFF\r\nON",'onchange'=>"if(this.value==1){document.settingsform.set_global_{$key}_master.disabled=0;document.settingsform.set_global_{$key}_slave.disabled=0;document.settingsform.set_global_{$key}_tables.disabled=0;document.settingsform.set_global_{$key}_master.setAttribute('required',1);document.settingsform.set_global_{$key}_slave.setAttribute('required',1);document.settingsform.set_global_{$key}_tables.setAttribute('required',1);}else{document.settingsform.set_global_{$key}_master.disabled=1;document.settingsform.set_global_{$key}_slave.disabled=1;document.settingsform.set_global_{$key}_tables.disabled=1;document.settingsform.set_global_{$key}_master.setAttribute('required',0);document.settingsform.set_global_{$key}_slave.setAttribute('required',0);document.settingsform.set_global_{$key}_tables.setAttribute('required',0);}"));
-			$help='Turn ON to enable synchronize manager between two databases.'."\n";
-			$help.='Tables that have synchronize selected by default are _pages,_templates,_fielddata,_tabledata,_cron, and _reports.'."\n";
-			$help.='The synchronize checkbox is found in the properties window of each table.';
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo '			<span class="icon-sync w_warning w_big w_bold"></span>'."\n";
-			echo '			<b class="w_big w_dblue">'.friendlyName($key)."</b>\n";
-			if($SETTINGS[$key]==1){
-				echo '			<div align="center"><span class="icon-power w_success w_bold w_biggest w_link w_block w_pad" alt="On" onclick="document.settingsform.set_global_'.$key.'.value=0;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			else{
-				echo '			<div align="center"><span class="icon-power w_danger w_bold w_biggest w_link w_block w_pad" alt="Off" onclick="document.settingsform.set_global_'.$key.'.value=1;document.settingsform.submit();" style="cursor:pointer;"></span></div>'."\n";
-			}
-			echo '		</td>'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo "<div>{$formfield}</div>\n";
-			$tvals=array();
-			foreach($dbs as $db){
-				$tvals[]=$db['database'];
-				}
-			sort($tvals);
-			$tvalstr=implode("\r\n",$tvals);
-			$disabled=$SETTINGS[$key]==1?0:1;
-			$required=$SETTINGS[$key]==1?1:0;
-			//Master
-			$subkey=$key.'_master';
-			if(!strlen($SETTINGS[$subkey])){$SETTINGS[$subkey]=$CONFIG['dbname'];}
-			echo "<div>Staging/Live {$disabled}</div>\n";
-			$formfield=getDBFieldTag(array('requiredmsg'=>'Select Staging Database','message'=>'-- Staging DB --','required'=>$required,'disabled'=>$disabled,'-table'=>'_settings','-field'=>'key_value','width'=>'','name'=>"set_global_{$subkey}",'value'=>$SETTINGS[$subkey],'inputtype'=>'select','tvals'=>$tvalstr,'dvals'=>$tvalstr));
-			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><span class="icon-database w_warning"></span> S '.$formfield.'</div>'."\n";
-			//slave
-			$subkey=$key.'_slave';
-			$formfield=getDBFieldTag(array('requiredmsg'=>'Select Live Database','message'=>'-- Live DB --','required'=>$required,'disabled'=>$disabled,'-table'=>'_settings','-field'=>'key_value','width'=>'','name'=>"set_global_{$subkey}",'value'=>$SETTINGS[$subkey],'inputtype'=>'select','tvals'=>$tvalstr,'dvals'=>$tvalstr));
-			echo '<div style="font-weight:bold;color:#CCC;font-size:14px;"><span class="icon-database w_success"></span> L&nbsp;  '.$formfield.'</div>'."\n";
-			echo '		</td>'."\n";
-			echo '		<td><span class="icon-help-circled"></span> '.$help.'</td>'."\n";
-			echo '	</tr>'."\n";
-
-			echo buildTableEnd();
-			echo buildFormSubmit("Save Settings");
-			echo buildFormEnd();
-			echo '</div>'."\n";
-			//echo printValue($_REQUEST);
 			break;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
@@ -2572,15 +2354,7 @@ LIST_TABLE:
 			echo '</table>'."\n";
 			break;
 		case 'sqlprompt':
-			echo adminViewPage('sqlprompt');
-			exit;
-			//echo '<div class="w_lblue w_bold w_bigger"> SQL Prompt</div>'."\n";
-			if(isset($_REQUEST['_qid']) && isNum($_REQUEST['_qid'])){
-            	$rec=getDBRecord(array('-table'=>"_queries",'_id'=>$_REQUEST['_qid']));
-            	if(is_array($rec)){$_REQUEST['sqlprompt_command']="EXPLAIN\r\n".$rec['query'];}
-			}
-			echo sqlPrompt();
-			//echo printValue($_REQUEST);
+			echo adminViewPage('sqlprompt');exit;
 			break;
 		case 'optimize':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'."\n";
@@ -3063,70 +2837,10 @@ LIST_TABLE:
 			//echo printValue($_FILES);
 			break;
 		case 'export':
-			echo adminViewPage('export');
-			exit;
+			echo adminViewPage('export');exit;
 		break;
-		case 'export':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-export w_biggest w_warning"></span> Export to xml</div>'."\n";
-			echo buildFormBegin('/php/admin.php',array('_menu'=>"export"));
-			echo '<input id="isapp" type="checkbox" name="isapp" value="1"> <label for="isapp"> Export as an application</label><br />'."\n";
-			$tables=getDBTables();
-			echo '<table class="table table-bordered table-striped">'."\n";
-			$cols=array('Table','Schema','Meta','Data');
-			$th=array();
-			foreach($cols as $col){
-				array_push($th,'<input type="checkbox" onclick="return checkAllElements(\'id\',\'ck_'.$col.'\',this.checked)">'." {$col}");
-            	}
-			echo buildTableTH($th);
-			foreach($tables as $table){
-				$td=array();
-				foreach($cols as $col){
-					$val='<input ck_table="'.$table.'"  id="ck_'.$col.'" type="checkbox"';
-					if($col=='Table'){
-						$val .= ' name="export[]" value="'.$table.'" onclick="return checkAllElements(\'ck_table\',\''.$table.'\',this.checked)"';
-						if(isset($_REQUEST['export']) && is_array($_REQUEST['export']) && in_array($table,$_REQUEST['export'])){
-							$val .= ' checked';
-                    		}
-						}
-					else{
-						$val .= ' name="'.$table.'_'.$col.'" value="1"';
-						if(isset($_REQUEST[$table.'_'.$col]) &&  $_REQUEST[$table.'_'.$col]==1){
-							$val .= ' checked';
-                    		}
-						}
-
-					$val .= '>';
-					if($col=='Table'){$val .= " {$table}";}
-					array_push($td,$val);
-					}
-				echo buildTableTD($td,array('class'=>"w_smaller"));
-            	}
-
-			//export specific pages option if _pages is not checked
-			$recs=getDBRecords(array('-table'=>'_pages','-order'=>'name'));
-			echo '	<tr><th colspan="4"><input type="checkbox" onclick="return checkAllElements(\'id\',\'pages\',this.checked)"> Only Export specific pages (Data)</th></tr>'."\n";
-			echo '	<tr><td colspan="4"><div style="height:100px;overflow:auto;">'."\n";
-			foreach($recs as $rec){
-				echo '	<input type="checkbox" id="pages" name="_pages_recs[]" value="'.$rec['_id'].'"> '.$rec['name']."<br>\n";
-        		}
-        	echo '	</div></td></tr>'."\n";
-        	//export specific templatees option if _pages is not checked
-			$recs=getDBRecords(array('-table'=>'_templates','-order'=>'name'));
-			echo '	<tr><th colspan="4"><input type="checkbox" onclick="return checkAllElements(\'id\',\'templates\',this.checked)"> Only Export specific templates (Data)</th></tr>'."\n";
-			echo '	<tr><td colspan="4"><div style="height:60px;overflow:auto;">'."\n";
-			foreach($recs as $rec){
-				echo '	<input type="checkbox" id="templates" name="_templates_recs[]" value="'.$rec['_id'].'"> '.$rec['name']."<br>\n";
-        		}
-        	echo '	</div></td></tr>'."\n";
-			echo buildTableEnd();
-
-			echo buildFormSubmit('Export','','','icon-export');
-			echo buildFormEnd();
-			//echo printValue($_REQUEST);
-			break;
 		case 'datasync':
-			echo adminViewPage($_REQUEST['_menu']);
-			exit;
+			echo adminViewPage($_REQUEST['_menu']);exit;
 		case 'searchreplace':
 			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'."\n";
 			break;
@@ -3183,6 +2897,29 @@ function adminShowSessionLog($sessionID){
 	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><span class="icon-erase w_danger"></span> Clear Error Log</a></div>'."\n";
 	$rtn .= getFileContents($errfile);
 	return $rtn;
+}
+//---------- begin function adminConfigSettings ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
+function adminConfigSettings(){
+	$recs=getDBRecords(array(
+		'-table'=>'_settings',
+		'user_id'=>0,
+		'-index'=>'key_name',
+		'-fields'=>'_id,key_name,key_value'
+	));
+	foreach($recs as $key=>$rec){
+		if($rec['key_value']==1){
+			$recs[$key]['checked']=' checked';
+		}
+		elseif(!strlen($rec['key_value'])){
+			$recs[$key]['checked']='';
+			$recs[$key]['key_value']=0;
+		}
+	}
+	return $recs;
 }
 
 //---------- begin function adminClearSessionLog ----
@@ -3635,8 +3372,14 @@ function adminMenu(){
 		$rtn .= '			</ul>'."\n";
 		$rtn .= '		</li>'."\n";
 	}
+	//git
+	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
+		$rtn .= '		<li>'."\n";
+		$rtn .= '			<a href="/php/admin.php?_menu=git" class="w_topmenu"><span class="icon-git w_big w_bold"></span><span class="hidden-xs hidden-sm"> Repo</span></a>'."\n";
+		$rtn .= '		</li>'."\n";
+	}
 	//errors
-	if(isDBTable('_errors')){
+	if((isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1) && isDBTable('_errors')){
 		$error_count=getDBCount(array('-table'=>'_errors','archived'=>0));
 		//echo "Errors: {$error_count}";exit;
 		if($error_count >0){
@@ -3686,7 +3429,6 @@ function adminMenu(){
 	$rtn .= '		</li>'."\n";
 	//Settings Link
 	$rtn .= '     	<li><a style="padding:0px 10px 0px 10px;" title="Settings" href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span></a></li>'."\n";
-	//$rtn .= '     	<li style="margin-left:15px;"><a href="/php/admin.php?_menu=settings" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',\'_menu=admin_settings\');"><span class="icon-gear"></span></a></li>'."\n";
 
 	//end menu
 	$rtn .= '	</ul>'."\n";
@@ -3901,108 +3643,6 @@ function tableOptions($table='',$params=array()){
 	return $rtn;
 	}
 
-
-//---------- begin function adminSettings ----
-/**
- * @author slloyd
- * @exclude  - this function is for internal use only and thus excluded from the manual
- */
-function adminSettings(){
-	//exclude:true
-	/*
-	Main Menu Settings
-		toggle icons, toggle text, toggle organize tables by first letter
-		top fade color, bottom fade color, bottom border color
-		text color, hover background color, hover text color
-		fixed width, Full Width
-		logo, logo url
-		reset default menu settings
-	Action Menu Settings
-		Toggle icons, toggle text
-		reset default menu settings
-	*/
-	global $ConfigSettings;
-	$old_request=$_REQUEST;
-	$_REQUEST=$ConfigSettings;
-	$setfield='_admin_settings_';
-	$rtn='';
-	$rtn .= buildFormBegin('',array('-name'=>"adminSettingsForm",'_action'=>"settings",'_menu'=>"admin_settings",'_userid'=>"-1",'_setfield'=>$setfield,'-multipart'=>1,'-onsubmit'=>'return submitForm(this);'));
-	$rtn .= '<div class="w_bold w_bigger w_lblue w_pad"><span class="icon-gear"></span> Admin Settings</div>'."\n";
-	$rtn .= '<div id="adminsettings" style="height:450px;width:450px;overflow:scroll;padding-right:20px;">'."\n";
-	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Main Menu</div>'."\n";
-	//$rtn .= '	<div class="mainmenu_fade_color_bot mainmenu_text_color w_big" style="padding-left:3px;">Icons and Text Settings</div>'."\n";
-	//icons, text, tablesbyletter
-	$tvals="ICO";
-	$dvals="Show Icons";
-	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"mainmenu_toggle",'inputtype'=>'checkbox','tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
-	$rtn .= '		<table class="w_pad" width="100%">'."\n";
-	//top fade color, bottom fade color, bottom border color
-	$rtn .= '			<tr valign="bottom"><td>Top Fade</td><td>Bottom Fade</td><td>Bottom Border</td></tr>'."\n";
-	$rtn .= '			<tr valign="top">'."\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"mainmenu_fade_color_top",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"mainmenu_fade_color_bot",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"mainmenu_border_color_bot",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '			</tr>'."\n";
-	//text color, hover background color, hover text color
-	$rtn .= '			<tr valign="bottom"><td>Text Color</td><td>Hover Background</td><td></td></tr>'."\n";
-	$rtn .= '			<tr valign="top">'."\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"mainmenu_text_color",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"mainmenu_hover_background",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td></td>'."\n";
-	$rtn .= '			</tr>'."\n";
-	$rtn .= '		</table>'."\n";
-	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=mainmenu\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
-
-	//Action Menu
-	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Action Menu</div>'."\n";
-	//icons, text, tablesbyletter
-	$tvals="ICO\r\nTXT";
-	$dvals="Show Icons\r\nShow Text";
-	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"actionmenu_toggle",'inputtype'=>'checkbox','tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
-	$rtn .= '		<table class="w_pad" width="100%">'."\n";
-	//text color, hover background color, hover text color
-	$rtn .= '			<tr valign="bottom"><td>Text Color</td><td>Hover Background</td><td></td></tr>'."\n";
-	$rtn .= '			<tr valign="top">'."\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"actionmenu_text_color",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"actionmenu_hover_background",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td></td>'."\n";
-	$rtn .= '			</tr>'."\n";
-	$rtn .= '		</table>'."\n";
-	//reset
-	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=actionmenu\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
-
-	//Content Settings
-	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Content Position</div>'."\n";
-	//Fixed Width Center or Full Width Left
-	$tvals="fixed\r\nfull";
-	$dvals="Fixed Width Center\r\nFull Width Left";
-	$rtn .= '	<div>'. buildFormField('_pages','title',array('name'=>"content_position",'inputtype'=>"radio",'tvals'=>$tvals,'dvals'=>$dvals)).'</div>'."\n";
-	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=content\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
-
-	//Table settings
-	$rtn .= '	<div id="adminmenu" class="w_bold"><span class="icon-gear"></span> Table Colors and Shading</div>'."\n";
-	//top fade color, bottom fade color, bottom border color
-	$rtn .= '		<table class="w_pad" width="100%">'."\n";
-	$rtn .= '			<tr valign="bottom"><td>TH Text Color</td><td>TH Background</td><td>Even Row Color</td></tr>'."\n";
-	$rtn .= '			<tr valign="top">'."\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"table_header_text",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"table_header_background",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '				<td>'. buildFormField('_pages','title',array('name'=>"table_even_background",'inputtype'=>'color'))."</td>\n";
-	$rtn .= '			</tr>'."\n";
-	$rtn .= '		</table>'."\n";
-	//reset
-	//reset
-	$rtn .= '	<div style="padding-left:3px;"><a class="w_link w_red" href="#" onclick="return ajaxGet(\'/php/css.php\',\'null\',\'default=table\');"><span class="icon-reset"></span> Reset to default settings</a></div>'."\n";
-
-	$rtn .= '</div>'."\n";
-	$rtn .= '<div align="right" class="w_pad">'.buildFormSubmit('Save Changes').'</div>'."\n";
-	$rtn .= buildFormEnd();
-	$_REQUEST=$old_request;
-	return $rtn;
-}
 
 /* sync and diff functions used in admin.php */
 //---------- begin function syncGetChanges ----
