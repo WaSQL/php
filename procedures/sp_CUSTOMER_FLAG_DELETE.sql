@@ -1,4 +1,4 @@
-DROP PROCEDURE CUSTOMER_FLAG_DELETE;
+drop procedure commissions.CUSTOMER_FLAG_DELETE;
 create procedure commissions.CUSTOMER_FLAG_DELETE
 /*--------------------------------------------------
 * @author       Del Stirling
