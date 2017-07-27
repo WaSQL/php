@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_VOLUME_EGV_SET;
+drop procedure Commissions.sp_Volume_Egv_Set;
 create procedure Commissions.sp_Volume_Egv_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
