@@ -1,4 +1,4 @@
-DROP PROCEDURE CUSTOMER_FLAG_UPSERT;
+drop procedure commissions.CUSTOMER_FLAG_UPSERT;
 create procedure commissions.CUSTOMER_FLAG_UPSERT
 /*--------------------------------------------------
 * @author       Del Stirling
