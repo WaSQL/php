@@ -1,4 +1,4 @@
-DROP PROCEDURE CUSTOMER_UPDATE;
+drop procedure commissions.CUSTOMER_UPDATE;
 create procedure commissions.CUSTOMER_UPDATE
 /*--------------------------------------------------
 * @author       Del Stirling
