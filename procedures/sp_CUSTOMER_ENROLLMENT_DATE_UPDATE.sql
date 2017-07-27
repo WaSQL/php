@@ -1,4 +1,4 @@
-DROP PROCEDURE CUSTOMER_ENROLLMENT_DATE_UPDATE;
+drop procedure commissions.CUSTOMER_ENROLLMENT_DATE_UPDATE;
 create procedure commissions.CUSTOMER_ENROLLMENT_DATE_UPDATE
 /*-------------------------------------------------
 * @author       Del Stirling
