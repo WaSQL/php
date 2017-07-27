@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_VOLUME_FS_SET;
+drop procedure Commissions.sp_Volume_Fs_Set;
 create procedure Commissions.sp_Volume_Fs_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
