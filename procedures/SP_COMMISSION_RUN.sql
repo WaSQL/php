@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_COMMISSION_RUN;
+drop Procedure Commissions.sp_Commission_Run;
 create Procedure Commissions.sp_Commission_Run
 /*-------------------------------------------------------
 * @author		Larry Cardon
