@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_VOLUME_ORG_SET;
+drop Procedure Commissions.sp_Volume_Org_Set;
 create Procedure Commissions.sp_Volume_Org_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
