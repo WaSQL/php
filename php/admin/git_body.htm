@@ -1,17 +1,10 @@
 <view:default>
-<script language="javascript">
-function gitChangePath(){
-	var p=prompt('New git path');
-	window.location='/php/admin.php?_menu=git&gitpath='+p
-}
-</script>
 <div class="container-fluid">
 	<div class="row-sm-12">
 		<div>
 			<div class="w_right w_lblue"><?=$git['status'];?></div>
 			<div class="w_bigger w_lblue w_bold">
-				<span class="icon-git w_bigger"></span> WaSQL Repository Manager - <?=$git['repo_path'];?>
-				<span class="icon-edit w_big w_grey w_pointer" onclick="gitChangePath();"></span>
+				<span class="icon-git w_biggest"></span> Repository - <?=$git['repo_path'];?>
 			</div>
 		</div>
 	</div>
@@ -97,6 +90,16 @@ function gitChangePath(){
 	</div>
 </div>
 </view:default>
+
+<view:not_enabled>
+	<h3>Git is not Enabled</h3>
+	To enable git use the settings option in the top right menu
+</view:not_enabled>
+
+<view:invalid_path>
+	<h3>Invalid Git Path</h3>
+	To set the git path use the settings option in the top right menu
+</view:invalid_path>
 
 <view:details>
 	<div class="w_centerpop_title">Git File Contents - <?=$file['name'];?></div>
