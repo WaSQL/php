@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_EARNING_04_SET;
+drop Procedure Commissions.sp_Earning_04_Set;
 create Procedure Commissions.sp_Earning_04_Set(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
