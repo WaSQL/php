@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_QUAL_LEG_CLEAR;
+drop procedure Commissions.sp_Customer_Qual_Leg_Clear;
 create procedure Commissions.sp_Customer_Qual_Leg_Clear(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
