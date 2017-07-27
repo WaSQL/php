@@ -235,7 +235,12 @@ function hanaDBConnect($params=array()){
 	$params=hanaParseConnectParams($params);
 	if(!isset($params['-dbname'])){return $params;}
 	if(isset($params['-single'])){
-		$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
+		if(isset($params['-cursor'])){
+			$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+		}
+		else{
+			$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+		}
 		if(!is_resource($dbh_hana_single)){
 			$err=odbc_errormsg();
 			echo "hanaDBConnect single connect error:{$err}".printValue($params);
@@ -247,7 +252,12 @@ function hanaDBConnect($params=array()){
 	if(is_resource($dbh_hana)){return $dbh_hana;}
 
 	try{
-		$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC );
+		if(isset($params['-cursor'])){
+			$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+		}
+		else{
+			$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+		}
 		if(!is_resource($dbh_hana)){
 			$err=odbc_errormsg();
 			echo "hanaDBConnect error:{$err}".printValue($params);
@@ -518,7 +528,7 @@ function hanaEditDBRecord($params){
 				}
         	break;
 		}
-		
+
         $updates[]="{$k}='{$v}'";
 	}
 	$updatestr=implode(', ',$updates);
@@ -879,11 +889,17 @@ function hanaQueryResults($query,$params=array()){
     	if(!$fh){echo 'hanaQueryResults error: Failed to open '.$params['-filename'];exit;}
 	}
 	else{$recs=array();}
+	if(isset($params['-binmode'])){
+		odbc_binmode($result, $params['-binmode']);
+	}
+	if(isset($params['-longreadlen'])){
+		odbc_longreadlen($result,$params['-longreadlen']);
+	}
 	while(odbc_fetch_row($result)){
 		$rec=array();
-	    for($i=1;$i<=odbc_num_fields($result);$i++){
-			$field=strtolower(odbc_field_name($result,$i));
-	        $rec[$field]=odbc_result($result,$i);
+	    for($z=1;$z<=odbc_num_fields($result);$z++){
+			$field=strtolower(odbc_field_name($result,$z));
+	        $rec[$field]=odbc_result($result,$z);
 	    }
 	    if(isset($fh)){
         	if($header==0){
