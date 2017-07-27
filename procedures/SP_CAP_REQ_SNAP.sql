@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CAP_REQ_SNAP;
+drop procedure Commissions.sp_Cap_Req_Snap;
 create procedure Commissions.sp_Cap_Req_Snap
 /*-------------------------------------------------------
 * @author		Larry Cardon
@@ -48,5 +48,4 @@ begin
 				
 		commit;
 	end if;
-
 end;
