@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_FLAG_SNAP;
+drop procedure Commissions.sp_Customer_Flag_Snap;
 create procedure Commissions.sp_Customer_Flag_Snap
 /*-------------------------------------------------------
 * @author		Larry Cardon
