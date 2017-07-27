@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_LOG_ADD;
+drop procedure Commissions.sp_Customer_Log_Add;
 create procedure Commissions.sp_Customer_Log_Add(
 						 		 pn_Customer_id					integer
 						 		,pn_Customer_Log_Type_id		integer
