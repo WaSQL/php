@@ -20,7 +20,7 @@
 		</div>
 		<div class="col-sm-8">
 			<div class="row">
-				<div class="col-xs-8">
+				<div class="col-xs-6">
 					<h3 class="w_nowrap">
 						<input type="checkbox" data-type="checkbox" id="wasql_queries" style="display:none;" name="wasql_queries" value="1"<?=$recs['wasql_queries']['checked'];?> />
 						<label class="icon-mark" for="wasql_queries"></label>
@@ -77,6 +77,30 @@
 				Turn ON to synchronize this host to a target host.
 				Tables that have synchronize selected by default are _pages,_templates,_fielddata,_tabledata,_cron, and _reports.
 				The synchronize checkbox is found in the properties window of each table.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row well">
+		<div class="col-sm-4">
+			</div>
+		<div class="col-sm-8">
+			<div class="row">
+				<div class="col-xs-6">
+					<h3 class="w_nowrap">
+						<input type="checkbox" data-type="checkbox" id="wasql_git" style="display:none;" name="wasql_git" value="1"<?=$recs['wasql_git']['checked'];?> />
+						<label class="icon-mark" for="wasql_git"></label>
+						<label for="wasql_git"><span class="icon-git w_biggest"></span> <span class="hidden-xs">Repo</span></label>
+					</h3>
+				</div>
+				<div class="col-xs-6" style="padding:0px;">
+					<label>Repository Path</label>
+					<input type="text" class="form-control" name="wasql_git_path" value="<?=$recs['wasql_git_path']['key_value'];?>" />
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12">
+				Turn Git Repo and set the path to use WaSQL as your interface a <span class="icon-git"></span> repository.
 				</div>
 			</div>
 		</div>
