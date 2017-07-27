@@ -1,4 +1,4 @@
-DROP PROCEDURE SP_CUSTOMER_RANK_CLEAR;
+drop procedure Commissions.sp_Customer_Rank_Clear;
 create procedure Commissions.sp_Customer_Rank_Clear(
 					 pn_Period_id		int
 					,pn_Period_Batch_id	int)
