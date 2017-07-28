@@ -1,95 +1,84 @@
 <view:default>
+<script language="javascript">
+function gitCall(func,div){
+	if(undefined == div){div='git_details';}
+	return ajaxGet('/php/admin.php',div,{_menu:'git',func:func});
+}
+</script>
 <div class="container-fluid">
-	<div class="row-sm-12">
-		<div>
-			<div class="w_right w_lblue"><?=$git['status'];?></div>
-			<div class="w_bigger w_lblue w_bold">
-				<span class="icon-git w_biggest"></span> Repository - <?=$git['repo_path'];?>
-			</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<h3 style="padding:0px;margin:0px;"><span class="icon-git w_biggest"></span> Repository - <?=$_SESSION['git_path'];?></h3>
 		</div>
 	</div>
-	<div class="row-sm-12">
-		<form method="post" name="gitform" action="/php/admin.php">
-		<input type="hidden" name="_menu" value="git" />
-		<input type="hidden" name="func" value="" />
-		<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
-		<table class="table table-striped table-bordered table-hover table-condensed">
-			<tr>
-				<th><?=buildFormCheckAll('data-class','file');?></th>
-				<th><a href="/php/admin.php?_menu=git&sort=name">File Name</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=ext">Type</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=status">Status</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=size">Size</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=_edate_age">Edited</a></th>
-				<th><a href="/php/admin.php?_menu=git&sort=lines">Lines</a></th>
-				<th>Commit Message</th>
-			</tr>
-			<view:_file>
-			<tr>
-				<td>
-					<input type="checkbox" data-type="checkbox" style="display:none;" id="id_<?=sha1($file['name']);?>" data-filetype="<?=$file['type'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=encodeBase64($file['name']);?>" />
-					<label for="id_<?=sha1($file['name']);?>" class="icon-mark"></label>
-				</td>
-				<td>
-					<div class="w_right">
-						<a href="#" class="w_link w_pad" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=encodeBase64($file['name']);?>'});" title="diff"><span class="icon-hash"></span></a>
-						<a href="#" class="w_link w_pad" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=encodeBase64($file['name']);?>'});"  title="log"><span class="icon-list"></span></a>
-					</div>
-					<label for="id_<?=sha1($file['name']);?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=$file['name'];?></label>
-				</td>
-				<td><a href="#" title="Check all off this type" onclick="return checkAllElements('data-filetype','<?=$file['type'];?>',1);"><?=$file['type'];?></a></td>
-				<td><a href="#" title="Check all off this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=$file['status'];?></a></td>
-				<td class="text-right"><?=$file['size_verbose'];?></td>
-				<td class="text-right"><?=$file['_edate_age_verbose'];?></td>
-				<td class="text-right"><?=$file['lines'];?></td>
-				<td><input type="text" name="msg_<?=$file['guid'];?>" value="<?$key='msg_'.$file['guid'];return isset($_REQUEST[$key])?$_REQUEST[$key]:'';?>" class="form-control input-sm" placeholder="commit message" /></td>
-			</tr>
-			</view:_file>
-			<?=renderEach('_file',$git['files'],array('-alias'=>'file'));?>
-		</table>
-		<div class="row">
-			<div class="col-sm-4">
-				<input type="text" name="msg" value="<?=$_REQUEST['msg'];?>" class="form-control input-sm" placeholder="global commit message" />
+	<div class="row">
+		<div class="col-sm-9 w_padtop">
+			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return submitForm(this);">
+			<input type="hidden" name="_menu" value="git" />
+			<input type="hidden" name="func" value="" />
+			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
+			<table class="table table-striped table-bordered table-hover table-condensed">
+				<tr>
+					<th><?=buildFormCheckAll('data-class','file',array('-label'=>''));?></th>
+					<th>File Name</th>
+					<th>Status</th>
+					<th>Edited</th>
+					<th>Lines</th>
+					<th>Commit Message</th>
+				</tr>
+				<view:file>
+				<tr>
+					<td>
+						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" style="display:none;" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>" />
+						<label for="id_<?=$file['sha'];?>" class="icon-mark"></label>
+					</td>
+					<td>
+						<div class="w_right">
+							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=$file['b64'];?>'});" title="compare"><span class="icon-compare w_big"></span></a>
+							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=$file['b64'];?>'});"  title="view history log"><span class="icon-history w_big"></span></a>
+						</div>
+						<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=$file['name'];?></label>
+					</td>
+					<td><a href="#" title="Check all off this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=$file['status'];?></a></td>
+					<td class="text-right"><?=$file['age_verbose'];?></td>
+					<td class="text-right"><?=$file['lines'];?></td>
+					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?$_REQUEST[$key]:'';?>" class="form-control input-sm" placeholder="commit message" /></td>
+				</tr>
+				</view:file>
+				<?=renderEach('file',$git['files'],'file');?>
+			</table>
+			<input type="text" name="msg" value="<?=$_REQUEST['msg'];?>" class="form-control" placeholder="global commit message" />
+			<div class="w_padtop">
+				<button class="btn btn-info btn-lg" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
+				<button class="btn btn-danger btn-lg" type="submit" onclick="if(!confirm('Remove?')){return false;}else{document.gitform.func.value='remove';return true;}"><span class="icon-minus"></span> Remove</button>
+				<button class="btn btn-warning btn-lg" type="submit" onclick="if(!confirm('Revert back, losing your changes?')){return false;}else{document.gitform.func.value='revert';return true;}"><span class="icon-backward"></span> Revert</button>
+				<button class="btn btn-success btn-lg" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
 			</div>
-			<div class="col-sm-4">
-				<input type="text" required="1" name="name" value="<?=$config['user.name'];?>" class="form-control input-sm" placeholder="your name" />
-			</div>
-			<div class="col-sm-4">
-				<input type="email" required="1" name="email" value="<?=$config['user.email'];?>" class="form-control input-sm" placeholder="your email" />
+			</form>
+			<div class="w_padtop" id="git_details">
+				<?=renderViewIf(isset($git['details'][0]),'git_details',$git['details'],'recs');?>
 			</div>
 		</div>
-		<div class="row w_padtop">
-			<div class="col-sm-12">
-				<button class="btn btn-warning" type="button" onclick="document.gitform.func.value='pull';document.gitform.submit();"><span class="icon-git-pull"></span> Pull</button>
-				<button class="btn btn-default" type="submit" onclick="document.gitform.func.value='checkout';"><span class="icon-git-remove"></span> Remove Selected Changes</button>
-				<button class="btn btn-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-git-add"></span> Add Selected</button>
-				<button class="btn btn-primary" type="submit" onclick="document.gitform.func.value='commit';"><span class="icon-git-commit"></span> Commit Selected</button>
-				<button class="btn btn-danger" type="submit" onclick="document.gitform.func.value='push';"><span class="icon-git-push"></span> Push Committed</button>
-				<button class="btn btn-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push Selected</button>
-			</div>
-		</div>
-		</form>
-		<div class="row w_padtop">
-			<div class="col-sm-6">
-				<label class="w_bigger">Legend:</label>
-				<div style="margin-bottom:2px;"><label class="btn w_warningback icon-git-pull"></label> - Pull down the latest version from github</div>
-				<div style="margin-bottom:2px;"><label class="btn w_defaultback icon-git-remove" style="border:1px solid #CCC;"></label> - Discard local changes in the files selected</div>
-				<div style="margin-bottom:2px;"><label class="btn w_infoback icon-git-add"></label> - Add new local files to the git repository</div>
-				<div style="margin-bottom:2px;"><label class="btn w_primaryback icon-git-commit"></label> - Commit local changes to github without pushing</div>
-				<div style="margin-bottom:2px;"><label class="btn w_dangerback icon-git-push"></label> - Push committed local changes to github</div>
-				<div style="margin-bottom:2px;"><label class="btn w_successback icon-git-push-commit"></label> - Commit and Push local changes to github in the selected files</div>
-			</div>
-			<div class="col-sm-6">
-				<view:_response>
-				<label class="w_bigger">Response:</label>
-				<div style="max-height:200px;overflow:auto;white-space: pre-line;"><?=$git['response'];?></div>
-				</view:_response>
-				<?=renderViewIf(strlen($git['response']),'_response',$git,array('-alias'=>'git'));?>
+		<div class="col-sm-3 w_padtop">
+			<ul class="nav nav-tabs">
+				<li class="active w_pointer"><a href\"#" onclick="return setActiveNav(this,'/php/admin.php','git_info',{_menu:'git','func':'status'});">Status</a></li>
+				<li class="w_pointer"><a href\"#" onclick="return setActiveNav(this,'/php/admin.php','git_info',{_menu:'git','func':'config'});">Config</a></li>
+			</ul>
+			<div id="git_info" class="well w_nowrap" style="overflow:auto;">
+				<?=nl2br($git['status']);?>
 			</div>
 		</div>
 	</div>
 </div>
 </view:default>
+
+<view:git_status>
+	<?=nl2br($git['status']);?>
+</view:git_status>
+
+<view:git_config>
+	<?=nl2br($git['config']);?>
+</view:git_config>
 
 <view:not_enabled>
 	<h3>Git is not Enabled</h3>
@@ -108,19 +97,29 @@
 	</div>
 </view:details>
 
-<view:diff>
-	<div class="w_centerpop_title">Git File Diff - <?=$name;?></div>
-	<div class="w_centerpop_content" style="max-height:500px;overflow:auto;">
-	<view:_diffline>
-		<div class="<?=$row['class'];?>"><?=$row['line'];?></div>
-	</view:_diffline>
-	<?=renderEach('_diffline',$diff['rows'],array('-alias'=>'row'));?>
+<view:git_diff>
+	<div class="w_centerpop_title">Diff - <?=$file;?></div>
+	<div class="w_centerpop_content" style="max-height:500px;max-width:800px;overflow:auto;">
+	<view:rec>
+		<div class="<?=$rec['class'];?>"><?=$rec['line'];?></div>
+	</view:rec>
+	<?=renderEach('rec',$recs,'rec');?>
 	</div>
-</view:diff>
+</view:git_diff>
 
-<view:log>
-	<div class="w_centerpop_title">Git File Log - <?=$name;?></div>
-	<div class="w_centerpop_content" style="max-height:500px;overflow:auto;">
-		<?=implode('<br>',$log['raw']);?>
+<view:git_log>
+	<div class="w_centerpop_title">Log - <?=$file;?></div>
+	<div class="w_centerpop_content" style="max-height:500px;max-width:800px;overflow:auto;">
+	<view:rec>
+		<div><?=$rec;?></div>
+	</view:rec>
+	<?=renderEach('rec',$recs,'rec');?>
 	</div>
-</view:log>
+</view:git_log>
+
+<view:git_details>
+	<view:rec>
+		<div><?=$rec;?></div>
+	</view:rec>
+	<?=renderEach('rec',$recs,'rec');?>
+</view:git_details>
