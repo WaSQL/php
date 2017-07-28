@@ -3,7 +3,7 @@ function gitFileInfo(){
 	global $git;
 	$git['status']=gitCommand('status -sb');
 	$lines=preg_split('/[\r\n]+/',trim($git['status']));
-	$git['lines']=$lines;
+	//$git['lines']=$lines;
 	$git['b64sha']=array();
 	foreach($lines as $line){
 		$line=trim($line);
