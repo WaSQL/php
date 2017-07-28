@@ -1,4 +1,4 @@
-<view:default>
+ <view:default>
 <script language="javascript">
 function gitCall(func,div){
 	if(undefined == div){div='git_details';}
@@ -49,6 +49,9 @@ function gitCall(func,div){
 			</table>
 			<input type="text" name="msg" value="<?=$_REQUEST['msg'];?>" class="form-control" placeholder="global commit message" />
 			<div class="w_padtop">
+				<div class="w_right">
+					<button class="btn btn-primary btn-lg" type="button" onclick="return gitCall('pull');"><span class="icon-download"></span> Pull</button>
+				</div>
 				<button class="btn btn-info btn-lg" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
 				<button class="btn btn-danger btn-lg" type="submit" onclick="if(!confirm('Remove?')){return false;}else{document.gitform.func.value='remove';return true;}"><span class="icon-minus"></span> Remove</button>
 				<button class="btn btn-warning btn-lg" type="submit" onclick="if(!confirm('Revert back, losing your changes?')){return false;}else{document.gitform.func.value='revert';return true;}"><span class="icon-backward"></span> Revert</button>
