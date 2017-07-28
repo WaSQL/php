@@ -13,7 +13,7 @@ function gitCall(func,div){
 	</div>
 	<div class="row">
 		<div class="col-sm-9 w_padtop">
-			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return submitForm(this);">
+			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'git_details');">
 			<input type="hidden" name="_menu" value="git" />
 			<input type="hidden" name="func" value="" />
 			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
@@ -122,4 +122,5 @@ function gitCall(func,div){
 		<div><?=$rec;?></div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
+	<a href="/php/admin.php?_menu=git" class="btn btn-default btn-lg"><span class="icon-refresh w_big"></span> Refresh</a>
 </view:git_details>
