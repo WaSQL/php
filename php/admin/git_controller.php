@@ -59,7 +59,7 @@
 		case 'commit_push':
 			gitFileInfo();
 			if(isset($_REQUEST['files'][0])){
-				$push=false;
+				$push=0;
 				foreach($_REQUEST['files'] as $bfile){
 					$file=addslashes(base64_decode($bfile));
 					$sha=$git['b64sha'][$bfile];
@@ -68,14 +68,14 @@
 					elseif(isset($_REQUEST['msg']) && strlen(trim($_REQUEST['msg']))){$msg=$_REQUEST['msg'];}
 					if(strlen($msg)){
 						$git['details'][]=gitCommand("commit -m \"{$msg}\" \"{$file}\"");
-						$push=true;
+						$push++;
 					}
 					else{
 						$git['details'][]="MISSING MESSAGE for \"{$file}\" - NOT PUSHED";
 					}
 				}
 				//echo printValue($git['details']);exit;
-				if($push){
+				if($push > 0){
 					$git['details'][]=gitCommand("push");
 					gitFileInfo();
 				}
