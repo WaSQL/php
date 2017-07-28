@@ -21,24 +21,22 @@
 	if(!isset($_REQUEST['func'])){$_REQUEST['func']='';}
 	switch(strtolower($_REQUEST['func'])){
 		case 'add':
+			$recs=array();
 			if(isset($_REQUEST['files'][0])){
 				foreach($_REQUEST['files'] as $bfile){
 					$file=addslashes(base64_decode($bfile));
-					$git['details'][]=gitCommand("add \"{$file}\"");
+					$recs[]=gitCommand("add \"{$file}\"");
 				}
 			}
-			gitFileInfo();
-			setView('default',1);
+			setView('git_details',1);
 			return;
 		break;
-		case 'ignore':
-			echo printValue($_REQUEST);exit;
-		break;
 		case 'remove':
+			$recs=array();
 			if(isset($_REQUEST['files'][0])){
 				foreach($_REQUEST['files'] as $bfile){
 					$file=addslashes(base64_decode($bfile));
-					$git['details'][]=gitCommand("rm \"{$file}\"");
+					$recs[]=gitCommand("rm \"{$file}\"");
 				}
 			}
 			gitFileInfo();
@@ -52,12 +50,12 @@
 					$git['details'][]=gitCommand("checkout \"{$file}\"");
 				}
 			}
-			gitFileInfo();
-			setView('default',1);
+			setView('git_details',1);
 			return;
 		break;
 		case 'commit_push':
 			gitFileInfo();
+			$recs=array();
 			if(isset($_REQUEST['files'][0])){
 				$push=0;
 				foreach($_REQUEST['files'] as $bfile){
@@ -67,20 +65,19 @@
 					if(isset($_REQUEST["msg_{$sha}"]) && strlen(trim($_REQUEST["msg_{$sha}"]))){$msg=$_REQUEST["msg_{$sha}"];}
 					elseif(isset($_REQUEST['msg']) && strlen(trim($_REQUEST['msg']))){$msg=$_REQUEST['msg'];}
 					if(strlen($msg)){
-						$git['details'][]=gitCommand("commit -m \"{$msg}\" \"{$file}\"");
+						$recs[]=gitCommand("commit -m \"{$msg}\" \"{$file}\"");
 						$push++;
 					}
 					else{
-						$git['details'][]="MISSING MESSAGE for \"{$file}\" - NOT PUSHED";
+						$recs[]="MISSING MESSAGE for \"{$file}\" - NOT PUSHED";
 					}
 				}
 				//echo printValue($git['details']);exit;
 				if($push > 0){
-					$git['details'][]=gitCommand("push");
-					gitFileInfo();
+					$recs[]=gitCommand("push");
 				}
 			}
-			setView('default',1);
+			setView('git_details',1);
 			return;
 		break;
 		case 'status':
