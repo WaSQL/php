@@ -15,6 +15,7 @@ function gitFileInfo(){
 			case '#':
 				$xparts=preg_split('/\.\.\./',$parts[0]);
 				$git['branch']=$parts[0];
+				$status='skip';
 			break;
 			case ' ':$status='unmodified';break;
 			case 'M':$status='modified';break;
@@ -24,9 +25,9 @@ function gitFileInfo(){
 			case 'C':$status='copied';break;
 			case 'U':$status='updated but unmerged';break;
 			case '?':$status='new';break;
-			default:$status="unknown-{$x}";break;
+			default:$status='skip';break;
 		}
-		if(strtoupper($x)=='#'){continue;}
+		if($status=='skip'){continue;}
 		$file=$parts[0];
 		$afile="{$_SESSION['git_path']}/{$file}";
 		$afile=str_replace("/","\\",$afile);
