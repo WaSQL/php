@@ -21,7 +21,7 @@
 	if(!isset($_REQUEST['func'])){$_REQUEST['func']='';}
 	switch(strtolower($_REQUEST['func'])){
 		case 'pull':
-			$recs=gitCommand('pull',1);
+			$recs=gitCommand('pull -v',1);
 			setView('git_details',1);
 			return;
 		break;
