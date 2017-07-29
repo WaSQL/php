@@ -1,12 +1,13 @@
 <?php
 function gitFileInfo(){
 	global $git;
-	$git['status']=gitCommand('status -sb');
+	$git['status']=gitCommand('status -s');
 	$lines=preg_split('/[\r\n]+/',trim($git['status']));
 	//$git['lines']=$lines;
 	$git['b64sha']=array();
 	foreach($lines as $line){
 		$line=trim($line);
+		if(preg_match('/^git status/i',$line)){continue;}
 		$x=substr($line,0,1);
 		$line=preg_replace('/^.{2,2}/','',$line);
 		$parts=preg_split('/\s+/',ltrim($line));
@@ -63,18 +64,13 @@ function gitGetPath(){
 	return $recs['wasql_git_path']['key_value'];
 }
 function gitCommand($args,$lines=0){
-	$out=cmdResults('git',$args,$_SESSION['git_path']);
-	if(isset($out['stderr']) && strlen($out['stderr'])){
-		if($lines==1){
-			$lines=preg_split('/[\r\n]+/',trim($out['stderr']));
-			return $lines;
-		}
-		return $out['stderr'];
-	}
+	$pdir=chdir($_SESSION['git_path']);
+	$out=`git {$args}`;
+	chdir($pdir);
 	if($lines==1){
-		$lines=preg_split('/[\r\n]+/',trim($out['stdout']));
+		$lines=preg_split('/[\r\n]+/',trim($out));
 		return $lines;
 	}
-	return $out['stdout'];
+	return $out;
 }
 ?>
