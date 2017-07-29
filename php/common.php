@@ -2212,7 +2212,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=null;}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	if(isWindows()){
-		$cmd="cmd /D /C ({$cmd})";
+		$cmd="cmd /V:ON /E:ON /F:OFF /D /C ({$cmd})";
 	}
 	$rtncode;
 	$stdout = "";
