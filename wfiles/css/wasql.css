@@ -861,18 +861,18 @@ table th a {
 .w_centerpop {
 	position: relative;
 	padding:25px 0px 25px 0px;
-	border:1px solid #939598;
+	border:none;
 	z-index:9990;
 	background:#FFFFFF;
 	border-radius: 6px;
-    [safari|chrome]-webkit-border-radius: 6px;
     box-shadow: 0px 5px 30px #818181;
-    [safari|chrome]-webkit-box-shadow: 0px 5px 30px #818181;
+    min-width:300px;
     -webkit-transition: height 1s ease;
 	-moz-transition: height 1s ease;
 	-ms-transition: height 1s ease;
 	-o-transition: height 1s ease;
 	transition: height 1s ease;
+
 	}
 @keyframes centerpopAnimate {
 	0% {transform: scale(0);opacity: 0;}
@@ -910,12 +910,12 @@ table th a {
 	width:inherit;
 	white-space:nowrap;
 	margin:0px;
-	padding:3px 50px 3px 50px;
-	text-align:center;
 	border-top-right-radius: 6px;
-    [safari|chrome]-webkit-border-radius-topright: 6px;
     border-top-left-radius: 6px;
-    [safari|chrome]-webkit-border-radius-topleft: 6px;
+    font-size: 20px;
+    text-align: left !important;
+    padding: 7px 30px 7px 30px;
+    height: 40px;
 }
 .w_centerpop .w_centerpop_drag{
 	cursor:move;
@@ -927,14 +927,16 @@ table th a {
 	z-index:9992
 }
 .w_centerpop_close_top{
-	position:absolute;
-	right:2px;
-	top:2px;
-	font-size:12px;
-	font-family:arial;
-	cursor:pointer;
-	z-index:9993;
-	color:#58595a;
+	position: absolute;
+    font-family: arial;
+    cursor: pointer;
+    z-index: 9993;
+    right: 12px;
+    top: 12px;
+    font-weight: bold;
+    font-size: 20px;
+    content: '\0274c';
+    color:#FFFFFF;
 }
 .printvalue{
 	max-width:800px;
@@ -950,6 +952,7 @@ table th a {
 	overflow:auto;
 }
 .w_centerpop_close_bot{
+	display:none;
 	position:absolute;
 	right:2px;
 	bottom:2px;
