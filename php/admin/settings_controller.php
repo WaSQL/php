@@ -27,7 +27,7 @@
 				$ok=editDBRecord(array('-table'=>'_settings','-where'=>"_id={$rec['_id']}",'key_value'=>$v));
 			}
 			foreach($_SESSION as $k=>$v){
-				if(preg_match('/^(sync\_|git\_)/i',$k))){
+				if(preg_match('/^(sync\_|git\_)/i',$k)){
 					unset($_SESSION[$k]);
 				}
 			}
