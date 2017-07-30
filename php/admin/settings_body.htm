@@ -2,13 +2,13 @@
 <form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'set_process');">
 <input type="hidden" name="_menu" value="settings" />
 <input type="hidden" name="func" value="process" />
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
-		<div class="col-sm-12">
-			<h2><span class="icon-gear"></span> Settings</h2>
+		<div class="col-sm-12 w_primaryback w_white w_round">
+			<h3 style="margin:0px;padding:3px;"><span class="icon-gear"></span> Settings</h3>
 		</div>
 	</div>
-	<div class="row well">
+	<div class="row well" style="margin-top:15px;">
 		<div class="col-sm-4">
 			<h3 class="w_nowrap">
 				<input type="checkbox" data-type="checkbox" id="wasql_crons" style="display:none;" name="wasql_crons" value="1"<?=$recs['wasql_crons']['checked'];?> />
