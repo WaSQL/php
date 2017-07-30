@@ -465,6 +465,9 @@ if(isAjax()){
     	case 'sqlprompt':
 			echo adminViewPage('sqlprompt');exit;
 		break;
+		case 'phpprompt':
+			echo adminViewPage('phpprompt');exit;
+		break;
     	case 'tabledetails':
     		if(isset($_REQUEST['table'])){
 				//echo '<div style="margin-left:15px;">'."\n";
@@ -623,29 +626,6 @@ if(isAjax()){
     	case 'editor':
     		//waSQL Inline Editor menu options
     		switch(strtolower($_REQUEST['emenu'])){
-				case 'sandbox':
-					$sessionID=session_id();
-					echo buildFormBegin('',array('_menu'=>'sandbox','preview'=>1,'-onsubmit'=>"ajaxSubmitForm(this,'sandbox_test');return false;"));
-					echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/php.png" class="w_middle" alt="PHP" /> PHP Sandbox '.buildFormSubmit('Test Code (F5)').'</div>'."\n";
-					echo '<table class="table table-striped table-bordered" width="100%">'."\n";
-					echo buildTableTH(array('Database Tables','PHP Coding Window','Code Results Window'));
-					echo '	<tr valign="top">'."\n";
-					echo '		<td class="nowrap">'."\n";
-					echo '			<div style="height:500px;overflow:auto;padding-right:30px;">'."\n";
-					echo '				' . expandAjaxTables();
-					echo '			</div>'."\n";
-					echo '		</td>'."\n";
-					echo '		<td>'."\n";
-					echo '			<textarea focus="2,2" name="sandbox_code" preview="1" ajaxid="sandbox_test" style="width:500px;height:400px;" data-behavior="phpeditor">'."\n";
-					echo encodeHtml('<?'.'php')."\r\n\t\r\n";
-					echo encodeHtml('?'.'>')."\r\n";
-					echo '			</textarea></td>'."\n";
-					echo '		<td width="100%"><div id="sandbox_test" style="height:400px;overflow:auto;"></div></td>'."\n";
-					echo '	</tr>'."\n";
-					echo buildTableEnd();
-					echo buildFormSubmit('Test Code (F5)');
-					echo buildFormEnd();
-					break;
 		    	case 'edit':
 		    		if(isset($_REQUEST['table']) && isNum($_REQUEST['id'])){
 						//table record edit
@@ -1711,29 +1691,6 @@ ENDOFJSONFORM;
 				echo addEditDBForm($addopts);
             }
 			break;
-		case 'sandbox':
-			$sessionID=session_id();
-			echo buildFormBegin('',array('_menu'=>'sandbox','preview'=>1,'-onsubmit'=>"ajaxSubmitForm(this,'sandbox_test');return false;"));
-			echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/iconsets/32/php.png" class="w_middle" alt="sandbox" /> PHP Sandbox '.buildFormSubmit('Test Code (F5)').'</div>'."\n";
-			echo '<table class="table table-striped table-bordered" width="100%">'."\n";
-			echo buildTableTH(array('Database Tables','PHP Coding Window','Code Results Window'));
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="nowrap">'."\n";
-			echo '			<div style="height:500px;overflow:auto;padding-right:30px;">'."\n";
-			echo '				' . expandAjaxTables();
-			echo '			</div>'."\n";
-			echo '		</td>'."\n";
-			echo '		<td>'."\n";
-			echo '			<textarea focus="2,2" name="sandbox_code" preview="1" ajaxid="sandbox_test" style="width:500px;height:400px;" data-behavior="phpeditor">'."\n";
-			echo encodeHtml('<?'.'php')."\r\n\t\r\n";
-			echo encodeHtml('?'.'>')."\r\n";
-			echo '			</textarea></td>'."\n";
-			echo '		<td width="100%"><div id="sandbox_test" style="height:400px;overflow:auto;"></div></td>'."\n";
-			echo '	</tr>'."\n";
-			echo buildTableEnd();
-			echo buildFormSubmit('Test Code (F5)');
-			echo buildFormEnd();
-			break;
 		case 'phpinfo':
 			ob_start();
 			phpinfo();
@@ -2355,7 +2312,10 @@ LIST_TABLE:
 			break;
 		case 'sqlprompt':
 			echo adminViewPage('sqlprompt');exit;
-			break;
+		break;
+		case 'phpprompt':
+			echo adminViewPage('phpprompt');exit;
+		break;
 		case 'optimize':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'."\n";
 			$rtn=optimizeDB();
@@ -3413,7 +3373,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=sandbox">'.adminMenuIcon('/wfiles/iconsets/16/php.png').' PHP Sandbox</a></li>'."\n";
+	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt</a></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'."\n";
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'."\n";
@@ -4094,9 +4054,6 @@ function editorNavigation(){
 	}
 	//Configuration
 	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/xml.png" class="w_middle" alt="config.xml" /> config.xml</a></div>'."\n";
-
-	//PHP Sandbox
-	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=sandbox&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/php.png" class="w_middle" alt="php sandbox" /> PHP Sandbox</a></div>'."\n";
 	//templates
 	$recs=getDBRecords(array('-table'=>'_templates','-order'=>'name','-index'=>'_id','-fields'=>'_id,name'));
 	$ico='<span class="icon-file-docs w_grey"></span>';
