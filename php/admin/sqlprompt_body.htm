@@ -15,7 +15,12 @@
 </script>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-xs-3">
+		<div class="col-sm-12 w_primaryback w_white w_round">
+			<h3 style="margin:0px;padding:3px;"><span class="icon-prompt"></span> SQL Prompt</h3>
+		</div>
+	</div>
+	<div class="row w_padtop">
+		<div class="col-sm-3">
 			<div class="w_bold w_big">Tables & Fields</div>
 			<div  style="max-height:85vh;overflow:auto;">
 			<ul class="nav nav-pills nav-stacked">
@@ -28,8 +33,8 @@
 			</ul>
 			</div>
 		</div>
-		<div class="col-xs-9">
-			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="sqlpromptSubmit(this);">
+		<div class="col-sm-9">
+			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="func" value="sql">
 				<input type="hidden" name="sql_select" value="">
