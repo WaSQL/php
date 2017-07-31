@@ -4216,7 +4216,6 @@ function adminGetSynchronizeFields($table){
 	$recopts=array(
 		'-table'=>"_fielddata",
 		'tablename'	=> $table,
-		'synchronize'=>1,
 		'-index'	=> "fieldname",
 		'-fields'	=> "fieldname,synchronize"
 	);
