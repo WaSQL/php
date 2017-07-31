@@ -2209,54 +2209,6 @@ function cleanDir($dir='') {
 *	returns the results of executing the command
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
-	if(!is_dir($dir)){$dir=null;}
-	if(strlen($args)){$cmd .= ' '.trim($args);}
-	$rtncode;
-	$stdout = "";
-	$stderr = "";
-	$pipes = array();
-	$tpath=getWasqlTempPath();
-	$sha=preg_replace('/[^a-z0-9\_\-]+/i','',"{$dir}_{$cmd}");
-	$errfile="{$tpath}/{$sha}_stderr.log";
-	if(file_exists($errfile)){
-		unlink($errfile);
-	}
-	$descriptors = array(
-		0 => array("pipe", "r"),	// stdin
-		1 => array("pipe", "w"),	// stdout
-		2 => array("file", $errfile, "a")	// stderr
-	);
-	$opts=array(
-		'suppress_errors'=>true
-	);
-	$process = proc_open($cmd, $descriptors, $pipes, $dir,null,$opts);
-	stream_set_blocking($pipes[0], 0);
-	stream_set_blocking($pipes[1], 0);
-	stream_set_write_buffer($pipes[0],0);
-    stream_set_write_buffer($pipes[1],0);
-	if (is_resource($process)){
-		fclose($pipes[0]);
-		while (!feof($pipes[1])) {
-			$stdout .= fread($pipes[1], 1024);
-		}
-		fclose($pipes[1]);
-		$rtncode = proc_close($process);
-		$stderr = file_get_contents($errfile);
-	}
-	unlink($errfile);
-	$rtn=array(
-    	'cmd'		=> $cmd,
-    	'args'		=> $args,
-    	'dir'		=> $dir,
-		'stdout'	=> $stdout,
-        'stderr'	=> $stderr,
-        'rtncode'	=> $rtncode
-    );
-    //echo printValue($rtn);exit;
-    return $rtn;
-
-
-
 
 	if(!is_dir($dir)){$dir=null;}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
