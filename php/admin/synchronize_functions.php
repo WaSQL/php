@@ -61,7 +61,10 @@ function synchronizePost($load,$plain=0){
 		if(!isset($ALLCONFIG[$target])){
 			return json_encode(array('error'=>'invalid target'));
 		}
-		if(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
+		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
+			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
+		}
+		elseif(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
 			$_SESSION['sync_target_url']="https://{$ALLCONFIG[$target]['name']}/php/admin.php";
 		}
 		else{
@@ -80,7 +83,9 @@ function synchronizePost($load,$plain=0){
 			'_auth'		=> $_SESSION['sync_target_auth']
 		);
 	}
+	//echo $_SESSION['sync_target_url'].printValue($postopts);
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
+	//echo printValue($post);exit;
 	if(isset($post['error'])){
 		return array('error'=>$post['error']);
 	}
