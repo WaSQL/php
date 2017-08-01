@@ -296,7 +296,7 @@ function mssqlAddDBRecord($params=array()){
 				if($k=='cdate' || $k=='_cdate'){
 					$params[$k]=date('Y-m-d',strtotime($v));
 				}
-        		$opts['values'][]="todate('{$params[$k]}')";
+        		$opts['values'][]="'{$params[$k]}'";
         	break;
         	default:
         		$opts['values'][]="'{$params[$k]}'";
