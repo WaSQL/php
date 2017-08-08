@@ -1738,10 +1738,10 @@ function addDBRecord($params=array()){
 
 	if(isset($info['_cuser']) && !isset($params['_cuser'])){
 		$params['_cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
-    	}
+    }
     if(isset($info['_cdate']) && (!isset($params['_cdate']) || !strlen(trim($params['_cdate'])))){
 		$params['_cdate']=date("Y-m-d H:i:s");
-    	}
+    }
     /* Add values for fields that match $_SERVER keys */
     foreach($info as $field=>$rec){
 		if(stringBeginsWith($field,'_')){continue;}
@@ -1762,30 +1762,30 @@ function addDBRecord($params=array()){
 		//null check
 		if(!is_array($val) && strlen($val)==0 && preg_match('/not_null/',$info[$key]['_dbflags'])){
 			return 'addDBRecord Datatype Null Error: Field "'.$key.'" cannot be null';
-        	}
+        }
 		array_push($fields,$key);
 		//date field?
 		if(strlen($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
 			array_push($vals,$pm[1]);
-			}
+		}
 		elseif(($info[$key]['_dbtype'] =='date')){
 			if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
 			$val=date("Y-m-d",strtotime($val));
 			array_push($vals,"'$val'");
-			}
+		}
 		elseif(isset($info[$key]['inputtype']) && $info[$key]['inputtype'] =='date'){
 			//date field :  03-09-2009, 2009-01-26
 			if(preg_match('/^([0-9]{1,2}?)[\/\-]([0-9]{1,2}?)[\/\-]([0-9]{4,4})$/',$_REQUEST[$key],$datematch)){
 				$val=$datematch[3].'-'.$datematch[1].'-'.$datematch[2];
-            	}
+            }
             $val=date("Y-m-d",strtotime($val));
 			array_push($vals,"'$val'");
-        	}
+        }
 		elseif($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
 			if(is_array($val)){$val=(integer)$val[0];}
 			if(!is_numeric($val) && strtolower($val) != 'null'){return 'addDBRecord Datatype Mismatch: numeric field "'.$key.'" is type "'.$info[$key]['_dbtype'].'" and requires a numeric value';}
 			array_push($vals,$val);
-			}
+		}
 		elseif($info[$key]['_dbtype'] =='datetime'){
 			unset($dmatch);
 			if(is_array($val)){
@@ -1802,7 +1802,7 @@ function addDBRecord($params=array()){
             }
             $val=date("Y-m-d H:i:s",strtotime($val));
             array_push($vals,"'$val'");
-			}
+		}
 		elseif($info[$key]['_dbtype'] =='time'){
 			if(is_array($val)){
 				if($val[2]=='pm' && $val[0] < 12){$val[0]+=12;}
@@ -1811,28 +1811,27 @@ function addDBRecord($params=array()){
             }
             $val=date("H:i:s",strtotime($val));
             array_push($vals,"'$val'");
-			}
-
+		}
 		else{
 			if($val != 'NULL'){
 				$val=databaseEscapeString($val);
 				array_push($vals,"'$val'");
-				}
+			}
 			else{
             	array_push($vals,$val);
 			}
-        	}
+        }
         if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){
 			$val=sha1($val);
 			array_push($fields,$key.'_sha1');
 			array_push($vals,"'$val'");
-			}
+		}
 		if(isset($info[$key.'_size']) && !isset($params[$key.'_size'])){
 			$val=strlen($val);
 			array_push($fields,$key.'_size');
 			array_push($vals,"'$val'");
-			}
-    	}
+		}
+    }
     //return if no updates were found
 	if(!count($fields)){
 		//failure
@@ -1884,9 +1883,9 @@ function addDBRecord($params=array()){
     	//if queries are turned on, log this query
     	if($params['-table'] != '_queries' && (!isset($params['-nolog']) || $params['-nolog'] != 1)){
 			logDBQuery($query,$start,$function,$params['-table']);
-			}
+		}
     	return $id;
-  		}
+  	}
   	else{
 		$error=getDBError();
 		if(isset($model['functions'])){
