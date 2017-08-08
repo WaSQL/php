@@ -192,7 +192,7 @@ ENDOFQUERY;
 					//new record - add it
 					$opts=array();
 					foreach($rec as $k=>$v){
-						if(isWasqlField($k)){continue;}
+						if(isWasqlField($k) && $k != '_id'){continue;}
 						if(!strlen($v) || $v=='null'){continue;}
 						$opts[$k]=$v;
 					}
