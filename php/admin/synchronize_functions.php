@@ -42,6 +42,7 @@ function synchronizeUpdateTargetRecords($table,$recs){
 		'table'		=> $table,
 		'records'	=> $recs
 	);
+	//echo printValue($load);exit;
 	return synchronizePost($load,0);
 }
 function synchronizeUpdateTargetSchemas($schemas){
