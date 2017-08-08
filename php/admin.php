@@ -192,11 +192,12 @@ ENDOFQUERY;
 					//new record - add it
 					$opts=array();
 					foreach($rec as $k=>$v){
-						if(isWasqlField($k) && $k != '_id'){continue;}
+						if(isWasqlField($k)){continue;}
 						if(!strlen($v) || $v=='null'){continue;}
 						$opts[$k]=$v;
 					}
 					$opts['-table']=$json['table'];
+					$opts['_id']=$id;
 					$opts['-nodebug']=true;
 					$nid=addDBRecord($opts);
 					if(isNum($nid)){
