@@ -453,12 +453,7 @@ if(isAjax()){
 			exit;
     		break;
     	case 'decode':
-			$json=json_decode(trim($_REQUEST['json']),1);
-			if(!is_array($json)){
-				$json=json_last_error_msg();
-			}
-			echo printValue($json);
-			exit;
+			echo adminViewPage('decode');exit;
     	break;
     	case 'manual':
 			echo adminViewPage('manual');exit;
@@ -1210,21 +1205,7 @@ if(isset($_REQUEST['_menu'])){
 			goto LIST_TABLE;
 		break;
 		case 'decode':
-			echo <<<ENDOFJSONFORM
-				<div class="row">
-					<div class="col-sm-4">
-						<h3><span class="icon-json"></span> JSON Decoder</h3>
-						<form method="POST" name="json_decoder_form" action="/{$PAGE['name']}" onsubmit="return ajaxSubmitForm(this,'json_decoder');">
-							<input type="hidden" name="_menu" value="decode">
-							<input type="hidden" name="func" value="json">
-							<textarea cols="7" rows="15" autofocus="true" name="json" class="form-control" placeholder="Enter JSON here"></textarea>
-							<div class="w_padtop text-right"><button class="btn btn-primary" type="submit">Decode JSON</button></div>
-						</form>
-					</div>
-					<div class="col-sm-8" id="json_decoder">
-					</div>
-				</div>
-ENDOFJSONFORM;
+			echo adminViewPage('decode');exit;
 		break;
 		case 'manual':
 			echo adminViewPage('manual');exit;
