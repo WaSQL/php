@@ -1309,6 +1309,24 @@ function getParentForm(obj) {
     }
 	return null;
 }
+/**
+* @describe returns parent of object based on parent nodeName
+* @param obj object  - the element
+* @return object or null
+* @usage var p=getParentEx(obj,'table');
+*/
+function getParentEx(obj,pname) {
+    var count = 1;
+    while(count < 1000) {
+        obj = obj.parentNode;
+        if(!typeof(obj)){return null;}
+        if(obj.nodeName.toLowerCase() == pname.toLowerCase()){
+			return obj;
+		}
+        count++;
+    }
+	return null;
+}
 //getSelText - returns selected text on the page.
 //<input type="button" value="Get selection" onmousedown="getSelText()">
 function getSelText(fld){
