@@ -96,8 +96,10 @@ ENDOFQUERY;
 				echo base64_encode(json_encode(array('error'=>'missing params')));
 				exit;
 			}
-			$rec=getDBRecord(array('-table'=>$json['table'],'_id'=>$json['id'],'-fields'=>$json['fields']));
-			if(!is_array($recs)){$rec=array();}
+			$opts=array('-table'=>$json['table'],'_id'=>$json['id'],'-fields'=>implode(',',$json['fields']));
+			$rec=getDBRecord($opts);
+			//echo json_encode($rec);exit;
+			if(!is_array($rec)){$rec=array();}
 			echo base64_encode(json_encode($rec));
 			exit;
 		break;
