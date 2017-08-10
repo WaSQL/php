@@ -82,6 +82,7 @@
 				if(preg_match('/No differences found/i',$diff)){continue;}
 				$diffs[$field]=$diff;
 			}
+
 			if(!count($diffs)){
 				$error="No differences found";
 				setView('error',1);
