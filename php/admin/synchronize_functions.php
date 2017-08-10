@@ -81,7 +81,8 @@ function synchronizePost($load,$plain=0){
 		$postopts=array(
 			'_menu'		=> 'synchronize',
 			'load'		=> base64_encode(json_encode($load)),
-			'_auth'		=> $_SESSION['sync_target_auth']
+			'_auth'		=> $_SESSION['sync_target_auth'],
+			'_noguid'	=> 1
 		);
 	}
 	//echo $_SESSION['sync_target_url'].printValue($postopts);
