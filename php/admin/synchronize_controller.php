@@ -60,8 +60,25 @@
 			return;
 		break;
 		case 'diff':
+			$diffs=array();
 			$id=addslashes($_REQUEST['id']);
 			$table=addslashes($_REQUEST['table']);
+			//push to target
+			if($table=='schema'){
+				$target_fields=synchronizeGetTargetSchema($id);
+				$source_fields=array();
+				$fields=getDBFieldInfo($id);
+				foreach($fields as $field=>$info){
+					if(isWasqlField($field)){continue;}
+					$source_fields[]="{$field} {$info['_dbtype_ex']}";
+				}
+				$diff = diffText($source_fields,$target_fields, $id,'',300);
+				if(!strlen($diff)){continue;}
+				if(preg_match('/No differences found/i',$diff)){continue;}
+				$diffs[$id]=$diff;
+				setView('sync_diffs',1);
+				return;
+			}
 			$fields=adminGetSynchronizeFields($table);
 			$target_rec=synchronizeGetTargetRecord($table,$id,$fields);
 			if(isset($target_rec['error'])){
@@ -72,7 +89,7 @@
 			//get local record
 			$source_rec=getDBRecord(array('-table'=>$table,'_id'=>$id,'-fields'=>$fields));
 			//compare them
-			$diffs=array();
+
 			foreach($source_rec as $field=>$val){
 				if(isWasqlField($field) || preg_match('/\_utime$/i',$field)){continue;}
 				$arr_source=preg_split('/[\r\n]+/', trim($val));
@@ -91,7 +108,64 @@
 			//echo $diffs['controller'];exit;
 			setView('sync_diffs',1);
 			return;
-			echo printValue($diffs);exit;
+		break;
+		case 'revert':
+			if(!isset($_REQUEST['id'])){
+				$error="None selected";
+				setView('error',1);
+				return;
+			}
+			if(!is_array($_REQUEST['id'])){
+				$_REQUEST['id']=array($_REQUEST['id']);
+			}
+			$ids=$_REQUEST['id'];
+			$table=addslashes($_REQUEST['table']);
+			setView('revert_verify',1);
+			return;
+		break;
+		case 'revert_verified':
+			if(!isset($_REQUEST['id']) || !isset($_REQUEST['table'])){
+				$error="Missing params".printValue($_REQUEST);
+				setView('error',1);
+				return;
+			}
+			if(!is_array($_REQUEST['id'])){
+				$_REQUEST['id']=array($_REQUEST['id']);
+			}
+			$ids=$_REQUEST['id'];
+			$table=addslashes($_REQUEST['table']);
+			//push to target
+			if($table=='schema'){
+				$schemas=array();
+				$results=array("Reverting {$table} records");
+				foreach($ids as $id){
+					$fields=synchronizeGetTargetSchema($id);
+					$new=isDBTable($id)?0:1;
+					$ok=updateDBSchema($id,$fields,$new);
+					$results[]="Table {$id} schema reverted";
+				}
+			}
+			else{
+				$results=array("Reverting {$table} records");
+				$fields=adminGetSynchronizeFields($table);
+				foreach($ids as $id){
+					$target_rec=synchronizeGetTargetRecord($table,$id,$fields);
+					$target_rec['-table']=$table;
+					$target_rec['-where']="_id={$id}";
+					$results[]=editDBRecord($target_rec);
+				}
+			}
+			$notes="reverted local changes";
+			//add log record
+			$x=addDBRecord(array(
+				'-table'	=> '_synchronize',
+				'tablename'	=> $table,
+				'ids'		=> json_encode($ids),
+				'target'	=> 'none',
+				'notes'		=> $notes,
+				'results'	=> json_encode($results)
+			));
+			setView('sync_verified',1);
 			return;
 		break;
 		case 'sync':
