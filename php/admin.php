@@ -149,6 +149,25 @@ ENDOFQUERY;
 			echo base64_encode(json_encode(array('count'=>$cnt)));
 			exit;
 		break;
+		case 'get_schema':
+			global $USER;
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>'not authorized')));
+				exit;
+			}
+			if(!isset($json['table'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$rec=array();
+			$fields=getDBFieldInfo($json['table']);
+			foreach($fields as $field=>$info){
+				if(isWasqlField($field)){continue;}
+				$rec[]="{$field} {$info['_dbtype_ex']}";
+			}
+			echo base64_encode(json_encode($rec));
+			exit;
+		break;
 		case 'update_schemas':
 			global $USER;
 			if(!isAdmin()){
