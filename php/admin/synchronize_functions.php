@@ -35,6 +35,14 @@ function synchronizeGetTargetRecord($table,$id,$fields){
 	);
 	return synchronizePost($load,0);
 }
+function synchronizeGetTargetSchema($table){
+	//build the load
+	$load=array(
+		'func'		=> 'get_schema',
+		'table'		=> $table
+	);
+	return synchronizePost($load,0);
+}
 function synchronizeUpdateTargetRecords($table,$recs){
 	//build the load
 	$load=array(
@@ -214,7 +222,7 @@ function synchronizeGetChanges($tables){
 			foreach($info as $field=>$f){
 				if(!isset($target_recs['_schema_'][$table][$field])){
 					//field in this table is new
-					$changes[]="NEW Field: {$field} {$f['_dbtype_ex']}";
+					$changes[]="New Field: {$field} {$f['_dbtype_ex']}";
 				}
 				elseif($target_recs['_schema_'][$table][$field] != $f['_dbtype_ex']){
 					//field in this table has changed
