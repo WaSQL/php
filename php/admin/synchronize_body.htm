@@ -41,7 +41,8 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<button class="btn btn-default btn-lg" type="submit"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+			<button class="btn btn-default btn-lg" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+			<button class="btn btn-default btn-lg" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
 			<a href="/php/admin.php?_menu=synchronize" class="btn btn-default btn-lg"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 	</div>
@@ -216,6 +217,28 @@
 	<h3 class="w_danger"><?=$error;?></h3>
 </div>
 </view:error>
+
+<view:revert_verify>
+<div class="w_centerpop_title"><span class="icon-backward w_danger"></span> Revert Verification</div>
+<div class="w_centerpop_content">
+	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
+		<tr><th><span class="icon-user w_black"></span> Reverted by</th><td><?=userValue('username');?></td></tr>
+		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
+		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
+		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
+	</table>
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+		<input type="hidden" name="_menu" value="synchronize" />
+		<input type="hidden" name="func" value="revert_verified" />
+		<input type="hidden" name="table" value="<?=$table;?>" />
+		<view:sync_id><input type="hidden" name="id[]" value="<?=$id;?>" /></view:sync_id>
+		<?=renderEach('sync_id',$ids,'id');?>
+		<label>Revert these changes? You will lose any local changes.</label>
+		<div class="w_padtop text-right"><button type="submit" class="btn btn-danger"><span class="icon-backward w_white"></span> Revert Changes</button></div>
+	</form>
+	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
+</div>
+</view:revert_verify>
 
 
 
