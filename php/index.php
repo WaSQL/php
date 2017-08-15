@@ -528,8 +528,9 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		header('Content-type: text/xml');
 		header('X-Platform: WaSQL');
 		echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
+		$error=xmlEncodeCDATA("User Authentication Failed for {$_REQUEST['username']}".printValue($_REQUEST));
 		echo "<result>\r\n";
-		echo "	<fatal_error>User Authentication Failed for {$_REQUEST['username']}".printValue($_REQUEST)."</fatal_error>\r\n";
+		echo "	<fatal_error>{$error}</fatal_error>\r\n";
 		echo "</result>\r\n";
 		exit;
     }
@@ -539,8 +540,9 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		header('Content-type: text/xml');
 		header('X-Platform: WaSQL');
 		echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
+		$error=xmlEncodeCDATA("{$user}, you do not have sufficient rights. Sorry.");
 		echo "<result>\r\n";
-		echo "	<fatal_error>{$user}, you do not have sufficient rights. Sorry.</fatal_error>\r\n";
+		echo "	<fatal_error>{$error}</fatal_error>\r\n";
 		echo "</result>\r\n";
 		exit;
     }
