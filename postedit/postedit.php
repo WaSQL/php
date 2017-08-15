@@ -88,13 +88,21 @@ function writeFiles(){
 		'postedittables'=>$tables,
 		'apimethod'	=>"posteditxml",
 		'encoding'	=>"base64",
-		'-ssl'=>1
+		'-ssl'=>1,
+		'-xml'=>1
 	);
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	//echo printValue($post);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
+	}
+	elseif(isset($post['xml_array']['result']['fatal_error'])){
+		$msg=str_replace('&quot;','"',$post['xml_array']['result']['fatal_error']);
+		$msg=str_replace('&gt;','>',$msg);
+		$msg=str_replace('&lt;','<',$msg);
+		abortMessage($msg);
 	}
 	//check for login form
 	if(preg_match('/\"\_login\"/is',$post['body'])){
@@ -107,7 +115,10 @@ function writeFiles(){
     	abortMessage("{$post['curl_info']['http_code']} error retrieving files");
 	}
 	elseif(isset($xml['fatal_error'])){
-    	abortMessage($xml['fatal_error']);
+		$msg=str_replace('&quote;','"',$xml['fatal_error']);
+		$msg=str_replace('&gt;','>',$msg);
+		$msg=str_replace('&lt;','<',$msg);
+		abortMessage($msg);
 	}
 
 
