@@ -624,7 +624,7 @@ function buildFormDate($name,$params=array()){
 	}
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'."\n";
-	$tag .= '	<input type="date"';
+	$tag .= '	<input type="text"';
 	$params['style']='width:100%';
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'."\n";
