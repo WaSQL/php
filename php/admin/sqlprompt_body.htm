@@ -38,8 +38,15 @@
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="func" value="sql">
 				<input type="hidden" name="sql_select" value="">
-				<textarea class="form-control" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
-				<div><button type="submit" class="btn btn-primary btn-sm">Execute</button> <span class="w_small w_grey">(or press F8)</span></div>
+				<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+				<div class="row w_padtop">
+					<div class="col-sm-4">
+						<button type="submit" class="btn btn-primary btn-sm">Execute</button> <span class="w_small w_grey">(or press F8)</span>
+					</div>
+					<div class="col-sm-8 text-right w_grey w_small">
+						Note: You can drag and drop .sql files onto the textarea
+					</div>
+				</div>
 			</form>
 			<div id="sqlprompt_results"></div>
 		</div>
