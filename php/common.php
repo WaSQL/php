@@ -620,6 +620,10 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
+		//strip off any time value
+		if(preg_match('/^(.+?)\ [0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}/',$params['-value'],$m)){
+			$params['-value']=$m[1];
+		}
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
