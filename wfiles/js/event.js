@@ -22,6 +22,66 @@ else if(document.attachEvent){
     document.attachEvent("onmousemove",mouseMove);
 	}
 else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
+/**
+* @describe loads the contents of the text file into the element it is dropped on
+* @param element object or id  - the element
+* @return false
+* @usage loadTextFileInit('sql_area');
+*/
+function loadTextFileInit(el){
+	// Setup the dnd listeners.
+	var loadTextFile = getObject(el);
+	if(undefined == el){
+		console.log('Error: invalid element',el);
+		return;
+	}
+	loadTextFile.origBgcolor=loadTextFile.style.backgroundColor;
+	addEventHandler(loadTextFile,"dragover",function(evt){
+		evt.stopPropagation();
+		evt.preventDefault();
+		evt.dataTransfer.dropEffect = 'copy';
+	});
+	addEventHandler(loadTextFile,"dragenter",function(evt){
+		evt.stopPropagation();
+		evt.preventDefault();
+		//change bg color
+		this.style.backgroundColor='#f0f0f0';
+	});
+	addEventHandler(loadTextFile,"dragexit",function(evt){
+		evt.stopPropagation();
+		evt.preventDefault();
+		//change bg color back
+		this.style.backgroundColor=this.origBgcolor;
+	});
+	addEventHandler(loadTextFile,"drop",function(evt){
+		evt.stopPropagation();
+		evt.preventDefault();
+		this.style.backgroundColor=this.origBgcolor;
+		// FileList object.
+		var files = evt.dataTransfer.files;
+		var obj=this;
+		// files is a FileList of File objects.
+		for (var i=0;i<files.length;i++){
+			var f=files[i];
+			// Only process text files.
+			if (!f.type.match('text.*')) {
+				setText(this,'ERROR! '+f.name+' is not a text file');
+				continue;
+			}
+			var reader = new FileReader();
+			reader.targetObj=this;
+			// Closure to capture the file information.
+			reader.onload = (function(theFile) {
+				return function(e) {
+					setText(this.targetObj,e.target.result);
+				};
+			})(f);
+			// Read in the file as text.
+			reader.readAsText(f);
+			break;
+		}
+	});
+}
 function marquee(id){
 	//info: turns text in specified object or id into a scrolling marquee
 	mobj=getObject(id);
@@ -1152,6 +1212,9 @@ function initBehaviors(ajaxdiv){
 			navEls[n].href='mailto:'+email;
 			setText(navEls[n],email);
 			navEls[n].setAttribute('data-behavior','processed');
+		}
+		if(in_array("loadtextfile",behaviors)){
+			loadTextFileInit(navEls[n]);
 		}
 		if(in_array("markers",behaviors)){
 			wasqlMarkerInit(navEls[n]);
