@@ -1,15 +1,34 @@
 <?php
 	switch(strtolower($_REQUEST['func'])){
 		case 'sql':
+			//echo printValue($_REQUEST);
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
-				$recs=getDBRecords($sql_select);
-				setView('results',1);
+				$recs=getDBRecords($_SESSION['sql_last']);
+				setView('block_results',1);
 			}
 			else{
+				$_SESSION['sql_last']=$sql_full;
+				//run the query where the cursor position is
+				$queries=preg_split('/\;/',$sql_full);
+				//echo printValue($queries);exit;
+				$cpos=$_REQUEST['cursor_pos'];
+				if(count($queries) > 1){
+					$p=0;
+					foreach($queries as $query){
+						$end=$p+strlen($query);
+						if($cpos > $p && $cpos < $end){
+							$_SESSION['sql_last']=$query;
+							$recs=getDBRecords($_SESSION['sql_last']);
+							setView('block_results',1);
+							return;
+						}
+						$p=$end;
+					}
+				}
 				$_SESSION['sql_last']=$sql_full;
 				$recs=getDBRecords($sql_full);
 				setView('results',1);
