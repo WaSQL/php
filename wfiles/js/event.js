@@ -39,7 +39,7 @@ function loadTextFileInit(el){
 	addEventHandler(loadTextFile,"dragover",function(evt){
 		evt.stopPropagation();
 		evt.preventDefault();
-		evt.dataTransfer.dropEffect = 'copy';
+		//evt.dataTransfer.dropEffect = 'copy';
 	});
 	addEventHandler(loadTextFile,"dragenter",function(evt){
 		evt.stopPropagation();
@@ -78,6 +78,7 @@ function loadTextFileInit(el){
 			})(f);
 			// Read in the file as text.
 			reader.readAsText(f);
+			loadTextFileInit(this);
 			break;
 		}
 	});
