@@ -2,13 +2,17 @@
 <script type="text/javascript">
 	function sqlpromptCheckKey(e){
 		e = e || window.event;
-		console.log(e.keyCode);
+		//console.log(e.keyCode);
         if (e.keyCode == 119) {
 			return sqlpromptSubmit(document.sqlprompt);
         }
 	}
 	function sqlpromptSubmit(frm){
 		frm.sql_select.value=getSelText(frm.sql_full);
+		var pos=getCursorPos(frm.sql_full);
+		if(undefined != pos.start){
+			frm.cursor_pos.value=pos.start;
+		}
 		return ajaxSubmitForm(frm,'sqlprompt_results');
 	}
 	document.onkeydown = sqlpromptCheckKey;
@@ -38,6 +42,7 @@
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="func" value="sql">
 				<input type="hidden" name="sql_select" value="">
+				<input type="hidden" name="cursor_pos" value="">
 				<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 				<div class="row w_padtop">
 					<div class="col-sm-4">
@@ -58,6 +63,17 @@
 	<div class="text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>
 	<?=listDBRecords($recs);?>
 </view:results>
+
+<view:block_results>
+	<div class="row w_padtop">
+		<div class="col-sm-10 w_grey"><span class="icon-prompt"></span>  <?=$_SESSION['sql_last'];?></div>
+		<div class="col-sm-1"><?=count($recs);?></div>
+		<div class="col-sm-1 text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>
+	</div>
+	<div class="row w_padtop">
+		<div class="col-sm-12"><?=listDBRecords($recs);?></div>
+	</div>
+</view:block_results>
 
 <view:fields>
 	<view:field>
