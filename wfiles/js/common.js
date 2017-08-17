@@ -1356,7 +1356,42 @@ function getSelText(fld){
 	        }
 		}
 	return txt;
-	}
+}
+/**
+* @describe returns the cursor positon
+* @param txt string  - the text string to check
+* @return hash pos.start and pos.end
+* @usage var pos=getCursorPos(txtfld)
+*/
+function getCursorPos(fld){
+    if ("selectionStart" in fld && document.activeElement == fld) {
+        return {
+            start: fld.selectionStart,
+            end: fld.selectionEnd
+        };
+    }
+    else if (fld.createTextRange) {
+        var sel = document.selection.createRange();
+        if (sel.parentElement() === fld) {
+            var rng = fld.createTextRange();
+            rng.moveToBookmark(sel.getBookmark());
+            for (var len = 0;
+                     rng.compareEndPoints("EndToStart", rng) > 0;
+                     rng.moveEnd("character", -1)) {
+                len++;
+            }
+            rng.setEndPoint("StartToStart", fld.createTextRange());
+            for (var pos = { start: 0, end: len };
+                     rng.compareEndPoints("EndToStart", rng) > 0;
+                     rng.moveEnd("character", -1)) {
+                pos.start++;
+                pos.end++;
+            }
+            return pos;
+        }
+    }
+    return -1;
+}
 //getText - returns object text
 function getText(obj){
 	//info: returns the text of the specified object or id
