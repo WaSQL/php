@@ -1483,14 +1483,16 @@ function findPos(obj){
         x: box.left + scrollLeft - clientLeft};
 }
 /* fadeOut - if remove ==1, the id will be destroyed after fading away */
+var commonFadeIdTimeouts=new Array();
 function fadeId(eid,remove,wait){
 	//info: fades, and removes if specified, specified id out
+	if(undefined != commonFadeIdTimeouts[eid]){clearTimeout(commonFadeIdTimeouts[eid]);}
 	if(undefined != wait && wait==1){
-		setTimeout("fadeId('" + eid + "'," + remove + ",2)", 33);
+		commonFadeIdTimeouts[eid]=setTimeout("fadeId('" + eid + "'," + remove + ",2)", 150);
 		return;
 	}
 	if(undefined != wait && wait==2 && isMouseOver(eid)){
-		setTimeout("fadeId('" + eid + "'," + remove + ",2)", 33);
+		commonFadeIdTimeouts[eid]=setTimeout("fadeId('" + eid + "'," + remove + ",2)", 150);
 		return;
 	}
 	var TimeToFade = 200.0;
@@ -1511,7 +1513,7 @@ function fadeId(eid,remove,wait){
 	else{
     	element.FadeState = element.FadeState == 2 ? -1 : 1;
     	element.FadeTimeLeft = TimeToFade;
-    	setTimeout("animateFade(" + new Date().getTime() + ",'" + eid + "','"+remove+"')", 33);
+    	commonFadeIdTimeouts[eid]=setTimeout("animateFade(" + new Date().getTime() + ",'" + eid + "','"+remove+"')", 33);
 		}
 	}
 function animateFade(lastTick, eid, remove){
