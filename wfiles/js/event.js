@@ -378,6 +378,7 @@ function centerpopDiv(txt,rtimer,x){
 }
 /* tooltipDiv */
 function tooltipDiv(obj,rtimer){
+	if(undefined != commonFadeIdTimeouts['w_tooltip']){clearTimeout(commonFadeIdTimeouts['w_tooltip']);}
 	obj=getObject(obj);
 	var txt=obj.getAttribute('data-tooltip');
 	var position=obj.getAttribute('data-tooltip_position') || '';
