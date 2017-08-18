@@ -1483,8 +1483,16 @@ function findPos(obj){
         x: box.left + scrollLeft - clientLeft};
 }
 /* fadeOut - if remove ==1, the id will be destroyed after fading away */
-function fadeId(eid,remove){
+function fadeId(eid,remove,wait){
 	//info: fades, and removes if specified, specified id out
+	if(undefined != wait && wait==1){
+		setTimeout("fadeId('" + eid + "'," + remove + ",2)", 33);
+		return;
+	}
+	if(undefined != wait && wait==2 && isMouseOver(eid)){
+		setTimeout("fadeId('" + eid + "'," + remove + ",2)", 33);
+		return;
+	}
 	var TimeToFade = 200.0;
   	var element=getObject(eid);
 	if(undefined == element){return;}
