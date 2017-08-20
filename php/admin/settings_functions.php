@@ -20,6 +20,7 @@ function settingsSyncSites($n,$v){
 	foreach($ALLCONFIG as $name=>$conf){
 		$opts[$name]="{$name} ({$conf['dbname']})";
 	}
+	ksort($opts);
 	return buildFormSelect($n,$opts,array('message'=>'---select---','value'=>$v));
 }
 ?>
