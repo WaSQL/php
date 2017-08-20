@@ -262,13 +262,7 @@ ENDOFQUERY;
 			}
 			//request to get sync changes
 			//confirm user is an admin in this system
-			$urec=getDBRecord(array(
-				'-table'=>'_users',
-				'username'=>addslashes($json['username']),
-				'_utype'=>0,
-				'-fields'=>'username'
-			));
-			if(!isset($urec['username'])){
+			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
