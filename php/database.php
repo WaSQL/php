@@ -3196,7 +3196,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " --user='{$CONFIG['dbuser']}'";
 			}
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " -p{$CONFIG['dbpass']}";
+			$dump['command'] .= " -password='{$CONFIG['dbpass']}'";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
