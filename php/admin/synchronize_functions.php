@@ -64,36 +64,45 @@ function synchronizeUpdateTargetSchemas($schemas){
 }
 function synchronizePost($load,$plain=0){
 	global $USER;
-	if(!isset($_SESSION['sync_target_url'])){
+	unset($_SESSION['sync_target_url']);
+	if(!isset($_SESSION['sync_target_url']) || !strlen($_SESSION['sync_target_url'])){
 		global $ALLCONFIG;
 		$target=$_SESSION['sync_target'];
 		if(!isset($ALLCONFIG[$target])){
 			return json_encode(array('error'=>'invalid target'));
 		}
+		$uhost=getUniqueHost($ALLCONFIG[$target]['name']);
+		$base=$ALLCONFIG[$target]['name'];
+		if($uhost==$ALLCONFIG[$target]['name']){$base="www.{$base}";}
 		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
 			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
 		}
 		elseif(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
-			$_SESSION['sync_target_url']="https://{$ALLCONFIG[$target]['name']}/php/admin.php";
+			$_SESSION['sync_target_url']="https://{$base}/php/admin.php";
 		}
 		else{
-			$_SESSION['sync_target_url']="http://{$ALLCONFIG[$target]['name']}/php/admin.php";
+			$_SESSION['sync_target_url']="http://{$base}/php/admin.php";
 		}
 	}
 	if($plain==1){
 		$postopts=$load;
 		$postopts['_menu']='synchronize';
 		$postopts['load']=base64_encode(json_encode($load));
+		$postopts['-follow']=1;
+		$postopts['-nossl']=1;
+		$postopts['_noguid']=1;
 	}
 	else{
 		$postopts=array(
 			'_menu'		=> 'synchronize',
 			'load'		=> base64_encode(json_encode($load)),
 			'_auth'		=> $_SESSION['sync_target_auth'],
-			'_noguid'	=> 1
+			'_noguid'	=> 1,
+			'-follow'	=> 1,
+			'-nossl'	=> 1
 		);
 	}
-	//echo $_SESSION['sync_target_url'].printValue($postopts);
+	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	//echo printValue($post);exit;
 	if(isset($post['error'])){
