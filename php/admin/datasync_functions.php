@@ -153,6 +153,9 @@ function datasyncPost($load,$plain=0){
 			'_auth'		=> $_SESSION['sync_target_auth']
 		);
 	}
+	$postopts['-follow']=1;
+	$postopts['-nossl']=1;
+	$postopts['_noguid']=1;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	if(isset($post['error'])){
 		return array('error'=>$post['error']);
