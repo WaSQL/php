@@ -61,8 +61,12 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 		case 'get_tables':
 			global $USER;
 			global $CONFIG;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				exit;
+			}
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			$query=<<<ENDOFQUERY
@@ -89,7 +93,7 @@ ENDOFQUERY;
 		case 'get_record':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['id']) || !isset($json['fields'])){
@@ -106,7 +110,7 @@ ENDOFQUERY;
 		case 'get_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['limit']) || !isset($json['offset'])){
@@ -121,7 +125,7 @@ ENDOFQUERY;
 		case 'datasync_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records']) || !isset($json['offset'])){
@@ -152,7 +156,7 @@ ENDOFQUERY;
 		case 'get_schema':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table'])){
@@ -171,7 +175,7 @@ ENDOFQUERY;
 		case 'update_schemas':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records'])){
@@ -195,7 +199,7 @@ ENDOFQUERY;
 		case 'update_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records'])){
@@ -265,7 +269,7 @@ ENDOFQUERY;
 				'-fields'=>'username'
 			));
 			if(!isset($urec['username'])){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin")));
+				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['utype']}]")));
 				exit;
 			}
 			$rtn=array();
