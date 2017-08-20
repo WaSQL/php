@@ -88,7 +88,8 @@ function writeFiles(){
 		'postedittables'=>$tables,
 		'apimethod'	=>"posteditxml",
 		'encoding'	=>"base64",
-		'-ssl'=>1,
+		'-nossl'=>1,
+		'-follow'=>1,
 		'-xml'=>1
 	);
 	$url=buildHostUrl();
@@ -173,8 +174,8 @@ function writeFiles(){
 function buildHostUrl(){
 	global $hosts;
 	global $chost;
-	if(isset($hosts[$chost]['secure']) && $hosts[$chost]['secure'] != 0){$http='https';}
-	else{$http='http';}
+	if(isset($hosts[$chost]['insecure']) && $hosts[$chost]['insecure'] == 1){$http='https';}
+	else{$http='https';}
 	$url="{$http}://{$hosts[$chost]['name']}/php/index.php";
 	return $url;
 }
