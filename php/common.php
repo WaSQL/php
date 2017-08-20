@@ -9887,8 +9887,12 @@ function postURL($url,$params=array()) {
 	}
 	if(isset($params['-user_agent'])){
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
-		}
-	if(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
+	}
+	if(isset($params['-nossl']) && $params['-nossl'] != 0){
+		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, false);
+	}
+	elseif(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
 		$cacert=dirname(__FILE__) . '/curl-ca-bundle.crt';
 		curl_setopt($process, CURLOPT_CAINFO, $cacert);
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, true);
