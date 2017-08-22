@@ -7925,9 +7925,14 @@ function isSSL(){
 	if(isset($_SERVER['HTTPS']) && in_array($_SERVER['HTTPS'],array(1,'on'))){
 		return true;
 	}
-	if(isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME']=='https'){
+	if(isset($_SERVER['REQUEST_SCHEME']) && strtolower($_SERVER['REQUEST_SCHEME'])=='https'){
 		return true;
 	}
+	//HTTP_X_FORWARDED
+	if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'])=='https'){
+		return true;
+	}
+	if (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443){return true;}
 	/* others */
 	if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443){return true;}
 	return false;
