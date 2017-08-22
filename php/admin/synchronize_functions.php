@@ -73,7 +73,7 @@ function synchronizePost($load,$plain=0){
 		}
 		$uhost=getUniqueHost($ALLCONFIG[$target]['name']);
 		$base=$ALLCONFIG[$target]['name'];
-		if($uhost==$ALLCONFIG[$target]['name']){$base="www.{$base}";}
+		if($uhost==$ALLCONFIG[$target]['name'] && stringContains($uhost,'.')){$base="www.{$base}";}
 		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
 			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
 		}
