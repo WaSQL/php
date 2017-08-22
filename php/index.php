@@ -268,12 +268,15 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
     else{
 		//send the email.
 		$to=$ruser['email'];
-		$subject='Remind Request from ' . $_SERVER['HTTP_HOST'];
-		$message = 'We just received a request to remind you of your login information '. "\n\n";
+		$sitename=isset($CONFIG['reminder_site_name'])?$CONFIG['reminder_site_name']:$_SERVER['HTTP_HOST'];
+		$fromname=isset($CONFIG['reminder_from_name'])?$CONFIG['reminder_from_name']:$_SERVER['HTTP_HOST'].' Team';
+		$subject="Remind request from ".html_entity_decode($sitename);
+		$message="Hi!<p>We received a request to remind you of your {$sitename} login information. We're here to help!</p>";
 		$message .= '<p>Username: '. $ruser['username']. "<br>\n";
 		$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 		$message .= 'Password: '. $pw. "<br>\n";
-		$message .= '<p>If you did not request this information, no worries. This email did go to you afterall, not them.' . "\n";
+		$message .= "<p>If you didn't ask to change your password, don't worry! Your password is still safe and you can delete this email.</p>";
+		$message .= "<p>Best regards,</p><p>{$fromname}</p>";
 		//clear out errors
 		@trigger_error("");
 		//attempt to send the email
