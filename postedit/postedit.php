@@ -208,6 +208,8 @@ function fileChanged($afile){
 		'_fields'	=>$field,
 		$field		=>$content,
 		'_return'	=>'XML',
+		'-nossl'=>1,
+		'-follow'=>1,
 		'-xml'		=>1
 	);
 	$url=buildHostUrl();
