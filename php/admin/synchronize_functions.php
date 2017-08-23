@@ -33,7 +33,13 @@ function synchronizeGetTargetRecord($table,$id,$fields){
 		'id'		=> $id,
 		'fields'	=> $fields
 	);
-	return synchronizePost($load,0);
+	$rec=synchronizePost($load,0);
+	foreach($rec as $k=>$v){
+		if(strlen(trim($v))){
+			$rec[$k]=base64_decode($v);
+		}
+	}
+	return $rec;
 }
 function synchronizeGetTargetSchema($table){
 	//build the load
@@ -44,6 +50,14 @@ function synchronizeGetTargetSchema($table){
 	return synchronizePost($load,0);
 }
 function synchronizeUpdateTargetRecords($table,$recs){
+	//convert the record values into Base64 so they will for sure convert to json
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(strlen(trim($v))){
+				$recs[$i][$k]=base64_encode($v);
+			}
+		}
+	}
 	//build the load
 	$load=array(
 		'func'		=> 'update_records',
@@ -104,7 +118,7 @@ function synchronizePost($load,$plain=0){
 	}
 	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
-	//echo printValue($post);exit;
+	//echo $post['body'];exit;
 	if(isset($post['error'])){
 		return array('error'=>$post['error']);
 	}
