@@ -78,7 +78,7 @@ function synchronizeUpdateTargetSchemas($schemas){
 }
 function synchronizePost($load,$plain=0){
 	global $USER;
-	unset($_SESSION['sync_target_url']);
+	//unset($_SESSION['sync_target_url']);
 	if(!isset($_SESSION['sync_target_url']) || !strlen($_SESSION['sync_target_url'])){
 		global $ALLCONFIG;
 		$target=$_SESSION['sync_target'];
@@ -120,22 +120,22 @@ function synchronizePost($load,$plain=0){
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	//echo $post['body'];exit;
 	if(isset($post['error'])){
-		return array('error'=>$post['error']);
+		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
 	}
 	elseif(!strlen($post['body'])){
-		return array('error'=>printValue($post));
+		return array('error'=>$_SESSION['sync_target_url'].printValue($post));
 	}
 	else{
 		$json=json_decode(base64_decode($post['body']),true);
 		if(!is_array($json)){
 			$json=json_decode($post['body'],true);
 			if(!is_array($json)){
-				return array('error'=>$post['body']);
+				return array('error'=>$_SESSION['sync_target_url'].$post['body']);
 			}
 		}
 		return $json;
 	}
-	return array('error'=>json_encode($post));
+	return array('error'=>$_SESSION['sync_target_url'].json_encode($post));
 }
 function synchronizeGetChanges($tables){
 	global $USER;
