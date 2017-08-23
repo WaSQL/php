@@ -507,6 +507,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			}
 			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
+			if(isset($params["{$tval}_readonly"])){$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';}
+			if(isset($params["{$tval}_disabled"])){$tag .= ' readonly="'.$params["{$tval}_disabled"].'"';}
 			elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
 			if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
