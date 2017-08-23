@@ -104,6 +104,11 @@ ENDOFQUERY;
 			$rec=getDBRecord($opts);
 			//echo json_encode($rec);exit;
 			if(!is_array($rec)){$rec=array();}
+			foreach($rec as $k=>$v){
+				if(strlen(trim($v))){
+					$rec[$k]=base64_encode($v);
+				}
+			}
 			echo base64_encode(json_encode($rec));
 			exit;
 		break;
@@ -119,6 +124,14 @@ ENDOFQUERY;
 			}
 			$recs=getDBRecords(array('-table'=>$json['table'],'-limit'=>$json['limit'],'-offset'=>$json['offset'],'-order'=>'_id'));
 			if(!is_array($recs)){$recs=array();}
+			//convert the record values into Base64 so they will for sure convert to json
+			foreach($recs as $i=>$rec){
+				foreach($rec as $k=>$v){
+					if(strlen(trim($v))){
+						$recs[$i][$k]=base64_encode($v);
+					}
+				}
+			}
 			echo base64_encode(json_encode($recs));
 			exit;
 		break;
@@ -140,7 +153,7 @@ ENDOFQUERY;
 				$opts=array();
 				foreach($rec as $k=>$v){
 					if(!strlen($v)){continue;}
-					$opts[$k]=$v;
+					$opts[$k]=base64_decode($v);
 				}
 				$opts['-table']=$json['table'];
 				$id=addDBRecord($opts);
@@ -219,7 +232,7 @@ ENDOFQUERY;
 					foreach($rec as $k=>$v){
 						if(isWasqlField($k)){continue;}
 						if(!strlen($v) || $v=='null'){continue;}
-						$opts[$k]=$v;
+						$opts[$k]=base64_decode($v);
 					}
 					$opts['-table']=$json['table'];
 					$opts['_id']=$id;
@@ -238,7 +251,7 @@ ENDOFQUERY;
 					foreach($rec as $k=>$v){
 						if(isWasqlField($k)){continue;}
 						if(sha1($v) != sha1($recs[$id][$k])){
-							$opts[$k]=$v;
+							$opts[$k]=base64_decode($v);
 						}
 					}
 					$opts['-table']=$json['table'];
