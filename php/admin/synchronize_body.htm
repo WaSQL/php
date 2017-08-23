@@ -93,7 +93,7 @@
 		<td><?=$rec['changed_age'];?></td>
 		<td class="text-right w_nowrap">
 			<view:action_diff>
-			<a href="#" title="Diff" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
+			<a href="#" title="Diff" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',marker:'<?=$rec['marker'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
 			</view:action_diff>
 			<?=renderViewIf(!preg_match('/^NEW/',$rec['changes']),'action_diff',$rec,'rec');?>
 			<a href="#" title="Sync" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
@@ -151,7 +151,7 @@
 </view:sync_auth>
 
 <view:sync_diffs>
-<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff</div>
+<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff - <?=$title;?></div>
 <div class="w_centerpop_content" style="padding-bottom:20px;">
 	<ul class="nav nav-tabs">
 		<view:field_tab>
@@ -172,6 +172,32 @@
 	</div>
 </div>
 </view:sync_diffs>
+
+<view:sync_diffs_none>
+<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff - <?=$title;?></div>
+<div class="w_centerpop_content" style="padding-bottom:20px;">
+	<div class="text-center w_big w_bold">No Differences found</div>
+	<view:sourcetarget>
+	<div class="row">
+		<div class="col-sm-6">
+			Source
+		</div>
+		<div class="col-sm-6">
+			Target
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-6">
+			<?=printValue($diff['source']);?>
+		</div>
+		<div class="col-sm-6">
+			<?=printValue($diff['target']);?>
+		</div>
+	</div>
+	</view:sourcetarget>
+	<?=renderViewif(isset($diff['source']),'sourcetarget',$diff,'diff');?>
+</div>
+</view:sync_diffs_none>
 
 <view:sync_verify>
 <div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verification</div>
