@@ -79,7 +79,7 @@ function datasyncFromTarget($table){
 			$opts=array();
 			foreach($rec as $k=>$v){
 				if(!strlen($v)){continue;}
-				$opts[$k]=$v;
+				$opts[$k]=base64_decode($v);
 			}
 			$opts['-table']=$table;
 			$id=addDBRecord($opts);
@@ -113,6 +113,14 @@ function datasyncToTarget($table){
 	while(1){
 		$recs=getDBRecords(array('-table'=>$table,'-limit'=>$limit,'-offset'=>$offset,'-order'=>'_id'));
 		if(!is_array($recs)){break;}
+		//convert the record values into Base64 so they will for sure convert to json
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(strlen(trim($v))){
+					$recs[$i][$k]=base64_encode($v);
+				}
+			}
+		}
 		$load=array(
 			'func'		=> 'datasync_records',
 			'table'		=> $table,
@@ -128,19 +136,26 @@ function datasyncToTarget($table){
 }
 function datasyncPost($load,$plain=0){
 	global $USER;
-	if(!isset($_SESSION['sync_target_url'])){
+	if(!isset($_SESSION['sync_target_url']) || !strlen($_SESSION['sync_target_url'])){
 		global $ALLCONFIG;
 		$target=$_SESSION['sync_target'];
 		if(!isset($ALLCONFIG[$target])){
 			return json_encode(array('error'=>'invalid target'));
 		}
-		if(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
-			$_SESSION['sync_target_url']="https://{$ALLCONFIG[$target]['name']}/php/admin.php";
+		$uhost=getUniqueHost($ALLCONFIG[$target]['name']);
+		$base=$ALLCONFIG[$target]['name'];
+		if($uhost==$ALLCONFIG[$target]['name'] && stringContains($uhost,'.')){$base="www.{$base}";}
+		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
+			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
+		}
+		elseif(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
+			$_SESSION['sync_target_url']="https://{$base}/php/admin.php";
 		}
 		else{
-			$_SESSION['sync_target_url']="http://{$ALLCONFIG[$target]['name']}/php/admin.php";
+			$_SESSION['sync_target_url']="http://{$base}/php/admin.php";
 		}
 	}
+
 	if($plain==1){
 		$postopts=$load;
 		$postopts['_menu']='datasync';
@@ -157,6 +172,7 @@ function datasyncPost($load,$plain=0){
 	$postopts['-nossl']=1;
 	$postopts['_noguid']=1;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
+	//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($load).$post['body'];exit;
 	if(isset($post['error'])){
 		return array('error'=>$post['error']);
 	}
