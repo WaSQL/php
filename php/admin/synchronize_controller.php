@@ -16,7 +16,7 @@
 		 $pass=addslashes($_REQUEST['sync_target_pass']);
 		 //echo printValue(array($user,$pass));exit;
 		 $json=synchronizeGetAuth($user,$pass);
-		 //echo printValue($json);exit;
+		 //echo printValue($json['error']);exit;
 		 if(isset($json['auth'])){
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
@@ -64,8 +64,10 @@
 			$diffs=array();
 			$id=addslashes($_REQUEST['id']);
 			$table=addslashes($_REQUEST['table']);
+			$marker=addslashes($_REQUEST['marker']);
 			//push to target
 			if($table=='schema'){
+				$title="{$marker} - {$id}";
 				$target_fields=synchronizeGetTargetSchema($id);
 				$source_fields=array();
 				$fields=getDBFieldInfo($id);
@@ -74,8 +76,14 @@
 					$source_fields[]="{$field} {$info['_dbtype_ex']}";
 				}
 				$diff = diffText($source_fields,$target_fields, $id,'',300);
-				if(!strlen($diff)){continue;}
-				if(preg_match('/No differences found/i',$diff)){continue;}
+				if(!strlen($diff) || preg_match('/No differences found/i',$diff)){
+					$diff=array(
+						'source'=>$source_fields,
+						'target'=>$target_fields
+					);
+					setView('sync_diffs_none',1);
+					return;
+				}
 				$diffs[$id]=$diff;
 				setView('sync_diffs',1);
 				return;
@@ -100,10 +108,9 @@
 				if(preg_match('/No differences found/i',$diff)){continue;}
 				$diffs[$field]=$diff;
 			}
-
+			$title="{$table} - {$marker}";
 			if(!count($diffs)){
-				$error="No differences found";
-				setView('error',1);
+				setView('sync_diffs_none',1);
 				return;
 			}
 			//echo $diffs['controller'];exit;
