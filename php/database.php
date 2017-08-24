@@ -7238,7 +7238,7 @@ function listDBRecords($params=array(),$customcode=''){
                 foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
 					$replace='%'.$xfld.'%';
-                    $target=str_replace($replace,$rec[$xfld],$href);
+                    $target=str_replace($replace,$rec[$xfld],$target);
                 	}
 				$target=" target=\"{$target}\"";
 			}
@@ -7247,7 +7247,7 @@ function listDBRecords($params=array(),$customcode=''){
                 foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
 					$replace='%'.$xfld.'%';
-                    $target=str_replace($replace,$rec[$xfld],$href);
+                    $target=str_replace($replace,$rec[$xfld],$target);
                 	}
 				$target=" target=\"{$target}\"";
 			}
