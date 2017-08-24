@@ -25,7 +25,7 @@
 			$_SESSION['sync_target']=syncronizeGetTarget();
 			unset($_SESSION['sync_target_auth']);
 			unset($_SESSION['sync_target_url']);
-			$json=array();
+			unset($json['body']);
 			setView('sync_auth',1);
 			return;
 		}
