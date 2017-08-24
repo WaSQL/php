@@ -136,9 +136,9 @@
 				<h4>Authorization on Target Site</h4>
 				<div style="max-width:300px;">Provide authorization on the target system in order to push changes. <span class="w_danger">User MUST have admin access.</span></div>
 				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="" autocomplete="new-username" />
+				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
 				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="form-control" value="" autocomplete="new-password" />
+				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
