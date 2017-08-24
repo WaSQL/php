@@ -118,7 +118,7 @@ function synchronizePost($load,$plain=0){
 	}
 	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
-	//echo $post['body'];exit;
+	//echo printValue($post['body']);exit;
 	if(isset($post['error'])){
 		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
 	}
@@ -135,7 +135,7 @@ function synchronizePost($load,$plain=0){
 		}
 		return $json;
 	}
-	return array('error'=>$_SESSION['sync_target_url'].json_encode($post));
+	return array('error'=>$_SESSION['sync_target_url'].'<br>'.json_encode($post));
 }
 function synchronizeGetChanges($tables){
 	global $USER;
