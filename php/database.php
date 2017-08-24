@@ -7232,21 +7232,40 @@ function listDBRecords($params=array(),$customcode=''){
 				$val='<img src="/wfiles/iconsets/16/'.$img.'" class="w_bottom" alt="" />';
 				}
 			//link, check, or image?
-			$target=isset($params[$fld."_target"])?' target="'.$params[$fld."_target"].'"':'';
+			
+			if(isset($params[$fld."_target"])){
+                $target=$params[$fld."_target"];
+                foreach($list[0] as $xfld=>$xval){
+					if(is_array($xfld) || is_array($xval)){continue;}
+					$replace='%'.$xfld.'%';
+                    $target=str_replace($replace,$rec[$xfld],$href);
+                	}
+				$target=" target=\"{$target}\"";
+			}
+			elseif(isset($params['-target'])){
+                $target=$params['-target'];
+                foreach($list[0] as $xfld=>$xval){
+					if(is_array($xfld) || is_array($xval)){continue;}
+					$replace='%'.$xfld.'%';
+                    $target=str_replace($replace,$rec[$xfld],$href);
+                	}
+				$target=" target=\"{$target}\"";
+			}
+			else{$target='';}
 			if(isset($params[$fld."_link"]) && $params[$fld."_link"]==1){
 				$val='<a class="w_link w_block" href="'.$val.'"'.$target.'>'.$val.'</a>';
 				}
-			elseif(isset($params['-href'])){
-                $href=$params['-href'];
+			elseif(isset($params[$fld."_href"])){
+                $href=$params[$fld."_href"];
                 foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
 					$replace='%'.$xfld.'%';
                     $href=str_replace($replace,$rec[$xfld],$href);
                 	}
-				$val='<a class="w_link w_block" href="'.$href.'">'.$val.'</a>';
+				$val='<a class="w_link w_block" href="'.$href.'"'.$target.'>'.$val.'</a>';
 				}
-			elseif(isset($params[$fld."_href"])){
-                $href=$params[$fld."_href"];
+			elseif(isset($params['-href'])){
+                $href=$params['-href'];
                 foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
 					$replace='%'.$xfld.'%';
