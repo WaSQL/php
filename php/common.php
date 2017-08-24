@@ -9924,13 +9924,15 @@ function postURL($url,$params=array()) {
 	curl_setopt($process, CURLINFO_HEADER_OUT, true);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEFILE, $this->cookie_file);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEJAR, $this->cookie_file);
+	curl_setopt($process, CURLOPT_CONNECTTIMEOUT, 600 );
 	curl_setopt($process, CURLOPT_TIMEOUT, 600);
-	//if ($this->proxy) curl_setopt($cUrl, CURLOPT_PROXY, �proxy_ip:proxy_port�);
-	curl_setopt($process, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($process, CURLOPT_RETURNTRANSFER, true);
 	if(isset($params['-follow'])){
-		curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($process, CURLOPT_AUTOREFERER, 1);
-		}
+		curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($process, CURLOPT_AUTOREFERER, true);
+		curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
+		curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
+	}
 	//turn retrieving the header off
 	//curl_setopt ($process, CURLOPT_HEADER, 0);
 	//convert Unix newlines to CRLF newlines
@@ -9949,7 +9951,7 @@ function postURL($url,$params=array()) {
 		$rtn['header']=trim($parts[0]);
 		$rtn['body']=trim($parts[1]);
 		//check for redirect cases with two headers
-		if(preg_match('/^HTTP\//s',$rtn['body'])){
+		if(preg_match('/^HTTP\//is',$rtn['body'])){
 			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
 			$rtn['header']=trim($parts[0]);
 			$rtn['body']=trim($parts[1]);
@@ -10004,7 +10006,7 @@ function postURL($url,$params=array()) {
 */
 function postJSON($url='',$json='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: application/json; charset=UTF-8","Accept-Charset: UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: application/json; charset=UTF-8';}
 	if(!isset($params['-json'])){$params['-json']=1;}
 	return postBody($url,$json,$params);
 }
@@ -10025,7 +10027,7 @@ function postJSON($url='',$json='',$params=array()) {
 */
 function postXML($url='',$xml='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-type: text/xml; charset=UTF-8","Accept-Charset: UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-type: text/xml; charset=UTF-8';}
 	if(!isset($params['-xml'])){$params['-xml']=1;}
 	return postBody($url,$xml,$params);
 }
@@ -10036,7 +10038,7 @@ function postXML($url='',$xml='',$params=array()) {
 function postBody($url='',$body='',$params=array()) {
 	//defaults
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: text/xml; charset=UTF-8","Accept-Charset: UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: text/xml; charset=UTF-8';}
 	if(!isset($params['-user_agent'])){
 		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
 	}
@@ -10073,13 +10075,15 @@ function postBody($url='',$body='',$params=array()) {
 	if(isset($params['-port']) && isNum($params['-port'])){
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
 	}
-
-    curl_setopt($process, CURLOPT_HEADER, 1);
-    curl_setopt($process,CURLOPT_POST,1);
+    curl_setopt($process, CURLOPT_HEADER, true);
+    curl_setopt($process,CURLOPT_POST, true);
     curl_setopt($process,CURLOPT_TIMEOUT, 600);
-    curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
-    curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($process,CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);
+    curl_setopt($process, CURLOPT_AUTOREFERER, true);
+	curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
+	curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
     if(stringBeginsWith($url,'https') || $params['-ssl']){
 		if(isset($params['-ssl_cert'])){
 			if(is_file($params['-ssl_cert'])){
