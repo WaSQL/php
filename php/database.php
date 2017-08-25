@@ -7226,13 +7226,7 @@ function listDBRecords($params=array(),$customcode=''){
                 	}
                 $val=evalPHP('<?' . $evalstr .'?>');
 				}
-			//checkmark?
-			if(isset($params[$fld."_checkmark"])){
-                $img=$val==1?'checkmark.png':'x.png';
-				$val='<img src="/wfiles/iconsets/16/'.$img.'" class="w_bottom" alt="" />';
-				}
 			//link, check, or image?
-			
 			if(isset($params[$fld."_target"])){
                 $target=$params[$fld."_target"];
                 foreach($list[0] as $xfld=>$xval){
@@ -7252,8 +7246,9 @@ function listDBRecords($params=array(),$customcode=''){
 				$target=" target=\"{$target}\"";
 			}
 			else{$target='';}
+			//link
 			if(isset($params[$fld."_link"]) && $params[$fld."_link"]==1){
-				$val='<a class="w_link w_block" href="'.$val.'"'.$target.'>'.$val.'</a>';
+				$val='<a class="w_link" href="'.$val.'"'.$target.'>'.$val.'</a>';
 				}
 			elseif(isset($params[$fld."_href"])){
                 $href=$params[$fld."_href"];
@@ -7262,7 +7257,7 @@ function listDBRecords($params=array(),$customcode=''){
 					$replace='%'.$xfld.'%';
                     $href=str_replace($replace,$rec[$xfld],$href);
                 	}
-				$val='<a class="w_link w_block" href="'.$href.'"'.$target.'>'.$val.'</a>';
+				$val='<a class="w_link" href="'.$href.'"'.$target.'>'.$val.'</a>';
 				}
 			elseif(isset($params['-href'])){
                 $href=$params['-href'];
@@ -7271,7 +7266,7 @@ function listDBRecords($params=array(),$customcode=''){
 					$replace='%'.$xfld.'%';
                     $href=str_replace($replace,$rec[$xfld],$href);
                 	}
-				$val='<a class="w_link w_block" href="'.$href.'"'.$target.'>'.$val.'</a>';
+				$val='<a class="w_link" href="'.$href.'"'.$target.'>'.$val.'</a>';
 				}
 			elseif(isset($params[$fld."_onclick"])){
                 $href=$params[$fld."_onclick"];
@@ -7281,19 +7276,25 @@ function listDBRecords($params=array(),$customcode=''){
 					//echo "replacing {$replace} with {$rec[$xfld]}<br>".PHP_EOL;
                     $href=str_replace($replace,$rec[$xfld],$href);
                 	}
-				$val='<a class="w_link w_block" title="CLICK" href="#" onClick="'.$href.'">'.$val.'</a>';
+				$val='<a class="w_link" href="#" onClick="'.$href.'">'.$val.'</a>';
 				}
 			elseif(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-				$cval=$val;
-				$val='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'"> ';
-				if(!isNum($cval)){$val .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
-            	}
+				if($val==0){$val='<div class="text-center"><span class="icon-checkbox-empty"></span></div>';}
+				else{$val='<div class="text-center"><span class="icon-checkbox"></span></div>';}
+				//$cval=$val;
+				//$val='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'"> ';
+				//if(!isNum($cval)){$val .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
+            }
 			elseif(isset($params[$fld."_check"]) && $params[$fld."_check"]==1){
 				if($val==0){$val='';}
-				elseif($val==1){$val='<center><img src="/wfiles/check.gif" alt="" /></center>';}
-            	}
+				elseif($val==1){$val='<div class="text-center"><span class="icon-check"></span></div>';}
+            }
+            elseif(isset($params[$fld."_checkmark"]) && $params[$fld."_checkmark"]==1){
+				if($val==0){$val='';}
+				elseif($val==1){$val='<div class="text-center"><span class="icon-check"></span></div>';}
+            }
             elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1){
-				$val='<center><img title="'.$val.'" src="'.$val.'" alt="" /></center>';
+				$val='<center><img src="'.$val.'" alt="" /></center>';
             	}
             elseif(isset($params[$fld."_email"]) && $params[$fld."_email"]==1){
 				$val='<a class="w_link" href="mailto:'.$val.'">'.$val.'</a>';
