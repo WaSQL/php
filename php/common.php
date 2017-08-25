@@ -10096,7 +10096,7 @@ function postBody($url='',$body='',$params=array()) {
     curl_setopt($process, CURLOPT_AUTOREFERER, true);
 	curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
 	curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-    if(stringBeginsWith($url,'https') || $params['-ssl']){
+    if(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
 		if(isset($params['-ssl_cert'])){
 			if(is_file($params['-ssl_cert'])){
 				curl_setopt($process, CURLOPT_CAINFO, $params['-ssl_cert']);
