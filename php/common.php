@@ -507,13 +507,25 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			}
 			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-			if(isset($params["{$tval}_readonly"])){$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';}
-			if(isset($params["{$tval}_disabled"])){$tag .= ' disabled="'.$params["{$tval}_disabled"].'"';}
+			//if checkbox is readonly or disabled then do not allow them to change it
+			$for=true;
+			if(isset($params["{$tval}_readonly"])){
+				$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';
+				$for=false;
+			}
+			if(isset($params["{$tval}_disabled"])){
+				$tag .= ' disabled="'.$params["{$tval}_disabled"].'"';
+				$for=false;
+			}
 			elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
+			$tag .= '> <label';
+			if($for){$tag .= ' for="'.$id.'"';}
+			$tag .= ' class="icon-mark'.$class.'"></label>'."\n";
 			if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
-				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'."\n";
+				$tag .= ' <label';
+				if($for){$tag .= ' for="'.$id.'"';}
+				$tag .= ' class="'.$class.'"> '.$dval.'</label>'."\n";
 			}
 			$tag .= '</div>'."\n";
 		}
