@@ -10020,6 +10020,16 @@ function postJSON($url='',$json='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
 	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: application/json; charset=UTF-8';}
 	if(!isset($params['-json'])){$params['-json']=1;}
+	if(isset($params['username']) && isset($params['apikey'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="W_APIKEY: {$params['apikey']}";
+		$params['-headers'][]="W_USERNAME: {$params['username']}";
+		$params['-headers'][]="W__AUTH: 1";
+	}
+	elseif(isset($params['_auth'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="W__AUTH: {$params['_auth']}";
+	}
 	return postBody($url,$json,$params);
 }
 
@@ -10041,6 +10051,16 @@ function postXML($url='',$xml='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
 	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-type: text/xml; charset=UTF-8';}
 	if(!isset($params['-xml'])){$params['-xml']=1;}
+	if(isset($params['username']) && isset($params['apikey'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="W_APIKEY: {$params['apikey']}";
+		$params['-headers'][]="W_USERNAME: {$params['username']}";
+		$params['-headers'][]="W__AUTH: 1";
+	}
+	elseif(isset($params['_auth'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="W__AUTH: {$params['_auth']}";
+	}
 	return postBody($url,$xml,$params);
 }
 //---------- begin function postBody
