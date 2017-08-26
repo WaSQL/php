@@ -29,6 +29,12 @@ global $USER;
 global $CONFIG;
 global $ConfigXml;
 
+foreach(getallheaders() as $name => $value){
+	if(preg_match('/^W\_(.+?)$/i',$name,$m)){
+		$k=strtolower($m[1]);
+		$_REQUEST[$k]=$value;
+	}
+}
 //SQL injection prevention
 if(isset($_REQUEST['username'])){
 	$_REQUEST['username']=preg_replace('/\'/',"\\'",$_REQUEST['username']);
