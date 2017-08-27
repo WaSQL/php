@@ -30,8 +30,9 @@ global $CONFIG;
 global $ConfigXml;
 
 foreach(getallheaders() as $name => $value){
-	if(preg_match('/^W\_(.+?)$/i',$name,$m)){
+	if(preg_match('/^WaSQL\-\(.+?)$/i',$name,$m)){
 		$k=strtolower($m[1]);
+		if($k=='auth'){$k='_auth';}
 		$_REQUEST[$k]=$value;
 	}
 }
