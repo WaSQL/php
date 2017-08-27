@@ -10022,13 +10022,13 @@ function postJSON($url='',$json='',$params=array()) {
 	if(!isset($params['-json'])){$params['-json']=1;}
 	if(isset($params['username']) && isset($params['apikey'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
-		$params['-headers'][]="W_APIKEY: {$params['apikey']}";
-		$params['-headers'][]="W_USERNAME: {$params['username']}";
-		$params['-headers'][]="W__AUTH: 1";
+		$params['-headers'][]="Wasql-Apikey: {$params['apikey']}";
+		$params['-headers'][]="WaSQL-Username: {$params['username']}";
+		$params['-headers'][]="WaSQL-Auth: 1";
 	}
 	elseif(isset($params['_auth'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
-		$params['-headers'][]="W__AUTH: {$params['_auth']}";
+		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 	}
 	return postBody($url,$json,$params);
 }
