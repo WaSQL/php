@@ -9964,7 +9964,7 @@ function postURL($url,$params=array()) {
 	//convert Unix newlines to CRLF newlines
 	curl_setopt ($process, CURLOPT_CRLF, 0);
 	$return = curl_exec($process);
-	$rtn['header_out']=curl_getinfo($process,CURLINFO_HEADER_OUT);
+	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($process);
 	//check for errors
 	if ( curl_errno($process) ) {
@@ -10008,7 +10008,6 @@ function postURL($url,$params=array()) {
 		echo "<b>Error #:</b> {$rtn['error_number']}<br>\n";
 		echo "<b>Url:</b> {$rtn['url']}<br>\n";
 		echo "<b>Error Message:</b> {$rtn['error']}<br>\n";
-		echo "<b>Header Sent:</b><br>\n<pre>\n{$rtn['header_out']}\n</pre>\n";
 		exit;
         }
     //close the handle
@@ -10173,6 +10172,7 @@ function postBody($url='',$body='',$params=array()) {
 
     curl_setopt($process,CURLOPT_POSTFIELDS,$body);
     $return=curl_exec($process);
+    $rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
     $rtn['curl_info']=curl_getinfo($process);
     $blank_count=0;
 	//Process the result
@@ -10227,7 +10227,6 @@ function postBody($url='',$body='',$params=array()) {
             }
         }
     }
-    $rtn['header_out']=curl_getinfo($process,CURLINFO_HEADER_OUT);
     //close the handle
 	curl_close($process);
 	$rtn['body']=trim($rtn['body']);
