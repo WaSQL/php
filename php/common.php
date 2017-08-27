@@ -9919,7 +9919,7 @@ function postURL($url,$params=array()) {
 	}
 	if(isset($params['-ssl_version'])){
 		curl_setopt($process, CURLOPT_SSLVERSION,$params['-ssl_version']);
-		}
+	}
 	//handle auth request - basic Authentication
 	if(isset($params['-auth']) && strlen($params['-auth'])){
 		//try all possible authentication methods
@@ -10116,7 +10116,11 @@ function postBody($url='',$body='',$params=array()) {
     curl_setopt($process, CURLOPT_AUTOREFERER, true);
 	curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
 	curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-    if(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
+	if(isset($params['-nossl']) && $params['-nossl'] != 0){
+		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, false);
+	}
+	elseif(stringBeginsWith($url,'https') || (isset($params['-ssl']) && $params['-ssl'])){
 		if(isset($params['-ssl_cert'])){
 			if(is_file($params['-ssl_cert'])){
 				curl_setopt($process, CURLOPT_CAINFO, $params['-ssl_cert']);
@@ -10127,7 +10131,7 @@ function postBody($url='',$body='',$params=array()) {
 			else{
 				$rtn['ssl_error']="missing cert: {$params['-ssl_cert']}";
 				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, false);
 			}
 		}
 		else{
@@ -10140,7 +10144,7 @@ function postBody($url='',$body='',$params=array()) {
 			else{
 				$rtn['ssl_error']="missing cert: {$rtn['ssl_cert']}";
 				curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($process, CURLOPT_SSL_VERIFYHOST, false);
 			}
 		}
 
