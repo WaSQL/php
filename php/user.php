@@ -28,8 +28,8 @@ $oldguid=$guid;
 global $USER;
 global $CONFIG;
 global $ConfigXml;
-
-foreach(getallheaders() as $name => $value){
+$headers=getallheaders();
+foreach($headers as $name => $value){
 	if(preg_match('/^WaSQL\-(.+?)$/i',$name,$m)){
 		$k=strtolower($m[1]);
 		if($k=='auth'){$k='_auth';}
