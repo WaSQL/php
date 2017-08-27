@@ -9848,6 +9848,20 @@ function postEditCheck($tables=array()){
 function postURL($url,$params=array()) {
 	//reference - http://drewish.com/content/2007/07/using_php_and_curl_to_do_an_html_file_post
 	$rtn=array('_params'=>$params);
+	//check for auth params
+	if(isset($params['username']) && isset($params['apikey'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="Wasql-Apikey: {$params['apikey']}";
+		$params['-headers'][]="WaSQL-Username: {$params['username']}";
+		$params['-headers'][]="WaSQL-Auth: 1";
+		unset($params['username']);
+		unset($params['apikey']);
+	}
+	elseif(isset($params['_auth'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
+		unset($params['_auth']);
+	}
 	//Build data stream from params
 	$query=array();
 	foreach($params as $key=>$val){
@@ -10025,10 +10039,13 @@ function postJSON($url='',$json='',$params=array()) {
 		$params['-headers'][]="Wasql-Apikey: {$params['apikey']}";
 		$params['-headers'][]="WaSQL-Username: {$params['username']}";
 		$params['-headers'][]="WaSQL-Auth: 1";
+		unset($params['username']);
+		unset($params['apikey']);
 	}
 	elseif(isset($params['_auth'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
+		unset($params['_auth']);
 	}
 	return postBody($url,$json,$params);
 }
@@ -10056,10 +10073,13 @@ function postXML($url='',$xml='',$params=array()) {
 		$params['-headers'][]="Wasql-Apikey: {$params['apikey']}";
 		$params['-headers'][]="WaSQL-Username: {$params['username']}";
 		$params['-headers'][]="WaSQL-Auth: 1";
+		unset($params['username']);
+		unset($params['apikey']);
 	}
 	elseif(isset($params['_auth'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
+		unset($params['_auth']);
 	}
 	return postBody($url,$xml,$params);
 }
@@ -10153,6 +10173,7 @@ function postBody($url='',$body='',$params=array()) {
 
     curl_setopt($process,CURLOPT_POSTFIELDS,$body);
     $return=curl_exec($process);
+    $rtn['curl_info']=curl_getinfo($process);
     $blank_count=0;
 	//Process the result
 	$ofx=0;
