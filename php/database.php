@@ -976,7 +976,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$info['formfields']=array();
 		$rows=preg_split('/[\r\n\,]+/',$params['-fields']);
 		foreach($rows as $row){
-			if(isXML((string)$row)){$line=$row;}
+			if(isXML((string)$row) || isset($params['-xml'])){$line=$row;}
 			else{$line=preg_split('/[\t\s\:]+/',$row);}
 			array_push($info['formfields'],$line);
         }
