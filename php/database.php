@@ -1110,7 +1110,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
 	$editable_fields=array();
     foreach($info['formfields'] as $fields){
-		if(!is_array($fields) && isXML((string)$fields)){
+		if(!is_array($fields) && (isXML((string)$fields) || isset($params['-xml']))){
 			$customrow=trim((string)$fields);
 			if(preg_match('/\<\?(.+?)\?\>/is',$customrow)){$customrow = trim(evalPHP($customrow));}
 			//convert [{field}] to getDBFieldTags
