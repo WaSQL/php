@@ -10042,7 +10042,7 @@ function postJSON($url='',$json='',$params=array()) {
 		unset($params['apikey']);
 	}
 	elseif(isset($params['_auth'])){
-		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		if(!isset($params['-headers'][0])){$params['-headers']=array();}
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 		unset($params['_auth']);
 	}
