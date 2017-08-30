@@ -10111,7 +10111,14 @@ function postBody($url='',$body='',$params=array()) {
 	else{
 		curl_setopt ($process, CURLOPT_HTTPHEADER, array($params['-contenttype']));
 	}
-
+	//cookiefile?
+	if(isset($params['-cookiefile'])){
+		curl_setopt ($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
+		curl_setopt ($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
+	}
+	elseif(isset($params['-cookie'])){
+		curl_setopt ($process, CURLOPT_COOKIE, $params['-cookie']);
+	}
 	if(isset($params['-authuser']) && strlen($params['-authuser']) && isset($params['-authpass']) && strlen($params['-authpass'])){
 		//try all possible authentication methods
 		//curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
