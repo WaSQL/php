@@ -820,6 +820,55 @@ function hanaGetDBCount($query,$params){
 	$params['-count']=1;
 	return hanaQueryResults($query,$params);
 }
+//---------- begin function hanaQueryHeader ----------
+/**
+* @describe returns a single row array with the column names
+* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array a single row array with the column names
+* @usage $recs=hanaQueryHeader($query);
+*/
+function hanaQueryHeader($query,$params=array()){
+	$dbh_hana=hanaDBConnect($params);
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaGetDBSchemas Connect Error",$e));
+    	return;
+	}
+	if(!preg_match('/limit\ /is',$query)){
+		$query .= " limit 0";
+	}
+	try{
+		$result=odbc_exec($dbh_hana,$query);
+		if(!$result){
+        	$err=array(
+        		'error'	=> odbc_errormsg($dbh_hana),
+        		'query'	=> $query
+			);
+			echo "hanaQueryHeader error:".printValue($err);
+			exit;
+		}
+	}
+	catch (Exception $e) {
+		$err=$e->errorInfo;
+		echo "hanaQueryHeader error: exception".printValue($err);
+		exit;
+	}
+	$fields=array();
+	for($i=1;$i<=odbc_num_fields($result);$i++){
+		$field=strtolower(odbc_field_name($result,$i));
+        $fields[]=$field;
+    }
+    odbc_free_result($result);
+    $rec=array();
+    foreach($fields as $field){
+		$rec[$field]='';
+	}
+    $recs=array($rec);
+	return $recs;
+}
 //---------- begin function hanaQueryResults ----------
 /**
 * @describe returns the records of a query
@@ -878,15 +927,35 @@ function hanaQueryResults($query,$params=array()){
 		echo "hanaQueryResults error: exception".printValue($err);
 		exit;
 	}
+	$rowcount=odbc_num_rows($result);
+	if($rowcount==0 && isset($params['-forceheader'])){
+		$fields=array();
+		for($i=1;$i<=odbc_num_fields($result);$i++){
+			$field=strtolower(odbc_field_name($result,$i));
+			$fields[]=$field;
+		}
+		odbc_free_result($result);
+		$rec=array();
+		foreach($fields as $field){
+			$rec[$field]='';
+		}
+		$recs=array($rec);
+		return $recs;
+	}
 	if(isset($params['-count'])){
-    	return odbc_num_rows($result);
+		odbc_free_result($result);
+    	return $rowcount;
 	}
 	$header=0;
 	unset($fh);
 	if(isset($params['-filename'])){
 		if(file_exists($params['-filename'])){unlink($params['-filename']);}
     	$fh = fopen($params['-filename'],"wb");
-    	if(!$fh){echo 'hanaQueryResults error: Failed to open '.$params['-filename'];exit;}
+    	if(!$fh){
+			odbc_free_result($result);
+			echo 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			exit;
+		}
 	}
 	else{$recs=array();}
 	if(isset($params['-binmode'])){
