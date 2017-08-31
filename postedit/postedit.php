@@ -27,36 +27,20 @@ if(!isset($chost)){
 }
 // acquire an exclusive lock
 $lock=preg_replace('/[^a-z0-9]+/i','',$chost);
+global $lockfile;
 $lockfile="{$progpath}/{$lock}_lock.txt";
-if(!is_file($lockfile)){
-	file_put_contents($lockfile,time());
-}
-echo "Obtaining the Lock: {$lockfile}".PHP_EOL;
-global $lockhandle;
-$lockhandle = fopen($lockfile, "r+");
-
-$count = 0;
-$timeout_secs = 2; //number of seconds of timeout
-$got_lock = true;
-while (!flock($lockhandle, LOCK_EX | LOCK_NB, $wouldblock)) {
-    if ($wouldblock && $count++ < $timeout_secs) {
-        sleep(1);
-    } else {
-        $got_lock = false;
-        break;
-    }
-}
-if (!$got_lock) {
-	abortMessage("{$chost} is Already locked");
-}
-
-
+global $pid;
+$pid=getmypid();
+echo "obtaining lock: {$lockfile}".PHP_EOL;
+file_put_contents($lockfile,$pid);
+echo "{$lockfile} is now mine".PHP_EOL;
 //get the files
 $afolder=writeFiles();
 echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
 while(1){
 	sleep(1);
+	shutdown_check();
 	foreach($mtimes as $afile=>$mtime){
 		$cmtime=filemtime($afile);
     	if($cmtime != $mtime){
@@ -67,12 +51,14 @@ while(1){
 	}
 }
 exit;
-function shutdown(){
-	global $lockhandle;
-	echo "Releasing the Lock".PHP_EOL;
-	// release the lock
-	flock($lockhandle, LOCK_UN);
-	fclose($lockhandle);
+function shutdown_check(){
+	global $lockfile;
+	global $pid;
+	$tpid=getFileContents($lockfile);
+	if(trim($tpid) != $pid){
+		echo "Another postedit process took control. Exiting.".PHP_EOL;
+		exit;
+	}
 }
 
 function writeFiles(){
@@ -255,12 +241,14 @@ POSTFILE:
 function abortMessage($msg){
 	global $settings;
 	global $progpath;
+	global $lockfile;
 	$msg=trim($msg);
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	echo $progpath;
 	if(isWindows()){
 		$ok=soundAlarm('abort');
 	}
+	unlink($lockfile);
 	exit;
 }
 function errorMessage($msg){
