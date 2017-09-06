@@ -1,16 +1,10 @@
 <?php
 
 /*
-	SQLITE Database functions
-		http://php.net/manual/en/function.sqlite-query.php
-		* http://php.net/manual/en/pdo.lastinsertid.php
-		* http://henryranch.net/software/ease-into-sqlite-3-with-php-and-pdo/
-		* 
+	sqlite3 Database functions
+		http://php.net/manual/en/sqlite3.query.php
+		*
 */
-if(!function_exists('sqlite_popen')){
-	echo "sqlite library is not loaded";
-	exit;
-}
 
 //---------- begin function sqliteParseConnectParams ----------
 /**
@@ -83,21 +77,24 @@ function sqliteParseConnectParams($params=array()){
 function sqliteDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=sqliteParseConnectParams($params);
-	if(!isset($params['-dbname'])){return $params;}
+	if(!isset($params['-dbname'])){
+		echo "sqliteDBConnect error: no dbname set";
+		exit;
+	}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}
-	global $dbh_sqlite;
-	if(is_resource($dbh_sqlite)){return $dbh_sqlite;}
-	try{
-		$dbh_sqlite = new PDO("sqlite:{$params['-dbname']}");
-		if(!is_resource($dbh_sqlite)){
-			echo "sqliteDBConnect error:{$err}".printValue($params);
-			exit;
 
-		}
+	global $dbh_sqlite;
+	if($dbh_sqlite){return $dbh_sqlite;}
+	try{
+		$dbh_sqlite = new SQLite3($params['-dbname'],SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
+		$dbh_sqlite->busyTimeout(5000);
+		// WAL mode has better control over concurrency.
+		// Source: https://www.sqlite.org/wal.html
+		$dbh_sqlite->exec('PRAGMA journal_mode = wal;');
 		return $dbh_sqlite;
 	}
 	catch (Exception $e) {
-		echo "sqliteDBConnect exception" . printValue($e);
+		echo "sqliteDBConnect exception" . $e->getMessage();
 		exit;
 
 	}
@@ -126,9 +123,22 @@ function sqliteIsDBTable($table,$params=array()){
 		exit;
 	}
 	try{
-		$query="SELECT name FROM sqlite_master WHERE type='table' and name = '{$table}';";
-		$result=$dbh_sqlite->exec($query);
-		foreach($result as $rec){
+		$query="SELECT name FROM sqlite_master WHERE type='table' and name = ?";
+		$vals=array($table);
+		$stmt=$dbh_sqlite->prepare($query);
+		if(!$stmt){
+			$err=array(
+				'msg'=>"sqliteIsDBTable error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query,
+				'vals'	=> $vals
+				);
+			echo printValue($err);
+			exit;
+		}
+		$stmt->bindParam(1,$vals[0],SQLITE3_TEXT);
+		$resuts=$stmt->execute();
+		while ($rec = $results->fetchArray(SQLITE3_ASSOC)) {
 			if(strtolower($rec['name']) == $table){return true;}
 		}
 	}
@@ -163,22 +173,18 @@ function sqliteClearConnection(){
 */
 function sqliteExecuteSQL($query,$params=array()){
 	$dbh_sqlite=sqliteDBConnect($params);
-	if(!is_resource($dbh_sqlite)){
-		echo "sqliteDBConnect error".printValue($params);
-		exit;
-	}
 	try{
 		$result=$dbh_sqlite->exec($query);
 		if(!$result){
 			debugValue($err);
 			return false;
 		}
-		
+
 		return true;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue($err);
+		$err=$e->getMessage();
+		debugValue("sqliteExecuteSQL error: {$err}");
 		return false;
 	}
 	return true;
@@ -213,39 +219,24 @@ function sqliteAddDBRecord($params){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
-	$valstr='';
+	$binds=array();
+	$vals=array();
+	$flds=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
 		if(!isset($fields[$k])){continue;}
-		//fix array values
-		if(is_array($v)){$v=implode(':',$v);}
-		//take care of single quotes in value
-		$v=str_replace("'","''",$v);
-		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$v;
-        	break;
-        	case 'date':
-				if($k=='cdate' || $k=='_cdate'){
-					$v=date('Y-m-d',strtotime($v));
-				}
-				$opts['values'][]="'{$v}'";
-        	break;
-        	default:
-        		$opts['values'][]="'{$v}'";
-        	break;
-		}
-        $opts['fields'][]=trim(strtoupper($k));
+		$vals[]=$v;
+		$flds[]=$k;
+        $binds[]='?';
 	}
-	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
+	$fldstr=implode(', ',$flds);
+	$bindstr=implode(',',$binds);
+
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
-			("{$fieldstr}")
+			({$fldstr})
 		VALUES
-			({$valstr})
+			({$bindstr})
 ENDOFQUERY;
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
@@ -254,27 +245,48 @@ ENDOFQUERY;
     	return;
 	}
 	try{
-		$result=$dbh_sqlite->exec($query);
-		if(!$result){
-        	$err=array(
-        		'error'	=> sqlite_errormsg($dbh_sqlite),
-				'query'	=> $query
-			);
-			debugValue($err);
-			return "sqliteAddDBRecord Error".printValue($err);
+		//echo $query.printValue($vals);exit;
+		$stmt=$dbh_sqlite->prepare($query);
+		if(!$stmt){
+			$err=array(
+				'msg'=>"sqliteAddDBRecord error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query,
+				'vals'	=> $vals
+				);
+			echo printValue($err);
+			exit;
 		}
-		return $dbh_sqlite->lastInsertId();;
+		foreach($vals as $i=>$v){
+			$fld=$flds[$i];
+			$x=$i+1;
+			//echo "{$x}::{$v}::{$fields[$fld]['type']}<br>".PHP_EOL;
+			switch(strtolower($fields[$fld]['type'])){
+				case 'integer':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_INTEGER);
+				break;
+				case 'float':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_FLOAT);
+				break;
+				case 'blob':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_BLOB);
+				break;
+				case 'null':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_NULL);
+				break;
+				default:
+					$stmt->bindParam($x,$vals[$i],SQLITE3_TEXT);
+				break;
+			}
+		}
+		$results=$stmt->execute();
+		return $dbh_sqlite->lastInsertRowID();;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		$err['query']=$query;
-		$recs=array($err);
-		//return $recs;
-		
-		debugValue(array("sqliteAddDBRecord Connect Error",$e));
-		return "sqliteAddDBRecord Error".printValue($err);
+		$err=$e->getMessage();
+		debugValue("sqliteAddDBRecord error: {$err}");
+		return null;
 	}
-	
 	return 0;
 }
 //---------- begin function sqliteEditDBRecord ----------
@@ -309,22 +321,15 @@ function sqliteEditDBRecord($params){
 	elseif(isset($fields['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
+	$updates=array();
+	$vals=array();
+	$flds=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
-		//fix array values
-		if(is_array($v)){$v=implode(':',$v);}
-		//take care of single quotes in value
-		$v=str_replace("'","''",$v);
-		switch(strtolower($fields[$k]['type'])){
-        	case 'date':
-				if($k=='edate' || $k=='_edate'){
-					$v=date('Y-m-d',strtotime($v));
-				}
-        	break;
-		}
-
-        $updates[]="{$k}='{$v}'";
+		$vals[]=$v;
+		$flds[]=$k;
+        $updates[]="{$k}=?";
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
@@ -332,90 +337,56 @@ function sqliteEditDBRecord($params){
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
-	$result=$dbh_sqlite->exec($query);
-	return 1;
-}
-//---------- begin function sqliteReplaceDBRecord ----------
-/**
-* @describe updates or adds a record from params passed in.
-*  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_sqlite,dbuser_sqlite, and dbpass_sqlite
-*   -table - name of the table to add to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add/edit to the record
-* @return integer returns the autoincriment key
-* @usage $id=sqliteReplaceDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
-*/
-function sqliteReplaceDBRecord($params){
-	global $USER;
-	if(!isset($params['-table'])){return 'sqliteAddRecord error: No table specified.';}
-	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
-	$opts=array();
-	if(isset($fields['cdate'])){
-		$opts['fields'][]='CDATE';
-		$opts['values'][]=strtoupper(date('d-M-Y  H:i:s'));
-	}
-	if(isset($fields['cuser'])){
-		$opts['fields'][]='CUSER';
-		$opts['values'][]=$USER['username'];
-	}
-	$valstr='';
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		//skip cuser and cdate - already set
-		if($k=='cuser' || $k=='cdate'){continue;}
-		//fix array values
-		if(is_array($v)){$v=implode(':',$v);}
-		//take care of single quotes in value
-		$v=str_replace("'","''",$v);
-		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$v;
-        	break;
-        	default:
-        		$opts['values'][]="'{$v}'";
-        	break;
-		}
-        $opts['fields'][]=trim(strtoupper($k));
-	}
-	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
-    $query=<<<ENDOFQUERY
-		REPLACE INTO {$params['-table']}
-		("{$fieldstr}")
-		values({$valstr})
-ENDOFQUERY;
+	echo $query.printValue($params);
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteReplaceDBRecord Connect Error",$e));
+    	debugValue(array("sqliteAddDBRecord Connect Error",$e));
     	return;
 	}
 	try{
-		$result=sqlite_exec($dbh_sqlite,$query);
-		if(!$result){
-        	$err=array(
-        		'error'	=> sqlite_errormsg($dbh_sqlite),
-				'query'	=> $query
-			);
-			debugValue($err);
-			return "sqliteReplaceDBRecord Error".printValue($err).$query;
+		$stmt=$dbh_sqlite->prepare($query);
+		if(!$stmt){
+			$err=array(
+				'msg'=>"sqliteEditDBRecord error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query,
+				'vals'	=> $vals
+				);
+			echo printValue($err);
+			exit;
 		}
+		foreach($vals as $i=>$v){
+			$fld=$flds[$i];
+			$x=$i+1;
+			echo "{$x}::{$v}::{$fields[$fld]['type']}<br>".PHP_EOL;
+			switch(strtolower($fields[$fld]['type'])){
+				case 'integer':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_INTEGER);
+				break;
+				case 'float':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_FLOAT);
+				break;
+				case 'blob':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_BLOB);
+				break;
+				case 'null':
+					$stmt->bindParam($x,$vals[$i],SQLITE3_NULL);
+				break;
+				default:
+					$stmt->bindParam($x,$vals[$i],SQLITE3_TEXT);
+				break;
+			}
+		}
+		$results=$stmt->execute();
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		$err['query']=$query;
-		
-		debugValue(array("sqliteReplaceDBRecord Connect Error",$e));
-		return "sqliteReplaceDBRecord Error".printValue($err);
+		$err=$e->getMessage();
+		debugValue("sqliteAddDBRecord error: {$err}");
+		return null;
 	}
-	
-	return true;
+	return 0;
 }
 //---------- begin function sqliteGetDBTables ----------
 /**
@@ -431,13 +402,13 @@ function sqliteGetDBTables($params=array()){
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
+    	debugValue(array("sqliteGetDBTables Error",$e));
     	return;
 	}
 	try{
-		$result = sqlite_query($dbhandle, "SELECT name FROM sqlite_master WHERE type='table';");
-		$tables=array();
-		while ($rec = sqlite_fetch_array($result, SQLITE_ASSOC)) {
+		$query="SELECT name FROM sqlite_master WHERE type='table';";
+		$results=$dbh_sqlite->query($query);
+		while ($rec = $results->fetchArray(SQLITE3_ASSOC)) {
 			$tables[]=strtolower($rec['name']);
 		}
 		return $tables;
@@ -466,16 +437,12 @@ function sqliteGetDBFieldInfo($table,$params=array()){
     	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
     	return;
 	}
-	$query="select * from {$table} where 1=0";
+	$query="PRAGMA table_info({$table})";
 	try{
-		$result=sqlite_exec($dbh_sqlite,$query);
-		if(!$result){
-        	$err=array(
-        		'error'	=> sqlite_errormsg($dbh_sqlite),
-        		'query'	=> $query
-			);
-			echo "sqliteGetDBFieldInfo error: No result".printValue($err);
-			exit;
+		$results=$dbh_sqlite->query($query);
+		$recs=array();
+		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
+			$recs[$xrec['name']]=$xrec;
 		}
 	}
 	catch (Exception $e) {
@@ -483,19 +450,6 @@ function sqliteGetDBFieldInfo($table,$params=array()){
 		echo "sqliteGetDBFieldInfo error: exception".printValue($err);
 		exit;
 	}
-	$recs=array();
-	for($i=1;$i<=sqlite_num_fields($result);$i++){
-		$field=strtolower(sqlite_field_name($result,$i));
-        $recs[$field]=array(
-			'name'		=> $field,
-			'type'		=> strtolower(sqlite_field_type($result,$i)),
-			'scale'		=> strtolower(sqlite_field_scale($result,$i)),
-			'precision'	=> strtolower(sqlite_field_precision($result,$i)),
-			'length'	=> strtolower(sqlite_field_len($result,$i)),
-			'num'		=> strtolower(sqlite_field_num($result,$i))
-		);
-    }
-    
 	return $recs;
 }
 //---------- begin function sqliteGetDBCount ----------
@@ -513,55 +467,6 @@ function sqliteGetDBCount($query,$params){
 	$params['-count']=1;
 	return sqliteQueryResults($query,$params);
 }
-//---------- begin function sqliteQueryHeader ----------
-/**
-* @describe returns a single row array with the column names
-* @param $params array - These can also be set in the CONFIG file with dbname_sqlite,dbuser_sqlite, and dbpass_sqlite
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return array a single row array with the column names
-* @usage $recs=sqliteQueryHeader($query);
-*/
-function sqliteQueryHeader($query,$params=array()){
-	$dbh_sqlite=sqliteDBConnect($params);
-	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
-    	return;
-	}
-	if(!preg_match('/limit\ /is',$query)){
-		$query .= " limit 0";
-	}
-	try{
-		$result=sqlite_exec($dbh_sqlite,$query);
-		if(!$result){
-        	$err=array(
-        		'error'	=> sqlite_errormsg($dbh_sqlite),
-        		'query'	=> $query
-			);
-			echo "sqliteQueryHeader error:".printValue($err);
-			exit;
-		}
-	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "sqliteQueryHeader error: exception".printValue($err);
-		exit;
-	}
-	$fields=array();
-	for($i=1;$i<=sqlite_num_fields($result);$i++){
-		$field=strtolower(sqlite_field_name($result,$i));
-        $fields[]=$field;
-    }
-    
-    $rec=array();
-    foreach($fields as $field){
-		$rec[$field]='';
-	}
-    $recs=array($rec);
-	return $recs;
-}
 //---------- begin function sqliteQueryResults ----------
 /**
 * @describe returns the records of a query
@@ -575,7 +480,7 @@ function sqliteQueryHeader($query,$params=array()){
 */
 function sqliteQueryResults($query,$params=array()){
 	global $dbh_sqlite;
-	if(!is_resource($dbh_sqlite)){
+	if(!$dbh_sqlite){
 		$dbh_sqlite=sqliteDBConnect($params);
 	}
 	if(!$dbh_sqlite){
@@ -584,53 +489,25 @@ function sqliteQueryResults($query,$params=array()){
     	return;
 	}
 	try{
-		$result=sqlite_exec($dbh_sqlite,$query);
-		if(!$result){
-			$errstr=sqlite_errormsg($dbh_sqlite);
-			if(!strlen($errstr)){return array();}
-        	$err=array(
-        		'error'	=> $errstr,
-        		'query' => $query
-			);
-			
-			echo "sqliteQueryResults error: No result".printValue($err);
-			exit;
+		$results=$dbh_sqlite->query($query);
+		if(isset($params['-count'])){
+			return $results->rowCount();
 		}
+		$recs=array();
+		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
+			$rec=array();
+			foreach($xrec as $k=>$v){
+				$k=strtolower($k);
+				$rec[$k]=$v;
+			}
+			$recs[]=$rec;
+		}
+		return $recs;
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
 		echo "sqliteQueryResults error: exception".printValue($err);
 		exit;
 	}
-	$rowcount=sqlite_num_rows($result);
-	if($rowcount==0 && isset($params['-forceheader'])){
-		$fields=array();
-		for($i=1;$i<=sqlite_num_fields($result);$i++){
-			$field=strtolower(sqlite_field_name($result,$i));
-			$fields[]=$field;
-		}
-		
-		$rec=array();
-		foreach($fields as $field){
-			$rec[$field]='';
-		}
-		$recs=array($rec);
-		return $recs;
-	}
-	if(isset($params['-count'])){
-    	return $rowcount;
-	}
-	$header=0;
-	unset($fh);
-	$recs=array();
-	while ($crec = sqlite_fetch_array($result, SQLITE_ASSOC)) {
-		$rec=array();
-		foreach($crec as $k=>$v){
-			$k=strtolower($k);
-			$rec[$k]=$v;
-		}
-		$recs[]=$rec;
-	}
-	return $recs;
 }
 
