@@ -139,8 +139,13 @@ function sqliteIsDBTable($table,$params=array()){
 		$stmt->bindParam(1,$vals[0],SQLITE3_TEXT);
 		$resuts=$stmt->execute();
 		while ($rec = $results->fetchArray(SQLITE3_ASSOC)) {
-			if(strtolower($rec['name']) == $table){return true;}
+			if(strtolower($rec['name']) == $table){
+				$results->finalize();
+				return true;
+			}
 		}
+		$results->finalize();
+		return false;
 	}
 	catch (Exception $e) {
 		$err=$e->getMessage();
@@ -411,6 +416,7 @@ function sqliteGetDBTables($params=array()){
 		while ($rec = $results->fetchArray(SQLITE3_ASSOC)) {
 			$tables[]=strtolower($rec['name']);
 		}
+		$results->finalize();
 		return $tables;
 	}
 	catch (Exception $e) {
@@ -444,13 +450,15 @@ function sqliteGetDBFieldInfo($table,$params=array()){
 		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
 			$recs[$xrec['name']]=$xrec;
 		}
+		$results->finalize();
+		return $recs;
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
 		echo "sqliteGetDBFieldInfo error: exception".printValue($err);
 		exit;
 	}
-	return $recs;
+	return array();
 }
 //---------- begin function sqliteGetDBCount ----------
 /**
@@ -502,6 +510,7 @@ function sqliteQueryResults($query,$params=array()){
 			}
 			$recs[]=$rec;
 		}
+		$results->finalize();
 		return $recs;
 	}
 	catch (Exception $e) {
