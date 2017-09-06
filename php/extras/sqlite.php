@@ -3,6 +3,9 @@
 /*
 	SQLITE Database functions
 		http://php.net/manual/en/function.sqlite-query.php
+		* http://php.net/manual/en/pdo.lastinsertid.php
+		* http://henryranch.net/software/ease-into-sqlite-3-with-php-and-pdo/
+		* 
 */
 if(!function_exists('sqlite_popen')){
 	echo "sqlite library is not loaded";
@@ -82,19 +85,10 @@ function sqliteDBConnect($params=array()){
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){return $params;}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}
-	if(isset($params['-single'])){
-		$dbh_sqlite_single = sqlite_open($params['-dbname'],$params['-mode'],$err );
-		if(!is_resource($dbh_sqlite_single)){
-			echo "sqliteDBConnect single connect error:{$err}".printValue($params);
-			exit;
-		}
-		return $dbh_sqlite_single;
-	}
 	global $dbh_sqlite;
 	if(is_resource($dbh_sqlite)){return $dbh_sqlite;}
-
 	try{
-		$dbh_sqlite = sqlite_popen($params['-dbname'],$params['-mode'],$err );
+		$dbh_sqlite = new PDO("sqlite:{$params['-dbname']}");
 		if(!is_resource($dbh_sqlite)){
 			echo "sqliteDBConnect error:{$err}".printValue($params);
 			exit;
@@ -132,13 +126,14 @@ function sqliteIsDBTable($table,$params=array()){
 		exit;
 	}
 	try{
-		$result = sqlite_query($dbhandle, "SELECT name FROM sqlite_master WHERE type='table' and name = '{$table}';");
-		while ($rec = sqlite_fetch_array($result, SQLITE_ASSOC)) {
+		$query="SELECT name FROM sqlite_master WHERE type='table' and name = '{$table}';";
+		$result=$dbh_sqlite->exec($query);
+		foreach($result as $rec){
 			if(strtolower($rec['name']) == $table){return true;}
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
+		$err=$e->getMessage();
 		echo "sqliteIsDBTable error: exception".printValue($err);
 		exit;
 	}
@@ -152,7 +147,7 @@ function sqliteIsDBTable($table,$params=array()){
 */
 function sqliteClearConnection(){
 	global $dbh_sqlite;
-	$dbh_sqlite='';
+	$dbh_sqlite=null;
 	return true;
 }
 //---------- begin function sqliteExecuteSQL ----------
@@ -173,7 +168,7 @@ function sqliteExecuteSQL($query,$params=array()){
 		exit;
 	}
 	try{
-		$result=sqlite_exec($dbh_sqlite,$query,$err);
+		$result=$dbh_sqlite->exec($query);
 		if(!$result){
 			debugValue($err);
 			return false;
@@ -259,7 +254,7 @@ ENDOFQUERY;
     	return;
 	}
 	try{
-		$result=sqlite_exec($dbh_sqlite,$query);
+		$result=$dbh_sqlite->exec($query);
 		if(!$result){
         	$err=array(
         		'error'	=> sqlite_errormsg($dbh_sqlite),
@@ -268,7 +263,7 @@ ENDOFQUERY;
 			debugValue($err);
 			return "sqliteAddDBRecord Error".printValue($err);
 		}
-		return sqlite_last_insert_rowid($dbh_sqlite);
+		return $dbh_sqlite->lastInsertId();;
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
@@ -337,7 +332,8 @@ function sqliteEditDBRecord($params){
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
-	return sqliteExecuteSQL($query,$params);
+	$result=$dbh_sqlite->exec($query);
+	return 1;
 }
 //---------- begin function sqliteReplaceDBRecord ----------
 /**
