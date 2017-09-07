@@ -1,6 +1,24 @@
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
+function setInputFileName(fld){
+	if(fld.files && fld.files.length > 1 ){
+		fileName = ( fld.getAttribute( 'data-multiple-caption' ) || '' ).replace( '{count}', fld.files.length );
+	}
+	else{
+		fileName = fld.value.split( '\\' ).pop();
+	}
+	var label=document.querySelector('label[for='+fld.id+']');
+	console.log(fileName,label);
+	if(fileName){
+		setText(label,'<span class="icon-upload w_big w_success"></span> '+fileName);
+		label.className='btn btn-default';
+	}
+	else{
+		setText(label,'<span class="icon-upload w_big w_danger"></span> file to upload');
+		label.className='btn btn-default';
+	}
+}
 /** attachDropFiles **/
 /** https://thiscouldbebetter.wordpress.com/2013/07/03/converting-a-file-to-a-base64-dataurl-in-javascript/ **/
 function attachDropFiles(fld){
