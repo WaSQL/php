@@ -1261,25 +1261,30 @@ function buildFormFile($name,$params=array()){
 		<input id="addedit_synchronize_1" data-group="addedit_synchronize_group" style="display:none;" data-type="checkbox" name="synchronize[]" value="1" type="checkbox">
 		<label class="icon-mark " for="addedit_synchronize_1"></label>
 		*/
-		$tag .= '<div class="w_smallest w_lblue">'."\n";
-		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'."\n";
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'."\n";
-		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'."\n";
-		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'."\n";
-		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'."\n";
-		$tag .= '</div>'."\n";
+		$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
+		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'.PHP_EOL;
+		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'.PHP_EOL;
+		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'.PHP_EOL;
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
+		$tag .= '</div>'.PHP_EOL;
 	}
     //remove style attribute since it is not supported
+    $params['data-type']='file';
+    $params['onchange']="setInputFileName(this);";
     if(!isset($params['style'])){
-		$params['style']="border:0px;box-shadow:none;";
+		unset($params['style']);
 	}
-    $params['size']=intval((string)$params['width']/8);
+	if(!isset($params['type'])){
+		unset($params['type']);
+	}
 	$tag .= '	<input type="file"';
 	$tag .= setTagAttributes($params);
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
 	}
-	$tag .= ' />'."\n";
+	$tag .= ' />'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'" class="btn btn-default"><span class="icon-upload w_big w_danger"></span> file to upload</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
@@ -2227,7 +2232,6 @@ function cleanDir($dir='') {
 *	returns the results of executing the command
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
-
 	if(!is_dir($dir)){$dir=null;}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	if($timeout != 0 && isNum($timeout) && !isWindows()){
@@ -2823,7 +2827,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'_behavior','display',
 		'required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
-		'lang','autocorrect','list','data-requiredif','autofocus'
+		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg'
 		);
 	//autofocus
 	if(isset($atts['autofocus'])){
@@ -9964,6 +9968,7 @@ function postURL($url,$params=array()) {
 	//convert Unix newlines to CRLF newlines
 	curl_setopt ($process, CURLOPT_CRLF, 0);
 	$return = curl_exec($process);
+	//echo $return;exit;
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($process);
 	//check for errors
