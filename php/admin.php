@@ -2648,6 +2648,7 @@ LIST_TABLE:
 			}
 		break;
 		case 'import':
+			//echo adminViewPage('import');exit;
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'."\n";
 			$importmsg='';
 			global $progpath;
@@ -2762,24 +2763,26 @@ LIST_TABLE:
 			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import",'file_path'=>$filepath,'file_autonumber'=>1));
 			if(!isset($_REQUEST['_types'])){$_REQUEST['_types']=array('xmlschema','xmlmeta','xmldata');}
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
-			echo '	<input type="file" data-required="1" name="file" size="80" acceptmsg="Only valid xml and csv files are allowed" accept="xml,csv" /><br />'."\n";
-			echo '<div style="width:600px;"'."\n";
+			echo buildFormFile('file',array('accept'=>'.xml,.csv','acceptmsg'=>'Only valid xml and csv files are allowed'));
+			echo '<div style="width:500px;"'."\n";
 			echo '<table class="table"><tr valign="top">'."\n";
 			//XML File Options
 			echo '<td class="nowrap">'."\n";
 			echo '<div class="w_lblue w_bold w_big">XML File Options</div>'."\n";
-			$checked=(isset($_REQUEST['_types']) && is_array($_REQUEST['_types']) && in_array('xmlschema',$_REQUEST['_types']))?' checked':'';
-			echo '	<input type="checkbox" name="_types[]" value="xmlschema" data-required="1" data-requiredmsg="At least one import type must be selected"'.$checked.'> Schema'."\n";
-			$checked=(isset($_REQUEST['_types']) && is_array($_REQUEST['_types']) && in_array('xmlmeta',$_REQUEST['_types']))?' checked':'';
-			echo '	<input type="checkbox" name="_types[]" value="xmlmeta"'.$checked.'> Meta'."\n";
-			$checked=(isset($_REQUEST['_types']) && is_array($_REQUEST['_types']) && in_array('xmlschema',$_REQUEST['_types']))?' checked':'';
-			echo '	<input type="checkbox" name="_types[]" value="xmldata"'.$checked.'> Data'."<br />\n";
-			$checked=(isset($_REQUEST['_options']) && is_array($_REQUEST['_options']) && in_array('drop',$_REQUEST['_options']))?' checked':'';
-			echo '	<input type="checkbox" name="_options[]" value="drop"'.$checked.'> Drop Existing Tables with same names'."<br />\n";
-			$checked=(isset($_REQUEST['_options']) && is_array($_REQUEST['_options']) && in_array('truncate',$_REQUEST['_options']))?' checked':'';
-			echo '	<input type="checkbox" name="_options[]" value="truncate"'.$checked.'> Truncate Existing Records'."<br />\n";
-			$checked=(isset($_REQUEST['_options']) && is_array($_REQUEST['_options']) && in_array('ids',$_REQUEST['_options']))?' checked':'';
-			echo '	<input type="checkbox" name="_options[]" value="ids"'.$checked.'> Import IDs'."<br />\n";
+			$opts=array(
+				'xmlschema'=>'Schema',
+				'xmlmeta'=>'Meta',
+				'xmldata'=>'Data'
+			);
+			$params=array('value'=>$_REQUEST['_types'],'width'=>3);
+			echo buildFormCheckbox('_types[]',$opts,$params);
+			$opts=array(
+				'drop'=>'Drop Existing Tables with same names',
+				'truncate'=>'Truncate Existing Records',
+				'ids'=>'Import IDs'
+			);
+			$params=array('value'=>$_REQUEST['_types'],'width'=>1);
+			echo buildFormCheckbox('_options[]',$opts,$params);
 			echo '	Merge Fields:<br /> <textarea name="_merge" style="width:300px;height:50px;" class="w_small form-control"></textarea>'."<br />\n";
 			echo '</td><td>'."\n";
 			echo '<div class="w_lblue w_bold w_big">CSV File Options</div>'."\n";
