@@ -1211,6 +1211,17 @@ input[list]{
 	background-position:right;
 	background-origin: content-box;
 }
+input[data-type=file]{
+	width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+input[data-type=file] + label[class*=icon-upload]{
+
+}
 /* checkbox formatting */
 input[data-type=checkbox] + label[class*=icon-mark]{
 	padding:2px 2px 2px 2px;
