@@ -81,7 +81,6 @@ function writeFiles(){
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
-	//echo printValue($post);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
 	}
@@ -160,7 +159,7 @@ function writeFiles(){
 function buildHostUrl(){
 	global $hosts;
 	global $chost;
-	if(isset($hosts[$chost]['insecure']) && $hosts[$chost]['insecure'] == 1){$http='https';}
+	if(isset($hosts[$chost]['insecure']) && $hosts[$chost]['insecure'] == 1){$http='http';}
 	else{$http='https';}
 	$url="{$http}://{$hosts[$chost]['name']}/php/index.php";
 	return $url;
