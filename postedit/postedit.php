@@ -138,7 +138,8 @@ function writeFiles(){
 	        		$ext='html';
 	        	break;
 			}
-	    	$afile="{$path}/{$info['name']}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
+			$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
+	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	//echo "{$afile}".PHP_EOL;
 	    	$content=base64_decode(trim($content));
 	    	file_put_contents($afile,$content);
