@@ -9744,6 +9744,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
                 /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 				$xml .= '	<WASQL_RECORD';
 				foreach($atts as $key=>$val){
+					$val=str_replace('"','&quot;',$val);
 					$xml .= " {$key}=\"{$val}\"";
 				}
 				$xml .= '>'."\n";
