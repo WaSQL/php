@@ -748,7 +748,7 @@ function hanaGetDBTables($params=array()){
 	$tables=array();
 	while(odbc_fetch_row($result)){
 		if(odbc_result($result,"TABLE_TYPE")!="TABLE"){continue;}
-		if(strlen($schema) && odbc_result($result,"TABLE_SCHEM") != strtoupper($schema)){continue;}
+		if(isset($params['-schema']) && strlen($params['-schema']) && strtoupper(odbc_result($result,"TABLE_SCHEM")) != strtoupper($params['-schema'])){continue;}
 		$schem=odbc_result($result,"TABLE_SCHEM");
 		$name=odbc_result($result,"TABLE_NAME");
 		$tables[]="{$schem}.{$name}";
