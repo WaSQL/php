@@ -125,8 +125,10 @@ function writeFiles(){
 				mkdir($path,0777,true);
 			}
 	    	//determine extension
-	    	$parts=preg_split('/\_/',$name);
+	    	$parts=preg_split('/\_/',ltrim($name,'_'),2);
+	    	//echo $name.printValue($parts);
 	    	$field=array_pop($parts);
+
 	    	switch(strtolower($field)){
 	        	case 'js':$ext='js';break;
 	        	case 'css':$ext='css';break;
