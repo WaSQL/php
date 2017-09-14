@@ -1,4 +1,81 @@
 <?php
+//---------- begin function getWebsiteMeta ----------
+/**
+* @describe gets the headers, meta, and link data from a website URL
+* @param url string - website URL
+* @return array key/value pairs.  title, url, headers, meta, and link
+* @usage $meta=getWebsiteMeta('https://www.google.com');
+*/
+function getWebsiteMeta($url){
+    $result = false;
+    $post=postURL($url,array(
+		'-method'=>'GET',
+		'-follow'=>1,
+		'-nossl'=>1
+	));
+	$contents=$post['body'];
+    $meta=array('url'=>$url,'headers'=>$post['headers']);
+    if(preg_match('/<title>([^>]*)<\/title>/si', $contents, $m)){
+		$meta['title']=$m[1];
+	}
+    preg_match_all('/\<(meta|link)\ (.+?)\>/si',$contents,$m);
+    foreach($m[2] as $i=>$str){
+		$attr=parseHtmlTagAttributes($str);
+		switch(strtolower($m[1][$i])){
+			case 'link':
+				$k=$attr['rel'];
+				$v=$attr['href'];
+				$g='link';
+			break;
+			case 'meta':
+				if(isset($attr['name'])){$k=$attr['name'];}
+				elseif(isset($attr['property'])){$k=$attr['property'];}
+				elseif(isset($attr['http-equiv'])){$k=$attr['http-equiv'];}
+				else{$k='';}
+				$v=$attr['content'];
+				$g='meta';
+			break;
+		}
+		if(strlen($k) && $k != 'stylesheet'){
+			$meta[$g][$k]=$v;
+		}
+	}
+	//sort
+	ksort($meta);
+	foreach($meta as $k=>$r){
+		if(is_array($meta[$k])){
+			ksort($meta[$k]);
+		}
+	}
+    return $meta;
+}
+//---------- begin function parseAttributes ----------
+/**
+* @describe parses an html tag attributes
+* @param txt html tag string
+* @return array key/value pairs for each attribute found in the html tag
+* @usage $attrs=parseHtmlTagAttributes($tag);
+*/
+function parseHtmlTagAttributes($text) {
+    $attributes = array();
+    $pattern = '#(?(DEFINE)
+            (?<name>[a-zA-Z][a-zA-Z0-9-:]*)
+            (?<value_double>"[^"]+")
+            (?<value_single>\'[^\']+\')
+            (?<value_none>[^\s>]+)
+            (?<value>((?&value_double)|(?&value_single)|(?&value_none)))
+        )
+        (?<n>(?&name))(=(?<v>(?&value)))?#xs';
+    if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+			$k=strtolower($match['n']);
+            $attributes[$k] = isset($match['v'])?trim($match['v'], '\'"'): null;
+        }
+    }
+    return $attributes;
+}
+
+
 //---------- begin function abort ----------
 /**
 * @describe aborts all processing and exits with an abort message
