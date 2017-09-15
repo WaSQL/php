@@ -56,11 +56,13 @@ function getWebsiteMeta($url){
 		if(isset($meta['meta']['description']) && strlen($meta['meta']['description'])){$meta['summary']['description']=$meta['meta']['description'];}
 		elseif(isset($meta['meta']['og:description']) && strlen($meta['meta']['og:description'])){$meta['summary']['description']=$meta['meta']['og:description'];}
 		elseif(isset($meta['meta']['twitter:description']) && strlen($meta['meta']['twitter:description'])){$meta['summary']['description']=$meta['meta']['twitter:description'];}
+		elseif(isset($meta['meta']['abstract']) && strlen($meta['meta']['abstract'])){$meta['summary']['description']=$meta['meta']['abstract'];}
 	}
 	if(!isset($meta['summary']['image']) || !strlen($meta['summary']['image'])){
 		if(isset($meta['meta']['image']) && strlen($meta['meta']['image'])){$meta['summary']['image']=$meta['meta']['image'];}
 		elseif(isset($meta['meta']['og:image']) && strlen($meta['meta']['og:image'])){$meta['summary']['image']=$meta['meta']['og:image'];}
 		elseif(isset($meta['meta']['twitter:image:src']) && strlen($meta['meta']['twitter:image:src'])){$meta['summary']['image']=$meta['meta']['twitter:image:src'];}
+		elseif(isset($meta['link']['apple-touch-icon']) && strlen($meta['link']['apple-touch-icon'])){$meta['summary']['image']=$meta['link']['apple-touch-icon'];}
 	}
 	//sort
 	ksort($meta);
