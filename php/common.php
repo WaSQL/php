@@ -64,6 +64,7 @@ function getWebsiteMeta($url){
 		elseif(isset($meta['meta']['og:image']) && strlen($meta['meta']['og:image'])){$meta['summary']['image']=$meta['meta']['og:image'];}
 		elseif(isset($meta['meta']['twitter:image:src']) && strlen($meta['meta']['twitter:image:src'])){$meta['summary']['image']=$meta['meta']['twitter:image:src'];}
 		elseif(isset($meta['link']['apple-touch-icon']) && strlen($meta['link']['apple-touch-icon'])){$meta['summary']['image']=$meta['link']['apple-touch-icon'];}
+		elseif(isset($meta['link']['icon']) && strlen($meta['link']['icon'])){$meta['summary']['image']=$meta['link']['icon'];}
 	}
 	if(isset($meta['summary']['image']) && strlen($meta['summary']['image']) && !preg_match('/^(http|https|\/\/)/',$meta['summary']['image'])){
 		$meta['summary']['image']=$url.$meta['summary']['image'];
