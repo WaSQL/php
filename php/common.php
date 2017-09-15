@@ -14,9 +14,10 @@ function getWebsiteMeta($url){
 		'-nossl'=>1
 	));
 	$contents=$post['body'];
-    $meta=array('url'=>$url,'headers'=>$post['headers']);
+    $meta=array('headers'=>$post['headers']);
+    $meta['summary']['url']=$url;
     if(preg_match('/<title>([^>]*)<\/title>/si', $contents, $m)){
-		$meta['title']=$m[1];
+		$meta['summary']['title']=$m[1];
 	}
     preg_match_all('/\<(meta|link)\ (.+?)\>/si',$contents,$m);
     foreach($m[2] as $i=>$str){
@@ -39,6 +40,27 @@ function getWebsiteMeta($url){
 		if(strlen($k) && $k != 'stylesheet'){
 			$meta[$g][$k]=$v;
 		}
+	}
+	//name, title, description, image
+	if(!isset($meta['summary']['name']) || !strlen($meta['summary']['name'])){
+		if(isset($meta['meta']['name']) && strlen($meta['meta']['name'])){$meta['summary']['name']=$meta['meta']['name'];}
+		elseif(isset($meta['meta']['og:site_name']) && strlen($meta['meta']['og:site_name'])){$meta['summary']['name']=$meta['meta']['og:site_name'];}
+		elseif(isset($meta['meta']['twitter:site']) && strlen($meta['meta']['twitter:site'])){$meta['summary']['name']=$meta['meta']['twitter:site'];}
+	}
+	if(!isset($meta['summary']['title']) || !strlen($meta['summary']['title'])){
+		if(isset($meta['meta']['title']) && strlen($meta['meta']['title'])){$meta['title']=$meta['summary']['title']['title'];}
+		elseif(isset($meta['meta']['og:title']) && strlen($meta['meta']['og:title'])){$meta['title']=$meta['summary']['title']['og:title'];}
+		elseif(isset($meta['meta']['twitter:title']) && strlen($meta['meta']['twitter:title'])){$meta['summary']['title']=$meta['meta']['twitter:title'];}
+	}
+	if(!isset($meta['summary']['description']) || !strlen($meta['summary']['description'])){
+		if(isset($meta['meta']['description']) && strlen($meta['meta']['description'])){$meta['summary']['description']=$meta['meta']['description'];}
+		elseif(isset($meta['meta']['og:description']) && strlen($meta['meta']['og:description'])){$meta['summary']['description']=$meta['meta']['og:description'];}
+		elseif(isset($meta['meta']['twitter:description']) && strlen($meta['meta']['twitter:description'])){$meta['summary']['description']=$meta['meta']['twitter:description'];}
+	}
+	if(!isset($meta['summary']['image']) || !strlen($meta['summary']['image'])){
+		if(isset($meta['meta']['image']) && strlen($meta['meta']['image'])){$meta['summary']['image']=$meta['meta']['image'];}
+		elseif(isset($meta['meta']['og:image']) && strlen($meta['meta']['og:image'])){$meta['summary']['image']=$meta['meta']['og:image'];}
+		elseif(isset($meta['meta']['twitter:image:src']) && strlen($meta['meta']['twitter:image:src'])){$meta['summary']['image']=$meta['meta']['twitter:image:src'];}
 	}
 	//sort
 	ksort($meta);
