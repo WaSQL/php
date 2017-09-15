@@ -10422,6 +10422,8 @@ function printValue($v='',$exit=0){
 	if(strlen($j)){
 		$rtn .= "{$type} object:".PHP_EOL;
 		//$j = preg_replace('/\\\//',"/",$j);
+		$j=str_replace('\r\n',PHP_EOL,$j);
+		$j=str_replace('\t',"\t",$j);
 		$rtn .= stripslashes($j);
 	}
 	else{
