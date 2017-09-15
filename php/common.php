@@ -46,6 +46,7 @@ function getWebsiteMeta($url){
 		if(isset($meta['meta']['name']) && strlen($meta['meta']['name'])){$meta['summary']['name']=$meta['meta']['name'];}
 		elseif(isset($meta['meta']['og:site_name']) && strlen($meta['meta']['og:site_name'])){$meta['summary']['name']=$meta['meta']['og:site_name'];}
 		elseif(isset($meta['meta']['twitter:site']) && strlen($meta['meta']['twitter:site'])){$meta['summary']['name']=$meta['meta']['twitter:site'];}
+		else{$meta['summary']['name']=getUniqueHost($url);}
 	}
 	if(!isset($meta['summary']['title']) || !strlen($meta['summary']['title'])){
 		if(isset($meta['meta']['title']) && strlen($meta['meta']['title'])){$meta['title']=$meta['summary']['title']['title'];}
