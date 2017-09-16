@@ -16,6 +16,8 @@ function getWebsiteMeta($url){
 	$contents=$post['body'];
     $meta=array('headers'=>$post['headers']);
     $meta['summary']['url']=$url;
+    $p=preg_split('/\#/',$url,2);
+	$meta['base_url']=$p[0];
     if(preg_match('/<title>([^>]*)<\/title>/si', $contents, $m)){
 		$meta['summary']['title']=$m[1];
 	}
@@ -47,7 +49,7 @@ function getWebsiteMeta($url){
 		if(isset($meta['meta']['name']) && strlen($meta['meta']['name'])){$meta['summary']['name']=$meta['meta']['name'];}
 		elseif(isset($meta['meta']['og:site_name']) && strlen($meta['meta']['og:site_name'])){$meta['summary']['name']=$meta['meta']['og:site_name'];}
 		elseif(isset($meta['meta']['twitter:site']) && strlen($meta['meta']['twitter:site'])){$meta['summary']['name']=$meta['meta']['twitter:site'];}
-		else{$meta['summary']['name']=getUniqueHost($url);}
+		else{$meta['summary']['name']=getUniqueHost($meta['base_url']);}
 	}
 	if(!isset($meta['summary']['title']) || !strlen($meta['summary']['title'])){
 		if(isset($meta['meta']['title']) && strlen($meta['meta']['title'])){$meta['title']=$meta['summary']['title']['title'];}
@@ -71,9 +73,7 @@ function getWebsiteMeta($url){
 	}
 	if(isset($meta['summary']['image']) && strlen($meta['summary']['image']) && !preg_match('/^(http|https|\/\/)/',$meta['summary']['image'])){
 		//remove any anchors
-		$p=preg_split('/\#/',$url,2);
-		$base_url=$p[0];
-		$meta['summary']['image']=$base_url.$meta['summary']['image'];
+		$meta['summary']['image']=$meta['base_url'].$meta['summary']['image'];
 	}
 	$meta['summary']['image']=preg_replace('/^http\:\/\//i',"[!a!]",$meta['summary']['image']);
 	$meta['summary']['image']=preg_replace('/^https\:\/\//i',"[!b!]",$meta['summary']['image']);
