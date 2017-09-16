@@ -51,6 +51,9 @@ function getWebsiteMeta($url){
 		elseif(isset($meta['meta']['og:title']) && strlen($meta['meta']['og:title'])){$meta['title']=$meta['summary']['title']['og:title'];}
 		elseif(isset($meta['meta']['twitter:title']) && strlen($meta['meta']['twitter:title'])){$meta['summary']['title']=$meta['meta']['twitter:title'];}
 	}
+	//replace em dash with a dash
+	$meta['summary']['title']=trim($meta['summary']['title']);
+	$meta['summary']['title']=preg_replace('~\xe2\x80\x93~','-',$meta['summary']['title']);
 	if(!isset($meta['summary']['name']) || !strlen($meta['summary']['name'])){
 		if(isset($meta['meta']['name']) && strlen($meta['meta']['name'])){$meta['summary']['name']=$meta['meta']['name'];}
 		elseif(isset($meta['meta']['og:site_name']) && strlen($meta['meta']['og:site_name'])){$meta['summary']['name']=$meta['meta']['og:site_name'];}
