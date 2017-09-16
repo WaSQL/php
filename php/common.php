@@ -71,6 +71,16 @@ function getWebsiteMeta($url){
 		elseif(isset($meta['meta']['msapplication-tileimage']) && strlen($meta['meta']['msapplication-tileimage'])){$meta['summary']['image']=$meta['meta']['msapplication-tileimage'];}
 		elseif(isset($meta['link']['icon']) && strlen($meta['link']['icon'])){$meta['summary']['image']=$meta['link']['icon'];}
 		elseif(isset($meta['link']['shortcut icon']) && strlen($meta['link']['shortcut icon'])){$meta['summary']['image']=$meta['link']['shortcut icon'];}
+		else{
+			//get the first src= image on the page
+			preg_match_all('/src=\"(.+?)\"/si',$contents,$im);
+			foreach($im[1] as $img){
+				if(preg_match('/(png|jpg|gif)$/i',$img)){
+					$meta['summary']['image']=$img;
+					break;
+				}
+			}
+		}
 	}
 	if(isset($meta['summary']['image']) && strlen($meta['summary']['image']) && !preg_match('/^(http|https|\/\/)/',$meta['summary']['image'])){
 		//remove any anchors
