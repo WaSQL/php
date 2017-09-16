@@ -59,7 +59,7 @@ function getWebsiteMeta($url){
 		elseif(isset($meta['meta']['og:site_name']) && strlen($meta['meta']['og:site_name'])){$meta['summary']['name']=$meta['meta']['og:site_name'];}
 		elseif(isset($meta['meta']['twitter:site']) && strlen($meta['meta']['twitter:site'])){$meta['summary']['name']=$meta['meta']['twitter:site'];}
 		elseif(isset($meta['summary']['title']) && strlen($meta['summary']['title'])){
-			$p=preg_split('/[\-\:]+/',$meta['summary']['title'],2);
+			$p=preg_split('/(\-|\:|\.\.\.)/',$meta['summary']['title'],2);
 			$meta['summary']['name']=trim($p[0]);
 		}
 		else{$meta['summary']['name']=getUniqueHost($meta['base_url']);}
