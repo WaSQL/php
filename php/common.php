@@ -70,6 +70,7 @@ function getWebsiteMeta($url){
 		elseif(isset($meta['link']['apple-touch-icon-precomposed']) && strlen($meta['link']['apple-touch-icon-precomposed'])){$meta['summary']['image']=$meta['link']['apple-touch-icon-precomposed'];}
 		elseif(isset($meta['meta']['msapplication-tileimage']) && strlen($meta['meta']['msapplication-tileimage'])){$meta['summary']['image']=$meta['meta']['msapplication-tileimage'];}
 		elseif(isset($meta['link']['icon']) && strlen($meta['link']['icon'])){$meta['summary']['image']=$meta['link']['icon'];}
+		elseif(isset($meta['link']['shortcut icon']) && strlen($meta['link']['shortcut icon'])){$meta['summary']['image']=$meta['link']['shortcut icon'];}
 	}
 	if(isset($meta['summary']['image']) && strlen($meta['summary']['image']) && !preg_match('/^(http|https|\/\/)/',$meta['summary']['image'])){
 		//remove any anchors
