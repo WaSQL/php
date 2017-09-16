@@ -69,6 +69,14 @@ function getWebsiteMeta($url){
 	if(isset($meta['summary']['image']) && strlen($meta['summary']['image']) && !preg_match('/^(http|https|\/\/)/',$meta['summary']['image'])){
 		$meta['summary']['image']=$url.$meta['summary']['image'];
 	}
+	$meta['summary']['image']=preg_replace('/^http\:\/\//i',"[!a!]",$meta['summary']['image']);
+	$meta['summary']['image']=preg_replace('/^https\:\/\//i',"[!b!]",$meta['summary']['image']);
+	$meta['summary']['image']=preg_replace('/^\/\//i',"[!c!]",$meta['summary']['image']);
+	$meta['summary']['image']=str_replace("//","/",$meta['summary']['image']);
+	$meta['summary']['image']=str_replace("[!a!]","http://",$meta['summary']['image']);
+	$meta['summary']['image']=str_replace("[!b!]","https://",$meta['summary']['image']);
+	$meta['summary']['image']=str_replace("[!c!]","//",$meta['summary']['image']);
+
 	//sort
 	ksort($meta);
 	foreach($meta as $k=>$r){
