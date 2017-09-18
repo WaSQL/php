@@ -30,7 +30,7 @@ $etagHeader=isset($_SERVER['HTTP_IF_NONE_MATCH'])?trim($_SERVER['HTTP_IF_NONE_MA
 $afilename="{$progpath}/minify/{$filename}";
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
-	echo "Session ID: ".session_id()."\r\n";
+	echo "Session ID: ".session_id().PHP_EOL;
 	foreach($_SESSION['w_MINIFY'] as $key=>$val){
 		if(!is_array($val) && strlen($val) > 300){continue;}
 		$debug[$key]=$val;
@@ -237,13 +237,13 @@ ENDOFGOOGLEAPPJS;
 //include files and set the lastmodifiedtime of any file
 foreach($files as $file){
 	if($_REQUEST['debug']==1){
-		echo "{$file}<br>\n";
+		echo "{$file}<br>".PHP_EOL;
 		continue;
 	}
 	if(strtolower($file)=='stripe'){
-		echo "\r\n/* BEGIN {$file} */\r\n";
-    	echo "loadJsCss('https://js.stripe.com/v1/','js')\n";
-    	echo "\n\n";
+		echo "/* BEGIN {$file} */".PHP_EOL.PHP_EOL;
+    	echo "loadJsCss('https://js.stripe.com/v1/','js')";
+    	echo PHP_EOL.PHP_EOL;
     	continue;
 	}
 	if(preg_match('/^http/i',$file)){
@@ -258,9 +258,9 @@ foreach($files as $file){
 	if(!strlen($afile)){continue;}
 	$lines=file($afile);
 	if(is_array($lines)){
-		echo "\r\n/* BEGIN {$file} */\r\n";
+		echo "/* BEGIN {$file} */".PHP_EOL.PHP_EOL;
     	echo minifyLines($lines);
-    	echo "\n\n";
+    	echo PHP_EOL.PHP_EOL;
 	}
 }
 
@@ -274,16 +274,18 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
 		$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
-		echo "\r\n/* BEGIN _templates {$field} */\r\n";
+		echo "/* BEGIN _templates {$field} */".PHP_EOL.PHP_EOL;
 		echo minifyLines($content);
+		echo PHP_EOL.PHP_EOL;
 	}
 	else{
     	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field2));
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
-			echo "\r\n/* BEGIN _templates {$field2} */\r\n";
+			echo "/* BEGIN _templates {$field2} */".PHP_EOL.PHP_EOL;
 			echo minifyLines($content);
+			echo PHP_EOL.PHP_EOL;
 		}
 	}
 }
@@ -297,16 +299,18 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 	}
 	if(!strlen($error) && strlen(trim($content)) > 10){
 		$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
-		echo "\r\n/* BEGIN _pages {$field} */\r\n";
+		echo "/* BEGIN _pages {$field} */".PHP_EOL.PHP_EOL;
 		echo minifyLines($content);
+		echo PHP_EOL.PHP_EOL;
 	}
 	else{
     	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field2));
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
-			echo "\r\n/* BEGIN _pages {$field2} {$error} */\r\n";
+			echo "/* BEGIN _pages {$field2} {$error} */".PHP_EOL.PHP_EOL;
 			echo minifyLines($content);
+			echo PHP_EOL.PHP_EOL;
 		}
 	}
 }
@@ -317,21 +321,23 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		$content=$field=='js'?evalPHP($rec[$field]):$rec[$field];
 		if(strlen(trim($content)) > 10){
 			$filename.='P'.$id;
-			echo "\r\n/* BEGIN includepages {$field} for {$rec['name']} page */\r\n";
+			echo "/* BEGIN includepages {$field} for {$rec['name']} page */".PHP_EOL.PHP_EOL;
 			echo minifyLines($content);
+			echo PHP_EOL.PHP_EOL;
 		}
 		else{
         	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"name,{$field2}"));
 			$content=$field=='js'?evalPHP($rec[$field]):$rec[$field2];
 			if(strlen(trim($content)) > 10){
 				$filename.='P'.$id;
-				echo "\r\n/* BEGIN includepages {$field2} for {$rec['name']} page */\r\n";
+				echo "/* BEGIN includepages {$field2} for {$rec['name']} page */".PHP_EOL.PHP_EOL;
 				echo minifyLines($content);
+				echo PHP_EOL.PHP_EOL;
 			}
 		}
 	}
 }
-echo "\r\n/* END Minify {$filename}.js */\r\n";
+echo "/* END Minify {$filename}.js */".PHP_EOL.PHP_EOL;
 //debug?
 if($_REQUEST['debug']==1 && is_array($_SESSION['w_MINIFY'])){
 	$debug=array();
@@ -371,7 +377,7 @@ function minifyFiles($path,$names){
 		elseif(strtolower($name)=='stripe'){
 			$files[]=$name;
 		}
-		else{echo "/* Minify_js Error: NO SUCH NAME:{$name} */\n";}
+		else{echo "/* Minify_js Error: NO SUCH NAME:{$name} */".PHP_EOL.PHP_EOL;}
 	}
 	return false;
 }
@@ -402,17 +408,14 @@ function minifyGetExternal($url){
 	$lines=file($url);
 	$rtn='';
 	if(is_array($lines)){
-		$rtn .= "/* BEGIN {$url} */\r\n";
-    		$rtn .=  minifyLines($lines);
-    		$rtn .= "\n\n";
+		$rtn .= "/* BEGIN {$url} */".PHP_EOL.PHP_EOL;
+    	$rtn .=  minifyLines($lines);
+    	$rtn .= PHP_EOL.PHP_EOL;
 	}
 	return $rtn;
 }
 function compress($buffer) {
 	/* remove comments */
-	//$buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
-	/* remove tabs, spaces, newlines, etc. */
-	//$buffer = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $buffer);
 	/*set an etag based on the combined file data */
 	global $lastmodifiedtime;
 	global $filename;
@@ -468,7 +471,7 @@ function minifyLines($lines) {
      	//ignore comments
      	if(strpos($tline,"//") === 0){continue;}
      	//if(strpos($tline,"/*") === 0 && strpos(strrev($tline),"/*") === 0){continue;}
-		$rtn .= rtrim($line) . "\n";
+		$rtn .= rtrim($line).PHP_EOL;
 	}
 	return $rtn;
 }
