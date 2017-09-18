@@ -657,6 +657,12 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 				$for=false;
 			}
 			elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+			//add any data params
+			foreach($params as $pk=>$pv){
+				if(preg_match('/^data\-/i',$pk)){
+					$tag .= " {$pk}=\"{$pv}\"";
+				}
+			}
 			$tag .= '> <label';
 			if($for){$tag .= ' for="'.$id.'"';}
 			$tag .= ' class="icon-mark'.$class.'"></label>'."\n";
@@ -1077,6 +1083,12 @@ function buildFormRadio($name, $opts=array(), $params=array()){
         		$checked_cnt++;
 			}
 			if($params['required']){$tag .= ' data-required="1"';}
+			//add any data params
+			foreach($params as $pk=>$pv){
+				if(preg_match('/^data\-/i',$pk)){
+					$tag .= " {$pk}=\"{$pv}\"";
+				}
+			}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
