@@ -640,10 +640,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			$minwidth=floor(strlen($dval)*10)+25;
 			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-    		if(in_array($tval,$params['-values'])){
-        		$tag .= ' checked';
-        		//$checked_cnt++;
-			}
+    		
 			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			//if checkbox is readonly or disabled then do not allow them to change it
@@ -662,6 +659,10 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 				if(preg_match('/^data\-/i',$pk)){
 					$tag .= " {$pk}=\"{$pv}\"";
 				}
+			}
+			if(in_array($tval,$params['-values'])){
+        		$tag .= ' checked';
+        		//$checked_cnt++;
 			}
 			$tag .= '> <label';
 			if($for){$tag .= ' for="'.$id.'"';}
@@ -1078,10 +1079,6 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 			$minwidth=floor(strlen($dval)*10)+25;
 			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
-    		if(in_array($tval,$params['-values'])){
-        		$tag .= ' checked';
-        		$checked_cnt++;
-			}
 			if($params['required']){$tag .= ' data-required="1"';}
 			//add any data params
 			foreach($params as $pk=>$pv){
@@ -1091,6 +1088,10 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 			}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+			if(in_array($tval,$params['-values'])){
+        		$tag .= ' checked';
+        		$checked_cnt++;
+			}
 			$tag .= '> <label for="'.$id.'" class="icon-mark'.$class.'"></label>'."\n";
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
