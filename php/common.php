@@ -9045,48 +9045,33 @@ function niftyPlayer($params=array()){
 function minifyCode($code,$type) {
 	if(!strlen($code)){return 'no code';}
 	if(!strlen($type)){return 'no type';}
-
-
 	switch(strtolower($type)){
 		case 'js':
-			$url='https://javascript-minifier.com/raw';
-			break;
-			$code=trim($code);
-			// remove comments
-			$code = preg_replace('/\/\*(.+?)\*\//mis', '', $code);
-			$lines=preg_split('/[\r\n]+/',$code);
-			$tmp=array();
-			foreach($lines as $line){
-            	$line=trim($line);
-            	if(preg_match('/^\/\//',$line)){continue;}
-            	//remove inline comments
-            	$line = preg_replace('/\/\/([a-zA-z0-9\ \-\*]+)$/', '', $line);
-            	$line = str_replace(' = ','=',$line);
-            	$line = str_replace(') {','){',$line);
-            	$line=trim($line);
-            	if(!strlen($line)){continue;}
-            	if(preg_match('/[\:\;\,]$/',$line)){$tmp[]=$line;}
-            	else{$tmp[]="{$line}\r\n";}
-			}
-			$code=implode('',$tmp);
+			require_once("jshrink.php");
+			$code = jsMinifier::minify($code);
 			return $code;
-			require_once("min-js.php");
-			$parser = new JSqueeze;
-    		return $parser->squeeze($code);
-			$url='https://javascript-minifier.com/raw';
 			break;
 		case 'css':
 			require_once("min-css.php");
-			$code = CssMin::minify($code);
+			//remove @import lines at the beginning first then add them back in
+			$lines=preg_split('/[\r\n]+/',$code);
+			$importlines=array();
+			foreach($lines as $i=>$line){
+				if(preg_match('/\@import\ /i',ltrim($line))){
+					$importlines[]=rtrim($line);
+					unset($lines[$i]);
+				}
+			}
+			if(count($importlines)){
+				$code=implode(PHP_EOL,$lines);
+				$code = CssMin::minify($code);
+				$pre=implode(PHP_EOL,$importlines);
+				$code=$pre.PHP_EOL.$code;
+			}
+			else{
+				$code = CssMin::minify($code);
+			}
 			return $code;
-			// Remove comments
-			$code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
-			// Remove space after colons
-			$code = str_replace(': ', ':', $code);
-			// Remove whitespace
-			$code = str_replace(array("\r\n", "\r", "\n", "\t", ' ', ' ', ' '), '', $code);
-			return $code;
-			$url='https://cssminifier.com/raw';
 			break;
 	}
 	//changed to post to handle ssl urls now
