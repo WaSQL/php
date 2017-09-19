@@ -6652,6 +6652,9 @@ function getDBUserById($id=0,$fields=array()){
 *	[-table] string - table name
 *	[-hidesearch] -  hide the search form
 *	[-limit] mixed - query record limit
+* 	[-header_class] string - class to set header row to
+* 	[-rowclass] string - class to set data row to. It can also in php code
+* 	[-limit] mixed - query record limit
 *	other field/value pairs filter the query results
 * @param [customcode] string - html code to append to end - defaults to blank
 * @return string - html table to display
@@ -7056,28 +7059,31 @@ function listDBRecords($params=array(),$customcode=''){
 				}
         	}
         $title=isset($params[$fld."_title"])?' title="'.$params[$fld."_title"].'"':'';
+        $class='w_nowrap';
+        if(isset($params[$fld."_header_class"])){$class=$params[$fld."_header_class"];}
+        elseif(isset($params["-header_class"])){$class=$params["-header_class"];}
         if(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-        	$rtn .= '		<th'.$title.' class="w_nowrap"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'.PHP_EOL;
+        	$rtn .= '		<th'.$title.' class="'.$class.'"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'.PHP_EOL;
 		}
         elseif(isset($params['-nosort']) || isset($params[$fld."_nolink"])){
-			$rtn .= '		<th'.$title.' class="w_nowrap">' . "{$col}</th>".PHP_EOL;
+			$rtn .= '		<th'.$title.' class="'.$class.'">' . "{$col}</th>".PHP_EOL;
         	}
         elseif(isset($params['-sortlink'])){
 			$href=$params['-sortlink'];
 			$replace='%col%';
             $href=str_replace($replace,$col,$href);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "</a></th>".PHP_EOL;
+			$rtn .= '		<th'.$title.' class="'.$class.'"><a class="w_link " href="/'.$href.'">' . $col. "</a></th>".PHP_EOL;
         	}
         elseif(isset($params['-sortclick'])){
 			$onclick=$params['-sortclick'];
 			$replace='%col%';
             $onclick=str_replace($replace,$col,$onclick);
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>".PHP_EOL;
+			$rtn .= '		<th'.$title.' class="'.$class.'"><a class="w_link " href="#'.$col.'" onclick="/'.$onclick.'">' . $col. "</a></th>".PHP_EOL;
         	}
         else{
 	        if(preg_match('/\.(php|htm|phtm)$/i',$PAGE['name'])){$href=$PAGE['name'].'?'.buildURL($arr);}
 	        else{$href=$PAGE['name'].'/?'.buildURL($arr);}
-			$rtn .= '		<th'.$title.' class="w_nowrap"><a class="w_link " href="/'.$href.'">' . $col. "{$arrow}</a></th>".PHP_EOL;
+			$rtn .= '		<th'.$title.' class="'.$class.'"><a class="w_link " href="/'.$href.'">' . $col. "{$arrow}</a></th>".PHP_EOL;
 			}
 		}
 	if(isset($params['-row_actions'])){
@@ -7143,7 +7149,17 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowid=' id="'.$rowid.'"';
 			}
 			$rowclass='w_top ';
-			if(isset($params['-rowclass'])){
+			if(isset($params[$fld."_rowclass"])){
+				$rowclass=$params[$fld."_rowclass"];
+				foreach($list[0] as $xfld=>$xval){
+					if(is_array($xfld) || is_array($xval)){continue;}
+					$replace='%'.$xfld.'%';
+                    $rowclass=str_replace($replace,$rec[$xfld],$rowclass);
+                }
+                $rowclass=evalPHP($rowclass);
+                $rowclass=' class="'.$rowclass.'"';
+			}
+			elseif(isset($params['-rowclass'])){
 				$rowclass=$params['-rowclass'];
             	foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
