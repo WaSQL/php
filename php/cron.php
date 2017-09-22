@@ -152,6 +152,14 @@ ENDOFWHERE;
 				'running'	=> 1,
 				'run_date'	=> $run_date
 			));
+			//make sure only one cron runs this entry
+			$rec=getDBRecord(array(
+				'-table'	=> '_cron',
+				'_id'		=> $rec['_id']
+			));
+			if($rec['cron_pid'] != $cron_pid){
+				continue;
+			}
         	$cmd=$rec['run_cmd'];
         	$result='';
 			if(isset($pages[$cmd])){
