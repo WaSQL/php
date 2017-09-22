@@ -11,34 +11,10 @@ cd $SDIR
 
 php cron.php &
 php cron.php &
-sleep 5
 php cron.php &
 php cron.php &
-sleep 5
 php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
-sleep 5
-php cron.php &
-php cron.php &
+
+
+
 
