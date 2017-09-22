@@ -640,7 +640,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			$minwidth=floor(strlen($dval)*10)+25;
 			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'."\n";
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-    		
+
 			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
 			//if checkbox is readonly or disabled then do not allow them to change it
