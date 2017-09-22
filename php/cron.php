@@ -143,7 +143,7 @@ ENDOFWHERE;
 			//skip if running
 			if($rec['running']==1){continue;}
 			echo " - running {$rec['name']}\n";
-			//update record to show wer are now running
+			//update record to show we are now running
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
@@ -216,6 +216,7 @@ ENDOFWHERE;
 				'run_result'=> $result
 			);
 			$ok=addDBRecord($opts);
+			exit;
 		}
 	}
 }
