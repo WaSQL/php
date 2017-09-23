@@ -1088,7 +1088,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$hasBehaviors=0;
 	if(isset($params['-honeypot'])){
 		$honeypot=$params['-honeypot'];
-		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
+		$rtn .= '<input type="hiddgetDBFieldTagen" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
 		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'.PHP_EOL;
 		}
 	$forcedatts=array(
@@ -1096,7 +1096,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
 		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help',
 		'group_id','group_class','group_style','checkclass','checkclasschecked',
-		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap'
+		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap','text'
 		);
 	//data opts
 	$dataopts=array();
@@ -1140,7 +1140,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						}
 					}
 					//check for field_options array - the easier, new way to override options
-					if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
+					if(isset($paramgetDBFieldTags[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
 						$used[$cfield.'_options']=1;
 						foreach($params[$cfield.'_options'] as $okey=>$oval){
 							if(in_array($okey,$forcedatts)){
@@ -1189,7 +1189,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			continue;
 		}
 		//set required string
-		$required_char=isset($params['-required'])?$params['-required']:'*';
+		$required_char=isset($paragetDBFieldTagms['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'.PHP_EOL;
 		//row
 		if(is_array($fields) && count($fields)==1 && !strlen($fields[0])){
