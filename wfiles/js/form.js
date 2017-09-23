@@ -3,7 +3,7 @@
 /*----------------------------------------------*/
 function setInputFileName(fld){
 	if(fld.files && fld.files.length > 1 ){
-		fileName = ( fld.getAttribute( 'data-multiple-caption' ) || '' ).replace( '{count}', fld.files.length );
+		fileName = (fld.getAttribute('data-multiple-caption') || '' ).replace('{count}', fld.files.length);
 	}
 	else{
 		fileName = fld.value.split( '\\' ).pop();
@@ -15,7 +15,7 @@ function setInputFileName(fld){
 		label.className='btn btn-default';
 	}
 	else{
-		setText(label,'<span class="icon-upload w_big w_danger"></span> file to upload');
+		setText(label,'<span class="icon-upload w_big w_danger"></span> '+fld.getAttribute('data-text'));
 		label.className='btn btn-default';
 	}
 }
@@ -23,7 +23,7 @@ function setInputFileName(fld){
 /** https://thiscouldbebetter.wordpress.com/2013/07/03/converting-a-file-to-a-base64-dataurl-in-javascript/ **/
 function attachDropFiles(fld){
 	var filesSelected = fld.files;
-	if (filesSelected.length == 0){return;}
+	if (filesSelected.length === 0){return;}
 	//get the parent form
 	var parentForm=getParentForm(fld);
 	if(undefined == parentForm){return;}
@@ -63,7 +63,7 @@ function attachDropFiles(fld){
 					txtarea.style.display='none';
 					parentForm.appendChild(txtarea);
 				}
-				txtarea.setAttribute('data-filename',this.fname)
+				txtarea.setAttribute('data-filename',this.fname);
 				txtarea.innerHTML = 'filename:'+this.fname+';'+fileLoadedEvent.target.result;
 			}
 		};
@@ -80,10 +80,10 @@ function autoFill(theForm,answerid,ro){
 	var answers=new Array();
 	var slist=GetElementsByAttribute('div', 'id', answerid);
 	for(i=0;i<slist.length;i++){
-		var ename=slist[i].getAttribute('name');
-		if(ename!='null'){
+		var en=slist[i].getAttribute('name');
+		if(en != 'null'){
 			var val=getText(slist[i]);
-			answers[ename]=val;
+			answers[en]=val;
 			}
         }
     for(var i=0;i<theForm.length;i++){
@@ -241,13 +241,13 @@ function buildFormCheckbox(fieldname, opts, params){
       	params['value']='';
     }
     if(undefined != params['-values']){
-		var vtype=typeof(params['-values']);
+		var pvtype=typeof(params['-values']);
 		//parse the value
-    	if(vtype.toLowerCase() == 'string'){
-    		var vals=params['-values'].split(':');
+    	if(pvtype.toLowerCase() == 'string'){
+    		var pvals=params['-values'].split(':');
     		params['-values']={};
-    		for(v=0;v<vals.length;v++){
-            	params['-values'][vals[v]]=true;
+    		for(v=0;v<pvals.length;v++){
+            	params['-values'][pvals[v]]=true;
 			}
     	}
 	}
@@ -259,19 +259,21 @@ function buildFormCheckbox(fieldname, opts, params){
 	//divide the opts into columns
 	var col_opts={};
 	var x=0;
-	for(var tval in opts){
+	var tval;
+	var dval;
+	for(tval in opts){
 		if(undefined == col_opts[x]){col_opts[x]={};}
-		var dval=opts[tval];
+		dval=opts[tval];
 		col_opts[x][tval]=dval;
 		x=x+1;
 		if(x==params.width){x=0;}
 	}
 	var col_width=Math.floor(12/params.width);
-	for(var x=0;x<params.width;x++){
+	for(x=0;x<params.width;x++){
 		var coldiv = document.createElement("div");
 		coldiv.className='col-xs-'+col_width;
-		for(var tval in col_opts[x]){
-			var dval=col_opts[x][tval];
+		for(tval in col_opts[x]){
+			dval=col_opts[x][tval];
 			var ctagdiv = document.createElement("div");
 			var cid=params['-formname']+'_'+fieldname+'_'+tval;
 			var ctag = document.createElement("input");
@@ -333,7 +335,7 @@ function buildFormColor(fieldname,params){
 	var iconcolor='#c0c0c0';
 	if(undefined != params.value){iconcolor=params.value;}
 	if(undefined == params.placeholder){params.placeholder='#HEXVAL';}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	params['maxlength']=7;
 	var tagdiv = document.createElement("div");
 	tagdiv.className="input-group";
@@ -341,17 +343,17 @@ function buildFormColor(fieldname,params){
 	var tag = document.createElement("input");
 	tag.type='text';
 	tag.maxlength=7;
-	tag.className=params.class;
+	tag.className=params.classname;
 	tag.style.fontSize='11px';
 	tag.style.fontFamily='arial';
 	tag.name=fieldname;
-	tag.id=params.id
+	tag.id=params.id;
 	if(params.required){tag.setAttribute('required',params.required);}
 	if(undefined != params.value){
 		tag.setAttribute('value',params.value);
 	}
 	else{tag.setAttribute('value','');}
-	tag.classname=params.class;
+	tag.classname=params.classname;
 	tag.placeholder=params.placeholder;
 	tagdiv.appendChild(tag);
 	var tagspan = document.createElement("span");
@@ -391,11 +393,11 @@ function buildFormCombo(fieldname,opts,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	var datalist_id=params.id+'_datalist';
 	var tagdiv = document.createElement("div");
 	var tag = document.createElement("input");
-	tag.className=params.class;
+	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
 	if(undefined != params.value){
     	tag.setAttribute('value',params.value);
@@ -444,7 +446,7 @@ function buildFormDate(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	if(undefined == params['-control']){params['-control']='date';}
 	var spanclass='';
 	switch(params['-control']){
@@ -466,6 +468,8 @@ function buildFormDate(fieldname,params){
 			params.width=115;
 			if(undefined == params.placeholder){params.placeholder='MH:MM:SS';}
 		break;
+		default:
+		break;
 	}
 	var iconid=params.id+'_icon';
 	var iconcolor='#c0c0c0';
@@ -474,17 +478,17 @@ function buildFormDate(fieldname,params){
 	tagdiv.style.width=params.width+'px';
 	var tag = document.createElement("input");
 	tag.type='text';
-	tag.className=params.class;
+	tag.className=params.classname;
 	tag.style.fontSize='12px';
 	tag.style.fontFamily='arial';
 	tag.name=fieldname;
-	tag.id=params.id
+	tag.id=params.id;
 	if(params.required){tag.setAttribute('required',params.required);}
 	if(undefined != params.value && params.value.length){
 		tag.setAttribute('value',params.value);
 	}
 	else{tag.setAttribute('value','');}
-	tag.classname=params.class;
+	tag.classname=params.classname;
 	tag.setAttribute('data-type',params['-control']);
 	tag.placeholder=params.placeholder;
 	tagdiv.appendChild(tag);
@@ -495,7 +499,7 @@ function buildFormDate(fieldname,params){
 	tagspan.style.color=iconcolor+';padding-left:3px !important;padding-right:6px !important;';
 	tagspan.title=params.title;
 	if(params['-control']=='datetime'){
-    	tagspan.innerHTML='<span class="icon-clock"></span>'
+    	tagspan.innerHTML='<span class="icon-clock"></span>';
 	}
 	tagdiv.appendChild(tagspan);
 	if(undefined != params['-parent']){
@@ -574,14 +578,14 @@ function buildFormPassword(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	var tag = document.createElement("input");
 	tag.type='password';
 	tag.name=fieldname;
 	tag.value=params.value;
 	if(params.required){tag.setAttribute('required',params.required);}
 	tag.id=params.id;
-	tag.className=params.class;
+	tag.className=params.classname;
 	if(undefined != params.value){
 		tag.setAttribute('value',params.value);
 	}
@@ -615,7 +619,7 @@ function buildFormPassword(fieldname,params){
 function buildFormRadio(fieldname, opts, params){
 	if(undefined == params){params={};}
 	params['-radio']=true;
-	return buildFormCheckbox(fieldname, opts, params)
+	return buildFormCheckbox(fieldname, opts, params);
 }
 //---------- begin function buildFormText--------------------
 /**
@@ -632,9 +636,9 @@ function buildFormText(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	var tag = document.createElement("input");
-	tag.className=params.class;
+	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
 	if(undefined != params.value){
     	tag.setAttribute('value',params.value);
@@ -666,11 +670,11 @@ function buildFormTextarea(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.class){params.class='form-control';}
+	if(undefined == params.classname){params.classname='form-control';}
 	if(undefined == params.height){params.height=50;}
 	if(undefined != params.behavior){params['data-behavior']=params.behavior;}
 	var tag = document.createElement("textarea");
-	tag.className=params.class;
+	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
 	if(undefined != params.value){
     	tag.innerHTML=params.value;
@@ -744,8 +748,9 @@ function buildFormSelect(fieldname, opts, params){
 	if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
+	if(undefined == params.classname){params.classname='form-control';}
     var tag = document.createElement("select");
-	tag.className=params.class;
+	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
 	tag.name=fieldname;
 	tag.id=params.id;
@@ -773,7 +778,7 @@ function comboCompleteMatch (sText, arrValues) {
 	sText=sText.toLowerCase();
 	for (var i=0; i < arrValues.length; i++) {
 		aval=arrValues[i].toLowerCase();
-		if (aval.indexOf(sText) == 0) {
+		if (aval.indexOf(sText) === 0) {
     		return i;
 			}
    		}
@@ -787,7 +792,7 @@ function comboComplete(oTextbox, oEvent, vid) {
 	for(var i=0;i<selectionLines.length;i++){
 		if(undefined == selectionLines[i]){continue;}
 		var cline=trim(selectionLines[i]);
-		if(cline.length ==0){continue;}
+		if(cline.length ===0){continue;}
 		var matches = cline.match(/tval=\"(.+?)\"/ig);
 		//showProperties(matches,null,1);
 		if(undefined == matches){continue;}
@@ -801,7 +806,7 @@ function comboComplete(oTextbox, oEvent, vid) {
 			}
     	}
 	//showProperties(arrayValues,null,1);
-	var code=parseInt(oEvent.keyCode)
+	var code=parseInt(oEvent.keyCode);
 	switch (code) {
 		case 38: //up arrow
 			if(undefined != oTextbox.getAttribute('last_index')){
@@ -3258,7 +3263,7 @@ AjaxRequest.post = function(args) {
  * The internal method used by the .get() and .post() methods
  */
 AjaxRequest.doRequest = function(method,args) {
-	if (typeof(args)!="undefined" && args!=null) {
+	if (typeof(args)!="undefined" && args !== null) {
 		var myRequest = new AjaxRequest();
 		myRequest.method = method;
 		myRequest.handleArguments(args);
@@ -3275,7 +3280,7 @@ AjaxRequest.doRequest = function(method,args) {
  */
 AjaxRequest.submit = function(theform, args) {
 	var myRequest = new AjaxRequest();
-	if (myRequest==null) { return false; }
+	if (myRequest===null) { return false; }
 	var serializedForm = AjaxRequest.serializeForm(theform);
 	myRequest.method = theform.method.toUpperCase();
 	myRequest.url = theform.action;
@@ -3341,13 +3346,15 @@ AjaxRequest.serializeForm = function(theform) {
 							this.addField(el.name,el.options[j].value);
 						}
 					}
-					break;
+				break;
 				case 'checkbox':
 				case 'radio':
 					if (el.checked) {
 						this.addField(el.name,el.value);
 					}
-					break;
+				break;
+				default:
+				break;
 			}
 		}
 	}
