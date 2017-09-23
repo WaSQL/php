@@ -6091,6 +6091,18 @@ function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
 	$rec=getDBRecord($recopts);
 	return $rec;
 	}
+//---------- begin function processDBRecords --------------------
+/**
+* @describe process table records through a function. Returns number of records processed
+* @param func string - function to call.  The rec array will be passed to this function
+* @param params array - params to filter recordset by - same params as getDBRecords
+* @return cnt integer - number of records processed
+* @usage $cnt=processDBRecords('myCustomFunction',array('-table'=>'states'));
+*/
+function processDBRecords($func_name,$params=array()){
+	$params['-process']=$func_name;
+	return getDBRecords($params);
+	}
 //---------- begin function getDBRecords-------------------
 /**
 * @describe returns a multi-dimensional array of records found
@@ -6105,6 +6117,7 @@ function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
 *	[-relate] mixed - field/table pairs of fields to get related records from other tables
 *	[-notimestamp] boolean - if true disables adding extra _utime data to date and datetime fields. Defaults to false
 *	[-model] boolean - set to false to disable model functionality
+* 	[-process] string - function to run results through instead of returning them.  If this is set the number of records processed will be returned
 *	Other key value pairs passed in are used to filter the results.  i.e. 'active'=>1
 * @return array
 * @usage $recs=getDBRecords(array('-table'=>$table,'field1'=>$val1...));
@@ -6116,6 +6129,10 @@ function getDBRecords($params=array()){
 	//check for just a query instead of a params array and convert it getDBRecords($query)
 	if(!is_array($params) && is_string($params)){
     	$params=array('-query'=>$params);
+	}
+	//check for -process
+	if(isset($params['-process']) && !function_exists($params['-process'])){
+		return "Error: Function is not loaded to process with: {$params['-process']}";
 	}
 	//change database if requested
 	if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
@@ -6204,6 +6221,11 @@ function getDBRecords($params=array()){
 			if(!in_array($rx,$random)){continue;}
 			//get out of the loop once we have filled our random count
         }
+        if(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$row);
+			$x++;
+			continue;
+		}
 		foreach($row as $key=>$val){
 			if(!isset($params['-lowercase']) || $params['-lowercase'] != false){$key=strtolower($key);}
 			if(isset($params['-eval']) && is_callable($params['-eval'])){
@@ -6252,6 +6274,7 @@ function getDBRecords($params=array()){
 		}
 	//Free the resources associated with the result set
 	databaseFreeResult($query_result);
+	if(isset($params['-process'])){return $x;}
 	//determine fields returned
 	$fields=array();
 	foreach($list as $i=>$r){
