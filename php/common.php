@@ -1391,6 +1391,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 */
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-text'])){$params['-text']='file to upload';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	$params['class']='';
@@ -1430,13 +1431,13 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['type'])){
 		unset($params['type']);
 	}
-	$tag .= '	<input type="file"';
+	$tag .= '	<input type="file" data-text="'.$params['-text'].'"';
 	$tag .= setTagAttributes($params);
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'" class="btn btn-default"><span class="icon-upload w_big w_danger"></span> file to upload</label>'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'" class="btn btn-default"><span class="icon-upload w_big w_danger"></span> '.$params['-text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
