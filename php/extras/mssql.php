@@ -308,14 +308,25 @@ function mssqlAddDBRecord($params=array()){
 	}
 	$fieldstr=implode('","',$opts['fields']);
 	$valstr=implode(',',$opts['values']);
+	//determine output field - identity column to return
+	$output='';
+	foreach($fields as $output_field=>$info){
+		if($info['identity']==1){
+			$output=" OUTPUT INSERTED.{$output_field}";
+			break;
+		}
+	}
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
 			("{$fieldstr}")
+		{$output}
 		VALUES(
 			{$valstr}
 		)
 ENDOFQUERY;
-	return mssqlQueryResults($query,$params);
+	$recs=mssqlQueryResults($query,$params);
+	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
+	return $recs;
 }
 //---------- begin function mssqlEditDBRecord ----------
 /**
@@ -540,6 +551,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			,IS_NULLABLE
 			,DATA_TYPE
 			,CHARACTER_MAXIMUM_LENGTH
+			,COLUMNPROPERTY(object_id(TABLE_SCHEMA+'.'+TABLE_NAME), COLUMN_NAME, 'IsIdentity') as identity_field
 		FROM
 			INFORMATION_SCHEMA.COLUMNS (nolock)
 		WHERE
@@ -559,7 +571,8 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			'length'	=> $rec['character_maximum_length'],
 			'num'		=> $rec['ordinal_position'],
 			'default'	=> $rec['column_default'],
-			'nullable'	=> $rec['is_nullable']
+			'nullable'	=> $rec['is_nullable'],
+			'identity' 	=> $rec['identity_field']
 		);
 		//add primary_key flag
 		if(in_array($name,$pkeys)){
