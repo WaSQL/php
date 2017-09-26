@@ -614,6 +614,10 @@ function mssqlQueryResults($query='',$params=array()){
 		$data = sqlsrv_query($dbh_mssql,$query);
 		if( $data === false ) {
 			$errs=sqlsrv_errors();
+			if(isset($errs[0]['message'])){
+				debugValue(array($errs[0]['message'],$params));
+				return $errs[0]['message'];
+			}
 			debugValue(array($errs,$params));
 			return printValue(array($errs,$params));
 		}
