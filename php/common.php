@@ -10464,7 +10464,7 @@ function printValue($v='',$exit=0){
 		$rtn .= ob_get_contents();
 		ob_clean();
 	}
-	if(isCLI()){$rtn .= "\n</pre>\n";}
+	if(!isCLI()){$rtn .= "\n</pre>\n";}
     if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
