@@ -62,6 +62,12 @@ table.sortable thead tr th {
 table th a {
 	display:block;
 	}
+table.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
 /* Change default hover color for bootstrap */
 .table-hover tr:hover td, .table-hover tr:hover th {
   background-color: #fef8f1 !important;
