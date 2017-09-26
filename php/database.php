@@ -6987,7 +6987,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
-	$tableclass='table table-bordered table-striped';
+	$tableclass='table table-bordered table-striped table-responsive';
 	//add the sortable class if there is only one page of records or is sorting is turned off
 	if(!isset($paging['-next']) || isset($params['-nosort'])){
 		$tableclass .= ' sortable';
@@ -7005,7 +7005,6 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableid'])){
 		$tablestyle=' id="'.$params['-tableid'].'"';
 	}
-	$rtn .= '<div class="table-responsive">'.PHP_EOL;
 	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'.PHP_EOL;
 
     //build header row
@@ -7408,7 +7407,6 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= '	</tr></tfoot>'.PHP_EOL;
 	}
     $rtn .= "</table>".PHP_EOL;
-    $rtn .= '</div>'.PHP_EOL;
     if($listform==1){
 		if($editlist > 0){$rtn .= buildFormSubmit("Update");}
 		$rtn .= $customcode;
