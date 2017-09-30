@@ -409,7 +409,7 @@ function oracleGetDBTablePrimaryKeys($table,$params=array()){
 		$owner=strtoupper($owner);
 		$owner_filter="AND upper(cols.owner) = '{$owner}'";
 	}
-	else{$owner_filter=='';}
+	else{$owner_filter='';}
 	$query=<<<ENDOFQUERY
 	SELECT
   		cols.column_name
@@ -439,11 +439,18 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	}
 	if(!$dbh_oracle){
     	$e=json_encode(oci_error());
-    	debugValue(array("oracleQueryResults Connect Error",$e));
+    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
     	return;
 	}
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
-	$stid = oci_parse($dbh_oracle, "select * from {$table} where 1=0");
+	//echo $table.printValue($pkeys);exit;
+	$query="select * from {$table} where 1=0";
+	$stid = oci_parse($dbh_oracle, $query);
+	if(!$stid){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleGetDBFieldInfo Parse Error",$query,$e));
+    	return;
+	}
 	oci_execute($stid, OCI_DESCRIBE_ONLY);
 	$ncols = oci_num_fields($stid);
 	$fields=array();
