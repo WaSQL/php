@@ -1,9 +1,10 @@
 <?php
 /*
 	Instructions:
-		run cron.php from a command-line every minute.
+		run cron.php from a command-line every minute as follows
 		you can run multiple to handle heavy loads - it will handle the queue
-		On linux, add to the crontab ./php cron.php
+		On linux, add to the crontab
+		* * * * * /var/www/wasql_live/php/cron.sh >/var/www/wasql_live/php/cron.log 2>&1
 		On Windows, add it as a scheduled task
 	Note: cron.php cannot be run from a URL, it is a command line app only.
 */
@@ -19,7 +20,7 @@ date_default_timezone_set('America/Denver');
 include_once("$progpath/common.php");
 //only allow this to be run from CLI
 if(!isCLI()){
-	echo "Cron.php is a command line app only.";
+	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
 global $ConfigXml;
@@ -36,6 +37,7 @@ include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/user.php");
 global $databaseCache;
+cronMessage(count($ConfigXml).' hosts in config file');
 foreach($ConfigXml as $name=>$host){
 	//allhost, then, sameas, then hostname
 	$CONFIG=$allhost;
@@ -49,16 +51,17 @@ foreach($ConfigXml as $name=>$host){
     	$CONFIG[$k]=$v;
 	}
 	if(isset($CONFIG['cron']) && $CONFIG['cron']==0){
+		cronMessage("Cron set to 0");
     	continue;
 	}
 	ksort($CONFIG);
 	//echo printValue($CONFIG);
 	//connect to this database.
 	$dbh='';
-	echo "connecting to {$CONFIG['name']}<br>\n";
+	cronMessage("connecting");
 	$ok=cronDBConnect();
 	if($ok != 1){
-    	echo "[{$CONFIG['name']}] {$ok}\n";
+    	cronMessage("failed to connect: {$ok}");
     	continue;
 	}
 	//if any crons are set to active and running and have been running for over 3 hours then they are not running anymore
@@ -90,7 +93,7 @@ ENDOFWHERE;
 	//echo printValue($recs);exit;
 	if(is_array($recs) && count($recs)){
 		$cnt=count($recs);
-		echo  "[{$CONFIG['name']}] {$cnt} crons found\n";
+		cronMessage("{$cnt} crons found. Checking...");
 		foreach($recs as $rec){
 			$run=0;
 			//should this cron be run now?  check frequency...
@@ -142,7 +145,7 @@ ENDOFWHERE;
 			));
 			//skip if running
 			if($rec['running']==1){continue;}
-			echo " - running {$rec['name']}\n";
+			cronMessage("running {$rec['name']}");
 			//update record to show we are now running
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
@@ -229,6 +232,17 @@ ENDOFWHERE;
 	}
 }
 exit;
+//---------- begin function cronUpdate
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function cronMessage($msg){
+	global $CONFIG;
+	global $mypid;
+	$ctime=time();
+	echo "{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
+	return;
+}
 //---------- begin function cronUpdate
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
