@@ -70,6 +70,15 @@ foreach($ConfigXml as $name=>$host){
 				$CONFIG[$key]=$val;
 			}
 		}
+		if(isset($ConfigXml[$sameas]['sameas']) && isset($ConfigXml[$ConfigXml[$sameas]['sameas']])){
+			$sameas2=$ConfigXml[$sameas]['sameas'];
+			foreach($ConfigXml[$sameas2] as $key=>$val){
+				$ALLCONFIG[$name][$key]=$val;
+				if(strlen($chost) && $name==$chost){
+					$CONFIG[$key]=$val;
+				}
+			}
+		}
 	}
 	foreach($ConfigXml[$name] as $key=>$val){
 		$ALLCONFIG[$name][$key]=$val;
