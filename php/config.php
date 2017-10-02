@@ -64,12 +64,6 @@ foreach($ConfigXml as $name=>$host){
 	}
 	if(isset($ConfigXml[$name]['sameas']) && isset($ConfigXml[$ConfigXml[$name]['sameas']])){
 		$sameas=$ConfigXml[$name]['sameas'];
-		foreach($ConfigXml[$sameas] as $key=>$val){
-			$ALLCONFIG[$name][$key]=$val;
-			if(strlen($chost) && $name==$chost){
-				$CONFIG[$key]=$val;
-			}
-		}
 		if(isset($ConfigXml[$sameas]['sameas']) && isset($ConfigXml[$ConfigXml[$sameas]['sameas']])){
 			$sameas2=$ConfigXml[$sameas]['sameas'];
 			foreach($ConfigXml[$sameas2] as $key=>$val){
@@ -79,6 +73,13 @@ foreach($ConfigXml as $name=>$host){
 				}
 			}
 		}
+		foreach($ConfigXml[$sameas] as $key=>$val){
+			$ALLCONFIG[$name][$key]=$val;
+			if(strlen($chost) && $name==$chost){
+				$CONFIG[$key]=$val;
+			}
+		}
+		
 	}
 	foreach($ConfigXml[$name] as $key=>$val){
 		$ALLCONFIG[$name][$key]=$val;
