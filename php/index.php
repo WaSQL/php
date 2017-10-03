@@ -64,6 +64,9 @@ global $CONFIG;
 if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
 }
+else{
+	@header('X-Frame-Options');
+}
 //check for valid_hosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_hosts'])){
 	$valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_hosts'])));
