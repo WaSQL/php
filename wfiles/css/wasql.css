@@ -1260,7 +1260,8 @@ input[data-type=checkbox] + label[class*=icon-close],
 input[data-type=checkbox] + label[class*=icon-circle],
 input[data-type=checkbox] + label[class*=icon-minus],
 input[data-type=checkbox] + label[class*=icon-plus],
-input[data-type=checkbox] + label[class*=icon-star]
+input[data-type=checkbox] + label[class*=icon-star],
+input[data-type=checkbox] + label[class*=icon-help]
 {
 	padding:2px 2px 2px 2px;
 	border:1px solid #ccc;
@@ -1277,7 +1278,8 @@ input[data-type=radio] + label[class*=icon-close],
 input[data-type=radio] + label[class*=icon-circle],
 input[data-type=radio] + label[class*=icon-minus],
 input[data-type=radio] + label[class*=icon-plus],
-input[data-type=radio] + label[class*=icon-star]
+input[data-type=radio] + label[class*=icon-star],
+input[data-type=radio] + label[class*=icon-help]
 {
 	padding:2px 2px 2px 2px;
 	border:1px solid #ccc;
@@ -1311,8 +1313,10 @@ input[data-type=checkbox]:checked + label[class*=icon-minus]
 }
 input[data-type=checkbox]:checked + label[class*=icon-blank],
 input[data-type=checkbox]:checked + label[class*=icon-circle],
+input[data-type=checkbox]:checked + label[class*=icon-help],
 input[data-type=radio]:checked + label[class*=icon-blank],
-input[data-type=radio]:checked + label[class*=icon-circle]
+input[data-type=radio]:checked + label[class*=icon-circle],
+input[data-type=radio]:checked + label[class*=icon-help]
 {
 	color:#428bca;
 }
@@ -1325,6 +1329,7 @@ input[data-type=checkbox] + label[class*=icon-circle] + label,
 input[data-type=checkbox] + label[class*=icon-minus] + label,
 input[data-type=checkbox] + label[class*=icon-plus] + label,
 input[data-type=checkbox] + label[class*=icon-star] + label,
+input[data-type=checkbox] + label[class*=icon-help] + label,
 input[data-type=radio] + label[class*=icon-mark] + label,
 input[data-type=radio] + label[class*=icon-blank] + label,
 input[data-type=radio] + label[class*=icon-cancel] + label,
@@ -1332,7 +1337,8 @@ input[data-type=radio] + label[class*=icon-close] + label,
 input[data-type=radio] + label[class*=icon-circle] + label,
 input[data-type=radio] + label[class*=icon-minus] + label,
 input[data-type=radio] + label[class*=icon-plus] + label,
-input[data-type=radio] + label[class*=icon-star] + label
+input[data-type=radio] + label[class*=icon-star] + label,
+input[data-type=radio] + label[class*=icon-help] + label
 {
 	cursor:pointer;
 	padding:2px 4px 0 2px;
