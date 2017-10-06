@@ -7171,17 +7171,7 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowid=' id="'.$rowid.'"';
 			}
 			$rowclass='w_top ';
-			if(isset($params[$fld."_rowclass"])){
-				$rowclass=$params[$fld."_rowclass"];
-				foreach($list[0] as $xfld=>$xval){
-					if(is_array($xfld) || is_array($xval)){continue;}
-					$replace='%'.$xfld.'%';
-                    $rowclass=str_replace($replace,$rec[$xfld],$rowclass);
-                }
-                $rowclass=evalPHP($rowclass);
-                $rowclass=' class="'.$rowclass.'"';
-			}
-			elseif(isset($params['-rowclass'])){
+			if(isset($params['-rowclass'])){
 				$rowclass=$params['-rowclass'];
             	foreach($list[0] as $xfld=>$xval){
 					if(is_array($xfld) || is_array($xval)){continue;}
@@ -7206,7 +7196,18 @@ function listDBRecords($params=array(),$customcode=''){
                 $rowstyle=evalPHP($rowstyle);
             	$rowstyle=' style="'.$rowstyle.'"';
 			}
-			$rtn .= '	<tr '.$rowid.$rowclass.$rowstyle.'>'.PHP_EOL;
+			$onclick='';
+			if(isset($params['-onclick'])){
+				$onclick=$params['-onclick'];
+            	foreach($list[0] as $xfld=>$xval){
+					if(is_array($xfld) || is_array($xval)){continue;}
+					$replace='%'.$xfld.'%';
+                    $onclick=str_replace($replace,$rec[$xfld],$onclick);
+                }
+                $onclick=evalPHP($onclick);
+            	$onclick=' onclick="'.$onclick.'"';
+			}
+			$rtn .= '	<tr '.$rowid.$rowclass.$rowstyle.$onclick.'>'.PHP_EOL;
 		}
 		if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
 			//echo "rec:".printValue($rec);
