@@ -1882,7 +1882,7 @@ function getTableRowValues(tr,s) {
 	//info: if s=1, then returns as a URL string instead of an array
 	//usage: alert(getTableRowValues(this,1));
 	if(undefined == s){s=0;}
-	ptable=tr.parentNode;
+	ptable=getParent(tr,'table');
     var keys=new Array();
     var vals=new Array();
     for (var i = 0, row; row = ptable.rows[i]; i ++) {
