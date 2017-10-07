@@ -9,10 +9,10 @@
 	Note: cron.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the cron does not time out
-ini_set('max_execution_time', 7200);
-set_time_limit(7200);
+ini_set('max_execution_time', 72000);
+set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
-$_SERVER['TIME_START']=microtime(true);
+
 $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
@@ -23,6 +23,7 @@ if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
+$_SERVER['TIME_START']=microtime(true);
 global $ConfigXml;
 global $allhost;
 global $dbh;
@@ -166,6 +167,7 @@ ENDOFWHERE;
         	$cmd=$rec['run_cmd'];
         	$result='';
 			if(isset($pages[$cmd])){
+				cronMessage("cron is a page");
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
             	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID());
@@ -189,16 +191,19 @@ ENDOFWHERE;
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
+            	cronMessage("cron is a PHP command");
             	$result=evalPHP($cmd);
             	if(is_array($result)){$result=printValue($result);}
 			}
-			elseif(preg_match('/^http/',$cmd)){
+			elseif(preg_match('/^http/i',$cmd)){
             	//cron is a URL.
+            	cronMessage("cron is a url");
             	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
 				$result = $post['body'];
 			}
 			else{
             	//cron is a command
+            	cronMessage("cron is a command");
             	$cmd=cmdResults($cmd);
             	if(isset($cmd['stdout']) && strlen($cmd['stdout'])){
             		$result=$cmd['stdout'];
@@ -212,6 +217,7 @@ ENDOFWHERE;
 				'run_length'	=> $run_length,
 				'run_result'	=> $result
 			));
+			cronMessage("set running to zero".printValue($ok));
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
@@ -227,6 +233,7 @@ ENDOFWHERE;
 				'run_result'=> $result
 			);
 			$ok=addDBRecord($opts);
+			cronMessage("finished");
 			exit;
 		}
 	}
