@@ -1285,10 +1285,23 @@ function getObject(obj){
 /**
 * @describe returns the parent object
 * @param obj mixed  - the object or id
+* @param [name] string - optional name of parent node to get.  This will walk up the until it reaches that parent.
 * @return object
 * @usage var obj=getParent(divid);
 */
-function getParent(obj){
+function getParent(obj,name){
+	if(undefined != name){
+		var count = 1;
+		while(count < 1000) {
+			obj = obj.parentNode;
+			if(!typeof(obj)){return null;}
+			if(obj.nodeName.toLowerCase() == name.toLowerCase()){
+				return obj;
+			}
+			count++;
+		}
+		return null;	
+	}
 	var cObj=getObject(obj);
 	if(undefined == cObj){return abort("undefined object passed to getParent");}
 	if(undefined == cObj.parentNode){return cObj;}
@@ -1296,18 +1309,14 @@ function getParent(obj){
 	if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 	else{return getParent(pobj);}
 	}
-/* find an objects parent by attribute. getParentNodeByAttribute('nodeName','FORM',this);*/
+/**
+* @describe returns the parent form of an element
+* @param obj mixed  - the object or id
+* @return object
+* @usage var p=getParentForm(this);
+*/
 function getParentForm(obj) {
-    var count = 1;
-    while(count < 1000) {
-        obj = obj.parentNode;
-        if(!typeof(obj)){return null;}
-        if(obj.nodeName == 'FORM'){
-			return obj;
-		}
-        count++;
-    }
-	return null;
+	return getParent(obj,'form');
 }
 /**
 * @describe returns parent of object based on parent nodeName
@@ -1873,7 +1882,7 @@ function getTableRowValues(tr,s) {
 	//info: if s=1, then returns as a URL string instead of an array
 	//usage: alert(getTableRowValues(this,1));
 	if(undefined == s){s=0;}
-	ptable=tr.parentNode;
+	ptable=getParent(tr,'table');
     var keys=new Array();
     var vals=new Array();
     for (var i = 0, row; row = ptable.rows[i]; i ++) {
