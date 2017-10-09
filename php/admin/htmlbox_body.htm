@@ -1,10 +1,15 @@
 <view:default>
-<div class="row"><div class="w_biggest"><span class="icon-html5 w_bigger" style="color:#e34c26;"></span> HTML Sandbox</div></div>
+<form method="post" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="htmlbox" />
+	<input type="hidden" name="func" value="save" />
 <div class="row">
-	<div class="hidden-xs col-sm-2">
-		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Reference</div>
-		<div class="w_borderbot"><span class="icon-css3" style="color:#006eb9;"></span>CSS3 Reference</div>
-		<div style="max-height:250px;overflow:auto;">
+	<div class="w_biggest"><span class="icon-html5 w_bigger" style="color:#e34c26;"></span> HTML Sandbox
+	<button type="submit" class="btn btn-sm btn-default" style="padding:0px;border:0px;margin-left:30px;" title="Save in Session"><span class="icon-save w_bigger"></span></button>
+</div></div>
+<div class="row">
+	<div class="hidden-xs col-sm-3" style="padding:1px;">
+		<div class="w_primaryback  w_white w_bold" style="padding:3px 15px 3px 15px;"><span class="icon-css3"></span> CSS3 Reference</div>
+		<div style="max-height:30vh;overflow:auto;">
 		<table class="table table-condensed table-bordered table-striped">
 		<view:_cssref>
 			<tr>
@@ -17,8 +22,8 @@
 		<?=renderEach('_cssref',$cssref['items'],array('-alias'=>'cssref'));?>
 		</table>
 		</div>
-		<div class="w_borderbot"><span class="icon-html5" style="color:#e34c26;"></span>HTML5 Reference</div>
-		<div style="max-height:350px;overflow:auto;">
+		<div class="w_primaryback  w_white w_bold" style="padding:3px 15px 3px 15px;"><span class="icon-html5"></span> HTML5 Reference</div>
+		<div style="max-height:50vh;overflow:auto;">
 		<table class="table table-condensed table-bordered table-striped">
 		<view:_htmlref>
 			<tr>
@@ -32,18 +37,18 @@
 		</table>
 		</div>
 	</div>
-	<div class="col-sm-5">
-		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Edit Windows</div>
-		<div class="w_borderbot"><span class="icon-css3" style="color:#006eb9;"></span>CSS3</div>
-		<div><textarea data-behavior="@raid(customcss) tab autogrow" class="form-control" style="min-height:100px;border:none;font-size:1.2em;font-family:arial;"></textarea></div>
-		<div class="w_borderbot"><span class="icon-html5" style="color:#e34c26;"></span>HTML5</div>
-		<div><textarea data-behavior="@raid(preview) tab autogrow" autofocus="true" class="form-control" style="min-height:500px;border:none;font-size:1.2em;font-family:arial;"></textarea></div>
+	<div class="col-sm-4" style="padding:1px;">
+		<div class="w_primaryback  w_white w_bold" style="padding:3px 15px 3px 15px;"><span class="icon-css3"></span> CSS3 Edit Window</div>
+		<div><textarea data-behavior="@raid(customcss) tab autogrow" class="form-control" style="min-height:30vh;font-size:1.2em;font-family:arial;border-radius:0px;" name="htmlbox_css"><?=$_SESSION['htmlbox_css'];?></textarea></div>
+		<div class="w_primaryback  w_white w_bold" style="padding:3px 15px 3px 15px;"><span class="icon-html5"></span> HTML5 Edit Window</div>
+		<div><textarea data-behavior="@raid(preview) tab autogrow" autofocus="autofocus" class="form-control" style="min-height:50vh;font-size:1.2em;font-family:arial;border-radius:0px;" name="htmlbox_html"><?=$_SESSION['htmlbox_html'];?></textarea></div>
 	</div>
-	<div class="col-sm-5">
-		<div class="w_primaryback w_roundsmall w_white w_bold" style="padding:3px 15px 3px 15px;">Preview Window</div>
+	<div class="col-sm-5" style="padding:1px;">
+		<div class="w_primaryback w_white w_bold" style="padding:3px 15px 3px 15px;">Preview Window</div>
 		<style type="text/css" id="customcss"></style>
-		<div id="preview"></div>
+		<div id="preview" style="padding:3px;"></div>
 	</div>
 </div>
+</form>
 </view:default>
 
