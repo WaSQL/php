@@ -9138,6 +9138,8 @@ function minifyCode($code,$type) {
 	if(!strlen($type)){return 'no type';}
 	switch(strtolower($type)){
 		case 'js':
+			//jshrink is not working - until I figure it out just strip out carriage returns
+			return str_replace('/[\r\n]+/','',$code);
 			require_once("jshrink.php");
 			$code = jsMinifier::minify($code);
 			return $code;
