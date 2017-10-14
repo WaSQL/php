@@ -448,6 +448,7 @@ function sqliteGetDBFieldInfo($table,$params=array()){
 		$results=$dbh_sqlite->query($query);
 		$recs=array();
 		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
+			$xrec['name']=strtolower($xrec['name']);
 			$recs[$xrec['name']]=$xrec;
 		}
 		$results->finalize();
