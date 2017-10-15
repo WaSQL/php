@@ -69,7 +69,8 @@ foreach($ConfigXml as $name=>$host){
 	$ok=editDBRecord(array(
 		'-table'	=> '_cron',
 		'-where'	=> "running=1 and active=1 and run_date < (NOW() - INTERVAL 4 HOUR)",
-		'running'	=> 0
+		'running'	=> 0,
+		'cron_pid'	=> 0
 	));
 	//get page names to determine if cron is a page
 	$pages=getDBRecords(array(
@@ -151,11 +152,8 @@ ENDOFWHERE;
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
- 			$ok=cronUpdate($rec['_id'],array(
-				'cron_pid'	=> $cron_pid,
-				'running'	=> 1,
-				'run_date'	=> $run_date
-			));
+			$ok=executeQuery("update _cron set cron_pid={$cron_pid},running=1,run_date='{$run_date}' where running=0 and _id={$rec['_id']}");
+
 			//make sure only one cron runs this entry
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
