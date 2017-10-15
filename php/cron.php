@@ -38,7 +38,7 @@ include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/user.php");
 global $databaseCache;
-cronMessage(count($ConfigXml).' hosts in config file');
+//cronMessage(count($ConfigXml).' hosts in config file');
 foreach($ConfigXml as $name=>$host){
 	//allhost, then, sameas, then hostname
 	$CONFIG=$allhost;
@@ -52,14 +52,14 @@ foreach($ConfigXml as $name=>$host){
     	$CONFIG[$k]=$v;
 	}
 	if(isset($CONFIG['cron']) && $CONFIG['cron']==0){
-		cronMessage("Cron set to 0");
+		//cronMessage("Cron set to 0");
     	continue;
 	}
 	ksort($CONFIG);
 	//echo printValue($CONFIG);
 	//connect to this database.
 	$dbh='';
-	cronMessage("connecting");
+	//cronMessage("connecting");
 	$ok=cronDBConnect();
 	if($ok != 1){
     	cronMessage("failed to connect: {$ok}");
@@ -87,7 +87,8 @@ ENDOFWHERE;
 	$recopts=array(
 		'-table'	=> '_cron',
 		'-fields'	=> '_id,name,run_cmd,running,run_date,frequency,run_format,run_values',
-		'-where'	=> $wherestr
+		'-where'	=> $wherestr,
+		'-nocache'	=> 1
 	);
 	$cronfields=getDBFields('_cron');
 	if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
@@ -95,7 +96,7 @@ ENDOFWHERE;
 	//echo printValue($recs);exit;
 	if(is_array($recs) && count($recs)){
 		$cnt=count($recs);
-		cronMessage("{$cnt} crons found. Checking...");
+		//cronMessage("{$cnt} crons found. Checking...");
 		foreach($recs as $rec){
 			$run=0;
 			//should this cron be run now?  check frequency...
@@ -143,25 +144,45 @@ ENDOFWHERE;
 			//get record again to insure another process is not running it.
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
-				'_id'		=> $rec['_id']
+				'_id'		=> $rec['_id'],
+				'-nocache'	=> 1,
+				'-fields'	=> '_id,running,cron_pid'
 			));
 			//skip if running
 			if($rec['running']==1){continue;}
-			cronMessage("running {$rec['name']}");
 			//update record to show we are now running
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
-			$ok=executeSQL("update _cron set cron_pid={$cron_pid},running=1,run_date='{$run_date}' where running=0 and _id={$rec['_id']}");
-
+			//echo $ok.printValue($rec);
+			cronMessage("handshaking {$rec['name']}");
+			$editopts=array(
+				'-table'	=> '_cron',
+				'-where'	=> "running=0 and _id={$rec['_id']}",
+				'cron_pid'	=> $cron_pid,
+				'running'	=> 1,
+				'run_date'	=> $run_date
+			);
+			$ok=editDBRecord($editopts);
+			//echo $ok.printValue($editopts);
 			//make sure only one cron runs this entry
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
-				'_id'		=> $rec['_id']
+				'_id'		=> $rec['_id'],
+				'-nocache'	=> 1,
+				'-fields'	=> '_id,running,cron_pid'
 			));
+			//echo $ok.printValue($rec);
 			if($rec['cron_pid'] != $cron_pid){
+				cronMessage("handshaking {$rec['name']} failed. {$rec['cron_pid']} != {$cron_pid}");
 				continue;
 			}
+			$rec=getDBRecord(array(
+				'-table'	=> '_cron',
+				'_id'		=> $rec['_id'],
+				'-nocache'	=> 1
+			));
+			cronMessage("running {$rec['name']}");
         	$cmd=$rec['run_cmd'];
         	$result='';
 			if(isset($pages[$cmd])){
@@ -212,10 +233,11 @@ ENDOFWHERE;
 			//update record to show wer are now finished
 			$ok=cronUpdate($rec['_id'],array(
 				'running'		=> 0,
+				'cron_pid'		=> 0,
 				'run_length'	=> $run_length,
 				'run_result'	=> $result
 			));
-			cronMessage("set running to zero".printValue($ok));
+			cronMessage("finished {$rec['name']}. Run Length:{$run_length}");
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
@@ -244,6 +266,7 @@ exit;
 function cronMessage($msg){
 	global $CONFIG;
 	global $mypid;
+	if(!strlen($mypid)){$mypid=getmypid();}
 	$ctime=time();
 	echo "{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
 	return;
