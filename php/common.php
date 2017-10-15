@@ -10181,7 +10181,7 @@ function postURL($url,$params=array()) {
 		curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($process, CURLOPT_AUTOREFERER, true);
 		curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
-		curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
+		curl_setopt($process, CURLOPT_POSTREDIR, 3 );
 	}
 	//turn retrieving the header off
 	//curl_setopt ($process, CURLOPT_HEADER, 0);
