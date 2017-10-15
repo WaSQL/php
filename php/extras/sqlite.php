@@ -234,6 +234,11 @@ function sqliteAddDBRecord($params){
 		$flds[]=$k;
         $binds[]='?';
 	}
+	if(!count($flds)){
+		$e="No fields";
+		debugValue(array("sqliteAddDBRecord Error",$e));
+    	return;
+	}
 	$fldstr=implode(', ',$flds);
 	$bindstr=implode(',',$binds);
 
@@ -336,13 +341,18 @@ function sqliteEditDBRecord($params){
 		$flds[]=$k;
         $updates[]="{$k}=?";
 	}
+	if(!count($flds)){
+		$e="No fields";
+		debugValue(array("sqliteAddDBRecord Error",$e));
+    	return;
+	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
 		UPDATE {$params['-table']}
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
-	echo $query.printValue($params);
+	//echo $query.printValue($params);
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
@@ -350,21 +360,17 @@ ENDOFQUERY;
     	return;
 	}
 	try{
+		//echo $query.printValue($vals);exit;
 		$stmt=$dbh_sqlite->prepare($query);
 		if(!$stmt){
-			$err=array(
-				'msg'=>"sqliteEditDBRecord error",
-				'error'	=> $dbh_sqlite->lastErrorMsg(),
-				'query'	=> $query,
-				'vals'	=> $vals
-				);
-			echo printValue($err);
-			exit;
+			$e=sqlite_error_string(sqlite_last_error());
+			debugValue(array("sqliteAddDBRecord Prepare Error",$e,$query));
+			return;
 		}
 		foreach($vals as $i=>$v){
 			$fld=$flds[$i];
 			$x=$i+1;
-			echo "{$x}::{$v}::{$fields[$fld]['type']}<br>".PHP_EOL;
+			//echo "{$x}::{$v}::{$fields[$fld]['type']}<br>".PHP_EOL;
 			switch(strtolower($fields[$fld]['type'])){
 				case 'integer':
 					$stmt->bindParam($x,$vals[$i],SQLITE3_INTEGER);
@@ -388,7 +394,7 @@ ENDOFQUERY;
 	}
 	catch (Exception $e) {
 		$err=$e->getMessage();
-		debugValue("sqliteAddDBRecord error: {$err}");
+		debugValue("sqliteAddDBRecord exception: {$err}");
 		return null;
 	}
 	return 0;
