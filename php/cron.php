@@ -152,7 +152,7 @@ ENDOFWHERE;
 			$start=time();
 			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
-			$ok=executeQuery("update _cron set cron_pid={$cron_pid},running=1,run_date='{$run_date}' where running=0 and _id={$rec['_id']}");
+			$ok=executeSQL("update _cron set cron_pid={$cron_pid},running=1,run_date='{$run_date}' where running=0 and _id={$rec['_id']}");
 
 			//make sure only one cron runs this entry
 			$rec=getDBRecord(array(
