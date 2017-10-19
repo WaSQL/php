@@ -77,6 +77,7 @@ function ldapAuth($params=array()){
 	if(!isset($params['-username'])){return 'LDAP Auth Error: no username';}
 	if(!isset($params['-password'])){return 'LDAP Auth Error: no password';}
 	if(!isset($params['-domain'])){$params['-domain']=$params['-host'];}
+	if(!isset($params['-checkmemberof'])){$params['-checkmemberof']=1;}
 	global $CONFIG;
 	if(!isset($params['-bind'])){$params['-bind']="{$params['-username']}@{$params['-domain']}";}
 	$ldap_base_dn = array();
@@ -134,7 +135,7 @@ function ldapAuth($params=array()){
 	if (FALSE !== $result){
 		$entries = ldap_get_entries($ldapInfo['connection'], $result);
 	    if ($entries['count'] == 1){
-	    	$rec=ldapParseEntry($entries[0],1);
+	    	$rec=ldapParseEntry($entries[0],$params['-checkmemberof']);
 	    	//echo printValue($rec);ldapClose();exit;
 	    	if(is_array($rec)){return $rec;}
 	    	return 'LDAP Auth Error 2: unable to parse LDAP entry'.printValue($rec).printValue($entries[0]);
@@ -390,7 +391,7 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
 		$lrec=array_change_key_case($lrec,CASE_LOWER);
 	}
 	//require a memberof key
-	if($checkmemberof==1 && !isset($lrec['memberof'])){return null;}
+	if($checkmemberof==1 && !isset($lrec['memberof'])){return 'NO MEMBER OF';}
 	$rec=array('active'=>ldapIsActiveRecord($lrec));
 	$skipkeys=array(
 		'logonhours','msexchsafesendershash','count','usercertificate',
