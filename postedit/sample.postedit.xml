@@ -13,6 +13,7 @@
 			username - username on this
 			apikey - apikey of username
 			tables - defaults to getting _models, _pages, _tables
+			dirname - name or table.  If set to name, files are placed into folders by name
 	-->
 	<host
 		name="localhost"
