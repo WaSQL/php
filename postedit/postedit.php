@@ -78,6 +78,10 @@ function writeFiles(){
 		'-follow'=>1,
 		'-xml'=>1
 	);
+	switch(strtolower($hosts[$chost]['dirname'])){
+		case 'name':$dirname='name';break;
+		default:$dirname='table';break;
+	}
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
@@ -120,14 +124,21 @@ function writeFiles(){
 		unset($rec['@attributes']);
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
-	    	$path="{$afolder}/{$info['table']}";
-	    	if(!is_dir($path)){
-				mkdir($path,0777,true);
-			}
 	    	//determine extension
 	    	$parts=preg_split('/\_/',ltrim($name,'_'),2);
 	    	//echo $name.printValue($parts);
 	    	$field=array_pop($parts);
+	    	//name
+	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
+	    	//path
+	    	$path="{$afolder}/{$info['table']}";
+	    	if($dirname=='name'){
+				$path .= "/{$name}";
+			}
+	    	if(!is_dir($path)){
+				mkdir($path,0777,true);
+			}
+
 
 	    	switch(strtolower($field)){
 	        	case 'js':$ext='js';break;
@@ -140,7 +151,6 @@ function writeFiles(){
 	        		$ext='html';
 	        	break;
 			}
-			$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	//echo "{$afile}".PHP_EOL;
 	    	$content=base64_decode(trim($content));
