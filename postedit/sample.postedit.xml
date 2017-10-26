@@ -13,7 +13,7 @@
 			username - username on this
 			apikey - apikey of username
 			tables - defaults to getting _models, _pages, _tables
-			dirname - name or table.  If set to name, files are placed into folders by name
+			groupby - name,field, type, or extension.  Groups files by file name, field(body,controller,functions,js,css), type(models, views, controllers), or extension (html,php,js,css)
 	-->
 	<host
 		name="localhost"

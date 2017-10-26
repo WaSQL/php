@@ -926,6 +926,7 @@ function dropDBIndex($params=array()){
 *	[_id] integer - turns the form into an edit form, editing the record with this ID
 *	[-where] string - turns the form into an edit form, editing the record that matches the where clause
 *	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row
+* 	[-editfields] string - use to override comma separated list of fields to edit on the form
 *	[-method] string - POST or GET - defaults to POST
 *	[-class] string - class attribute for form tag - defaults to w_form
 * 	[-bootstrap] boolean - sets width to 100% on tag fields

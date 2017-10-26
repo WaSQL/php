@@ -78,10 +78,6 @@ function writeFiles(){
 		'-follow'=>1,
 		'-xml'=>1
 	);
-	switch(strtolower($hosts[$chost]['dirname'])){
-		case 'name':$dirname='name';break;
-		default:$dirname='table';break;
-	}
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
@@ -130,26 +126,46 @@ function writeFiles(){
 	    	$field=array_pop($parts);
 	    	//name
 	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
-	    	//path
-	    	$path="{$afolder}/{$info['table']}";
-	    	if($dirname=='name'){
-				$path .= "/{$name}";
-			}
-	    	if(!is_dir($path)){
-				mkdir($path,0777,true);
-			}
-
-
+	    	//extension
 	    	switch(strtolower($field)){
-	        	case 'js':$ext='js';break;
-	        	case 'css':$ext='css';break;
+	        	case 'js':
+					$ext='js';
+					$type='views';
+				break;
+	        	case 'css':
+					$ext='css';
+					$type='views';
+				break;
 	        	case 'controller':
+					$ext='php';
+					$type='controllers';
+				break;
 				case 'functions':
 					$ext='php';
+					$type='models';
 				break;
 	        	default:
 	        		$ext='html';
+	        		$type='views';
 	        	break;
+			}
+	    	//path
+	    	$path="{$afolder}/{$info['table']}";
+	    	switch(strtolower($hosts[$chost]['groupby'])){
+				case 'name':$path .= "/{$name}";break;
+				case 'type':
+					$path .= "/{$type}";
+				break;
+				case 'field':
+					$path .= "/{$field}";
+				break;
+				case 'ext':
+				case 'extension':
+					$path .= "/{$ext}";
+				break;
+			}
+	    	if(!is_dir($path)){
+				mkdir($path,0777,true);
 			}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	//echo "{$afile}".PHP_EOL;

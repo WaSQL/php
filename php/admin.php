@@ -324,8 +324,8 @@ if(isset($_REQUEST['phpinfo']) && count($_REQUEST)==1){
 elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
 	include_once("$progpath/user.php");
 	echo buildHtmlBegin();
-	echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'."\n";
-	echo '<table class="table table-bordered table-striped">'."\n";
+	echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'.PHP_EOL;
+	echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 	echo buildTableTH(array('Variable','Value'));
 	foreach($_SERVER as $key=>$val){
 		if(!stringBeginsWith($key,'remote') && !stringBeginsWith($key,'http')){continue;}
@@ -441,19 +441,19 @@ if(isAjax()){
     		exit;
     		break;
     	case 'add':
-    		echo '<div class="w_centerpop_title"> Add Record '.$_REQUEST['_table_'].'</div>'."\n";
-			echo '<div class="w_centerpop_content">'."\n";
+    		echo '<div class="w_centerpop_title"> Add Record '.$_REQUEST['_table_'].'</div>'.PHP_EOL;
+			echo '<div class="w_centerpop_content">'.PHP_EOL;
 			if($_REQUEST['_table_']=='_reports' && isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
 				$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
 			}
 			if(isset($CONFIG['dbname_stage'])){
                 $xtables=adminGetSynchronizeTables($CONFIG['dbname_stage']);
                 if(in_array($_REQUEST['_table_'],$xtables)){
-					echo '<div class="w_bold">'."\n";
-					echo '	<span class="icon-warning w_danger w_bold"></span>'."\n";
-					echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'."\n";
-					echo '</div>'."\n";
-					echo '</div>'."\n";
+					echo '<div class="w_bold">'.PHP_EOL;
+					echo '	<span class="icon-warning w_danger w_bold"></span>'.PHP_EOL;
+					echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'.PHP_EOL;
+					echo '</div>'.PHP_EOL;
+					echo '</div>'.PHP_EOL;
 					exit;
 				}
 				else{
@@ -481,7 +481,7 @@ if(isAjax()){
 				//echo printValue($addopts);
 	    		echo addEditDBForm($addopts);
 			}
-			echo '</div>'."\n";
+			echo '</div>'.PHP_EOL;
 			exit;
     		break;
     	case 'decode':
@@ -498,7 +498,7 @@ if(isAjax()){
 		break;
     	case 'tabledetails':
     		if(isset($_REQUEST['table'])){
-				//echo '<div style="margin-left:15px;">'."\n";
+				//echo '<div style="margin-left:15px;">'.PHP_EOL;
 				$finfo=getDBFieldInfo($_REQUEST['table']);
 				/*
 					get the used count for these fields if as follows:
@@ -525,22 +525,22 @@ if(isAjax()){
 					}
 				//show total records for this table
 				echo "<div>Record Count: {$tcnt}</div>\n";
-				echo '<table class="table table-bordered table-striped">'."\n";
+				echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 				echo buildTableTH(array('Field','Type','Len','Null','Recs','Nulls'));
 				//echo printValue($finfo);
 				foreach($finfo as $info){
-					echo '	<tr>'."\n";
-					echo '		<td>'.$info['_dbfield'].'</td>'."\n";
-					echo '		<td>'.$info['_dbtype'].'</td>'."\n";
-					echo '		<td>'.$info['_dblength'].'</td>'."\n";
-					echo '		<td>'.$info['_dbnull'].'</td>'."\n";
-					echo '		<td align="right">'.$info['rec_cnt'].'</td>'."\n";
-					echo '		<td align="right">'.$info['null_cnt'].'</td>'."\n";
-					echo '	</tr>'."\n";
+					echo '	<tr>'.PHP_EOL;
+					echo '		<td>'.$info['_dbfield'].'</td>'.PHP_EOL;
+					echo '		<td>'.$info['_dbtype'].'</td>'.PHP_EOL;
+					echo '		<td>'.$info['_dblength'].'</td>'.PHP_EOL;
+					echo '		<td>'.$info['_dbnull'].'</td>'.PHP_EOL;
+					echo '		<td align="right">'.$info['rec_cnt'].'</td>'.PHP_EOL;
+					echo '		<td align="right">'.$info['null_cnt'].'</td>'.PHP_EOL;
+					echo '	</tr>'.PHP_EOL;
 				}
 				echo buildTableEnd();
 				//echo printValue($finfo);
-				//echo '</div>'."\n";
+				//echo '</div>'.PHP_EOL;
 			}
 			elseif(isset($_REQUEST['sqlprompt_command'])){
 				$cmds=preg_split('/\;+/',evalPHP(trim($_REQUEST['sqlprompt_command'])));
@@ -591,9 +591,9 @@ if(isAjax()){
                         	break;
 						}
 						//table record edit
-			    		$dname = '<span class="w_bold w_bigger w_dblue">Content for '.$rec['name'].' Page</span>'."\n";
+			    		$dname = '<span class="w_bold w_bigger w_dblue">Content for '.$rec['name'].' Page</span>'.PHP_EOL;
 
-						echo '<div style="position:relative;">'."\n";
+						echo '<div style="position:relative;">'.PHP_EOL;
 						$opts=array(
 							'-table'=>'_pages',
 							'_id'=>$_REQUEST['id'],
@@ -608,14 +608,14 @@ if(isAjax()){
 							'-fields'=>'user_content'
 							);
 						echo addEditDBForm($opts);
-						echo '</div>'."\n";
+						echo '</div>'.PHP_EOL;
 					}
 		    		break;
 		    	case 'add':
 		    		if(isset($_REQUEST['table'])){
 						//table record add
-			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'."\n";
-						echo '<div class="w_centerpop_content">'."\n";
+			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						echo '<div class="w_centerpop_content">'.PHP_EOL;
 						$addopts=array(
 							'-table'=>'_pages',
 							'-action'=>$_SERVER['PHP_SELF'],
@@ -629,7 +629,7 @@ if(isAjax()){
 						);
 						//echo printValue($addopts);
 						echo addEditDBForm($addopts);
-						echo '</div>'."\n";
+						echo '</div>'.PHP_EOL;
 					}
 		    		break;
 		    	case 'record':
@@ -638,9 +638,9 @@ if(isAjax()){
 						unset($_REQUEST['edit_rec']);
 						//echo printValue($_REQUEST);
 						//update menubar
-	            		echo '	<div id="w_editor_nav_update" style="display:none;">'."\n";
+	            		echo '	<div id="w_editor_nav_update" style="display:none;">'.PHP_EOL;
 						echo contentManager();
-						echo '	</div>'."\n";
+						echo '	</div>'.PHP_EOL;
 						echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
 
 					}
@@ -657,8 +657,8 @@ if(isAjax()){
 		    	case 'edit':
 		    		if(isset($_REQUEST['table']) && isNum($_REQUEST['id'])){
 						//table record edit
-			    		echo '<div class="w_centerpop_title">Editing Record #'.$_REQUEST['id'].' in '.$_REQUEST['table'].' table.</div>'."\n";
-						echo '<div class="w_centerpop_content">'."\n";
+			    		echo '<div class="w_centerpop_title">Editing Record #'.$_REQUEST['id'].' in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						echo '<div class="w_centerpop_content">'.PHP_EOL;
 						$opts=array(
 							'-table'=>$_REQUEST['table'],
 							'_id'=>$_REQUEST['id'],
@@ -680,7 +680,7 @@ if(isAjax()){
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
 							echo buildOnLoad("document.addedit.name.focus();");
 						}
-						echo '</div>'."\n";
+						echo '</div>'.PHP_EOL;
 					}
 					elseif(isset($_REQUEST['file'])){
 						echo editorFileEdit($_REQUEST['file']);
@@ -689,8 +689,8 @@ if(isAjax()){
 		    	case 'add':
 		    		if(isset($_REQUEST['table'])){
 						//table record edit
-			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'."\n";
-						echo '<div class="w_centerpop_content">'."\n";
+			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						echo '<div class="w_centerpop_content">'.PHP_EOL;
 						echo addEditDBForm(array(
 							'-table'=>$_REQUEST['table'],
 							'-action'=>$_SERVER['PHP_SELF'],
@@ -706,7 +706,7 @@ if(isAjax()){
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
 							echo buildOnLoad("document.addedit.name.focus();");
 						}
-						echo '</div>'."\n";
+						echo '</div>'.PHP_EOL;
 					}
 					elseif(isset($_REQUEST['filetype'])){
 						echo editorFileAdd($_REQUEST['filetype']);
@@ -721,9 +721,9 @@ if(isAjax()){
 		            		echo '<b style="color:#0d7d0c;">Saved! '.$ok.'</b>';
 		            		//echo "<hr>{$content}";
 		            		//update menubar
-		            		echo '	<div id="w_editor_nav_update" style="display:none;">'."\n";
+		            		echo '	<div id="w_editor_nav_update" style="display:none;">'.PHP_EOL;
 							echo editorNavigation();
-							echo '	</div>'."\n";
+							echo '	</div>'.PHP_EOL;
 							echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
 						}
 						else{
@@ -745,9 +745,9 @@ if(isAjax()){
 		            		echo '<b style="color:#0d7d0c;">Saved! '.$ok.'</b>';
 		            		echo "<hr>{$content}";
 		            		//update menubar
-		            		echo '	<div id="w_editor_nav_update" style="display:none;">'."\n";
+		            		echo '	<div id="w_editor_nav_update" style="display:none;">'.PHP_EOL;
 							echo editorNavigation();
-							echo '	</div>'."\n";
+							echo '	</div>'.PHP_EOL;
 							echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
 						}
 						else{
@@ -755,9 +755,9 @@ if(isAjax()){
 							echo $afile;
 						}
 		            	//redraw menu
-		            	echo '<div style="display:none" id="navigation_refresh">'."\n";
+		            	echo '<div style="display:none" id="navigation_refresh">'.PHP_EOL;
 		            	echo editorNavigation();
-		            	echo '</div>'."\n";
+		            	echo '</div>'.PHP_EOL;
 		            	echo buildOnLoad("setText('w_editor_nav',getText('navigation_refresh'));");
 
 					}
@@ -773,9 +773,9 @@ if(isAjax()){
 						}
 						else{echo '<b style="color:#0d7d0c;">Saved!</b>';}
 						//update menubar
-	            		echo '	<div id="w_editor_nav_update" style="display:none;">'."\n";
+	            		echo '	<div id="w_editor_nav_update" style="display:none;">'.PHP_EOL;
 						echo editorNavigation();
-						echo '	</div>'."\n";
+						echo '	</div>'.PHP_EOL;
 						echo buildOnLoad("setText('w_editor_nav',getText('w_editor_nav_update'));");
 
 					}
@@ -816,22 +816,22 @@ if(isAjax()){
             	echo printValue($lines);
             	exit;
 			}
-			echo '<div style="width:500px;height:300px;padding-right:25px;overflow:auto;">'."\n";
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<div style="width:500px;height:300px;padding-right:25px;overflow:auto;">'.PHP_EOL;
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Tablename','Status','More Info'));
 			foreach($schemas as $table=>$fieldstr){
-				echo '	<tr valign="top">'."\n";
+				echo '	<tr valign="top">'.PHP_EOL;
 				//dropDBTable($table,1);
 				unset($databaseCache['isDBTable'][$table]);
             	echo "		<td>{$table}</td>";
             	$ok=adminCreateNewTable($table,$fieldstr);
 				if(!isNum($ok)){
-					echo '<td class="w_red w_bold">FAILED</td><td>'.$ok.'</td>'."\n";
+					echo '<td class="w_red w_bold">FAILED</td><td>'.$ok.'</td>'.PHP_EOL;
 				}
 				else{
-                	echo '<td>SUCCESS</td><td>'.nl2br($fieldstr).'</td>'."\n";
+                	echo '<td>SUCCESS</td><td>'.nl2br($fieldstr).'</td>'.PHP_EOL;
 				}
-				echo '</tr>'."\n";
+				echo '</tr>'.PHP_EOL;
 			}
 			echo buildTableEnd();
     		exit;
@@ -861,9 +861,9 @@ if(!isUser()){
 		'title'=>$_SERVER['HTTP_HOST'].' Admin Login'
 	);
 	echo buildHtmlBegin($params);
-	//echo '<div id="adminmenu">'."\n";
+	//echo '<div id="adminmenu">'.PHP_EOL;
 	echo adminUserLoginMenu();
-	echo '	<div style="padding:5px;color:'.$ConfigSettings['mainmenu_text_color'].';">'."\n";
+	echo '	<div style="padding:5px;color:'.$ConfigSettings['mainmenu_text_color'].';">'.PHP_EOL;
 	$formopts=array(
 		'-action'=>'/php/admin.php',
 		'-show_icons'=>$ConfigSettings['mainmenu_icons']
@@ -871,16 +871,16 @@ if(!isUser()){
 	if(isset($_REQUEST['_menu'])){$formopts['_menu']=$_REQUEST['_menu'];}
 	if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
 	echo userLoginForm($formopts);
-	echo '</div>'."\n";
+	echo '</div>'.PHP_EOL;
 	echo buildHtmlEnd();
 	exit;
 	}
 elseif($USER['utype'] != 0){
 	echo buildHtmlBegin();
-	echo '<div class="w_left w_tip w_pad w_border">'."\n";
-	echo '	<span class="icon-warning w_danger w_bigger w_bold"></span><b class="w_danger w_bigger"> Administration access denied.</b>'."\n";
-	echo '	<div class="w_big w_danger">You must log in as an administrator to access the administration area.</div>'."\n";
-	echo '</div>'."\n";
+	echo '<div class="w_left w_tip w_pad w_border">'.PHP_EOL;
+	echo '	<span class="icon-warning w_danger w_bigger w_bold"></span><b class="w_danger w_bigger"> Administration access denied.</b>'.PHP_EOL;
+	echo '	<div class="w_big w_danger">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
+	echo '</div>'.PHP_EOL;
 	$formopts=array(
 		'-action'=>'/php/admin.php',
 		'-show_icons'=>$ConfigSettings['mainmenu_icons']
@@ -955,14 +955,15 @@ if(isset($_REQUEST['_menu'])){
 		case 'postedit_xml':
 			$xml='';
 			$xml .= xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
-			$xml .= '<hosts>'."\r\n";
-			$xml .= '	<host'."\r\n";
-			$xml .= '		name="'.$_SERVER['HTTP_HOST'].'"'."\r\n";
-			$xml .= '		group="'.$_SERVER['UNIQUE_HOST'].'"'."\r\n";
-			$xml .= '		apikey="'.$USER['apikey'].'"'."\r\n";
-			$xml .= '		username="'.$USER['username'].'"'."\r\n";
-			$xml .= '	/>'."\r\n";
-			$xml .= '</hosts>'."\r\n";
+			$xml .= '<hosts>'.PHP_EOL;
+			$xml .= '	<host'.PHP_EOL;
+			$xml .= '		name="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
+			$xml .= '		group="'.$_SERVER['UNIQUE_HOST'].'"'.PHP_EOL;
+			$xml .= '		apikey="'.$USER['apikey'].'"'.PHP_EOL;
+			$xml .= '		username="'.$USER['username'].'"'.PHP_EOL;
+			$xml .= '		groupby="name"'.PHP_EOL;
+			$xml .= '	/>'.PHP_EOL;
+			$xml .= '</hosts>'.PHP_EOL;
 			pushData($xml,"xml","postedit.xml");
 			break;
 		}
@@ -1010,20 +1011,20 @@ $params=array(
 	'title'=>$_SERVER['HTTP_HOST'].' Admin'
 	);
 echo buildHtmlBegin($params);
-echo '<div id="admin_menu">'."\n";
+echo '<div id="admin_menu">'.PHP_EOL;
 echo adminMenu();
-echo '</div>'."\n";
-echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'."\n";
+echo '</div>'.PHP_EOL;
+echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'.PHP_EOL;
 //if user has switched databases from original - show switch back link
 if(isset($_SESSION['dbhost_original'])){
-	echo '	<div class="w_pad w_margin w_dblue "><table class="w_nopad"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'."\n";
+	echo '	<div class="w_pad w_margin w_dblue "><table class="w_nopad"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'.PHP_EOL;
 }
-//echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'."\n";
-echo '	<div id="facebook_status" class="w_big w_pad"></div>'."\n";
-echo '</div>'."\n";
-echo '<br clear="both" />'."\n";
-echo '<div style="clear:both;float:left;width:100%;"></div>'."\n";
-echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'."\n";
+//echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'.PHP_EOL;
+echo '	<div id="facebook_status" class="w_big w_pad"></div>'.PHP_EOL;
+echo '</div>'.PHP_EOL;
+echo '<br clear="both" />'.PHP_EOL;
+echo '<div style="clear:both;float:left;width:100%;"></div>'.PHP_EOL;
+echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
@@ -1037,31 +1038,31 @@ if(isset($_REQUEST['_menu'])){
 			echo adminViewPage('export');exit;
 		break;
 		case 'editor':
-			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'."\n";
-			echo '	<td class="nowrap">'."\n";
-			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/wasql_admin.png" class="w_middle" alt="Inline Editor Menu" /> Inline Editor Menu</div>'."\n";
-			echo '	<div id="w_editor_nav">'."\n";
+			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
+			echo '	<td class="nowrap">'.PHP_EOL;
+			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/wasql_admin.png" class="w_middle" alt="Inline Editor Menu" /> Inline Editor Menu</div>'.PHP_EOL;
+			echo '	<div id="w_editor_nav">'.PHP_EOL;
 			echo editorNavigation();
-			echo '	</div></td>'."\n";
-			echo '	<td width="100%"><div id="w_editor_main">'."\n";
-			echo '	</div></td>'."\n";
-			echo '</tr></table>'."\n";
+			echo '	</div></td>'.PHP_EOL;
+			echo '	<td width="100%"><div id="w_editor_main">'.PHP_EOL;
+			echo '	</div></td>'.PHP_EOL;
+			echo '</tr></table>'.PHP_EOL;
 			break;
 		case 'contentmanager':
-			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'."\n";
-			echo '	<td class="nowrap">'."\n";
-			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/iconsets/32/contentmanager.png" class="w_middle" alt="content manager" /> Content Manager</div>'."\n";
-			echo '	<div id="w_editor_nav">'."\n";
+			echo '<table class="table table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
+			echo '	<td class="nowrap">'.PHP_EOL;
+			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/iconsets/32/contentmanager.png" class="w_middle" alt="content manager" /> Content Manager</div>'.PHP_EOL;
+			echo '	<div id="w_editor_nav">'.PHP_EOL;
 			echo contentManager();
-			echo '	</div></td>'."\n";
-			echo '	<td width="100%"><div id="w_editor_main">'."\n";
-			echo '	</div></td>'."\n";
-			echo '</tr></table>'."\n";
+			echo '	</div></td>'.PHP_EOL;
+			echo '	<td width="100%"><div id="w_editor_main">'.PHP_EOL;
+			echo '	</div></td>'.PHP_EOL;
+			echo '</tr></table>'.PHP_EOL;
 			break;
 		case 'env':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'."\n";
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'.PHP_EOL;
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1071,31 +1072,31 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'iconsets':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-file-image w_big"></span> List Iconsets</div>'."\n";
-			echo '<hr size="1" style="padding:0px;margin:0px;">'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-file-image w_big"></span> List Iconsets</div>'.PHP_EOL;
+			echo '<hr size="1" style="padding:0px;margin:0px;">'.PHP_EOL;
 			$iconsets=listIconsets();
-			echo '<table class="table table-striped">'."\n";
+			echo '<table class="table table-striped">'.PHP_EOL;
 			echo '<tr>';
 			$cnt=0;
 			foreach($iconsets as $name){
 				if(preg_match('/^thumbs$/i',$name)){continue;}
-            	echo '<td class="w_pad w_smallest w_lblue" align="center">'."\n";
-            	echo '	<div><img src="/wfiles/iconsets/64/'.$name.'.png" width="64" height="64" class="w_middle" alt="'.$name.'" /></div>'."\n";
-            	echo '	<div class="w_bold w_dblue w_bigger">'.$name.'</div>'."\n";
-				echo '	<div><b>16:</b> /wfiles/iconsets/16/'.$name.'.png</div>'."\n";
-            	echo '	<div><b>32:</b> /wfiles/iconsets/32/'.$name.'.png</div>'."\n";
-            	echo '	<div><b>64:</b> /wfiles/iconsets/64/'.$name.'.png</div>'."\n";
-				echo '</td>'."\n";
+            	echo '<td class="w_pad w_smallest w_lblue" align="center">'.PHP_EOL;
+            	echo '	<div><img src="/wfiles/iconsets/64/'.$name.'.png" width="64" height="64" class="w_middle" alt="'.$name.'" /></div>'.PHP_EOL;
+            	echo '	<div class="w_bold w_dblue w_bigger">'.$name.'</div>'.PHP_EOL;
+				echo '	<div><b>16:</b> /wfiles/iconsets/16/'.$name.'.png</div>'.PHP_EOL;
+            	echo '	<div><b>32:</b> /wfiles/iconsets/32/'.$name.'.png</div>'.PHP_EOL;
+            	echo '	<div><b>64:</b> /wfiles/iconsets/64/'.$name.'.png</div>'.PHP_EOL;
+				echo '</td>'.PHP_EOL;
 				$cnt++;
 				if($cnt==4){
-                	echo '</tr><tr>'."\n";
+                	echo '</tr><tr>'.PHP_EOL;
                 	$cnt=0;
 				}
 			}
-			echo '</tr></table>'."\n";
+			echo '</tr></table>'.PHP_EOL;
 			//echo printValue($iconsets);
 			break;
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1105,27 +1106,27 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'font_icons':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'."\n";
-			echo '<div class="w_bigger"><b>Usage: </b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'."\n";
-			echo '<hr size="1" style="padding:0px;margin:0px;margin-bottom:10px;">'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'.PHP_EOL;
+			echo '<div class="w_bigger"><b>Usage: </b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'.PHP_EOL;
+			echo '<hr size="1" style="padding:0px;margin:0px;margin-bottom:10px;">'.PHP_EOL;
 			$icons=wasqlFontIcons();
 			$sets=arrayColumns($icons,4);
-			echo '<div class="row">'."\n";
+			echo '<div class="row">'.PHP_EOL;
 			foreach($sets as $icons){
-				echo '		<div class="col-sm-3 w_nowrap">'."\n";
+				echo '		<div class="col-sm-3 w_nowrap">'.PHP_EOL;
             	foreach($icons as $icon){
-                	echo '			<div class="w_biggest w_dblue"><span class="'.$icon.'"></span> '.$icon.'</div>'."\n";
+                	echo '			<div class="w_biggest w_dblue"><span class="'.$icon.'"></span> '.$icon.'</div>'.PHP_EOL;
 				}
-				echo '		</div>'."\n";
+				echo '		</div>'.PHP_EOL;
 			}
-			echo '</div>'."\n";
+			echo '</div>'.PHP_EOL;
 		break;
 		case 'system':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'.PHP_EOL;
 			$info=getServerInfo();
 			//first show all the items that are not arrays
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Name','Description'));
 			foreach($info as $key=>$val){
 				if(!strlen($key)){continue;}
@@ -1140,8 +1141,8 @@ if(isset($_REQUEST['_menu'])){
 				if(!is_array($val)){continue;}
 				$name=str_replace('_',' ',$key);
 				$name=ucwords($name);
-				echo '	<tr><td>'.$name.'</td><td class="nowrap">'."\n";
-				//if(count($val) > 5 && is_array($val[0])){echo '		<div style="height:150px;overflow:auto;padding-right:20px;">'."\n";}
+				echo '	<tr><td>'.$name.'</td><td class="nowrap">'.PHP_EOL;
+				//if(count($val) > 5 && is_array($val[0])){echo '		<div style="height:150px;overflow:auto;padding-right:20px;">'.PHP_EOL;}
 				$fields=array();
 				foreach($val as $x=>$subval){
 					if(is_array($subval)){
@@ -1149,7 +1150,7 @@ if(isset($_REQUEST['_menu'])){
 						}
 					else{$fields[$x]=1;}
 					}
-				echo '<table class="table table-bordered table-striped">'."\n";
+				echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 				echo buildTableTH(array_keys($fields));
 				foreach($val as $x=>$subval){
 					$svals=array();
@@ -1164,15 +1165,15 @@ if(isset($_REQUEST['_menu'])){
                     	}
                 	}
 				echo buildTableEnd();
-				//if(count($val) > 5){echo '		</div>'."\n";}
-				echo '	</td></tr>'."\n";
+				//if(count($val) > 5){echo '		</div>'.PHP_EOL;}
+				echo '	</td></tr>'.PHP_EOL;
             	}
             echo buildTableEnd();
             //echo printValue($info);
 			break;
 			//$info=getServerInfo();
 			echo printValue($info);
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			//echo buildTableTH(array('Variable','Value'));
 
             echo buildTableEnd();
@@ -1183,7 +1184,7 @@ if(isset($_REQUEST['_menu'])){
 					http://www.danshort.com/HTMLentities/index.php?w=punct
 					http://www.amp-what.com/unicode/search/
 			*/
-			echo '<div class="w_lblue w_bold">&#128291; HTML Entities</div>'."\n";
+			echo '<div class="w_lblue w_bold">&#128291; HTML Entities</div>'.PHP_EOL;
 
 			echo listDBRecords(array(
 				'_menu'				=>$_REQUEST['_menu'],
@@ -1197,7 +1198,7 @@ if(isset($_REQUEST['_menu'])){
 			));
 			break;
 		case 'rebuild':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
             	if(dropDBTable($_REQUEST['_table_'],1)){
 					$ok=createWasqlTables($_REQUEST['_table_']);
@@ -1225,10 +1226,10 @@ if(isset($_REQUEST['_menu'])){
 					}
 			}
 			clearDBCache(array('databaseTables','isDBTable'));
-			echo '<div>Complete</div>'."\n";
+			echo '<div>Complete</div>'.PHP_EOL;
     		break;
     	case 'rebuild_meta':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
 				$table=addslashes(trim($_REQUEST['_table_']));
 				addMetaData($table);
@@ -1245,8 +1246,8 @@ if(isset($_REQUEST['_menu'])){
 		case 'profile':
 			//My Profile
 			$img=$USER['utype']==0?'admin.gif':'user.gif';
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'."\n";
-			echo '<table class="table table-bordered table-striped">'."\n";
+			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
+			echo '<table class="table table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1271,10 +1272,10 @@ if(isset($_REQUEST['_menu'])){
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info-circled"></span> About WaSQL</div>'."\n";
-			echo '<table class="table table-striped table-bordered">'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info-circled"></span> About WaSQL</div>'.PHP_EOL;
+			echo '<table class="table table-striped table-bordered">'.PHP_EOL;
 			//Database Information
-			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'."\n";
+			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
 			ksort($CONFIG);
 			foreach($CONFIG as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1283,7 +1284,7 @@ if(isset($_REQUEST['_menu'])){
 			//Version Information
 			//$cver=curl_version();
 			$versions=getAllVersions();
-			echo '<tr><th colspan="2">Version Information</th></tr>'."\n";
+			echo '<tr><th colspan="2">Version Information</th></tr>'.PHP_EOL;
 			foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
@@ -1297,7 +1298,7 @@ if(isset($_REQUEST['_menu'])){
 				'Machine Type'	=> php_uname('m'),
 				);
 			ksort($versions);
-            echo '<tr><th colspan="2">Server Information</th></tr>'."\n";
+            echo '<tr><th colspan="2">Server Information</th></tr>'.PHP_EOL;
             foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
@@ -1317,17 +1318,17 @@ if(isset($_REQUEST['_menu'])){
 				'PHP Ini Path'		=> php_ini_loaded_file()
 				);
 			ksort($versions);
-            echo '<tr><th colspan="2">Other Information</th></tr>'."\n";
+            echo '<tr><th colspan="2">Other Information</th></tr>'.PHP_EOL;
             foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr valign=\"top\"><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
             	}
-            echo '</table>'."\n";
+            echo '</table>'.PHP_EOL;
 			break;
 		case 'stats':
 			//Site Stats from the _access table
 			if(!isDBTable('_access')){$ok=createWasqlTable('_access');}
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-chart-line w_warning w_bigger"></span> Usage Stats</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-chart-line w_warning w_bigger"></span> Usage Stats</div>'.PHP_EOL;
 			echo getDBSiteStats();
 			//echo printValue($stats);
 			break;
@@ -1339,20 +1340,20 @@ if(isset($_REQUEST['_menu'])){
 					add column to see records and fields for Stage and Live
 					add links to push data: live to stage, stage to live
 			*/
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table w_biggest"></span> Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table w_biggest"></span> Tables</div>'.PHP_EOL;
 			echo buildFormBegin('',array('_menu'=>'tables','update'=>1));
-			echo '<table class="table table-bordered table-striped sortable">'."\n";
-			echo '<thead>'."\n";
-			echo '	<tr>'."\n";
-			echo '		<th>Action</th>'."\n";
-			echo '		<th>Tablename</th>'."\n";
-			echo '		<th>Records</th>'."\n";
-			echo '		<th>Fields</th>'."\n";
-			echo '		<th><span class="icon-group w_success w_big"></span> Group</th>'."\n";
-			echo '		<th>Description</th>'."\n";
-			echo '	</tr>'."\n";
-			echo '</thead>'."\n";
-			echo '<tbody>'."\n";
+			echo '<table class="table table-bordered table-striped sortable">'.PHP_EOL;
+			echo '<thead>'.PHP_EOL;
+			echo '	<tr>'.PHP_EOL;
+			echo '		<th>Action</th>'.PHP_EOL;
+			echo '		<th>Tablename</th>'.PHP_EOL;
+			echo '		<th>Records</th>'.PHP_EOL;
+			echo '		<th>Fields</th>'.PHP_EOL;
+			echo '		<th><span class="icon-group w_success w_big"></span> Group</th>'.PHP_EOL;
+			echo '		<th>Description</th>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '</thead>'.PHP_EOL;
+			echo '<tbody>'.PHP_EOL;
 			$tablegroup=array();
 			$groups=array();
 			$query="select tablename,tablegroup,tabledesc from _tabledata";
@@ -1411,7 +1412,7 @@ if(isset($_REQUEST['_menu'])){
 						));
 				}
             	}
-            echo '</tbody>'."\n";
+            echo '</tbody>'.PHP_EOL;
 			echo buildTableEnd();
 			echo buildFormSubmit('Save Changes','','','icon-save');
 			echo buildFormEnd();
@@ -1419,47 +1420,47 @@ if(isset($_REQUEST['_menu'])){
 		case 'summary':
 		case 'charset':
 			//Table Summary
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_info w_biggest"></span> Table Properties</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_info w_biggest"></span> Table Properties</div>'.PHP_EOL;
 			$cmessage='';
 			if(isset($_REQUEST['_charset']) && strlen($_REQUEST['_charset'])){
-				$cmessage .= '<h3>'.$_REQUEST['_charset'].' conversion results:</h3><hr>'."\n";
+				$cmessage .= '<h3>'.$_REQUEST['_charset'].' conversion results:</h3><hr>'.PHP_EOL;
 				$tables=getDBTables();
 				foreach($tables as $table){
 					$runsql='ALTER TABLE '.$table.' CONVERT TO CHARACTER SET '.$_REQUEST['_charset'];
-					$cmessage .= 'Converting Table '.$table.'...'."\n";
+					$cmessage .= 'Converting Table '.$table.'...'.PHP_EOL;
 					$ck=executeSQL($runsql);
 					if(isset($ck['result'])){
 						if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
-						else{$cmessage .= 'SUCCESS<br>'."\n";}
+						else{$cmessage .= 'SUCCESS<br>'.PHP_EOL;}
 						}
 					elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
-					else{$cmessage .= 'SUCCESS<br>'."\n";}
+					else{$cmessage .= 'SUCCESS<br>'.PHP_EOL;}
 	            	}
 	            $runsql='ALTER DATABASE '.$CONFIG['dbname'].' CHARACTER SET '.$_REQUEST['_charset'];
-				$cmessage .= 'Converting Database '.$CONFIG['dbname'].'...'."\n";
+				$cmessage .= 'Converting Database '.$CONFIG['dbname'].'...'.PHP_EOL;
 				$ck=executeSQL($runsql);
 				if(isset($ck['result'])){
 					if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}<br>\n";}
-					else{$cmessage .= 'SUCCESS<br>'."\n";}
+					else{$cmessage .= 'SUCCESS<br>'.PHP_EOL;}
 					}
 				elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
-				else{$cmessage .= 'SUCCESS<br>'."\n";}
+				else{$cmessage .= 'SUCCESS<br>'.PHP_EOL;}
 		        }
 			$charsets=getDBCharsets();
 			$current_charset=getDBCharset();
-			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'."\n";
-			echo '<div class="w_lblue w_bold"> Available Character Sets:</div>'."\n";
-			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'."\n";
-			echo '			<input type="hidden" name="_menu" value="charset">'."\n";
-			echo '			<select name="_charset">'."\n";
+			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'.PHP_EOL;
+			echo '<div class="w_lblue w_bold"> Available Character Sets:</div>'.PHP_EOL;
+			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'.PHP_EOL;
+			echo '			<input type="hidden" name="_menu" value="charset">'.PHP_EOL;
+			echo '			<select name="_charset">'.PHP_EOL;
 			foreach($charsets as $charset=>$desc){
 				echo '				<option value="'.$charset.'"';
 				if($charset == $current_charset){echo ' selected';}
-				echo '>'.$desc.'</option>'."\n";
+				echo '>'.$desc.'</option>'.PHP_EOL;
             	}
-			echo '			</select>'."\n";
+			echo '			</select>'.PHP_EOL;
 			echo buildFormSubmit('Convert');
-			echo '		</form>'."\n";
+			echo '		</form>'.PHP_EOL;
 			echo $cmessage;
 			echo listDBRecords(array(
 				'-query'				=>	"show table status",
@@ -1482,90 +1483,90 @@ if(isset($_REQUEST['_menu'])){
 					//add new table
 					$error=0;
 					if(isset($_SESSION['admin_errors']) && is_array($_SESSION['admin_errors']) && count($_SESSION['admin_errors'])){
-						echo '<div class="w_padding w_left">'."\n";
-						echo '	<div class="w_bold"><span class="icon-warning w_danger w_bold"></span> Error Adding Table:</div>'."\n";
+						echo '<div class="w_padding w_left">'.PHP_EOL;
+						echo '	<div class="w_bold"><span class="icon-warning w_danger w_bold"></span> Error Adding Table:</div>'.PHP_EOL;
 						foreach($_SESSION['admin_errors'] as $adderror){
 							echo "	<div class=\"w_marginleft w_red w_bold\"> - {$adderror}</div>\n";
                     	}
-                    	echo '</div>'."\n";
-                    	echo '<br clear="both">'."\n";
+                    	echo '</div>'.PHP_EOL;
+                    	echo '<br clear="both">'.PHP_EOL;
 						$error=1;
 						$_SESSION['admin_errors']=array();
 					}
 					//echo printValue($_REQUEST);
 					echo buildTableBegin(2,0);
-					echo '<tr valign="top"><td>'."\n";
-					echo '<div class="w_lblue w_bold w_bigger"><span class="icon-plus"></span> Add New table.</div>'."\n";
-					echo '		<form method="POST" name="new_table" action="/'.$PAGE['name'].'" class="w_form" onSubmit="return submitForm(this);">'."\n";
-					echo '			<input type="hidden" name="_menu" value="add">'."\n";
+					echo '<tr valign="top"><td>'.PHP_EOL;
+					echo '<div class="w_lblue w_bold w_bigger"><span class="icon-plus"></span> Add New table.</div>'.PHP_EOL;
+					echo '		<form method="POST" name="new_table" action="/'.$PAGE['name'].'" class="w_form" onSubmit="return submitForm(this);">'.PHP_EOL;
+					echo '			<input type="hidden" name="_menu" value="add">'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_table_']:'';
-					echo '			<b>Table Name:</b> <input type="text" data-required="1" data-requiredmsg="Enter a table name" class="form-control" maxlength="150" name="_table_" value="'.$value.'" onFocus="this.select();"><br />'."\n";
-					//echo '			<img src="/wfiles/iconsets/16/group.png" border="0"> Table Group: <input type="text"  style="width:310px;" maxlength="150" name="tablegroup" value="'.$value.'" onFocus="this.select();"><br />'."\n";
-					//echo '			<img src="/wfiles/iconsets/16/info.png" border="0"> Table Desc: <input type="text" style="width:315px;" maxlength="150" name="tabledesc" value="'.$value.'" onFocus="this.select();"><br />'."\n";
-					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'."\n";
+					echo '			<b>Table Name:</b> <input type="text" data-required="1" data-requiredmsg="Enter a table name" class="form-control" maxlength="150" name="_table_" value="'.$value.'" onFocus="this.select();"><br />'.PHP_EOL;
+					//echo '			<img src="/wfiles/iconsets/16/group.png" border="0"> Table Group: <input type="text"  style="width:310px;" maxlength="150" name="tablegroup" value="'.$value.'" onFocus="this.select();"><br />'.PHP_EOL;
+					//echo '			<img src="/wfiles/iconsets/16/info.png" border="0"> Table Desc: <input type="text" style="width:315px;" maxlength="150" name="tabledesc" value="'.$value.'" onFocus="this.select();"><br />'.PHP_EOL;
+					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_schema']:'';
-					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'."\n";
-					echo '			<div><button type="submit" class="btn btn-primary">Create</button></div>'."\n";
-					echo '		</form>'."\n";
+					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'.PHP_EOL;
+					echo '			<div><button type="submit" class="btn btn-primary">Create</button></div>'.PHP_EOL;
+					echo '		</form>'.PHP_EOL;
 					echo buildOnLoad('document.new_table._table_.focus();');
-					echo '</td><td>'."\n";
+					echo '</td><td>'.PHP_EOL;
 					//reference: http://www.htmlite.com/mysql003.php
 					//Text Types
-					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');"></span> Text Types</div>'."\n";
-					echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'."\n";
-					echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'."\n";
-					echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'."\n";
-					echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'."\n";
-					//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'."\n";
-					echo '</div></div>'."\n";
-					echo '<div style="margin-left:25px;">'."\n";
-					echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'."\n";
-					echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'."\n";
-					echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'."\n";
-					echo 'TEXT	A string with a maximum length of 65535 characters.<br />'."\n";
-					//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'."\n";
-					echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'."\n";
-					//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'."\n";
-					echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'."\n";
-					//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'."\n";
-					echo '</div>'."\n";
+					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');"></span> Text Types</div>'.PHP_EOL;
+					echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
+					echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'.PHP_EOL;
+					echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'.PHP_EOL;
+					echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'.PHP_EOL;
+					//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'.PHP_EOL;
+					echo '</div></div>'.PHP_EOL;
+					echo '<div style="margin-left:25px;">'.PHP_EOL;
+					echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'.PHP_EOL;
+					echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'.PHP_EOL;
+					echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'.PHP_EOL;
+					echo 'TEXT	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
+					//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
+					echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
+					//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
+					echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
+					//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
+					echo '</div>'.PHP_EOL;
 					//Number Types
-					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');"></span> Number Types</div>'."\n";
-					echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'."\n";
-					echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'."\n";
-					echo '</div></div>'."\n";
-					echo '<div style="margin-left:25px;">'."\n";
-					echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'."\n";
-					echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'."\n";
-					echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'."\n";
-					echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'."\n";
-					echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'."\n";
-					echo 'FLOAT	A small number with a floating decimal point.<br />'."\n";
-					echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'."\n";
-					echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'."\n";
-					echo '</div>'."\n";
+					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');"></span> Number Types</div>'.PHP_EOL;
+					echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
+					echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'.PHP_EOL;
+					echo '</div></div>'.PHP_EOL;
+					echo '<div style="margin-left:25px;">'.PHP_EOL;
+					echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'.PHP_EOL;
+					echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'.PHP_EOL;
+					echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'.PHP_EOL;
+					echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'.PHP_EOL;
+					echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'.PHP_EOL;
+					echo 'FLOAT	A small number with a floating decimal point.<br />'.PHP_EOL;
+					echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'.PHP_EOL;
+					echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'.PHP_EOL;
+					echo '</div>'.PHP_EOL;
 					//Date Types
-					echo '<div class="w_lblue w_bold">Date Types</div>'."\n";
-					echo '<div style="margin-left:25px;">'."\n";
-					echo 'DATE	YYYY-MM-DD.<br />'."\n";
-					echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'."\n";
-					echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'."\n";
-					echo 'TIME	HH:MM:SS.<br />'."\n";
-					echo '</div>'."\n";
-					echo '</td></tr></table>'."\n";
+					echo '<div class="w_lblue w_bold">Date Types</div>'.PHP_EOL;
+					echo '<div style="margin-left:25px;">'.PHP_EOL;
+					echo 'DATE	YYYY-MM-DD.<br />'.PHP_EOL;
+					echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'.PHP_EOL;
+					echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'.PHP_EOL;
+					echo 'TIME	HH:MM:SS.<br />'.PHP_EOL;
+					echo '</div>'.PHP_EOL;
+					echo '</td></tr></table>'.PHP_EOL;
                 }
 				else{
 					if(isset($CONFIG['dbname_stage'])){
                     	$xtables=adminGetSynchronizeTables($CONFIG['dbname_stage']);
                     	if(in_array($_REQUEST['_table_'],$xtables)){
-							echo '<div class="w_bold">'."\n";
-							echo '	<span class="icon-warning w_danger w_bold"></span>'."\n";
-							echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'."\n";
-							echo '</div>'."\n";
+							echo '<div class="w_bold">'.PHP_EOL;
+							echo '	<span class="icon-warning w_danger w_bold"></span>'.PHP_EOL;
+							echo '	"'.$_REQUEST['_table_'].'" is a synchronize table. New records must be added on the staging site.'.PHP_EOL;
+							echo '</div>'.PHP_EOL;
 						}
 						else{
 							echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-							echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'."\n";
+							echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 							$addopts=array(
 								'-action'=>'/php/admin.php',
 								'-table'=>$_REQUEST['_table_'],
@@ -1580,7 +1581,7 @@ if(isset($_REQUEST['_menu'])){
 					}
 					else{
 						echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-						echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'."\n";
+						echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 						$addopts=array(
 							'-action'=>'/php/admin.php',
 							'-table'=>$_REQUEST['_table_'],
@@ -1597,72 +1598,72 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'addmultiple':
 			echo buildTableBegin(2,0);
-			echo '<tr valign="top"><td>'."\n";
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table-add w_primary"></span> Add Multiple Tables.</div>'."\n";
-			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'centerpop\');return false;">'."\n";
-			echo '		<input type="hidden" name="_menu" value="addmultiple">'."\n";
-			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'."\n";
+			echo '<tr valign="top"><td>'.PHP_EOL;
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table-add w_primary"></span> Add Multiple Tables.</div>'.PHP_EOL;
+			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'centerpop\');return false;">'.PHP_EOL;
+			echo '		<input type="hidden" name="_menu" value="addmultiple">'.PHP_EOL;
+			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'.PHP_EOL;
 			$val=isset($_REQUEST['_schema'])?$_REQUEST['_schema']:'';
-			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$val.'</textarea>'."\n";
-			echo '		<div><input type="submit" value="Create"></div>'."\n";
-			echo '	</form>'."\n";
-			echo '</td><td>'."\n";
+			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$val.'</textarea>'.PHP_EOL;
+			echo '		<div><input type="submit" value="Create"></div>'.PHP_EOL;
+			echo '	</form>'.PHP_EOL;
+			echo '</td><td>'.PHP_EOL;
 			//reference: http://www.htmlite.com/mysql003.php
 			//Text Types
-			echo '<div class="w_lblue w_bold"><span class="icon-info"></span> Sample Entry</div>'."\n";
-			echo '<div style="margin-left:25px;"><pre>'."\n";
-			echo 'employees'."\n";
-			echo '	name varchar(55)'."\n";
-			echo '	age int'."\n";
-			echo '	hiredate datetime'."\n";
-			echo 'companies'."\n";
-			echo '	name varchar(100)'."\n";
-			echo '	url varchar(255)'."\n";
-			echo '	phone varchar(15)'."\n";
-			echo '	email varchar(255)'."\n";
-			echo '</pre></div>'."\n";
-			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" ></span> Text Types</div>'."\n";
-			echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'."\n";
-			echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'."\n";
-			echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'."\n";
-			echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'."\n";
-			//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'."\n";
-			echo '</div></div>'."\n";
-			echo '<div style="margin-left:25px;">'."\n";
-			echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'."\n";
-			echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'."\n";
-			echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'."\n";
-			echo 'TEXT	A string with a maximum length of 65535 characters.<br />'."\n";
-			//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'."\n";
-			echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'."\n";
-			//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'."\n";
-			echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'."\n";
-			//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'."\n";
-			echo '</div>'."\n";
+			echo '<div class="w_lblue w_bold"><span class="icon-info"></span> Sample Entry</div>'.PHP_EOL;
+			echo '<div style="margin-left:25px;"><pre>'.PHP_EOL;
+			echo 'employees'.PHP_EOL;
+			echo '	name varchar(55)'.PHP_EOL;
+			echo '	age int'.PHP_EOL;
+			echo '	hiredate datetime'.PHP_EOL;
+			echo 'companies'.PHP_EOL;
+			echo '	name varchar(100)'.PHP_EOL;
+			echo '	url varchar(255)'.PHP_EOL;
+			echo '	phone varchar(15)'.PHP_EOL;
+			echo '	email varchar(255)'.PHP_EOL;
+			echo '</pre></div>'.PHP_EOL;
+			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" ></span> Text Types</div>'.PHP_EOL;
+			echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
+			echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'.PHP_EOL;
+			echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'.PHP_EOL;
+			echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'.PHP_EOL;
+			//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'.PHP_EOL;
+			echo '</div></div>'.PHP_EOL;
+			echo '<div style="margin-left:25px;">'.PHP_EOL;
+			echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'.PHP_EOL;
+			echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'.PHP_EOL;
+			echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'.PHP_EOL;
+			echo 'TEXT	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
+			//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
+			echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
+			//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
+			echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
+			//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 			//Number Types
-			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types"></span> Number Types</div>'."\n";
-			echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'."\n";
-			echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'."\n";
-			echo '</div></div>'."\n";
-			echo '<div style="margin-left:25px;">'."\n";
-			echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'."\n";
-			echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'."\n";
-			echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'."\n";
-			echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'."\n";
-			echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'."\n";
-			echo 'FLOAT	A small number with a floating decimal point.<br />'."\n";
-			echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'."\n";
-			echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'."\n";
-			echo '</div>'."\n";
+			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types"></span> Number Types</div>'.PHP_EOL;
+			echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
+			echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'.PHP_EOL;
+			echo '</div></div>'.PHP_EOL;
+			echo '<div style="margin-left:25px;">'.PHP_EOL;
+			echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'.PHP_EOL;
+			echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'.PHP_EOL;
+			echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'.PHP_EOL;
+			echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'.PHP_EOL;
+			echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'.PHP_EOL;
+			echo 'FLOAT	A small number with a floating decimal point.<br />'.PHP_EOL;
+			echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'.PHP_EOL;
+			echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 			//Date Types
-			echo '<div class="w_lblue w_bold">Date Types</div>'."\n";
-			echo '<div style="margin-left:25px;">'."\n";
-			echo 'DATE	YYYY-MM-DD.<br />'."\n";
-			echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'."\n";
-			echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'."\n";
-			echo 'TIME	HH:MM:SS.<br />'."\n";
-			echo '</div>'."\n";
-			echo '</td></tr></table>'."\n";
+			echo '<div class="w_lblue w_bold">Date Types</div>'.PHP_EOL;
+			echo '<div style="margin-left:25px;">'.PHP_EOL;
+			echo 'DATE	YYYY-MM-DD.<br />'.PHP_EOL;
+			echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'.PHP_EOL;
+			echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'.PHP_EOL;
+			echo 'TIME	HH:MM:SS.<br />'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
+			echo '</td></tr></table>'.PHP_EOL;
 			break;
 		case 'drop':
 			echo $dropResult;
@@ -1670,14 +1671,14 @@ if(isset($_REQUEST['_menu'])){
 		case 'edit':
 			if(isset($_REQUEST['_table_']) && isNum($_REQUEST['_id'])){
 				echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-				echo '<div class="w_lblue w_bold w_bigger">Edit Record #'.$_REQUEST['_id'].' in '.$_REQUEST['_table_'].' table.</div>'."\n";
+				echo '<div class="w_lblue w_bold w_bigger">Edit Record #'.$_REQUEST['_id'].' in '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 				$rec=getDBRecord(array(
 					'-table'=>$_REQUEST['_table_'],
 					'_id'=>$_REQUEST['_id'],
 					'-relate'=>array('_euser'=>'_users','_cuser'=>'_users'),
 					'-fields'=>'_cdate,_cuser,_edate,_euser'
 				));
-				echo '<div class="w_lblue w_smaller" style="margin-left:20px;">'."\n";
+				echo '<div class="w_lblue w_smaller" style="margin-left:20px;">'.PHP_EOL;
 				if(isset($rec['_cuser_ex']['firstname'])){
 					$cdate=date('l F j, Y, g:i a',$rec['_cdate_utime']);
                 	echo "Created by {$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']} on {$cdate}";
@@ -1690,7 +1691,7 @@ if(isset($_REQUEST['_menu'])){
 					$edate=date('l F j, Y, g:i a',$rec['_edate_utime']);
                 	echo "  - | - Edited by {$rec['_euser_ex']['firstname']} {$rec['_euser_ex']['lastname']} on {$edate}";
 				}
-				echo '</div>'."\n";
+				echo '</div>'.PHP_EOL;
 				$menu=isset($_REQUEST['_menu2'])?$_REQUEST['_menu2']:'list';
 				$addopts=array(
 					'-action'=>'/php/admin.php',
@@ -1714,7 +1715,7 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'pdo':
 			if(extension_loaded('pdo')){
-				echo 'pdo_mysql is loaded<br>'."\n";
+				echo 'pdo_mysql is loaded<br>'.PHP_EOL;
 				$funcs=get_extension_funcs('pdo');
 				foreach($funcs as $func){
                 	$tmp=&$func();
@@ -1771,14 +1772,14 @@ LIST_TABLE:
 				        }
 				    break;
 				}
-				echo $_REQUEST['_table_'].' table.'."\n";
+				echo $_REQUEST['_table_'].' table.'.PHP_EOL;
 				if(strtolower($_REQUEST['_table_'])=='_cron'){
-					echo ' <a href="/php/admin.php?_menu=list&_table_=_cronlog" class="icon-cronlog w_link w_small w_grey"> View Logs</a>'."\n";
+					echo ' <a href="/php/admin.php?_menu=list&_table_=_cronlog" class="icon-cronlog w_link w_small w_grey"> View Logs</a>'.PHP_EOL;
 				}
 				elseif(strtolower($_REQUEST['_table_'])=='_cronlog'){
-					echo ' <a href="/php/admin.php?_menu=list&_table_=_cron" class="icon-cron w_link w_small w_grey"> View Crons</a>'."\n";
+					echo ' <a href="/php/admin.php?_menu=list&_table_=_cron" class="icon-cron w_link w_small w_grey"> View Crons</a>'.PHP_EOL;
 				}
-				echo '</div>'."\n";
+				echo '</div>'.PHP_EOL;
 				//special options for some tables
 				switch(strtolower($_REQUEST['_table_'])){
                 	case '_cron':
@@ -1814,18 +1815,18 @@ LIST_TABLE:
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&explain=1\');"><span class="icon-optimize w_gold w_big" alt="Show Indexes" data-tooltip="Explain Query"></span></a>','function','getDBRecords'),
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&view=1\');"><img src="/wfiles/iconsets/16/sql.png" data-tooltip="View This Query" class="w_middle" alt="view query" /></a>')
 						);
-						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$SETTINGS['wasql_queries_days'].', Time:'.$SETTINGS['wasql_queries_time'].' seconds</div>'."\n";
+						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$SETTINGS['wasql_queries_days'].', Time:'.$SETTINGS['wasql_queries_time'].' seconds</div>'.PHP_EOL;
                 	break;
 				}
 				if(isset($_REQUEST['add_result']['error'])){
-					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Add Failed:</b> '.printValue($_REQUEST['add_result']).'</div>'."\n";
+					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Add Failed:</b> '.printValue($_REQUEST['add_result']).'</div>'.PHP_EOL;
                 	}
                 elseif(isset($_REQUEST['edit_result']['error'])){
-					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'."\n";
+					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'.PHP_EOL;
                 	}
-                echo '<div style="padding:15px;">'."\n";
+                echo '<div style="padding:15px;">'.PHP_EOL;
 				echo listDBRecords($recopts);
-				echo '</div>'."\n";
+				echo '</div>'.PHP_EOL;
             	}
 			break;
 		case 'synchronize':
@@ -1834,7 +1835,7 @@ LIST_TABLE:
 		case 'schema':
 			if(isset($_REQUEST['_table_'])){
 				echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/schema.gif" alt="schema" /> Schema for '.$_REQUEST['_table_'].'</div>'."\n";
+				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/schema.gif" alt="schema" /> Schema for '.$_REQUEST['_table_'].'</div>'.PHP_EOL;
 				if(isset($_REQUEST['_schema'])){
 					$lines=preg_split('/[\r\n]+/',trim($_REQUEST['_schema']));
 					//common fields to all wasql tables
@@ -1886,17 +1887,17 @@ LIST_TABLE:
                 		}
                 	}
 				$list=getDBSchema(array($_REQUEST['_table_']));
-				echo '<table class="w_pad">'."\n";
-				echo '<tr valign="top"><td>'."\n";
+				echo '<table class="w_pad">'.PHP_EOL;
+				echo '<tr valign="top"><td>'.PHP_EOL;
 				echo listDBRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-bordered table-striped",
 					'_table_'		=>$_REQUEST['_table_'],
 					'-list'			=>$list
 				));
-				echo '</td><td>'."\n";
+				echo '</td><td>'.PHP_EOL;
 				echo buildFormBegin('',array('_menu'=>"schema",'_table_'=>$_REQUEST['_table_']));
-				echo '<textarea name="_schema" style="width:300px;height:400px;">'."\n";
+				echo '<textarea name="_schema" style="width:300px;height:400px;">'.PHP_EOL;
 				foreach($list as $field){
 					if(preg_match('/^\_/',$field['field'])){continue;}
 					$type=$field['type'];
@@ -1909,13 +1910,13 @@ LIST_TABLE:
 					echo "{$field['field']} {$type}\r\n";
 
 	                }
-				echo '</textarea><br />'."\n";
+				echo '</textarea><br />'.PHP_EOL;
 				echo buildFormSubmit("Modify");
 				echo buildFormEnd();
-				echo '</td></tr></table>'."\n";
+				echo '</td></tr></table>'.PHP_EOL;
 				}
 			else{
-				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/schema.gif" alt="all schema" /> Schema for All Tables</div>'."\n";
+				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/schema.gif" alt="all schema" /> Schema for All Tables</div>'.PHP_EOL;
 				$list=getDBSchema();
 				echo listDBRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
@@ -1929,7 +1930,7 @@ LIST_TABLE:
 		case 'truncate':
 			if(isset($_REQUEST['_table_'])){
 				echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-				echo '<div class="w_lblue w_bold w_bigger">Truncate '.$_REQUEST['_table_'].' table.</div>'."\n";
+				echo '<div class="w_lblue w_bold w_bigger">Truncate '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 			 	echo truncateDBTable($_REQUEST['_table_']);
 				}
 			break;
@@ -1947,7 +1948,7 @@ LIST_TABLE:
 						'-unique'	=> isset($_REQUEST['unique'])?true:false
 					));
 					if(stringContains($ok,'error')){
-                    	echo '<div class="w_tip w_pad w_border">'.$ok.'</div>'."\n";
+                    	echo '<div class="w_tip w_pad w_border">'.$ok.'</div>'.PHP_EOL;
 					}
                 }
                 elseif(isset($_REQUEST['_index_drop']) && strlen($_REQUEST['_index_drop'])){
@@ -1956,7 +1957,7 @@ LIST_TABLE:
 						'-name' 	=> $_REQUEST['_index_drop'],
 					));
 					if(stringContains($ok,'error')){
-                    	echo '<div class="w_tip w_pad w_border">'.$ok.'</div>'."\n";
+                    	echo '<div class="w_tip w_pad w_border">'.$ok.'</div>'.PHP_EOL;
 					}
                 }
                 //show indexes
@@ -1965,7 +1966,7 @@ LIST_TABLE:
 				if(strlen($img)){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
-				echo $_REQUEST['_table_'].'</div>'."\n";
+				echo $_REQUEST['_table_'].'</div>'.PHP_EOL;
 				$list=getDBIndexes(array($_REQUEST['_table_']));
 				$cnt=count($list);
 				for($i=0;$i<$cnt;$i++){
@@ -1983,22 +1984,22 @@ LIST_TABLE:
 				foreach($tfields as $tfield){
 					if(!isset($used[$tfield])){$fields[]=$tfield;}
 					}
-				echo '<div><b>Select fields to index</b></div>'."\n";
-				echo '<div style="margin-left:30px;">'."\n";
+				echo '<div><b>Select fields to index</b></div>'.PHP_EOL;
+				echo '<div style="margin-left:30px;">'.PHP_EOL;
 				$opts=array();
 				foreach($fields as $field){
                 	$opts[$field]=$field;
 				}
 				echo buildFormCheckbox('_indexfields_',$opts,array('width'=>6));
-				echo '</div>'."\n";
-				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid" style="display:none;"><label for="fulltextid" class="icon-mark"></label><label for="fulltextid"> FullText</label>'."\n";
-				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid" style="display:none;"><label for="uniqueid" class="icon-mark"></label><label for="uniqueid"> Unique</label>'."\n";
+				echo '</div>'.PHP_EOL;
+				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid" style="display:none;"><label for="fulltextid" class="icon-mark"></label><label for="fulltextid"> FullText</label>'.PHP_EOL;
+				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid" style="display:none;"><label for="uniqueid" class="icon-mark"></label><label for="uniqueid"> Unique</label>'.PHP_EOL;
 				echo buildFormSubmit("Create Index");
 				echo buildFormEnd();
 				//echo printValue($_REQUEST);
 			}
 			else{
-				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/indexes.gif" alt="all indexes" /> Indexes for All Tables</div>'."\n";
+				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/indexes.gif" alt="all indexes" /> Indexes for All Tables</div>'.PHP_EOL;
 				$list=getDBIndexes();
 			}
 			echo listDBRecords(array(
@@ -2011,45 +2012,46 @@ LIST_TABLE:
 			//echo printValue($list);
 			break;
 		case 'postedit':
-			echo '<div class="w_bigger w_lblue w_bold"><span class="icon-postedit w_bigger"></span> PostEdit Manager</div>'."\n";
-			echo '<div style="width:800px;">'."\n";
-			echo '<p><b>PostEdit Manager</b> is a php application that WaSQL uses to create pages and templates into a <b>PostEdit</b> folder on your local hard drive.'."\n";
-			echo 'This allows you to use any editor you wish to update your pages and templates.'."\n";
-			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to your WaSQL database.'."\n";
-			echo '</p>'."\n";
-			echo '<p>'."\n";
-			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, you will need to download it via git. '."\n";
-			echo '</p>'."\n";
-			echo '<p>'."\n";
-			echo '	If you need a good free text editor try geany.  It runs on linux, macs, and windows. '."\n";
-			echo ' <a class="w_link icon-download" href="https://www.geany.org/Download"> https://www.geany.org/Download</a>'."\n";
-			echo '</p><p>'."\n";
-			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'."\n";
-			echo 'This file contains authentication information for each domain/website you want to connect to.'."\n";
-			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'."\n";
-			echo '<pre><xmp>'."\n";
-			echo '<host'."\n";
-			echo '	name="'.$_SERVER['HTTP_HOST'].'"'."\n";
-			echo '	alias="'.$_SERVER['HTTP_HOST'].'"'."\n";
-			echo '	apikey="'.$USER['apikey'].'"'."\n";
-			echo '	username="'.$USER['username'].'"'."\n";
-			echo '/>'."\n";
-			echo '</xmp></pre>'."\n";
-			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'."\n";
-			echo '<ul>'."\n";
-			echo '	<li><b class="w_red">name</b> - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>'."\n";
-			echo '	<li><b class="w_red">username</b> - the username to authenticate as. This must be a valid username for this domain.</li>'."\n";
-			echo '	<li><b class="w_red">apikey</b> - the apikey for the authenticating user. This is found in the user profile menu after logging in.'."\n";
-			echo '		<ul>'."\n";
-			echo '			<li> Changing your username or password will change your apikey.'."\n";
-			echo '		</ul>'."\n";
-			echo '	</li>'."\n";
-			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, stage.domain.com may have an alias of domain.com (Stage).</li>'."\n";
-			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'."\n";
-			echo '</ul>'."\n";
-			echo '</p><p>'."\n";
-			echo '</p><br /><br /><br /><br />'."\n";
-			echo '</div>'."\n";
+			echo '<div class="w_bigger w_lblue w_bold"><span class="icon-postedit w_bigger"></span> PostEdit Manager</div>'.PHP_EOL;
+			echo '<div style="width:800px;">'.PHP_EOL;
+			echo '<p><b>PostEdit Manager</b> is a php application that WaSQL uses to create pages and templates into a <b>PostEdit</b> folder on your local hard drive.'.PHP_EOL;
+			echo 'This allows you to use any editor you wish to update your pages and templates.'.PHP_EOL;
+			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to your WaSQL database.'.PHP_EOL;
+			echo '</p>'.PHP_EOL;
+			echo '<p>'.PHP_EOL;
+			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, you will need to download it via git. '.PHP_EOL;
+			echo '</p>'.PHP_EOL;
+			echo '<p>'.PHP_EOL;
+			echo '	If you need a good free text editor try geany.  It runs on linux, macs, and windows. '.PHP_EOL;
+			echo ' <a class="w_link icon-download" href="https://www.geany.org/Download"> https://www.geany.org/Download</a>'.PHP_EOL;
+			echo '</p><p>'.PHP_EOL;
+			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'.PHP_EOL;
+			echo 'This file contains authentication information for each domain/website you want to connect to.'.PHP_EOL;
+			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'.PHP_EOL;
+			echo '<pre><xmp>'.PHP_EOL;
+			echo '<host'.PHP_EOL;
+			echo '	name="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
+			echo '	alias="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
+			echo '	apikey="'.$USER['apikey'].'"'.PHP_EOL;
+			echo '	username="'.$USER['username'].'"'.PHP_EOL;
+			echo '	groupby="name"'.PHP_EOL;
+			echo '/>'.PHP_EOL;
+			echo '</xmp></pre>'.PHP_EOL;
+			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'.PHP_EOL;
+			echo '<ul>'.PHP_EOL;
+			echo '	<li><b class="w_red">name</b> - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>'.PHP_EOL;
+			echo '	<li><b class="w_red">username</b> - the username to authenticate as. This must be a valid username for this domain.</li>'.PHP_EOL;
+			echo '	<li><b class="w_red">apikey</b> - the apikey for the authenticating user. This is found in the user profile menu after logging in.'.PHP_EOL;
+			echo '		<ul>'.PHP_EOL;
+			echo '			<li> Changing your username or password will change your apikey.'.PHP_EOL;
+			echo '		</ul>'.PHP_EOL;
+			echo '	</li>'.PHP_EOL;
+			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, stage.domain.com may have an alias of domain.com (Stage).</li>'.PHP_EOL;
+			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'.PHP_EOL;
+			echo '</ul>'.PHP_EOL;
+			echo '</p><p>'.PHP_EOL;
+			echo '</p><br /><br /><br /><br />'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 		break;
 		case 'properties':
 			if(!isset($_REQUEST['_table_']) || !strlen($_REQUEST['_table_'])){echo "No Table";break;}
@@ -2111,34 +2113,34 @@ LIST_TABLE:
 				if(strlen($img)){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
-			echo $currentTable.' Table</div>'."\n";
-			echo '<table class="w_nopad"><tr valign="top"><td>'."\n";
-			echo '<table class="table table-striped table-bordered table-hover">'."\n";
-			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'."\n";
-			echo '	<tr>'."\n";
-			echo '		<th class="w_smallest">Name</th>'."\n";
-			echo '		<th class="w_smallest">Type</th>'."\n";
-			echo '		<th class="w_smallest">Len</th>'."\n";
-			echo '		<th class="w_smallest">Null</th>'."\n";
-			echo '		<th class="w_smallest">Key</th>'."\n";
-			echo '		<th class="w_smallest">Val</th>'."\n";
-			echo '		<th class="w_smallest">Extra/Comment</th>'."\n";
-			echo '		<th class="w_smallest">Name</th>'."\n";
-			echo '		<th class="w_smallest">Type</th>'."\n";
-			echo '		<th class="w_smallest">Width</th>'."\n";
-			echo '		<th class="w_smallest">Height</th>'."\n";
-			echo '		<th class="w_smallest">Max</th>'."\n";
-			echo '		<th class="w_smallest">Req</th>'."\n";
-			echo '		<th class="w_smallest">Mask</th>'."\n";
-			echo '		<th class="w_smallest">List</th>'."\n";
-			echo '	</tr>'."\n";
+			echo $currentTable.' Table</div>'.PHP_EOL;
+			echo '<table class="w_nopad"><tr valign="top"><td>'.PHP_EOL;
+			echo '<table class="table table-striped table-bordered table-hover">'.PHP_EOL;
+			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'.PHP_EOL;
+			echo '	<tr>'.PHP_EOL;
+			echo '		<th class="w_smallest">Name</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Type</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Len</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Null</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Key</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Val</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Extra/Comment</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Name</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Type</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Width</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Height</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Max</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Req</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">Mask</th>'.PHP_EOL;
+			echo '		<th class="w_smallest">List</th>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
 			$row=0;
 			foreach($fields as $field){
 				$row++;
 				$frec=getDBRecord(array('-table'=>"_fielddata",'tablename'=>$currentTable,'fieldname'=>$field));
 				$id=is_array($frec)?$frec['_id']:0;
 				$onclick='return ajaxAddEditForm(\'_fielddata\','.$id.',\'\',\'_menu=properties&fieldname='.$field.'&tablename='.$currentTable.'&_table_='.$currentTable.'\');';
-				echo '	<tr onclick="'.$onclick.'">'."\n";
+				echo '	<tr onclick="'.$onclick.'">'.PHP_EOL;
 
 				$extras=array();
 				if(isset($tinfo['fieldinfo'][$field]['_dbextra']) && strlen($tinfo['fieldinfo'][$field]['_dbextra'])){
@@ -2149,29 +2151,29 @@ LIST_TABLE:
 				}
 				$extra=implode('/',$extras);
 				if(preg_match('/^\_/',$field)){
-					echo '		<td class="w_gray w_smaller">'.$field.'</td>'."\n";
+					echo '		<td class="w_gray w_smaller">'.$field.'</td>'.PHP_EOL;
 					}
 				else{
-					echo '		<td class="w_lblue w_bold w_smaller">'.$field.'</td>'."\n";
+					echo '		<td class="w_lblue w_bold w_smaller">'.$field.'</td>'.PHP_EOL;
 					}
 				$val=isset($tinfo['fieldinfo'][$field]['_dbtype'])?$tinfo['fieldinfo'][$field]['_dbtype']:'';
-				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'.PHP_EOL;
 				$val=isset($tinfo['fieldinfo'][$field]['_dblength'])?$tinfo['fieldinfo'][$field]['_dblength']:'';
-				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'.PHP_EOL;
 				$val=isset($tinfo['fieldinfo'][$field]['_dbnull'])?$tinfo['fieldinfo'][$field]['_dbnull']:'';
-				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'.PHP_EOL;
 				$val=isset($tinfo['fieldinfo'][$field]['_dbkey'])?$tinfo['fieldinfo'][$field]['_dbkey']:'';
-				echo '		<td class="w_gray w_smaller">'.$val.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller">'.$val.'</td>'.PHP_EOL;
 				$val=isset($tinfo['fieldinfo'][$field]['_dbdefault'])?$tinfo['fieldinfo'][$field]['_dbdefault']:'';
-				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'."\n";
-				echo '		<td class="w_gray w_smaller">'.$extra.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" align="right">'.$val.'</td>'.PHP_EOL;
+				echo '		<td class="w_gray w_smaller">'.$extra.'</td>'.PHP_EOL;
 				$val=isset($tinfo['fieldinfo'][$field]['displayname'])?$tinfo['fieldinfo'][$field]['displayname']:'';
-				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$val.'</td>'."\n";
+				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$val.'</td>'.PHP_EOL;
 				if(isset($tinfo['fieldinfo'][$field]['inputtype']) && strlen($tinfo['fieldinfo'][$field]['inputtype'])){
-					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"></td>'."\n";
+					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"></td>'.PHP_EOL;
 				}
 				else{
-                	echo '		<td></td>'."\n";
+                	echo '		<td></td>'.PHP_EOL;
 				}
 				foreach($formfields as $formfield){
 					$val=isset($tinfo['fieldinfo'][$field][$formfield])?$tinfo['fieldinfo'][$field][$formfield]:'';
@@ -2181,30 +2183,30 @@ LIST_TABLE:
 							elseif($formfield=='editlist'){$val='<span class="icon-list"></span>';}
 							}
 						elseif($val==0){$val='';}
-						echo '		<td align="right" class="w_smaller" title="'.$formfield.'">'.$val.'</td>'."\n";
+						echo '		<td align="right" class="w_smaller" title="'.$formfield.'">'.$val.'</td>'.PHP_EOL;
                     	}
-					else{echo '		<td title="'.$formfield.'" class="w_smaller" nowrap>'.$val.'</td>'."\n";}
+					else{echo '		<td title="'.$formfield.'" class="w_smaller" nowrap>'.$val.'</td>'.PHP_EOL;}
 					}
 				$recopts=array('-table'=>"_fielddata",'-where'=>"tablename = '{$currentTable}' and fieldname = '{$field}'");
 				$rec=getDBRecord($recopts);
 				$id=is_array($rec)?$rec['_id']:"''";
-				echo '	</tr>'."\n";
+				echo '	</tr>'.PHP_EOL;
             	}
             echo '</table>';
-            echo '</td><td>'."\n";
+            echo '</td><td>'.PHP_EOL;
             //$list=getDBSchema(array($currentTable));
             $list=$tinfo['fieldinfo'];
 			echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
-			echo '<table class="table table-bordered">'."\n";
-            echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'."\n";
-            echo '	<tr valign="top"><td>'."\n";
+			echo '<table class="table table-bordered">'.PHP_EOL;
+            echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'.PHP_EOL;
+            echo '	<tr valign="top"><td>'.PHP_EOL;
             $height=300;
             if(count($list) > 15){
             	$height=round((count($list)*12),0);
             	if($height > 700){$height=700;}
             	if($height < 300){$height=300;}
 			}
-			echo '		<textarea name="_schema" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'."\n";
+			echo '		<textarea name="_schema" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'.PHP_EOL;
 			//echo printValue($list);
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
@@ -2223,25 +2225,25 @@ LIST_TABLE:
 				if(isset($field['_dbcomment']) && strlen($field['_dbcomment'])){$type .= " COMMENT '{$field['_dbcomment']}'";}
 				echo "{$field['_dbfield']} {$type}\r\n";
             }
-			echo '		</textarea><br clear="both" />'."\n";
-			echo '<div align="right">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'."\n";
+			echo '		</textarea><br clear="both" />'.PHP_EOL;
+			echo '<div align="right">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'.PHP_EOL;
 			echo buildFormEnd();
-			echo '	</td></tr>'."\n";
-			echo '</table>'."\n";
-            echo '</td></tr>'."\n";
-            echo '<tr valign="top"><td colspan="2">'."\n";
+			echo '	</td></tr>'.PHP_EOL;
+			echo '</table>'.PHP_EOL;
+            echo '</td></tr>'.PHP_EOL;
+            echo '<tr valign="top"><td colspan="2">'.PHP_EOL;
             echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
             echo buildFormSubmit("Save Changes","do");
-            echo '<table class="table table-bordered table-striped table-responsive">'."\n";
+            echo '<table class="table table-bordered table-striped table-responsive">'.PHP_EOL;
             //General Table Settings
-            echo '	<tr valign="top">'."\n";
-			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'."\n";
-			echo '	</tr>'."\n";
+            echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
 			//synchronize and websockets
 			if(isset($tinfo['synchronize']) && $tinfo['synchronize']){$_REQUEST['synchronize']=$tinfo['synchronize'];}
 			if(isset($tinfo['websockets']) && $tinfo['websockets']){$_REQUEST['websockets']=$tinfo['websockets'];}
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue">'."\n";
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue">'.PHP_EOL;
 			//echo '<table>';
 			echo buildTableRow(array(
 				'<span class="icon-sync w_warning w_big w_bold"></span> ',
@@ -2254,75 +2256,75 @@ LIST_TABLE:
 				' Websockets'
 			));
 			//echo '</table>';
-			echo '		</td>'."\n";
-			echo '		<td>'."\n";
-			echo '			<div class="w_dblue">Check to synchronize this table</div>'."\n";
-			echo '			<div class="w_dblue">Check to enable websocket events for this table</div>'."\n";
-			echo '		</td>'."\n";
-			echo '	</tr>'."\n";
+			echo '		</td>'.PHP_EOL;
+			echo '		<td>'.PHP_EOL;
+			echo '			<div class="w_dblue">Check to synchronize this table</div>'.PHP_EOL;
+			echo '			<div class="w_dblue">Check to enable websocket events for this table</div>'.PHP_EOL;
+			echo '		</td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
 			//table group and description
 			if(isset($tinfo['tablegroup'])){$_REQUEST['tablegroup']=$tinfo['tablegroup'];}
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue">'."\n";
-			echo '			<div style="width:150px">'."\n";
-			echo '				<div data-tooltip="Allows grouping in admin table menu."><span class="icon-group w_success w_big"></span> Table Group</div>'."\n";
-			echo '					'.buildFormField('_tabledata','tablegroup')."\n";
-			echo '			</div>'."\n";
-			echo '		</td>'."\n";
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue">'.PHP_EOL;
+			echo '			<div style="width:150px">'.PHP_EOL;
+			echo '				<div data-tooltip="Allows grouping in admin table menu."><span class="icon-group w_success w_big"></span> Table Group</div>'.PHP_EOL;
+			echo '					'.buildFormField('_tabledata','tablegroup').PHP_EOL;
+			echo '			</div>'.PHP_EOL;
+			echo '		</td>'.PHP_EOL;
 			if(isset($tinfo['tabledesc']) && is_array($tinfo['tabledesc'])){$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);}
-			echo '		<td>'."\n";
-			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'."\n";
-			echo '					'.buildFormField('_tabledata','tabledesc')."\n";
-			echo '		</td>'."\n";
-			echo '	</tr>'."\n";
+			echo '		<td>'.PHP_EOL;
+			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'.PHP_EOL;
+			echo '					'.buildFormField('_tabledata','tabledesc').PHP_EOL;
+			echo '		</td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
 			//Table Admin List fields
-            echo '	<tr valign="top">'."\n";
-			echo '		<th colspan="2" class="w_align_left"><span class="icon-user-admin w_danger w_big"></span> Administrator Settings</th>'."\n";
-			echo '	</tr>'."\n";
-            echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
+            echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<th colspan="2" class="w_align_left"><span class="icon-user-admin w_danger w_big"></span> Administrator Settings</th>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+            echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
 			if(isset($tinfo['listfields']) && is_array($tinfo['listfields'])){$_REQUEST['listfields']=array2String($tinfo['listfields']);}
-			echo '		<td>'.buildFormField('_tabledata','listfields').'</td>'."\n";
-			echo '	</tr>'."\n";
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','listfields').'</td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'.PHP_EOL;
 			if(isset($tinfo['sortfields']) && is_array($tinfo['sortfields'])){$_REQUEST['sortfields']=array2String($tinfo['sortfields']);}
-			echo '		<td>'.buildFormField('_tabledata','sortfields').'</td>'."\n";
-			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields">'.$val.'</textarea></td>'."\n";
-			echo '	</tr>'."\n";
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form</div></td>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','sortfields').'</td>'.PHP_EOL;
+			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields">'.$val.'</textarea></td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form</div></td>'.PHP_EOL;
 			if(isset($tinfo['formfields']) && is_array($tinfo['formfields'])){$_REQUEST['formfields']=array2String($tinfo['formfields']);}
-			echo '		<td>'.buildFormField('_tabledata','formfields').'</td>'."\n";
-			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'."\n";
-			echo '	</tr>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','formfields').'</td>'.PHP_EOL;
+			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
 			//Non Admin Settings
-			echo '	<tr valign="top">'."\n";
-			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/user.gif" alt="non-admin settings" /> Non-Administrator Settings</th>'."\n";
-			echo '	</tr>'."\n";
-            echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'."\n";
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/user.gif" alt="non-admin settings" /> Non-Administrator Settings</th>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+            echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
 			if(isset($tinfo['listfields_mod']) && is_array($tinfo['listfields_mod'])){$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'."\n";
-			//echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'."\n";
-			echo '	</tr>'."\n";
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'.PHP_EOL;
+			//echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'.PHP_EOL;
 			if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'."\n";
-			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'."\n";
-			echo '	</tr>'."\n";
-			echo '	<tr valign="top">'."\n";
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'.PHP_EOL;
+			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '	<tr valign="top">'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'.PHP_EOL;
 			if(isset($tinfo['formfields_mod']) && is_array($tinfo['formfields_mod'])){$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'."\n";
-			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'."\n";
-			echo '	</tr>'."\n";
-			echo '</table>'."\n";
+			echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'.PHP_EOL;
+			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			echo '	</tr>'.PHP_EOL;
+			echo '</table>'.PHP_EOL;
 			echo buildFormSubmit("Save Changes","do");
 			echo buildFormEnd();
-			echo '</td></tr>'."\n";
-			echo '</table>'."\n";
+			echo '</td></tr>'.PHP_EOL;
+			echo '</table>'.PHP_EOL;
 			break;
 		case 'sqlprompt':
 			echo adminViewPage('sqlprompt');exit;
@@ -2331,7 +2333,7 @@ LIST_TABLE:
 			echo adminViewPage('phpprompt');exit;
 		break;
 		case 'optimize':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'.PHP_EOL;
 			$rtn=optimizeDB();
 			echo "<div>Command: {$rtn['command']}</div>\n";
 			echo nl2br($rtn['result']);
@@ -2339,7 +2341,7 @@ LIST_TABLE:
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup or <span class="icon-undo w_danger w_biggest"></span> Restore</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup or <span class="icon-undo w_danger w_biggest"></span> Restore</div>'.PHP_EOL;
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
@@ -2392,34 +2394,34 @@ LIST_TABLE:
                 	case 'backup':
                 		$dump=dumpDB(requestValue('_table_'));
                 		if(!isset($dump['success'])){
-							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'."\n";
-							echo '<div style="margin-left:50px;">'."\n";
-							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
-							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'."\n";
-							echo '</div>'."\n";
+							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
+							echo '<div style="margin-left:50px;">'.PHP_EOL;
+							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
+							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
+							echo '</div>'.PHP_EOL;
 						}
 						else{
-							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'."\n";
-							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
+							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
+							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 			            }
                 		break;
 					case 'backup now':
                 		$dump=dumpDB();
                 		if(!isset($dump['success'])){
-							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'."\n";
-							echo '<div style="margin-left:50px;">'."\n";
-							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
-							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'."\n";
-							echo '</div>'."\n";
+							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
+							echo '<div style="margin-left:50px;">'.PHP_EOL;
+							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
+							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
+							echo '</div>'.PHP_EOL;
 						}
 						else{
-							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'."\n";
-							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'."\n";
+							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
+							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 			            }
                 		break;
                 	case 'delete':
                 		if(!is_array($_REQUEST['name']) || !count($_REQUEST['name'])){
-                        	echo '<div>No Files Selected to Delete</div>'."\n";
+                        	echo '<div>No Files Selected to Delete</div>'.PHP_EOL;
 						}
 						else{
                         	foreach($_REQUEST['name'] as $name){
@@ -2429,8 +2431,8 @@ LIST_TABLE:
                 		break;
 				}
 			}
-			echo '<div>Backup Directory: '.$backupdir.'</div>'."\n";
-			echo '<div>DBName: '.$CONFIG['dbname'].'</div>'."\n";
+			echo '<div>Backup Directory: '.$backupdir.'</div>'.PHP_EOL;
+			echo '<div>DBName: '.$CONFIG['dbname'].'</div>'.PHP_EOL;
 			$files=listFilesEx($backupdir,array('name'=>$CONFIG['dbname'].'__'));
 
 			echo buildFormBegin('',array('_menu'=>'backups','func'=>'','-name'=>'backupform'));
@@ -2452,7 +2454,7 @@ LIST_TABLE:
 				//sort by newest first
 				$list=sortArrayByKey($list,'_cdate_age',SORT_ASC);
 				//display list
-				echo '<div style="padding:15px;">'."\n";
+				echo '<div style="padding:15px;">'.PHP_EOL;
 				echo listDBRecords(array(
 					'-list'					=>$list,
 					'-fields'				=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
@@ -2465,61 +2467,61 @@ LIST_TABLE:
 					'_cdate_age_verbose_align'	=> 'right',
 					'name_checkbox'			=>1
 					));
-				echo '</div>'."\n";
+				echo '</div>'.PHP_EOL;
 				echo buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');",'icon-cancel w_big');
 			}
 			echo buildFormEnd();
 			//echo printValue($_REQUEST);
 			break;
 		case 'email':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-mail"></span> Email</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-mail"></span> Email</div>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"email",'-name'=>"emailform"));
-			echo '<table class="table table-striped table-bordered">'."\n";
-			echo '	<tr valign="top" class="w_align_left">'."\n";
+			echo '<table class="table table-striped table-bordered">'.PHP_EOL;
+			echo '	<tr valign="top" class="w_align_left">'.PHP_EOL;
 			$tables=getDBTables();
-			echo '		<th>Table<br><select onchange="document.emailform.submit();" name="_table_"><option value=""></option>'."\n";
+			echo '		<th>Table<br><select onchange="document.emailform.submit();" name="_table_"><option value=""></option>'.PHP_EOL;
 			foreach($tables as $table){
 				echo '				<option value="'.$table.'"';
 				if(isset($_REQUEST['_table_']) && $_REQUEST['_table_']==$table){echo ' selected';}
-				echo '>'.$table.'</option>'."\n";
+				echo '>'.$table.'</option>'.PHP_EOL;
             	}
 			echo '			</select>'."</th>\n";
 			if(isset($_REQUEST['_table_'])){
 				//show fields for this table
 				$fields=getDBFields($_REQUEST['_table_']);
-				echo '		<th>Email Field<br><select onchange="document.emailform.submit();" name="_field_"><option value=""></option>'."\n";
+				echo '		<th>Email Field<br><select onchange="document.emailform.submit();" name="_field_"><option value=""></option>'.PHP_EOL;
 				foreach($fields as $field){
 					echo '				<option value="'.$field.'"';
 					if(isset($_REQUEST['_field_']) && $_REQUEST['_field_']==$field){echo ' selected';}
-					echo '>'.$field.'</option>'."\n";
+					echo '>'.$field.'</option>'.PHP_EOL;
 	            	}
 				echo '			</select>'."</th>\n";
             	}
-			echo '	</tr>'."\n";
+			echo '	</tr>'.PHP_EOL;
 			unset($recs);
 			if(isset($_REQUEST['_table_']) && isset($_REQUEST['_field_'])){
 				$field=$_REQUEST['_field_'];
-				echo '		<tr class="w_align_left"><th colspan="2">Where: <input type="text" style="width:300px;" name="_search_" value="'.$_REQUEST['_search_'].'"></td></tr>'."\n";
+				echo '		<tr class="w_align_left"><th colspan="2">Where: <input type="text" style="width:300px;" name="_search_" value="'.$_REQUEST['_search_'].'"></td></tr>'.PHP_EOL;
 				$recopts=array('-query'=>"select distinct {$field} from {$_REQUEST['_table_']} where not({$field} is null) and not({$field}='')");
 				if(isset($_REQUEST['_search_']) && strlen($_REQUEST['_search_'])){
 					$recopts['-query'] .= " and ({$_REQUEST['_search_']})";
                 	}
 				$recs=getDBRecords($recopts);
-				echo '		<tr class="w_align_left"><th colspan="2">'.count($recs).' email addresses found.</td></tr>'."\n";
+				echo '		<tr class="w_align_left"><th colspan="2">'.count($recs).' email addresses found.</td></tr>'.PHP_EOL;
 				if(!isset($_REQUEST['_from_']) && isEmail($USER['email'])){$_REQUEST['_from_']=$USER['email'];}
-				echo '		<tr class="w_align_left"><th colspan="2">From: <input type="email" style="width:300px;" name="_from_" mask="email" maskmsg="From must be a valid email address" data-required="1" data-requiredmsg="From is required" value="'.$_REQUEST['_from_'].'"></td></tr>'."\n";
-				echo '		<tr class="w_align_left"><th colspan="2">Subject: <input type="text" style="width:285px;" name="_subject_" data-required="1" data-requiredmsg="Subject is required" value="'.$_REQUEST['_subject_'].'"></td></tr>'."\n";
-				echo '		<tr class="w_align_left"><th colspan="2">Message<br><textarea name="message" style="width:350px;height:100px;">'.$_REQUEST['message'].'</textarea></td></tr>'."\n";
+				echo '		<tr class="w_align_left"><th colspan="2">From: <input type="email" style="width:300px;" name="_from_" mask="email" maskmsg="From must be a valid email address" data-required="1" data-requiredmsg="From is required" value="'.$_REQUEST['_from_'].'"></td></tr>'.PHP_EOL;
+				echo '		<tr class="w_align_left"><th colspan="2">Subject: <input type="text" style="width:285px;" name="_subject_" data-required="1" data-requiredmsg="Subject is required" value="'.$_REQUEST['_subject_'].'"></td></tr>'.PHP_EOL;
+				echo '		<tr class="w_align_left"><th colspan="2">Message<br><textarea name="message" style="width:350px;height:100px;">'.$_REQUEST['message'].'</textarea></td></tr>'.PHP_EOL;
 
 				}
-			echo '</table>'."\n";
-			echo '<input type="submit" name="do" value="Refresh">'."\n";
+			echo '</table>'.PHP_EOL;
+			echo '<input type="submit" name="do" value="Refresh">'.PHP_EOL;
 			if(isset($recs) && is_array($recs)){
 				if(strlen($_REQUEST['message'])){
-					echo '<input type="submit" name="do" value="Send Email" onclick="return confirm(\'Send Email Now to recipients shown?\');">'."\n";
+					echo '<input type="submit" name="do" value="Send Email" onclick="return confirm(\'Send Email Now to recipients shown?\');">'.PHP_EOL;
 					}
-				echo '<p><b>Recipeints List:</b></p>'."\n";
-				echo '<div style="margin-left:25px;height:200px;overflow:auto;padding-right:25px;">'."\n";
+				echo '<p><b>Recipeints List:</b></p>'.PHP_EOL;
+				echo '<div style="margin-left:25px;height:200px;overflow:auto;padding-right:25px;">'.PHP_EOL;
 				foreach($recs as $rec){
 					$email=$rec[$_REQUEST['_field_']];
 					echo '<div class="w_small">'.$email;
@@ -2527,16 +2529,16 @@ LIST_TABLE:
 						$ok=wasqlMail(array('to'=>$email,'from'=>$_REQUEST['_from_'],'subject'=>$_REQUEST['_subject_'],'message'=>$_REQUEST['message']));
 						echo " ... ";
 						if(is_array($ok)){echo printValue($ok);}
-						else{echo '<span class="icon-check w_success"></span>'."\n";}
+						else{echo '<span class="icon-check w_success"></span>'.PHP_EOL;}
                     	}
-					echo '</div>'."\n";
+					echo '</div>'.PHP_EOL;
 					}
-				echo '</div>'."\n";
+				echo '</div>'.PHP_EOL;
             	}
             echo buildFormEnd();
 			break;
 		case 'user_report':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-user w_grey"></span><span class="icon-chart-bar w_grey"></span> Password Report</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-user w_grey"></span><span class="icon-chart-bar w_grey"></span> Password Report</div>'.PHP_EOL;
 			$recs=getDBRecords(array(
 				'-table'=>'_users',
 				'-order'=>"utype,lastname"
@@ -2588,23 +2590,23 @@ LIST_TABLE:
 			//$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 			break;
 		case 'grep':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-search w_grey w_biggest"></span> Database Search</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-search w_grey w_biggest"></span> Database Search</div>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table class="table table-striped table-bordered" style="width:600px;">'."\n";
-			echo '	<tr valign="top" align="center"><th>Filters:</th>'."\n";
+			echo '<table class="table table-striped table-bordered" style="width:600px;">'.PHP_EOL;
+			echo '	<tr valign="top" align="center"><th>Filters:</th>'.PHP_EOL;
 			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
 			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";
 			$tables=getDBTables();
-			echo '		<th>Table<br><select name="_table_" class="form-control"><option value=""></option>'."\n";
+			echo '		<th>Table<br><select name="_table_" class="form-control"><option value=""></option>'.PHP_EOL;
 			foreach($tables as $table){
 				echo '				<option value="'.$table.'"';
 				if(isset($_REQUEST['_table_']) && $_REQUEST['_table_']==$table){echo ' selected';}
-				echo '>'.$table.'</option>'."\n";
+				echo '>'.$table.'</option>'.PHP_EOL;
             	}
 			echo '			</select>'."</th>\n";
-			echo '	</tr><tr><th>Text:</th>'."\n";
+			echo '	</tr><tr><th>Text:</th>'.PHP_EOL;
 			echo '		<td colspan="3"><input type="text" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
-			echo '	</tr></table>'."\n";
+			echo '	</tr></table>'.PHP_EOL;
 			echo buildFormSubmit('Search Database','','','icon-search');
 			echo buildFormEnd();
 			echo buildOnLoad("document.grepform._grep_string.focus();");
@@ -2617,9 +2619,9 @@ LIST_TABLE:
 				//echo printValue($grep);
 				//grep Schema?
 				if($grep['schema']==1){
-					echo '<div class="w_bold w_big w_dblue">Schema Results</div>'."\n";
-					echo '<table class="table table-striped table-bordered">'."\n";
-					echo '	<tr><th>Table</th><th>Fields</th></tr>'."\n";
+					echo '<div class="w_bold w_big w_dblue">Schema Results</div>'.PHP_EOL;
+					echo '<table class="table table-striped table-bordered">'.PHP_EOL;
+					echo '	<tr><th>Table</th><th>Fields</th></tr>'.PHP_EOL;
 					foreach($tables as $table){
 						if(strlen($grep['table']) && $table != $grep['table']){continue;}
 						$info=getDBFieldInfo($table);
@@ -2627,9 +2629,9 @@ LIST_TABLE:
 						foreach($info as $field=>$finfo){
 							if(stringContains($field,$grep['string'])){$vals[]=$field;}
                     		}
-                    	if(count($vals)){echo '	<tr valign="top"><td>'.$table.'</td><td>'.implode(', ',$vals).'</td></tr>'."\n";}
+                    	if(count($vals)){echo '	<tr valign="top"><td>'.$table.'</td><td>'.implode(', ',$vals).'</td></tr>'.PHP_EOL;}
                     	}
-                    echo '</table>'."\n";
+                    echo '</table>'.PHP_EOL;
                 	}
                 //grep records?
                 if($grep['records']==1){
@@ -2649,14 +2651,14 @@ LIST_TABLE:
 		break;
 		case 'import':
 			//echo adminViewPage('import');exit;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'.PHP_EOL;
 			$importmsg='';
 			global $progpath;
 			if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
-				echo '<div>Processing Uploaded File</div>'."\n";
+				echo '<div>Processing Uploaded File</div>'.PHP_EOL;
 	 			if(isset($_REQUEST['file_abspath']) && file_exists($_REQUEST['file_abspath'])){
 					if(preg_match('/XML/is',$_REQUEST['do'])){
-						echo '<div class="w_lblue w_bold w_big">XML Import</div>'."\n";
+						echo '<div class="w_lblue w_bold w_big">XML Import</div>'.PHP_EOL;
 						echo "<div>Reading File: {$_REQUEST['file_abspath']}</div>\n";
 						$items=exportFile2Array($_REQUEST['file_abspath']);
 						unlink($_REQUEST['file_abspath']);
@@ -2665,12 +2667,12 @@ LIST_TABLE:
 						$importmsg .= importXmlData($items,$_REQUEST);
 						}
 					elseif(preg_match('/CSV/is',$_REQUEST['do'])){
-						echo '<div class="w_lblue w_bold w_big">CSV Import</div>'."\n";
+						echo '<div class="w_lblue w_bold w_big">CSV Import</div>'.PHP_EOL;
 						if(!strlen($_REQUEST['_table_'])){
-							echo '<div class="w_red w_bold">You must select a table for CSV imports</div>'."\n";
+							echo '<div class="w_red w_bold">You must select a table for CSV imports</div>'.PHP_EOL;
                         	}
                         elseif($_REQUEST['_table_']=='Create NEW Table' && !strlen($_REQUEST['_tablename_'])){
-							echo '<div class="w_red w_bold">You must choose a name for the new table</div>'."\n";
+							echo '<div class="w_red w_bold">You must choose a name for the new table</div>'.PHP_EOL;
                         	}
 						else{
 							$lines = getCSVFileContents($_REQUEST['file_abspath']);
@@ -2756,7 +2758,7 @@ LIST_TABLE:
                 	}
 				}
 			if(isset($_REQUEST['file_error'])){
-				echo '<div class="w_red"><span class="icon-cancel w_danger w_big"></span> '.$_REQUEST['file_error'].'</div>'."\n";
+				echo '<div class="w_red"><span class="icon-cancel w_danger w_big"></span> '.$_REQUEST['file_error'].'</div>'.PHP_EOL;
             	}
             $progpath=dirname(__FILE__);
 			$filepath="{$progpath}/temp";
@@ -2764,11 +2766,11 @@ LIST_TABLE:
 			if(!isset($_REQUEST['_types'])){$_REQUEST['_types']=array('xmlschema','xmlmeta','xmldata');}
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
 			echo buildFormFile('file',array('accept'=>'.xml,.csv','acceptmsg'=>'Only valid xml and csv files are allowed'));
-			echo '<div style="width:500px;"'."\n";
-			echo '<table class="table"><tr valign="top">'."\n";
+			echo '<div style="width:500px;"'.PHP_EOL;
+			echo '<table class="table"><tr valign="top">'.PHP_EOL;
 			//XML File Options
-			echo '<td class="nowrap">'."\n";
-			echo '<div class="w_lblue w_bold w_big">XML File Options</div>'."\n";
+			echo '<td class="nowrap">'.PHP_EOL;
+			echo '<div class="w_lblue w_bold w_big">XML File Options</div>'.PHP_EOL;
 			$opts=array(
 				'xmlschema'=>'Schema',
 				'xmlmeta'=>'Meta',
@@ -2784,30 +2786,30 @@ LIST_TABLE:
 			$params=array('value'=>$_REQUEST['_types'],'width'=>1);
 			echo buildFormCheckbox('_options[]',$opts,$params);
 			echo '	Merge Fields:<br /> <textarea name="_merge" style="width:300px;height:50px;" class="w_small form-control"></textarea>'."<br />\n";
-			echo '</td><td>'."\n";
-			echo '<div class="w_lblue w_bold w_big">CSV File Options</div>'."\n";
+			echo '</td><td>'.PHP_EOL;
+			echo '<div class="w_lblue w_bold w_big">CSV File Options</div>'.PHP_EOL;
 			$tables=getDBTables();
 			array_unshift($tables,'Create NEW Table');
-			echo '<div>Table '."\n";
+			echo '<div>Table '.PHP_EOL;
 			echo getDBFieldTag(array('-table'=>'_tabledata','onchange'=>"if(this.value=='Create NEW Table'){showId('newtable');hideId('picktable');}else{hideId('newtable');showId('picktable');}",'-field'=>'fieldname','name'=>"_table_",'message'=>"--Select Table--",'inputtype'=>'select','tvals'=>join("\r\n",$tables)));
 			//echo "TEST:" . strtotime("yesterday");
-			echo '</div>'."\n";
-			echo '<div style="width:300px;margin-top:5px;position:relative;height:75px;">'."\n";
-			echo '	<div id="newtable" style="display:none;position:absolute;">New Tablename '."\n";
+			echo '</div>'.PHP_EOL;
+			echo '<div style="width:300px;margin-top:5px;position:relative;height:75px;">'.PHP_EOL;
+			echo '	<div id="newtable" style="display:none;position:absolute;">New Tablename '.PHP_EOL;
 			echo getDBFieldTag(array('-table'=>'_tabledata','-field'=>'fieldname','name'=>"_tablename_",'inputtype'=>'text','width'=>150,'maxlength'=>150));
-			echo '	<br>This will create a table with fields based on the data in the csv file you upload.'."\n";
-			echo '	</div>'."\n";
-			echo '	<div id="picktable">'."\n";
-			echo '		Select the table you want to import into. Make sure the first line of the csv file matches the field names of the table.'."\n";
-			echo '	</div>'."\n";
-			echo '</div>'."\n";
-			echo '</td></tr>'."\n";
-			echo '<tr><td style="padding-top:25px;">'.buildFormSubmit('Import XML File','do','','icon-import').'</td><td>'.buildFormSubmit('Import CSV File','do','','icon-import').'</td></tr>'."\n";
-			echo '</table>'."\n";
-			echo '</div>'."\n";
+			echo '	<br>This will create a table with fields based on the data in the csv file you upload.'.PHP_EOL;
+			echo '	</div>'.PHP_EOL;
+			echo '	<div id="picktable">'.PHP_EOL;
+			echo '		Select the table you want to import into. Make sure the first line of the csv file matches the field names of the table.'.PHP_EOL;
+			echo '	</div>'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
+			echo '</td></tr>'.PHP_EOL;
+			echo '<tr><td style="padding-top:25px;">'.buildFormSubmit('Import XML File','do','','icon-import').'</td><td>'.buildFormSubmit('Import CSV File','do','','icon-import').'</td></tr>'.PHP_EOL;
+			echo '</table>'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 			echo buildFormEnd();
 			if(strlen($importmsg)){
-				echo '<div class="w_lblue w_bold"> Import results:</div>'."\n";
+				echo '<div class="w_lblue w_bold"> Import results:</div>'.PHP_EOL;
 				echo $importmsg;
 				}
 			//echo printValue($_REQUEST);
@@ -2819,18 +2821,18 @@ LIST_TABLE:
 		case 'datasync':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		case 'searchreplace':
-			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'.PHP_EOL;
 			break;
 		case 'files':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-attach"></span> File Manager</div>'."\n";
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-attach"></span> File Manager</div>'.PHP_EOL;
 			echo fileManager();
 			break;
     	}
    	}
-echo '</div>'."\n";
-//echo '<div style="display:none" id="null">'."\n";
+echo '</div>'.PHP_EOL;
+//echo '<div style="display:none" id="null">'.PHP_EOL;
 //echo "ConfigSettings" . printValue($ConfigSettings);
-//echo '</div>'."\n";
+//echo '</div>'.PHP_EOL;
 //$elapsed=round((microtime(true)-$_SERVER['_start_']),2);
 //echo buildOnLoad("setText('admin_elapsed','{$elapsed} seconds');");
 echo showWasqlErrors();
@@ -2871,7 +2873,7 @@ function adminShowSessionLog($sessionID){
 	}
 	$rtn='';
 	$files=listFilesEx($errpath,array('name'=>"{$sessionID}.log"));
-	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><span class="icon-erase w_danger"></span> Clear Error Log</a></div>'."\n";
+	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><span class="icon-erase w_danger"></span> Clear Error Log</a></div>'.PHP_EOL;
 	$rtn .= getFileContents($errfile);
 	return $rtn;
 }
@@ -2924,51 +2926,51 @@ function adminClearSessionLog($sessionID){
 function sqlPrompt(){
 	$cmd=isset($_REQUEST['sqlprompt_command'])?stripslashes($_REQUEST['sqlprompt_command']):'';
 	$rtn='';
-	$rtn .= '<table class="w_nopad" width="100%">'."\n";
-	$rtn .= '<tr valign="top">'."\n";
-	$rtn .= '<td class="nowrap hidden-xs">'."\n";
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-table w_grey"></span> Tables</div>'."\n";
-	$rtn .= '<div style="height:500px;overflow:auto;padding-right:30px;">'."\n";
+	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
+	$rtn .= '<tr valign="top">'.PHP_EOL;
+	$rtn .= '<td class="nowrap hidden-xs">'.PHP_EOL;
+	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-table w_grey"></span> Tables</div>'.PHP_EOL;
+	$rtn .= '<div style="height:500px;overflow:auto;padding-right:30px;">'.PHP_EOL;
 	$rtn .= expandAjaxTables();
-	$rtn .= '</div>'."\n";
-	$rtn .= '</td><td width="100%">'."\n";
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-prompt w_black w_biggest"></span> SQL Command Window: <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. For help press F1)</span></div>'."\n";
-	$rtn .= '<form method="POST" name="sqlprompt_form" action="/php/admin.php" class="w_form" onsubmit="ajaxSubmitForm(this,\'sqlprompt_results\');return false;">'."\n";
-	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
-	$rtn .= '	<input type="hidden" name="_table_" value="_reports">'."\n";
-	$rtn .= '<table class="w_nopad" width="100%">'."\n";
-	$rtn .= '	<tr valign="top">'."\n";
-	$rtn .= '		<td class="w_align_left w_nowrap">'."\n";
-	$rtn .= '			<textarea data-gutter="true" preview="Run SQL and View Results" ajaxid="sqlprompt_results" name="sqlprompt_command" id="sqlprompt_command" style="width:100%;height:250px;" data-behavior="sqleditor" focus="1">'.$cmd.'</textarea><br>'."\n";
-	$rtn .= '		</td>'."\n";
-	$rtn .= '	</tr>'."\n";
-	$rtn .= '	<tr valign="top">'."\n";
-	$rtn .= '		<td class="w_align_left">'."\n";
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'."\n";
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'."\n";
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'."\n";
-	$rtn .= '		</td>'."\n";
-	$rtn .= '	</tr>'."\n";
-	$rtn .= '</table>'."\n";
-	$rtn .= '</form>'."\n";
-	$rtn .= '<div class="hidden"><form method="POST" name="sqlprompt_form2" id="sqlprompt_form2" target="_export" action="/php/admin.php" onsubmit="return submitForm(this);">'."\n";
-	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'."\n";
-	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'."\n";
-	$rtn .= '	<textarea _required="1" data-requiredmsg="First enter a query to export" name="sqlprompt_command" style="width:10px;height:10px;"></textarea>'."\n";
-	$rtn .= '</form></div>'."\n";
-	$rtn .= '<table class="w_nopad" width="100%">'."\n";
+	$rtn .= '</div>'.PHP_EOL;
+	$rtn .= '</td><td width="100%">'.PHP_EOL;
+	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-prompt w_black w_biggest"></span> SQL Command Window: <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. For help press F1)</span></div>'.PHP_EOL;
+	$rtn .= '<form method="POST" name="sqlprompt_form" action="/php/admin.php" class="w_form" onsubmit="ajaxSubmitForm(this,\'sqlprompt_results\');return false;">'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="_table_" value="_reports">'.PHP_EOL;
+	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
+	$rtn .= '	<tr valign="top">'.PHP_EOL;
+	$rtn .= '		<td class="w_align_left w_nowrap">'.PHP_EOL;
+	$rtn .= '			<textarea data-gutter="true" preview="Run SQL and View Results" ajaxid="sqlprompt_results" name="sqlprompt_command" id="sqlprompt_command" style="width:100%;height:250px;" data-behavior="sqleditor" focus="1">'.$cmd.'</textarea><br>'.PHP_EOL;
+	$rtn .= '		</td>'.PHP_EOL;
+	$rtn .= '	</tr>'.PHP_EOL;
+	$rtn .= '	<tr valign="top">'.PHP_EOL;
+	$rtn .= '		<td class="w_align_left">'.PHP_EOL;
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
+	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
+	$rtn .= '		</td>'.PHP_EOL;
+	$rtn .= '	</tr>'.PHP_EOL;
+	$rtn .= '</table>'.PHP_EOL;
+	$rtn .= '</form>'.PHP_EOL;
+	$rtn .= '<div class="hidden"><form method="POST" name="sqlprompt_form2" id="sqlprompt_form2" target="_export" action="/php/admin.php" onsubmit="return submitForm(this);">'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'.PHP_EOL;
+	$rtn .= '	<textarea _required="1" data-requiredmsg="First enter a query to export" name="sqlprompt_command" style="width:10px;height:10px;"></textarea>'.PHP_EOL;
+	$rtn .= '</form></div>'.PHP_EOL;
+	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
 	//results window
-	$rtn .= '	<tr valign="top">'."\n";
-	$rtn .= '		<td class="w_align_left w_nowrap">'."\n";
-	$rtn .= '			<div style="padding:3px;font-size:10pt;">'."\n";
-	$rtn .= '				<div id="sqlprompt_results">'."\n";
-	$rtn .= '				</div>'."\n";
-	$rtn .= '			</div>'."\n";
-	$rtn .= '		</td>'."\n";
-	$rtn .= '	</tr>'."\n";
-	$rtn .= '</table>'."\n";
-	$rtn .= '		'.buildOnLoad("document.sqlprompt_form.sqlprompt_command.focus();")."\n";
-	$rtn .= '</td></tr></table>'."\n";
+	$rtn .= '	<tr valign="top">'.PHP_EOL;
+	$rtn .= '		<td class="w_align_left w_nowrap">'.PHP_EOL;
+	$rtn .= '			<div style="padding:3px;font-size:10pt;">'.PHP_EOL;
+	$rtn .= '				<div id="sqlprompt_results">'.PHP_EOL;
+	$rtn .= '				</div>'.PHP_EOL;
+	$rtn .= '			</div>'.PHP_EOL;
+	$rtn .= '		</td>'.PHP_EOL;
+	$rtn .= '	</tr>'.PHP_EOL;
+	$rtn .= '</table>'.PHP_EOL;
+	$rtn .= '		'.buildOnLoad("document.sqlprompt_form.sqlprompt_command.focus();").PHP_EOL;
+	$rtn .= '</td></tr></table>'.PHP_EOL;
 	return $rtn;
 }
 
@@ -2983,22 +2985,22 @@ function expandAjaxTables(){
 	$tables=getDBTables();
 	//build a section for wasql tables using createExpandDiv($title,$expand,'#0d0d7d',0);
 	$title='<img src="/wfiles/wasql_admin.png" class="w_middle" alt="tables" /> Tables';
-	$expand = '<table class="w_nopad">'."\n";
+	$expand = '<table class="w_nopad">'.PHP_EOL;
 	foreach($tables as $table){
 		if(!isWasqlTable($table)){continue;}
 		$divid=$table .'_'. sha1($table);
-		$expand .= '<tr><td class="nowrap">'.createExpandDiv($table,'','#0d0d7d',0,'/php/admin.php','_menu=tabledetails&table='.$table).'</td></tr>'."\n";;
+		$expand .= '<tr><td class="nowrap">'.createExpandDiv($table,'','#0d0d7d',0,'/php/admin.php','_menu=tabledetails&table='.$table).'</td></tr>'.PHP_EOL;;
 	}
 	$expand .= buildTableEnd();
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
 	//build a section for non-wasql tables using createExpandDiv($title,$expand,'#0d0d7d',0);
 	$title='<span class="icon-user w_grey"><span class="icon-table"></span></span> User Tables';
-	$expand = '<table class="w_nopad">'."\n";
+	$expand = '<table class="w_nopad">'.PHP_EOL;
 	foreach($tables as $table){
 		if(isWasqlTable($table)){continue;}
 		$divid=$table .'_'. sha1($table);
-		$expand .= '<tr><td class="nowrap">'.createExpandDiv($table,'','#0d0d7d',0,'/php/admin.php','_menu=sqlprompt&table='.$table).'</td></tr>'."\n";;
+		$expand .= '<tr><td class="nowrap">'.createExpandDiv($table,'','#0d0d7d',0,'/php/admin.php','_menu=sqlprompt&table='.$table).'</td></tr>'.PHP_EOL;;
 	}
 	$expand .= buildTableEnd();
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
@@ -3044,8 +3046,8 @@ function adminMenu(){
 	$wtables .= '				<li class="dir"><a href="#">';
 	if($show_icons==1){$wtables .= '<img src="/wfiles/wasql_admin.png" class="w_middle hidden-xs" alt="wasql tables" />';}
 	$wtables .= ' Tables';
-	$wtables .= '</a>'."\n";
-    $wtables .= '					<ul>'."\n";
+	$wtables .= '</a>'.PHP_EOL;
+    $wtables .= '					<ul>'.PHP_EOL;
 	foreach($tables as $table){
 		if(!preg_match('/^\_/',$table)){continue;}
 		$lname=strtolower($table);
@@ -3061,17 +3063,17 @@ function adminMenu(){
 				break;
 			}
 		}
-		$wtables .= ' '.$table.'</a>'."\n";
+		$wtables .= ' '.$table.'</a>'.PHP_EOL;
 		$wtables .= tableOptions($table,array('-format'=>"li"));
-		$wtables .= '						</li>'."\n";
+		$wtables .= '						</li>'.PHP_EOL;
     	}
-    $wtables .= '					</ul></li>'."\n";
+    $wtables .= '					</ul></li>'.PHP_EOL;
     //admin info
     global $CONFIG;
-    $rtn .= '<div id="admin_info" style="display:none">'."\n";
-	$rtn .= '	<div style="float:left;max-width:500px;overflow:auto;">'."\n";
-	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'."\n";
-	$rtn .= '<table class="table table-striped table-bordered">'."\n";
+    $rtn .= '<div id="admin_info" style="display:none">'.PHP_EOL;
+	$rtn .= '	<div style="float:left;max-width:500px;overflow:auto;">'.PHP_EOL;
+	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'.PHP_EOL;
+	$rtn .= '<table class="table table-striped table-bordered">'.PHP_EOL;
 	if(!isset($_SESSION['wasql_info']) || isset($_REQUEST['refresh'])){
 		$_SESSION['wasql_info']=array(
 			'Server Host'	=> $_SERVER['HTTP_HOST'],
@@ -3104,48 +3106,48 @@ function adminMenu(){
 		}
 	}
 	foreach($_SESSION['wasql_info'] as $key=>$val){
-    	$rtn .= '	<tr><th class="w_align_left w_nowrap">'.$key.'</th><td>'.$val.'</td></tr>'."\n";
+    	$rtn .= '	<tr><th class="w_align_left w_nowrap">'.$key.'</th><td>'.$val.'</td></tr>'.PHP_EOL;
 	}
 	$rtn .= buildTableEnd();
-	$rtn .= '	</div>'."\n";
-	$rtn .= '</div>'."\n";
+	$rtn .= '	</div>'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
 	//search on right
-/* 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'."\n";
-	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);"))."\n";
-	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'."\n";
-	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'."\n";
+/* 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'.PHP_EOL;
+	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);")).PHP_EOL;
+	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'.PHP_EOL;
+	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '     		'.buildFormEnd()."</div>\n";
 	//show wpass in menu?
 	if($CONFIG['wpass']){$rtn .= wpassModule();}
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</div>'.PHP_EOL;
 */
-	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'."\n";
-	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'."\n";
+	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'.PHP_EOL;
+	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'.PHP_EOL;
 	//logo
-	$rtn .= '<li style="position:relative;padding-left:56px;" class="hidden-xs">'."\n";
+	$rtn .= '<li style="position:relative;padding-left:56px;" class="hidden-xs">'.PHP_EOL;
 	$rtn .= '	<img data-tooltip="id:admin_info" src="/wfiles/wasql_admin.png" width="51" height="21" style="position:absolute;top:0px;left:0px;" alt="WaSQL admin logo" />';
-	$rtn .= '</li>'."\n";
+	$rtn .= '</li>'.PHP_EOL;
 	//Database
 	$color_class=isDBStage()?'w_warning':'w_success';
-	$rtn .= '		<li><a href="#database" onclick="return false;" class="w_topmenu"><span class="icon-database w_big '.$color_class.'"></span><span class="hidden-xs"> Database<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt w_big w_default"></span> SQL Prompt</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search w_big w_default"></span> Search</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=backup" onclick="return confirm(\'This will backup the database. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_backup.png').' Backup</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_backups w_big w_default"></span> Backup or <span class="icon-undo w_danger w_big"></span> Restore</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=schema"><img src="/wfiles/schema.gif"> Schema</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=indexes"><img src="/wfiles/indexes.gif"> Indexes</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=import"><span class="icon-import w_big w_default w_big"></span> Import</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'."\n";
+	$rtn .= '		<li><a href="#database" onclick="return false;" class="w_topmenu"><span class="icon-database w_big '.$color_class.'"></span><span class="hidden-xs"> Database<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt w_big w_default"></span> SQL Prompt</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search w_big w_default"></span> Search</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=backup" onclick="return confirm(\'This will backup the database. Click OK to continue?\');">'.adminMenuIcon('/wfiles/iconsets/16/database_backup.png').' Backup</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_backups w_big w_default"></span> Backup or <span class="icon-undo w_danger w_big"></span> Restore</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=schema"><img src="/wfiles/schema.gif"> Schema</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=indexes"><img src="/wfiles/indexes.gif"> Indexes</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=import"><span class="icon-import w_big w_default w_big"></span> Import</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
-		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Records</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Records</a></li>'.PHP_EOL;
 	}
-	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'."\n";
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'.PHP_EOL;
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
  //Tables
 	/*
 		look for tablegroup values in _tabledata  - group tables by group
@@ -3167,17 +3169,17 @@ function adminMenu(){
 	ksort($group_tables);
 	sort($non_group_tables);
 	$list_table_count=count($group_tables) + count($non_group_tables);
-	$rtn .= '		<li><a href="#tables" onclick="return false;" class="w_topmenu"><span class="icon-table w_grey w_big"></span><span class="hidden-xs"> Tables<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list w_big"></span> List Tables</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add w_primary"></span> Add Multiple Tables</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#tables" onclick="return false;" class="w_topmenu"><span class="icon-table w_grey w_big"></span><span class="hidden-xs"> Tables<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list w_big"></span> List Tables</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New Table</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add w_primary"></span> Add Multiple Tables</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	//show wasql tables here also
 	$rtn .= $wtables;
 	//now show groups
 	foreach($group_tables as $group=>$gtables){
 		sort($gtables);
-		$rtn .= '				<li class="dir"><a href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> '.$group.' Tables</a><ul>'."\n";
+		$rtn .= '				<li class="dir"><a href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> '.$group.' Tables</a><ul>'.PHP_EOL;
 		foreach($gtables as $table){
 			if(preg_match('/^\_/',$table)){continue;}
 			$lname=strtolower($table);
@@ -3189,11 +3191,11 @@ function adminMenu(){
 					$rtn .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
 			}
-			$rtn .= ' '.$table.'</a>'."\n";
+			$rtn .= ' '.$table.'</a>'.PHP_EOL;
 			$rtn .= tableOptions($table,array('-format'=>"li",'-group'=>$group));
-			$rtn .= '				</li>'."\n";
+			$rtn .= '				</li>'.PHP_EOL;
 	    }
-	    $rtn .= '				</ul></li>'."\n";
+	    $rtn .= '				</ul></li>'.PHP_EOL;
 	}
 	//show non-group tables
 	if(count($non_group_tables) < 100){
@@ -3208,75 +3210,75 @@ function adminMenu(){
 					$rtn .= '<img src="'.$img.'" class="w_bottom" alt="" /> ';
 		        }
 			}
-			$rtn .= ' '.$table.'</a>'."\n";
+			$rtn .= ' '.$table.'</a>'.PHP_EOL;
 			$rtn .= tableOptions($table,array('-format'=>'li'));
-			$rtn .= '				</li>'."\n";
+			$rtn .= '				</li>'.PHP_EOL;
 	    }
 	}
-    $rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+    $rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	unset($tables);
  	//Pages
 	if(!isDBTable('_pages')){$ok=createWasqlTable('_pages');}
 	$pages=getDBRecords(array('-table'=>'_pages','-limit'=>15,'-order'=>'_edate desc,_cdate desc'));
-	$rtn .= '		<li><a href="#pages" onclick="return false;" class="w_topmenu"><span class="icon-file-doc w_grey w_big"></span><span class="hidden-xs"> Pages<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list w_big"></span> List Pages</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#pages" onclick="return false;" class="w_topmenu"><span class="icon-file-doc w_grey w_big"></span><span class="hidden-xs"> Pages<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul >'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list w_big"></span> List Pages</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	foreach($pages as $page){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id='.$page['_id'].'">';
 		$lname=strtolower($page['name']);
-		$rtn .= ' '.$page['_id'].'. '.$page['name'].'</a></li>'."\n";
+		$rtn .= ' '.$page['_id'].'. '.$page['name'].'</a></li>'.PHP_EOL;
     }
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	unset($pages);
 	//Templates
 	if(!isDBTable('_templates')){$ok=createWasqlTable('_templates');}
 	$templates=getDBRecords(array('-table'=>'_templates','-limit'=>15,'-order'=>"_edate desc,_cdate desc"));
-	$rtn .= '		<li><a href="#templates" onclick="return false;" class="w_topmenu"><span class="icon-file-docs w_big w_grey"></span><span class="hidden-xs"> Templates<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list w_big"></span> List Templates</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#templates" onclick="return false;" class="w_topmenu"><span class="icon-file-docs w_big w_grey"></span><span class="hidden-xs"> Templates<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list w_big"></span> List Templates</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-properties w_danger w_big"></span> Properties</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	if(is_array($templates)){
 		foreach($templates as $template){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_templates&_id='.$template['_id'].'">';
 			$lname=strtolower($template['name']);
-			$rtn .= ' '.$template['_id'].'. '.$template['name'].'</a></li>'."\n";
+			$rtn .= ' '.$template['_id'].'. '.$template['name'].'</a></li>'.PHP_EOL;
 	    	}
 		}
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	unset($templates);
 	//Reports
 	if(!isDBTable('_reports')){$ok=createWasqlTable('_reports');}
 	$reports=getDBRecords(array('-table'=>'_reports','active'=>1,'menu'=>'_reports','-limit'=>15,'-order'=>'name'));
-	$rtn .= '		<li><a href="#reports" onclick="return false;" class="w_topmenu"><span class="icon-chart-pie w_big"></span><span class="hidden-xs hidden-sm"> Reports<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul >'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list w_big"></span> List Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line w_big"></span> Run Reports</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#reports" onclick="return false;" class="w_topmenu"><span class="icon-chart-pie w_big"></span><span class="hidden-xs hidden-sm"> Reports<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul >'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_reports"><span class="icon-list w_big"></span> List Reports</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=reports"><span class="icon-chart-line w_big"></span> Run Reports</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_reports"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_reports"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	if(is_array($reports)){
 		foreach($reports as $report){
 			$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_reports&_id='.$report['_id'].'">';
-			$rtn .= ' '.$report['_id'].'. '.$report['name'].'</a></li>'."\n";
+			$rtn .= ' '.$report['_id'].'. '.$report['name'].'</a></li>'.PHP_EOL;
 	    }
 	}
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	unset($reports);
 	//Users
 	if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
 	$users=getDBRecords(array('-table'=>'_users','-limit'=>15,'-where'=>'_adate is not null','-order'=>"utype,_adate desc"));
-	$rtn .= '		<li><a href="#users" onclick="return false;" class="w_topmenu"><span class="icon-users w_info w_big"></span><span class="hidden-xs"> Users<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list w_big"></span> List Users</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie w_big"></span> Password Report</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#users" onclick="return false;" class="w_topmenu"><span class="icon-users w_info w_big"></span><span class="hidden-xs"> Users<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list w_big"></span> List Users</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-properties w_grey w_big"></span> Properties</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=user_report"><span class="icon-chart-pie w_big"></span> Password Report</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus w_big"></span> Add New</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	foreach($users as $cuser){
 		if(isAdmin() && $USER['_id'] != $cuser['_id']){$rtn .= '				<li class="dir">';}
 		else{$rtn .= '				<li>';}
@@ -3286,32 +3288,32 @@ function adminMenu(){
 		if($show_icons==1){$rtn .= '<span class="'.$info['class'].'" title="'.$info['status'].'"></span> ';}
 		$rtn .= ' '.$cuser['_id'].'. '.$cuser['username'].'</a>';
 		if(isAdmin() && $USER['_id'] != $cuser['_id']){$rtn .= '				<ul><li><a href="/php/admin.php?_menu=list&_table_=_users&_su_='.$cuser['_id'].'">Switch User (SU)</a></li></ul>';}
-		$rtn .= '</li>'."\n";
+		$rtn .= '</li>'.PHP_EOL;
     	}
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	unset($users);
 	//Cron Jobs
 	if(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1){
 		if(!isDBTable('_cron')){$ok=createWasqlTable('_cron');}
 		$crons=getDBRecords(array('-table'=>"_cron",'-limit'=>10,'-order'=>"run_date desc"));
-		$rtn .= '		<li><a href="#crons" onclick="return false;" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons<span class="icon-dir-down"></span></span></a>'."\n";
-		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> Run History</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus w_big"></span> Add New</a></li>'."\n";
+		$rtn .= '		<li><a href="#crons" onclick="return false;" class="w_topmenu"><span class="icon-cron w_success w_big"></span><span class="hidden-xs hidden-sm"> Crons<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+		$rtn .= '			<ul>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> List Crons</a></li>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog w_success w_big"></span> Run History</a></li>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus w_big"></span> Add New</a></li>'.PHP_EOL;
 		if(is_array($crons)){
 			if(count($crons) > 15){
-				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> Show All</a></li>'."\n";
+				$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list w_big"></span> Show All</a></li>'.PHP_EOL;
 				}
 			foreach($crons as $cron){
 				$rtn .= '				<li><a href="/php/admin.php?_menu=edit&_table_=_cron&_id='.$cron['_id'].'">';
 				$lname=strtolower($cron['name']);
-				$rtn .= ' '.$cron['_id'].'. '.$cron['name'].'</a></li>'."\n";
+				$rtn .= ' '.$cron['_id'].'. '.$cron['name'].'</a></li>'.PHP_EOL;
 		    	}
 			}
-		$rtn .= '			</ul>'."\n";
-		$rtn .= '		</li>'."\n";
+		$rtn .= '			</ul>'.PHP_EOL;
+		$rtn .= '		</li>'.PHP_EOL;
 		unset($crons);
 		}
 	//Queries
@@ -3326,94 +3328,94 @@ function adminMenu(){
 		else{
 			$rtn .= '<span class="icon-database-empty w_warning w_big"></span>';
 		}
-		$rtn .= '<span class="hidden-xs hidden-sm"> Queries</span></a></li>'."\n";
+		$rtn .= '<span class="hidden-xs hidden-sm"> Queries</span></a></li>'.PHP_EOL;
 		}
 	//Access
 	if(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1){
 		if(!isDBTable('_queries')){$ok=createWasqlTable('_queries');}
-		$rtn .= '		<li><a href="#access" onclick="return false;" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').'<span class="hidden-xs hidden-sm"> Access<span class="icon-dir-down"></span></span></a>'."\n";
-		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access_summary" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').' Summary</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access" class="w_topmenu">'.adminMenuIcon('/wfiles/_access_summary.gif').' Details</a></li>'."\n";
-		$rtn .= '			</ul>'."\n";
-		$rtn .= '		</li>'."\n";
+		$rtn .= '		<li><a href="#access" onclick="return false;" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').'<span class="hidden-xs hidden-sm"> Access<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+		$rtn .= '			<ul>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access_summary" class="w_topmenu">'.adminMenuIcon('/wfiles/_access.gif').' Summary</a></li>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_access" class="w_topmenu">'.adminMenuIcon('/wfiles/_access_summary.gif').' Details</a></li>'.PHP_EOL;
+		$rtn .= '			</ul>'.PHP_EOL;
+		$rtn .= '		</li>'.PHP_EOL;
 		}
 	//synchronize
 	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
-		$rtn .= '		<li>'."\n";
-		$rtn .= '			<a href="#synchronize" onclick="return false;" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span><span class="hidden-xs hidden-sm"> Synchronize</span></a>'."\n";
-		$rtn .= '			<ul>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync w_warning w_big w_bold"></span> Pending Changes</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-sync w_info w_big w_bold"></span> Sync History</a></li>'."\n";
-		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Database Records</a></li>'."\n";
-		$rtn .= '			</ul>'."\n";
-		$rtn .= '		</li>'."\n";
+		$rtn .= '		<li>'.PHP_EOL;
+		$rtn .= '			<a href="#synchronize" onclick="return false;" class="w_topmenu"><span class="icon-sync w_warning w_big w_bold"></span><span class="hidden-xs hidden-sm"> Synchronize</span></a>'.PHP_EOL;
+		$rtn .= '			<ul>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync w_warning w_big w_bold"></span> Pending Changes</a></li>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-sync w_info w_big w_bold"></span> Sync History</a></li>'.PHP_EOL;
+		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Database Records</a></li>'.PHP_EOL;
+		$rtn .= '			</ul>'.PHP_EOL;
+		$rtn .= '		</li>'.PHP_EOL;
 	}
 	//git
 	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
-		$rtn .= '		<li>'."\n";
-		$rtn .= '			<a href="/php/admin.php?_menu=git" class="w_topmenu"><span class="icon-git w_big w_bold"></span><span class="hidden-xs hidden-sm"> Repo</span></a>'."\n";
-		$rtn .= '		</li>'."\n";
+		$rtn .= '		<li>'.PHP_EOL;
+		$rtn .= '			<a href="/php/admin.php?_menu=git" class="w_topmenu"><span class="icon-git w_big w_bold"></span><span class="hidden-xs hidden-sm"> Repo</span></a>'.PHP_EOL;
+		$rtn .= '		</li>'.PHP_EOL;
 	}
 	//errors
 	if((isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1) && isDBTable('_errors')){
 		$error_count=getDBCount(array('-table'=>'_errors','archived'=>0));
 		//echo "Errors: {$error_count}";exit;
 		if($error_count >0){
-			$rtn .= '		<li>'."\n";
-			$rtn .= '			<a href="/php/admin.php?_menu=list&_table_=_errors" class="w_topmenu"><span class="w_badge w_badge-danger">'.$error_count.'</span><span class="hidden-xs hidden-sm"> Errors</span></a>'."\n";
-			$rtn .= '		</li>'."\n";
+			$rtn .= '		<li>'.PHP_EOL;
+			$rtn .= '			<a href="/php/admin.php?_menu=list&_table_=_errors" class="w_topmenu"><span class="w_badge w_badge-danger">'.$error_count.'</span><span class="hidden-xs hidden-sm"> Errors</span></a>'.PHP_EOL;
+			$rtn .= '		</li>'.PHP_EOL;
 		}
 	}
-	$rtn .= '	</ul>'."\n";
-	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'."\n";
+	$rtn .= '	</ul>'.PHP_EOL;
+	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal rightside" style="float:right;">'.PHP_EOL;
 	//My Profile
-	$rtn .= '		<li><a href="#profile" onclick="return false;" class="w_topmenu"><span class="icon-user w_big"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '			<ul style="width:110px;">'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_logout=1"><span class="icon-user" style="color:#CCC;"></span> Log Off</a></li>'."\n";
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '		<li><a href="#profile" onclick="return false;" class="w_topmenu"><span class="icon-user w_big"></span><span class="hidden-xs hidden-sm"> '.$USER['username'].'<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '			<ul style="width:110px;">'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=profile" class="w_topmenu"><span class="icon-user"></span> My Profile</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit w_dblue w_big"></span> PostEdit</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_logout=1"><span class="icon-user" style="color:#CCC;"></span> Log Off</a></li>'.PHP_EOL;
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	//WaSQL
-	$rtn .= '		<li><a href="#help" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help<span class="icon-dir-down"></span></span></a>'."\n";
-	$rtn .= '        	<ul>'."\n";
-	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '		<li><a href="#help" onclick="return false;"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span><span class="hidden-xs hidden-sm"> Help<span class="icon-dir-down"></span></span></a>'.PHP_EOL;
+	$rtn .= '        	<ul>'.PHP_EOL;
+	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
-		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'."\n";
+		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'.PHP_EOL;
 	}
-	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
+	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt</a></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
-	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> Font Icons</a></li>'."\n";
-    //$rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> Server Vars</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'."\n";
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'."\n";
-	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'."\n";
-	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'."\n";
-	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'."\n";
-	$rtn .= '			</ul>'."\n";
-	$rtn .= '		</li>'."\n";
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> Font Icons</a></li>'.PHP_EOL;
+    //$rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> Server Vars</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'.PHP_EOL;
+	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'.PHP_EOL;
+	$rtn .= '			</ul>'.PHP_EOL;
+	$rtn .= '		</li>'.PHP_EOL;
 	//Settings Link
-	$rtn .= '     	<li><a style="padding:0px 10px 0px 10px;" title="Settings" href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span></a></li>'."\n";
+	$rtn .= '     	<li><a style="padding:0px 10px 0px 10px;" title="Settings" href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span></a></li>'.PHP_EOL;
 
 	//end menu
-	$rtn .= '	</ul>'."\n";
-	$rtn .= '	<br clear="both" />'."\n";
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</ul>'.PHP_EOL;
+	$rtn .= '	<br clear="both" />'.PHP_EOL;
+	$rtn .= '	</div>'.PHP_EOL;
 	return $rtn;
 }
 
@@ -3427,13 +3429,13 @@ function adminUserLoginMenu(){
 	global $ConfigSettings;
 	$show_icons=$ConfigSettings['mainmenu_icons'];
 	$rtn='';
-	$rtn .= '	<div id="adminmenu">'."\n";
-	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'."\n";
-	$rtn .= '		<li><a href="#" onclick="return false;">'.adminMenuIcon('/wfiles/wasql_admin.png').' Admin Login - '.$_SERVER['HTTP_HOST'].'</a></li>'."\n";
+	$rtn .= '	<div id="adminmenu">'.PHP_EOL;
+	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'.PHP_EOL;
+	$rtn .= '		<li><a href="#" onclick="return false;">'.adminMenuIcon('/wfiles/wasql_admin.png').' Admin Login - '.$_SERVER['HTTP_HOST'].'</a></li>'.PHP_EOL;
 	//end menu
-	$rtn .= '	</ul>'."\n";
-	$rtn .= '	<br clear="both" />'."\n";
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</ul>'.PHP_EOL;
+	$rtn .= '	<br clear="both" />'.PHP_EOL;
+	$rtn .= '	</div>'.PHP_EOL;
 	return $rtn;
 }
 
@@ -3480,7 +3482,7 @@ function tableOptions($table='',$params=array()){
 	switch(strtolower($params['-format'])){
 		case 'li':
 			$params['-options']=array_reverse($params['-options']);
-			$rtn .= '					<ul>'."\n";
+			$rtn .= '					<ul>'.PHP_EOL;
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
@@ -3509,7 +3511,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
-				$rtn .= '</a></li>'."\n";
+				$rtn .= '</a></li>'.PHP_EOL;
 		        }
 		    //group?
 		    if(isset($_SERVER['waSQL_Tablegroups']) && is_array($_SERVER['waSQL_Tablegroups'])){
@@ -3524,18 +3526,18 @@ function tableOptions($table='',$params=array()){
 		        }
 		    if(is_array($recs) && count($recs)){
 	        	$menu=isset($_REQUEST['_menu'])?$_REQUEST['_menu']:'';
-	        	$rtn .= '						<li class="dir"><a class="w_link" href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> Group with</a>'."\n";
-	        	$rtn .= '							<ul>'."\n";
+	        	$rtn .= '						<li class="dir"><a class="w_link" href="#" onclick="return false;"><span class="icon-group w_big w_success"></span> Group with</a>'.PHP_EOL;
+	        	$rtn .= '							<ul>'.PHP_EOL;
 	        	foreach($recs as $rec){
-	            	$rtn .= '								<li><a class="w_link" href="/php/admin.php?_groupwith='.$rec['tablegroup'].'&_menu='.$menu.'&_table_='.$table.'">'.$rec['tablegroup'].'</a></li>'."\n";
+	            	$rtn .= '								<li><a class="w_link" href="/php/admin.php?_groupwith='.$rec['tablegroup'].'&_menu='.$menu.'&_table_='.$table.'">'.$rec['tablegroup'].'</a></li>'.PHP_EOL;
 				}
-	        	$rtn .= '							</ul>'."\n";
-	        	$rtn .= '						</li>'."\n";
+	        	$rtn .= '							</ul>'.PHP_EOL;
+	        	$rtn .= '						</li>'.PHP_EOL;
 			}
-		    $rtn .= '					</ul>'."\n";
+		    $rtn .= '					</ul>'.PHP_EOL;
 		    break;
 		case 'table':
-			$rtn .= '<table class="actionmenu" class="w_nopad"><tr>'."\n";
+			$rtn .= '<table class="actionmenu" class="w_nopad"><tr>'.PHP_EOL;
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
@@ -3574,9 +3576,9 @@ function tableOptions($table='',$params=array()){
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
-				$rtn .= '</button></td>'."\n";
+				$rtn .= '</button></td>'.PHP_EOL;
 		        }
-		    $rtn .= '</tr></table>'."\n";
+		    $rtn .= '</tr></table>'.PHP_EOL;
 			break;
 		default:
 			//none
@@ -3615,7 +3617,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($params['-notext'])){
 					$rtn .= $title;
 				}
-				$rtn .= '</a> '."\n";
+				$rtn .= '</a> '.PHP_EOL;
 		        }
 			break;
 		}
@@ -3649,7 +3651,7 @@ function syncGetChanges($stables=array()){
 	foreach($info['db_tables'] as $table){
 		$fields=adminGetSynchronizeFields($table);
 		if(!is_array($fields)){
-			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span> '.$table.' has no sync fields defined.</div>'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span> '.$table.' has no sync fields defined.</div>'.PHP_EOL;
 			continue;
 		}
 		//determine the field to use as a name field.
@@ -3658,10 +3660,10 @@ function syncGetChanges($stables=array()){
 			if(in_array($checkfield,$fields)){$namefield=$checkfield;break;}
 		}
 		if(!isset($namefield)){
-			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'.PHP_EOL;
 			echo "	No namefield specified in stage for {$table}:".implode(', ',$fields)."<br />\n";
 			echo "	One of the following fields must be in the table and marked as syncronize in the meta data:".implode(', ',$checkfields)."<br />\n";
-			echo '</div>'."\n";
+			echo '</div>'.PHP_EOL;
 			echo "<div>Synchronize Fields: ".implode(', ',$fields)."</div>\n";
 			continue;
 			}
@@ -3685,10 +3687,10 @@ function syncGetChanges($stables=array()){
 			if(in_array($checkfield,$fields)){$namefield=$checkfield;break;}
 		}
 		if(!isset($namefield)){
-			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'."\n";
+			echo '<div class="w_red"><span class="icon-warning w_danger w_bold"></span>'.PHP_EOL;
 			echo "	No namefield specified in stage for {$table}:".implode(', ',$fields)."<br />\n";
 			echo "	One of the following fields must be in the table and marked as syncronize in the meta data:".implode(', ',$checkfields)."<br />\n";
-			echo '</div>'."\n";
+			echo '</div>'.PHP_EOL;
 			continue;
 			}
 		$fparts=array();
@@ -3857,8 +3859,8 @@ function adminShowSyncChanges($stables=array()){
 	}
 	$rtn='';
 	//display change tabs by table using btn-group of bootstrap
-	$rtn .= '	<div  class="w_align_left">'."\n";
-	$rtn .= '	<div class="btn-group">'."\n";
+	$rtn .= '	<div  class="w_align_left">'.PHP_EOL;
+	$rtn .= '	<div class="btn-group">'.PHP_EOL;
 	foreach($changes as $table=>$recs){
 		//get changes for the current user
 		$change_user_count=0;
@@ -3872,23 +3874,23 @@ function adminShowSyncChanges($stables=array()){
 		$img='';
 		$src=getImageSrc($table);
 		if(strlen($src)){$img='<img src="'.$src.'" class="w_bottom" alt="" /> ';}
-        $rtn .= '		<button type="button" class="btn btn-primary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'."\n";
-        $rtn .= '			<sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup>'."\n";
-        $rtn .= '		</button>'."\n";
+        $rtn .= '		<button type="button" class="btn btn-primary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'.PHP_EOL;
+        $rtn .= '			<sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup>'.PHP_EOL;
+        $rtn .= '		</button>'.PHP_EOL;
 	}
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</div>'.PHP_EOL;
 	//build each table's changes in a hidden div
 	$formname='syncform';
 	$rtn .=  buildFormBegin('',array('_menu'=>"synchronize",'-name'=>$formname,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
-	$rtn .= '	<input type="hidden" name="sync_action" value="">'."\n";
-	$rtn .= '	<div id="syncDiv"></div>'."\n";
+	$rtn .= '	<input type="hidden" name="sync_action" value="">'.PHP_EOL;
+	$rtn .= '	<div id="syncDiv"></div>'.PHP_EOL;
 	unset($first_table);
-	$rtn .= '	<div id="syncTableHidden" style="display:none;">'."\n";
+	$rtn .= '	<div id="syncTableHidden" style="display:none;">'.PHP_EOL;
 	foreach($changes as $table=>$recs){
 		if(!isset($first_table)){$first_table=$table;}
 		$syncTableDiv='sync'.$table.'div';
 		$syncTableTab='sync'.$table.'tab';
-		$rtn .= '		<div table="'.$table.'" id="'.$syncTableDiv.'">'."\n";
+		$rtn .= '		<div table="'.$table.'" id="'.$syncTableDiv.'">'.PHP_EOL;
 		$rtn .=  listDBRecords(array(
 			'-list'			=> $changes[$table],'_id_align'=>"left",
 			'-tableclass'	=> "table table-bordered table-striped",
@@ -3903,18 +3905,18 @@ function adminShowSyncChanges($stables=array()){
 			'-sync'			=> 1,
 			'_id_displayname'=> '<input id="'.$table.'_checkall" type="checkbox" onclick="checkAllElements(\'group\',\''.$table.'_syncrec\', this.checked);"><label for="'.$table.'_checkall"> ID</label>'
 			));
-		$rtn .= '		</div>'."\n";
+		$rtn .= '		</div>'.PHP_EOL;
 	}
-	$rtn .= '	</div>'."\n";
-	$rtn .= '	</div>'."\n";
+	$rtn .= '	</div>'.PHP_EOL;
+	$rtn .= '	</div>'.PHP_EOL;
 	//show the first table or the one they sorted by
 	$showtable=isset($_REQUEST['synctab'])?$_REQUEST['synctab']:$first_table;
 	$syncTableTab='sync'.$showtable.'tab';
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
-	$rtn .= '<br clear="both" />'."\n";
-	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'."\n";
-	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'."\n";
+	$rtn .= '<br clear="both" />'.PHP_EOL;
+	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }
@@ -3974,19 +3976,19 @@ function editorFileEdit($file){
 	}
 	$content=getFileContents($file);
 	$rtn = '';
-	$rtn .= '<div style="position:relative;">'."\n";
+	$rtn .= '<div style="position:relative;">'.PHP_EOL;
 	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('emenu'=>'file','_menu'=>"editor",'file'=>$file,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
-	$rtn .= '<table class="w_pad"><tr><td>'."\n";
-	$rtn .= '	<div class="w_bold w_bigger w_dblue">Editing File: '.$file.'</div>'."\n";
-	$rtn .= '</td><td>'.buildFormSubmit('Save').'</td></tr></table>'."\n";
-	$rtn .= '<div style="border:1px inset #000;width:800px;">'."\n";
-	$rtn .= '<textarea name="file_content" data-behavior="'.$behavior.'" style="width:800px;height:400px;">'."\n";
+	$rtn .= '<table class="w_pad"><tr><td>'.PHP_EOL;
+	$rtn .= '	<div class="w_bold w_bigger w_dblue">Editing File: '.$file.'</div>'.PHP_EOL;
+	$rtn .= '</td><td>'.buildFormSubmit('Save').'</td></tr></table>'.PHP_EOL;
+	$rtn .= '<div style="border:1px inset #000;width:800px;">'.PHP_EOL;
+	$rtn .= '<textarea name="file_content" data-behavior="'.$behavior.'" style="width:800px;height:400px;">'.PHP_EOL;
 	$rtn .= encodeHtml($content);
-	$rtn .= '</textarea>'."\n";
-	$rtn .= '</div>'."\n";
+	$rtn .= '</textarea>'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
 	$rtn .= buildFormSubmit('Save');
 	$rtn .= buildFormEnd();
-	$rtn .= '</div>'."\n";
+	$rtn .= '</div>'.PHP_EOL;
  	return $rtn;
 }
 
@@ -4001,17 +4003,17 @@ function editorFileAdd($filetype){
     	case 'css':$behavior='csseditor';break;
 	}
 	$rtn = '';
-	$rtn .= '<div style="position:relative;">'."\n";
-	$rtn .= '<table class="w_pad"><tr><td><div class="w_bold w_bigger w_dblue">New '.strtoupper($filetype).' File</div></td><td><div id="w_editor_status"></div></td></tr></table>'."\n";
+	$rtn .= '<div style="position:relative;">'.PHP_EOL;
+	$rtn .= '<table class="w_pad"><tr><td><div class="w_bold w_bigger w_dblue">New '.strtoupper($filetype).' File</div></td><td><div id="w_editor_status"></div></td></tr></table>'.PHP_EOL;
 	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('-name'=>'addedit','emenu'=>'file','filetype'=>$filetype,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
-	$rtn .= '<div style="margin-bottom:5px;">FileName: <input type="text" name="filename" data-required="1" style="width:400px;">.'.$filetype.'</div>'."\n";
-	$rtn .= '<div style="border:1px inset #000;width:800px;">'."\n";
-	$rtn .= '<textarea name="file_content" data-behavior="'.$behavior.'" style="width:800px;height:400px;">'."\n";
-	$rtn .= '</textarea>'."\n";
-	$rtn .= '</div>'."\n";
+	$rtn .= '<div style="margin-bottom:5px;">FileName: <input type="text" name="filename" data-required="1" style="width:400px;">.'.$filetype.'</div>'.PHP_EOL;
+	$rtn .= '<div style="border:1px inset #000;width:800px;">'.PHP_EOL;
+	$rtn .= '<textarea name="file_content" data-behavior="'.$behavior.'" style="width:800px;height:400px;">'.PHP_EOL;
+	$rtn .= '</textarea>'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
 	$rtn .= buildFormSubmit('Save');
 	$rtn .= buildFormEnd();
-	$rtn .= '</div>'."\n";
+	$rtn .= '</div>'.PHP_EOL;
 	$rtn .= buildOnLoad("document.addedit.filename.focus();");
  	return $rtn;
 }
@@ -4022,20 +4024,20 @@ function editorFileAdd($filetype){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function contentManager(){
-	$rtn = '<div style="height:600px;overflow:auto;padding-right:25px;">'."\n";
+	$rtn = '<div style="height:600px;overflow:auto;padding-right:25px;">'.PHP_EOL;
 	//pages
 	$expand='';
 	$recs=getDBRecords(array('-table'=>'_pages','page_type'=>1,'-order'=>'name','-index'=>'_id','-fields'=>"_id,name,permalink,_template"));
 	$ico='<img src="/wfiles/_pages.gif" class="w_middle" alt="pages" />';
 	$title=$ico.' Pages ('.count($recs).')';
 	//add new link
-	//$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=contentmanager&emenu=add&table=_pages\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle"> add new</a></div>'."\n";
+	//$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=contentmanager&emenu=add&table=_pages\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/add.png" class="w_middle"> add new</a></div>'.PHP_EOL;
 	$expand .= buildTableBegin(2,0);
-	$expand .= '	<tbody>'."\n";
+	$expand .= '	<tbody>'.PHP_EOL;
 	foreach($recs as $id=>$rec){
-    	$expand .= '	<tr><td><a href="#" onclick="removeTinyMCE(\'txtfield_content\');return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=contentmanager&emenu=edit&table=_pages&id='.$id.'\');" class="w_link w_lblue w_block">'.$rec['name'].'</a></td></tr>'."\n";
+    	$expand .= '	<tr><td><a href="#" onclick="removeTinyMCE(\'txtfield_content\');return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=contentmanager&emenu=edit&table=_pages&id='.$id.'\');" class="w_link w_lblue w_block">'.$rec['name'].'</a></td></tr>'.PHP_EOL;
 	}
-	$expand .= '	</tbody>'."\n";
+	$expand .= '	</tbody>'.PHP_EOL;
 	$expand .= buildTableEnd();
 	return $expand;
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
@@ -4048,7 +4050,7 @@ function contentManager(){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function editorNavigation(){
-	$rtn = '<div style="height:600px;overflow:auto;padding-right:25px;">'."\n";
+	$rtn = '<div style="height:600px;overflow:auto;padding-right:25px;">'.PHP_EOL;
 	//files
 	if(isset($_SERVER['DOCUMENT_ROOT'])){
 		$expand='';
@@ -4058,7 +4060,7 @@ function editorNavigation(){
 			if(!isTextFile($file['name'])){continue;}
 			$cnt++;
 			$ico=getFileIcon($file['name']);
-			$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$ico.' '.$file['name'].'</a></div>'."\n";
+			$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$ico.' '.$file['name'].'</a></div>'.PHP_EOL;
 		}
 		$ico=getFileIcon("x.log");
 		$title=$ico.' Root Files ('.$cnt.')';
@@ -4067,24 +4069,24 @@ function editorNavigation(){
 
 	//.htaccess
 	if(is_file(realpath("../.htaccess"))){
-		echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../.htaccess\');" class="w_link w_lblue"><span class="icon-gear"></span> .htaccess</a></div>'."\n";
+		echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../.htaccess\');" class="w_link w_lblue"><span class="icon-gear"></span> .htaccess</a></div>'.PHP_EOL;
 	}
 	//Configuration
-	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/xml.png" class="w_middle" alt="config.xml" /> config.xml</a></div>'."\n";
+	echo '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file=../config.xml\');" class="w_link w_lblue"><img src="/wfiles/iconsets/16/xml.png" class="w_middle" alt="config.xml" /> config.xml</a></div>'.PHP_EOL;
 	//templates
 	$recs=getDBRecords(array('-table'=>'_templates','-order'=>'name','-index'=>'_id','-fields'=>'_id,name'));
 	$ico='<span class="icon-file-docs w_grey"></span>';
 	$title=$ico.' Templates ('.count($recs).')';
 	$expand='';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_templates\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_templates\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'.PHP_EOL;
 	$expand .= buildTableBegin(1,1,1);
 	$expand .= buildTableTH(array('ID','Name'),array('thead'=>1));
-	$expand .= '	<tbody>'."\n";
+	$expand .= '	<tbody>'.PHP_EOL;
 	foreach($recs as $id=>$rec){
-    	$expand .= '	<tr><td>'.$rec['_id'].'</td><td><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&table=_templates&id='.$id.'\');" class="w_link w_lblue">'.$rec['name'].'</a></td></tr>'."\n";
+    	$expand .= '	<tr><td>'.$rec['_id'].'</td><td><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&table=_templates&id='.$id.'\');" class="w_link w_lblue">'.$rec['name'].'</a></td></tr>'.PHP_EOL;
 	}
-	$expand .= '	</tbody>'."\n";
+	$expand .= '	</tbody>'.PHP_EOL;
 	$expand .= buildTableEnd();
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 	//pages
@@ -4093,14 +4095,14 @@ function editorNavigation(){
 	$ico='<img src="/wfiles/_pages.gif" class="w_middle" alt="pages" />';
 	$title=$ico.' Pages ('.count($recs).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_pages\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&table=_pages\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'.PHP_EOL;
 	$expand .= buildTableBegin(1,1,1);
 	$expand .= buildTableTH(array('ID','Name','TID'),array('thead'=>1));
-	$expand .= '	<tbody>'."\n";
+	$expand .= '	<tbody>'.PHP_EOL;
 	foreach($recs as $id=>$rec){
-    	$expand .= '	<tr><td>'.$rec['_id'].'</td><td><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&table=_pages&id='.$id.'\');" class="w_link w_lblue">'.$rec['name'].'</a></td><td>'.$rec['_template'].'</td></tr>'."\n";
+    	$expand .= '	<tr><td>'.$rec['_id'].'</td><td><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&table=_pages&id='.$id.'\');" class="w_link w_lblue">'.$rec['name'].'</a></td><td>'.$rec['_template'].'</td></tr>'.PHP_EOL;
 	}
-	$expand .= '	</tbody>'."\n";
+	$expand .= '	</tbody>'.PHP_EOL;
 	$expand .= buildTableEnd();
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
@@ -4110,9 +4112,9 @@ function editorNavigation(){
 	$ico=getFileIcon("x.css");
 	$title=$ico.' Custom CSS Files ('.count($files).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=css\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=css\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'.PHP_EOL;
 	foreach($files as $file){
-    	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
+    	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'.PHP_EOL;
 	}
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
@@ -4122,13 +4124,13 @@ function editorNavigation(){
 	$ico=getFileIcon("x.js");
 	$title=$ico.' Custom Js Files ('.count($files).')';
 	//add new link
-	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=js\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'."\n";
+	$expand .= '<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=add&filetype=js\');" class="w_link w_lblue"><span class="icon-plus"></span> add new</a></div>'.PHP_EOL;
 	foreach($files as $file){
-    	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'."\n";
+    	$expand .= '	<div><a href="#" onclick="return ajaxGet(\''.$_SERVER['PHP_SELF'].'\',\'w_editor_main\',\'_menu=editor&emenu=edit&file='.$file['afile'].'\');" class="w_link w_lblue">'.$file['name'].'</a></div>'.PHP_EOL;
 	}
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
-	$rtn .= '</div>'."\n";
+	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
 
@@ -4139,15 +4141,15 @@ function editorNavigation(){
  */
 function adminCronBoard(){
 	$rtn='';
-	$rtn .= '<div class="w_round w_dropshadow" style="background:#FFF;border:1px solid #b9b9b9;padding:3px 0 7px 0;margin-top:0px;" align="center">'."\n";
+	$rtn .= '<div class="w_round w_dropshadow" style="background:#FFF;border:1px solid #b9b9b9;padding:3px 0 7px 0;margin-top:0px;" align="center">'.PHP_EOL;
 	//return printValue($recs);
 	$rtn .= buildTableBegin(2,0);
-	$rtn .= '	<tr>'."\n";
-	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-cron w_success w_big"></span></a></td>'."\n";
-	$rtn .= '		<td colspan="5" class="w_bold w_dblue" align="center" style="font-size:1.1em;">Cron Activity Dashboard</td>'."\n";
-	$rtn .= '		<td align="right"><div title="Update Timer" data-behavior="countdown" class="w_lblue w_smaller" id="cronboard_countdown">31</div></td>'."\n";
-	$rtn .= '		<td align="right"><a href="/php/admin.php?_menu=list&_table_=_cronlog"><img src="/wfiles/_cronlog.png" class="w_middle" title="goto CronLog" alt="cron log" /></a></td>'."\n";
-	$rtn .= '	</tr>'."\n";
+	$rtn .= '	<tr>'.PHP_EOL;
+	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-cron w_success w_big"></span></a></td>'.PHP_EOL;
+	$rtn .= '		<td colspan="5" class="w_bold w_dblue" align="center" style="font-size:1.1em;">Cron Activity Dashboard</td>'.PHP_EOL;
+	$rtn .= '		<td align="right"><div title="Update Timer" data-behavior="countdown" class="w_lblue w_smaller" id="cronboard_countdown">31</div></td>'.PHP_EOL;
+	$rtn .= '		<td align="right"><a href="/php/admin.php?_menu=list&_table_=_cronlog"><img src="/wfiles/_cronlog.png" class="w_middle" title="goto CronLog" alt="cron log" /></a></td>'.PHP_EOL;
+	$rtn .= '	</tr>'.PHP_EOL;
 	$rtn .= buildTableTH(array('','Crons','Active','Inactive','Running','MaxRun','Listening','Logs'));
 	//base query
 	$basequery="select
@@ -4170,33 +4172,33 @@ function adminCronBoard(){
 		$xrec=getDBRecord(array('-query'=>$query));
 		$rec['maxrun']=$xrec['maxrun'];
 		if(!isset($rec['maxrun'])){$rec['maxrun']=0;}
-		$rtn .= '	<tr>'."\n";
-		$rtn .= '		<td>'.$t.'</td>'."\n";
+		$rtn .= '	<tr>'.PHP_EOL;
+		$rtn .= '		<td>'.$t.'</td>'.PHP_EOL;
 		//crons
 		$bg=$rec['count_crons']==0?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons'].'</td>'.PHP_EOL;
 		//active
 		$bg=$rec['count_crons_active']==0?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_active'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_active'].'</td>'.PHP_EOL;
 		//inactive
 		$bg='';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_inactive'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_inactive'].'</td>'.PHP_EOL;
 		//running
 		$bg=$rec['count_crons_running'] > ($rec['count_crons']/2)?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_running'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_running'].'</td>'.PHP_EOL;
 		//MaxRun
 		$bg='';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['maxrun'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['maxrun'].'</td>'.PHP_EOL;
 		//listening
 		$bg=$rec['count_crons_listening'] < ($rec['maxrun']*1.5)?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_listening'].'</td>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_listening'].'</td>'.PHP_EOL;
 		//Logs
 		$bg=$rec['logs'] > 100000?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_cronlogs'].'</td>'."\n";
-		$rtn .= '	</tr>'."\n";
+		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_cronlogs'].'</td>'.PHP_EOL;
+		$rtn .= '	</tr>'.PHP_EOL;
 	}
 	$rtn .= buildTableEnd();
-	$rtn .= '</div>'."\n";
+	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
 

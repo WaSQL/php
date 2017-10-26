@@ -901,16 +901,16 @@ function userLoginForm($params=array()){
 	}
 	if(isset($CONFIG['login_title'])){$params['-title']=$CONFIG['login_title'];}
 	elseif(isset($CONFIG['authhost'])){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'."\n";
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'.PHP_EOL;
 	}
 	elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'."\n";
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'.PHP_EOL;
 	}
 	elseif(isset($CONFIG['authldaps']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'."\n";
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'.PHP_EOL;
 	}
 	elseif(isset($CONFIG['auth365'])){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'."\n";
+		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'.PHP_EOL;
 	}
     if(!isset($params['-username'])){
     	$params['-username']='<span class="icon-user w_biggest w_grey"></span>';
@@ -920,7 +920,7 @@ function userLoginForm($params=array()){
 	}
 	//return the user Login form
 	$form='';
-	$form .= '<div style="clear:both;">'."\n";
+	$form .= '<div style="clear:both;">'.PHP_EOL;
 	//beginning form tag
 	$attributes=array('id','name','style','class','method','action','onsubmit');
 	$form .= '<form';
@@ -931,22 +931,22 @@ function userLoginForm($params=array()){
 		}
 	}
 	$form .= ">\n";
-	$form .= '	<input type="hidden" name="guid" value="'.$_SERVER['GUID'].'">'."\n";
-	$form .= '	<input type="hidden" name="_login" value="1">'."\n";
-	$form .= '	<input type="hidden" name="_pwe" value="1">'."\n";
+	$form .= '	<input type="hidden" name="guid" value="'.$_SERVER['GUID'].'">'.PHP_EOL;
+	$form .= '	<input type="hidden" name="_login" value="1">'.PHP_EOL;
+	$form .= '	<input type="hidden" name="_pwe" value="1">'.PHP_EOL;
 	//-title
     if(strlen($params['-title'])){
-		$form .= '<div>'.$params['-title'].'</div>'."\n";
+		$form .= '<div>'.$params['-title'].'</div>'.PHP_EOL;
     	}
     //$params['-format']='inline';
     switch(strtolower($params['-format'])){
 		case 'oneline':
-			$form .= '<div id="w_loginform_oneline">'."\n";
+			$form .= '<div id="w_loginform_oneline">'.PHP_EOL;
 			$form .= '<table>';
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'."\n";
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>1)).'</td>'."\n";
-			$form .= '		<td class="text-right w_padright"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
+			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'.PHP_EOL;
+			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>1)).'</td>'.PHP_EOL;
+			$form .= '		<td class="text-right w_padright"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td class="w_padright"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -955,32 +955,32 @@ function userLoginForm($params=array()){
     			$form .= '<td class="w_padright"><div id="google_login"></div></td>';
 			}
 			if(!isset($params['-noremind'])){
-				$form .= '		<td class="text-left" style="padding:10px 10px 0 0;">'."\n";
+				$form .= '		<td class="text-left" style="padding:10px 10px 0 0;">'.PHP_EOL;
 				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
 				if($params['-icons']){
 					$form .= '<span class="icon-mail w_biggest w_padright"></span>';
 				}
 				$form .= " {$params['-remind']}</a>\n";
-				$form .= '		</td>'."\n";
+				$form .= '		</td>'.PHP_EOL;
 			}
-			$form .= '	</tr>'."\n";
-			$form .= '</table>'."\n";
+			$form .= '	</tr>'.PHP_EOL;
+			$form .= '</table>'.PHP_EOL;
 			if(isset($_REQUEST['_login_error'])){
-				$form .= '<div style="display:inline;margin-left:25px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'."\n";
+				$form .= '<div style="display:inline;margin-left:25px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'.PHP_EOL;
 			}
-			$form .= '</div>'."\n";
+			$form .= '</div>'.PHP_EOL;
 			break;
 		case 'inline':
-			$form .= '<div id="w_loginform_inline">'."\n";
+			$form .= '<div id="w_loginform_inline">'.PHP_EOL;
 			$form .= '<table>';
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_username" style="padding:0px;">'.$params['-username'].'</label></th>'."\n";
-			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_password" style="padding:0px;">'.$params['-password'].'</label></th>'."\n";
+			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_username" style="padding:0px;">'.$params['-username'].'</label></th>'.PHP_EOL;
+			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_password" style="padding:0px;">'.$params['-password'].'</label></th>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
-				$form .= '		<td class="text-left" colspan="2">'."\n";
+				$form .= '		<td class="text-left" colspan="2">'.PHP_EOL;
 			}
 			else{
-				$form .= '		<td class="text-left">'."\n";
+				$form .= '		<td class="text-left">'.PHP_EOL;
 			}
 			if(!isset($params['-noremind'])){
 				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
@@ -989,12 +989,12 @@ function userLoginForm($params=array()){
 				}
 				$form .= " {$params['-remind']}</a>\n";
 			}
-			$form .= '		</td>'."\n";
-			$form .= '	</tr>'."\n";
+			$form .= '		</td>'.PHP_EOL;
+			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'."\n";
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2)).'</td>'."\n";
-			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
+			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'.PHP_EOL;
+			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2)).'</td>'.PHP_EOL;
+			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td style="padding:3px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -1002,42 +1002,59 @@ function userLoginForm($params=array()){
 			if(isset($CONFIG['google_appid'])){
     			$form .= '<td style="padding:3px;"><div id="google_login"></div></td>';
 			}
-			$form .= '	</tr>'."\n";
-			$form .= '</table>'."\n";
+			$form .= '	</tr>'.PHP_EOL;
+			$form .= '</table>'.PHP_EOL;
 			if(isset($_REQUEST['_login_error'])){
-				$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'."\n";
+				$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'.PHP_EOL;
 			}
-			$form .= '</div>'."\n";
+			$form .= '</div>'.PHP_EOL;
 			break;
 		default:
-			$form .= '<div id="w_loginform_default">'."\n";
+			$form .= '<div class="row" id="w_loginform_bootstrap" style="max-width:300px;">'.PHP_EOL;
+			$form .= '	<div class="col-sm-9">'.PHP_EOL;
+			$form .= '		<div class="input-group">'.PHP_EOL;
+			$form .= '			<span class="input-group-addon"><span class="icon-user"></span></span>'.PHP_EOL;
+			$form .= '		'.buildFormText('username',array('id'=>$params['-name'].'_username','placeholder'=>'username'));
+			$form .= '		</div>'.PHP_EOL;
+			$form .= '		<div class="w_padtop"><div class="input-group">'.PHP_EOL;
+			$form .= '			<span class="input-group-addon"><span class="icon-lock"></span></span>'.PHP_EOL;
+			$form .= '		'.buildFormPassword('password',array('id'=>$params['-name'].'_password','placeholder'=>'password'));
+			$form .= '		</div></div>'.PHP_EOL;
+			$form .= '	</div>'.PHP_EOL;
+			$form .= '	<div class="col-sm-3">'.PHP_EOL;
+			$form .= '		<button type="submit" class="btn btn-default btn-lg">Login</button>'.PHP_EOL;
+			$form .= '	</div>'.PHP_EOL;
+			$form .= '</div>'.PHP_EOL;
+		break;
+		case 'default_old':
+			$form .= '<div id="w_loginform_default">'.PHP_EOL;
 			$form .= '<table>';
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td class="text-left" title="Username" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></td>'."\n";
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'placeholder'=>'username','autofocus'=>'true')).'</td>'."\n";
-			$form .= '		<td rowspan="2" class="w_top w_padleft"><button class="btn btn-default btn-lg w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'."\n";
-			$form .= '	</tr>'."\n";
+			$form .= '		<td class="text-left" title="Username" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></td>'.PHP_EOL;
+			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'placeholder'=>'username','autofocus'=>'true')).'</td>'.PHP_EOL;
+			$form .= '		<td rowspan="2" class="w_top w_padleft"><button class="btn btn-default btn-lg w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
+			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td class="text-left w_padtop" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'."\n";
-			$form .= '		<td class="w_padtop">'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name']."_password",'required'=>1,'tabindex'=>2,'placeholder'=>'password')).'</td>'."\n";
-			$form .= '	</tr>'."\n";
+			$form .= '		<td class="text-left w_padtop" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'.PHP_EOL;
+			$form .= '		<td class="w_padtop">'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name']."_password",'required'=>1,'tabindex'=>2,'placeholder'=>'password')).'</td>'.PHP_EOL;
+			$form .= '	</tr>'.PHP_EOL;
 			if(!isset($params['-noremind'])){
 				$form .= '	<tr class="w_middle text-right">';
-				$form .= '		<td class="text-left" style="padding-right:10px;">'."\n";
+				$form .= '		<td class="text-left" style="padding-right:10px;">'.PHP_EOL;
 				if($params['-icons']){
 					$form .= '			<span class="icon-mail"></span> ';
 				}
-				$form .= '</td><td colspan="2" class="text-left" style="padding-top:10px">'."\n";
-				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'."\n";
-				$form .= '		</td>'."\n";
-				$form .= '	</tr>'."\n";
+				$form .= '</td><td colspan="2" class="text-left" style="padding-top:10px">'.PHP_EOL;
+				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'.PHP_EOL;
+				$form .= '		</td>'.PHP_EOL;
+				$form .= '	</tr>'.PHP_EOL;
 			}
 			if(isset($_REQUEST['_login_error'])){
-				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'."\n";
+				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'.PHP_EOL;
 			}
-			$form .= '</table>'."\n";
+			$form .= '</table>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
-				$form .= '<table><tr>'."\n";
+				$form .= '<table><tr>'.PHP_EOL;
 				if(isset($CONFIG['facebook_appid'])){
 					loadExtrasJs('facebook_login');
 					checkDBTableSchema('_users');
@@ -1047,23 +1064,23 @@ function userLoginForm($params=array()){
 				if(isset($CONFIG['google_appid'])){
 					$form .= '<td style="margin-top:15px;padding-left:10px;"><div id="google_login"></div></td>';
 				}
-				$form .= '</tr></table>'."\n";
+				$form .= '</tr></table>'.PHP_EOL;
 			}
-			$form .= '</div>'."\n";
+			$form .= '</div>'.PHP_EOL;
 			break;
 	}
 	//pass thru params
-	$form .= '<div style="display:none;" id="passthru">'."\n";
+	$form .= '<div style="display:none;" id="passthru">'.PHP_EOL;
 	foreach($params as $key=>$val){
 		if(stringBeginsWith($key,'-')){continue;}
-		$form .= '	<textarea name="'.$key.'">'.$val.'</textarea>'."\n";
+		$form .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
     }
-    $form .= '</div>'."\n";
-	$form .= '</form>'."\n";
+    $form .= '</div>'.PHP_EOL;
+	$form .= '</form>'.PHP_EOL;
 	if(!isset($params['-focus']) || $params['-focus'] == 'username'){
 		$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
 	}
-	$form .= '</div>'."\n";
+	$form .= '</div>'.PHP_EOL;
 	//$form .=printValue($_REQUEST);
     return $form;
 }
@@ -1167,21 +1184,21 @@ function wpassModule(){
 	global $USER;
 	if(!isNum($USER['_id'])){return '';}
 	if(!isDBTable('_wpass')){createWasqlTables('_wpass');}
-	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'."\n";
-	$rtn .= '	<input id="wpass_search" class="form-control" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'."\n";
-	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer w_middle" src="/wfiles/_wpass.png" alt="add" />'."\n";
-	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'."\n";
-	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'."\n";
+	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'.PHP_EOL;
+	$rtn .= '	<input id="wpass_search" class="form-control" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'.PHP_EOL;
+	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer w_middle" src="/wfiles/_wpass.png" alt="add" />'.PHP_EOL;
+	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'.PHP_EOL;
+	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'.PHP_EOL;
 	$query="select _id,category,title from _wpass where users like '{$USER['_id']}:%' or users like '%:{$USER['_id']}' or users like '{$USER['_id']}' or users like '%:{$USER['_id']}:%' or  _cuser={$USER['_id']} order by category,title";
 	$recs=getDBRecords(array('-query'=>$query));
-	$rtn .= '	<datalist id="wpass_datalist">'."\n";
+	$rtn .= '	<datalist id="wpass_datalist">'.PHP_EOL;
 	if(is_array($recs)){
 		foreach($recs as $rec){
-			$rtn .= '	<option value="'.$rec['_id'].'">'."{$rec['category']} - {$rec['title']}".'</option>'."\n";
+			$rtn .= '	<option value="'.$rec['_id'].'">'."{$rec['category']} - {$rec['title']}".'</option>'.PHP_EOL;
     	}
 	}
-    $rtn .= '	</datalist>'."\n";
-	$rtn .= '</div>'."\n";
+    $rtn .= '	</datalist>'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
 //---------- begin function wpassInfo ----
@@ -1197,8 +1214,8 @@ function wpassInfo($id){
 	$rtn='';
 	if($id==0){
     	//add
-    	$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
-    	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="new" /> New wPass Record</div>'."\n";
+    	$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'.PHP_EOL;
+    	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="new" /> New wPass Record</div>'.PHP_EOL;
     	$rtn .= addEditDBForm(array(
 			'-table'=>'_wpass',
 			'-name'=> '_wpass_addedit',
@@ -1207,9 +1224,9 @@ function wpassInfo($id){
 			'-fields'	=> "category:title,user:pass,url,notes,users",
 			'-onsubmit'=>"ajaxSubmitForm(this,'wpass_info');return false;"
 		));
-		$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'."\n";
-		$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'."\n";
-		$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+		$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'.PHP_EOL;
+		$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'.PHP_EOL;
+		$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'.PHP_EOL;
 	}
 	else{
 		$rec=getDBRecord(array(
@@ -1220,10 +1237,10 @@ function wpassInfo($id){
 		if(isset($rec['_id'])){
 			$users_list=preg_split('/\:/',$rec['users']);
 			if($rec['_cuser'] != $USER['_id'] && !in_array($USER['_id'],$users_list)){
-            	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="denied" /> Denied Access</div>'."\n";
+            	$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="denied" /> Denied Access</div>'.PHP_EOL;
 			}
-			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
-			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="edit" /> Edit wPass Record</div>'."\n";
+			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'.PHP_EOL;
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="edit" /> Edit wPass Record</div>'.PHP_EOL;
 			$editopts=array(
 				'-table'=>'_wpass',
 				'-name'=> '_wpass_addedit',
@@ -1240,21 +1257,21 @@ function wpassInfo($id){
             	$editopts['-hide']="clone,delete,reset,save";
 			}
 	    	$rtn .= addEditDBForm($editopts);
-			$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'."\n";
-			$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'."\n";
+			$rtn .= '<div class="w_smaller"> - Fields marked with ** are stored in the database encrypted</div>'.PHP_EOL;
+			$rtn .= '<div class="w_smaller"> - only the creator of this record can edit it.</div>'.PHP_EOL;
 			if($rec['_cuser']==$USER['_id']){
-				$rtn .= '<div class="w_smaller"> - Created by you on '.$rec['_cdate'].'</div>'."\n";
+				$rtn .= '<div class="w_smaller"> - Created by you on '.$rec['_cdate'].'</div>'.PHP_EOL;
 			}
 			else{
-            	$rtn .= '<div class="w_smaller"> - Created by '."{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'."\n";
+            	$rtn .= '<div class="w_smaller"> - Created by '."{$rec['_cuser_ex']['firstname']} {$rec['_cuser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'.PHP_EOL;
 			}
 			if(strlen($rec['_edate']) && isset($rec['_euser_ex']['firstname'])){
-            	$rtn .= '<div class="w_smaller"> - Last edited by '."{$rec['_euser_ex']['firstname']} {$rec['_euser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'."\n";
+            	$rtn .= '<div class="w_smaller"> - Last edited by '."{$rec['_euser_ex']['firstname']} {$rec['_euser_ex']['lastname']}".' on '.$rec['_cdate'].'</div>'.PHP_EOL;
 			}
-			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'."\n";
+			$rtn .= '<div class="w_right w_pointer w_red w_padright" onclick="setText(\'wpass_info\',\'\');">close</div>'.PHP_EOL;
 		}
 		else{
-			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="no record" /> No such record</div>'."\n";
+			$rtn .= '<div class="w_bold" style="font-size:24px;font-family:arial;color:#ceb78b;"><img src="/wfiles/iconsets/32/keylock.png" class="w_middle" alt="no record" /> No such record</div>'.PHP_EOL;
 		}
 	}
 	return $rtn;
