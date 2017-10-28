@@ -8719,6 +8719,10 @@ function listFilesEx($dir='.',$params=array()){
 				elseif(!stringContains($fileinfo[$key],$val)){$skip++;}
             	}
             if($skip > 0){continue;}
+            //exif
+            if(isset($params['-exif']) && $params['-exif']){
+				$fileinfo['exif']=getFileExif($fileinfo['afile']);
+			}
             //line count
             if(isset($params['-lines']) && $params['-lines']){
             	$fileinfo['lines']=getFileLineCount($afile);
