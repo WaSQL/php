@@ -382,10 +382,21 @@ function tooltipDiv(obj,rtimer){
 	obj=getObject(obj);
 	var txt=obj.getAttribute('data-tooltip');
 	var position=obj.getAttribute('data-tooltip_position') || '';
+	var ajax='';
 	if(txt.indexOf('id:')==0){
 		//get tooltip text from an external div
     	var divid=str_replace('id:','',txt);
     	txt=getText(divid) || '';
+	}
+	else if(txt.indexOf('js:')==0){
+		//call a function
+    	var f=str_replace('id:','',txt);
+    	txt=eval(func);
+	}
+	else if(txt.indexOf('ajax:')==0){
+		//call a function
+    	ajax=str_replace('id:','',txt);
+    	txt='';
 	}
 	else if(txt.indexOf('att:')==0){
 		//get tooltip from another attribute - att:alt for example
@@ -424,6 +435,9 @@ function tooltipDiv(obj,rtimer){
 	tipdiv.style.top=y+"px";
     tipdiv.style.left=x+"px";
  	document.body.appendChild(tipdiv);
+ 	if(ajax.length){
+		ajaxGet(ajax,'w_tooltip');
+	}
 	return false;
 }
 /* popUpDiv */
