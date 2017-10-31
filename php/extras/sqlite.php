@@ -78,8 +78,8 @@ function sqliteDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){
-		echo "sqliteDBConnect error: no dbname set";
-		exit;
+		debugValue("sqliteDBConnect error: no dbname set");
+		return null;
 	}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}
 
@@ -94,8 +94,8 @@ function sqliteDBConnect($params=array()){
 		return $dbh_sqlite;
 	}
 	catch (Exception $e) {
-		echo "sqliteDBConnect exception" . $e->getMessage();
-		exit;
+		debugValue("sqliteDBConnect exception" . $e->getMessage());
+		return null;
 
 	}
 }
@@ -114,13 +114,13 @@ function sqliteDBConnect($params=array()){
 function sqliteIsDBTable($table,$params=array()){
 	if(!strlen($table)){
 		echo "sqliteIsDBTable error: No table";
-		exit;
+		return null;
 	}
 	$table=strtolower($table);
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!is_resource($dbh_sqlite)){
-		echo "sqliteDBConnect error".printValue($params);
-		exit;
+		debugValue("sqliteDBConnect error".printValue($params));
+		return null;
 	}
 	try{
 		$query="SELECT name FROM sqlite_master WHERE type='table' and name = ?";
@@ -133,8 +133,8 @@ function sqliteIsDBTable($table,$params=array()){
 				'query'	=> $query,
 				'vals'	=> $vals
 				);
-			echo printValue($err);
-			exit;
+			debugValue($err);
+			return null;
 		}
 		$stmt->bindParam(1,$vals[0],SQLITE3_TEXT);
 		$resuts=$stmt->execute();
@@ -149,8 +149,8 @@ function sqliteIsDBTable($table,$params=array()){
 	}
 	catch (Exception $e) {
 		$err=$e->getMessage();
-		echo "sqliteIsDBTable error: exception".printValue($err);
-		exit;
+		debugValue("sqliteIsDBTable error: exception".printValue($err));
+		return null;
 	}
     return false;
 }
@@ -255,7 +255,6 @@ ENDOFQUERY;
     	return;
 	}
 	try{
-		//echo $query.printValue($vals);exit;
 		$stmt=$dbh_sqlite->prepare($query);
 		if(!$stmt){
 			$err=array(
@@ -264,8 +263,8 @@ ENDOFQUERY;
 				'query'	=> $query,
 				'vals'	=> $vals
 				);
-			echo printValue($err);
-			exit;
+			debugValue($err);
+			return null;
 		}
 		foreach($vals as $i=>$v){
 			$fld=$flds[$i];
@@ -360,7 +359,6 @@ ENDOFQUERY;
     	return;
 	}
 	try{
-		//echo $query.printValue($vals);exit;
 		$stmt=$dbh_sqlite->prepare($query);
 		if(!$stmt){
 			$e=sqlite_error_string(sqlite_last_error());
@@ -427,8 +425,8 @@ function sqliteGetDBTables($params=array()){
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "sqliteIsDBTable error: exception".printValue($err);
-		exit;
+		debugValue("sqliteIsDBTable error: exception".printValue($err));
+		return null;
 	}
 	return array();
 }
@@ -462,8 +460,8 @@ function sqliteGetDBFieldInfo($table,$params=array()){
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "sqliteGetDBFieldInfo error: exception".printValue($err);
-		exit;
+		debugValue("sqliteGetDBFieldInfo error: exception".printValue($err));
+		return null;
 	}
 	return array();
 }
@@ -501,7 +499,7 @@ function sqliteQueryResults($query,$params=array()){
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
     	debugValue(array("sqliteQueryResults Connect Error",$e));
-    	return;
+    	return null;
 	}
 	try{
 		$results=$dbh_sqlite->query($query);
@@ -522,8 +520,8 @@ function sqliteQueryResults($query,$params=array()){
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "sqliteQueryResults error: exception".printValue($err);
-		exit;
+		debugValue("sqliteQueryResults error: exception".printValue($err));
+		return null;
 	}
 }
 
