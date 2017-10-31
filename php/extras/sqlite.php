@@ -181,6 +181,11 @@ function sqliteExecuteSQL($query,$params=array()){
 	try{
 		$result=$dbh_sqlite->exec($query);
 		if(!$result){
+			$err=array(
+				'msg'=>"sqliteExecuteSQL error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query
+				);
 			debugValue($err);
 			return false;
 		}
@@ -361,8 +366,12 @@ ENDOFQUERY;
 	try{
 		$stmt=$dbh_sqlite->prepare($query);
 		if(!$stmt){
-			$e=sqlite_error_string(sqlite_last_error());
-			debugValue(array("sqliteAddDBRecord Prepare Error",$e,$query));
+			$err=array(
+				'msg'=>"sqliteEditDBRecord prepare error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query
+				);
+			debugValue($err);
 			return;
 		}
 		foreach($vals as $i=>$v){
