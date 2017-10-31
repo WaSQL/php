@@ -391,7 +391,7 @@ function tooltipDiv(obj,rtimer){
 	else if(txt.indexOf('js:')==0){
 		//call a function
     	var f=str_replace('id:','',txt);
-    	txt=eval(func);
+    	txt=eval(f);
 	}
 	else if(txt.indexOf('ajax:')==0){
 		//call a function
