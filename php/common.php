@@ -5195,7 +5195,7 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'."\n";
 	$rtn .= '  			}'."\n";
 	$rtn .= '  </script>'."\n";
-	$rtn .= '  <div style="width:400px;padding:25px;">'."\n";
+	$rtn .= '  <div style="width:600px;padding:25px;">'."\n";
 	//$rtn .= $action;
 	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'."\n";
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'."\n";
@@ -5203,24 +5203,32 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'."\n";
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<div class="row">'."\n";
-		$rtn .= '		<label for="_newdir">New Directory Name</label>'."\n";
-		$rtn .= '		<input type="text" id="_newdir" class="form-control" name="_newdir" value="" />'."\n";
+		$rtn .= '		<div class="col-sm-12">'."\n";
+		$rtn .= '			<label for="_newdir">New Directory Name</label>'."\n";
+		$rtn .= '			<input type="text" id="_newdir" class="form-control" name="_newdir" value="" />'."\n";
+		$rtn .= '		</div>'."\n";
 		$rtn .= '	</div>'."\n";
 		}
 	if($params['-rights'] != 'readonly'){
 		if(!isset($params['-hide']) || !stringContains($params['-hide'],'browse')){
 			$rtn .= '	<div class="row">'."\n";
-			$rtn .= '		<label for="file">New File</label>'."\n";
-			$rtn .= '		<input type="file" class="form-control" id="file" name="file" />'."\n";
+			$rtn .= '		<div class="col-sm-12">'."\n";
+			$rtn .= '			<div class="w_bold">New File</div>'."\n";
+			$rtn .= buildFormFile('file',array('id'=>'file'));
+			$rtn .= '		</div>'."\n";
 			$rtn .= '	</div>'."\n";
 			$rtn .= '	<div class="row">'."\n";
-			$rtn .= '		<label for="description">Description</label>'."\n";
-			$rtn .= '		<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
+			$rtn .= '		<div class="col-sm-12">'."\n";
+			$rtn .= '			<label for="description">Description</label>'."\n";
+			$rtn .= '			<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'."\n";
+			$rtn .= '		</div>'."\n";
 			$rtn .= '	</div>'."\n";
 		}
 
 		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'."\n";
-		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'."\n";
+		$rtn .= '		<div class="col-sm-12">'."\n";
+		$rtn .= '			<button type="submit" class="btn btn-primary">Save</button>'."\n";
+		$rtn .= '		</div>'."\n";
 		$rtn .= '	</div>'."\n";
 		}
 	$rtn .= '	</form>'."\n";
