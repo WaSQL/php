@@ -8,6 +8,9 @@
 			dbpass - Database password
 			dbtype - Database type (mysqli,mysql,sqlite,mssql,postgres)
 			showtables="all" will show all tables, including WaSQL tables
+			post_max_size - defaults to 64M
+			upload_max_filesize - defaults to 60M
+			max_execution_time - defaults to 10000
 			paging - default paging limit
 			missing_msg - Message to show if page is missing. if msg is a url it will redirect.
 			missing_template - template to use on missing pages
@@ -41,7 +44,7 @@
 			minify_css boolean - use minified versions of css files when avail.  Looks for .min.css
 			minify_js boolean - use minified versions of js files when avail.  Looks for .min.js
 			markdown 0|1 - if a textarea field being edited/added has a corresponding {field}_mdml field in the table then convert the field into markdown using the markdown extra. Setting it to 1 will set strip-tags to true
-			database_sessions 0|1 - if set to 1 WaSQL will use the _sessions table for session management 
+			database_sessions 0|1 - if set to 1 WaSQL will use the _sessions table for session management
 			user_tracking 0|1 - defaults to 1. Turns off updating the _aip, _auser, _adate in the _users table - speed
 			page_tracking 0|1 - defaults to 1. Turns off updating the _amem, _aip, _auser, _adate, and _env in the _pages table - speed
 			template_tracking 0|1 - defaults to 1. Turns off updating the _apage in the _templates table - speed
