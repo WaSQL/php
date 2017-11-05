@@ -819,7 +819,17 @@ table.table-responsive {
 	background: -webkit-gradient(linear,left bottom,left top,color-stop(0.20, #ff5e5e),color-stop(0.70, #970000));
 	background: -moz-linear-gradient(center bottom,#ff5e5e 20%,#970000 70%);
 }
-
+.w_modal{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9999;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    outline: 0;
+}
 /* w_pop - responsive web popup used in ajaxGet when id=pop */
 .w_popmodal{
 	position: absolute;
