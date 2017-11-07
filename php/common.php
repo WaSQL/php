@@ -3053,12 +3053,15 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
 		'id','name','class','style','title','alt','accesskey','tabindex',
-		'onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','onfocus',
+		'onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
 		'_behavior','display',
 		'required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg'
 		);
+	if(isset($atts['pattern']) && !isset($atts['oninvalid']) && isset($atts['data-pattern_message'])){
+		$atts['oninvalid']="setCustomValidity(this.getAttribute('data-pattern_message'));";
+	}
 	//autofocus
 	if(isset($atts['autofocus'])){
 		$atts['autofocus']="autofocus";
