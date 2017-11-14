@@ -533,6 +533,22 @@ function sqliteQueryResults($query,$params=array()){
 		return null;
 	}
 }
+//---------- begin function sqliteGetDBRecord ----------
+/**
+* @describe retrieves a single record from DB based on params
+* @param $params array
+* 	-table 	  - table to query
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array recordset
+* @usage $rec=sqliteGetDBRecord(array('-table'=>'tesl));
+*/
+function sqliteGetDBRecord($params=array()){
+	$recs=sqliteGetDBRecords($params);
+	if(isset($recs[0])){return $recs[0];}
+	return null;
+}
 //---------- begin function sqliteGetDBRecords ----------
 /**
 * @describe retrieves records from DB based on params
