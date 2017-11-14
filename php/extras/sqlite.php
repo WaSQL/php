@@ -545,42 +545,43 @@ function sqliteQueryResults($query,$params=array()){
 * @usage $ok=sqliteGetDBRecords(array('-table'=>'tesl));
 */
 function sqliteGetDBRecords($params=array()){
-	if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
-	if(!isset($params['-fields'])){$params['-fields']='*';}
-	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
-	$wherestr='';
-	if(isset($params['-where'])){
-		$wherestr= " WHERE {$params['-where']}";
+	//check for just a query instead of a params array and convert it getDBRecords($query)
+	if(!is_array($params) && is_string($params)){
+    	$params=array('-query'=>$params);
 	}
+	if(isset($params['-query'])){$query=$params['-query'];}
 	else{
-		$ands=array();
-		foreach($params as $k=>$v){
-			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
-			if(!isset($fields[$k])){continue;}
-			if(is_array($params[$k])){
-				$params[$k]=implode(':',$params[$k]);
+		if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
+		if(!isset($params['-fields'])){$params['-fields']='*';}
+		$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+		$wherestr='';
+		if(isset($params['-where'])){
+			$wherestr= " WHERE {$params['-where']}";
+		}
+		else{
+			$ands=array();
+			foreach($params as $k=>$v){
+				$k=strtolower($k);
+				if(!strlen(trim($v))){continue;}
+				if(!isset($fields[$k])){continue;}
+				if(is_array($params[$k])){
+					$params[$k]=implode(':',$params[$k]);
+				}
+				$params[$k]=str_replace("'","''",$params[$k]);
+				$ands[]="upper({$k})=upper('{$params[$k]}')";
 			}
-			$params[$k]=str_replace("'","''",$params[$k]);
-			$ands[]="upper({$k})=upper('{$params[$k]}')";
-		}
 
-		if(count($ands)){
-			$wherestr='WHERE '.implode(' and ',$ands);
+			if(count($ands)){
+				$wherestr='WHERE '.implode(' and ',$ands);
+			}
 		}
-	}
-    $query=<<<ENDOFQUERY
-		SELECT
-			{$params['-fields']}
-		FROM
-			{$params['-table']}
-		{$wherestr}
-ENDOFQUERY;
-	if(isset($params['-order'])){
-    	$query .= " ORDER BY {$params['-order']}";
-	}
-	if(isset($params['-limit'])){
-    	$query .= " limit {$params['-limit']}";
+		$query="SELECT {$params['-fields']}  FROM {$params['-table']} {$wherestr}";
+		if(isset($params['-order'])){
+			$query .= " ORDER BY {$params['-order']}";
+		}
+		if(isset($params['-limit'])){
+			$query .= " limit {$params['-limit']}";
+		}
 	}
 	return sqliteQueryResults($query,$params);
 }
