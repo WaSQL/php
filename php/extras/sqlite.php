@@ -548,20 +548,26 @@ function sqliteGetDBRecords($params=array()){
 	if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
 	if(!isset($params['-fields'])){$params['-fields']='*';}
 	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
-	$ands=array();
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		if(is_array($params[$k])){
-            $params[$k]=implode(':',$params[$k]);
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-        $ands[]="upper({$k})=upper('{$params[$k]}')";
-	}
 	$wherestr='';
-	if(count($ands)){
-		$wherestr='WHERE '.implode(' and ',$ands);
+	if(isset($params['-where'])){
+		$wherestr= " WHERE {$params['-where']}";
+	}
+	else{
+		$ands=array();
+		foreach($params as $k=>$v){
+			$k=strtolower($k);
+			if(!strlen(trim($v))){continue;}
+			if(!isset($fields[$k])){continue;}
+			if(is_array($params[$k])){
+				$params[$k]=implode(':',$params[$k]);
+			}
+			$params[$k]=str_replace("'","''",$params[$k]);
+			$ands[]="upper({$k})=upper('{$params[$k]}')";
+		}
+
+		if(count($ands)){
+			$wherestr='WHERE '.implode(' and ',$ands);
+		}
 	}
     $query=<<<ENDOFQUERY
 		SELECT
@@ -577,4 +583,4 @@ ENDOFQUERY;
     	$query .= " limit {$params['-limit']}";
 	}
 	return sqliteQueryResults($query,$params);
-	}
+}
