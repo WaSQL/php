@@ -547,7 +547,7 @@ function sqliteQueryResults($query,$params=array()){
 function sqliteGetDBRecords($params=array()){
 	if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
 	if(!isset($params['-fields'])){$params['-fields']='*';}
-	$fields=mssqlGetDBFieldInfo($params['-table'],$params);
+	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
 	$ands=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
