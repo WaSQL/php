@@ -533,4 +533,48 @@ function sqliteQueryResults($query,$params=array()){
 		return null;
 	}
 }
-
+//---------- begin function sqliteGetDBRecords ----------
+/**
+* @describe retrieves records from DB based on params
+* @param $params array
+* 	-table 	  - table to query
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array recordsets
+* @usage $ok=sqliteGetDBRecords(array('-table'=>'tesl));
+*/
+function sqliteGetDBRecords($params=array()){
+	if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
+	if(!isset($params['-fields'])){$params['-fields']='*';}
+	$fields=mssqlGetDBFieldInfo($params['-table'],$params);
+	$ands=array();
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if(is_array($params[$k])){
+            $params[$k]=implode(':',$params[$k]);
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+        $ands[]="upper({$k})=upper('{$params[$k]}')";
+	}
+	$wherestr='';
+	if(count($ands)){
+		$wherestr='WHERE '.implode(' and ',$ands);
+	}
+    $query=<<<ENDOFQUERY
+		SELECT
+			{$params['-fields']}
+		FROM
+			{$params['-table']}
+		{$wherestr}
+ENDOFQUERY;
+	if(isset($params['-order'])){
+    	$query .= " ORDER BY {$params['-order']}";
+	}
+	if(isset($params['-limit'])){
+    	$query .= " limit {$params['-limit']}";
+	}
+	return sqliteQueryResults($query,$params);
+	}
