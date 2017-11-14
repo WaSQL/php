@@ -388,6 +388,33 @@ ENDOFQUERY;
 	mssqlQueryResults($query,$params);
 	return;
 }
+//---------- begin function mssqlGetDBRecord ----------
+/**
+* @describe retrieves a single record from DB based on params
+* @param $params array
+* 	-table 	  - table to query
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array recordset
+* @usage $rec=mssqlGetDBRecord(array('-table'=>'tesl));
+*/
+function mssqlGetDBRecord($params=array()){
+	$recs=mssqlGetDBRecords($params);
+	if(isset($recs[0])){return $recs[0];}
+	return null;
+}
+//---------- begin function mssqlGetDBRecords ----------
+/**
+* @describe retrieves records from DB based on params
+* @param $params array
+* 	-table 	  - table to query
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array recordsets
+* @usage $ok=mssqlGetDBRecords(array('-table'=>'tesl));
+*/
 function mssqlGetDBRecords($params=array()){
 	if(!is_array($params) && is_string($params)){
     	$params=array('-query'=>$params);
