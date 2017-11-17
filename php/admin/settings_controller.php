@@ -1,6 +1,14 @@
 <?php
 	//get global settings
 	global $ALLCONFIG;
+	global $CONFIG;
+	$configvalues=array();
+	foreach($CONFIG as $k=>$v){
+		if(isWasqlField($k)){continue;}
+		if(preg_match('/pass$/i',$k)){$v=preg_replace('/./','*',$v);}
+		$configvalues[$k]=$v;
+	}
+	ksort($configvalues);
 	$recs=settingsGetValues();
 	switch(strtolower($_REQUEST['func'])){
 		case 'process':
