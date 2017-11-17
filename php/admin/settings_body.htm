@@ -121,6 +121,29 @@
 
 		</div>
 	</div>
+	<div class="row well" style="margin-top:15px;">
+		<div class="col-sm-4">
+			<h3 class="w_nowrap">
+				Config
+			</h3>
+			<div>Values set for this host in the WaSQL config.xml file</div>
+			<table class="table table-striped">
+				<tr><th>Host</th><td><?=$_SERVER['HTTP_HOST'];?></td></tr>
+				<tr><th>IP Addr</th><td><?=$_SERVER['SERVER_ADDR'];?></td></tr>
+			</table>
+		</div>
+		<div class="col-sm-8">
+			<table class="table table-striped table-condensed">
+				<view:configrow>
+				<tr>
+					<th><?=$key;?></th>
+					<td><?=$value;?></td>
+				</tr>
+				</view:configrow>
+				<?=renderEach('configrow',$configvalues,'value');?>
+			</table>
+		</div>
+	</div>
 </div>
 </form>
 </view:default>
