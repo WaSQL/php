@@ -609,3 +609,22 @@ function sqliteGetDBRecords($params=array()){
 	}
 	return sqliteQueryResults($query,$params);
 }
+//---------- begin function sqliteGetDBRecordsCount ----------
+/**
+* @describe retrieves records from DB based on params
+* @param $params array
+* 	-table 	  - table to query
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array recordsets
+* @usage $cnt=sqliteGetDBRecordsCount(array('-table'=>'tesl));
+*/
+function sqliteGetDBRecordsCount($params=array()){
+	$params['-fields']='count(*) cnt';
+	if(isset($params['-order'])){unset($params['-order']);}
+	if(isset($params['-limit'])){unset($params['-limit']);}
+	if(isset($params['-offset'])){unset($params['-offset']);}
+	$recs=sqliteGetDBRecords($params);
+	return $recs[0]['cnt'];
+}
