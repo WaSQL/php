@@ -596,7 +596,15 @@ function sqliteGetDBRecords($params=array()){
 			$query .= " ORDER BY {$params['-order']}";
 		}
 		if(isset($params['-limit'])){
+			if(stringContains($params['-limit'],',')){
+				$parts=preg_split('/\,/',$params['-limit'],2);
+				$params['-offset']=$parts[0];
+				$params['-limit']=$parts[1];
+			}
 			$query .= " limit {$params['-limit']}";
+		}
+		if(isset($params['-offset'])){
+			$query .= " offset {$params['-offset']}";
 		}
 	}
 	return sqliteQueryResults($query,$params);
