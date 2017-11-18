@@ -607,6 +607,7 @@ function sqliteGetDBRecords($params=array()){
 			$query .= " offset {$params['-offset']}";
 		}
 	}
+	//echo "[{$query}]<br />".PHP_EOL;
 	return sqliteQueryResults($query,$params);
 }
 //---------- begin function sqliteGetDBRecordsCount ----------
