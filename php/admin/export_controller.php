@@ -1,6 +1,17 @@
 <?php
-
+	if(!isAdmin()){
+		setView('not_admin',1);
+		return;
+	}
 	switch(strtolower($_REQUEST['func'])){
+		case 'db':
+			$path=getWasqlPath('sh/backups');
+			buildDir($path);
+			$ok=cleanupDirectory($path,2,'mon','gz');
+			$dump=dumpDB();
+			if(isset($dump['error']) && strlen($dump['error'])){echo printValue($dump);exit;}
+			pushFile("{$dump['path']}/{$dump['file']}");
+		break;
 		case 'export':
 			setView('export',1);
 			//export_schema, export_meta, export_data
