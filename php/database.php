@@ -3176,12 +3176,12 @@ function dumpDB($table=''){
 	$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
 	if(isset($CONFIG['backup_command'])){
 		$dump['command'] = $CONFIG['backup_command'];
-		$dump['command'] .= " --host={$CONFIG['dbhost']}";
+		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --user='{$CONFIG['dbuser']}'";
+			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --password='{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3193,12 +3193,12 @@ function dumpDB($table=''){
 	elseif(isMysql() || isMysqli()){
 		//mysqldump
 		$dump['command'] = isWindows()?"mysqldump.exe":"mysqldump";
-		$dump['command'] .= " --host={$CONFIG['dbhost']}";
+		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --user='{$CONFIG['dbuser']}'";
+			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " --password='{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
