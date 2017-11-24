@@ -2615,7 +2615,6 @@ LIST_TABLE:
 				$grep['string']=$_REQUEST['_grep_string'];
 				if(isset($_REQUEST['_grep_schema']) && $_REQUEST['_grep_schema']==1){$grep['schema']=1;}
 				if(isset($_REQUEST['_grep_records']) && $_REQUEST['_grep_records']==1){$grep['records']=1;}
-				if(isset($_REQUEST['_table_']) && strlen($_REQUEST['_table_'])){$grep['table']=$_REQUEST['_table_'];}
 				//echo printValue($grep);
 				//grep Schema?
 				if($grep['schema']==1){
@@ -2635,7 +2634,9 @@ LIST_TABLE:
                 	}
                 //grep records?
                 if($grep['records']==1){
-					$results=grepDBTables($grep['string']);
+					$tables=array();
+					if(isset($_REQUEST['_table_']) && strlen($_REQUEST['_table_'])){$tables[]=$_REQUEST['_table_'];}
+					$results=grepDBTables($grep['string'],$tables);
 					if(is_array($results)){
 						echo '<div class="w_bold w_big w_dblue">Record Results</div>'.PHP_EOL;
 						echo listDBRecords(array(
