@@ -95,15 +95,18 @@
 }
 .icon-w3c:before {
   content: "\e917";
+  color:#005a9c;
 }
 .icon-warning:before {
   content: "\e918";
+  color:#ffd42a;
 }
 .icon-warning-empty:before {
   content: "\e919";
 }
 .icon-water:before {
   content: "\e91a";
+  color:#74BBFB;
 }
 .icon-website:before {
   content: "\e91b";
@@ -255,12 +258,15 @@
 }
 .icon-browser-chrome:before {
   content: "\e94b";
+  color:#4db649;
 }
 .icon-browser-firefox:before {
   content: "\e94c";
+  color:#e76100;
 }
 .icon-browser-ie:before {
   content: "\e94d";
+  color:#00a0d8;
 }
 .icon-bug:before {
   content: "\e94e";
@@ -312,21 +318,27 @@
 }
 .icon-cc-amex:before {
   content: "\e95e";
+  color:#3498d8;
 }
 .icon-cc-discover:before {
   content: "\e95f";
+  color:#f27300;
 }
 .icon-cc-mastercard:before {
   content: "\e960";
+  color:#cc0000;
 }
 .icon-cc-paypal:before {
   content: "\e961";
+  color:#006492;
 }
 .icon-cc-stripe:before {
   content: "\e962";
+  color:#2c97de;
 }
 .icon-cc-visa:before {
   content: "\e963";
+  color:#0023a0;
 }
 .icon-chair:before {
   content: "\e964";
@@ -453,6 +465,7 @@
 }
 .icon-css3:before {
   content: "\e98d";
+  color:#118ed1;
 }
 .icon-cube:before {
   content: "\e98e";
@@ -528,6 +541,7 @@
 }
 .icon-droplet:before {
   content: "\e9a6";
+  color:#74BBFB;
 }
 .icon-earth:before {
   content: "\e9a7";
@@ -624,6 +638,7 @@
 }
 .icon-first-aid:before {
   content: "\e9c6";
+  color:#8A0707;
 }
 .icon-flag:before {
   content: "\e9c7";
@@ -732,6 +747,7 @@
 }
 .icon-html5:before {
   content: "\e9ea";
+  color:#e44d26;
 }
 .icon-image:before {
   content: "\e9eb";
@@ -888,18 +904,23 @@
 }
 .icon-os-android:before {
   content: "\ea1e";
+  color:#a4c639;
 }
 .icon-os-apple:before {
   content: "\ea1f";
+  color:#8e8e8e;
 }
 .icon-os-linux:before {
   content: "\ea20";
+  color:#020204;
 }
 .icon-os-ubuntu:before {
   content: "\ea21";
+  color:#ff6d0e;
 }
 .icon-os-windows:before {
   content: "\ea22";
+  color:#03a9f4;
 }
 .icon-package:before {
   content: "\ea23";
@@ -918,6 +939,7 @@
 }
 .icon-paypal:before {
   content: "\ea28";
+  color:#006492;
 }
 .icon-pen:before {
   content: "\ea29";
@@ -930,6 +952,7 @@
 }
 .icon-php:before {
   content: "\ea2c";
+  color:#777bb3;
 }
 .icon-pin:before {
   content: "\ea2d";
@@ -969,9 +992,11 @@
 }
 .icon-qrcode:before {
   content: "\ea39";
+  color:#000000;
 }
 .icon-rain:before {
   content: "\ea3a";
+  color:#74BBFB;
 }
 .icon-raspberrypi:before {
   content: "\ea3b";
@@ -1006,6 +1031,7 @@
 }
 .icon-save:before {
   content: "\ea45";
+  color:#000000;
 }
 .icon-scissors:before {
   content: "\ea46";
@@ -1232,15 +1258,18 @@
 }
 .icon-star:before {
   content: "\ea85";
+  color:#ffca28;
 }
 .icon-star-empty:before {
   content: "\ea86";
 }
 .icon-star-half:before {
   content: "\ea87";
+  color:#ffca28;
 }
 .icon-star-half-empty:before {
   content: "\ea88";
+  color:#ffca28;
 }
 .icon-stopwatch:before {
   content: "\ea89";
@@ -1259,9 +1288,11 @@
 }
 .icon-sun:before {
   content: "\ea8e";
+  color:#FFDF22;
 }
 .icon-sun2:before {
   content: "\ea8f";
+  color:#FFDF22;
 }
 .icon-superscript:before {
   content: "\ea90";
