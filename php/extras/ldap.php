@@ -116,6 +116,7 @@ function ldapAuth($params=array()){
         $enum=ldap_errno($ldapInfo['connection']);
         $msg=ldap_err2str( $enum );
 		ldap_unbind($ldapInfo['connection']); // Clean up after ourselves.
+		$params['-password']=preg_replace('/./','*',$params['-password']);
 		return "LDAP Auth Error: auth failed. Err:{$enum}, Msg:{$msg} .. ".printValue($params);
 	}
 	foreach($params as $k=>$v){
