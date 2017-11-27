@@ -103,6 +103,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                     $changes['-table']='_users';
                     $changes['-where']="_id={$rec['_id']}";
                     $ok=editDBRecord($changes);
+                    if(!isNum($ok)){
+						$_REQUEST['_login_error']=$ok;
+					}
 				}
 				$USER=$rec;
 			}
@@ -115,6 +118,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                	$id=addDBRecord($ldap);
                	if(isNum($id)){
                     $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+				}
+				else{
+					$_REQUEST['_login_error']=$id;
 				}
 			}
 		}
@@ -155,6 +161,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 						'-where'	=> "_id={$rec['_id']}",
 						'utype'		=> 1
 					));
+					if(!isNum($ok)){
+						$_REQUEST['_login_error']=$ok;
+					}
 				}
 				$USER=$rec;
 			}
@@ -171,6 +180,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                	if(isNum($id)){
                     $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
 				}
+				else{
+					$_REQUEST['_login_error']=$id;
+				}
 			}
 		}
 		else{
@@ -182,7 +194,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 		switch(strtolower($authname)){
 			case 'openid':
 				//openid authentication coming soon
-				break;
+			break;
 			default:
 				//authenticate to a different host
 				$authkey=encodeCRC($_REQUEST['username'].time());
