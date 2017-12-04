@@ -1,5 +1,5 @@
 <?php
-/* 
+/*
 	Geonames API methods
 		http://www.geonames.org/export/ws-overview.html
 */
@@ -25,10 +25,9 @@ loadExtras('zipfile');
 *	[community_name]
 *	[community_code]
 * @usage
-*	<?php
 *	//get info about 84321
 *	$info=geonamesPostalCodeSearch(84321);
-*	/*
+*
 *	Returns Array
 *	(
 *	    [0] => Array
@@ -44,8 +43,7 @@ loadExtras('zipfile');
 *	            [state_name] => Utah
 *	        )
 *	)
-*	*/
-*	?>
+*
 */
 function geonamesPostalCodeSearch($postalcode,$country='US',$username='demo',$maxrows=10){
 	//http://api.geonames.org/postalCodeSearchJSON?formatted=true&postalcode=84062&country=US&maxRows=10&username=demo&style=full
@@ -186,4 +184,3 @@ function geonamesImportZipcode($rec){
 	$opts['-table']="zipcodes";
 	$id=addDBRecord($opts);
 }
-?>
