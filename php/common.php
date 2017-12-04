@@ -7280,7 +7280,7 @@ function getFileContentType($file=''){
 */
 function getFileExtension($file=''){
 	//params (string) filename
-	$tmp=explode('.',$file);
+	$tmp=preg_split('/\./',$file);
 	$ext=array_pop($tmp);
 	return strtolower($ext);
 	}
@@ -7297,7 +7297,7 @@ function getFileName($file='',$stripext=0){
 	$tmp=preg_split('/[\/]/',$file);
 	$name=array_pop($tmp);
 	if($stripext){
-		$stmp=explode('.',$name);
+		$stmp=preg_split('/\./',$name);
 		array_pop($stmp);
 		$name=implode('.',$stmp);
     	}
@@ -10967,7 +10967,8 @@ function processActions(){
 							$ok=cleanupDBRecords('_changelog',90);
 						}
                     }
-					$fields=explode(',',$_REQUEST['_fields']);
+                    $_REQUEST['_fields']=strtolower(str_replace(' ','',$_REQUEST['_fields']));
+					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
 					$opts=array('-table'=>$_REQUEST['_table'],'-where'=>'_id='.$_REQUEST['_id']);
 
