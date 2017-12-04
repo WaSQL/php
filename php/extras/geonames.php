@@ -111,6 +111,8 @@ function geonamesPostalCodeSearch($postalcode,$country='US',$username='demo',$ma
 */
 function geonamesImportZipcodes($countries=array(),$params=array()){
 	$progpath=dirname(__FILE__);
+	$logfile="{$progpath}/geonamesImportZipcodes.log";
+	setFileContents($logfile,"started".PHP_EOL);
 	$rtn=array();
 	//create schema if it does not exist in this database
 	if(!isDBTable('zipcodes')){
@@ -140,15 +142,19 @@ function geonamesImportZipcodes($countries=array(),$params=array()){
 		$country=strtoupper($country);
 		$remote_file="http://download.geonames.org/export/zip/{$country}.zip";
 		$local_file="{$progpath}/zipcodes_{$country}.zip";
+		appendFileContents($logfile,"downloading {$local_file}".PHP_EOL);
 		if(copy($remote_file,$local_file)){
+			appendFileContents($logfile,"{$local_file} downloaded".PHP_EOL);
 			$rtn[$country]['download_time']=$last=getRunTime()-$last;
 			$files=zipExtract($local_file);
+			appendFileContents($logfile,"{$local_file} extracted".PHP_EOL);
 			foreach($files as $file){
 				$fname=getFileName($file,1);
 				if($fname==$country){
 					//drop this country from the table
 					$ok=executeSQL("delete from zipcodes where country_code='{$country}'");
 					//add al
+					appendFileContents($logfile,"processing {$country} records in {$file}".PHP_EOL);
 					$rtn[$country]=processCSVFileLines($file,'geonamesImportZipcode',array(
 						'separator'=>"\t",
 						'fields'	=> array(
@@ -159,9 +165,11 @@ function geonamesImportZipcodes($countries=array(),$params=array()){
 							'latitude','longitude','accuracy'
 						)
 					));
+					appendFileContents($logfile,"{$country} records in {$file} processed".PHP_EOL);
 					$rtn[$country]['import_time']=$last=getRunTime()-$last;
 				}
 			}
+			appendFileContents($logfile,"cleaning up".PHP_EOL);
 			//cleanup
 			cleanDir("{$progpath}/zipcodes_{$country}");
 			rmdir("{$progpath}/zipcodes_{$country}");
@@ -172,6 +180,7 @@ function geonamesImportZipcodes($countries=array(),$params=array()){
         	$rtn[$country]['errors'][]='Unable to download';
 		}
 	}
+	appendFileContents($logfile,"finished".PHP_EOL);
 	return $rtn;
 }
 //---------- begin function geonamesImportZipcode
