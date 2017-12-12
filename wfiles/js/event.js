@@ -2391,6 +2391,7 @@ function ajaxTimer(id){
 			var params={};
 			if(undefined != parts[1]){params=JSON.parse('{"' + decodeURI(parts[1].replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');}
 			params['showprocessing']=false;
+			params['timer']=timer;
 			ajaxGet(parts[0],attr['id'],params);
 		}
 		else if(undefined != attr['function'] || undefined != attr['data-function']){
