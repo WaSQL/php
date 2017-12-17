@@ -6,7 +6,8 @@
 global $temp;
 global $temp_logfile;
 $temp=realpath('../temp');
-include_once(realpath('../php/common.php'));
+$phpdir=realpath('../php');
+include_once("{$phpdir}/common.php");
 $temp_logfile="{$temp}/resumable.log";
 //keep log file to 1MB in size or smaller
 if(file_exists($temp_logfile) && filesize($temp_logfile) > 1048576){
