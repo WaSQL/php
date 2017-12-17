@@ -7,7 +7,6 @@ global $temp;
 global $temp_logfile;
 $temp=realpath('../temp');
 $phpdir=realpath('../php');
-include_once("{$phpdir}/common.php");
 $temp_logfile="{$temp}/resumable.log";
 //keep log file to 1MB in size or smaller
 if(file_exists($temp_logfile) && filesize($temp_logfile) > 1048576){
@@ -38,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if (!empty($_FILES)) foreach ($_FILES as $file) {
     // check the error status
     if ($file['error'] != 0) {
-        _log('error '.$file['error'].' in file '.$_POST['resumableFilename'].printValue($file));
+        _log('error '.$file['error'].' in file '.$_POST['resumableFilename'].json_encode($file));
         continue;
     }
     // init the destination file (format <filename.ext>.part<#chunk>
