@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if (!empty($_FILES)) foreach ($_FILES as $file) {
     // check the error status
     if ($file['error'] != 0) {
-        _log('error '.$file['error'].' in file '.$_POST['resumableFilename']);
+        _log('error '.$file['error'].' in file '.$_POST['resumableFilename'].printValue($file));
         continue;
     }
     // init the destination file (format <filename.ext>.part<#chunk>
