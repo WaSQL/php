@@ -426,6 +426,7 @@ function getGroups(){
 	if(!is_array($hosts)){getHosts();}
 	$groups=array();
 	foreach($hosts as $name=>$host){
+		if(!isset($host['group'])){continue;}
 		$group=strtolower($host['group']);
 		if(isset($groups[$group])){$groups[$group]+=1;}
 		else{$groups[$group]=1;}
