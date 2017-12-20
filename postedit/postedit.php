@@ -29,6 +29,8 @@ if(!isset($chost)){
 $lock=preg_replace('/[^a-z0-9]+/i','',$chost);
 global $lockfile;
 $lockfile="{$progpath}/{$lock}_lock.txt";
+global $noloop;
+$noloop="{$progpath}/postedit.noloop";
 global $pid;
 $pid=getmypid();
 echo "obtaining lock: {$lockfile}".PHP_EOL;
@@ -36,6 +38,11 @@ file_put_contents($lockfile,$pid);
 echo "{$lockfile} is now mine".PHP_EOL;
 //get the files
 $afolder=writeFiles();
+if(file_exists($noloop)){
+	echo "files are now in {$afolder}".PHP_EOL;
+	echo "noloop file detected. exiting".PHP_EOL;
+	exit;
+}
 echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
 while(1){
