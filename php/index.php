@@ -283,11 +283,12 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		$sitename=isset($CONFIG['reminder_site_name'])?$CONFIG['reminder_site_name']:$_SERVER['HTTP_HOST'];
 		$fromname=isset($CONFIG['reminder_from_name'])?$CONFIG['reminder_from_name']:$_SERVER['HTTP_HOST'].' Team';
 		$subject="Remind request from ".html_entity_decode($sitename);
-		$message="Hi!<p>We received a request to remind you of your {$sitename} login information. We're here to help!</p>";
-		$message .= '<p>Username: '. $ruser['username']. "<br>\n";
+		$message="Hi there!<p>We received a request to remind you of your {$sitename}  login information, located below: </p>";
+		$message .= '<p>Username: '. $ruser['username']. "<br>".PHP_EOL;
 		$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
-		$message .= 'Password: '. $pw. "<br>\n";
-		$message .= "<p>If you didn't ask to change your password, don't worry! Your password is still safe and you can delete this email.</p>";
+		$message .= 'Password: '. $pw. PHP_EOL;
+		$message .= '<p>Once you login to your account, you will be able to change your password under your username, then select Account Profile.</p>';
+		$message .= "<p>If you didn't ask to change your password, don't worry! Your password is still safe and you can ignore this email.</p>";
 		$message .= "<p>Best regards,</p><p>{$fromname}</p>";
 		//clear out errors
 		@trigger_error("");
