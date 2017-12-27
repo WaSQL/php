@@ -900,7 +900,7 @@ table.table-responsive {
 }
 .w_centerpop {
 	position: relative;
-	padding:25px 0px 25px 0px;
+	padding:0px 0px 25px 0px;
 	border:none;
 	z-index:9990;
 	background:#FFFFFF;
@@ -967,12 +967,12 @@ table.table-responsive {
 	z-index:9992
 }
 .w_centerpop_close_top{
-	position: absolute;
+	position: absolute !important;
     font-family: arial;
     cursor: pointer;
     z-index: 9993;
     right: 12px;
-    top: 12px;
+    top: -16px;
     font-weight: bold;
     font-size: 20px;
     content: '\0274c';
