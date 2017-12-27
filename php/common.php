@@ -10090,7 +10090,7 @@ function postURL($url,$params=array()) {
 	$rtn=array('_params'=>$params);
 	//check for auth params
 	if(isset($params['username']) && isset($params['apikey'])){
-		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		if(!isset($params['-headers']) || !is_array($params['-headers'])){$params['-headers']=array();}
 		$params['-headers'][]="Wasql-Apikey: {$params['apikey']}";
 		$params['-headers'][]="WaSQL-Username: {$params['username']}";
 		$params['-headers'][]="WaSQL-Auth: 1";
