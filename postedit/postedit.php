@@ -83,11 +83,15 @@ function writeFiles(){
 		'encoding'	=>"base64",
 		'-nossl'=>1,
 		'-follow'=>1,
-		'-xml'=>1
+		//'-xml'=>1
 	);
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	if(preg_match('/\<fatal_error\>(.+?)\<\/fatal_error\>/is',$post['body'],$m)){
+		abortMessage($m[1].printValue($postopts));
+	}
+	$post['xml_array']=xml2Array($post['body']);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
 	}
