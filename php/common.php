@@ -11012,7 +11012,7 @@ function processActions(){
 							}
 						}
 						//markdown?
-						if($info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
+						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
 							if(!strlen(trim($_REQUEST[$field]))){
                             	$opts["{$field}_mdml"]='NULL';
 							}
@@ -11023,11 +11023,13 @@ function processActions(){
 								$opts["{$field}_mdml"]=markdownFromHtml($_REQUEST[$field],$mdmlopts);
 							}
 						}
-						if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
-						elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
-						elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
-						elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
-						if($info[$field]['inputtype']=='file'){
+						if(isset($info[$field]['behavior'])){
+							if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
+							elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
+							elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
+							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
+						}
+						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
 							//skip file field if used did not check to remove current value
 							if(isset($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
 							//add sha1, width, height, and type if fields exist
