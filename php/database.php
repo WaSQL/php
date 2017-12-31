@@ -1222,7 +1222,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
 				if(!isset($opts['class'])){$opts['class']='';}
-				if($params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
+				if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -1597,7 +1597,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 	    elseif(isset($rec['_id']) && isNum($rec['_id'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'';
-			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
+			if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
 				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;
@@ -1617,7 +1617,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			}
 		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'';
-			if($params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
+			if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($class,'btn')){$class .= ' btn btn-primary';}
 			$action=isset($params['-nosave'])?'':'Add';
 	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
