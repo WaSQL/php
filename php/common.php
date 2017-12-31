@@ -10997,7 +10997,7 @@ function processActions(){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
 						//decode it if needs be
-						if($_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+						if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 						//css_min minifycode
 						if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
                         	//only call minifyCode if the css has changed
