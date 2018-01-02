@@ -76,7 +76,7 @@ function phpmailerSendMail($params=array()){
 		$mail->SMTPDebug = $params['debug'];  // debugging: 1 = errors and messages, 2 = messages only
 	} */
 	//set timeout higher than 10 seconds
-	$mail->Timeout = 120;
+	$mail->Timeout = 300;
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
 	//custom SMTP?
 	if(isset($params['smtp'])){
