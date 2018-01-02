@@ -12638,7 +12638,7 @@ function sendMail($params=array()){
     if(!isEmail($params['to'])){return "sendMail Error - invalid emailaddress: " . $params['to'];}
     if(!isEmail($params['from'])){return "sendMail Error - invalid emailaddress: " . $params['from'];}
     //add reply-to to the headers
-    if(isEmail($params['reply-to'])){
+    if(isset($params['reply-to']) && isEmail($params['reply-to'])){
 		array_push($headers,"Reply-To: {$params['reply-to']}");
 	}
 	else{
@@ -12656,7 +12656,7 @@ function sendMail($params=array()){
 	}
 	/* If there are no attachments and the message is text, just send it */
 	$multi=0;
-	if(is_array($params['attach']) && count($params['attach']) > 0){$multi++;}
+	if(isset($params['attach']) && is_array($params['attach']) && count($params['attach']) > 0){$multi++;}
 	if(isXML($params['message'])){$multi++;}
 	if($multi==0){
 		//simple text message
