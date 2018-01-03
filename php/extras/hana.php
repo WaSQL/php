@@ -913,20 +913,17 @@ function hanaQueryResults($query,$params=array()){
 						'query' => $query,
 						'retry'	=> 1
 					);
-					echo "hanaQueryResults error: No result".printValue($err);
-					exit;
+					return "hanaQueryResults error1: ".json_encode($err);
 				}
 			}
 			else{
-				echo "hanaQueryResults error: No result".printValue($err);
-				exit;
+				return "hanaQueryResults error2: ".json_encode($err);
 			}
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "hanaQueryResults error: exception".printValue($err);
-		exit;
+		return "hanaQueryResults exception: ".json_encode($err);
 	}
 	$rowcount=odbc_num_rows($result);
 	if($rowcount==0 && isset($params['-forceheader'])){
@@ -954,7 +951,7 @@ function hanaQueryResults($query,$params=array()){
     	$fh = fopen($params['-filename'],"wb");
     	if(!$fh){
 			odbc_free_result($result);
-			echo 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 	}
