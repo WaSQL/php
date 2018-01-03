@@ -913,17 +913,17 @@ function hanaQueryResults($query,$params=array()){
 						'query' => $query,
 						'retry'	=> 1
 					);
-					return "hanaQueryResults error1: ".json_encode($err);
+					return json_encode($err);
 				}
 			}
 			else{
-				return "hanaQueryResults error2: ".json_encode($err);
+				return json_encode($err);
 			}
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		return "hanaQueryResults exception: ".json_encode($err);
+		return json_encode($err);
 	}
 	$rowcount=odbc_num_rows($result);
 	if($rowcount==0 && isset($params['-forceheader'])){
