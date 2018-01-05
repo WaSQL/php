@@ -432,6 +432,11 @@ function hanaAddDBRecord($params){
 				}
 				$opts['values'][]="'{$v}'";
         	break;
+			case 'nvarchar':
+			case 'nchar':
+				//add N before the value to handle utf8 inserts
+				$opts['values'][]="N'{$v}'";
+        	break;
         	default:
         		$opts['values'][]="'{$v}'";
         	break;
@@ -522,14 +527,21 @@ function hanaEditDBRecord($params){
 		//take care of single quotes in value
 		$v=str_replace("'","''",$v);
 		switch(strtolower($fields[$k]['type'])){
+			case 'nvarchar':
+			case 'nchar':
+				//add N before the value to handle utf8 inserts
+				$updates[]="{$k}=N'{$v}'";
+			break;
         	case 'date':
 				if($k=='edate' || $k=='_edate'){
 					$v=date('Y-m-d',strtotime($v));
 				}
+				$updates[]="{$k}='{$v}'";
         	break;
+			default:
+				$updates[]="{$k}='{$v}'";
+			break;
 		}
-
-        $updates[]="{$k}='{$v}'";
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
@@ -581,6 +593,11 @@ function hanaReplaceDBRecord($params){
         	case 'number':
         		$opts['values'][]=$v;
         	break;
+			case 'nvarchar':
+			case 'nchar':
+				//add N before the value to handle utf8 inserts
+				$opts['values'][]="N'{$v}'";
+			break;
         	default:
         		$opts['values'][]="'{$v}'";
         	break;
