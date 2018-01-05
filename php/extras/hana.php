@@ -419,37 +419,28 @@ function hanaAddDBRecord($params){
 		if(!isset($fields[$k])){continue;}
 		//fix array values
 		if(is_array($v)){$v=implode(':',$v);}
-		//take care of single quotes in value
-		$v=str_replace("'","''",$v);
 		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$v;
-        	break;
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
 					$v=date('Y-m-d',strtotime($v));
 				}
-				$opts['values'][]="'{$v}'";
         	break;
 			case 'nvarchar':
 			case 'nchar':
-				//add N before the value to handle utf8 inserts
-				$opts['values'][]="N'{$v}'";
-        	break;
-        	default:
-        		$opts['values'][]="'{$v}'";
+				$v=hanaConvert2UTF8($v);
         	break;
 		}
+		$opts['values'][]=$v;
+		$opts['bindings']='?';
         $opts['fields'][]=trim(strtoupper($k));
 	}
 	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
+	$bindstr=implode(',',$opts['bindings']);
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
 			("{$fieldstr}")
 		VALUES
-			({$valstr})
+			({$bindstr})
 ENDOFQUERY;
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
@@ -458,19 +449,17 @@ ENDOFQUERY;
     	return;
 	}
 	try{
-		$result=odbc_exec($dbh_hana,$query);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana),
-				'query'	=> $query
-			);
-			debugValue($err);
-			return "hanaAddDBRecord Error".printValue($err);
+		$hana_stmt    = odbc_prepare($dbh_hana, $query);
+		if(!is_resource($hana_stmt)){
+			$e=odbc_errormsg();
+			debugValue(array("hanaAddDBRecord prepare Error",$e));
+    		return 1;
 		}
+		$success = odbc_execute($hana_stmt,$opts['values']);
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 CURRENT_IDENTITY_VALUE() as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
 		$row=array_change_key_case($row);
-		odbc_free_result($result);
+		odbc_free_result($result2);
 		if(isNum($row['cval'])){return $row['cval'];}
 		return "hanaAddDBRecord Error".printValue($row).$query;
 		//echo "result2:".printValue($row);
@@ -479,12 +468,9 @@ ENDOFQUERY;
 		$err=$e->errorInfo;
 		$err['query']=$query;
 		$recs=array($err);
-		//return $recs;
-		odbc_free_result($result);
 		debugValue(array("hanaAddDBRecord Connect Error",$e));
 		return "hanaAddDBRecord Error".printValue($err);
 	}
-	odbc_free_result($result);
 	return 0;
 }
 //---------- begin function hanaEditDBRecord ----------
@@ -502,6 +488,7 @@ ENDOFQUERY;
 * @usage $id=hanaEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
 function hanaEditDBRecord($params){
+	mb_internal_encoding("UTF-8");
 	if(!isset($params['-table'])){return 'hanaEditDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'hanaEditDBRecord error: No where specified.';}
 	global $USER;
@@ -519,29 +506,25 @@ function hanaEditDBRecord($params){
 	elseif(isset($fields['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
+	$vals=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
 		//fix array values
 		if(is_array($v)){$v=implode(':',$v);}
-		//take care of single quotes in value
-		$v=str_replace("'","''",$v);
 		switch(strtolower($fields[$k]['type'])){
 			case 'nvarchar':
 			case 'nchar':
-				//add N before the value to handle utf8 inserts
-				$updates[]="{$k}=N'{$v}'";
+				$v=hanaConvert2UTF8($v);
 			break;
         	case 'date':
 				if($k=='edate' || $k=='_edate'){
 					$v=date('Y-m-d',strtotime($v));
 				}
-				$updates[]="{$k}='{$v}'";
         	break;
-			default:
-				$updates[]="{$k}='{$v}'";
-			break;
 		}
+		$updates[]="{$k}=?";
+		$vals[]=$v;
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
@@ -549,7 +532,30 @@ function hanaEditDBRecord($params){
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
-	return hanaExecuteSQL($query,$params);
+	global $dbh_hana;
+	if(!is_resource($dbh_hana)){
+		$dbh_hana=hanaDBConnect($params);
+	}
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaEditDBRecord2 Connect Error",$e));
+    	return;
+	}
+	try{
+		$hana_stmt    = odbc_prepare($dbh_hana, $query);
+		if(!is_resource($hana_stmt)){
+			$e=odbc_errormsg();
+			debugValue(array("hanaEditDBRecord2 prepare Error",$e));
+    		return 1;
+		}
+		$success = odbc_execute($hana_stmt,$vals);
+		//echo $vals[5].$query.printValue($success).printValue($vals);
+	}
+	catch (Exception $e) {
+		debugValue(array("hanaEditDBRecord2 try Error",$e));
+    	return;
+	}
+	return 0;
 }
 //---------- begin function hanaReplaceDBRecord ----------
 /**
@@ -1143,3 +1149,17 @@ function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array(
 	$query="DELETE FROM {$table} WHERE {$wherestr}";
 	return $query;
 }
+function hanaConvert2UTF8($content) { 
+    if(!mb_check_encoding($content, 'UTF-8') 
+        OR !($content === mb_convert_encoding(mb_convert_encoding($content, 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) {
+
+        $content = mb_convert_encoding($content, 'UTF-8'); 
+
+        if (mb_check_encoding($content, 'UTF-8')) { 
+            // log('Converted to UTF-8'); 
+        } else { 
+            // log('Could not converted to UTF-8'); 
+        } 
+    } 
+    return $content; 
+} 
