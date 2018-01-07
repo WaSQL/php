@@ -1089,7 +1089,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$hasBehaviors=0;
 	if(isset($params['-honeypot'])){
 		$honeypot=$params['-honeypot'];
-		$rtn .= '<input type="hiddgetDBFieldTagen" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
+		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
 		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'.PHP_EOL;
 		}
 	$forcedatts=array(

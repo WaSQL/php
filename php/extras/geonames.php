@@ -111,6 +111,7 @@ function geonamesPostalCodeSearch($postalcode,$country='US',$username='demo',$ma
 */
 function geonamesImportZipcodes($countries=array(),$params=array()){
 	$progpath=dirname(__FILE__);
+	global $logfile;
 	$logfile="{$progpath}/geonamesImportZipcodes.log";
 	setFileContents($logfile,"started".PHP_EOL);
 	$rtn=array();
@@ -189,6 +190,7 @@ function geonamesImportZipcodes($countries=array(),$params=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function geonamesImportZipcode($rec){
+	global $logfile;
 	$opts=$rec['line'];
 	$opts['-table']="zipcodes";
 	$id=addDBRecord($opts);

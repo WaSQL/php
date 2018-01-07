@@ -5,8 +5,8 @@
  * */
 global $temp;
 global $temp_logfile;
+$progpath=dirname(__FILE__);
 $temp=realpath('../temp');
-$phpdir=realpath('../php');
 $temp_logfile="{$temp}/resumable.log";
 //keep log file to 1MB in size or smaller
 if(file_exists($temp_logfile) && filesize($temp_logfile) > 1048576){
@@ -55,11 +55,41 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
     if (!move_uploaded_file($file['tmp_name'], $dest_file)) {
         _log('Error saving (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
     } else {
+		_log('Success (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
+		if(isset($_SERVER['HTTP_HOST'])){
+			global $CONFIG;
+			include_once("{$phpdir}/common.php");
+			include_once("{$phpdir}/config.php");
+			include_once("{$phpdir}/database.php");
+			if(!isDBTable('resumable')){
+				$ok=createDBTable('resumable',array(
+					'dirname'=>'varchar(255) NOT NULL UNIQUE',
+					'filename'=>'varchar(255) NOT NULL',
+					'chunkcount'=>'integer NOT NULL',
+					'filesize'=>'integer NOT NULL',
+					'processed'=>'tinyint(1) NOT NULL Default 0'
+				));
+			}
+			$rec=getDBRecord(array(
+				'-table'=>'resumable',
+				'dirname'=>$temp_dir,
+				'-fields'=>'_id'
+			));
+			if(!isset($rec['_id'])){
+				$ok=addDBRecord(array(
+					'-table'=>'resumable',
+					'dirname'=>$temp_dir,
+					'filename'=>$_POST['resumableFilename'],
+					'chunkcount'=>$_POST['resumableTotalChunks'],
+					'filesize'=>$_POST['resumableTotalSize'],
+					'processed'=>0
+				));
+			}
+		}
         // check if all the parts present, and create the final destination file
-        createFileFromChunks($temp_dir, $_POST['resumableFilename'],$_POST['resumableChunkSize'], $_POST['resumableTotalSize'],$_POST['resumableTotalChunks']);
+        //createFileFromChunks($temp_dir, $_POST['resumableFilename'],$_POST['resumableChunkSize'], $_POST['resumableTotalSize'],$_POST['resumableTotalChunks']);
     }
 }
-
 
 /**
  *
