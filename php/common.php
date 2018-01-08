@@ -12121,7 +12121,7 @@ function pushFile($file='',$params=array()){
     readfile($file);
     exit;
 	}
-//---------- begin function pushFile---------------------------------------
+//---------- begin function readRSS---------------------------------------
 /**
 * @describe reads an RSS feed into an array and returns the array
 * @param $url string
@@ -12148,14 +12148,14 @@ function readRSS($url,$hrs=3,$force=0){
 	$local="{$progpath}/temp/readRSS_" . md5($url) . '.xml';
 	$results['file']=$local;
 	if($force && file_exists($local)){unlink($local);}
-    if(file_exists($local)){
+    if(file_exists($local) && filesize($local)){
 		$results['feedDate_utime']=filectime($local);
 		/* Use the local file if it is less than 3 hours old */
 		$results['file_hrs'] = intval((time() - $results['feedDate_utime'])/60/60);
         if ($results['file_hrs'] < $hrs){
 			$url=$local;
-			}
-    	}
+		}
+    }
     $results['file_src']=$url;
 	if($local != $url){
 		if(function_exists('curl_init')){
@@ -12169,26 +12169,36 @@ function readRSS($url,$hrs=3,$force=0){
 			fclose($fp);
 			if(!file_exists($local)){
 				$results['error']= "rss2Xml Curl Error opening file";
-				return $result;
+				return $results;
 				}
 			$results['feedDate_utime']=time();
 			$url=$local;
-			}
+		}
 		else{
 			$results['error']= "Curl is not supported";
-			return $result;
-			}
+			return $results;
 		}
+	}
 	$articles = array();
 	// step 1: get the feed
-	$content = file_get_contents($url);
+	$lines=file($url);
+	//fix malformed & in links, etc
+	foreach($lines as $i=>$line){
+		$lines[$i]=str_replace('&amp;','[[[amp]]]',$lines[$i]);
+		$lines[$i]=str_replace('&','&amp;',$lines[$i]);
+		$lines[$i]=str_replace('[[[amp]]]','&amp;',$lines[$i]);
+		
+	}
+	$content = implode('',$lines);
+	//fix malformed links
+	//$content=preg_replace('/\<link\>http(.+?)\<\/link\>/','<link><![CDATA[http$1]]></link>',$content);
 	try{
 		$xml = new SimpleXmlElement($content);
 		}
 	catch(Exception $e){
 		$results['error']=printValue($e);
 		$results['raw']=$content;
-		return $result;
+		return $results;
     	}
     //feedDate
     $results['feedDate']=date('D F j,Y g:i a',$results['feedDate_utime']);
