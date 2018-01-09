@@ -461,7 +461,7 @@ ENDOFQUERY;
 		odbc_free_result($result2);
 		$row=array_change_key_case($row);
 		if(isset($row['cval'])){return $row['cval'];}
-		return "hanaAddDBRecord Identity Error".printValue($row).printValues($opts);
+		return "hanaAddDBRecord Identity Error".printValue($row).printValue($opts);
 		//echo "result2:".printValue($row);
 	}
 	catch (Exception $e) {
