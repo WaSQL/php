@@ -430,9 +430,16 @@ function hanaAddDBRecord($params){
 				$v=hanaConvert2UTF8($v);
         	break;
 		}
-		$opts['values'][]=$v;
-		$opts['bindings'][]='?';
-        $opts['fields'][]=trim(strtoupper($k));
+		//support for nextval
+		if(preg_match('/\.nextval$/',$val)){
+			$opts['bindings'][]=$val;
+        	$opts['fields'][]=trim(strtoupper($k));
+		}
+		else{
+			$opts['values'][]=$v;
+			$opts['bindings'][]='?';
+        	$opts['fields'][]=trim(strtoupper($k));
+		}
 	}
 	$fieldstr=implode('","',$opts['fields']);
 	$bindstr=implode(',',$opts['bindings']);
