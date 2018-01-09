@@ -431,7 +431,7 @@ function hanaAddDBRecord($params){
         	break;
 		}
 		$opts['values'][]=$v;
-		$opts['bindings']='?';
+		$opts['bindings'][]='?';
         $opts['fields'][]=trim(strtoupper($k));
 	}
 	$fieldstr=implode('","',$opts['fields']);
