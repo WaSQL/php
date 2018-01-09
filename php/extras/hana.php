@@ -397,7 +397,7 @@ function hanaExecuteSQL($query,$params=array()){
 */
 function hanaAddDBRecord($params){
 	global $USER;
-	if(!isset($params['-table'])){return 'hanaAddRecord error: No table specified.';}
+	if(!isset($params['-table'])){return 'hanaAddDBRecord error: No table.';}
 	$fields=hanaGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['cdate'])){
@@ -446,21 +446,21 @@ ENDOFQUERY;
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
     	debugValue(array("hanaAddDBRecord Connect Error",$e));
-    	return;
+    	return "hanaAddDBRecord Connect Error".printValue($e);
 	}
 	try{
 		$hana_stmt    = odbc_prepare($dbh_hana, $query);
 		if(!is_resource($hana_stmt)){
 			$e=odbc_errormsg();
 			debugValue(array("hanaAddDBRecord prepare Error",$e));
-    		return 1;
+    		return "hanaAddDBRecord prepare Error".printValue($e);
 		}
 		$success = odbc_execute($hana_stmt,$opts['values']);
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 CURRENT_IDENTITY_VALUE() as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
 		$row=array_change_key_case($row);
 		odbc_free_result($result2);
-		if(isNum($row['cval'])){return $row['cval'];}
+		if(isset($row['cval'])){return $row['cval'];}
 		return "hanaAddDBRecord Error".printValue($row).$query;
 		//echo "result2:".printValue($row);
 	}
@@ -468,8 +468,8 @@ ENDOFQUERY;
 		$err=$e->errorInfo;
 		$err['query']=$query;
 		$recs=array($err);
-		debugValue(array("hanaAddDBRecord Connect Error",$e));
-		return "hanaAddDBRecord Error".printValue($err);
+		debugValue(array("hanaAddDBRecord Try Error",$e));
+		return "hanaAddDBRecord Try Error".printValue($err);
 	}
 	return 0;
 }
