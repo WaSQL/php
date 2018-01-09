@@ -459,8 +459,9 @@ ENDOFQUERY;
 		$hana_stmt    = odbc_prepare($dbh_hana, $query);
 		if(!is_resource($hana_stmt)){
 			$e=odbc_errormsg();
-			debugValue(array("hanaAddDBRecord prepare Error",$e));
-    		return "hanaAddDBRecord prepare Error".printValue($e);
+			$err=array("hanaAddDBRecord prepare Error",$e,$query);
+			debugValue($err);
+    		return printValue($err);
 		}
 		$success = odbc_execute($hana_stmt,$opts['values']);
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
