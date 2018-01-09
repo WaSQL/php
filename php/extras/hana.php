@@ -458,10 +458,10 @@ ENDOFQUERY;
 		$success = odbc_execute($hana_stmt,$opts['values']);
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
-		$row=array_change_key_case($row);
 		odbc_free_result($result2);
+		$row=array_change_key_case($row);
 		if(isset($row['cval'])){return $row['cval'];}
-		return "hanaAddDBRecord Identity Error".printValue($row).$query;
+		return "hanaAddDBRecord Identity Error".printValue($row).printValues($opts);
 		//echo "result2:".printValue($row);
 	}
 	catch (Exception $e) {
