@@ -431,8 +431,8 @@ function hanaAddDBRecord($params){
         	break;
 		}
 		//support for nextval
-		if(preg_match('/\.nextval$/',$val)){
-			$opts['bindings'][]=$val;
+		if(preg_match('/\.nextval$/',$v)){
+			$opts['bindings'][]=$v;
         	$opts['fields'][]=trim(strtoupper($k));
 		}
 		else{
