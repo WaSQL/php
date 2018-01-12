@@ -1201,6 +1201,9 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['-tableclass'])){
 					$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
 				}
+				elseif(isset($params['-bootstrap']) && $params['-bootstrap']){
+					$rtn .= '<table class="w_table" style="width:100%">'.PHP_EOL;
+				}
 				else{
 					$rtn .= '<table class="w_table">'.PHP_EOL;
 				}
@@ -1222,7 +1225,12 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
 				if(!isset($opts['class'])){$opts['class']='';}
-				if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}
+				if(isset($params['-bootstrap']) && $params['-bootstrap']){
+					unset($params['width']);
+					unset($opts['width']);
+					$opts['-bootstrap']=1;
+					if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
+				}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -1417,7 +1425,10 @@ function addEditDBForm($params=array(),$customcode=''){
 			}
         else{
 			if(isset($params['-tableclass'])){
-        	$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+        		$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
+			}
+			elseif(isset($params['-bootstrap']) && $params['-bootstrap']){
+				$rtn .= '<table class="w_table www" style="width:100%">'.PHP_EOL;
 			}
 			else{
 				$rtn .= '<table class="w_table">'.PHP_EOL;
@@ -1432,6 +1443,12 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
 			if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
+			if(isset($params['-bootstrap']) && $params['-bootstrap']){
+				unset($params['width']);
+				unset($opts['width']);
+				$opts['-bootstrap']=1;
+				if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
+			}
 			if(isset($params[$field.'_dname'])){
 				$dname=$params[$field.'_dname'];
 				$used[$field.'_dname']=1;
@@ -4137,7 +4154,11 @@ function getDBFieldTag($params=array()){
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
 	//LOAD form-control if bootstrap is loaded
-	if(isset($params['-bootstrap']) && $params['-bootstrap'] && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
+	if(isset($params['-bootstrap']) && $params['-bootstrap']){
+		if(!stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
+		unset($info[$field]['width']);
+	}
+	//return printValue($params).printValue($info[$field]);
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
 		//Checkbox
@@ -7086,7 +7107,11 @@ function listDBRecords($params=array(),$customcode=''){
         if(isset($params[$fld."_header_class"])){$class=$params[$fld."_header_class"];}
         elseif(isset($params["-header_class"])){$class=$params["-header_class"];}
         if(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-        	$rtn .= '		<th'.$title.' class="'.$class.'"><label for="'.$fld.'_checkbox"> '.$col.'</label> <input type="checkbox" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);"> </th>'.PHP_EOL;
+        	$rtn .= '		<th'.$title.' class="'.$class.'">'.PHP_EOL;
+			$rtn .= '			<input type="checkbox" id="'.$fld.'_checkbox_all" data-type="checkbox" style="display:none" onclick="checkAllElements(\'data-group\',\''.$fld.'_checkbox\', this.checked);">'.PHP_EOL;
+			$rtn .= '			<label for="'.$fld.'_checkbox_all" class="icon-mark"></label>'.PHP_EOL;
+			$rtn .= '			<label for="'.$fld.'_checkbox_all"> '.$col.'</label>'.PHP_EOL;
+			$rtn .= '		</th>'.PHP_EOL;
 		}
         elseif(isset($params['-nosort']) || isset($params[$fld."_nolink"])){
 			$rtn .= '		<th'.$title.' class="'.$class.'">' . "{$col}</th>".PHP_EOL;
@@ -7320,11 +7345,12 @@ function listDBRecords($params=array(),$customcode=''){
 				$val='<a class="w_link" href="#" onClick="'.$href.'">'.$val.'</a>';
 				}
 			elseif(isset($params[$fld."_checkbox"]) && $params[$fld."_checkbox"]==1){
-				if($val==0){$val='<div class="text-center"><span class="icon-checkbox-empty"></span></div>';}
-				else{$val='<div class="text-center"><span class="icon-checkbox"></span></div>';}
-				//$cval=$val;
-				//$val='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'"> ';
-				//if(!isNum($cval)){$val .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
+				//if($val==0){$val='<div class="text-center"><span class="icon-checkbox-empty"></span></div>';}
+				//else{$val='<div class="text-center"><span class="icon-checkbox"></span></div>';}
+				$cval=$val;
+				$val='<input type="checkbox" data-type="checkbox" style="display:none" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$val.'"> ';
+				$val .= '<label for="'.$fld.'_checkbox_'.$row.'" class="icon-mark"></label>'.PHP_EOL;
+				if(!isNum($cval)){$val .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
             }
 			elseif(isset($params[$fld."_check"]) && $params[$fld."_check"]==1){
 				if($val==0){$val='';}
