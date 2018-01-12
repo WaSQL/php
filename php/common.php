@@ -1185,9 +1185,14 @@ function buildFormTextarea($name,$params=array()){
 		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['-bootstrap'])){
+		unset($params['width']);
+	}
 	if(isset($params['height'])){
 		if(isNum($params['height'])){$params['height'].='px';}
-		$params['style'].=";height:{$params['height']}";
+		if(!stringContains($params['style'],'height')){
+			$params['style'].=";height:{$params['height']};";
+		}
 	}
 	$white_wrap=0;
 	if(isset($params['behavior']) && strlen($params['behavior'])){
