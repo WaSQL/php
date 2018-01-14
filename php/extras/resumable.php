@@ -9,6 +9,7 @@ $progpath=dirname(__FILE__);
 $temp=realpath('../temp');
 $phpdir=realpath('../');
 $temp_logfile="{$temp}/resumable.log";
+//echo $temp_logfile;
 //keep log file to 1MB in size or smaller
 if(file_exists($temp_logfile) && filesize($temp_logfile) > 1048576){
 	file_put_contents($temp_logfile,'');
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if (!empty($_FILES)) foreach ($_FILES as $file) {
     // check the error status
     if ($file['error'] != 0) {
-        _log('error '.$file['error'].' in file '.$_POST['resumableFilename'].json_encode($file));
+        resumableLog('error '.$file['error'].' in file '.$_POST['resumableFilename'].json_encode($file));
         continue;
     }
     // init the destination file (format <filename.ext>.part<#chunk>
@@ -50,22 +51,22 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
     // create the temporary directory
     if (!is_dir($temp_dir)) {
         mkdir($temp_dir, 0777, true);
-		_log("making temp dir: {$temp_dir}");
+		resumableLog("making temp dir: {$temp_dir}");
     }
 
     // move the temporary file
-	_log("moving {$file['tmp_name']} to {$dest_file}");
+	resumableLog("moving {$file['tmp_name']} to {$dest_file}");
     if (!move_uploaded_file($file['tmp_name'], $dest_file)) {
-        _log('Error saving (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
+        resumableLog('Error saving (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
     } else {
-		_log("Success (move_uploaded_file) chunk {$_POST['resumableChunkNumber']} for file {$_POST['resumableFilename']} to {$dest_file} ");
+		resumableLog("Success (move_uploaded_file) chunk {$_POST['resumableChunkNumber']} for file {$_POST['resumableFilename']} to {$dest_file} ");
 		if(isset($_SERVER['HTTP_HOST'])){
 			global $CONFIG;
 			include_once("{$phpdir}/common.php");
 			include_once("{$phpdir}/config.php");
 			include_once("{$phpdir}/database.php");
 			if(!isDBTable('resumable')){
-				_log("creating resumable table")
+				resumableLog("creating resumable table");
 				$ok=createDBTable('resumable',array(
 					'dirname'=>'varchar(255) NOT NULL UNIQUE',
 					'filename'=>'varchar(255) NOT NULL',
@@ -89,7 +90,7 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
 					'processed'=>0
 				);
 				$ok=addDBRecord($opts);
-				_log("adding record".json_encode($opts).json_encode(array($ok));
+				resumableLog("adding record".json_encode($opts).json_encode(array($ok)));
 			}
 		}
         // check if all the parts present, and create the final destination file
@@ -123,11 +124,11 @@ function createFileFromChunks($temp_dir, $fileName, $chunkSize, $totalSize,$tota
         if (($fp = fopen("{$temp}/{$fileName}", 'w')) !== false) {
             for ($i=1; $i<=$total_files; $i++) {
                 fwrite($fp, file_get_contents($temp_dir.'/'.$fileName.'.part'.$i));
-                _log('writing chunk '.$i);
+                resumableLog('writing chunk '.$i);
             }
             fclose($fp);
         } else {
-            _log('cannot create the destination file');
+            resumableLog('cannot create the destination file');
             return false;
         }
 
@@ -146,7 +147,7 @@ function createFileFromChunks($temp_dir, $fileName, $chunkSize, $totalSize,$tota
  * Logging operation - to a file (upload_log.txt) and to the stdout
  * @param string $str - the logging string
  */
-function _log($str) {
+function resumableLog($str) {
 	global $temp;
 	global $temp_logfile;
     // log to the output
