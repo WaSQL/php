@@ -84,7 +84,7 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
 				$opts=array(
 					'-table'=>'resumable',
 					'dirname'=>$temp_dir,
-					'filename'=>$_POST['resumableFilename'],
+					'filename'=>getFileName($dest_file),
 					'chunkcount'=>$_POST['resumableTotalChunks'],
 					'filesize'=>$_POST['resumableTotalSize'],
 					'processed'=>0
