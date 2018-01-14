@@ -6562,6 +6562,37 @@ function getCharset($str=''){
     	}
 	return $charset;
 	}
+//---------- begin function getGravatar--------------------
+/**
+ * @describe returns the Gravatar URL for a specified email address.
+ * @param string $email The email address
+ * @param array $params
+ *		size - numeric Size in pixels, defaults to 80px [ 1 - 2048 ]
+ *		set - imageset to use, defaults to mm [ 404 | mm | identicon | monsterid | wavatar ]
+ *		rating - max rating, defaults to g [ g | pg | r | x ]
+ * @return String containing either just a URL or a complete image tag
+ * @source https://gravatar.com/site/implement/images/php/
+ * @usage <img src="<?=getGravatar('some.email@gmail.com');?>" alt="gravatar" />
+ */
+function getGravatar($email,$params=array()){
+	if(!isset($params['size'])){$params['size']=80;}
+	//check for valid size
+	if(!isNum($params['size']) || $params['size'] < 1 || $params['size'] > 2048){
+		$params['size']=80;
+	}
+	if(!isset($params['set'])){$params['set']='mm';}
+	//check for a valid set value
+	$valid_sets=array('404','mm','identicon','monsterid','wavatar');
+	if(!in_array($params['set'],$valid_sets)){$params['set']='mm';}
+	if(!isset($params['rating'])){$params['rating']='g';}
+	//check for valid rating
+	$valid_ratings=array('g','pg','r','x');
+	if(!in_array($params['rating'],$valid_ratings)){$params['rating']='g';}
+	//build md5 string
+	$md5str=md5(strtolower(trim($email)));
+	//return url
+	return "https://secure.gravatar.com/avatar/{$md5str}/?s={$params['size']}&d={$params['set']}&r={$params['rating']}";
+}
 //---------- begin function getGUID--------------------
 /**
 * @describe gets a unique GUID for this user, setting it if it does not exist
