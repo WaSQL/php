@@ -50,19 +50,22 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
     // create the temporary directory
     if (!is_dir($temp_dir)) {
         mkdir($temp_dir, 0777, true);
+		_log("making temp dir: {$temp_dir}");
     }
 
     // move the temporary file
+	_log("moving {$file['tmp_name']} to {$dest_file}");
     if (!move_uploaded_file($file['tmp_name'], $dest_file)) {
         _log('Error saving (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
     } else {
-		_log('Success (move_uploaded_file) chunk '.$_POST['resumableChunkNumber'].' for file '.$_POST['resumableFilename']);
+		_log("Success (move_uploaded_file) chunk {$_POST['resumableChunkNumber']} for file {$_POST['resumableFilename']} to {$dest_file} ");
 		if(isset($_SERVER['HTTP_HOST'])){
 			global $CONFIG;
 			include_once("{$phpdir}/common.php");
 			include_once("{$phpdir}/config.php");
 			include_once("{$phpdir}/database.php");
 			if(!isDBTable('resumable')){
+				_log("creating resumable table")
 				$ok=createDBTable('resumable',array(
 					'dirname'=>'varchar(255) NOT NULL UNIQUE',
 					'filename'=>'varchar(255) NOT NULL',
@@ -77,14 +80,16 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
 				'-fields'=>'_id'
 			));
 			if(!isset($rec['_id'])){
-				$ok=addDBRecord(array(
+				$opts=array(
 					'-table'=>'resumable',
 					'dirname'=>$temp_dir,
 					'filename'=>$_POST['resumableFilename'],
 					'chunkcount'=>$_POST['resumableTotalChunks'],
 					'filesize'=>$_POST['resumableTotalSize'],
 					'processed'=>0
-				));
+				);
+				$ok=addDBRecord($opts);
+				_log("adding record".json_encode($opts).json_encode(array($ok));
 			}
 		}
         // check if all the parts present, and create the final destination file
