@@ -84,7 +84,7 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
 				$opts=array(
 					'-table'=>'resumable',
 					'dirname'=>$temp_dir,
-					'filename'=>getFileName($dest_file),
+					'filename'=>$_POST['resumableFilename'],
 					'chunkcount'=>$_POST['resumableTotalChunks'],
 					'filesize'=>$_POST['resumableTotalSize'],
 					'processed'=>0
@@ -94,7 +94,7 @@ if (!empty($_FILES)) foreach ($_FILES as $file) {
 			}
 		}
         // check if all the parts present, and create the final destination file
-        //createFileFromChunks($temp_dir, $_POST['resumableFilename'],$_POST['resumableChunkSize'], $_POST['resumableTotalSize'],$_POST['resumableTotalChunks']);
+        createFileFromChunks($temp_dir, $_POST['resumableFilename'],$_POST['resumableChunkSize'], $_POST['resumableTotalSize'],$_POST['resumableTotalChunks']);
     }
 }
 
