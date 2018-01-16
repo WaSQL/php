@@ -143,7 +143,10 @@
 			</form>
 		</div>
 		<div class="col-sm-9">
-			<view:noauth><h3 class="w_danger"><span class="icon-warning w_warning"></span> <?=$rec['error'];?></h3></view:noauth>
+			<view:noauth>
+				<h3 class="w_danger"><span class="icon-warning w_warning"></span> <?=$rec['error'];?></h3>
+				<?=printValue($rec);?>
+			</view:noauth>
 			<?=renderViewIf(isset($json['error']),'noauth',$json,'rec');?>
 		</div>
 	</div>
