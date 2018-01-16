@@ -50,7 +50,7 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 	switch(strtolower($json['func'])){
 		case 'auth':
 			if(!isAdmin()){
-				echo json_encode(array('error'=>"User '{$USER['username']}' is not an admin",'request'=>$json));
+				echo json_encode(array('error'=>"auth: User '{$USER['username']}' is not an admin",'user'=>$USER,'request'=>$json));
 				exit;
 			}
 			//send them the _auth
@@ -66,7 +66,7 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 				exit;
 			}
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"get_tables: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			$query=<<<ENDOFQUERY
@@ -93,7 +93,7 @@ ENDOFQUERY;
 		case 'get_record':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"get_record:User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['id']) || !isset($json['fields'])){
@@ -115,7 +115,7 @@ ENDOFQUERY;
 		case 'get_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"get_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['limit']) || !isset($json['offset'])){
@@ -138,7 +138,7 @@ ENDOFQUERY;
 		case 'datasync_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"datasync_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records']) || !isset($json['offset'])){
@@ -169,7 +169,7 @@ ENDOFQUERY;
 		case 'get_schema':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"get_schema: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table'])){
@@ -188,7 +188,7 @@ ENDOFQUERY;
 		case 'update_schemas':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"update_schemas:User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records'])){
@@ -212,7 +212,7 @@ ENDOFQUERY;
 		case 'update_records':
 			global $USER;
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"update_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records'])){
@@ -276,7 +276,7 @@ ENDOFQUERY;
 			//request to get sync changes
 			//confirm user is an admin in this system
 			if(!isAdmin()){
-				echo base64_encode(json_encode(array('error'=>"User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				echo base64_encode(json_encode(array('error'=>"get_changes: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
 			$rtn=array();
