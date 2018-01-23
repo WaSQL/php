@@ -888,7 +888,7 @@ function userLoginForm($params=array()){
 	$defaults=array(
 		'-title'	=> '',
 		'-login'	=> "Login",
-		'-remind'	=> "Send Me My Login Info",
+		'-remind'	=> "Remind Me",
 		'-remind_title'	=> "Click here if you need your login information emailed to you.",
 		'-format'		=> "standard",
 		'-icons'		=> true,
@@ -1035,6 +1035,9 @@ function userLoginForm($params=array()){
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="col-sm-3">'.PHP_EOL;
 			$form .= '		<button type="submit" class="btn btn-default btn-lg">Login</button>'.PHP_EOL;
+			$form .= '		<div class="w_padtop w_nowrap">'.PHP_EOL;
+			$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a>'.PHP_EOL;
+			$form .= '		</div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '</div>'.PHP_EOL;
 		break;
