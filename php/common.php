@@ -3223,6 +3223,11 @@ function setView($name='',$clear=0){
 	$PAGE['setView'][$name]+=1;
 	return 1;
 }
+function setViewNames(){
+	global $PAGE;
+	if(!isset($PAGE['setView'][0])){return array();}
+	return array_keys($PAGE['setView']);
+}
 //---------- begin function
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
