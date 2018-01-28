@@ -231,6 +231,10 @@ function checkDBTableSchema($wtable){
 			adminSynchronizeRecord('_fielddata',$id,isDBStage());
 			$rtn .= " added synchronize to _pages table<br />".PHP_EOL;
         }
+		if(!isset($finfo['settings'])){
+			$query="ALTER TABLE {$wtable} ADD settings text NULL;";
+			$ok=executeSQL($query);
+        }
         if(!isset($finfo['_env'])){
 			$query="ALTER TABLE {$wtable} ADD _env text NULL;";
 			$ok=executeSQL($query);
@@ -1154,6 +1158,10 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts['-checkall']=1;
 						$used[$cfield.'_checkall']=1;
 					}
+					if(isset($params[$cfield.'_wrap'])){
+						$opts['wrap']=$params[$cfield.'_wrap'];
+						$used[$cfield.'_wrap']=1;
+						}
 					if(isset($params[$cfield.'_tvals'])){
 						$opts['tvals']=$params[$cfield.'_tvals'];
 						$used[$cfield.'_tvals']=1;
@@ -1366,6 +1374,10 @@ function addEditDBForm($params=array(),$customcode=''){
 						$dname .= ' <img title="Click to preview html" onclick="popUpDiv(document.'.$formname.'.'.$field.'.value,{center:1,drag:1});" src="/wfiles/iconsets/16/webpage.png" width="16" height="16" style="cursor:pointer;vertical-align:middle;" alt="preview" />';
 	                }
 				}
+				if(isset($params[$field.'_wrap'])){
+					$opts['wrap']=$params[$field.'_wrap'];
+					$used[$field.'_wrap']=1;
+					}
                 if(isset($params[$field.'_tvals'])){
 					$opts['tvals']=$params[$field.'_tvals'];
 					$used[$field.'_tvals']=1;
