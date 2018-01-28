@@ -1197,11 +1197,14 @@ function buildFormTextarea($name,$params=array()){
 	$white_wrap=0;
 	if(isset($params['behavior']) && strlen($params['behavior'])){
 		$params['data-behavior']=strtolower($params['behavior']);
-		$params['wrap']="off";
+		
 		switch(strtolower($params['behavior'])){
 	    	case 'nowrap':
 	    		$params['behavior']='';
 				$params['wrap']="off";
+			break;
+			case 'autogrow':
+				if(!isset($params['wrap'])){$params['wrap']="soft";}
 			break;
 			case 'editor':
 			case 'tinymce':
@@ -1219,6 +1222,7 @@ function buildFormTextarea($name,$params=array()){
 			break;
 		}
 	}
+	if(!isset($params['wrap'])){$params['wrap']="off";}
 	$params['name']=$name;
 	$tag='';
 	if($white_wrap==1){$tag.='<div style="background:#FFF;">'."\n";}
