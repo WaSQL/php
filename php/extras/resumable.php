@@ -139,6 +139,8 @@ function createFileFromChunks($temp_dir, $fileName, $chunkSize, $totalSize,$tota
         } else {
             rrmdir($temp_dir);
         }
+		//mark image record ready to resize
+		
     }
 
 }
