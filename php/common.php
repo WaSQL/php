@@ -8635,12 +8635,12 @@ function listFiles($dir='.'){
 //---------- begin function listFilesEx--------------------
 /**
 * @describe returns an array of files in dir
-* @param dir string - directory path
+* @param dir string - directory path - required
 * @param params array
-*	type - limit results to this type - defaults to file
-*	-dateformat - return date format
-*	-perms - limit results to files this these permissions
-*	-lines - return the line count of each file returned
+*	[type] - limit results to this type - defaults to file
+*	[-dateformat] - return date format
+*	[-perms] - limit results to files this these permissions
+*	[-lines] - return the line count of each file returned
 * @return array
 * @usage $files=listFilesEx($dir);
 */
