@@ -278,6 +278,10 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		exit;
     }
     else{
+		$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
+		$auth=encrypt("{$ruser['username']}:{$ruser['apikey']}",$ruser['_id']);
+		$ruser['_auth']="{$ruser['_id']}.{$auth}";
+		//echo printValue($ruser);exit;
 		//send the email.
 		$to=$ruser['email'];
 		$sitename=isset($CONFIG['reminder_site_name'])?$CONFIG['reminder_site_name']:$_SERVER['HTTP_HOST'];
@@ -287,9 +291,13 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		$message .= '<p>Username: '. $ruser['username']. "<br>".PHP_EOL;
 		$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 		$message .= 'Password: '. $pw. PHP_EOL;
-		$message .= '<p>Once you login to your account, you will be able to change your password under your username, then select Account Profile.</p>';
+		$http=isSSL()?'https://':'http://';
+		$href=$http.$_SERVER['HTTP_HOST'].'?_auth='.$ruser['_auth'];
+		$message .= '<p>You can also <a href="'.$href.'">click here</a> to log in automatically</p>';
+		$message .= '<p>Once you login to your account, please change your password.</p>';
 		$message .= "<p>If you didn't ask to change your password, don't worry! Your password is still safe and you can ignore this email.</p>";
 		$message .= "<p>Best regards,</p><p>{$fromname}</p>";
+		//echo $message;exit;
 		//clear out errors
 		@trigger_error("");
 		//attempt to send the email
