@@ -290,7 +290,12 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		$message="Hi there!<p>We received a request to remind you of your {$sitename}  login information, located below: </p>";
 		$message .= '<p>Username: '. $ruser['username']. "<br>".PHP_EOL;
 		$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
-		$message .= 'Password: '. $pw. PHP_EOL;
+		if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
+			$message .= 'Your password is your LDAP password'. PHP_EOL;
+		}
+		else{
+			$message .= 'Password: '. $pw. PHP_EOL;
+		}
 		$http=isSSL()?'https://':'http://';
 		$href=$http.$_SERVER['HTTP_HOST'].'?_auth='.$ruser['_auth'];
 		$message .= '<p>You can also <a href="'.$href.'">click here</a> to log in automatically</p>';
