@@ -50,7 +50,26 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	list($_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,2);
 	$_REQUEST['_auth']=1;
 }
-
+elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
+	list($key,$encoded)=preg_split('/\./',$_REQUEST['_tauth'],2);
+	$decoded=decrypt($encoded,"Salt{$key}tlaS");
+	//echo $decoded;exit;
+	list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
+	//make sure the atime is within the allowed time frame - 30 minutes
+	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
+	$seconds=$minutes*60;
+	$elapsed=time()-$atime;
+	//echo  "{$decoded},{$key},{$atime}".printValue($_REQUEST);exit;
+	if($elapsed > $seconds){
+		unset($_REQUEST['apikey']);
+		unset($_REQUEST['username']);
+		$_REQUEST['_login_error']="The login link used is no longer valid. {$elapsed}";
+	}
+	else{
+		$_REQUEST['_auth']=1;
+	}
+	//echo printValue($_REQUEST);exit;
+}
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>addslashes($_REQUEST['username'])));
