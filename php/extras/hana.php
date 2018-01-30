@@ -533,6 +533,7 @@ ENDOFQUERY;
 * @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function hanaAddDBRecord($params){
+	global $hanaAddDBRecordCache;
 	global $USER;
 	if(!isset($params['-table'])){return 'hanaAddDBRecord error: No table.';}
 	$fields=hanaGetDBFieldInfo($params['-table'],$params);
@@ -593,14 +594,17 @@ ENDOFQUERY;
     	return "hanaAddDBRecord Connect Error".printValue($e);
 	}
 	try{
-		$hana_stmt    = odbc_prepare($dbh_hana, $query);
-		if(!is_resource($hana_stmt)){
-			$e=odbc_errormsg();
-			$err=array("hanaAddDBRecord prepare Error",$e,$query);
-			debugValue($err);
-    		return printValue($err);
+		if(isset($hanaAddDBRecordCache[$params['-table']]['stmt'])){
+			$hanaAddDBRecordCache[$params['-table']]['stmt']    = odbc_prepare($dbh_hana, $query);
+			if(!is_resource($hanaAddDBRecordCache[$params['-table']]['stmt'])){
+				$e=odbc_errormsg();
+				$err=array("hanaAddDBRecord prepare Error",$e,$query);
+				debugValue($err);
+				return printValue($err);
+			}
 		}
-		$success = odbc_execute($hana_stmt,$opts['values']);
+		
+		$success = odbc_execute($hanaAddDBRecordCache[$params['-table']]['stmt'],$opts['values']);
 		if(!$success){
 			$e=odbc_errormsg();
 			debugValue(array("hanaAddDBRecord Execute Error",$e));
