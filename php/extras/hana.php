@@ -496,6 +496,11 @@ ENDOFQUERY;
     		return printValue($err);
 		}
 		$success = odbc_execute($hana_stmt,$opts['values']);
+		if(!$success){
+			$e=odbc_errormsg();
+			debugValue(array("hanaAddDBRecord Execute Error",$e));
+    		return "hanaAddDBRecord Execute Error".printValue($e);
+		}
 		if(isset($params['-noidentity'])){return $success;}
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
@@ -596,6 +601,11 @@ ENDOFQUERY;
     		return printValue($err);
 		}
 		$success = odbc_execute($hana_stmt,$opts['values']);
+		if(!$success){
+			$e=odbc_errormsg();
+			debugValue(array("hanaAddDBRecord Execute Error",$e));
+    		return "hanaAddDBRecord Execute Error".printValue($e);
+		}
 		if(isset($params['-noidentity'])){return $success;}
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
