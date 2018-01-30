@@ -594,7 +594,7 @@ ENDOFQUERY;
     	return "hanaAddDBRecord Connect Error".printValue($e);
 	}
 	try{
-		if(isset($hanaAddDBRecordCache[$params['-table']]['stmt'])){
+		if(!isset($hanaAddDBRecordCache[$params['-table']]['stmt'])){
 			$hanaAddDBRecordCache[$params['-table']]['stmt']    = odbc_prepare($dbh_hana, $query);
 			if(!is_resource($hanaAddDBRecordCache[$params['-table']]['stmt'])){
 				$e=odbc_errormsg();
