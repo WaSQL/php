@@ -395,6 +395,138 @@ function hanaExecuteSQL($query,$params=array()){
 * @return integer returns the autoincriment key
 * @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
+function hanaAddDBRecords($table,$recs){
+	global $USER;
+	if(!strlen($table)){return 'hanaAddDBRecords error: No table.';}
+	$fields=hanaGetDBFieldInfo($table,$params);
+	$opts=array();
+	foreach($recs as $i=>$rec){
+		if(isset($fields['cdate'])){
+			$recs[$i]['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+		}
+		elseif(isset($fields['_cdate'])){
+			$recs[$i]['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
+		}
+		if(isset($fields['cuser'])){
+			$recs[$i]['cuser']=$USER['username'];
+		}
+		elseif(isset($fields['_cuser'])){
+			$recs[$i]['_cuser']=$USER['username'];
+		}
+		foreach($rec as $k=>$v){
+			$k=strtolower($k);
+			if(!strlen(trim($v))){continue;}
+			if(!isset($fields[$k])){continue;}
+			//fix array values
+			if(is_array($v)){$v=implode(':',$v);}
+			switch(strtolower($fields[$k]['type'])){
+				case 'date':
+					if($k=='cdate' || $k=='_cdate'){
+						$v=date('Y-m-d',strtotime($v));
+					}
+				break;
+				case 'nvarchar':
+				case 'nchar':
+					$v=hanaConvert2UTF8($v);
+				break;
+			}
+			//support for nextval
+			if(preg_match('/\.nextval$/',$v)){
+				$opts['bindings'][]=$v;
+				$opts['fields'][]=trim(strtoupper($k));
+			}
+			else{
+				$opts['values'][]=$v;
+				$opts['bindings'][]='?';
+				$opts['fields'][]=trim(strtoupper($k));
+			}
+		}
+		
+	}
+	
+	$valstr='';
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		//fix array values
+		if(is_array($v)){$v=implode(':',$v);}
+		switch(strtolower($fields[$k]['type'])){
+        	case 'date':
+				if($k=='cdate' || $k=='_cdate'){
+					$v=date('Y-m-d',strtotime($v));
+				}
+        	break;
+			case 'nvarchar':
+			case 'nchar':
+				$v=hanaConvert2UTF8($v);
+        	break;
+		}
+		//support for nextval
+		if(preg_match('/\.nextval$/',$v)){
+			$opts['bindings'][]=$v;
+        	$opts['fields'][]=trim(strtoupper($k));
+		}
+		else{
+			$opts['values'][]=$v;
+			$opts['bindings'][]='?';
+        	$opts['fields'][]=trim(strtoupper($k));
+		}
+	}
+	$fieldstr=implode('","',$opts['fields']);
+	$bindstr=implode(',',$opts['bindings']);
+    $query=<<<ENDOFQUERY
+		INSERT INTO {$params['-table']}
+			("{$fieldstr}")
+		VALUES
+			({$bindstr})
+ENDOFQUERY;
+	$dbh_hana=hanaDBConnect($params);
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaAddDBRecord Connect Error",$e));
+    	return "hanaAddDBRecord Connect Error".printValue($e);
+	}
+	try{
+		$hana_stmt    = odbc_prepare($dbh_hana, $query);
+		if(!is_resource($hana_stmt)){
+			$e=odbc_errormsg();
+			$err=array("hanaAddDBRecord prepare Error",$e,$query);
+			debugValue($err);
+    		return printValue($err);
+		}
+		$success = odbc_execute($hana_stmt,$opts['values']);
+		if(isset($params['-noidentity'])){return $success;}
+		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
+		$row=odbc_fetch_array($result2,0);
+		odbc_free_result($result2);
+		$row=array_change_key_case($row);
+		if(isset($row['cval'])){return $row['cval'];}
+		return "hanaAddDBRecord Identity Error".printValue($row).printValue($opts);
+		//echo "result2:".printValue($row);
+	}
+	catch (Exception $e) {
+		$err=$e->errorInfo;
+		$err['query']=$query;
+		$recs=array($err);
+		debugValue(array("hanaAddDBRecord Try Error",$e));
+		return "hanaAddDBRecord Try Error".printValue($err);
+	}
+	return 0;
+}
+//---------- begin function hanaAddDBRecord ----------
+/**
+* @describe adds a records from params passed in.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+*   -table - name of the table to add to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return integer returns the autoincriment key
+* @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+*/
 function hanaAddDBRecord($params){
 	global $USER;
 	if(!isset($params['-table'])){return 'hanaAddDBRecord error: No table.';}
@@ -464,6 +596,7 @@ ENDOFQUERY;
     		return printValue($err);
 		}
 		$success = odbc_execute($hana_stmt,$opts['values']);
+		if(isset($params['-noidentity'])){return $success;}
 		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
 		odbc_free_result($result2);
