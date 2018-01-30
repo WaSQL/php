@@ -73,6 +73,7 @@ function writeFiles(){
 	global $chost;
 	global $progpath;
 	global $mtimes;
+	global $settings;
 	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
@@ -192,7 +193,13 @@ function writeFiles(){
 	}
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
-		cmdResults("EXPLORER /E,\"{$afolder}\"");
+		if(isset($settings['editor']['command'])){
+			$cmd="{$settings['editor']['command']} \"{$afolder}\"";
+		}
+		else{
+				$cmd="EXPLORER /E,\"{$afolder}\"";
+		}
+		cmdResults($cmd);
 	}
 	return $afolder;
 }
@@ -472,6 +479,13 @@ function getSettings(){
 			$settings['sound'][$k]=$v;
 		}
 	}
+	foreach($xml['settings']->editor as $set){
+	    	$set=(array)$set;
+	    	foreach($set['@attributes'] as $k=>$v){
+			$settings['editor'][$k]=$v;
+		}
+	}
+	//echo printValue($settings);exit;
 	return;
 }
 function getXml(){
