@@ -10116,16 +10116,18 @@ function postEditCheck($tables=array()){
 * @describe HTML URL POST using curl and return the result in an array
 * @param url string - URL to post to
 * @param params array
-*	-method - POST,GET,DELETE, or PUT - defaults to POST
-*	-cookiefile - cookiefile to use
-*	-fresh - fresh connect
-*	-user_agent - USER AGENT to pose as
-*	-headers - headers to set
-*	-ssl - if true set both SSL options to false (ignore)
-*	-authuser - auth username
-*	-authpass - auth password
-*	-follow - follow location if redirected
-*	-xml - return xml_array as part of the resulting array
+*	[-method] - POST,GET,DELETE, or PUT - defaults to POST
+*	[-cookiefile] - cookiefile to use
+*	[-fresh] - fresh connect
+*	[-user_agent] - USER AGENT to pose as
+*	[-headers] - headers to set
+*	[-ssl] - if true set both SSL options to false (ignore)
+*	[-authuser] - auth username
+*	[-authpass] - auth password
+*	[-follow] - follow location if redirected
+*	[-timeout]  - The maximum number of seconds to allow cURL functions to execute. Defaults to 600
+*	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect. Defaults to 600
+*	[-xml] - return xml_array as part of the resulting array
 *	other params are passed through as key/value pairs to the URL specified
 * @return array
 * @usage $post=postURL($url,array('age'=>33,'name'=>'bob'));
@@ -10147,6 +10149,8 @@ function postURL($url,$params=array()) {
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 		unset($params['_auth']);
 	}
+	if(!isset($params['-timeout'])){$params['-timeout']=600;}
+	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=600;}
 	//Build data stream from params
 	$query=array();
 	foreach($params as $key=>$val){
@@ -10235,8 +10239,8 @@ function postURL($url,$params=array()) {
 	curl_setopt($process, CURLINFO_HEADER_OUT, true);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEFILE, $this->cookie_file);
 	//if ($this->cookies == TRUE) curl_setopt($process, CURLOPT_COOKIEJAR, $this->cookie_file);
-	curl_setopt($process, CURLOPT_CONNECTTIMEOUT, 600 );
-	curl_setopt($process, CURLOPT_TIMEOUT, 600);
+	curl_setopt($process, CURLOPT_CONNECTTIMEOUT, $params['-timeout_connect'] );
+	curl_setopt($process, CURLOPT_TIMEOUT, $params['-timeout']);
 	curl_setopt($process, CURLOPT_RETURNTRANSFER, true);
 	if(isset($params['-follow'])){
 		curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
