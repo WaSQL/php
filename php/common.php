@@ -10944,6 +10944,7 @@ function processActions(){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
 			}
 			if(strlen($_REQUEST['_table']) && (integer)$_REQUEST['_id'] > 0 && strlen($_REQUEST['_fields'])){
+				//echo printValue($_REQUEST);exit;
 				$rec=getDBRecord(array('-table'=>$_REQUEST['_table'],'_id'=>$_REQUEST['_id'],'-nocache'=>1));
 				$timestamp=time();
 				$_REQUEST['edit_rec']=$rec;
@@ -11043,6 +11044,7 @@ function processActions(){
 						if(!isset($info[$field])){continue;}
 						//decode it if needs be
 						if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+						elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 						//css_min minifycode
 						if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
                         	//only call minifyCode if the css has changed
@@ -11278,6 +11280,9 @@ function processActions(){
 					elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
+					//decode it if needs be
+					if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+					elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 					//css_min minifycode
 					if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
 						$opts['css_min']=minifyCode($_REQUEST[$field],'css');
