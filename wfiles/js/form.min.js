@@ -1822,26 +1822,6 @@ function submitForm(theForm,popup,debug,ajax){
     if(ffound==0){
 		formAddField(theForm,'_formfields',formfieldstr);
 		}
-	//change textarea body fields to base64
-	for(var i=0;i<theForm.length;i++){
-		if(undefined == theForm[i].name){continue;}
-		if(theForm[i].name != 'body'){continue;}
-		var behavior=theForm[i].getAttribute('data-behavior');
-		if(undefined != behavior){continue;}
-		if(behavior.length){continue;}
-		if(theForm[i].type=='textarea'){
-			//convert value to base64 string
-			var val=getText(theForm[i]);
-			var enc=window.btoa(val);
-			var fld=document.getElementById(theForm[i].id);
-			theForm[i].value=enc;
-			theForm[i].setAttribute('codeeditor_processed',1);
-			//document.getElementById(theForm[i].id).value=enc;
-			//add a trigger field so we know it was converted
-			formAddField(theForm,theForm[i].name+'_base64',1);
-			console.log(document.getElementById(theForm[i].id).value);
-		}
-	}
     return true;
 	}
 function formAddField(frm,fld,val){
