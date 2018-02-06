@@ -12930,7 +12930,7 @@ function sendSMTPMail($params=array()){
 * @usage $ok=setFileContents($file,$data);
 */
 function setFileContents($file,$data,$append=0){
-	if($append){
+	if($append && file_exists($file)){
 		return file_put_contents($file,$data,FILE_APPEND);
 	}
 	return file_put_contents($file,$data);
