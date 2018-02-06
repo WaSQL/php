@@ -551,6 +551,21 @@ function oracleQueryResults($query='',$params=array()){
     	return;
 	}
 	//read results into a recordset array
+	$rowcount=oci_num_rows($stid);
+	if($rowcount==0 && isset($params['-forceheader'])){
+		$fields=array();
+		for($i=1;$i<=oci_num_fields($stid);$i++){
+			$field=strtolower(oci_field_name($stid,$i));
+			$fields[]=$field;
+		}
+		oci_free_statement($stid);
+		$rec=array();
+		foreach($fields as $field){
+			$rec[$field]='';
+		}
+		$recs=array($rec);
+		return $recs;
+	}
 	$recs=array();
 	$id=0;
 	while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
@@ -563,6 +578,7 @@ function oracleQueryResults($query='',$params=array()){
 		$id++;
 		$recs[]=$rec;
 	}
+
 	oci_free_statement($stid);
 	if($params['setmodule']){
 		oci_set_module_name($dbh_oracle, 'idle');
