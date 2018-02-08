@@ -12,8 +12,8 @@
 $progpath=dirname(__FILE__);
 //requires common,config, and database to be loaded first
 if(!isDBTable('_sessions')){
-	include_once("$progpath/schema.php");
-	include_once("$progpath/user.php");
+	include_once("{$progpath}/schema.php");
+	include_once("{$progpath}/user.php");
 	if(!isDBTable('_fielddata')){
 		$ok=createWasqlTables();
 	}
@@ -66,9 +66,9 @@ function sessionClose() {
 function sessionRead($session_id) {
 	global $USER;
 	$table=sessionTable();
-	$rec=getDBRecord(array('-query'=>"select _id,session_data,json from {$table} where session_id = '{$session_id}';"));
+	$rec=getDBRecord(array('-query'=>"select _id,session_id,session_data,json from {$table} where session_id = '{$session_id}';"));
 	$ctime = time();
-	if(isset($rec['_id'])){
+	if(isset($rec['session_data'])){
 		//custom decode if session is stored in JSON
 		$_SESSION=json_decode($rec['session_data'],true);
 		//update touchtime
@@ -97,7 +97,7 @@ function sessionWrite($session_id, $session_data) {
 	//decode the data and then store it as json instead so other programs can also share the session data
 	@session_decode($session_data);
 	$session_data = json_encode($_SESSION);
-	
+	if(preg_match('/minify\_(css|js)/',$_SERVER['PHP_SELF'])){return true;}
 	$table=sessionTable();
 	$ctime = time();
 	$session_data=databaseEscapeString($session_data);
@@ -110,6 +110,7 @@ function sessionWrite($session_id, $session_data) {
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function sessionDestroy($session_id) {
+	if(preg_match('/minify\_(css|js)/',$_SERVER['PHP_SELF'])){return true;}
 	$table=sessionTable();
     executeSQL("DELETE FROM {$table} WHERE session_id = '{$session_id}';");
     return true;

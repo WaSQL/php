@@ -7,15 +7,15 @@ $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
-include_once("$progpath/common.php");
+include_once("{$progpath}/common.php");
 global $CONFIG;
-include_once("$progpath/config.php");
+include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
 }
-include_once("$progpath/wasql.php");
-include_once("$progpath/database.php");
-include_once("$progpath/sessions.php");
+include_once("{$progpath}/wasql.php");
+include_once("{$progpath}/database.php");
+include_once("{$progpath}/sessions.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 global $filename;
@@ -51,7 +51,7 @@ header('Expires: ' . gmdate('D, d M Y H:i:s', time()-$expires) . ' GMT');
 //start
 ob_start("compress");
 //get the js path
-$jspath=realpath('../wfiles/js');
+$jspath=realpath("{$progpath}/../wfiles/js");
 //app path
 $appspath=realpath('../apps');
 //initialize the global files array
@@ -233,7 +233,6 @@ function changeGoogleLoginText(){
 }
 ENDOFGOOGLEAPPJS;
 }
-
 //include files and set the lastmodifiedtime of any file
 foreach($files as $file){
 	if($_REQUEST['debug']==1){

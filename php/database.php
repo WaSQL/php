@@ -900,7 +900,12 @@ function addDBIndex($params=array()){
 	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
+	if(isSqlite()){
+		$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	}
+	else{
 	$query="alter table {$params['-table']} add{$fulltext}{$unique} index {$params['-name']} ({$fieldstr})";
+	}
 	return executeSQL($query);
 }
 //---------- begin function dropDBIndex--------------------
@@ -1684,6 +1689,7 @@ function addEditDBForm($params=array(),$customcode=''){
 *	));
 */
 function addDBRecord($params=array()){
+	if(isSqlite()){return sqliteAddDBRecord($params);}
 	$function='addDBRecord';
 	if(!isset($params['-table'])){return 'addDBRecord Error: No table';}
 	$table=$params['-table'];
@@ -2124,7 +2130,7 @@ function createDBTable($table='',$fields=array(),$engine=''){
     $query .= ")";
     if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
-	//echo $query . printValue($query_result);
+	//echo $query . printValue($query_result);exit;
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
@@ -3321,6 +3327,7 @@ function optimizeDB(){
 *	?>
 */
 function editDBRecord($params=array()){
+	if(isSqlite()){return sqliteEditDBRecord($params);}
 	$function='editDBRecord';
 	if(!isset($params['-table'])){return 'editDBRecord Error: No table <br>' . printValue($params);}
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where <br>' . printValue($params);}
@@ -3592,6 +3599,7 @@ function editDBUser($id='',$opts=array()){
 * @usage $ok=executeSQL($query);
 */
 function executeSQL($query=''){
+	if(isSqlite()){return sqliteExecuteSQL($query);}
 	$rtn=array();
 	$rtn['query'] = '<div style="font-size:9pt;margin-left:15px;"><pre><xmp>'.$query.'</xmp></pre></div>'.PHP_EOL;
 	$function='executeSQL';
@@ -4690,15 +4698,25 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 */
 function includeDBOnce($params=array()){
 	global $CONFIG;
+	global $TEMPLATE;
+	global $PAGE;
 	// need table, field, where
 	if(!isset($params['-table'])){return 'includeDBOnce Error: No table' . printValue($params);}
 	if(!isset($params['-field'])){return 'includeDBOnce Error: No field' . printValue($params);}
 	if(!isset($params['-where'])){return 'includeDBOnce Error: No where' . printValue($params);}
 	$field=$params['-field'];
-	$params['-where']=str_replace(' like ',' = ',$params['-where']);
-	$opts=array('-table'=>$params['-table'],'-notimestamp'=>1,'-where'=>$params['-where'],'-fields'=>array($field));
-	if(isset($params['-dbname'])){$opts['-dbname']=$params['-dbname'];}
-	$rec=getDBRecord($opts);
+	if($params['-table']=='_templates' && isset($TEMPLATE['_id']) && stringContains($params['-where'],"_id={$TEMPLATE['_id']}")){
+		$rec=$TEMPLATE;
+	}
+	elseif($params['-table']=='_pages' && isset($PAGE['_id']) && stringContains($params['-where'],"_id={$PAGE['_id']}")){
+		$rec=$PAGE;
+	}
+	else{
+		$params['-where']=str_replace(' like ',' = ',$params['-where']);
+		$opts=array('-table'=>$params['-table'],'-notimestamp'=>1,'-where'=>$params['-where'],'-fields'=>array($field));
+		if(isset($params['-dbname'])){$opts['-dbname']=$params['-dbname'];}
+		$rec=getDBRecord($opts);
+	}
 	if(!is_array($rec)){
 		return 'includeDBOnce Error: No record. ' .$rec. printValue($params);
 	}
@@ -4961,6 +4979,7 @@ function getDBFields($table='',$allfields=0){
 * @usage $fields=getDBFieldInfo('notes');
 */
 function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
+	if(isSqlite()){return sqliteGetDBFieldInfo($table,array('-field'=>$field,'-getmeta'=>$getmeta,'-force'=>$force));}
 	global $databaseCache;
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
@@ -6076,6 +6095,7 @@ function getDBFiltersString($table,$filters){
 * @usage $rec=getDBRecord(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecord($params=array()){
+	if(isSqlite()){return sqliteGetDBRecord($params);}
 	if(!is_array($params) && is_string($params)){
     	$params=array('-query'=>$params);
 	}
@@ -6157,6 +6177,7 @@ function processDBRecords($func_name,$params=array()){
 * @usage $recs=getDBRecords(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecords($params=array()){
+	if(isSqlite()){return sqliteGetDBRecords($params);}
 	$function='getDBRecords';
 	global $CONFIG;
 	global $databaseCache;
@@ -7595,6 +7616,7 @@ function isDBPage($str){
 * @usage if(isDBTable('_users')){...}
 */
 function isDBTable($table='',$force=0){
+	if(isSqlite()){return sqliteIsDBTable($table);}
 	global $databaseCache;
 	$table=strtolower($table);
 	if(isset($databaseCache['isDBTable'][$table])){return $databaseCache['isDBTable'][$table];}
@@ -7708,6 +7730,11 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 		$conn_string="host={$host} dbname={$dbname} user={$user} password={$pass}";
 		return pg_pconnect($conn_string);
 		}
+	elseif(isSqlite()){
+		global $dbh;
+		$dbh=sqliteDBConnect();
+		return $dbh;
+	}
 	return null;
 	}
 //---------- begin function
@@ -7736,6 +7763,43 @@ function databaseDataType($str){
 	        	case 'mediumtext':
 	        	case 'longtext':
 				return 'text';
+			break;
+		}
+	}
+	if(isSqlite()){
+		switch(strtolower($name)){
+			case 'int':
+			case 'integer':
+			case 'tinyint':
+			case 'smallint':
+			case 'mediumint':
+	        case 'bigint':
+				return 'integer';
+			break;
+	        case 'char':
+			case 'nchar':
+			case 'varchar':
+			case 'nvarchar':
+			case 'text':
+			case 'smalltext':
+	        case 'mediumtext':
+			case 'clob':
+				return 'text';
+			break;
+			case 'real':
+			case 'double':
+			case 'float':
+				return 'real';
+			break;
+			case 'numeric':
+			case 'decimal':
+			case 'boolean':
+			case 'date':
+	        case 'datetime':
+				return 'numeric';
+			break;
+			default:
+				return 'blob';
 			break;
 		}
 	}
@@ -8192,6 +8256,7 @@ function databasePrimaryKeyFieldString(){
 	elseif(isOracle()){return 'NUMBER GENERATED BY DEFAULT AS IDENTITY';}
 	elseif(isPostgreSQL()){return "serial PRIMARY KEY";}
 	elseif(isMssql()){return "INT NOT NULL IDENTITY(1,1)";}
+	elseif(isSqlite()){return "INTEGER PRIMARY KEY";}
 	}
 //---------- begin function databaseQuery ----------
 /**
@@ -8209,6 +8274,27 @@ function databaseQuery($query){
 	}
 	elseif(isPostgreSQL()){return pg_query($dbh,$query);}
 	elseif(isMssql()){return mssql_query($query);}
+	elseif(isSqlite()){
+		global $dbh_sqlite;
+		if(!$dbh_sqlite){
+			$dbh_sqlite=sqliteDBConnect($params);
+		}
+		if(!$dbh_sqlite){
+			return null;
+		}
+		try{
+			$results=$dbh_sqlite->query($query);
+			if(!is_object($results)){
+				return null;
+			}
+			$results->finalize();
+			return 1;
+		}
+		catch (Exception $e) {
+			return null;
+		}
+		return null;	
+	}
 	}
 //---------- begin function databaseRestoreDb ----------
 /**
@@ -8233,6 +8319,7 @@ function databaseSelectDb($dbname){
 	elseif(isMysql()){$rtn = mysql_select_db($dbname);}
 	elseif(isPostgreSQL()){$rtn=$dbh?true:false;}
 	elseif(isMssql()){$rtn = mssql_select_db($dbname);}
+	elseif(isSqlite()){$rtn=1;}
 	if($rtn){$CONFIG['_current_dbname_']=$dbname;}
 	return $rtn;
 	}
@@ -8261,6 +8348,9 @@ function databaseTables($dbname='',$force=0){
 		global $CONFIG;
 		$query = "select name from sysobjects where xtype = 'U';";
 		}
+	elseif(isSqlite()){
+		return sqliteGetDBTables();
+	}
 	else{return null;}
 	//run query
 	$query_result=@databaseQuery($query);
@@ -8365,7 +8455,10 @@ function isPostgreSQL(){
 function isSqlite(){
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='sqlite'){return true;}
+	if($dbtype=='sqlite'){
+		loadExtras('sqlite');
+		return true;
+	}
 	return false;
 	}
 //---------- begin function isMssql ----------

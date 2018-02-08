@@ -1114,6 +1114,9 @@ function userLoginForm($params=array()){
 	if(!isset($params['-focus']) || $params['-focus'] == 'username'){
 		$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
 	}
+	if(isset($_REQUEST['_login_error'])){
+		$form .= '<span class="w_red">'.$_REQUEST['_login_error'].'</span>'.PHP_EOL;
+	}
 	$form .= '</div>'.PHP_EOL;
 	//$form .=printValue($_REQUEST);
     return $form;

@@ -3,18 +3,20 @@
 /* first, lets determine the current page, template, domain, and user */
 error_reporting(E_ALL & ~E_NOTICE);
 $progpath=dirname(__FILE__);
+$slash=DIRECTORY_SEPARATOR;
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
-include_once("$progpath/common.php");
+include_once("{$progpath}/common.php");
 global $CONFIG;
-include_once("$progpath/config.php");
+include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
 }
-include_once("$progpath/wasql.php");
-include_once("$progpath/database.php");
-include_once("$progpath/sessions.php");
+include_once("{$progpath}/wasql.php");
+include_once("{$progpath}/database.php");
+include_once("{$progpath}/sessions.php");
+$session_id=session_id();
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
@@ -54,7 +56,7 @@ $etagHeader=isset($_SERVER['HTTP_IF_NONE_MATCH'])?trim($_SERVER['HTTP_IF_NONE_MA
 //start
 ob_start("compress");
 //get the css path
-$csspath=realpath('../wfiles/css');
+$csspath=realpath("{$progpath}/../wfiles/css");
 //initialize the global files array
 global $files;
 $files=array();
@@ -88,6 +90,7 @@ if(isset($_SESSION['w_MINIFY']['cssfiles']) && is_array($_SESSION['w_MINIFY']['c
 global $csslines;
 global $pre_csslines;
 $csslines=array();
+$loaded=array();
 $pre_csslines=array();
 foreach($files as $file){
 	if($_REQUEST['debug']==1){
@@ -116,7 +119,10 @@ foreach($files as $file){
 		if(stringEndsWith($file,'.min.css')){
 			$conditionals=0;
 		}
+		if($CONFIG['minify_css'] != 1){
 		$csslines[]= "\r\n/* BEGIN {$fname} */\r\n";
+		}
+		$loaded[]=$fname;
     	minifyLines($lines,$conditionals);
 	}
 }
@@ -129,7 +135,10 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
 		$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
+		if($CONFIG['minify_css'] != 1){
 		$csslines[] = "\r\n/* BEGIN _templates {$field} */\r\n";
+		}
+		$loaded[]="_templates {$field}";
 		minifyLines($content);
 	}
 	else{
@@ -137,7 +146,10 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
+			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN _templates {$field2} */\r\n";
+			}
+			$loaded[]="_templates {$field2}";
 			minifyLines($content);
 		}
 	}
@@ -148,7 +160,10 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
 		$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
+		if($CONFIG['minify_css'] != 1){
 		$csslines[] = "\r\n/* BEGIN _pages {$field} */\r\n";
+		}
+		$loaded[]="_pages {$field}";
 		minifyLines($content);
 	}
 	else{
@@ -156,7 +171,10 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='T'.$_SESSION['w_MINIFY']['page_id'];
+			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN _pages {$field2} */\r\n";
+			}
+			$loaded[]="_pages {$field2}";
 			minifyLines($content);
 		}
 	}
@@ -168,7 +186,10 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
 			$filename.='P'.$id;
+			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN includepages {$field} for {$rec['name']} page */\r\n";
+			}
+			$loaded[]="includepages {$field} for {$rec['name']} page";
 			minifyLines($content);
 		}
 		else{
@@ -176,19 +197,38 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 			$content=evalPHP($rec[$field2]);
 			if(strlen(trim($content)) > 10){
 				$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
+				if($CONFIG['minify_css'] != 1){
 				$csslines[] = "\r\n/* BEGIN includepages {$field2} for {$rec['name']} page */\r\n";
+				}
+				$loaded[]="includepages {$field} for {$rec['name']} page";
 				minifyLines($content);
 			}
 		}
 	}
 }
+if($CONFIG['minify_css'] != 1){
 $csslines[]= "\r\n/* END Minify {$filename}.css */\r\n";
+}
+//show loaded list
+$sessionid=session_id();
+if($CONFIG['minify_css'] != 1){
+	echo "/* Session ID: {$sessionid} */".PHP_EOL;
+	echo "/* Loaded CSS Files: */".PHP_EOL;
+	foreach($loaded as $name){
+		echo "/* 	 - {$name} */".PHP_EOL;
+	}
+	echo PHP_EOL.PHP_EOL;
+}
 
 //
 if(count($pre_csslines)){
+	if($CONFIG['minify_css'] != 1){
 	echo "/* Begin Imports - must be at the top */\r\n";
+	}
 	echo implode("\r\n",$pre_csslines);
+	if($CONFIG['minify_css'] != 1){
 	echo "\r\n/* End Imports */\r\n\r\n";
+	}
 }
 echo implode("\r\n",$csslines);
 ob_end_flush();

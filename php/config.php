@@ -58,6 +58,8 @@ foreach($checkhosts as $env){
 foreach($allhost as $key=>$val){
 	$CONFIG[$key]=$val;
 }
+if(!strlen($chost)){$CONFIG['error']='No host found for'.$SERVER['HTTP_HOST'];}
+//echo $chost.printValue($CONFIG).printValue($_SERVER);exit;
 foreach($ConfigXml as $name=>$host){
 	foreach($allhost as $key=>$val){
 		$ALLCONFIG[$name][$key]=$val;

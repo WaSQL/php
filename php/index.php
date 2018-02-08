@@ -391,7 +391,7 @@ if(isAjax() && isUser()){
         	exit;
 	}
 }
-//echo isUser().printValue($USER);exit;
+//echo isUser().printValue($USER).isDBStage().printValue($CONFIG);exit;
 if(!isUser() && isset($CONFIG['access']) && strtolower($CONFIG['access']) == 'user'){
     indexUserAccess();
     exit;
@@ -1022,6 +1022,11 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	elseif($_REQUEST['_viewfield'] != 'body'){$tid=1;}
 	elseif(isset($PAGE['template']) && strlen($PAGE['template'])){$tid=$PAGE['template'];}
 	elseif(isset($PAGE['_template']) && strlen($PAGE['_template'])){$tid=$PAGE['_template'];}
+	if(!strlen($tid)){
+		if(isset($PAGE['template']) && strlen($PAGE['template'])){$tid=$PAGE['template'];}
+		elseif(isset($PAGE['_template']) && strlen($PAGE['_template'])){$tid=$PAGE['_template'];}
+		else{$tid=1;}
+	}
 	$getopts=array('-table'=>'_templates','-notimestamp'=>1);
 	if(isNum($tid)){$getopts['_id']=$tid;}
 	else{$getopts['name']=$tid;}
@@ -1047,7 +1052,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		}
 	}
 	//Load template Functions
-	//echo "HERE:::".$TEMPLATE['functions'];exit;
+	//echo "HERE:::".$TEMPLATE
 	if(strlen(trim($TEMPLATE['functions']))){
 		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$TEMPLATE['_id']}"));
 		if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
@@ -1223,7 +1228,9 @@ function indexUserAccess(){
         	$CONFIG['access_template']=$PAGE['_template'];
 		}
 	}
-	else{$PAGE=array('body'=>userLoginForm());}
+	else{
+		$PAGE=array('body'=>userLoginForm());
+	}
 	if(isset($CONFIG['access_template'])){
 		$tid=$CONFIG['access_template'];
 		if(isNum($tid)){

@@ -28,6 +28,7 @@ include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
+
 global $USER;
 include_once("$progpath/user.php");
 global $wtables;
@@ -317,11 +318,14 @@ foreach($_REQUEST as $key=>$val){
 	}
 }
 //show phpinfo if that is the only request param
-if(isset($_REQUEST['phpinfo']) && count($_REQUEST)==1){
+if(count($_REQUEST)==1){
+	$k=implode('',array_keys($_REQUEST));
+	switch(strtolower($k)){
+		case 'phpinfo':
 	phpinfo();
 	exit;
-}
-elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
+		break;
+		case 'env':
 	include_once("$progpath/user.php");
 	echo buildHtmlBegin();
 	echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'.PHP_EOL;
@@ -334,6 +338,8 @@ elseif(isset($_REQUEST['env']) && count($_REQUEST)==1){
     echo buildTableEnd();
     echo buildHtmlEnd();
 	exit;
+		break;
+	}
 }
 
 if(isset($_REQUEST['sqlprompt']) && strtolower($_REQUEST['sqlprompt'])=='csv export'){
@@ -353,6 +359,7 @@ wasqlMagicQuotesFix();
 global $PAGE;
 global $TEMPLATE;
 global $databaseCache;
+global $USER;
 //set AdminUserID to current user id - this will turn off query logging for queries on the backend
 $_SERVER['WaSQL_AdminUserID']=$USER['_id'];
 //Verify all the WaSQL internal tables are built
@@ -855,6 +862,7 @@ if(isAjax()){
 }
 //set a minify session variable
 wasqlSetMinify(1);
+loadExtrasCss('admin');
 //check for user
 if(!isUser()){
 	$params=array(
@@ -3073,6 +3081,9 @@ function adminMenu(){
     global $CONFIG;
     $rtn .= '<div id="admin_info" style="display:none">'.PHP_EOL;
 	$rtn .= '	<div style="float:left;max-width:500px;overflow:auto;">'.PHP_EOL;
+	$rtn .= '		<div style="float:right;">'.PHP_EOL;
+	$rtn .= '		<a href="/php/admin.php?refresh" title="refresh"><span class="icon-refresh w_grey"></span></a>'.PHP_EOL;
+	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '		<div class="w_lblue w_bold w_big">Information Snapshot</div>'.PHP_EOL;
 	$rtn .= '<table class="table table-striped table-bordered">'.PHP_EOL;
 	if(!isset($_SESSION['wasql_info']) || isset($_REQUEST['refresh'])){
@@ -3138,13 +3149,18 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save w_backups w_big w_default"></span> Backup or <span class="icon-undo w_danger w_big"></span> Restore</a></li>'.PHP_EOL;
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=schema"><img src="/wfiles/schema.gif"> Schema</a></li>'.PHP_EOL;
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=indexes"><img src="/wfiles/indexes.gif"> Indexes</a></li>'.PHP_EOL;
+	if(isMysql() || isMysqli()){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=optimize" onclick="return confirm(\'This will run mysqlcheck -o -v on the database to optimize the tables. Click OK to continue?\');"><span class="icon-optimize w_big w_gold"></span> Optimize</a></li>'.PHP_EOL;
+	}
+	
 	$rtn .= '				<li><a href="/php/admin.php?_menu=import"><span class="icon-import w_big w_default w_big"></span> Import</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=export"><span class="icon-export w_big w_default w_big"></span> Export</a></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-sync w_danger w_big"></span> Synchronize Records</a></li>'.PHP_EOL;
 	}
+	if(isMysql() || isMysqli()){
 	$rtn .= '     		<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties w_big w_info"></span> Table Properties</a></li>'.PHP_EOL;
+	}
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=charset"><span class="icon-encoding w_big w_grey"></span> Character Sets</a></li>'.PHP_EOL;
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=searchreplace" title="Search and Replace text in multiple records of a table"> Search&Replace</a></li>'.PHP_EOL;
 	$rtn .= '			</ul>'.PHP_EOL;

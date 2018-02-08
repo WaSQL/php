@@ -28,6 +28,10 @@ function sqliteParseConnectParams($params=array()){
 			$params['-dbname']=$CONFIG['sqlite_dbname'];
 			$params['-dbname_source']="CONFIG sqlite_dbname";
 		}
+		elseif(isset($CONFIG['dbname'])){
+			$params['-dbname']=$CONFIG['dbname'];
+			$params['-dbname_source']="CONFIG dbname";
+		}
 		else{return 'sqliteParseConnectParams Error: No dbname set';}
 	}
 	else{
@@ -118,8 +122,8 @@ function sqliteIsDBTable($table,$params=array()){
 	}
 	$table=strtolower($table);
 	$dbh_sqlite=sqliteDBConnect($params);
-	if(!is_resource($dbh_sqlite)){
-		debugValue("sqliteDBConnect error".printValue($params));
+	if(!is_object($dbh_sqlite)){
+		echo("sqliteDBConnect error:{$table}".printValue($dbh_sqlite));exit;
 		return null;
 	}
 	try{
@@ -137,7 +141,7 @@ function sqliteIsDBTable($table,$params=array()){
 			return null;
 		}
 		$stmt->bindParam(1,$vals[0],SQLITE3_TEXT);
-		$resuts=$stmt->execute();
+		$results=$stmt->execute();
 		while ($rec = $results->fetchArray(SQLITE3_ASSOC)) {
 			if(strtolower($rec['name']) == $table){
 				$results->finalize();
@@ -224,10 +228,11 @@ function sqliteAddDBRecord($params){
 		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
 	if(isset($fields['cuser'])){
-		$params['cuser']=$USER['username'];
+		$params['cuser']=isset($USER['username'])?$USER['username']:0;
+		
 	}
 	elseif(isset($fields['_cuser'])){
-		$params['_cuser']=$USER['username'];
+		$params['_cuser']=isset($USER['username'])?$USER['username']:0;
 	}
 	$binds=array();
 	$vals=array();
@@ -446,25 +451,60 @@ function sqliteGetDBTables($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+*	[-getmeta] - boolean - if true returns info in _fielddata table for these fields - defaults to false
+*	[-field] - if this has a value return only this field - defaults to blank
+*	[-force] - clear cache and refetch info
 * @return boolean returns true on success
 * @usage $fieldinfo=sqliteGetDBFieldInfo('abcschema.abc');
 */
-function sqliteGetDBFieldInfo($table,$params=array()){
+function sqliteGetDBFieldInfo($tablename,$params=array()){
+	global $sqliteGetDBFieldInfoCache;
+	$key=$tablename.encodeCRC(json_encode($params));
+	//clear cache?
+	if(isset($params['-force']) && $params['-force'] && $sqliteGetDBFieldInfoCache[$key]){
+		unset($sqliteGetDBFieldInfoCache[$key]);
+	}
+	//check cache
+	if(isset($sqliteGetDBFieldInfoCache[$key])){return $sqliteGetDBFieldInfoCache[$key];}
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
     	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
     	return;
 	}
-	$query="PRAGMA table_info({$table})";
+	$query="PRAGMA table_info({$tablename})";
 	try{
 		$results=$dbh_sqlite->query($query);
 		$recs=array();
 		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
-			$xrec['name']=strtolower($xrec['name']);
-			$recs[$xrec['name']]=$xrec;
+			$field=strtolower($xrec['name']);
+			$xrec['_dbfield']=$field;
+			$xrec['_dbtype']=$xrec['_dbtype_ex']=$xrec['type'];
+			$xrec['_dbnull']=$xrec['notnull']==0?'NO':'YES';
+			$xrec['_dbdefault']=$xrec['dflt_value'];
+			$recs[$field]=$xrec;
 		}
 		$results->finalize();
+		if(isset($params['-getmeta']) && $params['-getmeta']){
+			//Get a list of the metadata for this table
+			$metaopts=array('-table'=>"_fielddata",'-notimestamp'=>1,'tablename'=>$tablename);
+			if(isset($params['-field']) && strlen($params['-field'])){
+				$metaopts['fieldname']=$params['-field'];
+			}
+			$meta_recs=getDBRecords($metaopts);
+			//echo $tablename.printValue($meta_recs);
+			if(is_array($meta_recs)){
+				foreach($meta_recs as $meta_rec){
+					$name=$meta_rec['fieldname'];
+					if(!isset($recs[$name]['_dbtype'])){continue;}
+					foreach($meta_rec as $key=>$val){
+						if(preg_match('/^\_/',$key)){continue;}
+						$recs[$name][$key]=$val;
+					}
+            	}
+        	}
+		}
+		$sqliteGetDBFieldInfoCache[$key]=$recs;
 		return $recs;
 	}
 	catch (Exception $e) {
@@ -485,7 +525,7 @@ function sqliteGetDBFieldInfo($table,$params=array()){
 * @return $count integer
 * @usage $cnt=sqliteGetDBCount('select * from abcschema.abc');
 */
-function sqliteGetDBCount($query,$params){
+function sqliteGetDBCount($params=array()){
 	$params['-count']=1;
 	return sqliteQueryResults($query,$params);
 }
@@ -512,8 +552,8 @@ function sqliteQueryResults($query,$params=array()){
 	}
 	try{
 		$results=$dbh_sqlite->query($query);
-		if(isset($params['-count'])){
-			return $results->rowCount();
+		if(!is_object($results)){
+			echo "sqliteQueryResults error".printValue($query);exit;
 		}
 		$recs=array();
 		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
@@ -569,12 +609,15 @@ function sqliteGetDBRecords($params=array()){
 	else{
 		if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
 		if(!isset($params['-fields'])){$params['-fields']='*';}
-		$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+		if(is_array($params['-fields'])){
+			$params['-fields']=implode(', ',$params['-fields']);
+		}
 		$wherestr='';
 		if(isset($params['-where'])){
 			$wherestr= " WHERE {$params['-where']}";
 		}
 		else{
+			$fields=sqliteGetDBFieldInfo($params['-table'],$params);
 			$ands=array();
 			foreach($params as $k=>$v){
 				$k=strtolower($k);
@@ -584,7 +627,8 @@ function sqliteGetDBRecords($params=array()){
 					$params[$k]=implode(':',$params[$k]);
 				}
 				$params[$k]=str_replace("'","''",$params[$k]);
-				$ands[]="upper({$k})=upper('{$params[$k]}')";
+				$val=strtoupper($params[$k]);
+				$ands[]="upper({$k})='{$val}'";
 			}
 
 			if(count($ands)){

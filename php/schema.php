@@ -9,7 +9,9 @@ function createWasqlTables($wtables=array()){
 	if(!is_array($wtables)){$wtables=array($wtables);}
 	clearDBCache('databaseTables');
 	if(!count($wtables)){$wtables=getWasqlTables();}
+	//echo "wtables".printValue($wtables);
 	$ctables=getDBTables('',1);
+	//echo "ctables".printValue($ctables);
 	$rtn=array();
 	foreach($wtables as $wtable){
 		if(!in_array($wtable,$ctables)){
@@ -32,23 +34,23 @@ function createWasqlTable($table=''){
 	$fields=array(
 		'_id'	=> databasePrimaryKeyFieldString(),
 		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
-		'_cuser'=> "INT NOT NULL",
+		'_cuser'=> databaseDataType('int')." NOT NULL",
 		'_edate'=> databaseDataType('datetime')." NULL",
-		'_euser'=> "INT NULL",
+		'_euser'=> databaseDataType('int')." NULL",
 		);
 	switch(strtolower($table)){
 		case '_access':
-			$fields['http_host']="varchar(225) NULL";
-			$fields['http_referer']="varchar(255) NULL";
-			$fields['page']="varchar(255) NOT NULL";
-			$fields['remote_addr']="varchar(20) NULL";
-			$fields['remote_browser']="varchar(125) NULL";
-			$fields['remote_browser_version']="varchar(125) NULL";
-			$fields['remote_lang']="varchar(10) NULL";
-			$fields['remote_os']="varchar(50) NULL";
-			$fields['remote_device']="varchar(50) NULL";
-			$fields['session_id']="varchar(50) NULL";
-			$fields['guid']="char(40) NULL";
+			$fields['http_host']=databaseDataType('varchar(255)')." NULL";
+			$fields['http_referer']=databaseDataType('varchar(255)')." NULL";
+			$fields['page']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['remote_addr']=databaseDataType('varchar(20)')." NULL";
+			$fields['remote_browser']=databaseDataType('varchar(125)')." NULL";
+			$fields['remote_browser_version']=databaseDataType('varchar(125)')." NULL";
+			$fields['remote_lang']=databaseDataType('varchar(10)')." NULL";
+			$fields['remote_os']=databaseDataType('varchar(50)')." NULL";
+			$fields['remote_device']=databaseDataType('varchar(50)')." NULL";
+			$fields['session_id']=databaseDataType('varchar(50)')." NULL";
+			$fields['guid']=databaseDataType('char(40)')." NULL";
 			$fields['xml']="text NULL";
 			$fields['status']=databaseDataType('smallint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
@@ -59,19 +61,19 @@ function createWasqlTable($table=''){
 			break;
 		case '_access_summary':
 			$fields['accessdate']=databaseDataType('datetime')." NOT NULL";
-			$fields['http_host']="varchar(225) NOT NULL";
-			$fields['visits']="INT NOT NULL Default 1";
-			$fields['visits_unique']="INT NOT NULL Default 1";
-			$fields['http_referer_unique']="INT NOT NULL Default 1";
-			$fields['page_unique']="INT NOT NULL Default 1";
-			$fields['remote_addr_unique']="INT NOT NULL Default 1";
-			$fields['remote_browser_unique']="INT NOT NULL Default 1";
-			$fields['remote_browser_version_unique']="INT NOT NULL Default 1";
-			$fields['remote_lang_unique']="INT NOT NULL Default 1";
-			$fields['remote_os_unique']="INT NOT NULL Default 1";
-			$fields['remote_device_unique']="INT NOT NULL Default 1";
-			$fields['session_id_unique']="INT NOT NULL Default 1";
-			$fields['guid_unique']="INT NOT NULL Default 1";
+			$fields['http_host']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['visits']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['visits_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['http_referer_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['page_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_addr_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_browser_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_browser_version_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_lang_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_os_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['remote_device_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['session_id_unique']=databaseDataType('integer')." NOT NULL Default 1";
+			$fields['guid_unique']=databaseDataType('integer')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=schemaAddFileData($table);
@@ -80,18 +82,18 @@ function createWasqlTable($table=''){
 			break;
 		case '_reports':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_auser']="integer NULL";
-			$fields['name']="varchar(100) NOT NULL";
-			$fields['menu']="varchar(50) NULL";
-			$fields['description']="varchar(255) NULL";
-			$fields['rowcount']="integer NOT NULL Default 0";
-			$fields['runtime']="integer NOT NULL Default 0";
-			$fields['icon']="varchar(50) NULL";
+			$fields['_auser']=databaseDataType('integer')." NULL";
+			$fields['name']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['menu']=databaseDataType('varchar(50)')." NULL";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
+			$fields['rowcount']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['runtime']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['icon']=databaseDataType('varchar(50)')." NULL";
 			$fields['query']="text NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['options']="text NULL";
-			$fields['departments']="varchar(1000) NULL";
-			$fields['users']="varchar(1000) NULL";
+			$fields['departments']=databaseDataType('varchar(1000)')." NULL";
+			$fields['users']=databaseDataType('varchar(1000)')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -115,11 +117,11 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_changelog':
-			$fields['tablename']="varchar(255) NOT NULL";
-			$fields['method']="char(10) NOT NULL Default 'web'";
-			$fields['fieldname']="varchar(255) NOT NULL";
-			$fields['record_id']="INT NOT NULL";
-			$fields['changeval']="mediumtext NULL";
+			$fields['tablename']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['method']=databaseDataType('char(10)')." NOT NULL Default 'web'";
+			$fields['fieldname']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['record_id']=databaseDataType('integer')." NOT NULL";
+			$fields['changeval']=databaseDataType('mediumtext')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){ return printValue($ok);break;}
 
@@ -129,18 +131,18 @@ function createWasqlTable($table=''){
 			break;
 		case '_cron':
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
-			$fields['begin_date']="date NULL";
-			$fields['end_date']="date NULL";
-			$fields['frequency']="integer NOT NULL Default 0";
-			$fields['name']="varchar(150) NULL";
-			$fields['cron_pid']="integer NOT NULL Default 0";
-			$fields['run_as']="integer NOT NULL Default 0";
-			$fields['run_cmd']="varchar(255) NOT NULL";
+			$fields['begin_date']=databaseDataType('date')." NULL";
+			$fields['end_date']=databaseDataType('date')." NULL";
+			$fields['frequency']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['name']=databaseDataType('varchar(150)')." NULL";
+			$fields['cron_pid']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['run_as']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NULL";
-			$fields['run_format']="varchar(255) NULL";
-			$fields['run_length']="integer NULL";
+			$fields['run_format']=databaseDataType('varchar(255)')." NULL";
+			$fields['run_length']=databaseDataType('integer')." NULL";
 			$fields['run_result']="text NULL";
-			$fields['run_values']="varchar(255) NULL";
+			$fields['run_values']=databaseDataType('varchar(255)')." NULL";
 			$fields['running']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
@@ -164,13 +166,13 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_cronlog':
-			$fields['name']="varchar(150) NOT NULL";
-			$fields['cron_id']="integer NOT NULL";
-			$fields['cron_pid']="integer NOT NULL";
-			$fields['run_cmd']="varchar(255) NOT NULL";
+			$fields['name']=databaseDataType('varchar(150)')." NOT NULL";
+			$fields['cron_id']=databaseDataType('integer')." NOT NULL";
+			$fields['cron_pid']=databaseDataType('integer')." NOT NULL";
+			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NOT NULL";
-			$fields['run_result']="mediumtext NULL";
-			$fields['run_length']="integer NOT NULL Default 0";
+			$fields['run_result']=databaseDataType('mediumtext')." NULL";
+			$fields['run_length']=databaseDataType('integer')." NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -186,26 +188,26 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_fielddata':
-			$fields['behavior']="varchar(255) NULL";
-			$fields['defaultval']="varchar(255) NULL";
-			$fields['displayname']="varchar(255) NULL";
-			$fields['description']="varchar(255) NULL";
+			$fields['behavior']=databaseDataType('varchar(255)')." NULL";
+			$fields['defaultval']=databaseDataType('varchar(255)')." NULL";
+			$fields['displayname']=databaseDataType('varchar(255)')." NULL";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['postedit']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['dvals']="text NULL";
 			$fields['editlist']=databaseDataType('tinyint')." NULL";
-			$fields['fieldname']="varchar(100) NOT NULL";
-			$fields['height']="INT NULL";
-			$fields['help']="varchar(255) NULL";
-			$fields['inputmax']="INT NULL";
-			$fields['inputtype']="varchar(25) NULL";
-			$fields['mask']="varchar(255) NULL";
-			$fields['onchange']="varchar(255) NULL";
+			$fields['fieldname']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['height']=databaseDataType('integer')." NULL";
+			$fields['help']=databaseDataType('varchar(255)')." NULL";
+			$fields['inputmax']=databaseDataType('integer')." NULL";
+			$fields['inputtype']=databaseDataType('varchar(25)')." NULL";
+			$fields['mask']=databaseDataType('varchar(255)')." NULL";
+			$fields['onchange']=databaseDataType('varchar(255)')." NULL";
 			$fields['required']=databaseDataType('tinyint')." NULL";
-			$fields['tablename']="varchar(100) NOT NULL";
+			$fields['tablename']=databaseDataType('varchar(100)')." NOT NULL";
 			$fields['tvals']="text NULL";
-			$fields['width']="INT NULL";
-			$fields['related_table']="varchar(100) NULL";
+			$fields['width']=databaseDataType('integer')." NULL";
+			$fields['related_table']=databaseDataType('varchar(100)')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -214,15 +216,15 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_files':
-			$fields['file']="varchar(255) NOT NULL";
-			$fields['file_size']="integer NULL";
-			$fields['file_width']="integer NULL";
-			$fields['file_height']="integer NULL";
-			$fields['file_type']="varchar(150) NULL";
-			$fields['tablename_id']="integer NOT NULL Default 0";
-			$fields['tablename']="varchar(100) NULL";
-			$fields['category']="varchar(100) NULL";
-			$fields['description']="varchar(255) NULL";
+			$fields['file']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['file_size']=databaseDataType('integer')." NULL";
+			$fields['file_width']=databaseDataType('integer')." NULL";
+			$fields['file_height']=databaseDataType('integer')." NULL";
+			$fields['file_type']=databaseDataType('varchar(150)')." NULL";
+			$fields['tablename_id']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['tablename']=databaseDataType('varchar(100)')." NULL";
+			$fields['category']=databaseDataType('varchar(100)')." NULL";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -231,10 +233,10 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_html_entities':
-			$fields['entity_name']="varchar(125) NULL";
-			$fields['entity_number']="varchar(15) NOT NULL UNIQUE";
-			$fields['category']="varchar(100) NULL";
-			$fields['description']="varchar(255) NULL";
+			$fields['entity_name']=databaseDataType('varchar(125)')." NULL";
+			$fields['entity_number']=databaseDataType('varchar(15)')." NOT NULL UNIQUE";
+			$fields['category']=databaseDataType('varchar(100)')." NULL";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//import csv
@@ -242,7 +244,7 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_posteditlog':
-			$fields['postedittables']="varchar(255) NOT NULL";
+			$fields['postedittables']=databaseDataType('varchar(255)')." NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){ return printValue($ok);break;}
 
@@ -257,13 +259,13 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_markers':
-			$fields['problem']="varchar(500) NULL";
-			$fields['solution']="varchar(1000) NULL";
-			$fields['mousex']="integer NOT NULL Default 0 COMMENT 'Horizontal Position'";
-			$fields['mousey']="integer NOT NULL Default 0 COMMENT 'Vertical Position'";
-			$fields['page_id']="integer NOT NULL Default 0";
-			$fields['priority']="integer NOT NULL Default 2 COMMENT 'High(1),Med(2),Low(3)'";
-			$fields['status']="integer NOT NULL Default 1 COMMENT 'New(1),Fixed(2),Nope(3)'";;
+			$fields['problem']=databaseDataType('varchar(500)')." NULL";
+			$fields['solution']=databaseDataType('varchar(1000)')." NULL";
+			$fields['mousex']=databaseDataType('integer')." NOT NULL Default 0 COMMENT 'Horizontal Position'";
+			$fields['mousey']=databaseDataType('integer')." NOT NULL Default 0 COMMENT 'Vertical Position'";
+			$fields['page_id']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['priority']=databaseDataType('integer')." NOT NULL Default 2 COMMENT 'High(1),Med(2),Low(3)'";
+			$fields['status']=databaseDataType('integer')." NOT NULL Default 1 COMMENT 'New(1),Fixed(2),Nope(3)'";;
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -272,10 +274,10 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_forms':
-			$fields['email']="varchar(255) NULL";
-			$fields['_formname']="varchar(100) NOT NULL";
-			$fields['http_host']="varchar(255) NULL";
-			$fields['script_url']="varchar(255) NULL";
+			$fields['email']=databaseDataType('varchar(255)')." NULL";
+			$fields['_formname']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['http_host']=databaseDataType('varchar(255)')." NULL";
+			$fields['script_url']=databaseDataType('varchar(255)')." NULL";
 			$fields['_xmldata']="text NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
@@ -285,12 +287,12 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_history':
-			$fields['action']="char(5) NULL";
-			$fields['page_id']="INT NULL";
-			$fields['tablename']="varchar(255) NOT NULL";
-			$fields['record_id']="INT NOT NULL";
+			$fields['action']=databaseDataType('char(5)')." NULL";
+			$fields['page_id']=databaseDataType('integer')." NULL";
+			$fields['tablename']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['record_id']=databaseDataType('integer')." NOT NULL";
 			$fields['xmldata']="text NULL";
-			$fields['md5']="char(32) NOT NULL";
+			$fields['md5']=databaseDataType('char(32)')." NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -299,8 +301,9 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_minify':
-			$fields['name']="varchar(100) NOT NULL";
-			$fields['version']="INT NOT NULL Default 1";
+			$fields['_cuser']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['name']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['version']=databaseDataType('integer')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexs
@@ -309,10 +312,10 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_models':
-			$fields['name']="varchar(100) NOT NULL UNIQUE";
-			$fields['mtype']="INT NOT NULL Default 1";
-			$fields['active']="tinyint(1) NOT NULL Default 1";
-			$fields['functions']="mediumtext NULL";
+			$fields['name']=databaseDataType('varchar(100)')." NOT NULL UNIQUE";
+			$fields['mtype']=databaseDataType('integer(1)')." NOT NULL Default 1";
+			$fields['active']=databaseDataType('tinyint(1)')." NOT NULL Default 1";
+			$fields['functions']=databaseDataType('mediumtext')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexs
@@ -328,32 +331,32 @@ function createWasqlTable($table=''){
 				user_content text NULL - for user driven content without code
 			*/
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']="char(45) NULL";
-			$fields['_auser']="integer NULL";
-			$fields['_counter']="integer NULL";
+			$fields['_aip']=databaseDataType('char(45)')." NULL";
+			$fields['_auser']=databaseDataType('integer')." NULL";
+			$fields['_counter']=databaseDataType('integer')." NULL";
 			$fields['_amem']=databaseDataType('bigint')." NULL";
 			$fields['_env']="text NULL";
-			$fields['_template']="INT NOT NULL Default 1";
+			$fields['_template']=databaseDataType('integer')." NOT NULL Default 1";
 			$fields['_cache']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['body']=databaseDataType('mediumtext')." NULL";
 			$fields['controller']="text NULL";
 			$fields['css']="text NULL";
 			$fields['css_min']="text NULL";
-			$fields['description']="varchar(255) NULL";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$fields['functions']=databaseDataType('mediumtext')." NULL";
 			$fields['js']="text NULL";
 			$fields['js_min']="text NULL";
 			$fields['menu']=databaseDataType('tinyint')." NULL";
-			$fields['meta_description']="varchar(255) NULL";
-			$fields['name']="varchar(50) NOT NULL";
+			$fields['meta_description']=databaseDataType('varchar(255)')." NULL";
+			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
 			$fields['page_type']=databaseDataType('smallint')." NOT NULL Default 0";
-			$fields['parent']="varchar(50) NULL";
-			$fields['permalink']="varchar(255) NULL";
+			$fields['parent']=databaseDataType('varchar(50)')." NULL";
+			$fields['permalink']=databaseDataType('varchar(255)')." NULL";
 			$fields['postedit']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['settings']="text NULL";
 			$fields['sort_order']=databaseDataType('smallint')." NOT NULL Default 0";
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 1";
-			$fields['title']="varchar(255) NULL";
+			$fields['title']=databaseDataType('varchar(255)')." NULL";
 			$fields['user_content']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
@@ -369,13 +372,13 @@ function createWasqlTable($table=''){
 		case '_queries':
 			$fields['run_length']=databaseDataType('real(8,3)')." NOT NULL Default 0.000";
 			$fields['query']="text NULL";
-			$fields['page_id']="int NULL";
-			$fields['row_count']="int NULL";
-			$fields['field_count']="int NULL";
-			$fields['function']="varchar(25) NULL";
-			$fields['fields']="varchar(255) NULL";
-			$fields['tablename']="varchar(255) NULL";
-			$fields['user_id']="int NULL";
+			$fields['page_id']=databaseDataType('integer')." NULL";
+			$fields['row_count']=databaseDataType('integer')." NULL";
+			$fields['field_count']=databaseDataType('integer')." NULL";
+			$fields['function']=databaseDataType('varchar(25)')." NULL";
+			$fields['fields']=databaseDataType('varchar(255)')." NULL";
+			$fields['tablename']=databaseDataType('varchar(255)')." NULL";
+			$fields['user_id']=databaseDataType('integer')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -395,13 +398,13 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_wpass':
-			$fields['title']="varchar(100) NOT NULL";
-			$fields['category']="varchar(50) NOT NULL";
-			$fields['user']="varchar(60) NOT NULL";
-			$fields['pass']="varchar(40) NOT NULL";
-			$fields['url']="varchar(255) NOT NULL";
-			$fields['notes']="mediumtext NULL";
-			$fields['users']="varchar(1000) NULL";
+			$fields['title']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['category']=databaseDataType('varchar(50)')." NOT NULL";
+			$fields['user']=databaseDataType('varchar(60)')." NOT NULL";
+			$fields['pass']=databaseDataType('varchar(40)')." NOT NULL";
+			$fields['url']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['notes']=databaseDataType('mediumtext')." NULL";
+			$fields['users']=databaseDataType('varchar(1000)')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser,category,title",'-unique'=>1));
@@ -417,10 +420,10 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_sessions':
-			$fields['session_id']="char(40) NOT NULL UNIQUE";
-			$fields['session_data']="mediumtext NULL";
-			$fields['touchtime']="int NOT NULL Default 0";
-			$fields['json']="tinyint(1) NOT NULL Default 0";
+			$fields['session_id']=databaseDataType('char(40)')." NOT NULL UNIQUE";
+			$fields['session_data']=databaseDataType('mediumtext')." NULL";
+			$fields['touchtime']=databaseDataType('int')." NOT NULL Default 0";
+			$fields['json']=databaseDataType('tinyint(1)')." NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"touchtime"));
@@ -440,13 +443,13 @@ function createWasqlTable($table=''){
 			$fields['formfields_mod']="text NULL";
 			$fields['listfields']="text NULL";
 			$fields['listfields_mod']="text NULL";
-			$fields['sortfields']="varchar(255) NULL";
-			$fields['sortfields_mod']="varchar(255) NULL";
-			$fields['tablename']="varchar(255) NOT NULL";
-			$fields['tablegroup']="varchar(255) NULL";
+			$fields['sortfields']=databaseDataType('varchar(255)')." NULL";
+			$fields['sortfields_mod']=databaseDataType('varchar(255)')." NULL";
+			$fields['tablename']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['tablegroup']=databaseDataType('varchar(255)')." NULL";
 			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['websockets']=databaseDataType('tinyint')." NOT NULL Default 0";
-			$fields['tabledesc']="varchar(500) NULL";
+			$fields['tabledesc']=databaseDataType('varchar(500)')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -537,18 +540,18 @@ function createWasqlTable($table=''){
 			break;
 		case '_templates':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']="char(45) NULL";
-			$fields['_auser']="integer NULL";
+			$fields['_aip']=databaseDataType('char(45)')." NULL";
+			$fields['_auser']=databaseDataType('integer')." NULL";
 			$fields['body']=databaseDataType('mediumtext')." NULL";
 			$fields['functions']=databaseDataType('mediumtext')." NULL";
 			$fields['js']="text NULL";
 			$fields['css']="text NULL";
 			$fields['js_min']="text NULL";
 			$fields['css_min']="text NULL";
-			$fields['description']="varchar(255) NULL";
-			$fields['name']="varchar(50) NOT NULL";
-			$fields['postedit']=databaseDataType('tinyint')." NOT NULL Default 1";
-			$fields['synchronize']=databaseDataType('tinyint')." NOT NULL Default 1";
+			$fields['description']=databaseDataType('varchar(255)')." NULL";
+			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
+			$fields['postedit']=databaseDataType('tinyint(1)')." NOT NULL Default 1";
+			$fields['synchronize']=databaseDataType('tinyint(1)')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
@@ -558,9 +561,9 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_settings':
-			$fields['key_name']="varchar(25) NOT NULL";
-			$fields['key_value']="varchar(5000) NULL";
-			$fields['user_id']="integer NOT NULL Default 0";
+			$fields['key_name']=databaseDataType('varchar(25)')." NOT NULL";
+			$fields['key_value']=databaseDataType('varchar(5000)')." NULL";
+			$fields['user_id']=databaseDataType('integer')." NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -586,10 +589,10 @@ function createWasqlTable($table=''){
 			break;
 		case '_synchronize':
 			//sync_action,diff_table,diff_id,sync_items
-			$fields['tablename']="varchar(100) NOT NULL";
-			$fields['ids']="varchar(255) NOT NULL";
+			$fields['tablename']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['ids']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['notes']="text NULL";
-			$fields['target']="varchar(100) NULL";
+			$fields['target']=databaseDataType('varchar(100)')." NULL";
 			$fields['results']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
@@ -598,33 +601,35 @@ function createWasqlTable($table=''){
 			break;
 		case '_users':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_apage']="INT NULL";
-			$fields['_aip']="char(45) NULL";
+			$fields['_apage']=databaseDataType('integer')." NULL";
+			$fields['_aip']=databaseDataType('char(45)')." NULL";
 			$fields['_env']="text NULL";
-			$fields['_sid']="varchar(150) NULL";
+			$fields['_sid']=databaseDataType('varchar(150)')." NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
-			$fields['address1']="varchar(255) NULL";
-			$fields['address2']="varchar(255) NULL";
-			$fields['city']="varchar(50) NULL";
-			$fields['country']="char(2) NOT NULL Default 'US'";
-			$fields['email']="varchar(255) NULL";
-			$fields['guid']="char(40) NULL";
-			$fields['department']="varchar(60) NULL";
-			$fields['hint']="varchar(255) NULL";
-			$fields['firstname']="varchar(100) NULL";
-			$fields['lastname']="varchar(150) NULL";
-			$fields['title']="varchar(255) NULL";
-			$fields['note']="varchar(255) NULL";
-			$fields['password']="varchar(255) NOT NULL";
-			$fields['phone']="varchar(25) NULL";
-			$fields['state']="char(5) NULL";
-			$fields['username']="varchar(255) NOT NULL";
+			$fields['address1']=databaseDataType('varchar(255)')." NULL";
+			$fields['address2']=databaseDataType('varchar(255)')." NULL";
+			$fields['city']=databaseDataType('varchar(50)')." NULL";
+			$fields['country']=databaseDataType('char(2)')." NOT NULL Default 'US'";
+			$fields['email']=databaseDataType('varchar(255)')." NULL";
+			$fields['guid']=databaseDataType('char(40)')." NULL";
+			$fields['department']=databaseDataType('varchar(60)')." NULL";
+			$fields['hint']=databaseDataType('varchar(255)')." NULL";
+			$fields['firstname']=databaseDataType('varchar(100)')." NULL";
+			$fields['lastname']=databaseDataType('varchar(150)')." NULL";
+			$fields['title']=databaseDataType('varchar(255)')." NULL";
+			$fields['note']=databaseDataType('varchar(255)')." NULL";
+			$fields['password']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['phone']=databaseDataType('varchar(25)')." NULL";
+			$fields['state']=databaseDataType('char(5)')." NULL";
+			$fields['username']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['utype']=databaseDataType('smallint')." NOT NULL Default 1";
-			$fields['zip']="varchar(10) NULL";
-			$fields['picture']="varchar(255) NULL";
+			$fields['zip']=databaseDataType('varchar(10)')." NULL";
+			$fields['picture']=databaseDataType('varchar(255)')." NULL";
 			$fields['bio']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
-			if($ok != 1){break;}
+			if($ok != 1){
+				break;
+			}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"username",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
@@ -647,9 +652,9 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case 'states':
-			$fields['code']="char(7) NOT NULL";
-			$fields['name']="varchar(50) NOT NULL";
-			$fields['country']="char(2) NOT NULL Default 'US'";
+			$fields['code']=databaseDataType('char(7)')." NOT NULL";
+			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
+			$fields['country']=databaseDataType('char(2)')." NOT NULL Default 'US'";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -676,36 +681,36 @@ function createWasqlTable($table=''){
             return 1;
 			break;
 		case 'contact_form':
-			$fields['name']="varchar(150) NULL";
-			$fields['email']="varchar(252) NOT NULL";
-			$fields['subject']="varchar(150) NOT NULL";
+			$fields['name']=databaseDataType('varchar(150)')." NULL";
+			$fields['email']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['subject']=databaseDataType('varchar(150)')." NOT NULL";
 			$fields['message']="text NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			addMetaData($table);
 			break;
 		case 'countries':
-			$fields['areainsqkm']="real(12,1) NOT NULL Default 0";
-			$fields['capital']="varchar(255) NULL";
-			$fields['continent']="char(5) NULL";
-			$fields['continentname']="varchar(255) NULL";
-			$fields['countrycode']="char(5) NOT NULL";
-			$fields['countryname']="varchar(255) NULL";
-			$fields['currencycode']="varchar(150) NULL";
+			$fields['areainsqkm']=databaseDataType('real(12,1)')." NOT NULL Default 0";
+			$fields['capital']=databaseDataType('varchar(255)')." NULL";
+			$fields['continent']=databaseDataType('char(5)')." NULL";
+			$fields['continentname']=databaseDataType('varchar(255)')." NULL";
+			$fields['countrycode']=databaseDataType('char(5)')." NOT NULL";
+			$fields['countryname']=databaseDataType('varchar(255)')." NULL";
+			$fields['currencycode']=databaseDataType('varchar(150)')." NULL";
 			$fields['east']=databaseDataType('bigint')." NULL";
-			$fields['fipscode']="char(5) NOT NULL";
-			$fields['geonameid']="integer NOT NULL Default 0";
-			$fields['isoalpha3']="char(3) NOT NULL";
-			$fields['isonumeric']="integer NOT NULL";
-			$fields['languages']="varchar(255) NULL";
-			$fields['population']="integer NOT NULL Default 0";
-			$fields['population_rank']="integer NOT NULL Default 0";
+			$fields['fipscode']=databaseDataType('char(5)')." NOT NULL";
+			$fields['geonameid']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['isoalpha3']=databaseDataType('char(3)')." NOT NULL";
+			$fields['isonumeric']=databaseDataType('integer')." NOT NULL";
+			$fields['languages']=databaseDataType('varchar(255)')." NULL";
+			$fields['population']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['population_rank']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['north']=databaseDataType('bigint')." NULL";
 			$fields['south']=databaseDataType('bigint')." NULL";
 			$fields['west']=databaseDataType('bigint')." NULL";
-			$fields['code']="char(2) NOT NULL";
-			$fields['code3']="char(3) NULL";
-			$fields['name']="varchar(200) NOT NULL";
+			$fields['code']=databaseDataType('char(2)')." NOT NULL";
+			$fields['code3']=databaseDataType('char(3)')." NULL";
+			$fields['name']=databaseDataType('varchar(200)')." NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
