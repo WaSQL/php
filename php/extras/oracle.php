@@ -541,6 +541,9 @@ function oracleQueryResults($query='',$params=array()){
 		$curs = oci_new_cursor($dbh_oracle);
 	}
 	$r = oci_execute($stid);
+	if(isset($params['-cursor'])){
+		oci_execute($curs);
+	}
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e));
@@ -595,7 +598,6 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	oci_free_statement($stid);
 	if(isset($params['-cursor'])){
-		$curs = oci_new_cursor($dbh_oracle);
 		oci_free_statement($curs);
 	}
 	if($params['setmodule']){
