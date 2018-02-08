@@ -1,7 +1,12 @@
 <?php
-ini_set('oci8.max_persistent',5);
+//max number of persistent connections to the database
+ini_set('oci8.max_persistent',10);
+//seconds a persistent connection will stay alive
 ini_set('oci8.persistent_timeout',60);
-ini_set('oci8.statement_cache_size',50);
+//number of rows in each DB round trip to cache
+ini_set('oci8.default_prefetch',100);
+//number of statements to cache
+ini_set('oci8.statement_cache_size',25);
 //---------- begin function oracleParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
@@ -134,7 +139,7 @@ function oracleDBConnect($params=array()){
 		exit;
 	}
 	if(isset($params['-single'])){
-		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],'AL32UTF8');
+		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
 		if(!is_resource($dbh_single)){
 			$err=json_encode(oci_error());
 			echo "oracleDBConnect single connect error:{$err}".printValue($params);
@@ -145,7 +150,7 @@ function oracleDBConnect($params=array()){
 	global $dbh_oracle;
 	if(is_resource($dbh_oracle)){return $dbh_oracle;}
 	try{
-		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],'AL32UTF8');
+		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
 		if(!is_resource($dbh_oracle)){
 			$err=json_encode(oci_error());
 			echo "oracleDBConnect error:{$err}".printValue($params);
@@ -566,15 +571,11 @@ function oracleQueryResults($query='',$params=array()){
 		$recs=array($rec);
 	}
 	oci_free_statement($stid);
-	if(isset($params['-cursor'])){
-		oci_free_statement($curs);
-	}
 	if($params['setmodule']){
 		oci_set_module_name($dbh_oracle, 'idle');
 		oci_set_action($dbh_oracle, 'idle');
 		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
-	
 	oci_close($dbh_oracle);
 	return $recs;
 }
