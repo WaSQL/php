@@ -537,14 +537,7 @@ function oracleQueryResults($query='',$params=array()){
 		oci_close($dbh_oracle);
     	return;
 	}
-	if(isset($params['-cursor'])){
-		$curs = oci_new_cursor($dbh_oracle);
-	}
 	$r = oci_execute($stid);
-	if(isset($params['-cursor'])){
-		oci_set_prefetch($curs,200);
-		oci_execute($curs);
-	}
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e));
@@ -558,32 +551,7 @@ function oracleQueryResults($query='',$params=array()){
     	return;
 	}
 	//read results into a recordset array	
-	$recs=array();
-	$id=0;
-	if(isset($params['-cursor'])){
-		while ($row = oci_fetch_array($curs, OCI_ASSOC+OCI_RETURN_NULLS)) {
-			$rec=array();
-			if(isset($params['-idcolumn'])){$rec['_id']=$id;}
-			foreach ($row as $field=>$val){
-				$field=strtolower($field);
-				$rec[$field]=$val;
-			}
-			$id++;
-			$recs[]=$rec;
-		}
-	}
-	else{
-		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-			$rec=array();
-			if(isset($params['-idcolumn'])){$rec['_id']=$id;}
-			foreach ($row as $field=>$val){
-				$field=strtolower($field);
-				$rec[$field]=$val;
-			}
-			$id++;
-			$recs[]=$rec;
-		}
-	}
+	$recs=oracleGetResourceResults($stid);
 	if(!count($recs) && isset($params['-forceheader'])){
 		$fields=array();
 		for($i=1;$i<=oci_num_fields($stid);$i++){
@@ -608,6 +576,25 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	
 	oci_close($dbh_oracle);
+	return $recs;
+}
+function oracleGetResourceResults($res){
+	$recs=array();
+	while ($row = oci_fetch_array($res, OCI_ASSOC+OCI_RETURN_NULLS)) {
+		$rec=array();
+		foreach ($row as $field=>$val){
+			$field=strtolower($field);
+			if(is_resource($val)){
+				oci_execute($val);
+				$rec[$field]=oracleGetResourceResults($val);
+				oci_free_statement($val);
+			}
+			else{
+				$rec[$field]=$val;
+			}
+		}
+		$recs[]=$rec;
+	}
 	return $recs;
 }
 //---------- begin function oracleExecuteSQL ----------
