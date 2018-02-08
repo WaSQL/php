@@ -2,11 +2,11 @@
 //max number of persistent connections to the database
 ini_set('oci8.max_persistent',10);
 //seconds a persistent connection will stay alive
-ini_set('oci8.persistent_timeout',60);
+ini_set('oci8.persistent_timeout',300);
 //number of rows in each DB round trip to cache
-ini_set('oci8.default_prefetch',100);
+ini_set('oci8.default_prefetch',0);
 //number of statements to cache
-ini_set('oci8.statement_cache_size',25);
+ini_set('oci8.statement_cache_size',20);
 //---------- begin function oracleParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
