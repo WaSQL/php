@@ -537,7 +537,14 @@ function oracleQueryResults($query='',$params=array()){
 		oci_close($dbh_oracle);
     	return;
 	}
+	if(isset($params['-cursor'])){
+		$curs = oci_new_cursor($dbh_oracle);
+	}
 	$r = oci_execute($stid);
+	if(isset($params['-cursor'])){
+		oci_set_prefetch($curs,200);
+		oci_execute($curs);
+	}
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e));
@@ -553,15 +560,29 @@ function oracleQueryResults($query='',$params=array()){
 	//read results into a recordset array	
 	$recs=array();
 	$id=0;
-	while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-		$rec=array();
-		if(isset($params['-idcolumn'])){$rec['_id']=$id;}
-		foreach ($row as $field=>$val){
-			$field=strtolower($field);
-			$rec[$field]=$val;
+	if(isset($params['-cursor'])){
+		while ($row = oci_fetch_array($curs, OCI_ASSOC+OCI_RETURN_NULLS)) {
+			$rec=array();
+			if(isset($params['-idcolumn'])){$rec['_id']=$id;}
+			foreach ($row as $field=>$val){
+				$field=strtolower($field);
+				$rec[$field]=$val;
+			}
+			$id++;
+			$recs[]=$rec;
 		}
-		$id++;
-		$recs[]=$rec;
+	}
+	else{
+		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+			$rec=array();
+			if(isset($params['-idcolumn'])){$rec['_id']=$id;}
+			foreach ($row as $field=>$val){
+				$field=strtolower($field);
+				$rec[$field]=$val;
+			}
+			$id++;
+			$recs[]=$rec;
+		}
 	}
 	if(!count($recs) && isset($params['-forceheader'])){
 		$fields=array();
@@ -577,11 +598,15 @@ function oracleQueryResults($query='',$params=array()){
 		$recs=array($rec);
 	}
 	oci_free_statement($stid);
+	if(isset($params['-cursor'])){
+		oci_free_statement($curs);
+	}
 	if($params['setmodule']){
 		oci_set_module_name($dbh_oracle, 'idle');
 		oci_set_action($dbh_oracle, 'idle');
 		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
+	
 	oci_close($dbh_oracle);
 	return $recs;
 }
