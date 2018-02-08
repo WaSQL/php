@@ -542,6 +542,7 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	$r = oci_execute($stid);
 	if(isset($params['-cursor'])){
+		oci_set_prefetch($curs,200);
 		oci_execute($curs);
 	}
 	if (!$r) {
@@ -560,7 +561,7 @@ function oracleQueryResults($query='',$params=array()){
 	$recs=array();
 	$id=0;
 	if(isset($params['-cursor'])){
-		while (($row = oci_fetch_array($curs, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+		while ($row = oci_fetch_array($curs, OCI_ASSOC+OCI_RETURN_NULLS)) {
 			$rec=array();
 			if(isset($params['-idcolumn'])){$rec['_id']=$id;}
 			foreach ($row as $field=>$val){
