@@ -618,7 +618,7 @@ function setUserInfo($guid='NULL'){
 	/* update access date */
 	$adate=date("Y-m-d H:i:s");
 	$finfo=getDBFieldInfo("_users");
-	if($finfo['guid']['_dbtype'] != 'char'){
+	if($finfo['guid']['_dbtype'] != 'char' && $finfo['guid']['_dbtype'] != 'text'){
 		$query="ALTER TABLE _users modify guid char(40) NULL;";
 		$ok=executeSQL($query);
     }
