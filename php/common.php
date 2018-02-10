@@ -620,6 +620,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     	$tag .= '</div></div>'."\n";
 	}
 	$tag.='<div class="row">'."\n";
+	//add hidden field so we know this field exists when not checked
+	$tag .= '<input type="hidden" name="'.$name.'_checkbox" value="1" />'.PHP_EOL;
 	$class='';
 	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
 	if(isset($params['size'])){
