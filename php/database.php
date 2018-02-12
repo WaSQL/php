@@ -3215,8 +3215,8 @@ function dumpDB($table=''){
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
-		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " -p{$CONFIG['dbpass']}";
+		if(strlen($CONFIG['dbpass'])){
+			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3232,8 +3232,8 @@ function dumpDB($table=''){
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
-		if(strlen($CONFIG['dbuser'])){
-			$dump['command'] .= " -p{$CONFIG['dbpass']}";
+		if(strlen($CONFIG['dbpass'])){
+			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
