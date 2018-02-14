@@ -297,7 +297,7 @@ function upsTrack($params=array()){
 				//set the delivery date if the package is delivered
 				if(preg_match('/^delivered$/i',$activity['status']) && !isset($rtn['delivery_date'])){
 					$rtn['delivery_date']=$activity['date'];
-					$rtn['delivery_date_utime']=$activity['delivery_date_utime'];
+					$rtn['delivery_date_utime']=$activity['date_utime'];
 				}
 				//Status Code
 				$activity['status_code']=(string)$act->Status->StatusType->Code;
