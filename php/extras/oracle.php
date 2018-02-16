@@ -47,6 +47,8 @@ function oracleParseConnectParams($params=array()){
 	else{
 		$params['-dbpass_source']="passed in";
 	}
+	//
+	if(isset($CONFIG['oracle_single'])){$params['-single']=$CONFIG['oracle_single'];}
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['oracle_connect'])){
