@@ -529,6 +529,25 @@ function sqliteGetDBCount($params=array()){
 	$params['-count']=1;
 	return sqliteQueryResults($query,$params);
 }
+//---------- begin function sqliteTruncateDBTable ----------
+/**
+* @describe truncates the specified table
+* @param $table mixed - the table to truncate or and array of tables to truncate
+* @return boolean integer
+* @usage $cnt=sqliteTruncateDBTable('test');
+*/
+function sqliteTruncateDBTable($table){
+	if(is_array($table)){$tables=$table;}
+	else{$tables=array($table);}
+	foreach($tables as $table){
+		if(!sqliteIsDBTable($table)){return "No such table: {$table}.";}
+		$result=executeSQL("DELETE FROM {$table}");
+		if(isset($result['error'])){
+			return $result['error'];
+	        }
+	    }
+    return 1;
+}
 //---------- begin function sqliteQueryResults ----------
 /**
 * @describe returns the records of a query

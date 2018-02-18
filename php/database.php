@@ -7645,6 +7645,7 @@ function isDBTable($table='',$force=0){
 * @usage $ok=truncateDBTable('comments');
 */
 function truncateDBTable($table){
+	if(isSqlite()){return sqliteTruncateDBTable($table);}
 	if(is_array($table)){$tables=$table;}
 	else{$tables=array($table);}
 	foreach($tables as $table){

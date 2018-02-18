@@ -3085,11 +3085,11 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		$atts['required']="required";
 		unset($atts['_required']);
     }
-    if(isset($atts['required']) && $atts['required']!='required'){
+    if(isset($atts['required']) && ($atts['required'] != 'required' || $atts['required'] == 0)){
 		unset($atts['required']);
     }
     //inputmax
-    if(isset($atts['inputmax'])){
+    if(isset($atts['inputmax']) && isNum($atts['inputmax']) && $atts['inputmax'] > 0){
 		$atts['maxlength']=$atts['inputmax'];
 		unset($atts['inputmax']);
     }
@@ -9587,10 +9587,15 @@ function getAgentLang($agent=''){
 	$found=0;
 	if(preg_match('/^(.+?)\((.+?)\)/',$agent,$matches)){
 		$parts=preg_split('/[\;\,]+/',$matches[2]);
+		//check for en-US
 		foreach($parts as $part){
 			$part=trim($part);
 			if(preg_match('/^[a-z]{2,2}\-[a-z]{2,2}$/i',$part)){return $part;}
-			elseif(preg_match('/^[a-z]{2,2}$/i',$part)){return $part;}
+        }
+		//check for en
+		foreach($parts as $part){
+			$part=trim($part);
+			if(preg_match('/^[a-z]{2,2}$/i',$part)){return $part;}
         }
     }
     if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
@@ -9598,7 +9603,11 @@ function getAgentLang($agent=''){
 		foreach($parts as $part){
 			$part=trim($part);
 			if(preg_match('/^[a-z]{2,2}\-[a-z]{2,2}$/i',$part)){return $part;}
-			elseif(preg_match('/^[a-z]{2,2}$/i',$part)){return $part;}
+        }
+		//check for en
+		foreach($parts as $part){
+			$part=trim($part);
+			if(preg_match('/^[a-z]{2,2}$/i',$part)){return $part;}
         }
     	return $_SERVER['HTTP_ACCEPT_LANGUAGE'];
     }

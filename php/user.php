@@ -629,7 +629,7 @@ function setUserInfo($guid='NULL'){
 	$sessionID=session_id();
 	$opts=array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'_adate'=>$adate,'_sid'=>$sessionID);
 
-	if($finfo['password']['_dblength'] != 255){
+	if($finfo['password']['_dblength'] != 255 && $finfo['password']['_dbtype'] != 'text'){
 		//increase password length
 		$ok=@databaseQuery('alter table _users modify password VARCHAR(255)');
 	}
