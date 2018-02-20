@@ -517,7 +517,7 @@ function oracleQueryResults($query='',$params=array()){
 	$stid = oci_parse($dbh_oracle, $query);
 	if (!$stid) {
     	$e = json_encode(oci_error($dbh_oracle));
-		debugValue(array('OracleQueryResults Parse Error',$e));
+		debugValue(array('OracleQueryResults Parse Error',$e,$query));
 		oci_close($dbh_oracle);
     	return;
 	}
