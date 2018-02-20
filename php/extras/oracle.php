@@ -547,7 +547,7 @@ function oracleQueryResults($query='',$params=array()){
 	$r = oci_execute($stid);
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
-	    debugValue(array("oracleQueryResults Execute Error",$e));
+	    debugValue(array("oracleQueryResults Execute Error",$e,$query));
 	    oci_free_statement($stid);
 	    if($params['setmodule']){
 			oci_set_module_name($dbh_oracle, 'idle');
