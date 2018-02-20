@@ -6208,7 +6208,7 @@ function getDBRecords($params=array()){
 				}
 			}
 		setWasqlError(debug_backtrace(),"No table");
-		return "No table";
+		return "No table. ".json_encode($params);
 	}
 	//do we already have a query for this stored?
 	$query_sha=sha1($CONFIG['dbname'].$query);
