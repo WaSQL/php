@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'wasql_icons';
-  src:  url('/wfiles/fonts/wasql_icons.eot?j5j46z');
-  src:  url('/wfiles/fonts/wasql_icons.eot?j5j46z#iefix') format('embedded-opentype'),
-    url('/wfiles/fonts/wasql_icons.ttf?j5j46z') format('truetype'),
-    url('/wfiles/fonts/wasql_icons.woff?j5j46z') format('woff'),
-    url('/wfiles/fonts/wasql_icons.svg?j5j46z#wasql_icons') format('svg');
+  src:  url('/wfiles/fonts/wasql_icons.eot?zcrn4r');
+  src:  url('/wfiles/fonts/wasql_icons.eot?zcrn4r#iefix') format('embedded-opentype'),
+    url('/wfiles/fonts/wasql_icons.ttf?zcrn4r') format('truetype'),
+    url('/wfiles/fonts/wasql_icons.woff?zcrn4r') format('woff'),
+    url('/wfiles/fonts/wasql_icons.svg?zcrn4r#wasql_icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -24,6 +24,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-rocket:before {
+  content: "\eabf";
+}
+.icon-dns:before {
+  content: "\eac0";
+}
+.icon-disconnect:before {
+  content: "\eac1";
+}
+.icon-connect:before {
+  content: "\eac2";
+}
 .icon-list-numbered:before {
   content: "\e900";
 }
