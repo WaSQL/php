@@ -558,7 +558,7 @@ function oracleQueryResults($query='',$params=array()){
     	return;
 	}
 	//read results into a recordset array	
-	$recs=oracleGetResourceResults($stid);
+	$recs=oracleGetResourceResults($stid,$params);
 	if(!count($recs) && isset($params['-forceheader'])){
 		$fields=array();
 		for($i=1;$i<=oci_num_fields($stid);$i++){
@@ -581,7 +581,7 @@ function oracleQueryResults($query='',$params=array()){
 	oci_close($dbh_oracle);
 	return $recs;
 }
-function oracleGetResourceResults($res){
+function oracleGetResourceResults($res,$params=array()){
 	$recs=array();
 	while ($row = oci_fetch_array($res, OCI_ASSOC+OCI_RETURN_NULLS)) {
 		$rec=array();
@@ -589,7 +589,21 @@ function oracleGetResourceResults($res){
 			$field=strtolower($field);
 			if(is_resource($val)){
 				oci_execute($val);
-				$rec[$field]=oracleGetResourceResults($val);
+				//get the fields
+				$xfields=array();
+				$icount=oci_num_fields($val);
+				for($i=1;$i<=$icount;$i++){
+					$xfield=strtolower(oci_field_name($val,$i));
+					$xfields[]=$xfield;
+				}
+				$rec[$field]=oracleGetResourceResults($val,$params);
+				if(!count($rec[$field]) && isset($params['-forceheader'])){
+					$xrec=array();
+					foreach($xfields as $xfield){
+						$xrec[$xfield]='';
+					}
+					$rec[$field]=array($xrec);
+				}
 				oci_free_statement($val);
 			}
 			else{
