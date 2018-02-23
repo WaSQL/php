@@ -12255,6 +12255,7 @@ function readRSS($url,$hrs=3,$force=0){
 		
 	}
 	$content = implode('',$lines);
+	//echo $content;exit;
 	//fix malformed links
 	//$content=preg_replace('/\<link\>http(.+?)\<\/link\>/','<link><![CDATA[http$1]]></link>',$content);
 	try{
@@ -12265,6 +12266,7 @@ function readRSS($url,$hrs=3,$force=0){
 		$results['raw']=$content;
 		return $results;
     	}
+	//echo printValue($xml);exit;
     //feedDate
     $results['feedDate']=date('D F j,Y g:i a',$results['feedDate_utime']);
 	// define the namespaces that we are interested in
@@ -12285,7 +12287,15 @@ function readRSS($url,$hrs=3,$force=0){
 			$key=(string)$citem;
 			if(isNum((string)$cval)){$article[$key]=(real)$cval;}
 			else{$article[$key]=removeCdata((string)$cval);}
-			}
+		}
+		//check for itunes elements -- https://stackoverflow.com/questions/11612712/reading-itunes-xml-file-with-php-dom-method
+		$itunes = $item->children('http://www.itunes.com/dtds/podcast-1.0.dtd');
+		foreach($itunes as $ik=>$iv){
+			$ik=(string)$ik;
+			if(isset($article[$ik])){continue;}
+			if(isNum((string)$iv)){$article[$ik]=(real)$iv;}
+			else{$article[$ik]=removeCdata((string)$iv);}
+		}
         if(strlen($article['pubDate'])){$article['pubDate_utime']=strtotime($article['pubDate']);}
         // get data held in content namespace
         $content = $item->children($ns['content']);
