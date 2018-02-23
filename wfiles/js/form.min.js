@@ -2631,18 +2631,24 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var lname=dname.toLowerCase();
 				var cb=this.callback.toLowerCase();
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
-					var txt=getProcessingDiv(sid);
-					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:10px;border:0px;background:#FFF;"});
-					var atitle='Processing Request';
-					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
+					var sidObj=getObject(sid);
+					if(undefined == sidObj){
+						var txt=getProcessingDiv(sid);
+						popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:10px;border:0px;background:#FFF;"});
+						var atitle='Processing Request';
+						setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
 					}
+					if(this.showprocessing){
+						setProcessing(this.showprocessingdiv);
+					}
+				}
 				else if(lname == 'pop'){
 					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
-					}
+				}
 				else if(this.showprocessing){
 					setProcessing(this.showprocessingdiv);
-					}
-				},
+				}
+			},
 			'onTimeout':function(req){
 				var dname = this.groupName;
 				var lname=dname.toLowerCase();
@@ -2650,12 +2656,12 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var val="<b style=\"color:red\">ajaxGet Timed Out Error</b>";
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
-                	}
+                }
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'timed out...');
-					}
+				}
 				else{setText(dname,val);}
-				},
+			},
 			'onError':function(req){
 				var dname = this.groupName;
 				var lname=dname.toLowerCase();
