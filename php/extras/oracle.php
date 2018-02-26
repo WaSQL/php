@@ -499,6 +499,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
 * 	[id] - identifier to set query against. Defaults to current user
 * 	[setmodule] boolean - set to false to not set module, action, and id. Defaults to true
 * 	[-idcolumn] boolean - set to true to include row number as _id column
+*	[-lobs] boolean - add OCI_RETURN_LOBS to the oci_fetch to return lobs in the data
 * @return array - returns records
 */
 function oracleQueryResults($query='',$params=array()){
@@ -583,7 +584,9 @@ function oracleQueryResults($query='',$params=array()){
 }
 function oracleGetResourceResults($res,$params=array()){
 	$recs=array();
-	while ($row = oci_fetch_array($res, OCI_ASSOC+OCI_RETURN_NULLS)) {
+	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
+	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
+	while ($row = oci_fetch_array($res, $fetchopts)) {
 		$rec=array();
 		foreach ($row as $field=>$val){
 			$field=strtolower($field);
