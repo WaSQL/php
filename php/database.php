@@ -4730,6 +4730,7 @@ function includeDBOnce($params=array()){
 	$where=preg_replace('/\_+$/','',$where);
 	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
 	$phpfilename=$CONFIG['dbname'] .'_' . $params['-table'] .'_' . $params['-field'] . '_' . $where . '.php';
+	$phpfilename=getFileName($phpfilename);
 	$phpfilename=preg_replace('/\_+/','_',$phpfilename);
 	$progpath=dirname(__FILE__);
 	buildDir("{$progpath}/temp");
