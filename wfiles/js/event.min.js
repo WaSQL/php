@@ -1625,7 +1625,7 @@ function initBehaviors(ajaxdiv){
 				var secs=parseInt(s,10);
 				if(!isNaN(secs)){
 					var t=verboseTime(secs);
-					if(!isNaN(t)){
+					if(t.length){
 						setText(navEls[n],t);
 					}
 				}
