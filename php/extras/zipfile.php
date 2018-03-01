@@ -53,7 +53,7 @@ function zipPushData($files=array(),$zipname='zipfile.zip'){
 }
 //---------- begin function zipExtract ----------
 /**
-* @describe 
+* @describe
 *	extracts $zipfile to new directory with the same name as the file in the same path unless $newpath is specified
 * @param zipfile string - path and zipfile to extract
 * @param newpath string - name of new path.  default is to create a new dir with the same name as the zipfile
@@ -77,9 +77,18 @@ function zipExtract( $zipfile,$newpath=''){
 		//loop through the files in the zipfile
         while ($zip_entry = zip_read($zip)){
 			$entryname=zip_entry_name($zip_entry);
-			$entrydir=getFilePath($entryname);
-            $apath = "{$newpath}/{$entrydir}";
-            $afile = "{$apath}/{$entryname}";
+			$size=zip_entry_filesize($zip_entry);
+			if($size==0){
+				$apath="{$newpath}/{$entryname}";
+				if(!is_dir($apath)){buildDir($apath);}
+				continue;
+			}
+			else{
+				$entrydir=getFilePath($entryname);
+				$apath = "{$newpath}/{$entrydir}";
+				$filename=getFileName($entryname);
+				$afile = "{$apath}/{$filename}";
+			}
             $afile=preg_replace('/\/+/',$slash,$afile);
             $afile=preg_replace('/\\+/',$slash,$afile);
             //build the directory if it does not exist
@@ -94,6 +103,7 @@ function zipExtract( $zipfile,$newpath=''){
                 }
                 else {
                     // probably an empty directory
+                    echo "Failed to write<br>Entry Name: {$entryname}<br />Entry Dir: {$entrydir}<br />Apath: {$apath}<br />Afile:{$afile}<br />Size:{$size}<br /> <br />".PHP_EOL;exit;
                 }
                 zip_entry_close($zip_entry);
             }
