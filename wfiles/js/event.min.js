@@ -1610,16 +1610,24 @@ function initBehaviors(ajaxdiv){
 		else if(in_array("timer_verbose",behaviors)){
 			/* Timer Verbose */
   			var id=navEls[n].getAttribute('id');
-			var t=parseInt(getText(navEls[n]),10);
-			navEls[n].setAttribute('timer_verbose',t);
-			if(id){timerVerbose(id,1);}
+			if(undefined != id){
+				var t=parseInt(getText(navEls[n]),10);
+				if(!isNaN(t)){
+					navEls[n].setAttribute('timer_verbose',t);
+					timerVerbose(id,1);
+				}	
+			}
 		}
 		else if(in_array("time_verbose",behaviors)){
 			/* Time Verbose */
 			var s=getText(navEls[n]);
-			var secs=parseInt(s,10);
-			var t=verboseTime(secs);
-			setText(navEls[n],t);
+			if(!isNaN(s)){
+				var secs=parseInt(s,10);
+				if(!isNaN(secs)){
+					var t=verboseTime(secs);
+					setText(navEls[n],t);
+				}
+			}
 		}
 		else if(in_array("time",behaviors)){
 			/* TIME */
