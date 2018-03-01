@@ -1644,6 +1644,7 @@ function setText(obj,txt){
 	//usage: setText('div2','test');
 	var cObj=getObject(obj);
     if(undefined == cObj){
+		if(obj==0){return null;}
 		console.log('setText: no object found for '+obj);
 		return null;
 	}
