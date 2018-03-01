@@ -1947,7 +1947,7 @@ function verboseTime(s){
 	if(days > 0){parts.push(days+' days');}
 	if(hrs > 0){parts.push(hrs+' hrs');}
 	if(mins > 0){parts.push(mins+' mins');}
-	if(secs > 0){parts.push(secs+' secs');}
+	parts.push(secs+' secs');
 	return implode(' ',parts);
 }
 function ucwords (str) {

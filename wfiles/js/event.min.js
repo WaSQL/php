@@ -1610,7 +1610,8 @@ function initBehaviors(ajaxdiv){
 		else if(in_array("timer_verbose",behaviors)){
 			/* Timer Verbose */
   			var id=navEls[n].getAttribute('id');
-			navEls[n].setAttribute('timer_verbose',getText(navEls[n]));
+			var t=parseInt(getText(navEls[n]),10);
+			navEls[n].setAttribute('timer_verbose',t);
 			if(id){timerVerbose(id,1);}
 		}
 		else if(in_array("time_verbose",behaviors)){
