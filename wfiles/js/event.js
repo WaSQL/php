@@ -1625,7 +1625,9 @@ function initBehaviors(ajaxdiv){
 				var secs=parseInt(s,10);
 				if(!isNaN(secs)){
 					var t=verboseTime(secs);
-					setText(navEls[n],t);
+					if(!isNaN(t)){
+						setText(navEls[n],t);
+					}
 				}
 			}
 		}
