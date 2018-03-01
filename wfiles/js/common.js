@@ -1923,6 +1923,33 @@ function ucfirst (str) {
     var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
 	}
+function verboseTime(s){
+	if(isNaN(s)){return '';}
+	var secs = parseInt(s, 10);
+	//console.log("seconds",seconds);
+	var years = Math.floor(secs / (3600*24*365));
+	secs  -= years*3600*24*365;
+	var months = Math.floor(secs / (3600*24*30));
+	secs  -= months*3600*24*30;
+	var days = Math.floor(secs / (3600*24));
+	//console.log("days",days);
+	secs  -= days*3600*24;
+	var hrs   = Math.floor(secs / 3600);
+	//console.log("hrs",hrs);
+	secs  -= hrs*3600;
+	var mins = Math.floor(secs / 60);
+	//console.log("mnts",mnts);
+	secs  -= mins*60;
+	//console.log("----------------------");
+	var parts=new Array();
+	if(years > 0){parts.push(years+' years');}
+	if(months > 0){parts.push(months+' months');}
+	if(days > 0){parts.push(days+' days');}
+	if(hrs > 0){parts.push(hrs+' hrs');}
+	if(mins > 0){parts.push(mins+' mins');}
+	if(secs > 0){parts.push(secs+' secs');}
+	return implode(' ',parts);
+}
 function ucwords (str) {
     //info: Uppercase the first character of every word in a string
     //source: http://phpjs.org/functions
