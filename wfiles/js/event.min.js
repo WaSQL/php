@@ -1617,7 +1617,8 @@ function initBehaviors(ajaxdiv){
 		else if(in_array("time_verbose",behaviors)){
 			/* Time Verbose */
 			var s=getText(navEls[n]);
-			var t=verboseTime(parseInt(s,10));
+			var secs=parseInt(s,10);
+			var t=verboseTime(secs);
 			setText(navEls[n],t);
 		}
 		else if(in_array("time",behaviors)){

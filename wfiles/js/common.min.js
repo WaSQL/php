@@ -1924,7 +1924,7 @@ function ucfirst (str) {
     return f + str.substr(1);
 	}
 function verboseTime(s){
-	if(isNaN(s)){return '';}
+	if(isNaN(s)){return s;}
 	var secs = parseInt(s, 10);
 	//console.log("seconds",seconds);
 	var years = Math.floor(secs / (3600*24*365));
