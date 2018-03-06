@@ -10,6 +10,12 @@ foreach($loads as $load){
 	$end=microtime(true);
 	$times[$load]=$end-$begin;
 }
+//query
+$begin=microtime(true);
+$recs=getDBRecords(array('-table'=>'countries'));
+$cnt=count($recs);
+$end=microtime(true);
+$times["query countries table ({$cnt} results)"]=$end-$begin;
 $stop=microtime(true);
 $times['TOTAL']=$stop-$start;
 echo "LOAD TIMES BY MODULE".PHP_EOL;
