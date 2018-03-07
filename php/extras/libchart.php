@@ -1,6 +1,10 @@
 <?php
 /* References:
 	https://naku.dohcrew.com/libchart/pages/introduction/
+	http://colorhunt.co/
+	https://coolors.co/a2c5ac-9db5b2-e6ccbe-878e99-7f6a93
+	http://www.color-hex.com/color-palettes/
+	
 	NOTE: work in progress...  need to build PieChart, BarChart, LineChart
 		2018-03-07: libchartPieChart is finished
 */
@@ -30,9 +34,12 @@ function libchartPieChart($title='',$opts=array(),$params=array()){
 		foreach($params['colors'] as $color){
 			if(!is_array($color)){$color=hex2RGB($color);}
 			$colors[]=new Color($color[0],$color[1],$color[2]);
-		}
-		$chart->getPlot()->getPalette()->setPieColor($colors);	
+		}	
 	}
+	else{
+		$colors=libchartColorThemes();
+	}
+	$chart->getPlot()->getPalette()->setPieColor($colors);
 	$dataSet = new XYDataSet();
 	foreach($opts as $key=>$val){
 		$dataSet->addPoint(new Point($key, $val));
@@ -54,5 +61,20 @@ function libchartPieChart($title='',$opts=array(),$params=array()){
 	header('Content-type: image/png');
 	$chart->render();
 }
-
+function libchartColorThemes($theme='neon'){
+	switch(strtolower($theme)){
+		case 'neon':
+			$hexcolors=array('#9900ff','#99ff00','#ff9900','#00ff99','#00eeee','#f00000','#fd1bff','#3ccdec','#2fff00','#e8ff29','#e3247a');
+		break;
+		default:
+			$hexcolors=array('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99');
+		break;
+	}
+	$colors=array();
+	foreach($hexcolors as $color){
+		$color=hex2RGB($color);
+		$colors[]=new Color($color[0],$color[1],$color[2]);
+	}
+	return $colors;
+}
 ?>
