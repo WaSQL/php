@@ -885,9 +885,9 @@ if(!isUser()){
 	}
 elseif($USER['utype'] != 0){
 	echo buildHtmlBegin();
-	echo '<div class="w_left w_tip w_pad w_border">'.PHP_EOL;
-	echo '	<span class="icon-warning w_danger w_bigger w_bold"></span><b class="w_danger w_bigger"> Administration access denied.</b>'.PHP_EOL;
-	echo '	<div class="w_big w_danger">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
+	echo '<div class="well" style="border-radius:0px;">'.PHP_EOL;
+	echo '	<span class="icon-block w_danger w_biggest w_bold"></span><b class="w_danger w_biggest"> Administration access denied.</b>'.PHP_EOL;
+	echo '	<div class="w_big">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
 	echo '</div>'.PHP_EOL;
 	$formopts=array(
 		'-action'=>'/php/admin.php',
@@ -895,7 +895,9 @@ elseif($USER['utype'] != 0){
 		);
 	if(isset($_REQUEST['_menu'])){$formopts['_menu']=$_REQUEST['_menu'];}
 	if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
+	echo '<div style="margin-top:20px;margin-left:20px;">'.PHP_EOL;
 	echo userLoginForm($formopts);
+	echo '</div>'.PHP_EOL;
 	echo buildHtmlEnd();
 	exit;
 	}
