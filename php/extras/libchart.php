@@ -61,7 +61,7 @@ function libchartPieChart($title='',$opts=array(),$params=array()){
 	header('Content-type: image/png');
 	$chart->render();
 }
-function libchartColorThemes($theme='neon'){
+function libchartColorThemes($theme=''){
 	switch(strtolower($theme)){
 		case 'neon':
 			$hexcolors=array('#9900ff','#99ff00','#ff9900','#00ff99','#00eeee','#f00000','#fd1bff','#3ccdec','#2fff00','#e8ff29','#e3247a');
