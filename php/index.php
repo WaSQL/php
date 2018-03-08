@@ -78,7 +78,7 @@ else{
 	//@header('X-Frame-Options: ALLOWALL');
 }
 if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
-	@header('X-XSS-Protection: 1; mode=block');
+	@header('X-XSS-Protection: "1; mode=block"');
 }
 //check for valid_hosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_hosts'])){
