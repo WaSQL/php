@@ -61,7 +61,7 @@
                 $align |= $this->VERTICAL_TOP_ALIGN;
             }
 
-            $fontSize = 8;
+            $fontSize = 9;
             $lineSpacing = 1;
 
              list ($llx, $lly, $lrx, $lry, $urx, $ury, $ulx, $uly) = imageftbbox($fontSize, 0, $fontFileName, $text, array("linespacing" => $lineSpacing));

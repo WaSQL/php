@@ -111,10 +111,10 @@
             $primitive->outlinedBox($graphArea->x1, $graphArea->y1, $graphArea->x2, $graphArea->y2, $palette->axisColor[0], $palette->axisColor[1]);
 
             // Aqua-like background
-            for ($i = $graphArea->y1 + 2; $i < $graphArea->y2 - 1; $i++) {
-                $color = $palette->backgroundColor[($i + 3) % 4];
-                $primitive->line($graphArea->x1 + 2, $i, $graphArea->x2 - 2, $i, $color);
-            }
+            //for ($i = $graphArea->y1 + 2; $i < $graphArea->y2 - 1; $i++) {
+                //$color = $palette->backgroundColor[($i + 3) % 4];
+                //$primitive->line($graphArea->x1 + 2, $i, $graphArea->x2 - 2, $i, $color);
+            //}
         }
 
         /**
