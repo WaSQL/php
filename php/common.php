@@ -6666,10 +6666,11 @@ function getGUID($force=0){
 	//expire in a year
 	$expire=time()+(3600*24*365);
 	if(isset($CONFIG['session_domain'])){
-		setcookie("GUID", $guid, $expire, "/", ".{$CONFIG['session_domain']}");
+		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
+		setcookie("GUID", $guid, $expire, "/", ".{$CONFIG['session_domain']}",isSSL(),true);
 	}
 	else{
-    	setcookie("GUID", $guid, $expire, "/");
+    	setcookie("GUID", $guid, $expire, "/",null,isSSL(),true);
 	}
 	$_SERVER['GUID']=$guid;
 	return $guid;
