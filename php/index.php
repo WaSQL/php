@@ -74,7 +74,11 @@ if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
 }
 else{
-	@header('X-Frame-Options: ALLOWALL');
+	//Allowing all domains is the default. Don't set the X-Frame-Options header at all if you want that.
+	//@header('X-Frame-Options: ALLOWALL');
+}
+if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
+	@header('X-XSS-Protection: 1; mode=block');
 }
 //check for valid_hosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_hosts'])){
