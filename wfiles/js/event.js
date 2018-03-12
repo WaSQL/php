@@ -991,6 +991,14 @@ function initBehaviors(ajaxdiv){
 	//	<div data-behavior="@math(one+(two*three))"></div>
 	//	<div data-behavior="@sum(one:two:three)"></div>
 	//	<div data-behavior="@raid(raidid)"></div><input type="text" name="raidid" value="123">
+	//setCustomValidity for input fields with data-patternmsg
+	var f=document.querySelectorAll('input[data-patternmsg]');
+	for(var i=0;i<f.length;i++){
+		addEventHandler(f[i],'invalid',function(){
+			this.setCustomValidity(this.getAttribute('data-patternmsg'));
+        	this.setCustomValidity("");
+		});
+	}
 	//replace title attributes with ours
 	try{f_tcalInit();}catch(e){}
 	//bootstrap toggles
