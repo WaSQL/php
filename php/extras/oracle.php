@@ -137,6 +137,8 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	$params=oracleParseConnectParams($params);
 	if(!isset($params['-connect'])){
+		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 		echo "oracleDBConnect error: no connect params".printValue($params);
 		exit;
 	}
@@ -144,6 +146,8 @@ function oracleDBConnect($params=array()){
 		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
 		if(!is_resource($dbh_single)){
 			$err=json_encode(oci_error());
+			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 			echo "oracleDBConnect single connect error:{$err}".printValue($params);
 			exit;
 		}
@@ -155,6 +159,8 @@ function oracleDBConnect($params=array()){
 		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
 		if(!is_resource($dbh_oracle)){
 			$err=json_encode(oci_error());
+			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 			echo "oracleDBConnect error:{$err}".printValue($params);
 			exit;
 
