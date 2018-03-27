@@ -1128,8 +1128,8 @@ function getProcessingDiv(id,msg,cancel){
 	if(undefined == msg){msg='Processing ...';}
 	var str='';
 	str += '<span id="processing_div">';
-	str += '<span class="w_loader"></span>';
-	str += '<span class="w_grey">'+msg+'</span>';
+	str += '<span class="icon-spin7 w_spin"></span>';
+	str += ' <span class="w_grey">'+msg+'</span>';
 	if(cancel==1){
 		str += '<span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
 	}
