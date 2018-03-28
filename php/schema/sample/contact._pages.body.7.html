@@ -1,0 +1,19 @@
+<view:default>
+<div class="col-sm-6">
+	<h1 class="title">Get In Touch</h1>
+	<p>Please use the form on this page or contact us directly via email.</p>
+
+	<h4>Contact Details</h4>
+	<div>Email: <span>info@yourdomain.com</span></div>
+	<?=pageContactForm();?>
+</div>
+<div class="col-sm-6 text-center">
+	<span class="icon-mail" style="font-size:20em;"></span>
+</div>
+</view:default>
+<view:thankyou>
+	<div class="w_centerpop_content">
+		<h3>Thank You For Your Message!</h3>
+		<?=buildOnLoad("document.addedit.reset();");?>
+	</div>
+</view:thankyou>

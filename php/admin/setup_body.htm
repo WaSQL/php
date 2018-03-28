@@ -1,0 +1,112 @@
+<view:default>
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+ 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" />
+ 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" />
+ 	<title>WaSQL Setup Wizard</title>
+ 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+ 	<meta name="robots" content="noindex, nofollow, noarchive" />
+ 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+ 	<link type="text/css" rel="stylesheet" href="/wfiles/css/wasql.min.css" />
+	<link type="text/css" rel="stylesheet" href="/wfiles/css/wasql_icons.min.css" />
+	<link type="text/css" rel="stylesheet" href="/wfiles/css/extras/bootstrap.min.css" />
+  	<script type="text/javascript" src="/wfiles/js/common.min.js"></script>
+	<script type="text/javascript" src="/wfiles/js/event.min.js"></script>
+	<script type="text/javascript" src="/wfiles/js/form.min.js"></script>
+	<script type="text/javascript" src="/php/admin/setup_js.js"></script>
+</head>
+<body style="background:#FFFFFF;color:#2c68ac;margin:0px;padding:0px;">
+	<div class="container">
+		<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
+		<div class="row">
+			<div class="col-sm-12 text-center">
+				<h2 style="font-size:64px;line-height: 64px;color:#2c68ac;" class="text-center"><img src="/wfiles/wasql64.png" style="vertical-align: bottom;" /> WaSQL Setup Wizard</h2>
+			</div>
+		</div>
+		<div class="row w_padtop">
+			<div class="col-sm-12 text-center">
+				<h2 class="text-center">
+					Select the type of system you want to install:
+				</h2>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4 text-center w_padtop">
+				<input type="radio" id="starttype_blank" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="blank" style="display:none" onclick="setupFillMore('blank')" <?=setupTypeChecked('blank');?> /> 
+				<label for="starttype_blank" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
+				<label for="starttype_blank" style="font-size:3em;padding:20px;" class="btn btn-default btn-lg">Blank</label>
+				<div>Blank option will create only the bare essential pages and WaSQL tables.  No frills point.</div>
+			</div>
+			<div class="col-sm-4 text-center w_padtop">
+				<input type="radio" id="starttype_sample" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="sample" style="display:none" onclick="setupFillMore('sample')" <?=setupTypeChecked('sample');?> /> 
+				<label for="starttype_sample" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
+				<label for="starttype_sample" style="font-size:3em;padding:20px;" class="btn btn-warning btn-lg">Sample</label>
+				<div>Sample option will create a sample website with several pages and the WaSQL tables. Simple starting point.</div>
+			</div>
+			<div class="col-sm-4 text-center w_padtop">
+				<input type="radio" id="starttype_clone" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="clone" style="display:none" onclick="setupFillMore('clone')" <?=setupTypeChecked('clone');?> /> 
+				<label for="starttype_clone" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
+				<label for="starttype_clone" style="font-size:3em;padding:20px;" class="btn btn-danger btn-lg">Clone</label>
+				<div>Clone option will let you choose an existing WaSQL site that you have admin rights to and clone it. Replication point.</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4 text-left">
+				<div id="blank_more">
+					
+				</div>
+			</div>
+			<div class="col-sm-4 text-left">
+				<div id="sample_more">
+					
+				</div>
+			</div>
+			<div class="col-sm-4 text-left">
+				<div id="clone_more">
+					
+				</div>
+			</div>
+		</div>
+		<div class="row w_padtop">
+			<div class="col-sm-8 text-left w_bigger w_red">
+				<?=$message;?>
+			</div>
+			<div class="col-sm-4 text-right">
+				<button id="begin_button" type="submit" class="btn btn-primary btn-lg" style="font-size:3em;padding:20px;">BEGIN <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+			</div>
+		</div>
+		</form>
+		<div style="display:none">
+			<div id="blank_more_content">
+				
+			</div>
+			<div id="sample_more_content">
+				
+			</div>
+			
+			<div  id="clone_more_content">
+				<div>
+					<label class="w_red">Website to clone (must be running WaSQL)</label>
+					<?=buildFormText('clone_url',array('required'=>1,'class'=>'form-control input-lg'));?>
+				</div>
+				<div>
+					<label class="w_red">Username (must be an admin)</label>
+					<?=buildFormText('clone_username',array('required'=>1,'class'=>'form-control input-lg'));?>
+				</div>
+				<div>
+					<label class="w_red">Password</label>
+					<?=buildFormPassword('clone_password',array('required'=>1,'class'=>'form-control input-lg'));?>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+</view:default>
+
+
+
+
+
+

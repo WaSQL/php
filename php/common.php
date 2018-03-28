@@ -2479,7 +2479,7 @@ function cleanDir($dir='') {
 *	returns the results of executing the command
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
-	if(!is_dir($dir)){$dir=null;}
+	if(!is_dir($dir)){$dir='';}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	if($timeout != 0 && isNum($timeout) && !isWindows()){
 		//this will kill the process if it goes longer than timeout

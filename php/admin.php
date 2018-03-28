@@ -2401,34 +2401,39 @@ LIST_TABLE:
 							}
 						}
 					break;
+					case 'download':
+						if(isset($_REQUEST['filename'])){
+							$afile=base64_decode($_REQUEST['filename']);
+							if(file_exists(($afile))){
+								pushFile($afile);
+							}
+						}
+					break;
                 	case 'backup':
-                		$dump=dumpDB(requestValue('_table_'));
-                		if(!isset($dump['success'])){
-							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
-							echo '<div style="margin-left:50px;">'.PHP_EOL;
-							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
-							echo '</div>'.PHP_EOL;
-						}
-						else{
-							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
-							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-			            }
-                		break;
 					case 'backup now':
-                		$dump=dumpDB();
-                		if(!isset($dump['success'])){
+                		$dump=dumpDB(requestValue('_table_'));
+						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
+							if(file_exists($dump['afile'])){
+								echo '<backup>'.base64_encode($dump['afile']).'</backup>';
+							}
+							else{
+								echo '<backup>ERROR:'.$dump['error'].'</backup>';
+							}
+							exit;
+						}
+                		elseif(!isset($dump['success'])){
 							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
 							echo '<div style="margin-left:50px;">'.PHP_EOL;
 							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
+							echo '	<div><b>Result:</b> '.printValue($dump['result']).'</div>'.PHP_EOL;
 							echo '</div>'.PHP_EOL;
 						}
 						else{
 							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
 							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 			            }
-                		break;
+                	break;
                 	case 'delete':
                 		if(!is_array($_REQUEST['name']) || !count($_REQUEST['name'])){
                         	echo '<div>No Files Selected to Delete</div>'.PHP_EOL;
@@ -2438,7 +2443,7 @@ LIST_TABLE:
 								unlink("{$backupdir}/{$name}");
 							}
 						}
-                		break;
+                	break;
 				}
 			}
 			echo '<div>Backup Directory: '.$backupdir.'</div>'.PHP_EOL;

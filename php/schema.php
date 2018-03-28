@@ -112,9 +112,7 @@ function createWasqlTable($table=''){
 				'synchronize'	=> 1
 				);
 			$id=addDBRecord($addopts);
-			if($CONFIG['starttype']=='sample'){
-				$ok=schemaAddFileData($table);	
-			}
+			$ok=schemaAddFileData($table);	
 			addMetaData($table);
 			return 1;
 			break;
@@ -367,9 +365,7 @@ function createWasqlTable($table=''){
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"permalink"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"page_type"));
 			//insert default files for this table from the schema directory
-			if($CONFIG['starttype']=='sample'){
-				schemaAddFileData($table);
-			}
+			schemaAddFileData($table);
 			addMetaData($table);
 			return 1;
 			break;
@@ -560,9 +556,7 @@ function createWasqlTable($table=''){
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			//insert default files for this table from the schema directory
-			if($CONFIG['starttype']=='sample'){
-				schemaAddFileData($table);
-			}
+			schemaAddFileData($table);
 			addMetaData($table);
 			return 1;
 			break;
@@ -2105,7 +2099,7 @@ function addMetaData($table=''){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function getWasqlTables($system_type='blank'){
+function getWasqlTables(){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
@@ -2114,10 +2108,8 @@ function getWasqlTables($system_type='blank'){
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
-	switch(strtolower($system_type)){
-		case 'sample':
-			$tables[]='contact_form';
-		break;
+	if(isset($CONFIG['starttype']) && $CONFIG['starttype']=='sample'){
+		$tables[]='contact_form';
 	}
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
@@ -2129,8 +2121,12 @@ function getWasqlTables($system_type='blank'){
 */
 function schemaAddFileData($table){
 	global $CONFIG;
+	if(!isset($CONFIG['starttype'])){return;}
 	$progpath=dirname(__FILE__);
-	$files=listFilesEx("$progpath/schema",array('name'=>$table));
+	$dir=realpath("$progpath/schema/{$CONFIG['starttype']}");
+	
+	$files=listFilesEx($dir,array('name'=>$table));
+	//echo $dir.printValue($files);exit;
 	$tables=array();
 	foreach($files as $file){
         list($fname,$ftable,$field,$fid,$fext)=preg_split('/\./',$file['name']);

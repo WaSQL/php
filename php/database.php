@@ -3216,7 +3216,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3233,7 +3233,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p{$CONFIG['dbpass']}";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3263,12 +3263,16 @@ function dumpDB($table=''){
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);
 	}
+	//check for errors
 	if(is_file($dump['afile'])){
 		if($handle = fopen($dump['afile'],"r")){
 			$sql .= fgets($handle);
 			$sql .= fgets($handle);
 			fclose($handle);
-			if(preg_match('/^Usage\:/i',$sql)){$dump['error']=$sql;}
+			if(preg_match('/^Usage\:/i',$sql)){
+				$dump['error']=$sql;
+				unlink($dump['afile']);
+			}
 			else{$dump['success']=1;}
 		}
 		else{
