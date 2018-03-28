@@ -2411,9 +2411,9 @@ LIST_TABLE:
 					break;
                 	case 'backup':
 					case 'backup now':
-                		$dump=dumpDB(requestValue('_table_'));
+                		$dump=dumpDB($_REQUEST['_table_']);
 						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
-							if(file_exists($dump['afile'])){
+							if(file_exists($dump['afile']) && filesize($dump['afile'])){
 								echo '<backup>'.base64_encode($dump['afile']).'</backup>';
 							}
 							else{
