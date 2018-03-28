@@ -55,7 +55,16 @@ else{
 }
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
-
+//launch setup on new databases;
+if(!isDBTable('_users')){
+	if(is_file("{$progpath}/admin/setup_functions.php")){
+    	include_once("{$progpath}/admin/setup_functions.php");
+	}
+	$body=getFileContents("{$progpath}/admin/setup_body.htm");
+	$controller=getFileContents("{$progpath}/admin/setup_controller.php");
+	echo evalPHP(array($controller,$body));
+	exit;
+}
 //check for tiny urls - /y/B49Z  - checks the _tiny table
 if($url_parts[0]=='y' && count($url_parts)==2){
 	include_once("$progpath/schema.php");

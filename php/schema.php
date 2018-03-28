@@ -112,7 +112,9 @@ function createWasqlTable($table=''){
 				'synchronize'	=> 1
 				);
 			$id=addDBRecord($addopts);
-			$ok=schemaAddFileData($table);
+			if($CONFIG['starttype']=='sample'){
+				$ok=schemaAddFileData($table);	
+			}
 			addMetaData($table);
 			return 1;
 			break;
@@ -365,7 +367,9 @@ function createWasqlTable($table=''){
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"permalink"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"page_type"));
 			//insert default files for this table from the schema directory
-			schemaAddFileData($table);
+			if($CONFIG['starttype']=='sample'){
+				schemaAddFileData($table);
+			}
 			addMetaData($table);
 			return 1;
 			break;
@@ -556,7 +560,9 @@ function createWasqlTable($table=''){
 			if($ok != 1){break;}
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			//insert default files for this table from the schema directory
-			schemaAddFileData($table);
+			if($CONFIG['starttype']=='sample'){
+				schemaAddFileData($table);
+			}
 			addMetaData($table);
 			return 1;
 			break;
@@ -827,6 +833,7 @@ function schemaUpdateStates(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function addMetaData($table=''){
+	global $CONFIG;
 	//echo "addMetaData[{$table}]<br>\n";
 	//delete existing metadata for this table
 	$ok=delDBRecord(array('-table'=>"_fielddata",'-where'=>"tablename = '{$table}'"));
@@ -2098,17 +2105,22 @@ function addMetaData($table=''){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function getWasqlTables(){
+function getWasqlTables($system_type='blank'){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','countries','states','contact_form','_errors',
+		'_fielddata','_tabledata','countries','states','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
+	switch(strtolower($system_type)){
+		case 'sample':
+			$tables[]='contact_form';
+		break;
+	}
 	//include wpass table?
-	if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
+	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
 	return $tables;
 	}
 //---------- begin function schemaAddFileData
