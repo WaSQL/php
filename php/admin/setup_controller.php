@@ -85,7 +85,7 @@
 						//echo "<div>{$cmd}</div>\n";
                         $afile=preg_replace('/\.gz$/i','',$afile);
 					}
-					echo "<div>afile (sql): {$afile}</div>\n";
+					//echo "<div>afile (sql): {$afile}</div>\n";
 					if(is_file($afile) && preg_match('/\.sql$/i',$afile)){
 						$cmds=array(
 							"mysql -h {$CONFIG['dbhost']} -u {$CONFIG['dbuser']} -p\"{$CONFIG['dbpass']}\" --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
