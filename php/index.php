@@ -163,7 +163,14 @@ if(isset($CONFIG['valid_uhosts'])){
 if(isset($_REQUEST['_pushfile'])){
 	$params=array();
 	if(isset($_REQUEST['-attach']) && $_REQUEST['-attach']==0){$params['-attach']=0;}
- 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']),$params);
+	$afile=decodeBase64($_REQUEST['_pushfile']);
+	//for security purposes, only push file that are in document_root or the wasql path
+	$wasqlpath=getWasqlPath();
+	if(!stringContains($afile,$_SERVER['DOCUMENT_ROOT']) && !stringContains($afile,$wasqlpath)){
+		echo "Error: denied push request";
+		exit;
+	}
+ 	$ok=pushFile($afile,$params);
 }
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){
