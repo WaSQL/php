@@ -8435,7 +8435,7 @@ function isOracle(){
 	}
 	else{$isOracleCache=false;}
 	return $isOracleCache;
-	}
+}
 //---------- begin function isMysqli ----------
 /**
 * @describe returns true if database driver is MySQLi
