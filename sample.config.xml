@@ -57,6 +57,8 @@
 			cron 0|1 - must be set to 1 on stage sites if you want to run crons on stage
 			nocron 0|1 - set nocron=1 to nor run crons  - same as cron=0
 			cronlog_max - number of days to keep cronlog records - default is 365 days
+			backup_command - command to backup database - defaults to mysqldump
+			mysql_command - command to import database - defaults to mysql
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost
