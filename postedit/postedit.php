@@ -201,7 +201,7 @@ function writeFiles(){
 		else{
 				$cmd="EXPLORER /E,\"{$afolder}\"";
 		}
-		cmdResults($cmd);
+		shell_exec($cmd);
 	}
 	return $afolder;
 }
@@ -353,8 +353,8 @@ function getContents($file){
 	$file=preg_replace('/\//',"\\",$file);
 	$cmd="file_get_contents.exe \"{$file}\"";
 	//echo $cmd.PHP_EOL;
-	$out=cmdResults($cmd);
-	return $out['stdout'];
+	$out=shell_exec($cmd);
+	return $out;
 	$tries=0;
 	while(!isset($out['stdout']) && $tries < 5){
     	sleep(1);

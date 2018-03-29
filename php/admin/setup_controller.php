@@ -63,21 +63,26 @@
 					$url="{$url}/php/index.php?_pushfile={$body}";
 					//echo "<div>{$url}</div>".PHP_EOL;
 					$rfile=base64_decode($body);
-					$filename=getFileName($rfile);
-					$ext=getFileExtension($filename);					
-					$afile="{$progpath}/temp/{$filename}";
-					$fp = fopen ($afile, 'w+');
-					$ch = curl_init();
-					curl_setopt( $ch, CURLOPT_URL, $url );
-					curl_setopt( $ch, CURLOPT_BINARYTRANSFER, true );
-					curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
-					curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
-					curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 300 );
-					curl_setopt( $ch, CURLOPT_FILE, $fp );
-					curl_exec( $ch );
-					curl_close( $ch );
-					fclose( $fp );
-					$afile=realpath($afile);
+					//check to see if it is local
+					if(file_exists($rfile)){$afile=$rfile;}
+					else{
+						//echo "<div>{$rfile}</div>".PHP_EOL;exit;
+						$filename=getFileName($rfile);
+						$ext=getFileExtension($filename);					
+						$afile="{$progpath}/temp/{$filename}";
+						$fp = fopen ($afile, 'w+');
+						$ch = curl_init();
+						curl_setopt( $ch, CURLOPT_URL, $url );
+						curl_setopt( $ch, CURLOPT_BINARYTRANSFER, true );
+						curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
+						curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+						curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 300 );
+						curl_setopt( $ch, CURLOPT_FILE, $fp );
+						curl_exec( $ch );
+						curl_close( $ch );
+						fclose( $fp );
+						$afile=realpath($afile);
+					}
 					//echo "<div>afile: {$afile}</div>\n";
 					if(preg_match('/\.gz$/i',$afile)){
 						$cmd="gunzip \"{$afile}\"";
@@ -94,7 +99,9 @@
 						foreach($cmds as $cmd){
 							//echo "<div>{$cmd}</div>\n";
 							$ok=shell_exec($cmd);
+							// $ok.PHP_EOL;
 						}
+						exit;
 					}
 					else{
 						$message="Failed: {$afile} not found";
