@@ -4,23 +4,8 @@ $progpath=dirname(__FILE__);
 //parse Server Variables
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
 //echo "DEBUG".printValue(headers_list());exit;
-
-//echo "DEBUG".printValue(headers_list());exit;
 if(!isDBTable('_users')){
-	include_once("$progpath/schema.php");
-	$ok=createWasqlTables();
-}
-if(!isDBTable('states')){
-	include_once("$progpath/schema.php");
-	$ok=createWasqlTables();
-}
-if(!isDBTable('countries')){
-	include_once("$progpath/schema.php");
-	$ok=createWasqlTables();
-}
-if(!isDBTable('_sessions')){
-	include_once("$progpath/schema.php");
-	$ok=createWasqlTables();
+	return;
 }
 //get the user GUID stored in a cookie
 $guid=getGUID();

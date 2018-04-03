@@ -55,7 +55,16 @@ else{
 }
 include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
-
+//launch setup on new databases;
+if(!isDBTable('_users')){
+	if(is_file("{$progpath}/admin/setup_functions.php")){
+    	include_once("{$progpath}/admin/setup_functions.php");
+	}
+	$body=getFileContents("{$progpath}/admin/setup_body.htm");
+	$controller=getFileContents("{$progpath}/admin/setup_controller.php");
+	echo evalPHP(array($controller,$body));
+	exit;
+}
 //check for tiny urls - /y/B49Z  - checks the _tiny table
 if($url_parts[0]=='y' && count($url_parts)==2){
 	include_once("$progpath/schema.php");
@@ -74,8 +83,14 @@ if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
 }
 else{
-	@header('X-Frame-Options: ALLOWALL');
+	//Allowing all domains is the default. Don't set the X-Frame-Options header at all if you want that.
+	//@header('X-Frame-Options: ALLOWALL');
 }
+if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
+	@header('X-XSS-Protection: 1; mode=block');
+}
+//X-Content-Type-Options
+@header('X-Content-Type-Options: nosniff');
 //check for valid_hosts in CONFIG settings and reject if needed
 if(isset($CONFIG['valid_hosts'])){
 	$valid_hosts=preg_split('/[\s\,\;]+/',strtolower(trim($CONFIG['valid_hosts'])));
@@ -148,7 +163,14 @@ if(isset($CONFIG['valid_uhosts'])){
 if(isset($_REQUEST['_pushfile'])){
 	$params=array();
 	if(isset($_REQUEST['-attach']) && $_REQUEST['-attach']==0){$params['-attach']=0;}
- 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']),$params);
+	$afile=decodeBase64($_REQUEST['_pushfile']);
+	//for security purposes, only push file that are in document_root or the wasql path
+	$wasqlpath=getWasqlPath();
+	if(!stringContains($afile,$_SERVER['DOCUMENT_ROOT']) && !stringContains($afile,$wasqlpath)){
+		echo "Error: denied push request";
+		exit;
+	}
+ 	$ok=pushFile($afile,$params);
 }
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){

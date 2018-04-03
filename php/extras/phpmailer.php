@@ -43,6 +43,8 @@
 */
 $progpath=dirname(__FILE__);
 include_once "{$progpath}/phpmailer/class.phpmailer.php";
+include_once "{$progpath}/phpmailer/class.smtp.php";
+include_once "{$progpath}/phpmailer/class.pop3.php";
 //---------- begin function phpmailerSendMail--------------------
 /**
 * @describe sends email using phpmailer

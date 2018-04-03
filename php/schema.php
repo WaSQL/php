@@ -112,7 +112,7 @@ function createWasqlTable($table=''){
 				'synchronize'	=> 1
 				);
 			$id=addDBRecord($addopts);
-			$ok=schemaAddFileData($table);
+			$ok=schemaAddFileData($table);	
 			addMetaData($table);
 			return 1;
 			break;
@@ -827,6 +827,7 @@ function schemaUpdateStates(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function addMetaData($table=''){
+	global $CONFIG;
 	//echo "addMetaData[{$table}]<br>\n";
 	//delete existing metadata for this table
 	$ok=delDBRecord(array('-table'=>"_fielddata",'-where'=>"tablename = '{$table}'"));
@@ -2102,13 +2103,16 @@ function getWasqlTables(){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','countries','states','contact_form','_errors',
+		'_fielddata','_tabledata','countries','states','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
+	if(isset($CONFIG['starttype']) && $CONFIG['starttype']=='sample'){
+		$tables[]='contact_form';
+	}
 	//include wpass table?
-	if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
+	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
 	return $tables;
 	}
 //---------- begin function schemaAddFileData
@@ -2117,8 +2121,12 @@ function getWasqlTables(){
 */
 function schemaAddFileData($table){
 	global $CONFIG;
+	if(!isset($CONFIG['starttype'])){return;}
 	$progpath=dirname(__FILE__);
-	$files=listFilesEx("$progpath/schema",array('name'=>$table));
+	$dir=realpath("$progpath/schema/{$CONFIG['starttype']}");
+	
+	$files=listFilesEx($dir,array('name'=>$table));
+	//echo $dir.printValue($files);exit;
 	$tables=array();
 	foreach($files as $file){
         list($fname,$ftable,$field,$fid,$fext)=preg_split('/\./',$file['name']);

@@ -1128,8 +1128,8 @@ function getProcessingDiv(id,msg,cancel){
 	if(undefined == msg){msg='Processing ...';}
 	var str='';
 	str += '<span id="processing_div">';
-	str += '<span class="w_loader"></span>';
-	str += '<span class="w_grey">'+msg+'</span>';
+	str += '<span class="icon-spin7 w_spin"></span>';
+	str += ' <span class="w_grey">'+msg+'</span>';
 	if(cancel==1){
 		str += '<span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
 	}
@@ -1529,7 +1529,7 @@ function submitForm(theForm,popup,debug,ajax){
 	quickmask['integer'] = '^[0-9]+$';
 	quickmask['hexcolor'] = '^#[abcdef0-9]{6,6}$';
 	quickmask['decimal'] = '^[0-9]*\\.[0-9]+$';
-	quickmask['number'] = '(^[0-9]+$)|(^\\.[0-9]+$)|(^[0-9]+\\.[0-9]+$)';
+	quickmask['number'] = '(^\-{0,1}[0-9]+$)|(^\-{0,1}\\.[0-9]+$)|(^\-{0,1}[0-9]+\\.[0-9]+$)';
 	quickmask['phone'] = '^([0-9]{3,3}[\\-\\.][0-9]{3,3}[\\-\\.][0-9]{4,4}|\\([0-9]{3,3}\\)\\ [0-9]{3,3}[\\-][0-9]{4,4})$';
 	quickmask['time'] = '^[0-9]{1,2}\\:[0-9]{2}$';
 	quickmask['ssn'] = '^[0-9]{3,3}\\-[0-9]{2,2}\\-[0-9]{4,4}$';

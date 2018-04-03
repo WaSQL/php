@@ -885,9 +885,9 @@ if(!isUser()){
 	}
 elseif($USER['utype'] != 0){
 	echo buildHtmlBegin();
-	echo '<div class="w_left w_tip w_pad w_border">'.PHP_EOL;
-	echo '	<span class="icon-warning w_danger w_bigger w_bold"></span><b class="w_danger w_bigger"> Administration access denied.</b>'.PHP_EOL;
-	echo '	<div class="w_big w_danger">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
+	echo '<div class="well" style="border-radius:0px;">'.PHP_EOL;
+	echo '	<span class="icon-block w_danger w_biggest w_bold"></span><b class="w_danger w_biggest"> Administration access denied.</b>'.PHP_EOL;
+	echo '	<div class="w_big">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
 	echo '</div>'.PHP_EOL;
 	$formopts=array(
 		'-action'=>'/php/admin.php',
@@ -895,7 +895,9 @@ elseif($USER['utype'] != 0){
 		);
 	if(isset($_REQUEST['_menu'])){$formopts['_menu']=$_REQUEST['_menu'];}
 	if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
+	echo '<div style="margin-top:20px;margin-left:20px;">'.PHP_EOL;
 	echo userLoginForm($formopts);
+	echo '</div>'.PHP_EOL;
 	echo buildHtmlEnd();
 	exit;
 	}
@@ -2399,34 +2401,39 @@ LIST_TABLE:
 							}
 						}
 					break;
+					case 'download':
+						if(isset($_REQUEST['filename'])){
+							$afile=base64_decode($_REQUEST['filename']);
+							if(file_exists(($afile))){
+								pushFile($afile);
+							}
+						}
+					break;
                 	case 'backup':
-                		$dump=dumpDB(requestValue('_table_'));
-                		if(!isset($dump['success'])){
-							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
-							echo '<div style="margin-left:50px;">'.PHP_EOL;
-							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
-							echo '</div>'.PHP_EOL;
-						}
-						else{
-							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
-							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-			            }
-                		break;
 					case 'backup now':
-                		$dump=dumpDB();
-                		if(!isset($dump['success'])){
+                		$dump=dumpDB($_REQUEST['_table_']);
+						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
+							if(file_exists($dump['afile']) && filesize($dump['afile'])){
+								echo '<backup>'.base64_encode($dump['afile']).'</backup>';
+							}
+							else{
+								echo '<backup>ERROR:'.$dump['error'].'</backup>';
+							}
+							exit;
+						}
+                		elseif(!isset($dump['success'])){
 							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
 							echo '<div style="margin-left:50px;">'.PHP_EOL;
 							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
+							echo '	<div><b>Result:</b> '.printValue($dump['result']).'</div>'.PHP_EOL;
 							echo '</div>'.PHP_EOL;
 						}
 						else{
 							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
 							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
 			            }
-                		break;
+                	break;
                 	case 'delete':
                 		if(!is_array($_REQUEST['name']) || !count($_REQUEST['name'])){
                         	echo '<div>No Files Selected to Delete</div>'.PHP_EOL;
@@ -2436,7 +2443,7 @@ LIST_TABLE:
 								unlink("{$backupdir}/{$name}");
 							}
 						}
-                		break;
+                	break;
 				}
 			}
 			echo '<div>Backup Directory: '.$backupdir.'</div>'.PHP_EOL;

@@ -3216,7 +3216,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3227,13 +3227,13 @@ function dumpDB($table=''){
 	}
 	elseif(isMysql() || isMysqli()){
 		//mysqldump
-		$dump['command'] = isWindows()?"mysqldump.exe":"mysqldump";
+		$dump['command'] = "mysqldump";
 		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p'{$CONFIG['dbpass']}'";
+			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3257,29 +3257,32 @@ function dumpDB($table=''){
     	$dump['command'] .= " | gzip -9";
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
-	$dump['command'] .= "  > \"{$dump['afile']}\"";
+	$dump['command'] .= "  > \"{$dump['afile']}\" 2>&1";
 	$dump['result']=cmdResults($dump['command']);
-
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);
 	}
+	//check for errors
 	if(is_file($dump['afile'])){
 		if($handle = fopen($dump['afile'],"r")){
 			$sql .= fgets($handle);
 			$sql .= fgets($handle);
 			fclose($handle);
-			if(preg_match('/^Usage\:/i',$sql)){$dump['error']=$sql;}
+			if(preg_match('/^Usage\:/i',$sql)){
+				$dump['error']=$sql;
+				unlink($dump['afile']);
+			}
 			else{$dump['success']=1;}
 		}
 		else{
         	$dump['error']="unable to read sql file";
 		}
 	}
-	else{$dump['error']='Unable to create database dump.';}
+	else{$dump['error']='Unable to create database dump.'.printValue($dump);}
 	//echo printValue($dump);exit;
 	return $dump;
 	}
-//---------- begin function dumpDB--------------------
+//---------- begin function optimizeDB--------------------
 /**
 * @describe performs a mysqlcheck -o -v -h
 * @return array
@@ -4730,6 +4733,7 @@ function includeDBOnce($params=array()){
 	$where=preg_replace('/\_+$/','',$where);
 	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
 	$phpfilename=$CONFIG['dbname'] .'_' . $params['-table'] .'_' . $params['-field'] . '_' . $where . '.php';
+	$phpfilename=getFileName($phpfilename);
 	$phpfilename=preg_replace('/\_+/','_',$phpfilename);
 	$progpath=dirname(__FILE__);
 	buildDir("{$progpath}/temp");
@@ -7696,7 +7700,7 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	//Open a connection to a dabase Server - supports multiple database types
 	if(isMysqli()){
 		try{
-			$dbh=mysqli_connect($host, $user, $pass, $dbname);
+			$dbh=@mysqli_connect($host, $user, $pass, $dbname);
 		}
 		catch(Exception $e){
 			$dbh=false;
@@ -8405,10 +8409,13 @@ function databaseType(){
 * @usage if(isMysql()){...}
 */
 function isMysql(){
+	global $isMysqlCache;
+	if(isset($isMysqlCache)){return $isMysqlCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='mysql'){return true;}
-	return false;
+	if($dbtype=='mysql'){$isMysqlCache=true;}
+	else{$isMysqlCache=false;}
+	return $isMysqlCache;
 	}
 //---------- begin function isOracle ----------
 /**
@@ -8417,11 +8424,17 @@ function isMysql(){
 * @usage if(isOracle()){...}
 */
 function isOracle(){
+	global $isOracleCache;
+	if(isset($isOracleCache)){return $isOracleCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='oracle'){return true;}
-	return false;
+	if($dbtype=='oracle'){
+		loadExtras('oracle');
+		$isOracleCache=true;
 	}
+	else{$isOracleCache=false;}
+	return $isOracleCache;
+}
 //---------- begin function isMysqli ----------
 /**
 * @describe returns true if database driver is MySQLi
@@ -8429,10 +8442,13 @@ function isOracle(){
 * @usage if(isMysqli()){...}
 */
 function isMysqli(){
+	global $isMysqliCache;
+	if(isset($isMysqliCache)){return $isMysqliCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='mysqli'){return true;}
-	return false;
+	if($dbtype=='mysqli'){$isMysqliCache=true;}
+	else{$isMysqliCache=false;}
+	return $isMysqliCache;
 	}
 //---------- begin function isPostgreSQL ----------
 /**
@@ -8441,12 +8457,15 @@ function isMysqli(){
 * @usage if(isPostgreSQL()){...}
 */
 function isPostgreSQL(){
+	global $isPostgreSQLCache;
+	if(isset($isPostgreSQLCache)){return $isPostgreSQLCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='postgres'){return true;}
-	elseif($dbtype=='postgresql'){return true;}
-	return false;
-	}
+	if($dbtype=='postgres'){$isPostgreSQLCache=true;}
+	elseif($dbtype=='postgresql'){$isPostgreSQLCache=true;}
+	else{$isPostgreSQLCache=false;}
+	return $isPostgreSQLCache;
+}
 //---------- begin function isSqlite ----------
 /**
 * @describe returns true if database driver is Sqlite
@@ -8454,14 +8473,17 @@ function isPostgreSQL(){
 * @usage if(isSqlite()){...}
 */
 function isSqlite(){
+	global $isSqliteCache;
+	if(isset($isSqliteCache)){return $isSqliteCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
 	if($dbtype=='sqlite'){
 		loadExtras('sqlite');
-		return true;
+		$isSqliteCache=true;
 	}
-	return false;
-	}
+	else{$isSqliteCache=false;}
+	return $isSqliteCache;
+}
 //---------- begin function isMssql ----------
 /**
 * @describe returns true if database driver is MS SQL
@@ -8469,11 +8491,17 @@ function isSqlite(){
 * @usage if(isMssql()){...}
 */
 function isMssql(){
+	global $isMssqlCache;
+	if(isset($isMssqlCache)){return $isMssqlCache;}
 	global $CONFIG;
 	$dbtype=strtolower(trim($CONFIG['dbtype']));
-	if($dbtype=='mssql'){return true;}
-	return false;
+	if($dbtype=='mssql'){
+		loadExtras('mssql');
+		$isMssqlCache=true;
 	}
+	else{$isMssqlCache=false;}
+	return $isMssqlCache;
+}
 //---------- begin function isODBC ----------
 /**
 * @describe returns true if database driver is ODBC
