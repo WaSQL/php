@@ -1910,11 +1910,10 @@ function buildHtmlBegin($params=array()){
 	if(isset($_SERVER['LANG'])){
 		$rtn .= '<html lang="'.$_SERVER['LANG'].'">'.PHP_EOL;
 		}
-	else{$rtn .= '<html lang="en">'.PHP_EOL;}
+	else{$rtn .= '<html lang="en" style="max-width:100%; overflow-x:hidden;">'.PHP_EOL;}
 	$rtn .= '<head>'.PHP_EOL;
 	$rtn .= ' 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" />'.PHP_EOL;
 	$rtn .= ' 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" />'.PHP_EOL;
-
 	$title=setValue(array($params['title'],"WaSQL - {$_SERVER['HTTP_HOST']}"));
 	$rtn .= ' 	<title>'.$title.'</title>'.PHP_EOL;
 	$rtn .= ' 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />'.PHP_EOL;
@@ -1930,7 +1929,7 @@ function buildHtmlBegin($params=array()){
 		$rtn .= $params['js'];
 	}
 	$rtn .= '</head>'.PHP_EOL;
-	$rtn .= '<body style="background:#FFFFFF;margin:0px;padding:0px;">'.PHP_EOL;
+	$rtn .= '<body style="background:#FFFFFF;margin:0px;padding:0px;max-width:100%;">'.PHP_EOL;
 	$rtn .= '	<div class="container-fluid">'.PHP_EOL;
 	$rtn .= '		<div class="row">'.PHP_EOL;
 	$rtn .= '			<div class="col-xs-12" style="padding:0px;">'.PHP_EOL;
