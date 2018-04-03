@@ -3216,7 +3216,7 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p{$CONFIG['dbpass']}";
+			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3227,13 +3227,13 @@ function dumpDB($table=''){
 	}
 	elseif(isMysql() || isMysqli()){
 		//mysqldump
-		$dump['command'] = isWindows()?"mysqldump.exe":"mysqldump";
+		$dump['command'] = "mysqldump";
 		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p{$CONFIG['dbpass']}";
+			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
 			}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -3257,9 +3257,8 @@ function dumpDB($table=''){
     	$dump['command'] .= " | gzip -9";
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
-	$dump['command'] .= "  > \"{$dump['afile']}\"";
+	$dump['command'] .= "  > \"{$dump['afile']}\" 2>&1";
 	$dump['result']=cmdResults($dump['command']);
-
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);
 	}
@@ -3279,11 +3278,11 @@ function dumpDB($table=''){
         	$dump['error']="unable to read sql file";
 		}
 	}
-	else{$dump['error']='Unable to create database dump.';}
+	else{$dump['error']='Unable to create database dump.'.printValue($dump);}
 	//echo printValue($dump);exit;
 	return $dump;
 	}
-//---------- begin function dumpDB--------------------
+//---------- begin function optimizeDB--------------------
 /**
 * @describe performs a mysqlcheck -o -v -h
 * @return array
