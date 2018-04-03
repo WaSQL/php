@@ -1910,7 +1910,7 @@ function buildHtmlBegin($params=array()){
 	if(isset($_SERVER['LANG'])){
 		$rtn .= '<html lang="'.$_SERVER['LANG'].'">'."\n";
 		}
-	else{$rtn .= '<html lang="en">'."\n";}
+	else{$rtn .= '<html lang="en" style="max-width:100%; overflow-x:hidden;">'."\n";}
 	$rtn .= '<head>'."\n";
 	$rtn .= ' 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" />'."\n";
 	$rtn .= ' 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" />'."\n";
@@ -1930,7 +1930,7 @@ function buildHtmlBegin($params=array()){
 		$rtn .= $params['js'] ."\n";
 	}
 	$rtn .= '</head>'."\n";
-	$rtn .= '<body style="background:#FFFFFF;margin:0px;padding:0px;">'."\n";
+	$rtn .= '<body style="background:#FFFFFF;margin:0px;padding:0px;max-width:100%;">'."\n";
 	return $rtn;
 	}
 
