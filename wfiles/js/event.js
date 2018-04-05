@@ -1699,9 +1699,21 @@ function initBehaviors(ajaxdiv){
     //data tooltips
 	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
 	for(var i=0;i<tobs.length;i++){
-		addEventHandler(tobs[i],'mouseover', function(){tooltipDiv(this);});
-		addEventHandler(tobs[i],'focus', function(){tooltipDiv(this);});
-		addEventHandler(tobs[i],'mouseout', function(){fadeId('w_tooltip',1,1);});
+		addEventHandler(tobs[i],'mouseover', function(event){
+			tooltipDiv(this);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
+		addEventHandler(tobs[i],'focus', function(event){
+			tooltipDiv(this);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
+		addEventHandler(tobs[i],'mouseout', function(event){
+			fadeId('w_tooltip',1,1);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
 	}
 }
 function cancel(e) {
