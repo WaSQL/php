@@ -1700,6 +1700,7 @@ function initBehaviors(ajaxdiv){
 	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
 	for(var i=0;i<tobs.length;i++){
 		addEventHandler(tobs[i],'mouseover', function(){tooltipDiv(this);});
+		addEventHandler(tobs[i],'focus', function(){tooltipDiv(this);});
 		addEventHandler(tobs[i],'mouseout', function(){fadeId('w_tooltip',1,1);});
 	}
 }
