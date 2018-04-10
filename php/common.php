@@ -2478,7 +2478,7 @@ function cleanDir($dir='') {
 *	returns the results of executing the command
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
-	if(!is_dir($dir)){$dir='';}
+	if(!is_dir($dir)){$dir=realpath('.');}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	if($timeout != 0 && isNum($timeout) && !isWindows()){
 		//this will kill the process if it goes longer than timeout
@@ -2492,7 +2492,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			),
 		$pipes,
 		$dir
-		);
+	);
 	stream_set_blocking($pipes[2], 0);
     //fwrite($pipes[0], $args);
 	fclose($pipes[0]);

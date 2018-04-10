@@ -73,7 +73,6 @@ function writeFiles(){
 	global $chost;
 	global $progpath;
 	global $mtimes;
-	global $settings;
 	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
@@ -84,15 +83,11 @@ function writeFiles(){
 		'encoding'	=>"base64",
 		'-nossl'=>1,
 		'-follow'=>1,
-		//'-xml'=>1
+		'-xml'=>1
 	);
 	$url=buildHostUrl();
 	echo "Calling {$url}...".PHP_EOL;
 	$post=postURL($url,$postopts);
-	if(preg_match('/\<fatal_error\>(.+?)\<\/fatal_error\>/is',$post['body'],$m)){
-		abortMessage($m[1].printValue($postopts));
-	}
-	$post['xml_array']=xml2Array($post['body']);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
 	}
@@ -193,13 +188,7 @@ function writeFiles(){
 	}
 	if(isWindows()){
 		$afolder=preg_replace('/\//',"\\",$afolder);
-		if(isset($settings['editor']['command'])){
-			$cmd="{$settings['editor']['command']} \"{$afolder}\"";
-		}
-		else{
-				$cmd="EXPLORER /E,\"{$afolder}\"";
-		}
-		cmdResults($cmd);
+		cmdResults("EXPLORER /E,\"{$afolder}\"");
 	}
 	return $afolder;
 }
@@ -479,13 +468,6 @@ function getSettings(){
 			$settings['sound'][$k]=$v;
 		}
 	}
-	foreach($xml['settings']->editor as $set){
-	    	$set=(array)$set;
-	    	foreach($set['@attributes'] as $k=>$v){
-			$settings['editor'][$k]=$v;
-		}
-	}
-	//echo printValue($settings);exit;
 	return;
 }
 function getXml(){
