@@ -117,7 +117,7 @@ function writeFiles(){
 
 	$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
 	$afolder="{$progpath}/postEditFiles/{$folder}";
-	if(is_dir($afolder)){cleanDir($afolder);}
+	if(is_dir($afolder)){postEditCleanDir($afolder);}
 	else{
 		mkdir($afolder,0777,true);
 	}
@@ -192,6 +192,26 @@ function writeFiles(){
 	}
 	return $afolder;
 }
+function postEditCleanDir($dir='') {
+	if(!is_dir($dir)){return false;}
+	if ($handle = opendir($dir)) {
+    	while (false !== ($file = readdir($handle))) {
+			if($file == '.' || $file == '..'){continue;}
+			//skip files and dirs that start with a dot.
+			if(stringBeginsWith($file,'.')){continue;}
+			$afile="{$dir}/{$file}";
+			if(is_dir($afile)){
+				postEditCleanDir($afile);
+				rmdir($afile);
+            	}
+            else{
+				unlink($afile);
+            	}
+    		}
+    	closedir($handle);
+		}
+	return true;
+	}
 function buildHostUrl(){
 	global $hosts;
 	global $chost;
