@@ -40,7 +40,6 @@ elseif($url_parts[0]=='t'){
 	$_REQUEST['_view']=implode('/',$url_parts);
 	//echo printValue($_REQUEST['_view']);exit;
 }
-echo printValue($_SERVER).printValue($_REQUEST);exit;
 global $CONFIG;
 include_once("$progpath/config.php");
 //changes based on config
