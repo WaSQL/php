@@ -9209,6 +9209,15 @@ function minifyCode($code,$type) {
 	if(!strlen($type)){return 'no type';}
 	switch(strtolower($type)){
 		case 'js':
+			//matthiasmullie minifier
+			if(file_exists('d:/minifier/minifyme.php')){
+				file_put_contents('minifyme.js',$code);	
+				$out=cmdResults("php d:/minifier/minifyme.php minifyme.js");
+				$mincode=file_get_contents('minifyme.min.js');
+				unlink('minifyme.js');
+				unlink('minifyme.min.js');
+				return $mincode;
+			}
 			//jshrink is not working - until I figure it out just strip out carriage returns
 			return str_replace('/[\r\n]+/','',$code);
 			require_once("jshrink.php");

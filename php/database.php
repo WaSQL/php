@@ -3227,7 +3227,7 @@ function dumpDB($table=''){
 	}
 	elseif(isMysql() || isMysqli()){
 		//mysqldump
-		$dump['command'] = "mysqldump";
+		$dump['command'] = isWindows()?'mysqldump.exe':'mysqldump';
 		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";

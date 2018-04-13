@@ -17,8 +17,7 @@
 	<script type="text/javascript" src="/php/admin/setup_js.js"></script>
 </head>
 <body style="background:#FFFFFF;color:#2c68ac;margin:0px;padding:0px;">
-	<div class="container">
-		<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
+	<div class="container-fluid" style="margin:15px;padding:15px;">
 		<div class="row">
 			<div class="col-sm-12 text-center">
 				<h2 style="font-size:64px;line-height: 64px;color:#2c68ac;;" class="text-center"><img src="/wfiles/wasql64.png" style="vertical-align: bottom;" /> WaSQL Setup Wizard</h2>
@@ -44,71 +43,42 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-sm-4 text-center w_padtop">
-				<input type="radio" id="starttype_blank" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="blank" style="display:none" onclick="setupFillMore('blank')" <?=setupTypeChecked('blank');?> /> 
-				<label for="starttype_blank" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
-				<label for="starttype_blank" style="font-size:3em;padding:20px;" class="btn btn-default btn-lg">Blank</label>
-				<div>Blank option will create only the bare essential pages and WaSQL tables.  No frills point.</div>
-			</div>
-			<div class="col-sm-4 text-center w_padtop">
-				<input type="radio" id="starttype_sample" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="sample" style="display:none" onclick="setupFillMore('sample')" <?=setupTypeChecked('sample');?> /> 
-				<label for="starttype_sample" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
-				<label for="starttype_sample" style="font-size:3em;padding:20px;" class="btn btn-warning btn-lg">Sample</label>
-				<div>Sample option will create a sample website with several pages and the WaSQL tables. Simple starting point.</div>
-			</div>
-			<div class="col-sm-4 text-center w_padtop">
-				<input type="radio" id="starttype_clone" name="starttype" _required="1" requiredmsg="Pick a Type First" data-type="checkbox" value="clone" style="display:none" onclick="setupFillMore('clone')" <?=setupTypeChecked('clone');?> /> 
-				<label for="starttype_clone" class="icon-mark" style="font-size:4em;vertical-align:top;"></label>
-				<label for="starttype_clone" style="font-size:3em;padding:20px;" class="btn btn-danger btn-lg">Clone</label>
-				<div>Clone option will let you choose an existing WaSQL site that you have admin rights to and clone it. Replication point.</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-4 text-left">
-				<div id="blank_more">
-					
+			<div class="col-sm-8">
+				<div class="panel panel-info">
+					<div class="panel-heading w_bold w_biggest"><span class="icon-website"></span> Select from a template</div>
+  					<div class="panel-body">
+						<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
+							<?=renderEach('template',$templates,'template');?>
+							<div class="text-right w_padtop">
+								<button id="begin_button" type="submit" class="btn btn-primary btn-lg">Install <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
-			<div class="col-sm-4 text-left">
-				<div id="sample_more">
-					
-				</div>
-			</div>
-			<div class="col-sm-4 text-left">
-				<div id="clone_more">
-					
-				</div>
-			</div>
-		</div>
-		<div class="row w_padtop">
-			<div class="col-sm-8 text-left w_bigger w_red">
-				<?=$message;?>
-			</div>
-			<div class="col-sm-4 text-right">
-				<button id="begin_button" type="submit" class="btn btn-primary btn-lg" style="font-size:3em;padding:20px;">BEGIN <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
-			</div>
-		</div>
-		</form>
-		<div style="display:none">
-			<div id="blank_more_content">
-				
-			</div>
-			<div id="sample_more_content">
-				
-			</div>
-			
-			<div  id="clone_more_content">
-				<div>
-					<label class="w_red">Website to clone (must be running WaSQL)</label>
-					<?=buildFormText('clone_url',array('required'=>1,'class'=>'form-control input-lg'));?>
-				</div>
-				<div>
-					<label class="w_red">Username (must be an admin)</label>
-					<?=buildFormText('clone_un',array('required'=>1,'class'=>'form-control input-lg'));?>
-				</div>
-				<div>
-					<label class="w_red">Password</label>
-					<?=buildFormPassword('clone_pw',array('required'=>1,'class'=>'form-control input-lg'));?>
+			<div class="col-sm-4">
+				<div class="panel panel-success">
+					<div class="panel-heading w_bold w_biggest"><span class="icon-clone"></span> Clone an existing website</div>
+  					<div class="panel-body">
+						<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
+							<input type="hidden" name="starttype" value="clone">
+							<div>
+								<label class="w_red">Website to clone (must be running WaSQL)</label>
+								<?=buildFormText('clone_url',array('required'=>1,'class'=>'form-control input-lg'));?>
+							</div>
+							<div>
+								<label class="w_red">Username (must be an admin)</label>
+								<?=buildFormText('clone_un',array('required'=>1,'class'=>'form-control input-lg'));?>
+							</div>
+							<div>
+								<label class="w_red">Password</label>
+								<?=buildFormPassword('clone_pw',array('required'=>1,'class'=>'form-control input-lg'));?>
+							</div>
+							<div class="text-right w_padtop">
+								<button id="begin_button" type="submit" class="btn btn-success btn-lg">Clone <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -117,7 +87,17 @@
 </html>
 </view:default>
 
-
+<view:template>
+<div style="float:left;margin-right:15px;margin-bottom:15px;width:200px;height:260px;" class="well">
+	<label for="starttype_<?=$template['nameonly'];?>"><img src="/?showimage=<?=base64_encode($template['afile']);?>" class="img img-responsive img-thumbnail" /></label>
+	<div class="text-center w_padtop">
+		<input type="radio" id="starttype_<?=$template['nameonly'];?>" name="starttype" _required="1" requiredmsg="Pick a Template First" data-type="checkbox" value="<?=$template['nameonly'];?>" style="display:none" <?=setupTypeChecked($template['nameonly']);?> /> 
+		<label for="starttype_<?=$template['nameonly'];?>" class="icon-mark" style="font-size:1.3em;vertical-align:top;"></label>
+		<label for="starttype_<?=$template['nameonly'];?>"><?=ucfirst($template['nameonly']);?></label>
+	</div>
+	<div class="w_padtop text-left"><?=setupGetDescription($template['afile']);?></div>
+</div>
+</view:template>
 
 
 

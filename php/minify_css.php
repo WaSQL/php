@@ -24,6 +24,25 @@ foreach($_REQUEST as $key=>$val){
 	$minify_string=$key;
 	break;
 }
+if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
+	$_SESSION['w_MINIFY']['extras_css']=array();
+}
+//check for framework:  bootstrap, materialize, foundation are supported
+if(isset($_REQUEST['_minify_'])){
+	$parts=preg_split('/\_/',$_REQUEST['_minify_'],2);
+	if($parts[0]=='bootstrap'){
+		$parts[0]='bootstrap/css/bootstrap';
+	}
+	if(!in_array($parts[0],$_SESSION['w_MINIFY']['extras_css'])){
+        $_SESSION['w_MINIFY']['extras_css'][]=$parts[0];
+	}
+}
+elseif(isset($_REQUEST['bootstrap'])){
+	$extra='bootstrap/css/bootstrap';
+	if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        $_SESSION['w_MINIFY']['extras_css'][]=$extra;
+	}
+}
 //echo $minify_string.printValue($_SERVER);exit;
 global $filename;
 $filename='minify';
@@ -63,16 +82,7 @@ $files=array();
 //add wasql CSS file
 minifyFiles($csspath,'wasql');
 minifyFiles($csspath,'wasql_icons');
-//check for ?bootstrap
-if(isset($_REQUEST['bootstrap'])){
-	$extra='bootstrap/css/bootstrap';
-	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
-    	$_SESSION['w_MINIFY']['extras_css']=array();
-	}
-	if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
-        $_SESSION['w_MINIFY']['extras_css'][]=$extra;
-	}
-}
+//echo printValue($parts).printValue($_REQUEST).printValue($_SESSION['w_MINIFY']);exit;
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY']['extras_css'])){
 	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
@@ -86,6 +96,7 @@ if(isset($_SESSION['w_MINIFY']['cssfiles']) && is_array($_SESSION['w_MINIFY']['c
 	}
 	$filename.='F'.count($_SESSION['w_MINIFY']['cssfiles']);
 }
+//echo printValue($files);exit;
 //include files and set the lastmodifiedtime of any file
 global $csslines;
 global $pre_csslines;
@@ -104,14 +115,15 @@ foreach($files as $file){
 		minifyLines($content);
 		continue;
 	}
-	$afile=realpath($file);
-	$mtime=filemtime($afile);
-	if(!strlen($lastmodifiedtime) || $mtime > $lastmodifiedtime){$lastmodifiedtime=$mtime;}
-	$afile=realpath($file);
-	if(!is_file($afile)){continue;}
-	$lines=file($afile);
+	if(!is_file($file)){
+		echo "/* Minify_css Error: NO SUCH FILE:{$file} */".PHP_EOL.PHP_EOL;
+		continue;
+	}
+	$lines=file($file);
+	//$cnt=count($lines);
+	//echo "/* Minify_css File:{$file}  LineCnt:{$cnt} */".PHP_EOL.PHP_EOL;
 	if(is_array($lines)){
-		$fname=getFileName($afile);
+		$fname=getFileName($file);
 		$conditionals=1;
 		if(stringContains($file,'extras') && !stringContains($fname,'extras')){
 			$fname="extras/{$fname}";
@@ -119,11 +131,12 @@ foreach($files as $file){
 		if(stringEndsWith($file,'.min.css')){
 			$conditionals=0;
 		}
-		if($CONFIG['minify_css'] != 1){
 		$csslines[]= "\r\n/* BEGIN {$fname} */\r\n";
-		}
 		$loaded[]=$fname;
     	minifyLines($lines,$conditionals);
+	}
+	else{
+		echo "/* Minify_css Error: NO FILE LINES:{$file} */".PHP_EOL.PHP_EOL;
 	}
 }
 //load the template, includepages, and page
@@ -135,9 +148,7 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
 		$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
-		if($CONFIG['minify_css'] != 1){
 		$csslines[] = "\r\n/* BEGIN _templates {$field} */\r\n";
-		}
 		$loaded[]="_templates {$field}";
 		minifyLines($content);
 	}
@@ -146,9 +157,7 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
-			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN _templates {$field2} */\r\n";
-			}
 			$loaded[]="_templates {$field2}";
 			minifyLines($content);
 		}
@@ -160,9 +169,7 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
 		$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
-		if($CONFIG['minify_css'] != 1){
 		$csslines[] = "\r\n/* BEGIN _pages {$field} */\r\n";
-		}
 		$loaded[]="_pages {$field}";
 		minifyLines($content);
 	}
@@ -171,9 +178,7 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
 			$filename.='T'.$_SESSION['w_MINIFY']['page_id'];
-			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN _pages {$field2} */\r\n";
-			}
 			$loaded[]="_pages {$field2}";
 			minifyLines($content);
 		}
@@ -186,9 +191,7 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
 			$filename.='P'.$id;
-			if($CONFIG['minify_css'] != 1){
 			$csslines[] = "\r\n/* BEGIN includepages {$field} for {$rec['name']} page */\r\n";
-			}
 			$loaded[]="includepages {$field} for {$rec['name']} page";
 			minifyLines($content);
 		}
@@ -197,38 +200,19 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 			$content=evalPHP($rec[$field2]);
 			if(strlen(trim($content)) > 10){
 				$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
-				if($CONFIG['minify_css'] != 1){
 				$csslines[] = "\r\n/* BEGIN includepages {$field2} for {$rec['name']} page */\r\n";
-				}
 				$loaded[]="includepages {$field} for {$rec['name']} page";
 				minifyLines($content);
 			}
 		}
 	}
 }
-if($CONFIG['minify_css'] != 1){
-$csslines[]= "\r\n/* END Minify {$filename}.css */\r\n";
-}
 //show loaded list
 $sessionid=session_id();
-if($CONFIG['minify_css'] != 1){
-	echo "/* Session ID: {$sessionid} */".PHP_EOL;
-	echo "/* Loaded CSS Files: */".PHP_EOL;
-	foreach($loaded as $name){
-		echo "/* 	 - {$name} */".PHP_EOL;
-	}
-	echo PHP_EOL.PHP_EOL;
-}
-
 //
 if(count($pre_csslines)){
-	if($CONFIG['minify_css'] != 1){
 	echo "/* Begin Imports - must be at the top */\r\n";
-	}
 	echo implode("\r\n",$pre_csslines);
-	if($CONFIG['minify_css'] != 1){
-	echo "\r\n/* End Imports */\r\n\r\n";
-	}
 }
 echo implode("\r\n",$csslines);
 ob_end_flush();
@@ -237,6 +221,7 @@ function minifyFiles($path,$names){
 	global $files;
 	global $CONFIG;
 	if(!is_array($names)){$names=array($names);}
+	//echo $path.implode(',',$names).PHP_EOL;return;
 	foreach($names as $name){
 		//automatically create minified versions if they do not exist - localhost only
 		if($_SERVER['UNIQUE_HOST']=='localhost' && !stringEndsWith($name,'.min') && !is_file("{$path}/{$name}.min.css") && is_file("{$path}/{$name}.css")){
@@ -244,14 +229,21 @@ function minifyFiles($path,$names){
 			$mcode=minifyCode($code,'css');
 			setFileContents("{$path}/{$name}.min.css",$mcode);
 		}
+		if(preg_match('/^http/i',$name)){
+	     	//remote file - expire every week
+	     	$evalstr="return minifyGetExternal('{$name}');";
+			echo getStoredValue($evalstr,0,168);
+			continue;
+		}
 		if($CONFIG['minify_css'] && is_file("{$path}/{$name}.min.css")){
-			$file="{$path}/{$name}.min.css";
+			$file=realpath("{$path}/{$name}.min.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
 		elseif(is_file("{$path}/{$name}.css")){
-	    	$file="{$path}/{$name}.css";
+	    	$file=realpath("{$path}/{$name}.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
+		else{echo "/* Minify_css Error: NO SUCH NAME:{$name} */".PHP_EOL.PHP_EOL;}
 	}
 }
 

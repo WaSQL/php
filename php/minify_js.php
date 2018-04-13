@@ -18,6 +18,25 @@ include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
+if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
+	$_SESSION['w_MINIFY']['extras_js']=array();
+}
+//check for framework:  bootstrap, materialize, foundation are supported
+if(isset($_REQUEST['_minify_'])){
+	$parts=preg_split('/\_/',$_REQUEST['_minify_'],2);
+	switch(strtolower($parts[0])){
+		case 'uikit':
+		case 'kube':
+		case 'foundation':
+			//uikit and kube require jquery
+			$_SESSION['w_MINIFY']['extras_js'][]='jquery2';
+		break;
+	}
+	if(!in_array($parts[0],$_SESSION['w_MINIFY']['extras_js'])){
+        $_SESSION['w_MINIFY']['extras_js'][]=$parts[0];
+	}
+}
+//echo printValue($_SESSION['w_MINIFY']['extras_js']);exit;
 global $filename;
 $filename='minify';
 global $lastmodifiedtime;
@@ -60,25 +79,34 @@ $files=array();
 //add wasql js file
 minifyFiles($jspath,array('common','event','form','calendar','colorpicker'));
 //Get any extras
-if(isset($_SESSION['w_MINIFY']['extras_js']) && is_array($_SESSION['w_MINIFY']['extras_js'])){
-	foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
-		if($extra=='codemirror'){
-			minifyCodeMirrorFiles();
-		}
-		elseif($extra=='google'){
-			minifyGoogleFiles();
-		}
-		elseif(preg_match('/^app\:(.+)$/i',$extra,$m)){
-        	$app=strtolower($m[1]);
-        	/* --- /apps/chat/chat.css ---*/
-        	minifyFiles(realpath("{$appspath}/{$app}"),"{$app}.css");
-		}
-		else{
-			minifyFiles(realpath("{$jspath}/extras"),$extra);
-		}
-	}
-	$filename.='X'.count($_SESSION['w_MINIFY']['extras_js']);
+if(!isset($_SESSION['w_MINIFY']['extras_js']) || !is_array($_SESSION['w_MINIFY']['extras_js'])){
+	$_SESSION['w_MINIFY']['extras_js']=array();
 }
+//check for framework:  bootstrap, materialize, foundation are supported
+if(isset($_REQUEST['_minify_'])){
+	$parts=preg_split('/\_/',$_REQUEST['_minify_'],2);
+	if(!in_array($parts[0],$_SESSION['w_MINIFY']['extras_js'])){
+        $_SESSION['w_MINIFY']['extras_js'][]=$parts[0];
+	}
+}
+foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
+	if($extra=='codemirror'){
+		minifyCodeMirrorFiles();
+	}
+	elseif($extra=='google'){
+		minifyGoogleFiles();
+	}
+	elseif(preg_match('/^app\:(.+)$/i',$extra,$m)){
+		$app=strtolower($m[1]);
+		/* --- /apps/chat/chat.css ---*/
+		minifyFiles(realpath("{$appspath}/{$app}"),"{$app}.css");
+	}
+	else{
+		minifyFiles(realpath("{$jspath}/extras"),$extra);
+	}
+}
+$filename.='X'.count($_SESSION['w_MINIFY']['extras_js']);
+
 
 //Add any files in the $_SESSION['w_MINIFY']['jsfiles'] array
 if(isset($_SESSION['w_MINIFY']['jsfiles']) && is_array($_SESSION['w_MINIFY']['jsfiles'])){
@@ -344,7 +372,7 @@ if($_REQUEST['debug']==1 && is_array($_SESSION['w_MINIFY'])){
 		if(!is_array($val) && strlen($val) > 300){continue;}
 		$debug[$key]=$val;
 	}
-	echo '<hr size=1>$_SESSION[w_MINIFY]:'.printValue($debug);
+	//echo '<hr size=1>$_SESSION[w_MINIFY]:'.printValue($debug);
 }
 ob_end_flush();
 /* ------------ Functions needed ---------------- */
@@ -354,10 +382,8 @@ function minifyFiles($path,$names){
 	if(!is_array($names)){$names=array($names);}
 	foreach($names as $name){
 		//automatically create minified versions if they do not exist - localhost only
-		if($_SERVER['UNIQUE_HOST']=='localhost' && !stringEndsWith($name,'.min') && !is_file("{$path}/{$name}.min.js") && is_file("{$path}/{$name}.js")){
-			$code=getFileContents("{$path}/{$name}.js");
-			$mcode=minifyCode($code,'js');
-			setFileContents("{$path}/{$name}.min.js",$mcode);
+		if($_SERVER['UNIQUE_HOST']=='localhost' && !stringEndsWith($name,'.min') && !is_file("{$path}/{$name}.min.js") && is_file("{$path}/{$name}.js") && file_exists('d:/minifier/minifyme.php')){	
+			$out=cmdResults("php d:/minifier/minifyme.php \"{$path}/{$name}.js\"");
 		}
 		if(preg_match('/^http/i',$name)){
 	     	//remote file - expire every week
@@ -366,11 +392,11 @@ function minifyFiles($path,$names){
 			continue;
 		}
 		if($CONFIG['minify_js'] && is_file("{$path}/{$name}.min.js")){
-			$file="{$path}/{$name}.min.js";
+			$file=realpath("{$path}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
 		elseif(is_file("{$path}/{$name}.js")){
-	    	$file="{$path}/{$name}.js";
+	    	$file=realpath("{$path}/{$name}.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
 		elseif(strtolower($name)=='stripe'){

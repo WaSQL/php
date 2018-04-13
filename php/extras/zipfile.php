@@ -112,6 +112,69 @@ function zipExtract( $zipfile,$newpath=''){
     }
     return $rtn;
 }
+//---------- begin function zipPushFile ----------
+/**
+* @describe pushes a file within a zipfile
+* @param zipfile string - path and zipfile
+* @param filename string - filename inside of zip file to push
+* @usage
+*	<?php
+*	zipPushFile('/var/www/temp/myfiles.zip','sample.png');
+*	?>
+*/
+function zipPushFile($zip_file, $file_name) {
+	if (file_exists($zip_file)) {
+		$zip = zip_open($zip_file);
+		while ($zip_entry = zip_read($zip)) {
+			if (zip_entry_open($zip, $zip_entry, "r")) {
+				if (zip_entry_name($zip_entry) == $file_name) {
+					$ctype=getFileContentType($file_name);
+					$size=zip_entry_filesize($zip_entry);
+					header("Content-Type: {$ctype}");
+					header("Content-length: {$size}");
+					echo zip_entry_read($zip_entry, $size);
+					zip_entry_close($zip_entry);
+					exit;
+				}
+			}
+		}
+		zip_close($zip);
+		echo "zipPushFile Error: {$file_name} does not exist in {$zip_file}".PHP_EOL;
+	}
+	else{
+		echo "zipPushFile Error: {$zip_file} does not exist".PHP_EOL;
+	}
+	exit;
+}
+//---------- begin function zipGetFileContents ----------
+/**
+* @describe return the contents of a file within a zipfile
+* @param zipfile string - path and zipfile
+* @param filename string - filename inside of zip file to push
+* @return mixed
+* @usage
+*	<?=zipGetFileContents('/var/www/temp/myfiles.zip','description.txt');?>
+*/
+function zipGetFileContents($zip_file, $file_name) {
+	$content='';
+	if (file_exists($zip_file)) {
+		$zip = zip_open($zip_file);
+		while ($zip_entry = zip_read($zip)) {
+			if (zip_entry_open($zip, $zip_entry, "r")) {
+				if (zip_entry_name($zip_entry) == $file_name) {
+					$ctype=getFileContentType($file_name);
+					$size=zip_entry_filesize($zip_entry);
+					$content=zip_entry_read($zip_entry, $size);
+					zip_entry_close($zip_entry);
+					break;
+				}
+			}
+		}
+		zip_close($zip);
+	}
+	return $content;
+}
+
 //---------- begin function zipListFiles ----------
 /**
 * @describe returns a list of files found in zip file

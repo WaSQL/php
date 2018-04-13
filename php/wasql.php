@@ -663,16 +663,20 @@ function minifyFilename($ext=''){
 *      - bbarten 2013-10-24 added documentation
 */
 function minifyCssFile($v=''){
-	global $PAGE;
-	$name=sha1($PAGE['name']);
-	return "/php/minify_css{$v}.php?".minifyFilename();
-	//
-	$phpdir=dirname(__FILE__);
-	$file=minifyFilename('css');
-	if(!strlen($file)){return "/php/minify_css.php";}
-	$afile="{$phpdir}/minify/{$file}";
-	if(!is_file($afile)){return "/php/minify_css.php";}
-	return "/php/minify/".minifyFilename('css');
+	$mfn=minifyFilename();
+	$v=strtolower($v);
+	switch($v){
+		case 'bootstrap':
+		case 'materialize':
+		case 'foundation':
+		case 'kube':
+		case 'uikit':
+			return "/minify_{$v}_{$mfn}.css";
+		break;
+		default:
+			return "/php/minify_css{$v}.php?{$mfn}";
+		break;
+	}
 }
 //---------- begin function minifyJsFile ----
 /**
@@ -688,16 +692,20 @@ function minifyCssFile($v=''){
 *	bbarten 2013-10-24 added documentation
 */
 function minifyJsFile($v=''){
-	global $PAGE;
-	$name=sha1($PAGE['name']);
-	return "/php/minify_js{$v}.php?".minifyFilename();
-	//
-	$phpdir=dirname(__FILE__);
-	$file=minifyFilename('js');
-	if(!strlen($file)){return "/php/minify_js.php";}
-	$afile="{$phpdir}/minify/{$file}";
-	if(!is_file($afile)){return "/php/minify_js.php";}
-	return "/php/minify/".minifyFilename('js');
+	$mfn=minifyFilename();
+	$v=strtolower($v);
+	switch($v){
+		case 'bootstrap':
+		case 'materialize':
+		case 'foundation':
+		case 'kube':
+		case 'uikit':
+			return "/minify_{$v}_{$mfn}.js";
+		break;
+		default:
+			return "/php/minify_js{$v}.php?{$mfn}";
+		break;
+	}
 }
 //---------- begin function wasqlSetMinify
 /**
@@ -771,11 +779,10 @@ function wasqlSetMinify($backend=0){
 		loadExtrasJs('facebook_login');
 		$_SESSION['facebook_email']=$USER['facebook_email'];
 		$_SESSION['facebook_id']=$USER['facebook_id'];
-	}
-	//bootstrap for everyone
-	loadExtrasCss(array('bootstrap','dropdown'));
+	}	
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
+		loadExtrasCss(array('bootstrap','dropdown'));
 		loadExtrasCss(array('alertify','nicedit','codemirror','admin','accordian','dropdown','socialbuttons','treeview'));
 		loadExtrasJs(array('alertify','html5','nicedit','codemirror'));
 		loadExtras('system');
