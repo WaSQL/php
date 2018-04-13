@@ -12,6 +12,15 @@ $progpath=dirname(__FILE__);
 date_default_timezone_set('America/Denver');
 //includes
 include_once("$progpath/common.php");
+//check for minify redirect
+if(preg_match('/^minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
+	header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
+	exit;
+}
+if(preg_match('/^minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
+	header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
+	exit;
+}
 //check for special user login path
 $url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
 //echo printValue($_SERVER);exit;
@@ -31,6 +40,7 @@ elseif($url_parts[0]=='t'){
 	$_REQUEST['_view']=implode('/',$url_parts);
 	//echo printValue($_REQUEST['_view']);exit;
 }
+echo printValue($_SERVER).printValue($_REQUEST);exit;
 global $CONFIG;
 include_once("$progpath/config.php");
 //changes based on config

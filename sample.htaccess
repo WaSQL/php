@@ -25,7 +25,5 @@ RewriteCond %{REQUEST_FILENAME} !-d
 #ignore server-status requests
 RewriteCond %{REQUEST_URI} !=/server-status
 #pass everything else to WaSQL
-RewriteRule ^minify\_(.*).css$ /php/minify_css.php?_minify_=$1 [L,QSA]
-RewriteRule ^minify\_(.*).js$ /php/minify_js.php?_minify_=$1 [L,QSA]
 RewriteRule ^(.*)$ /php/index.php?_view=$1 [L,QSA]
 RewriteRule ^$ /php/index.php?_view=index [L,QSA]
