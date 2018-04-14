@@ -100,7 +100,7 @@ if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
 }
 //check for url_eval
 if(isset($CONFIG['url_eval'])){
-	$out=includePage($CONFIG['url_eval'],$_REQUEST);
+	$out=includePage($CONFIG['url_eval'],array());
 	//echo "HERE".$out;exit;
 	
 }
