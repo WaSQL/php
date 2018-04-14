@@ -59,6 +59,7 @@
 			cronlog_max - number of days to keep cronlog records - default is 365 days
 			backup_command - command to backup database - defaults to mysqldump
 			mysql_command - command to import database - defaults to mysql
+			url_eval - page name to eval before processing.  This gives you control to modify the $_REQUEST variable. etc.. _view should be set to the page name.
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost

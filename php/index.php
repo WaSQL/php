@@ -98,6 +98,12 @@ else{
 if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
 	@header('X-XSS-Protection: 1; mode=block');
 }
+//check for url_eval
+if(isset($CONFIG['url_eval'])){
+	$out=includePage($CONFIG['url_eval'],$_REQUEST);
+	//echo "HERE".$out;exit;
+	
+}
 //X-Content-Type-Options
 @header('X-Content-Type-Options: nosniff');
 //check for valid_hosts in CONFIG settings and reject if needed
