@@ -1,4 +1,5 @@
 <?php
+$starttime=time();
 //Set upload size
 //Set Post Max Size
 ini_set('POST_MAX_SIZE', '64M');
@@ -100,9 +101,7 @@ if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
 }
 //check for url_eval
 if(isset($CONFIG['url_eval'])){
-	$out=includePage($CONFIG['url_eval'],array());
-	//echo "HERE".$out;exit;
-	
+	$out=includePage($CONFIG['url_eval'],array());	
 }
 //X-Content-Type-Options
 @header('X-Content-Type-Options: nosniff');
@@ -288,7 +287,7 @@ if(isset($CONFIG['maintenance']) && strlen($CONFIG['maintenance'])){
 }
 //Check for xml posts and parse them out...
 unset($xmlpost);
-if(isset($GLOBALS['HTTP_RAW_POST_DATA']) && strlen($GLOBALS['HTTP_RAW_POST_DATA']) && preg_match('/^\<\?xml /i',trim($GLOBALS['HTTP_RAW_POST_DATA']))){
+if(isset($GLOBALS['HTTP_RAW_POST_DATA']) && strlen($GLOBALS['HTTP_RAW_POST_DATA']) && preg_match('/^\<\?xml\ /i',trim($GLOBALS['HTTP_RAW_POST_DATA']))){
 	$xmlpost=trim($GLOBALS['HTTP_RAW_POST_DATA']);
 }
 elseif(isset($_REQUEST['xml']) && strlen($_REQUEST['xml']) && preg_match('/^\<\?xml /i',trim($_REQUEST['xml']))){
@@ -301,6 +300,7 @@ if(isset($xmlpost)){
     $_REQUEST['_xmlrequest_array']=xml2Array($xmlpost);
     $_REQUEST['_xmlrequest_raw']=$xmlpost;
 }
+
 //remind Me Form?
 if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['email'])){
 	if(!isEmail($_REQUEST['email'])){
