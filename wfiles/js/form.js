@@ -1639,6 +1639,16 @@ function submitForm(theForm,popup,debug,ajax){
 		            return false;
 				}
 			}
+			else if(theForm[i].type=='select-one'){
+            	var cval=theForm[i].options[theForm[i].selectedIndex].value;
+            	if(cval.length==0){
+                	var msg=dname+" is required";
+		            if(undefined != requiredmsg){msg=requiredmsg;}
+				 	submitFormAlert(msg,popup,5);
+		            theForm[i].focus();
+		            return false;
+				}
+			}
 			else if(theForm[i].value == ''){
 	            var msg=dname+" is required";
 	            if(undefined != requiredmsg){msg=requiredmsg;}
