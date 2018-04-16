@@ -12293,9 +12293,11 @@ function readRSS($url,$hrs=3,$force=0){
 	$channel['link']        = (string)$xml->channel->link;
 	$channel['description'] = (string)$xml->channel->description;
 	$channel['pubDate']     = (string)$xml->pubDate;
+	if(!strlen($channel['pubDate'])){$channel['pubDate']     = (string)$xml->channel->pubDate;}
 	if(strlen($channel['pubDate'])){$channel['pubDate_utime']=strtotime($channel['pubDate']);}
 	$channel['generator']   = (string)$xml->generator;
 	$channel['language']    = (string)$xml->language;
+	if(!strlen($channel['language'])){$channel['language']     = (string)$xml->channel->language;}
 	// step 3: extract the articles
 	foreach ($xml->channel->item as $item){
         $article = array();
