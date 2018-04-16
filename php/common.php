@@ -12296,6 +12296,7 @@ function readRSS($url,$hrs=3,$force=0){
 	if(!strlen($channel['pubDate'])){$channel['pubDate']     = (string)$xml->channel->pubDate;}
 	if(strlen($channel['pubDate'])){$channel['pubDate_utime']=strtotime($channel['pubDate']);}
 	$channel['generator']   = (string)$xml->generator;
+	if(!strlen($channel['generator'])){$channel['generator']     = (string)$xml->channel->generator;}
 	$channel['language']    = (string)$xml->language;
 	if(!strlen($channel['language'])){$channel['language']     = (string)$xml->channel->language;}
 	// step 3: extract the articles
