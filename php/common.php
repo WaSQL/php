@@ -12262,6 +12262,7 @@ function readRSS($url,$hrs=3,$force=0){
 	$channel['language']    = (string)$xml->language;
 	if(!strlen($channel['language'])){$channel['language']     = (string)$xml->channel->language;}
 	// step 3: extract the articles
+	$articles=array();
 	foreach ($xml->channel->item as $item){
         $article = array();
         foreach($item as $citem=>$cval){
