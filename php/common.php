@@ -12223,46 +12223,8 @@ function readRSS($url,$hrs=3,$force=0){
 	//set error string to blank
 	$rss_log='';
 	$results=array('feed'=>$url,'hrs'=>$hrs,'force'=>$force);
-	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
-	$progpath=dirname(__FILE__);
-	buildDir("{$progpath}/temp");
-	$local="{$progpath}/temp/readRSS_" . md5($url) . '.xml';
-	$results['file']=$local;
-	if($force && file_exists($local)){unlink($local);}
-    if(file_exists($local) && filesize($local)){
-		$results['feedDate_utime']=filectime($local);
-		/* Use the local file if it is less than 3 hours old */
-		$results['file_hrs'] = intval((time() - $results['feedDate_utime'])/60/60);
-        if ($results['file_hrs'] < $hrs){
-			$url=$local;
-		}
-    }
-    $results['file_src']=$url;
-	if($local != $url){
-		if(function_exists('curl_init')){
-			$ch=curl_init($url);
-			if(file_exists($local)){unlink($local);}
-			$fp = fopen($local, "w");
-			curl_setopt($ch, CURLOPT_FILE, $fp);
-			curl_setopt($ch, CURLOPT_HEADER, 0);
-			if(!curl_exec($ch)){return "Error connecting to $url";}
-			curl_close($ch);
-			fclose($fp);
-			if(!file_exists($local)){
-				$results['error']= "rss2Xml Curl Error opening file";
-				return $results;
-				}
-			$results['feedDate_utime']=time();
-			$url=$local;
-		}
-		else{
-			$results['error']= "Curl is not supported";
-			return $results;
-		}
-	}
-	$articles = array();
-	// step 1: get the feed
-	$lines=file($url);
+	$post=getStoredValue("return postURL('{$url}',array('-method'=>'GET'));",$force,$hrs);
+	$lines=preg_split('/[\r\n]+/',$post['body']);
 	//fix malformed & in links, etc
 	foreach($lines as $i=>$line){
 		$lines[$i]=str_replace('&amp;','[[[amp]]]',$lines[$i]);
