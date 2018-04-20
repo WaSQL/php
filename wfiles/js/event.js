@@ -1294,6 +1294,17 @@ function initBehaviors(ajaxdiv){
 			/* EDITOR: XMLEditor */
 			codemirrorTextEditor(navEls[n],{name: "xml", alignCDATA: true},'xmleditor');
 		}
+		if(in_array("tab_enable",behaviors)){
+			/* Enable tabs - */
+			navEls[n].onkeydown = function(e){
+				if(e.keyCode==9 || e.which==9){
+					e.preventDefault();
+					var s = this.selectionStart;
+					this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+					this.selectionEnd = s+1; 
+				}
+			}
+		}
 		if(in_array("zoom",behaviors)){
 			/*zoom - optional attributes:  data-zoomsrc, id, data-zoomalwaysshow */
 			if(undefined == navEls[n].getAttribute('id')){
