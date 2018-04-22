@@ -29,6 +29,10 @@ include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
+//check for url_eval
+if(isset($CONFIG['admin_eval'])){
+	$out=includePage($CONFIG['admin_eval'],array());	
+}
 global $USER;
 include_once("$progpath/user.php");
 global $wtables;

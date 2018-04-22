@@ -127,7 +127,15 @@ function sqliteIsDBTable($table,$params=array()){
 		return null;
 	}
 	try{
+		//check for dbname.tablename
+		$parts=preg_split('/\./',$table,2);
+		if(count($parts)==2){
+			$query="SELECT name FROM {$parts[0]}.sqlite_master WHERE type='table' and name = ?";
+			$table=$parts[1];
+		}
+		else{
 		$query="SELECT name FROM sqlite_master WHERE type='table' and name = ?";
+		}
 		$vals=array($table);
 		$stmt=$dbh_sqlite->prepare($query);
 		if(!$stmt){
@@ -217,6 +225,7 @@ function sqliteExecuteSQL($query,$params=array()){
 * @usage $id=sqliteAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function sqliteAddDBRecord($params){
+	//echo "sqliteAddDBRecord".printValue($params);exit;
 	global $USER;
 	if(!isset($params['-table'])){return 'sqliteAddRecord error: No table specified.';}
 	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
@@ -472,7 +481,14 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
     	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
     	return;
 	}
+	//check for dbname.tablename
+	$parts=preg_split('/\./',$tablename,2);
+	if(count($parts)==2){
+		$query="PRAGMA {$parts[0]}.table_info({$parts[1]})";	
+	}
+	else{
 	$query="PRAGMA table_info({$tablename})";
+	}
 	try{
 		$results=$dbh_sqlite->query($query);
 		$recs=array();
@@ -491,8 +507,11 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 			if(isset($params['-field']) && strlen($params['-field'])){
 				$metaopts['fieldname']=$params['-field'];
 			}
+			if(count($parts)==2){
+				$metaopts['-table']="{$parts[0]}._fielddata";
+				$metaopts['tablename']=$parts[1];
+			}
 			$meta_recs=getDBRecords($metaopts);
-			//echo $tablename.printValue($meta_recs);
 			if(is_array($meta_recs)){
 				foreach($meta_recs as $meta_rec){
 					$name=$meta_rec['fieldname'];
