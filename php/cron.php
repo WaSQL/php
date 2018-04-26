@@ -209,13 +209,13 @@ ENDOFWHERE;
 				}
 				//echo $url.printValue($postopts);
             	$post=postURL($url,$postopts);
-            	$result=$post['body'];
+            	$result.=$post['body'];
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
             	cronMessage("cron is a PHP command");
                  $result .= 'CronType: PHP '.PHP_EOL;
-            	$result=evalPHP($cmd);
+            	$result.=evalPHP($cmd);
             	if(is_array($result)){$result=printValue($result);}
 			}
 			elseif(preg_match('/^http/i',$cmd)){
@@ -223,7 +223,7 @@ ENDOFWHERE;
                  $result .= 'CronType: URL '.PHP_EOL;
             	cronMessage("cron is a url");
             	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
-				$result = $post['body'];
+				$result .= $post['body'];
 			}
 			else{
             	//cron is a command
@@ -231,7 +231,7 @@ ENDOFWHERE;
                  $result .= 'CronType: command '.PHP_EOL;
             	$cmd=cmdResults($cmd);
             	if(isset($cmd['stdout']) && strlen($cmd['stdout'])){
-            		$result=$cmd['stdout'];
+            		$result.=$cmd['stdout'];
 				}
 			}
 			$stop=time();
