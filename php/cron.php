@@ -83,6 +83,7 @@ $wherestr=<<<ENDOFWHERE
 active=1 and running != 1 and run_cmd is not null
 	and (date(begin_date) >= date(now()) or begin_date is null)
 	and (date(end_date) <= date(now()) or end_date is null)
+    and (run_date < date_sub(now(), interval 1 minute) or run_date is null)
 ENDOFWHERE;
 	$recopts=array(
 		'-table'	=> '_cron',
@@ -93,10 +94,10 @@ ENDOFWHERE;
 	$cronfields=getDBFields('_cron');
 	if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 	$recs=getDBRecords($recopts);
-	//echo printValue($recs);exit;
+	
 	if(is_array($recs) && count($recs)){
 		$cnt=count($recs);
-		//cronMessage("{$cnt} crons found. Checking...");
+		cronMessage("{$cnt} crons found. Checking...");
 		foreach($recs as $rec){
 			$run=0;
 			//should this cron be run now?  check frequency...
@@ -117,7 +118,7 @@ ENDOFWHERE;
 				$cvalue=date($rec['run_format']);
 				$values=preg_split('/\,/',$rec['run_values']);
 				foreach($values as $value){
-					//echo "cron name:{$rec['name']} run value:{$value}, current value:{$cvalue}<br>\n";
+					cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
                 	if($cvalue==$value){$run=1;break;}
 				}
 
@@ -185,8 +186,10 @@ ENDOFWHERE;
 			cronMessage("running {$rec['name']}");
         	$cmd=$rec['run_cmd'];
         	$result='';
+			$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL;
 			if(isset($pages[$cmd])){
 				cronMessage("cron is a page");
+                $result .= 'CronType: page '.PHP_EOL;
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
             	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID());
@@ -211,11 +214,13 @@ ENDOFWHERE;
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
             	cronMessage("cron is a PHP command");
+                 $result .= 'CronType: PHP '.PHP_EOL;
             	$result=evalPHP($cmd);
             	if(is_array($result)){$result=printValue($result);}
 			}
 			elseif(preg_match('/^http/i',$cmd)){
             	//cron is a URL.
+                 $result .= 'CronType: URL '.PHP_EOL;
             	cronMessage("cron is a url");
             	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
 				$result = $post['body'];
@@ -223,6 +228,7 @@ ENDOFWHERE;
 			else{
             	//cron is a command
             	cronMessage("cron is a command");
+                 $result .= 'CronType: command '.PHP_EOL;
             	$cmd=cmdResults($cmd);
             	if(isset($cmd['stdout']) && strlen($cmd['stdout'])){
             		$result=$cmd['stdout'];
@@ -230,6 +236,8 @@ ENDOFWHERE;
 			}
 			$stop=time();
 			$run_length=$stop-$start;
+            $result .= PHP_EOL;
+            $result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
 			//update record to show wer are now finished
 			$ok=cronUpdate($rec['_id'],array(
 				'running'		=> 0,
@@ -256,6 +264,9 @@ ENDOFWHERE;
 			cronMessage("finished");
 			exit;
 		}
+	}
+	else{
+        cronMessage("No crons found.");
 	}
 }
 exit;
