@@ -200,7 +200,7 @@ function postEditCleanDir($dir='') {
 			//skip files and dirs that start with a dot.
 			if(stringBeginsWith($file,'.')){continue;}
 			//skip the README.md file.
-			if($file == "README.md"){continue;}
+			if(strtolower($file) == 'readme.md'){continue;}
 			$afile="{$dir}/{$file}";
 			if(is_dir($afile)){
 				postEditCleanDir($afile);
