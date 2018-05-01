@@ -192,6 +192,7 @@ ENDOFWHERE;
                 $result .= 'CronType: page '.PHP_EOL;
             	//cron is a page.
             	$url="http://{$CONFIG['name']}/{$cmd}";
+                $result .= "CronURL: {$url}".PHP_EOL;
             	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID());
             	//if they have specified a run_as then login as that person
             	if(isset($rec['run_as']) && isNum($rec['run_as'])){
@@ -209,7 +210,7 @@ ENDOFWHERE;
 				}
 				//echo $url.printValue($postopts);
             	$post=postURL($url,$postopts);
-            	$result.=$post['body'];
+            	$result.=printValue($post);
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
