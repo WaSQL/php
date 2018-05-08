@@ -12205,7 +12205,7 @@ function pushFile($file='',$params=array()){
     readfile($file);
     exit;
 	}
-//---------- begin function readRSS---------------------------------------
+//---------- begin---------------------------------------
 /**
 * @describe reads an RSS feed into an array and returns the array
 * @param $url string
@@ -12252,6 +12252,7 @@ function readRSS($url,$hrs=3,$force=0){
     $results['feedDate']=date('D F j,Y g:i a',$results['feedDate_utime']);
 	// define the namespaces that we are interested in
 	$ns = $xml->getNamespaces(true);
+	//echo printValue($ns);exit;
 	// step 2: extract the channel metadata
 	$channel = array();
 	$channel['title']       = (string)$xml->channel->title;
@@ -12270,39 +12271,32 @@ function readRSS($url,$hrs=3,$force=0){
         $article = array();
         foreach($item as $citem=>$cval){
 			$key=(string)$citem;
-			if(isNum((string)$cval)){$article[$key]=(real)$cval;}
-			else{$article[$key]=removeCdata((string)$cval);}
+			if(isset($article[$key])){continue;}
+            if(isNum((string)$cval)){$v=(real)$cval;}
+			else{$v=removeCdata((string)$cval);}
+			if(strlen($v)){$article[$key]=$v;}
 		}
 		//check for itunes elements -- https://stackoverflow.com/questions/11612712/reading-itunes-xml-file-with-php-dom-method
-		$itunes = $item->children('http://www.itunes.com/dtds/podcast-1.0.dtd');
-		foreach($itunes as $ik=>$iv){
-			$ik=(string)$ik;
-			if(isset($article[$ik])){continue;}
-			if(isNum((string)$iv)){$article[$ik]=(real)$iv;}
-			else{$article[$ik]=removeCdata((string)$iv);}
+		//get values from all the namespaces
+		foreach($ns as $nsk=>$nsurl){
+			$nsitems = $item->children($nsurl);
+			foreach($nsitems as $nsitemkey=>$nsitemval){
+				$nsitemkey=(string)$nsitemkey;
+                if(isset($article[$nsitemkey])){continue;}
+				if(isNum((string)$nsitemval)){$v=(real)$nsitemval;}
+				else{$v=removeCdata((string)$nsitemval);}
+				if(strlen($v)){$article[$nsitemkey]=$v;}
+				else{
+					//get attributes
+					$attribs=(array)$nsitemval->attributes();
+					$attribs=(array)$attribs['@attributes'];
+					foreach($attribs as $ak=>$av){
+						$article["{$nsk}_{$nsitemkey}_{$ak}"]=$av;
+					}
+				}
+			}
 		}
         if(strlen($article['pubDate'])){$article['pubDate_utime']=strtotime($article['pubDate']);}
-        // get data held in content namespace
-        $content = $item->children($ns['content']);
-        foreach($content as $citem=>$cval){
-			$key=(string)$citem;
-			if(isNum((string)$cval)){$article[$key]=(real)$cval;}
-			else{$article[$key]=removeCdata((string)$cval);}
-			}
-		// get data held in dc namespace
-        $dc      = $item->children($ns['dc']);
-		foreach($dc as $citem=>$cval){
-			$key=(string)$citem;
-			if(isNum((string)$cval)){$article[$key]=(real)$cval;}
-			else{$article[$key]=removeCdata((string)$cval);}
-			}
-		// get data held in wfw namespace
-        $wfw     = $item->children($ns['wfw']);
-		foreach($wfw as $citem=>$cval){
-			$key=(string)$citem;
-			if(isNum((string)$cval)){$article[$key]=(real)$cval;}
-			else{$article[$key]=removeCdata((string)$cval);}
-			}
         // add this article to the list
         array_push($articles,$article);
 		}
