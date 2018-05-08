@@ -13410,15 +13410,18 @@ function verboseTime($num=0,$notate=0,$nosecs=0) {
 	$sec=intval($num);
 	$string='';
 	if($notate){
+        if(!$hrs){$hrs='00';}
 		if(!$min){$min='00';}
 		if(!$sec){$sec='00';}
-		$string .= "{$min}:{$sec}";
-		if($hrs){$string = "{$hrs}:{$string}";}
+		if(strlen($hrs)==1){$hrs="0{$hrs}";}
+        if(strlen($min)==1){$min="0{$min}";}
+        if(strlen($sec)==1){$sec="0{$sec}";}
+		$string .= "{$hrs}:{$min}:{$sec}";
 		if($days){$string = "{$days}d {$string}";}
 		if($months){$string = "{$months}m {$string}";}
 		if($years){$string = "{$years}y {$string}";}
 		return $string;
-    	}
+    }
 	if($years){$string .= $years . ' yrs ';}
 	if(isset($months)){$string .= $months . ' months ';}
 	if($days){$string .= $days . ' days ';}
