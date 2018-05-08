@@ -41,6 +41,9 @@
 		break;
 		default:
 			$tables=getDBTables();
+			if(!isset($_SESSION['php_full']) || !strlen($_SESSION['php_full'])){
+                $_SESSION['php_full']='<?'.'php'.PHP_EOL.PHP_EOL.'?'.'>'.PHP_EOL;
+			}
 			setView('default',1);
 		break;
 	}
