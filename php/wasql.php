@@ -637,6 +637,15 @@ function minifyFilename($ext=''){
 	$filename='M'.encodeCRC(implode('',$parts));
 	$filename .= 'P'.$PAGE['_id'];
 	$filename .= 'T'.$TEMPLATE['_id'];
+    //add includePage calls
+	preg_match_all('/includePage\((.+?)\)/',$TEMPLATE['body'],$m);
+	if(isset($m[1][0])){
+		$filename .= 'TI'.encodeCRC(implode(',',$m[1]));;
+	}
+    preg_match_all('/includePage\((.+?)\)/',$PAGE['body'],$m);
+	if(isset($m[1][0])){
+		$filename .= 'PI'.encodeCRC(implode(',',$m[1]));;
+	}
 	if(isAjax()){$filename .= 'A';}
 	$rec=getDBRecord(array('-table'=>"_minify",'name'=>$filename));
 	if(is_array($rec)){
