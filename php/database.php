@@ -4386,6 +4386,9 @@ function getDBFieldTag($params=array()){
             $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelect($name,$options,$info[$field]);
 			break;
+        case 'starrating':
+			$tag=buildFormStarRating($info[$field]['name'],$info[$field]);
+		break;
 		case 'toggle_f':
 		case 'toggle_r':
 			$selections=getDBFieldSelections($info[$field]);

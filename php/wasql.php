@@ -1265,9 +1265,10 @@ function wasqlGetInputtypes($d=0){
 		'toggle_r'	=> 'Toggle Round',
 		'toggle_f'	=> 'Toggle Flip',
 		'signature'	=> 'Signature',
-		'timezone'	=> 'Timezone'
+		'timezone'	=> 'Timezone',
+		'starrating'=> 'Star Rating'
 	);
-	ksort($types);
+	asort($types);
 	if($d){$vals=array_values($types);}
 	else{$vals=array_keys($types);}
 	return implode("\r\n",$vals);

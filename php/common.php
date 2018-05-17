@@ -1881,6 +1881,33 @@ function buildFormSlider($name, $params=array()){
     //$rtn .= printValue($params);
 	return $rtn;
 }
+//---------- begin function buildFormStarRating-------------------
+/**
+* @param name string  - The name of the field
+* @param params array - options are as follows
+*	[-formname]. Defaults to addedit
+*	[id]. Defaults to formname_fieldname
+*	[name]. overrides name
+*	[value]. Defaults to 0
+* @return string - return HTML star rating field
+*/
+function buildFormStarRating($name, $params=array()){
+	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+    if(!isset($params['value'])){$params['value']=0;}
+	$rtn = '<ul id="'.$params['id'].'">'.PHP_EOL;
+	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'" />'.PHP_EOL;
+	for($x=1;$x<=5;$x++){
+		if($x <= $params['value']){$class='icon-star w_pointer';}
+		else{$class='icon-star-empty w_pointer';}
+		$class .= ' w_biggest';
+		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;"><span class="'.$class.'" onclick="setStarRating(\''.$params['id'].'\','.$x.');"></span></li>'.PHP_EOL;
+	}
+	$rtn .= '</ul>'.PHP_EOL;
+	return $rtn;
+}
 //---------- begin function buildFormSubmit-------------------
 /**
 * @describe creates an HTML submit tag

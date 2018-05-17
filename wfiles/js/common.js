@@ -752,6 +752,34 @@ function setOpacity(obj,level) {
 	cObj.style.filter = "alpha(opacity=" + (level * 100) + ");";
 	return false;
 	}
+//w_setStarRating
+/**
+* @describe sets the number of stars to fill in
+* @param id mixed  - the object or id
+* @param level integer 0 through 5
+* @return boolean
+*/
+function setStarRating(id,n){
+	var obj=getObject(id);
+    n=parseInt(n);
+	var list=obj.querySelectorAll('span');
+	//toggle first star if it is the only one marked so the user can select none
+	if(n==1 && list[0].className.indexOf('empty') == -1 && list[1].className.indexOf('empty') != -1){
+		n=0;
+	}
+	//set field value
+	obj.querySelector('input').value=n;
+	for(var i=0;i<list.length;i++){
+		var s=i+1;
+		if(s <= n){
+			list[i].className='icon-star w_biggest w_pointer';
+		}
+		else{
+            list[i].className='icon-star-empty w_biggest w_pointer';
+		}
+	}
+	return true;
+}
 function fadeIn(id){
 	for (i = 0; i <= 1; i += (1 / 20)) {
 		setTimeout("setOpacity('"+id+"'," + i + ")", i * 200);
