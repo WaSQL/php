@@ -2173,7 +2173,8 @@ function createDBTableFromText($table,$fieldstr){
 	$fields=array();
 	$errors=array();
 	foreach($lines as $line){
-		if(!strlen(trim($line))){continue;}
+		$line=trim($line);
+		if(!strlen($line)){continue;}
 		list($name,$type)=preg_split('/[\s\t]+/',$line,2);
 		if(!strlen($type)){
 			$errors[]="Missing field type for {$line}";
