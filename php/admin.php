@@ -835,7 +835,7 @@ if(isAjax()){
 				//dropDBTable($table,1);
 				unset($databaseCache['isDBTable'][$table]);
             	echo "		<td>{$table}</td>";
-            	$ok=adminCreateNewTable($table,$fieldstr);
+            	$ok=createDBTableFromText($table,$fieldstr);
 				if(!isNum($ok)){
 					echo '<td class="w_red w_bold">FAILED</td><td>'.$ok.'</td>'.PHP_EOL;
 				}
@@ -914,7 +914,7 @@ if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isse
 //Create new table?
 if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='add' && isset($_REQUEST['_table_']) && isset($_REQUEST['_schema'])){
 	$_SESSION['admin_errors']=array();
-	$ok=adminCreateNewTable($_REQUEST['_table_'],$_REQUEST['_schema']);
+	$ok=createDBTableFromText($_REQUEST['_table_'],$_REQUEST['_schema']);
 	if(!isNum($ok)){$_SESSION['admin_errors'][]=$ok;}
 	}
 //process pre-menu commands
@@ -3947,46 +3947,6 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
 	$rtn .=  buildFormEnd();
 	return $rtn;
-}
-
-//---------- begin function adminCreateNewTable ----
-/**
- * @author slloyd
- * @exclude  - this function is for internal use only and thus excluded from the manual
- */
-function adminCreateNewTable($table,$fieldstr){
-	//exclude:true
-	if(isDBTable($table)){return "{$table} already exists";}
-	$lines=preg_split('/[\r\n]+/',trim($fieldstr));
-	if(!count($lines)){return "no fields defined for {$table}";}
-	//common fields to all wasql tables
-	$cfields=array(
-		'_id'	=> databasePrimaryKeyFieldString(),
-		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
-		'_cuser'=> "int NOT NULL",
-		'_edate'=> databaseDataType('datetime')." NULL",
-		'_euser'=> "int NULL",
-		);
-	$fields=array();
-	$errors=array();
-	foreach($lines as $line){
-		if(!strlen(trim($line))){continue;}
-		list($name,$type)=preg_split('/[\s\t]+/',$line,2);
-		if(!strlen($type)){
-			$errors[]="Missing field type for {$line}";
-			}
-        elseif(!strlen($name)){
-			$errors[]="Invalid line: {$line}";
-			}
-		else{$fields[$name]=$type;}
-        }
-    if(count($errors)){
-		return "Field errors for {$table}:".printValue($errors);
-		}
-	//add common fields
-	foreach($cfields as $key=>$val){$fields[$key]=$val;}
-    $ok = createDBTable($table,$fields);
-    return $ok;
 }
 //------------------------------ editor funcitons ----------------------------
 //---------- begin function editorFileEdit ----

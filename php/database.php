@@ -2101,11 +2101,11 @@ function createDBTable($table='',$fields=array(),$engine=''){
 	if(!isset($fields['_id'])){$fields['_id']=databasePrimaryKeyFieldString();}
 	if(!isset($fields['_cdate'])){
 		$fields['_cdate']=databaseDataType('datetime').databaseDateTimeNow();
-		}
+	}
 	if(!isset($fields['_cuser'])){$fields['_cuser']="INT NOT NULL";}
 	if(!isset($fields['_edate'])){
 		$fields['_edate']=databaseDataType('datetime')." NULL";
-		}
+	}
 	if(!isset($fields['_euser'])){$fields['_euser']="INT NULL";}
 	//lowercase the tablename and replace spaces with underscores
 	$table=strtolower(trim($table));
@@ -2125,7 +2125,7 @@ function createDBTable($table='',$fields=array(),$engine=''){
 		$field=strtolower(trim($field));
 		$field=str_replace(' ','_',$field);
 		$query .= "{$field} {$attributes},";
-    	}
+   	}
     $query=preg_replace('/\,$/','',$query);
     $query .= ")";
     if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
@@ -2139,11 +2139,58 @@ function createDBTable($table='',$fields=array(),$engine=''){
         	instantDBMeta($ori_table,$field,$attributes);
 		}
 		return 1;
-  		}
+	}
   	else{
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
-  		}
 	}
+}
+//---------- begin function createDBTableFromText ----
+/**
+* @author slloyd
+* @describe creates specified table by parsing specified text for field names and properties
+* @param table string - name of table to alter
+* @param text string - table fields. one per line
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=createDBTableFromText($table,$fieldstr);
+ */
+function createDBTableFromText($table,$fieldstr){
+	if(isDBTable($table)){
+		return "{$table} already exists";
+	}
+	$lines=preg_split('/[\r\n]+/',trim($fieldstr));
+	if(!count($lines)){
+		return "no fields defined for {$table}";
+	}
+	//common fields to all wasql tables
+	$cfields=array(
+		'_id'	=> databasePrimaryKeyFieldString(),
+		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
+		'_cuser'=> "int NOT NULL",
+		'_edate'=> databaseDataType('datetime')." NULL",
+		'_euser'=> "int NULL",
+		);
+	$fields=array();
+	$errors=array();
+	foreach($lines as $line){
+		if(!strlen(trim($line))){continue;}
+		list($name,$type)=preg_split('/[\s\t]+/',$line,2);
+		if(!strlen($type)){
+			$errors[]="Missing field type for {$line}";
+			}
+        elseif(!strlen($name)){
+			$errors[]="Invalid line: {$line}";
+			}
+		else{$fields[$name]=$type;}
+        }
+    if(count($errors)){
+		return "Field errors for {$table}:".printValue($errors);
+		}
+	//add common fields
+	foreach($cfields as $key=>$val){$fields[$key]=$val;}
+    $ok = createDBTable($table,$fields);
+    return $ok;
+}
 //---------- begin function createDBTableFromFile--------------------
 /**
 * @describe creates a new table from the data in given file
