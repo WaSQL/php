@@ -174,12 +174,25 @@ table.table-responsive {
     animation: w_loader_animation 1s linear infinite;
     display:inline-block;
 }
-
 @keyframes w_loader_animation {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
+/* blink animation */
+.w_blink {
+    animation: w_blink_animation 1s linear infinite;
+	-webkit-animation: w_blink_animation 1s linear infinite;
+	-moz-animation: w_blink_animation 1s linear infinite;
+	-o-animation: w_blink_animation 1s linear infinite;
+}
+@keyframes w_blink_animation {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* spin animation */
 .w_spin {
 	-webkit-animation: w_spin 1.1s infinite linear;
 	-moz-animation: w_spin 1.1s infinite linear;
