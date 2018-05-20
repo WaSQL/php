@@ -181,10 +181,10 @@ table.table-responsive {
 
 /* blink animation */
 .w_blink {
-    animation: w_blink_animation 1s linear infinite;
-	-webkit-animation: w_blink_animation 1s linear infinite;
-	-moz-animation: w_blink_animation 1s linear infinite;
-	-o-animation: w_blink_animation 1s linear infinite;
+    animation: w_blink_animation 2s linear infinite;
+	-webkit-animation: w_blink_animation 2s linear infinite;
+	-moz-animation: w_blink_animation 2s linear infinite;
+	-o-animation: w_blink_animation 2s linear infinite;
 }
 @keyframes w_blink_animation {
   50% {
