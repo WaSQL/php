@@ -73,6 +73,7 @@ function writeFiles(){
 	global $chost;
 	global $progpath;
 	global $mtimes;
+	global $settings;
 	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
@@ -181,14 +182,18 @@ function writeFiles(){
 	    	$mtimes[$afile]=1;
 		}
 	}
+	//echo printValue($settings);exit;
 	sleep(1);
 	echo "  setting baseline modify times.".PHP_EOL;
 	foreach($mtimes as $afile=>$x){
 		$mtimes[$afile]=filemtime($afile);
 	}
-	if(isWindows()){
+	$cmd='';
+	if(isset($settings['editor']['command'])){$cmd=$settings['editor']['command'];}
+	elseif(isWindows()){$cmd="EXPLORER /E";}
+	if(strlen($cmd)){
 		$afolder=preg_replace('/\//',"\\",$afolder);
-		cmdResults("EXPLORER /E,\"{$afolder}\"");
+		cmdResults("{$cmd} \"{$afolder}\"");
 	}
 	return $afolder;
 }
@@ -488,6 +493,12 @@ function getSettings(){
 	    	$set=(array)$set;
 	    	foreach($set['@attributes'] as $k=>$v){
 			$settings['sound'][$k]=$v;
+		}
+	}
+	foreach($xml['settings']->editor as $set){
+	    	$set=(array)$set;
+	    	foreach($set['@attributes'] as $k=>$v){
+			$settings['editor'][$k]=$v;
 		}
 	}
 	return;
