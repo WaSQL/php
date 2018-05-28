@@ -1172,7 +1172,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$cfield.'_tvals']=1;
 					}
 					if(isset($params[$cfield.'_dvals'])){
-						$opts['dvals']=$params[$field.'_dvals'];
+						$opts['dvals']=$params[$cfield.'_dvals'];
 						$used[$field.'_dvals']=1;
 					}
 					if(isset($params['-bootstrap'])){
@@ -1191,7 +1191,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					}
 					if(isset($params['-class_all'])){$opts['class']=$params['-class_all'];}
 					if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
-					if(!isset($params['-focus'])){$params['-focus']=$field;}
+					if(!isset($params['-focus'])){$params['-focus']=$cfield;}
 					$cval=getDBFieldTag($opts);
 				}
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
