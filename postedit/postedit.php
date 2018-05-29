@@ -175,9 +175,12 @@ function writeFiles(){
 	    	if(!is_dir($path)){
 				mkdir($path,0777,true);
 			}
+			$content=base64_decode(trim($content));
+			//check content to see if it starts with php
+			if(preg_match('/^\<\?php/i',$content)){$ext='php';}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	//echo "{$afile}".PHP_EOL;
-	    	$content=base64_decode(trim($content));
+	    	
 	    	file_put_contents($afile,$content);
 	    	$mtimes[$afile]=1;
 		}
