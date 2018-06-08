@@ -6767,9 +6767,13 @@ function getDBUser($params=array()){
 */
 function getDBUserById($id=0,$fields=array()){
 	if($id == 0){return null;}
-	$cuser=getDBRecord(array('-table'=>'_users','_id'=>$id));
+	$opts=array('-table'=>'_users','_id'=>$id);
+	if(is_array($fields) && count($fields)){
+		$opts['-fields']=implode(',',$fields);
+	}
+	$cuser=getDBRecord($opts);
 	if(!is_array($cuser)){return null;}
-	if(count($fields)){
+	if(is_array($fields) && count($fields)){
 		//only return certain fields
 		$vals=array();
 		foreach($fields as $fld){array_push($vals,$cuser[$fld]);}
