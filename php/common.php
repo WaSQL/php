@@ -671,12 +671,12 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			}
 			$tag .= '> <label';
 			if($for){$tag .= ' for="'.$id.'"';}
-			$tag .= ' class="icon-'.$params['-icon'].$class.'"></label>'.PHP_EOL;
+			$tag .= ' class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
 			if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
 				$tag .= ' <label';
 				if($for){$tag .= ' for="'.$id.'"';}
-				$tag .= ' class="'.$class.'"> '.$dval.'</label>'.PHP_EOL;
+				$tag .= ' class=""> '.$dval.'</label>'.PHP_EOL;
 			}
 			$tag .= '</div>'.PHP_EOL;
 		}
