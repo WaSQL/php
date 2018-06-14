@@ -3,6 +3,7 @@
 /*		usage: in PHP: loadExtrasCss('flags4x3);  			*/
 /*		 then in HTML: <span class="flag-icon-us"></span> 	*/
 /*		 		   or: <span class="flag-icon-usa"></span> 	*/
+/*	NOTE: flags1x1 and flags4x3 cannot be used together     */
 /************************************************************/
 [class^="flag-icon-"]:before, [class*=" flag-icon-"]:before {
   background-size: contain;
