@@ -7124,7 +7124,7 @@ function listDBRecords($params=array(),$customcode=''){
     //build header row
     $rtn .= "	<thead><tr>".PHP_EOL;
     if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
-		$rtn .= '		<td><img src="/wfiles/icons/users/users.gif" alt="users" /></td>'.PHP_EOL;
+		$rtn .= '		<td><span class="icon-user w_grey w_big"></span></td>'.PHP_EOL;
     	}
     //allow user to pass in what fields to display as -listfields
     if(isset($params['-listfields'])){
@@ -7330,7 +7330,7 @@ function listDBRecords($params=array(),$customcode=''){
 		if(isset($params['-table']) && $params['-table']=='_users' && $params['-icons']){
 			//echo "rec:".printValue($rec);
 			$uinfo=getUserInfo($rec);
-			$rtn .= '		<td><img src="'.$uinfo['icon'].'" title="user:'.$uinfo['username'].', status:'.$uinfo['status'].'" alt="" /></td>'.PHP_EOL;
+			$rtn .= '		<td><span class="'.$uinfo['class'].'"></span></td>'.PHP_EOL;
     		}
     	if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
 			foreach($params['-sumfields'] as $sumfield){

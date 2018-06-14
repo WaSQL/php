@@ -1259,8 +1259,8 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		case 'profile':
 			//My Profile
-			$img=$USER['utype']==0?'admin.gif':'user.gif';
-			echo '<div class="w_lblue w_bold"><img src="/wfiles/icons/users/'.$img.'" alt="my profile" /> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
+			$uinfo=getUserInfo($USER);
+			echo '<div class="w_lblue w_bold"><span class="'.$uinfo['class'].'"></span> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
 			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
@@ -2314,7 +2314,7 @@ LIST_TABLE:
 			echo '	</tr>'.PHP_EOL;
 			//Non Admin Settings
 			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<th colspan="2" class="w_align_left"><img src="/wfiles/icons/users/user.gif" alt="non-admin settings" /> Non-Administrator Settings</th>'.PHP_EOL;
+			echo '		<th colspan="2" class="w_align_left"><span class="icon-user w_big w_grey"></span> Non-Administrator Settings</th>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
             echo '	<tr valign="top">'.PHP_EOL;
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;

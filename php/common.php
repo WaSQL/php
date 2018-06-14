@@ -6326,8 +6326,6 @@ function getImageSrc($name='',$size=16){
 		);
 	foreach($names as $name){
 		if(is_file("{$wfiles}/iconsets/{$size}/{$name}.png")){return "/wfiles/iconsets/{$size}/{$name}.png";}
-		if(is_file("{$wfiles}/icons/tables/{$name}.gif")){return "/wfiles/icons/tables/{$name}.gif";}
-		if(is_file("{$wfiles}/icons/pages/{$name}.gif")){return "/wfiles/icons/pages/{$name}.gif";}
 		if(is_file("{$wfiles}/icons/{$name}.png")){return "/wfiles/icons/{$name}.png";}
 		if(is_file("{$wfiles}/icons/{$name}.gif")){return "/wfiles/icons/{$name}.gif";}
 		if(is_file("{$wfiles}/icons/files/{$name}.gif")){return "/wfiles/icons/files/{$name}.gif";}

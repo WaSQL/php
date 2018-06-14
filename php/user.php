@@ -714,12 +714,10 @@ function getUserInfo($cuser,$size=16){
 		);
 	//set user icon based on admin or not
 	if($cuser['utype']==0){
-		$info['icon']="/wfiles/iconsets/{$size}/user_admin.png";
-		$info['class']='icon-user-admin w_primary';
+		$info['class']='icon-user-admin w_danger w_big';
     }
     else{
-		$info['icon']="/wfiles/iconsets/{$size}/user.png";
-		$info['class']='icon-user w_grey';
+		$info['class']='icon-user w_big w_grey';
     }
     $nowstamp=time();
     $timestamp=$nowstamp-300;
