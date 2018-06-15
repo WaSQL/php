@@ -1116,10 +1116,10 @@ function buildFormRadio($name, $opts=array(), $params=array()){
         		$tag .= ' checked';
         		$checked_cnt++;
 			}
-			$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].$class.'"></label>'.PHP_EOL;
+			$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
 			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 			else{
-				$tag .= ' <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label>'.PHP_EOL;
+				$tag .= ' <label for="'.$id.'"> '.$dval.'</label>'.PHP_EOL;
 			}
 			$tag .= '</div>'.PHP_EOL;
 		}
