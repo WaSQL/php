@@ -83,9 +83,41 @@ function loadTextFileInit(el){
 		}
 	});
 }
+function eventInitSticky(){
+	//set table headers  to sticky
+	var tlist=document.querySelectorAll('table.w_sticky');
+	for(var t=0;t<tlist.length;t++){
+		//get the top position of this table
+		var tabletop=tlist[t].offsetTop;
+		if(undefined != tlist[t].getAttribute('data-top')){
+			tabletop=tlist[t].getAttribute('data-top');
+		}
+		//get the table thead th objects and set them to sticky
+		var list=tlist[t].querySelectorAll('thead th');	
+		for(var i=0;i<list.length;i++){
+			list[i].style.position='sticky';
+			list[i].style.top=tabletop+'px';
+		}
+	}
+	
+	//set anything that has w_sticky as a class
+	list=document.querySelectorAll('.w_sticky');
+	for(i=0;i<list.length;i++){
+		//skip tables since we have already taken care of them above
+		if(undefined != tlist[i].nodeName && tlist[i].nodeName=='TABLE'){
+			continue;
+		}
+		else if(undefined != tlist[i].tagName && tlist[i].tagName=='TABLE'){
+			continue;
+		}
+		t=list[i].offsetTop;
+		list[i].style.position='sticky';
+		list[i].style.top=t+'px';
+	}
+}
 function marquee(id){
 	//info: turns text in specified object or id into a scrolling marquee
-	mobj=getObject(id);
+	var mobj=getObject(id);
 	if(undefined==mobj){return false;}
 	var mid=mobj.id;
 	clearTimeout(TimoutArray[id]);
@@ -99,7 +131,7 @@ function marquee(id){
 	if (typeof(mobj.onmouseover) != 'undefined'){
 		mobj.onmouseover=function(){
 			this.setAttribute('m',1);
-		}
+		};
 		mobj.onmouseout=function(e){
 			if(undefined == e){e = fixE(e);}
 			if(undefined != e){
@@ -107,9 +139,9 @@ function marquee(id){
 					this.setAttribute('m',0);
 				}
 			}
-		}
+		};
 	}
-	if(undefined == attr['m'] || attr['m']==0){
+	if(undefined == attr['m'] || attr['m']===0){
 		//get the text and determine its length
 		var pxwh=getTextPixelWidthHeight(mobj);
 		var mwh=getWidthHeight(mobj);
@@ -130,14 +162,14 @@ function marquee(id){
 					x=mobj.style.paddingRight;
 					if(x.length){
 						x=x.replace('px','');
-						x= parseInt(x);
+						x=parseInt(x,10);
 					}
 					else{
 	                    	x=0;
 					}
 				}
 				if(x < mwh[0]-pxwh[0]-2){
-					mobj.style.paddingRight=parseInt(x+2)+'px';
+					mobj.style.paddingRight=parseInt(x+2,10)+'px';
 				}
 				else{
 					mobj.style.paddingRight='0px';
@@ -152,14 +184,14 @@ function marquee(id){
 					x=mobj.style.paddingLeft;
 					if(x.length){
 						x=x.replace('px','');
-						x= parseInt(x);
+						x= parseInt(x,10);
 					}
 					else{
 	                    	x=0;
 					}
 				}
 				if(x < mwh[0]-pxwh[0]-2){
-					mobj.style.paddingLeft=parseInt(x+2)+'px';
+					mobj.style.paddingLeft=parseInt(x+2,10)+'px';
 				}
 				else{
 					mobj.style.paddingLeft='0px';
@@ -172,9 +204,10 @@ function marquee(id){
 	}
 	//set timeout to call it again in speed miliseconds
 	TimoutArray[id] = setTimeout("marquee('"+id+"')",timer);
+	return false;
 }
 function mouseMove(e) {
-	if (!e) var e = window.event;
+	if (!e){e = window.event;}
 	if (e.pageX || e.pageY){
 		cursor.x = e.pageX;
 		cursor.y = e.pageY;
@@ -182,10 +215,8 @@ function mouseMove(e) {
 	else if (e.clientX || e.clientY){
 		if(document.body){
 			if(document.documentElement){
-				cursor.x = e.clientX + document.body.scrollLeft
-					+ document.documentElement.scrollLeft;
-				cursor.y = e.clientY + document.body.scrollTop
-					+ document.documentElement.scrollTop;
+				cursor.x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				cursor.y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
 				}
 			}
 		}
@@ -249,7 +280,7 @@ function setFloatDiv(id, sx, sy){
 		this.cx += (pX + this.sx - this.cx)/8;this.cy += (pY + this.sy - this.cy)/8;
 		this.sP(this.cx, this.cy);
 		setTimeout(this.id + "_obj.floatIt()", 40);
-		}
+		};
 	return el;
 	}
 var changeState = new Array();
@@ -275,6 +306,7 @@ function scheduleAjaxGet(id,page,div,opts,ms,nosetprocess){
 function pageRefresh(page,div,opts,nosetprocess){
 	if(undefined == document.getElementById(div)){return false;}
 	ajaxGet('/'+page,div,opts,'',60000,nosetprocess);
+	return false;
 }
 // -- processMultiComboBox
 function processMultiComboBox(tid,cid,tcnt,cm,showvalues){
@@ -340,14 +372,15 @@ function ajaxPopup(url,params,useropts){
 	var opt={
         id: pid,
         drag:1
-		}
+		};
 	/* allow user to override default opt values */
 	if(useropts){
-		for (var key in opt){
+		var key;
+		for (key in opt){
 			if(undefined != useropts[key]){opt[key]=useropts[key];}
 			}
 		/* add additonal user settings to opt Object */
-		for (var key in useropts){
+		for (key in useropts){
 			if(undefined == opt[key]){opt[key]=useropts[key];}
 			}
 		}
@@ -359,7 +392,7 @@ function cancelBubble(e) {
  	var evt = e ? e:window.event;
  	if (evt.preventDefault){evt.preventDefault();}
 	if (evt.stopPropagation){evt.stopPropagation();}
- 	if (evt.cancelBubble != null){evt.cancelBubble = true;}
+ 	if (evt.cancelBubble !== null){evt.cancelBubble = true;}
 }
 /* centerpopDiv*/
 function centerpopDiv(txt,rtimer,x){
@@ -383,27 +416,27 @@ function tooltipDiv(obj,rtimer){
 	var txt=obj.getAttribute('data-tooltip');
 	var position=obj.getAttribute('data-tooltip_position') || '';
 	var ajax='';
-	if(txt.indexOf('id:')==0){
+	if(txt.indexOf('id:')===0){
 		//get tooltip text from an external div
     	var divid=str_replace('id:','',txt);
     	txt=getText(divid) || '';
 	}
-	else if(txt.indexOf('js:')==0){
+	else if(txt.indexOf('js:')===0){
 		//call a function
     	var f=str_replace('id:','',txt);
     	txt=eval(f);
 	}
-	else if(txt.indexOf('ajax:')==0){
+	else if(txt.indexOf('ajax:')===0){
 		//call a function
     	ajax=str_replace('id:','',txt);
     	txt='';
 	}
-	else if(txt.indexOf('att:')==0){
+	else if(txt.indexOf('att:')===0){
 		//get tooltip from another attribute - att:alt for example
     	var att=str_replace('att:','',txt);
     	txt=obj.getAttribute(att) || '';
 	}
-	if(txt.length == 0 || txt=='false' || !txt){return false;}
+	if(txt.length === 0 || txt==='false' || !txt){return false;}
 	var cObj=getObject('w_tooltip');
 	if(undefined != cObj){removeId(cObj);}
 	var tipdiv = document.createElement("div");
@@ -416,7 +449,7 @@ function tooltipDiv(obj,rtimer){
 	var x=y=h=w=th=0;
 	h=getHeight(obj);
 	//default image position to bottom
-	if(position=='' && obj.nodeName.toLowerCase()=='img'){
+	if(position==='' && obj.nodeName.toLowerCase()==='img'){
 		position='bottom';
 	}
 	if(position=='bottom'){
@@ -460,14 +493,15 @@ function popUpDiv(content,param){
         bodystyle: bs,
         titleleft: 20,
         body: content
-		}
+		};
 	/* allow user to override default opt values */
 	if(param){
-		for (var key in opt){
+		var key;
+		for (key in opt){
 			if(undefined != param[key]){opt[key]=param[key];}
 			}
 		/* add additonal user settings to opt Object */
-		for (var key in param){
+		for (key in param){
 			if(undefined == opt[key]){opt[key]=param[key];}
 			}
 		}
@@ -559,7 +593,7 @@ function popUpDiv(content,param){
 		    botcell.align='right';
 		    botcell.style.fontFamily='arial';
 		    botcell.style.fontSize='11px';
-		    var bgcolor='#FFFFFF';
+		    bgcolor='#FFFFFF';
 	    	if(opt.botbgcolor){bgcolor=opt.botbgcolor;}
 	    	else if(param.botbgcolor){bgcolor=param.botbgcolor;}
 		    botcell.style.backgroundColor=bgcolor;
@@ -593,7 +627,7 @@ function popUpDiv(content,param){
     masterdiv.style.display='block';
     if(opt.center){
 		var xy=centerObject(masterdiv);
-		var x=0;;
+		var x=0;
 		var y=0;
 		var cvalue=opt.center+'';
 		if(cvalue.indexOf('x') != -1){
@@ -612,16 +646,16 @@ function popUpDiv(content,param){
 		if(undefined != opt.x){
 			//if x begins with a + or -, then add it
 			xvalue=opt.x+'';
-			if(xvalue.indexOf('+') != -1){x=Math.round(MouseX+parseInt(xvalue));}
-			else if(xvalue.indexOf('-') != -1){x=Math.round(MouseX-Math.abs(parseInt(xvalue)));}
+			if(xvalue.indexOf('+') != -1){x=Math.round(MouseX+parseInt(xvalue,10));}
+			else if(xvalue.indexOf('-') != -1){x=Math.round(MouseX-Math.abs(parseInt(xvalue,10)));}
 			else{x=Math.round(opt.x);}
 			if(x < 0){x=0;}
 			}
 		if(undefined != opt.y){
 			//if y begins with a + or -, then add it
 			yvalue=opt.y+'';
-			if(yvalue.indexOf('+') != -1){y=Math.round(MouseY+parseInt(yvalue));}
-			else if(yvalue.indexOf('-') != -1){y=Math.round(MouseY-Math.abs(parseInt(yvalue)));}
+			if(yvalue.indexOf('+') != -1){y=Math.round(MouseY+parseInt(yvalue,10));}
+			else if(yvalue.indexOf('-') != -1){y=Math.round(MouseY-Math.abs(parseInt(yvalue,10)));}
 			else{y=Math.round(opt.y);}
 			if(y < 0){y=0;}
 			}
@@ -660,9 +694,9 @@ function popUpDiv(content,param){
 		showOnScreen(masterdiv);
      	}
     else if(opt.mouse){
-        var x=0;
-		var y=0;
-		var cvalue=opt.mouse+'';
+        x=0;
+		y=0;
+		cvalue=opt.mouse+'';
 		if(cvalue.indexOf('x') != -1){
 			//only center x - make y MouseY
 			x=MouseX;
@@ -675,15 +709,15 @@ function popUpDiv(content,param){
 		if(undefined != opt.x){
 			//if x begins with a + or -, then add it
 			xvalue=opt.x+'';
-			if(xvalue.indexOf('+') != -1){x=Math.round(MouseX+parseInt(xvalue));}
-			else if(xvalue.indexOf('-') != -1){x=Math.round(MouseX-Math.abs(parseInt(xvalue)));}
+			if(xvalue.indexOf('+') != -1){x=Math.round(MouseX+parseInt(xvalue,10));}
+			else if(xvalue.indexOf('-') != -1){x=Math.round(MouseX-Math.abs(parseInt(xvalue,10)));}
 			else{x=MouseX;}
 			}
 		if(undefined != opt.y){
 			//if y begins with a + or -, then add it
 			yvalue=opt.y+'';
-			if(yvalue.indexOf('+') != -1){y=Math.round(MouseY+parseInt(yvalue));}
-			else if(yvalue.indexOf('-') != -1){y=Math.round(MouseY-Math.abs(parseInt(yvalue)));}
+			if(yvalue.indexOf('+') != -1){y=Math.round(MouseY+parseInt(yvalue,10));}
+			else if(yvalue.indexOf('-') != -1){y=Math.round(MouseY-Math.abs(parseInt(yvalue,10)));}
 			else{y=MouseY;}
 			}
 		//window.status=x+','+y;
@@ -699,7 +733,7 @@ function popUpDiv(content,param){
     if(opt.showtime){
 		//remove the div if mouse is not in the div,
 		//	otherwise until after they have moved mouse out and timeout has expired.
-		var t=Math.round(opt.showtime*1000);
+		t=Math.round(opt.showtime*1000);
 		popupdiv_timeout=setTimeout("removeDivOnExit('"+opt.id+"',1)",t);
     	}
     else if(opt.fade){
@@ -712,30 +746,30 @@ function popUpDiv(content,param){
 					}
 				}
 			//else{fadeId(this.id,1);}
-			}
+			};
     	}
 }
 function createTable(){
 	var t  = document.createElement("table");
-    tb = document.createElement("tbody")
-    t.setAttribute("border","1")
+    tb = document.createElement("tbody");
+    t.setAttribute("border","1");
     var tr = document.createElement("tr");
     var td ;
     var d;
-	d = document.createElement("div")
+	d = document.createElement("div");
     d.style.backgroundColor = "red";
     d.style.minHeight = "20px";
     d.style.width = "50px";
     td = document.createElement("td");
-    td.appendChild(d)
+    td.appendChild(d);
 
     tr.appendChild(td);
-	d = document.createElement("div")
+	d = document.createElement("div");
     d.style.backgroundColor = "green";
     d.style.minHeight = "20px";
     d.style.width = "50px";
     td = document.createElement("td");
-    td.appendChild(d)
+    td.appendChild(d);
     tr.appendChild(td);
 	tb.appendChild(tr);
     t.appendChild(tb);
@@ -802,7 +836,7 @@ function removeDivOnExit(divid,fade){
 					}
 				}
 			//else{fadeId(this.id,1);}
-			}
+			};
 		}
 	else{
 		obj.onmouseout=function(e){
@@ -814,7 +848,7 @@ function removeDivOnExit(divid,fade){
 				}
 			//else{removeDiv(this.id);}
 			}
-		}
+		};
 	}
 /* isMouseOver - returns true the mouse if over this object*/
 function isMouseOver(id){
@@ -833,7 +867,7 @@ function getChildById(obj, id) {
 	if (obj.hasChildNodes()) {
 		for (var i=0; i<obj.childNodes.length; i++) {
 			var child = getChildById(obj.childNodes[i], id);
-			if (child != null){return child;}
+			if (child !== null){return child;}
 			}
 		}
 	return null;
@@ -879,7 +913,7 @@ function centerObject(obj,fade){
 			if(undefined != e){
 				if(checkMouseLeave(this,e)){fadeId(this.id,1);}
 			}
-		}
+		};
 	}
   	return new Array(x,y);
 	}
@@ -893,10 +927,11 @@ function hideOnExit(obj){
 		if(undefined != e){
 			if(checkMouseLeave(this,e)){
 				this.style.display='none';
-				}
 			}
 		}
-	}
+	};
+	return false;
+}
 /* showOnScreen */
 function showOnScreen(obj){
 	//info: forces placement of object on screen
@@ -925,7 +960,7 @@ function showOnScreen(obj){
 		}
 	/* set y */
 	if(y+h+20 > sh){
-		var z=y-h;
+		z=y-h;
 		while(z < 0){z++;}
 		y = z;
 		}
@@ -940,26 +975,26 @@ function getViewPort(){
 	var viewport={};
 	if (typeof window.innerWidth != 'undefined')
 	 {
-	      viewport.w = window.innerWidth,
-	      viewport.h = window.innerHeight
+	      viewport.w = window.innerWidth;
+	      viewport.h = window.innerHeight;
 	 }
 
 	// IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
 
-	 else if (typeof document.documentElement != 'undefined'
+	 else if (typeof document.documentElement != 'undefined' 
 	     && typeof document.documentElement.clientWidth !=
 	     'undefined' && document.documentElement.clientWidth != 0)
 	 {
-	       viewport.w = document.documentElement.clientWidth,
-	       viewport.h = document.documentElement.clientHeight
+	       viewport.w = document.documentElement.clientWidth;
+	       viewport.h = document.documentElement.clientHeight;
 	 }
 
 	 // older versions of IE
 
 	 else
 	 {
-	       viewport.w = document.getElementsByTagName('body')[0].clientWidth,
-	       viewport.h = document.getElementsByTagName('body')[0].clientHeight
+	       viewport.w = document.getElementsByTagName('body')[0].clientWidth;
+	       viewport.h = document.getElementsByTagName('body')[0].clientHeight;
 	 }
   return viewport;
   }
@@ -972,13 +1007,13 @@ sfHover = function() {
 		for (var i=0; i<sfEls.length; i++){
 			sfEls[i].onmouseover=function(){
 				this.className="sfhover";
-				}
+				};
 			sfEls[i].onmouseout=function(){
 				this.className="";
-				}
+				};
 			}
 		}
-	}
+	};
 // Add sfHover to the onLoad queue
 addEventHandler(window,'load',sfHover);
 var calledStickyMenus=0;
@@ -1003,7 +1038,7 @@ function initBehaviors(ajaxdiv){
             	removeClass(kids[k],'active');
 			}
 			addClass(this,'active');
-		}
+		};
 	}
 	if(!window.jQuery){
 		//look for data-toggle modal
@@ -1030,8 +1065,8 @@ function initBehaviors(ajaxdiv){
 			};
 		}
 		//look for data-toggle modal
-		var navbars=document.querySelectorAll('[data-toggle="dropdown"]');
-		for (var n=0; n<navbars.length; n++){
+		navbars=document.querySelectorAll('[data-toggle="dropdown"]');
+		for (n=0; n<navbars.length; n++){
 	    	navbars[n].onclick=function(e){
 				cancel(e);
 	        	var p=getParent(this);
@@ -1047,8 +1082,8 @@ function initBehaviors(ajaxdiv){
 			};
 		}
 		//look for bootstrap navbars with a collapse toggle attribute and hook the onclick
-		var navbars=document.querySelectorAll('[data-toggle="collapse"]');
-		for (var n=0; n<navbars.length; n++){
+		navbars=document.querySelectorAll('[data-toggle="collapse"]');
+		for (n=0; n<navbars.length; n++){
 	    	navbars[n].onclick=function(){
 	        	var t=this.getAttribute('data-target');
 	        	if(undefined == t){return false;}
@@ -1056,7 +1091,7 @@ function initBehaviors(ajaxdiv){
 	        	if(undefined == tdiv){return false;}
 	        	var state=this.getAttribute('aria-expanded');
 	        	if(undefined == 'state'){state='';}
-	        	if(state==null){state='';}
+	        	if(state===null){state='';}
 	        	switch(state.toLowerCase()){
 	            	case 'f':
 	            	case 'false':
@@ -1070,19 +1105,23 @@ function initBehaviors(ajaxdiv){
 	            		removeClass(tdiv,'in');
 	            	break;
 				}
+				return false;
 			};
 		}
 	}
+	//
+	eventInitSticky();
+
 	var navEls = GetElementsByAttribute('*', 'data-behavior', '.+');
 	var navEls2 = GetElementsByAttribute('*', '_behavior', '.+');
 	//backwords compatibility - get _behavior attributes also
-	for (var n=0; n<navEls2.length; n++){
+	for (n=0; n<navEls2.length; n++){
 		navEls2[n].setAttribute('data-behavior',navEls2[n].getAttribute('_behavior'));
 		navEls2[n].removeAttribute('_behavior');
     	navEls[navEls.length]=navEls2[n];
 	}
 	//alert(navEls.length+' objects have behaviors');
-	for (var n=0; n<navEls.length; n++){
+	for (n=0; n<navEls.length; n++){
 		var str=navEls[n].getAttribute('data-behavior').toLowerCase();
 		var behaviors=str.split(/[\ \;\,\:]+/);
 		if(in_array("ajax",behaviors)){
@@ -1095,13 +1134,13 @@ function initBehaviors(ajaxdiv){
 		if(in_array("animate",behaviors)){
 			/* ANIMATE - get id and head */
             addEventHandler(navEls[n],'mouseover',function(e){
-				animateGrow(this.id,parseInt(this.getAttribute('min')),parseInt(this.getAttribute('max')));
+				animateGrow(this.id,parseInt(this.getAttribute('min'),10),parseInt(this.getAttribute('max'),10));
 			});
 			addEventHandler(navEls[n],'mouseout',function(e){
 				if(undefined == e){e = fixE(e);}
 				if(undefined != e){
 					if(checkMouseLeave(this,e)){
-						animateShrink(this.id,parseInt(this.getAttribute('max')),parseInt(this.getAttribute('min')));
+						animateShrink(this.id,parseInt(this.getAttribute('max'),10),parseInt(this.getAttribute('min'),10));
 					}
 				}
 			});
@@ -1133,7 +1172,7 @@ function initBehaviors(ajaxdiv){
 			var chart_id=navEls[n].getAttribute('data-datasets') || '';
 			var chart_ids=GetElementsByAttribute('div', 'id', chart_id);
 			//showProperties(chart_ids,'debug',1);
-			for (var i=0; i<chart_ids.length; i++) {
+			for (i=0; i<chart_ids.length; i++) {
 				var txt=getText(chart_ids[i]);
 				var dataset=parseJSONString(txt);
 				chart_datasets.push(dataset);
@@ -1147,16 +1186,20 @@ function initBehaviors(ajaxdiv){
 			if(undefined != document.getElementById(chart_options)){
             	chart_options=getText(chart_options);
 			}
-			var chart_options=parseJSONString(chart_options);
+			chart_options=parseJSONString(chart_options);
+			var myLine;
 			switch(chart_type){
 				case 'bar':
-					var myLine = new Chart(navEls[n].getContext("2d")).Bar(chart_data,chart_options);
+					myLine = new Chart(navEls[n].getContext("2d")).Bar(chart_data,chart_options);
 				break;
 				case 'line':
-					var myLine = new Chart(navEls[n].getContext("2d")).Line(chart_data,chart_options);
+					myLine = new Chart(navEls[n].getContext("2d")).Line(chart_data,chart_options);
 				break;
 				case 'pie':
-					var myLine = new Chart(navEls[n].getContext("2d")).Pie(chart_data,chart_options);
+					myLine = new Chart(navEls[n].getContext("2d")).Pie(chart_data,chart_options);
+				break;
+				default:
+					myLine='';
 				break;
 			}
 			//save as an image if requested

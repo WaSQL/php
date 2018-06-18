@@ -22,8 +22,7 @@ if(isset($argv[1])){
 	if(isset($hosts[$argv[1]])){$chost=$argv[1];}
 }
 if(!isset($chost)){
-	if(!isset($cgroup)){$cgroup=selectGroup();}
-	$chost=selectHost();
+	abortMessage($argv[1]." was not found in postedit.xml");
 }
 // acquire an exclusive lock
 $lock=preg_replace('/[^a-z0-9]+/i','',$chost);
@@ -313,7 +312,7 @@ function abortMessage($msg){
 	if(isWindows()){
 		$ok=soundAlarm('abort');
 	}
-	unlink($lockfile);
+	if(file_exists($lockfile)){unlink($lockfile);}
 	exit;
 }
 function errorMessage($msg){

@@ -86,7 +86,25 @@ function sqliteDBConnect($params=array()){
 		return null;
 	}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}
-
+	//echo printValue($params).printValue($_SERVER);exit;
+	//check to see if the sqlite database is available. Find it if possible
+	if(!file_exists($params['-dbname'])){
+		$cfiles=array(
+			realpath("{$_SERVER['DOCUMENT_ROOT']}{$params['-dbname']}"),
+			realpath("{$_SERVER['DOCUMENT_ROOT']}../{$params['-dbname']}"),
+			realpath("{$_SERVER['DOCUMENT_ROOT']}../../{$params['-dbname']}"),
+			realpath("{$_SERVER['DOCUMENT_ROOT']}/{$params['-dbname']}"),
+			realpath("{$_SERVER['DOCUMENT_ROOT']}/../{$params['-dbname']}"),
+			realpath("{$_SERVER['DOCUMENT_ROOT']}/../../{$params['-dbname']}"),
+			realpath("../{$params['-dbname']}")
+		);
+		foreach($cfiles as $cfile){
+			if(file_exists($cfile)){
+				$params['-dbname']=$cfile;
+			}
+		}
+		//echo printValue($cfiles).printValue($params);exit;
+	}
 	global $dbh_sqlite;
 	if($dbh_sqlite){return $dbh_sqlite;}
 	try{
@@ -361,7 +379,7 @@ function sqliteEditDBRecord($params){
 	}
 	if(!count($flds)){
 		$e="No fields";
-		debugValue(array("sqliteAddDBRecord Error",$e));
+		debugValue(array("sqliteEditDBRecord Error",$e));
     	return;
 	}
 	$updatestr=implode(', ',$updates);
@@ -370,11 +388,10 @@ function sqliteEditDBRecord($params){
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
-	//echo $query.printValue($params);
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
     	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteAddDBRecord Connect Error",$e));
+    	debugValue(array("sqliteEditDBRecord Connect Error",$e));
     	return;
 	}
 	try{
@@ -411,11 +428,23 @@ ENDOFQUERY;
 			}
 		}
 		$results=$stmt->execute();
+		if($results){
+			$results->finalize();
+		}
+		else{
+			$err=$dbh_sqlite->lastErrorMsg();
+			if(strtolower($err) != 'not an error'){
+				debugValue("sqliteEditDBRecord execute error: {$err}");
+			}
+			else{
+				debugValue("sqliteEditDBRecord execute error: unknown reason");
+			}
+		}
 		return 1;
 	}
 	catch (Exception $e) {
 		$err=$e->getMessage();
-		debugValue("sqliteAddDBRecord exception: {$err}");
+		debugValue("sqliteEditDBRecord exception: {$err}");
 		return null;
 	}
 	return 0;
@@ -659,8 +688,8 @@ function sqliteGetDBRecords($params=array()){
 			$ands=array();
 			foreach($params as $k=>$v){
 				$k=strtolower($k);
-				if(!strlen(trim($v))){continue;}
 				if(!isset($fields[$k])){continue;}
+				if(!strlen(trim($v))){continue;}
 				if(is_array($params[$k])){
 					$params[$k]=implode(':',$params[$k]);
 				}
