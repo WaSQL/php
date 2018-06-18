@@ -952,14 +952,21 @@ function userLoginForm($params=array()){
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'.PHP_EOL;
     	}
-    //$params['-format']='inline';
+    $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username");
+	foreach($params as $k=>$v){$username_opts[$k]=$v;}
+	$password_opts=array('id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2,'placeholder'=>"password");
+	foreach($params as $k=>$v){$password_opts[$k]=$v;}
     switch(strtolower($params['-format'])){
 		case 'oneline':
 			$form .= '<div id="w_loginform_oneline">'.PHP_EOL;
 			$form .= '<table>';
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'.PHP_EOL;
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>1)).'</td>'.PHP_EOL;
+			//username
+			$opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true');
+			foreach($params as $k=>$v){$opts[$k]=$v;}
+			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
+			//password
+			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
 			$form .= '		<td class="text-right w_padright"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
@@ -1006,8 +1013,8 @@ function userLoginForm($params=array()){
 			$form .= '		</td>'.PHP_EOL;
 			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true')).'</td>'.PHP_EOL;
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2)).'</td>'.PHP_EOL;
+			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
+			$form .= '		<td>'.buildFormText('password',$password_opts).'</td>'.PHP_EOL;
 			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
@@ -1028,11 +1035,11 @@ function userLoginForm($params=array()){
 			$form .= '	<div class="col-sm-9">'.PHP_EOL;
 			$form .= '		<div class="input-group">'.PHP_EOL;
 			$form .= '			<span class="input-group-addon"><span class="icon-user"></span></span>'.PHP_EOL;
-			$form .= '		'.buildFormText('username',array('id'=>$params['-name'].'_username','placeholder'=>'username'));
+			$form .= '		'.buildFormText('username',$username_opts);
 			$form .= '		</div>'.PHP_EOL;
 			$form .= '		<div class="w_padtop"><div class="input-group">'.PHP_EOL;
 			$form .= '			<span class="input-group-addon"><span class="icon-lock"></span></span>'.PHP_EOL;
-			$form .= '		'.buildFormPassword('password',array('id'=>$params['-name'].'_password','placeholder'=>'password'));
+			$form .= '		'.buildFormText('password',$password_opts);
 			$form .= '		</div></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="col-sm-3">'.PHP_EOL;
@@ -1048,12 +1055,12 @@ function userLoginForm($params=array()){
 			$form .= '<table>';
 			$form .= '	<tr class="w_middle text-right">';
 			$form .= '		<td class="text-left" title="Username" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></td>'.PHP_EOL;
-			$form .= '		<td>'.getDBFieldTag(array('-table'=>'_users','-field'=>"username",'id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'placeholder'=>'username','autofocus'=>'true')).'</td>'.PHP_EOL;
+			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
 			$form .= '		<td rowspan="2" class="w_top w_padleft"><button class="btn btn-default btn-lg w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
 			$form .= '		<td class="text-left w_padtop" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'.PHP_EOL;
-			$form .= '		<td class="w_padtop">'.getDBFieldTag(array('-table'=>'_users','inputtype'=>"password",'-field'=>"password",'id'=>$params['-name']."_password",'required'=>1,'tabindex'=>2,'placeholder'=>'password')).'</td>'.PHP_EOL;
+			$form .= '		<td class="w_padtop">'.buildFormText('password',$password_opts).'</td>'.PHP_EOL;
 			$form .= '	</tr>'.PHP_EOL;
 			if(!isset($params['-noremind'])){
 				$form .= '	<tr class="w_middle text-right">';
