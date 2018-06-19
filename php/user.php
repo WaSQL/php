@@ -1014,7 +1014,7 @@ function userLoginForm($params=array()){
 			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
 			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
-			$form .= '		<td>'.buildFormText('password',$password_opts).'</td>'.PHP_EOL;
+			$form .= '		<td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
 			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
@@ -1039,7 +1039,7 @@ function userLoginForm($params=array()){
 			$form .= '		</div>'.PHP_EOL;
 			$form .= '		<div class="w_padtop"><div class="input-group">'.PHP_EOL;
 			$form .= '			<span class="input-group-addon"><span class="icon-lock"></span></span>'.PHP_EOL;
-			$form .= '		'.buildFormText('password',$password_opts);
+			$form .= '		'.buildFormPassword('password',$password_opts);
 			$form .= '		</div></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="col-sm-3">'.PHP_EOL;
@@ -1060,7 +1060,7 @@ function userLoginForm($params=array()){
 			$form .= '	</tr>'.PHP_EOL;
 			$form .= '	<tr class="w_middle text-right">';
 			$form .= '		<td class="text-left w_padtop" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'.PHP_EOL;
-			$form .= '		<td class="w_padtop">'.buildFormText('password',$password_opts).'</td>'.PHP_EOL;
+			$form .= '		<td class="w_padtop">'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
 			$form .= '	</tr>'.PHP_EOL;
 			if(!isset($params['-noremind'])){
 				$form .= '	<tr class="w_middle text-right">';
