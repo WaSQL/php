@@ -641,7 +641,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	}
 	if(strlen($class)){$class=' '.trim($class);}
 	foreach($cols as $opts){
-    	$tag .= '	<div class="'$colxs.$colsize.'">'.PHP_EOL;
+    	$tag .= '	<div class="'.$colxs.$colsize.'">'.PHP_EOL;
     	foreach($opts as $tval=>$dval){
 			$id=$params['id'].'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
