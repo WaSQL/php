@@ -10002,7 +10002,7 @@ function postEditSha($pextables=array()){
 					break;
 					default:
 						if(strlen($val)){
-							$rec[$key]=crc32String($val);
+							$rec[$key]=sha1($val);
 						}
 					break;
 				}

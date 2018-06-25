@@ -60,7 +60,7 @@ if(file_exists($noloop)){
 file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
 echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
-$countdown=30;
+$countdown=20;
 
 while(1){
 	cli_set_process_title("{$afolder} - {$countdown} seconds to next check");
@@ -69,18 +69,19 @@ while(1){
 	//check for local changes
 	foreach($local_shas as $afile=>$sha){
 		if(!file_exists($afile)){continue;}
-		$csha=crc32File($afile);
+		$csha=sha1_file($afile);
 		if($sha != $csha){
 			$name=getFileName($afile);
 			cli_set_process_title("{$afolder} - file changed {$name}");
-			echo "  {$afile} changed locally {$sha} != {$csha}".PHP_EOL;
+			//echo "  {$afile} changed locally {$sha} != {$csha}".PHP_EOL;
 			fileChanged($afile);
 		}
 	}
 	$countdown-=1;
 	if($countdown==0){
 		writeFiles();
-		$countdown=30;
+		$countdown=20;
+		exit;
 	}
 }
 exit;
@@ -200,10 +201,11 @@ function writeFiles(){
 				}
 				if(file_exists($afile)){
 					$shakey=posteditShaKey($afile);
-					$sha=crc32File($afile);
+					$sha=sha1_file($afile);
 					if($firsttime==1){$local_shas[$shakey]=$sha;}
 					if($sha!=$rec[$field]){
 						//need it 
+						echo "Need it: {$tablename},{$id},{$field} -- {$sha} != {$rec[$field]}".PHP_EOL;
 						$json[$tablename][$id][]=$field;
 						$changes++;
 					}
@@ -323,11 +325,11 @@ function writeFiles(){
 			elseif(preg_match('/^\<\?\=/i',$content)){$ext='php';}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	$shakey=posteditShaKey($afile);
-	    	if(file_exists($afile) && crc32String($content)==crc32File($afile)){
+	    	if(file_exists($afile) && sha1($content)==sha1_file($afile)){
 	    		continue;
 	    	}
 	    	file_put_contents($afile,$content);
-	    	$local_shas[$shakey]=crc32File($afile);
+	    	$local_shas[$shakey]=sha1_file($afile);
 	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
 	    		$fname=getFileName($afile);
 	    		$ftable=str_replace('_',' ',$info['table']);
@@ -461,7 +463,7 @@ POSTFILE:
 	}
 	$ok=successMessage(" - Successfully updated");
 	$shakey=posteditShaKey($afile);
-	$local_shas[$shakey]=crc32File($afile);
+	$local_shas[$shakey]=sha1_file($afile);
 	return true;
 }
 function abortMessage($msg){
