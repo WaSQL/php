@@ -618,6 +618,58 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		exit;
     }
 	switch(strtolower($_REQUEST['apimethod'])){
+		case 'posteditsha':
+			$tables=array('_pages','_templates','_models');
+			if(strlen($_REQUEST['postedittables'])){
+				$moretables=preg_split('/[\,\;\:]+/',$_REQUEST['postedittables']);
+				foreach($moretables as $mtable){
+					if(isDBTable($mtable)){
+						//require name field
+						$finfo=getDBFieldInfo($mtable,1);
+						if(isset($finfo['name'])){
+							array_push($tables,$mtable);	
+						}
+					}
+                }
+            }
+            //get the fields
+            $params=array();
+            foreach($tables as $table){
+            	$finfo=getDBFieldInfo($table,1);
+            	//echo printValue($finfo);exit;
+            	$fields=array();
+            	foreach($finfo as $field=>$info){
+            		if(isWasqlField($field)){continue;}
+            		if(in_array($table,array('_pages','_templates')) && preg_match('/^(template|name|css_min|js_min)$/i',$field)){continue;}
+            		if(in_array($info['_dbtype'],array('blob','text'))){
+            			$fields[]=$field;
+            		}
+            	}
+            	if(!count($fields)){continue;}
+            	$params[$table]=$fields;
+            }
+            //echo printValue($params);exit;
+			//return xml of pages and templates
+			header('Content-type: application/json');
+			echo postEditSha($params);
+			exit;
+		break;
+		case 'posteditxmlfromjson':
+			if(strlen($_REQUEST['json'])){
+				$json=json_decode($_REQUEST['json'],true);
+				if(is_array($json)){
+					header('Content-type: text/xml');
+					echo postEditXmlFromJson($json);
+				}
+				else{
+					echo "Error: POSTEDITXMLFROMJSON json is invalid";
+				}
+            }
+            else{
+            	echo "Error: POSTEDITXMLFROMJSON request is invalid";
+            }
+            exit;
+		break;
 		case 'posteditxml':
 			//return xml of pages and templates
 			$tables=array('_pages','_templates','_models');
@@ -633,7 +685,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 			$encoding=isset($_REQUEST['encoding'])?$_REQUEST['encoding']:'';
 			echo postEditXml($tables,$dbname,$encoding);
 			exit;
-			break;
+		break;
 		case 'posteditupload':
 			//upload
 			header('Content-type: text/plain');

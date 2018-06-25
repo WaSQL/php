@@ -48,6 +48,8 @@ else{ini_set("memory_limit","1024M");}
 /* Load_pages as specified in the conf settings */
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
+	elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxmlfromjson' && isset($_REQUEST['apikey'])){}
+		elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditsha' && isset($_REQUEST['apikey'])){}
 elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	$loads=explode(',',$CONFIG['load_pages']);
 	foreach($loads as $load){
@@ -8021,6 +8023,7 @@ function databaseFetchAssoc($query_result){
 	elseif(isOracle()){return oci_fetch_assoc($query_result);}
 	elseif(isPostgreSQL()){return pg_fetch_assoc($query_result);}
 	elseif(isMssql()){return mssql_fetch_assoc($query_result);}
+	elseif(isSqlite()){return $query_result->fetchArray(SQLITE3_ASSOC);}
 	return null;
 	}
 //---------- begin function
@@ -8035,6 +8038,12 @@ function databaseFetchObject($query_result){
 	elseif(isOracle()){return oci_fetch_object($query_result);}
 	elseif(isPostgreSQL()){return pg_fetch_object($query_result);}
 	elseif(isMssql()){return mssql_fetch_object($query_result);}
+	elseif(isSqlite()){
+		//sqlite does not really handle this so lets just do it ourselves
+		$obj=$query_result->fetchArray(SQLITE3_ASSOC);
+		if($obj){return (object)$obj;}
+		return $obj;
+	}
 	return null;
 	}
 //---------- begin function
@@ -8347,8 +8356,7 @@ function databaseQuery($query){
 			if(!is_object($results)){
 				return null;
 			}
-			$results->finalize();
-			return 1;
+			return $results;
 		}
 		catch (Exception $e) {
 			return null;

@@ -9954,6 +9954,239 @@ function settingsValues($id=0,$fields=array()){
     	}
 	return $settings;
 	}
+//---------- begin function postEditSha---------------------------------------
+/**
+* @describe postEditSha is used to communicate with postedit.exe
+* @param $tables array - key is tablename and value is an array of fields to check
+* @return $recs array - list of shas foreach table and field
+*/
+function postEditSha($pextables=array()){
+	global $USER;
+	$shas=array(
+		'tables'=>array(),
+		'records'=>array(),
+		'pexetables'=>$pextables
+	);
+	foreach($pextables as $tablename=>$tablefields){
+		//echo printValue($tablefields);
+		$fields=array();
+		if(!is_array($tablefields)){
+			$tablefields=preg_split('/\,/',$tablefields);
+		}
+		if(!isset($shas['tables'][$tablename])){
+			$shas['tables'][$tablename]=$tablefields;
+		}
+		//echo printValue($tablefields);exit;
+		foreach($tablefields as $field){
+			$fields[]=$field;
+		}
+		if(!count($fields)){continue;}
+		$fieldstr=implode(',',$fields);
+		//echo printValue($pextables).printValue($tablefields).printValue($fields);exit;
+		$query="select _id,name,{$fieldstr} from {$tablename}";
+		$query_result=@databaseQuery($query);
+		if(!$query_result){
+			$e=getDBError();
+			echo "query_result is blank ".printValue($e);
+			exit;
+		}
+		while ($row = databaseFetchAssoc($query_result)) {
+			$rec=array();
+			foreach($row as $key=>$val){
+				$key=strtolower($key);
+				$val=trim($val);
+				switch($key){
+					case '_id':
+					case 'name':
+						$rec[$key]=$val;
+					break;
+					default:
+						if(strlen($val)){
+							$rec[$key]=crc32String($val);
+						}
+					break;
+				}
+			}
+			$shas['records'][$tablename][]=$rec;
+		}
+	}
+	return json_encode($shas);
+}
+
+$GLOBALS['crc32Table']=array();        // Lookup table array
+crc32InitTable();
+function crc32InitTable() {            // Builds lookup table array
+    // This is the official polynomial used by CRC-32 in PKZip, WinZip and Ethernet.
+    $polynomial = 0x04c11db7;
+    // 256 values representing ASCII character codes.
+	for($i=0;$i <= 0xFF;++$i) {
+    	$GLOBALS['crc32Table'][$i]=(crc32Reflect($i,8) << 24);
+        for($j=0;$j < 8;++$j) {
+            $GLOBALS['crc32Table'][$i]=(($GLOBALS['crc32Table'][$i] << 1) ^ (($GLOBALS['crc32Table'][$i] & (1 << 31))?$polynomial:0));
+        }
+        $GLOBALS['crc32Table'][$i] = crc32Reflect($GLOBALS['crc32Table'][$i], 32);
+    }
+}
+function crc32Reflect($ref, $ch) {        // Reflects CRC bits in the lookup table
+	$value=0;
+	// Swap bit 0 for bit 7, bit 1 for bit 6, etc.
+	for($i=1;$i<($ch+1);++$i) {
+		if($ref & 1) $value |= (1 << ($ch-$i));
+		$ref = (($ref >> 1) & 0x7fffffff);
+	}
+	return $value;
+}
+
+function crc32String($text) {        // Creates a CRC from a text string
+	// Once the lookup table has been filled in by the two functions above,
+	// this function creates all CRCs using only the lookup table.
+
+	// You need unsigned variables because negative values
+	// introduce high bits where zero bits are required.
+	// PHP doesn't have unsigned integers:
+	// I've solved this problem by doing a '&' after a '>>'.
+
+	// Start out with all bits set high.
+	$crc=0xffffffff;
+	$len=strlen($text);
+
+	// Perform the algorithm on each character in the string,
+	// using the lookup table values.
+	for($i=0;$i < $len;++$i) {
+		$crc=(($crc >> 8) & 0x00ffffff) ^ $GLOBALS['crc32Table'][($crc & 0xFF) ^ ord($text{$i})];
+	}
+
+	// Exclusive OR the result with the beginning value.
+	return $crc ^ 0xffffffff;
+}
+
+function crc32File($afile) {            // Creates a CRC from a file
+	// Info: look at __crc32_string
+
+	// Start out with all bits set high.
+	$crc=0xffffffff;
+	if(($fp=fopen($afile,'rb'))===false){ return false;}
+	// Perform the algorithm on each character in file
+	for(;;) {
+		$i=@fread($fp,1);
+		if(strlen($i)==0){break;}
+		$crc=(($crc >> 8) & 0x00ffffff) ^ $GLOBALS['crc32Table'][($crc & 0xFF) ^ ord($i)];
+	}
+	@fclose($fp);
+	// Exclusive OR the result with the beginning value.
+	return $crc ^ 0xffffffff;
+}
+
+
+//---------- begin function postEditXmlFromJson---------------------------------------
+/**
+* @describe postEditXml is used to communicate with postedit.exe
+* @param $json array
+* @param $dbname string
+*	database name - defaults to current database
+* @return string xml
+*	returns xml for postedit.exe to parse
+*/
+function postEditXmlFromJson($json=array()){
+	if(!is_array($json)){return null;}
+	//build XML
+	$xml=xmlHeader(array('version'=>"1.0",'encoding'=>"utf-8"));
+	$xml .= "<xmlroot>".PHP_EOL;
+	$xml .= "	<wasql_host>{$_SERVER['HTTP_HOST']}</wasql_host>".PHP_EOL;
+	$xml .= "	<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>".PHP_EOL;
+	$xml .= "	<postedit_tables>".implode(',',array_keys($json))."</postedit_tables>".PHP_EOL;
+    // JDESPAIN/IntegraCore expanded information for editing user and datetime stamps
+    $finfo=getDBFieldInfo('_users');
+    $fields=array();
+    foreach($finfo as $field=>$info){
+    	if(in_array($field,array('password','guid','_env','address','email','zip','zipcode','picture','image','bio','address2','utype','hint','note','_aip','_sid'))){continue;}
+    	switch(strtolower($info['_dbtype'])){
+    		case 'varchar':
+    		case 'char':
+    		case 'text':
+    			$fields[]=$field;
+    		break;
+    	}
+    }
+    if(!in_array('_id',$fields)){$fields[]='_id';}
+	$edit_users = getDBRecords(array(
+		'-table'	=> '_users',
+		'-index'	=> '_id',
+		'-fields'	=> implode(',',$fields)
+	));
+	//json[table][id][field1], json[table][id][field2]...
+	//echo "JSON:".printValue($json).PHP_EOL;exit;
+	foreach($json as $table=>$tableids){
+		$ids=array();
+		$fields=array();
+		foreach($tableids as $id=>$cfields){
+			$ids[]=$id;
+			foreach($cfields as $field){
+				if(!in_array($field,$fields)){$fields[]=$field;}
+			}
+		}
+		//determine the name field
+		if(isset($finfo['name'])){
+			$fields[]='name';
+		}
+		$idstr=implode(',',$ids);
+		$fieldstr=implode(',',$fields);
+		$finfo=getDBFieldInfo($table,1);
+		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table} where _id in ({$idstr})";
+		//limit results to recs marked with postedit flag if it exists
+		if(isset($finfo['postedit'])){
+			$q.=" and postedit=1";
+		}
+		$recs=getDBRecords($q);
+		$recs_count=count($recs);
+		//$xml .= "	<query_{$table} count=\"{$recs_count}\">".$q."</query_{$table}>".PHP_EOL;
+		if(!is_array($recs)){	continue;}
+		//build the xml for these records
+		foreach($recs as $rec){
+			$id=$rec['_id'];
+			$recxml='';
+			foreach($tableids[$id] as $field){
+				if(!strlen($rec[$field])){continue;}
+				$val=$rec[$field];
+				if(strlen($val)){$val=encodeBase64(trim($val));}	
+				$recxml .= "		<{$table}_{$field}>{$val}</{$table}_{$field}>".PHP_EOL;
+			}
+			if(!strlen($recxml)){continue;}
+			$atts=array(
+				'table'	=> $table,
+				'rec_count'=>$recs_count,
+				'_id'	=> $rec['_id'],
+				'name'	=> $rec['name'],
+			);
+
+			/* JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
+            if(strlen($rec['_edate']) && isNum($rec['_euser']) && isset($edit_users[$rec['_euser']])){
+            	foreach($edit_users[$rec['_euser']] as $k=>$v){
+            		if(strlen($v) > 255){continue;}
+            		$atts["user_{$k}"]=$v;	
+				}
+            }
+            elseif(strlen($rec['_cdate']) && isNum($rec['_cuser']) && isset($edit_users[$rec['_cuser']])){
+            	foreach($edit_users[$rec['_cuser']] as $k=>$v){
+            		if(strlen($v) > 255){continue;}
+            		$atts["user_{$k}"]=$v;	
+				}
+            }
+            /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
+			$xml .= '	<WASQL_RECORD';
+			foreach($atts as $key=>$val){
+				$val=str_replace('&','&amp;',$val);
+				$val=str_replace('"','&quot;',$val);
+				$xml .= " {$key}=\"{$val}\"";
+			}
+			$xml .= '>'.PHP_EOL;
+			$xml .= $recxml;
+	        $xml .= '	</WASQL_RECORD>'.PHP_EOL;
+        }
+    }
+    $xml .= "</xmlroot>".PHP_EOL;
+    return $xml;
+}
 //---------- begin function postEditXml---------------------------------------
 /**
 * @describe postEditXml is used to communicate with postedit.exe
@@ -11013,68 +11246,7 @@ function processActions(){
 				if(is_array($rec)){
 					$tinymce=array();
 					$ruser=(isNum($rec['_euser']) && $rec['_euser'] > 0)?$rec['_euser']:$rec['_cuser'];
-					if($action=='POSTEDIT'){
-						//Has this table and field been updated since last refresh
-						if(!isDBTable('_posteditlog')){
-							$progpath=dirname(__FILE__);
-							include_once("$progpath/schema.php");
-							$ok=createWasqlTable('_posteditlog');
-						}
-						//get last posteditlog rec for this user
-						$posteditlog=getDBRecord(array('-table'=>'_posteditlog','_cuser'=>$USER['_id'],'-order'=>'_id desc'));
-						//get last _changelog record for this table and field
-						if(!isDBTable('_changelog')){
-							$progpath=dirname(__FILE__);
-							include_once("$progpath/schema.php");
-							$ok=createWasqlTable('_changelog');
-						}
-						$flds=getDBFields('_changelog');
-						if(!in_array('fieldname',$flds)){
-							$progpath=dirname(__FILE__);
-							include_once("$progpath/schema.php");
-                        	executeSQL("drop table _changelog");
-                        	$ok=createWasqlTable('_changelog');
-						}
-						$changelog=getDBRecord(array(
-							'-table'	=> '_changelog',
-							'tablename'	=> $_REQUEST['_table'],
-							'fieldname'	=> $_REQUEST['_fields'],
-							'record_id'	=> $_REQUEST['_id'],
-							'-order'	=> '_id desc'
-						));
-						if(
-							isset($changelog['_cdate']) && isset($posteditlog['_cdate']) &&
-							strtotime($changelog['_cdate']) > strtotime($posteditlog['_cdate']) &&
-							$changelog['_cuser'] != $USER['_id']
-							){
-							$urec=getDBUserById($changelog['_cuser']);
-							if(strlen($urec['firstname']) && strlen($urec['lastname'])){$name="{$urec['firstname']} {$urec['lastname']}";}
-							elseif(strlen($urec['name'])){$name=$urec['name'];}
-							elseif(strlen($urec['username'])){$name=$urec['username'];}
-							else{$name="Unknown";}
-							$age=time()-strtotime($changelog['_cdate']);
-							$ago=verboseTime($age,0,1);
-							if(!strlen($ago)){$ago='a few seconds';}
-							$error="Table: {$changelog['tablename']}, Field:{$changelog['fieldname']}, Record {$changelog['record_id']} has been updated since you refreshed last.\r\n\r\n";
-							$error.=" You must REFRESH postEdit before submitting your change.\r\n\r\n";
-							$error.=" Last Changed by {$name} {$ago} ago.\r\n";
-							echo "<refresh_error>{$error}</refresh_error>\r\n";
-							echo "<error_code>ECR{$rec['_id']}</error_code>\r\n";
-							exit;
-                        	}
-                        else{
-                        	//add record to _changelog
-							$ok=addDBRecord(array(
-								'-table'	=> '_changelog',
-								'tablename'	=> $_REQUEST['_table'],
-								'fieldname'	=> $_REQUEST['_fields'],
-								'record_id'	=> $_REQUEST['_id'],
-								'method'	=> 'postedit',
-								'changeval'	=> decodeBase64($_REQUEST[$_REQUEST['_fields']])
-							));
-							$ok=cleanupDBRecords('_changelog',90);
-						}
-                    }
+					
                     $_REQUEST['_fields']=strtolower(str_replace(' ','',$_REQUEST['_fields']));
 					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
@@ -11585,22 +11757,6 @@ function processActions(){
 						    }
 						}
 				    }
-				}
-			break;
-		case 'POSTEDIT':
-			//PostEdit requires a valid USER
-			if(isUser()){
-				$tables=array('_pages','_templates');
-				if(strlen($_REQUEST['postedittables'])){
-					$moretables=preg_split('/[\,\;\:]+/',$_REQUEST['postedittables']);
-					foreach($moretables as $mtable){
-						if(isDBTable($mtable)){array_push($tables,$mtable);}
-	                    }
-	                }
-				//return xml of pages and templates
-				header('Content-type: text/xml');
-				echo postEditXml($tables);
-				exit;
 				}
 			break;
 		case 'CHAT':

@@ -8,11 +8,12 @@ global $settings;
 global $cgroup;
 global $chost;
 global $argv;
-global $mtimes;
+global $local_shas;
+global $firsttime;
+global $afolder;
+$firsttime=1;
+$local_shas=array();
 ini_set("allow_url_fopen",1);
-$mtimes=array();
-global $mds;
-$mds=array();
 $progpath=dirname(__FILE__);
 include_once("$progpath/../php/common.php");
 getHosts();
@@ -35,25 +36,51 @@ $pid=getmypid();
 echo "obtaining lock: {$lockfile}".PHP_EOL;
 file_put_contents($lockfile,$pid);
 echo "{$lockfile} is now mine".PHP_EOL;
+//create the base dir
+$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
+$afolder="{$progpath}/postEditFiles/{$folder}";
+$userfields=array('username');
+if(isset($hosts[$chost]['user_fields'])){
+	$userfields=preg_split('/\,/',$hosts[$chost]['user_fields']);
+}
+if(!is_dir($afolder)){
+	mkdir($afolder,0777,true);
+}
+else{
+	cli_set_process_title("{$afolder} - cleaning");
+	postEditCleanDir($afolder);
+}
 //get the files
-$afolder=writeFiles();
+writeFiles();
 if(file_exists($noloop)){
 	echo "files are now in {$afolder}".PHP_EOL;
 	echo "noloop file detected. exiting".PHP_EOL;
 	exit;
 }
-echo PHP_EOL."Listening to file in {$afolder} for changes...".PHP_EOL;
+file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
+echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
+$countdown=30;
+
 while(1){
+	cli_set_process_title("{$afolder} - {$countdown} seconds to next check");
 	sleep(1);
 	shutdown_check();
-	foreach($mtimes as $afile=>$mtime){
-		$cmtime=filemtime($afile);
-    	if($cmtime != $mtime){
-	        //file Changed
-        	$mtimes[$afile]=filemtime($afile);
-        	fileChanged($afile);
+	//check for local changes
+	foreach($local_shas as $afile=>$sha){
+		if(!file_exists($afile)){continue;}
+		$csha=crc32File($afile);
+		if($sha != $csha){
+			$name=getFileName($afile);
+			cli_set_process_title("{$afolder} - file changed {$name}");
+			echo "  {$afile} changed locally {$sha} != {$csha}".PHP_EOL;
+			fileChanged($afile);
 		}
+	}
+	$countdown-=1;
+	if($countdown==0){
+		writeFiles();
+		$countdown=30;
 	}
 }
 exit;
@@ -71,23 +98,27 @@ function writeFiles(){
 	global $hosts;
 	global $chost;
 	global $progpath;
-	global $mtimes;
 	global $settings;
+	global $firsttime;
+	global $local_shas;
+	global $afolder;
+	global $userfields;
+	$url=buildHostUrl();
+	cli_set_process_title("{$afolder} - checking {$url}");
 	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
 		'username'	=>$hosts[$chost]['username'],
 		'_noguid'	=>1,
 		'postedittables'=>$tables,
-		'apimethod'	=>"posteditxml",
-		'encoding'	=>"base64",
+		'apimethod'	=>"posteditsha",
 		'-nossl'=>1,
 		'-follow'=>1,
-		'-xml'=>1
+		'-json'=>1
 	);
-	$url=buildHostUrl();
-	echo "Calling {$url}...".PHP_EOL;
+	//echo "Calling posteditsha ...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	file_put_contents("{$progpath}/postedit_sha.txt",$post['body']);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
 	}
@@ -97,11 +128,123 @@ function writeFiles(){
 		$msg=str_replace('&lt;','<',$msg);
 		abortMessage($msg);
 	}
-	//check for login form
-	if(preg_match('/\"\_login\"/is',$post['body'])){
-    	abortMessage("INVALID LOGIN CREDENTIALS");
+	$server=json_decode($post['body'],true);
+	//file_put_contents("{$progpath}/postedit_sha.json",$post['body']);
+	//exit;
+	if(!isset($server['records'])){
+		abortMessage("invalid json - make sure you have updated WaSQL on the server");
 	}
-	file_put_contents("{$progpath}/postedit_pages.result",$post['body']);
+	file_put_contents("{$progpath}/postedit_sha.txt",printValue($server));
+	//figure out what pages we need to get
+	
+	
+	$extensions=array('php','html','js','css');
+	$json=array();
+	$changes=0;
+	$missing=0;
+	foreach($server['records'] as $tablename=>$recs){
+		//path
+    	$path="{$afolder}/{$tablename}";
+		foreach($recs as $rec){
+			//loop through the fields 
+			$id=$rec['_id'];
+			foreach($server['tables'][$tablename] as $field){
+				$cpath=$path;
+				switch(strtolower($field)){
+		        	case 'js':
+						$ext='js';
+						$type='views';
+					break;
+		        	case 'css':
+						$ext='css';
+						$type='views';
+					break;
+		        	case 'controller':
+						$ext='php';
+						$type='controllers';
+					break;
+					case 'functions':
+						$ext='php';
+						$type='models';
+					break;
+		        	default:
+		        		$ext='html';
+		        		$type='views';
+		        	break;
+				}
+				switch(strtolower($hosts[$chost]['groupby'])){				
+					case 'type':
+						$cpath .= "/{$type}";
+					break;
+					case 'field':
+						$cpath .= "/{$field}";
+					break;
+					case 'ext':
+					case 'extension':
+						$cpath .= "/{$ext}";
+					break;
+					default:
+						$cpath .= "/{$rec['name']}";
+					break;
+				}
+				$afile="{$cpath}/{$rec['name']}.{$tablename}.{$field}.{$rec['_id']}.{$ext}";
+				if(!file_exists($afile)){
+					//check extensions
+					foreach($extensions as $ext){
+						$cfile="{$cpath}/{$rec['name']}.{$tablename}.{$field}.{$rec['_id']}.{$ext}";
+						if(!file_exists($cfile)){
+							$afile=$cfile;
+							break;
+						}
+					}
+				}
+				if(file_exists($afile)){
+					$shakey=posteditShaKey($afile);
+					$sha=crc32File($afile);
+					if($firsttime==1){$local_shas[$shakey]=$sha;}
+					if($sha!=$rec[$field]){
+						//need it 
+						$json[$tablename][$id][]=$field;
+						$changes++;
+					}
+				}
+				else{
+					$json[$tablename][$id][]=$field;
+					$missing++;
+				}
+			}
+		}
+		
+	}
+	//if($changes==0){return;}
+	$json=json_encode($json);
+	//file_put_contents("{$progpath}/postedit_xml.json",$json);
+	$postopts=array(
+		'apikey'	=>$hosts[$chost]['apikey'],
+		'username'	=>$hosts[$chost]['username'],
+		'_noguid'	=>1,
+		'postedittables'=>$tables,
+		'apimethod'	=>"posteditxmlfromjson",
+		'encoding'	=>"base64",
+		'-nossl'=>1,
+		'-follow'=>1,
+		'-xml'=>1,
+		'json'=>$json
+	);
+	if($changes > 0){
+		echo "  Getting {$changes} changes from server ...".PHP_EOL;
+	}
+	$post=postURL($url,$postopts);
+	file_put_contents("{$progpath}/postedit_xml.txt",$post['body']);
+	if(isset($post['error']) && strlen($post['error'])){
+		abortMessage($post['error']);
+	}
+	elseif(isset($post['xml_array']['result']['fatal_error'])){
+		$msg=str_replace('&quot;','"',$post['xml_array']['result']['fatal_error']);
+		$msg=str_replace('&gt;','>',$msg);
+		$msg=str_replace('&lt;','<',$msg);
+		abortMessage($msg);
+	}
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
@@ -113,18 +256,18 @@ function writeFiles(){
 		$msg=str_replace('&lt;','<',$msg);
 		abortMessage($msg);
 	}
-
-
-	$folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
-	$afolder="{$progpath}/postEditFiles/{$folder}";
-	if(is_dir($afolder)){postEditCleanDir($afolder);}
-	else{
-		mkdir($afolder,0777,true);
+	//fix the one record issue
+	$xml['WASQL_RECORD']=(array)$xml['WASQL_RECORD'];
+	if(isset($xml['WASQL_RECORD']['@attributes'])){
+		$xml['WASQL_RECORD']=array($xml['WASQL_RECORD']);
 	}
+	//echo printValue($xml['WASQL_RECORD']);
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
+		//echo printValue($rec);
 		$info=$rec['@attributes'];
 		unset($rec['@attributes']);
+		//echo printValue($info).printValue($rec);exit;
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
 	    	//determine extension
@@ -177,27 +320,45 @@ function writeFiles(){
 			$content=base64_decode(trim($content));
 			//check content to see if it starts with php
 			if(preg_match('/^\<\?php/i',$content)){$ext='php';}
+			elseif(preg_match('/^\<\?\=/i',$content)){$ext='php';}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
-	    	//echo "{$afile}".PHP_EOL;
-	    	
+	    	$shakey=posteditShaKey($afile);
+	    	if(file_exists($afile) && crc32String($content)==crc32File($afile)){
+	    		continue;
+	    	}
 	    	file_put_contents($afile,$content);
-	    	$mtimes[$afile]=1;
+	    	$local_shas[$shakey]=crc32File($afile);
+	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
+	    		$fname=getFileName($afile);
+	    		$ftable=str_replace('_',' ',$info['table']);
+	    		$changedby=array();
+	    		foreach($userfields as $userfield){
+	    			$changedby[]=$info["user_{$userfield}"];
+	    		}
+	    		$changedby=implode(' ',$changedby);
+	    		echo "  {$afile} was changed by {$changedby} {$local_shas[$shakey]}".PHP_EOL;
+
+	    		//posteditSpeak("The, {$name} {$field} in the {$ftable} table was changed by {$changedby}");
+	    	}
 		}
 	}
-	//echo printValue($settings);exit;
-	sleep(1);
-	echo "  setting baseline modify times.".PHP_EOL;
-	foreach($mtimes as $afile=>$x){
-		$mtimes[$afile]=filemtime($afile);
+	if($firsttime==1){
+		$cmd='';
+		if(isset($settings['editor']['command'])){$cmd=$settings['editor']['command'];}
+		elseif(isWindows()){$cmd="EXPLORER /E";}
+		if(strlen($cmd)){
+			$afolder=preg_replace('/\//',"\\",$afolder);
+			cmdResults("{$cmd} \"{$afolder}\"");
+		}
 	}
-	$cmd='';
-	if(isset($settings['editor']['command'])){$cmd=$settings['editor']['command'];}
-	elseif(isWindows()){$cmd="EXPLORER /E";}
-	if(strlen($cmd)){
-		$afolder=preg_replace('/\//',"\\",$afolder);
-		cmdResults("{$cmd} \"{$afolder}\"");
-	}
-	return $afolder;
+	$firsttime=0;
+	return false;
+}
+function posteditShaKey($afile){
+	$path=getFilePath($afile);
+	$path=realpath($path);
+	$name=getFileName($afile);
+	return "{$path}/{$name}";
 }
 function postEditCleanDir($dir='') {
 	if(!is_dir($dir)){return false;}
@@ -233,7 +394,7 @@ function fileChanged($afile){
 	global $progpath;
 	global $hosts;
 	global $chost;
-	global $mtimes;
+	global $local_shas;
 	$filename=getFileName($afile);
 	echo "  {$filename}";
 	$content=@file_get_contents($afile);
@@ -252,20 +413,19 @@ function fileChanged($afile){
 		'_noguid'	=>1,
 		'_base64'	=>1,
 		'_id'		=>$id,
-		'timestamp'	=>$mtimes[$afile],
 		'_action'	=>'postEdit',
 		'_table'	=>$table,
 		'_fields'	=>$field,
 		$field		=>$content,
 		'_return'	=>'XML',
-		'-nossl'=>1,
-		'-follow'=>1,
+		'-nossl'	=>1,
+		'-follow'	=>1,
 		'-xml'		=>1
 	);
+
 	$url=buildHostUrl();
 	$post=postURL($url,$postopts);
-	file_put_contents("{$progpath}/postedit_change.post",printValue($post));
-	file_put_contents("{$progpath}/postedit_change.result",$post['body']);
+	file_put_contents("{$progpath}/postedit_filechanged.txt", printValue($postopts).$post['body']);
 POSTFILE:
 	$xml=array();
 	$json=array();
@@ -300,6 +460,8 @@ POSTFILE:
 		}
 	}
 	$ok=successMessage(" - Successfully updated");
+	$shakey=posteditShaKey($afile);
+	$local_shas[$shakey]=crc32File($afile);
 	return true;
 }
 function abortMessage($msg){
@@ -350,10 +512,10 @@ function soundAlarm($type='success'){
 			switch(strtolower($settings['sound']['gender'])){
 				case 'f':
 				case 'female':
-					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -f -d \"{$soundmsg}\"";
+					$cmd="{$progpath}\\voice.exe -v 75 -r 1 -f -d \"{$soundmsg}\"";
 				break;
 				default:
-					$cmd="{$progpath}\\voice.exe -v 100 -r 1 -m -d \"{$soundmsg}\"";
+					$cmd="{$progpath}\\voice.exe -v 75 -r 1 -m -d \"{$soundmsg}\"";
 				break;
 			}
 			$ok=exec($cmd);
@@ -364,6 +526,22 @@ function soundAlarm($type='success'){
 			return;
 		}
 	}
+}
+function posteditSpeak($msg){
+	global $settings;
+	global $progpath;
+	if(!isWindows()){return false;}
+	switch(strtolower($settings['sound']['gender'])){
+		case 'f':
+		case 'female':
+			$cmd="{$progpath}\\voice.exe -v 60 -r 1 -f -d \"{$msg}\"";
+		break;
+		default:
+			$cmd="{$progpath}\\voice.exe -v 60 -r 1 -m -d \"{$msg}\"";
+		break;
+	}
+	$ok=exec($cmd);
+	return true;
 }
 function getContents($file){
 	$file=preg_replace('/\//',"\\",$file);
