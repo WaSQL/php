@@ -60,7 +60,7 @@ if(file_exists($noloop)){
 file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
 echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
-$countdown=20;
+$countdown=60;
 
 while(1){
 	cli_set_process_title("{$afolder} - {$countdown} seconds to next check");
@@ -80,8 +80,7 @@ while(1){
 	$countdown-=1;
 	if($countdown==0){
 		writeFiles();
-		$countdown=20;
-		exit;
+		$countdown=60;
 	}
 }
 exit;
