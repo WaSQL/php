@@ -205,7 +205,7 @@ function writeFiles(){
 					if($firsttime==1){$local_shas[$shakey]=$sha;}
 					if($sha!=$rec[$field]){
 						//need it 
-						echo "Need it: {$tablename},{$id},{$field} -- {$sha} != {$rec[$field]}".PHP_EOL;
+						//echo "Need it: {$tablename},{$id},{$field} -- {$sha} != {$rec[$field]}".PHP_EOL;
 						$json[$tablename][$id][]=$field;
 						$changes++;
 					}
@@ -328,6 +328,10 @@ function writeFiles(){
 	    	if(file_exists($afile) && sha1($content)==sha1_file($afile)){
 	    		continue;
 	    	}
+	    	$changename="added";
+	    	if(file_exists($afile)){
+	    		$changename="changed";
+	    	}
 	    	file_put_contents($afile,$content);
 	    	$local_shas[$shakey]=sha1_file($afile);
 	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
@@ -338,7 +342,7 @@ function writeFiles(){
 	    			$changedby[]=$info["user_{$userfield}"];
 	    		}
 	    		$changedby=implode(' ',$changedby);
-	    		echo "  {$afile} was changed by {$changedby} {$local_shas[$shakey]}".PHP_EOL;
+	    		echo "  {$afile} was {$changename} by {$changedby} {$local_shas[$shakey]}".PHP_EOL;
 
 	    		//posteditSpeak("The, {$name} {$field} in the {$ftable} table was changed by {$changedby}");
 	    	}
