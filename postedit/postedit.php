@@ -67,6 +67,17 @@ while(1){
 	sleep(1);
 	shutdown_check();
 	//check for local changes
+	checkForChanges();
+	$countdown-=1;
+	if($countdown==0){
+		writeFiles();
+		$countdown=60;
+	}
+}
+exit;
+function checkForChanges(){
+	global $local_shas;
+	if(!is_array($local_shas)){return false;}
 	foreach($local_shas as $afile=>$sha){
 		if(!file_exists($afile)){continue;}
 		$csha=sha1_file($afile);
@@ -77,13 +88,8 @@ while(1){
 			fileChanged($afile);
 		}
 	}
-	$countdown-=1;
-	if($countdown==0){
-		writeFiles();
-		$countdown=60;
-	}
+	return true;
 }
-exit;
 function shutdown_check(){
 	global $lockfile;
 	global $pid;
@@ -118,6 +124,7 @@ function writeFiles(){
 	);
 	//echo "Calling posteditsha ...".PHP_EOL;
 	$post=postURL($url,$postopts);
+	checkForChanges();
 	file_put_contents("{$progpath}/postedit_sha.txt",$post['body']);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
@@ -136,8 +143,6 @@ function writeFiles(){
 	}
 	file_put_contents("{$progpath}/postedit_sha.txt",printValue($server));
 	//figure out what pages we need to get
-	
-	
 	$extensions=array('php','html','js','css');
 	$json=array();
 	$changes=0;
@@ -235,7 +240,9 @@ function writeFiles(){
 	if($changes > 0){
 		echo "  Getting {$changes} changes from server ...".PHP_EOL;
 	}
+	checkForChanges();
 	$post=postURL($url,$postopts);
+	checkForChanges();
 	file_put_contents("{$progpath}/postedit_xml.txt",$post['body']);
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
@@ -332,6 +339,7 @@ function writeFiles(){
 	    		$changename="changed";
 	    	}
 	    	file_put_contents($afile,$content);
+	    	checkForChanges();
 	    	$local_shas[$shakey]=sha1_file($afile);
 	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
 	    		$fname=getFileName($afile);
