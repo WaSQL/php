@@ -334,6 +334,9 @@ function writeFiles(){
 	    	if(file_exists($afile) && sha1($content)==sha1_file($afile)){
 	    		continue;
 	    	}
+	    	if(isset($local_shas[$shakey]) && sha1($content)==$local_shas[$shakey]){
+	    		continue;
+	    	}
 	    	$changename="added";
 	    	if(file_exists($afile)){
 	    		$changename="changed";
