@@ -3428,12 +3428,23 @@ function renderView($view, $params=array(), $opts=array()){
 //---------- begin function renderViewIf---------------------------------------
 /**
 * @describe renderViewIf is a Conditional renderView
-* @param condition boolean - condition
+* @param condition mixed - condition can be a boolean or an array of boolean=>view sets
+* @param view string - view name if true - not needed if condition is an array
+* @param params array
+* @param options array
 * @see renderView();
 * @author
 *	Brady Barten, brady.barten@zipsmart.com
 */
 function renderViewIf($conditional,$view, $params=array(), $opts=array()){
+	if(is_array($conditional) && count($conditional)){
+		$opts=$params;
+		$params=$view;
+		foreach($conditional as $condition=>$view){
+			if($condition){return renderView($view,$params,$opts);}
+		}
+		return '';
+	}
 	if($conditional){return renderView($view,$params,$opts);}
 	return '';
 }
@@ -3441,15 +3452,23 @@ function renderViewIf($conditional,$view, $params=array(), $opts=array()){
 //---------- begin function renderViewIfElse---------------------------------------
 /**
 * @describe renderViewIfElse is a Conditional renderView
-* @param condition boolean - condition
+* @param condition mixed - condition can be a boolean or an array of boolean=>view sets
 * @param view string - view name if true
-* @param viewelse string - view name if false
+* @param viewelse string - view name if false. Not needed if condition is an array
 * @param params array
 * @param options array
 * @see renderView();
 * @author Brady Barten, brady.barten@zipsmart.com
 */
 function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=array()){
+	if(is_array($conditional) && count($conditional)){
+		$opts=$params;
+		$params=$viewelse;
+		foreach($conditional as $condition=>$view){
+			if($condition){return renderView($view,$params,$opts);}
+		}
+		return renderView($view,$params,$opts);;
+	}
 	if($conditional){return renderView($view,$params,$opts);}
 	else{return renderView($viewelse,$params,$opts);}
 }
