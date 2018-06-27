@@ -385,10 +385,10 @@ function postEditCleanDir($dir='') {
 			$afile="{$dir}/{$file}";
 			if(is_dir($afile)){
 				postEditCleanDir($afile);
-				rmdir($afile);
+				@rmdir($afile);
             	}
             else{
-				unlink($afile);
+				@unlink($afile);
             	}
     		}
     	closedir($handle);
