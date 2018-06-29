@@ -175,6 +175,53 @@ function zipGetFileContents($zip_file, $file_name) {
 	return $content;
 }
 
+//---------- begin function zipGetFileThumbnail ----------
+/**
+* @describe return the first image within a zipfile as a thumbnail
+* @param zipfile string - path and zipfile
+* @param filename string - filename inside of zip file to push
+* @return raw
+* @usage
+*	<?=zipGetFileThumbnail('/var/www/temp/myfiles.zip');?>
+*/
+function zipGetFileThumbnail($zip_file) {
+	$content='';
+	if (file_exists($zip_file)) {
+		$zip = zip_open($zip_file);
+		while ($zip_entry = zip_read($zip)) {
+			if (zip_entry_open($zip, $zip_entry, "r")) {
+				$name=zip_entry_name($zip_entry);
+				if (preg_match('/\.(jpg|png|jpeg|gif)$/i',$name)) {
+					$ctype=getFileContentType($file_name);
+					$size=zip_entry_filesize($zip_entry);
+					$content=zip_entry_read($zip_entry, $size);
+					zip_entry_close($zip_entry);
+					break;
+				}
+			}
+		}
+		zip_close($zip);
+	}
+	header('Content-Description: File Transfer');
+	header("Content-Type: {$ctype}");
+    header('Content-Disposition: attachment; filename='.basename($name));
+    header("Accept-Ranges: bytes");
+	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+	header('ETag: ' . md5(time()));
+	//Note: caching on https will make it so it will fail in IE
+    if (isset($_SERVER['HTTPS'])) {
+		header('Pragma: ');
+		header('Cache-Control: ');
+		}
+    else{
+    	header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+    	header('Pragma: public');
+		}
+    header('Content-Length: ' . strlen($content));
+    echo $content;
+    exit;
+}
+
 //---------- begin function zipListFiles ----------
 /**
 * @describe returns a list of files found in zip file
