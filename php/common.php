@@ -3402,13 +3402,7 @@ function renderView($view, $params=array(), $opts=array()){
 			unset($opts['-format']);
 			unset($opts['-key']);
 			//echo printValue($opts);exit;
-			if(isExtra('phpmailer')){
-				$ok=phpmailerSendMail($opts);
-			}
-			else{
-				//echo 'old';exit;
-				$ok=sendMail($opts);
-				}
+			$ok=sendMail($opts);
 			if(!isNum($ok) && strlen($ok)){return $ok;}
 			return;
 		break;
@@ -10134,42 +10128,43 @@ function postEditXmlFromJson($json=array()){
 		'-fields'	=> implode(',',$fields)
 	));
 	//json[table][id][field1], json[table][id][field2]...
-	//echo "JSON:".printValue($json).PHP_EOL;exit;
+	//echo "Error: JSON:".printValue($json).PHP_EOL;
 	foreach($json as $table=>$tableids){
-		$ids=array();
+		//determine what fields I need for this table
+		//echo "Error: {$table}".PHP_EOL;
+		$finfo=getDBFieldInfo($table,1);
+		//continue;
+		//echo "Error: {$table}".PHP_EOL;continue;
+		//skip tables that do not have a name as a field
+		if(!isset($finfo['name'])){continue;}
 		$fields=array();
-		foreach($tableids as $id=>$cfields){
-			$ids[]=$id;
-			foreach($cfields as $field){
-				if(!in_array($field,$fields)){$fields[]=$field;}
+		foreach($finfo as $field=>$info){
+			if(isWasqlField($field)){continue;}
+			if(preg_match('/^(template|name|css_min|js_min)$/i',$field)){continue;}
+			if((isset($info['inputtype']) && strlen($info['inputtype']) && $info['inputtype'] == 'textarea') || $info['_dbtype']=='blob'){
+				$fields[]=$field;
 			}
 		}
-		//determine the name field
-		if(isset($finfo['name'])){
-			$fields[]='name';
-		}
-		$idstr=implode(',',$ids);
 		$fieldstr=implode(',',$fields);
-		$finfo=getDBFieldInfo($table,1);
-		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table} where _id in ({$idstr})";
-		//limit results to recs marked with postedit flag if it exists
-		if(isset($finfo['postedit'])){
-			$q.=" and postedit=1";
-		}
+		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table}";
 		$recs=getDBRecords($q);
 		$recs_count=count($recs);
-		//$xml .= "	<query_{$table} count=\"{$recs_count}\">".$q."</query_{$table}>".PHP_EOL;
-		if(!is_array($recs)){	continue;}
+		if(!is_array($recs)){continue;}
 		//build the xml for these records
 		foreach($recs as $rec){
 			$id=$rec['_id'];
 			$recxml='';
-			foreach($tableids[$id] as $field){
-				if(!strlen($rec[$field])){continue;}
-				$val=$rec[$field];
+			foreach($rec as $field=>$val){
+				if(isWasqlField($field) || $field=='name' || !strlen($val)){continue;}
+				$sha=posteditSha1($val);
+				//skip fields that have not changed
+				if(isset($json[$table][$id][$field]) && $sha == $json[$table][$id][$field]){
+					continue;
+				}
 				if(strlen($val)){$val=encodeBase64(trim($val));}	
 				$recxml .= "		<{$table}_{$field}>{$val}</{$table}_{$field}>".PHP_EOL;
 			}
+			//skip records that have not changed
 			if(!strlen($recxml)){continue;}
 			$atts=array(
 				'table'	=> $table,
@@ -10204,7 +10199,15 @@ function postEditXmlFromJson($json=array()){
         }
     }
     $xml .= "</xmlroot>".PHP_EOL;
+    //echo $xml;exit;
     return $xml;
+}
+function posteditSha1($str){
+	if(is_file($str)){
+		$str=file_get_contents($str);
+	}
+	$str=preg_replace('/[\r\n]+/','',$str);
+	return sha1($str);
 }
 //---------- begin function postEditXml---------------------------------------
 /**

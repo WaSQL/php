@@ -2,6 +2,9 @@
 /*
 	replacement for posteditd.pl to handle secure sites
 */
+//set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
+$timer=60;
+
 global $progpath;
 global $hosts;
 global $settings;
@@ -18,7 +21,6 @@ $progpath=dirname(__FILE__);
 include_once("$progpath/../php/common.php");
 getHosts();
 getSettings();
-$groups=getGroups();
 if(isset($argv[1])){
 	if(isset($hosts[$argv[1]])){$chost=$argv[1];}
 }
@@ -38,6 +40,10 @@ file_put_contents($lockfile,$pid);
 echo "{$lockfile} is now mine".PHP_EOL;
 //create the base dir
 $folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
+//allow timer to be set in postedit.xml
+if(isset($hosts[$chost]['timer'])){
+	$timer=(integer)$hosts[$chost]['timer'];
+}
 $afolder="{$progpath}/postEditFiles/{$folder}";
 $userfields=array('username');
 if(isset($hosts[$chost]['user_fields'])){
@@ -60,36 +66,20 @@ if(file_exists($noloop)){
 file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
 echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 $ok=soundAlarm('ready');
-$countdown=60;
+$countdown=$timer;
 
 while(1){
 	cli_set_process_title("{$afolder} - {$countdown} seconds to next check");
 	sleep(1);
 	shutdown_check();
 	//check for local changes
-	checkForChanges();
 	$countdown-=1;
-	if($countdown==0){
+	if($timer != 0 && $countdown==0){
 		writeFiles();
-		$countdown=60;
+		$countdown=$timer;
 	}
 }
 exit;
-function checkForChanges(){
-	global $local_shas;
-	if(!is_array($local_shas)){return false;}
-	foreach($local_shas as $afile=>$sha){
-		if(!file_exists($afile)){continue;}
-		$csha=sha1_file($afile);
-		if($sha != $csha){
-			$name=getFileName($afile);
-			cli_set_process_title("{$afolder} - file changed {$name}");
-			//echo "  {$afile} changed locally {$sha} != {$csha}".PHP_EOL;
-			fileChanged($afile);
-		}
-	}
-	return true;
-}
 function shutdown_check(){
 	global $lockfile;
 	global $pid;
@@ -99,7 +89,11 @@ function shutdown_check(){
 		exit;
 	}
 }
-
+/*
+	writeFiles:
+		submit sha1 of local files to server
+		Server responds with any files I need - new or changed
+*/
 function writeFiles(){
 	global $hosts;
 	global $chost;
@@ -109,121 +103,11 @@ function writeFiles(){
 	global $local_shas;
 	global $afolder;
 	global $userfields;
+	$json=posteditGetLocalShas();
+	$json=json_encode($json);
+	//echo "Local JSON: {$json}".PHP_EOL;
 	$url=buildHostUrl();
 	cli_set_process_title("{$afolder} - checking {$url}");
-	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
-	$postopts=array(
-		'apikey'	=>$hosts[$chost]['apikey'],
-		'username'	=>$hosts[$chost]['username'],
-		'_noguid'	=>1,
-		'postedittables'=>$tables,
-		'apimethod'	=>"posteditsha",
-		'-nossl'=>1,
-		'-follow'=>1,
-		'-json'=>1
-	);
-	//echo "Calling posteditsha ...".PHP_EOL;
-	$post=postURL($url,$postopts);
-	checkForChanges();
-	file_put_contents("{$progpath}/postedit_sha.txt",$post['body']);
-	if(isset($post['error']) && strlen($post['error'])){
-		abortMessage($post['error']);
-	}
-	elseif(isset($post['xml_array']['result']['fatal_error'])){
-		$msg=str_replace('&quot;','"',$post['xml_array']['result']['fatal_error']);
-		$msg=str_replace('&gt;','>',$msg);
-		$msg=str_replace('&lt;','<',$msg);
-		abortMessage($msg);
-	}
-	$server=json_decode($post['body'],true);
-	//file_put_contents("{$progpath}/postedit_sha.json",$post['body']);
-	//exit;
-	if(!isset($server['records'])){
-		abortMessage("invalid json - make sure you have updated WaSQL on the server");
-	}
-	file_put_contents("{$progpath}/postedit_sha.txt",printValue($server));
-	//figure out what pages we need to get
-	$extensions=array('php','html','js','css');
-	$json=array();
-	$changes=0;
-	$missing=0;
-	foreach($server['records'] as $tablename=>$recs){
-		//path
-    	$path="{$afolder}/{$tablename}";
-		foreach($recs as $rec){
-			//loop through the fields 
-			$id=$rec['_id'];
-			foreach($server['tables'][$tablename] as $field){
-				$cpath=$path;
-				switch(strtolower($field)){
-		        	case 'js':
-						$ext='js';
-						$type='views';
-					break;
-		        	case 'css':
-						$ext='css';
-						$type='views';
-					break;
-		        	case 'controller':
-						$ext='php';
-						$type='controllers';
-					break;
-					case 'functions':
-						$ext='php';
-						$type='models';
-					break;
-		        	default:
-		        		$ext='html';
-		        		$type='views';
-		        	break;
-				}
-				switch(strtolower($hosts[$chost]['groupby'])){				
-					case 'type':
-						$cpath .= "/{$type}";
-					break;
-					case 'field':
-						$cpath .= "/{$field}";
-					break;
-					case 'ext':
-					case 'extension':
-						$cpath .= "/{$ext}";
-					break;
-					default:
-						$cpath .= "/{$rec['name']}";
-					break;
-				}
-				$afile="{$cpath}/{$rec['name']}.{$tablename}.{$field}.{$rec['_id']}.{$ext}";
-				if(!file_exists($afile)){
-					//check extensions
-					foreach($extensions as $ext){
-						$cfile="{$cpath}/{$rec['name']}.{$tablename}.{$field}.{$rec['_id']}.{$ext}";
-						if(!file_exists($cfile)){
-							$afile=$cfile;
-							break;
-						}
-					}
-				}
-				if(file_exists($afile)){
-					$shakey=posteditShaKey($afile);
-					$sha=sha1_file($afile);
-					if($firsttime==1){$local_shas[$shakey]=$sha;}
-					if($sha!=$rec[$field]){
-						//need it 
-						//echo "Need it: {$tablename},{$id},{$field} -- {$sha} != {$rec[$field]}".PHP_EOL;
-						$json[$tablename][$id][]=$field;
-						$changes++;
-					}
-				}
-				else{
-					$json[$tablename][$id][]=$field;
-					$missing++;
-				}
-			}
-		}
-		
-	}
-	//if($changes==0){return;}
-	$json=json_encode($json);
 	//file_put_contents("{$progpath}/postedit_xml.json",$json);
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
@@ -237,15 +121,17 @@ function writeFiles(){
 		'-xml'=>1,
 		'json'=>$json
 	);
-	if($changes > 0){
-		echo "  Getting {$changes} changes from server ...".PHP_EOL;
-	}
-	checkForChanges();
 	$post=postURL($url,$postopts);
-	checkForChanges();
-	file_put_contents("{$progpath}/postedit_xml.txt",$post['body']);
+	file_put_contents("{$progpath}/posteditxmlfromjson.txt",$post['body']);
+	//echo printValue($postopts);exit;
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
+	}
+	elseif(stringBeginsWith($post['body'],'error:')){
+		abortMessage($post['body']);
+	}
+	elseif(stringBeginsWith($post['body'],'You have an error in your SQL syntax;')){
+		abortMessage($post['body']);
 	}
 	elseif(isset($post['xml_array']['result']['fatal_error'])){
 		$msg=str_replace('&quot;','"',$post['xml_array']['result']['fatal_error']);
@@ -253,6 +139,7 @@ function writeFiles(){
 		$msg=str_replace('&lt;','<',$msg);
 		abortMessage($msg);
 	}
+
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
@@ -270,6 +157,9 @@ function writeFiles(){
 		$xml['WASQL_RECORD']=array($xml['WASQL_RECORD']);
 	}
 	//echo printValue($xml['WASQL_RECORD']);
+	$cnt=count($xml['WASQL_RECORD']);
+	if($cnt==0){return;}
+	echo "updating {$cnt} pages".PHP_EOL;
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
 		//echo printValue($rec);
@@ -330,20 +220,13 @@ function writeFiles(){
 			if(preg_match('/^\<\?php/i',$content)){$ext='php';}
 			elseif(preg_match('/^\<\?\=/i',$content)){$ext='php';}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
-	    	$shakey=posteditShaKey($afile);
-	    	if(file_exists($afile) && sha1($content)==sha1_file($afile)){
-	    		continue;
-	    	}
-	    	if(isset($local_shas[$shakey]) && sha1($content)==$local_shas[$shakey]){
-	    		continue;
-	    	}
 	    	$changename="added";
 	    	if(file_exists($afile)){
 	    		$changename="changed";
 	    	}
 	    	file_put_contents($afile,$content);
-	    	checkForChanges();
-	    	$local_shas[$shakey]=sha1_file($afile);
+	    	$shakey=posteditShaKey($afile);
+	    	$local_shas[$shakey]=posteditSha1($afile);
 	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
 	    		$fname=getFileName($afile);
 	    		$ftable=str_replace('_',' ',$info['table']);
@@ -352,9 +235,9 @@ function writeFiles(){
 	    			$changedby[]=$info["user_{$userfield}"];
 	    		}
 	    		$changedby=implode(' ',$changedby);
-	    		echo "  {$afile} was {$changename} by {$changedby} {$local_shas[$shakey]}".PHP_EOL;
-
-	    		//posteditSpeak("The, {$name} {$field} in the {$ftable} table was changed by {$changedby}");
+	    		$sfile=getFileName($afile);
+	    		$stime=date('Y-m-d H:i:s');
+	    		echo "  $stime: {$sfile} was {$changename} by {$changedby}".PHP_EOL;
 	    	}
 		}
 	}
@@ -369,6 +252,25 @@ function writeFiles(){
 	}
 	$firsttime=0;
 	return false;
+}
+function posteditGetLocalShas(){
+	global $local_shas;
+	global $tables;
+	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
+	$tables=preg_split('/\,/',$tables);
+	$json=array();
+	//echo "localshas:".printValue($local_shas).PHP_EOL;
+	foreach($local_shas as $file=>$sha){
+		list($name,$table,$field,$id,$ext)=preg_split('/\./',getFileName($file));
+		//echo "file:{$file}".PHP_EOL;
+		//echo "{$name},{$table},{$field},{$id},{$ext} = {$sha}".PHP_EOL;
+		$json[$table][$id][$field]=$sha;
+	}
+	//make sure every table is represented in the jason
+	foreach($tables as $table){
+		if(!isset($json[$table])){$json[$table]=array();}
+	}
+	return $json;
 }
 function posteditShaKey($afile){
 	$path=getFilePath($afile);
@@ -477,7 +379,7 @@ POSTFILE:
 	}
 	$ok=successMessage(" - Successfully updated");
 	$shakey=posteditShaKey($afile);
-	$local_shas[$shakey]=sha1_file($afile);
+	$local_shas[$shakey]=posteditSha1($afile);
 	return true;
 }
 function abortMessage($msg){
@@ -573,89 +475,6 @@ function getContents($file){
 	}
 	return $out['stdout'];
 
-}
-function selectHost(){
-	global $cgroup;
-	global $hosts;
-	global $argv;
-	if(!is_array($hosts)){getHosts();}
-	$groups=getGroups();
-	$lines=array();
-	$x=1;
-	$map=array();
-	foreach($hosts as $name=>$host){
-		if(strtolower($host['group']) != $cgroup){continue;}
-    	$lines[]=" {$x}-{$name}";
-    	$map[$x]=$name;
-    	$x+=1;
-	}
-	//check for command line input
-	if(isset($argv[2])){
-		if(isset($map[$argv[2]])){return $map[$argv[2]];}
-		if(isset($hosts[$argv[2]])){return $argv[2];}
-	}
-	while(1){
-		echo "Select a Host:".PHP_EOL;
-		echo implode("\r\n",$lines);
-		echo "\r\nSelection: ";
-		$s = stream_get_line(STDIN, 1024, PHP_EOL);
-		$s=strtolower($s);
-		if(isset($map[$s])){
-			return $map[$s];
-		}
-		elseif(isset($hosts[$s])){
-			return $s;
-		}
-		else{
-        	echo "\r\nInvalid host entry".PHP_EOL;
-		}
-	}
-}
-function selectGroup(){
-	global $argv;
-	$groups=getGroups();
-	$lines=array();
-	$x=1;
-	$map=array();
-	foreach($groups as $group=>$cnt){
-    	$lines[]=" {$x}-{$group}";
-    	$map[$x]=$group;
-    	$x+=1;
-	}
-	//check for command line input
-	if(isset($argv[1])){
-		if(isset($map[$argv[1]])){return $map[$argv[1]];}
-		if(isset($groups[$argv[1]])){return $argv[1];}
-	}
-	while(1){
-		echo "Select a Group:".PHP_EOL;
-		echo implode("\r\n",$lines);
-		echo "\r\nSelection: ";
-		$s = stream_get_line(STDIN, 1024, PHP_EOL);
-		$s=strtolower($s);
-		if(isset($map[$s])){
-			return $map[$s];
-		}
-		elseif(isset($groups[$s])){
-			return $s;
-		}
-		else{
-        	echo "\r\nInvalid group entry".PHP_EOL;
-		}
-	}
-}
-function getGroups(){
-	global $hosts;
-	if(!is_array($hosts)){getHosts();}
-	$groups=array();
-	foreach($hosts as $name=>$host){
-		if(!isset($host['group'])){continue;}
-		$group=strtolower($host['group']);
-		if(isset($groups[$group])){$groups[$group]+=1;}
-		else{$groups[$group]=1;}
-	}
-	ksort($groups);
-	return $groups;
 }
 function getHosts(){
 	global $progpath;

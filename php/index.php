@@ -662,11 +662,11 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 					echo postEditXmlFromJson($json);
 				}
 				else{
-					echo "Error: POSTEDITXMLFROMJSON json is invalid";
+					echo "Error: POSTEDITXMLFROMJSON json is invalid".printValue($_REQUEST);
 				}
             }
             else{
-            	echo "Error: POSTEDITXMLFROMJSON request is invalid";
+            	echo "Error: POSTEDITXMLFROMJSON request is invalid".printValue($_REQUEST);
             }
             exit;
 		break;
