@@ -73,6 +73,7 @@ while(1){
 	sleep(1);
 	shutdown_check();
 	//check for local changes
+	checkForChanges();
 	$countdown-=1;
 	if($timer != 0 && $countdown==0){
 		writeFiles();
@@ -80,6 +81,21 @@ while(1){
 	}
 }
 exit;
+function checkForChanges(){
+	global $local_shas;
+	if(!is_array($local_shas)){return false;}
+	foreach($local_shas as $afile=>$sha){
+		if(!file_exists($afile)){continue;}
+		$csha=posteditSha1($afile);
+		if($sha != $csha){
+			$name=getFileName($afile);
+			cli_set_process_title("{$afolder} - file changed {$name}");
+			//echo "  {$afile} changed locally {$sha} != {$csha}".PHP_EOL;
+			fileChanged($afile);
+		}
+	}
+	return true;
+}
 function shutdown_check(){
 	global $lockfile;
 	global $pid;
