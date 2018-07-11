@@ -124,6 +124,7 @@ function writeFiles(){
 	//echo "Local JSON: {$json}".PHP_EOL;
 	$url=buildHostUrl();
 	cli_set_process_title("{$afolder} - checking {$url}");
+	echo "checking {$url}".PHP_EOL;
 	//file_put_contents("{$progpath}/postedit_xml.json",$json);
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
@@ -175,10 +176,10 @@ function writeFiles(){
 	//echo printValue($xml['WASQL_RECORD']);
 	$cnt=count($xml['WASQL_RECORD']);
 	if($cnt==0){return;}
-	echo "updating {$cnt} pages".PHP_EOL;
+	//echo "updating {$cnt} pages".PHP_EOL;
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
-		//echo printValue($rec);
+		echo printValue($rec).PHP_EOL;
 		$info=$rec['@attributes'];
 		unset($rec['@attributes']);
 		//echo printValue($info).printValue($rec);exit;

@@ -10155,13 +10155,14 @@ function postEditXmlFromJson($json=array()){
 			$id=$rec['_id'];
 			$recxml='';
 			foreach($rec as $field=>$val){
-				if(isWasqlField($field) || $field=='name' || !strlen($val)){continue;}
+				$val=trim($val);
+				if(isWasqlField($field) || $field=='name' || !strlen($val){continue;}
 				$sha=posteditSha1($val);
 				//skip fields that have not changed
 				if(isset($json[$table][$id][$field]) && $sha == $json[$table][$id][$field]){
 					continue;
 				}
-				if(strlen($val)){$val=encodeBase64(trim($val));}	
+				$val=encodeBase64($val);
 				$recxml .= "		<{$table}_{$field}>{$val}</{$table}_{$field}>".PHP_EOL;
 			}
 			//skip records that have not changed
