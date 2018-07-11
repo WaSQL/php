@@ -179,7 +179,7 @@ function writeFiles(){
 	//echo "updating {$cnt} pages".PHP_EOL;
 	foreach($xml['WASQL_RECORD'] as $rec){
 		$rec=(array)$rec;
-		echo printValue($rec).PHP_EOL;
+		//echo printValue($rec).PHP_EOL;
 		$info=$rec['@attributes'];
 		unset($rec['@attributes']);
 		//echo printValue($info).printValue($rec);exit;
