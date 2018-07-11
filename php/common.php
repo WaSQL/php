@@ -10156,7 +10156,7 @@ function postEditXmlFromJson($json=array()){
 			$recxml='';
 			foreach($rec as $field=>$val){
 				$val=trim($val);
-				if(isWasqlField($field) || $field=='name' || !strlen($val){continue;}
+				if(isWasqlField($field) || $field=='name' || !strlen($val)){continue;}
 				$sha=posteditSha1($val);
 				//skip fields that have not changed
 				if(isset($json[$table][$id][$field]) && $sha == $json[$table][$id][$field]){
