@@ -16,6 +16,7 @@ global $firsttime;
 global $afolder;
 $firsttime=1;
 $local_shas=array();
+date_default_timezone_set('America/Denver');
 ini_set("allow_url_fopen",1);
 $progpath=dirname(__FILE__);
 include_once("$progpath/../php/common.php");
@@ -43,6 +44,10 @@ $folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['n
 //allow timer to be set in postedit.xml
 if(isset($hosts[$chost]['timer'])){
 	$timer=(integer)$hosts[$chost]['timer'];
+}
+//allow timezone to be set
+if(isset($hosts[$chost]['timezone'])){
+	date_default_timezone_set($hosts[$chost]['timezone']);
 }
 $afolder="{$progpath}/postEditFiles/{$folder}";
 $userfields=array('username');
