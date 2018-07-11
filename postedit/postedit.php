@@ -124,7 +124,10 @@ function writeFiles(){
 	//echo "Local JSON: {$json}".PHP_EOL;
 	$url=buildHostUrl();
 	cli_set_process_title("{$afolder} - checking {$url}");
-	echo "checking {$url}".PHP_EOL;
+	if($firsttime==1){
+		echo "checking {$url}".PHP_EOL;
+	}
+	
 	//file_put_contents("{$progpath}/postedit_xml.json",$json);
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
