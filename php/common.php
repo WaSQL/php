@@ -793,7 +793,7 @@ function buildFormDate($name,$params=array()){
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="input-group" style="width:100%;">'.PHP_EOL;
+	$tag .= '<div class="input-group" style="width:100%;position:relative;white-space: nowrap;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='width:100%';
 	unset($params['width']);
