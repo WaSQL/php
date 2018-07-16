@@ -768,7 +768,6 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['width']=145;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
 	if($params['-value']=='NULL'){$params['-value']='';}
@@ -794,9 +793,10 @@ function buildFormDate($name,$params=array()){
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="input-group" style="width:100%;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='width:100%';
+	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
 	$tag .= '	<span data-id="'.$params['id'].'" class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"></span>'.PHP_EOL;
