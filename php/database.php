@@ -986,7 +986,12 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     elseif(isset($params['-fields']) && strlen($params['-fields']) > 0){
 		$info['formfields']=array();
-		$rows=preg_split('/[\r\n\,]+/',$params['-fields']);
+		if(isXML($params['-fields']) || isset($params['-xml'])){
+			$rows=preg_split('/[\r\n]+/',$params['-fields']);
+		}
+		else{
+			$rows=preg_split('/[\r\n\,]+/',$params['-fields']);
+		}
 		foreach($rows as $row){
 			if(isXML((string)$row) || isset($params['-xml'])){$line=$row;}
 			else{$line=preg_split('/[\t\s\:]+/',$row);}
