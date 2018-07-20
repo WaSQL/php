@@ -614,8 +614,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$cols=arrayColumns($opts,$params['width'],true);
 	$colsize=floor(12/count($cols));
 	$tag='';
-	$colxs=isset($params['materialize'])?'col s':'col-xs-';
-	$colsm=isset($params['materialize'])?'col s':'col-sm-';
+	$colxs=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-xs-';
+	$colsm=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-sm-';
 	if(isset($params['-checkall'])){
 		$tag .= '<div class="row"><div class="'.$colsm.'12 text-left">'.PHP_EOL;
     	$tag .= buildFormCheckAll('data-group',$params['group']);
@@ -645,7 +645,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     	foreach($opts as $tval=>$dval){
 			$id=$params['id'].'_'.$tval;
 			$minwidth=floor(strlen($dval)*10)+25;
-			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'.PHP_EOL;
+			$tag .= '		<div style="min-width:'.$minwidth.'px;margin-top:5px;white-space: nowrap;">'.PHP_EOL;
 			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
 
 			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
@@ -1098,7 +1098,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	if(strlen($class)){$class=' '.trim($class);}
 	$tag='';
 	$tag.='<div class="row">'.PHP_EOL;
-	$colxs=isset($params['materialize'])?'col s':'col-xs-';
+	$colxs=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-xs-';
 	foreach($cols as $opts){
     	$tag .= '	<div class="'.$colxs.$colsize.'">'.PHP_EOL;
     	foreach($opts as $tval=>$dval){

@@ -1251,6 +1251,12 @@ function addEditDBForm($params=array(),$customcode=''){
 					$opts['-bootstrap']=1;
 					if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
 				}
+				elseif(isset($params['-materialize']) && $params['-materialize']){
+					unset($params['width']);
+					unset($opts['width']);
+					$opts['-materialize']=1;
+					if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
+				}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -1471,6 +1477,12 @@ function addEditDBForm($params=array(),$customcode=''){
 				unset($params['width']);
 				unset($opts['width']);
 				$opts['-bootstrap']=1;
+				if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
+			}
+			elseif(isset($params['-materialize']) && $params['-materialize']){
+				unset($params['width']);
+				unset($opts['width']);
+				$opts['-materialize']=1;
 				if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
 			}
 			if(isset($params[$field.'_dname'])){
@@ -4235,6 +4247,11 @@ function getDBFieldTag($params=array()){
 	if(isset($params['-bootstrap']) && $params['-bootstrap']){
 		if(!stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
 		unset($info[$field]['width']);
+		$info[$field]['-bootstrap']=1;
+	}
+	elseif(isset($params['-materialize']) && $params['-materialize']){
+		unset($info[$field]['width']);
+		$info[$field]['-materialize']=1;
 	}
 	//return printValue($params).printValue($info[$field]);
 	//set a few special fields
@@ -4495,6 +4512,9 @@ function getDBFieldTag($params=array()){
 		default:
 			if(isset($params['-bootstrap'])){
 				$info[$field]['-bootstrap']=$params['-bootstrap'];
+			}
+			elseif(isset($params['-materialize'])){
+				$info[$field]['-materialize']=$params['-materialize'];
 			}
 			$tag=buildFormText($info[$field]['name'],$info[$field]);
 			break;
