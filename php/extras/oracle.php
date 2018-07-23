@@ -456,6 +456,14 @@ function oracleGetDBFieldInfo($table,$params=array()){
     	return;
 	}
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
+    	return;
+	}
 	//echo $table.printValue($pkeys);exit;
 	$query="select * from {$table} where 1=0";
 	$stid = oci_parse($dbh_oracle, $query);
