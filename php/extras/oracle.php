@@ -325,7 +325,7 @@ function oracleEditDBRecord($params){
         	break;
 		}
         $params[$k]=str_replace("'","''",$params[$k]);
-        $updates[]="upper({$k})=upper('{$params[$k]}')";
+        $updates[]="{$k}='{$params[$k]}'";
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
