@@ -4430,8 +4430,8 @@ function diffText($s,$m,$title='',$more='',$height=600){
 			$result .= '	<tr>'.PHP_EOL;
         	$result .= '		<td valign="top"></td>'.PHP_EOL;
         	$content=preg_replace('/^\t/','[tab]',$diff);
-        	$content=encodeHtml($content);
-        	$content=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$content);
+        	$content='<xmp>'.encodeHtml($content).'</xmp>';
+        	$content=str_replace('[tab]','          ',$content);
         	$result .= '		<td><div class="w_diff">'.$content.'</div></td>'.PHP_EOL;
         	$result .= '	</tr>'.PHP_EOL;
 		}
@@ -4446,8 +4446,8 @@ function diffText($s,$m,$title='',$more='',$height=600){
 				$contentlines=array();
 				foreach($diff['d'] as $line){
 					$line=preg_replace('/^\t/','[[tab]]',$line);
-					$line=encodeHtml($line);
-					$line=str_replace('[[tab]]','&nbsp;&nbsp;&nbsp;&nbsp;',$line);
+					$line='<xmp>'.encodeHtml($line).'</xmp>';
+					$line=str_replace('[[tab]]','          ',$line);
 					$contentlines[]=$line;
 				}
 				$content=implode("<br />\n",$contentlines);
@@ -4465,8 +4465,8 @@ function diffText($s,$m,$title='',$more='',$height=600){
 				$contentlines=array();
 				foreach($diff['i'] as $line){
 					$line=preg_replace('/^\t/','[[tab]]',$line);
-					$line=encodeHtml($line);
-					$line=str_replace('[[tab]]','&nbsp;&nbsp;&nbsp;&nbsp;',$line);
+					$line='<xmp>'.encodeHtml($line).'</xmp>';
+					$line=str_replace('[[tab]]','          ',$line);
 					$contentlines[]=$line;
 				}
 				$content=implode("<br />\n",$contentlines);

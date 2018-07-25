@@ -113,6 +113,7 @@
 				setView('sync_diffs_none',1);
 				return;
 			}
+			//echo printValue($diffs);exit;
 			//echo $diffs['controller'];exit;
 			setView('sync_diffs',1);
 			return;
