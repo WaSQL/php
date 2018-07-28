@@ -3283,8 +3283,14 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
+			if(stringContains($CONFIG['dbpass'],'$')){
+				$dump['command'] .= " -p'{$CONFIG['dbpass']}'";	
 			}
+			else{
+				$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
+			}
+			
+		}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
 			$dump['command'] .= " {$table}";
@@ -3300,8 +3306,13 @@ function dumpDB($table=''){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
 			}
 		if(strlen($CONFIG['dbpass'])){
-			$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
+			if(stringContains($CONFIG['dbpass'],'$')){
+				$dump['command'] .= " -p'{$CONFIG['dbpass']}'";	
 			}
+			else{
+				$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
+			}
+		}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
 			$dump['command'] .= " {$table}";
@@ -3368,8 +3379,13 @@ function optimizeDB(){
 		$rtn['command'] .= " -u {$CONFIG['dbuser']}";
 		}
 	if(strlen($CONFIG['dbuser'])){
-		$rtn['command'] .= " -p{$CONFIG['dbpass']}";
+		if(stringContains($CONFIG['dbpass'],'$')){
+			$rtn['command'] .= " -p'{$CONFIG['dbpass']}'";	
 		}
+		else{
+			$rtn['command'] .= " -p\"{$CONFIG['dbpass']}\"";
+		}
+	}
 	$rtn['command'] .= " {$CONFIG['dbname']}";
 	ob_start();
 	passthru($rtn['command']);
