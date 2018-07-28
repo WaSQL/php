@@ -281,8 +281,11 @@ function writeFiles(){
 function posteditGetLocalShas(){
 	global $local_shas;
 	global $tables;
+	global $hosts;
+	global $chost;
 	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	$tables=preg_split('/\,/',$tables);
+	//echo $chost.printValue($hosts[$chost]).printValue($tables);exit;
 	$json=array();
 	//echo "localshas:".printValue($local_shas).PHP_EOL;
 	foreach($local_shas as $file=>$sha){
@@ -295,6 +298,7 @@ function posteditGetLocalShas(){
 	foreach($tables as $table){
 		if(!isset($json[$table])){$json[$table]=array();}
 	}
+	//echo printValue($json);exit;
 	return $json;
 }
 function posteditShaKey($afile){
