@@ -7,10 +7,778 @@ ini_set('oci8.persistent_timeout',300);
 ini_set('oci8.default_prefetch',0);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
+//---------- begin function oracleAddDBRecord ----------
+/**
+* @describe adds a records from params passed in.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*   -table - name of the table to add to
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return integer returns the autoincriment key
+* @usage $id=oracleAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+*/
+function oracleAddDBRecord($params){
+	global $USER;
+	if(!isset($params['-table'])){return 'oracleAddRecord error: No table specified.';}
+	$fields=oracleGetDBFieldInfo($params['-table'],$params);
+	$sequence='';
+	$owner='';
+	foreach($fields as $field){
+    	if(isset($field['sequence'])){
+        	$sequence=$field['sequence'];
+        	$owner=$field['owner'];
+        	break;
+		}
+	}
+	$opts=array();
+	if(isset($fields['cdate'])){
+		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+	}
+	elseif(isset($fields['_cdate'])){
+		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
+	}
+	if(isset($fields['cuser'])){
+		$params['cuser']=$USER['username'];
+	}
+	elseif(isset($fields['_cuser'])){
+		$params['_cuser']=$USER['username'];
+	}
+	$valstr='';
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if(is_array($params[$k])){
+            	$params[$k]=implode(':',$params[$k]);
+		}
+		switch(strtolower($fields[$k]['type'])){
+        	case 'integer':
+        	case 'number':
+        		$opts['values'][]=$params[$k];
+        	break;
+        	case 'date':
+				if($k=='cdate' || $k=='_cdate'){
+					$params[$k]=date('Y-m-d',strtotime($v));
+				}
+        		$opts['values'][]="todate('{$params[$k]}')";
+        	break;
+        	default:
+        		$opts['values'][]="'{$params[$k]}'";
+        	break;
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+
+        $opts['fields'][]=trim(strtoupper($k));
+	}
+	$fieldstr=implode('","',$opts['fields']);
+	$valstr=implode(',',$opts['values']);
+    $query=<<<ENDOFQUERY
+		INSERT INTO {$params['-table']}
+		("{$fieldstr}")
+		values({$valstr})
+ENDOFQUERY;
+	return oracleQueryResults($query,$params);
+}
+//---------- begin function oracleAutoCommit ----------
+/**
+* @describe turn autocommit on or off
+* @param $stid resource - statement id
+* @param $onoff boolean - set to 0 or 'off' to turn autocommit off
+* @return connection resource and sets the global $dbh_oracle variable
+* @usage $ok=oracleAutoCommit($stid,'off');
+*/
+function oracleAutoCommit($stid,$onoff=0){
+	switch(strtolower($onoff)){
+		case 0:
+		case 'off':
+			//turn OFF autocommit
+			$r = oci_execute($stid, OCI_NO_AUTO_COMMIT);
+		break;
+		default:
+			//turn ON autocommit
+			$r = oci_execute($stid, OCI_COMMIT_ON_SUCCESS );
+		break;
+	}
+	if (!$r) {
+		$err=json_encode(oci_error($stid));
+		echo "oracleAutoCommit error:{$err}";
+		exit;
+	}
+	return true;
+}
+//---------- begin function oracleCommit ----------
+/**
+* @describe commit any transactions that have not been committed
+* @param [$conn] resource - connection. defaults to $dbh_oracle global
+* @return boolean
+* @usage $ok=oracleCommit();
+*/
+function oracleCommit($conn=''){
+	if(is_resource($conn)){
+		global $dbh_oracle;
+		$conn=$dbh_oracle;
+	}
+	return oci_commit($conn);
+}
+//---------- begin function oracleDBConnect ----------
+/**
+* @describe returns connection resource
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of database.
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return connection resource and sets the global $dbh_oracle variable
+* @usage $dbh_oracle=oracleDBConnect($params);
+* @usage singe query usage
+* 	$conn=oracleDBConnect(array('-single'=>1));
+* 		$stid = oci_parse($conn, 'select 1,2,3 from dual');
+* 		oci_execute($stid);
+* 		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+* 			echo printValue($row);
+* 		}
+* 	oci_close($conn);
+*/
+function oracleDBConnect($params=array()){
+	if(!isset($params['-port'])){$params['-port']=1521;}
+	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
+	$params=oracleParseConnectParams($params);
+	if(!isset($params['-connect'])){
+		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
+		echo "oracleDBConnect error: no connect params".printValue($params);
+		exit;
+	}
+	if(isset($params['-single'])){
+		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
+		if(!is_resource($dbh_single)){
+			$err=json_encode(oci_error());
+			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
+			echo "oracleDBConnect single connect error:{$err}".printValue($params);
+			exit;
+		}
+		return $dbh_single;
+	}
+	global $dbh_oracle;
+	if(is_resource($dbh_oracle)){return $dbh_oracle;}
+	try{
+		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
+		if(!is_resource($dbh_oracle)){
+			$err=json_encode(oci_error());
+			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
+			echo "oracleDBConnect error:{$err}".printValue($params);
+			exit;
+
+		}
+		return $dbh_oracle;
+	}
+	catch (Exception $e) {
+		echo "oracleDBConnect exception" . printValue($e);
+		exit;
+	}
+}
+//---------- begin function oracleEditDBRecord ----------
+/**
+* @describe edits a records from params passed in. must have a -table and a -where
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*   -table - name of the table to add to
+*   -where - filter to limit edit by.  i.e "id=4"
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to specify what fields and values to edit
+* @return integer return 1 on success
+* @usage $id=oracleEditDBRecord(array('-table'=>'abc','-where'=>'id=4',name'=>'bob','age'=>25));
+*/
+function oracleEditDBRecord($params){
+	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
+	global $USER;
+	global $dbh_oracle;
+	$fields=oracleGetDBFieldInfo($params['-table'],$params);
+	$opts=array();
+	if(isset($fields['edate'])){
+		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
+	}
+	elseif(isset($fields['_edate'])){
+		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
+	}
+	if(isset($fields['euser'])){
+		$params['euser']=$USER['username'];
+	}
+	elseif(isset($fields['_euser'])){
+		$params['_euser']=$USER['username'];
+	}
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($fields[$k])){continue;}
+		if($k=='cuser' || $k=='cdate'){continue;}
+		if(is_array($params[$k])){
+            $params[$k]=implode(':',$params[$k]);
+		}
+		switch(strtolower($fields[$k]['type'])){
+        	case 'date':
+				if($k=='edate' || $k=='_edate'){
+					$params[$k]=date('Y-m-d',strtotime($v));
+				}
+        	break;
+		}
+        $params[$k]=str_replace("'","''",$params[$k]);
+        $updates[]="{$k}='{$params[$k]}'";
+	}
+	$updatestr=implode(', ',$updates);
+    $query=<<<ENDOFQUERY
+		UPDATE {$params['-table']}
+		SET {$updatestr}
+		WHERE {$params['-where']}
+ENDOFQUERY;
+	return oracleQueryResults($query,$params);
+	return;
+}
+//---------- begin function oracleExecuteSQL ----------
+/**
+* @describe executes query and returns succes or error
+* @param $query string - SQL query to execute
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
+*	[-host] - mssql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	[module] - module to set query against. Defaults to 'waSQL'
+* 	[action] - action to set query against. Defaults to 'oracleExecuteSQL'
+* 	[id] - identifier to set query against. Defaults to current user
+* 	[setmodule] boolean - set to false to not set module, action, and id. Defaults to true
+* 	[-idcolumn] boolean - set to true to include row number as _id column
+* @return array - returns boolean or error
+* @usage $ok=oracleExecuteSQL($query);
+*/
+function oracleExecuteSQL($query='',$params=array()){
+	global $USER;
+	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleQueryResults Connect Error",$e));
+    	return;
+	}
+	oci_rollback($dbh_oracle);
+	if(!isset($params['setmodule'])){$params['setmodule']=true;}
+	$stid = oci_parse($dbh_oracle, $query);
+	if (!$stid) {
+    	$e = json_encode(oci_error($dbh_oracle));
+		debugValue(array('OracleQueryResults Parse Error',$e));
+		oci_close($dbh_oracle);
+    	return;
+	}
+	if($params['setmodule']){
+		if(!isset($params['module'])){$params['module']='waSQL';}
+		if(!isset($params['action'])){
+			if(isset($_REQUEST['AjaxRequestUniqueId'])){$params['action']='oracleExecuteSQL (AJAX): '.$_REQUEST['AjaxRequestUniqueId'];}
+			else{$params['action']='oracleExecuteSQL';}
+		}
+		if(!isset($params['id'])){$params['id']=$USER['username'];}
+		oci_set_module_name($dbh_oracle, $params['module']);
+		oci_set_action($dbh_oracle, $params['action']);
+		oci_set_client_identifier($dbh_oracle, $params['id']);
+	}
+	// check for non-select query
+	if(preg_match('/^(update|insert|alter)/is',trim($query))){
+		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
+    	oci_free_statement($stid);
+    	if($params['setmodule']){
+			oci_set_module_name($dbh_oracle, 'idle');
+			oci_set_action($dbh_oracle, 'idle');
+			oci_set_client_identifier($dbh_oracle, 'idle');
+		}
+		oci_close($dbh_oracle);
+    	return;
+	}
+	$r = oci_execute($stid);
+	if (!$r) {
+		$e = json_encode(oci_error($stid));
+	    
+	    oci_free_statement($stid);
+	    if($params['setmodule']){
+			oci_set_module_name($dbh_oracle, 'idle');
+			oci_set_action($dbh_oracle, 'idle');
+			oci_set_client_identifier($dbh_oracle, 'idle');
+		}
+		oci_close($dbh_oracle);
+    	return;
+	}
+	return true;
+}
+//---------- begin function oracleGetActiveSessionCount
+/**
+* @describe returns and array of records
+* @param params array - requires either -list or -table or a raw query instead of params
+*	[-seconds] integer - seconds since  - LAST_CALL_ET
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return integer - number of sessions
+* @usage
+*	$cnt=oracleGetActiveSessionCount(array('-seconds'=>60));
+*/
+function oracleGetActiveSessionCount($params=array()){
+	$query="
+		SELECT
+			count(*) cnt
+		FROM v\$session sess
+		WHERE
+			sess.type='USER'
+			and sess.status='ACTIVE'
+	";
+	if(isset($params['-seconds']) && isNum($params['-seconds'])){
+		$query .= " AND sess.LAST_CALL_ET >= {$params['-seconds']}";
+	}
+	$recs=oracleQueryResults($query,$params);
+	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
+	return $query;
+}
+//---------- begin function oracleGetDBFieldInfo--------------------
+/**
+* @describe returns an array containing type,length, and flags for each field in said table
+* @param table string - table name
+* @param params array - requires either -list or -table or a raw query instead of params
+*	[-getmeta] string - table name.  Use this with other field/value params to filter the results
+*	[-field] mixed - query record limit
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array
+* @usage $fields=oracleGetDBFieldInfo('notes');
+*/
+function oracleGetDBFieldInfo($table,$params=array()){
+	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
+    	return;
+	}
+	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
+    	return;
+	}
+	//echo $table.printValue($pkeys);exit;
+	$query="select * from {$table} where 1=0";
+	$stid = oci_parse($dbh_oracle, $query);
+	if(!$stid){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleGetDBFieldInfo Parse Error",$query,$e));
+    	return;
+	}
+	oci_execute($stid, OCI_DESCRIBE_ONLY);
+	$ncols = oci_num_fields($stid);
+	$fields=array();
+	for ($i = 1; $i <= $ncols; $i++) {
+		$name=oci_field_name($stid, $i);
+		$field=array(
+			'table'	=> $table,
+			'name'	=> $name,
+			'type'	=> oci_field_type($stid, $i),
+			'precision'	=> oci_field_precision($stid, $i),
+			'scale'	=> oci_field_scale($stid, $i),
+			'length'	=> oci_field_size($stid, $i),
+			//'type_raw'	=> oci_field_type_raw($stid, $i),
+		);
+		if(in_array($name,$pkeys)){
+			$field['primary_key']=true;
+		}
+		else{
+			$field['primary_key']=false;
+			}
+		$name=strtolower($name);
+	    $fields[$name]=$field;
+	}
+	oci_free_statement($stid);
+	oci_close($dbh_oracle);
+	return $fields;
+}
+//---------- begin function oracleGetDBRecords
+/**
+* @describe returns and array of records
+* @param params array - requires either -table or a raw query instead of params
+*	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-limit] mixed - query record limit.  Defaults to CONFIG['paging'] if set in config.xml otherwise 25
+*	[-offset] mixed - query offset limit
+*	[-fields] mixed - fields to return
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array - set of records
+* @usage
+*	<?=oracleGetDBRecords(array('-table'=>'notes'));?>
+*	<?=oracleGetDBRecords("select * from myschema.mytable where ...");?>
+*/
+function oracleGetDBRecords($params){
+	global $USER;
+	global $CONFIG;
+	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+		//they just entered a query
+		$query=$params;
+	}
+	else{
+		//determine fields to return
+		if(!empty($params['-fields'])){
+			if(!is_array($params['-fields'])){
+				$params['-fields']=str_replace(' ','',$params['-fields']);
+				$params['-fields']=preg_split('/\,/',$params['-fields']);
+			}
+			$params['-fields']=implode(',',$params['-fields']);
+		}
+		if(empty($params['-fields'])){$params['-fields']='*';}
+		$fields=oracleGetDBFieldInfo($params['-table'],$params);
+		$ands=array();
+		foreach($params as $k=>$v){
+			$k=strtolower($k);
+			if(!strlen(trim($v))){continue;}
+			if(!isset($fields[$k])){continue;}
+			if(is_array($params[$k])){
+	            $params[$k]=implode(':',$params[$k]);
+			}
+	        $params[$k]=str_replace("'","''",$params[$k]);
+	        $v=strtoupper($params[$k]);
+	        $ands[]="upper({$k})='{$v}'";
+		}
+		$wherestr='';
+		if(count($ands)){
+			$wherestr='WHERE '.implode(' and ',$ands);
+		}
+	    $query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    if(isset($params['-order'])){
+    		$query .= " ORDER BY {$params['-order']}";
+    	}
+    	//offset and limit
+    	$offset=isset($params['-offset'])?$params['-offset']:0;
+    	$limit=25;
+    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
+    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	}
+	return oracleQueryResults($query,$params);
+}
+//---------- begin function oracleGetDBTables ----------
+/**
+* @describe returns all valid table names
+* @param params array
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array - valid table names 
+*/
+function oracleGetDBTables($params=array()){
+	global $CONFIG;
+	$query=<<<ENDOFQUERY
+		SELECT 
+			owner,table_name,last_analyzed,num_rows,pct_free 
+		FROM 
+			all_tables 
+		WHERE 
+			owner not in ('SYS','SYSTEM') 
+			and tablespace_name not in ('SYS','SYSAUX','SYSTEM') 
+			and status='VALID'
+		ORDER BY 
+			owner,table_name
+ENDOFQUERY;
+	$recs = oracleQueryResults($query,$params);
+	$tables=array();
+	foreach($recs as $rec){
+		$tables[]="{$rec['owner']}.{$rec['table_name']}";
+	}
+	return $tables;
+}
+//---------- begin function oracleGetDBTablePrimaryKeys
+/**
+* @describe returns a list of primary key fields for specified table
+* @param table string - table name
+* @param params array
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array - primary key fields
+* @usage
+*	$pkeys=oracleGetDBTablePrimaryKeys('people');?>
+*/
+function oracleGetDBTablePrimaryKeys($table,$params=array()){
+	$parts=preg_split('/\./',$table);
+	$table=array_pop($parts);
+	$table=str_replace("'","''",$table);
+	$table=strtoupper($table);
+	if(count($parts)){
+		$owner=array_pop($parts);
+		$owner=str_replace("'","''",$owner);
+		$owner=strtoupper($owner);
+		$owner_filter="AND upper(cols.owner) = '{$owner}'";
+	}
+	else{$owner_filter='';}
+	$query=<<<ENDOFQUERY
+	SELECT
+  		cols.column_name
+		,cols.position
+		,cons.status
+		,cons.owner
+	FROM all_constraints cons, all_cons_columns cols
+	WHERE
+		upper(cols.table_name) = '{$table}'
+		{$owner_filter}
+		AND cons.constraint_type = 'P'
+		AND cons.constraint_name = cols.constraint_name
+		AND cons.owner = cols.owner
+	ORDER BY cols.position
+ENDOFQUERY;
+	$tmp = oracleQueryResults($query);
+	$keys=array();
+	foreach($tmp as $rec){
+		$keys[]=$rec['column_name'];
+    }
+	return $keys;
+}
+//---------- begin function oracleGetResourceResults ----------
+/**
+* @describe returns the results from a query resource
+* @param $resource resource - resource handle from query call
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return $recs array
+* @usage $recs=oracleGetResourceResults($resource);
+*/
+function oracleGetResourceResults($res,$params=array()){
+	$recs=array();
+	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
+	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
+	while ($row = oci_fetch_array($res, $fetchopts)) {
+		$rec=array();
+		foreach ($row as $field=>$val){
+			$field=strtolower($field);
+			if(is_resource($val)){
+				oci_execute($val);
+				//get the fields
+				$xfields=array();
+				$icount=oci_num_fields($val);
+				for($i=1;$i<=$icount;$i++){
+					$xfield=strtolower(oci_field_name($val,$i));
+					$xfields[]=$xfield;
+				}
+				$rec[$field]=oracleGetResourceResults($val,$params);
+				if(!count($rec[$field]) && isset($params['-forceheader'])){
+					$xrec=array();
+					foreach($xfields as $xfield){
+						$xrec[$xfield]='';
+					}
+					$rec[$field]=array($xrec);
+				}
+				oci_free_statement($val);
+			}
+			else{
+				$rec[$field]=$val;
+			}
+		}
+		$recs[]=$rec;
+	}
+	return $recs;
+}
+//---------- begin function oracleListDBRecords
+/**
+* @describe returns an html table of records
+* @param params array - requires either -list or -table or a raw query instead of params
+*	[-list] array - getDBRecords array to use
+*	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-table{class|style|id|...}] string - sets specified attribute on table
+*	[-thead{class|style|id|...}] string - sets specified attribute on thead
+*	[-tbody{class|style|id|...}] string - sets specified attribute on tbody
+*	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
+*	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
+*	[-listfields] -  subset of fields to list from the list returned.
+*	[-limit] mixed - query record limit
+*	[-offset] mixed - query offset limit
+*	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
+*	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
+*	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return string - html table to display
+* @usage
+*	<?=oracleListDBRecords(array('-table'=>'notes'));?>
+*	<?=oracleListDBRecords(array('-list'=>$recs));?>
+*	<?=oracleListDBRecords("select * from myschema.mytable where ...");?>
+*/
+function oracleListDBRecords($params=array(),$customcode=''){
+	//require -table or -list
+	if(empty($params['-table']) && empty($params['-list'])){
+		if(!empty($params[0])){
+			//they are passing in the list without any other params.
+			$params=array('-list'=>$params);
+		}
+		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+			//they just entered a query. convert it to a list
+			$params=array('-list'=>oracleQueryResults($params));
+		}
+	}
+	if(!empty($params['-table'])){
+		//get the list from the table. First lets get the table fields
+		$info=oracleGetDBFieldInfo($params['-table']);
+		if(!is_array($info) || !count($info)){
+			return "oracleListDBRecords error: No fields found for {$params['-table']}";
+		}
+		$params['-forceheader']=1;
+		$params['-list']=oracleGetDBRecords($params);
+	}
+	//verify we have records in $params['-list']
+	if(!is_array($params['-list']) || count($params['-list'])==0){
+		return "oracleListDBRecords error: ".$params['-list'];
+	}
+	//determine -listfields
+	if(!empty($params['-listfields'])){
+		if(!is_array($params['-listfields'])){
+			$params['-listfields']=str_replace(' ','',$params['-listfields']);
+			$params['-listfields']=preg_split('/\,/',$params['-listfields']);
+		}
+	}
+	if(empty($params['-listfields'])){
+		//get fields from -list
+		$params['-listfields']=array();
+		foreach($params['-list'] as $rec){
+			foreach($rec as $k=>$v){
+				$params['-listfields'][]=$k;
+			}
+			break;
+		}
+	}
+	//lets make us a table from the list we have
+	$rtn='<table ';
+	//add any table attributes pass in with -table
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-table(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	//build the thead
+	$rtn.='<thead ';
+	//add any thead attributes pass in with -thead
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-thead(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	$rtn .= '		<tr>'.PHP_EOL;
+	foreach($params['-listfields'] as $field){
+		$name=ucfirst(str_replace('_',' ',$field));
+		$rtn .= '			<th>';
+		//TODO: build in ability to sort by column
+		if(!empty($params['-thead_onclick'])){
+			$href=$params['-thead_onclick'];
+			$replace='%field%';
+            $href=str_replace($replace,$field,$href);
+            $name='<a href="#" onclick="'.$href.'">'.$name.'</a>';
+		}
+		elseif(!empty($params['-thead_href'])){
+			$href=$params['-thead_href'];
+			$replace='%field%';
+            $href=str_replace($replace,$field,$href);
+            $name='<a href="'.$href.'">'.$name.'</a>';
+		}
+		$rtn .=$name;
+		$rtn .='</th>'.PHP_EOL;
+	}
+	$rtn .= '		<tr>'.PHP_EOL;
+	$rtn .= '	</thead>'.PHP_EOL;
+	//build the tbody
+	$rtn.='<tbody ';
+	//add any tbody attributes pass in with -tbody
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-tbody(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	foreach($params['-list'] as $rec){
+		$rtn .= '		<tr>'.PHP_EOL;
+		foreach($params['-listfields'] as $fld){
+			$value=$rec[$fld];
+			//check for {field}_eval
+			if(!empty($params[$fld."_eval"])){
+				$evalstr=$params[$fld."_eval"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $evalstr=str_replace($replace,$rec[$recfld],$evalstr);
+                }
+                $value=evalPHP('<?' . $evalstr .'?>');
+			}
+			//check for {field}_onclick and {field}_href
+			if(!empty($params[$fld."_onclick"])){
+				$href=$params[$fld."_onclick"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $href=str_replace($replace,$rec[$recfld],$href);
+                }
+                $value='<a href="#" onclick="'.$href.'">'.$value.'</a>';
+			}
+			elseif(!empty($params[$fld."_href"])){
+				$href=$params[$fld."_onclick"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $href=str_replace($replace,$rec[$recfld],$href);
+                }
+                $value='<a href="'.$href.'">'.$value.'</a>';
+			}
+			$rtn .= '			<td>'.$value.'</td>'.PHP_EOL;
+		}
+		$rtn .= '		</tr>'.PHP_EOL;
+	}
+	$rtn .= '	</tbody>'.PHP_EOL;
+	$rtn .= '</table>'.PHP_EOL;
+	return $rtn;
+}
+
 //---------- begin function oracleParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
 * @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*	[-host] - oracle server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
@@ -113,392 +881,7 @@ function oracleParseConnectParams($params=array()){
 	}
 	return $params;
 }
-//---------- begin function oracleDBConnect ----------
-/**
-* @describe returns connection resource
-* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
-*	[-host] - oracle server to connect to
-* 	[-dbname] - name of database.
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return connection resource and sets the global $dbh_oracle variable
-* @usage $dbh_oracle=oracleDBConnect($params);
-* @usage singe query usage
-* 	$conn=oracleDBConnect(array('-single'=>1));
-* 		$stid = oci_parse($conn, 'select 1,2,3 from dual');
-* 		oci_execute($stid);
-* 		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-* 			echo printValue($row);
-* 		}
-* 	oci_close($conn);
-*/
-function oracleDBConnect($params=array()){
-	if(!isset($params['-port'])){$params['-port']=1521;}
-	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
-	$params=oracleParseConnectParams($params);
-	if(!isset($params['-connect'])){
-		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-		echo "oracleDBConnect error: no connect params".printValue($params);
-		exit;
-	}
-	if(isset($params['-single'])){
-		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
-		if(!is_resource($dbh_single)){
-			$err=json_encode(oci_error());
-			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			echo "oracleDBConnect single connect error:{$err}".printValue($params);
-			exit;
-		}
-		return $dbh_single;
-	}
-	global $dbh_oracle;
-	if(is_resource($dbh_oracle)){return $dbh_oracle;}
-	try{
-		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
-		if(!is_resource($dbh_oracle)){
-			$err=json_encode(oci_error());
-			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			echo "oracleDBConnect error:{$err}".printValue($params);
-			exit;
 
-		}
-		return $dbh_oracle;
-	}
-	catch (Exception $e) {
-		echo "oracleDBConnect exception" . printValue($e);
-		exit;
-	}
-}
-//---------- begin function oracleAutoCommit ----------
-/**
-* @describe turn autocommit on or off
-* @param $stid resource - statement id
-* @param $onoff boolean - set to 0 or 'off' to turn autocommit off
-* @return connection resource and sets the global $dbh_oracle variable
-* @usage $ok=oracleAutoCommit($stid,'off');
-*/
-function oracleAutoCommit($stid,$onoff=0){
-	switch(strtolower($onoff)){
-		case 0:
-		case 'off':
-			//turn OFF autocommit
-			$r = oci_execute($stid, OCI_NO_AUTO_COMMIT);
-		break;
-		default:
-			//turn ON autocommit
-			$r = oci_execute($stid, OCI_COMMIT_ON_SUCCESS );
-		break;
-	}
-	if (!$r) {
-		$err=json_encode(oci_error($stid));
-		echo "oracleAutoCommit error:{$err}";
-		exit;
-	}
-	return true;
-}
-
-//---------- begin function oracleCommit ----------
-/**
-* @describe commit any transactions that have not been committed
-* @param [$conn] resource - connection. defaults to $dbh_oracle global
-* @return boolean
-* @usage $ok=oracleCommit();
-*/
-function oracleCommit($conn=''){
-	if(is_resource($conn)){
-		global $dbh_oracle;
-		$conn=$dbh_oracle;
-	}
-	return oci_commit($conn);
-}
-//---------- begin function oracleAddDBRecord ----------
-/**
-* @describe adds a records from params passed in.
-*  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
-*   -table - name of the table to add to
-*	[-host] - oracle server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
-* @return integer returns the autoincriment key
-* @usage $id=oracleAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
-*/
-function oracleAddDBRecord($params){
-	global $USER;
-	if(!isset($params['-table'])){return 'oracleAddRecord error: No table specified.';}
-	$fields=oracleGetDBFieldInfo($params['-table'],$params);
-	$sequence='';
-	$owner='';
-	foreach($fields as $field){
-    	if(isset($field['sequence'])){
-        	$sequence=$field['sequence'];
-        	$owner=$field['owner'];
-        	break;
-		}
-	}
-	$opts=array();
-	if(isset($fields['cdate'])){
-		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
-	}
-	elseif(isset($fields['_cdate'])){
-		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
-	}
-	if(isset($fields['cuser'])){
-		$params['cuser']=$USER['username'];
-	}
-	elseif(isset($fields['_cuser'])){
-		$params['_cuser']=$USER['username'];
-	}
-	$valstr='';
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		if(is_array($params[$k])){
-            	$params[$k]=implode(':',$params[$k]);
-		}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$params[$k];
-        	break;
-        	case 'date':
-				if($k=='cdate' || $k=='_cdate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
-				}
-        		$opts['values'][]="todate('{$params[$k]}')";
-        	break;
-        	default:
-        		$opts['values'][]="'{$params[$k]}'";
-        	break;
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-
-        $opts['fields'][]=trim(strtoupper($k));
-	}
-	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
-    $query=<<<ENDOFQUERY
-		INSERT INTO {$params['-table']}
-		("{$fieldstr}")
-		values({$valstr})
-ENDOFQUERY;
-	return oracleQueryResults($query,$params);
-}
-function oracleEditDBRecord($params){
-	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
-	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
-	global $USER;
-	global $dbh_oracle;
-	$fields=oracleGetDBFieldInfo($params['-table'],$params);
-	$opts=array();
-	if(isset($fields['edate'])){
-		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
-	}
-	elseif(isset($fields['_edate'])){
-		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
-	}
-	if(isset($fields['euser'])){
-		$params['euser']=$USER['username'];
-	}
-	elseif(isset($fields['_euser'])){
-		$params['_euser']=$USER['username'];
-	}
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		if($k=='cuser' || $k=='cdate'){continue;}
-		if(is_array($params[$k])){
-            $params[$k]=implode(':',$params[$k]);
-		}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'date':
-				if($k=='edate' || $k=='_edate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
-				}
-        	break;
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-        $updates[]="{$k}='{$params[$k]}'";
-	}
-	$updatestr=implode(', ',$updates);
-    $query=<<<ENDOFQUERY
-		UPDATE {$params['-table']}
-		SET {$updatestr}
-		WHERE {$params['-where']}
-ENDOFQUERY;
-	return oracleQueryResults($query,$params);
-	return;
-}
-function oracleGetDBRecords($params){
-	if(!isset($params['-table'])){return 'oracleGetRecords error: No table specified.';}
-	if(!isset($params['-fields'])){$params['-fields']='*';}
-	$fields=oracleGetDBFieldInfo($params['-table'],$params);
-	$ands=array();
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		if(is_array($params[$k])){
-            $params[$k]=implode(':',$params[$k]);
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-        $ands[]="upper({$k})=upper('{$params[$k]}')";
-	}
-	$wherestr='';
-	if(count($ands)){
-		$wherestr='WHERE '.implode(' and ',$ands);
-	}
-    $query=<<<ENDOFQUERY
-		SELECT
-			{$params['-fields']}
-		FROM
-			{$params['-table']}
-		{$wherestr}
-ENDOFQUERY;
-	if(isset($params['-order'])){
-    	$query .= " ORDER BY {$params['-order']}";
-	}
-	return oracleQueryResults($query,$params);
-}
-
-function oracleGetActiveSessionCount($params=array()){
-	$query="
-		SELECT
-			count(*) cnt
-		FROM v\$session sess
-		WHERE
-			sess.type='USER'
-			and sess.status='ACTIVE'
-	";
-	if(isset($params['-seconds']) && isNum($params['-seconds'])){
-		$query .= " AND sess.LAST_CALL_ET >= {$params['-seconds']}";
-	}
-	$recs=oracleQueryResults($query,$params);
-	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
-	return $query;
-}
-//---------- begin function oracleGetDBTables ----------
-/**
-* @describe returns connection resource
-* @return array
-*	dbname, owner, name, type
-*/
-function oracleGetDBTables($params=array()){
-	global $CONFIG;
-	$query=<<<ENDOFQUERY
-		SELECT 
-			owner,table_name,last_analyzed,num_rows,pct_free 
-		FROM 
-			all_tables 
-		WHERE 
-			owner not in ('SYS','SYSTEM') 
-			and tablespace_name not in ('SYS','SYSAUX','SYSTEM') 
-			and status='VALID'
-		ORDER BY 
-			owner,table_name
-ENDOFQUERY;
-	$recs = oracleQueryResults($query,$params);
-	$tables=array();
-	foreach($recs as $rec){
-		$tables[]="{$rec['owner']}.{$rec['table_name']}";
-	}
-	return $tables;
-}
-function oracleGetDBTablePrimaryKeys($table,$params=array()){
-	$parts=preg_split('/\./',$table);
-	$table=array_pop($parts);
-	$table=str_replace("'","''",$table);
-	$table=strtoupper($table);
-	if(count($parts)){
-		$owner=array_pop($parts);
-		$owner=str_replace("'","''",$owner);
-		$owner=strtoupper($owner);
-		$owner_filter="AND upper(cols.owner) = '{$owner}'";
-	}
-	else{$owner_filter='';}
-	$query=<<<ENDOFQUERY
-	SELECT
-  		cols.column_name
-		,cols.position
-		,cons.status
-		,cons.owner
-	FROM all_constraints cons, all_cons_columns cols
-	WHERE
-		upper(cols.table_name) = '{$table}'
-		{$owner_filter}
-		AND cons.constraint_type = 'P'
-		AND cons.constraint_name = cols.constraint_name
-		AND cons.owner = cols.owner
-	ORDER BY cols.position
-ENDOFQUERY;
-	$tmp = oracleQueryResults($query);
-	$keys=array();
-	foreach($tmp as $rec){
-		$keys[]=$rec['column_name'];
-    }
-	return $keys;
-}
-function oracleGetDBFieldInfo($table,$params=array()){
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
-    	return;
-	}
-	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
-    	return;
-	}
-	//echo $table.printValue($pkeys);exit;
-	$query="select * from {$table} where 1=0";
-	$stid = oci_parse($dbh_oracle, $query);
-	if(!$stid){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Parse Error",$query,$e));
-    	return;
-	}
-	oci_execute($stid, OCI_DESCRIBE_ONLY);
-	$ncols = oci_num_fields($stid);
-	$fields=array();
-	for ($i = 1; $i <= $ncols; $i++) {
-		$name=oci_field_name($stid, $i);
-		$field=array(
-			'table'	=> $table,
-			'name'	=> $name,
-			'type'	=> oci_field_type($stid, $i),
-			'precision'	=> oci_field_precision($stid, $i),
-			'scale'	=> oci_field_scale($stid, $i),
-			'length'	=> oci_field_size($stid, $i),
-			//'type_raw'	=> oci_field_type_raw($stid, $i),
-		);
-		if(in_array($name,$pkeys)){
-			$field['primary_key']=true;
-		}
-		else{
-			$field['primary_key']=false;
-			}
-		$name=strtolower($name);
-	    $fields[$name]=$field;
-	}
-	oci_free_statement($stid);
-	oci_close($dbh_oracle);
-	return $fields;
-}
 //---------- begin function oracleQueryResults ----------
 /**
 * @describe returns the oracle records from query
@@ -595,114 +978,4 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	oci_close($dbh_oracle);
 	return $recs;
-}
-function oracleGetResourceResults($res,$params=array()){
-	$recs=array();
-	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
-	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
-	while ($row = oci_fetch_array($res, $fetchopts)) {
-		$rec=array();
-		foreach ($row as $field=>$val){
-			$field=strtolower($field);
-			if(is_resource($val)){
-				oci_execute($val);
-				//get the fields
-				$xfields=array();
-				$icount=oci_num_fields($val);
-				for($i=1;$i<=$icount;$i++){
-					$xfield=strtolower(oci_field_name($val,$i));
-					$xfields[]=$xfield;
-				}
-				$rec[$field]=oracleGetResourceResults($val,$params);
-				if(!count($rec[$field]) && isset($params['-forceheader'])){
-					$xrec=array();
-					foreach($xfields as $xfield){
-						$xrec[$xfield]='';
-					}
-					$rec[$field]=array($xrec);
-				}
-				oci_free_statement($val);
-			}
-			else{
-				$rec[$field]=$val;
-			}
-		}
-		$recs[]=$rec;
-	}
-	return $recs;
-}
-//---------- begin function oracleExecuteSQL ----------
-/**
-* @describe executes query and returns succes or error
-* @param $query string - SQL query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
-*	[-host] - mssql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	[module] - module to set query against. Defaults to 'waSQL'
-* 	[action] - action to set query against. Defaults to 'oracleExecuteSQL'
-* 	[id] - identifier to set query against. Defaults to current user
-* 	[setmodule] boolean - set to false to not set module, action, and id. Defaults to true
-* 	[-idcolumn] boolean - set to true to include row number as _id column
-* @return array - returns boolean or error
-* @usage $ok=oracleExecuteSQL($query);
-*/
-function oracleExecuteSQL($query='',$params=array()){
-	global $USER;
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleQueryResults Connect Error",$e));
-    	return;
-	}
-	oci_rollback($dbh_oracle);
-	if(!isset($params['setmodule'])){$params['setmodule']=true;}
-	$stid = oci_parse($dbh_oracle, $query);
-	if (!$stid) {
-    	$e = json_encode(oci_error($dbh_oracle));
-		debugValue(array('OracleQueryResults Parse Error',$e));
-		oci_close($dbh_oracle);
-    	return;
-	}
-	if($params['setmodule']){
-		if(!isset($params['module'])){$params['module']='waSQL';}
-		if(!isset($params['action'])){
-			if(isset($_REQUEST['AjaxRequestUniqueId'])){$params['action']='oracleExecuteSQL (AJAX): '.$_REQUEST['AjaxRequestUniqueId'];}
-			else{$params['action']='oracleExecuteSQL';}
-		}
-		if(!isset($params['id'])){$params['id']=$USER['username'];}
-		oci_set_module_name($dbh_oracle, $params['module']);
-		oci_set_action($dbh_oracle, $params['action']);
-		oci_set_client_identifier($dbh_oracle, $params['id']);
-	}
-	// check for non-select query
-	if(preg_match('/^(update|insert|alter)/is',trim($query))){
-		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
-    	oci_free_statement($stid);
-    	if($params['setmodule']){
-			oci_set_module_name($dbh_oracle, 'idle');
-			oci_set_action($dbh_oracle, 'idle');
-			oci_set_client_identifier($dbh_oracle, 'idle');
-		}
-		oci_close($dbh_oracle);
-    	return;
-	}
-	$r = oci_execute($stid);
-	if (!$r) {
-		$e = json_encode(oci_error($stid));
-	    
-	    oci_free_statement($stid);
-	    if($params['setmodule']){
-			oci_set_module_name($dbh_oracle, 'idle');
-			oci_set_action($dbh_oracle, 'idle');
-			oci_set_client_identifier($dbh_oracle, 'idle');
-		}
-		oci_close($dbh_oracle);
-    	return;
-	}
-	return true;
 }
