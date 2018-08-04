@@ -605,7 +605,7 @@ function oracleGetResourceResults($res,$params=array()){
 	}
 	return $recs;
 }
-//---------- begin function oracleListDBRecords
+//---------- begin function oracleListRecords
 /**
 * @describe returns an html table of records
 * @param params array - requires either -list or -table or a raw query instead of params
@@ -622,17 +622,17 @@ function oracleGetResourceResults($res,$params=array()){
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
-*	[-host] - oracle server to connect to
-* 	[-dbname] - name of ODBC connection
+*	[-host] - server to connect to
+* 	[-dbname] - name of database
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return string - html table to display
 * @usage
-*	<?=oracleListDBRecords(array('-table'=>'notes'));?>
-*	<?=oracleListDBRecords(array('-list'=>$recs));?>
-*	<?=oracleListDBRecords("select * from myschema.mytable where ...");?>
+*	<?=oracleListRecords(array('-table'=>'notes'));?>
+*	<?=oracleListRecords(array('-list'=>$recs));?>
+*	<?=oracleListRecords("select * from myschema.mytable where ...");?>
 */
-function oracleListDBRecords($params=array(),$customcode=''){
+function oracleListRecords($params=array()){
 	//require -table or -list
 	if(empty($params['-table']) && empty($params['-list'])){
 		if(!empty($params[0])){
@@ -641,21 +641,21 @@ function oracleListDBRecords($params=array(),$customcode=''){
 		}
 		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 			//they just entered a query. convert it to a list
-			$params=array('-list'=>oracleQueryResults($params));
+			$params=array('-list'=>oracleGetDBRecords($params));
 		}
 	}
 	if(!empty($params['-table'])){
 		//get the list from the table. First lets get the table fields
 		$info=oracleGetDBFieldInfo($params['-table']);
 		if(!is_array($info) || !count($info)){
-			return "oracleListDBRecords error: No fields found for {$params['-table']}";
+			return "oracleListRecords error: No fields found for {$params['-table']}";
 		}
 		$params['-forceheader']=1;
 		$params['-list']=oracleGetDBRecords($params);
 	}
 	//verify we have records in $params['-list']
 	if(!is_array($params['-list']) || count($params['-list'])==0){
-		return "oracleListDBRecords error: ".$params['-list'];
+		return "oracleListRecords error: ".$params['-list'];
 	}
 	//determine -listfields
 	if(!empty($params['-listfields'])){
@@ -674,8 +674,15 @@ function oracleListDBRecords($params=array(),$customcode=''){
 			break;
 		}
 	}
+	//return printValue($params);exit;
+	$rtn='';
+	//Check for -total to determine if we should show the searchFilterForm
+	if(!empty($params['-total'])){
+		$rtn .= commonSearchFiltersForm($params);
+	}
+	//return $rtn;
 	//lets make us a table from the list we have
-	$rtn='<table ';
+	$rtn.='<table ';
 	//add any table attributes pass in with -table
 	$atts=array();
 	foreach($params as $k=>$v){

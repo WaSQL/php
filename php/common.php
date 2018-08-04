@@ -1,4 +1,206 @@
 <?php
+//---------- begin function commonSearchFiltersForm
+/**
+* @describe returns an HTML search/filters form
+* @param params array
+*	[-form{class|style|id|...}] string - sets specified attribute on the form
+*	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
+*	[-limit] integer - number of records to show
+*	[-offset] integer - number to start with - defaults to 0
+*	[-total] integer - number of total records - required to show pagination buttons
+* @return string - html table to display
+* @usage
+*	<?=commonSearchFiltersForm(array('-table'=>'notes'));?>
+*/
+function commonSearchFiltersForm($params=array()){
+	if(empty($params['-formname'])){
+		$params['-formname']='searchfiltersform';
+	}
+	global $PAGE;
+	//beginning Form tag
+	$rtn = '<form method="post"';
+	//add any attributes pass in with -form
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-form(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	if(empty($atts['action'])){
+		$atts['action']=!empty($_SERVER['PHP_SELF'])?$_SERVER['PHP_SELF']:"/{$PAGE['name']}";
+	}
+	if(empty($atts['onsubmit'])){
+		$atts['onsubmit']="pagingAddFilter(this);pagingSetFilters(this);return true;";
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	$rtn .= '<div style="display:none;">'.PHP_EOL;
+	$rtn .= '	<textarea name="_filters">'.$params['-filters'].'</textarea>'.PHP_EOL;
+	if(isset($params['-bulkedit'])){
+		$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'.PHP_EOL;
+	}
+	$rtn .= '	<input type="hidden" name="_export" value="" />'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
+	//default class to browser-default
+	if(empty($params['class'])){$params['class']='browser-default';}
+	//if(empty($params['style'])){$params['style']='min-width:75px';}
+	//flex wrapper
+	$rtn .= '	<div class="w_flex w_flexrow w_flexwrap">'.PHP_EOL;
+	//search fields
+	if(!empty($params['-searchfields'])){
+		if(!is_array($params['-searchfields'])){
+			$params['-searchfields']=preg_split('/\/',$params['-searchfields']);
+		}
+		$vals=array();
+		foreach($params['-searchfields'] as $field){
+	    	$vals[$field]=ucwords(str_replace('_',' ',$field));
+		}
+	}
+	elseif(!empty($params['-table'])){
+		$fields=getDBFields($params['-table'],1);
+		$vals=array('*'=>'Any Field');
+		foreach($fields as $field){
+	    	if(isWasqlField($field) && $field != '_id'){continue;}
+	    	$vals[$field]=ucwords(str_replace('_',' ',$field));
+		}
+	}
+	//keep field and operator together (nowrap)
+	$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$rtn .= buildFormSelect('filter_field',$vals,$params);
+	$rtn .= '			</div>'.PHP_EOL;
+	//operators
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$vals=array(
+		'ct'	=> 'Contains',
+		'nct'	=> 'Not Contains',
+		'ca'	=> 'Contains Any of These',
+		'nca'	=> 'Not Contain Any of These',
+		'eq'	=> 'Equals',
+		'neq'	=> 'Not Equals',
+		'ea'	=> 'Equals Any of These',
+		'nea'	=> 'Not Equals Any of These',
+		'gt'	=> 'Greater Than',
+		'lt'	=> 'Less Than',
+		'egt'	=> 'Equals or Greater than',
+		'elt'	=> 'Less than or Equals',
+		'ib'	=> 'Is Blank',
+		'nb'	=> 'Is Not Blank'
+	);
+	$rtn .= buildFormSelect('filter_operator',$vals,$params);
+	$rtn .= '			</div>'.PHP_EOL;
+	$rtn .= '		</div>'.PHP_EOL;
+	//filter_value
+	//keep search_value and search button together (nowrap)
+	$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$params['placeholder']='value';
+	$params['autofocus']='autofocus';
+	$rtn .= buildFormText('filter_value',$params);
+	unset($params['autofocus']);
+	$rtn .= '			</div>'.PHP_EOL;
+	//search button
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$rtn .= '				<button type="submit" class="browser-default"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+	$rtn .= '			</div>'.PHP_EOL;
+	//add filter
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$rtn .= '				<button type="button" class="browser-default" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
+	$rtn .= '			</div>'.PHP_EOL;
+	if(isset($params['-bulkedit'])){
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Bulk Edit" class="browser-default" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '			</div>'.PHP_EOL;
+	}$rtn .= '		</div>'.PHP_EOL;
+	//Paging buttons - first, prev, next, and last
+	if(!empty($params['-total'])){
+		//keep pagination buttons together (now wrapping)
+		$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+		if(empty($params['-limit'])){$params['-limit']=25;}
+		if(empty($params['-offset'])){$params['-offset']=0;}
+		$rtn .= '		<input type="hidden" name="filter_total" value="'.$params['-total'].'" />'.PHP_EOL;
+		$rtn .= '		<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
+		//show first if offset minus limit is not 0
+		if($params['-offset']-$params['-limit'] > 0){
+			$offset=0;
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
+			$rtn .= '			</div>'.PHP_EOL;
+		}
+		//show prev if offset is not 0
+		if($params['-offset'] > 0){
+			$offset=$params['-offset']-$params['-limit'];
+			if($offset < 0){$offset=0;}
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
+			$rtn .= '			</div>'.PHP_EOL;
+		}
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$x=$params['-offset']+1;
+		$y=$x+$params['-limit']-1;
+		if($y > $params['-total']){$y=$params['-total'];}
+		$rtn .= "				{$x}-{$y} of {$params['-total']}".PHP_EOL;
+		$rtn .= '			</div>'.PHP_EOL;
+		//show next if offset+limit < total
+		if($params['-offset']+$params['-limit'] < $params['-total']){
+			$offset=$params['-offset']+$params['-limit'];
+			if($offset > $params['-total']-$params['-limit']){
+				$offset = $params['-total']-$params['-limit'];
+			}
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
+			$rtn .= '			</div>'.PHP_EOL;
+		}
+		if($params['-offset']+$params['-limit'] < $params['-total']){
+			$offset=$params['-total']-$params['-limit'];
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
+			$rtn .= '			</div>'.PHP_EOL;
+		}
+		$rtn .= '		</div>'.PHP_EOL;
+	}
+	
+	//end flex wrapper
+	$rtn .= '	</div>'.PHP_EOL;
+	//send_to_filters list
+	$rtn .= '	<div id="send_to_filters" style="min-height:30px;max-height:120px;overflow:auto;">'.PHP_EOL;
+	if(strlen($params['-filters']) && $params['-filters'] != 1){
+        //field-oper-value
+        if(is_array($params['-filters'])){$sets=$params['-filters'];}
+    	else{$sets=preg_split('/[\r\n\,]+/',$params['-filters']);}
+    	foreach($sets as $set){
+        	list($field,$oper,$val)=preg_split('/\-/',trim($set),3);
+        	if($field=='null' || $val=='null'){continue;}
+        	$fid=$field.$oper.$val;
+        	$dfield=$field;
+			if($dfield=='*'){$dfield='Any Field';}
+        	$doper=$oper;
+			$dval="'{$val}'";
+			switch($oper){
+	        	case 'ct': $doper='Contains';break;
+	        	case 'nct': $doper='Not Contains';break;
+	        	case 'ca': $doper='Contains Any of These';break;
+	        	case 'nca': $doper='Not Contain Any of These';break;
+				case 'eq': $doper='Equals';break;
+				case 'neq': $doper='Not Equals';break;
+				case 'ea': $doper='Equals Any of These';break;
+				case 'nea': $doper='Not Equals Any of These';break;
+				case 'gt': $doper='Greater Than';break;
+				case 'lt': $doper='Less Than';break;
+				case 'egt': $doper='Equals or Greater than';break;
+				case 'elt': $doper='Less than or Equals';break;
+				case 'ib': $doper='Is Blank';$dval='';break;
+				case 'nb': $doper='Is Not Blank';$dval='';break;
+			}
+			$dstr="{$dfield} {$doper} {$dval}";
+        	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
+		}
+		$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
+	}
+	$rtn .= '	</div>'.PHP_EOL;
+	$rtn .= '</form>'.PHP_EOL;
+	return $rtn;
+}
 //---------- begin function getWebsiteMeta ----------
 /**
 * @describe gets the headers, meta, and link data from a website URL
@@ -3103,7 +3305,8 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'_behavior','display',
 		'required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
-		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg'
+		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg',
+		'action','onsubmit'
 		);
 	if(isset($atts['pattern']) && !isset($atts['oninvalid']) && isset($atts['data-pattern_message'])){
 		$atts['oninvalid']="setCustomValidity(this.getAttribute('data-pattern_message'));";

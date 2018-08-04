@@ -1863,6 +1863,10 @@ function formFieldHasValue(fld){
 function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
 	}
+function pagingSetOffset(frm,v){
+	frm.filter_offset.value=v;
+	frm.submit();
+}
 function pagingBulkEdit(frm){
 	if(frm.filter_field.value.length==0 || frm.filter_field.value=='*'){alert('select a field to edit');return false;}
 	var editval='';

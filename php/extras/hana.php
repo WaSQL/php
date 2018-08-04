@@ -11,6 +11,179 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+//---------- begin function hanaListRecords
+/**
+* @describe returns an html table of records
+* @param params array - requires either -list or -table or a raw query instead of params
+*	[-list] array - getDBRecords array to use
+*	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-table{class|style|id|...}] string - sets specified attribute on table
+*	[-thead{class|style|id|...}] string - sets specified attribute on thead
+*	[-tbody{class|style|id|...}] string - sets specified attribute on tbody
+*	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
+*	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
+*	[-listfields] -  subset of fields to list from the list returned.
+*	[-limit] mixed - query record limit
+*	[-offset] mixed - query offset limit
+*	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
+*	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
+*	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
+*	[-host] - hana server to connect to
+* 	[-dbname] - name of database
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return string - html table to display
+* @usage
+*	<?=hanaListRecords(array('-table'=>'notes'));?>
+*	<?=hanaListRecords(array('-list'=>$recs));?>
+*	<?=hanaListRecords("select * from myschema.mytable where ...");?>
+*/
+function hanaListRecords($params=array()){
+	//require -table or -list
+	if(empty($params['-table']) && empty($params['-list'])){
+		if(!empty($params[0])){
+			//they are passing in the list without any other params.
+			$params=array('-list'=>$params);
+		}
+		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+			//they just entered a query. convert it to a list
+			$params=array('-list'=>hanaGetDBRecords($params));
+		}
+	}
+	if(!empty($params['-table'])){
+		//get the list from the table. First lets get the table fields
+		$info=hanaGetDBFieldInfo($params['-table']);
+		if(!is_array($info) || !count($info)){
+			return "hanaListRecords error: No fields found for {$params['-table']}";
+		}
+		$params['-forceheader']=1;
+		$params['-list']=hanaGetDBRecords($params);
+	}
+	//verify we have records in $params['-list']
+	if(!is_array($params['-list']) || count($params['-list'])==0){
+		return "hanaListRecords error: ".$params['-list'];
+	}
+	//determine -listfields
+	if(!empty($params['-listfields'])){
+		if(!is_array($params['-listfields'])){
+			$params['-listfields']=str_replace(' ','',$params['-listfields']);
+			$params['-listfields']=preg_split('/\,/',$params['-listfields']);
+		}
+	}
+	if(empty($params['-listfields'])){
+		//get fields from -list
+		$params['-listfields']=array();
+		foreach($params['-list'] as $rec){
+			foreach($rec as $k=>$v){
+				$params['-listfields'][]=$k;
+			}
+			break;
+		}
+	}
+	$rtn='';
+	//Check for -total to determine if we should show the searchFilterForm
+	if(!empty($params['-total'])){
+		$rtn .= commonSearchFiltersForm($params);
+	}
+	//lets make us a table from the list we have
+	$rtn.='<table ';
+	//add any table attributes pass in with -table
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-table(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	//build the thead
+	$rtn.='<thead ';
+	//add any thead attributes pass in with -thead
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-thead(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	$rtn .= '		<tr>'.PHP_EOL;
+	foreach($params['-listfields'] as $field){
+		$name=ucfirst(str_replace('_',' ',$field));
+		$rtn .= '			<th>';
+		//TODO: build in ability to sort by column
+		if(!empty($params['-thead_onclick'])){
+			$href=$params['-thead_onclick'];
+			$replace='%field%';
+            $href=str_replace($replace,$field,$href);
+            $name='<a href="#" onclick="'.$href.'">'.$name.'</a>';
+		}
+		elseif(!empty($params['-thead_href'])){
+			$href=$params['-thead_href'];
+			$replace='%field%';
+            $href=str_replace($replace,$field,$href);
+            $name='<a href="'.$href.'">'.$name.'</a>';
+		}
+		$rtn .=$name;
+		$rtn .='</th>'.PHP_EOL;
+	}
+	$rtn .= '		<tr>'.PHP_EOL;
+	$rtn .= '	</thead>'.PHP_EOL;
+	//build the tbody
+	$rtn.='<tbody ';
+	//add any tbody attributes pass in with -tbody
+	$atts=array();
+	foreach($params as $k=>$v){
+		if(preg_match('/^-tbody(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+	}
+	$rtn .= setTagAttributes($atts);
+	$rtn .= '>'.PHP_EOL;
+	foreach($params['-list'] as $rec){
+		$rtn .= '		<tr>'.PHP_EOL;
+		foreach($params['-listfields'] as $fld){
+			$value=$rec[$fld];
+			//check for {field}_eval
+			if(!empty($params[$fld."_eval"])){
+				$evalstr=$params[$fld."_eval"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $evalstr=str_replace($replace,$rec[$recfld],$evalstr);
+                }
+                $value=evalPHP('<?' . $evalstr .'?>');
+			}
+			//check for {field}_onclick and {field}_href
+			if(!empty($params[$fld."_onclick"])){
+				$href=$params[$fld."_onclick"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $href=str_replace($replace,$rec[$recfld],$href);
+                }
+                $value='<a href="#" onclick="'.$href.'">'.$value.'</a>';
+			}
+			elseif(!empty($params[$fld."_href"])){
+				$href=$params[$fld."_onclick"];
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $href=str_replace($replace,$rec[$recfld],$href);
+                }
+                $value='<a href="'.$href.'">'.$value.'</a>';
+			}
+			$rtn .= '			<td>'.$value.'</td>'.PHP_EOL;
+		}
+		$rtn .= '		</tr>'.PHP_EOL;
+	}
+	$rtn .= '	</tbody>'.PHP_EOL;
+	$rtn .= '</table>'.PHP_EOL;
+	return $rtn;
+}
 
 //---------- begin function hanaAddDBRecordsFromCSV ----------
 /**

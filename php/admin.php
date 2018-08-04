@@ -3565,7 +3565,7 @@ function tableOptions($table='',$params=array()){
 		    $rtn .= '					</ul>'.PHP_EOL;
 		    break;
 		case 'table':
-			$rtn .= '<table class="actionmenu" class="w_nopad"><tr>'.PHP_EOL;
+			$rtn .= '<table class="actionmenu w_nopad"><tr>'.PHP_EOL;
 			foreach($params['-options'] as $option){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
@@ -3597,7 +3597,7 @@ function tableOptions($table='',$params=array()){
 					$rtn .= ' onclick="'.$onclick.'"';
 		            }
 		        else{
-                	$rtn .= 'onclick="window.location=\''.$href.'\';"';
+                	$rtn .= ' onclick="window.location=\''.$href.'\';"';
 				}
 				$rtn .= '>';
 				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
