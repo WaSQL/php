@@ -2081,7 +2081,9 @@ function addDBRecord($params=array()){
     $valstr=implode(",",$vals);
     $table=$params['-table'];
     if(isMssql()){$table="[{$table}]";}
-    $query = 'insert into ' . $table . ' (' . $fieldstr . ') values (' . $valstr .')';
+    $ignore='';
+    if($params['-ignore']){$ignore=' ignore';}
+    $query = 'insert'.$ignore.' into ' . $table . ' (' . $fieldstr . ') values (' . $valstr .')';
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
 	$query_result=@databaseQuery($query);
