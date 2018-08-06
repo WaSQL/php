@@ -87,6 +87,16 @@ function commonSearchFiltersForm($params=array()){
 		'ib'	=> 'Is Blank',
 		'nb'	=> 'Is Not Blank'
 	);
+	if(!empty($params['-searchopers'])){
+		if(!is_array($params['-searchopers'])){
+			$params['-searchopers']=preg_split('/\,/',$params['-searchopers']);
+		}
+		$tmp=array();
+		foreach($params['-searchopers'] as $k){
+			$tmp[$k]=$vals[$k];
+		}
+		$vals=$tmp;
+	}
 	$rtn .= buildFormSelect('filter_operator',$vals,$params);
 	$rtn .= '			</div>'.PHP_EOL;
 	$rtn .= '		</div>'.PHP_EOL;
