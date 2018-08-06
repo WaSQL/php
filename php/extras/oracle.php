@@ -463,6 +463,10 @@ function oracleGetDBRecords($params){
 	        $v=strtoupper($params[$k]);
 	        $ands[]="upper({$k})='{$v}'";
 		}
+		//check for -where
+		if(!empty($params['-where'])){
+			$ands[]=$params['-where'];
+		}
 		$wherestr='';
 		if(count($ands)){
 			$wherestr='WHERE '.implode(' and ',$ands);
