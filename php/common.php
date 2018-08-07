@@ -37,9 +37,19 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
 	$rtn .= '	<textarea name="_filters">'.$params['-filters'].'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
-		$rtn .= '	<input type="hidden" name="_bulkedit" value="" />'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
 	}
-	$rtn .= '	<input type="hidden" name="_export" value="" />'.PHP_EOL;
+	if(isset($params['-export'])){
+		$rtn .= '	<input type="hidden" name="filter_export" value="" />'.PHP_EOL;
+	}
+	//other fields
+	foreach($params as $k=>$v){
+		if(preg_match('/^\-/',$k)){continue;}
+		if(is_array($params['-searchfields']) && in_array($k,$params['-searchfields'])){
+			continue;
+		}
+		$rtn .= '	<textarea name="'.$k.'">'.$v.'</textarea>'.PHP_EOL;
+	}
 	$rtn .= '</div>'.PHP_EOL;
 	//default class to browser-default
 	if(empty($params['class'])){$params['class']='browser-default';}
@@ -99,15 +109,22 @@ function commonSearchFiltersForm($params=array()){
 	}
 	$rtn .= buildFormSelect('filter_operator',$vals,$params);
 	$rtn .= '			</div>'.PHP_EOL;
-	$rtn .= '		</div>'.PHP_EOL;
-	//filter_value
-	//keep search_value and search button together (nowrap)
-	$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$params['placeholder']='value';
 	$params['autofocus']='autofocus';
 	$rtn .= buildFormText('filter_value',$params);
 	unset($params['autofocus']);
+	$rtn .= '			</div>'.PHP_EOL;
+	$rtn .= '		</div>'.PHP_EOL;
+	$rtn .= '		<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+	//order
+	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	$vals=array();
+	foreach($params['-listfields'] as $fld){
+		$vals[$fld]='Order By '.ucwords(trim(str_replace('_',' ',$fld))).' &#9650;';
+		$vals["{$fld} desc"]='Order By '.ucwords(trim(str_replace('_',' ',$fld))).' &#9660;';
+	}
+	$rtn .= buildFormSelect('filter_order',$vals,$params);
 	$rtn .= '			</div>'.PHP_EOL;
 	//search button
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
@@ -121,7 +138,13 @@ function commonSearchFiltersForm($params=array()){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="Bulk Edit" class="browser-default" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
-	}$rtn .= '		</div>'.PHP_EOL;
+	}
+	if(isset($params['-export'])){
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="CSV Export" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '			</div>'.PHP_EOL;
+	}
+	$rtn .= '		</div>'.PHP_EOL;
 	//Paging buttons - first, prev, next, and last
 	if(!empty($params['-total'])){
 		//keep pagination buttons together (now wrapping)
@@ -145,7 +168,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$rtn .= '			<div style="margin:0 3px;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
 		$x=$params['-offset']+1;
 		$y=$x+$params['-limit']-1;
 		if($y > $params['-total']){$y=$params['-total'];}
@@ -174,7 +197,7 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '	</div>'.PHP_EOL;
 	//send_to_filters list
 	$rtn .= '	<div id="send_to_filters" style="min-height:30px;max-height:120px;overflow:auto;">'.PHP_EOL;
-	if(strlen($params['-filters']) && $params['-filters'] != 1){
+	if(!empty($params['-filters'])){
         //field-oper-value
         if(is_array($params['-filters'])){$sets=$params['-filters'];}
     	else{$sets=preg_split('/[\r\n\,]+/',$params['-filters']);}

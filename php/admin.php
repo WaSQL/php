@@ -1192,25 +1192,6 @@ if(isset($_REQUEST['_menu'])){
 
             echo buildTableEnd();
 			break;
-		case 'entities':
-			/*
-				Best Lists on web:
-					http://www.danshort.com/HTMLentities/index.php?w=punct
-					http://www.amp-what.com/unicode/search/
-			*/
-			echo '<div class="w_lblue w_bold">&#128291; HTML Entities</div>'.PHP_EOL;
-
-			echo listDBRecords(array(
-				'_menu'				=>$_REQUEST['_menu'],
-				'-tableclass'		=> "table table-responsive table-bordered table-striped",
-				'-table'			=>'_html_entities',
-				'-listfields'		=> 'entity,entity_name,entity_number,description,category',
-				'entity_eval'		=> "return '<b class=\"w_bigger\">%entity_number%</b>';",
-				'entity_name_eval'	=>"return encodeHtml('%entity_name%');",
-				'entity_number_eval'=>"return encodeHtml('%entity_number%');",
-				'-order'			=> 'entity_number'
-			));
-			break;
 		case 'rebuild':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
@@ -1762,12 +1743,38 @@ LIST_TABLE:
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-responsive table-bordered table-striped",
 					'-bulkedit'		=> 1,
+					'-export'		=> 1,
 					'_table_'=>$_REQUEST['_table_'],
+					'-total'=>empty($_REQUEST['filter_total'])?getDBCount(array('-table'=>$_REQUEST['_table_'])):$_REQUEST['filter_total'],
 					'-table'=>$_REQUEST['_table_'],
-					'-action'=>'/php/admin.php','_id_href'=>'/php/admin.php?'.$idurl
+					'-formaction'=>'/php/admin.php',
+					'_id_href'=>'/php/admin.php?'.$idurl,
+					'-thead_onclick'=>"pagingSetOrder(document.searchfiltersform,'%field%');",
+					'-theadclass'=>'w_pointer'
 				);
-				if($_REQUEST['_table_']=='_users'){$recopts['-icons']=true;}
-				if($_REQUEST['_table_']=='_access_summary'){$recopts['accessdate_dateformat']="m/Y";}
+				//get listfields from tablemeta
+				$tinfo=getDBTableInfo(array('-table'=>$_REQUEST['_table_']));
+				if(!empty($tinfo['listfields'])){
+					$recopts['-listfields']=$tinfo['listfields'];
+					//add _id if it does not exist
+					if(!in_array('_id',$recopts['-listfields'])){
+						array_unshift($recopts['-listfields'],'_id');
+					}
+				}
+				elseif(!empty($tinfo['default_listfields'])){
+					$recopts['-listfields']=$tinfo['default_listfields'];
+					//add _id if it does not exist
+					if(!in_array('_id',$recopts['-listfields'])){
+						array_unshift($recopts['-listfields'],'_id');
+					}
+				}
+				//look for _filters
+				if(!empty($_REQUEST['_filters'])){
+					$recopts['-filters']=preg_split('/[\r\n]/',$_REQUEST['_filters']);					
+				}
+				if(!empty($_REQUEST['filter_order'])){
+					$recopts['-order']=$_REQUEST['filter_order'];					
+				}
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
@@ -1811,6 +1818,15 @@ LIST_TABLE:
 						$recopts['active_align']="center";
 						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as";
                 	break;
+                	case '_html_entities':
+                		$recopts['entity_name_eval']="return str_replace('&','&amp;','%entity_name%');";
+                		$recopts['entity_name_class']='text-right';
+                		$recopts['entity_number_eval']="return str_replace('&','&amp;',\"%entity_number%\");";
+                		$recopts['entity_number_class']='text-right';
+                		$recopts['-listfields']=array('_id','category','description','entity_name','entity_number','display');
+                		$recopts['display_eval']="return \"%entity_number%\";";
+                		$recopts['display_class']='text-right';
+                	break;
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";
                 		$recopts['-relate']=array('_template'=>'_templates');
@@ -1839,7 +1855,9 @@ LIST_TABLE:
 					echo '<div class="w_tip w_pad w_border"><span class="icon-warning w_danger w_big"></span><b class="w_red"> Edit Failed:</b>: '.printValue($_REQUEST['edit_result']).'</div>'.PHP_EOL;
                 	}
                 echo '<div style="padding:15px;">'.PHP_EOL;
-				echo listDBRecords($recopts);
+                //echo printValue($recopts);
+				echo databaseListRecords($recopts);
+				//echo printValue($_REQUEST);
 				echo '</div>'.PHP_EOL;
             	}
 			break;
@@ -3430,7 +3448,7 @@ function adminMenu(){
     //$rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> Server Vars</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=list&_table_=_html_entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'.PHP_EOL;

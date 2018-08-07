@@ -109,11 +109,122 @@ function databaseListRecords($params=array()){
 		if(!is_array($info) || !count($info)){
 			return "databaseListRecords error: No fields found for {$params['-table']}";
 		}
+		//check for -filters
+		if(!empty($params['-filters'])){
+			$wheres=array();
+			foreach($params['-filters'] as $filter){
+				list($field,$oper,$val)=preg_split('/\-/',$filter,3);
+				$val=strtolower(trim($val));
+				$val=str_replace("'","''",$val);
+				switch(strtolower($oper)){
+					case 'ct':
+						//contains
+						$wheres[]="lower({$field}) like '%{$val}%'";
+					break;
+					case 'nct':
+						//not contains
+						$wheres[]="lower({$field}) not like '%{$val}%'";
+					break;
+					case 'ca':
+						//contains any
+						$ors=array();
+						$cvals=preg_split('/\,/',$val);
+						foreach($cvals as $cval){
+							$ors[]="lower({$field}) like '%{$cval}%'";
+						}
+						$wheres[]='('.implode(' or ',$ors).')';
+					break;
+					case 'nca':
+						//not contains any
+						$ands=array();
+						$cvals=preg_split('/\,/',$val);
+						foreach($cvals as $cval){
+							$ands[]="lower({$field}) not like '%{$cval}%'";
+						}
+						$wheres[]='('.implode(' and ',$ands).')';
+					break;
+					case 'eq':
+						//equals
+						$wheres[]="lower({$field}) = '{$val}'";
+					break;
+					case 'neq':
+						//not equals
+						$wheres[]="lower({$field}) != '{$val}'";
+					break;
+					case 'ea':
+						//equals any
+						$ors=array();
+						$cvals=preg_split('/\,/',$val);
+						foreach($cvals as $cval){
+							$ors[]="lower({$field}) = '{$cval}'";
+						}
+						$wheres[]='('.implode(' or ',$ors).')';
+					break;
+					case 'nea':
+						//not equals any
+						$ands=array();
+						$cvals=preg_split('/\,/',$val);
+						foreach($cvals as $cval){
+							$ands[]="lower({$field}) != '{$cval}'";
+						}
+						$wheres[]='('.implode(' and ',$ands).')';
+					break;
+					case 'gt':
+						//greater than
+						if(isNum($val)){
+							$wheres[]="{$field} > {$val}";
+						}
+					break;
+					case 'lt':
+						//less than
+						if(isNum($val)){
+							$wheres[]="{$field} < {$val}";
+						}
+					break;
+					case 'egt':
+						//equals or greater than
+						if(isNum($val)){
+							$wheres[]="{$field} >= {$val}";
+						}
+					break;
+					case 'elt':
+						//equals or less than
+						if(isNum($val)){
+							$wheres[]="{$field} <= {$val}";
+						}
+					break;
+					case 'ib':
+						//is blank
+						if(isNum($val)){
+							$wheres[]="({$field} is null or LENGTH({$field}) = 0)";
+						}
+					break;
+					case 'nb':
+						//is not blank
+						if(isNum($val)){
+							$wheres[]="{$field} is not null and LENGTH({$field}) > 0";
+						}
+					break;
+				}
+			}	
+			if(count($wheres)){
+				$params['-where']=implode(' and ',$wheres);
+			}
+		}
 		$params['-forceheader']=1;
+		$params['-total']=getDBCount($params);
+		//echo printValue($params);exit;
 		$params['-list']=getDBRecords($params);
+		if(!is_array($params['-list']) && empty($params['-listfields'])){
+			$params['-listfields']=array();
+			foreach($info as $field=>$finfo){
+				if(isWasqlField($field) && $field != '_id'){continue;}
+				$params['-listfields'][]=$field;
+			}
+		}
 	}
 	//verify we have records in $params['-list']
-	if(!is_array($params['-list']) || count($params['-list'])==0){
+	if(!is_array($params['-list']) && strlen($params['-list'])){
 		return "databaseListRecords error: ".$params['-list'];
 	}
 	//determine -listfields
@@ -128,6 +239,7 @@ function databaseListRecords($params=array()){
 		$params['-listfields']=array();
 		foreach($params['-list'] as $rec){
 			foreach($rec as $k=>$v){
+				if(isWasqlField($k) && $k != '_id'){continue;}
 				$params['-listfields'][]=$k;
 			}
 			break;
@@ -136,6 +248,12 @@ function databaseListRecords($params=array()){
 	$rtn='';
 	//Check for -total to determine if we should show the searchFilterForm
 	if(!empty($params['-total'])){
+		if(empty($params['-searchfields'])){
+			$params['-searchfields']=array();
+			foreach($params['-listfields'] as $field){
+				$params['-searchfields'][]=$field;
+			}
+		}
 		$rtn .= commonSearchFiltersForm($params);
 	}
 	//lets make us a table from the list we have
@@ -182,6 +300,10 @@ function databaseListRecords($params=array()){
 	}
 	$rtn .= '		<tr>'.PHP_EOL;
 	$rtn .= '	</thead>'.PHP_EOL;
+	if(!is_array($params['-list']) || !count($params['-list'])){
+		$rtn .= '</table>'.PHP_EOL;
+		return $rtn;
+	}
 	//build the tbody
 	$rtn.='<tbody ';
 	//add any tbody attributes pass in with -tbody
@@ -220,7 +342,7 @@ function databaseListRecords($params=array()){
                 $value='<a href="#" onclick="'.$href.'">'.$value.'</a>';
 			}
 			elseif(!empty($params[$fld."_href"])){
-				$href=$params[$fld."_onclick"];
+				$href=$params[$fld."_href"];
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
@@ -229,7 +351,15 @@ function databaseListRecords($params=array()){
                 }
                 $value='<a href="'.$href.'">'.$value.'</a>';
 			}
-			$rtn .= '			<td>'.$value.'</td>'.PHP_EOL;
+			$rtn .= '			<td';
+			$atts=array();
+			foreach($params as $k=>$v){
+				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
+					$atts[$m[1]]=$v;
+				}
+			}
+			$rtn .= setTagAttributes($atts);
+			$rtn .='>'.$value.'</td>'.PHP_EOL;
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
 	}

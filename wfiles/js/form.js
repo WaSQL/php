@@ -1867,17 +1867,24 @@ function pagingSetOffset(frm,v){
 	frm.filter_offset.value=v;
 	frm.submit();
 }
+function pagingSetOrder(frm,v){
+	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
+		v=v+' desc';
+	}
+	frm.filter_order.value=v;
+	frm.submit();
+}
 function pagingBulkEdit(frm){
 	if(frm.filter_field.value.length==0 || frm.filter_field.value=='*'){alert('select a field to edit');return false;}
 	var editval='';
 	if(frm.filter_value.value.length==0){editval='NULL';}
 	else{editval="'"+frm.filter_value.value+"'";}
 	if(!confirm('Are you sure you want to update the current dataset?'+"\r\n\r\n"+'Mass Update \''+frm.filter_field.value+'\' field to '+editval+'?'+"\r\n\r\n"+'Click OK to confirm.  THIS IS NOT REVERSABLE.')){return false;}
-	frm._bulkedit.value='1';
+	frm.filter_bulkedit.value='1';
 	frm.submit();
 }
 function pagingExport(frm){
-	frm._export.value='1';
+	frm.filter_export.value='1';
 	frm.submit();
 }
 function pagingAddFilter(frm){
@@ -1960,9 +1967,9 @@ function pagingSetFilters(frm){
 	//update filters field
 	frm._filters.value=implode("\r\n",filters);
 	//clear bulk edit if it exists
-	if(undefined != frm._bulkedit){frm._bulkedit.value='';}
+	if(undefined != frm.filter_bulkedit){frm.filter_bulkedit.value='';}
 	//clear export if it exists
-	if(undefined != frm._export){frm._export.value='';}
+	if(undefined != frm.filter_export){frm.filter_export.value='';}
 }
 function pagingClearFilters(){
 	var f=document.querySelectorAll('.w_pagingfilter');

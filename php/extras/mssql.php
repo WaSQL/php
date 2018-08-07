@@ -73,6 +73,7 @@ function mssqlListRecords($params=array()){
 		$params['-listfields']=array();
 		foreach($params['-list'] as $rec){
 			foreach($rec as $k=>$v){
+				if(isWasqlField($k) && $k != '_id'){continue;}
 				$params['-listfields'][]=$k;
 			}
 			break;
@@ -81,6 +82,12 @@ function mssqlListRecords($params=array()){
 	$rtn='';
 	//Check for -total to determine if we should show the searchFilterForm
 	if(!empty($params['-total'])){
+		if(empty($params['-searchfields'])){
+			$params['-searchfields']=array();
+			foreach($params['-listfields'] as $field){
+				$params['-searchfields'][]=$field;
+			}
+		}
 		$rtn .= commonSearchFiltersForm($params);
 	}
 	//lets make us a table from the list we have
