@@ -138,6 +138,13 @@ function databaseListRecords($params=array()){
 		if(!is_array($info) || !count($info)){
 			return "databaseListRecords error: No fields found for {$params['-table']}";
 		}
+		//look for _filters
+		if(!empty($_REQUEST['_filters'])){
+			$params['-filters']=preg_split('/[\r\n]/',$_REQUEST['_filters']);					
+		}
+		if(empty($params['-order']) && !empty($_REQUEST['filter_order'])){
+			$params['-order']=$_REQUEST['filter_order'];					
+		}
 		//check for -filters
 		if(!empty($params['-filters'])){
 			$wheres=array();

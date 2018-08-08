@@ -1768,13 +1768,6 @@ LIST_TABLE:
 						array_unshift($recopts['-listfields'],'_id');
 					}
 				}
-				//look for _filters
-				if(!empty($_REQUEST['_filters'])){
-					$recopts['-filters']=preg_split('/[\r\n]/',$_REQUEST['_filters']);					
-				}
-				if(!empty($_REQUEST['filter_order'])){
-					$recopts['-order']=$_REQUEST['filter_order'];					
-				}
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
