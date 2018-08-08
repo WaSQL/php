@@ -241,24 +241,25 @@ function databaseListRecords($params=array()){
 			}
 		}
 		$params['-forceheader']=1;
-		switch(strtolower($params['-database'])){
-			case 'oracle':
-				$params['-total']=oracleGetDBCount($params);
-			break;
-			case 'hana':
-				$params['-total']=hanaGetDBCount($params);
-			break;
-			case 'mssql':
-				$params['-total']=mssqlGetDBCount($params);
-			break;
-			case 'sqlite':
-				$params['-total']=sqliteGetDBCount($params);
-			break;
-			default:
-				$params['-total']=getDBCount($params);
-			break;
+		if(empty($params['-total'])){
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+					$params['-total']=oracleGetDBCount($params);
+				break;
+				case 'hana':
+					$params['-total']=hanaGetDBCount($params);
+				break;
+				case 'mssql':
+					$params['-total']=mssqlGetDBCount($params);
+				break;
+				case 'sqlite':
+					$params['-total']=sqliteGetDBCount($params);
+				break;
+				default:
+					$params['-total']=getDBCount($params);
+				break;
+			}
 		}
-		
 		//check for -bulkedit and filter_bulkedit before running query
 		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
 			$bulk=array('-table'=>$params['-table']);
