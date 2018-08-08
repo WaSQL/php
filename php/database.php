@@ -280,10 +280,25 @@ function databaseListRecords($params=array()){
 	$rtn .= '>'.PHP_EOL;
 	$rtn .= '		<tr>'.PHP_EOL;
 	foreach($params['-listfields'] as $field){
-		$name=ucfirst(str_replace('_',' ',$field));
-		$rtn .= '			<th>';
-		//TODO: build in ability to sort by column
-		if(!empty($params['-thead_onclick'])){
+		$name=ucwords(trim(str_replace('_',' ',$field)));
+		$rtn .= '			<th class="w_nowrap">';
+		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
+		if(!empty($params['-sorting']) && $params['-sorting']==1){
+			$name='<a href="#" onclick="pagingSetOrder(document.searchfiltersform,\''.$field.'\');">'.$name;
+			//show sorting icon
+			if(!empty($_REQUEST['filter_order'])){
+				switch(strtolower($_REQUEST['filter_order'])){
+					case "{$field} desc":
+						$name .= ' <span class="icon-dir-down"></span>';
+					break;
+					case $field:
+						$name .= ' <span class="icon-dir-up"></span>';
+					break;
+				}
+			}
+			$name .= '</a>';
+		}
+		elseif(!empty($params['-thead_onclick'])){
 			$href=$params['-thead_onclick'];
 			$replace='%field%';
             $href=str_replace($replace,$field,$href);

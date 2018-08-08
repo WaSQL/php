@@ -9,7 +9,7 @@ function setInputFileName(fld){
 		fileName = fld.value.split( '\\' ).pop();
 	}
 	var label=document.querySelector('label[for='+fld.id+']');
-	console.log(fileName,label);
+	//console.log(fileName,label);
 	if(fileName){
 		setText(label,'<span class="icon-upload w_big w_success"></span> '+fileName);
 		label.className='btn btn-default';
@@ -1361,7 +1361,7 @@ function checkAllElements(att,val,ck){
 			//process any onclick attribute
 			if(undefined != cust[i].getAttribute('onclick')){
 				simulateEvent(cust[i], 'click');
-				console.log(cust[i], 'click');
+				//console.log(cust[i], 'click');
 			}
 			cust[i].checked=ck;
 			cnt++;
@@ -1867,7 +1867,7 @@ function pagingSetOffset(frm,v){
 	frm.filter_offset.value=v;
 	frm.submit();
 }
-function pagingSetOrder(frm,v){
+function pagingSetOrder(obj,frm,v){
 	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
 		v=v+' desc';
 	}

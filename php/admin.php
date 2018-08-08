@@ -1749,7 +1749,8 @@ LIST_TABLE:
 					'-table'=>$_REQUEST['_table_'],
 					'-formaction'=>'/php/admin.php',
 					'_id_href'=>'/php/admin.php?'.$idurl,
-					'-thead_onclick'=>"pagingSetOrder(document.searchfiltersform,'%field%');",
+					'-sorting'=>1,
+					'-limit'=>25,
 					'-theadclass'=>'w_pointer'
 				);
 				//get listfields from tablemeta

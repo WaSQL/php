@@ -118,14 +118,20 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '		<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 	//order
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$vals=array();
-	foreach($params['-listfields'] as $fld){
-		$vals[$fld]='Order By '.ucwords(trim(str_replace('_',' ',$fld))).' &#9650;';
-		$vals["{$fld} desc"]='Order By '.ucwords(trim(str_replace('_',' ',$fld))).' &#9660;';
+	if(!empty($params['-showorder']) && $params['-showorder']==1){
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$vals=array();
+		foreach($params['-listfields'] as $fld){
+			$dname=ucwords(trim(str_replace('_',' ',$fld)));
+			$vals[$fld]='Order By '.$dname;
+			$vals["{$fld} desc"]='Order By '.$dname.' desc';
+		}
+		$rtn .= buildFormSelect('filter_order',$vals,$params);
+		$rtn .= '			</div>'.PHP_EOL;	
 	}
-	$rtn .= buildFormSelect('filter_order',$vals,$params);
-	$rtn .= '			</div>'.PHP_EOL;
+	else{
+		$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
+	}
 	//search button
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$rtn .= '				<button type="submit" class="browser-default"><span class="icon-search"></span> Search</button>'.PHP_EOL;
