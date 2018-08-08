@@ -118,7 +118,23 @@ function databaseListRecords($params=array()){
 	}
 	if(!empty($params['-table'])){
 		//get the list from the table. First lets get the table fields
-		$info=getDBFieldInfo($params['-table']);
+		switch(strtolower($params['-database'])){
+			case 'oracle':
+				$info=oracleGetDBFieldInfo($params['-table']);
+			break;
+			case 'hana':
+				$info=hanaGetDBFieldInfo($params['-table']);
+			break;
+			case 'mssql':
+				$info=mssqlGetDBFieldInfo($params['-table']);
+			break;
+			case 'sqlite':
+				$info=sqliteGetDBFieldInfo($params['-table']);
+			break;
+			default:
+				$info=getDBFieldInfo($params['-table']);
+			break;
+		}
 		if(!is_array($info) || !count($info)){
 			return "databaseListRecords error: No fields found for {$params['-table']}";
 		}
