@@ -1867,7 +1867,7 @@ function pagingSetOffset(frm,v){
 	frm.filter_offset.value=v;
 	frm.submit();
 }
-function pagingSetOrder(obj,frm,v){
+function pagingSetOrder(frm,v){
 	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
 		v=v+' desc';
 	}

@@ -77,6 +77,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
+*	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
 *	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
@@ -88,10 +89,6 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	<?=databaseListRecords("select * from myschema.mytable where ...");?>
 */
 function databaseListRecords($params=array()){
-	//if(isSqlite()){return sqliteListRecords($params);}
-	//if(isPostgreSQL() || isPostgres()){return postgresListRecords($params);}
-	//if(isMssql()){return mssqlListRecords($params);}
-	//if(isOracle()){return oracleListRecords($params);}
 	//require -table or -list
 	if(empty($params['-table']) && empty($params['-list'])){
 		if(!empty($params[0])){
@@ -100,7 +97,23 @@ function databaseListRecords($params=array()){
 		}
 		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 			//they just entered a query. convert it to a list
-			$params=array('-list'=>getDBRecords($params));
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+					$params=array('-list'=>oracleGetDBRecords($params));
+				break;
+				case 'hana':
+					$params=array('-list'=>hanaGetDBRecords($params));
+				break;
+				case 'mssql':
+					$params=array('-list'=>mssqlGetDBRecords($params));
+				break;
+				case 'sqlite':
+					$params=array('-list'=>sqliteGetDBRecords($params));
+				break;
+				default:
+					$params=array('-list'=>getDBRecords($params));
+				break;
+			}
 		}
 	}
 	if(!empty($params['-table'])){
@@ -212,9 +225,82 @@ function databaseListRecords($params=array()){
 			}
 		}
 		$params['-forceheader']=1;
-		$params['-total']=getDBCount($params);
+		switch(strtolower($params['-database'])){
+			case 'oracle':
+				$params['-total']=oracleGetDBCount($params);
+			break;
+			case 'hana':
+				$params['-total']=hanaGetDBCount($params);
+			break;
+			case 'mssql':
+				$params['-total']=mssqlGetDBCount($params);
+			break;
+			case 'sqlite':
+				$params['-total']=sqliteGetDBCount($params);
+			break;
+			default:
+				$params['-total']=getDBCount($params);
+			break;
+		}
+		
+		//check for -bulkedit and filter_bulkedit before running query
+		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
+			$bulk=array('-table'=>$params['-table']);
+			if(!empty($params['-where'])){$bulk['-where']=$params['-where'];}
+			else{$bulk['-where']='1=1';}
+			$bulk[$_REQUEST['filter_field']]=$_REQUEST['filter_val'];
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+					$ok=oracleEditDBRecord($bulk);
+				break;
+				case 'hana':
+					$ok=hanaEditDBRecord($bulk);
+				break;
+				case 'mssql':
+					$ok=mssqlEditDBRecord($bulk);
+				break;
+				case 'sqlite':
+					$ok=sqliteEditDBRecord($bulk);
+				break;
+				default:
+					$ok=editDBRecord($bulk);
+				break;
+			}
+		}
+		//check for -export and filter_export
+		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
+			$limit=$params['-limit'];
+			$params['-limit']=$params['-total'];
+			$recs=getDBRecords($params);
+			$params['-limit']=$limit;
+			$csv=arrays2csv($recs);
+			$epath=getWasqlTempPath();
+			$ename=sha1($csv).'.csv';
+			$efile="{$epath}/".$ename;
+			setFileContents($efile,$csv);
+			$params['-export_file']="/php/temp/{$ename}";
+			//clean up any csv files in this folder older than 1 hour
+			$ok=cleanupDirectory($epath,1,'hours','csv');
+		}
+		
 		//echo printValue($params);exit;
-		$params['-list']=getDBRecords($params);
+		switch(strtolower($params['-database'])){
+			case 'oracle':
+				$params['-list']=oracleGetDBRecords($params);
+			break;
+			case 'hana':
+				$params['-list']=hanaGetDBRecords($params);
+			break;
+			case 'mssql':
+				$params['-list']=mssqlGetDBRecords($params);
+			break;
+			case 'sqlite':
+				$params['-list']=sqliteGetDBRecords($params);
+			break;
+			default:
+				$params['-list']=getDBRecords($params);
+			break;
+		}
 		if(!is_array($params['-list']) && empty($params['-listfields'])){
 			$params['-listfields']=array();
 			foreach($info as $field=>$finfo){

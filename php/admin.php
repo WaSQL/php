@@ -1750,7 +1750,6 @@ LIST_TABLE:
 					'-formaction'=>'/php/admin.php',
 					'_id_href'=>'/php/admin.php?'.$idurl,
 					'-sorting'=>1,
-					'-limit'=>25,
 					'-theadclass'=>'w_pointer'
 				);
 				//get listfields from tablemeta

@@ -8,6 +8,8 @@
 *	[-limit] integer - number of records to show
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
+*	['-formname'] - formname. defaults to searchfiltersform
+
 * @return string - html table to display
 * @usage
 *	<?=commonSearchFiltersForm(array('-table'=>'notes'));?>
@@ -27,7 +29,7 @@ function commonSearchFiltersForm($params=array()){
 		}
 	}
 	if(empty($atts['action'])){
-		$atts['action']=!empty($_SERVER['PHP_SELF'])?$_SERVER['PHP_SELF']:"/{$PAGE['name']}";
+		$atts['action']="/{$PAGE['name']}";
 	}
 	if(empty($atts['onsubmit'])){
 		$atts['onsubmit']="pagingAddFilter(this);pagingSetFilters(this);return true;";
@@ -140,15 +142,20 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$rtn .= '				<button type="button" class="browser-default" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
-	if(isset($params['-bulkedit'])){
+	if(!empty($params['-bulkedit'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="Bulk Edit" class="browser-default" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
 	}
-	if(isset($params['-export'])){
+	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="CSV Export" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
+    	if(!empty($params['-export_file'])){
+    		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
+	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="browser-default" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+	    	$rtn .= '			</div>'.PHP_EOL;
+    	}
 	}
 	$rtn .= '		</div>'.PHP_EOL;
 	//Paging buttons - first, prev, next, and last
@@ -156,7 +163,9 @@ function commonSearchFiltersForm($params=array()){
 		//keep pagination buttons together (now wrapping)
 		$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 		if(empty($params['-limit'])){$params['-limit']=25;}
-		if(empty($params['-offset'])){$params['-offset']=0;}
+		if(empty($params['-offset'])){
+			$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
+		}
 		$rtn .= '		<input type="hidden" name="filter_total" value="'.$params['-total'].'" />'.PHP_EOL;
 		$rtn .= '		<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
 		//show first if offset minus limit is not 0
