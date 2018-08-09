@@ -136,17 +136,19 @@ function commonSearchFiltersForm($params=array()){
 	}
 	//search button
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="submit" class="browser-default"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+	$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//add filter
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$rtn .= '				<button type="button" class="browser-default" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
+	//bulkedit
 	if(!empty($params['-bulkedit'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="Bulk Edit" class="browser-default" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
 	}
+	//export
 	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="CSV Export" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
@@ -162,7 +164,7 @@ function commonSearchFiltersForm($params=array()){
 	if(!empty($params['-total'])){
 		//keep pagination buttons together (now wrapping)
 		$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
-		if(empty($params['-limit'])){$params['-limit']=25;}
+		if(empty($params['-limit'])){$params['-limit']=15;}
 		if(empty($params['-offset'])){
 			$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
 		}
@@ -192,9 +194,6 @@ function commonSearchFiltersForm($params=array()){
 		//show next if offset+limit < total
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
-			if($offset > $params['-total']-$params['-limit']){
-				$offset = $params['-total']-$params['-limit'];
-			}
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
@@ -218,7 +217,7 @@ function commonSearchFiltersForm($params=array()){
     	else{$sets=preg_split('/[\r\n\,]+/',$params['-filters']);}
     	foreach($sets as $set){
         	list($field,$oper,$val)=preg_split('/\-/',trim($set),3);
-        	if($field=='null' || $val=='null'){continue;}
+        	if($field=='null' || $val=='null' || $oper=='null' || strlen($field)==0 || strlen($oper)==0 || strlen($val)==0){continue;}
         	$fid=$field.$oper.$val;
         	$dfield=$field;
 			if($dfield=='*'){$dfield='Any Field';}

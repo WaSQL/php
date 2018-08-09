@@ -348,6 +348,31 @@ function oracleGetActiveSessionCount($params=array()){
 	if(isset($recs[0]['cnt'])){return $recs[0]['cnt'];}
 	return $query;
 }
+//---------- begin function oracleGetDBCount--------------------
+/**
+* @describe returns a record count based on params
+* @param params array - requires either -list or -table or a raw query instead of params
+*	-table string - table name.  Use this with other field/value params to filter the results
+*	[-host] -  server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array
+* @usage $cnt=oracleGetDBCount(array('-table'=>'states'));
+*/
+function oracleGetDBCount($params=array()){
+	$params['-fields']="count(*) as cnt";
+	unset($params['-order']);
+	unset($params['-limit']);
+	unset($params['-offset']);
+	$recs=oracleGetDBRecords($params);
+	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
+	if(!isset($recs[0]['cnt'])){
+		debugValue($recs);
+		return 0;
+	}
+	return $recs[0]['cnt'];
+}
 //---------- begin function oracleGetDBFieldInfo--------------------
 /**
 * @describe returns an array containing type,length, and flags for each field in said table

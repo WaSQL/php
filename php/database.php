@@ -248,25 +248,6 @@ function databaseListRecords($params=array()){
 			}
 		}
 		$params['-forceheader']=1;
-		if(empty($params['-total'])){
-			switch(strtolower($params['-database'])){
-				case 'oracle':
-					$params['-total']=oracleGetDBCount($params);
-				break;
-				case 'hana':
-					$params['-total']=hanaGetDBCount($params);
-				break;
-				case 'mssql':
-					$params['-total']=mssqlGetDBCount($params);
-				break;
-				case 'sqlite':
-					$params['-total']=sqliteGetDBCount($params);
-				break;
-				default:
-					$params['-total']=getDBCount($params);
-				break;
-			}
-		}
 		//check for -bulkedit and filter_bulkedit before running query
 		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
 			$bulk=array('-table'=>$params['-table']);
@@ -291,11 +272,29 @@ function databaseListRecords($params=array()){
 				break;
 			}
 		}
+		//limit
+		if(!isset($params['-limit'])){$params['-limit']=15;}
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
 			$limit=$params['-limit'];
 			$params['-limit']=$params['-total'];
-			$recs=getDBRecords($params);
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+					$recs=oracleGetDBRecords($params);
+				break;
+				case 'hana':
+					$recs=hanaGetDBRecords($params);
+				break;
+				case 'mssql':
+					$recs=mssqlGetDBRecords($params);
+				break;
+				case 'sqlite':
+					$recs=sqliteGetDBRecords($params);
+				break;
+				default:
+					$recs=getDBRecords($params);
+				break;
+			}
 			$params['-limit']=$limit;
 			$csv=arrays2csv($recs);
 			$epath=getWasqlTempPath();
@@ -306,7 +305,29 @@ function databaseListRecords($params=array()){
 			//clean up any csv files in this folder older than 1 hour
 			$ok=cleanupDirectory($epath,1,'hours','csv');
 		}
-		
+		if(empty($params['-total'])){
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+					$params['-total']=oracleGetDBCount($params);
+				break;
+				case 'hana':
+					$params['-total']=hanaGetDBCount($params);
+				break;
+				case 'mssql':
+					$params['-total']=mssqlGetDBCount($params);
+				break;
+				case 'sqlite':
+					$params['-total']=sqliteGetDBCount($params);
+				break;
+				default:
+					$params['-total']=getDBCount($params);
+				break;
+			}
+		}
+		//check for filter_offset
+		if(!isset($params['-offset']) && !empty($_REQUEST['filter_offset'])){
+			$params['-offset']=$_REQUEST['filter_offset'];
+		}
 		//echo printValue($params);exit;
 		switch(strtolower($params['-database'])){
 			case 'oracle':
@@ -4515,6 +4536,7 @@ function getDBCount($params=array()){
 		unset($params['-order']);
 		$query=getDBQuery($params);
 		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 		if(!isset($recs[0]['cnt'])){
 			debugValue($recs);
 			return 0;

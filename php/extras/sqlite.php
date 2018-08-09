@@ -569,20 +569,26 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 	}
 	return array();
 }
-//---------- begin function sqliteGetDBCount ----------
+//---------- begin function sqliteGetDBCount--------------------
 /**
-* @describe returns the count of any query without actually getting the data
-* @param $query string - the query to run
-* @param $params array - These can also be set in the CONFIG file with dbname_sqlite,dbuser_sqlite, and dbpass_sqlite
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return $count integer
-* @usage $cnt=sqliteGetDBCount('select * from abcschema.abc');
+* @describe returns a record count based on params
+* @param params array - requires either -list or -table or a raw query instead of params
+*	-table string - table name.  Use this with other field/value params to filter the results
+* @return array
+* @usage $cnt=sqliteGetDBCount(array('-table'=>'states'));
 */
 function sqliteGetDBCount($params=array()){
-	$params['-count']=1;
-	return sqliteQueryResults($query,$params);
+	$params['-fields']="count(*) as cnt";
+	unset($params['-order']);
+	unset($params['-limit']);
+	unset($params['-offset']);
+	$recs=sqliteGetDBRecords($params);
+	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
+	if(!isset($recs[0]['cnt'])){
+		debugValue($recs);
+		return 0;
+	}
+	return $recs[0]['cnt'];
 }
 //---------- begin function sqliteTruncateDBTable ----------
 /**

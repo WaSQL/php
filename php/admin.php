@@ -1745,7 +1745,6 @@ LIST_TABLE:
 					'-bulkedit'		=> 1,
 					'-export'		=> 1,
 					'_table_'=>$_REQUEST['_table_'],
-					'-total'=>empty($_REQUEST['filter_total'])?getDBCount(array('-table'=>$_REQUEST['_table_'])):$_REQUEST['filter_total'],
 					'-table'=>$_REQUEST['_table_'],
 					'-formaction'=>'/php/admin.php',
 					'_id_href'=>'/php/admin.php?'.$idurl,

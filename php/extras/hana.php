@@ -991,20 +991,26 @@ function hanaGetDBFieldInfo($table,$params=array()){
     odbc_free_result($result);
 	return $recs;
 }
-//---------- begin function hanaGetDBCount ----------
+//---------- begin function hanaGetDBCount--------------------
 /**
-* @describe returns the count of any query without actually getting the data
-* @param $query string - the query to run
-* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return $count integer
-* @usage $cnt=hanaGetDBCount('select * from abcschema.abc');
+* @describe returns a record count based on params
+* @param params array - requires either -list or -table or a raw query instead of params
+*	-table string - table name.  Use this with other field/value params to filter the results
+* @return array
+* @usage $cnt=hanaGetDBCount(array('-table'=>'states'));
 */
-function hanaGetDBCount($query,$params){
-	$params['-count']=1;
-	return hanaQueryResults($query,$params);
+function hanaGetDBCount($params=array()){
+	$params['-fields']="count(*) as cnt";
+	unset($params['-order']);
+	unset($params['-limit']);
+	unset($params['-offset']);
+	$recs=hanaGetDBRecords($params);
+	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
+	if(!isset($recs[0]['cnt'])){
+		debugValue($recs);
+		return 0;
+	}
+	return $recs[0]['cnt'];
 }
 //---------- begin function hanaQueryHeader ----------
 /**
