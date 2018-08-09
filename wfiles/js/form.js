@@ -1882,16 +1882,16 @@ function pagingBulkEdit(frm){
 	if(frm.filter_value.value.length==0){editval='NULL';}
 	else{editval="'"+frm.filter_value.value+"'";}
 	if(!confirm('Are you sure you want to update the current dataset?'+"\r\n\r\n"+'Mass Update \''+frm.filter_field.value+'\' field to '+editval+'?'+"\r\n\r\n"+'Click OK to confirm.  THIS IS NOT REVERSABLE.')){return false;}
-	frm.filter_bulkedit.value='1';
 	var v=frm.filter_field.value;
 	frm.filter_field.value='';
 	pagingSetFilters(frm);
 	frm.filter_field.value=v;
+	frm.filter_bulkedit.value='1';
 	frm.submit();
 }
 function pagingExport(frm){
-	frm.filter_export.value='1';
 	pagingSetFilters(frm);
+	frm.filter_export.value='1';
 	frm.submit();
 }
 function pagingAddFilter(frm){
