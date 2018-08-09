@@ -7491,7 +7491,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
   padding-left: 16px;
   height: 1.5rem;
   line-height: 1.5rem;
-  letter-spacing: .4;
+  letter-spacing: .4px;
   display: inline-block;
 }
 
@@ -8969,7 +8969,7 @@ input[type=range].focused:focus:not(.active)::-ms-thumb {
 
 .timepicker-canvas line {
   stroke: #26a69a;
-  stroke-width: 4;
+  stroke-width: 4px;
   stroke-linecap: round;
 }
 
