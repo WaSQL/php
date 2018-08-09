@@ -1849,7 +1849,7 @@ LIST_TABLE:
                 echo '<div style="padding:15px;">'.PHP_EOL;
                 //echo printValue($recopts);
 				echo databaseListRecords($recopts);
-				echo printValue($_REQUEST);
+				//echo printValue($_REQUEST);
 				echo '</div>'.PHP_EOL;
             	}
 			break;
