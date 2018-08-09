@@ -361,7 +361,7 @@ function oracleGetActiveSessionCount($params=array()){
 * @usage $cnt=oracleGetDBCount(array('-table'=>'states'));
 */
 function oracleGetDBCount($params=array()){
-	$params['-fields']="count(*) as cnt";
+	$params['-fields']="count(*) cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
