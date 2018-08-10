@@ -62,7 +62,7 @@ function oracleAddDBRecord($params){
         	break;
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
+					$params[$k]=date('d-M-Y',strtotime($v));
 				}
         		$opts['values'][]="todate('{$params[$k]}')";
         	break;
@@ -206,10 +206,10 @@ function oracleEditDBRecord($params){
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['edate'])){
-		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
+		$params['edate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
 	elseif(isset($fields['_edate'])){
-		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
+		$params['_edate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
 	if(isset($fields['euser'])){
 		$params['euser']=$USER['username'];
@@ -228,7 +228,7 @@ function oracleEditDBRecord($params){
 		switch(strtolower($fields[$k]['type'])){
         	case 'date':
 				if($k=='edate' || $k=='_edate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
+					$params[$k]=date('d-M-Y',strtotime($v));
 				}
         	break;
 		}
