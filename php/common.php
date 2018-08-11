@@ -32,7 +32,7 @@ function commonSearchFiltersForm($params=array()){
 		$atts['action']="/{$PAGE['name']}";
 	}
 	if(empty($atts['onsubmit'])){
-		$atts['onsubmit']="pagingAddFilter(this);pagingSetFilters(this);return true;";
+		$atts['onsubmit']="return pagingSubmit(this);";
 	}
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
@@ -47,6 +47,7 @@ function commonSearchFiltersForm($params=array()){
 	//other fields
 	foreach($params as $k=>$v){
 		if(preg_match('/^\-/',$k)){continue;}
+		if(preg_match('/\_(onclick|eval|href)$/i',$k)){continue;}
 		if(is_array($params['-searchfields']) && in_array($k,$params['-searchfields'])){
 			continue;
 		}
@@ -61,7 +62,7 @@ function commonSearchFiltersForm($params=array()){
 	//search fields
 	if(!empty($params['-searchfields'])){
 		if(!is_array($params['-searchfields'])){
-			$params['-searchfields']=preg_split('/\/',$params['-searchfields']);
+			$params['-searchfields']=preg_split('/\,/',$params['-searchfields']);
 		}
 		$vals=array();
 		foreach($params['-searchfields'] as $field){
@@ -174,7 +175,7 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//show prev if offset is not 0
@@ -182,7 +183,7 @@ function commonSearchFiltersForm($params=array()){
 			$offset=$params['-offset']-$params['-limit'];
 			if($offset < 0){$offset=0;}
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '			<div style="margin:0 3px;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
@@ -195,13 +196,13 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-total']-$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
@@ -242,7 +243,9 @@ function commonSearchFiltersForm($params=array()){
 			$dstr="{$dfield} {$doper} {$dval}";
         	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
-		$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
+		if(count($sets)){
+			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
+		}
 	}
 	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '</form>'.PHP_EOL;

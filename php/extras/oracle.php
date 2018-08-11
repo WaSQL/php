@@ -449,7 +449,9 @@ function oracleGetDBFieldInfo($table,$params=array()){
 *	[-limit] mixed - query record limit.  Defaults to CONFIG['paging'] if set in config.xml otherwise 25
 *	[-offset] mixed - query offset limit
 *	[-fields] mixed - fields to return
-*	[-host] - oracle server to connect to
+*	[-where] string - string to add to where clause
+*	[-filter] string - string to add to where clause
+*	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
@@ -490,7 +492,10 @@ function oracleGetDBRecords($params){
 		}
 		//check for -where
 		if(!empty($params['-where'])){
-			$ands[]=$params['-where'];
+			$ands[]= "({$params['-where']})";
+		}
+		if(isset($params['-filter'])){
+			$ands[]= "({$params['-filter']})";
 		}
 		$wherestr='';
 		if(count($ands)){
@@ -501,12 +506,15 @@ function oracleGetDBRecords($params){
     		$query .= " ORDER BY {$params['-order']}";
     	}
     	//offset and limit
-    	$offset=isset($params['-offset'])?$params['-offset']:0;
-    	$limit=25;
-    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
-    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+    	if(!isset($params['-nolimit'])){
+	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$limit=25;
+	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
+	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	    }
 	}
+	if(isset($params['-debug'])){return $query;}
 	return oracleQueryResults($query,$params);
 }
 //---------- begin function oracleGetDBTables ----------

@@ -1863,18 +1863,22 @@ function formFieldHasValue(fld){
 function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
 	}
-function pagingSetOffset(frm,v){
-	frm.filter_offset.value=v;
+//--------------------------
+function pagingSubmit(frm){
+	pagingAddFilter(frm);
 	pagingSetFilters(frm);
 	frm.submit();
+	return false;
+}
+function pagingSetOffset(frm,v){
+	frm.filter_offset.value=v;
 }
 function pagingSetOrder(frm,v){
 	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
 		v=v+' desc';
 	}
 	frm.filter_order.value=v;
-	pagingSetFilters(frm);
-	frm.submit();
+	return pagingSubmit(frm);
 }
 function pagingBulkEdit(frm){
 	if(frm.filter_field.value.length==0 || frm.filter_field.value=='*'){alert('select a field to edit');return false;}
@@ -1888,11 +1892,11 @@ function pagingBulkEdit(frm){
 	frm.filter_field.value=v;
 	frm.filter_bulkedit.value='1';
 	frm.submit();
+	return true;
 }
 function pagingExport(frm){
-	pagingSetFilters(frm);
 	frm.filter_export.value='1';
-	frm.submit();
+	return pagingSubmit(frm);
 }
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
@@ -1947,18 +1951,27 @@ function pagingAddFilter(frm){
 		var p=getObject('send_to_filters');
 		p.appendChild(d);
 	}
-	//Clear Filters button
-	obj=getObject('paging_clear_filters');
-	if(undefined != obj){removeId(obj);}
-	var d=document.createElement('div');
-	d.className='w_pagingfilter  icon-erase w_danger';
-	d.id='paging_clear_filters';
-	d.setAttribute('title','Clear All Filters');
-	d.onclick=function(){
-		pagingClearFilters();
-	};
-	var p=getObject('send_to_filters');
-	p.appendChild(d);
+	var f=document.querySelectorAll('.w_pagingfilter');
+	var filter_count=0;
+	for(var i=0;i<f.length;i++){
+    	if(f[i].style.display=='none'){continue;}
+    	if(undefined == f[i].getAttribute('data-field') || f[i].getAttribute('data-field')=='null'){continue;}
+  		filter_count=filter_count+1;
+	}
+	if(filter_count > 0){
+		//Clear Filters button
+		obj=getObject('paging_clear_filters');
+		if(undefined != obj){removeId(obj);}
+		var d=document.createElement('div');
+		d.className='w_pagingfilter icon-erase w_big w_danger';
+		d.id='paging_clear_filters';
+		d.setAttribute('title','Clear All Filters');
+		d.onclick=function(){
+			pagingClearFilters();
+		};
+		var p=getObject('send_to_filters');
+		p.appendChild(d);
+	}
 	frm.filter_value.value='';
 	frm.filter_value.focus();
 }

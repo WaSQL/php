@@ -843,6 +843,82 @@ ENDOFQUERY;
 	}
 	return count($recs);
 }
+//---------- begin function hanaGetDBRecords
+/**
+* @describe returns and array of records
+* @param params array - requires either -table or a raw query instead of params
+*	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-limit] mixed - query record limit.  Defaults to CONFIG['paging'] if set in config.xml otherwise 25
+*	[-offset] mixed - query offset limit
+*	[-fields] mixed - fields to return
+*	[-where] string - string to add to where clause
+*	[-filter] string - string to add to where clause
+*	[-host] - server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array - set of records
+* @usage
+*	<?=hanaGetDBRecords(array('-table'=>'notes'));?>
+*	<?=hanaGetDBRecords("select * from myschema.mytable where ...");?>
+*/
+function hanaGetDBRecords($params){
+	global $USER;
+	global $CONFIG;
+	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+		//they just entered a query
+		$query=$params;
+	}
+	else{
+		//determine fields to return
+		if(!empty($params['-fields'])){
+			if(!is_array($params['-fields'])){
+				$params['-fields']=str_replace(' ','',$params['-fields']);
+				$params['-fields']=preg_split('/\,/',$params['-fields']);
+			}
+			$params['-fields']=implode(',',$params['-fields']);
+		}
+		if(empty($params['-fields'])){$params['-fields']='*';}
+		$fields=hanaGetDBFieldInfo($params['-table'],$params);
+		$ands=array();
+		foreach($params as $k=>$v){
+			$k=strtolower($k);
+			if(!strlen(trim($v))){continue;}
+			if(!isset($fields[$k])){continue;}
+			if(is_array($params[$k])){
+	            $params[$k]=implode(':',$params[$k]);
+			}
+	        $params[$k]=str_replace("'","''",$params[$k]);
+	        $v=strtoupper($params[$k]);
+	        $ands[]="upper({$k})='{$v}'";
+		}
+		//check for -where
+		if(!empty($params['-where'])){
+			$ands[]= "({$params['-where']})";
+		}
+		if(isset($params['-filter'])){
+			$ands[]= "({$params['-filter']})";
+		}
+		$wherestr='';
+		if(count($ands)){
+			$wherestr='WHERE '.implode(' and ',$ands);
+		}
+	    $query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    if(isset($params['-order'])){
+    		$query .= " ORDER BY {$params['-order']}";
+    	}
+    	//offset and limit
+    	if(!isset($params['-nolimit'])){
+	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$limit=25;
+	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
+	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
+	    }
+	}
+	if(isset($params['-debug'])){return $query;}
+	return hanaQueryResults($query,$params);
+}
 //---------- begin function hanaGetDBSystemTables ----------
 /**
 * @describe returns an array of system tables

@@ -669,69 +669,80 @@ function sqliteGetDBRecord($params=array()){
 	if(isset($recs[0])){return $recs[0];}
 	return null;
 }
-//---------- begin function sqliteGetDBRecords ----------
+//---------- begin function sqliteGetDBRecords
 /**
-* @describe retrieves records from DB based on params
-* @param $params array
-* 	-table 	  - table to query
+* @describe returns and array of records
+* @param params array - requires either -table or a raw query instead of params
+*	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-limit] mixed - query record limit.  Defaults to CONFIG['paging'] if set in config.xml otherwise 25
+*	[-offset] mixed - query offset limit
+*	[-fields] mixed - fields to return
+*	[-where] string - string to add to where clause
+*	[-filter] string - string to add to where clause
+*	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* @return array recordsets
-* @usage $ok=sqliteGetDBRecords(array('-table'=>'tesl));
+* @return array - set of records
+* @usage
+*	<?=sqliteGetDBRecords(array('-table'=>'notes'));?>
+*	<?=sqliteGetDBRecords("select * from myschema.mytable where ...");?>
 */
-function sqliteGetDBRecords($params=array()){
-	//check for just a query instead of a params array and convert it getDBRecords($query)
-	if(!is_array($params) && is_string($params)){
-    	$params=array('-query'=>$params);
+function sqliteGetDBRecords($params){
+	global $USER;
+	global $CONFIG;
+	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+		//they just entered a query
+		$query=$params;
 	}
-	if(isset($params['-query'])){$query=$params['-query'];}
 	else{
-		if(!isset($params['-table'])){return 'sqliteGetDBRecords error: No table specified.';}
-		if(!isset($params['-fields'])){$params['-fields']='*';}
-		if(is_array($params['-fields'])){
-			$params['-fields']=implode(', ',$params['-fields']);
+		//determine fields to return
+		if(!empty($params['-fields'])){
+			if(!is_array($params['-fields'])){
+				$params['-fields']=str_replace(' ','',$params['-fields']);
+				$params['-fields']=preg_split('/\,/',$params['-fields']);
+			}
+			$params['-fields']=implode(',',$params['-fields']);
+		}
+		if(empty($params['-fields'])){$params['-fields']='*';}
+		$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+		$ands=array();
+		foreach($params as $k=>$v){
+			$k=strtolower($k);
+			if(!strlen(trim($v))){continue;}
+			if(!isset($fields[$k])){continue;}
+			if(is_array($params[$k])){
+	            $params[$k]=implode(':',$params[$k]);
+			}
+	        $params[$k]=str_replace("'","''",$params[$k]);
+	        $v=strtoupper($params[$k]);
+	        $ands[]="upper({$k})='{$v}'";
+		}
+		//check for -where
+		if(!empty($params['-where'])){
+			$ands[]= "({$params['-where']})";
+		}
+		if(isset($params['-filter'])){
+			$ands[]= "({$params['-filter']})";
 		}
 		$wherestr='';
-		if(isset($params['-where'])){
-			$wherestr= " WHERE {$params['-where']}";
+		if(count($ands)){
+			$wherestr='WHERE '.implode(' and ',$ands);
 		}
-		else{
-			$fields=sqliteGetDBFieldInfo($params['-table'],$params);
-			$ands=array();
-			foreach($params as $k=>$v){
-				$k=strtolower($k);
-				if(!isset($fields[$k])){continue;}
-				if(!strlen(trim($v))){continue;}
-				if(is_array($params[$k])){
-					$params[$k]=implode(':',$params[$k]);
-				}
-				$params[$k]=str_replace("'","''",$params[$k]);
-				$val=strtoupper($params[$k]);
-				$ands[]="upper({$k})='{$val}'";
-			}
-
-			if(count($ands)){
-				$wherestr='WHERE '.implode(' and ',$ands);
-			}
-		}
-		$query="SELECT {$params['-fields']}  FROM {$params['-table']} {$wherestr}";
-		if(isset($params['-order'])){
-			$query .= " ORDER BY {$params['-order']}";
-		}
-		if(isset($params['-limit'])){
-			if(stringContains($params['-limit'],',')){
-				$parts=preg_split('/\,/',$params['-limit'],2);
-				$params['-offset']=$parts[0];
-				$params['-limit']=$parts[1];
-			}
-			$query .= " limit {$params['-limit']}";
-		}
-		if(isset($params['-offset'])){
-			$query .= " offset {$params['-offset']}";
-		}
+	    $query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    if(isset($params['-order'])){
+    		$query .= " ORDER BY {$params['-order']}";
+    	}
+    	//offset and limit
+    	if(!isset($params['-nolimit'])){
+	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$limit=25;
+	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
+	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	    }
 	}
-	//echo "[{$query}]<br />".PHP_EOL;
+	if(isset($params['-debug'])){return $query;}
 	return sqliteQueryResults($query,$params);
 }
 //---------- begin function sqliteGetDBRecordsCount ----------

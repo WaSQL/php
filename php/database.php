@@ -139,7 +139,7 @@ function databaseListRecords($params=array()){
 			return "databaseListRecords error: No fields found for {$params['-table']}";
 		}
 		//look for _filters
-		if(!empty($_REQUEST['_filters'])){
+		if(isset($_REQUEST['_filters'])){
 			$params['-filters']=preg_split('/[\r\n]/',$_REQUEST['_filters']);					
 		}
 		if(empty($params['-order']) && !empty($_REQUEST['filter_order'])){
@@ -243,10 +243,14 @@ function databaseListRecords($params=array()){
 					break;
 				}
 			}	
+			if(!empty($params['-where'])){
+				$wheres[]="({$params['-where']})";
+			}
 			if(count($wheres)){
 				$params['-where']=implode(' and ',$wheres);
 			}
 		}
+		//echo printValue($params);
 		$params['-forceheader']=1;
 		//check for -bulkedit and filter_bulkedit before running query
 		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
@@ -276,8 +280,10 @@ function databaseListRecords($params=array()){
 		if(!isset($params['-limit'])){$params['-limit']=15;}
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
+			//remove limit temporarily
 			$limit=$params['-limit'];
 			$params['-limit']=$params['-total'];
+			//run query to get records for export
 			switch(strtolower($params['-database'])){
 				case 'oracle':
 					$recs=oracleGetDBRecords($params);
@@ -295,7 +301,9 @@ function databaseListRecords($params=array()){
 					$recs=getDBRecords($params);
 				break;
 			}
+			//set limit back
 			$params['-limit']=$limit;
+			//create a csv file
 			$csv=arrays2csv($recs);
 			$epath=getWasqlTempPath();
 			$ename=sha1($csv).'.csv';
@@ -305,6 +313,7 @@ function databaseListRecords($params=array()){
 			//clean up any csv files in this folder older than 1 hour
 			$ok=cleanupDirectory($epath,1,'hours','csv');
 		}
+		//get total number of records
 		if(empty($params['-total'])){
 			switch(strtolower($params['-database'])){
 				case 'oracle':
@@ -328,7 +337,7 @@ function databaseListRecords($params=array()){
 		if(!isset($params['-offset']) && !empty($_REQUEST['filter_offset'])){
 			$params['-offset']=$_REQUEST['filter_offset'];
 		}
-		//echo printValue($params);exit;
+		//get the list of records to display
 		switch(strtolower($params['-database'])){
 			case 'oracle':
 				$params['-list']=oracleGetDBRecords($params);
@@ -343,6 +352,7 @@ function databaseListRecords($params=array()){
 				$params['-list']=sqliteGetDBRecords($params);
 			break;
 			default:
+				//echo printValue($params);
 				$params['-list']=getDBRecords($params);
 			break;
 		}
@@ -378,6 +388,9 @@ function databaseListRecords($params=array()){
 	}
 	$rtn='';
 	//Check for -total to determine if we should show the searchFilterForm
+	if(empty($params['-formname'])){
+		$params['-formname']='searchfiltersform';
+	}
 	if(!empty($params['-total'])){
 		if(empty($params['-searchfields'])){
 			$params['-searchfields']=array();
@@ -385,6 +398,7 @@ function databaseListRecords($params=array()){
 				$params['-searchfields'][]=$field;
 			}
 		}
+
 		$rtn .= commonSearchFiltersForm($params);
 	}
 	//lets make us a table from the list we have
@@ -411,11 +425,16 @@ function databaseListRecords($params=array()){
 	$rtn .= '>'.PHP_EOL;
 	$rtn .= '		<tr>'.PHP_EOL;
 	foreach($params['-listfields'] as $field){
-		$name=ucwords(trim(str_replace('_',' ',$field)));
+		if(!empty($params[$field."_displayname"])){
+			$name=$params[$field."_displayname"];
+		}
+		else{
+			$name=ucwords(trim(str_replace('_',' ',$field)));
+		}
 		$rtn .= '			<th class="w_nowrap">';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
 		if(!empty($params['-sorting']) && $params['-sorting']==1){
-			$name='<a href="#" onclick="pagingSetOrder(document.searchfiltersform,\''.$field.'\');">'.$name;
+			$name='<a href="#" onclick="return pagingSetOrder(document.'.$params['-formname'].',\''.$field.'\');">'.$name;
 			//show sorting icon
 			if(!empty($_REQUEST['filter_order'])){
 				switch(strtolower($_REQUEST['filter_order'])){
@@ -6372,121 +6391,27 @@ function getDBWhere($params,$info=array()){
 	if(!isset($info) || !count($info)){
 		$info=getDBFieldInfo($params['-table']);
 	}
-	$query='';
-	if(isset($params['-where'])){
-        $query .= $params['-where'];
-        if(isset($params['-filter'])){$query .= " and ({$params['-filter']})";}
-        if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$wherestr=getDBFiltersString($params['-table'],$params['-filters']);
-        	if(strlen($wherestr)){
-				$query .= " and ({$wherestr})";
-			}
+	$ands=array();
+	foreach($params as $k=>$v){
+		$k=strtolower($k);
+		if(!strlen(trim($v))){continue;}
+		if(!isset($info[$k])){continue;}
+		if(is_array($params[$k])){
+            $params[$k]=implode(':',$params[$k]);
 		}
-        if(isset($params['-search'])){
-			if(preg_match('/^where (.+)/i',$params['-search'],$smatch)){
-				$query .= ' and ('.$smatch[1].')';
-            }
-            elseif(isset($params['-searchfield'])){
-				$field=$params['-searchfield'];
-				if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
-					if(isNum($params['-search'])){
-                		$query .= " and {$field}={$params['-search']}";
-					}
-					else{
-						$query .= " and {$field}='{$params['-search']}'";
-					}
-				}
-				else{
-					if(stringContains($params['-search'],'%')){
-						$query .= " and {$field} like '{$params['-search']}'";
-					}
-					else{
-						$query .= " and {$field} = '{$params['-search']}'";
-					}
-                }
-			}
-            else{
-				$ors=array();
-				foreach(array_keys($info) as $field){
-					if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
-						if(isNum($params['-search'])){
-							array_push($ors,"{$field} = {$params['-search']}");
-                        }
-	                }
-	                else{array_push($ors,"{$field} like '%{$params['-search']}%'");}
-				}
-				if(count($ors)){
-					$query .= ' and ('.implode(' or ',$ors).')';
-	            }
-			}
-        }
-    }
-	else{
-		if(isset($params['-filter'])){$query .= "({$params['-filter']})";}
-		/* Filter the query based on params */
-		foreach($params as $key=>$val){
-			//skip keys that begin with a dash
-			if(preg_match('/^\-/',$key)){continue;}
-			if(!isset($info[$key]['_dbtype'])){continue;}
-			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='real'){
-				$query .= " and {$key}={$val}";
-			}
-			else{
-				$val=databaseEscapeString($val);
-				$query .= " and {$key}='{$val}'";
-	        }
-	    }
-	    if(isset($params['-filters']) && strlen($params['-filters']) && $params['-filters'] != 1){
-        	$wherestr=getDBFiltersString($params['-table'],$params['-filters']);
-        	if(strlen($wherestr)){
-				$query .= " and ({$wherestr})";
-			}
-		}
-	    if(isset($params['-search'])){
-			if(!stringBeginsWith($params['-search'],'where')){
-				$params['-search']=databaseEscapeString($params['-search']);
-			}
-			if(preg_match('/^where (.+)/i',$params['-search'],$smatch)){
-				$query .= ' and ('.$smatch[1].')';
-            }
-            elseif(isset($params['-searchfield'])){
-				$field=$params['-searchfield'];
-				if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
-					if(isNum($params['-search'])){
-                		$query .= " and {$field}={$params['-search']}";
-					}
-					else{
-						$query .= " and {$field}='{$params['-search']}'";
-					}
-				}
-				else{
-					if(stringContains($params['-search'],'%')){
-						$query .= " and {$field} like '{$params['-search']}'";
-					}
-					else{
-						$query .= " and {$field} = '{$params['-search']}'";
-					}
-                }
-			}
-			else{
-				$ors=array();
-				foreach(array_keys($info) as $field){
-					if(preg_match('/(int|real)/',$info[$field]['_dbtype'])){
-						if(isNum($params['-search'])){
-							array_push($ors,"{$field} = {$params['-search']}");
-                        }
-	                }
-	                else{array_push($ors,"{$field} like '%{$params['-search']}%'");}
-				}
-				if(count($ors)){
-					$query .= ' and ('.implode(' or ',$ors).')';
-	            }
-	        }
-        }
+        $params[$k]=str_replace("'","''",$params[$k]);
+        $v=strtoupper($params[$k]);
+        $v=databaseEscapeString($v);
+        $ands[]="upper({$k})='{$v}'";
 	}
-	$query=trim($query);
-	$query=preg_replace('/^and\ /i','',$query);
-	return $query;
+	//check for -where
+	if(!empty($params['-where'])){
+		$ands[]= "({$params['-where']})";
+	}
+	if(isset($params['-filter'])){
+		$ands[]= "({$params['-filter']})";
+	}
+	return implode(' and ',$ands);
 }
 //---------- begin function getDBFiltersString
 /**
@@ -6710,7 +6635,7 @@ function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
 function processDBRecords($func_name,$params=array()){
 	$params['-process']=$func_name;
 	return getDBRecords($params);
-	}
+}
 //---------- begin function getDBRecords-------------------
 /**
 * @describe returns a multi-dimensional array of records found
