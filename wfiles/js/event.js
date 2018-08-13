@@ -26,14 +26,13 @@ else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.M
 * @describe returns the realtime results from websocketd
 */
 function websocketdResults(divid,host,port,ssl,debug){
-	if(undefined==host){host='localhost';}
-	if(undefined==port){port=8000;}
-	if(undefined==ssl){ssl=false;}
-	if(ssl.toString().length===0){ssl=false;}
-	if(undefined==debug){debug=false;}
-	if(debug.toString().length===0){debug=false;}
+	if(host.length==0){host='localhost';}
+	if(port.length==0){port='8000';}
   	// setup websocket with callbacks
   	if(ssl){
+  		if(debug){
+    		console.log('websocketdResults starting. Host: '+host+' , Port: '+port);
+    	}
   		var ws = new WebSocket('wss://'+host+':'+port+'/');
   	}
   	else{
@@ -52,6 +51,9 @@ function websocketdResults(divid,host,port,ssl,debug){
   	};
   	ws.onmessage = function(event) {
   		var msg=event.data;
+  		if(debug){
+    		console.log('websocketdResults message. Host: '+host+' , Port: '+port+' , Message:'+msg);
+    	}
   		if(msg.toLowerCase().indexOf('error') != -1){
       		msg='<div class="w_red" style="margin-bottom:3px;">'+msg + '</div>\n';
     	}

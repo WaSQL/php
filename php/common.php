@@ -2855,9 +2855,9 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				}
 				if($port > 9999){$port=8000;}
 				setFileContents($portfile,$port);
-				$debug=$args['debug'];
 				$ssl=!empty($args['ssl'])?'true':'false';
-				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},'{$debug}');");
+				$debug=!empty($args['debug'])?'true':'false';
+				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},{$debug});");
 			}
 
 			return 1;
