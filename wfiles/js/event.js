@@ -31,11 +31,14 @@ function websocketdResults(divid,host,port,ssl,debug){
   	// setup websocket with callbacks
   	if(ssl){
   		if(debug){
-    		console.log('websocketdResults starting. Host: '+host+' , Port: '+port);
+    		console.log('websocketdResults starting secure Host: '+host+' , Port: '+port);
     	}
   		var ws = new WebSocket('wss://'+host+':'+port+'/');
   	}
   	else{
+  		if(debug){
+    		console.log('websocketdResults starting Host: '+host+' , Port: '+port);
+    	}
   		var ws = new WebSocket('ws://'+host+':'+port+'/');
   	}
   	ws.divid=divid;
