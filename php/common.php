@@ -2841,7 +2841,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 					setFileContents($portfile,$port);
 				}
 				$debug=$args['debug'];
-				$ssl=!empty($args['ssl']):'true'?'false';
+				$ssl=!empty($args['ssl'])?'true':'false';
 				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},'{$debug}');");
 			}
 
