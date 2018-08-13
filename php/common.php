@@ -2753,15 +2753,72 @@ function cleanDir($dir='') {
 /**
 * @describe executes command and returns results
 * @param cmd string - the command to execute
-* @param [args] string - arguements to pass to the command
+* @param [args] mixed - either a string of arguments to pass to the command or an an array of params.
+*		[websocketd] - path to websocketd - run the cmd through websocketd so the results can be streamed in real time via websockets. You can get websocketd from https://github.com/joewalnes/websocketd/releases.  You can also set websocketd in the config.xml - then send websocketd=>1 to this.
+*		[timeout] integer - seconds timeout. default is 30 seconds
+*		[port] integer - port to use for websocketd. Default is 8000
+*		[args] string - additional args, if any, to append to cmd
+*		[address] string - Address to bind to (multiple options allowed) Use square brackets to specify IPv6 address. defaults to ALL
+*		[sameorigin] string - true,false - Restrict (HTTP 403) protocol upgrades if the Origin header does not match to requested HTTP Host. Default false
+*		[divid] string - divid to send results to.  If set, this will return a buildOnLoad javascript call to websocketdResults
+*		[host] string - host sent to websocketdResults. defaults to $_SERVER['SERVER_NAME']
+*		[debug] string - debug sent to websocketdResults
 * @param [dir] string - directory
 * @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
-* @return string
-*	returns the results of executing the command
+* @return string - returns the results of executing the command
+* @usage 
+*		$out=cmdResults('ls -al');
+*		$ok=cmdResults('ls -al',array('websocketd'=>'/etc','port'=>9696));
+*		$ok=cmdResults('apt-get update',array('websocketd'=>'1','timeout'=>600)); assumes websocketd is set in config.xml
+*		echo cmdResults('apt-get update',array('websocketd'=>'1','timeout'=>600,'divid'=>'results')); calls websocketdResults
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=realpath('.');}
-	if(strlen($args)){$cmd .= ' '.trim($args);}
+	if(!is_array($args)){
+		if(!empty($args['websocketd'])){
+			global $CONFIG;
+			//check for websocketd 
+			if(!file_exists("{$args['websocketd']}/websocketd")){
+				return "cmdResults error: websocketd not found at {$args['websocketd']}/websocketd";
+			}
+			elseif(!empty($CONFIG['websocketd'])){
+				if(!file_exists("{$CONFIG['websocketd']}/websocketd")){
+					return "cmdResults error: websocketd not found at {$CONFIG['websocketd']}/websocketd  - check config.xml";
+				}
+				$args['websocketd']=$CONFIG['websocketd'];
+			}
+			//default timeout to 30 seconds
+			if(empty($args['timeout'])){$args['timeout']=30;}
+			//default port to 8000
+			if(empty($args['port'])){$args['port']=8000;}
+			//check for args
+			if(empty($args['args'])){
+				$cmd .= ' '.trim($args['args']);
+			}
+			$cmd = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
+			if(!empty($args['address'])){
+				$cmd .= " address={$args['address']}";
+			}
+			if(!empty($args['sameorigin'])){
+				$cmd .= " sameorigin={$args['sameorigin']}";
+			}
+			$cmd.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
+			$ok=cmdResults($cmd);
+			if(!empty($args['divid'])){
+				if(empty($args['host'])){
+					$args['host']=$_SERVER['SERVER_NAME'];
+				}
+				$divid=$args['divid'];
+				$host=$args['host'];
+				$port=$args['port'];
+				$debug=$args['debug'];
+				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}','{$debug}');");
+			}
+
+			return 1;
+		}
+	}
+	elseif(strlen($args)){$cmd .= ' '.trim($args);}
 	if($timeout != 0 && isNum($timeout) && !isWindows()){
 		//this will kill the process if it goes longer than timeout
     	$cmd="($cmd) & WPID=\$!; sleep {$timeout} && kill \$WPID > /dev/null 2>&1 & wait \$WPID";
