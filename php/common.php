@@ -2760,7 +2760,7 @@ function cleanDir($dir='') {
 *		[args] string - additional args, if any, to append to cmd
 *		[address] string - Address to bind to (multiple options allowed) Use square brackets to specify IPv6 address. defaults to ALL
 *		[sameorigin] string - true,false - Restrict (HTTP 403) protocol upgrades if the Origin header does not match to requested HTTP Host. Default false
-*		[divid] string - divid to send results to.  If set, this will return a buildOnLoad javascript call to websocketdResults
+*		[divid] string - divid to send results to.  If set, this will return a buildOnLoad javascript call to websocketdResults. Port will by dynamically set
 *		[host] string - host sent to websocketdResults. defaults to $_SERVER['SERVER_NAME']
 *		[debug] string - debug sent to websocketdResults
 * @param [dir] string - directory
