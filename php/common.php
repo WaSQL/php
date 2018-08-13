@@ -2813,12 +2813,24 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			}
 			if(!empty($args['ssl'])){
 				$cmd .= " --ssl";
-			}
-			if(!empty($args['sslcert'])){
-				$cmd .= " --sslcert={$args['sslcert']}";
-			}
-			if(!empty($args['sslkey'])){
-				$cmd .= " --sslkey={$args['sslkey']}";
+				if(!empty($args['sslcert'])){
+					$cmd .= " --sslcert=\"{$args['sslcert']}\"";
+				}
+				elseif(!empty($CONFIG['sslcert'])){
+					$cmd .= " --sslcert=\"{$CONFIG['sslcert']}\"";
+				}
+				else{
+					return "cmdResults error: missing sslcert param";
+				}
+				if(!empty($args['sslkey'])){
+					$cmd .= " --sslkey=\"{$args['sslkey']}\"";
+				}
+				elseif(!empty($CONFIG['sslkey'])){
+					$cmd .= " --sslkey=\"{$CONFIG['sslkey']}\"";
+				}
+				else{
+					return "cmdResults error: missing sslkey param";
+				}
 			}
 			$cmd.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
 			$ok=cmdResults($cmd);
@@ -2838,6 +2850,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				else{
 					$last=getFileContents($portfile);
 					$port=(integer)$last+1;
+					//once we reach port 9999 then go back to 8000
+					if($port > 9999){$port=8000;}
 					setFileContents($portfile,$port);
 				}
 				$debug=$args['debug'];
