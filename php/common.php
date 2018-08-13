@@ -2834,6 +2834,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			}
 			$cmd.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
 			$ok=cmdResults($cmd);
+			$tmppath=getWasqlTempPath();
+			setFileContents("{$tmppath}/websocketd_port.cmd",$cmd);
 			if(!empty($args['divid'])){
 				if(empty($args['host'])){
 					$args['host']=$_SERVER['SERVER_NAME'];
@@ -2841,7 +2843,6 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				$divid=$args['divid'];
 				$host=$args['host'];
 				//get the next available port from websocketd_port.txt in the tmp folder
-				$tmppath=getWasqlTempPath();
 				$portfile="{$tmppath}/websocketd_port.txt";
 				if(!file_exists($portfile)){
 					setFileContents($portfile,8000);
