@@ -2852,9 +2852,9 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 					$last=getFileContents($portfile);
 					$port=(integer)$last+1;
 					//once we reach port 9999 then go back to 8000
-					if($port > 9999){$port=8000;}
-					setFileContents($portfile,$port);
 				}
+				if($port > 9999){$port=8000;}
+				setFileContents($portfile,$port);
 				$debug=$args['debug'];
 				$ssl=!empty($args['ssl'])?'true':'false';
 				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},'{$debug}');");
