@@ -2799,11 +2799,26 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			//default timeout to 30 seconds
 			if(empty($args['timeout'])){$args['timeout']=30;}
 			//default port to 8000
-			if(empty($args['port'])){$args['port']=8000;}
+			if(empty($args['port'])){
+				$tmppath=getWasqlTempPath();
+				$portfile="{$tmppath}/websocketd_port.txt";
+				if(!file_exists($portfile)){
+					setFileContents($portfile,8000);
+					$args['port']=8000;
+				}
+				else{
+					$last=getFileContents($portfile);
+					$args['port']=(integer)$last+1;
+					//once we reach port 9999 then go back to 8000
+				}
+				if($args['port'] > 9999){$args['port']=8000;}
+				setFileContents($portfile,$args['port']);
+			}
 			//check for args
 			if(empty($args['args'])){
 				$cmd .= ' '.trim($args['args']);
 			}
+			
 			$command = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
 			if(!empty($args['address'])){
 				$command .= " --address={$args['address']}";
@@ -2834,7 +2849,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			}
 			$command.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
 			$ok=cmdResults($command);
-			$tmppath=getWasqlTempPath();
+			
 			setFileContents("{$tmppath}/websocketd_port.cmd",$command);
 			if(!empty($args['divid'])){
 				if(empty($args['host'])){
@@ -2842,19 +2857,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				}
 				$divid=$args['divid'];
 				$host=$args['host'];
+				$port=$args['port'];
 				//get the next available port from websocketd_port.txt in the tmp folder
-				$portfile="{$tmppath}/websocketd_port.txt";
-				if(!file_exists($portfile)){
-					setFileContents($portfile,8000);
-					$port=$args['port'];
-				}
-				else{
-					$last=getFileContents($portfile);
-					$port=(integer)$last+1;
-					//once we reach port 9999 then go back to 8000
-				}
-				if($port > 9999){$port=8000;}
-				setFileContents($portfile,$port);
 				$ssl=!empty($args['ssl'])?'true':'false';
 				$debug=!empty($args['debug'])?'true':'false';
 				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},{$debug});");
