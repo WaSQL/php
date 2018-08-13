@@ -24,17 +24,21 @@ else if(document.attachEvent){
 else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
 /**
 * @describe returns the realtime results from websocketd
-* @param element object or id  - the element
-* @return false
-* @usage loadTextFileInit('sql_area');
 */
-function websocketdResults(divid,host,port,debug){
+function websocketdResults(divid,host,port,ssl,debug){
 	if(undefined==host){host='localhost';}
 	if(undefined==port){port=8000;}
+	if(undefined==ssl){ssl=false;}
+	if(ssl.toString().length===0){ssl=false;}
 	if(undefined==debug){debug=false;}
 	if(debug.toString().length===0){debug=false;}
   	// setup websocket with callbacks
-  	var ws = new WebSocket('ws://'+host+':'+port+'/');
+  	if(ssl){
+  		var ws = new WebSocket('wss://'+host+':'+port+'/');
+  	}
+  	else{
+  		var ws = new WebSocket('ws://'+host+':'+port+'/');
+  	}
   	ws.divid=divid;
   	ws.onopen = function() {
     	if(debug){

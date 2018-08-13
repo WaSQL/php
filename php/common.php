@@ -2806,10 +2806,19 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			}
 			$cmd = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
 			if(!empty($args['address'])){
-				$cmd .= " address={$args['address']}";
+				$cmd .= " --address={$args['address']}";
 			}
 			if(!empty($args['sameorigin'])){
-				$cmd .= " sameorigin={$args['sameorigin']}";
+				$cmd .= " --sameorigin={$args['sameorigin']}";
+			}
+			if(!empty($args['ssl'])){
+				$cmd .= " --ssl";
+			}
+			if(!empty($args['sslcert'])){
+				$cmd .= " --sslcert={$args['sslcert']}";
+			}
+			if(!empty($args['sslkey'])){
+				$cmd .= " --sslkey={$args['sslkey']}";
 			}
 			$cmd.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
 			$ok=cmdResults($cmd);
@@ -2832,7 +2841,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 					setFileContents($portfile,$port);
 				}
 				$debug=$args['debug'];
-				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}','{$debug}');");
+				$ssl=!empty($args['ssl']):'true'?'false';
+				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},'{$debug}');");
 			}
 
 			return 1;
