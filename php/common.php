@@ -2810,7 +2810,18 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				}
 				$divid=$args['divid'];
 				$host=$args['host'];
-				$port=$args['port'];
+				//get the next available port from websocketd_port.txt in the tmp folder
+				$tmppath=getWasqlTempPath();
+				$portfile="{$tmppath}/websocketd_port.txt";
+				if(!file_exists($portfile)){
+					setFileContents($portfile,8000);
+					$port=$args['port'];
+				}
+				else{
+					$last=getFileContents($portfile);
+					$port=(integer)$last+1;
+					setFileContents($portfile,$port);
+				}
 				$debug=$args['debug'];
 				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}','{$debug}');");
 			}
