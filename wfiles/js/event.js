@@ -34,7 +34,7 @@ function websocketdResults(divid,host,port,debug){
 	if(undefined==debug){debug=false;}
 	if(debug.toString().length===0){debug=false;}
   	// setup websocket with callbacks
-  	var ws = new WebSocket('ws://'+ip+':'+port+'/');
+  	var ws = new WebSocket('ws://'+host+':'+port+'/');
   	ws.divid=divid;
   	ws.onopen = function() {
     	if(debug){

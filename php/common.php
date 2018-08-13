@@ -2774,12 +2774,21 @@ function cleanDir($dir='') {
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=realpath('.');}
-	if(!is_array($args)){
+	if(is_array($args)){
 		if(!empty($args['websocketd'])){
 			global $CONFIG;
 			//check for websocketd 
 			if(!file_exists("{$args['websocketd']}/websocketd")){
-				return "cmdResults error: websocketd not found at {$args['websocketd']}/websocketd";
+				if(!empty($CONFIG['websocketd'])){
+					if(!file_exists("{$CONFIG['websocketd']}/websocketd")){
+						return "cmdResults error: websocketd not found at {$CONFIG['websocketd']}/websocketd  - check config.xml";
+					}
+					$args['websocketd']=$CONFIG['websocketd'];
+				}
+				else{
+					return "cmdResults error: websocketd not found at {$args['websocketd']}/websocketd";
+				}
+				
 			}
 			elseif(!empty($CONFIG['websocketd'])){
 				if(!file_exists("{$CONFIG['websocketd']}/websocketd")){
