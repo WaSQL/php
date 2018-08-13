@@ -2804,38 +2804,38 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			if(empty($args['args'])){
 				$cmd .= ' '.trim($args['args']);
 			}
-			$cmd = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
+			$command = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
 			if(!empty($args['address'])){
-				$cmd .= " --address={$args['address']}";
+				$command .= " --address={$args['address']}";
 			}
 			if(!empty($args['sameorigin'])){
-				$cmd .= " --sameorigin={$args['sameorigin']}";
+				$command .= " --sameorigin={$args['sameorigin']}";
 			}
 			if(!empty($args['ssl'])){
-				$cmd .= " --ssl";
+				$command .= " --ssl";
 				if(!empty($args['sslcert'])){
-					$cmd .= " --sslcert=\"{$args['sslcert']}\"";
+					$command .= " --sslcert=\"{$args['sslcert']}\"";
 				}
 				elseif(!empty($CONFIG['sslcert'])){
-					$cmd .= " --sslcert=\"{$CONFIG['sslcert']}\"";
+					$command .= " --sslcert=\"{$CONFIG['sslcert']}\"";
 				}
 				else{
 					return "cmdResults error: missing sslcert param";
 				}
 				if(!empty($args['sslkey'])){
-					$cmd .= " --sslkey=\"{$args['sslkey']}\"";
+					$command .= " --sslkey=\"{$args['sslkey']}\"";
 				}
 				elseif(!empty($CONFIG['sslkey'])){
-					$cmd .= " --sslkey=\"{$CONFIG['sslkey']}\"";
+					$command .= " --sslkey=\"{$CONFIG['sslkey']}\"";
 				}
 				else{
 					return "cmdResults error: missing sslkey param";
 				}
 			}
-			$cmd.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
-			$ok=cmdResults($cmd);
+			$command.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
+			$ok=cmdResults($command);
 			$tmppath=getWasqlTempPath();
-			setFileContents("{$tmppath}/websocketd_port.cmd",$cmd);
+			setFileContents("{$tmppath}/websocketd_port.cmd",$command);
 			if(!empty($args['divid'])){
 				if(empty($args['host'])){
 					$args['host']=$_SERVER['SERVER_NAME'];
