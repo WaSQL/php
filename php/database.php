@@ -6402,9 +6402,8 @@ function getDBWhere($params,$info=array()){
             $params[$k]=implode(':',$params[$k]);
 		}
         $params[$k]=str_replace("'","''",$params[$k]);
-        $v=strtoupper($params[$k]);
-        $v=databaseEscapeString($v);
-        $ands[]="upper({$k})='{$v}'";
+        $v=databaseEscapeString($params[$k]);
+        $ands[]="{$k}='{$v}'";
 	}
 	//check for -where
 	if(!empty($params['-where'])){
