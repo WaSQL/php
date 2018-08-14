@@ -257,7 +257,8 @@ function databaseListRecords($params=array()){
 			$bulk=array('-table'=>$params['-table']);
 			if(!empty($params['-where'])){$bulk['-where']=$params['-where'];}
 			else{$bulk['-where']='1=1';}
-			$bulk[$_REQUEST['filter_field']]=$_REQUEST['filter_val'];
+			$bulk[$_REQUEST['filter_field']]=$_REQUEST['filter_value'];
+			//echo printValue($bulk).printValue($_REQUEST);exit;
 			switch(strtolower($params['-database'])){
 				case 'oracle':
 					$ok=oracleEditDBRecord($bulk);
