@@ -520,6 +520,7 @@ function databaseListRecords($params=array()){
 			$rtn .= '			<td';
 			$atts=array();
 			foreach($params as $k=>$v){
+				if(preg_match('/^'.$fld.'_(onclick|eval|href)$/i',$k)){continue;}
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
 					$atts[$m[1]]=$v;
 				}
