@@ -155,18 +155,77 @@ function databaseListRecords($params=array()){
 				switch(strtolower($oper)){
 					case 'ct':
 						//contains
-						$wheres[]="lower({$field}) like '%{$val}%'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								$wheres[]="lower({$field}) like '%{$val}%'";
+							break;
+							case 'hana':
+								$wheres[]="lower({$field}) like '%{$val}%'";
+							break;
+							case 'mssql':
+								$wheres[]="lower({$field}) like '%{$val}%'";
+							break;
+							case 'sqlite':
+								$wheres[]="lower({$field}) like '%{$val}%'";
+							break;
+							default:
+								//mysql is case insensitive
+								$wheres[]="{$field} like '%{$val}%'";
+							break;
+						}
 					break;
 					case 'nct':
 						//not contains
-						$wheres[]="lower({$field}) not like '%{$val}%'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								$wheres[]="lower({$field}) not like '%{$val}%'";
+							break;
+							case 'hana':
+								$wheres[]="lower({$field}) not like '%{$val}%'";
+							break;
+							case 'mssql':
+								$wheres[]="lower({$field}) not like '%{$val}%'";
+							break;
+							case 'sqlite':
+								$wheres[]="lower({$field}) not like '%{$val}%'";
+							break;
+							default:
+								//mysql is case insensitive
+								$wheres[]="{$field} not like '%{$val}%'";
+							break;
+						}
 					break;
 					case 'ca':
 						//contains any
 						$ors=array();
 						$cvals=preg_split('/\,/',$val);
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) like '%{$cval}%'";
+								}
+							break;
+							case 'hana':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) like '%{$cval}%'";
+								}
+							break;
+							case 'mssql':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) like '%{$cval}%'";
+								}
+							break;
+							case 'sqlite':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) like '%{$cval}%'";
+								}
+							break;
+							default:
+								//mysql is case insensitive
+								foreach($cvals as $cval){
+									$ors[]="{$field} like '%{$cval}%'";
+								}
+							break;
 						}
 						$wheres[]='('.implode(' or ',$ors).')';
 					break;
@@ -174,34 +233,144 @@ function databaseListRecords($params=array()){
 						//not contains any
 						$ands=array();
 						$cvals=preg_split('/\,/',$val);
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) not like '%{$cval}%'";
+								}
+							break;
+							case 'hana':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) not like '%{$cval}%'";
+								}
+							break;
+							case 'mssql':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) not like '%{$cval}%'";
+								}
+							break;
+							case 'sqlite':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) not like '%{$cval}%'";
+								}
+							break;
+							default:
+								//mysql is case insensitive
+								foreach($cvals as $cval){
+									$ands[]="{$field} not like '%{$cval}%'";
+								}
+							break;
 						}
 						$wheres[]='('.implode(' and ',$ands).')';
 					break;
 					case 'eq':
 						//equals
-						$wheres[]="lower({$field}) = '{$val}'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								$wheres[]="lower({$field}) = '{$val}'";
+							break;
+							case 'hana':
+								$wheres[]="lower({$field}) = '{$val}'";
+							break;
+							case 'mssql':
+								$wheres[]="lower({$field}) = '{$val}'";
+							break;
+							case 'sqlite':
+								$wheres[]="lower({$field}) = '{$val}'";
+							break;
+							default:
+								//mysql is case insensitive
+								$wheres[]="{$field} = '{$val}'";
+							break;
+						}
 					break;
 					case 'neq':
 						//not equals
-						$wheres[]="lower({$field}) != '{$val}'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								$wheres[]="lower({$field}) != '{$val}'";
+							break;
+							case 'hana':
+								$wheres[]="lower({$field}) != '{$val}'";
+							break;
+							case 'mssql':
+								$wheres[]="lower({$field}) != '{$val}'";
+							break;
+							case 'sqlite':
+								$wheres[]="lower({$field}) != '{$val}'";
+							break;
+							default:
+								//mysql is case insensitive
+								$wheres[]="{$field} != '{$val}'";
+							break;
+						}
 					break;
 					case 'ea':
 						//equals any
 						$ors=array();
 						$cvals=preg_split('/\,/',$val);
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) = '{$cval}'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) = '{$cval}'";
+								}
+							break;
+							case 'hana':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) = '{$cval}'";
+								}
+							break;
+							case 'mssql':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) = '{$cval}'";
+								}
+							break;
+							case 'sqlite':
+								foreach($cvals as $cval){
+									$ors[]="lower({$field}) = '{$cval}'";
+								}
+							break;
+							default:
+								//mysql is case insensitive
+								foreach($cvals as $cval){
+									$ors[]="{$field} = '{$cval}'";
+								}
+							break;
 						}
+						
 						$wheres[]='('.implode(' or ',$ors).')';
 					break;
 					case 'nea':
 						//not equals any
 						$ands=array();
 						$cvals=preg_split('/\,/',$val);
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) != '{$cval}'";
+						switch(strtolower($params['-database'])){
+							case 'oracle':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) != '{$cval}'";
+								}
+							break;
+							case 'hana':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) != '{$cval}'";
+								}
+							break;
+							case 'mssql':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) != '{$cval}'";
+								}
+							break;
+							case 'sqlite':
+								foreach($cvals as $cval){
+									$ands[]="lower({$field}) != '{$cval}'";
+								}
+							break;
+							default:
+								//mysql is case insensitive
+								foreach($cvals as $cval){
+									$ands[]="{$field} != '{$cval}'";
+								}
+							break;
 						}
 						$wheres[]='('.implode(' and ',$ands).')';
 					break;
@@ -249,6 +418,7 @@ function databaseListRecords($params=array()){
 			if(count($wheres)){
 				$params['-where']=implode(' and ',$wheres);
 			}
+			//echo printValue($params);exit;
 		}
 		//echo printValue($params);
 		$params['-forceheader']=1;
@@ -6394,6 +6564,7 @@ function getDBWhere($params,$info=array()){
 		$info=getDBFieldInfo($params['-table']);
 	}
 	$ands=array();
+	//echo printValue($info);exit;
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
@@ -6403,7 +6574,20 @@ function getDBWhere($params,$info=array()){
 		}
         $params[$k]=str_replace("'","''",$params[$k]);
         $v=databaseEscapeString($params[$k]);
-        $ands[]="{$k}='{$v}'";
+        switch(strtolower($info[$k]['_dbtype'])){
+        	case 'int':
+        	case 'integer':
+        	case 'tinyint':
+        	case 'number':
+        	case 'float':
+        		if(isNum($v)){
+        			$ands[]="{$k}={$v}";
+        		}
+        	break;
+        	default:
+        		$ands[]="{$k}='{$v}'";
+        	break;
+        } 
 	}
 	//check for -where
 	if(!empty($params['-where'])){
