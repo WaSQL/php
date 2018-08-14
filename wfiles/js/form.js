@@ -1895,8 +1895,11 @@ function pagingBulkEdit(frm){
 	return true;
 }
 function pagingExport(frm){
+	pagingAddFilter(frm);
+	pagingSetFilters(frm);
 	frm.filter_export.value='1';
-	return pagingSubmit(frm);
+	frm.submit();
+	return false;
 }
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
