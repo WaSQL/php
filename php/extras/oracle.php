@@ -292,9 +292,12 @@ function oracleExecuteSQL($query='',$params=array()){
 		oci_set_action($dbh_oracle, $params['action']);
 		oci_set_client_identifier($dbh_oracle, $params['id']);
 	}
+	//log this query
 	// check for non-select query
+	$start=microtime(true);
 	if(preg_match('/^(update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
+    	logDBQuery($query,$start,'oracleExecuteSQL','oracle');
     	oci_free_statement($stid);
     	if($params['setmodule']){
 			oci_set_module_name($dbh_oracle, 'idle');
@@ -302,9 +305,11 @@ function oracleExecuteSQL($query='',$params=array()){
 			oci_set_client_identifier($dbh_oracle, 'idle');
 		}
 		oci_close($dbh_oracle);
+		
     	return;
 	}
 	$r = oci_execute($stid);
+	logDBQuery($query,$start,'oracleExecuteSQL','oracle');
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    
@@ -810,6 +815,7 @@ function oracleQueryResults($query='',$params=array()){
 	// check for non-select query
 	if(preg_match('/^(update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
+		logDBQuery($query,$start,'oracleQueryResults','oracle');
     	oci_free_statement($stid);
     	if($params['setmodule']){
 			oci_set_module_name($dbh_oracle, 'idle');
@@ -820,6 +826,7 @@ function oracleQueryResults($query='',$params=array()){
     	return;
 	}
 	$r = oci_execute($stid);
+	logDBQuery($query,$start,'oracleQueryResults','oracle');
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e,$query));
