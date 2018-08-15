@@ -813,6 +813,7 @@ function oracleQueryResults($query='',$params=array()){
 		oci_set_client_identifier($dbh_oracle, $params['id']);
 	}
 	// check for non-select query
+	$start=microtime(true);
 	if(preg_match('/^(update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
 		logDBQuery($query,$start,'oracleQueryResults','oracle');
