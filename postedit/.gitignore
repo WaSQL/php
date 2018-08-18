@@ -1,6 +1,8 @@
 postedit.xml
 wasql_*.lock
 *_lock.txt
+postedit_*.txt
+posteditxmlfromjson.txt
 postEditXML
 postEditFiles
 postedit.noloop
