@@ -51,10 +51,7 @@
 		$params['-loglevel']='error';
 	}
 	if(!isset($params['-shortcuts'])){
-		$params['-shortcuts']=array(
-			array('name'=>'ifconfig','cmd'=>'ifconfig'),
-			array('name'=>'ipconfig','cmd'=>'ipconfig')
-		);
+		$params['-shortcuts']=array();
 	}
 	//check for websocketd file
 	//check for sslkey
@@ -79,15 +76,22 @@
 	if(!preg_match('/websocketd/i',$out['stdout'])){
 		//not running. lets start it up
     	if(isWindows()){
-    		$cmd="{$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash";
-    		$error="websocketd is not running. Run this command to start it in a cmd prompt : {$cmd} ";
+    		$path=getFilePath($params['-file']);
+    		$path=str_replace('/',"\\",$path);
+    		$batch=str_replace('.exe','',$batch);
+    		$params['-file']=str_replace('/',"\\",$params['-file']);
+    		$cmd="start /B {$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash >{$path}\\websocketd.log";
+    		//pclose(popen($cmd,'r'));
+    		//$out=cmdResults($cmd);
+    		//pclose(popen("start /B /SHARED ". $cmd, "r"));
+    		$error="websocketd is not running. Run this command from a CMD prompt to start it:<br /> <textarea>{$cmd}</textarea> ";
 			setView('error',1);
 			return;
     	}
     	else{
     		$cmd="{$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash > /dev/null 2>&1 &";
+    		$out=cmdResults($cmd);
     	}
-    	$out=cmdResults($cmd);
 	}
 	setView('default',1);
 ?>

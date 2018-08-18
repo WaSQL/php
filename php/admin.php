@@ -1192,6 +1192,21 @@ if(isset($_REQUEST['_menu'])){
 
             echo buildTableEnd();
 			break;
+		case 'terminal':
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-prompt w_bigger" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</div>'.PHP_EOL;
+			$shortcuts=array(
+				'help'=>'help',
+				'uname -a'=>'uname -a',
+				'set'=>'set'
+			);
+			if(isWindows()){
+				$shortcuts['ipconfig']='ipconfig';
+			}
+			else{
+				$shortcuts['ifconfig']='ifconfig';
+			}
+			echo commonBuildTerminal(array('-shortcuts'=>$shortcuts));
+		break;
 		case 'rebuild':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
@@ -3428,6 +3443,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt</a></li>'.PHP_EOL;
