@@ -81,7 +81,7 @@
     	$cmd="tasklist | find /I \"websocketd\"";
 	}
 	else{
-		$cmd="ps aux|grep {$process}";
+		$cmd="ps aux|grep websocketd";
 	}
 	$out=cmdResults($cmd);
 	if(!preg_match('/websocketd/i',$out['stdout'])){
