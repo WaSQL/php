@@ -23,54 +23,6 @@ else if(document.attachEvent){
 	}
 else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
 /**
-* @describe returns the realtime results from websocketd
-*/
-function websocketdResults(divid,host,port,ssl,debug){
-	if(host.length==0){host='localhost';}
-	if(port.length==0){port='8000';}
-  	// setup websocket with callbacks
-  	if(ssl){
-  		if(debug){
-    		console.log('websocketdResults starting secure Host: '+host+' , Port: '+port);
-    	}
-  		var ws = new WebSocket('wss://'+host+':'+port+'/');
-  	}
-  	else{
-  		if(debug){
-    		console.log('websocketdResults starting Host: '+host+' , Port: '+port);
-    	}
-  		var ws = new WebSocket('ws://'+host+':'+port+'/');
-  	}
-  	ws.divid=divid;
-  	ws.onopen = function() {
-    	if(debug){
-    		console.log('websocketdResults opened. Host: '+host+' , Port: '+port);
-    	}
-  	};
-  	ws.onclose = function() {
-    	if(debug){
-    		console.log('websocketdResults closed. Host: '+host+' , Port: '+port);
-    	}
-  	};
-  	ws.onmessage = function(event) {
-  		var msg=event.data;
-  		if(debug){
-    		console.log('websocketdResults message. Host: '+host+' , Port: '+port+' , Message:'+msg);
-    	}
-  		if(msg.toLowerCase().indexOf('error') != -1){
-      		msg='<div class="w_red" style="margin-bottom:3px;">'+msg + '</div>\n';
-    	}
-    	else{
-      		msg='<div class="w_grey" style="margin-bottom:3px;">'+msg + '</div>\n';
-    	}
-    	var divobj=getObject(this.divid);
-    	//add the message
-    	divobj.innerHTML += msg;
-    	//scroll to bottom
-    	divobj.scrollTo(0,divobj.scrollHeight); 
-  	};
-}
-/**
 * @describe loads the contents of the text file into the element it is dropped on
 * @param element object or id  - the element
 * @return false

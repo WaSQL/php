@@ -209,6 +209,12 @@ if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	exit;
 }
 //Check for websocket
+if(isset($_REQUEST['wscmd_completed']) && isNum($_REQUEST['wscmd_completed']) && count($_REQUEST)==1){
+	$port=$_REQUEST['wscmd_completed'];
+	$ok=cmdResults("pkill -f  \"/websocketd --port={$port}\"");
+	echo printValue($ok);
+	exit;
+}
 if(isset($_REQUEST['_websocket']) && count($_REQUEST)==1){
 	loadExtras('websockets');
 	$params=array(

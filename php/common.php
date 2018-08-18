@@ -1,4 +1,25 @@
 <?php
+//---------- begin function commonBuildTerminal
+/**
+* @describe returns an HTML5 based terminal window to the server. requires websocketd path to be set in config.xml
+* @param params array
+*	[-shortcuts] array - an array of shortcuts with name and cmd specified for each shortcut. These show up on the right
+* @usage
+*	<?=commonBuildTerminal(array('-shortcuts'=>$shortcuts));?>
+*/
+function commonBuildTerminal($opts=array()){
+	$menu='terminal';
+	$progpath=dirname(__FILE__);
+	$menu=strtolower($menu);
+	global $params;
+	$params=$opts;
+	if(is_file("{$progpath}/admin/{$menu}_functions.php")){
+    	include_once("{$progpath}/admin/{$menu}_functions.php");
+	}
+	$body=getFileContents("{$progpath}/admin/{$menu}_body.htm");
+	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
+	return evalPHP(array($controller,$body));
+}
 //---------- begin function commonSearchFiltersForm
 /**
 * @describe returns an HTML search/filters form
@@ -2753,121 +2774,16 @@ function cleanDir($dir='') {
 /**
 * @describe executes command and returns results
 * @param cmd string - the command to execute
-* @param [args] mixed - either a string of arguments to pass to the command or an an array of params.
-*		[websocketd] - path to websocketd - run the cmd through websocketd so the results can be streamed in real time via websockets. You can get websocketd from https://github.com/joewalnes/websocketd/releases.  You can also set websocketd in the config.xml - then send websocketd=>1 to this.
-*		[timeout] integer - seconds timeout. default is 30 seconds
-*		[port] integer - port to use for websocketd. Default is 8000
-*		[args] string - additional args, if any, to append to cmd
-*		[address] string - Address to bind to (multiple options allowed) Use square brackets to specify IPv6 address. defaults to ALL
-*		[sameorigin] string - true,false - Restrict (HTTP 403) protocol upgrades if the Origin header does not match to requested HTTP Host. Default false
-*		[divid] string - divid to send results to.  If set, this will return a buildOnLoad javascript call to websocketdResults. Port will by dynamically set
-*		[host] string - host sent to websocketdResults. defaults to $_SERVER['SERVER_NAME']
-*		[debug] string - debug sent to websocketdResults
+* @param [args] string - a string of arguments to pass to the command 
 * @param [dir] string - directory
 * @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
 * @return string - returns the results of executing the command
 * @usage 
 *		$out=cmdResults('ls -al');
-*		$ok=cmdResults('ls -al',array('websocketd'=>'/etc','port'=>9696));
-*		$ok=cmdResults('apt-get update',array('websocketd'=>'1','timeout'=>600)); assumes websocketd is set in config.xml
-*		echo cmdResults('apt-get update',array('websocketd'=>'1','timeout'=>600,'divid'=>'results')); calls websocketdResults
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=realpath('.');}
-	if(is_array($args)){
-		if(!empty($args['websocketd'])){
-			global $CONFIG;
-			//check for websocketd 
-			if(!file_exists("{$args['websocketd']}/websocketd")){
-				if(!empty($CONFIG['websocketd'])){
-					if(!file_exists("{$CONFIG['websocketd']}/websocketd")){
-						return "cmdResults error: websocketd not found at {$CONFIG['websocketd']}/websocketd  - check config.xml";
-					}
-					$args['websocketd']=$CONFIG['websocketd'];
-				}
-				else{
-					return "cmdResults error: websocketd not found at {$args['websocketd']}/websocketd";
-				}
-				
-			}
-			elseif(!empty($CONFIG['websocketd'])){
-				if(!file_exists("{$CONFIG['websocketd']}/websocketd")){
-					return "cmdResults error: websocketd not found at {$CONFIG['websocketd']}/websocketd  - check config.xml";
-				}
-				$args['websocketd']=$CONFIG['websocketd'];
-			}
-			//default timeout to 30 seconds
-			if(empty($args['timeout'])){$args['timeout']=30;}
-			//default port to 8000
-			if(empty($args['port'])){
-				$tmppath=getWasqlTempPath();
-				$portfile="{$tmppath}/websocketd_port.txt";
-				if(!file_exists($portfile)){
-					setFileContents($portfile,8000);
-					$args['port']=8000;
-				}
-				else{
-					$last=getFileContents($portfile);
-					$args['port']=(integer)$last+1;
-					//once we reach port 9999 then go back to 8000
-				}
-				if($args['port'] > 9999){$args['port']=8000;}
-				setFileContents($portfile,$args['port']);
-			}
-			//check for args
-			if(empty($args['args'])){
-				$cmd .= ' '.trim($args['args']);
-			}
-			
-			$command = "sudo {$args['websocketd']}/websocketd --port={$args['port']}";
-			if(!empty($args['address'])){
-				$command .= " --address={$args['address']}";
-			}
-			if(!empty($args['sameorigin'])){
-				$command .= " --sameorigin={$args['sameorigin']}";
-			}
-			if(!empty($args['ssl'])){
-				$command .= " --ssl";
-				if(!empty($args['sslcert'])){
-					$command .= " --sslcert=\"{$args['sslcert']}\"";
-				}
-				elseif(!empty($CONFIG['sslcert'])){
-					$command .= " --sslcert=\"{$CONFIG['sslcert']}\"";
-				}
-				else{
-					return "cmdResults error: missing sslcert param";
-				}
-				if(!empty($args['sslkey'])){
-					$command .= " --sslkey=\"{$args['sslkey']}\"";
-				}
-				elseif(!empty($CONFIG['sslkey'])){
-					$command .= " --sslkey=\"{$CONFIG['sslkey']}\"";
-				}
-				else{
-					return "cmdResults error: missing sslkey param";
-				}
-			}
-			$command.= " timeout {$args['timeout']}s {$cmd} > /dev/null 2>&1 &";
-			$ok=cmdResults($command);
-			
-			setFileContents("{$tmppath}/websocketd_port.cmd",$command);
-			if(!empty($args['divid'])){
-				if(empty($args['host'])){
-					$args['host']=$_SERVER['SERVER_NAME'];
-				}
-				$divid=$args['divid'];
-				$host=$args['host'];
-				$port=$args['port'];
-				//get the next available port from websocketd_port.txt in the tmp folder
-				$ssl=!empty($args['ssl'])?'true':'false';
-				$debug=!empty($args['debug'])?'true':'false';
-				return buildOnLoad("websocketdResults('{$divid}','{$host}','{$port}',{$ssl},{$debug});");
-			}
-
-			return 1;
-		}
-	}
-	elseif(strlen($args)){$cmd .= ' '.trim($args);}
+	if(strlen($args)){$cmd .= ' '.trim($args);}
 	if($timeout != 0 && isNum($timeout) && !isWindows()){
 		//this will kill the process if it goes longer than timeout
     	$cmd="($cmd) & WPID=\$!; sleep {$timeout} && kill \$WPID > /dev/null 2>&1 & wait \$WPID";
