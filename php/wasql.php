@@ -1195,6 +1195,7 @@ function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
 		))){return true;}
 	$ok=addDBRecord(array(
 		'-table'=>'_errors',
+		'-ignore'=>1,
 		'errno'=>$errno,
 		'errstr'=>$errstr,
 		'errfile'=>$errfile,
