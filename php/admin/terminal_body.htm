@@ -110,9 +110,9 @@ shortcut.add("Down",function() {
 	</div>
 	<div style="flex-grow: 1;padding-left:15px;">
 		<view:shortcut>
-		<div><a href="#" data-cmd="<?=$key;?>" onclick="return terminalCommand(this.getAttribute('data-cmd'));"><?=$val;?></a></div>
+		<div><a href="#" data-cmd="<?=$rec['cmd'];?>" onclick="return terminalCommand(this.getAttribute('data-cmd'));"><?=$rec['name'];?></a></div>
 		</view:shortcut>
-		<?=renderEach('shortcut',$params['-shortcuts']);?>
+		<?=renderEach('shortcut',$params['-shortcuts'],'rec');?>
 	</div>
 </div>
 </view:default>

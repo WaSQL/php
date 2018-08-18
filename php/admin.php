@@ -1195,16 +1195,20 @@ if(isset($_REQUEST['_menu'])){
 		case 'terminal':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-prompt w_bigger" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</div>'.PHP_EOL;
 			$shortcuts=array(
-				'help'=>'help',
-				'uname -a'=>'uname -a',
-				'set'=>'set'
+				'Show Help'=>'help',
+				'Identify Server'=>'uname -a'
 			);
 			if(isWindows()){
-				$shortcuts['ipconfig']='ipconfig';
-			}
+				$shortcuts['IPConfig']='ipconfig';
+				$shortcuts['Drive Space']='wmic logicaldisk get size,freespace,caption,description,filesystem';
+		}
 			else{
-				$shortcuts['ifconfig']='ifconfig';
+				$shortcuts['IFConfig']='ifconfig';
+				$shortcuts['Drive Space']='df -h';
+				$log=getFilePath($CONFIG['websocketd_file'])."/websocketd_terminal.log";
+				$shortcuts['Terminal Log']='tail -n 50 '.$log;
 			}
+			ksort($shortcuts);
 			echo commonBuildTerminal(array('-shortcuts'=>$shortcuts));
 		break;
 		case 'rebuild':

@@ -53,6 +53,17 @@
 	if(!isset($params['-shortcuts'])){
 		$params['-shortcuts']=array();
 	}
+	//turn shortcuts into arrays
+	$shortcuts=array();
+	foreach($params['-shortcuts'] as $name=>$cmd){
+		$shortcut=array(
+			'name'=>$name,
+			'cmd'=>$cmd
+		);
+		$shortcuts[]=$shortcut;
+	}
+	$params['-shortcuts']=$shortcuts;
+	$shortcuts=null;
 	//check for websocketd file
 	//check for sslkey
 	if(!isset($params['-file'])){
@@ -80,7 +91,7 @@
     		$path=str_replace('/',"\\",$path);
     		$batch=str_replace('.exe','',$batch);
     		$params['-file']=str_replace('/',"\\",$params['-file']);
-    		$cmd="start /B {$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash >{$path}\\websocketd.log";
+    		$cmd="start /B {$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash >{$path}\\websocketd_terminal.log";
     		//pclose(popen($cmd,'r'));
     		//$out=cmdResults($cmd);
     		//pclose(popen("start /B /SHARED ". $cmd, "r"));
@@ -89,7 +100,7 @@
 			return;
     	}
     	else{
-    		$cmd="{$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash > /dev/null 2>&1 &";
+    		$cmd="{$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash > {$path}/websocketd_terminal.log 2>&1 &";
     		$out=cmdResults($cmd);
     	}
 	}
