@@ -1,0 +1,84 @@
+<view:default>
+<script type="text/javascript">
+	function terminalCommand(msg){
+		switch(msg.toLowerCase()){
+			case 'cls':
+			case 'clear':
+				setText('<?=$params['-divid'];?>','');
+			break;
+			default:
+				terminalLog('>'+msg);
+				waws.send(msg);
+			break;
+		}
+		return false;
+	}
+	function terminalLog(msg) {
+		//replace tabs with 5 spaces
+		msg=msg.replace(/\t/g, '     ');
+		//replace spaces with &nbsp;
+		msg=msg.replace(/ /g, '\u00a0');
+		if(msg.toLowerCase().indexOf('>') == 0){
+      		msg='<div style="color:#29b6f6;margin-bottom:1px;">'+msg + '</div>\n';
+    	}
+		else if(msg.toLowerCase().indexOf('error') != -1){
+      		msg='<div style="margin-left:15px;color:#ff9800;">'+msg + '</div>\n';
+    	}
+    	else{
+      		msg='<div style="margin-left:15px;">'+msg + '</div>\n';
+    	}
+    	var divobj=getObject('<?=$params['-divid'];?>');
+    	//add the message
+    	divobj.innerHTML += msg;
+    	//scroll to bottom
+    	divobj.scrollTo(0,divobj.scrollHeight);
+  }
+var waws;
+function terminalStart(){
+	  // setup websocket with callbacks
+	  waws = new WebSocket('<?=$params['-ws'];?>://<?=$params['-host'];?>:<?=$params['-port'];?>/');
+	  waws.onopen = function() {
+	  	terminalLog('++');
+	  };
+	  waws.onclose = function() {
+	    terminalLog('--');
+	  };
+	  waws.onmessage = function(event) {
+	    terminalLog(event.data);
+	  };
+}
+terminalStart();
+shortcut.add("Ctrl+c",function() {
+	//console.log('crtl-c called');
+	waws.close();
+	terminalStart();
+});
+</script>
+<div class="w_flex w_flexrow w_flexnowrap" style="margin-top:15px;padding: 0 15px;">
+	<div style="flex-grow: 3">
+		<form method="post" autocomplete="off" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return terminalCommand(this.cmd.value);">
+			<div class="w_flex w_flexrow w_flexwrap">
+				<div style="flex-grow:10"><input type="text" autofocus="autofocus" name="cmd" class="browser-default" value="" placeholder="enter command here"></div>
+				<div style="flex-grow:1"><button type="submit" class="browser-default">Run</button></div>
+			</div>
+		</form>
+		<div id="<?=$params['-divid'];?>" style="font-size:0.9em;padding:5px;border:4px solid #ccc;background:#000;color:#bbb;min-height:150px;max-height:500px;overflow:auto;width:100%;">
+		
+		</div>
+	</div>
+	<div style="flex-grow: 1;padding-left:15px;">
+		shortcuts
+		<view:shortcut>
+		<div><a href="#" data-cmd="<?=$rec['cmd'];?>" onclick="return terminalCommand(this.getAttribute('data-cmd'));"><?=$rec['name'];?></a></div>
+		</view:shortcut>
+		<?=renderEach('shortcut',$params['-shortcuts'],'rec');?>
+	</div>
+</div>
+</view:default>
+
+<view:error>
+	<div class="w_bold w_big w_danger"><?=$error;?></div>
+</view:error>
+
+
+
