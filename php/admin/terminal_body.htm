@@ -30,13 +30,13 @@ function terminalLog(msg) {
 	//replace spaces with &nbsp;
 	msg=msg.replace(/ /g, '\u00a0');
 	if(msg.toLowerCase().indexOf('>') == 0){
-  		msg='<div style="color:#29b6f6;margin-bottom:1px;">'+msg + '</div>\n';
+  		msg='<div style="color:#29b6f6;margin-bottom:1px;white-space: nowrap;">'+msg + '</div>\n';
 	}
 	else if(msg.toLowerCase().indexOf('error') != -1){
-  		msg='<div style="margin-left:15px;color:#ff9800;">'+msg + '</div>\n';
+  		msg='<div style="margin-left:15px;color:#ff9800;white-space: nowrap;">'+msg + '</div>\n';
 	}
 	else{
-  		msg='<div style="margin-left:15px;">'+msg + '</div>\n';
+  		msg='<div style="margin-left:15px;white-space: nowrap;">'+msg + '</div>\n';
 	}
 	var divobj=getObject('<?=$params['-divid'];?>');
 	//add the message
@@ -104,7 +104,7 @@ shortcut.add("Down",function() {
 				<div style="flex-grow:1"><button type="submit" class="browser-default">Run</button></div>
 			</div>
 		</form>
-		<div id="<?=$params['-divid'];?>" style="margin:0px !important;font-size:0.9em;padding:5px;border:4px solid #ccc;background:#000;color:#bbb;height:500px;overflow:auto;width:100%;">
+		<div id="<?=$params['-divid'];?>"  style="margin:0px !important;font-size:0.9em;padding:5px;border:4px solid #ccc;background:#000;color:#bbb;height:500px;overflow:auto;width:100%;">
 		
 		</div>
 	</div>
