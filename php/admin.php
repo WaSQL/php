@@ -1207,6 +1207,7 @@ if(isset($_REQUEST['_menu'])){
 				$shortcuts['Drive Space']='df -h';
 				$log=getFilePath($CONFIG['websocketd_file'])."/websocketd_terminal.log";
 				$shortcuts['Terminal Log']='tail -n 50 '.$log;
+				$shortcuts['Kill the Terminal']="sudo pkill -f \"websocketd --port={$params['-port']}\"";
 			}
 			ksort($shortcuts);
 			echo commonBuildTerminal(array('-shortcuts'=>$shortcuts));
