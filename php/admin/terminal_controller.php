@@ -86,10 +86,9 @@
 	$out=cmdResults($cmd);
 	if(!preg_match('/websocketd/i',$out['stdout'])){
 		//not running. lets start it up
+		$path=getFilePath($params['-file']);
     	if(isWindows()){
-    		$path=getFilePath($params['-file']);
     		$path=str_replace('/',"\\",$path);
-    		$batch=str_replace('.exe','',$batch);
     		$params['-file']=str_replace('/',"\\",$params['-file']);
     		$cmd="start /B {$params['-file']} --port={$params['-port']} --loglevel={$params['-loglevel']} bash >{$path}\\websocketd_terminal.log";
     		//pclose(popen($cmd,'r'));
