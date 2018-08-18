@@ -84,7 +84,7 @@
 		$cmd="ps aux|grep websocketd";
 	}
 	$out=cmdResults($cmd);
-	if(!preg_match('/websocketd/i',$out['stdout'])){
+	if((isWindows() && !preg_match('/websocketd/i',$out['stdout'])) || (!isWindows() && !preg_match('/websocketd \-\-port/i',$out['stdout']))){
 		//not running. lets start it up
 		$path=getFilePath($params['-file']);
     	if(isWindows()){
