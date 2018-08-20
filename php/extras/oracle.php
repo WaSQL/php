@@ -792,6 +792,10 @@ function oracleQueryResults($query='',$params=array()){
     	debugValue(array("oracleQueryResults Connect Error",$e));
     	return;
 	}
+	//check for -process
+	if(isset($params['-process']) && !function_exists($params['-process'])){
+		return "Error: Function is not loaded to process with: {$params['-process']}";
+	}
 	oci_rollback($dbh_oracle);
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
@@ -852,6 +856,11 @@ function oracleQueryResults($query='',$params=array()){
 		$rec=array();
 		foreach($fields as $field){
 			$rec[$field]='';
+		}
+		if(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$rec);
+			$x++;
+			continue;
 		}
 		$recs=array($rec);
 	}
