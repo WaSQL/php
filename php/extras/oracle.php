@@ -643,6 +643,11 @@ function oracleGetResourceResults($res,$params=array()){
 				$rec[$field]=$val;
 			}
 		}
+		if(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$row);
+			$x++;
+			continue;
+		}
 		$recs[]=$rec;
 	}
 	return $recs;
@@ -856,11 +861,6 @@ function oracleQueryResults($query='',$params=array()){
 		$rec=array();
 		foreach($fields as $field){
 			$rec[$field]='';
-		}
-		if(isset($params['-process'])){
-			$ok=call_user_func($params['-process'],$rec);
-			$x++;
-			continue;
 		}
 		$recs=array($rec);
 	}
