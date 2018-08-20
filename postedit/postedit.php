@@ -148,7 +148,9 @@ function writeFiles(){
 	);
 	$post=postURL($url,$postopts);
 	file_put_contents("{$progpath}/posteditxmlfromjson.txt",$post['body']);
-	//echo printValue($postopts);exit;
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code']==404){
+		abortMessage("404 Error - /php/index.php not found");
+	}
 	if(isset($post['error']) && strlen($post['error'])){
 		abortMessage($post['error']);
 	}
