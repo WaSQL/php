@@ -2549,7 +2549,7 @@ function addDBRecord($params=array()){
     $table=$params['-table'];
     if(isMssql()){$table="[{$table}]";}
     $ignore='';
-    if($params['-ignore']){$ignore=' ignore';}
+    if(isset($params['-ignore']) && $params['-ignore']){$ignore=' ignore';}
     $query = 'insert'.$ignore.' into ' . $table . ' (' . $fieldstr . ') values (' . $valstr .')';
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
