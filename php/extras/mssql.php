@@ -749,7 +749,7 @@ function mssqlQueryResults($query='',$params=array()){
 * @return array
 *	returns records
 */
-function mssqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
+function mssqlEnumQueryResults($data,$params=array()){
 	$results=array();
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
@@ -766,7 +766,12 @@ function mssqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
 					$val=date("Y-m-d H:i:s",$crow[$key."_utime"]);
             		}
 				$crow[$key]=$val;
-				}
+			}
+			if(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$crow);
+				$x++;
+				continue;
+			}
 	        $results[] = $crow;
 		}
 		sqlsrv_free_stmt( $data);
@@ -788,7 +793,11 @@ function mssqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
             		}
 				$crow[$key]=$val;
 				}
-			//ksort($crow);
+			if(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$crow);
+				$x++;
+				continue;
+			}
 	        $results[] = $crow;
 	    	}
 		}

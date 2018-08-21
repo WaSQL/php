@@ -644,7 +644,7 @@ function oracleGetResourceResults($res,$params=array()){
 			}
 		}
 		if(isset($params['-process'])){
-			$ok=call_user_func($params['-process'],$row);
+			$ok=call_user_func($params['-process'],$rec);
 			$x++;
 			continue;
 		}

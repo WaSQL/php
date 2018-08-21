@@ -642,6 +642,11 @@ function sqliteQueryResults($query,$params=array()){
 				$k=strtolower($k);
 				$rec[$k]=$v;
 			}
+			if(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$rec);
+				$x++;
+				continue;
+			}
 			$recs[]=$rec;
 		}
 		$results->finalize();

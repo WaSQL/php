@@ -1250,6 +1250,11 @@ function hanaQueryResults($query,$params=array()){
 			fwrite($fh,$csv."\r\n");
 			continue;
 		}
+		elseif(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$rec);
+			$x++;
+			continue;
+		}
 		else{
 			$recs[]=$rec;
 		}
