@@ -745,57 +745,17 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		$name=$params['name'];
 		unset($params['name']);
 	}
-	//check for size option
-	if(!isset($params['-size'])){$params['-size']='';}
-	switch(strtolower($params['-size'])){
-    	case 'xs':
-    	case 'extrasmall':
-    		$params['-button'].=' btn-xs';
-    	break;
-		case 'small':
-    	case 'sm':
-			$params['-button'].=' btn-sm';
-		break;
-		case 'md':
-		case 'medium':
-			$params['-button'].=' btn-md';
-		break;
-		case 'lg':
-		case 'large':
-			$params['-button'].=' btn-lg';
-		break;
-		case 'full':
-		case 'block':
-			$params['-button'].=' btn-block';
-		break;
-	}
-	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
-	$tag='';
-	$class=isset($params['class'])?$params['class']:'';
-	$tag .= '<div class="btn-group w_nowrap" data-toggle="buttons">'.PHP_EOL;
+	$tag='<div class="w_btnselect">'.PHP_EOL;
 	foreach($opts as $tval=>$dval){
-		$class=$params['-button'];
 		$checked='';
 		if($tval==$params['value'] || $dval==$params['value']){
-			$class.=' active';
 			$checked=' checked';
 		}
-	    $tag .= '	<label class="btn '.$class.'">';
-		if(isset($params["{$tval}_class"])){
-			switch(strtolower($params['-size'])){
-            	case 'lg':
-            	case 'large':
-            		$params["{$tval}_class"] .= " w_biggest";
-            	break;
-			}
-			$tag .= '<span class="'.$params["{$tval}_class"].'"></span>';
-		}
-	    $tag .= '<input type="radio" name="'.$name.'" value="'.$tval.'"';
-		$tag .= setTagAttributes($params);
-		$tag .= $checked.' /> '.$dval;
-	    $tag .= '</label>'.PHP_EOL;
+		$id="{$name}_{$tval}";
+		$tag .= '<input type="radio" class="browser-default" name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+        $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
-    $tag .= '</div>'.PHP_EOL;
+	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormCalendar--------------------
@@ -883,79 +843,45 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	//return printValue($opts).printValue($params);
-	$cols=arrayColumns($opts,$params['width'],true);
-	$colsize=floor(12/count($cols));
-	$tag='';
-	$colxs=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-xs-';
-	$colsm=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-sm-';
-	if(isset($params['-checkall'])){
-		$tag .= '<div class="row"><div class="'.$colsm.'12 text-left">'.PHP_EOL;
-    	$tag .= buildFormCheckAll('data-group',$params['group']);
-    	$tag .= '</div></div>'.PHP_EOL;
-	}
-	$tag.='<div class="row">'.PHP_EOL;
-	//add hidden field so we know this field exists when not checked
-	$tag .= '<input type="hidden" name="'.$name.'_checkbox" value="1" />'.PHP_EOL;
-	$class='';
-	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
-	if(isset($params['size'])){
-		switch(strtolower($params['size'])){
-	    	case 'small':$class='w_small';break;
-	    	case 'smaller':$class='w_smaller';break;
-	    	case 'smallest':$class='w_smallest';break;
-	    	case 'tiny':$class='w_tiny';break;
-	    	case 'big':$class='w_big';break;
-	    	case 'bigger':$class='w_bigger';break;
-	    	case 'biggest':$class='w_biggest';break;
-	    	case 'huge':$class='w_huge';break;
-	    	default:$class='';break;
-		}
-	}
-	if(strlen($class)){$class=' '.trim($class);}
-	foreach($cols as $opts){
-    	$tag .= '	<div class="'.$colxs.$colsize.'">'.PHP_EOL;
-    	foreach($opts as $tval=>$dval){
-			$id=$params['id'].'_'.$tval;
-			$minwidth=floor(strlen($dval)*10)+25;
-			$tag .= '		<div style="min-width:'.$minwidth.'px;margin-top:5px;white-space: nowrap;">'.PHP_EOL;
-			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+	$tag='<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+	foreach($opts as $tval=>$dval){
+		$id=$params['id'].'_'.$tval;
+		$tag .= '		<div style="margin-top:5px;white-space: normal;">'.PHP_EOL;
+		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
 
-			if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
-			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-			//if checkbox is readonly or disabled then do not allow them to change it
-			$for=true;
-			if(isset($params["{$tval}_readonly"])){
-				$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';
-				$for=false;
-			}
-			if(isset($params["{$tval}_disabled"])){
-				$tag .= ' disabled="'.$params["{$tval}_disabled"].'"';
-				$for=false;
-			}
-			elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-			//add any data params
-			foreach($params as $pk=>$pv){
-				if(preg_match('/^data\-/i',$pk)){
-					$tag .= " {$pk}=\"{$pv}\"";
-				}
-			}
-			if(in_array($tval,$params['-values'])){
-        		$tag .= ' checked';
-        		//$checked_cnt++;
-			}
-			$tag .= '> <label';
-			if($for){$tag .= ' for="'.$id.'"';}
-			$tag .= ' class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
-			if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
-			else{
-				$tag .= ' <label';
-				if($for){$tag .= ' for="'.$id.'"';}
-				$tag .= ' class=""> '.$dval.'</label>'.PHP_EOL;
-			}
-			$tag .= '</div>'.PHP_EOL;
+		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
+		if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
+		//if checkbox is readonly or disabled then do not allow them to change it
+		$for=true;
+		if(isset($params["{$tval}_readonly"])){
+			$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';
+			$for=false;
 		}
-    	$tag .= '	</div>'.PHP_EOL;
+		if(isset($params["{$tval}_disabled"])){
+			$tag .= ' disabled="'.$params["{$tval}_disabled"].'"';
+			$for=false;
+		}
+		elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+		//add any data params
+		foreach($params as $pk=>$pv){
+			if(preg_match('/^data\-/i',$pk)){
+				$tag .= " {$pk}=\"{$pv}\"";
+			}
+		}
+		if(in_array($tval,$params['-values'])){
+    		$tag .= ' checked';
+    		//$checked_cnt++;
+		}
+		$tag .= '> <label';
+		if($for){$tag .= ' for="'.$id.'"';}
+		$tag .= ' class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
+		if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
+		else{
+			$tag .= ' <label style="white-space: normal;"';
+			if($for){$tag .= ' for="'.$id.'"';}
+			$tag .= ' class=""> '.$dval.'</label>'.PHP_EOL;
+		}
+		$tag .= '</div>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -1351,55 +1277,31 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	$cols=arrayColumns($opts,$params['width'],true);
-	$colsize=floor(12/count($cols));
-	$class='';
-	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
-	if(isset($params['size'])){
-		switch(strtolower($params['size'])){
-	    	case 'small':$class='w_small';break;
-	    	case 'smaller':$class='w_smaller';break;
-	    	case 'smallest':$class='w_smallest';break;
-	    	case 'tiny':$class='w_tiny';break;
-	    	case 'big':$class='w_big';break;
-	    	case 'bigger':$class='w_bigger';break;
-	    	case 'biggest':$class='w_biggest';break;
-	    	case 'huge':$class='w_huge';break;
-	    	default:$class='';break;
+	$tag  = '<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+	foreach($opts as $tval=>$dval){
+		$id=$params['-formname'].'_'.$name.'_'.$tval;
+		$minwidth=floor(strlen($dval)*10)+25;
+		$tag .= '		<div style="margin-top:5px;white-space: normal;">'.PHP_EOL;
+		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
+		if($params['required']){$tag .= ' data-required="1"';}
+		//add any data params
+		foreach($params as $pk=>$pv){
+			if(preg_match('/^data\-/i',$pk)){
+				$tag .= " {$pk}=\"{$pv}\"";
+			}
 		}
-	}
-	if(strlen($class)){$class=' '.trim($class);}
-	$tag='';
-	$tag.='<div class="row">'.PHP_EOL;
-	$colxs=isset($params['materialize']) || isset($params['-materialize'])?'col s':'col-xs-';
-	foreach($cols as $opts){
-    	$tag .= '	<div class="'.$colxs.$colsize.'">'.PHP_EOL;
-    	foreach($opts as $tval=>$dval){
-			$id=$params['-formname'].'_'.$name.'_'.$tval;
-			$minwidth=floor(strlen($dval)*10)+25;
-			$tag .= '		<div style="min-width:'.$minwidth.'px;white-space: nowrap;">'.PHP_EOL;
-			$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
-			if($params['required']){$tag .= ' data-required="1"';}
-			//add any data params
-			foreach($params as $pk=>$pv){
-				if(preg_match('/^data\-/i',$pk)){
-					$tag .= " {$pk}=\"{$pv}\"";
-				}
-			}
-			if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-			elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-			if(in_array($tval,$params['-values'])){
-        		$tag .= ' checked';
-        		$checked_cnt++;
-			}
-			$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
-			if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
-			else{
-				$tag .= ' <label for="'.$id.'"> '.$dval.'</label>'.PHP_EOL;
-			}
-			$tag .= '</div>'.PHP_EOL;
+		if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
+		elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+		if(in_array($tval,$params['-values'])){
+    		$tag .= ' checked';
+    		$checked_cnt++;
 		}
-    	$tag .= '	</div>'.PHP_EOL;
+		$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
+		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
+		else{
+			$tag .= ' <label for="'.$id.'" style="white-space: normal;"> '.$dval.'</label>'.PHP_EOL;
+		}
+		$tag .= '</div>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -9537,11 +9439,8 @@ function minifyCode($code,$type) {
 				unlink('minifyme.min.js');
 				return $mincode;
 			}
-			//jshrink is not working - until I figure it out just strip out carriage returns
-			return str_replace('/[\r\n]+/','',$code);
-			require_once("jshrink.php");
-			$code = jsMinifier::minify($code);
-			return $code;
+			//just strip out carriage returns for now
+			return preg_replace('/[\r\n]+/','',$code);
 			break;
 		case 'css':
 			require_once("min-css.php");

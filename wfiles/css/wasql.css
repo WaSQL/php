@@ -13,6 +13,69 @@ table.w_formtable td, table.w_formtable th {
     font-size:11pt;
 }
 /*********************************************************/
+/* buildFormButtonSelect */
+/*********************************************************/
+.w_btnselect{
+	display:inline-block;
+	-webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.12),0 1px 5px 0 rgba(0,0,0,.2);
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.12),0 1px 5px 0 rgba(0,0,0,.2);
+	border-radius:2px;
+}
+.w_btnselect input[type="radio"]{
+	display:none;
+	pointer-events: inherit !important;
+}
+.w_btnselect label {
+    background-color: #26a69a; /* Green background */
+    color: white; /* White text */
+    border:0px;
+    padding: 10px 24px; /* Some padding */
+    cursor: pointer; /* Pointer/hand icon */
+    float: left; /* Float the buttons side by side */
+    transition: * .2s ease-out;
+	cursor: pointer;
+	font-size:14px;
+	letter-spacing: .5px;
+	transition: background-color .2s ease-out;
+	text-align: center;
+	display: inline-block;
+	height: 36px;
+	line-height: 36px;
+	padding: 0 16px;
+	text-transform: uppercase;
+	vertical-align: middle;
+	font-weight:normal;
+	margin-bottom:0px;
+}
+.w_btnselect label:not(:first-child) {
+    border-left: 1px solid rgba(255,255,255,0.5);
+}
+.w_btnselect label:not(:last-child) {
+    border-right: none; /* Prevent double borders */
+}
+.w_btnselect label:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+.w_btnselect label:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+/* Clear floats (clearfix hack) */
+.w_btnselect:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Add a background color on hover */
+.w_btnselect label:hover {
+    background-color:#2bbbad;
+}
+.w_btnselect input[type="radio"]:checked+label{
+	filter: brightness(75%);
+}
+/*********************************************************/
 /* Flex */
 /*********************************************************/
 .w_flex{
