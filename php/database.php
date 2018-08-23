@@ -652,7 +652,18 @@ function databaseListRecords($params=array()){
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
 	foreach($params['-list'] as $rec){
-		$rtn .= '		<tr>'.PHP_EOL;
+		$rtn .= '		<tr';
+		if(!empty($params['-onclick'])){
+			$href=$params['-onclick'];
+			//substitute and %{field}% with its value in this record
+			foreach($rec as $recfld=>$recval){
+				if(is_array($recfld) || is_array($recval)){continue;}
+				$replace='%'.$recfld.'%';
+                $href=str_replace($replace,$rec[$recfld],$href);
+            }
+            $rtn .=" onclick=\"{$href}\"";
+		}
+		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
 			$value=$rec[$fld];
 			//check for {field}_eval
