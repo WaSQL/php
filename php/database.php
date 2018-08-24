@@ -606,8 +606,8 @@ function databaseListRecords($params=array()){
 		$rtn .= '			<th';
 		$atts=array();
 		foreach($params as $k=>$v){
-			if(preg_match('/^'.$fld.'_(onclick|eval|href)$/i',$k)){continue;}
-			if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
+			if(preg_match('/^'.$field.'_(onclick|eval|href)$/i',$k)){continue;}
+			if(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
 				$atts[$m[1]]=$v;
 			}
 		}
