@@ -613,7 +613,6 @@ function databaseListRecords($params=array()){
 		}
 		$rtn .= setTagAttributes($atts);
 		$rtn .='>'.PHP_EOL;
-		$rtn .= '			<th class="w_nowrap">';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
 		if(!empty($params['-sorting']) && $params['-sorting']==1){
 			$name='<a href="#" onclick="return pagingSetOrder(document.'.$params['-formname'].',\''.$field.'\');">'.$name;
