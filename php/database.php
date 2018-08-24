@@ -602,6 +602,17 @@ function databaseListRecords($params=array()){
 		else{
 			$name=ucwords(trim(str_replace('_',' ',$field)));
 		}
+		if(!isset($params[$fld.'_class'])){$params[$fld.'_class']='w_nowrap';}
+		$rtn .= '			<th';
+		$atts=array();
+		foreach($params as $k=>$v){
+			if(preg_match('/^'.$fld.'_(onclick|eval|href)$/i',$k)){continue;}
+			if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
+				$atts[$m[1]]=$v;
+			}
+		}
+		$rtn .= setTagAttributes($atts);
+		$rtn .='>'.PHP_EOL;
 		$rtn .= '			<th class="w_nowrap">';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
 		if(!empty($params['-sorting']) && $params['-sorting']==1){
