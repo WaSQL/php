@@ -2983,6 +2983,9 @@ table {
 table.striped tr {
   border-bottom: none;
 }
+table.bordered tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
 
 table.striped > tbody > tr:nth-child(odd) {
   background-color: rgba(242, 242, 242, 0.5);
