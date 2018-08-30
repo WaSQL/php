@@ -843,10 +843,11 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	$tag='<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+	$tag='<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
-		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;width:100%;">'.PHP_EOL;
+		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;'.$style.'">'.PHP_EOL;
 		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
 
 		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
@@ -1277,11 +1278,12 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	$tag  = '<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+	$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
 		$minwidth=floor(strlen($dval)*10)+25;
-		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;width:100%;">'.PHP_EOL;
+		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;'.$style.'">'.PHP_EOL;
 		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
 		if($params['required']){$tag .= ' data-required="1"';}
 		//add any data params
