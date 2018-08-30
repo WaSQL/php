@@ -1605,7 +1605,6 @@ function dropDBIndex($params=array()){
 * 	[-editfields] string - use to override comma separated list of fields to edit on the form
 *	[-method] string - POST or GET - defaults to POST
 *	[-class] string - class attribute for form tag - defaults to w_form
-* 	[-bootstrap] boolean - sets width to 100% on tag fields
 *	[-name] string - name attribute for form tag - defaults to addedit
 *	[-action] string - action attribute for form tag - defaults to $PAGE['name']
 *	[-onsubmit] string - onsubmit attribute for form tag - defaults to 'return submitForm(this);'
@@ -1822,7 +1821,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						}
 					}
 					//check for field_options array - the easier, new way to override options
-					if(isset($paramgetDBFieldTags[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
+					if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
 						$used[$cfield.'_options']=1;
 						foreach($params[$cfield.'_options'] as $okey=>$oval){
 							if(in_array($okey,$forcedatts)){
@@ -1848,7 +1847,6 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$field.'_dvals']=1;
 					}
 					if(isset($params['-bootstrap'])){
-						//echo $cfield.printValue($info['fieldinfo'][$cfield]);
 						switch(strtolower($info['fieldinfo'][$cfield]['inputtype'])){
 							case 'text':
 							case 'textarea':
@@ -1857,7 +1855,7 @@ function addEditDBForm($params=array(),$customcode=''){
 							case 'combo':
 							case 'multiselect':
 							case 'signature':
-								$opts['width']='100%';
+								$opts['style']='width:100%';
 							break;
 						}
 					}
@@ -1875,7 +1873,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			continue;
 		}
 		//set required string
-		$required_char=isset($paragetDBFieldTagms['-required'])?$params['-required']:'*';
+		$required_char=isset($params['-required'])?$params['-required']:'*';
 		$required = '			<b class="w_required" title="Required Field">'.$required_char.'</b>'.PHP_EOL;
 		//row
 		if(is_array($fields) && count($fields)==1 && !strlen($fields[0])){
@@ -1886,8 +1884,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['-tableclass'])){
 					$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
 				}
-				elseif(isset($params['-bootstrap']) && $params['-bootstrap']){
-					$rtn .= '<table class="w_table" style="width:100%">'.PHP_EOL;
+				elseif(isset($params['-bootstrap'])){
+					$rtn .= '<table class="w_table" style="width:100%;">'.PHP_EOL;
 				}
 				else{
 					$rtn .= '<table class="w_table">'.PHP_EOL;
@@ -1899,6 +1897,19 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
 				$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
+				if(isset($params['-bootstrap'])){
+					switch(strtolower($info['fieldinfo'][$field]['inputtype'])){
+						case 'text':
+						case 'textarea':
+						case 'password':
+						case 'select':
+						case 'combo':
+						case 'multiselect':
+						case 'signature':
+							$opts['style']='width:100%';
+						break;
+					}
+				}
 				//dataopts
 				if(isset($dataopts[$field])){
 					foreach($dataopts[$field] as $k=>$v){$opts[$k]=$v;}
@@ -1910,18 +1921,6 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//LOAD form-control if bootstrap is loaded
 				if(!isset($opts['class'])){$opts['class']='';}
-				if(isset($params['-bootstrap']) && $params['-bootstrap']){
-					unset($params['width']);
-					unset($opts['width']);
-					$opts['-bootstrap']=1;
-					if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
-				}
-				elseif(isset($params['-materialize']) && $params['-materialize']){
-					unset($params['width']);
-					unset($opts['width']);
-					$opts['-materialize']=1;
-					if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
-				}
 				if(isset($params[$field.'_dname'])){
 					$dname=$params[$field.'_dname'];
 					$used[$field.'_dname']=1;
@@ -2122,9 +2121,6 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(isset($params['-tableclass'])){
         		$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
 			}
-			elseif(isset($params['-bootstrap']) && $params['-bootstrap']){
-				$rtn .= '<table class="w_table www" style="width:100%">'.PHP_EOL;
-			}
 			else{
 				$rtn .= '<table class="w_table">'.PHP_EOL;
 			}
@@ -2138,18 +2134,6 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(isset($params['-style_all'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
 			if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
-			if(isset($params['-bootstrap']) && $params['-bootstrap']){
-				unset($params['width']);
-				unset($opts['width']);
-				$opts['-bootstrap']=1;
-				if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
-			}
-			elseif(isset($params['-materialize']) && $params['-materialize']){
-				unset($params['width']);
-				unset($opts['width']);
-				$opts['-materialize']=1;
-				if(!stringContains($opts['class'],'form-control')){$opts['class'] .= ' form-control';}	
-			}
 			if(isset($params[$field.'_dname'])){
 				$dname=$params[$field.'_dname'];
 				$used[$field.'_dname']=1;
@@ -4927,16 +4911,6 @@ function getDBFieldTag($params=array()){
 			}
 		}
 	if(!strlen($info[$field]['inputtype'])){return "Unknown inputtype for fieldname ".$field;}
-	//LOAD form-control if bootstrap is loaded
-	if(isset($params['-bootstrap']) && $params['-bootstrap']){
-		if(!stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
-		unset($info[$field]['width']);
-		$info[$field]['-bootstrap']=1;
-	}
-	elseif(isset($params['-materialize']) && $params['-materialize']){
-		unset($info[$field]['width']);
-		$info[$field]['-materialize']=1;
-	}
 	//return printValue($params).printValue($info[$field]);
 	//set a few special fields
 	switch ($info[$field]['inputtype']){
