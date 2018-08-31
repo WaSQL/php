@@ -602,7 +602,9 @@ function databaseListRecords($params=array()){
 		else{
 			$name=ucwords(trim(str_replace('_',' ',$field)));
 		}
+		if(isset($params['-thclass']) && !isset($params[$fld.'_class'])){$params[$fld.'_class']=$params['-thclass'];}
 		if(!isset($params[$fld.'_class'])){$params[$fld.'_class']='w_nowrap';}
+
 		$rtn .= '			<th';
 		$atts=array();
 		foreach($params as $k=>$v){
