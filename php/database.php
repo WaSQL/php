@@ -602,7 +602,6 @@ function databaseListRecords($params=array()){
 		else{
 			$name=ucwords(trim(str_replace('_',' ',$field)));
 		}
-		if(isset($params['-thclass']) && !isset($params[$field.'_class'])){$params[$field.'_class']=$params['-thclass'];}
 		if(!isset($params[$field.'_class'])){$params[$field.'_class']='w_nowrap';}
 
 		$rtn .= '			<th';
@@ -611,6 +610,11 @@ function databaseListRecords($params=array()){
 			if(preg_match('/^'.$field.'_(onclick|eval|href)$/i',$k)){continue;}
 			if(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
 				$atts[$m[1]]=$v;
+			}
+			if(isset($params['-thclass'])){
+				//add this class
+				$atts['class'].= ' '.$params['-thclass'];
+				$atts['class']=trim($atts['class']);
 			}
 		}
 		$rtn .= setTagAttributes($atts);
