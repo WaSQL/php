@@ -132,7 +132,7 @@ function writeFiles(){
 	if($firsttime==1){
 		echo "checking {$url}".PHP_EOL;
 	}
-	
+	$tables=isset($hosts[$chost]['tables'])?$hosts[$chost]['tables']:'_pages,_templates,_models';
 	//file_put_contents("{$progpath}/postedit_xml.json",$json);
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
