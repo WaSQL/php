@@ -441,7 +441,10 @@ function tooltipDiv(obj,rtimer){
 	}
 	if(txt.length === 0 || txt==='false' || !txt){txt=' ';}
 	var cObj=getObject('w_tooltip');
-	if(undefined != cObj){removeId(cObj);}
+	if(undefined != cObj){
+		tooltipDivObj='';
+		removeId(cObj);
+	}
 	var tipdiv = document.createElement("div");
 	tipdiv.setAttribute("id",'w_tooltip');
 	tipdiv.style.zIndex='698999';
