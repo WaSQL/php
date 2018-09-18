@@ -410,9 +410,12 @@ function centerpopDiv(txt,rtimer,x){
 	return false;
 }
 /* tooltipDiv */
+var tooltipDivObj='';
 function tooltipDiv(obj,rtimer){
 	if(undefined != commonFadeIdTimeouts['w_tooltip']){clearTimeout(commonFadeIdTimeouts['w_tooltip']);}
 	obj=getObject(obj);
+	if(tooltipDivObj==obj){return false;}
+	tooltipDivObj=obj;
 	var txt=obj.getAttribute('data-tooltip');
 	var position=obj.getAttribute('data-tooltip_position') || '';
 	var ajax='';
