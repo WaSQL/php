@@ -1770,6 +1770,7 @@ function initBehaviors(ajaxdiv){
     		event.preventDefault();
 		});
 		addEventHandler(tobs[i],'mouseout', function(event){
+			tooltipDivObj='';
 			fadeId('w_tooltip',1,1);
 			event.stopPropagation();
     		event.preventDefault();
