@@ -366,7 +366,7 @@ function oracleGetActiveSessionCount($params=array()){
 * @usage $cnt=oracleGetDBCount(array('-table'=>'states'));
 */
 function oracleGetDBCount($params=array()){
-	$params['-fields']="count(*) cnt";
+	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
@@ -475,9 +475,11 @@ function oracleGetDBRecords($params){
 	else{
 		//determine fields to return
 		if(!empty($params['-fields'])){
-			if(!is_array($params['-fields'])){
-				$params['-fields']=str_replace(' ','',$params['-fields']);
+			if(!is_array($params['-fields'])){;
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
+				foreach($params['-fields'] as $i=>$field){
+					$params['-fields'][$i]=trim($field);
+				}
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}
