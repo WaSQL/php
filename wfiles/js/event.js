@@ -423,12 +423,12 @@ function tooltipDiv(obj,rtimer){
 	}
 	else if(txt.indexOf('js:')===0){
 		//call a function
-    	var f=str_replace('id:','',txt);
+    	var f=str_replace('js:','',txt);
     	txt=eval(f);
 	}
 	else if(txt.indexOf('ajax:')===0){
 		//call a function
-    	ajax=str_replace('id:','',txt);
+    	ajax=str_replace('ajax:','',txt);
     	txt='';
 	}
 	else if(txt.indexOf('att:')===0){
@@ -436,7 +436,7 @@ function tooltipDiv(obj,rtimer){
     	var att=str_replace('att:','',txt);
     	txt=obj.getAttribute(att) || '';
 	}
-	//if(txt.length === 0 || txt==='false' || !txt){txt=' ';}
+	if(txt.length === 0 || txt==='false' || !txt){txt=' ';}
 	var cObj=getObject('w_tooltip');
 	if(undefined != cObj){removeId(cObj);}
 	var tipdiv = document.createElement("div");
