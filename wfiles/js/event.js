@@ -436,7 +436,7 @@ function tooltipDiv(obj,rtimer){
     	var att=str_replace('att:','',txt);
     	txt=obj.getAttribute(att) || '';
 	}
-	if(txt.length === 0 || txt==='false' || !txt){return false;}
+	//if(txt.length === 0 || txt==='false' || !txt){return false;}
 	var cObj=getObject('w_tooltip');
 	if(undefined != cObj){removeId(cObj);}
 	var tipdiv = document.createElement("div");
