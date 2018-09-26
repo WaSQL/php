@@ -537,24 +537,34 @@ function postgreGetDBTables($params=array()){
 	foreach($recs as $rec){$tables[]=$rec['name'];}
 	return $tables;
 }
-
+//---------- begin function postgreGetDBTablePrimaryKeys ----------
+/**
+* @describe returns an array of primary key fields for the specified table
+* @param [$params] array - These can also be set in the CONFIG file with dbname_postgre,dbuser_postgre, and dbpass_postgre
+*	[-host] - postgre server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array returns array of primary key fields
+* @usage $fields=postgreGetDBTablePrimaryKeys();
+*/
 function postgreGetDBTablePrimaryKeys($table,$params=array()){
 	global $CONFIG;
-	$query="
-	SELECT
-		ccu.column_name
-		,ccu.constraint_name
-	FROM
-		information_schema.table_constraints (nolock) as tc
-    INNER JOIN
-		information_schema.constraint_column_usage as ccu
-		ON tc.constraint_name = ccu.constraint_name
-	WHERE
-		tc.table_catalog = '{$CONFIG['postgre_dbname']}'
-    	and tc.table_schema = 'dbo'
-    	and tc.table_name = '{$table}'
-    	and tc.constraint_type = 'PRIMARY KEY'
-	";
+	$query=<<<ENDOFQUERY
+		SELECT 
+			kc.column_name,
+			kc.constraint_name
+		FROM  
+		    information_schema.table_constraints tc,  
+		    information_schema.key_column_usage kc  
+		where 
+		    tc.constraint_type = 'PRIMARY KEY' 
+		    and kc.table_name = tc.table_name 
+		    and kc.table_schema = tc.table_schema
+		    tc.table_catalog = '{$CONFIG['postgre_dbname']}'
+		    and kc.constraint_name = tc.constraint_name
+		order by 1, 2;
+ENDOFQUERY;
 	$tmp = postgreQueryResults($query,$params);
 	$keys=array();
 	foreach($tmp as $rec){
