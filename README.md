@@ -18,7 +18,7 @@ Documentation is built in and searchable via the backend admin Help menu. If you
 ## How can I Help WaSQL become better?
 Feel free to request changes via github.  You can also help by donating to the cause.  Donations can be sent via PayPal to steve.lloyd@gmail.com
 
-##Installation - Windows
+## Installation - Windows
 - **Install git**
 	-  you can install git by going to https://git-scm.com/download/win.  This will download the latest git client.  I suggest selecting "Use Git and optional Unix tools from the Windows Command Prompt".  If you are not comfortable with this option, select "Use Git from the Windows Command Prompt" option. Select the default options for the rest.
 - **Install WaSQL**
