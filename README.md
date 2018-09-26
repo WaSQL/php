@@ -69,6 +69,6 @@ Feel free to request changes via github.  You can also help by donating to the c
 			->../wasql/dirsetup.sh
 		- create a blank database called wasql_sample (to match the dbname in config.xml)
 - **Ready to try**
-	- using a browser open your website.  If all went well it will take a second to load and you will see the sample website.
+	- Using a browser open your website.  If all went well it will take a second to load and you will see the sample website.
 	- using a browser open your website with /a at the end of the url.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
 
