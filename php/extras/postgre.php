@@ -1,5 +1,7 @@
 <?php
 /*
+	postgre.php - a collection of postgres functions for use by WaSQL.
+	
 	References:
 		https://en.wikibooks.org/wiki/Converting_MySQL_to_PostgreSQL
 		https://www.convert-in.com/mysql-to-postgres-types-mapping.htm
