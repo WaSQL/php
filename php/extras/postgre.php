@@ -499,7 +499,7 @@ function postgreGetDBRecords($params){
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
