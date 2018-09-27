@@ -26,27 +26,22 @@ Feel free to request changes via github.  You can also help by donating to the c
 		- d:\\>git clone https://github.com/WaSQL/v2.git wasql
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
-- **Install WampServer**
-	- you can install WAMP by going to http://sourceforge.net/projects/wampserver/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. Once installed, use the WAMP icon in the system tray to insure the following PHP extensions are enabled:
-		- php_curl
-		- php_mbstring
-		- php_mysqli
+- **Install AppServ**
+	- you can install AppServ by going to https://www.appserv.org/en/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. 
 	- add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
 		- in the "IfModule alias_module" section:
 			- Alias /php/ "d:/wasql/php/"
 			- Alias /wfiles/ "d:/wasql/wfiles/"
 		- Just below the ifModule section create the following:
-<pre><xmp>
-	<Directory "d:/wasql/">
-		Options Indexes FollowSymLinks
-		AllowOverride all
-		Require local
-	</Directory>
-</xmp></pre>
+			<Directory "d:/wasql/">
+				Options Indexes FollowSymLinks
+				AllowOverride all
+				Require local
+			</Directory>
 
-- copy sample.htaccess in the wasql folder to c:\wamp\www\ folder and name it .htaccess.
-- restart Apache using the WAMP icon in the system tray.
-- using the WAMP icon in the system tray, open a MySQL console and hit ENTER (default password in blank). Type the following (changing the user and pass to match the config.xml file)
+- copy sample.htaccess in the wasql folder to c:\wamp\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
+- restart Apache.
+- open a MySQL console and connect to mysql. Type the following (changing the user and pass to match the config.xml file)
 	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
 	- mysql>flush privileges;
 	- mysql>create database wasql_sample;
