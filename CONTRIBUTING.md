@@ -36,34 +36,34 @@ Adhering to the following this process is the best way to get your work included
 
 0. Fork WaSQL. If you don't have an SSH key yet, create one and add it to your profile.
   
-  ```ssh-keygen```
+    ```ssh-keygen```
 
 1. If you have not downloade WaSQL yet, get the code:
 
-   ```git clone git@github.com:yourusername/v2.git```
+    ```git clone git@github.com:yourusername/v2.git```
 
 2. Change directory into v2 and set the URL.
 
-  ```git remote set-url origin git@github.com:yourusername/v2.git```
+    ```git remote set-url origin git@github.com:yourusername/v2.git```
 
 3. Add an remote to track waSQL (it doesn't have to be named "upstream").
 
-  ```git remote add upstream git@github.com:WaSQL/v2.git```
+    ```git remote add upstream git@github.com:WaSQL/v2.git```
 
 4. To get the latest code:
 
-  ```git fetch upstream```
-  ```git merge upstream upstream/master```
+    ```git fetch upstream```
+    ```git merge upstream upstream/master```
 
 5. Add your changes to the stage. You may have to enter your email and name.
 
 6. Commit your changes.
 
-  ```git commit -m "Your message here."```
+    ```git commit -m "Your message here."```
 
 7. Push your changes to your repository.
 
-  ```git push -u origin master```
+    ```git push -u origin master```
 
 8. On the repository you are adding to, create a pull request and wait for your changes to be approved.
 
