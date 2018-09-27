@@ -54,7 +54,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 	- using a browser open http://localhost.  If all went well it will take a second to load and you will see the sample website.
 	- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
 
-##Installation - Linux
+## Installation - Linux
 - **Install git**
 	-  if you don't already have it installed, install git.  Depending on your linux flavor this will be different.
 - **Install WaSQL**
