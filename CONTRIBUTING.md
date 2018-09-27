@@ -29,27 +29,43 @@ respect the following restrictions:
 <a name="pull-requests"></a>
 ## Pull Requests
 
-Pull requests are a great way to add new content to WaSQL, as well
-as updating any browser issues or other style changes. Pretty much any sort of
-change is accepted if seen as constructive.
+Pull requests are a great way to add new content to WaSQL, as well as updating any browser issues or other style changes. 
+Pretty much any sort of change is accepted if seen as constructive.
 
-Adhering to the following this process is the best way to get your work
-included in the project:
+Adhering to the following this process is the best way to get your work included in the project:
+
+0. Fork WaSQL. If you don't have an SSH key yet, create one and add it to your profile.
+  
+  ```ssh-keygen```
 
 1. If you have not downloade WaSQL yet, get the code:
 
-   ```bash
-   git clone https://github.com/WaSQL/v2.git wasql
-   ```
+   ```git clone git@github.com:yourusername/v2.git```
 
-2. If you cloned a while ago, get the latest changes from the source:
+2. Change directory into v2 and set the URL.
 
-   ```bash
-   git pull
-   ```
+  ```git remote set-url origin git@github.com:yourusername/v2.git```
 
-3. Use the [issue tracker](https://github.com/WaSQL/v2/issues) to submit any changes
+3. Add an remote to track waSQL (it doesn't have to be named "upstream").
 
+  ```git remote add upstream git@github.com:WaSQL/v2.git```
+
+4. To get the latest code:
+
+  ```git fetch upstream```
+  ```git merge upstream upstream/master```
+
+5. Add your changes to the stage. You may have to enter your email and name.
+
+6. Commit your changes.
+
+  ```git commit -m "Your message here."```
+
+7. Push your changes to your repository.
+
+  ```git push -u origin master```
+
+8. On the repository you are adding to, create a pull request and wait for your changes to be approved.
 
 ## Contribution Agreement and Usage
 
