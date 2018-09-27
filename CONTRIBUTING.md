@@ -46,7 +46,7 @@ Adhering to the following this process is the best way to get your work included
 
     ```git remote set-url origin git@github.com:yourusername/v2.git```
 
-3. Add an remote to track waSQL (it doesn't have to be named "upstream").
+3. Add an remote to track WaSQL. (It doesn't have to be named "upstream").
 
     ```git remote add upstream git@github.com:WaSQL/v2.git```
 
