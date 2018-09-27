@@ -41,7 +41,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 
 - copy sample.htaccess in the wasql folder to c:\wamp\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
 - restart Apache.
-- open a MySQL console and connect to mysql. Type the following (changing the user and pass to match the config.xml file)
+- open a DOS console and type >mysql -u root -p <ENTER>. Then enter you password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
 	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
 	- mysql>flush privileges;
 	- mysql>create database wasql_sample;
