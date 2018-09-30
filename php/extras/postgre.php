@@ -5,6 +5,7 @@
 	References:
 		https://en.wikibooks.org/wiki/Converting_MySQL_to_PostgreSQL
 		https://www.convert-in.com/mysql-to-postgres-types-mapping.htm
+		https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresql-8bfcd2f4a91e
 */
 
 //---------- begin function postgreAddDBRecord ----------
@@ -185,24 +186,16 @@ function postgreDBConnect($params=array()){
 	}
 	global $dbh_postgre;
 	if(is_resource($dbh_postgre)){return $dbh_postgre;}
-
+	//echo printValue($params);exit;
 	try{
-		$dbh_postgre = pg_connect($params['-dbhost'],$params['-dbuser'],$params['-dbpass']);
+		$dbh_postgre = pg_connect($params['-connect']);
 		if(!is_resource($dbh_postgre)){
-			$err=postgre_get_last_message();
+			$err=pg_last_error();
 			echo "postgreDBConnect error:{$err}".printValue($params);
 			exit;
 
 		}
-		if(isset($params['-dbname'])){
-			$ok=postgre_select_db($params['-dbname'],$dbh_postgre);
-			if (!$ok) {
-				$err=postgre_get_last_message();
-				echo "postgreDBConnect error:{$err}".printValue($params);
-				exit;
-			}
 		return $dbh_postgre;
-		}
 	}
 	catch (Exception $e) {
 		echo "postgreDBConnect exception" . printValue($e);
@@ -288,19 +281,19 @@ function postgreExecuteSQL($query,$params=array()){
 		$dbh_postgre=postgreDBConnect($params);
 	}
 	if(!$dbh_postgre){
-    	$e=postgre_get_last_message();
+    	$e=pg_last_error();
     	debugValue(array("postgreExecuteSQL Connect Error",$e));
     	return;
 	}
 	try{
-		$result=@postgre_query($query,$dbh_postgre);
+		$result=@pg_query($query,$dbh_postgre);
 		if(!$result){
-			$e=postgre_get_last_message();
-			postgre_close($dbh_postgre);
+			$e=pg_last_error();
+			pg_close($dbh_postgre);
 			debugValue(array("postgreExecuteSQL Connect Error",$e));
 			return;
 		}
-		postgre_close($dbh_postgre);
+		pg_close($dbh_postgre);
 		return true;
 	}
 	catch (Exception $e) {
@@ -603,11 +596,15 @@ function postgreParseConnectParams($params=array()){
 			$params['-dbhost']=$CONFIG['postgre_dbhost'];
 			$params['-dbhost_source']="CONFIG postgre_dbhost";
 		}
+		else{
+			$params['-dbhost']=$params['-dbhost_source']='localhost';
+		}
 	}
 	else{
 		$params['-dbhost_source']="passed in";
 	}
 	$CONFIG['postgre_dbhost']=$params['-dbhost'];
+	
 	//dbuser
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_postgre'])){
@@ -622,6 +619,7 @@ function postgreParseConnectParams($params=array()){
 	else{
 		$params['-dbuser_source']="passed in";
 	}
+	$CONFIG['postgre_dbuser']=$params['-dbuser'];
 	//dbpass
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_postgre'])){
@@ -636,7 +634,45 @@ function postgreParseConnectParams($params=array()){
 	else{
 		$params['-dbpass_source']="passed in";
 	}
-
+	$CONFIG['postgre_dbpass']=$params['-dbpass'];
+	//dbname
+	if(!isset($params['-dbname'])){
+		if(isset($CONFIG['dbname_postgre'])){
+			$params['-dbname']=$CONFIG['dbname_postgre'];
+			$params['-dbname_source']="CONFIG dbname_postgre";
+		}
+		elseif(isset($CONFIG['postgre_dbname'])){
+			$params['-dbname']=$CONFIG['postgre_dbname'];
+			$params['-dbname_source']="CONFIG postgre_dbname";
+		}
+		else{
+			$params['-dbname']=$CONFIG['postgre_dbuser'];
+			$params['-dbname_source']="set to username";
+		}
+	}
+	else{
+		$params['-dbname_source']="passed in";
+	}
+	$CONFIG['postgre_dbname']=$params['-dbname'];
+	//dbport
+	if(!isset($params['-dbport'])){
+		if(isset($CONFIG['dbport_postgre'])){
+			$params['-dbport']=$CONFIG['dbport_postgre'];
+			$params['-dbport_source']="CONFIG dbport_postgre";
+		}
+		elseif(isset($CONFIG['postgre_dbport'])){
+			$params['-dbport']=$CONFIG['postgre_dbport'];
+			$params['-dbport_source']="CONFIG postgre_dbport";
+		}
+		else{
+			$params['-dbport']=5432;
+			$params['-dbport_source']="default port";
+		}
+	}
+	else{
+		$params['-dbport_source']="passed in";
+	}
+	$CONFIG['postgre_dbport']=$params['-dbport'];
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['postgre_connect'])){
@@ -648,79 +684,15 @@ function postgreParseConnectParams($params=array()){
 			$params['-connect_source']="CONFIG connect_postgre";
 		}
 		else{
-			//build connect - https://docs.microsoft.com/en-us/sql/connect/php/connection-options
-			//database - dbname
-			$dbname='';
-			if(isset($params['-dbname'])){$dbname=$params['-dbname'];}
-			elseif(isset($CONFIG['postgre_dbname'])){$dbname=$CONFIG['postgre_dbname'];}
-			elseif(isset($CONFIG['dbname_postgre'])){$dbname=$CONFIG['dbname_postgre'];}
-			$CONFIG['postgre_dbname']=$dbname;
-			if(!strlen($dbname)){return $params;}
-			//character_set
-			$character_set='UTF-8';
-			if(isset($params['-character_set'])){$character_set=$params['-character_set'];}
-			elseif(isset($CONFIG['postgre_character_set'])){$character_set=$CONFIG['postgre_character_set'];}
-			elseif(isset($CONFIG['character_set_postgre'])){$character_set=$CONFIG['character_set_postgre'];}
-			//return_dates_as_strings
-			$return_dates_as_strings=true;
-			if(isset($params['-return_dates_as_strings'])){$return_dates_as_strings=$params['-return_dates_as_strings'];}
-			elseif(isset($CONFIG['postgre_return_dates_as_strings'])){$return_dates_as_strings=$CONFIG['postgre_return_dates_as_strings'];}
-			elseif(isset($CONFIG['return_dates_as_strings_postgre'])){$return_dates_as_strings=$CONFIG['return_dates_as_strings_postgre'];}
-			$connect_data = array(
-				'Database'				=> $dbname,
-				'CharacterSet' 			=> $character_set,
-				'ReturnDatesAsStrings' 	=> $return_dates_as_strings
-			);
-			//application_intent - ReadOnly or readWrite - Defaults to ReadWrite
-			if(isset($params['-application_intent'])){$connect_data['ApplicationIntent']=$params['-application_intent'];}
-			elseif(isset($CONFIG['postgre_application_intent'])){$connect_data['ApplicationIntent']=$CONFIG['postgre_application_intent'];}
-			elseif(isset($CONFIG['application_intent_postgre'])){$connect_data['ApplicationIntent']=$CONFIG['application_intent_postgre'];}
-			//Encrypt - communication with SQL Server is encrypted (1 or true) or unencrypted (0 or false) - defaults to 0
-			if(isset($params['-encrypt'])){$connect_data['Encrypt']=$params['-encrypt'];}
-			elseif(isset($CONFIG['postgre_encrypt'])){$connect_data['Encrypt']=$CONFIG['postgre_encrypt'];}
-			elseif(isset($CONFIG['encrypt_postgre'])){$connect_data['Encrypt']=$CONFIG['encrypt_postgre'];}
-			//LoginTimeout - Specifies the number of seconds to wait before failing the connection attempt - defaults to no timeout
-			if(isset($params['-login_timeout'])){$connect_data['LoginTimeout']=$params['-login_timeout'];}
-			elseif(isset($CONFIG['postgre_login_timeout'])){$connect_data['LoginTimeout']=$CONFIG['postgre_login_timeout'];}
-			elseif(isset($CONFIG['login_timeout_postgre'])){$connect_data['LoginTimeout']=$CONFIG['login_timeout_postgre'];}
-			//TraceFile - Specifies the path for the file used for trace data
-			if(isset($params['-trace_file'])){$connect_data['TraceFile']=$params['-trace_file'];}
-			elseif(isset($CONFIG['postgre_trace_file'])){$connect_data['TraceFile']=$CONFIG['postgre_trace_file'];}
-			elseif(isset($CONFIG['trace_file_postgre'])){$connect_data['TraceFile']=$CONFIG['trace_file_postgre'];}
-			//TraceOn - ODBC tracing is enabled (1 or true) or disabled (0 or false) - defaults to false
-			if(isset($params['-trace_on'])){$connect_data['TraceOn']=$params['-trace_on'];}
-			elseif(isset($CONFIG['postgre_trace_on'])){$connect_data['TraceOn']=$CONFIG['postgre_trace_on'];}
-			elseif(isset($CONFIG['trace_on_postgre'])){$connect_data['TraceOn']=$CONFIG['trace_on_postgre'];}
-			//WSID - the name of the computer for tracing.
-			if(isset($params['-wsid'])){$connect_data['WSID']=$params['-wsid'];}
-			elseif(isset($CONFIG['postgre_wsid'])){$connect_data['WSID']=$CONFIG['postgre_wsid'];}
-			elseif(isset($CONFIG['wsid_postgre'])){$connect_data['WSID']=$CONFIG['wsid_postgre'];}
-			//TrustServerCertificate - trust (1 or true) or reject (0 or false) a self-signed server certificate - defaults to false
-			if(isset($params['-trust_server_certificate'])){$connect_data['TrustServerCertificate']=$params['-trust_server_certificate'];}
-			elseif(isset($CONFIG['postgre_trust_server_certificate'])){$connect_data['TrustServerCertificate']=$CONFIG['postgre_trust_server_certificate'];}
-			elseif(isset($CONFIG['trust_server_certificate_postgre'])){$connect_data['TrustServerCertificate']=$CONFIG['trust_server_certificate_postgre'];}
-			$params['-connect']=$connect_data;
+			//build connect - http://php.net/manual/en/function.pg-connect.php
+			//$conn_string = "host=sheep port=5432 dbname=test user=lamb password=bar";
+			$params['-connect']="host={$CONFIG['postgre_dbhost']} port={$CONFIG['postgre_dbport']} dbname={$CONFIG['postgre_dbname']} user={$CONFIG['postgre_dbuser']} password={$CONFIG['postgre_dbpass']}";
 			$params['-connect_source']="manual";
 		}
 	}
 	else{
 		$params['-connect_source']="passed in";
 	}
-	if(isset($params['-connect']) && !is_array($params['-connect']) && strlen($params['-connect'])){
-		//turn string into an array - key=value;key=value;
-		$parts=preg_split('/[\;\,\&]+/',$params['-connect']);
-		$params['-connect']=array();
-		foreach($parts as $part){
-			list($k,$v)=preg_split('/\=/',$part);
-			$k=trim($k);
-			$v=trim($v);
-			$params['-connect'][$k]=$v;
-		}
-	}
-	if(!isset($CONFIG['postgre_dbname']) && isset($params['-dbname'])){
-		$CONFIG['postgre_dbname']=$params['-dbname'];
-	}
-	$CONFIG['postgre_dbname']=$dbname;
 	return $params;
 }
 //---------- begin function postgreQueryResults ----------
@@ -741,53 +713,25 @@ function postgreQueryResults($query='',$params=array()){
 		$dbh_postgre=postgreDBConnect($params);
 	}
 	if(!$dbh_postgre){
-    	$e=postgre_get_last_message();
+    	$e=pg_last_error();
     	debugValue(array("postgreQueryResults Connect Error",$e));
     	return;
 	}
-	//php 7 and greater no longer use postgre_connect
-	if((integer)phpversion()>=7){
-		$data = sqlsrv_query($dbh_postgre,"SET ANSI_NULLS ON");
-		$data = sqlsrv_query($dbh_postgre,"SET ANSI_WARNINGS ON");
-		$data = sqlsrv_query($dbh_postgre,$query);
-		if( $data === false ) {
-			$errs=sqlsrv_errors();
-			if(isset($errs[0]['message'])){
-				debugValue(array($errs[0]['message'],$params));
-				return $errs[0]['message'];
-			}
-			debugValue(array($errs,$params));
-			return printValue(array($errs,$params));
-		}
-		if(preg_match('/^insert /i',$query)){
-			$stmt=sqlsrv_query($dbh_postgre,"SELECT @@rowcount as rows");
-			while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_NUMERIC) ) {
-				$id=$row[0];
-				break;
-			}
-			sqlsrv_free_stmt( $stmt);
-			return $id;
-		}
-		$results = postgreEnumQueryResults($data);
-		return $results;
-	}
-	postgre_query("SET ANSI_NULLS ON",$dbh_postgre);
-	postgre_query("SET ANSI_WARNINGS ON",$dbh_postgre);
-	$data=@postgre_query($query,$dbh_postgre);
-	if(!$data){return "MS SQL Query Error: " . postgre_get_last_message();}
+	$data=@pg_query($dbh_postgre,$query);
+	if(!$data){return "Postgres Query Error: " . pg_last_error();}
 	if(preg_match('/^insert /i',$query)){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($data);
-    	postgre_close($dbh_postgre);
+    	pg_close($dbh_postgre);
     	return $id;
 	}
 	$results = postgreEnumQueryResults($data);
-	postgre_close($dbh_postgre);
+	pg_close($dbh_postgre);
 	return $results;
 }
 //---------- begin function postgreEnumQueryResults ----------
 /**
-* @describe enumerates through the data from a postgre_query call
+* @describe enumerates through the data from a pg_query call
 * @exclude - used for internal user only
 * @param data resource
 * @return array
@@ -795,48 +739,16 @@ function postgreQueryResults($query='',$params=array()){
 */
 function postgreEnumQueryResults($data,$showblank=0,$fieldmap=array()){
 	$results=array();
-	//php 7 and greater no longer use postgre_connect
-	if((integer)phpversion()>=7){
-		while( $row = sqlsrv_fetch_array( $data, SQLSRV_FETCH_ASSOC) ) {
-			$crow=array();
-			foreach($row as $key=>$val){
-				if(!$showblank && !strlen(trim($val))){continue;}
-				$key=strtolower($key);
-				if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
-				if(preg_match('/(.+?)\:[0-9]{3,3}(PM|AM)$/i',$val,$tmatch)){
-					$newval=$tmatch[1].' '.$tmatch[2];
-					$crow[$key."_zulu"]=$val;
-					$crow[$key."_utime"]=strtotime($newval);
-					$val=date("Y-m-d H:i:s",$crow[$key."_utime"]);
-            		}
-				$crow[$key]=$val;
-				}
-	        $results[] = $crow;
-		}
-		sqlsrv_free_stmt( $data);
-		return $results;
+	while ($row = @pg_fetch_assoc($data)){
+		$crow=array();
+		foreach($row as $key=>$val){
+			if(!$showblank && !strlen(trim($val))){continue;}
+			$key=strtolower($key);
+			if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
+			$crow[$key]=$val;
+    	}
+    	$results[] = $crow;
 	}
-	//PHP is lower than 7 use postgre_fetch to retrieve
-	do {
-		while ($row = @postgre_fetch_assoc($data)){
-			$crow=array();
-			foreach($row as $key=>$val){
-				if(!$showblank && !strlen(trim($val))){continue;}
-				$key=strtolower($key);
-				if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
-				if(preg_match('/(.+?)\:[0-9]{3,3}(PM|AM)$/i',$val,$tmatch)){
-					$newval=$tmatch[1].' '.$tmatch[2];
-					$crow[$key."_zulu"]=$val;
-					$crow[$key."_utime"]=strtotime($newval);
-					$val=date("Y-m-d H:i:s",$crow[$key."_utime"]);
-            		}
-				$crow[$key]=$val;
-				}
-			//ksort($crow);
-	        $results[] = $crow;
-	    	}
-		}
-	while ( @postgre_next_result($data) );
 	return $results;
 }
 
