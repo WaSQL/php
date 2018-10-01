@@ -1,14 +1,27 @@
 <?php
+	global $CONFIG;
 	switch(strtolower($_REQUEST['func'])){
+		case 'setdb':
+			switch(strtolower($_REQUEST['db'])){
+				case 'postgresql':
+					loadExtras('postgresql');
+					$tables=postgresqlGetDBTables();
+				break;
+				default:
+					$tables=getDBTables();
+				break;
+			}
+			setView('tables_fields',1);
+			return;
+		break;
 		case 'sql':
-			//echo printValue($_REQUEST);
+			$view='results';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
-				$recs=getDBRecords($_SESSION['sql_last']);
-				setView('block_results',1);
+				$view='block_results';
 			}
 			else{
 				$_SESSION['sql_last']=$sql_full;
@@ -22,18 +35,28 @@
 						$end=$p+strlen($query);
 						if($cpos > $p && $cpos < $end){
 							$_SESSION['sql_last']=$query;
-							$recs=getDBRecords($_SESSION['sql_last']);
-							setView('block_results',1);
-							return;
+							$view='block_results';
+							break;
 						}
 						$p=$end;
 					}
 				}
-				$_SESSION['sql_last']=$sql_full;
-				$recs=getDBRecords($sql_full);
-				setView('results',1);
+				else{
+					$_SESSION['sql_last']=$sql_full;
+					$view='results';
+				}
 			}
-
+			switch(strtolower($_REQUEST['db'])){
+				case 'postgresql':
+					loadExtras('postgresql');
+					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				default:
+					$recs=getDBRecords($_SESSION['sql_last']);
+				break;
+			}
+			setView($view,1);
 			return;
 		break;
 		case 'export':
@@ -59,6 +82,12 @@
 			return;
 		break;
 		default:
+			$tabs=array();
+			if(isset($CONFIG['postgresql_dbname'])){$tabs[]=array('name'=>'postgresql');}
+			if(isset($CONFIG['oracle_dbname'])){$tabs[]=array('name'=>'oracle');}
+			if(isset($CONFIG['mssql_dbname'])){$tabs[]=array('name'=>'mssql');}
+			if(isset($CONFIG['sqlite_dbname'])){$tabs[]=array('name'=>'sqlite');}
+			//echo printValue($CONFIG).printValue($tabs);exit;
 			$tables=getDBTables();
 			setView('default',1);
 		break;

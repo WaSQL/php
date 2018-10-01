@@ -7,6 +7,10 @@
 			return sqlpromptSubmit(document.sqlprompt);
         }
 	}
+	function sqlpromptSetDB(db){
+		document.sqlprompt.db.value=db;
+		return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
+	}
 	function sqlpromptSubmit(frm){
 		frm.sql_select.value=getSelText(frm.sql_full);
 		var pos=getCursorPos(frm.sql_full);
@@ -24,25 +28,17 @@
 		</div>
 	</div>
 	<div class="row w_padtop">
-		<div class="col-sm-3">
-			<div class="w_bold w_big">Tables & Fields</div>
-			<div  style="max-height:85vh;overflow:auto;">
-			<ul class="nav nav-pills nav-stacked">
-				<view:table>
-					<li role="presentation"><a href="#" style="padding:5px 0px 3px 10px;" onclick="var t=getText('<?=$table;?>_fields');if(t.length){setText('<?=$table;?>_fields','');}else{return ajaxGet('/php/admin.php','<?=$table;?>_fields',{_menu:'sqlprompt',func:'fields',table:'<?=$table;?>'});}"><?=$table;?></a>
-						<ul id="<?=$table;?>_fields" class="nav nav-pills nav-stacked" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></ul>
-					</li>
-				</view:table>
-				<?=renderEach('table',$tables,'table');?>
-			</ul>
-			</div>
+		<div class="col-sm-3" id="table_fields">
+			<?=renderView('tables_fields',$tables,'tables');?>
 		</div>
 		<div class="col-sm-9">
+			<?=renderViewIf(count($tabs),'tabs',$tabs,'tabs');?>
 			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 				<input type="hidden" name="_menu" value="sqlprompt">
-				<input type="hidden" name="func" value="sql">
-				<input type="hidden" name="sql_select" value="">
-				<input type="hidden" name="cursor_pos" value="">
+				<input type="hidden" name="db" value="default" />
+				<input type="hidden" name="func" value="sql" />
+				<input type="hidden" name="sql_select" value="" />
+				<input type="hidden" name="cursor_pos" value="" />
 				<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 				<div class="row w_padtop">
 					<div class="col-sm-4">
@@ -58,6 +54,36 @@
 	</div>
 </div>
 </view:default>
+
+<view:tables_fields>
+	<div class="w_bold w_big">Tables & Fields</div>
+	<div  style="max-height:85vh;overflow:auto;">
+	<ul class="nav nav-pills nav-stacked">
+		<view:table>
+			<li role="presentation"><a href="#" style="padding:5px 0px 3px 10px;" onclick="var t=getText('<?=$table;?>_fields');if(t.length){setText('<?=$table;?>_fields','');}else{return ajaxGet('/php/admin.php','<?=$table;?>_fields',{_menu:'sqlprompt',func:'fields',table:'<?=$table;?>'});}"><?=$table;?></a>
+				<ul id="<?=$table;?>_fields" class="nav nav-pills nav-stacked" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></ul>
+			</li>
+		</view:table>
+		<?=renderEach('table',$tables,'table');?>
+	</ul>
+	</div>
+</view:tables_fields>
+
+<view:tabs>
+<ul class="nav nav-tabs">
+	<li class="nav-item">
+		<input type="radio" id="db_default" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="default" checked />
+		<label for="db_default" class="icon-mark"> </label><label for="db_default">Default</label>
+	</li>
+	<view:tab>
+	<li class="nav-item">
+		<input type="radio" id="db_<?=$tab['name'];?>" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
+		<label for="db_<?=$tab['name'];?>" class="icon-mark"> </label><label for="db_<?=$tab['name'];?>"><?=$tab['name'];?></label>
+	</li>
+	</view:tab>
+	<?=renderEach('tab',$tabs,'tab');?>
+</ul>
+</view:tabs>
 
 <view:results>
 	<div class="text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>

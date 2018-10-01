@@ -6,6 +6,7 @@
 		https://en.wikibooks.org/wiki/Converting_MySQL_to_PostgreSQL
 		https://www.convert-in.com/mysql-to-postgresqls-types-mapping.htm
 		https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresqlsql-8bfcd2f4a91e
+		https://stackoverflow.com/questions/15520361/permission-denied-for-relation
 */
 
 //---------- begin function postgresqlAddDBRecord ----------
@@ -447,6 +448,7 @@ function postgresqlGetDBRecords($params){
 	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 		//they just entered a query
 		$query=$params;
+		$params=array();
 	}
 	else{
 		//determine fields to return
@@ -511,20 +513,9 @@ function postgresqlGetDBRecords($params){
 */
 function postgresqlGetDBTables($params=array()){
 	global $CONFIG;
-	$query="
-	SELECT
-        table_name as name
-	FROM
-		information_schema.tables
-	WHERE
-		table_type='BASE TABLE'
-		and table_schema='public'
-		and table_catalog='{$CONFIG['postgresql_dbname']}'
-	ORDER BY
-		table_name
-	";
+	$query="SELECT tablename as name from pg_tables where schemaname='public' ORDER BY tablename";
 	$recs = postgresqlQueryResults($query,$params);
-	echo $query.printValue($recs);exit;
+	//echo $query.printValue($recs);exit;
 	$tables=array();
 	foreach($recs as $rec){$tables[]=$rec['name'];}
 	return $tables;
