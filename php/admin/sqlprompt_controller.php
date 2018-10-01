@@ -80,7 +80,7 @@
 				break;
 				case 'hana':
 					loadExtras('hana');
-					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
+					$recs=hanaGetDBRecords($_SESSION['sql_last']);
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 				case 'sqlite':
