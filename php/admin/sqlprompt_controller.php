@@ -8,15 +8,15 @@
 					$tables=postgresqlGetDBTables();
 				break;
 				case 'oracle':
-					loadExtras('postgresql');
+					loadExtras('oracle');
 					$tables=oracleGetDBTables();
 				break;
 				case 'mssql':
-					loadExtras('postgresql');
+					loadExtras('mssql');
 					$tables=mssqlGetDBTables();
 				break;
 				case 'hana':
-					loadExtras('postgresql');
+					loadExtras('hana');
 					$tables=hanaGetDBTables();
 				break;
 				case 'sqlite':
