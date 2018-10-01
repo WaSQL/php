@@ -119,9 +119,10 @@
 		break;
 		default:
 			$tabs=array();
-			if(isset($CONFIG['postgresql_dbname'])){$tabs[]=array('name'=>'postgresql');}
-			if(isset($CONFIG['oracle_dbname'])){$tabs[]=array('name'=>'oracle');}
-			if(isset($CONFIG['mssql_dbname'])){$tabs[]=array('name'=>'mssql');}
+			if(isset($CONFIG['postgresql_dbname']) || isset($CONFIG['postgresql_dbhost'])){$tabs[]=array('name'=>'postgresql');}
+			if(isset($CONFIG['oracle_dbname']) || isset($CONFIG['oracle_dbhost'])){$tabs[]=array('name'=>'oracle');}
+			if(isset($CONFIG['mssql_dbname']) || isset($CONFIG['mssql_dbhost'])){$tabs[]=array('name'=>'mssql');}
+			if(isset($CONFIG['hana_dbname']) || isset($CONFIG['hana_dbhost'])){$tabs[]=array('name'=>'hana');}
 			if(isset($CONFIG['sqlite_dbname'])){$tabs[]=array('name'=>'sqlite');}
 			//echo printValue($CONFIG).printValue($tabs);exit;
 			$tables=getDBTables();
