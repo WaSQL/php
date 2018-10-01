@@ -119,11 +119,13 @@
 		break;
 		default:
 			$tabs=array();
-			if(isset($CONFIG['postgresql_dbname']) || isset($CONFIG['postgresql_dbhost'])){$tabs[]=array('name'=>'postgresql');}
-			if(isset($CONFIG['oracle_dbname']) || isset($CONFIG['oracle_dbhost'])){$tabs[]=array('name'=>'oracle');}
-			if(isset($CONFIG['mssql_dbname']) || isset($CONFIG['mssql_dbhost'])){$tabs[]=array('name'=>'mssql');}
-			if(isset($CONFIG['hana_dbname']) || isset($CONFIG['hana_dbhost'])){$tabs[]=array('name'=>'hana');}
-			if(isset($CONFIG['sqlite_dbname'])){$tabs[]=array('name'=>'sqlite');}
+			$dbs=array('postgresql','oracle','mssql','hana','sqlite');
+			foreach($dbs as $db){
+				if(isset($CONFIG["{$db}_dbname"]) || isset($CONFIG["{$db}_dbhost"])){
+					$tabname=isset($CONFIG["{$db}_tabname"])?$CONFIG["{$db}_tabname"]:$db;
+					$tabs[]=array('name'=>$db,'host'=>$CONFIG["{$db}_dbhost"],'tabname'=>$tabname);
+				}
+			}
 			//echo printValue($CONFIG).printValue($tabs);exit;
 			$tables=getDBTables();
 			setView('default',1);

@@ -78,7 +78,7 @@
 	<view:tab>
 	<li class="nav-item">
 		<input type="radio" id="db_<?=$tab['name'];?>" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>" class="icon-mark"> </label><label for="db_<?=$tab['name'];?>"><?=$tab['name'];?></label>
+		<label for="db_<?=$tab['name'];?>" class="icon-mark"> </label><label for="db_<?=$tab['name'];?>"><?=$tab['tabname'];?></label>
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>
