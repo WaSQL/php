@@ -7,6 +7,22 @@
 					loadExtras('postgresql');
 					$tables=postgresqlGetDBTables();
 				break;
+				case 'oracle':
+					loadExtras('postgresql');
+					$tables=oracleGetDBTables();
+				break;
+				case 'mssql':
+					loadExtras('postgresql');
+					$tables=mssqlGetDBTables();
+				break;
+				case 'hana':
+					loadExtras('postgresql');
+					$tables=hanaGetDBTables();
+				break;
+				case 'sqlite':
+					loadExtras('sqlite');
+					$tables=sqliteGetDBTables();
+				break;
 				default:
 					$tables=getDBTables();
 				break;
@@ -50,6 +66,26 @@
 				case 'postgresql':
 					loadExtras('postgresql');
 					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'oracle':
+					loadExtras('oracle');
+					$recs=oracleGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'mssql':
+					loadExtras('mssql');
+					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'hana':
+					loadExtras('hana');
+					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'sqlite':
+					loadExtras('sqlite');
+					$recs=sqliteGetDBRecords($_SESSION['sql_last']);
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 				default:
