@@ -471,6 +471,7 @@ function oracleGetDBRecords($params){
 	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 		//they just entered a query
 		$query=$params;
+		$params=array();
 	}
 	else{
 		//determine fields to return
