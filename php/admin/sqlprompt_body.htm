@@ -11,6 +11,15 @@
 		document.sqlprompt.db.value=db;
 		return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 	}
+	function sqlpromptFields(table){
+		var t=getText(table+'_fields');
+		if(t.length){
+			setText(table+'_fields','');
+			return;
+		}
+		var db=document.sqlprompt.db.value;
+		return ajaxGet('/php/admin.php',table+'_fields',{_menu:'sqlprompt',func:'fields',table:table,db:db})
+	}
 	function sqlpromptSubmit(frm){
 		frm.sql_select.value=getSelText(frm.sql_full);
 		var pos=getCursorPos(frm.sql_full);
@@ -60,7 +69,7 @@
 	<div  style="max-height:85vh;overflow:auto;">
 	<ul class="nav nav-pills nav-stacked">
 		<view:table>
-			<li role="presentation"><a href="#" style="padding:5px 0px 3px 10px;" onclick="var t=getText('<?=$table;?>_fields');if(t.length){setText('<?=$table;?>_fields','');}else{return ajaxGet('/php/admin.php','<?=$table;?>_fields',{_menu:'sqlprompt',func:'fields',table:'<?=$table;?>'});}"><?=$table;?></a>
+			<li role="presentation"><a href="#" style="padding:5px 0px 3px 10px;" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
 				<ul id="<?=$table;?>_fields" class="nav nav-pills nav-stacked" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></ul>
 			</li>
 		</view:table>

@@ -361,50 +361,33 @@ ENDOFQUERY;
 */
 function postgresqlGetDBFieldInfo($table,$params=array()){
 	global $CONFIG;
-	$query=<<<ENDOFQUERY
-		SELECT
-			column_name,
-			data_type,
-			character_maximum_length,
-			numeric_precision,
-			numeric_precision_radix,
-			ordinal_position,
-			column_default,
-			is_nullable,
-			is_identity
-		FROM
-			INFORMATION_SCHEMA.COLUMNS
-		WHERE
-			table_catalog = '{$CONFIG['postgresql_dbname']}'
-    		and table_schema = 'dbo'
-			and table_name = '{$table}'
-		ORDER BY 
-			ordinal_position
-ENDOFQUERY;
-	$recs=postgresqlQueryResults($query,$params);
-	$fields=array();
-	$pkeys=postgresqlGetDBTablePrimaryKeys($table,$params);
-	foreach($recs as $rec){
-		$name=strtolower($rec['column_name']);
-		//name, type, length, num, default
-		$fields[$name]=array(
-		 	'name'		=> $name,
-		 	'type'		=> $rec['data_type'],
-			'length'	=> $rec['character_maximum_length'],
-			'num'		=> $rec['ordinal_position'],
-			'default'	=> $rec['column_default'],
-			'nullable'	=> $rec['is_nullable'],
-			'identity' 	=> $rec['identity_field']
-		);
-		//add primary_key flag
-		if(in_array($name,$pkeys)){
-			$fields[$name]['primary_key']=true;
-		}
-		else{
-			$fields[$name]['primary_key']=false;
-		}
+	global $USER;
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect($params);
 	}
-    ksort($fields);
+	if(!$dbh_postgresql){
+    	$e=pg_last_error();
+    	debugValue(array("postgresqlQueryResults Connect Error",$e));
+    	return;
+	}
+	$query="SELECT * from {$table} where false";
+	$res=@pg_query($dbh_postgresql,$query);
+	$fields=array();
+	$i = pg_num_fields($res);
+	for ($j = 0; $j < $i; $j++) {
+	    $fieldname = pg_field_name($res, $j);
+		$fields[$fieldname]=array(
+		 	'_dbfield'	=> $fieldname,
+		 	'_dbtype'	=> pg_field_type($res, $j),
+			'length'	=> pg_field_prtlen($res, $j),
+			'num'		=> pg_field_num($res, $j),
+			'size'		=> pg_field_size($res, $j),
+			'nullable'	=> pg_field_is_null($res, $j),
+		);
+	}
+	pg_close($dbh_postgresql);
+	ksort($fields);
 	return $fields;
 }
 //---------- begin function postgresqlGetDBRecord ----------

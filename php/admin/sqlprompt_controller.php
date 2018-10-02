@@ -103,7 +103,38 @@
 		break;
 		case 'fields':
 			$table=addslashes($_REQUEST['table']);
-			$fields=getDBFieldInfo($table);
+			//echo printValue($_REQUEST);exit;
+			switch(strtolower($_REQUEST['db'])){
+				case 'postgresql':
+					loadExtras('postgresql');
+					$fields=postgresqlGetDBFieldInfo($table);
+				break;
+				case 'oracle':
+					loadExtras('oracle');
+					$fields=oracleGetDBFieldInfo($table);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'mssql':
+					loadExtras('mssql');
+					$fields=mssqlGetDBFieldInfo($table);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'hana':
+					loadExtras('hana');
+					$fields=hanaGetDBFieldInfo($table);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'sqlite':
+					loadExtras('sqlite');
+					$fields=sqliteGetDBFieldInfo($table);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				default:
+					$fields=getDBFieldInfo($table);
+				break;
+			}
+			
+			
 			//echo printValue($fields);exit;
 			setView('fields',1);
 			return;
