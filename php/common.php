@@ -752,7 +752,11 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$checked=' checked';
 		}
 		$id="{$name}_{$tval}";
-		$tag .= '<input type="radio" class="browser-default" name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+		$tag .= '<input type="radio" class="browser-default"';
+		if(isset($params['onclick'])){
+			$tag .= ' onclick="'.$params['onclick'].'"';
+		}
+		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
         $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
