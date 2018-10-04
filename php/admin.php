@@ -2130,9 +2130,15 @@ LIST_TABLE:
 					}
 				}
                 if(count($editopts)){
-					$editopts['-table']='_tabledata';
-					$editopts['-where']="tablename = '{$currentTable}'";
-					if(getDBCount($editopts)){$ok=editDBRecord($editopts);}
+					$erec=getDBRecord(array(
+						'-table'=>'_tabledata',
+						'tablename'=>$currentTable
+					));
+					if(isset($erec['_id'])){
+						$editopts['-table']='_tabledata';
+						$editopts['-where']="_id = '{$erec['_id']}'";
+						$ok=editDBRecord($editopts);
+					}
 					else{
 						$editopts['tablename']=$currentTable;
 						$ok=addDBRecord($editopts);
