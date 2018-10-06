@@ -39,14 +39,14 @@ Feel free to request changes via github.  You can also help by donating to the c
 				Require local
 			</Directory>
 
-- copy sample.htaccess in the wasql folder to c:\wamp\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
+- copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
 - restart Apache.
-- open a DOS console and type >mysql -u root -p <ENTER>. Then enter you password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
+- open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
 	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
 	- mysql>flush privileges;
 	- mysql>create database wasql_sample;
 - **Ready to try**
-	- using a browser open http://localhost.  If all went well it will take a second to load and you will see the sample website.
+	- using a browser open http://localhost.  If all went well you will see the sample website wizard. Select the one you want and click on the Install button.
 	- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
 
 ## Installation - Linux
@@ -64,6 +64,6 @@ Feel free to request changes via github.  You can also help by donating to the c
 			->../wasql/dirsetup.sh
 		- create a blank database called wasql_sample (to match the dbname in config.xml)
 - **Ready to try**
-	- Using a browser open your website.  If all went well it will take a second to load and you will see the sample website.
+	- Using a browser open your website.  If all went well you will see the sample website wizard. Select the one you want and click on the Install button.
 	- using a browser open your website with /a at the end of the url.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
 
