@@ -33,11 +33,13 @@ Feel free to request changes via github.  You can also help by donating to the c
 			- Alias /php/ "d:/wasql/php/"
 			- Alias /wfiles/ "d:/wasql/wfiles/"
 		- Just below the ifModule section create the following:
+```
 			<Directory "d:/wasql/">
 				Options Indexes FollowSymLinks
 				AllowOverride all
 				Require local
 			</Directory>
+```
 
 - copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
 - restart Apache.
