@@ -1415,7 +1415,9 @@ function buildFormTextarea($name,$params=array()){
 	$tag .= '	<textarea';
 	$tag .= setTagAttributes($params);
 	$tag .= ' >';
-	$params['value']=fixMicrosoft($params['value']);
+	if(isset($params['-fixms'])){
+		$params['value']=fixMicrosoft($params['value']);
+	}
 	$tag .= encodeHtml($params['value']);
 	$tag .= '</textarea>'.PHP_EOL;
 	if($white_wrap==1){$tag.='</div>'.PHP_EOL;}
