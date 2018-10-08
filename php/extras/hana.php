@@ -1157,7 +1157,7 @@ function hanaQueryResults($query,$params=array()){
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
     	debugValue(array("hanaQueryResults Connect Error",$e));
-    	return;
+    	return json_encode($e);
 	}
 	try{
 		$result=odbc_exec($dbh_hana,$query);
