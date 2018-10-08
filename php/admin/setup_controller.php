@@ -50,7 +50,7 @@
 		//import dump file
 		//echo "{$url}/php/admin.php".printValue($params);
 		$post=postURL("{$url}/php/admin.php",$params);
-		//echo $post['body'];exit;
+		//echo printValue($post);exit;
 		if(preg_match('/\<backup\>(.+?)\<\/backup\>/is',$post['body'],$m)){
 			$body=trim($m[1]);
 			if(preg_match('/^error/is',$body)){
@@ -60,7 +60,7 @@
 			else{
 				//download the file
 				$url="{$url}/php/index.php?_pushfile={$body}";
-				//echo "<div>{$url}</div>".PHP_EOL;
+				//echo "<div>{$url}</div>".PHP_EOL;exit;
 				$rfile=base64_decode($body);
 				//check to see if it is local
 				if(file_exists($rfile)){$afile=$rfile;}
@@ -96,21 +96,27 @@
 					//$message=$afile;break;
 					$mysql_cmd=isset($CONFIG['mysql_command'])?$CONFIG['mysql_command']:'mysql';
 					$cmds=array(
-						"{$$mysql_cmd} -h {$CONFIG['dbhost']} -u {$CONFIG['dbuser']} -p\"{$CONFIG['dbpass']}\" --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
-						"{$$mysql_cmd} -h {$CONFIG['dbhost']} -u {$CONFIG['dbuser']} -p\"{$CONFIG['dbpass']}\" --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$afile}\" 2>&1"
+						"{$mysql_cmd} -h {$CONFIG['dbhost']} -u {$CONFIG['dbuser']} -p\"{$CONFIG['dbpass']}\" --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
+						"{$mysql_cmd} -h {$CONFIG['dbhost']} -u {$CONFIG['dbuser']} -p\"{$CONFIG['dbpass']}\" --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$afile}\" 2>&1"
 					);
 					foreach($cmds as $cmd){
 						//echo "<div>{$cmd}</div>\n";
-						$out=shell_exec($cmd);
-						$message.="<div>{$cmd}</div>";
-						$message.="<div>{$out}</div>";
+						$out=cmdResults($cmd);
+						//$message.=printValue($out);
 						// $ok.PHP_EOL;
 					}
+					$message='<h1 class="w_success">Clone Complete</h1>';
+					$message.='<a href="/" class="btn btn-lg btn-primary">Refresh</a>';
 				}
 				else{
 					$message="Failed: {$afile} not found";
 				}
+				//echo $message;exit;
 			}
+		}
+		else{
+			$message="Failed: ".$post['body'];
+			//echo $message;exit;
 		}
 	}
 	else{
