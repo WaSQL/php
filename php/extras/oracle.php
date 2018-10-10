@@ -297,7 +297,9 @@ function oracleExecuteSQL($query='',$params=array()){
 	$start=microtime(true);
 	if(preg_match('/^(update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
-    	logDBQuery($query,$start,'oracleExecuteSQL','oracle');
+		if(function_exists('logDBQuery')){
+			logDBQuery($query,$start,'oracleExecuteSQL','oracle');
+		}
     	oci_free_statement($stid);
     	if($params['setmodule']){
 			oci_set_module_name($dbh_oracle, 'idle');
@@ -309,7 +311,9 @@ function oracleExecuteSQL($query='',$params=array()){
     	return;
 	}
 	$r = oci_execute($stid);
-	logDBQuery($query,$start,'oracleExecuteSQL','oracle');
+	if(function_exists('logDBQuery')){
+		logDBQuery($query,$start,'oracleExecuteSQL','oracle');
+	}
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    
@@ -828,7 +832,9 @@ function oracleQueryResults($query='',$params=array()){
 	$start=microtime(true);
 	if(preg_match('/^(update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
-		logDBQuery($query,$start,'oracleQueryResults','oracle');
+		if(function_exists('logDBQuery')){
+			logDBQuery($query,$start,'oracleQueryResults','oracle');
+		}
     	oci_free_statement($stid);
     	if($params['setmodule']){
 			oci_set_module_name($dbh_oracle, 'idle');
@@ -839,7 +845,9 @@ function oracleQueryResults($query='',$params=array()){
     	return;
 	}
 	$r = oci_execute($stid);
-	logDBQuery($query,$start,'oracleQueryResults','oracle');
+	if(function_exists('logDBQuery')){
+		logDBQuery($query,$start,'oracleQueryResults','oracle');
+	}
 	if (!$r) {
 		$e = json_encode(oci_error($stid));
 	    debugValue(array("oracleQueryResults Execute Error",$e,$query));
