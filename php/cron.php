@@ -65,6 +65,14 @@ foreach($ConfigXml as $name=>$host){
     	cronMessage("failed to connect: {$ok}");
     	continue;
 	}
+	//check for apache_access_log
+	if(isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+		loadExtras('apache');
+		cronMessage("running apacheParseLogFile...");
+		$msg=apacheParseLogFile();
+		if(strlen($msg)){cronMessage($msg);}
+		cronMessage("apacheParseLogFile completed");
+	}
 	//if any crons are set to active and running and have been running for over 3 hours then they are not running anymore
 	$ok=editDBRecord(array(
 		'-table'	=> '_cron',
