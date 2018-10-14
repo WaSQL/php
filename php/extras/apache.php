@@ -111,13 +111,16 @@ function apacheTableSetup(){
 			'referer'			=> 'varchar(255) NULL',
 			'sha'				=> 'char(42) NOT NULL UNIQUE',
 			'status'			=> 'int(11) NULL',			
-			'user_agent'		=> 'varchar(255) NULL'
+			'user_agent'		=> 'varchar(255) NULL',
+			'bot'				=> 'varchar(100) NULL'
 		);
 		$ok = createDBTable($table,$fields,'InnoDB');
 		$ok=addDBIndex(array('-table'=>$table,'-fields'=>"log_date"));
+		$ok=addDBIndex(array('-table'=>$table,'-fields'=>"os"));
+		$ok=addDBIndex(array('-table'=>$table,'-fields'=>"bot"));
 		$addopts=array('-table'=>"_tabledata",
 			'tablename'		=> $table,
-			'listfields'	=> "log_date\r\nip_address\r\nbrowser\r\npath\r\nstatus\r\nreferer",
+			'listfields'	=> "log_date\r\nip_address\r\nbrowser\r\nbot\r\npath\r\nstatus\r\nos\r\nreferer",
 			'sortfields'	=> "log_date desc",
 			'synchronize'	=> 0
 		);
@@ -253,6 +256,10 @@ function apacheParseLogFileLine($line){
       	$rec['os']=getAgentOS($rec['user_agent']);
       	//skip bots?
       	if(isset($CONFIG['apache_access_skip_bots']) && $CONFIG['apache_access_skip_bots']==1 && stringContains($rec['os'],'BOT:')){return null;}
+      	if(stringContains($rec['os'],'BOT:')){
+      		$rec['bot']=str_replace('bot:','',$rec['os']);
+      		$rec['os']='BOT';
+      	}
       	$rec['mobile']=isMobileDevice($rec['user_agent']);
       	//remove junk values
       	foreach($rec as $k=>$v){
