@@ -257,7 +257,7 @@ function apacheParseLogFileLine($line){
       	//skip bots?
       	if(isset($CONFIG['apache_access_skip_bots']) && $CONFIG['apache_access_skip_bots']==1 && stringContains($rec['os'],'BOT:')){return null;}
       	if(stringContains($rec['os'],'BOT:')){
-      		$rec['bot']=str_replace('bot:','',$rec['os']);
+      		$rec['bot']=str_replace('bot:','',strtolower($rec['os']));
       		$rec['os']='BOT';
       	}
       	$rec['mobile']=isMobileDevice($rec['user_agent']);
