@@ -148,7 +148,7 @@ function apacheReportCounts($field){
 		GROUP BY 
 			{$field}
 		ORDER BY
-			cnt desc,bot
+			cnt desc
 ENDOFQ;
 	$recs=getDBRecords($q);
 	//map status name
