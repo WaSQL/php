@@ -148,7 +148,7 @@ function apacheReportCounts($field){
 	switch($field){
 		case 'bot':
 		case 'referer':
-			$filter="WHERE {$field} not null";
+			$filter="WHERE {$field} is not null";
 		break;
 		case 'path':
 			$filter="WHERE {$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
