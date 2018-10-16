@@ -147,6 +147,12 @@ function apacheReportCounts($field){
 			$recs[$i]['status_name']=$map[$status];
 		}
 	}
+	//add percent
+	$total=0;
+	foreach($recs as $i=>$rec){$total+=$rec['cnt'];}
+	foreach($recs as $i=>$rec){
+		$recs[$i]['percent']=round(($rec['cnt']/$total)*100,0);
+	}
 	return $recs;
 }
 function apacheParseLogFile(){
