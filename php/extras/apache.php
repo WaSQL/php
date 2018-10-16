@@ -145,11 +145,17 @@ function apacheReportCounts($field){
 	}
 	$table=$CONFIG['apache_access_table'];
 	$filter='';
-	if($field=='path'){
-		$filter="WHERE {$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
-	}
-	elseif($field=='referer'){
-		$filter="WHERE {$field} not like '%{$_SERVER['UNIQUE_HOST']}%'";
+	switch($field){
+		case 'bot':
+		case 'referer':
+			$filter="WHERE {$field} not null";
+		break;
+		case 'path':
+			$filter="WHERE {$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
+		break;
+		case 'referer':
+			$filter="WHERE {$field} not like '%{$_SERVER['UNIQUE_HOST']}%'";
+		break;
 	}
 	$q=<<<ENDOFQ
 		SELECT 
