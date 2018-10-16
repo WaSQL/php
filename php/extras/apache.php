@@ -137,7 +137,7 @@ function apacheReportCounts($field){
 		apacheTableSetup();
 	}
 	$table=$CONFIG['apache_access_table'];
-	$q="select count(*) cnt,{$field} as name,min(log_date) as mindate,max(log_date) as maxdate  from {$table} group by {$field} order by {$field} order by cnt desc";
+	$q="select count(*) cnt,{$field} as name,min(log_date) as mindate,max(log_date) as maxdate  from {$table} group by {$field} order by cnt desc,bot";
 	$recs=getDBRecords($q);
 	//map status name
 	if($field=='status'){
