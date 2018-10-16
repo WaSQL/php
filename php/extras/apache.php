@@ -135,7 +135,7 @@ function apacheGetTableName(){
 	}
 	return $CONFIG['apache_access_table'];
 }
-function apacheReportCounts($field){
+function apacheReportCounts($field,$begin='',$end=''){
 	global $CONFIG;
 	if(!isset($CONFIG['apache_access_table'])){
 		$CONFIG['apache_access_table']='apache_access_log';
@@ -144,19 +144,29 @@ function apacheReportCounts($field){
 		apacheTableSetup();
 	}
 	$table=$CONFIG['apache_access_table'];
-	$filter='';
+	$filters=array();
+	if(strlen($begin) && strlen($end)){
+		$filters[]="log_date between '{$begin}' and '{$end}'";
+	}
+	elseif(strlen($begin)){
+		$filters[]="log_date >= '{$begin}'";
+	}
+	elseif(strlen($end)){
+		$filters[]="log_date <= '{$end}'";
+	}
 	switch($field){
 		case 'bot':
 		case 'referer':
-			$filter="WHERE {$field} is not null";
+			$filters[]="{$field} is not null";
 		break;
 		case 'path':
-			$filter="WHERE {$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
+			$filters[]="{$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
 		break;
 		case 'referer':
-			$filter="WHERE {$field} not like '%{$_SERVER['UNIQUE_HOST']}%'";
+			$filters[]="{$field} not like '%{$_SERVER['UNIQUE_HOST']}%'";
 		break;
 	}
+	if(count($filters)){$filter="WHERE ".implode(' and ',$filters);}
 	$q=<<<ENDOFQ
 		SELECT 
 			count(*) cnt,
