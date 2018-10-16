@@ -144,6 +144,13 @@ function apacheReportCounts($field){
 		apacheTableSetup();
 	}
 	$table=$CONFIG['apache_access_table'];
+	$filter='';
+	if($field=='path'){
+		$filter="WHERE {$field} not like '/wfiles/%' and {$field} not like '/php/minify_%' and {$field} not like '/minify_%'";
+	}
+	elseif($field=='referer'){
+		$filter="WHERE {$field} not like '%{$_SERVER['UNIQUE_HOST']}%'";
+	}
 	$q=<<<ENDOFQ
 		SELECT 
 			count(*) cnt,
@@ -152,6 +159,7 @@ function apacheReportCounts($field){
 			max(log_date) as maxdate  
 		FROM 
 			{$table} 
+		{$filter}
 		GROUP BY 
 			{$field}
 		ORDER BY
