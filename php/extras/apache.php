@@ -128,6 +128,13 @@ function apacheTableSetup(){
 	}
 	return true;
 }
+function apacheGetTableName(){
+	global $CONFIG;
+	if(!isset($CONFIG['apache_access_table'])){
+		$CONFIG['apache_access_table']='apache_access_log';
+	}
+	return $CONFIG['apache_access_table'];
+}
 function apacheReportCounts($field){
 	global $CONFIG;
 	if(!isset($CONFIG['apache_access_table'])){

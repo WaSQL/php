@@ -6041,12 +6041,13 @@ function getDBFormRecords($params=array()){
 //---------- begin function getDBIndexes
 /**
 * @describe returns indexes for specified (or all if none specified) tables
-* @param [tables] array - array of table names
+* @param [tables] mixed - array of table names or a single table name
 * @param [dbname] string - name of database - defaults to current database
 * @return array
 * @usage $indexes=getDBIndexes(array('note'));
 */
 function getDBIndexes($tables=array(),$dbname=''){
+	if(!is_array($tables)){$tables=array($tables);}
 	$indexes=array();
 	if(count($tables)==0){$tables=getDBTables($dbname);}
 	foreach($tables as $table){

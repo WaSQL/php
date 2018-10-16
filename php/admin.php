@@ -2066,16 +2066,15 @@ LIST_TABLE:
 			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, you will need to download it via git. '.PHP_EOL;
 			echo '</p>'.PHP_EOL;
 			echo '<p>'.PHP_EOL;
-			echo '	If you need a good free text editor try geany.  It runs on linux, macs, and windows. '.PHP_EOL;
-			echo ' <a class="w_link icon-download" href="https://www.geany.org/Download"> https://www.geany.org/Download</a>'.PHP_EOL;
 			echo '</p><p>'.PHP_EOL;
 			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'.PHP_EOL;
 			echo 'This file contains authentication information for each domain/website you want to connect to.'.PHP_EOL;
 			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'.PHP_EOL;
 			echo '<pre><xmp>'.PHP_EOL;
+			$alias=preg_replace('/^(dev\-|qa\-)/','',$_SERVER['UNIQUE_HOST']);
 			echo '<host'.PHP_EOL;
 			echo '	name="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
-			echo '	alias="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
+			echo '	alias="'.$alias.'"'.PHP_EOL;
 			echo '	apikey="'.$USER['apikey'].'"'.PHP_EOL;
 			echo '	username="'.$USER['username'].'"'.PHP_EOL;
 			echo '	groupby="name"'.PHP_EOL;
@@ -2090,7 +2089,7 @@ LIST_TABLE:
 			echo '			<li> Changing your username or password will change your apikey.'.PHP_EOL;
 			echo '		</ul>'.PHP_EOL;
 			echo '	</li>'.PHP_EOL;
-			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, stage.domain.com may have an alias of domain.com (Stage).</li>'.PHP_EOL;
+			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, dev.wasql.com may have an alias of wasql.</li>'.PHP_EOL;
 			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'.PHP_EOL;
 			echo '</ul>'.PHP_EOL;
 			echo '</p><p>'.PHP_EOL;
