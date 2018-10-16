@@ -146,9 +146,7 @@ function apacheReportCounts($field){
 		FROM 
 			{$table} 
 		GROUP BY 
-			{$field},
-			min(log_date),
-			max(log_date) 
+			{$field}
 		ORDER BY
 			cnt desc,bot
 ENDOFQ;
@@ -165,6 +163,7 @@ ENDOFQ;
 	$total=0;
 	foreach($recs as $i=>$rec){$total+=$rec['cnt'];}
 	foreach($recs as $i=>$rec){
+		if(!strlen($rec['name'])){$recs[$i]['name']='UNKNOWN';}
 		$recs[$i]['pcnt']=round(($rec['cnt']/$total)*100,0);
 	}
 	return $recs;
