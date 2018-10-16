@@ -180,6 +180,7 @@ ENDOFQ;
 	foreach($recs as $i=>$rec){
 		if(!strlen($rec['name'])){$recs[$i]['name']='UNKNOWN';}
 		$recs[$i]['pcnt']=round(($rec['cnt']/$total)*100,0);
+		if($recs[$i]['pcnt']==0){unset($recs[$i]);}
 	}
 	return $recs;
 }
