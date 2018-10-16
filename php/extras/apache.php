@@ -311,7 +311,7 @@ function apacheParseLogFileLine($line){
       		$rec['bot']=str_replace('bot:','',strtolower($rec['os']));
       		$rec['os']='BOT';
       	}
-      	$rec['mobile']=isMobileDevice($rec['user_agent']);
+      	$rec['mobile']=isMobileDevice($rec['user_agent'])?1:0;
       	//remove junk values
       	foreach($rec as $k=>$v){
       		if($v=='-'){unset($rec[$k]);}
