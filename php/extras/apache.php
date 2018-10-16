@@ -137,7 +137,7 @@ function apacheReportCounts($field){
 		apacheTableSetup();
 	}
 	$table=$CONFIG['apache_access_table'];
-	$q="select count(*) cnt,{$field} from {$table} group by {$field} order by {$field}";
+	$q="select count(*) cnt,{$field} as name,min(log_date) as mindate,max(log_date) as maxdate  from {$table} group by {$field} order by {$field} order by cnt desc";
 	$recs=getDBRecords($q);
 	//map status name
 	if($field=='status'){
@@ -151,7 +151,7 @@ function apacheReportCounts($field){
 	$total=0;
 	foreach($recs as $i=>$rec){$total+=$rec['cnt'];}
 	foreach($recs as $i=>$rec){
-		$recs[$i]['percent']=round(($rec['cnt']/$total)*100,0);
+		$recs[$i]['pcnt']=round(($rec['cnt']/$total)*100,0);
 	}
 	return $recs;
 }
