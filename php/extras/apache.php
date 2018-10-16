@@ -170,7 +170,7 @@ ENDOFQ;
 	if($field=='status'){
 		$map=apacheStatusCodes();
 		foreach($recs as $i=>$rec){
-			$status=$rec[$field];
+			$status=$rec['name'];
 			$recs[$i]['status_name']=$map[$status];
 		}
 	}
