@@ -2906,6 +2906,8 @@ function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 function csvParseLine($str,$delim=',', $enclose='"', $preserve=false){
 	$resArr = array();
 	$n = 0;
+	if(!strlen($delim)){$delim=',';}
+	if(!strlen($enclose)){$enclose='"';}
 	$expEncArr = explode($enclose, $str);
   	foreach($expEncArr as $EncItem){
     	if($n++%2){
@@ -7136,6 +7138,7 @@ function getCSVFileContents($file,$params=array()){
 		return $results;
 		}
 	$row = 1;
+	setlocale(LC_ALL, 'en_US.UTF-8');
 	//$handle =  fopen($file, "r");
 	$handle = fopen_utf8($file, "rb");
 	$results['stat']=fstat($handle);
@@ -7185,7 +7188,10 @@ function getCSVFileContents($file,$params=array()){
     $results['field_properties']=array();
     $row_ptr=0;
     if(isset($params['unique'])){$unique=array();}
-	while (($data = fgetcsv($handle, $params['maxlen'], $params['separator'])) !== FALSE) {
+	while (($data = fgets($handle, $params['maxlen'])) !== FALSE) {
+		$data=utf8_encode($data);
+		$data=csvParseLine($data,$params['separator'],$params['enclose']);
+		//echo printValue($data);exit;
 		if($results['count'] > $params['maxrows']){break;}
 		$row=array();
 	    $num = count($data);
@@ -7200,10 +7206,10 @@ function getCSVFileContents($file,$params=array()){
 					$replace='%val%';
 	                $evalstr=str_replace($replace,$val,$evalstr);
 	                $val=evalPHP('<?' . $evalstr .'?>');
-                	}
-                $row[$field]=fixMicrosoft($val);
-				}
-	    	}
+                }
+                $row[$field]=$val;
+			}
+	    }
 	    foreach($params as $key=>$val){
 			if(preg_match('/^(.+?)\_filter$/i',$key,$kmatch)){
 				if(!isset($row[$kmatch[1]])){$collect=0;}
