@@ -2109,12 +2109,13 @@ LIST_TABLE:
 			$dirty=0;
 			if(isset($_REQUEST['do']) && strtolower($_REQUEST['do'])=='save changes'){
                 //Tabledata edits
-                //echo printValue($_REQUEST);
+               // echo printValue($_REQUEST);
                 $fields=array('websockets','synchronize','tablegroup','tabledesc','listfields','sortfields','formfields','listfields_mod','sortfields_mod','formfields_mod');
                 $editopts=array();
                 foreach($fields as $field){
 					$val=array2String($_REQUEST[$field]);
 					$cval=array2String($tinfo[$field]);
+					//echo "field:{$field},val:{$val},cval:{$cval}<br />";
 					switch($field){
                     	case 'websockets':
                     	case 'synchronize':
@@ -2128,13 +2129,14 @@ LIST_TABLE:
                     	break;
 					}
 				}
+				//echo printValue($editopts);
                 if(count($editopts)){
+                	$editopts['-table']='_tabledata';
 					$erec=getDBRecord(array(
 						'-table'=>'_tabledata',
 						'tablename'=>$currentTable
 					));
 					if(isset($erec['_id'])){
-						$editopts['-table']='_tabledata';
 						$editopts['-where']="_id = '{$erec['_id']}'";
 						$ok=editDBRecord($editopts);
 					}
