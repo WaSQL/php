@@ -562,7 +562,7 @@ function databaseListRecords($params=array()){
 	if(empty($params['-formname'])){
 		$params['-formname']='searchfiltersform';
 	}
-	if(!empty($params['-total'])){
+	if(!isset($params['-hidesearch']) || $params['-hidesearch']==0){
 		if(empty($params['-searchfields'])){
 			$params['-searchfields']=array();
 			foreach($params['-listfields'] as $field){

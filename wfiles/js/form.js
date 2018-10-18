@@ -1864,9 +1864,12 @@ function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
 	}
 //--------------------------
-function pagingSubmit(frm){
+function pagingSubmit(frm,div){
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
+	if(undefined != div){
+		return ajaxSubmitForm(frm,div);
+	}
 	frm.submit();
 	return false;
 }
