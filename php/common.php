@@ -3664,10 +3664,11 @@ function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=
 * @param options array
 * @see renderView();
 * <?=renderViewSwitch('red',array('blue','red','pink'),array('_blueimg','_redimg','_pinkimg'),$recs,array('-alias'=>'recs'));?>
+* <?=renderViewSwitch('red',array('blue','red','*'),array('blueimg','redimg','anythingelse'),$recs,'recs');?>
 */
 function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 	for($x=0;$x<count($values);$x++){
-    	if($str==$values[$x]){
+    	if($str==$values[$x] || $values[$x]=='*'){
 			return renderView($views[$x],$params,$opts);
 		}
 	}
