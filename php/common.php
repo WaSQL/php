@@ -6990,11 +6990,15 @@ function getFileContentsPartial($file,$begin=0,$end=200){
 *		file - name of file
 *		line_number - line number in file
 *		line - line contents
+* @param params array
+*	[-start] - line to start on
+*	[-stop]  - line to stop on
+*	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
 *	$num=processFileLines($afile,'processLine');
 */
-function processFileLines($file,$func_name){
+function processFileLines($file,$func_name,$params=array()){
 	//validate function exists
 	if(!function_exists($func_name)){
 		return 'invalid function:'.$func_name;
@@ -7004,12 +7008,25 @@ function processFileLines($file,$func_name){
 		while (!feof($fh)) {
 			//stream_get_line is significantly faster than fgets
 			$line = stream_get_line($fh, 1000000, "\n");
+			//startline and stopline
+			if(isset($params['-start']) && $linecnt < $params['-start']-1){
+				$linecnt++;
+				continue;
+			}
+			elseif(isset($params['-stop']) && $linecnt >= $params['-stop']-1){
+				$linecnt++;
+				break;
+			}
 			//build an array with this line and some general info about where we are
 			$set=array(
 				'file'			=> $file,
 				'line_number'	=> $linecnt,
 				'line'			=> $line
 			);
+			foreach($params as $key=>$val){
+				if(preg_match('/^(\-start|\-stop)$/i',$key)){continue;}
+            	$set[$key]=$val;
+			}
 			//pass array to function
 			$ok=call_user_func($func_name,$set);
 			$linecnt++;
@@ -7030,9 +7047,11 @@ function processFileLines($file,$func_name){
 *		line_number - line number in file
 *		line - CSV array based on first fields
 * @param params array
-*	separator - defaults to ,
-*	enclose - defaults to "
-*	fields - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[separator] - defaults to ,
+*	[enclose] - defaults to "
+*	[fields] - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[-start] - line to start on
+*	[-stop]  - line to stop on
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
@@ -7065,6 +7084,15 @@ function processCSVFileLines($file,$func_name,$params=array()){
 		while (!feof($fh)) {
 			//stream_get_line is significantly faster than fgets
 			$line = stream_get_line($fh, 1000000, "\n");
+			//startline and stopline
+			if(isset($params['-start']) && $linecnt < $params['-start']-1){
+				$linecnt++;
+				continue;
+			}
+			elseif(isset($params['-stop']) && $linecnt >= $params['-stop']-1){
+				$linecnt++;
+				break;
+			}
 			$lineparts=csvParseLine($line,$params['separator'],$params['enclose']);
 			//build an array with this line and some general info about where we are
 			$set=array(
@@ -7073,6 +7101,7 @@ function processCSVFileLines($file,$func_name,$params=array()){
 				'line'			=> array()
 			);
 			foreach($params as $key=>$val){
+				if(preg_match('/^(\-start|\-stop|separator|enclose)$/i',$key)){continue;}
             	$set[$key]=$val;
 			}
 			$cnt=count($fields);
