@@ -3668,7 +3668,12 @@ function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=
 */
 function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 	for($x=0;$x<count($values);$x++){
-    	if($str==$values[$x] || $values[$x]=='*'){
+    	if($str==$values[$x]){
+			return renderView($views[$x],$params,$opts);
+		}
+	}
+	for($x=0;$x<count($values);$x++){
+    	if('*'==$values[$x]){
 			return renderView($views[$x],$params,$opts);
 		}
 	}
