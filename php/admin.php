@@ -1294,6 +1294,9 @@ if(isset($_REQUEST['_menu'])){
 			ksort($CONFIG);
 			foreach($CONFIG as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
+				if(preg_match('/pass$/i',$key)){
+					$val=preg_replace('/./','*',$val);
+				}
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$val}</td></tr>\n";
             	}
 			//Version Information
