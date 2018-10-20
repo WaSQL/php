@@ -2071,13 +2071,16 @@ LIST_TABLE:
 			echo 'This file contains authentication information for each domain/website you want to connect to.'.PHP_EOL;
 			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'.PHP_EOL;
 			echo '<pre><xmp>'.PHP_EOL;
-			$alias=preg_replace('/^(dev\-|qa\-)/','',$_SERVER['UNIQUE_HOST']);
+			$alias=preg_replace('/\.(com|net|org)$/i','',$_SERVER['UNIQUE_HOST']);
 			echo '<host'.PHP_EOL;
 			echo '	name="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
 			echo '	alias="'.$alias.'"'.PHP_EOL;
 			echo '	apikey="'.$USER['apikey'].'"'.PHP_EOL;
 			echo '	username="'.$USER['username'].'"'.PHP_EOL;
 			echo '	groupby="name"'.PHP_EOL;
+			if(!isSecure()){
+				echo '	insecure="1"'.PHP_EOL;
+			}
 			echo '/>'.PHP_EOL;
 			echo '</xmp></pre>'.PHP_EOL;
 			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'.PHP_EOL;
@@ -2090,6 +2093,7 @@ LIST_TABLE:
 			echo '		</ul>'.PHP_EOL;
 			echo '	</li>'.PHP_EOL;
 			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, dev.wasql.com may have an alias of wasql.</li>'.PHP_EOL;
+			echo '	<li><b>insecure</b> - If your website is not HTTPS then set this attribute to 1.</li>'.PHP_EOL;
 			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'.PHP_EOL;
 			echo '</ul>'.PHP_EOL;
 			echo '</p><p>'.PHP_EOL;
