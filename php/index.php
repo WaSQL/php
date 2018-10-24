@@ -200,6 +200,17 @@ foreach($_REQUEST as $key=>$val){
         $ok=processInlineImage($val,$key);
 	}
 }
+//Check for ping
+if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
+	$json=array(
+		'status'=>'success',
+		'time'=>time(),
+		'site'=>$_SERVER['HTTP_HOST']
+	);
+	header("Content-Type: application/json; charset=UTF-8");
+	echo json_encode($json, JSON_PRETTY_PRINT);
+	exit;
+}
 //Check for heartbeat
 if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo '<heartbeat>' . time() . '</heartbeat>'."\n";
