@@ -227,27 +227,6 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	echo json_encode($json, JSON_PRETTY_PRINT);
 	exit;
 }
-elseif(isset($_REQUEST['dbping']) && count($_REQUEST)==1){
-	//Check for ping
-	$stime=microtime(true);
-	$recs=getDBTables();
-	$json=array(
-		'status'=>'success',
-		'time'=>number_format((microtime(true)-$starttime),3),
-		'site'=>$_SERVER['HTTP_HOST'],
-		'dbtime'=> number_format((microtime(true)-$stime),3)
-	);
-	if(!is_array($recs) || !count($recs)){
-		$json['status']='failed';
-		$json['error']=$recs;
-	}
-	foreach($loadtimes as $k=>$v){
-		$json[$k]=$v;
-	}
-	header("Content-Type: application/json; charset=UTF-8");
-	echo json_encode($json, JSON_PRETTY_PRINT);
-	exit;
-}
 //Check for heartbeat
 if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo '<heartbeat>' . time() . '</heartbeat>'."\n";
