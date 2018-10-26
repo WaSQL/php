@@ -1,5 +1,6 @@
 <?php
-$starttime=time();
+$starttime=microtime(true);
+$loadtimes=array();
 //Set upload size
 //Set Post Max Size
 ini_set('POST_MAX_SIZE', '64M');
@@ -12,7 +13,9 @@ $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
+$stime=microtime(true);
 include_once("$progpath/common.php");
+$loadtimes['common']=number_format((microtime(true)-$stime),3);
 //check for minify redirect
 if(preg_match('/^minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
 	header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
@@ -42,7 +45,9 @@ elseif($url_parts[0]=='t'){
 	//echo printValue($_REQUEST['_view']);exit;
 }
 global $CONFIG;
+$stime=microtime(true);
 include_once("$progpath/config.php");
+$loadtimes['config']=number_format((microtime(true)-$stime),3);
 //changes based on config
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
@@ -63,8 +68,12 @@ if(isset($CONFIG['encoding'])){
 else{
 	mb_internal_encoding("UTF-8");
 }
+$stime=microtime(true);
 include_once("$progpath/wasql.php");
+$loadtimes['wasql']=number_format((microtime(true)-$stime),3);
+$stime=microtime(true);
 include_once("$progpath/database.php");
+$loadtimes['database']=number_format((microtime(true)-$stime),3);
 //launch setup on new databases;
 if(!isDBTable('_users')){
 	if(is_file("{$progpath}/admin/setup_functions.php")){
@@ -86,8 +95,12 @@ if($url_parts[0]=='y' && count($url_parts)==2){
     	exit;
 	}
 }
+$stime=microtime(true);
 include_once("$progpath/sessions.php");
+$loadtimes['sessions']=number_format((microtime(true)-$stime),3);
+$stime=microtime(true);
 include_once("$progpath/user.php");
+$loadtimes['user']=number_format((microtime(true)-$stime),3);
 global $CONFIG;
 if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
@@ -204,9 +217,33 @@ foreach($_REQUEST as $key=>$val){
 if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	$json=array(
 		'status'=>'success',
-		'time'=>time(),
+		'time'=>number_format((microtime(true)-$starttime),3),
 		'site'=>$_SERVER['HTTP_HOST']
 	);
+	foreach($loadtimes as $k=>$v){
+		$json[$k]=$v;
+	}
+	header("Content-Type: application/json; charset=UTF-8");
+	echo json_encode($json, JSON_PRETTY_PRINT);
+	exit;
+}
+elseif(isset($_REQUEST['dbping']) && count($_REQUEST)==1){
+	//Check for ping
+	$stime=microtime(true);
+	$recs=getDBTables();
+	$json=array(
+		'status'=>'success',
+		'time'=>number_format((microtime(true)-$starttime),3),
+		'site'=>$_SERVER['HTTP_HOST'],
+		'dbtime'=> number_format((microtime(true)-$stime),3)
+	);
+	if(!is_array($recs) || !count($recs)){
+		$json['status']='failed';
+		$json['error']=$recs;
+	}
+	foreach($loadtimes as $k=>$v){
+		$json[$k]=$v;
+	}
 	header("Content-Type: application/json; charset=UTF-8");
 	echo json_encode($json, JSON_PRETTY_PRINT);
 	exit;
