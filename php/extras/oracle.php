@@ -64,7 +64,7 @@ function oracleAddDBRecord($params){
 				if($k=='cdate' || $k=='_cdate'){
 					$params[$k]=date('d-M-Y',strtotime($v));
 				}
-        		$opts['values'][]="todate('{$params[$k]}')";
+        		$opts['values'][]="to_date('{$params[$k]}')";
         	break;
         	default:
         		$opts['values'][]="'{$params[$k]}'";
