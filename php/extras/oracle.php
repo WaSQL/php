@@ -81,6 +81,7 @@ function oracleAddDBRecord($params){
 		("{$fieldstr}")
 		values({$valstr})
 ENDOFQUERY;
+	if(isset($params['-debug'])){return oracleQueryResults($query,$params).$query;}
 	return oracleQueryResults($query,$params);
 }
 //---------- begin function oracleAutoCommit ----------
@@ -241,6 +242,7 @@ function oracleEditDBRecord($params){
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
+	if(isset($params['-debug'])){return oracleQueryResults($query,$params).$query;}
 	return oracleQueryResults($query,$params);
 	return;
 }
@@ -381,6 +383,24 @@ function oracleGetDBCount($params=array()){
 		return 0;
 	}
 	return $recs[0]['cnt'];
+}
+//---------- begin function oracleGetDBFields--------------------
+/**
+* @describe returns an array of fields for said table
+* @param table string - table name
+* @param params array - requires either -list or -table or a raw query instead of params
+*	[-getmeta] string - table name.  Use this with other field/value params to filter the results
+*	[-field] mixed - query record limit
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array
+* @usage $fields=oracleGetDBFields('notes');
+*/
+function oracleGetDBFields($table,$params=array()){
+	$info=oracleGetDBFieldInfo($table,$params);
+	return array_keys($info);
 }
 //---------- begin function oracleGetDBFieldInfo--------------------
 /**
