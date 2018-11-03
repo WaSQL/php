@@ -584,7 +584,7 @@ function databaseListRecords($params=array()){
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
 	//build the thead
-	$rtn.='<thead ';
+	$rtn.='	<thead ';
 	//add any thead attributes pass in with -thead
 	$atts=array();
 	foreach($params as $k=>$v){
@@ -611,14 +611,14 @@ function databaseListRecords($params=array()){
 			if(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
 				$atts[$m[1]]=$v;
 			}
-			if(isset($params['-thclass'])){
-				//add this class
-				$atts['class'].= ' '.$params['-thclass'];
-				$atts['class']=trim($atts['class']);
+		}
+		foreach($params as $k=>$v){
+			if(preg_match('/^-th(.+)$/',$k,$m)){
+				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}
 		}
 		$rtn .= setTagAttributes($atts);
-		$rtn .='>'.PHP_EOL;
+		$rtn .='>';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
 		if(!empty($params['-sorting']) && $params['-sorting']==1){
 			$name='<a href="#" onclick="return pagingSetOrder(document.'.$params['-formname'].',\''.$field.'\');">'.$name;
@@ -650,14 +650,14 @@ function databaseListRecords($params=array()){
 		$rtn .=$name;
 		$rtn .='</th>'.PHP_EOL;
 	}
-	$rtn .= '		<tr>'.PHP_EOL;
+	$rtn .= '		</tr>'.PHP_EOL;
 	$rtn .= '	</thead>'.PHP_EOL;
 	if(!is_array($params['-list']) || !count($params['-list'])){
 		$rtn .= '</table>'.PHP_EOL;
 		return $rtn;
 	}
 	//build the tbody
-	$rtn.='<tbody ';
+	$rtn.='	<tbody ';
 	//add any tbody attributes pass in with -tbody
 	$atts=array();
 	foreach($params as $k=>$v){
@@ -720,6 +720,11 @@ function databaseListRecords($params=array()){
 				if(preg_match('/^'.$fld.'_(onclick|eval|href)$/i',$k)){continue;}
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
 					$atts[$m[1]]=$v;
+				}
+			}
+			foreach($params as $k=>$v){
+				if(preg_match('/^-td(.+)$/',$k,$m)){
+					if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 				}
 			}
 			$rtn .= setTagAttributes($atts);
