@@ -700,7 +700,7 @@ function databaseListRecords($params=array()){
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
 					$replace='%'.$recfld.'%';
-                    $href=str_replace($replace,$rec[$recfld],$href);
+                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
                 $value='<a href="#" onclick="'.$href.'">'.$value.'</a>';
 			}
@@ -710,7 +710,7 @@ function databaseListRecords($params=array()){
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
 					$replace='%'.$recfld.'%';
-                    $href=str_replace($replace,$rec[$recfld],$href);
+                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
                 $value='<a href="'.$href.'">'.$value.'</a>';
 			}
