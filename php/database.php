@@ -675,7 +675,7 @@ function databaseListRecords($params=array()){
 			foreach($rec as $recfld=>$recval){
 				if(is_array($recfld) || is_array($recval)){continue;}
 				$replace='%'.$recfld.'%';
-                $href=str_replace($replace,$rec[$recfld],$href);
+                $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
             }
             $rtn .=" onclick=\"{$href}\"";
 		}
@@ -689,7 +689,7 @@ function databaseListRecords($params=array()){
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
 					$replace='%'.$recfld.'%';
-                    $evalstr=str_replace($replace,$rec[$recfld],$evalstr);
+                    $evalstr=str_replace($replace,strip_tags($rec[$recfld]),$evalstr);
                 }
                 $value=evalPHP('<?' . $evalstr .'?>');
 			}
