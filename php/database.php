@@ -712,16 +712,18 @@ function databaseListRecords($params=array()){
 					$replace='%'.$recfld.'%';
                     $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
+                $hvalue=$value;
                 $value='<a href="'.$href.'"';
                 if(!empty($params[$fld."_target"])){
                 	$value .= ' target="'.$params[$fld."_target"].'"';
                 }
-                $value .= '>'.$value.'</a>';
+                $value .= '>'.$hvalue.'</a>';
+                unset($hvalue);
 			}
 			$rtn .= '			<td';
 			$atts=array();
 			foreach($params as $k=>$v){
-				if(preg_match('/^'.$fld.'_(onclick|eval|href)$/i',$k)){continue;}
+				if(preg_match('/^'.$fld.'_(onclick|eval|href|target)$/i',$k)){continue;}
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
 					$atts[$m[1]]=$v;
 				}
