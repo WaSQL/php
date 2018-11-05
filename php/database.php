@@ -712,7 +712,11 @@ function databaseListRecords($params=array()){
 					$replace='%'.$recfld.'%';
                     $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
-                $value='<a href="'.$href.'">'.$value.'</a>';
+                $value='<a href="'.$href.'"';
+                if(!empty($params[$fld."_target"])){
+                	$value .= ' target="'.$params[$fld."_target"].'"';
+                }
+                $value .= '>'.$value.'</a>';
 			}
 			$rtn .= '			<td';
 			$atts=array();
