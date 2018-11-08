@@ -42,14 +42,9 @@
 	ClearCustomHeaders() 	  	  	Clears all custom headers. Returns void.
 */
 $progpath=dirname(__FILE__);
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require "{$progpath}/phpmailer2/Exception.php";
-require "{$progpath}/phpmailer2/PHPMailer.php";
-require "{$progpath}/phpmailer2/SMTP.php";
-
+include_once "{$progpath}/phpmailer_old/class.phpmailer.php";
+include_once "{$progpath}/phpmailer_old/class.smtp.php";
+include_once "{$progpath}/phpmailer_old/class.pop3.php";
 //---------- begin function phpmailerSendMail--------------------
 /**
 * @describe sends email using phpmailer
@@ -61,73 +56,39 @@ require "{$progpath}/phpmailer2/SMTP.php";
 *	[message_text] - text version. gets auto created if message is HTML and not set
 *	[reply-to] - email or array(email,name) of who to reply to
 *	[smtp]	- set SMTP server
-*	[smtpport] - set SMTP port - defaults to 25. Set to 587 for tls and 465 for ssl
 *	[smtpuser] - set SMTP username - only valid if smtp is set
+*	[priority] - sets X-MSMail-Priority - valid values are Low, Normal, High
+*	[encrypt] - sets security type - valid values are TLS, SSL
 *	[smtppass] - set SMTP password - only valid if smtp is set
-*	[priority] - sets priority - valid values are 3,Low, 2,Normal, 3,High
-*	[encrypt] - sets security type - valid values are TLS, SSL. not needed if setting smtpport
-
 *	[attach] - array of files to attach to message
 *	[inline] - array of inline images to embed.  each element must be an array of (afile,cid,name)
-*	[X-***] - sets custom pseudo-properties - must begin with X-
-*	[-timeout] - mail timeout in seconds. defaults to 300
+*	[x-***] - sets custom pseudo-properties - must begin with X-
 * @return 1 on success or error message on failure
 * @usage
 *	phpmailerSendMail(array('to'=>$to,'from'=>$from,'subject'=>$subject,'message'=>$msg));
 */
 function phpmailerSendMail($params=array()){
-	global $CONFIG;
-    //check for CONFIG settings?
-    $flds=array('smtp','smtpport','smtpuser','smtppass');
-    foreach($flds as $fld){
-    	if(isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
-    }
-    if(isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
-    if(isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
-    if(isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
-    //defaults
-	if(!isset($params['smtpport'])){$params['smtpport']=25;}
-	if(!isset($params['-timeout'])){$params['-timeout']=300;}
 	/* Required options */
 	$reqopts=array('to','from','subject','message');
 	foreach($reqopts as $key){
 		if(!isset($params[$key]) || strlen($params[$key])==0){return "phpmailerSendMail Error - missing required parameter: ". $key;}
     }
-	//mail object
-	$mail = new PHPMailer(true);
-	//-debug ?
- 	if(isset($params['-debug'])){
-		$mail->SMTPDebug = 2;  // verbose debugging enabled
-		//send debug info to $_REQUEST['phpmailer_debug']
-		$_REQUEST['phpmailer_debug']='';
-		$mail->Debugoutput = function($str, $level) {
-		    $_REQUEST['phpmailer_debug'] .= "$level: $str\n";
-		};
-	}
-	//-timeout
-	$mail->Timeout = $params['-timeout'];
+	$mail = new PHPMailer;
+/* 	if(isset($params['debug'])){
+		$mail->SMTPDebug = $params['debug'];  // debugging: 1 = errors and messages, 2 = messages only
+	} */
+	//set timeout higher than 10 seconds
+	$mail->Timeout = 300;
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
 	//custom SMTP?
 	if(isset($params['smtp'])){
-		//set smtp use
-		$mail->isSMTP(); 
-		//smtpport
-		switch($params['smtpport']){
-			case 587:
-				$mail->SMTPSecure = 'tls';
-				$mail->Port = 587;
-			break;
-			case 465:
-				$mail->SMTPSecure = 'ssl';
-				$mail->Port = 465;
-			break;
-			default:
-				$mail->Port = $params['smtpport'];
-			break;
+		//default smtpport to 587
+		if(isNum($params['smtpport'])){
+			$mail->Port = $params['smtpport'];
 		}
-		//smtp
+		$mail->IsSMTP();                                      // Set mailer to use SMTP
 		$mail->Host = $params['smtp'];                 		  // Specify main and backup server
-		//smtpuser and smtppass
+		// Enable SMTP authentication only if user and pass are set
 		if(isset($params['smtpuser']) || isset($params['smtppass'])){
 			$mail->SMTPAuth = true;
 		}
@@ -146,35 +107,8 @@ function phpmailerSendMail($params=array()){
 	}
 	//priority?
 	if(isset($params['priority'])){
-		// For most clients expecting the Priority header:
-		// 1 = High, 2 = Medium, 3 = Low
-		switch(strtolower($params['priority'])){
-			case 1:
-			case 'high':
-				$mail->Priority = 1;
-				// MS Outlook custom header
-				$mail->AddCustomHeader("X-MSMail-Priority: High");
-				// Not sure if Priority will also set the Importance header:
-				$mail->AddCustomHeader("Importance: High");		
-			break;
-			case 2:
-			case 'medium':
-				$mail->Priority = 2;
-				// MS Outlook custom header
-				$mail->AddCustomHeader("X-MSMail-Priority: Medium");
-				// Not sure if Priority will also set the Importance header:
-				$mail->AddCustomHeader("Importance: Medium");		
-			break;
-			case 3:
-			case 'low':
-				$mail->Priority = 3;
-				// MS Outlook custom header
-				$mail->AddCustomHeader("X-MSMail-Priority: Low");
-				// Not sure if Priority will also set the Importance header:
-				$mail->AddCustomHeader("Importance: Low");
-			break;
-		}	
-	}
+		$mail->set('X-MSMail-Priority', $params['priority']);
+		}
 	//SSL or TLS security?
 	if(isset($params['encrypt'])){
 		switch(strtolower($params['encrypt'])){
@@ -197,11 +131,10 @@ function phpmailerSendMail($params=array()){
 		}
 	}
 	//From
+	$mail->SetFrom($params['from']);
+	$mail->From = $params['from'];
 	if(isset($params['fromname'])){
-		$mail->SetFrom($params['from'], $params['fromname']);
-	}
-	else{
-		$mail->SetFrom($params['from']);
+		$mail->FromName = $params['fromname'];
 	}
 	//To
 	if(!is_array($params['to'])){$params['to']=preg_split('/[\,\;]+/',$params['to']);}
@@ -216,24 +149,24 @@ function phpmailerSendMail($params=array()){
 	//CC
 	if(isset($params['cc'])){
 		if(!is_array($params['cc'])){$params['cc']=preg_split('/[\,\;]+/',$params['cc']);}
-		foreach($params['cc'] as $cc){
-			if(is_array($cc) && isEmail($cc[0])){
-				$mail->addCC($cc[0], $cc[1]);  // Add a recipient and name
+		foreach($params['cc'] as $to){
+			if(is_array($to) && isEmail($to[0])){
+				$mail->addCC($to[0], $to[1]);  // Add a recipient and name
 			}
-			elseif(isEmail($cc)){
-				$mail->addCC($cc);               // Name is optional
+			elseif(isEmail($to)){
+				$mail->addCC($to);               // Name is optional
 			}
 		}
 	}
 	//BCC
 	if(isset($params['bcc'])){
 		if(!is_array($params['bcc'])){$params['bcc']=preg_split('/[\,\;]+/',$params['bcc']);}
-		foreach($params['bcc'] as $bcc){
-			if(is_array($bcc) && isEmail($bcc[0])){
-				$mail->addBCC($bcc[0], $bcc[1]);  // Add a recipient and name
+		foreach($params['bcc'] as $to){
+			if(is_array($to) && isEmail($to[0])){
+				$mail->addBCC($to[0], $to[1]);  // Add a recipient and name
 			}
-			elseif(isEmail($bcc)){
-				$mail->addBCC($bcc);               // Name is optional
+			elseif(isEmail($to)){
+				$mail->addBCC($to);               // Name is optional
 			}
 		}
 	}
@@ -303,11 +236,8 @@ function phpmailerSendMail($params=array()){
 			}
 		}
 	}
-	try{
-		$mail->send();
-		return 1;
-	} catch (Exception $e) {
-		return $mail->ErrorInfo;
-	}
+	if(isset($params['maildebug'])){echo printValue($params). printValue($mail);exit;}
+	if(!$mail->Send()){return "phpmailerSendMail Error -". $mail->ErrorInfo;}
+	return 1;
 }
 ?>

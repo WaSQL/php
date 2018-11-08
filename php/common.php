@@ -13095,13 +13095,6 @@ function sendMail($params=array()){
 	global $CONFIG;
 	if(isset($CONFIG['phpmailer'])){
         loadExtras('phpmailer');
-        if(!isset($params['smtp']) && isset($CONFIG['smtp'])){$params['smtp']=$CONFIG['smtp'];}
-        if(!isset($params['smtpuser']) && isset($CONFIG['smtpuser'])){$params['smtpuser']=$CONFIG['smtpuser'];}
-		if(!isset($params['smtppass']) && isset($CONFIG['smtppass'])){$params['smtppass']=$CONFIG['smtppass'];}
-		if(!isset($params['smtpport']) && isset($CONFIG['smtpport'])){$params['smtpport']=$CONFIG['smtpport'];}
-		if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
-		if(!isset($params['encrypt']) && isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
-		if(!isset($params['maildebug']) && isset($CONFIG['email_debug'])){$params['maildebug']=1;}
 		return phpmailerSendMail($params);
 	}
 
