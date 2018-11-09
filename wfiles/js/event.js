@@ -1256,7 +1256,7 @@ function initBehaviors(ajaxdiv){
 		if(in_array("drag",behaviors)){
 			/* DRAG - Make object draggable */
 			var head=navEls[n].getAttribute('data-head');
-			if(undefined != head){head=navEls[n].getAttribute('head');}
+			if(undefined == head){head=navEls[n].getAttribute('head');}
 			var headobj=getObject(head);
 			navEls[n].style.position='relative';
             if(undefined == headobj){
