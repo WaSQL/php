@@ -2473,8 +2473,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 						setCenterPopText(dname,val);
                     	}
 					else{
-						var str=this.callback+'(req);';
-						eval(str);
+						window[this.callback](req,dname);
+						//var str=this.callback+'(req);';
+						//eval(str);
 						}
                 	}
 				else{
@@ -2570,8 +2571,9 @@ function ajaxAbort(sid){
 		//check for abort_callback
 		if(undefined != req.abort_callback && req.abort_callback.length){
 			req.status='aborted';
-			var str=req.abort_callback+'(req);';
-			eval(str);
+			window[req.abort_callback](req);
+			//var str=req.abort_callback+'(req);';
+			//eval(str);
         }
 		req.xmlHttpRequest.abort();
 		delete(req);
@@ -2757,8 +2759,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						}
                     }
 					else{
-						var str=this.callback+'(req);';
-						eval(str);
+						window[this.callback](req,dname);
+						//var str=this.callback+'(req);';
+						//eval(str);
 						}
                 	}
 				else{
