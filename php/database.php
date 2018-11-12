@@ -89,7 +89,27 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	<?=databaseListRecords("select * from myschema.mytable where ...");?>
 */
 function databaseListRecords($params=array()){
-	//require -table or -list
+	//require -table or -list or -query
+	if(isset($params['-query'])){
+		switch(strtolower($params['-database'])){
+			case 'oracle':
+				$params['-list']=oracleQueryResults($params['-query']);
+			break;
+			case 'hana':
+				$params['-list']=hanaQueryResults($params['-query']);
+			break;
+			case 'mssql':
+				$params['-list']=mssqlQueryResults($params['-query']);
+			break;
+			case 'sqlite':
+				$params['-list']=sqliteQueryResults($params['-query']);
+			break;
+			default:
+				$params['-list']=getDBRecords($params['-query']);
+			break;
+		}
+		unset($params['-query']);
+	}
 	if(empty($params['-table']) && empty($params['-list'])){
 		if(!empty($params[0])){
 			//they are passing in the list without any other params.
