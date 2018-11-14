@@ -195,7 +195,8 @@ ENDOFWHERE;
         	$cmd=$rec['run_cmd'];
         	$result='';
 			$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL;
-			if(isset($pages[$cmd])){
+			$lcmd=strtolower(trim($cmd));
+			if(isset($pages[$lcmd])){
 				cronMessage("cron is a page");
                 $result .= 'CronType: page '.PHP_EOL;
             	//cron is a page.

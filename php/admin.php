@@ -1480,7 +1480,7 @@ if(isset($_REQUEST['_menu'])){
 			echo buildFormSubmit('Convert');
 			echo '		</form>'.PHP_EOL;
 			echo $cmessage;
-			echo listDBRecords(array(
+			echo databaseListRecords(array(
 				'-query'				=>	"show table status",
 				'-hidesearch'				=> 1,
 				'-tableclass'			=> "table table-responsive table-bordered table-striped",
@@ -1936,7 +1936,7 @@ LIST_TABLE:
 				$list=getDBSchema(array($_REQUEST['_table_']));
 				echo '<table class="w_pad">'.PHP_EOL;
 				echo '<tr valign="top"><td>'.PHP_EOL;
-				echo listDBRecords(array(
+				echo databaseListRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-responsive table-bordered table-striped",
 					'_table_'		=>$_REQUEST['_table_'],
@@ -1965,7 +1965,7 @@ LIST_TABLE:
 			else{
 				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/schema.gif" alt="all schema" /> Schema for All Tables</div>'.PHP_EOL;
 				$list=getDBSchema();
-				echo listDBRecords(array(
+				echo databaseListRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-responsive table-bordered table-striped",
 					'_table_'		=>$_REQUEST['_table_'],
@@ -2049,7 +2049,7 @@ LIST_TABLE:
 				echo '<div class="w_bigger w_lblue w_bold"><img src="/wfiles/indexes.gif" alt="all indexes" /> Indexes for All Tables</div>'.PHP_EOL;
 				$list=getDBIndexes();
 			}
-			echo listDBRecords(array(
+			echo databaseListRecords(array(
 				'_menu'			=>$_REQUEST['_menu'],
 				'_table_'		=>$_REQUEST['_table_'],
 				'-tableclass'	=>"table table-striped table-bordered",
@@ -2518,7 +2518,7 @@ LIST_TABLE:
 				$list=sortArrayByKey($list,'_cdate_age',SORT_ASC);
 				//display list
 				echo '<div style="padding:15px;">'.PHP_EOL;
-				echo listDBRecords(array(
+				echo databaseListRecords(array(
 					'-list'					=>$list,
 					'-fields'				=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
 					'-tableclass'			=> "table table-responsive table-bordered table-striped",
@@ -2639,7 +2639,7 @@ LIST_TABLE:
 				$recs[$i]['type']=$recs[$i]['utype']==0?'<span class="icon-user-admin w_red"></span>':'<span class="icon-user w_grey"></span>';
 
 			}
-			echo listDBRecords(array(
+			echo databaseListRecords(array(
 				'-list'				=>$recs,
 				'-tableclass'			=> "table table-responsive table-bordered table-striped",
 				'-fields'			=> "_id,active,firstname,lastname,username,type,pw_score,created,edited,accessed",
@@ -2702,8 +2702,9 @@ LIST_TABLE:
 					$results=grepDBTables($grep['string'],$tables);
 					if(is_array($results)){
 						echo '<div class="w_bold w_big w_dblue">Record Results</div>'.PHP_EOL;
-						echo listDBRecords(array(
+						echo databaseListRecords(array(
 							'-list'=>$results,
+							'-tableclass'	=> "table table-responsive table-bordered table-striped",
 							'_id_href'=>"/php/admin.php?_table_=%tablename%&_menu=edit&_id=%_id%"
 						));
 					}
@@ -3964,7 +3965,7 @@ function adminShowSyncChanges($stables=array()){
 		$syncTableDiv='sync'.$table.'div';
 		$syncTableTab='sync'.$table.'tab';
 		$rtn .= '		<div table="'.$table.'" id="'.$syncTableDiv.'">'.PHP_EOL;
-		$rtn .=  listDBRecords(array(
+		$rtn .=  databaseListRecords(array(
 			'-list'			=> $changes[$table],'_id_align'=>"left",
 			'-tableclass'	=> "table table-responsive table-bordered table-striped",
 			'-tableid'		=> "synctable{$table}",

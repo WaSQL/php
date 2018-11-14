@@ -89,6 +89,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	<?=databaseListRecords("select * from myschema.mytable where ...");?>
 */
 function databaseListRecords($params=array()){
+	global $CONFIG;
 	//require -table or -list or -query
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
@@ -468,7 +469,14 @@ function databaseListRecords($params=array()){
 			}
 		}
 		//limit
-		if(!isset($params['-limit'])){$params['-limit']=15;}
+		if(!isset($params['-limit'])){
+			if(isset($CONFIG['paging']) && isNum($CONFIG['paging'])){
+				$params['-limit']=$CONFIG['paging'];
+			}
+			else{
+				$params['-limit']=15;
+			}
+		}
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
 			//remove limit temporarily
