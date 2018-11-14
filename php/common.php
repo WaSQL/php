@@ -5100,6 +5100,36 @@ function evalPHP($strings){
 		$cntB=count($evalmatches[1]);
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
+			//check for python
+			if(preg_match('/^py[\ \r\n]+(.+)/',$p)){
+				//run the python script: https://stackoverflow.com/questions/19735250/running-a-python-script-from-php
+				if(file_exists(trim($p[1]))){
+					$pfile=trim($p[1]);
+					if(isWindows()){
+						$command = escapeshellcmd("python {$pfile}");
+					}
+					else{
+						$command=escapeshellcmd($pfile);
+					}
+					$val = shell_exec($command);
+				}
+				else{
+					$tmppath=getWasqlTempPath();
+					$tmpfile=sha1($p[1]).'.py';
+					if(isWindows()){
+						setFileContents($tmpfile,$p[1]);
+						$command = escapeshellcmd("python {$tmppath}\\{$tmpfile}");
+					}
+					else{
+						setFileContents($tmpfile,'#!/usr/bin/env python'.PHP_EOL.$p[1]);
+						$command = escapeshellcmd("{$tmppath}/{$tmpfile}");	
+					}
+					$val = shell_exec($command);
+					unlink($tmpfile);	
+				}
+				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+				continue;
+			}
 			$evalcode=preg_replace('/^php/i','',$evalcode);
 			if(preg_match('/^xml version/i',$evalcode)){continue;}
 			//  remove =/*...*/
