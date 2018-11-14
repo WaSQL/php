@@ -219,30 +219,37 @@ ENDOFWHERE;
 				}
 				//echo $url.printValue($postopts);
             	$post=postURL($url,$postopts);
-            	$result.=printValue($post);
+            	$result .= 'Headers Sent:'.PHP_EOL.printValue($post['headers_out']).PHP_EOL;
+            	$result .= 'CURL Info:'.PHP_EOL.printValue($post['curl_info']).PHP_EOL;
+            	$result .= 'Headers Received:'.PHP_EOL.printValue($post['headers']).PHP_EOL;
+            	$result .= 'Content Received:'.PHP_EOL.$post['body'].PHP_EOL;
 			}
 			elseif(preg_match('/^<\?\=/',$cmd)){
             	//cron is a php command
             	cronMessage("cron is a PHP command");
-                 $result .= 'CronType: PHP '.PHP_EOL;
-            	$result.=evalPHP($cmd);
-            	if(is_array($result)){$result=printValue($result);}
+                $result .= 'CronType: PHP '.PHP_EOL;
+                $result .= 'Output Received:'.PHP_EOL;
+            	$out=evalPHP($cmd).PHP_EOL;
+            	if(is_array($out)){$result.=printValue($out).PHP_EOL;}
+            	else{$result.=$out.PHP_EOL;}
 			}
 			elseif(preg_match('/^http/i',$cmd)){
             	//cron is a URL.
                  $result .= 'CronType: URL '.PHP_EOL;
             	cronMessage("cron is a url");
             	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
-				$result .= $post['body'];
+				$result .= 'Headers Sent:'.PHP_EOL.printValue($post['headers_out']).PHP_EOL;
+            	$result .= 'CURL Info:'.PHP_EOL.printValue($post['curl_info']).PHP_EOL;
+            	$result .= 'Headers Received:'.PHP_EOL.printValue($post['headers']).PHP_EOL;
+            	$result .= 'Content Received:'.PHP_EOL.$post['body'].PHP_EOL;
 			}
 			else{
             	//cron is a command
             	cronMessage("cron is a command");
-                 $result .= 'CronType: command '.PHP_EOL;
-            	$cmd=cmdResults($cmd);
-            	if(isset($cmd['stdout']) && strlen($cmd['stdout'])){
-            		$result.=$cmd['stdout'];
-				}
+                $result .= 'CronType: command '.PHP_EOL;
+            	$out=cmdResults($cmd);
+            	$result .= 'Output Received:'.PHP_EOL;
+            	$result .= printValue($out).PHP_EOL;
 			}
 			$stop=time();
 			$run_length=$stop-$start;

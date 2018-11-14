@@ -13127,6 +13127,14 @@ function sendMail($params=array()){
         loadExtras('phpmailer');
 		return phpmailerSendMail($params);
 	}
+	//check for CONFIG settings?
+    $flds=array('smtp','smtpport','smtpuser','smtppass');
+    foreach($flds as $fld){
+    	if(!isset($params[$fld]) && isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
+    }
+    if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
+    if(!isset($params['encrypt']) && isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
+    if(!isset($params['-timeout']) && isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
 
 	$attachincluded=array();
 	/* Required options */

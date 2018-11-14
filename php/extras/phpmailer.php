@@ -54,11 +54,11 @@ function phpmailerSendMail($params=array()){
     //check for CONFIG settings?
     $flds=array('smtp','smtpport','smtpuser','smtppass');
     foreach($flds as $fld){
-    	if(isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
+    	if(!isset($params[$fld]) && isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
     }
-    if(isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
-    if(isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
-    if(isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
+    if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
+    if(!isset($params['encrypt']) && isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
+    if(!isset($params['-timeout']) && isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
     //defaults
 	if(!isset($params['smtpport'])){$params['smtpport']=25;}
 	if(!isset($params['-timeout'])){$params['-timeout']=300;}
@@ -71,11 +71,11 @@ function phpmailerSendMail($params=array()){
 	$mail = new PHPMailer(true);
 	//-debug ?
  	if(isset($params['-debug'])){
-		$mail->SMTPDebug = 2;  // verbose debugging enabled
+		$mail->SMTPDebug = 4;  // verbose debugging enabled
 		//send debug info to $_REQUEST['phpmailer_debug']
-		$_REQUEST['phpmailer_debug']='';
+		$_REQUEST['phpmailer_debug']='<br />';
 		$mail->Debugoutput = function($str, $level) {
-		    $_REQUEST['phpmailer_debug'] .= "$level: $str\n";
+		    $_REQUEST['phpmailer_debug'] .= "{$level}: {$str}<br />".PHP_EOL;
 		};
 	}
 	//-timeout
