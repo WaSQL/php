@@ -5286,12 +5286,7 @@ function evalPHP($strings){
 				//run the script:
 				if(file_exists($evalcode)){
 					$pfile=$evalcode;
-					if(isWindows()){
-						$command = "{$lang['exe']} \"{$pfile}\"";
-					}
-					else{
-						$command=$pfile;
-					}
+					$command = "{$lang['exe']} \"{$pfile}\"";
 					$out = cmdResults($command);
 					if($out['rtncode']==0){$val=$out['stdout'];}	
 					else{$val="ERROR: {$lang['exe']} embeded script failed";}
@@ -5308,7 +5303,7 @@ function evalPHP($strings){
 					}
 					else{
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
-						$command = "{$tmppath}/{$tmpfile}";	
+						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
 					$out = cmdResults($command);
 					unlink("{$tmppath}/{$tmpfile}");
