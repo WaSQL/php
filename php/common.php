@@ -5092,6 +5092,7 @@ function evalPHP($strings){
 			continue;
 		}
 		preg_match_all('/\<\?(.+?)\?\>/sm',$strings[$sIndex],$evalmatches,PREG_PATTERN_ORDER);
+		//echo printValue($evalmatches);
 		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$strings[$sIndex],$evalmatches2,PREG_PATTERN_ORDER);
 		if(count($evalmatches2[1])){
 			$evalmatches[0]=array_merge($evalmatches[0],$evalmatches2[0]);
@@ -5100,36 +5101,126 @@ function evalPHP($strings){
 		$cntB=count($evalmatches[1]);
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
-			//check for python
-			if(preg_match('/^py[\ \r\n]+(.+)/',$p)){
+			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
+			if(preg_match('/^(python|perl|ruby|bash|sh)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
+				global $USER;
+				switch(strtolower($g[1])){
+					case 'python':
+						//python
+						$lang=array(
+							'ext'=>'py',
+							'exe'=>'python',
+							'shebang'=>'#!/usr/bin/env python'
+						);
+						//add variables to this script
+						$precode=array();
+						//$_USER
+						if(isset($USER['_id'])){
+							$json=array();
+							foreach($USER as $k=>$v){
+								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
+								$json[$k]=$v;
+							}
+							$precode[]="USER = ".json_encode($json);
+						}
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$json=array();
+							foreach($_SERVER as $k=>$v){
+								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
+								$json[$k]=$v;
+							}
+							$precode[]="SERVER = ".json_encode($json);
+						}
+						//$_REQUEST
+						$json=array();
+						foreach($_REQUEST as $k=>$v){
+							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
+							$json[$k]=$v;
+						}
+						$precode[]="REQUEST = ".json_encode($json);
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$precode[]="PASSTHRU = ".json_encode($_REQUEST['passthru']);
+						}
+						if(count($precode)){
+							array_unshift($precode,'# BEGIN WaSQL Variable Definitions');
+							$precode[]='# END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
+						//echo $evalcode;exit;
+					break;
+					case 'perl':
+						//perl
+						$lang=array(
+							'ext'=>'pl',
+							'exe'=>'perl',
+							'shebang'=>'#!/usr/bin/env perl'
+						);
+					break;
+					case 'ruby':
+						//ruby
+						$lang=array(
+							'ext'=>'rb',
+							'exe'=>'ruby',
+							'shebang'=>'#!/usr/bin/env ruby'
+						);
+					break;
+					case 'bash':
+						//bash shell
+						$lang=array(
+							'ext'=>'sh',
+							'exe'=>'bash',
+							'shebang'=>'#!/usr/bin/env bash'
+						);
+					break;
+					case 'sh':
+						//bourne shell
+						$lang=array(
+							'ext'=>'sh',
+							'exe'=>'sh',
+							'shebang'=>'#!/usr/bin/env sh'
+						);
+					break;
+				}
+				
+
 				//run the python script: https://stackoverflow.com/questions/19735250/running-a-python-script-from-php
-				if(file_exists(trim($p[1]))){
-					$pfile=trim($p[1]);
+				if(file_exists($evalcode)){
+					$pfile=$evalcode;
 					if(isWindows()){
-						$command = escapeshellcmd("python {$pfile}");
+						$command = "{$lang['exe']} \"{$pfile}\"";
 					}
 					else{
-						$command=escapeshellcmd($pfile);
+						$command=$pfile;
 					}
-					$val = shell_exec($command);
+					$out = cmdResults($command);
+					$val=$out['stdout'];
 				}
 				else{
 					$tmppath=getWasqlTempPath();
-					$tmpfile=sha1($p[1]).'.py';
+					$tmpfile=sha1($evalcode).".{$lang['ext']}";
+					if(!stringBeginsWith($evalcode,'#!')){
+						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
+					}
 					if(isWindows()){
-						setFileContents($tmpfile,$p[1]);
-						$command = escapeshellcmd("python {$tmppath}\\{$tmpfile}");
+						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
+						$command = "{$lang['exe']} \"{$tmppath}\\{$tmpfile}\"";
 					}
 					else{
-						setFileContents($tmpfile,'#!/usr/bin/env python'.PHP_EOL.$p[1]);
-						$command = escapeshellcmd("{$tmppath}/{$tmpfile}");	
+						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
+						$command = "{$tmppath}/{$tmpfile}";	
 					}
-					$val = shell_exec($command);
-					unlink($tmpfile);	
+					$out = cmdResults($command);
+					unlink("{$tmppath}/{$tmpfile}");
+					if($out['rtncode']==0){$val=$out['stdout'];}	
+					else{$val="ERROR: {$lang['exe']} embeded script failed";}
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 				continue;
 			}
+			//assume PHP code
 			$evalcode=preg_replace('/^php/i','',$evalcode);
 			if(preg_match('/^xml version/i',$evalcode)){continue;}
 			//  remove =/*...*/

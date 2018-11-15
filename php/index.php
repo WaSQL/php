@@ -1197,6 +1197,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	}
 	else{$htm=$PAGE[$viewfield];}
 	$htm=evalPHP(array($controller,$htm));
+	echo $htm;exit;
     	//if the page name or permalink ends in .html then write the static file.
     	if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){
 		$afile="{$_SERVER['DOCUMENT_ROOT']}/{$PAGE['name']}";
