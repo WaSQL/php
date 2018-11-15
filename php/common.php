@@ -5184,9 +5184,7 @@ function evalPHP($strings){
 						);
 					break;
 				}
-				
-
-				//run the python script: https://stackoverflow.com/questions/19735250/running-a-python-script-from-php
+				//run the script:
 				if(file_exists($evalcode)){
 					$pfile=$evalcode;
 					if(isWindows()){
@@ -5196,7 +5194,8 @@ function evalPHP($strings){
 						$command=$pfile;
 					}
 					$out = cmdResults($command);
-					$val=$out['stdout'];
+					if($out['rtncode']==0){$val=$out['stdout'];}	
+					else{$val="ERROR: {$lang['exe']} embeded script failed";}
 				}
 				else{
 					$tmppath=getWasqlTempPath();
