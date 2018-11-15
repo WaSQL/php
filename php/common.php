@@ -5221,6 +5221,51 @@ function evalPHP($strings){
 							'exe'=>'ruby',
 							'shebang'=>'#!/usr/bin/env ruby'
 						);
+						//add variables to this script
+						$precode=array("require 'json'");
+						//$_USER
+						if(isset($USER['_id'])){
+							$precode[]="USER = {";
+							foreach($USER as $k=>$v){
+								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
+								$precode[]="	'{$k}' => '{$v}',";
+							}
+							$precode[]="}";
+						}
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$precode[]="SERVER = {";
+							foreach($_SERVER as $k=>$v){
+								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
+								$precode[]="	'{$k}' => '{$v}',";
+							}
+							$precode[]="}";
+						}
+						//$_REQUEST
+						$precode[]="REQUEST = {";
+						foreach($_REQUEST as $k=>$v){
+							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
+							$precode[]="	'{$k}' => '{$v}',";
+						}
+						$precode[]="}";
+						//$CONFIG
+						global $CONFIG;
+						$precode[]="CONFIG = {";
+						foreach($CONFIG as $k=>$v){
+							if(is_array($v) || !strlen($v)){continue;}
+							$precode[]="	'{$k}' => '{$v}',";
+						}
+						$precode[]="}";
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$precode[]="PASSTHRU = [\"".implode('","',$_REQUEST['passthru'])."\"]";
+
+						}
+						if(count($precode)){
+							array_unshift($precode,'# BEGIN WaSQL Variable Definitions');
+							$precode[]='# END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
 					break;
 					case 'bash':
 						//bash shell
