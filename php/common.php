@@ -5140,6 +5140,14 @@ function evalPHP($strings){
 							$json[$k]=$v;
 						}
 						$precode[]="REQUEST = ".json_encode($json);
+						//$CONFIG
+						global $CONFIG;
+						$json=array();
+						foreach($CONFIG as $k=>$v){
+							if(is_array($v) || !strlen($v)){continue;}
+							$json[$k]=$v;
+						}
+						$precode[]="CONFIG = ".json_encode($json);
 						//passthru
 						if(isset($_REQUEST['passthru'][0])){
 							$precode[]="PASSTHRU = ".json_encode($_REQUEST['passthru']);
@@ -5158,6 +5166,51 @@ function evalPHP($strings){
 							'exe'=>'perl',
 							'shebang'=>'#!/usr/bin/env perl'
 						);
+						//add variables to this script
+						$precode=array();
+						//$_USER
+						if(isset($USER['_id'])){
+							$precode[]="our %USER = (";
+							foreach($USER as $k=>$v){
+								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
+								$precode[]="	'{$k}' => '{$v}',";
+							}
+							$precode[]=");";
+						}
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$precode[]="our %SERVER = (";
+							foreach($_SERVER as $k=>$v){
+								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
+								$precode[]="	'{$k}' => '{$v}',";
+							}
+							$precode[]=");";
+						}
+						//$_REQUEST
+						$precode[]="our %REQUEST = (";
+						foreach($_REQUEST as $k=>$v){
+							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
+							$precode[]="	'{$k}' => '{$v}',";
+						}
+						$precode[]=");";
+						//$CONFIG
+						global $CONFIG;
+						$precode[]="our %CONFIG = (";
+						foreach($CONFIG as $k=>$v){
+							if(is_array($v) || !strlen($v)){continue;}
+							$precode[]="	'{$k}' => '{$v}',";
+						}
+						$precode[]=");";
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$precode[]="our @PASSTHRU = (\"".implode('","',$_REQUEST['passthru'])."\");";
+
+						}
+						if(count($precode)){
+							array_unshift($precode,'# BEGIN WaSQL Variable Definitions');
+							$precode[]='# END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
 					break;
 					case 'ruby':
 						//ruby
@@ -5183,6 +5236,52 @@ function evalPHP($strings){
 							'shebang'=>'#!/usr/bin/env sh'
 						);
 					break;
+				}
+				//bash and sh syntax is the same for variable declaration
+				if($lang['ext']=='sh'){
+					//add variables to this script
+					$precode=array();
+					//$_USER
+					if(isset($USER['_id'])){
+						$precode[]="declare -A USER";
+						foreach($USER as $k=>$v){
+							if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
+							$precode[]="	USER[{$k}]=\"{$v}\"";
+						}
+					}
+					//$_SERVER
+					if(isset($_SERVER['HTTP_HOST'])){
+						$precode[]="declare -A SERVER";
+						foreach($_SERVER as $k=>$v){
+							if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
+							$precode[]="	SERVER[{$k}]=\"{$v}\"";
+						}
+					}
+					//$_REQUEST
+					$precode[]="declare -A REQUEST";
+					foreach($_REQUEST as $k=>$v){
+						if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
+						$precode[]="	REQUEST[{$k}]=\"{$v}\"";
+					}
+					//$CONFIG
+					global $CONFIG;
+					$precode[]="declare -A CONFIG";
+					foreach($CONFIG as $k=>$v){
+						if(is_array($v) || !strlen($v)){continue;}
+						$precode[]="	CONFIG[{$k}]=\"{$v}\"";
+					}
+					//passthru
+					if(isset($_REQUEST['passthru'][0])){
+						foreach($_REQUEST['passthru'] as $k=>$v){
+							$precode[]="PASSTHRU[{$k}]=\"{$v}\"";
+						}
+					}
+					if(count($precode)){
+						array_unshift($precode,'# BEGIN WaSQL Variable Definitions');
+						$precode[]='# END WaSQL Variable Definitions'.PHP_EOL;
+						$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+					}	
+
 				}
 				//run the script:
 				if(file_exists($evalcode)){
