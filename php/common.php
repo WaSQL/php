@@ -5065,8 +5065,10 @@ function evalPHP_ob($string, $flags) {
 //---------- begin function evalPHP
 /**
 * @describe
-*	evaluates PHP code or php embeded html and returns eval result or errors
-*	supports return value, echo and = functions
+*	evaluates PHP, Perl, Python, bash, or sh embeded scripts and returns the result
+*	supports short tags for PHP: <?=....?>. 
+*	Perl, Python, bash, and sh scripts are passed USER, SERVER, REQUEST, PASSTHRU, and CONFIG variables
+*	<?PHP ...?>  or <?=... ?> or <?perl ....?> or <?python ...?> or <?bash ...?> or <?sh ...?>
 * @param str string or array of strings
 *	php code or php embeded html to eval
 * @return
