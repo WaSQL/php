@@ -5065,10 +5065,10 @@ function evalPHP_ob($string, $flags) {
 //---------- begin function evalPHP
 /**
 * @describe
-*	evaluates PHP, Perl, Python, bash, or sh embeded scripts and returns the result
+*	evaluates PHP, Perl, Python, Ruby, bash, or sh embeded scripts and returns the result
 *	supports short tags for PHP: <?=....?>. 
-*	Perl, Python, bash, and sh scripts are passed USER, SERVER, REQUEST, PASSTHRU, and CONFIG variables
-*	<?PHP ...?>  or <?=... ?> or <?perl ....?> or <?python ...?> or <?bash ...?> or <?sh ...?>
+*	Perl, Python, Ruby bash, and sh scripts are passed USER, SERVER, REQUEST, PASSTHRU, and CONFIG variables
+*	<?PHP ...?>  or <?=... ?> or <?perl ....?> or <?python ...?> or <?ruby ... ?> or <?bash ...?> or <?sh ...?>
 * @param str string or array of strings
 *	php code or php embeded html to eval
 * @return
@@ -5104,11 +5104,12 @@ function evalPHP($strings){
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
-			if(preg_match('/^(python|perl|ruby|bash|sh)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
 				global $USER;
 				switch(strtolower($g[1])){
 					case 'python':
+					case 'py':
 						//python
 						$lang=array(
 							'ext'=>'py',
@@ -5121,33 +5122,61 @@ function evalPHP($strings){
 						if(isset($USER['_id'])){
 							$json=array();
 							foreach($USER as $k=>$v){
-								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
-								$json[$k]=$v;
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$json[$k]=$v;
+									}
+								}
 							}
 							$precode[]="USER = ".json_encode($json);
 						}
+						//$_SESSION
+						$precode[]="SESSION = ".json_encode($_SESSION);
 						//$_SERVER
 						if(isset($_SERVER['HTTP_HOST'])){
 							$json=array();
 							foreach($_SERVER as $k=>$v){
-								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
-								$json[$k]=$v;
+								//skip specific keys
+								if(in_array($k,array('HTTP_COOKIE','PATH'))){continue;}
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$json[$k]=$v;
+									}
+								}
 							}
 							$precode[]="SERVER = ".json_encode($json);
 						}
 						//$_REQUEST
 						$json=array();
 						foreach($_REQUEST as $k=>$v){
-							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
-							$json[$k]=$v;
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$json[$k]=$v;
+								}
+							}
 						}
 						$precode[]="REQUEST = ".json_encode($json);
 						//$CONFIG
 						global $CONFIG;
 						$json=array();
 						foreach($CONFIG as $k=>$v){
-							if(is_array($v) || !strlen($v)){continue;}
-							$json[$k]=$v;
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$json[$k]=$v;
+								}
+							}
 						}
 						$precode[]="CONFIG = ".json_encode($json);
 						//passthru
@@ -5162,6 +5191,7 @@ function evalPHP($strings){
 						//echo $evalcode;exit;
 					break;
 					case 'perl':
+					case 'pl':
 						//perl
 						$lang=array(
 							'ext'=>'pl',
@@ -5174,8 +5204,29 @@ function evalPHP($strings){
 						if(isset($USER['_id'])){
 							$precode[]="our %USER = (";
 							foreach($USER as $k=>$v){
-								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
-								$precode[]="	'{$k}' => '{$v}',";
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
+							}
+							$precode[]=");";
+						}
+						//$_SESSION
+						if(isset($USER['_id'])){
+							$precode[]="our %SESSION = (";
+							foreach($_SESSION as $k=>$v){
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
 							}
 							$precode[]=");";
 						}
@@ -5183,24 +5234,44 @@ function evalPHP($strings){
 						if(isset($_SERVER['HTTP_HOST'])){
 							$precode[]="our %SERVER = (";
 							foreach($_SERVER as $k=>$v){
-								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
-								$precode[]="	'{$k}' => '{$v}',";
+								//skip specific keys
+								if(in_array($k,array('HTTP_COOKIE','PATH'))){continue;}
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
 							}
 							$precode[]=");";
 						}
 						//$_REQUEST
 						$precode[]="our %REQUEST = (";
 						foreach($_REQUEST as $k=>$v){
-							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
-							$precode[]="	'{$k}' => '{$v}',";
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	'{$k}' => '{$v}',";
+								}
+							}
 						}
 						$precode[]=");";
 						//$CONFIG
 						global $CONFIG;
 						$precode[]="our %CONFIG = (";
 						foreach($CONFIG as $k=>$v){
-							if(is_array($v) || !strlen($v)){continue;}
-							$precode[]="	'{$k}' => '{$v}',";
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	'{$k}' => '{$v}',";
+								}
+							}
 						}
 						$precode[]=");";
 						//passthru
@@ -5215,6 +5286,7 @@ function evalPHP($strings){
 						}
 					break;
 					case 'ruby':
+					case 'rb':
 						//ruby
 						$lang=array(
 							'ext'=>'rb',
@@ -5227,33 +5299,74 @@ function evalPHP($strings){
 						if(isset($USER['_id'])){
 							$precode[]="USER = {";
 							foreach($USER as $k=>$v){
-								if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
-								$precode[]="	'{$k}' => '{$v}',";
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
 							}
 							$precode[]="}";
+						}
+						//$_SESSION
+						if(isset($USER['_id'])){
+							$precode[]="SESSION = {";
+							foreach($_SESSION as $k=>$v){
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
+							}
+							$precode[]="};";
 						}
 						//$_SERVER
 						if(isset($_SERVER['HTTP_HOST'])){
 							$precode[]="SERVER = {";
 							foreach($_SERVER as $k=>$v){
-								if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
-								$precode[]="	'{$k}' => '{$v}',";
+								//skip specific keys
+								if(in_array($k,array('HTTP_COOKIE','PATH'))){continue;}
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="	'{$k}' => '{$v}',";
+									}
+								}
 							}
 							$precode[]="}";
 						}
 						//$_REQUEST
 						$precode[]="REQUEST = {";
 						foreach($_REQUEST as $k=>$v){
-							if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
-							$precode[]="	'{$k}' => '{$v}',";
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	'{$k}' => '{$v}',";
+								}
+							}
 						}
 						$precode[]="}";
 						//$CONFIG
 						global $CONFIG;
 						$precode[]="CONFIG = {";
 						foreach($CONFIG as $k=>$v){
-							if(is_array($v) || !strlen($v)){continue;}
-							$precode[]="	'{$k}' => '{$v}',";
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	'{$k}' => '{$v}',";
+								}
+							}
 						}
 						$precode[]="}";
 						//passthru
@@ -5283,6 +5396,115 @@ function evalPHP($strings){
 							'shebang'=>'#!/usr/bin/env sh'
 						);
 					break;
+					case 'vbscript':
+					case 'vbs':
+						//vbscript shell
+						$lang=array(
+							'ext'=>'vbs',
+							'exe'=>'cscript //Nologo',
+							'shebang'=>''
+						);
+						//add variables to this script
+						/*
+							Dim result : Set result = CreateObject("Scripting.Dictionary")
+							result.Add "Age", 60
+							result.Add "Name", "Tony"
+						*/
+						$precode=array();
+						//$_USER
+						if(isset($USER['_id'])){
+							$precode[]="Dim USER : Set USER = CreateObject(\"Scripting.Dictionary\")";
+							foreach($USER as $k=>$v){
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="USER.Add \"{$k}\", \"{$v}\"";
+									}
+								}
+							}
+							$precode[]="";
+						}
+						//$_SESSION
+						$tmp=array();
+						foreach($_SESSION as $k=>$v){
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$tmp[]="SESSION.Add \"{$k}\", \"{$v}\"";
+								}
+							}
+						}
+						if(count($tmp)){
+							$precode[]="Dim SESSION : Set SESSION = CreateObject(\"Scripting.Dictionary\")";
+							foreach($tmp as $t){
+								$precode[]=$t;
+							}
+							$precode[]="";
+						}
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$precode[]="Dim SERVER : Set SERVER = CreateObject(\"Scripting.Dictionary\")";
+							foreach($_SERVER as $k=>$v){
+								//skip specific keys
+								if(in_array($k,array('HTTP_COOKIE','PATH'))){continue;}
+								if(is_array($v)){
+									//session arrays are not yet implimented
+								}
+								else{
+									if(strlen($v)){
+										$precode[]="SERVER.Add \"{$k}\", \"{$v}\"";
+									}
+								}
+							}
+							$precode[]="";
+						}
+						//$_REQUEST
+						$precode[]="Dim REQUEST : Set REQUEST = CreateObject(\"Scripting.Dictionary\")";
+						foreach($_REQUEST as $k=>$v){
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="REQUEST.Add \"{$k}\", \"{$v}\"";
+								}
+							}
+						}
+						$precode[]="";
+						//$CONFIG
+						global $CONFIG;
+						$precode[]="Dim CONFIG : Set CONFIG = CreateObject(\"Scripting.Dictionary\")";
+						foreach($CONFIG as $k=>$v){
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="CONFIG.Add \"{$k}\", \"{$v}\"";
+								}
+							}
+						}
+						$precode[]="";
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$cnt=count($_REQUEST['passthru']);
+							$precode[]="Dim PASSTHRU({$cnt})";
+							foreach($_REQUEST['passthru'] as $i=>$v){
+								$precode[]="PASSTHRU({$i}) = \"{$v}\"";
+							}
+							$precode[]="";
+
+						}
+						if(count($precode)){
+							array_unshift($precode,'\' BEGIN WaSQL Variable Definitions');
+							$precode[]='\' END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
+					break;
 				}
 				//bash and sh syntax is the same for variable declaration
 				if($lang['ext']=='sh'){
@@ -5292,37 +5514,77 @@ function evalPHP($strings){
 					if(isset($USER['_id'])){
 						$precode[]="declare -A USER";
 						foreach($USER as $k=>$v){
-							if(is_array($v) || !strlen($v) || preg_match('/^(_auth|apikey|_aip|guid|password)$/i',$k)){continue;}
-							$precode[]="	USER[{$k}]=\"{$v}\"";
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	USER[{$k}]=\"{$v}\"";
+								}
+							}
+						}
+					}
+					//$_SESSION
+					$precode[]="declare -A SESSION";
+					foreach($_SESSION as $k=>$v){
+						if(is_array($v)){
+							//session arrays are not yet implimented
+						}
+						else{
+							if(strlen($v)){
+								$precode[]="	SESSION[{$k}]=\"{$v}\"";
+							}
 						}
 					}
 					//$_SERVER
 					if(isset($_SERVER['HTTP_HOST'])){
 						$precode[]="declare -A SERVER";
 						foreach($_SERVER as $k=>$v){
-							if(is_array($v) || !strlen($v) || !preg_match('/^(HTTP|REMOTE|WaSQL)/i',$k) || preg_match('/^(wasqlMagicQuotesFix|HTTP_COOKIE)$/i',$k)){continue;}
-							$precode[]="	SERVER[{$k}]=\"{$v}\"";
+							//skip specific keys
+							if(in_array($k,array('HTTP_COOKIE','PATH'))){continue;}
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	SERVER[{$k}]=\"{$v}\"";
+								}
+							}
 						}
 					}
 					//$_REQUEST
 					$precode[]="declare -A REQUEST";
 					foreach($_REQUEST as $k=>$v){
-						if(is_array($v) || !strlen($v) || preg_match('/^(_view|_viewfield)$/i',$k)){continue;}
-						$precode[]="	REQUEST[{$k}]=\"{$v}\"";
+						if(is_array($v)){
+							//session arrays are not yet implimented
+						}
+						else{
+							if(strlen($v)){
+								$precode[]="	REQUEST[{$k}]=\"{$v}\"";
+							}
+						}
 					}
 					//$CONFIG
 					global $CONFIG;
 					$precode[]="declare -A CONFIG";
 					foreach($CONFIG as $k=>$v){
-						if(is_array($v) || !strlen($v)){continue;}
-						$precode[]="	CONFIG[{$k}]=\"{$v}\"";
+						if(is_array($v)){
+							//session arrays are not yet implimented
+						}
+						else{
+							if(strlen($v)){
+								$precode[]="	CONFIG[{$k}]=\"{$v}\"";
+							}
+						}
 					}
-					//passthru
+					//PASSTHRU
 					if(isset($_REQUEST['passthru'][0])){
+						$precode[]="declare -A PASSTHRU";
 						foreach($_REQUEST['passthru'] as $k=>$v){
 							$precode[]="PASSTHRU[{$k}]=\"{$v}\"";
 						}
 					}
+					//Build the code to run
 					if(count($precode)){
 						array_unshift($precode,'# BEGIN WaSQL Variable Definitions');
 						$precode[]='# END WaSQL Variable Definitions'.PHP_EOL;
@@ -5341,7 +5603,7 @@ function evalPHP($strings){
 				else{
 					$tmppath=getWasqlTempPath();
 					$tmpfile=sha1($evalcode).".{$lang['ext']}";
-					if(!stringBeginsWith($evalcode,'#!')){
+					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
 					}
 					if(isWindows()){
@@ -5352,6 +5614,7 @@ function evalPHP($strings){
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
 						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
+					//echo $command;exit;
 					$out = cmdResults($command);
 					unlink("{$tmppath}/{$tmpfile}");
 					if($out['rtncode']==0){$val=$out['stdout'];}	
