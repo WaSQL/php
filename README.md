@@ -4,9 +4,9 @@
 WaSQL is a website development platform.  It is designed to help you build web sites, forms, e-commerce, intranet and other custom web applications rapidly.  WaSQL deploys pages and applications using a database driven MVC architecture.  It is a stand-alone platform as it does not require any outside or 3rd party add-ons to work.  It is also a replacement for PhpMyAdmin since database schema management is built in.  User management is also built in.
 
 ## Supported Scripting Languages
-WaSQL is written in PHP but supports embeded PHP, Nodejs, Python, Perl, Ruby, Vbscript, Lua, Bash, and shell scripts. Request, session, server, config, and user variables are passed all scripts, regardless of langauge, so you can access them in whatever language you write your code in.  Note: if you want to modify the variables you must modify it in PHP.
+WaSQL is written in PHP but supports embeded PHP, Nodejs, Python, Perl, Ruby, Vbscript, Lua, Bash, and shell scripts. Request, session, server, config, and user variables are passed in to all scripts, regardless of langauge, so you can access them in whatever language you write your code in.  Note: if you want to modify the variables you must modify them in PHP.
 
-WaSQL is the only web development platform that we are aware of that lets you write in whatever language you want.
+WaSQL is the only web development platform, that we are aware of, that lets you write in whatever language you want.
 
 Caveat: your web server has to support the languages you decide to write in.
 
