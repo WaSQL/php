@@ -5104,9 +5104,10 @@ function evalPHP($strings){
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
-			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
 				global $USER;
+				$precode=array();
 				switch(strtolower($g[1])){
 					case 'python':
 					case 'py':
@@ -5116,8 +5117,6 @@ function evalPHP($strings){
 							'exe'=>'python',
 							'shebang'=>'#!/usr/bin/env python'
 						);
-						//add variables to this script
-						$precode=array();
 						//$_USER
 						if(isset($USER['_id'])){
 							$json=array();
@@ -5198,8 +5197,6 @@ function evalPHP($strings){
 							'exe'=>'perl',
 							'shebang'=>'#!/usr/bin/env perl'
 						);
-						//add variables to this script
-						$precode=array();
 						//$_USER
 						if(isset($USER['_id'])){
 							$precode[]="our %USER = (";
@@ -5294,7 +5291,7 @@ function evalPHP($strings){
 							'shebang'=>'#!/usr/bin/env ruby'
 						);
 						//add variables to this script
-						$precode=array("require 'json'");
+						$precode[]="require 'json'";
 						//$_USER
 						if(isset($USER['_id'])){
 							$precode[]="USER = {";
@@ -5311,20 +5308,18 @@ function evalPHP($strings){
 							$precode[]="}";
 						}
 						//$_SESSION
-						if(isset($USER['_id'])){
-							$precode[]="SESSION = {";
-							foreach($_SESSION as $k=>$v){
-								if(is_array($v)){
-									//session arrays are not yet implimented
-								}
-								else{
-									if(strlen($v)){
-										$precode[]="	'{$k}' => '{$v}',";
-									}
+						$precode[]="SESSION = {";
+						foreach($_SESSION as $k=>$v){
+							if(is_array($v)){
+								//session arrays are not yet implimented
+							}
+							else{
+								if(strlen($v)){
+									$precode[]="	'{$k}' => '{$v}',";
 								}
 							}
-							$precode[]="};";
 						}
+						$precode[]="};";
 						//$_SERVER
 						if(isset($_SERVER['HTTP_HOST'])){
 							$precode[]="SERVER = {";
@@ -5380,6 +5375,99 @@ function evalPHP($strings){
 							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
 						}
 					break;
+					case 'node':
+					case 'nodejs':
+						//node
+						$lang=array(
+							'ext'=>'js',
+							'exe'=>'node',
+							'shebang'=>'#!/usr/bin/env node'
+						);
+						//add variables to this script
+						//$_USER
+						$precode[]="const USER = ".json_encode($USER).";";
+						$precode[]="";
+						//$_SESSION
+						$precode[]="const SESSION = ".json_encode($_SESSION).";";
+						$precode[]="";
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$json=$_SERVER;
+							unset($json['HTTP_COOKIE']);
+							unset($json['PATH']);
+							$precode[]="const SERVER = ".json_encode($json).";";
+							$precode[]="";
+						}
+						//$_REQUEST
+						$precode[]="const REQUEST = ".json_encode($_REQUEST).";";
+						$precode[]="";
+						//$CONFIG
+						global $CONFIG;
+						$precode[]="const CONFIG = ".json_encode($CONFIG).";";
+						$precode[]="";
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$precode[]="var PASSTHRU = [\"".implode('","',$_REQUEST['passthru'])."\"];";
+
+						}
+						if(count($precode)){
+							array_unshift($precode,'// BEGIN WaSQL Variable Definitions');
+							$precode[]='// END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
+					break;
+					case 'lua':
+						//lua
+						$lang=array(
+							'ext'=>'lua',
+							'exe'=>'lua',
+							'shebang'=>'#!/usr/bin/env lua'
+						);
+						//add variables to this script
+						$precode[]="json = require \"json\";";
+						//$_USER
+						$precode[]="local USER = json.decode('".json_encode($USER,JSON_UNESCAPED_SLASHES)."');";
+						$precode[]="";
+						//$_SESSION
+						$precode[]="local SESSION = json.decode('".json_encode($_SESSION,JSON_UNESCAPED_SLASHES)."');";
+						$precode[]="";
+						//$_SERVER
+						if(isset($_SERVER['HTTP_HOST'])){
+							$json=$_SERVER;
+							unset($json['HTTP_COOKIE']);
+							unset($json['PATH']);
+							foreach($json as $k=>$v){
+								if(stringContains($v,"\\")){
+									unset($json[$k]);
+								}
+							}
+							$precode[]="local SERVER = json.decode('".json_encode($json,JSON_UNESCAPED_SLASHES)."');";
+							$precode[]="";
+						}
+						//$_REQUEST
+						$precode[]="local REQUEST = json.decode('".json_encode($_REQUEST,JSON_UNESCAPED_SLASHES)."');";
+						$precode[]="";
+						//$CONFIG
+						global $CONFIG;
+						$json=$CONFIG;
+						foreach($json as $k=>$v){
+							if(stringContains($v,"\\")){
+								unset($json[$k]);
+							}
+						}
+						$precode[]="local CONFIG = json.decode('".json_encode($json,JSON_UNESCAPED_SLASHES)."');";
+						$precode[]="";
+						//passthru
+						if(isset($_REQUEST['passthru'][0])){
+							$precode[]="local PASSTHRU = [\"".implode('","',$_REQUEST['passthru'])."\"];";
+
+						}
+						if(count($precode)){
+							array_unshift($precode,'-- BEGIN WaSQL Variable Definitions');
+							$precode[]='-- END WaSQL Variable Definitions'.PHP_EOL;
+							$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
+						}
+					break;
 					case 'bash':
 						//bash shell
 						$lang=array(
@@ -5410,7 +5498,6 @@ function evalPHP($strings){
 							result.Add "Age", 60
 							result.Add "Name", "Tony"
 						*/
-						$precode=array();
 						//$_USER
 						if(isset($USER['_id'])){
 							$precode[]="Dim USER : Set USER = CreateObject(\"Scripting.Dictionary\")";
@@ -5592,6 +5679,7 @@ function evalPHP($strings){
 					}	
 
 				}
+				$precode=array();
 				//run the script:
 				if(file_exists($evalcode)){
 					$pfile=$evalcode;
@@ -5606,6 +5694,16 @@ function evalPHP($strings){
 					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
 					}
+					if($lang['ext'] == 'lua'){
+						//get the json.lua file 
+						//https://github.com/rxi/json.lua
+						$lua_dest=getWasqlPath('php/json.lua');
+						//copy json.lua to the tmppath
+						if(!file_exists($lua_dest)){
+							$lua_source=getWasqlPath('php/extras/json.lua');
+							copyFile($lua_source,$lua_dest);
+						}
+					}
 					if(isWindows()){
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
 						$command = "{$lang['exe']} \"{$tmppath}\\{$tmpfile}\"";
@@ -5616,9 +5714,13 @@ function evalPHP($strings){
 					}
 					//echo $command;exit;
 					$out = cmdResults($command);
-					unlink("{$tmppath}/{$tmpfile}");
-					if($out['rtncode']==0){$val=$out['stdout'];}	
-					else{$val="ERROR: {$lang['exe']} embeded script failed";}
+					if($out['rtncode']==0){
+						unlink("{$tmppath}/{$tmpfile}");
+						$val=$out['stdout'];
+					}	
+					else{
+						$val="ERROR: {$lang['exe']} embeded script failed".printValue($out);
+					}
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 				continue;
