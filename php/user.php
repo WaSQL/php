@@ -1031,8 +1031,8 @@ function userLoginForm($params=array()){
 			$form .= '</div>'.PHP_EOL;
 			break;
 		default:
-			$form .= '<div class="row" id="w_loginform_bootstrap" style="max-width:300px;">'.PHP_EOL;
-			$form .= '	<div class="col-sm-9">'.PHP_EOL;
+			$form .= '<div class="w_flex w_flexrow">'.PHP_EOL;
+			$form .= '	<div class="w_flexcol" style="padding:5px 20px;">'.PHP_EOL;
 			$form .= '		<div class="input-group">'.PHP_EOL;
 			$form .= '			<span class="input-group-addon"><span class="icon-user"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormText('username',$username_opts);
@@ -1042,7 +1042,7 @@ function userLoginForm($params=array()){
 			$form .= '		'.buildFormPassword('password',$password_opts);
 			$form .= '		</div></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
-			$form .= '	<div class="col-sm-3">'.PHP_EOL;
+			$form .= '	<div class="w_flexcol" style="padding:5px 20px;">'.PHP_EOL;
 			$form .= '		<button type="submit" class="btn btn-default btn-lg">Login</button>'.PHP_EOL;
 			$form .= '		<div class="w_padtop w_nowrap">'.PHP_EOL;
 			$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a>'.PHP_EOL;
