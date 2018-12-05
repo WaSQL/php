@@ -177,6 +177,7 @@ function createWasqlTable($table=''){
 			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,

@@ -124,8 +124,6 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 		$zipcodeLine['updated']
 	);
 	//lock the zipcodes table for efficiency
-	$ok=executeSQL("UNLOCK TABLES");
-	$ok=executeSQL("LOCK TABLES zipcodes WRITE");
 	//loop through each country
 	foreach($country_codes as $country){
 		$country=strtoupper($country);
@@ -169,7 +167,6 @@ function zipcodesImportCountry($country_codes,$truncate=false){
         	$rtn['errors'][]="file copy failed: {$remote_file} to {$local_file}";
 		}
 	}
-	$ok=executeSQL("UNLOCK TABLES");
 	return $rtn;
 }
 //---------- begin function zipcodesGetClosestRecords ----------
