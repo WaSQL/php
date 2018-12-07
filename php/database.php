@@ -721,8 +721,10 @@ function databaseListRecords($params=array()){
 		foreach($params['-listfields'] as $fld){
 			$value=$rec[$fld];
 			// is this a sum field?
-			if(isset($sums[$fld]) && isNum($value)){
-				$sums[$fld]+=$value;
+			if(isset($sums[$fld])){
+				$sval=str_replace(',','',$value);
+				$sval=str_replace('$','',$sval);
+				if(isNum($sval)){$sums[$fld]+=$sval;}
 			}
 			//check for {field}_eval
 			if(!empty($params[$fld."_eval"])){
