@@ -801,7 +801,10 @@ function databaseListRecords($params=array()){
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>';
 			if(isset($sums[$fld])){
-				$rtn .= $sums[$fld];
+				//figure out how many decimal places are in this number
+				$d=strlen(substr(strrchr($sums[$fld], "."), 1));
+				//format it to add commas
+				$rtn .= number_format($sums[$fld],$d);
 			}
 			$rtn .='</th>'.PHP_EOL;
 		}
