@@ -74,6 +74,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-listfields] -  subset of fields to list from the list returned.
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
+*	[-sumfields] string or array - list of fields to sum
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
@@ -695,6 +696,15 @@ function databaseListRecords($params=array()){
 	}
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
+	$sums=array();
+	if(isset($params['-sumfields'])){
+		if(!is_array($params['-sumfields'])){
+			$params['-sumfields']=preg_split('/\,/',$params['-sumfields']);
+		}
+		foreach($params['-sumfields'] as $sfld){
+			$sums[$sfld]=0;
+		}
+	}
 	foreach($params['-list'] as $rec){
 		$rtn .= '		<tr';
 		if(!empty($params['-onclick'])){
@@ -710,6 +720,10 @@ function databaseListRecords($params=array()){
 		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
 			$value=$rec[$fld];
+			// is this a sum field?
+			if(isset($sums[$fld]) && isNum($value)){
+				$sums[$fld]+=$value;
+			}
 			//check for {field}_eval
 			if(!empty($params[$fld."_eval"])){
 				$evalstr=$params[$fld."_eval"];
@@ -763,6 +777,31 @@ function databaseListRecords($params=array()){
 			}
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>'.$value.'</td>'.PHP_EOL;
+		}
+		$rtn .= '		</tr>'.PHP_EOL;
+	}
+	if(count($sums)){
+		$rtn .= '		<tr>'.PHP_EOL;
+		foreach($params['-listfields'] as $fld){
+			$rtn .= '			<th';
+			$atts=array();
+			foreach($params as $k=>$v){
+				if(preg_match('/^'.$field.'_(onclick|eval|href)$/i',$k)){continue;}
+				if(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
+					$atts[$m[1]]=$v;
+				}
+			}
+			foreach($params as $k=>$v){
+				if(preg_match('/^-th(.+)$/',$k,$m)){
+					if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
+				}
+			}
+			$rtn .= setTagAttributes($atts);
+			$rtn .='>';
+			if(isset($sums[$fld])){
+				$rtn .= $sums[$fld];
+			}
+			$rtn .='</th>'.PHP_EOL;
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
 	}
