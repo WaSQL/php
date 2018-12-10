@@ -56,14 +56,31 @@ elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_ta
 	}
 	//echo printValue($_REQUEST);exit;
 }
-elseif(isset($_REQUEST['_sessionid']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_sessionid'])){
+elseif(isset($_REQUEST['_sessionid'])){
+	$str=base64_decode($_REQUEST['_sessionid']);
 	//sessionid - good for 10 minutes unless specified otherwise in the config sessionid_timeout variable
-	list($key,$encoded)=preg_split('/\./',$_REQUEST['_sessionid'],2);
+	list($key,$encoded)=preg_split('/\./',$str,2);
 	$decoded=decrypt($encoded,"Session{$key}tlaS");
-	//echo $decoded;exit;
-	list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
-	//make sure the atime is within the allowed time frame - 5 minutes
-	$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:5;
+	if(isEven($key)){
+		list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
+	}
+	else{
+		list($atime,$_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
+	}
+	$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username'],'-fields'=>'_id'));
+	if(!isset($rec['_id'])){
+		unset($_REQUEST['apikey']);
+		unset($_REQUEST['username']);
+		$_REQUEST['_login_error']="Invalid login request (1)";
+	}
+	$id=substr($key,0,strlen($key)-1);
+	if($id != $rec['_id']){
+		unset($_REQUEST['apikey']);
+		unset($_REQUEST['username']);
+		$_REQUEST['_login_error']="Invalid login request (2)";
+	}
+	//make sure the atime is within the allowed time frame - 10 minutes is the default
+	$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:10;
 	$seconds=$minutes*60;
 	$elapsed=time()-$atime;
 	//echo  "{$decoded},{$key},{$atime}".printValue($_REQUEST);exit;
@@ -661,9 +678,17 @@ function setUserInfo($guid='NULL'){
 	$USER['_auth']="{$USER['_id']}.{$auth}";
 	//_sessionid
 	$rtime=time();
-	$salt="Session{$USER['_id']}tlaS";
-	$auth=encrypt("{$USER['username']}:{$rtime}:{$USER['apikey']}",$salt);
-	$USER['_sessionid']="{$USER['_id']}.{$auth}";
+	$rnum=rand(1,9);
+	$salt="Session{$USER['_id']}{$rnum}tlaS";
+	//to make the session  as secure as possible
+	if(isEven($rnum)){
+		$string="{$USER['username']}:{$rtime}:{$USER['apikey']}";
+	}
+	else{
+		$string="{$rtime}:{$USER['username']}:{$USER['apikey']}";
+	}
+	$auth=encrypt($string,$salt);
+	$USER['_sessionid']=base64_encode("{$USER['_id']}{$rnum}.{$auth}");
 	$USER['_adate']=$adate;
     /* replace the user password with stars */
 	$USER['password']=preg_replace('/./','*',$USER['password']);
