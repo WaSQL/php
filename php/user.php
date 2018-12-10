@@ -36,6 +36,7 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	$_REQUEST['_auth']=1;
 }
 elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
+	//timed auth code - good for 30 minutes
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_tauth'],2);
 	$decoded=decrypt($encoded,"Salt{$key}tlaS");
 	//echo $decoded;exit;
@@ -49,6 +50,27 @@ elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_ta
 		unset($_REQUEST['apikey']);
 		unset($_REQUEST['username']);
 		$_REQUEST['_login_error']="The login link used is no longer valid. {$elapsed}";
+	}
+	else{
+		$_REQUEST['_auth']=1;
+	}
+	//echo printValue($_REQUEST);exit;
+}
+elseif(isset($_REQUEST['_sessionid']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_sessionid'])){
+	//sessionid - good for 10 minutes unless specified otherwise in the config sessionid_timeout variable
+	list($key,$encoded)=preg_split('/\./',$_REQUEST['_sessionid'],2);
+	$decoded=decrypt($encoded,"Session{$key}tlaS");
+	//echo $decoded;exit;
+	list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
+	//make sure the atime is within the allowed time frame - 5 minutes
+	$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:5;
+	$seconds=$minutes*60;
+	$elapsed=time()-$atime;
+	//echo  "{$decoded},{$key},{$atime}".printValue($_REQUEST);exit;
+	if($elapsed > $seconds){
+		unset($_REQUEST['apikey']);
+		unset($_REQUEST['username']);
+		$_REQUEST['_login_error']="The sessionid used is no longer valid. {$elapsed}";
 	}
 	else{
 		$_REQUEST['_auth']=1;
@@ -633,9 +655,15 @@ function setUserInfo($guid='NULL'){
 			$USER['_env']=$env_array['env'];
 		}
 	}
+	//_auth
 	$USER['apikey']=encodeUserAuthCode();
 	$auth=encrypt("{$USER['username']}:{$USER['apikey']}",$USER['_id']);
 	$USER['_auth']="{$USER['_id']}.{$auth}";
+	//_sessionid
+	$rtime=time();
+	$salt="Session{$USER['_id']}tlaS";
+	$auth=encrypt("{$USER['username']}:{$rtime}:{$USER['apikey']}",$salt);
+	$USER['_sessionid']="{$USER['_id']}.{$auth}";
 	$USER['_adate']=$adate;
     /* replace the user password with stars */
 	$USER['password']=preg_replace('/./','*',$USER['password']);

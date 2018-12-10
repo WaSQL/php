@@ -1277,8 +1277,10 @@ if(isset($_REQUEST['_menu'])){
                 	}
 				echo buildTableTD(array("<b>{$key}</b>",$val),array('valign'=>'top'));
             	}
-            echo buildTableTD(array("<b>SessionID</b>",session_id()),array('valign'=>'top'));
-			echo buildTableTD(array("<b>Auth Key</b>",$USER['_auth']),array('valign'=>'top'));
+            echo buildTableTD(array("<b>PHP SessionID</b>",session_id()),array('valign'=>'top'));
+			echo buildTableTD(array("<b>API Auth Key</b>",$USER['_auth']),array('valign'=>'top'));
+			$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:5;
+			echo buildTableTD(array("<b>API SessionID</b> (good for {$minutes} minutes)",$USER['_sessionid']),array('valign'=>'top'));
             echo buildTableEnd();
 			break;
 		case 'settings':
