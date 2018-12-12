@@ -10,6 +10,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
+
 //includes
 include_once("$progpath/common.php");
 global $CONFIG;
@@ -324,24 +325,36 @@ foreach($_REQUEST as $key=>$val){
 //show phpinfo if that is the only request param
 if(count($_REQUEST)==1){
 	$k=implode('',array_keys($_REQUEST));
+	if(!isAdmin()){
+		echo buildHtmlBegin();
+		echo '<div class="container-fluid">'.PHP_EOL;
+		echo '	<div class="row">'.PHP_EOL;
+		echo '		<div class="col-xs-12" style="padding:25px;">'.PHP_EOL;
+		echo "			<h3><img src=\"/wfiles/wasql.png\" class=\"w_middle\" alt=\"\" /> '{$k}' requires admin access to view. Login first.</h3>".PHP_EOL;
+		echo userLoginForm(array('-action'=>$PHP_SELF.'?'.$k));
+		echo '		</div>'.PHP_EOL;
+		echo '	</div>'.PHP_EOL;
+		echo '</div>'.PHP_EOL;
+	    echo buildHtmlEnd();
+		exit;
+	}
 	switch(strtolower($k)){
 		case 'phpinfo':
-	phpinfo();
-	exit;
+			phpinfo();
+			exit;
 		break;
 		case 'env':
-	include_once("$progpath/user.php");
-	echo buildHtmlBegin();
-	echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'.PHP_EOL;
-	echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
-	echo buildTableTH(array('Variable','Value'));
-	foreach($_SERVER as $key=>$val){
-		if(!stringBeginsWith($key,'remote') && !stringBeginsWith($key,'http')){continue;}
-		echo buildTableTD(array($key,printValue($val)),array('valign'=>'top'));
-        }
-    echo buildTableEnd();
-    echo buildHtmlEnd();
-	exit;
+			echo buildHtmlBegin();
+			echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'.PHP_EOL;
+			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo buildTableTH(array('Variable','Value'));
+			foreach($_SERVER as $key=>$val){
+				if(!stringBeginsWith($key,'remote') && !stringBeginsWith($key,'http')){continue;}
+				echo buildTableTD(array($key,printValue($val)),array('valign'=>'top'));
+		        }
+		    echo buildTableEnd();
+		    echo buildHtmlEnd();
+			exit;
 		break;
 	}
 }
@@ -1072,6 +1085,32 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<td width="100%"><div id="w_editor_main">'.PHP_EOL;
 			echo '	</div></td>'.PHP_EOL;
 			echo '</tr></table>'.PHP_EOL;
+			break;
+		case 'phpinfo':
+			//Server Variables
+			$data=adminGetPHPInfo();
+			if(preg_match('/\<body\>(.+)\<\/body\>/ism',$data,$m)){
+				echo <<<ENDOFX
+				<style type="text/css">
+				table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
+				.center {text-align: center;}
+				.center table {margin: 1em auto; text-align: left;}
+				.center th {text-align: center !important;}
+				td, th {border: 1px solid #666; font-size: 75%; vertical-align: baseline; padding: 4px 5px;}
+				h1 {font-size: 150%;}
+				h2 {font-size: 125%;}
+				.p {text-align: left;}
+				.e {background-color: #ccf; width: 300px; font-weight: bold;}
+				.h {background-color: #99c; font-weight: bold;}
+				.v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
+				.v i {color: #999;}
+				</style>
+ENDOFX;
+				echo $m[1];
+			}
+			else{
+				echo $data;
+			}
 			break;
 		case 'env':
 			//Server Variables
@@ -2907,9 +2946,19 @@ echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
 
+//---------- begin function adminGetPHPInfo ----
+/**
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
+function adminGetPHPInfo(){
+    ob_start();
+    phpinfo();
+    $data = ob_get_contents();
+    ob_clean();
+    return $data;
+}
 //---------- begin function adminViewPage ----
 /**
- * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function adminViewPage($menu){
@@ -3458,18 +3507,20 @@ function adminMenu(){
 	$rtn .= '        	<ul>'.PHP_EOL;
 	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'.PHP_EOL;
 	}
-	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-help-circled w_big" style="color:#8892bf;"></span> PHP Docs</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="http://getbootstrap.com/components/" target="bootstrapdocs"><span class="icon-help-circled w_big" style="color:#5b4282;"></span> Bootstrap Docs</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=phpinfo"><span class="icon-php w_big" style="color:#8892bf;"></span> Info <span class="icon-info-circled w_big" style="color:#8892bf;"></span></a></li>';
+	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-php w_big" style="color:#8892bf;"></span> Docs <span class="icon-file-txt w_big" style="color:#8892bf;"></span></a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt <span class="icon-prompt w_big" style="color:#8892bf;"></span></a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="https://getbootstrap.com/" target="_blank"><span class="icon-help-circled w_big" style="color:#563d7c;"></span> Bootstrap CSS</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="https://materializecss.com/" target="_blank"><span class="icon-help-circled w_big" style="color:#ee6e73;"></span> Materialize CSS</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'.PHP_EOL;
-	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'.PHP_EOL;
 	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'.PHP_EOL;

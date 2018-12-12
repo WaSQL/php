@@ -1,12 +1,16 @@
 # WaSQL - Web access to SQL
+##### A multi-language Rapid Application Development platform
 
 ## What is WaSQL?
-WaSQL is a website development platform.  It is designed to help you build web sites, forms, e-commerce, intranet and other custom web applications rapidly.  WaSQL deploys pages and applications using a database driven MVC architecture.  It is a stand-alone platform as it does not require any outside or 3rd party add-ons to work.  It is also a replacement for PhpMyAdmin since database schema management is built in.  User management is also built in.
+WaSQL is truly RAD, in both senses of the word. It is a PHP driven, Rapid Application Development (RAD) platform that lets you code in many different languages (whoa! that is rad!).  It is designed to help you build web sites, intranets, forms, e-commerce, and other custom web applications.  WaSQL deploys pages and applications using a database driven MVC architecture.  It is a stand-alone platform as it does not require any outside or 3rd party add-ons to work.  It is also a replacement for PhpMyAdmin since database schema management is built in.  User management is also built in.
+
+One of the things that makes WaSQL unique from most other applications is that all of the page logic is stored in database records.  This has several advantages.  It makes hacking that pages much, much harder.  It also allows you to wrap your entire site into a Mysql dump file, move it to another server or another location, and then restore it within seconds.
+
 
 ## Supported Scripting Languages
 WaSQL is written in PHP but supports embeded PHP, Nodejs, Python, Perl, Ruby, Vbscript, Lua, Bash, and shell scripts. Request, session, server, config, and user variables are passed in to all scripts, regardless of langauge, so you can access them in whatever language you write your code in.  Note: if you want to modify the variables you must modify them in PHP.
 
-WaSQL is the only web development platform, that we are aware of, that lets you write in whatever language you want.
+WaSQL is the only web development platform, that we are aware of, that lets you write in whatever language you want.  Please let us know if there are other languages you would like it to support and we will do our best to add support for it.
 
 Caveat: your web server has to support the languages you decide to write in.
 
@@ -14,10 +18,7 @@ Caveat: your web server has to support the languages you decide to write in.
 WaSQL is free for both personal and business use. Read the full license [here](license.md)
 
 ## Required Skills
-To use WaSQL effectively you need to know HTML5, CSS3, JavaScript, SQL, and PHP.  Many functions are already built for you but you need to understand programming logic to really use it.
-
-## Best Way to Learn WaSQL
-I have found that the best way to learn WaSQL is to download it and use it.  I also recommend reading the functions found in database.php and common.php for starters.
+To use WaSQL effectively you need to know HTML5, CSS3, JavaScript, SQL, and one of the supported programming languages. At least a basic knowledge of PHP is also very helpful.
 
 ## Where to Get Help
 Documentation is built in and searchable via the backend admin Help menu. If you need additional help with your project please contact me at steve.lloyd@gmail.com. 
