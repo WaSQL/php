@@ -5350,7 +5350,7 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 	if(!count($arr)){return array();}
 	switch($lang['name']){
 		case 'python':
-			$precode[]="{$varname} = ".json_encode($json);
+			$precode[]="{$varname} = ".json_encode($arr);
 		break;
 		case 'perl':
 			$precode[]="our %{$varname} = (";
