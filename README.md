@@ -63,7 +63,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 - **Install git**
 	-  if you don't already have it installed, install git.  Depending on your linux flavor this will be different.
 - **Install WaSQL**
-	- From a telnet prompt cd to the directory you want to place the wasql folder.  I usually place it just below document root (/var/www)  Type the following command and hit enter:
+	- From a terminal prompt cd to the directory you want to place the wasql folder.  I usually place it just below document root (/var/www)  Type the following command and hit enter:
 		- >git clone https://github.com/WaSQL/php.git wasql
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- edit config.xml. Change the dbname, dbuser, and dbpass if you want.
