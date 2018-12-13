@@ -1,6 +1,5 @@
 <?php
 	if(isset($_REQUEST['requests'])){
-
 		$n=(integer)$_REQUEST['requests'];
 		$c=(integer)$_REQUEST['concurrency'];
 		$url=$_REQUEST['url'];
@@ -26,6 +25,7 @@
 		setView('result',1);
 	}
 	else{
+		apachebenchCheckSchema();
 		setView('default');
 	}
 ?>
