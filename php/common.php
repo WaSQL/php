@@ -2694,24 +2694,38 @@ function cleanDir($dir='') {
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=realpath('.');}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
-	if($timeout != 0 && isNum($timeout) && !isWindows()){
-		//this will kill the process if it goes longer than timeout
-    	$cmd="($cmd) & WPID=\$!; sleep {$timeout} && kill \$WPID > /dev/null 2>&1 & wait \$WPID";
+	//windows OS requires the stderr pipe to be write
+	if(isWindows()){
+		$proc=proc_open($cmd,
+			array(
+				0=>array('pipe', 'r'), //stdin
+				1=>array('pipe', 'w'), //stdout
+				2=>array('pipe', 'w')  //stderr
+				),
+			$pipes,
+			$dir,
+			null,
+			array('bypass_shell'=>true)
+		);
+		stream_set_blocking($pipes[1], 0);
+		stream_set_blocking($pipes[2], 0);
 	}
-	$proc=proc_open($cmd,
-		array(
-			0=>array('pipe', 'r'), //stdin
-			1=>array('pipe', 'w'), //stdout
-			2=>array('pipe', 'w')  //stderr
-			),
-		$pipes,
-		$dir,
-		null,
-		isWindows()?array('bypass_shell'=>true):null
-	);
-	
-	stream_set_blocking($pipes[1], 0);
-	stream_set_blocking($pipes[2], 0);
+	else{
+		if($timeout != 0 && isNum($timeout)){
+			//this will kill the process if it goes longer than timeout
+	    	$cmd="($cmd) & WPID=\$!; sleep {$timeout} && kill \$WPID > /dev/null 2>&1 & wait \$WPID";
+		}
+		$proc=proc_open($cmd,
+			array(
+				0=>array('pipe', 'r'), //stdin
+				1=>array('pipe', 'w'), //stdout
+				2=>array('pipe', 'a')  //stderr
+				),
+			$pipes,
+			$dir
+		);
+		stream_set_blocking($pipes[2], 0);
+	}
     //fwrite($pipes[0], $args);
 	fclose($pipes[0]);
     $stdout=stream_get_contents($pipes[1]);fclose($pipes[1]);
