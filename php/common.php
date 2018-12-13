@@ -2702,11 +2702,15 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 		array(
 			0=>array('pipe', 'r'), //stdin
 			1=>array('pipe', 'w'), //stdout
-			2=>array('pipe', 'a')  //stderr
+			2=>array('pipe', 'w')  //stderr
 			),
 		$pipes,
-		$dir
+		$dir,
+		null,
+		isWindows()?array('bypass_shell'=>true):null
 	);
+	
+	stream_set_blocking($pipes[1], 0);
 	stream_set_blocking($pipes[2], 0);
     //fwrite($pipes[0], $args);
 	fclose($pipes[0]);

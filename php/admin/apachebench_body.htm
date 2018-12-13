@@ -1,0 +1,16 @@
+<view:default>
+<h2 style="margin:0px;"><span class="icon-featjer"></span> Apache Bench</h2>
+ApacheBench (ab) is a single-threaded command line computer program for measuring the performance of HTTP web servers.
+<div class="row">
+	<div class="col-xs-4">
+		<?=pageAbForm();?>
+	</div>
+	<div class="col-xs-8" id="ab_results">
+	</div>
+</div>
+</view:default>
+
+<view:result>
+<div class="w_grey w_small w_pad" style="margin-bottom:10px;"><span class="icon-prompt"></span><?=$cmd;?></div>
+<?=$result;?>
+</view:result>

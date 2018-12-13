@@ -511,6 +511,9 @@ if(isAjax()){
     	case 'decode':
 			echo adminViewPage('decode');exit;
     	break;
+    	case 'ab':
+			echo adminViewPage('apachebench');exit;
+    	break;
     	case 'manual':
 			echo adminViewPage('manual');exit;
 		break;
@@ -1293,6 +1296,9 @@ ENDOFX;
 		break;
 		case 'decode':
 			echo adminViewPage('decode');exit;
+		break;
+		case 'ab':
+			echo adminViewPage('apachebench');exit;
 		break;
 		case 'manual':
 			echo adminViewPage('manual');exit;
@@ -3518,6 +3524,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="https://materializecss.com/" target="_blank"><span class="icon-help-circled w_big" style="color:#ee6e73;"></span> Materialize CSS</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=ab"><span class="icon-feather w_big w_black"></span> Apache Bench</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'.PHP_EOL;
