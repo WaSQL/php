@@ -15,14 +15,19 @@
 $progpath=dirname(__FILE__);
 //make sure the translations table exists
 translateCheckSchema();
+
+
 //functions
 //---------- begin function translateCheckSchema
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateCheckSchema(){
+	global $CONFIG;
 	$table='translations';
-	if(isDBTable($table)){return false;}
+	if(isDBTable($table)){
+		return false;
+	}
 	$fields=array(
 		'_id'			=> databasePrimaryKeyFieldString(),
 		'_cdate'		=> databaseDataType('datetime').databaseDateTimeNow(),
@@ -35,6 +40,7 @@ function translateCheckSchema(){
 		'translation'	=> databaseDataType('varchar(255)')." NULL",
 		'identifier'	=> databaseDataType('char(40)')." NULL",
 		'confirmed'		=> databaseDataType('int')." NOT NULL Default 0",
+		'failed'		=> databaseDataType('int')." NOT NULL Default 0",
 		);
 	$ok = createDBTable($table,$fields,'InnoDB');
 	if($ok != 1){
@@ -87,7 +93,7 @@ function translateText($text,$locale=''){
 	global $CONFIG;
 	list($target_lang,$target_country)=translateParseLocale($locale);
 	$translation=$text;
-	if($lang != 'en' && isset($CONFIG['translate_source'])){
+	if($target_lang != $source_lang && isset($CONFIG['translate_source'])){
 		if(!isset($CONFIG['translate_key'])){
 			debugValue('Missing Translate Key in config');
 			return;
@@ -105,8 +111,13 @@ function translateText($text,$locale=''){
 		'identifier'	=> $identifier,
 		't_id'			=> $TEMPLATE['_id'],
 		'p_id'			=> $PAGE['_id'],
-		'translation'	=> $translation
+		'translation'	=> $translation,
+		'failed'		=> 0
 	);
+	if($target_lang != $source_lang && sha1(trim($translation))==sha1($text)){
+		$addopts['failed']=1;
+	}
+	//echo "{$target_lang} != {$source_lang}<br>{$translation}<br>{$text}".printValue($addopts);exit;
 	$id=addDBRecord($addopts);
 	return $translation;
 }
@@ -133,6 +144,7 @@ function translateYandex($text,$source_lang,$target_lang){
 		'-follow'	=> 1
 	);
 	$post=postURL($url,$opts);
+	//echo $post['body'];exit;
 	if(isset($post['json_array']['text'][0])){
 		return decodeURL($post['json_array']['text'][0]);
 	}
