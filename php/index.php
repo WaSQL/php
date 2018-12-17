@@ -1026,87 +1026,10 @@ if(!is_array($PAGE)){
 }
 global $TEMPLATE;
 if(is_array($PAGE) && $PAGE['_id'] > 0){
-	//look for _marker requests
-    if(isset($_REQUEST['_marker'])){
-		if($_REQUEST['_marker']=='load'){
-			//check to make sure the _markers table is available.  If not create it
-			if(!isDBTable('_markers')){createWasqlTable('_markers');}
-			$markers=array();
-			$recs=getDBRecords(array('-table'=>'_markers','status'=>1,'page_id'=>$PAGE['_id']));
-			foreach($recs as $rec){
-				$marker=array('x'=>$rec['mousex'],'y'=>$rec['mousey'],'page'=>$rec['page_id'],'priority'=>$rec['priority']);
-				$markers[]=$marker;
-			}
-			$json=json_encode($markers);
-			//$json=str_replace('"',"'",$json);
-			echo '<div id="wasqlMarkerTagsData" data-page="'.$PAGE['_id'].'">'.$json.'</div>'."\n";
-			echo buildOnLoad("wasqlMarkerTagsJson('wasqlMarkerTagsData');");
-			echo printValue($PAGE['name']);
-			exit;
-		}
-		elseif($_REQUEST['_marker']=='close'){
-			if(isNum($_REQUEST['add_id'])){
-				$rec=getDBRecord(array('-table'=>'_markers','_id'=>$_REQUEST['add_id']));
-				echo buildOnLoad("wasqlMarkerTag({$rec['mousex']},{$rec['mousey']},{$rec['page_id']},{$rec['priority']});");
-			}
-			elseif(isNum($_REQUEST['edit_id'])){
-				$rec=getDBRecord(array('-table'=>'_markers','_id'=>$_REQUEST['edit_id']));
-				if($rec['status']==1){
-					echo buildOnLoad("wasqlMarkerTag({$rec['mousex']},{$rec['mousey']},{$rec['page_id']},{$rec['priority']});");
-				}
-				else{
-					$guid="_marker_{$rec['mousex']}_{$rec['mousey']}_{$rec['page_id']}";
-					echo buildOnLoad("removeId('{$guid}');");
-				}
-			}
-	    	echo buildOnLoad("removeId('centerpop');");
-	    	echo printValue($_REQUEST);
-	    	exit;
-		}
-		$opts=array(
-			'-table'=>'_markers',
-			'-fields'=>'status:priority,problem',
-			'-name'=>'_markerform',
-			'_marker'=>'close',
-			'priority_displayname'=>'Importance',
-			'note_displayname'=>'Describe what you want different',
-			'-focus'=>'problem',
-			'-hide'=>'clone',
-			'-onsubmit'=>"return ajaxSubmitForm(this,'_markernulldiv');"
-		);
-		$minx=$_REQUEST['mousex']-30;
-		$maxx=$_REQUEST['mousex']+30;
-		$miny=$_REQUEST['mousey']-30;
-		$maxy=$_REQUEST['mousey']+30;
-		$recopts=array(
-			'-table'=>'_markers',
-			'-where'=>"mousex between {$minx} and {$maxx} and mousey between {$miny} and {$maxy} and status=1 and page_id={$PAGE['_id']}"
-		);
-		$rec=getDBRecord($recopts);
-		if(isset($rec['_id'])){
-			$opts['_id']=$rec['_id'];
-			$opts['_action']='EDIT';
-			$opts['-fields']='status:priority,problem,solution';
-			$opts['-focus']='solution';
-			$opts['status']=2;
-			$opts['-save']='Mark as Fixed';
-		}
-		else{
-	    	$opts['mousex']=$_REQUEST['mousex'];
-	    	$opts['mousey']=$_REQUEST['mousey'];
-	    	$opts['status']=1;
-	    	$opts['_action']='ADD';
-	    	$opts['page_id']=$PAGE['_id'];
-	    	$opts['-save']='Mark this Page';
-		}
-		echo addEditDBForm($opts);
-		exit;
-	}
 	//ignore viewfield if blank
 	if(strlen(trim($PAGE[$_REQUEST['_viewfield']]))==0){
           	$_REQUEST['_viewfield']='body';
 	}
-	//echo printValue($viewfield);exit;
 	//determine Content-type
 	if(!headers_sent()){
 		if(strtolower($PAGE['name'])=='css'){header("Content-type: text/css");}
@@ -1197,9 +1120,11 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	}
 	else{$htm=$PAGE[$viewfield];}
 	$htm=evalPHP(array($controller,$htm));
+	//check for translate tags
+	$htm=processTranslateTags($htm);
 	echo $htm;exit;
-    	//if the page name or permalink ends in .html then write the static file.
-    	if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){
+    //if the page name or permalink ends in .html then write the static file.
+    if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){
 		$afile="{$_SERVER['DOCUMENT_ROOT']}/{$PAGE['name']}";
 		setFileContents($afile,$htm);
 	}

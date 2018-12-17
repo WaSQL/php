@@ -3517,6 +3517,27 @@ function removeViews($htm){
 	}
 	return $htm;
 }
+//---------- begin function processTranslateTags
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function processTranslateTags($htm){
+	if(!stringContains($htm,'<translate>')){return $htm;}
+	loadExtras('translate');
+	preg_match_all('/\<translate\>(.+?)\<\/translate\>/ism',$htm,$m,PREG_PATTERN_ORDER);
+	/* this returns an array of three arrays
+		0 = the whole tag
+		1 = the tag text
+	*/
+	foreach($m[1] as $i=>$text){
+		$replace_str=translateText($text);
+		$htm=str_replace($m[0][$i],$replace_str,$htm);
+	}
+	if(stringContains($htm,'<translate>')){
+    	debugValue("Translate Tag Error detected - perhaps a malformed 'translate' tag");
+	}
+	return $htm;
+}
 
 //---------- begin function renderView---------------------------------------
 /**
@@ -8335,6 +8356,10 @@ function includePage($val='',$params=array()){
 		if(isset($prev[$key])){$_REQUEST[$key]=$prev[$key];}
 		else{unset($_REQUEST[$key]);}
 	}
+	if(isset($params['-notranslate'])){
+		return $rtn;
+	}
+	$rtn=processTranslateTags($rtn);
     return $rtn;
 }
 
