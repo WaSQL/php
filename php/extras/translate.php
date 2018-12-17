@@ -24,7 +24,7 @@ translateCheckSchema();
 */
 function translateCheckSchema(){
 	global $CONFIG;
-	$table='translations';
+	$table='_translations';
 	if(isDBTable($table)){
 		return false;
 	}
@@ -80,7 +80,7 @@ function translateText($text,$locale=''){
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
 	$opts=array(
-		'-table'	=> 'translations',
+		'-table'	=> '_translations',
 		'-where'	=> "locale ='{$locale}' and p_id in (0,{$PAGE['_id']}) and t_id in (0,{$TEMPLATE['_id']})"
 	);
 	$recs=getDBRecords($opts);
@@ -105,7 +105,7 @@ function translateText($text,$locale=''){
 		}
 	}
 	$addopts=array(
-		'-table'		=> 'translations',
+		'-table'		=> '_translations',
 		'-ignore'		=> 1,
 		'locale'		=> $locale,
 		'identifier'	=> $identifier,
