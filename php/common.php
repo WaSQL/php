@@ -49,8 +49,16 @@ function commonSearchFiltersForm($params=array()){
 			$atts[$m[1]]=$v;
 		}
 	}
+	//action override?
+	if(!empty($atts['-action'])){
+		$atts['action']=$atts['-action'];
+	}
 	if(empty($atts['action'])){
 		$atts['action']="/{$PAGE['name']}";
+	}
+	//onsubmit override?
+	if(!empty($atts['-onsubmit'])){
+		$atts['onsubmit']=$atts['-onsubmit'];
 	}
 	if(empty($atts['onsubmit'])){
 		$atts['onsubmit']="return pagingSubmit(this);";
