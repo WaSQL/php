@@ -79,6 +79,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
+*	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function
 *	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
@@ -684,6 +685,10 @@ function databaseListRecords($params=array()){
 	if(!is_array($params['-list']) || !count($params['-list'])){
 		$rtn .= '</table>'.PHP_EOL;
 		return $rtn;
+	}
+	//check for -results_eval
+	if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+		$params['-list']=call_user_func($params['-results_eval'],$params['-list']);
 	}
 	//build the tbody
 	$rtn.='	<tbody ';
