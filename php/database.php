@@ -770,7 +770,7 @@ function databaseListRecords($params=array()){
                 unset($hvalue);
 			}
 			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
-                $value='<img src="'.$value.'" alt="" style="height:28px;border-radius:18px;" />';
+                $value='<img src="'.$value.'" alt="" style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);" />';
 			}
 			$rtn .= '			<td';
 			$atts=array();
