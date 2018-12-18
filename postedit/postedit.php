@@ -80,7 +80,7 @@ while(1){
 	//check for local changes
 	checkForChanges();
 	$countdown-=1;
-	if($timer != 0 && $countdown==0){
+	if($timer != 0 && $countdown < 1){
 		writeFiles();
 		$countdown=$timer;
 	}

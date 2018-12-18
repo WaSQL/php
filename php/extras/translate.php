@@ -22,17 +22,34 @@ translateCheckSchema();
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function translateGetLocales(){
+function translateGetLocales($filters=array()){
+	if(!is_array($filters)){
+		$filters=preg_split('/\,+/',$filters);
+	}
 	$path=getWasqlPath('php/schema');
+	$flagspath=getWasqlPath('wfiles/flags');
 	$jsontxt=getFileContents("{$path}/locales.json");
 	$sets=json_decode($jsontxt,true);
 	$recs=array();
 	foreach($sets as $locale=>$name){
 		if(strlen($locale) != 5){continue;}
-		$recs[]=array(
-			'locale'=>strtolower(str_replace('_','-',$locale)),
-			'name'=>$name
+		$locale=strtolower(str_replace('_','-',$locale));
+		list($lang,$country)=translateParseLocale($locale);
+		$country=strtolower($country);
+		$rec=array(
+			'locale'=>$locale,
+			'name'=>$name,
+			'lang'=>$lang,
+			'country'=>$country
 		);
+
+		if(file_exists("{$flagspath}/4x3/{$country}.svg")){
+			$rec['flag4x3']="/wfiles/flags/4x3/{$country}.svg";
+		}
+		if(file_exists("{$flagspath}/1x1/{$country}.svg")){
+			$rec['flag1x1']="/wfiles/flags/1x1/{$country}.svg";
+		}
+		$recs[]=$rec;
 	}
 	return $recs;
 }
