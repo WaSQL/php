@@ -22,6 +22,58 @@ translateCheckSchema();
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
+function translateGetLocales(){
+	$path=getWasqlPath('php/schema');
+	$jsontxt=getFileContents("{$path}/locales.json");
+	$sets=json_decode($jsontxt,true);
+	$recs=array();
+	foreach($sets as $locale=>$name){
+		if(strlen($locale) != 5){continue;}
+		$recs[]=array(
+			'locale'=>strtolower(str_replace('_','-',$locale)),
+			'name'=>$name
+		);
+	}
+	return $recs;
+}
+//---------- begin function translateCheckSchema
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function translateGetLocalesUsed(){
+	$locales=translateGetLocales();
+	$q=<<<ENDOFQ
+		SELECT
+			lower(locale) as locale,
+			count(*) entry_cnt,
+			sum(confirmed) confirmed_cnt,
+			sum(failed) failed_cnt
+		FROM
+			_translations
+		GROUP BY locale
+ENDOFQ;
+	$recs=getDBRecords(array(
+		'-query'=>$q,
+		'-index'=>'locale'
+	));
+	//echo printValue($locales).printValue($recs);exit;
+	foreach($locales as $i=>$rec){
+		$locale=strtolower(str_replace('_','-',$rec['locale']));
+		if(!isset($recs[$locale])){
+			unset($locales[$i]);
+			continue;
+		}
+		foreach($recs[$locale] as $k=>$v){
+			if(isset($locales[$i][$k])){continue;}
+			$locales[$i][$k]=$v;
+		}
+	}
+	return $locales;
+}
+//---------- begin function translateCheckSchema
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function translateCheckSchema(){
 	global $CONFIG;
 	$table='_translations';

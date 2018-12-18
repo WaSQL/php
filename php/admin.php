@@ -514,6 +514,9 @@ if(isAjax()){
     	case 'ab':
 			echo adminViewPage('apachebench');exit;
     	break;
+    	case 'translate':
+			echo adminViewPage('translate');exit;
+    	break;
     	case 'manual':
 			echo adminViewPage('manual');exit;
 		break;
@@ -1299,6 +1302,9 @@ ENDOFX;
 		break;
 		case 'ab':
 			echo adminViewPage('apachebench');exit;
+		break;
+		case 'translate':
+			echo adminViewPage('translate');exit;
 		break;
 		case 'manual':
 			echo adminViewPage('manual');exit;
@@ -3520,8 +3526,9 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=phpinfo"><span class="icon-php w_big" style="color:#8892bf;"></span> Info <span class="icon-info-circled w_big" style="color:#8892bf;"></span></a></li>';
 	$rtn .= '     			<li><a href="http://php.net/" target="phpdocs"><span class="icon-php w_big" style="color:#8892bf;"></span> Docs <span class="icon-file-txt w_big" style="color:#8892bf;"></span></a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php w_big"></span> Prompt <span class="icon-prompt w_big" style="color:#8892bf;"></span></a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="https://getbootstrap.com/" target="_blank"><span class="icon-help-circled w_big" style="color:#563d7c;"></span> Bootstrap CSS</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="https://materializecss.com/" target="_blank"><span class="icon-help-circled w_big" style="color:#ee6e73;"></span> Materialize CSS</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate w_big w_success"></span> Translate Manager</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="https://getbootstrap.com/" target="_blank"><span class="icon-css w_big" style="color:#563d7c;"></span> Bootstrap CSS</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="https://materializecss.com/" target="_blank"><span class="icon-css w_big" style="color:#ee6e73;"></span> Materialize CSS</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode w_big w_black"></span> Decode Tools</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=ab"><span class="icon-feather w_big w_black"></span> Apache Bench</a></li>'.PHP_EOL;

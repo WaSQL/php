@@ -5077,6 +5077,8 @@ function getDBFieldTag($params=array()){
     	}
     if(!isset($info[$field]['class'])){$info[$field]['class']='';}
     if(isExtraCss('bootstrap') && !stringContains($info[$field]['class'],'form-control')){$info[$field]['class'] .= ' form-control';}
+    if(!isset($info[$field]['fieldname'])){$info[$field]['fieldname']=$field;}
+    if(!isset($info[$field]['name'])){$info[$field]['name']=$field;}
 	$tag='';
 	switch(strtolower($info[$field]['inputtype'])){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
