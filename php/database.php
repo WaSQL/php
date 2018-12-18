@@ -769,8 +769,8 @@ function databaseListRecords($params=array()){
                 $value .= '>'.$hvalue.'</a>';
                 unset($hvalue);
 			}
-			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1){
-                $value='<img src="'.$value.'" alt="" style="max-height:32px;border-radius:15px;" />';
+			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
+                $value='<img src="'.$value.'" alt="" style="height:28px;border-radius:18px;" />';
 			}
 			$rtn .= '			<td';
 			$atts=array();
