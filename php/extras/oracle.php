@@ -521,7 +521,7 @@ function oracleGetDBRecords($params){
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        $v=strtoupper($params[$k]);
 	        if(isNum($v)){
-	        	$ands[]="{$k} = '{$v}'";
+	        	$ands[]="{$k} = {$v}";
 	        }
 	        else{
 	        	$ands[]="upper({$k})='{$v}'";

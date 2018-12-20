@@ -294,7 +294,7 @@ function databaseListRecords($params=array()){
 							case 'mssql':
 							case 'sqlite':
 								if(isNum($val)){
-									$wheres[]="{$field} = '{$val}'";
+									$wheres[]="{$field} = {$val}";
 								}
 								else{
 									$wheres[]="lower({$field}) = '{$val}'";
@@ -314,7 +314,7 @@ function databaseListRecords($params=array()){
 							case 'mssql':
 							case 'sqlite':
 								if(isNum($val)){
-									$wheres[]="{$field} != '{$val}'";
+									$wheres[]="{$field} != {$val}";
 								}
 								else{
 									$wheres[]="lower({$field}) != '{$val}'";
@@ -337,7 +337,7 @@ function databaseListRecords($params=array()){
 							case 'sqlite':
 								foreach($cvals as $cval){
 									if(isNum($val)){
-										$ors[]="{$field} = '{$val}'";
+										$ors[]="{$field} = {$val}";
 									}
 									else{
 										$ors[]="lower({$field}) = '{$val}'";
