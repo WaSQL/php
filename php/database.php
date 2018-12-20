@@ -290,16 +290,15 @@ function databaseListRecords($params=array()){
 						//equals
 						switch(strtolower($params['-database'])){
 							case 'oracle':
-								$wheres[]="lower({$field}) = '{$val}'";
-							break;
 							case 'hana':
-								$wheres[]="lower({$field}) = '{$val}'";
-							break;
 							case 'mssql':
-								$wheres[]="lower({$field}) = '{$val}'";
-							break;
 							case 'sqlite':
-								$wheres[]="lower({$field}) = '{$val}'";
+								if(isNum($val)){
+									$wheres[]="{$field} = '{$val}'";
+								}
+								else{
+									$wheres[]="lower({$field}) = '{$val}'";
+								}
 							break;
 							default:
 								//mysql is case insensitive
@@ -311,16 +310,15 @@ function databaseListRecords($params=array()){
 						//not equals
 						switch(strtolower($params['-database'])){
 							case 'oracle':
-								$wheres[]="lower({$field}) != '{$val}'";
-							break;
 							case 'hana':
-								$wheres[]="lower({$field}) != '{$val}'";
-							break;
 							case 'mssql':
-								$wheres[]="lower({$field}) != '{$val}'";
-							break;
 							case 'sqlite':
-								$wheres[]="lower({$field}) != '{$val}'";
+								if(isNum($val)){
+									$wheres[]="{$field} != '{$val}'";
+								}
+								else{
+									$wheres[]="lower({$field}) != '{$val}'";
+								}
 							break;
 							default:
 								//mysql is case insensitive
@@ -334,23 +332,16 @@ function databaseListRecords($params=array()){
 						$cvals=preg_split('/\,/',$val);
 						switch(strtolower($params['-database'])){
 							case 'oracle':
-								foreach($cvals as $cval){
-									$ors[]="lower({$field}) = '{$cval}'";
-								}
-							break;
 							case 'hana':
-								foreach($cvals as $cval){
-									$ors[]="lower({$field}) = '{$cval}'";
-								}
-							break;
 							case 'mssql':
-								foreach($cvals as $cval){
-									$ors[]="lower({$field}) = '{$cval}'";
-								}
-							break;
 							case 'sqlite':
 								foreach($cvals as $cval){
-									$ors[]="lower({$field}) = '{$cval}'";
+									if(isNum($val)){
+										$ors[]="{$field} = '{$val}'";
+									}
+									else{
+										$ors[]="lower({$field}) = '{$val}'";
+									}
 								}
 							break;
 							default:
@@ -369,23 +360,16 @@ function databaseListRecords($params=array()){
 						$cvals=preg_split('/\,/',$val);
 						switch(strtolower($params['-database'])){
 							case 'oracle':
-								foreach($cvals as $cval){
-									$ands[]="lower({$field}) != '{$cval}'";
-								}
-							break;
 							case 'hana':
-								foreach($cvals as $cval){
-									$ands[]="lower({$field}) != '{$cval}'";
-								}
-							break;
 							case 'mssql':
-								foreach($cvals as $cval){
-									$ands[]="lower({$field}) != '{$cval}'";
-								}
-							break;
 							case 'sqlite':
 								foreach($cvals as $cval){
-									$ands[]="lower({$field}) != '{$cval}'";
+									if(isNum($val)){
+										$ands[]="{$field} != '{$val}'";
+									}
+									else{
+										$ands[]="lower({$field}) != '{$val}'";
+									}
 								}
 							break;
 							default:
