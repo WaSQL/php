@@ -520,7 +520,13 @@ function oracleGetDBRecords($params){
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        $v=strtoupper($params[$k]);
-	        $ands[]="upper({$k})='{$v}'";
+	        if(isNum($v)){
+	        	$ands[]="{$k} = '{$v}'";
+	        }
+	        else{
+	        	$ands[]="upper({$k})='{$v}'";
+	        }
+	        
 		}
 		//check for -where
 		if(!empty($params['-where'])){
