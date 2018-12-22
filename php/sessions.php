@@ -30,7 +30,7 @@ if(isset($CONFIG['session_domain'])){
 	ini_set("session.cookie_domain", ".{$CONFIG['session_domain']}");
 }
 //start the session
-session_start();
+@session_start();
 /********************************************************/
 /**
  * @author slloyd
