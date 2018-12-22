@@ -90,6 +90,7 @@ function sqliteDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){
+		$CONFIG['sqlite_error']="dbname not set";
 		debugValue("sqliteDBConnect error: no dbname set".printValue($params));
 		return null;
 	}
@@ -97,6 +98,7 @@ function sqliteDBConnect($params=array()){
 	//echo printValue($params).printValue($_SERVER);exit;
 	//check to see if the sqlite database is available. Find it if possible
 	if(!file_exists($params['-dbname'])){
+		$CONFIG['sqlite_error']="dbname does not exist";
 		$cfiles=array(
 			realpath("{$_SERVER['DOCUMENT_ROOT']}{$params['-dbname']}"),
 			realpath("{$_SERVER['DOCUMENT_ROOT']}../{$params['-dbname']}"),
@@ -125,7 +127,9 @@ function sqliteDBConnect($params=array()){
 		return $dbh_sqlite;
 	}
 	catch (Exception $e) {
-		debugValue("sqliteDBConnect exception" . $e->getMessage());
+		$err=$e->getMessage();
+		$CONFIG['sqlite_error']=$err;
+		debugValue("sqliteDBConnect exception - {$err}");
 		return null;
 
 	}
