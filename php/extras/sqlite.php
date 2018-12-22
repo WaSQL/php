@@ -86,6 +86,7 @@ function sqliteParseConnectParams($params=array()){
 *
 */
 function sqliteDBConnect($params=array()){
+	global $CONFIG;
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){
@@ -112,6 +113,7 @@ function sqliteDBConnect($params=array()){
 		}
 		//echo printValue($cfiles).printValue($params);exit;
 	}
+	$CONFIG['sqlite_dbname_realpath']=$params['-dbname'];
 	global $dbh_sqlite;
 	if($dbh_sqlite){return $dbh_sqlite;}
 	try{
