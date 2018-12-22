@@ -85,7 +85,9 @@
 				break;
 				case 'sqlite':
 					loadExtras('sqlite');
-					$recs=sqliteGetDBRecords($_SESSION['sql_last']);
+					$sql=preg_replace('/[\r\n]+/',' ',$_SESSION['sql_last']);
+					//echo $sql;exit;
+					$recs=sqliteGetDBRecords($sql);
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 				default:

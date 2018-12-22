@@ -294,8 +294,12 @@ function sqliteAddDBRecord($params){
 ENDOFQUERY;
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteAddDBRecord Connect Error",$e));
+		$err=array(
+			'msg'=>"sqliteAddDBRecord error",
+			'error'	=> $dbh_sqlite->lastErrorMsg(),
+			'query'	=> $query
+		);
+    	debugValue(array("sqliteAddDBRecord Connect Error",$err));
     	return;
 	}
 	try{
@@ -397,8 +401,12 @@ function sqliteEditDBRecord($params){
 ENDOFQUERY;
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteEditDBRecord Connect Error",$e));
+    	$err=array(
+			'msg'=>"sqliteEditDBRecord error",
+			'error'	=> $dbh_sqlite->lastErrorMsg(),
+			'query'	=> $query
+		);
+    	debugValue(array("sqliteEditDBRecord Connect Error",$err));
     	return;
 	}
 	try{
@@ -469,8 +477,12 @@ ENDOFQUERY;
 function sqliteGetDBTables($params=array()){
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteGetDBTables Error",$e));
+    	$err=array(
+			'msg'=>"sqliteGetDBTables error",
+			'error'	=> $dbh_sqlite->lastErrorMsg(),
+			'query'	=> $query
+		);
+    	debugValue(array("sqliteGetDBTables Error",$err));
     	return;
 	}
 	try{
@@ -513,8 +525,7 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 	if(isset($sqliteGetDBFieldInfoCache[$key])){return $sqliteGetDBFieldInfoCache[$key];}
 	$dbh_sqlite=sqliteDBConnect($params);
 	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteGetDBSchemas Connect Error",$e));
+    	debugValue(array("sqliteGetDBFieldInfo Connect Error"));
     	return;
 	}
 	//check for dbname.tablename
@@ -626,8 +637,7 @@ function sqliteQueryResults($query,$params=array()){
 		$dbh_sqlite=sqliteDBConnect($params);
 	}
 	if(!$dbh_sqlite){
-    	$e=sqlite_error_string(sqlite_last_error());
-    	debugValue(array("sqliteQueryResults Connect Error",$e));
+    	debugValue(array("sqliteQueryResults Connect Error"));
     	return null;
 	}
 	try{
