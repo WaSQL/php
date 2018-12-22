@@ -44,6 +44,10 @@ function sqliteParseConnectParams($params=array()){
 	else{
 		$params['-dbname_source']="passed in";
 	}
+	//readonly
+	if(!isset($params['-sqlite_readonly']) && isset($CONFIG['sqlite_readonly'])){
+		$params['-readonly']=$CONFIG['sqlite_readonly'];
+	}
 	//dbmode
 	if(!isset($params['-dbmode'])){
 		if(isset($CONFIG['dbmode_sqlite'])){
@@ -119,7 +123,13 @@ function sqliteDBConnect($params=array()){
 	global $dbh_sqlite;
 	if($dbh_sqlite){return $dbh_sqlite;}
 	try{
-		$dbh_sqlite = new SQLite3($params['-dbname'],SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
+		if(isset($params['-readonly']) && $params['-readonly']==1){
+			$dbh_sqlite = new SQLite3($params['-dbname'],SQLITE3_OPEN_READONLY);
+		}
+		else{
+			$dbh_sqlite = new SQLite3($params['-dbname'],SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);	
+		}
+		
 		$dbh_sqlite->busyTimeout(5000);
 		// WAL mode has better control over concurrency.
 		// Source: https://www.sqlite.org/wal.html
