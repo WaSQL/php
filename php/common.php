@@ -181,7 +181,7 @@ function commonSearchFiltersForm($params=array()){
 	//export
 	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="CSV Export" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
     	if(!empty($params['-export_file'])){
     		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
