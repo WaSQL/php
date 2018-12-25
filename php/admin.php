@@ -331,6 +331,7 @@ if(count($_REQUEST)==1){
 		echo '	<div class="row">'.PHP_EOL;
 		echo '		<div class="col-xs-12" style="padding:25px;">'.PHP_EOL;
 		echo "			<h3><img src=\"/wfiles/wasql.png\" class=\"w_middle\" alt=\"\" /> '{$k}' requires admin access to view. Login first.</h3>".PHP_EOL;
+		echo printValue($USER).printValue($_COOKIE);
 		echo userLoginForm(array('-action'=>$PHP_SELF.'?'.$k));
 		echo '		</div>'.PHP_EOL;
 		echo '	</div>'.PHP_EOL;

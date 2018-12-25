@@ -1757,12 +1757,13 @@ input.w_toggle-flip:checked + label:after {
 	}
 
 /* Style to wrap pre tags in Mozilla - Hidden from IE  - Mozilla only */
-pre{white-space: pre-wrap;}
+/* pre{white-space: pre-wrap;} */
 .w_nowrap, .nowrap{
 	white-space: nowrap;
 }
 .w_pre{
 	white-space: pre-line;
+	white-space: pre-wrap;
 }
 .w_button {
 	padding-bottom:1px;
