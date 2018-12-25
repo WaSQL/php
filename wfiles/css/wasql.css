@@ -1931,6 +1931,10 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 #w_code {margin: 3%; padding: 7px; border: solid 1px #cccccc; background-color: #eeeeee; font-size:11pt; color: #000000;}
 #w_code {clear:both; margin:0px; padding:2px; text-align:left; border: solid 1px #cccccc; background-color: #eeeeee; font-size:11pt; color: #000000;}
 
+/*Codemirror cursor fix */
+.CodeMirror pre.CodeMirror-cursor{
+	height:13px;
+}
 /*list style*/
 .w_fancylist{}
 .w_fancylist li{
