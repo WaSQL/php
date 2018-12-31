@@ -8319,11 +8319,9 @@ function includePage($val='',$params=array()){
 	$table='_pages';
 	if(isset($params['-dbname'])){$table="{$params['-dbname']}._pages";}
 	if(strtolower($PAGE['name'])==strtolower($val) && $table=='_pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
-	$fields="_id,controller,body,functions,name";
 	$fieldname="body";
 	$opts=array(
-		'-table'=>$table,
-		'-fields'=>$fields
+		'-table'=>$table
 	);
 	if(isNum($val)){$opts['-where']="_id={$val}";}
 	else{$opts['-where']="name='{$val}'";}
