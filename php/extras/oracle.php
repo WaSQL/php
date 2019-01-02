@@ -445,24 +445,35 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	}
 	oci_execute($stid, OCI_DESCRIBE_ONLY);
 	$ncols = oci_num_fields($stid);
+	//echo "here".$ncols;exit;
 	$fields=array();
 	for ($i = 1; $i <= $ncols; $i++) {
 		$name=oci_field_name($stid, $i);
 		$field=array(
 			'table'	=> $table,
+			'_dbtable'	=> $table,
 			'name'	=> $name,
+			'_dbfield'	=> strtolower($name),
 			'type'	=> oci_field_type($stid, $i),
 			'precision'	=> oci_field_precision($stid, $i),
 			'scale'	=> oci_field_scale($stid, $i),
 			'length'	=> oci_field_size($stid, $i),
 			//'type_raw'	=> oci_field_type_raw($stid, $i),
 		);
+		$field['_dbtype']=$field['_dbtype_ex']=strtolower($field['type']);
+		if($field['precision'] > 0){
+			$field['_dbtype_ex']=strtolower("{$field['type']}({$field['precision']})");
+		}
+		elseif($field['length'] > 0 && preg_match('/(char|text|blob)/i',$field['_dbtype'])){
+			$field['_dbtype_ex']=strtolower("{$field['type']}({$field['length']})");
+		}
+		$field['_dblength']=$field['length'];
 		if(in_array($name,$pkeys)){
 			$field['primary_key']=true;
 		}
 		else{
 			$field['primary_key']=false;
-			}
+		}
 		$name=strtolower($name);
 	    $fields[$name]=$field;
 	}
