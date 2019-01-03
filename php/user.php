@@ -575,7 +575,44 @@ function userEncryptPW($pw){
 	$pw_enc='~!'.$pw_enc.'^-';
 	return $pw_enc;
 }
-
+//---------- begin function userGetTempAuthLink ----
+/**
+* get a temporary auth link that you can email to a user.
+* @return string
+* @usage
+*	global $USER;
+*	$temp_auth_link=userGetTempAuthLink($USER); 
+*	$auth_link_timeout=userGetTempAuthLinkTimout();
+*/
+function userGetTempAuthLink($ruser=array()){
+	if(!is_array($ruser) && isNum($ruser)){
+		$ruser=getDBRecord(array('-table'=>'_users','_id'=>$ruser));
+		if(!isset($ruser['_id'])){return null;}
+	}
+	$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
+	$rtime=time();
+	$salt="Salt{$ruser['_id']}tlaS";
+	$auth=encrypt("{$ruser['username']}:{$rtime}:{$ruser['apikey']}",$salt);
+	$dauth=decrypt($auth,$salt);
+	$ruser['_tauth']="{$ruser['_id']}.{$auth}";
+	$http=isSSL()?'https://':'http://';
+	$href=$http.$_SERVER['HTTP_HOST'].'?_tauth='.encodeURL($ruser['_tauth']);
+	return $href;
+}
+//---------- begin function userGetTempAuthLinkTimout ----
+/**
+* gets the number of minutes a temporary auth link is valid for. Set by auth_timeout in config.xml.
+* @return number
+* @usage
+*	global $USER;
+*	$temp_auth_link=userGetTempAuthLink($USER); 
+*	$auth_link_timeout=userGetTempAuthLinkTimout();
+*/
+function userGetTempAuthLinkTimout(){
+	global $CONFIG;
+	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
+	return $minutes;
+}
 //---------- begin function userDecryptPW ----
 /**
 * returns the original password that was put in and secured by WaSQL's security algorythm.

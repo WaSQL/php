@@ -349,12 +349,8 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
     }
     else{
 		$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
-		$rtime=time();
-		$salt="Salt{$ruser['_id']}tlaS";
 		$auth=encrypt("{$ruser['username']}:{$rtime}:{$ruser['apikey']}",$salt);
 		$dauth=decrypt($auth,$salt);
-		//echo "{$auth}<br>{$dauth}";exit;
-		$ruser['_tauth']="{$ruser['_id']}.{$auth}";
 		//send the email.
 		$to=$ruser['email'];
 		$sitename=isset($CONFIG['reminder_site_name'])?$CONFIG['reminder_site_name']:$_SERVER['HTTP_HOST'];
@@ -370,8 +366,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 			$pw=substr($pw,0,2);
 			$message .= 'Your Password starts with "'.$pw.'"'. PHP_EOL;
 		}
-		$http=isSSL()?'https://':'http://';
-		$href=$http.$_SERVER['HTTP_HOST'].'?_tauth='.encodeURL($ruser['_tauth']);
+		$href=userGenerateTempAuthLink($ruser);
 		$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
 		$message .= '<p>You can also <a href="'.$href.'">click here</a> to log in automatically (link expires in '.$minutes.' minutes)</p>';
 		$message .= '<p>Once you login to your account, please change your password.</p>';
