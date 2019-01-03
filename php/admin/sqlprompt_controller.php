@@ -71,6 +71,13 @@
 				case 'oracle':
 					loadExtras('oracle');
 					$recs=oracleGetDBRecords($_SESSION['sql_last']);
+					//check for an oracle ref cursor
+					if(count($recs)==1 && count(array_keys($recs[0])==1)){
+						foreach($recs[0] as $k=>$v){
+							if(is_array($v)){$recs=$v;}
+							break;
+						}
+					}
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 				case 'mssql':
@@ -98,7 +105,45 @@
 			return;
 		break;
 		case 'export':
-			$recs=getDBRecords($_SESSION['sql_last']);
+			switch(strtolower($_REQUEST['db'])){
+				case 'postgresql':
+					loadExtras('postgresql');
+					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'oracle':
+					loadExtras('oracle');
+					$recs=oracleGetDBRecords($_SESSION['sql_last']);
+					//check for an oracle ref cursor
+					if(count($recs)==1 && count(array_keys($recs[0])==1)){
+						foreach($recs[0] as $k=>$v){
+							if(is_array($v)){$recs=$v;}
+							break;
+						}
+					}
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'mssql':
+					loadExtras('mssql');
+					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'hana':
+					loadExtras('hana');
+					$recs=hanaGetDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				case 'sqlite':
+					loadExtras('sqlite');
+					$sql=preg_replace('/[\r\n]+/',' ',$_SESSION['sql_last']);
+					//echo $sql;exit;
+					$recs=sqliteGetDBRecords($sql);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
+				break;
+				default:
+					$recs=getDBRecords($_SESSION['sql_last']);
+				break;
+			}
 			$csv=arrays2CSV($recs);
 			pushData($csv,'csv');
 			exit;
