@@ -325,7 +325,7 @@ foreach($_REQUEST as $key=>$val){
 //show phpinfo if that is the only request param
 if(count($_REQUEST)==1){
 	$k=implode('',array_keys($_REQUEST));
-	if(!isAdmin()){
+	if(!isAdmin() && $k != '_logout'){
 		echo buildHtmlBegin();
 		echo '<div class="container-fluid">'.PHP_EOL;
 		echo '	<div class="row">'.PHP_EOL;
