@@ -584,10 +584,14 @@ function userEncryptPW($pw){
 *	$temp_auth_link=userGetTempAuthLink($USER); 
 *	$auth_link_timeout=userGetTempAuthLinkTimout();
 */
-function userGetTempAuthLink($ruser=array()){
+function userGetTempAuthLink($ruser=array(),$pagename=''){
 	if(!is_array($ruser) && isNum($ruser)){
 		$ruser=getDBRecord(array('-table'=>'_users','_id'=>$ruser));
 		if(!isset($ruser['_id'])){return null;}
+	}
+	//make sure pagename starts with a slash
+	if(strlen($pagename) && !preg_match('/^\//',$pagename)){
+		$pagename="/".$pagename;
 	}
 	$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
 	$rtime=time();
@@ -596,7 +600,7 @@ function userGetTempAuthLink($ruser=array()){
 	$dauth=decrypt($auth,$salt);
 	$ruser['_tauth']="{$ruser['_id']}.{$auth}";
 	$http=isSSL()?'https://':'http://';
-	$href=$http.$_SERVER['HTTP_HOST'].'?_tauth='.encodeURL($ruser['_tauth']);
+	$href=$http.$_SERVER['HTTP_HOST'].$pagename.'?_tauth='.encodeURL($ruser['_tauth']);
 	return $href;
 }
 //---------- begin function userGetTempAuthLinkTimout ----
