@@ -62,6 +62,7 @@
 					$view='results';
 				}
 			}
+			$_SESSION['db_last']=$_REQUEST['db'];
 			switch(strtolower($_REQUEST['db'])){
 				case 'postgresql':
 					loadExtras('postgresql');
@@ -105,7 +106,7 @@
 			return;
 		break;
 		case 'export':
-			switch(strtolower($_REQUEST['db'])){
+			switch(strtolower($_SESSION['db_last'])){
 				case 'postgresql':
 					loadExtras('postgresql');
 					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
