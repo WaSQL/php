@@ -2670,12 +2670,14 @@ function addDBRecord($params=array()){
     if(isMssql()){$table="[{$table}]";}
     $ignore='';
     if(isset($params['-ignore']) && $params['-ignore']){$ignore=' ignore';}
-    $query = 'insert'.$ignore.' into ' . $table . ' (' . $fieldstr . ') values (' . $valstr .')';
+    $query = 'INSERT'.$ignore.' INTO ' . $table . ' (' . $fieldstr . ') VALUES (' . $valstr .')';
     if(count($upserts)){
-    	$query .= ' ON DUPLICATE KEY UPDATE';
+    	$query .= ' ON DUPLICATE KEY UPDATE'.PHP_EOL;
+    	$updates=array();
     	foreach($upserts as $k=>$v){
-    		$query .= " {$k} = {$v}";
+    		$updates[]="{$k} = {$v}";
     	}
+    	$query .= implode(', ',$updates);
     }
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
