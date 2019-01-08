@@ -2561,10 +2561,10 @@ function addDBRecord($params=array()){
     		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
     	}
     	if(isset($info['_edate'])){
-    		$upserts['_edate']=$params['_cdate'];
+    		$upserts['_edate']="'{$params['_cdate']}'";
     	}
     	if(isset($info['_euser'])){
-    		$upserts['_euser']=$params['_cuser'];
+    		$upserts['_euser']="'{$params['_cuser']}'";
     	}
     	foreach($params['-upsert'] as $key){
     		$key=strtolower(trim($key));
