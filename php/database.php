@@ -2438,6 +2438,8 @@ function addEditDBForm($params=array(),$customcode=''){
 * @describe adds record to table and returns the ID of record added
 * @param params array
 *	-table string - name of table
+*	[-ignore] boolean - set to 1 to ignore if record already exists
+*	[-upsert] mixed - list of fields to update if record already exits. comma separated list or array of fields.
 *	[-model] boolean - set to false to disable model functionality
 *	treats other params as field/value pairs
 * @return array
@@ -2553,6 +2555,17 @@ function addDBRecord($params=array()){
 	/* Filter the query based on params */
 	$fields=array();
 	$vals=array();
+	$upserts=array(); //field to update on duplicate key
+	if(isset($params['-upsert'])){
+    	if(!is_array($params['-upsert'])){
+    		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+    	}
+    	foreach($params['-upsert'] as $key){
+    		$key=strtolower(trim($key));
+    		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
+    		$upserts[$key]='';
+    	}
+    }
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
@@ -2566,11 +2579,13 @@ function addDBRecord($params=array()){
 		//date field?
 		if(strlen($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
 			array_push($vals,$pm[1]);
+			if(isset($upserts[$key])){$upserts[$key]=$pm[1];}
 		}
 		elseif(($info[$key]['_dbtype'] =='date')){
 			if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
 			$val=date("Y-m-d",strtotime($val));
 			array_push($vals,"'$val'");
+			if(isset($upserts[$key])){$upserts[$key]="'$val'";}
 		}
 		elseif(isset($info[$key]['inputtype']) && $info[$key]['inputtype'] =='date'){
 			//date field :  03-09-2009, 2009-01-26
@@ -2579,11 +2594,13 @@ function addDBRecord($params=array()){
             }
             $val=date("Y-m-d",strtotime($val));
 			array_push($vals,"'$val'");
+			if(isset($upserts[$key])){$upserts[$key]="'$val'";}
         }
 		elseif($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
 			if(is_array($val)){$val=(integer)$val[0];}
 			if(!is_numeric($val) && strtolower($val) != 'null'){return 'addDBRecord Datatype Mismatch: numeric field "'.$key.'" is type "'.$info[$key]['_dbtype'].'" and requires a numeric value';}
 			array_push($vals,$val);
+			if(isset($upserts[$key])){$upserts[$key]=$val;}
 		}
 		elseif($info[$key]['_dbtype'] =='datetime'){
 			unset($dmatch);
@@ -2601,6 +2618,7 @@ function addDBRecord($params=array()){
             }
             $val=date("Y-m-d H:i:s",strtotime($val));
             array_push($vals,"'$val'");
+            if(isset($upserts[$key])){$upserts[$key]="'$val'";}
 		}
 		elseif($info[$key]['_dbtype'] =='time'){
 			if(is_array($val)){
@@ -2610,14 +2628,17 @@ function addDBRecord($params=array()){
             }
             $val=date("H:i:s",strtotime($val));
             array_push($vals,"'$val'");
+            if(isset($upserts[$key])){$upserts[$key]="'$val'";}
 		}
 		else{
 			if($val != 'NULL'){
 				$val=databaseEscapeString($val);
 				array_push($vals,"'$val'");
+				if(isset($upserts[$key])){$upserts[$key]="'$val'";}
 			}
 			else{
             	array_push($vals,$val);
+            	if(isset($upserts[$key])){$upserts[$key]=$val;}
 			}
         }
         if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){
@@ -2650,6 +2671,12 @@ function addDBRecord($params=array()){
     $ignore='';
     if(isset($params['-ignore']) && $params['-ignore']){$ignore=' ignore';}
     $query = 'insert'.$ignore.' into ' . $table . ' (' . $fieldstr . ') values (' . $valstr .')';
+    if(count($upserts)){
+    	$query .= ' ON DUPLICATE KEY UPDATE';
+    	foreach($upserts as $k=>$v){
+    		$query .= " {$k} = {$v}";
+    	}
+    }
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
 	$query_result=@databaseQuery($query);
