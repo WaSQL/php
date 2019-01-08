@@ -2670,9 +2670,9 @@ function addDBRecord($params=array()){
     if(isMssql()){$table="[{$table}]";}
     $ignore='';
     if(isset($params['-ignore']) && $params['-ignore']){$ignore=' ignore';}
-    $query = 'INSERT'.$ignore.' INTO ' . $table . ' (' . $fieldstr . ') VALUES (' . $valstr .')';
+    $query = 'INSERT'.$ignore.' INTO ' . $table .PHP_EOL. '(' . $fieldstr . ')'.PHP_EOL.'VALUES (' . $valstr .')'.PHP_EOL;
     if(count($upserts)){
-    	$query .= ' ON DUPLICATE KEY UPDATE'.PHP_EOL;
+    	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
     	$updates=array();
     	foreach($upserts as $k=>$v){
     		$updates[]="{$k} = {$v}";
