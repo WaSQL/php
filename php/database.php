@@ -458,6 +458,20 @@ function databaseListRecords($params=array()){
             }
             $rtn .=" onclick=\"{$href}\"";
 		}
+		//check for -trclass, -trstyle, -trdata-..., -tr*
+		foreach($params as $pk=>$pv){
+			if(preg_match('/^\-tr(.+)$/i',$pk,$pm)){
+				$patt_name=$pm[1];
+				$patt_val=$pv;
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $patt_val=str_replace($replace,strip_tags($rec[$recfld]),$patt_val);
+                }
+                $rtn .= " {$patt_name}=\"{$patt_val}\"";
+			}
+		}
 		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
 			$value=$rec[$fld];
