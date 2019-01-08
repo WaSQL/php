@@ -2675,9 +2675,9 @@ function addDBRecord($params=array()){
     	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
     	$updates=array();
     	foreach($upserts as $k=>$v){
-    		$updates[]="{$k} = {$v}";
+    		$updates[]="	{$k} = {$v}";
     	}
-    	$query .= implode(', ',$updates);
+    	$query .= implode(','.PHP_EOL,$updates);
     }
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
