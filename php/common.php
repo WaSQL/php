@@ -1979,7 +1979,10 @@ function buildFormSignature($name,$params=array()){
 		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
-	$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
+	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
+		$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
+	}
+
 	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '		'.$params['displayname'].PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
@@ -1992,6 +1995,12 @@ function buildFormSignature($name,$params=array()){
 	}
 	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
 		$rtn .= ' height="'.$params['height'].'"';
+	}
+	if(isset($params['data-pencolor'])){
+		$rtn .= ' data-color="'.$params['data-pencolor'].'"';
+	}
+	elseif(isset($params['data-color'])){
+		$rtn .= ' data-color="'.$params['data-color'].'"';
 	}
 	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" data-barid="'.$barid.'" class="w_signature"></canvas>'.PHP_EOL;
 	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'.PHP_EOL;
@@ -11592,7 +11601,7 @@ function processInlineImage($img,$fld='inline'){
     $file=$fld.'_'.encodeCRC(sha1($encodedString)).".{$ext}";
 	$decoded=base64_decode($encodedString);
 	//make sure the path exists or create it.
-	$path="{$_SERVER['DOCUMENT_ROOT']}/{$fld}";
+	$path="{$_SERVER['DOCUMENT_ROOT']}/{$fld}_files";
 	if(!is_dir($path)){buildDir($path);}
 	if(!is_dir($path)){
 		debugValue("processInlineImage error: unable to find or create path: {$path}");
@@ -11604,7 +11613,7 @@ function processInlineImage($img,$fld='inline'){
 	//save the file
 	file_put_contents($afile,$decoded);
 	if(file_exists($afile)){
-        $_REQUEST[$fld]="/{$fld}/{$file}";
+        $_REQUEST[$fld]="/{$fld}_files/{$file}";
         return $_REQUEST[$fld];
 	}
 	debugValue("processInlineImage error: unable to save file: {$afile}");
