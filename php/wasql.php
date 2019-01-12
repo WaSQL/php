@@ -676,10 +676,12 @@ function minifyCssFile($v=''){
 	$v=strtolower($v);
 	switch($v){
 		case 'bootstrap':
+		case 'bootstrap4':
 		case 'materialize':
 		case 'foundation':
 		case 'kube':
 		case 'uikit':
+		case 'mini':
 			return "/minify_{$v}_{$mfn}.css";
 		break;
 		default:
@@ -705,6 +707,7 @@ function minifyJsFile($v=''){
 	$v=strtolower($v);
 	switch($v){
 		case 'bootstrap':
+		case 'bootstrap4':
 		case 'materialize':
 		case 'foundation':
 		case 'kube':

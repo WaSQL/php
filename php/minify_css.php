@@ -30,6 +30,7 @@ if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
 //check for framework:  bootstrap, materialize, foundation are supported
 if(isset($_REQUEST['_minify_'])){
 	$parts=preg_split('/\_/',$_REQUEST['_minify_'],2);
+	//echo printValue($parts);exit;
 	if($parts[0]=='bootstrap'){
 		$parts[0]='bootstrap/css/bootstrap';
 	}
