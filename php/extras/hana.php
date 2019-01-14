@@ -267,10 +267,19 @@ function hanaDBConnect($params=array()){
 			$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
 		}
 		if(!is_resource($dbh_hana)){
-			$err=odbc_errormsg();
-			echo "hanaDBConnect error:{$err}".printValue($params);
-			exit;
-
+			//wait a few seconds and try again
+			sleep(2);
+			if(isset($params['-cursor'])){
+				$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			}
+			else{
+				$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+			}
+			if(!is_resource($dbh_hana)){
+				$err=odbc_errormsg();
+				echo "hanaDBConnect error:{$err}".printValue($params);
+				exit;
+			}
 		}
 		return $dbh_hana;
 	}
@@ -376,6 +385,9 @@ function hanaExecuteSQL($query,$params=array()){
 		if(!is_resource($dbh_hana)){
 			debugValue("hanaDBConnect error".printValue($params));
 			return false;
+		}
+		else{
+			debugValue("hanaDBConnect recovered connection ")
 		}
 	}
 	try{
