@@ -370,8 +370,13 @@ function hanaClearConnection(){
 function hanaExecuteSQL($query,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
 	if(!is_resource($dbh_hana)){
-		echo "hanaDBConnect error".printValue($params);
-		exit;
+		//wait a couple of seconds and try again
+		sleep(2);
+		$dbh_hana=hanaDBConnect($params);
+		if(!is_resource($dbh_hana)){
+			debugValue("hanaDBConnect error".printValue($params));
+			return false;
+		}
 	}
 	try{
 		$result=odbc_exec($dbh_hana,$query);
