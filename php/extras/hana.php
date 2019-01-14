@@ -387,7 +387,7 @@ function hanaExecuteSQL($query,$params=array()){
 			return false;
 		}
 		else{
-			debugValue("hanaDBConnect recovered connection ")
+			debugValue("hanaDBConnect recovered connection ");
 		}
 	}
 	try{
