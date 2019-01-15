@@ -20,6 +20,11 @@ date_default_timezone_set('America/Denver');
 ini_set("allow_url_fopen",1);
 $progpath=dirname(__FILE__);
 include_once("$progpath/../php/common.php");
+// $post['body']=getFileContents("{$progpath}/posteditxmlfromjson.txt");
+// $xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
+// $xml=(array)$xml;
+// echo printValue($xml);
+// exit;
 getHosts();
 getSettings();
 if(isset($argv[1])){
