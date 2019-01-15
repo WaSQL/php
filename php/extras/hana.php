@@ -261,19 +261,19 @@ function hanaDBConnect($params=array()){
 
 	try{
 		if(isset($params['-cursor'])){
-			$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
 		}
 		if(!is_resource($dbh_hana)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
-				$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+				$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 			}
 			else{
-				$dbh_hana = odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+				$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
 			}
 			if(!is_resource($dbh_hana)){
 				$err=odbc_errormsg();
