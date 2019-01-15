@@ -10684,8 +10684,8 @@ function postEditXmlFromJson($json=array()){
 		$fieldstr=implode(',',$fields);
 		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table}";
 		$recs=getDBRecords($q);
-		$recs_count=count($recs);
 		if(!is_array($recs)){continue;}
+		$recs_count=count($recs);
 		//build the xml for these records
 		foreach($recs as $rec){
 			$id=$rec['_id'];
