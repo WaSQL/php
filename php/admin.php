@@ -1338,7 +1338,14 @@ ENDOFX;
 			break;
 		case 'settings':
 			echo adminViewPage('settings');exit;
-			break;
+		break;
+		case 'update_wasql':
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh"></span> Update WaSQL</div>'.PHP_EOL;
+			if(isWindows()){$cmd="git pull";}
+			else{$cmd="sudo git pull";}
+			$out=cmdResults($cmd);
+			echo nl2br($out['stdout']);
+		break;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
@@ -3520,6 +3527,8 @@ function adminMenu(){
 	$rtn .= '        	<ul>'.PHP_EOL;
 	//$rtn .= '     			<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear w_big w_grey"></span> Settings</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-refresh w_big" style="color:#1b68ae;"></span> Update WaSQL</a></li>'.PHP_EOL;
+	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-table w_big" style="color:#1b68ae;"></span> Rebuild WaSQL Tables</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'.PHP_EOL;
@@ -3537,19 +3546,12 @@ function adminMenu(){
 	$rtn .= '				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code w_big"></span> Temp Files Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach w_big"></span> File Manager</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=htmlbox"><span class="icon-html5 w_big" style="color:#e34c26;"></span> HTML Sandbox</a></li>'.PHP_EOL;
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=editor">'.adminMenuIcon('/wfiles/wasql_admin.png').' Inline Editor</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
-	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-refresh w_primary w_big"></span> Rebuild waSQL Tables</a></li><li></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line w_warning w_big"></span> Usage Stats</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=email"><span class="icon-mail w_big"></span> Send Email</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow w_big"></span> Font Icons</a></li>'.PHP_EOL;
-    //$rtn .= '     			<li><a href="/php/admin.php?_menu=iconsets"><span class="icon-file-image w_big"></span> List Image Icons</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=env"><span class="icon-server w_grey"></span> Server Vars</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=system"><span class="icon-server w_black"></span> System Info</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=list&_table_=_html_entities"><span class="icon-encoding w_big"></span> HTML Entities</a><hr size="1" style="padding:0px;margin:0px;"></li>'.PHP_EOL;
-	//$rtn .= '				<li><a href="/php/admin.php?_menu=errors">'.adminMenuIcon('/wfiles/iconsets/16/warning.png').' Session Errors</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="http://www.wasql.com"><span class="icon-website w_big w_dblue"></span> Goto WaSQL.com</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="https://github.com/WaSQL/v2/issues/new" target="wasql_bug"><span class="icon-bug w_big w_danger"></span> Report a Bug</a></li>'.PHP_EOL;
-	//$rtn .= '				<li><a href="/php/admin.php?_logout=1"><img src="/wfiles/logoff.gif" alt="" /> Log Off</a></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=list&_table_=_html_entities"><span class="icon-encoding w_big"></span> HTML Entities</a></li>'.PHP_EOL;
 	$rtn .= '			</ul>'.PHP_EOL;
 	$rtn .= '		</li>'.PHP_EOL;
 	//Settings Link
