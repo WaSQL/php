@@ -3529,7 +3529,7 @@ function adminMenu(){
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled w_big" style="color:#1b68ae;"></span> WaSQL Docs</a></li>'.PHP_EOL;
 	$rtn .= '     			<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-refresh w_big" style="color:#1b68ae;"></span> Update WaSQL</a></li>'.PHP_EOL;
 	$rtn .= '				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-table w_big" style="color:#1b68ae;"></span> Rebuild WaSQL Tables</a></li>'.PHP_EOL;
-	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big w_lblue"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
+	$rtn .= '     			<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled w_big" style="color:#1b68ae;"></span> About WaSQL</a><hr size="1" style="padding:0px;margin:5px 0px;"></li>'.PHP_EOL;
 	if(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1){
 		$rtn .= '				<li><a href="/php/admin.php?_menu=git"><span class="icon-git w_big"></span> Repo</a></li>'.PHP_EOL;
 	}
