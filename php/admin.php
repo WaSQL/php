@@ -1341,9 +1341,16 @@ ENDOFX;
 		break;
 		case 'update_wasql':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh"></span> Update WaSQL</div>'.PHP_EOL;
-			if(isWindows()){$cmd="git pull";}
-			else{$cmd="sudo git pull";}
-			$out=cmdResults($cmd);
+			if(isWindows()){
+				$cmd="git pull";
+				$out=cmdResults($cmd);
+			}
+			else{
+				$out=cmdResults("sudo git pull");
+				if(!isset($out['stdout'])){
+					$out=cmdResults("git pull");
+				}
+			}
 			echo nl2br($out['stdout']);
 		break;
 		case 'about':
