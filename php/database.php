@@ -3551,7 +3551,7 @@ function buildDBPaging($paging=array()){
                 	$rtn .= '	<button type="button" title="Bulk Edit" class="btn btn-default btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
 				}
 				if(!isset($paging['-noexport'])){
-                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="return pagingExport(document.'.$formname.');"> export</a>'.PHP_EOL;
+                	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="setProcessing(this);return pagingExport(document.'.$formname.');"> export</a>'.PHP_EOL;
                 	//export
 					if(isset($_REQUEST['_export']) && $_REQUEST['_export']==1){
 			        	$where=getDBWhere($paging);
