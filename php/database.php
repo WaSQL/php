@@ -3699,7 +3699,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        	}
 			$arr['_start']=$paging['-first'];
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
+			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
         $rtn .= '</div></th>'.PHP_EOL;
 		$rtn .= '	<th><div style="width:35px;">';
@@ -3713,7 +3713,7 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
+			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
         $rtn .= '</div></th>'.PHP_EOL;
 
@@ -3731,7 +3731,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'.PHP_EOL;
-			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
         if(isset($paging['-last'])){
 			$arr=array();
@@ -3744,7 +3744,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'.PHP_EOL;
-			$rtn .= '<td><button type="submit" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn btn-default btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
         $rtn .= '</tr></table>'.PHP_EOL;
 	}
