@@ -92,6 +92,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 */
 function databaseListRecords($params=array()){
 	global $CONFIG;
+	$info=array();
 	//require -table or -list or -query
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
@@ -392,7 +393,7 @@ function databaseListRecords($params=array()){
 		$rtn .= setTagAttributes($atts);
 		$rtn .='>';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
-		if(!empty($params['-sorting']) && $params['-sorting']==1){
+		if(!empty($params['-sorting']) && $params['-sorting']==1 && isset($info[$field])){
 			$name='<a href="#" onclick="return pagingSetOrder(document.'.$params['-formname'].',\''.$field.'\');">'.$name;
 			//show sorting icon
 			if(!empty($_REQUEST['filter_order'])){
