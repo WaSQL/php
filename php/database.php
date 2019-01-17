@@ -238,10 +238,16 @@ function databaseListRecords($params=array()){
 					$recs=getDBRecords($params);
 				break;
 			}
+			//check for results_eval
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				$recs=call_user_func($params['-results_eval'],$recs);
+			}
 			//set limit back
 			$params['-limit']=$limit;
 			//create a csv file
 			$csv=arrays2csv($recs);
+			//add UTF-8 byte order mark to the beginning of the csv
+			$csv="\xEF\xBB\xBF".$csv;
 			$epath=getWasqlTempPath();
 			$ename=sha1($csv).'.csv';
 			$efile="{$epath}/".$ename;
