@@ -1114,6 +1114,7 @@ function remindMeForm(){
 	document.remindMe.email.focus();
 	return false;
 	}
+
 //--------------------------
 function setProcessing(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
@@ -1864,6 +1865,15 @@ function imposeMaxlength(obj, max){
 	return (obj.value.length <= max);
 	}
 //--------------------------
+function pagingSetProcessing(obj){ 
+	let s=obj.querySelector('span');
+	if(undefined != s){
+		s.className='icon-spin7 w_spin';
+	}
+	else{
+		setText(obj,'<span class="icon-spin7 w_spin"></span>');
+	}
+}
 function pagingSubmit(frm,div){
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
@@ -1875,6 +1885,7 @@ function pagingSubmit(frm,div){
 }
 function pagingSetOffset(frm,v){
 	frm.filter_offset.value=v;
+	return pagingSubmit(frm);
 }
 function pagingSetOrder(frm,v){
 	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
