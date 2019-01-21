@@ -2702,6 +2702,7 @@ function addDBRecord($params=array()){
     	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
     	$updates=array();
     	foreach($upserts as $k=>$v){
+    		if(!strlen($v)){$v='NULL';}
     		$updates[]="	{$k} = {$v}";
     	}
     	$query .= implode(','.PHP_EOL,$updates);
