@@ -5704,6 +5704,12 @@ function fileManager($startdir='',$params=array()){
     }
     elseif(isset($_REQUEST['_rmdir']) && $params['-rights'] == 'all'){
 		$ddir=decodeBase64($_REQUEST['_rmdir']);
+		//for security purposes, only push file that are in document_root or the wasql path
+		$wasqlpath=getWasqlPath();
+		if(!stringContains($ddir,$_SERVER['DOCUMENT_ROOT']) && !stringContains($ddir,$wasqlpath)){
+			echo "Error: denied delete request";
+			exit;
+		}
 		$rs = @deleteDirectory($ddir);
 		$rtn .= '<div style="display:none" id="rmdir" result="'.$rs.'">'.$ddir.'</div>'.PHP_EOL;
 		//Remove from xml
@@ -5723,6 +5729,12 @@ function fileManager($startdir='',$params=array()){
     }
     elseif(isset($_REQUEST['_rmfile']) && $params['-rights'] != 'readonly'){
 		$ddir=decodeBase64($_REQUEST['_rmfile']);
+		//for security purposes, only push file that are in document_root or the wasql path
+		$wasqlpath=getWasqlPath();
+		if(!stringContains($ddir,$_SERVER['DOCUMENT_ROOT']) && !stringContains($ddir,$wasqlpath)){
+			echo "Error: denied delete request";
+			exit;
+		}
 		$rs = @deleteDirectory($ddir);
 		//Remove from xml
 		$found=0;
