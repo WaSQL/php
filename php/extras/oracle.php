@@ -64,7 +64,27 @@ function oracleAddDBRecord($params){
 				if($k=='cdate' || $k=='_cdate'){
 					$params[$k]=date('d-M-Y',strtotime($v));
 				}
-        		$opts['values'][]="to_date('{$params[$k]}')";
+				//set the template for the to_date
+				if(preg_match('/^[0-9]{2,2}\-[a-z]{3,3}\-[0-9]{2,4}/i',$params[$k])){
+					//14-Jan-2019 or  14-Jan-2019 00:00:00
+					if(stringContains($params[$k],':')){
+						$opts['values'][]="to_date('{$params[$k]}','DD-MON-YYYY HH24:MI:SS')";
+					}
+					else{
+						$opts['values'][]="to_date('{$params[$k]}','DD-MON-YYYY')";
+					}
+				}
+				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k])){
+					if(stringContains($params[$k],':')){
+						$opts['values'][]="to_date('{$params[$k]}','YYYY-MM-DD HH24:MI:SS')";
+					}
+					else{
+						$opts['values'][]="to_date('{$params[$k]}','YYYY-MM-DD')";
+					}
+				}
+				else{
+					$opts['values'][]="to_date('{$params[$k]}')";
+				}
         	break;
         	default:
         		$opts['values'][]="'{$params[$k]}'";
@@ -231,10 +251,33 @@ function oracleEditDBRecord($params){
 				if($k=='edate' || $k=='_edate'){
 					$params[$k]=date('d-M-Y',strtotime($v));
 				}
+				//set the template for the to_date
+				if(preg_match('/^[0-9]{2,2}\-[a-z]{3,3}\-[0-9]{2,4}/i',$params[$k])){
+					//14-Jan-2019 or  14-Jan-2019 00:00:00
+					if(stringContains($params[$k],':')){
+						$updates[]="{$k}=to_date('{$params[$k]}','DD-MON-YYYY HH24:MI:SS')";
+					}
+					else{
+						$updates[]="{$k}=to_date('{$params[$k]}','DD-MON-YYYY')";
+					}
+				}
+				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k])){
+					if(stringContains($params[$k],':')){
+						$updates[]="{$k}=to_date('{$params[$k]}','YYYY-MM-DD HH24:MI:SS')";
+					}
+					else{
+						$updates[]="{$k}=to_date('{$params[$k]}','YYYY-MM-DD')";
+					}
+				}
+				else{
+					$updates[]="{$k}=to_date('{$params[$k]}')";
+				}
+        	break;
+        	default:
+        		$params[$k]=str_replace("'","''",$params[$k]);
+        		$updates[]="{$k}='{$params[$k]}'";
         	break;
 		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-        $updates[]="{$k}='{$params[$k]}'";
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
