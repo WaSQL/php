@@ -384,6 +384,21 @@ function oracleGetDBCount($params=array()){
 	}
 	return $recs[0]['cnt'];
 }
+//---------- begin function oracleTruncateDBTable--------------------
+/**
+* @describe truncates the specified table
+* @param params array - requires either -list or -table or a raw query instead of params
+*	-table string - table name.  Use this with other field/value params to filter the results
+*	[-host] -  server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array
+* @usage $cnt=oracleTruncateDBTable('myschema.mytable');
+*/
+function oracleTruncateDBTable($table,$params=array()){
+	return oracleExecuteSQL("truncate {$table}");
+}
 //---------- begin function oracleGetDBFields--------------------
 /**
 * @describe returns an array of fields for said table
