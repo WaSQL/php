@@ -441,7 +441,7 @@ function oracleGetDBCount($params=array()){
 * @usage $cnt=oracleTruncateDBTable('myschema.mytable');
 */
 function oracleTruncateDBTable($table,$params=array()){
-	return oracleExecuteSQL("truncate {$table}");
+	return oracleExecuteSQL("truncate table {$table}",$params);
 }
 //---------- begin function oracleGetDBFields--------------------
 /**
