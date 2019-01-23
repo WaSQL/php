@@ -87,6 +87,7 @@ function oracleAddDBRecord($params){
 				}
         	break;
         	default:
+        		$params[$k]=str_replace("'","''",$params[$k]);
         		$opts['values'][]="'{$params[$k]}'";
         	break;
 		}
