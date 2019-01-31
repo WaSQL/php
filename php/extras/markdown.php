@@ -1,6 +1,8 @@
 <?php
 /*
 	http://www.parsedown.org
+	https://github.com/erusev/parsedown
+	https://github.com/nickcernis/html-to-markdown
 */
 $progpath=dirname(__FILE__);
 //load the parsedown library

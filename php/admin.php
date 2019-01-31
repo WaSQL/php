@@ -2098,8 +2098,8 @@ LIST_TABLE:
 				$tfields=getDBFields($_REQUEST['_table_'],1);
 				foreach($list as $index){$used[$index['column_name']]=1;}
 				foreach($tfields as $tfield){
-					if(!isset($used[$tfield])){$fields[]=$tfield;}
-					}
+					$fields[]=$tfield;
+				}
 				echo '<div><b>Select fields to index</b></div>'.PHP_EOL;
 				echo '<div style="margin-left:30px;">'.PHP_EOL;
 				$opts=array();
