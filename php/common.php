@@ -8321,7 +8321,7 @@ function includeApp($app,$params=array()){
 * @usage echo includeModule('translate',array('foo'=>25));
 * @author slloyd
 */
-function includeModule($name,$params){
+function includeModule($name,$params=array()){
 	global $MODULE;
 	$MODULE=$params;
 	$MODULE['name']=$name;

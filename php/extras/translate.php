@@ -85,7 +85,11 @@ ENDOFQ;
 			$locales[$i][$k]=$v;
 		}
 	}
-	return $locales;
+	$recs=array();
+	foreach($locales as $locale){
+		$recs[]=$locale;
+	}
+	return $recs;
 }
 //---------- begin function translateCheckSchema
 /**
