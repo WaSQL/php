@@ -1,5 +1,5 @@
 <view:default>
-<h2 style="margin:0px;"><span class="icon-translate w_success"></span> Translation Manager</h2>
+<h3><?=$MODULE['title'];?></h3>
 <div style="display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
 		<?=translateListLocales();?>
@@ -12,6 +12,7 @@
 
 <view:list>
 	<?=translateListRecords($locale);?>
+	<?=buildOnLoad("removeId('centerpop');");?>
 </view:list>
 
 <view:edit>

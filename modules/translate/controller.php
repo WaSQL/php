@@ -1,5 +1,9 @@
 <?php
 	global $PAGE;
+	global $MODULE;
+	if(!isset($MODULE['title'])){
+		$MODULE['title']='<span class="icon-translate w_success"></span> <translate>Translation Manager</translate>';
+	}
 	loadExtras('translate');
 	switch(strtolower($_REQUEST['passthru'][0])){
 		case 'locale':
