@@ -8310,6 +8310,40 @@ function includeApp($app,$params=array()){
 	}
     return $rtn;
 }
+//---------- begin function includeModule---------------------------------------
+/**
+* @describe a module is a prebuilt page without a specific template. You can include them in your site.
+* modules are made of three files: model.php, view.htm, and controller.php
+* @param $module_name string - name of the module in the modules directory
+* @param [$params] array - passed to the module in the global $MODULE array
+*    additional $_REQUEST key/value pairs you want sent to the page
+* @return html module
+* @usage echo includeModule('translate',array('foo'=>25));
+* @author slloyd
+*/
+function includeModule($name,$params){
+	global $MODULE;
+	$MODULE=$params;
+	$MODULE['name']=$name;
+	if(!strlen($name)){return 'includeModule ERROR - no name';}
+	$modulePath=getWaSQLPath("modules/{$name}");
+	if(!is_dir($modulePath)){return "includeModule ERROR - {$name} does not exist";}
+	//load module functions
+	if(is_file("{$modulePath}/model.php")){
+    	include_once("{$modulePath}/model.php");
+	}
+	if(file_exists("{$modulePath}/controller.php")){
+		$body=getFileContents("{$modulePath}/view.htm");
+		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
+		$controller.=getFileContents("{$modulePath}/controller.php");
+		return evalPHP(array($controller,$body));
+	}
+	else{
+		$body=getFileContents("{$modulePath}/view.htm");
+		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
+		return evalPHP(array($controller,$body));
+	}
+}
 //---------- begin function includePage---------------------------------------
 /**
 * @describe returns the specified page and loads any functions, etc of that page
