@@ -714,6 +714,14 @@ function setUserInfo($guid='NULL'){
 			$USER['_env']=$env_array['env'];
 		}
 	}
+	//check for fields that match a SERVER Variable
+	foreach($_SERVER as $k=>$v){
+		$lk=strtolower($k);
+		if(isset($finfo[$lk]) && !isset($opts[$lk]) && !is_array($v)){
+			$opts[$lk]=$v;
+			$USER[$lk]=$v;
+		}
+	}
 	//_auth
 	$USER['apikey']=encodeUserAuthCode();
 	$auth=encrypt("{$USER['username']}:{$USER['apikey']}",$USER['_id']);
