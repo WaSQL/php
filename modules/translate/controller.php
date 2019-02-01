@@ -2,6 +2,11 @@
 	global $PAGE;
 	loadExtras('translate');
 	switch(strtolower($_REQUEST['passthru'][0])){
+		case 'locale':
+			$locale=addslashes($_REQUEST['passthru'][1]);
+			//echo $locale.printValue($_REQUEST);exit;
+			setView('default');
+		break;
 		case 'list':
 			$locale=addslashes($_REQUEST['passthru'][1]);
 			setView('list',1);

@@ -1,10 +1,11 @@
 <view:default>
 <h2 style="margin:0px;"><span class="icon-translate w_success"></span> Translation Manager</h2>
 <div style="display: flex;flex-direction: row;justify-content: flex-start;">
-	<div>
+	<div style="flex-grow:1;margin-right:10px;">
 		<?=translateListLocales();?>
 	</div>
-	<div id="translate_results">
+	<div id="translate_results" style="flex-grow:4;">
+		<?=renderViewIf(isset($locale),'list',$locale,'locale');?>
 	</div>
 </div>
 </view:default>
@@ -17,9 +18,9 @@
 <div class="w_centerpop_title">Edit <?=$source_locale;?> to <?=$rec['locale'];?></div>
 <div class="w_centerpop_content" style="min-width:600px;padding-right:18px;">
 	<div style="display: flex;flex-direction: row;justify-content: flex-start;">
-		<div>
+		<div style="margin-right:10px;">
 			<div>Source</div>
-			<div class="form-control"><?=$rec['source'];?></div>
+			<div class="form-control browser-default" style="margin-top:10px;"><?=$rec['source'];?></div>
 		</div>
 		<div>
 			<?=translateEditRec($rec);?>
@@ -28,10 +29,6 @@
 </div>
 </view:edit>
 
-<view:edit_fields>
-	<div><div class="w_right">[confirmed]</div>Translation </div>
-	<div>[translation]</div>
-</view:edit_fields>
 
 
 

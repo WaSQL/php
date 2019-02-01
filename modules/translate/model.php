@@ -3,8 +3,10 @@ function translateListRecords($locale){
 	global $PAGE;
 	return databaseListRecords(array(
 		'-table'=>'_translations',
-		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
+		'-formaction'=>"/{$PAGE['name']}/locale/{$locale}",
+		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered w_pointer condensed striped bordered hover',
 		'-listfields'=>'p_id,t_id,locale,confirmed,failed,translation',
+		'-searchfields'=>'translation,locale,p_id,t_id,confirmed,failed',
 		'p_id_displayname'=>'PageID',
 		't_id_displayname'=>'TemplateID',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/edit/%_id%','centerpop')",
@@ -17,7 +19,7 @@ function translateListLocales(){
 	return databaseListRecords(array(
 		'-list'=>translateGetLocalesUsed(),
 		'-hidesearch'=>1,
-		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
+		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered w_pointer condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt,failed_cnt',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results');",
 		'flag4x3_displayname'=>'Flag',
@@ -37,10 +39,10 @@ function translateEditRec($rec){
 		'func'=>'list',
 		'locale'=>$rec['locale'],
 		'-table'=>'_translations',
-		'-fields'=>'<div><div style="float:right;" title="Mark Confirmed">[confirmed]</div>Translation </div><div>[translation]</div>',
+		'-fields'=>translateEditFields(),
 		'translation_inputtype'=>'textarea',
-		'translation_class'=>'form-control',
-		'translation_style'=>'width:100%',
+		'translation_class'=>'form-control browser-default',
+		'translation_style'=>'width:100%;height:150px;',
 		'confirmed_inputtype'=>'checkbox',
 		'confirmed_tvals'=>1,
 		'_id'=>$rec['_id'],
@@ -48,5 +50,15 @@ function translateEditRec($rec){
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);
+}
+function translateEditFields(){
+	return <<<ENDOFFIELDS
+	<div style="display: flex;flex-direction: row;justify-content: space-between;margin-bottom:10px;">
+		<div style="flex-grow:1;margin-right:10px;">Translation</div>
+		<div style="flex-grow:1;margin-right:10px;">Confirmed</div>
+		<div style="flex-grow:4;">[confirmed]</div>
+	</div>
+	<div>[translation]</div>
+ENDOFFIELDS;
 }
 ?>
