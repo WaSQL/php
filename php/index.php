@@ -223,6 +223,14 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	foreach($loadtimes as $k=>$v){
 		$json[$k]=$v;
 	}
+	//if linux add loadavg
+	if(!isWindows()){
+		$out=cmdResults('cat /proc/loadavg');
+		$json['loadavg']=$out['stdout'];
+		$out=cmdResults('cat /proc/uptime');
+		$json['uptime']=$out['stdout'];
+	}
+	
 	header("Content-Type: application/json; charset=UTF-8");
 	echo json_encode($json, JSON_PRETTY_PRINT);
 	exit;
