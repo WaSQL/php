@@ -17,8 +17,8 @@ table.w_formtable td, table.w_formtable th {
     cursor: pointer;
 }
 .w_btn {
-	height: 34px;
-    line-height: 1.42857143;
+	height: 34px !important;
+    line-height: 1.42857143 !important;
     font-size: 14px;
     font-weight:400;
     font-family: Arial;
@@ -129,26 +129,7 @@ table.w_formtable td, table.w_formtable th {
     background-color: #138496;
     border-color: #117a8b;
 }
-.w_input-group {
-    position: relative;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    -ms-flex-align: stretch;
-    align-items: stretch;
-    width: 100%;
-}
-.w_input-group-prepend {
-    margin-right: -1px;
-}
-.w_input-group-append {
-    margin-left: -1px;
-}
-.w_input-group-append, .w_input-group-prepend {
-    display: -ms-flexbox;
-    display: flex;
-}
+
 /*********************************************************/
 /* Flex */
 /*********************************************************/
@@ -201,8 +182,8 @@ table.w_formtable td, table.w_formtable th {
 .w_browser-default,.w_form-control, .browser-default {
     display: block;
     width: 100%;
-    height: 34px;
-    line-height: 1.42857143;
+    height: 34px !important;
+    line-height: 1.42857143 !important;
     font-size: 14px;
     padding: 6px 12px;
     color: #555;
