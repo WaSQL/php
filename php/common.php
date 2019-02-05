@@ -83,8 +83,8 @@ function commonSearchFiltersForm($params=array()){
 		$rtn .= '	<textarea name="'.$k.'">'.$v.'</textarea>'.PHP_EOL;
 	}
 	$rtn .= '</div>'.PHP_EOL;
-	//default class to browser-default
-	if(empty($params['class'])){$params['class']='browser-default';}
+	//default class to w_form-control
+	if(empty($params['class'])){$params['class']='w_form-control';}
 	//if(empty($params['style'])){$params['style']='min-width:75px';}
 	//flex wrapper
 	$rtn .= '	<div class="w_flex w_flexrow w_flexwrap">'.PHP_EOL;
@@ -166,26 +166,26 @@ function commonSearchFiltersForm($params=array()){
 	}
 	//search button
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+	$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//add filter
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="button" class="browser-default" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
+	$rtn .= '				<button type="button" class="w_form-control" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//bulkedit
 	if(!empty($params['-bulkedit'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Bulk Edit" class="browser-default" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Bulk Edit" class="w_form-control" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
 	}
 	//export
 	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="browser-default" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="w_form-control" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
     	if(!empty($params['-export_file'])){
     		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="browser-default" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="w_form-control" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
     	}
 	}
@@ -204,7 +204,7 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//show prev if offset is not 0
@@ -212,7 +212,7 @@ function commonSearchFiltersForm($params=array()){
 			$offset=$params['-offset']-$params['-limit'];
 			if($offset < 0){$offset=0;}
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '			<div style="margin:0 3px;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
@@ -225,13 +225,13 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-total']-$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="browser-default" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
@@ -760,7 +760,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$checked=' checked';
 		}
 		$id="{$name}_{$tval}";
-		$tag .= '<input type="radio" class="browser-default"';
+		$tag .= '<input type="radio" class="w_form-control"';
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
 		}
@@ -925,7 +925,7 @@ function buildFormColor($name,$params=array()){
 	$iconcolor='#c0c0c0';
 	if(strlen($params['value'])){$iconcolor=$params['value'];}
 	if(!isset($params['placeholder'])){$params['placeholder']='#HEXVAL';}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['maxlength']=7;
 	$tag='';
 	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'.PHP_EOL;
@@ -951,7 +951,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['list']=$params['id'].'_datalist';
 	if(!isset($params['value'])){
@@ -993,7 +993,7 @@ function buildFormDate($name,$params=array()){
 	}
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
 	if(!isset($params['maxlength'])){$params['maxlength']='15';}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['data-type'])){$params['data-type']='date';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
@@ -1039,7 +1039,7 @@ function buildFormDateTime($name,$params=array()){
 	}
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD HH:MM:SS';}
 	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['data-type'])){$params['data-type']='datetime';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
@@ -1086,7 +1086,7 @@ function buildFormHidden($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value'])){
 		$params['value']=$_REQUEST[$name];
@@ -1109,7 +1109,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
@@ -1180,7 +1180,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	//class
 	$class='';
-	if(isset($params['class'])){$class=str_replace('form-control','',$params['class']);}
+	if(isset($params['class'])){$class=str_replace('w_form-control','',$params['class']);}
 	if(isset($params['size'])){
 		switch(strtolower($params['size'])){
 	    	case 'small':$class='w_small';break;
@@ -1334,7 +1334,7 @@ function buildFormText($name,$params=array()){
 	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(isset($params['requiredif']) && $params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	$params['name']=$name;
@@ -1374,7 +1374,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){
 		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
 	}
@@ -1462,7 +1462,7 @@ function buildFormTime($name,$params=array()){
 	}
 	if(!isset($params['placeholder'])){$params['placeholder']='HH:MM:SS';}
 	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['data-type'])){$params['data-type']='time';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
@@ -1763,6 +1763,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif']) && $params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//return printValue($pairs);
 	$pcnt=count($pairs);
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
@@ -1776,11 +1777,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
 	}
 	$sval=isset($sval)?$sval:'';
-
 	$params['name']=$name;
-	if(isExtraCss('bootstrap') && !stringContains($params['class'],'form-control')){
-		$params['class'] .= ' form-control';
-	}
 	$skip=array();
 	if(isset($params['-noname'])){$skip[]='name';}
 	$rtn = '<select data-value="'.$sval.'"';
@@ -1813,7 +1810,7 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
@@ -1863,7 +1860,7 @@ function buildFormSelectMonth($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$opts=array(
 		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
@@ -1884,7 +1881,7 @@ function buildFormSelectState($name='state',$country='US',$params=array('message
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	//get a list of country codes that exist in the states table - place these first
 	$recopts=array(
@@ -1915,7 +1912,7 @@ function buildFormSelectTimezone($name='timezone',$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$opts=timezoneList($params);
 	return buildFormSelect($name,$opts,$params);
@@ -1934,7 +1931,7 @@ function buildFormSelectYear($name,$params=array()){
 	if(!isset($params['-backwards'])){$params['-backwards']=0;}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$tvals=selectYears($params['-years'],2,$params['-backwards']);
 	$dvals=selectYears($params['-years'],4,$params['-backwards']);
@@ -5790,7 +5787,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	<div class="row">'.PHP_EOL;
 		$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
 		$rtn .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$rtn .= '			<input type="text" id="_newdir" class="form-control" name="_newdir" value="" />'.PHP_EOL;
+		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" name="_newdir" value="" />'.PHP_EOL;
 		$rtn .= '		</div>'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 		}
@@ -5805,7 +5802,7 @@ function fileManager($startdir='',$params=array()){
 			$rtn .= '	<div class="row">'.PHP_EOL;
 			$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
 			$rtn .= '			<label for="description">Description</label>'.PHP_EOL;
-			$rtn .= '			<textarea name="description" id="description" class="form-control" onkeypress="autoGrow(this,200);"></textarea>'.PHP_EOL;
+			$rtn .= '			<textarea name="description" id="description" class="w_form-control" onkeypress="autoGrow(this,200);"></textarea>'.PHP_EOL;
 			$rtn .= '		</div>'.PHP_EOL;
 			$rtn .= '	</div>'.PHP_EOL;
 		}

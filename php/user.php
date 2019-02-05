@@ -1070,7 +1070,7 @@ function userLoginForm($params=array()){
 			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
 			//password
 			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
-			$form .= '		<td class="text-right w_padright"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
+			$form .= '		<td class="text-right w_padright"><button class="w_btn w_btn-secondary w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td class="w_padright"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -1118,7 +1118,7 @@ function userLoginForm($params=array()){
 			$form .= '	<tr class="w_middle text-right">';
 			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
 			$form .= '		<td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
-			$form .= '		<td align="right"><button class="btn btn-default w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
+			$form .= '		<td align="right"><button class="w_btn w_btn-secondary w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
 			if(isset($CONFIG['facebook_appid'])){
 				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
     			$form .= '<td style="padding:3px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
@@ -1134,67 +1134,23 @@ function userLoginForm($params=array()){
 			$form .= '</div>'.PHP_EOL;
 			break;
 		default:
-			$form .= '<div style="max-width:250px;">'.PHP_EOL;
-			$form .= '	<div>'.PHP_EOL;
-			$form .= '		<div class="input-group">'.PHP_EOL;
-			$form .= '			<span class="input-group-prepend"><span class="icon-user"></span></span>'.PHP_EOL;
+			$username_opts['class']='w_browser-default w_input-append';
+			$password_opts['class']='w_browser-default w_input-append';
+			$form .= '<div style="max-width:250px;margin-left:10px;">'.PHP_EOL;
+			$form .= '	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">'.PHP_EOL;
+			$form .= '		<span class="w_btn w_btn-secondary disabled"><span class="icon-user"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormText('username',$username_opts);
-			$form .= '		</div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
-			$form .= '	<div class="w_padtop">'.PHP_EOL;
-			$form .= '		<div class="w_padtop"><div class="input-group">'.PHP_EOL;
-			$form .= '			<span class="input-group-prepend"><span class="icon-lock"></span></span>'.PHP_EOL;
+			$form .= '	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">'.PHP_EOL;
+			$form .= '			<span class="w_btn w_btn-secondary disabled"><span class="icon-lock"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormPassword('password',$password_opts);
-			$form .= '		</div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="w_flex w_flexrow w_flexbetween w_flexnowrap w_padtop">'.PHP_EOL;
 			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
-			$form .= '		<div><button type="submit" class="btn btn-secondary">Login</button></div>'.PHP_EOL;
+			$form .= '		<div><button type="submit" class="w_btn w_btn-secondary">Login</button></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '</div>'.PHP_EOL;
 		break;
-		case 'default_old':
-			$form .= '<div id="w_loginform_default">'.PHP_EOL;
-			$form .= '<table>';
-			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td class="text-left" title="Username" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></td>'.PHP_EOL;
-			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
-			$form .= '		<td rowspan="2" class="w_top w_padleft"><button class="btn btn-default btn-lg w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
-			$form .= '	</tr>'.PHP_EOL;
-			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td class="text-left w_padtop" title="Password" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></td>'.PHP_EOL;
-			$form .= '		<td class="w_padtop">'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
-			$form .= '	</tr>'.PHP_EOL;
-			if(!isset($params['-noremind'])){
-				$form .= '	<tr class="w_middle text-right">';
-				$form .= '		<td class="text-left" style="padding-right:10px;">'.PHP_EOL;
-				if($params['-icons']){
-					$form .= '			<span class="icon-mail"></span> ';
-				}
-				$form .= '</td><td colspan="2" class="text-left" style="padding-top:10px">'.PHP_EOL;
-				$form .= '			<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">'.$params['-remind'].'</a>'.PHP_EOL;
-				$form .= '		</td>'.PHP_EOL;
-				$form .= '	</tr>'.PHP_EOL;
-			}
-			if(isset($_REQUEST['_login_error'])){
-				$form .= '<tr><td><span class="icon-warning w_red"></span></td><td colspan="2" class="w_red w_small" id="loginform_msg"> '.$_REQUEST['_login_error'].'</td></tr>'.PHP_EOL;
-			}
-			$form .= '</table>'.PHP_EOL;
-			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
-				$form .= '<table><tr>'.PHP_EOL;
-				if(isset($CONFIG['facebook_appid'])){
-					loadExtrasJs('facebook_login');
-					checkDBTableSchema('_users');
-					if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-					$form .= '<td style="margin-top:15px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
-				}
-				if(isset($CONFIG['google_appid'])){
-					$form .= '<td style="margin-top:15px;padding-left:10px;"><div id="google_login"></div></td>';
-				}
-				$form .= '</tr></table>'.PHP_EOL;
-			}
-			$form .= '</div>'.PHP_EOL;
-			break;
 	}
 	//pass thru params
 	$form .= '<div style="display:none;" id="passthru">'.PHP_EOL;
@@ -1315,7 +1271,7 @@ function wpassModule(){
 	if(!isNum($USER['_id'])){return '';}
 	if(!isDBTable('_wpass')){createWasqlTables('_wpass');}
 	$rtn =  '<div class="w_wpass" style="z-index:998;position:relative;display:table-cell;">'.PHP_EOL;
-	$rtn .= '	<input id="wpass_search" class="form-control" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'.PHP_EOL;
+	$rtn .= '	<input id="wpass_search" class="w_form-control" value="" list="wpass_datalist" oninput="return wpassInput(this.value);" style="width:40px;" onfocus="this.style.width=\'250px\';" onblur="this.style.width=\'40px\';" placeholder="wPass search" />'.PHP_EOL;
 	$rtn .= '	<img onclick="wpassInput(0);" title="click to add new wPass record" class="w_pointer w_middle" src="/wfiles/_wpass.png" alt="add" />'.PHP_EOL;
 	$rtn .= '	<div id="wpass_info" style="z-index:999;position:absolute;top:30px;right:0px;background:#FFF;"></div>'.PHP_EOL;
 	$rtn .= '	<div style="display:none;"><div id="wpass_nulldiv"></div></div>'.PHP_EOL;

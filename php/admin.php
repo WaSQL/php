@@ -1015,9 +1015,9 @@ $js=<<<ENDOFJSSCRIPT
 		c=getObject(c);
 		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
 		for(var i=0;i<tabs.length;i++){
-			setClassName(tabs[i],'btn btn-primary');
+			setClassName(tabs[i],'w_btn w_btn-secondary');
 		}
-		setClassName(c,'btn btn-warning active');
+		setClassName(c,'w_btn w_btn-warning active');
 		var sdiv=c.getAttribute('data-div');
 		setText('syncDiv',getText(sdiv));
 		return true;
@@ -1593,7 +1593,7 @@ ENDOFX;
 					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_schema']:'';
 					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'.PHP_EOL;
-					echo '			<div><button type="submit" class="btn btn-primary">Create</button></div>'.PHP_EOL;
+					echo '			<div class="w_padtop"><button type="submit" class="w_btn w_btn-secondary">Create</button></div>'.PHP_EOL;
 					echo '		</form>'.PHP_EOL;
 					echo buildOnLoad('document.new_table._table_.focus();');
 					echo '</td><td>'.PHP_EOL;
@@ -3090,9 +3090,9 @@ function sqlPrompt(){
 	$rtn .= '	</tr>'.PHP_EOL;
 	$rtn .= '	<tr valign="top">'.PHP_EOL;
 	$rtn .= '		<td class="w_align_left">'.PHP_EOL;
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
-	$rtn .= '			<button class="btn btn-primary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
+	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
+	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
+	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
 	$rtn .= '		</td>'.PHP_EOL;
 	$rtn .= '	</tr>'.PHP_EOL;
 	$rtn .= '</table>'.PHP_EOL;
@@ -3258,16 +3258,6 @@ function adminMenu(){
 	$rtn .= buildTableEnd();
 	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '</div>'.PHP_EOL;
-	//search on right
-/* 	$rtn .= '	<div style="float:right;padding:2px 10px 0 10px;" class="hidden-xs hidden-sm">'.PHP_EOL;
-	$rtn .= '     		<div style="display:table-cell;padding-right:10px;">'.buildFormBegin('/php/admin.php',array('-name'=>'reference','_menu'=>'manual','_type'=>'user','-onsubmit'=>"return submitForm(this);")).PHP_EOL;
-	$rtn .= '     			<input type="text" placeholder="search docs" class="form-control input-sm" name="_search" data-required="1" value="'.$_REQUEST['_search'].'" onFocus="this.select();">'.PHP_EOL;
-	$rtn .= '     			<button class="btn btn-default btn-sm" type="submit"><span class="icon-search w_grey"></span></button>'.PHP_EOL;
-	$rtn .= '     		'.buildFormEnd()."</div>\n";
-	//show wpass in menu?
-	if($CONFIG['wpass']){$rtn .= wpassModule();}
-	$rtn .= '	</div>'.PHP_EOL;
-*/
 	$rtn .= '	<div id="adminmenu" style="padding:6px 0 0 10px;">'.PHP_EOL;
 	$rtn .= '	<ul id="nav" class="dropdown dropdown-horizontal">'.PHP_EOL;
 	//logo
@@ -3694,7 +3684,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
 				$spanclass=$tableoptions[$option][1];
-				$class='btn btn-default';
+				$class='w_btn w_btn-secondary';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
                 	if(isset($model['_id'])){
@@ -4026,7 +4016,7 @@ function adminShowSyncChanges($stables=array()){
 		$img='';
 		$src=getImageSrc($table);
 		if(strlen($src)){$img='<img src="'.$src.'" class="w_bottom" alt="" /> ';}
-        $rtn .= '		<button type="button" class="btn btn-primary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'.PHP_EOL;
+        $rtn .= '		<button type="button" class="w_btn w_btn-secondary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'.PHP_EOL;
         $rtn .= '			<sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup>'.PHP_EOL;
         $rtn .= '		</button>'.PHP_EOL;
 	}
@@ -4067,8 +4057,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'.PHP_EOL;
-	$rtn .= '<button type="button" class="btn btn-primary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
-	$rtn .= '<button type="button" class="btn btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="w_btn w_btn-secondary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="w_btn w_btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }
