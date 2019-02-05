@@ -33,23 +33,19 @@
 
 <view:edit>
 <div class="w_centerpop_title">Edit <?=$source_locale;?> to <?=$rec['locale'];?></div>
-<div class="w_centerpop_content" style="min-width:600px;padding-right:18px;">
-	<div class="row">
-		<div class="col-xs-6">
+<div class="w_centerpop_content" style="min-width:400px;padding-right:18px;">
+	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">
+		<div class="w_flex w_flexcol w_flexstart w_flexnowrap">
 			<div>Source</div>
 			<div class="form-control"><?=$rec['source'];?></div>
 		</div>
-		<div class="col-xs-6">
+		<div class="w_flex w_flexcol w_flexstart w_flexnowrap w_padleft">
 			<?=pageEditRec($rec);?>
 		</div>
 	</div>
 </div>
 </view:edit>
 
-<view:edit_fields>
-	<div><div class="w_rigt">[confirmed]</div>Translation </div>
-	<div>[translation]</div>
-</view:edit_fields>
 
 
 

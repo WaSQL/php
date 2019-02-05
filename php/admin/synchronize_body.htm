@@ -41,9 +41,9 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<button class="btn btn-default btn-lg" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
-			<button class="btn btn-default btn-lg" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
-			<a href="/php/admin.php?_menu=synchronize" class="btn btn-default btn-lg"><span class="icon-refresh"></span> Refresh</a>
+			<button class="w_btn w_btn-secondary btn-lg" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+			<button class="w_btn w_btn-secondary btn-lg" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
+			<a href="/php/admin.php?_menu=synchronize" class="w_btn w_btn-secondary btn-lg"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 	</div>
 </div>
@@ -136,10 +136,10 @@
 				<h4>Authorization on Target Site</h4>
 				<div style="max-width:300px;">Provide authorization on the target system in order to push changes. <span class="w_danger">User MUST have admin access.</span></div>
 				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
+				<input type="text" name="sync_target_user" required="required" class="w_form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
 				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
-				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
+				<input type="password" name="sync_target_pass" required="required" class="w_form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
+				<div class="w_padtop"><button type="submit" class="w_btn w_btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
 		<div class="col-sm-9">
@@ -218,8 +218,8 @@
 		<view:sync_id><input type="hidden" name="id[]" value="<?=$id;?>" /></view:sync_id>
 		<?=renderEach('sync_id',$ids,'id');?>
 		<label for="sync_verify_notes">Notes/Explanation</label>
-		<textarea name="notes" required="required" class="form-control" autofocus="autofocus"><?=$_SESSION['sync_notes'];?></textarea>
-		<div class="w_padtop text-right"><button type="submit" class="btn btn-default"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
+		<textarea name="notes" required="required" class="w_form-control" autofocus="autofocus"><?=$_SESSION['sync_notes'];?></textarea>
+		<div class="w_padtop text-right"><button type="submit" class="w_btn w_btn-secondary"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
 	</form>
 	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
 </div>
@@ -229,7 +229,7 @@
 <div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verified</div>
 <div class="w_centerpop_content" style="max-width:800px;overflow:auto;">
 	<div class="w_success"><?=implode('<br>',$results);?></div>
-	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="btn btn-default">Refresh</a></div>
+	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="w_btn w_btn-secondary">Refresh</a></div>
 </div>
 </view:sync_verified>
 
@@ -263,7 +263,7 @@
 		<view:sync_id><input type="hidden" name="id[]" value="<?=$id;?>" /></view:sync_id>
 		<?=renderEach('sync_id',$ids,'id');?>
 		<label>Revert these changes? You will lose any local changes.</label>
-		<div class="w_padtop text-right"><button type="submit" class="btn btn-danger"><span class="icon-backward w_white"></span> Revert Changes</button></div>
+		<div class="w_padtop text-right"><button type="submit" class="w_btn w_btn-danger"><span class="icon-backward w_white"></span> Revert Changes</button></div>
 	</form>
 	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
 </div>

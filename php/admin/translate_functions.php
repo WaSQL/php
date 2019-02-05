@@ -19,7 +19,7 @@ function pageEditRec($rec){
 		'func'=>'list',
 		'locale'=>$rec['locale'],
 		'-table'=>'_translations',
-		'-fields'=>'<div><div style="float:right;" title="Mark Confirmed">[confirmed]</div>Translation </div><div>[translation]</div>',
+		'-fields'=>pageEditFields(),
 		'translation_inputtype'=>'textarea',
 		'translation_class'=>'form-control',
 		'translation_style'=>'width:100%',
@@ -30,5 +30,14 @@ function pageEditRec($rec){
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);
+}
+function pageEditFields(){
+	return <<<ENDOFEDITFIELDS
+	<div class="w_flex w_flexrow w_flexstart w_flexnowrap">
+		<div><translate>Translation</translate></div>
+		<div class="w_padleft">[confirmed]</div>
+	</div>
+	<div>[translation]</div>
+ENDOFEDITFIELDS;
 }
 ?>
