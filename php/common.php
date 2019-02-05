@@ -437,8 +437,8 @@ function abort($obj,$title='',$subtitle=''){
 	$rtn .= '	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />'.PHP_EOL;
 	$rtn .= '	<meta name="robots" content="noindex, nofollow, noarchive" />'.PHP_EOL;
 	$rtn .= '	<meta name="viewport" content="width=device-width, initial-scale=1" />'.PHP_EOL;
-	$rtn .= '	<link type="text/css" rel="stylesheet" href="/php/minify_css.php" />'.PHP_EOL;
-	$rtn .= '	<script type="text/javascript" src="/php/minify_js.php"></script>'.PHP_EOL;
+	$rtn .= '	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('bootstrap4').'" />'.PHP_EOL;
+	$rtn .= '	<script type="text/javascript" src="'.minifyJsFile('bootstrap4').'"></script>'.PHP_EOL;
 	$rtn .= '</head>'.PHP_EOL;
 	$rtn .= '<body>'.PHP_EOL;
 	$headstr = '<div class="w_bigger w_bold w_dblue">'.$title.'</div>'.PHP_EOL;
