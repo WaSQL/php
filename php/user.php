@@ -1134,8 +1134,8 @@ function userLoginForm($params=array()){
 			$form .= '</div>'.PHP_EOL;
 			break;
 		default:
-			$username_opts['class']='w_browser-default w_input-append';
-			$password_opts['class']='w_browser-default w_input-append';
+			$username_opts['class']='browser-default w_input-append';
+			$password_opts['class']='browser-default w_input-append';
 			$form .= '<div style="max-width:250px;margin-left:10px;">'.PHP_EOL;
 			$form .= '	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">'.PHP_EOL;
 			$form .= '		<span class="w_btn w_btn-secondary disabled"><span class="icon-user"></span></span>'.PHP_EOL;
