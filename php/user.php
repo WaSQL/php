@@ -1149,7 +1149,7 @@ function userLoginForm($params=array()){
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="w_flex w_flexrow w_flexbetween w_flexnowrap w_padtop">'.PHP_EOL;
 			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
-			$form .= '		<div><button type="submit" class="btn btn-secondary btn-lg">Login</button></div>'.PHP_EOL;
+			$form .= '		<div><button type="submit" class="btn btn-secondary">Login</button></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '</div>'.PHP_EOL;
 		break;
