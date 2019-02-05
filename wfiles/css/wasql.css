@@ -106,6 +106,21 @@ table.w_formtable td, table.w_formtable th {
 .w_flexnowrap{
 	flex-wrap:nowrap;
 }
+.w_flexstart{
+	justify-content: flex-start;
+}
+.w_flexend{
+	justify-content: flex-end;
+}
+.w_flexbetween{
+	justify-content: space-between;
+}
+.w_flexaround{
+	justify-content: space-around;
+}
+.w_flexbaseline{
+	align-items: baseline;
+}
 /*********************************************************/
 /* Browser default form fields */
 /*********************************************************/

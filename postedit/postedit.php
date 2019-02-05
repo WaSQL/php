@@ -3,7 +3,7 @@
 	replacement for posteditd.pl to handle secure sites
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
-$timer=60;
+$timer=5;
 
 global $progpath;
 global $hosts;
@@ -75,7 +75,8 @@ if(file_exists($noloop)){
 }
 file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
 echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
-$ok=soundAlarm('ready');
+//$ok=soundAlarm('ready');
+$ok=posteditBeep(2);
 $countdown=$timer;
 
 while(1){
@@ -308,6 +309,11 @@ function posteditGetLocalShas(){
 	//echo printValue($json);exit;
 	return $json;
 }
+function posteditBeep($n=1){
+	for($x=0;$x<$n;$x++){
+		fprintf ( STDOUT, "%s", "\x07" );
+	}
+}
 function posteditShaKey($afile){
 	$path=getFilePath($afile);
 	$path=realpath($path);
@@ -426,7 +432,8 @@ function abortMessage($msg){
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	echo $progpath;
 	if(isWindows()){
-		$ok=soundAlarm('abort');
+		//$ok=soundAlarm('abort');
+		$ok=posteditBeep(3);
 	}
 	if(file_exists($lockfile)){unlink($lockfile);}
 	exit;
@@ -435,7 +442,7 @@ function errorMessage($msg){
 	$msg=trim($msg);
 	echo " - Error: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=soundAlarm('error');
+		$ok=posteditBeep(3);
 	}
 	return;
 }
@@ -446,7 +453,7 @@ function successMessage($msg){
 	$msg=trim($msg);
 	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=soundAlarm('success');
+		$ok=posteditBeep(1);
 	}
 	return;
 }
