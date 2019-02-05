@@ -1137,13 +1137,13 @@ function userLoginForm($params=array()){
 			$form .= '<div style="max-width:250px;">'.PHP_EOL;
 			$form .= '	<div>'.PHP_EOL;
 			$form .= '		<div class="input-group">'.PHP_EOL;
-			$form .= '			<span class="input-group-addon input-group-prepend"><span class="icon-user"></span></span>'.PHP_EOL;
+			$form .= '			<span class="input-group-prepend"><span class="icon-user"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormText('username',$username_opts);
 			$form .= '		</div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="w_padtop">'.PHP_EOL;
 			$form .= '		<div class="w_padtop"><div class="input-group">'.PHP_EOL;
-			$form .= '			<span class="input-group-addon input-group-prepend"><span class="icon-lock"></span></span>'.PHP_EOL;
+			$form .= '			<span class="input-group-prepend"><span class="icon-lock"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormPassword('password',$password_opts);
 			$form .= '		</div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
