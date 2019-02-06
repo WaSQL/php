@@ -1137,15 +1137,15 @@ function userLoginForm($params=array()){
 			$username_opts['class']='browser-default w_input-append';
 			$password_opts['class']='browser-default w_input-append';
 			$form .= '<div style="max-width:250px;margin-left:10px;">'.PHP_EOL;
-			$form .= '	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">'.PHP_EOL;
+			$form .= '	<div class="w_flexgroup">'.PHP_EOL;
 			$form .= '		<span class="w_btn w_btn-secondary disabled"><span class="icon-user"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormText('username',$username_opts);
 			$form .= '	</div>'.PHP_EOL;
-			$form .= '	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">'.PHP_EOL;
+			$form .= '	<div class="w_flexgroup">'.PHP_EOL;
 			$form .= '			<span class="w_btn w_btn-secondary disabled"><span class="icon-lock"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormPassword('password',$password_opts);
 			$form .= '	</div>'.PHP_EOL;
-			$form .= '	<div class="w_flex w_flexrow w_flexbetween w_flexnowrap w_padtop">'.PHP_EOL;
+			$form .= '	<div class="w_flexrow">'.PHP_EOL;
 			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
 			$form .= '		<div><button type="submit" class="w_btn w_btn-secondary">Login</button></div>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;

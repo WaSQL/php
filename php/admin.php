@@ -3684,7 +3684,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
 				$spanclass=$tableoptions[$option][1];
-				$class='w_btn w_btn-secondary';
+				$class='w_btn w_btn-outline-secondary';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
                 	if(isset($model['_id'])){
