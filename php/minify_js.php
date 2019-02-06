@@ -96,6 +96,10 @@ foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
 	elseif($extra=='google'){
 		minifyGoogleFiles();
 	}
+	elseif($extra=='bootstrap4'){
+		minifyFiles(realpath("{$jspath}/extras"),'jquery2');
+		minifyFiles(realpath("{$jspath}/extras"),$extra);
+	}
 	elseif(preg_match('/^app\:(.+)$/i',$extra,$m)){
 		$app=strtolower($m[1]);
 		/* --- /apps/chat/chat.css ---*/
