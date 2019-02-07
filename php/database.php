@@ -4422,6 +4422,37 @@ function editDBRecord($params=array()){
     	$id=databaseAffectedRows($query_result);
     	databaseFreeResult($query_result);
     	logDBQuery($query,$start,$function,$params['-table']);
+    	//dirty the w_min cache if a template  or page record is updated
+    	$w_min='';
+    	switch(strtolower($params['-table'])){
+    		case '_pages':
+    		$w_min='P';
+    		break;
+    		case '_templates':
+    			$w_min='T';
+    		break;
+    	}
+    	if(strlen($w_min)){
+    		$docroot=$_SERVER['DOCUMENT_ROOT'];
+    		if(is_dir("{$docroot}/w_min")){
+    			$xfiles=listFiles("{$docroot}/w_min");
+	    		$xrecs=getDBRecords(array(
+					'-table'=>$params['-table'],
+					'-where'=>$params['-where'],
+					'-fields'=>'_id',
+					'-index'=>'_id'
+				));
+				if(is_array($xrecs)){
+					foreach($xrecs as $id=>$xrec){
+						foreach($xfiles as $xfile){
+							if(preg_match('/('.$w_min.$id.'?)[PI\.]/',$xfile)){
+								unlink("{$docroot}/w_min/$xfile");
+							}
+						}
+					}
+				}
+			}
+    	}
     	//addDBHistory('edit',$params['-table'],$params['-where']);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));

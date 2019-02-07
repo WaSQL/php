@@ -28,25 +28,9 @@ if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
 	$_SESSION['w_MINIFY']['extras_css']=array();
 }
 //check for framework:  bootstrap, materialize, foundation are supported
-if(isset($_REQUEST['_minify_'])){
-	$parts=preg_split('/\_/',$_REQUEST['_minify_'],2);
-	//echo printValue($parts);exit;
-	if($parts[0]=='bootstrap'){
-		$parts[0]='bootstrap/css/bootstrap';
-	}
-	if(!in_array($parts[0],$_SESSION['w_MINIFY']['extras_css'])){
-        $_SESSION['w_MINIFY']['extras_css'][]=$parts[0];
-	}
-}
-elseif(isset($_REQUEST['bootstrap'])){
-	$extra='bootstrap/css/bootstrap';
-	if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
-        $_SESSION['w_MINIFY']['extras_css'][]=$extra;
-	}
-}
 //echo $minify_string.printValue($_SERVER);exit;
 global $filename;
-$filename='minify';
+$filename=$_SESSION['w_MINIFY']['css_filename'];
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
 	foreach($_SESSION['w_MINIFY'] as $key=>$val){
@@ -89,13 +73,11 @@ if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY'][
 	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
 		minifyFiles(realpath("{$csspath}/extras"),$extra);
 	}
-	$filename.='X'.count($_SESSION['w_MINIFY']['extras_css']);
 }
 if(isset($_SESSION['w_MINIFY']['cssfiles']) && is_array($_SESSION['w_MINIFY']['cssfiles'])){
 	foreach($_SESSION['w_MINIFY']['cssfiles'] as $file){
     	if(!in_array($file,$files)){$files[]=$file;}
 	}
-	$filename.='F'.count($_SESSION['w_MINIFY']['cssfiles']);
 }
 //echo printValue($files);exit;
 //include files and set the lastmodifiedtime of any file
@@ -134,7 +116,7 @@ foreach($files as $file){
 		}
 		$csslines[]= "\r\n/* BEGIN {$fname} */\r\n";
 		$loaded[]=$fname;
-    	minifyLines($lines,$conditionals);
+    	minifyLines($lines);
 	}
 	else{
 		echo "/* Minify_css Error: NO FILE LINES:{$file} */".PHP_EOL.PHP_EOL;
@@ -148,7 +130,6 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field));
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
-		$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
 		$csslines[] = "\r\n/* BEGIN _templates {$field} */\r\n";
 		$loaded[]="_templates {$field}";
 		minifyLines($content);
@@ -157,7 +138,6 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 		$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field2));
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
-			$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
 			$csslines[] = "\r\n/* BEGIN _templates {$field2} */\r\n";
 			$loaded[]="_templates {$field2}";
 			minifyLines($content);
@@ -169,7 +149,6 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field));
 	$content=evalPHP($rec[$field]);
 	if(strlen(trim($content)) > 10){
-		$filename.='P'.$_SESSION['w_MINIFY']['page_id'];
 		$csslines[] = "\r\n/* BEGIN _pages {$field} */\r\n";
 		$loaded[]="_pages {$field}";
 		minifyLines($content);
@@ -178,7 +157,6 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field2));
 		$content=evalPHP($rec[$field2]);
 		if(strlen(trim($content)) > 10){
-			$filename.='T'.$_SESSION['w_MINIFY']['page_id'];
 			$csslines[] = "\r\n/* BEGIN _pages {$field2} */\r\n";
 			$loaded[]="_pages {$field2}";
 			minifyLines($content);
@@ -191,7 +169,6 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"name,{$field}"));
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
-			$filename.='P'.$id;
 			$csslines[] = "\r\n/* BEGIN includepages {$field} for {$rec['name']} page */\r\n";
 			$loaded[]="includepages {$field} for {$rec['name']} page";
 			minifyLines($content);
@@ -200,7 +177,6 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 			$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"name,{$field2}"));
 			$content=evalPHP($rec[$field2]);
 			if(strlen(trim($content)) > 10){
-				$filename.='T'.$_SESSION['w_MINIFY']['template_id'];
 				$csslines[] = "\r\n/* BEGIN includepages {$field2} for {$rec['name']} page */\r\n";
 				$loaded[]="includepages {$field} for {$rec['name']} page";
 				minifyLines($content);
@@ -208,15 +184,26 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		}
 	}
 }
-//show loaded list
-$sessionid=session_id();
-//
-if(count($pre_csslines)){
-	echo "/* Begin Imports - must be at the top */\r\n";
-	echo implode("\r\n",$pre_csslines);
+$docroot=$_SERVER['DOCUMENT_ROOT'];
+if(!is_dir("{$docroot}/w_min")){
+	buildDir("{$docroot}/w_min");
 }
-echo implode("\r\n",$csslines);
+$afile="{$docroot}/w_min/{$filename}";
+$data='';
+if(count($pre_csslines)){
+	$d="/* Begin Imports - must be at the top */\r\n";
+	echo $d;
+	$data.=$d;
+	$d=implode("\r\n",$pre_csslines);
+	echo $d;
+	$data.=$d;
+}
+$d=implode("\r\n",$csslines);
+echo $d;
+$data.=$d;
 ob_end_flush();
+setFileContents($afile,$data);
+exit;
 /* ------------ Functions needed ---------------- */
 function minifyFiles($path,$names){
 	global $files;

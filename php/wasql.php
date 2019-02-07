@@ -624,39 +624,59 @@ function minifyFilename($ext=''){
 	global $CONFIG;
 	if(!isNum($PAGE['_id'])){return '';}
 	if(!isNum($TEMPLATE['_id'])){return '';}
-	$uparts=preg_split('/\?/',$_SERVER['REQUEST_URI'],2);
+	//$uparts=preg_split('/\?/',$_SERVER['REQUEST_URI'],2);
 	$parts=array(
-		$CONFIG['dbname'],
-		$_SERVER['REMOTE_BROWSER'],
-		$_SERVER['REMOTE_BROWSER_VERSION'],
-		$uparts[0]
+		'D'.encodeCRC($CONFIG['dbname']),
+		'H'.encodeCRC($_SERVER['HTTP_HOST']),
+		'T'.$TEMPLATE['_id'],
+		'P'.$PAGE['_id']
 	);
-/* 	if(isset($_REQUEST['passthru']) && is_array($_REQUEST['passthru']) && count($_REQUEST['passthru'])){
-		$parts=array_merge($parts,$_REQUEST['passthru']);
-	} */
-	$filename='M'.encodeCRC(implode('',$parts));
-	$filename .= 'P'.$PAGE['_id'];
-	$filename .= 'T'.$TEMPLATE['_id'];
     //add includePage calls
-	preg_match_all('/includePage\((.+?)\)/',$TEMPLATE['body'],$m);
-	if(isset($m[1][0])){
-		$filename .= 'TI'.encodeCRC(implode(',',$m[1]));;
+	preg_match_all('/includePage\((.+?)([\,\)])/',$TEMPLATE['body'],$m);
+	if(count($m[1])){
+		$names=array();
+		foreach($m[1] as $name){
+			$name=str_replace("'",'',$name);
+			$name=str_replace('"','',$name);
+			$names[]=$name;
+		}
+		$namestr=implode("','",$names);
+		$recs=getDBRecords(array(
+			'-table'=>'_pages',
+			'-index'=>'_id',
+			'-fields'=>'name,_id',
+			'-where'=>"name in ('{$namestr}') or _id in ('{$namestr}')"
+		));	
+		if(is_array($recs)){
+			foreach($recs as $id=>$rec){
+				$parts[]="I{$id}";
+			}
+		}
 	}
-    preg_match_all('/includePage\((.+?)\)/',$PAGE['body'],$m);
-	if(isset($m[1][0])){
-		$filename .= 'PI'.encodeCRC(implode(',',$m[1]));;
+	preg_match_all('/includePage\((.+?)([\,\)])/',$PAGE['body'],$m);
+	if(count($m[1])){
+		$names=array();
+		foreach($m[1] as $name){
+			$name=str_replace("'",'',$name);
+			$name=str_replace('"','',$name);
+			$names[]=$name;
+		}
+		$namestr=implode("','",$names);
+		$recs=getDBRecords(array(
+			'-table'=>'_pages',
+			'-index'=>'_id',
+			'-fields'=>'name,_id',
+			'-where'=>"name in ('{$namestr}') or _id in ('{$namestr}')"
+		));	
+		if(is_array($recs)){
+			foreach($recs as $id=>$rec){
+				$parts[]="I{$id}";
+			}
+		}
 	}
-	if(isAjax()){$filename .= 'A';}
-	$rec=getDBRecord(array('-table'=>"_minify",'name'=>$filename));
-	if(is_array($rec)){
-    	$filename .= 'V'.$rec['version'];
-	}
-	else{
-    	addDBRecord(array('-table'=>"_minify",'name'=>$filename,'version'=>1));
-    	$filename .= 'V1';
-	}
-	if(strlen($ext)){$filename .= '.'.$ext;}
-	return $filename;
+	$rtn=implode('',$parts);
+	if(strlen($ext)){$rtn .= '.'.$ext;}
+	return $rtn;
 }
 //---------- begin function minifyCssFile
 /**
@@ -672,6 +692,10 @@ function minifyFilename($ext=''){
 *      - bbarten 2013-10-24 added documentation
 */
 function minifyCssFile($v=''){
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	if(!is_dir("{$docroot}/w_min")){
+		buildDir("{$docroot}/w_min");
+	}
 	$mfn=minifyFilename();
 	$v=strtolower($v);
 	switch($v){
@@ -682,12 +706,15 @@ function minifyCssFile($v=''){
 		case 'kube':
 		case 'uikit':
 		case 'mini':
-			return "/minify_{$v}_{$mfn}.css";
+			$_SESSION['w_MINIFY']['extras_css'][]=$v;
+			$cssfile = "minify_{$v}_{$mfn}.css";
 		break;
 		default:
-			return "/php/minify_css{$v}.php?{$mfn}";
+			$cssfile = "minify_x_{$mfn}.css";
 		break;
 	}
+	$_SESSION['w_MINIFY']['css_filename']=$cssfile;
+	return "/w_min/{$cssfile}";
 }
 //---------- begin function minifyJsFile ----
 /**
@@ -703,6 +730,10 @@ function minifyCssFile($v=''){
 *	bbarten 2013-10-24 added documentation
 */
 function minifyJsFile($v=''){
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	if(!is_dir("{$docroot}/w_min")){
+		buildDir("{$docroot}/w_min");
+	}
 	$mfn=minifyFilename();
 	$v=strtolower($v);
 	switch($v){
@@ -712,12 +743,15 @@ function minifyJsFile($v=''){
 		case 'foundation':
 		case 'kube':
 		case 'uikit':
-			return "/minify_{$v}_{$mfn}.js";
+			$_SESSION['w_MINIFY']['extras_js'][]=$v;
+			$jsfile="/minify_{$v}_{$mfn}.js";
 		break;
 		default:
-			return "/php/minify_js{$v}.php?{$mfn}";
+			$jsfile="/minify_x_{$mfn}.js";
 		break;
 	}
+	$_SESSION['w_MINIFY']['js_filename']=$jsfile;
+	return "/w_min/{$jsfile}";
 }
 //---------- begin function wasqlSetMinify
 /**

@@ -17,11 +17,11 @@ $stime=microtime(true);
 include_once("$progpath/common.php");
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
 //check for minify redirect
-if(preg_match('/^minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
+if(preg_match('/^w_min\/minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
 	header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
 	exit;
 }
-if(preg_match('/^minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
+if(preg_match('/^w_min\/minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
 	header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
 	exit;
 }

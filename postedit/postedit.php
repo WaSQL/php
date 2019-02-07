@@ -3,7 +3,7 @@
 	replacement for posteditd.pl to handle secure sites
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
-$timer=5;
+$timer=20;
 
 global $progpath;
 global $hosts;
