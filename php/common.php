@@ -1313,7 +1313,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 		$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$tag .= ' <label for="'.$id.'" style="white-space: normal;"> '.$dval.'</label>'.PHP_EOL;
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
