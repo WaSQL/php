@@ -1220,7 +1220,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$litags .= ' checked';
         	$checked_cnt++;
 		}
-    	$litags .= ' /><label for="'.$id.'" class="icon-mark'.$class.'"></label> <label for="'.$id.'" class="'.$class.'"> '.$dval.'</label></li>'.PHP_EOL;
+    	$litags .= ' /><label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'"> '.$dval.'</label></li>'.PHP_EOL;
 	}
 
 
