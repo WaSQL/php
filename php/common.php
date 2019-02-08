@@ -1011,7 +1011,7 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span data-id="'.$params['id'].'" class="w_btn w_btn-secondary" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer></span></span>'.PHP_EOL;
+	$tag .= '	<span data-id="'.$params['id'].'" class="w_btn w_btn-secondary" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer"></span></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
