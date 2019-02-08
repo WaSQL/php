@@ -31,4 +31,6 @@ if [ ! -d images ];
 then
 	mkdir images
 	chmod 755 images
+	mkdir w_min
+	chmod 777 w_min
 fi
