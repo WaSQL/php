@@ -184,25 +184,38 @@ if(is_array($_SESSION['w_MINIFY']['includepages'])){
 		}
 	}
 }
-$docroot=$_SERVER['DOCUMENT_ROOT'];
-if(!is_dir("{$docroot}/w_min")){
-	buildDir("{$docroot}/w_min");
-}
-$afile="{$docroot}/w_min/{$filename}";
-$data='';
-if(count($pre_csslines)){
-	$d="/* Begin Imports - must be at the top */\r\n";
+if(strlen($filename)){
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	if(!is_dir("{$docroot}/w_min")){
+		buildDir("{$docroot}/w_min");
+	}
+	$afile="{$docroot}/w_min/{$filename}";
+	$data='';
+	if(count($pre_csslines)){
+		$d="/* Begin Imports - must be at the top */\r\n";
+		echo $d;
+		$data.=$d;
+		$d=implode("\r\n",$pre_csslines);
+		echo $d;
+		$data.=$d;
+	}
+	$d=implode("\r\n",$csslines);
 	echo $d;
 	$data.=$d;
-	$d=implode("\r\n",$pre_csslines);
-	echo $d;
-	$data.=$d;
+	ob_end_flush();
+	setFileContents($afile,$data);
 }
-$d=implode("\r\n",$csslines);
-echo $d;
-$data.=$d;
-ob_end_flush();
-setFileContents($afile,$data);
+else{
+	if(count($pre_csslines)){
+		$d="/* Begin Imports - must be at the top */\r\n";
+		echo $d;
+		$d=implode("\r\n",$pre_csslines);
+		echo $d;
+	}
+	$d=implode("\r\n",$csslines);
+	echo $d;
+	ob_end_flush();
+}
 exit;
 /* ------------ Functions needed ---------------- */
 function minifyFiles($path,$names){
