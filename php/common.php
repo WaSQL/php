@@ -1011,7 +1011,7 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span data-id="'.$params['id'].'" class="w_btn w_btn-secondary" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer"></span></span>'.PHP_EOL;
+	$tag .= '	<span data-id="'.$params['id'].'" class="w_btn w_btn-secondary w_btn-append" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer"></span></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
@@ -1143,11 +1143,11 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	switch(strtolower($params['-size'])){
     	case 'sm':
     	case 'small':
-			$params['-size']='btn-sm';
+			$params['-size']='w_btn-sm';
 		break;
 		case 'lg':
 		case 'large':
-			$params['-size']='btn-lg';
+			$params['-size']='w_btn-lg';
 		break;
 	}
 	$mid=$name.'_options';
@@ -1226,9 +1226,10 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 	$tag='';
 	$tag .= '<div class="dropdown" id="'.$dropdown_classid.'">'.PHP_EOL;
-	$tag .= '	<div class="btn-group dropdown-toggle" data-toggle="dropdown">'.PHP_EOL;
-	$tag .= ' 		<button class="btn '.$params['-size'].' btn-default" type="button">'.$dname."</button>\n";
-	$tag .= '		<button type="button" class="btn '.$params['-size'].' btn-default"><span data-group="'.$params['group'].'" class="'.$icon.'"></span><span class="caret"></span></button>'.PHP_EOL;
+	$tag .= '	<div class="w_flexgroup" data-toggle="dropdown">'.PHP_EOL;
+	$tag .= ' 		<button class="w_btn '.$params['-size'].' w_btn-default" type="button">'.$dname.PHP_EOL;
+	$tag .= '			<span data-group="'.$params['group'].'" class="'.$icon.'" style="padding-left:10px;margin-right:3px;"></span><span class="icon-arrow-down" style="padding-left:5px;"></span>'.PHP_EOL;
+	$tag .= '		</button>'.PHP_EOL;
 	$tag .= ' 	</div>'.PHP_EOL;
 	$tag .= ' 	<div class="dropdown-menu" style="background:#FFF;z-index:9999;">'.PHP_EOL;
 	//checkall
@@ -1510,11 +1511,11 @@ function buildFormWhiteboard($name,$params=array()){
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
-	$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
+	$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
 	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '		'.$params['displayname'].PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
@@ -1719,7 +1720,7 @@ function buildFormFile($name,$params=array()){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'" class="btn btn-default"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'" class="w_btn w_btn-default"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
@@ -1972,12 +1973,12 @@ function buildFormSignature($name,$params=array()){
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
-		$rtn .= '			<button type="button" class="btn btn-sm btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
 	}
 
 	$rtn .= '		</div>'.PHP_EOL;
@@ -2118,7 +2119,7 @@ function buildFormStarRating($name, $params=array()){
 * @usage if(!buildDir('/var/www/test/folder/sub/test')){return 'failed to build dir';}
 */
 function buildFormSubmit($val='Submit',$name='',$onclick='',$class=''){
-	$rtn = '<button class="btn btn-default '.$class.'" type="submit" value="'.$val.'"';
+	$rtn = '<button class="w_btn w_btn-default '.$class.'" type="submit" value="'.$val.'"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
 	$rtn .= '> '.$val."</button>";
@@ -5809,7 +5810,7 @@ function fileManager($startdir='',$params=array()){
 
 		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'.PHP_EOL;
 		$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
-		$rtn .= '			<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
+		$rtn .= '			<button type="submit" class="w_btn w_btn-primary">Save</button>'.PHP_EOL;
 		$rtn .= '		</div>'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 		}

@@ -1075,7 +1075,7 @@ function initBehaviors(ajaxdiv){
 		for (n=0; n<navbars.length; n++){
 	    	navbars[n].onclick=function(e){
 				cancel(e);
-	        	var p=getParent(this);
+	        	let p=getParent(this);
 	        	if(undefined != p){
 	            	if(p.className.indexOf('open')==-1){
 	                	addClass(p,'open');
@@ -1114,6 +1114,9 @@ function initBehaviors(ajaxdiv){
 				return false;
 			};
 		}
+	}
+	else{
+		console.log('found jQuery');
 	}
 	//
 	eventInitSticky();
