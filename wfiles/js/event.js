@@ -1023,6 +1023,38 @@ sfHover = function() {
 // Add sfHover to the onLoad queue
 addEventHandler(window,'load',sfHover);
 var calledStickyMenus=0;
+function initCarousels(){
+	let list=document.querySelectorAll('.w_carousel');
+	for(let i=0;i<list.length;i++){
+		//if the active one is the first one then do not show prev icon
+		if(undefined != list[i].getAttribute('initialized')){continue;}
+		list[i].setAttribute('initialized',1);
+		let e=document.createElement('span');
+		e.className="icon-arrow-right w_carousel_next";
+		e.onclick=function(){
+			//get the next child
+			let list=this.parentNode.querySelectorAll('.slide');
+			//console.log(list);
+			for(let i=0;i<list.length;i++){
+				if(list[i].className.indexOf('active') != -1){
+					//console.log(i,'is active');
+					removeClass(list[i],'active');
+					let n=i+1;
+					if(undefined != list[n]){
+						//console.log('setting active',n);
+						addClass(list[n],'active');
+					}
+					else{
+						//console.log('setting active',0);
+						addClass(list[0],'active');
+					}
+					break;
+				}
+			}
+		}
+		list[i].appendChild(e);
+	}
+}
 /* initPin - function to assign hover to dom objects that have data-behavior="pin" so they hide onMouseOut */
 function initBehaviors(ajaxdiv){
 	//info: initializes special data-behavior atrributes
@@ -1033,6 +1065,7 @@ function initBehaviors(ajaxdiv){
 	//	<div data-behavior="@sum(one:two:three)"></div>
 	//	<div data-behavior="@raid(raidid)"></div><input type="text" name="raidid" value="123">
 	//replace title attributes with ours
+	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
 	//bootstrap toggles
 	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');

@@ -1450,6 +1450,35 @@ table.table-responsive {
 	background:#5cb85c !important;
 	text-decoration:none !important;
 }
+/* carousel */
+div.w_carousel{
+    position:relative;
+}
+div span.w_carousel_next{
+    cursor: pointer;
+    color: rgba(0,0,0,0.3);
+    font-size: 2.5rem;
+    position: absolute;
+    top: 50%;
+    right: 0px;
+    transform: translateY(-50%);
+    margin: 0;
+    z-index: 99999;
+}
+div.w_carousel_next:hover{
+    cursor:pointer;
+}
+div.w_carousel > div{
+    transition: opacity 1s ease-in-out;
+    opacity: 0; 
+    height: 0;
+    overflow: hidden;
+}
+div.w_carousel > div.active{
+    opacity: 1;
+    height: auto;
+    overflow:auto;
+}
 /* misc*/
 .w_drop {
 	display:none;
