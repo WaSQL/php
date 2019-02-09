@@ -1201,7 +1201,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	//return printValue($pairs);
 	foreach($pairs as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
-    	$litags .= '		<li style="white-space:nowrap;">';
+    	$litags .= '		<div style="white-space:nowrap;">';
     	if(!isNum($tval) && $tval=='--'){
 			$litags .= '--------</li>'.PHP_EOL;
 			continue;
@@ -1220,7 +1220,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$litags .= ' checked';
         	$checked_cnt++;
 		}
-    	$litags .= ' /><label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'"> '.$dval.'</label></li>'.PHP_EOL;
+    	$litags .= ' /><label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'"> '.$dval.'</label></div>'.PHP_EOL;
 	}
 
 
