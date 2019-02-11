@@ -31,6 +31,11 @@ if [ ! -d images ];
 then
 	mkdir images
 	chmod 755 images
+fi
+
+#create an w_min directory and set permissions if it does not exist
+if [ ! -d w_min ];
+then
 	mkdir w_min
 	chmod 777 w_min
 fi

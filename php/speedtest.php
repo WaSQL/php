@@ -2,6 +2,7 @@
 $start=microtime(true);
 $progpath=dirname(__FILE__);
 $begin=$start;
+global $times;
 $times=array();
 $loads=array('common.php','config.php','wasql.php','database.php','schema.php','sessions.php','user.php');
 foreach($loads as $load){
