@@ -144,6 +144,7 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$params['placeholder']='value';
 	$params['autofocus']='autofocus';
+	$params['class']='browser-default';
 	$rtn .= buildFormText('filter_value',$params);
 	unset($params['autofocus']);
 	$rtn .= '			</div>'.PHP_EOL;
