@@ -1007,7 +1007,7 @@ function buildFormDate($name,$params=array()){
 	$tag .= '<div class="w_flexgroup" style="position:relative;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='min-width:100px;';
-	$params['class']='w_form-control w_input-prepend';
+	$params['class']='browser-default w_form-control w_input-prepend';
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
@@ -1039,7 +1039,7 @@ function buildFormDateTime($name,$params=array()){
 	}
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD HH:MM:SS';}
 	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='browser-default w_form-control';}
 	if(!isset($params['data-type'])){$params['data-type']='datetime';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
