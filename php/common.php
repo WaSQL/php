@@ -88,7 +88,7 @@ function commonSearchFiltersForm($params=array()){
 	if(empty($params['class'])){$params['class']='w_form-control';}
 	//if(empty($params['style'])){$params['style']='min-width:75px';}
 	//flex wrapper
-	$rtn .= '	<div class="w_flex w_flexrow w_flexwrap">'.PHP_EOL;
+	$rtn .= '	<div class="w_flex w_flexgroup w_flexwrap">'.PHP_EOL;
 	//search fields
 	if(!empty($params['-searchfields'])){
 		if(!is_array($params['-searchfields'])){
@@ -108,7 +108,7 @@ function commonSearchFiltersForm($params=array()){
 		}
 	}
 	//keep field and operator together (nowrap)
-	$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+	$rtn .= '	<div data-set="1" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$rtn .= buildFormSelect('filter_field',$vals,$params);
 	$rtn .= '			</div>'.PHP_EOL;
@@ -150,7 +150,7 @@ function commonSearchFiltersForm($params=array()){
 	unset($params['autofocus']);
 	$rtn .= '			</div>'.PHP_EOL;
 	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '		<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+	$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 	//order
 	if(!empty($params['-showorder']) && $params['-showorder']==1){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
@@ -195,7 +195,7 @@ function commonSearchFiltersForm($params=array()){
 	//Paging buttons - first, prev, next, and last
 	if(!empty($params['-total'])){
 		//keep pagination buttons together (now wrapping)
-		$rtn .= '	<div class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+		$rtn .= '	<div data-set="3" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 		if(empty($params['-limit'])){$params['-limit']=15;}
 		if(empty($params['-offset'])){
 			$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
