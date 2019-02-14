@@ -218,7 +218,8 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	$json=array(
 		'status'=>'success',
 		'time'=>number_format((microtime(true)-$starttime),3),
-		'site'=>$_SERVER['HTTP_HOST']
+		'site'=>$_SERVER['HTTP_HOST'],
+		'hostname'=>gethostname()
 	);
 	foreach($loadtimes as $k=>$v){
 		$json[$k]=$v;
