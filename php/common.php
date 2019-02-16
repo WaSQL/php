@@ -1701,7 +1701,10 @@ function buildFormFile($name,$params=array()){
 		*/
 		$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
 		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove">'.PHP_EOL;
+		$checked='';
+		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
+		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
 		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'.PHP_EOL;
 		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'.PHP_EOL;
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
