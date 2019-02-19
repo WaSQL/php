@@ -738,6 +738,10 @@ function minifyJsFile($v=''){
 	$v=strtolower($v);
 	switch($v){
 		case 'bootstrap':
+			$_SESSION['w_MINIFY']['extras_js'][]='jquery1';
+			$_SESSION['w_MINIFY']['extras_js'][]=$v;
+			$jsfile="/minify_{$v}_{$mfn}.js";
+		break;
 		case 'bootstrap4':
 		case 'materialize':
 		case 'foundation':
