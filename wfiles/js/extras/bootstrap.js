@@ -4,7 +4,7 @@
  * Licensed under http://www.apache.org/licenses/LICENSE-2.0
  */
 
-if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery") }
+if (typeof jQuery === "undefined") {  }
 
 /* ========================================================================
  * Bootstrap: transition.js v3.0.3
