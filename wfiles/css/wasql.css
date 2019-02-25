@@ -292,7 +292,6 @@ table.w_formtable td, table.w_formtable th {
 .w_browser-default,.w_form-control, .browser-default {
     display: block;
     width: 100%;
-    height: 34px !important;
     line-height: 1.42857143 !important;
     font-size: 14px;
     padding: 6px 12px;
@@ -305,6 +304,11 @@ table.w_formtable td, table.w_formtable th {
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
     -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
     transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+input.w_browser-default,input.w_form-control,input.browser-default,
+select.w_browser-default,select.w_form-control,select.browser-default,
+div.w_browser-default,div.w_form-control,div.browser-default {
+    height: 34px !important;
 }
 .w_browser-default:focus, .w_form-control:focus, .browser-default:focus{
 	border-color: #66afe9;

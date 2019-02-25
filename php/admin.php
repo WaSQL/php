@@ -326,12 +326,13 @@ foreach($_REQUEST as $key=>$val){
 if(count($_REQUEST)==1){
 	$k=implode('',array_keys($_REQUEST));
 	if(!isAdmin() && $k != '_logout'){
+		global $USER;
 		echo buildHtmlBegin();
 		echo '<div class="container-fluid">'.PHP_EOL;
 		echo '	<div class="row">'.PHP_EOL;
 		echo '		<div class="col-xs-12" style="padding:25px;">'.PHP_EOL;
 		echo "			<h3><img src=\"/wfiles/wasql.png\" class=\"w_middle\" alt=\"\" /> '{$k}' requires admin access to view. Login first.</h3>".PHP_EOL;
-		echo printValue($USER).printValue($_COOKIE);
+		//echo printValue($USER).printValue($_COOKIE);
 		echo userLoginForm(array('-action'=>$PHP_SELF.'?'.$k));
 		echo '		</div>'.PHP_EOL;
 		echo '	</div>'.PHP_EOL;
