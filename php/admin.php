@@ -1902,6 +1902,16 @@ LIST_TABLE:
 						$recopts['active_checkmark']=1;
 						$recopts['active_align']="center";
 						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as";
+						$_REQUEST['filter_field']='name';
+                	break;
+                	case '_cronlog':
+                		$_REQUEST['filter_field']='name';
+                	break;
+                	case '_forms':
+                		$_REQUEST['filter_field']='formname';
+                	break;
+                	case '_history':
+                		$_REQUEST['filter_field']='tablename';
                 	break;
                 	case '_html_entities':
                 		$recopts['entity_name_eval']="return str_replace('&','&amp;','%entity_name%');";
@@ -1911,10 +1921,27 @@ LIST_TABLE:
                 		$recopts['-listfields']=array('_id','category','description','entity_name','entity_number','display');
                 		$recopts['display_eval']="return \"%entity_number%\";";
                 		$recopts['display_class']='text-right';
+                		$_REQUEST['filter_field']='description';
                 	break;
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";
                 		$recopts['-relate']=array('_template'=>'_templates');
+                		$_REQUEST['filter_field']='name';
+                	break;
+                	case '_templates':
+                		$_REQUEST['filter_field']='name';
+                	break;
+                	case '_tabledata':
+                		$_REQUEST['filter_field']='tablename';
+                	break;
+                	case '_fielddata':
+                		$_REQUEST['filter_field']='tablename';
+                	break;
+                	case '_reports':
+                		$_REQUEST['filter_field']='name';
+                	break;
+                	case '_users':
+                		$_REQUEST['filter_field']='lastname';
                 	break;
                 	case '_queries':
                 		global $SETTINGS;
