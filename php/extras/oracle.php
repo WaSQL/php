@@ -540,6 +540,27 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	oci_close($dbh_oracle);
 	return $fields;
 }
+//---------- begin function oracleGetDBRecord--------------------
+/**
+* @describe returns a record based on params
+* @param params array 
+*	-table string - table name.  Use this with other field/value params to filter the results
+*	[-host] -  server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array
+* @usage $cnt=oracleGetDBRecord(array('-table'=>'states','code'=>'UT'));
+*/
+function oracleGetDBRecord($params=array()){
+	$params['-limit']=1;
+	$recs=oracleGetDBRecords($params);
+	if(!isset($recs[0])){
+		debugValue($recs);
+		return array();
+	}
+	return $recs[0];
+}
 //---------- begin function oracleGetDBRecords
 /**
 * @describe returns and array of records
