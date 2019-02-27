@@ -306,7 +306,7 @@
             
         } else if (element.addEventListener) {
 
-            element.addEventListener(event, listener, false);
+            element.addEventListener(event, listener, commonPassiveEventListener(false));
         }
     }
 

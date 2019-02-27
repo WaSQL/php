@@ -11,9 +11,9 @@ if(document.onmousemove){
 	}
 else if(document.addEventListener){
 	/* Firefox model */
-	document.addEventListener("mousedown",mouseMove,false);
-    document.addEventListener("mouseup",mouseMove,false);
-    document.addEventListener("mousemove",mouseMove,false);
+	document.addEventListener("mousedown",mouseMove,commonPassiveEventListener(false));
+    document.addEventListener("mouseup",mouseMove,commonPassiveEventListener(false));
+    document.addEventListener("mousemove",mouseMove,commonPassiveEventListener(false));
 	}
 else if(document.attachEvent){
 	/* IE model */
@@ -1865,7 +1865,7 @@ function addEvent(elem, evnt, func){
 function addEventHandler(elem,evnt, func){
 	if (elem.addEventListener){
 		// W3C DOM
-		elem.addEventListener(evnt,func,false);
+		elem.addEventListener(evnt,func,commonPassiveEventListener(false));
 	}
 	else if (elem.attachEvent){
    		// IE DOM

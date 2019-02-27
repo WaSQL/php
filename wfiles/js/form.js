@@ -3529,7 +3529,7 @@ THE SOFTWARE.
 	var onChange = document.createEvent('HTMLEvents');
 	onChange.initEvent('change', true, false);
 	if (document.readyState == 'loading'){
-  		document.addEventListener('DOMContentLoaded', initialize, true);
+  		document.addEventListener('DOMContentLoaded', initialize, commonPassiveEventListener(true));
 	}
 	else{
   		initialize();
@@ -3620,10 +3620,10 @@ THE SOFTWARE.
 	    });
 	  }).observe(slider, options);
 
-	  slider.addEventListener('mousedown', onDragStart, true);
-	  slider.addEventListener('keydown', onKeyDown, true);
-	  slider.addEventListener('focus', onFocus, true);
-	  slider.addEventListener('blur', onBlur, true);
+	  slider.addEventListener('mousedown', onDragStart, commonPassiveEventListener(true));
+	  slider.addEventListener('keydown', onKeyDown, commonPassiveEventListener(true));
+	  slider.addEventListener('focus', onFocus, commonPassiveEventListener(true));
+	  slider.addEventListener('blur', onBlur, commonPassiveEventListener(true));
 
 	  function onDragStart(e) {
 	    isClick = true;
@@ -3644,8 +3644,8 @@ THE SOFTWARE.
 	    }
 	    rawValue = value;
 	    prevX = e.clientX;
-	    this.addEventListener('mousemove', onDrag, true);
-	    this.addEventListener('mouseup', onDragEnd, true);
+	    this.addEventListener('mousemove', onDrag, commonPassiveEventListener(true));
+	    this.addEventListener('mouseup', onDragEnd, commonPassiveEventListener(true));
 	  }
 
 	  function onDrag(e) {

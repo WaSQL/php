@@ -99,6 +99,15 @@ function guid() {
     }
     return _p8() + _p8(true) + _p8(true) + _p8();
 }
+function commonPassiveEventListener(bool){
+	try{
+		if(Modernizr.passiveeventlisteners){return {passive: bool};}
+	}
+	catch(e){
+
+	}
+	return bool;
+}
 /*scrollableTable*/
 function scrollableTable (tableId, tableHeight, tableWidth) {
 	//info:	Scrollable HTML table JavaScript code can be used to convert tables in ordinary HTML
