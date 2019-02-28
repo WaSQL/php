@@ -65,6 +65,7 @@ function sessionClose() {
 */
 function sessionRead($session_id) {
 	global $USER;
+	global $CONFIG;
 	$table=sessionTable();
 	$rec=getDBRecord(array('-query'=>"select _id,session_id,session_data,json from {$table} where session_id = '{$session_id}';"));
 	$ctime = time();
@@ -78,7 +79,12 @@ function sessionRead($session_id) {
 	//no session found  - add a blank record
 	$cuser=0;$cdate=date('Y-m-d H:i:s');
 	if(isset($CUSER['_id']) && isNum($CUSER['_id'])){$cuser=$CUSER['_id'];}
-	$ok=executeSQL("INSERT IGNORE INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
+	if($CONFIG['dbtype']=='mysql' || $CONFIG['dbtype']=='mysqli'){
+		$ok=executeSQL("INSERT IGNORE INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
+	}
+	else{
+		$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
+	}
 	return '';
 }
 /**
