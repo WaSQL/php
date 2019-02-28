@@ -755,7 +755,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		$name=$params['name'];
 		unset($params['name']);
 	}
-	$tag='<div class="w_btnselect">'.PHP_EOL;
+	$tag='<div class="w_flexgroup w_flexrow">'.PHP_EOL;
 	foreach($opts as $tval=>$dval){
 		$checked='';
 		if($tval==$params['value'] || $dval==$params['value']){
