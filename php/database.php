@@ -536,12 +536,26 @@ function databaseListRecords($params=array()){
 			foreach($params as $k=>$v){
 				if(preg_match('/^'.$fld.'_(onclick|eval|href|target)$/i',$k)){continue;}
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
+	                }
+	                $v=str_replace('"','',$v);
 					$atts[$m[1]]=$v;
 				}
 			}
 			foreach($params as $k=>$v){
 				if(preg_match('/^-td(.+)$/',$k,$m)){
-					if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
+					if(!isset($atts[$m[1]])){
+						foreach($rec as $recfld=>$recval){
+							if(is_array($recfld) || is_array($recval)){continue;}
+							$replace='%'.$recfld.'%';
+		                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
+		                }
+		                $v=str_replace('"','',$v);
+						$atts[$m[1]]=$v;
+					}
 				}
 			}
 			$rtn .= setTagAttributes($atts);
