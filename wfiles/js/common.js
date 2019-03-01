@@ -85,6 +85,51 @@ function getAllAttributes(obj){
 		}
     return rv;
 	}
+//commonModalPopup
+/**
+* @describe creates a responsive modal popup
+* @param htm string  - the content of the modal
+* @param [title] string  - creates a title bar with this optional text
+* @param [overlay] boolean  - if defined creates an overlay so nothing else can be clicked on
+* @return modal object
+* @usage commonModalPopup(htm,'This is a title',true);
+*/
+function commonModalPopup(htm,title,overlay) {
+	let modal=document.createElement('div');
+	let modal_close=document.createElement('span');
+	modal.className='x_modal';
+	if(undefined!=title && title.length > 0){
+		let modal_title=document.createElement('div');
+		modal_title.className='x_modal_title';
+		modal_close.className='x_modal_close icon-close';
+		modal_close.title="Close";
+		modal_close.onclick=function(){
+			removeId(this.pnode);
+		}
+		modal_title.appendChild(modal_close);
+		let modal_title_text=document.createElement('div');
+		modal_title_text.innerHTML=title;
+		modal_title.appendChild(modal_title_text);
+		modal.appendChild(modal_title);
+
+	}
+	let modal_content=document.createElement('div');
+	modal_content.className='x_modal_content';
+	modal_content.innerHTML=htm;
+	modal.appendChild(modal_content);
+	if(undefined != overlay){
+		let modal_overlay=document.createElement('div');
+		modal_overlay.className='x_modal_overlay';
+		modal_overlay.appendChild(modal);
+		modal_close.pnode=modal_overlay;
+		document.body.appendChild(modal_overlay);
+	}
+	else{
+		modal_close.pnode=modal;
+		document.body.appendChild(modal);
+	}
+	return modal;
+}
 /**
  * Generates a GUID string, according to RFC4122 standards.
  * @returns {String} The generated GUID.

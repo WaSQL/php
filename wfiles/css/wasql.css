@@ -1138,17 +1138,6 @@ table.table-responsive {
 	background: -webkit-gradient(linear,left bottom,left top,color-stop(0.20, #ff5e5e),color-stop(0.70, #970000));
 	background: -moz-linear-gradient(center bottom,#ff5e5e 20%,#970000 70%);
 }
-.w_modal{
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 9999;
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-    outline: 0;
-}
 /* w_pop - responsive web popup used in ajaxGet when id=pop */
 .w_popmodal{
 	position: absolute;
@@ -1195,6 +1184,81 @@ table.table-responsive {
 	color:#FFF;
 	border-bottom-right-radius: 6px;
     border-bottom-left-radius: 6px;
+}
+/* Modals */
+.w_modal_overlay{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9000;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.w_modal{
+    display: block;
+    position: fixed;
+    max-height: calc(100% - 100px);
+    max-width: calc(100% - 50px);
+    min-width:200px;
+    min-height:50px;
+    overflow:auto;
+    top: 50%;
+    left: 50%;
+    z-index: 9010;
+    transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    -o-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    background: #fff;
+    border-radius: 5px;
+    -ms-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    -ms-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);  
+}
+.w_modal .w_modal_title{
+    position:sticky;
+    top:0px;
+    width:inherit;
+    height:50px;
+    background-color: #d6d6d6;
+    font-size:1.3rem;
+    font-weight:400;
+    border-bottom:1px dotted #e1e1e1;
+    padding: 6px 7px;
+    z-index: 9050
+}
+.w_modal .w_modal_title .w_modal_close{
+    position:absolute;
+    top:4px;
+    right:4px;
+    z-index: 9051;
+    font-size:16px;
+    cursor:pointer;
+    font-weight: 100;
+    padding:0 0 10px 10px;
+
+    color:#aaaaaa;
+}
+.w_modal .w_modal_title .w_modal_close:hover{
+    color:#8a8a8a;
+}
+.w_modal .w_modal_content{
+    position:relative;
+    height:100%;
+    overflow:auto;
+    padding: 12px 14px;
+    z-index: 9020
 }
 /* Popup Style*/
 .w_popup {
