@@ -5,6 +5,59 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+//---------- begin function sqliteCreateDBTable--------------------
+/**
+* @describe creates table with specified fields
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to add
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=sqliteCreateDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
+*/
+function sqliteCreateDBTable($table='',$fields=array()){
+	if(strlen($table)==0){return "sqliteCreateDBTable error: No table";}
+	if(count($fields)==0){return "sqliteCreateDBTable error: No fields";}
+	if(sqliteIsDBTable($table)){return 0;}
+	global $CONFIG;
+	//verify the wasql fields are there. if not add them
+	if(!isset($fields['_id'])){$fields['_id']=databasePrimaryKeyFieldString();}
+	if(!isset($fields['_cdate'])){
+		$fields['_cdate']=databaseDataType('datetime').databaseDateTimeNow();
+	}
+	if(!isset($fields['_cuser'])){$fields['_cuser']="INT NOT NULL";}
+	if(!isset($fields['_edate'])){
+		$fields['_edate']=databaseDataType('datetime')." NULL";
+	}
+	if(!isset($fields['_euser'])){$fields['_euser']="INT NULL";}
+	//lowercase the tablename and replace spaces with underscores
+	$table=strtolower(trim($table));
+	$table=str_replace(' ','_',$table);
+	$query="create table {$table} (";
+	//echo printValue($fields);exit;
+	foreach($fields as $field=>$attributes){
+		//lowercase the fieldname and replace spaces with underscores
+		$field=strtolower(trim($field));
+		$field=str_replace(' ','_',$field);
+		$query .= "{$field} {$attributes},";
+   	}
+    $query=preg_replace('/\,$/','',$query);
+    $query .= ")";
+	$query_result=sqliteExecuteSQL($query);
+	//clear the cache
+	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
+  	if(!isset($query_result['error']) && $query_result==true){
+		//success creating table.  Now to through the fields and create any instant meta data found
+		foreach($fields as $field=>$attributes){
+        	instantDBMeta($ori_table,$field,$attributes);
+		}
+		return 1;
+	}
+  	else{
+		return setWasqlError(debug_backtrace(),getDBError(),$query);
+	}
+}
+
+
 //---------- begin function sqliteListRecords
 /**
 * @describe returns an html table of records from a sqlite database. refer to databaseListRecords
@@ -120,6 +173,7 @@ function sqliteDBConnect($params=array()){
 		//echo printValue($cfiles).printValue($params);exit;
 	}
 	$CONFIG['sqlite_dbname_realpath']=$params['-dbname'];
+	//echo printValue($params);exit;
 	global $dbh_sqlite;
 	if($dbh_sqlite){return $dbh_sqlite;}
 	try{
@@ -236,7 +290,7 @@ function sqliteAddDBRecord($params){
 	//echo "sqliteAddDBRecord".printValue($params);exit;
 	global $USER;
 	if(!isset($params['-table'])){return 'sqliteAddRecord error: No table specified.';}
-	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+	$fields=sqliteGetDBFieldInfo($params['-table']);
 	$opts=array();
 	if(isset($fields['cdate'])){
 		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
@@ -347,7 +401,7 @@ function sqliteEditDBRecord($params){
 	if(!isset($params['-table'])){return 'sqliteEditDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'sqliteEditDBRecord error: No where specified.';}
 	global $USER;
-	$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+	$fields=sqliteGetDBFieldInfo($params['-table']);
 	$opts=array();
 	if(isset($fields['edate'])){
 		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
@@ -480,6 +534,7 @@ function sqliteGetDBTables($params=array()){
 * @usage $fieldinfo=sqliteGetDBFieldInfo('abcschema.abc');
 */
 function sqliteGetDBFieldInfo($tablename,$params=array()){
+	if(!strlen(trim($tablename))){return;}
 	global $sqliteGetDBFieldInfoCache;
 	$key=$tablename.encodeCRC(json_encode($params));
 	//clear cache?
@@ -488,6 +543,7 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 	}
 	//check cache
 	if(isset($sqliteGetDBFieldInfoCache[$key])){return $sqliteGetDBFieldInfoCache[$key];}
+	//echo "sqliteGetDBFieldInfo:{$key}({$tablename})".printValue($params).PHP_EOL;
 	//check for dbname.tablename
 	$parts=preg_split('/\./',$tablename,2);
 	if(count($parts)==2){
@@ -497,6 +553,7 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 		$query="PRAGMA table_info({$tablename})";
 	}
 	$recs=array();
+	//echo "{$query}<br><br>".PHP_EOL;
 	$xrecs=sqliteQueryResults($query);
 	foreach($xrecs as $rec){
 		$name=strtolower($rec['name']);
@@ -519,7 +576,7 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 			$metaopts['-table']="{$parts[0]}._fielddata";
 			$metaopts['tablename']=$parts[1];
 		}
-		$meta_recs=getDBRecords($metaopts);
+		$meta_recs=sqliteGetDBRecords($metaopts);
 		if(is_array($meta_recs)){
 			foreach($meta_recs as $meta_rec){
 				$name=$meta_rec['fieldname'];
@@ -592,11 +649,13 @@ function sqliteQueryResults($query,$params=array()){
 	}
 	if(!$dbh_sqlite){
     	debugValue(array("sqliteQueryResults Connect Error"));
+    	//echo "Cannot Connect";exit;
     	return array();
 	}
 	try{
 		$results=$dbh_sqlite->query($query);
 		if(!is_object($results)){
+			//echo $query.printValue($results);exit;
 			return array();
 		}
 		$recs=array();
@@ -635,6 +694,7 @@ function sqliteQueryResults($query,$params=array()){
 */
 function sqliteGetDBRecord($params=array()){
 	$recs=sqliteGetDBRecords($params);
+	//echo "sqliteGetDBRecord".printValue($params).printValue($recs);
 	if(isset($recs[0])){return $recs[0];}
 	return null;
 }
@@ -675,7 +735,8 @@ function sqliteGetDBRecords($params){
 			$params['-fields']=implode(',',$params['-fields']);
 		}
 		if(empty($params['-fields'])){$params['-fields']='*';}
-		$fields=sqliteGetDBFieldInfo($params['-table'],$params);
+		//echo printValue($params);
+		$fields=sqliteGetDBFieldInfo($params['-table']);
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
@@ -709,11 +770,13 @@ function sqliteGetDBRecords($params){
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
-	return sqliteQueryResults($query,$params);
+	$recs=sqliteQueryResults($query,$params);
+	//echo '<hr>'.$query.printValue($params).printValue($recs);
+	return $recs;
 }
 //---------- begin function sqliteGetDBRecordsCount ----------
 /**

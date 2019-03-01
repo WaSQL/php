@@ -2912,6 +2912,7 @@ ENDOFSQL;
 *	$ok=createDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function createDBTable($table='',$fields=array(),$engine=''){
+	if(isSqlite()){return sqliteCreateDBTable($table,$fields);}
 	global $databaseCache;
 	$function='createDBTable';
 	if(strlen($table)==0){return "createDBTable error: No table";}
@@ -5903,7 +5904,7 @@ function getDBFields($table='',$allfields=0){
 * @usage $fields=getDBFieldInfo('notes');
 */
 function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
-	if(isSqlite()){return sqliteGetDBFieldInfo($table,array('-field'=>$field,'-getmeta'=>$getmeta,'-force'=>$force));}
+	if(isSqlite()){return sqliteGetDBFieldInfo($table);}
 	global $databaseCache;
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
