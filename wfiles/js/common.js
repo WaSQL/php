@@ -131,6 +131,24 @@ function commonModalPopup(htm,title,overlay) {
 	return modal;
 }
 /**
+ * when using w_navbar this toggles the hamburger menu.
+ * @returns false
+ * @example <a href="#" onclick="return w_navbarToggle(this)">&#9776; </a>
+ */
+function w_navbarToggle(obj) {
+	let navs=document.querySelectorAll('ul.w_navbar');
+	for(let i=0;i<navs.length;i++){
+		let icon=navs[i].querySelector('li.w_menu_icon a');
+		if(undefined == icon || icon != obj){continue;}
+		if (navs[i].className.indexOf('responsive') == -1) {
+	        addClass(navs[i],'responsive');
+	    } else {
+	        removeClass(navs[i],'responsive');
+	    }
+	}    
+    return false;
+}
+/**
  * Generates a GUID string, according to RFC4122 standards.
  * @returns {String} The generated GUID.
  * @example af8a8416-6e18-a307-bd9c-f2c947bbb3aa

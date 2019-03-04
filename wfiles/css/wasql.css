@@ -952,6 +952,168 @@ table.table-responsive {
 	0% {z-index:0;-webkit-transform: scaleX(0.3);}
 	100% {z-index:800;-webkit-transform: scaleX(1);}
 }
+/* BEGIN: w_navbar */
+ul.w_navbar, ul.w_navbar ul{
+    list-style-type: none;
+    width: 100%;
+    padding: 0px 0px;
+    margin: 0;
+    position:relative;
+}
+ul.w_navbar li:last-child{
+    margin-bottom: 25px;
+}
+/* Since we'll have the "ul li" "float:left"
+ * we need to add a clear after the container. */
+ul.w_navbar:after {
+    content:"";
+    display:table;
+    clear:both;
+}
+ul.w_navbar li {
+    float: left;
+    text-align: center;
+    display:inline-block;
+    position:relative;
+    min-width:100px;
+}
+ul.w_navbar li a{
+    display: block;
+    text-align: center;
+    padding:13px 16px;
+    text-decoration: none;
+    font-size: 18px;
+    -webkit-transition:* 0.2s ease-in;
+    -ms-transition:* 0.2s ease-in;
+    transition:* 0.2s ease-in;
+}
+ul.w_navbar li a span.icon-dir-down{
+    position:absolute;
+    top:20px;
+    right:2px;
+}
+ul.w_navbar li.w_menu_icon {
+    display: none;
+}
+
+/* Hide Dropdowns by Default
+ * and giving it a position of absolute */
+ul.w_navbar ul {
+    display: none; 
+}
+    
+/* Display Dropdowns on Hover */
+ul.w_navbar li:hover > ul {
+    display:inherit;
+    position:absolute;
+    left:0;
+    top:100%;
+    display:inline-flex;
+    flex-wrap: nowrap;
+    justify-content:flex-start;
+    flex-direction:column;
+    align-items: flex-start;
+    padding: 0px 0px;
+}
+ul.w_navbar li:hover > ul ul {
+    position:absolute;
+    left:198px;
+    top:0px;
+}
+ul.w_navbar li:hover > ul li {
+    width:200px;
+}
+ul.w_navbar li:hover > ul li a{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow: ellipsis;
+}
+/* borders */
+ul.w_navbar ul li {
+    float:left;
+    border-right:1px solid #CCC;
+    border-left:1px solid #CCC;
+    border-bottom:1px solid #CCC;
+}
+ul.w_navbar ul li a,ul.w_navbar ul ul li a{
+    white-space: nowrap;
+}
+/* media queries to handle smaller screens */
+@media screen and (max-width: 768px) {
+    ul.w_navbar li:not(.active) {display: none;}
+    ul.w_navbar li.w_menu_icon {
+        float: right;
+        display: inline-block;
+        margin-bottom:0px;
+    }
+    /* when the menu icon is clicked, set the icon in the top right */
+    ul.w_navbar.responsive li.w_menu_icon {
+        position: absolute;
+        top:0;
+        right:0;
+    }
+    ul.w_navbar.responsive {position: relative;}
+    ul.w_navbar.responsive li {
+        position: relative;
+        float: none;
+        display:block;
+        margin:0;
+        padding:0;
+    }
+    ul.w_navbar.responsive li ul, 
+    ul.w_navbar.responsive li ul ul{
+        display:table;
+        float:none;
+        margin:0;
+        padding:0;
+    }
+    ul.w_navbar.responsive li a{
+        text-align: left;
+    }
+    ul.w_navbar.responsive ul li{
+        float:none;
+        width:100%;
+        display:table-row;
+        margin:0;
+        border:0px;
+    }
+    ul.w_navbar.responsive li:hover > ul, 
+    ul.w_navbar.responsive li:hover > ul ul {
+        position:relative;
+        display:table-row;
+        width:100%;
+    }
+    ul.w_navbar.responsive li:hover > ul li {
+        width:100%;
+        float:none;
+        display:table-row;
+    }
+    ul.w_navbar.responsive li:hover > ul li a{
+        width:100%;
+        float:none;
+        overflow:auto;
+        text-overflow: initial;
+    }
+}
+/*background color variations */
+/* light */
+ul.w_navbar.light, ul.w_navbar.light ul li {background: #F8F8F8;}
+ul.w_navbar.light li a{color: #777;}
+ul.w_navbar.light li a:hover, ul.w_navbar.light li.active a {color: #333;background: #D5D5D5;}
+/* dark */
+ul.w_navbar.dark, ul.w_navbar.dark ul li {background: #222326;}
+ul.w_navbar.dark li a{color: #f1f1f1;}
+ul.w_navbar.dark li a:hover, ul.w_navbar.dark li.active a {background: #8b8c84;}
+/* blue */
+ul.w_navbar.blue, ul.w_navbar.blue ul li {background: #69899f;}
+ul.w_navbar.blue li a{color: #d7e2e9;}
+ul.w_navbar.blue li a:hover, ul.w_navbar.blue li.active a {color: #e5dbdb;background: #425766;}
+/* red */
+ul.w_navbar.red, ul.w_navbar.red ul li {background: #872415;}
+ul.w_navbar.red li a{color: #eef1ec;}
+ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;background: #cf7b6f;}
+/* END: w_navbar */
+
 /* slideshow nav */
 .w_slideshow_nav{
 	z-index:99999;
