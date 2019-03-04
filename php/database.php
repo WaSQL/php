@@ -4450,6 +4450,7 @@ function editDBRecord($params=array()){
     	if(strlen($w_min)){
     		$docroot=$_SERVER['DOCUMENT_ROOT'];
     		if(is_dir("{$docroot}/w_min")){
+    			//echo "W_MIN FOUND".PHP_EOL;
     			$xfiles=listFiles("{$docroot}/w_min");
 	    		$xrecs=getDBRecords(array(
 					'-table'=>$params['-table'],
@@ -4458,10 +4459,14 @@ function editDBRecord($params=array()){
 					'-index'=>'_id'
 				));
 				if(is_array($xrecs)){
+					//echo printValue($xrecs).PHP_EOL;
 					foreach($xrecs as $id=>$xrec){
 						foreach($xfiles as $xfile){
 							if(preg_match('/('.$w_min.$id.'?)[PI\.]/',$xfile)){
-								unlink("{$docroot}/w_min/$xfile");
+								unlink("{$docroot}/w_min/{$xfile}");
+							}
+							elseif(preg_match('/(I'.$id.'?)[PI\.]/',$xfile)){
+								unlink("{$docroot}/w_min/{$xfile}");
 							}
 						}
 					}
