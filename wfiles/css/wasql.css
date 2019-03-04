@@ -952,6 +952,7 @@ table.table-responsive {
 	0% {z-index:0;-webkit-transform: scaleX(0.3);}
 	100% {z-index:800;-webkit-transform: scaleX(1);}
 }
+
 /* BEGIN: w_navbar */
 ul.w_navbar, ul.w_navbar ul{
     list-style-type: none;
@@ -1037,6 +1038,14 @@ ul.w_navbar ul li {
 }
 ul.w_navbar ul li a,ul.w_navbar ul ul li a{
     white-space: nowrap;
+}
+/* condensed version */
+ul.w_navbar.condensed li a{
+    padding:7px 15px 7px 8px;
+    font-size: 16px;
+}
+ul.w_navbar.condensed li a span.icon-dir-down{
+    top:10px;
 }
 /* media queries to handle smaller screens */
 @media screen and (max-width: 768px) {
