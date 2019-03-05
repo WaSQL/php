@@ -220,6 +220,10 @@ function databaseListRecords($params=array()){
 		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
 			//remove limit temporarily
 			$limit=$params['-limit'];
+			$fields=$params['-fields'];
+			if(isset($params['-exportfields'])){
+				$params['-fields']=$params['-exportfields'];
+			}
 			$params['-limit']=$params['-total'];
 			//run query to get records for export
 			switch(strtolower($params['-database'])){
@@ -245,6 +249,7 @@ function databaseListRecords($params=array()){
 			}
 			//set limit back
 			$params['-limit']=$limit;
+			$params['-fields']=$fields;
 			//create a csv file
 			$csv=arrays2csv($recs);
 			//add UTF-8 byte order mark to the beginning of the csv
