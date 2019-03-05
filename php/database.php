@@ -72,6 +72,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
 *	[-listfields] -  subset of fields to list from the list returned.
+*	[-exportfields] -  subset of fields to export.
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
 *	[-sumfields] string or array - list of fields to sum
