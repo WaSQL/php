@@ -698,20 +698,12 @@ function minifyCssFile($v=''){
 	}
 	$mfn=minifyFilename();
 	$v=strtolower($v);
-	switch($v){
-		case 'bootstrap':
-		case 'bootstrap4':
-		case 'materialize':
-		case 'foundation':
-		case 'kube':
-		case 'uikit':
-		case 'mini':
-			$_SESSION['w_MINIFY']['extras_css'][]=$v;
-			$cssfile = "minify_{$v}_{$mfn}.css";
-		break;
-		default:
-			$cssfile = "minify_x_{$mfn}.css";
-		break;
+	if(strlen($v)){
+		$_SESSION['w_MINIFY']['extras_css'][]=$v;
+		$cssfile = "minify_{$v}_{$mfn}.css";
+	}
+	else{
+		$cssfile = "minify_x_{$mfn}.css";
 	}
 	$_SESSION['w_MINIFY']['css_filename']=$cssfile;
 	return "/w_min/{$cssfile}";
@@ -742,16 +734,14 @@ function minifyJsFile($v=''){
 			$_SESSION['w_MINIFY']['extras_js'][]=$v;
 			$jsfile="/minify_{$v}_{$mfn}.js";
 		break;
-		case 'bootstrap4':
-		case 'materialize':
-		case 'foundation':
-		case 'kube':
-		case 'uikit':
-			$_SESSION['w_MINIFY']['extras_js'][]=$v;
-			$jsfile="/minify_{$v}_{$mfn}.js";
-		break;
 		default:
-			$jsfile="/minify_x_{$mfn}.js";
+			if(strlen($v)){
+				$_SESSION['w_MINIFY']['extras_js'][]=$v;
+				$jsfile="/minify_{$v}_{$mfn}.js";
+			}
+			else{
+				$jsfile="/minify_x_{$mfn}.js";
+			}
 		break;
 	}
 	$_SESSION['w_MINIFY']['js_filename']=$jsfile;
