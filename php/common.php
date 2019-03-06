@@ -249,7 +249,9 @@ function commonSearchFiltersForm($params=array()){
     	else{$sets=preg_split('/[\r\n\,]+/',$params['-filters']);}
     	foreach($sets as $set){
         	list($field,$oper,$val)=preg_split('/\-/',trim($set),3);
-        	if($field=='null' || $val=='null' || $oper=='null' || strlen($field)==0 || strlen($oper)==0 || strlen($val)==0){continue;}
+        	if($field=='null' || $val=='null' || $oper=='null' || strlen($field)==0 || strlen($oper)==0 || strlen($val)==0){
+        		if(!strlen($oper) || !in_array($oper,array('ib','nb'))){continue;}
+        	}
         	$fid=$field.$oper.$val;
         	$dfield=$field;
 			if($dfield=='*'){$dfield='Any Field';}

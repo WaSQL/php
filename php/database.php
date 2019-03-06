@@ -226,6 +226,10 @@ function databaseListRecords($params=array()){
 				$params['-fields']=$params['-exportfields'];
 			}
 			$params['-limit']=$params['-total'];
+			if(!isNum($params['-limit'])){
+				//set limit 1,000,000 if not specified.
+				$params['-limit']=1000000;
+			}
 			//run query to get records for export
 			switch(strtolower($params['-database'])){
 				case 'oracle':
@@ -848,13 +852,13 @@ function databaseParseFilters($params=array()){
 			break;
 			case 'ib':
 				//is blank
-				if(isNum($val)){
+				if(!isNum($val)){
 					$wheres[]="({$field} is null or LENGTH({$field}) = 0)";
 				}
 			break;
 			case 'nb':
 				//is not blank
-				if(isNum($val)){
+				if(!isNum($val)){
 					$wheres[]="{$field} is not null and LENGTH({$field}) > 0";
 				}
 			break;

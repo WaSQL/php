@@ -1,4 +1,8 @@
-
+body{
+  padding:0;
+  margin:0;
+  height:100%;
+}
 /* alignment */
 .left {text-align: left;}
 .right {text-align: right;}
@@ -11,8 +15,7 @@
 /* navigation bars positioned with  topmenu, leftmenu*/
 /* nav.topmenu */
 .nav.topmenu{
-  margin: 50px 0;
-  background-color: #E64A19;
+  margin: 0;
 }
 .nav.topmenu ul {
   padding: 0;
@@ -22,18 +25,13 @@
   }
 .nav.topmenu ul li {
   display:inline-block;
-  background-color: #E64A19;
   }
 .nav.topmenu a {
   display:block;
   padding:0 10px; 
-  color:#FFF;
   font-size:20px;
   line-height: 60px;
   text-decoration:none;
-}
-.nav.topmenu a:hover { 
-  background-color: #000000; 
 }
 /* Hide Dropdowns by Default */
 .nav.topmenu ul ul {
@@ -59,8 +57,30 @@
   left:170px;
 }
 /* Change this in order to change the Dropdown symbol.  2192=right arrow, 2190 left arrow */
-.nav.topmenu li > a:after { content:  "\2192"; }
+.nav.topmenu li > a:after { 
+  font-family:Arial;
+  content:  " +"; 
+}
 .nav.topmenu li > a:only-child:after { content: ''; }
+
+/*background color variations */
+/* light */
+.nav.topmenu.light, .nav.topmenu.light ul li {background: #F8F8F8;}
+.nav.topmenu.light a{color: #777;}
+.nav.topmenu.light a:hover, .nav.topmenu.light a:active {color: #333;background: #D5D5D5;}
+/* dark */
+.nav.topmenu.dark, .nav.topmenu.dark ul li {background: #222326;}
+.nav.topmenu.dark a{color: #f1f1f1;}
+.nav.topmenu.dark a:hover, .nav.topmenu.dark a:active {background: #8b8c84;}
+/* blue */
+.nav.topmenu.blue, .nav.topmenu.blue ul li {background: #69899f;}
+.nav.topmenu.blue a{color: #d7e2e9;}
+.nav.topmenu.blue a:hover, .nav.topmenu.blue a:active {color: #e5dbdb;background: #425766;}
+/* red */
+.nav.topmenu.red, .nav.topmenu.red ul li {background: #872415;}
+.nav.topmenu.red a{color: #eef1ec;}
+.nav.topmenu.red a:hover, .nav.topmenu.red a:active {color: #eef1ec;background: #cf7b6f;}
+
 
 /* .nav.leftmenu */
 .nav.leftmenu:hover,nav.nav.leftmenu.expanded {
