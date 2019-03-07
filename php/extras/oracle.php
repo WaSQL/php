@@ -311,14 +311,14 @@ function oracleEditDBRecord($params){
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
-					debugValue(array("oracleAddDBRecord Bind Error binding {$k}",oci_error($stid)));
+					debugValue(array("oracleAddDBRecord Bind Error binding {$k} to {$bind}",$stid,oci_error($stid),$values[$k]));
 			    	return;
 				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
-			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",oci_error($stid)));
+			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k} to {$bind}",$stid,oci_error($stid),$values[$k]));
 			    	return;
 				}
     		break;
