@@ -101,10 +101,11 @@ function oracleAddDBRecord($params){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
+				if(!oci_bind_by_name($stid, "{$bind}", $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -118,10 +119,11 @@ function oracleAddDBRecord($params){
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
+    			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], -1)){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -357,10 +359,11 @@ function oracleEditDBRecord($params){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
+				if(!oci_bind_by_name($stid, "{$bind}", $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -374,10 +377,11 @@ function oracleEditDBRecord($params){
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
+    			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], -1)){
 			    	debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
