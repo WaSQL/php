@@ -239,8 +239,7 @@ function oracleEditDBRecord($params){
 		$dbh_oracle=oracleDBConnect($params);
 	}
 	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleEditDBRecord Connect Error",$e));
+    	debugValue(array("oracleEditDBRecord Connect Error",oci_error()));
     	return;
 	}
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
@@ -300,8 +299,7 @@ function oracleEditDBRecord($params){
     $query="UPDATE {$params['-table']} SET ({$setstr}) WHERE {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $sql);
     if (!is_resource($stid)){
-    	$e=json_encode(oci_error($dbh_oracle));
-    	debugValue(array("oracleAddDBRecord Parse Error",$e,$query));
+    	debugValue(array("oracleEditDBRecord Parse Error",oci_error($dbh_oracle),$query));
     	return;
     }
     //bind the variables
@@ -310,13 +308,15 @@ function oracleEditDBRecord($params){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-				oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB);
+				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
+					debugValue(array("oracleAddDBRecord Bind Error binding {$k}",oci_error($stid)));
+			    	return;
+				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
-					$e=json_encode(oci_error($stid));
-			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",$e));
+			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",oci_error($stid)));
 			    	return;
 				}
     		break;
@@ -324,8 +324,7 @@ function oracleEditDBRecord($params){
     }
 	$r = oci_execute($stid);
 	if (!$r) {
-		$e=json_encode(oci_error($stid));
-		debugValue(array("oracleAddDBRecord Execute Error",$e,$query));
+		debugValue(array("oracleAddDBRecord Execute Error",oci_error($stid),$query));
 	}
 	return true;
 }
