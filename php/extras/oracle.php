@@ -104,12 +104,13 @@ function oracleAddDBRecord($params){
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
+					$e=oci_error($stid);
 					debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'oci_error'=>$e,
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -124,16 +125,20 @@ function oracleAddDBRecord($params){
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
+    				$e=oci_error($stid);
 					debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'oci_error'=>$e,
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
-			    		'value'=>$values[$k]
+			    		'value'=>$values[$k],
+			    		'bind_count'=>count($bindvars),
+			    		'values_count'=>count($values)
 			    	));
 			    	return false;
 				}
