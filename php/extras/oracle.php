@@ -82,7 +82,7 @@ function oracleAddDBRecord($params){
 	//build the query with bind variables
 	$fieldstr=implode(',',array_keys($values));
 	$bindstr=implode(',',array_values($bindvars));
-    $query="INSERT INTO {$params['-table']} ({$fieldstr}) values({$bindstr})";
+    $query="INSERT INTO {$params['-table']} ({$fieldstr}) values ({$bindstr})";
     $stid = oci_parse($dbh_oracle, $sql);
     if (!is_resource($stid)){
     	debugValue(array(
