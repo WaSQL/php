@@ -234,7 +234,8 @@ function oracleEditDBRecord($params){
 	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
 	global $USER;
-	$oconn=oracleDBConnect($params);
+	global $dbh_oracle;
+	$dbh_oracle=oracleDBConnect($params);
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$values=array();
 	$bindars=array();
@@ -290,14 +291,14 @@ function oracleEditDBRecord($params){
 	}
 	$setstr=implode(',',$sets);
     $query="update {$params['-table']} set {$setstr} where {$params['-where']}";
-    $stid = oci_parse($oconn, $query);
+    $stid = oci_parse($dbh_oracle, $query);
     //check for parse errors
     if(!is_resource($stid)){
     	debugValue(array(
     		'function'=>"oracleEditDBRecord",
-    		'connection'=>$oconn,
+    		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($oconn),
+    		'oci_error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	));
     	return;
@@ -311,7 +312,7 @@ function oracleEditDBRecord($params){
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
-			    		'connection'=>$oconn,
+			    		'connection'=>$dbh_oracle,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -327,7 +328,7 @@ function oracleEditDBRecord($params){
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
 			    	debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
-			    		'connection'=>$oconn,
+			    		'connection'=>$dbh_oracle,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -344,7 +345,7 @@ function oracleEditDBRecord($params){
 	if (!$r) {
 		debugValue(array(
     		'function'=>"oracleEditDBRecord",
-    		'connection'=>$oconn,
+    		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'oci_error'=>oci_error($stid),
     		'query'=>$query
