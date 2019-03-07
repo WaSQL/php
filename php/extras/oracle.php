@@ -625,7 +625,7 @@ function oracleGetDBRecords($params){
 	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 		//they just entered a query
 		$query=$params;
-		$params=array();
+		$params=array('-lobs'=>1);
 	}
 	else{
 		//determine fields to return
