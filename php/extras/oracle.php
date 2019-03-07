@@ -96,7 +96,8 @@ function oracleAddDBRecord($params){
     	return false;
     }
     //bind the variables
-    foreach($bindvars as $k=>$bind){
+    foreach($values as $k=>$v){
+    	$bind=$bindvars[$k];
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
