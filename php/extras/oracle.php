@@ -122,7 +122,7 @@ function oracleAddDBRecord($params){
     		case 'integer':
     			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], strlen($values[$k]), OCI_B_INT )){
 			    	debugValue(array(
-			    		'function'=>"oracleEditDBRecord",
+			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
