@@ -23,18 +23,18 @@ ini_set('oci8.statement_cache_size',20);
 */
 function oracleAddDBRecord($params){
 	global $USER;
-	if(!isset($params['-table'])){return 'oracleAddRecord error: No table specified.';}
-	$fields=oracleGetDBFieldInfo($params['-table'],$params);
-	$sequence='';
-	$owner='';
-	foreach($fields as $field){
-    	if(isset($field['sequence'])){
-        	$sequence=$field['sequence'];
-        	$owner=$field['owner'];
-        	break;
-		}
+	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
 	}
-	$opts=array();
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleAddDBRecord Connect Error",$e));
+    	return;
+	}
+	if(!isset($params['-table'])){return 'oracleAddDBRecord error: No table specified.';}
+	$fields=oracleGetDBFieldInfo($params['-table'],$params);
+	//populate cdate and cuser fields
 	if(isset($fields['cdate'])){
 		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
@@ -47,63 +47,73 @@ function oracleAddDBRecord($params){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
-	$valstr='';
+	$values=array();
+	$bindvars=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
 		if(!isset($fields[$k])){continue;}
+		if($k=='euser' || $k=='edate'){continue;}
+		if($k=='_euser' || $k=='_edate'){continue;}
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$params[$k];
-        	break;
+		$bindvars[$k]=":b_{$k}";
+		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
 					$params[$k]=date('d-M-Y',strtotime($v));
 				}
 				//set the template for the to_date
-				if(preg_match('/^[0-9]{2,2}\-[a-z]{3,3}\-[0-9]{2,4}/i',$params[$k])){
-					//14-Jan-2019 or  14-Jan-2019 00:00:00
-					if(stringContains($params[$k],':')){
-						$opts['values'][]="to_date('{$params[$k]}','DD-MON-YYYY HH24:MI:SS')";
-					}
-					else{
-						$opts['values'][]="to_date('{$params[$k]}','DD-MON-YYYY')";
-					}
+				if(preg_match('/^([0-9]{2,2}?)\-([a-z]{3,3}?)\-([0-9]{2,4})/i',$params[$k],$m)){
+					$values[$k]="{$m[1]}-{$m[2]}-{$m[3]}";
 				}
-				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k])){
-					if(stringContains($params[$k],':')){
-						$opts['values'][]="to_date('{$params[$k]}','YYYY-MM-DD HH24:MI:SS')";
-					}
-					else{
-						$opts['values'][]="to_date('{$params[$k]}','YYYY-MM-DD')";
-					}
+				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k],$m)){
+					$values[$k]=date('d-M-Y',strtotime("{$m[1]}-{$m[2]}-{$m[3]}"));
 				}
 				else{
-					$opts['values'][]="to_date('{$params[$k]}')";
+					$values[$k]=date('d-M-Y',strtotime($v));
 				}
         	break;
         	default:
-        		$params[$k]=str_replace("'","''",$params[$k]);
-        		$opts['values'][]="'{$params[$k]}'";
+        		$values[$k]=$v;
         	break;
 		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-
-        $opts['fields'][]=trim(strtoupper($k));
 	}
-	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
-    $query=<<<ENDOFQUERY
-		INSERT INTO {$params['-table']}
-		("{$fieldstr}")
-		values({$valstr})
-ENDOFQUERY;
-	if(isset($params['-debug'])){return oracleQueryResults($query,$params).$query;}
-	return oracleQueryResults($query,$params);
+	//build the query with bind variables
+	$fieldstr=implode(',',array_keys($values));
+	$bindstr=implode(',',array_values($bindvars));
+    $query="INSERT INTO {$params['-table']} ({$fieldstr}) values({$bindstr})";
+    $stid = oci_parse($dbh_oracle, $sql);
+    if (!is_resource($stid)){
+    	$e=json_encode(oci_error($dbh_oracle));
+    	debugValue(array("oracleAddDBRecord Parse Error",$e,$query));
+    	return;
+    }
+    //bind the variables
+    foreach($bindvars as $k=>$bind){
+    	switch(strtolower($fields[$k]['type'])){
+    		case 'clob':
+    			// treat clobs differently so we can insert large amounts of data
+    			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
+				oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB);
+				$descriptor[$k]->writeTemporary($values[$k]);
+    		break;
+    		default:
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
+					$e=json_encode(oci_error($stid));
+			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",$e));
+			    	return;
+				}
+    		break;
+    	}
+    }
+	$r = oci_execute($stid);
+	if (!$r) {
+		$e=json_encode(oci_error($stid));
+		debugValue(array("oracleAddDBRecord Execute Error",$e,$query));
+	}
+	return true;
 }
 //---------- begin function oracleAutoCommit ----------
 /**
@@ -225,8 +235,17 @@ function oracleEditDBRecord($params){
 	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
 	global $USER;
 	global $dbh_oracle;
+	if(!is_resource($dbh_oracle)){
+		$dbh_oracle=oracleDBConnect($params);
+	}
+	if(!$dbh_oracle){
+    	$e=json_encode(oci_error());
+    	debugValue(array("oracleEditDBRecord Connect Error",$e));
+    	return;
+	}
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
-	$opts=array();
+	$values=array();
+	$bindars=array();
 	if(isset($fields['edate'])){
 		$params['edate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
@@ -239,56 +258,76 @@ function oracleEditDBRecord($params){
 	elseif(isset($fields['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
+	$values=array();
+	$bindvars=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
 		if(!isset($fields[$k])){continue;}
 		if($k=='cuser' || $k=='cdate'){continue;}
+		if($k=='_cuser' || $k=='_cdate'){continue;}
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
-		switch(strtolower($fields[$k]['type'])){
+		$bindvars[$k]=":b_{$k}";
+		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
-				if($k=='edate' || $k=='_edate'){
+				if($k=='cdate' || $k=='_cdate'){
 					$params[$k]=date('d-M-Y',strtotime($v));
 				}
 				//set the template for the to_date
-				if(preg_match('/^[0-9]{2,2}\-[a-z]{3,3}\-[0-9]{2,4}/i',$params[$k])){
-					//14-Jan-2019 or  14-Jan-2019 00:00:00
-					if(stringContains($params[$k],':')){
-						$updates[]="{$k}=to_date('{$params[$k]}','DD-MON-YYYY HH24:MI:SS')";
-					}
-					else{
-						$updates[]="{$k}=to_date('{$params[$k]}','DD-MON-YYYY')";
-					}
+				if(preg_match('/^([0-9]{2,2}?)\-([a-z]{3,3}?)\-([0-9]{2,4})/i',$params[$k],$m)){
+					$values[$k]="{$m[1]}-{$m[2]}-{$m[3]}";
 				}
-				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k])){
-					if(stringContains($params[$k],':')){
-						$updates[]="{$k}=to_date('{$params[$k]}','YYYY-MM-DD HH24:MI:SS')";
-					}
-					else{
-						$updates[]="{$k}=to_date('{$params[$k]}','YYYY-MM-DD')";
-					}
+				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k],$m)){
+					$values[$k]=date('d-M-Y',strtotime("{$m[1]}-{$m[2]}-{$m[3]}"));
 				}
 				else{
-					$updates[]="{$k}=to_date('{$params[$k]}')";
+					$values[$k]=date('d-M-Y',strtotime($v));
 				}
         	break;
         	default:
-        		$params[$k]=str_replace("'","''",$params[$k]);
-        		$updates[]="{$k}='{$params[$k]}'";
+        		$values[$k]=$v;
         	break;
 		}
 	}
-	$updatestr=implode(', ',$updates);
-    $query=<<<ENDOFQUERY
-		UPDATE {$params['-table']}
-		SET {$updatestr}
-		WHERE {$params['-where']}
-ENDOFQUERY;
-	if(isset($params['-debug'])){return oracleQueryResults($query,$params).$query;}
-	return oracleQueryResults($query,$params);
-	return;
+	//build the query with bind variables
+	$sets=array();
+	foreach($values as $k=>$v){
+		$sets[]="{$k}={$bindvars[$k]}";
+	}
+	$setstr=implode(',',array_keys($sets));
+    $query="UPDATE {$params['-table']} SET ({$setstr}) WHERE {$params['-where']}";
+    $stid = oci_parse($dbh_oracle, $sql);
+    if (!is_resource($stid)){
+    	$e=json_encode(oci_error($dbh_oracle));
+    	debugValue(array("oracleAddDBRecord Parse Error",$e,$query));
+    	return;
+    }
+    //bind the variables
+    foreach($bindvars as $k=>$bind){
+    	switch(strtolower($fields[$k]['type'])){
+    		case 'clob':
+    			// treat clobs differently so we can insert large amounts of data
+    			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
+				oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB);
+				$descriptor[$k]->writeTemporary($values[$k]);
+    		break;
+    		default:
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
+					$e=json_encode(oci_error($stid));
+			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",$e));
+			    	return;
+				}
+    		break;
+    	}
+    }
+	$r = oci_execute($stid);
+	if (!$r) {
+		$e=json_encode(oci_error($stid));
+		debugValue(array("oracleAddDBRecord Execute Error",$e,$query));
+	}
+	return true;
 }
 //---------- begin function oracleExecuteSQL ----------
 /**
@@ -606,6 +645,8 @@ function oracleGetDBRecords($params){
 			$k=strtolower($k);
 			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
+			//check for lobs
+			if($fields[$k]['_dbtype']=='clob' && !isset($params['-lobs'])){$params['-lobs']=1;}
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
 			}
@@ -782,6 +823,16 @@ function oracleGetResourceResults($res,$params=array()){
 */
 function oracleListRecords($params=array()){
 	$params['-database']='oracle';
+	//check for clobs
+	if(isset($params['-table']) && !isset($params['-lobs'])){
+		$fields=oracleGetDBFieldInfo($params['-table'],$params);
+		foreach($fields as $k=>$info){
+			if($fields[$k]['_dbtype']=='clob'){
+				$params['-lobs']=1;
+				break;
+			}
+		}
+	}
 	return databaseListRecords($params);
 }
 
@@ -947,7 +998,7 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	// check for non-select query
 	$start=microtime(true);
-	if(preg_match('/^(update|insert|alter)/is',trim($query))){
+	if(preg_match('/^(create|drop|grant|truncate|update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
 		if(function_exists('logDBQuery')){
 			logDBQuery($query,$start,'oracleQueryResults','oracle');
