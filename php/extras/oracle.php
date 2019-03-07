@@ -1,10 +1,10 @@
 <?php
 //max number of persistent connections to the database
-ini_set('oci8.max_persistent',10);
+ini_set('oci8.max_persistent',5);
 //seconds a persistent connection will stay alive
-ini_set('oci8.persistent_timeout',300);
+ini_set('oci8.persistent_timeout',30);
 //number of rows in each DB round trip to cache
-ini_set('oci8.default_prefetch',0);
+ini_set('oci8.default_prefetch',20);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
 //---------- begin function oracleAddDBRecord ----------
