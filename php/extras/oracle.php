@@ -296,7 +296,7 @@ function oracleEditDBRecord($params){
 		$sets[]="{$k}={$bindvars[$k]}";
 	}
 	$setstr=implode(',',$sets);
-    $query="UPDATE {$params['-table']} SET ({$setstr}) WHERE {$params['-where']}";
+    $query="UPDATE {$params['-table']} SET {$setstr} WHERE {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $query);
     //check for parse errors
     if(!is_resource($stid)){
