@@ -57,7 +57,7 @@ function oracleAddDBRecord($params){
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=':b'.preg_replace('/[^a-z]/i','',$k);
+		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
@@ -78,7 +78,6 @@ function oracleAddDBRecord($params){
         		$values[$k]=$v;
         	break;
 		}
-		if(isNum($values[$k])){$bindvars[$k]=$values[$k];}
 	}
 	//build the query with bind variables
 	$fieldstr=implode(',',array_keys($values));
@@ -98,26 +97,21 @@ function oracleAddDBRecord($params){
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
-    	if(isNum($bind)){continue;}
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
-					$e=oci_error($stid);
 					debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
-			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>$e,
+			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
-			    		'value'=>$values[$k],
-			    		'bind_count'=>count($bindvars),
-			    		'values_count'=>count($values)
+			    		'value'=>$values[$k]
 			    	));
 			    	return false;
 				}
@@ -125,20 +119,16 @@ function oracleAddDBRecord($params){
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
-    				$e=oci_error($stid);
-					debugValue(array(
+			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
-			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>$e,
+			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
-			    		'value'=>$values[$k],
-			    		'bind_count'=>count($bindvars),
-			    		'values_count'=>count($values)
+			    		'value'=>$values[$k]
 			    	));
 			    	return false;
 				}
@@ -340,7 +330,6 @@ function oracleEditDBRecord($params){
         		$values[$k]=$v;
         	break;
 		}
-		if(isNum($values[$k])){$bindvars[$k]=$values[$k];}
 	}
 	//build the query with bind variables
 	$sets=array();
@@ -364,7 +353,6 @@ function oracleEditDBRecord($params){
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
-    	if(isNum($bind)){continue;}
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
