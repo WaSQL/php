@@ -23,16 +23,15 @@ ini_set('oci8.statement_cache_size',20);
 */
 function oracleAddDBRecord($params){
 	global $USER;
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleAddDBRecord Connect Error",$e));
-    	return;
-	}
-	if(!isset($params['-table'])){return 'oracleAddDBRecord error: No table specified.';}
+	if(!isset($params['-table'])){
+		debugValue(array(
+    		'function'=>"oracleAddDBRecord",
+    		'error'=>'No table specified'
+    	));
+    	return false;
+    }
+	//connect
+	$dbh_oracle=oracleDBConnect($params);
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	//populate cdate and cuser fields
 	if(isset($fields['cdate'])){
@@ -86,32 +85,67 @@ function oracleAddDBRecord($params){
     $query="INSERT INTO {$params['-table']} ({$fieldstr}) values({$bindstr})";
     $stid = oci_parse($dbh_oracle, $sql);
     if (!is_resource($stid)){
-    	$e=json_encode(oci_error($dbh_oracle));
-    	debugValue(array("oracleAddDBRecord Parse Error",$e,$query));
-    	return;
+    	debugValue(array(
+    		'function'=>"oracleAddDBRecord",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
+    	oci_close($dbh_oracle);
+    	return false;
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
-    	switch(strtolower($fields[$k]['type'])){
+    	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-				oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB);
+				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
+					debugValue(array(
+			    		'function'=>"oracleAddDBRecord",
+			    		'connection'=>$dbh_oracle,
+			    		'action'=>'oci_bind_by_name',
+			    		'oci_error'=>oci_error($stid),
+			    		'query'=>$query,
+			    		'field'=>$k,
+			    		'_dbtype'=>$fields[$k]['_dbtype'],
+			    		'bind'=>$bind,
+			    		'value'=>$values[$k]
+			    	));
+			    	return false;
+				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
-					$e=json_encode(oci_error($stid));
-			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k}",$e));
-			    	return;
+					debugValue(array(
+			    		'function'=>"oracleAddDBRecord",
+			    		'connection'=>$dbh_oracle,
+			    		'action'=>'oci_bind_by_name',
+			    		'oci_error'=>oci_error($stid),
+			    		'query'=>$query,
+			    		'field'=>$k,
+			    		'_dbtype'=>$fields[$k]['_dbtype'],
+			    		'bind'=>$bind,
+			    		'value'=>$values[$k]
+			    	));
+			    	return false;
 				}
     		break;
     	}
     }
 	$r = oci_execute($stid);
 	if (!$r) {
-		$e=json_encode(oci_error($stid));
-		debugValue(array("oracleAddDBRecord Execute Error",$e,$query));
+		debugValue(array(
+    		'function'=>"oracleAddDBRecord",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_execute',
+    		'stid'=>$stid,
+    		'oci_error'=>oci_error($stid),
+    		'query'=>$query
+    	));
+    	return false;
 	}
 	return true;
 }
@@ -231,9 +265,22 @@ function oracleDBConnect($params=array()){
 * @usage $id=oracleEditDBRecord(array('-table'=>'abc','-where'=>'id=4',name'=>'bob','age'=>25));
 */
 function oracleEditDBRecord($params){
-	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
-	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
+	if(!isset($params['-table'])){
+		debugValue(array(
+    		'function'=>"oracleEditDBRecord",
+    		'error'=>'No table specified'
+    	));
+    	return false;
+    }
+	if(!isset($params['-where'])){
+		debugValue(array(
+    		'function'=>"oracleEditDBRecord",
+    		'error'=>'No where specified'
+    	));
+    	return false;
+    }
 	global $USER;
+	//get the database handle
 	$dbh_oracle=oracleDBConnect($params);
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$values=array();
@@ -300,11 +347,12 @@ function oracleEditDBRecord($params){
     		'oci_error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	));
-    	return;
+    	oci_close($dbh_oracle);
+    	return false;
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
-    	switch(strtolower($fields[$k]['type'])){
+    	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
@@ -316,10 +364,11 @@ function oracleEditDBRecord($params){
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
+			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	));
-			    	return;
+			    	return false;
 				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
@@ -332,10 +381,11 @@ function oracleEditDBRecord($params){
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
+			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	));
-			    	return;
+			    	return false;
 				}
     		break;
     	}
@@ -346,9 +396,11 @@ function oracleEditDBRecord($params){
     		'function'=>"oracleEditDBRecord",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
+    		'stid'=>$stid,
     		'oci_error'=>oci_error($stid),
     		'query'=>$query
     	));
+    	return false;
 	}
 	return true;
 }
@@ -371,22 +423,20 @@ function oracleEditDBRecord($params){
 */
 function oracleExecuteSQL($query='',$params=array()){
 	global $USER;
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleQueryResults Connect Error",$e));
-    	return;
-	}
+	//connect
+	$dbh_oracle=oracleDBConnect($params);
 	oci_rollback($dbh_oracle);
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if (!$stid) {
-    	$e = json_encode(oci_error($dbh_oracle));
-		debugValue(array('OracleQueryResults Parse Error',$e));
-		oci_close($dbh_oracle);
+		debugValue(array(
+    		'function'=>"oracleExecuteSQL",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
+    	oci_close($dbh_oracle);
     	return;
 	}
 	if($params['setmodule']){
@@ -403,7 +453,7 @@ function oracleExecuteSQL($query='',$params=array()){
 	//log this query
 	// check for non-select query
 	$start=microtime(true);
-	if(preg_match('/^(update|insert|alter)/is',trim($query))){
+	if(preg_match('/^(truncate|create|drop|update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
 		if(function_exists('logDBQuery')){
 			logDBQuery($query,$start,'oracleExecuteSQL','oracle');
@@ -415,25 +465,41 @@ function oracleExecuteSQL($query='',$params=array()){
 			oci_set_client_identifier($dbh_oracle, 'idle');
 		}
 		oci_close($dbh_oracle);
-		
-    	return;
+		if (!$r){
+			debugValue(array(
+	    		'function'=>"oracleExecuteSQL",
+	    		'connection'=>$dbh_oracle,
+	    		'action'=>'oci_execute',
+	    		'oci_error'=>oci_error($stid),
+	    		'query'=>$query
+	    	));
+	    	return false;
+		}
+		return true;
 	}
 	$r = oci_execute($stid);
 	if(function_exists('logDBQuery')){
 		logDBQuery($query,$start,'oracleExecuteSQL','oracle');
 	}
-	if (!$r) {
-		$e = json_encode(oci_error($stid));
-	    
-	    oci_free_statement($stid);
-	    if($params['setmodule']){
-			oci_set_module_name($dbh_oracle, 'idle');
-			oci_set_action($dbh_oracle, 'idle');
-			oci_set_client_identifier($dbh_oracle, 'idle');
-		}
-		oci_close($dbh_oracle);
-    	return;
+    if($params['setmodule']){
+		oci_set_module_name($dbh_oracle, 'idle');
+		oci_set_action($dbh_oracle, 'idle');
+		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
+	if (!$r){
+		debugValue(array(
+    		'function'=>"oracleExecuteSQL",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_execute',
+    		'oci_error'=>oci_error($stid),
+    		'query'=>$query
+    	));
+    	oci_free_statement($stid);
+		oci_close($dbh_oracle);
+    	return false;
+	}
+	oci_free_statement($stid);
+	oci_close($dbh_oracle);
 	return true;
 }
 //---------- begin function oracleGetActiveSessionCount
@@ -485,7 +551,10 @@ function oracleGetDBCount($params=array()){
 	$recs=oracleGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
-		debugValue($recs);
+		debugValue(array(
+    		'function'=>"oracleGetDBCount",
+    		'error'=>$recs,
+    	));
 		return 0;
 	}
 	return $recs[0]['cnt'];
@@ -538,31 +607,23 @@ function oracleGetDBFields($table,$params=array()){
 * @usage $fields=oracleGetDBFieldInfo('notes');
 */
 function oracleGetDBFieldInfo($table,$params=array()){
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
-    	return;
-	}
+	//connect
+	$dbh_oracle=oracleDBConnect($params);
+	//primary keys
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Connect Error",$e));
-    	return;
-	}
 	//echo $table.printValue($pkeys);exit;
 	$query="select * from {$table} where 1=0";
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!$stid){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleGetDBFieldInfo Parse Error",$query,$e));
-    	return;
+		debugValue(array(
+    		'function'=>"oracleGetDBFieldInfo",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
+    	oci_close($dbh_oracle);
+    	return false;
 	}
 	oci_execute($stid, OCI_DESCRIBE_ONLY);
 	$ncols = oci_num_fields($stid);
@@ -986,27 +1047,32 @@ function oracleParseConnectParams($params=array()){
 */
 function oracleQueryResults($query='',$params=array()){
 	global $USER;
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
-	}
-	if(!$dbh_oracle){
-    	$e=json_encode(oci_error());
-    	debugValue(array("oracleQueryResults Connect Error",$e));
-    	return;
-	}
+	//connect
+	$dbh_oracle=oracleDBConnect($params);
 	//check for -process
 	if(isset($params['-process']) && !function_exists($params['-process'])){
-		return "Error: Function is not loaded to process with: {$params['-process']}";
+		debugValue(array(
+    		'function'=>"oracleQueryResults",
+    		'connection'=>$dbh_oracle,
+    		'error'=>'Invalid process function',
+    		'function'=>$params['-process'],
+    		'query'=>$query
+    	));
+		return false;
 	}
 	oci_rollback($dbh_oracle);
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
-	if (!$stid) {
-    	$e = json_encode(oci_error($dbh_oracle));
-		debugValue(array('OracleQueryResults Parse Error',$e,$query));
+	if(!is_resource($stid)){
+		debugValue(array(
+    		'function'=>"oracleQueryResults",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
 		oci_close($dbh_oracle);
-    	return;
+    	return false;
 	}
 	if($params['setmodule']){
 		if(!isset($params['module'])){$params['module']='waSQL';}
@@ -1033,23 +1099,38 @@ function oracleQueryResults($query='',$params=array()){
 			oci_set_client_identifier($dbh_oracle, 'idle');
 		}
 		oci_close($dbh_oracle);
-    	return;
+		if (!$r){
+			debugValue(array(
+	    		'function'=>"oracleQueryResults",
+	    		'connection'=>$dbh_oracle,
+	    		'action'=>'oci_execute',
+	    		'oci_error'=>oci_error($stid),
+	    		'query'=>$query
+	    	));
+	    	return false;
+		}
+		return true;
 	}
 	$r = oci_execute($stid);
 	if(function_exists('logDBQuery')){
 		logDBQuery($query,$start,'oracleQueryResults','oracle');
 	}
+	if($params['setmodule']){
+		oci_set_module_name($dbh_oracle, 'idle');
+		oci_set_action($dbh_oracle, 'idle');
+		oci_set_client_identifier($dbh_oracle, 'idle');
+	}
 	if (!$r) {
-		$e = json_encode(oci_error($stid));
-	    debugValue(array("oracleQueryResults Execute Error",$e,$query));
+		debugValue(array(
+    		'function'=>"oracleQueryResults",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_execute',
+    		'oci_error'=>oci_error($stid),
+    		'query'=>$query
+    	));
 	    oci_free_statement($stid);
-	    if($params['setmodule']){
-			oci_set_module_name($dbh_oracle, 'idle');
-			oci_set_action($dbh_oracle, 'idle');
-			oci_set_client_identifier($dbh_oracle, 'idle');
-		}
 		oci_close($dbh_oracle);
-    	return;
+    	return false;
 	}
 	//read results into a recordset array	
 	$recs=oracleGetResourceResults($stid,$params);
@@ -1067,11 +1148,6 @@ function oracleQueryResults($query='',$params=array()){
 		$recs=array($rec);
 	}
 	oci_free_statement($stid);
-	if($params['setmodule']){
-		oci_set_module_name($dbh_oracle, 'idle');
-		oci_set_action($dbh_oracle, 'idle');
-		oci_set_client_identifier($dbh_oracle, 'idle');
-	}
 	oci_close($dbh_oracle);
 	return $recs;
 }
