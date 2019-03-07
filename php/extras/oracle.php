@@ -46,6 +46,7 @@ function oracleAddDBRecord($params){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
+	global $values;
 	$values=array();
 	$bindvars=array();
 	foreach($params as $k=>$v){
