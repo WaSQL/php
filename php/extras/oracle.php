@@ -107,13 +107,16 @@ function oracleAddDBRecord($params){
 					debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
+			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
 			    		'bind'=>$bind,
-			    		'value'=>$values[$k]
+			    		'value'=>$values[$k],
+			    		'bind_count'=>count($bindvars),
+			    		'values_count'=>count($values)
 			    	));
 			    	return false;
 				}
