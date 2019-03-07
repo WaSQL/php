@@ -136,13 +136,14 @@ function oracleAddDBRecord($params){
     	}
     }
 	$r = oci_execute($stid);
+	$e=oci_error($stid);
 	if (!$r) {
 		debugValue(array(
     		'function'=>"oracleAddDBRecord",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'stid'=>$stid,
-    		'oci_error'=>oci_error($stid),
+    		'oci_error'=>$e,
     		'query'=>$query
     	));
     	return false;
@@ -391,13 +392,14 @@ function oracleEditDBRecord($params){
     	}
     }
 	$r = oci_execute($stid);
+	$e=oci_error($stid);
 	if (!$r) {
 		debugValue(array(
     		'function'=>"oracleEditDBRecord",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'stid'=>$stid,
-    		'oci_error'=>oci_error($stid),
+    		'oci_error'=>$e,
     		'query'=>$query
     	));
     	return false;
