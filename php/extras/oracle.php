@@ -46,7 +46,6 @@ function oracleAddDBRecord($params){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
-	global $values;
 	$values=array();
 	$bindvars=array();
 	foreach($params as $k=>$v){
@@ -98,6 +97,7 @@ function oracleAddDBRecord($params){
     }
     //bind the variables
     foreach($values as $k=>$v){
+    	$$k=$values[$k];
     	$bind=$bindvars[$k];
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
@@ -121,7 +121,7 @@ function oracleAddDBRecord($params){
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		case 'blob':
-    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]), OCI_B_BLOB )){
+    			if(!oci_bind_by_name($stid, $bind, $$k, strlen($$k), OCI_B_BLOB )){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
@@ -138,7 +138,7 @@ function oracleAddDBRecord($params){
 				}
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]))){
+    			if(!oci_bind_by_name($stid, $bind, $$k, strlen($$k))){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
