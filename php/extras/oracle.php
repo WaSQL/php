@@ -57,7 +57,7 @@ function oracleAddDBRecord($params){
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=":b_{$k}";
+		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
@@ -309,7 +309,7 @@ function oracleEditDBRecord($params){
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=":b_{$k}";
+		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);;
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
