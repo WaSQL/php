@@ -299,9 +299,15 @@ function oracleEditDBRecord($params){
     $query="UPDATE {$params['-table']} SET ({$setstr}) WHERE {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $query);
     //check for parse errors
-    $e=oci_error($dbh_oracle);
-    if($e){
-    	debugValue(array("oracleEditDBRecord Error Parsing Query",e,$query));
+    if(!is_resource($stid)){
+    	$e=oci_error($dbh_oracle);
+    	debugValue(array(
+    		'function'=>"oracleEditDBRecord",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
     	return;
     }
     //bind the variables
@@ -311,14 +317,32 @@ function oracleEditDBRecord($params){
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
-					debugValue(array("oracleAddDBRecord Bind Error binding {$k} to {$bind}",$stid,oci_error($stid),$values[$k]));
+					debugValue(array(
+			    		'function'=>"oracleEditDBRecord",
+			    		'connection'=>$dbh_oracle,
+			    		'action'=>'oci_bind_by_name',
+			    		'oci_error'=>oci_error($stid),
+			    		'query'=>$query,
+			    		'field'=>$k,
+			    		'bind'=>$bind,
+			    		'value'=>$values[$k]
+			    	));
 			    	return;
 				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		default:
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
-			    	debugValue(array("oracleAddDBRecord Bind Error binding {$k} to {$bind}",$stid,oci_error($stid),$values[$k]));
+			    	debugValue(array(
+			    		'function'=>"oracleEditDBRecord",
+			    		'connection'=>$dbh_oracle,
+			    		'action'=>'oci_bind_by_name',
+			    		'oci_error'=>oci_error($stid),
+			    		'query'=>$query,
+			    		'field'=>$k,
+			    		'bind'=>$bind,
+			    		'value'=>$values[$k]
+			    	));
 			    	return;
 				}
     		break;
@@ -326,7 +350,13 @@ function oracleEditDBRecord($params){
     }
 	$r = oci_execute($stid);
 	if (!$r) {
-		debugValue(array("oracleAddDBRecord Execute Error",oci_error($stid),$query));
+		debugValue(array(
+    		'function'=>"oracleEditDBRecord",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_execute',
+    		'oci_error'=>oci_error($stid),
+    		'query'=>$query
+    	));
 	}
 	return true;
 }
