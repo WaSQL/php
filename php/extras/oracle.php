@@ -238,7 +238,7 @@ function oracleEditDBRecord($params){
 	if(!is_resource($dbh_oracle)){
 		$dbh_oracle=oracleDBConnect($params);
 	}
-	if(!$dbh_oracle){
+	if(!is_resource($dbh_oracle)){
     	debugValue(array("oracleEditDBRecord Connect Error",oci_error()));
     	return;
 	}
@@ -296,11 +296,10 @@ function oracleEditDBRecord($params){
 		$sets[]="{$k}={$bindvars[$k]}";
 	}
 	$setstr=implode(',',$sets);
-    $query="update {$params['-table']} set {$setstr} WHERE {$params['-where']}";
+    $query="update {$params['-table']} set {$setstr} where {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $query);
     //check for parse errors
     if(!is_resource($stid)){
-    	$e=oci_error($dbh_oracle);
     	debugValue(array(
     		'function'=>"oracleEditDBRecord",
     		'connection'=>$dbh_oracle,
