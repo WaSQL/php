@@ -97,7 +97,6 @@ function oracleAddDBRecord($params){
     }
     //bind the variables
     foreach($values as $k=>$v){
-    	$$k=$values[$k];
     	$bind=$bindvars[$k];
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
@@ -121,7 +120,7 @@ function oracleAddDBRecord($params){
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
     		case 'blob':
-    			if(!oci_bind_by_name($stid, $bind, $$k, strlen($$k), OCI_B_BLOB )){
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]), OCI_B_BLOB )){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
@@ -138,7 +137,7 @@ function oracleAddDBRecord($params){
 				}
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, $$k, strlen($$k))){
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]))){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
@@ -378,7 +377,7 @@ function oracleEditDBRecord($params){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
     			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-				if(!oci_bind_by_name($stid, "{$bind}", $descriptor[$k], -1, SQLT_CLOB)){
+				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
 			    		'connection'=>$dbh_oracle,
@@ -395,26 +394,8 @@ function oracleEditDBRecord($params){
 				}
 				$descriptor[$k]->writeTemporary($values[$k]);
     		break;
-    		case 'number':
-    		case 'integer':
-    			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], strlen($values[$k]), OCI_B_INT )){
-			    	debugValue(array(
-			    		'function'=>"oracleEditDBRecord",
-			    		'connection'=>$dbh_oracle,
-			    		'stid'=>$stid,
-			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
-			    		'query'=>$query,
-			    		'field'=>$k,
-			    		'_dbtype'=>$fields[$k]['_dbtype'],
-			    		'bind'=>$bind,
-			    		'value'=>$values[$k]
-			    	));
-			    	return false;
-				}
-    		break;
     		case 'blob':
-    			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], strlen($values[$k]), OCI_B_BLOB )){
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]), OCI_B_BLOB )){
 			    	debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
 			    		'connection'=>$dbh_oracle,
@@ -431,7 +412,7 @@ function oracleEditDBRecord($params){
 				}
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, "{$bind}", $values[$k], strlen($values[$k]))){
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]))){
 			    	debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
 			    		'connection'=>$dbh_oracle,
