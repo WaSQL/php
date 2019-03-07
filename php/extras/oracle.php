@@ -307,7 +307,7 @@ function oracleEditDBRecord($params){
     	switch(strtolower($fields[$k]['type'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
-    			$descriptor[$k] = oci_new_descriptor($oconn, OCI_DTYPE_LOB);
+    			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
