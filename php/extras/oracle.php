@@ -98,6 +98,7 @@ function oracleAddDBRecord($params){
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
+    	if(isNum($bind)){continue;}
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
@@ -355,6 +356,7 @@ function oracleEditDBRecord($params){
     }
     //bind the variables
     foreach($bindvars as $k=>$bind){
+    	if(isNum($bind)){continue;}
     	switch(strtolower($fields[$k]['_dbtype'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
