@@ -234,11 +234,11 @@ function oracleEditDBRecord($params){
 	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
 	global $USER;
-	global $dbh_oracle;
-	if(!is_resource($dbh_oracle)){
-		$dbh_oracle=oracleDBConnect($params);
+	global $oconn;
+	if(!is_resource($oconn)){
+		$oconn=oracleDBConnect($params);
 	}
-	if(!is_resource($dbh_oracle)){
+	if(!is_resource($oconn)){
     	debugValue(array("oracleEditDBRecord Connect Error",oci_error()));
     	return;
 	}
@@ -297,14 +297,14 @@ function oracleEditDBRecord($params){
 	}
 	$setstr=implode(',',$sets);
     $query="update {$params['-table']} set {$setstr} where {$params['-where']}";
-    $stid = oci_parse($dbh_oracle, $query);
+    $stid = oci_parse($oconn, $query);
     //check for parse errors
     if(!is_resource($stid)){
     	debugValue(array(
     		'function'=>"oracleEditDBRecord",
-    		'connection'=>$dbh_oracle,
+    		'connection'=>$oconn,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($dbh_oracle),
+    		'oci_error'=>oci_error($oconn),
     		'query'=>$query
     	));
     	return;
@@ -314,11 +314,11 @@ function oracleEditDBRecord($params){
     	switch(strtolower($fields[$k]['type'])){
     		case 'clob':
     			// treat clobs differently so we can insert large amounts of data
-    			$descriptor[$k] = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
+    			$descriptor[$k] = oci_new_descriptor($oconn, OCI_DTYPE_LOB);
 				if(!oci_bind_by_name($stid, $bind, $descriptor[$k], -1, SQLT_CLOB)){
 					debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
-			    		'connection'=>$dbh_oracle,
+			    		'connection'=>$oconn,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -334,7 +334,7 @@ function oracleEditDBRecord($params){
     			if(!oci_bind_by_name($stid, $bind, $values[$k], -1)){
 			    	debugValue(array(
 			    		'function'=>"oracleEditDBRecord",
-			    		'connection'=>$dbh_oracle,
+			    		'connection'=>$oconn,
 			    		'action'=>'oci_bind_by_name',
 			    		'oci_error'=>oci_error($stid),
 			    		'query'=>$query,
@@ -351,7 +351,7 @@ function oracleEditDBRecord($params){
 	if (!$r) {
 		debugValue(array(
     		'function'=>"oracleEditDBRecord",
-    		'connection'=>$dbh_oracle,
+    		'connection'=>$oconn,
     		'action'=>'oci_execute',
     		'oci_error'=>oci_error($stid),
     		'query'=>$query
