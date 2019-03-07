@@ -57,7 +57,7 @@ function oracleAddDBRecord($params){
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);
+		$bindvars[$k]=':b'.preg_replace('/[^a-z]/i','',$k);
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
@@ -78,6 +78,7 @@ function oracleAddDBRecord($params){
         		$values[$k]=$v;
         	break;
 		}
+		if(isNum($values[$k])){$bindvars[$k]=$values[$k];}
 	}
 	//build the query with bind variables
 	$fieldstr=implode(',',array_keys($values));
@@ -309,7 +310,7 @@ function oracleEditDBRecord($params){
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);;
+		$bindvars[$k]=':b'.preg_replace('/[^a-z]/i','',$k);
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
@@ -330,6 +331,7 @@ function oracleEditDBRecord($params){
         		$values[$k]=$v;
         	break;
 		}
+		if(isNum($values[$k])){$bindvars[$k]=$values[$k];}
 	}
 	//build the query with bind variables
 	$sets=array();
