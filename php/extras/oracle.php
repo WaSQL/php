@@ -234,14 +234,7 @@ function oracleEditDBRecord($params){
 	if(!isset($params['-table'])){return 'oracleEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'oracleEditRecord error: No where specified.';}
 	global $USER;
-	global $oconn;
-	if(!is_resource($oconn)){
-		$oconn=oracleDBConnect($params);
-	}
-	if(!is_resource($oconn)){
-    	debugValue(array("oracleEditDBRecord Connect Error",oci_error()));
-    	return;
-	}
+	$oconn=oracleDBConnect($params);
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$values=array();
 	$bindars=array();
