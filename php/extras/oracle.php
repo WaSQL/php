@@ -298,8 +298,10 @@ function oracleEditDBRecord($params){
 	$setstr=implode(',',$sets);
     $query="UPDATE {$params['-table']} SET ({$setstr}) WHERE {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $query);
-    if (!is_resource($stid)){
-    	debugValue(array("oracleEditDBRecord Parse Error",oci_error($dbh_oracle),$query));
+    //check for parse errors
+    $e=oci_error($dbh_oracle);
+    if($e){
+    	debugValue(array("oracleEditDBRecord Error Parsing Query",e,$query));
     	return;
     }
     //bind the variables
