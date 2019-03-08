@@ -191,9 +191,14 @@ function oracleAutoCommit($stid,$onoff=0){
 		break;
 	}
 	if (!$r) {
-		$err=json_encode(oci_error($stid));
-		echo "oracleAutoCommit error:{$err}";
-		exit;
+		debugValue(array(
+    		'function'=>"oracleAutoCommit",
+    		'stid'=>$stid,
+    		'action'=>'oci_execute',
+    		'oci_error'=>oci_error($stid),
+    		'onoff'=>$onoff
+    	));
+		return false;
 	}
 	return true;
 }
