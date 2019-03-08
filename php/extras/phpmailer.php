@@ -81,6 +81,9 @@ function phpmailerSendMail($params=array()){
 	//-timeout
 	$mail->Timeout = $params['-timeout'];
 	$mail->set('X-WaSQL-Method', 'phpmailerSendMail');
+	if(isset($params['charset'])){
+		$mail->CharSet = $params['charset'];
+	}
 	//custom SMTP?
 	if(isset($params['smtp'])){
 		//set smtp use
