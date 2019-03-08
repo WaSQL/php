@@ -21,9 +21,9 @@
 
 function romanizeString($string)
 {
-    if (romanizeIsASCII($string)) {
-        return $string;
-    }
+    // if (romanizeIsASCII($string)) {
+    //     return $string;
+    // }
     return strtr($string, romanizeMap());
 }
 /*
