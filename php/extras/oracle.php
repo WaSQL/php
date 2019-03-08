@@ -83,7 +83,7 @@ function oracleAddDBRecord($params){
 	$fieldstr=implode(', ',array_keys($values));
 	$bindstr=implode(', ',array_values($bindvars));
     $query="INSERT INTO {$params['-table']} ({$fieldstr}) values ({$bindstr})";
-    $stid = oci_parse($dbh_oracle, $sql);
+    $stid = oci_parse($dbh_oracle, $query);
     if (!is_resource($stid)){
     	debugValue(array(
     		'function'=>"oracleAddDBRecord",
@@ -137,7 +137,7 @@ function oracleAddDBRecord($params){
 				}
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]))){
+    			if(!oci_bind_by_name($stid, $bind, '1234', 4)){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
