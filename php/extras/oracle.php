@@ -65,9 +65,11 @@ function oracleAddDBRecord($params){
 				}
 				//set the template for the to_date
 				if(preg_match('/^([0-9]{2,2}?)\-([a-z]{3,3}?)\-([0-9]{2,4})/i',$params[$k],$m)){
+					//already in the right format: 02-MAR-2019
 					$values[$k]="{$m[1]}-{$m[2]}-{$m[3]}";
 				}
-				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k],$m)){
+				elseif(preg_match('/^([0-9]{4,4}?)\-([0-9]{2,2}?)\-([0-9]{2,2})/i',$params[$k],$m)){
+					//2018-11-07
 					$values[$k]=date('d-M-Y',strtotime("{$m[1]}-{$m[2]}-{$m[3]}"));
 				}
 				else{
@@ -342,9 +344,11 @@ function oracleEditDBRecord($params){
 				}
 				//set the template for the to_date
 				if(preg_match('/^([0-9]{2,2}?)\-([a-z]{3,3}?)\-([0-9]{2,4})/i',$params[$k],$m)){
+					//already in the right format: 02-MAR-2019
 					$values[$k]="{$m[1]}-{$m[2]}-{$m[3]}";
 				}
-				elseif(preg_match('/^[0-9]{4,4}\-[0-9]{2,2}\-[0-9]{2,2}/i',$params[$k],$m)){
+				elseif(preg_match('/^([0-9]{4,4}?)\-([0-9]{2,2}?)\-([0-9]{2,2})/i',$params[$k],$m)){
+					//2018-11-07
 					$values[$k]=date('d-M-Y',strtotime("{$m[1]}-{$m[2]}-{$m[3]}"));
 				}
 				else{
