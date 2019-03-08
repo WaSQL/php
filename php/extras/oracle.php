@@ -137,7 +137,7 @@ function oracleAddDBRecord($params){
 				}
     		break;
     		default:
-    			if(!oci_bind_by_name($stid, $bind, '1234', 4)){
+    			if(!oci_bind_by_name($stid, $bind, $values[$k], strlen($values[$k]))){
 			    	debugValue(array(
 			    		'function'=>"oracleAddDBRecord",
 			    		'connection'=>$dbh_oracle,
