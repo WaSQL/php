@@ -1589,15 +1589,17 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 .w_calendar_div{
 	position:absolute;
 	background:#FFF;
+    width:inherit;
 	display:inline-block;
 	padding:0px !important;
 	margin:0px !important;
 }
 .w_calendar_table{
 	background-color: #FFF !important;
+    width:100%;
 }
 .w_calendar_title{
-	font-size:11px !important;
+	font-size:12px !important;
 }
 .w_calendar_month th{
 	font-weight:bold !important;
@@ -1610,13 +1612,13 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	border-collapse:collapse !important;
 	padding:0px !important;
 	background-color:#a7a8a9 !important;
-	font-size:11px !important;
+	font-size:12px !important;
 	color:#FFF !important;
 	text-align:center !important;
 }
 .w_calendar_body th{
 	font-family: Tahoma, Geneva, sans-serif !important;
-	font-size: 11px !important;
+	font-size: 12px !important;
 	text-align:right !important;
 	font-weight:normal !important;
 	border-collapse:collapse !important;
@@ -1660,11 +1662,12 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	border-bottom: 1px solid #dddddd !important;
 	border-left: 1px solid #dddddd !important;
 }
-.w_calendar_now{
-	font-size:13px !important;
+.w_calendar_now, .w_calendar_now span{
+	font-size:16px !important;
 	font-family:arial !important;
 	color:#961f24 !important;
 	cursor:pointer !important;
+    display:block;
 }
 .w_calendar_close{
 	font-size:13px !important;

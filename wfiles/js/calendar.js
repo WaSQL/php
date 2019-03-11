@@ -21,8 +21,9 @@ function Calendar(target_id,month, year, s) {
     	tobj.insertAdjacentElement('afterEnd',caldiv);
 	}
 	else if(undefined==s && caldiv.style.display=='inline-block'){
+    	//console.log('closing Calendar',s,caldiv.style.display);
     	caldiv.style.display='none';
-    	return;
+    	return '';
 	}
 	var controlType=tobj.getAttribute('data-type');
 	if(undefined != controlType){
@@ -56,15 +57,14 @@ function Calendar(target_id,month, year, s) {
 	//time interval
 	var interval=tobj.getAttribute('data-interval');
 	if(undefined != interval){
-		switch(parseInt(interval)){
+		switch(parseInt(interval,10)){
 			case 1:
 				//every minute
 				this.ms=new Array(
 					'00','01','02','03','04','05','06','07','08','09','10','11','12','13','14',
 					'15','16','17','18','19','20','21','22','23','24','25','26','27','28','29',
 					'30','31','32','33','34','35','36','37','38','39','40','41','42','43','44',
-					'45','46','47','48','49','50','51','52','53','54','55','56','57','58','59'
-				);
+					'45','46','47','48','49','50','51','52','53','54','55','56','57','58','59');
 				this.scrollPos=8000;
 			break;
 			case 5:
@@ -112,23 +112,23 @@ function Calendar(target_id,month, year, s) {
 		var t = cval.split(/[- :]/);
 		if(t.length==6){
 			//var d = new Date(year, month, day, hours, minutes, seconds, milliseconds);
-			this.cval = new Date(parseInt(t[0]), parseInt(t[1])-1, parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), parseInt(t[5]),0);
+			this.cval = new Date(parseInt(t[0],10), parseInt(t[1],10)-1, parseInt(t[2],10), parseInt(t[3],10), parseInt(t[4],10), parseInt(t[5],10),0);
 			this.cvalYear=this.cval.getFullYear();
 			this.cvalMonth=this.cval.getMonth();
 			this.cvalDate=this.cval.getDate();
-			this.cvalHr=this.cval.getHours()
+			this.cvalHr=this.cval.getHours();
 			this.cvalMin=this.cval.getMinutes();
 		}
 		else if(t.length==3 && t[0].length==4){
-			this.cval = new Date(parseInt(t[0]), parseInt(t[1])-1, parseInt(t[2]), 0, 0, 0,0);
+			this.cval = new Date(parseInt(t[0],10), parseInt(t[1],10)-1, parseInt(t[2],10), 0, 0, 0,0);
 			this.cvalYear=this.cval.getFullYear();
 			this.cvalMonth=this.cval.getMonth();
 			this.cvalDate=this.cval.getDate();
 		}
 		else if(t.length==3){
-        	this.cval = new Date(this.current_dateYear, this.current_dateMonth, this.current_dateDate, parseInt(t[0]), parseInt(t[1]), parseInt(t[2]),0);
+        	this.cval = new Date(this.current_dateYear, this.current_dateMonth, this.current_dateDate, parseInt(t[0],10), parseInt(t[1],10), parseInt(t[2],10),0);
 
-			this.cvalHr=this.cval.getHours()
+			this.cvalHr=this.cval.getHours();
 			this.cvalMin=this.cval.getMinutes();
 		}
 
@@ -144,8 +144,8 @@ function Calendar(target_id,month, year, s) {
 			}
 		}
 
-		this.month = (isNaN(month) || month == null) ? this.current_date.getMonth() : month;
-		this.year  = (isNaN(year) || year == null) ? this.current_date.getFullYear() : year;
+		this.month = (isNaN(month) || month === null) ? this.current_date.getMonth() : month;
+		this.year  = (isNaN(year) || year === null) ? this.current_date.getFullYear() : year;
 	  	// these are labels for the days of the week
 		this.days_labels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 		// these are human-readable month name labels, in order
@@ -157,20 +157,20 @@ function Calendar(target_id,month, year, s) {
 		var startingDay = firstDay.getDay();
 		this.month=firstDay.getMonth();
 		this.year=firstDay.getFullYear();
-		this.nextyear=parseInt(this.year)+1;
-		this.prevyear=parseInt(this.year)-1;
-		switch(parseInt(this.month)){
+		this.nextyear=parseInt(this.year,10)+1;
+		this.prevyear=parseInt(this.year,10)-1;
+		switch(parseInt(this.month,10)){
 	    	case 0:
 				this.prevmonth=11;
 				this.nextmonth=this.month+1;
-				this.prevmonthyear=parseInt(this.year)-1;
+				this.prevmonthyear=parseInt(this.year,10)-1;
 				this.nextmonthyear=this.year;
 			break;
 	    	case 11:
 	    		this.prevmonth=this.month-1;
 				this.nextmonth=0;
 				this.prevmonthyear=this.year;
-				this.nextmonthyear=parseInt(this.year)+1;
+				this.nextmonthyear=parseInt(this.year,10)+1;
 			break;
 	    	default:
 				this.prevmonth=this.month-1;
@@ -183,7 +183,7 @@ function Calendar(target_id,month, year, s) {
 		var monthLength = this.days_in_month[this.month];
 		// compensate for leap year
 		if (this.month == 1) { // February only!
-	    	if((this.year % 4 == 0 && this.year % 100 != 0) || this.year % 400 == 0){
+	    	if((this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0){
 	      		monthLength = 29;
 	    	}
 	  	}
@@ -210,7 +210,7 @@ function Calendar(target_id,month, year, s) {
 	  	var day = 1;
 	  	// this loop is for is weeks (rows)
 	  	var rows=1;
-	  	for (var i = 0; i < 9; i++) {
+	  	for (i = 0; i < 9; i++) {
 	    	// this loop is for weekdays (cells)
 	    	for (var j = 0; j <= 6; j++) {
 				//today?
@@ -227,7 +227,7 @@ function Calendar(target_id,month, year, s) {
 					}
 				}
 				//weekends are th cells
-		      	if(j==0 || j==6){html += '		<th';}
+		      	if(j===0 || j==6){html += '		<th';}
 		      	else{html += '		<td';}
 		      	if(active){html+=' class="active"';}
 		      	else if(today){html+=' class="today"';}
@@ -240,7 +240,7 @@ function Calendar(target_id,month, year, s) {
 		        	day++;
 		      	}
 		      	//weekends are th cells
-		      	if(j==0 || j==6){html += '</th>'+"\n";}
+		      	if(j===0 || j==6){html += '</th>'+"\n";}
 		      	else{html += '</td>'+"\n";}
 	
 	    	}
@@ -257,7 +257,7 @@ function Calendar(target_id,month, year, s) {
 		html += '</tr>'+"\n";
 		html += '</table></td>'+"\n";
 		if(this.showtime){
-			this.timesheight=parseInt(rows*21)+15;
+			this.timesheight=parseInt(rows*21,10)+15;
 			html += 	'<td style="padding:0px !important;border-left:1px solid #CCC;" nowrap>'+"\n";
 			html +=		'<div class="w_bold w_smaller" align="center">Time</div>'+"\n";
 			this.showtimes=this.id+'_showtimes';
@@ -271,18 +271,18 @@ function Calendar(target_id,month, year, s) {
 	            	hours=hrs[h];
 				}
 	        	else if(hrs[h] > 12){
-	            	if(h !=0){a='pm';}
+	            	if(h !==0){a='pm';}
 	            	hours=hrs[h]-12;
 				}
 				else{
 					hours=hrs[h];
 				}
 				var hh=CalendarTwoDigits(hrs[h]);
-				for(var m=0;m<this.ms.length;m++){
+				for(m=0;m<this.ms.length;m++){
 					var time=hours+':'+this.ms[m]+' '+a;
-					var onclick=hh+':'+this.ms[m]+':00';
-					var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(this.ms[m]),0,0);
-					var active=false;
+					onclick=hh+':'+this.ms[m]+':00';
+					cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h],10),parseInt(this.ms[m],10),0,0);
+					active=false;
 					if(this.hasvalue && this.cvalHr==cdate.getHours() && this.cvalMin==cdate.getMinutes()){active=true;}
 					html += '<div onclick="CalendarSetTime(\''+this.target_id+'\',\''+onclick+'\');" class="w_calendar_time';
 					if(active){html += ' active';}
@@ -319,27 +319,27 @@ function Calendar(target_id,month, year, s) {
 		html +=		'<div class="w_bold w_small" align="center">Time</div>'+"\n";
 		this.showtimes=this.id+'_showtimes';
 		html +=		'<div class="w_calendar_times" id="'+this.showtimes+'" style="height:'+this.timesheight+'px;">'+"\n";
-		var hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
-		for(var h=0;h<hrs.length;h++){
-			var a='am';
-			var hours;
+		hrs=new Array(24,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
+		for(h=0;h<hrs.length;h++){
+			a='am';
+			hours='';
         	if(hrs[h] == 12){
 	            	a='pm';
 	            	hours=hrs[h];
 				}
 	        else if(hrs[h] > 12){
-            	if(h !=0){a='pm';}
+            	if(h !==0){a='pm';}
             	hours=hrs[h]-12;
 			}
 			else{
 				hours=hrs[h];
 			}
-			var hh=CalendarTwoDigits(hrs[h]);
-			for(var m=0;m<this.ms.length;m++){
-				var time=hours+':'+this.ms[m]+' '+a;
-				var onclick=hh+':'+this.ms[m]+':00';
-				var cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h]),parseInt(this.ms[m]),0,0);
-				var active=false;
+			hh=CalendarTwoDigits(hrs[h]);
+			for(m=0;m<this.ms.length;m++){
+				time=hours+':'+this.ms[m]+' '+a;
+				onclick=hh+':'+this.ms[m]+':00';
+				cdate=new Date(this.current_dateYear,this.current_dateMonth,this.current_dateDate,parseInt(hrs[h],10),parseInt(this.ms[m],10),0,0);
+				active=false;
 				if(this.hasvalue && this.cvalHr==cdate.getHours() && this.cvalMin==cdate.getMinutes()){active=true;}
 				html += '<div onclick="CalendarSetTime(\''+this.target_id+'\',\''+onclick+'\');" class="w_calendar_time';
 				if(active){html += ' active';}
@@ -347,7 +347,7 @@ function Calendar(target_id,month, year, s) {
 			}
 		}
 		html +=		'</div>'+"\n";
-		var val='';
+		val='';
 		if(this.hasvalue && undefined != this.cvalHr){val= CalendarTwoDigits(this.cvalHr)+':'+CalendarTwoDigits(this.cvalMin)+':'+'00';}
 		html +=		'<input type="text" id="'+this.timeid+'" class="form-control" style="height:24px;border:0px;" value="'+val+'" />'+"\n";
 		html += 	'</div>'+"\n";
@@ -356,8 +356,8 @@ function Calendar(target_id,month, year, s) {
   	//populate the div
 	caldiv.innerHTML=html;
 	caldiv.style.display='inline-block';
-	var h=getHeight(caldiv);
-	h=parseInt(h)+3;
+	h=getHeight(caldiv);
+	h=parseInt(h,10)+3;
 	if(h < 150){h=150;}
 	caldiv.style.bottom='-'+h+'px';
 	caldiv.style.left='0px';
@@ -443,18 +443,18 @@ function CalendarSetTarget(target_id,now){
 	if(undefined != now){
 		this.current_date = new Date();
 		var mon=this.current_date.getMonth();
-		mon=parseInt(mon)+1;
-		if(parseInt(mon) < 10){mon='0'+mon;}
+		mon=parseInt(mon,10)+1;
+		if(parseInt(mon,10) < 10){mon='0'+mon;}
 		var day=this.current_date.getDate();
-		if(parseInt(day) < 10){day='0'+day;}
+		if(parseInt(day,10) < 10){day='0'+day;}
 		date=this.current_date.getFullYear()+'-'+mon+'-'+day;
 		if(this.showtime){
 			var h=this.current_date.getHours();
-			if(parseInt(h) < 10){h='0'+h;}
+			if(parseInt(h,10) < 10){h='0'+h;}
 			var m=this.current_date.getMinutes();
-			if(parseInt(m) < 10){m='0'+m;}
+			if(parseInt(m,10) < 10){m='0'+m;}
 			var s=this.current_date.getSeconds();
-			if(parseInt(s) < 10){s='0'+s;}
+			if(parseInt(s,10) < 10){s='0'+s;}
         	time=h+':'+m+':'+s;
 		}
 	}
@@ -470,6 +470,7 @@ function CalendarSetTarget(target_id,now){
 	}
 	else{setText(target_id,date);}
 	hideId(this.id);
+	return false;
 }
 function CalendarSetTime(target_id,time){
 	if(undefined==target_id){alert('No Calendar target ID:'+target_id);return false;}
@@ -517,4 +518,3 @@ function CalendarTwoDigits(d) {
     if(-10 < d && d < 0) return "-0" + (-1*d).toString();
     return d.toString();
 }
-

@@ -2155,11 +2155,11 @@ function buildHtmlBegin($params=array()){
 	$rtn .= ' 	<meta name="robots" content="noindex, nofollow, noarchive" />'.PHP_EOL;
 	$rtn .= ' 	<meta name="viewport" content="width=device-width, initial-scale=1" />'.PHP_EOL;
 	//set the order of compatibility view for IE - dumb I know, but it works.
-	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="'.minifyCssFile().'" />'.PHP_EOL;
+	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('wacss').'" />'.PHP_EOL;
 	if(isset($params['css']) && strlen($params['css'])){
 		$rtn .= $params['css'] .PHP_EOL;
 	}
-	$rtn .= ' 	<script type="text/javascript" src="'.minifyJsFile().'"> </script>'.PHP_EOL;
+	$rtn .= ' 	<script type="text/javascript" src="'.minifyJsFile('wacss').'"> </script>'.PHP_EOL;
 	if(isset($params['js'])){
 		$rtn .= $params['js'];
 	}

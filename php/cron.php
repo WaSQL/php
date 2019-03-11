@@ -17,7 +17,7 @@ $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
-include_once("$progpath/common.php");
+include_once("{$progpath}/common.php");
 //only allow this to be run from CLI
 if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
@@ -30,13 +30,13 @@ global $dbh;
 global $sel;
 global $CONFIG;
 $_SERVER['HTTP_HOST']='localhost';
-include_once("$progpath/config.php");
+include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
 }
-include_once("$progpath/wasql.php");
-include_once("$progpath/database.php");
-include_once("$progpath/user.php");
+include_once("{$progpath}/wasql.php");
+include_once("{$progpath}/database.php");
+include_once("{$progpath}/user.php");
 global $databaseCache;
 //cronMessage(count($ConfigXml).' hosts in config file');
 foreach($ConfigXml as $name=>$host){
