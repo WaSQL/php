@@ -462,6 +462,16 @@ input.form-control, select.form-control{
   z-index: -1; 
   letter-spacing: 0.5px;
 }
+
+/* right align placeholders since labels will be on the left */
+input.form-control::-webkit-input-placeholder,
+input.form-control:-moz-placeholder,
+input.form-control::-moz-placeholder,
+input.form-control:-ms-input-placeholder,
+input::placeholder {
+  text-align: right;
+}
+
 .form-control:focus ~ label, 
 input.form-control:not(:placeholder-shown) ~ label,
 textarea.form-control:not(:placeholder-shown) ~ label,
