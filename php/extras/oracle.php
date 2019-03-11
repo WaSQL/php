@@ -665,7 +665,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	//primary keys
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
 	//echo $table.printValue($pkeys);exit;
-	$query="select * from {$table} where 1=0";
+	$query="select * from {$table} where 0=".rand(1,1000);
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!$stid){
 		debugValue(array(
