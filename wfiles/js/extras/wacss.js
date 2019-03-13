@@ -3,7 +3,16 @@ var wacss = {
 	author: 'WaSQL.com',
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={};}
+		if(undefined != document.getElementById('wacss_modal')){
+			let m=document.getElementById('wacss_modal');
+			let mel=m.querySelector('.modal_content');
+			if(undefined != mel){
+				mel.innerHTML=htm;
+				return m;
+			}
+		}
 		let modal=document.createElement('div');
+		modal.id='wacss_modal';
 		let modal_close=document.createElement('span');
 		modal.className='modal';
 		if(undefined!=title && title.length > 0){
@@ -46,6 +55,7 @@ var wacss = {
 			modal_close.pnode=modal;
 			document.body.appendChild(modal);
 		}
+		return modal;
 	},
 	navMobileToggle: function(el){
 		let navs=document.querySelectorAll('.nav');

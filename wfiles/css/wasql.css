@@ -286,35 +286,6 @@ table.w_formtable td, table.w_formtable th {
 .w_flexgrow-12{
     flex-grow: 12;
 }
-/*********************************************************/
-/* Browser default form fields */
-/*********************************************************/
-.w_browser-default,.w_form-control, .browser-default {
-    display: block;
-    width: 100%;
-    height: 34px !important;
-    line-height: 1.42857143 !important;
-    font-size: 14px;
-    padding: 6px 12px;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-}
-textarea.w_browser-default,textarea.w_form-control,textarea.browser-default {
-    height: auto !important;
-}
-.w_browser-default:focus, .w_form-control:focus, .browser-default:focus{
-	border-color: #66afe9;
-    outline: 0;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
-}
 
 table.w_table td{
 	padding: 4px;
@@ -365,16 +336,14 @@ table.sortable thead tr th {
 table th a {
 	display:block;
 	}
+
 table.table-responsive {
     display: block;
     width: 100%;
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
-/* Change default hover color for bootstrap */
-.table-hover tr:hover td, .table-hover tr:hover th {
-  background-color: #fef8f1 !important;
-}
+
 /* resizable */
 .w_resize {
      overflow: hidden;

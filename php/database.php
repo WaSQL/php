@@ -782,10 +782,10 @@ function databaseParseFilters($params=array()){
 					case 'sqlite':
 						foreach($cvals as $cval){
 							if(isNum($val)){
-								$ors[]="{$field} = {$val}";
+								$ors[]="{$field} = {$cval}";
 							}
 							else{
-								$ors[]="lower({$field}) = '{$val}'";
+								$ors[]="lower({$field}) = '{$cval}'";
 							}
 						}
 					break;
@@ -810,10 +810,10 @@ function databaseParseFilters($params=array()){
 					case 'sqlite':
 						foreach($cvals as $cval){
 							if(isNum($val)){
-								$ands[]="{$field} != '{$val}'";
+								$ands[]="{$field} != '{$cval}'";
 							}
 							else{
-								$ands[]="lower({$field}) != '{$val}'";
+								$ands[]="lower({$field}) != '{$cval}'";
 							}
 						}
 					break;

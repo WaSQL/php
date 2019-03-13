@@ -3735,7 +3735,7 @@ function tableOptions($table='',$params=array()){
 		            }
 		        elseif($option == 'add'){
 					//ajaxAddEditForm(table,id,flds,userparams)
-					$onclick="return ajaxGet('/php/admin.php','centerpop','_menu=add&_table_={$table}');";
+					$onclick="return ajaxGet('/php/admin.php','modal','_menu=add&_table_={$table}');";
 					$rtn .= ' onclick="'.$onclick.'"';
 		            }
 		        else{

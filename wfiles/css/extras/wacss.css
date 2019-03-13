@@ -304,6 +304,10 @@ body{
   padding: 8px 10px;
   z-index: 9050
 }
+.modal_title{
+  position:sticky;
+  top:0px;
+}
 .modal .modal_title .modal_close{
   position:absolute;
   top:6px;
@@ -365,14 +369,12 @@ body{
 /* content */
 .modal .modal_content{
   position:relative;
-  height:100%;
-  overflow:auto;
   padding: 12px 14px;
   z-index: 9020
 }
 
 /* -------------------- Buttons compatible with bootstrap ------------------ */
-.btn {
+.btn,button.w_form-control {
     display: inline-block;
     cursor:pointer;
     font-weight: 400;
@@ -395,7 +397,7 @@ body{
     -webkit-transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
-.btn:hover{
+.btn:hover, button.w_form-control:hover{
   background-color: #f8f9fa;
   box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
 }
@@ -429,7 +431,7 @@ body{
   margin-top:22px;
   padding-left:0px !important;
 }
-.form-control{
+.form-control,.browser-default {
   display: block;
   width: 100%;
   padding: 6px 12px;
@@ -444,15 +446,15 @@ body{
   color: #333;
   border: 1px solid #ccc;
 }
-input.form-control, select.form-control{
+input.form-control, select.form-control,input.browser-default, select.browser-default{
   height: 34px;
   line-height: 1.42857143;
 }
-.form-control:focus{
+.form-control:focus, .browser-default:focus{
   outline:none;
   box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
 }
-.form-control ~ label{
+.form-control ~ label, .browser-default ~ label{
   position: absolute; 
   left: 14px; 
   width: 100%; 
@@ -468,21 +470,30 @@ input.form-control::-webkit-input-placeholder,
 input.form-control:-moz-placeholder,
 input.form-control::-moz-placeholder,
 input.form-control:-ms-input-placeholder,
-input::placeholder {
+input.form-control::placeholder,
+input.browser-default::-webkit-input-placeholder,
+input.browser-default:-moz-placeholder,
+input.browser-default::-moz-placeholder,
+input.browser-default:-ms-input-placeholder,
+input.browser-default::placeholder {
   text-align: right;
 }
 
 .form-control:focus ~ label, 
 input.form-control:not(:placeholder-shown) ~ label,
 textarea.form-control:not(:placeholder-shown) ~ label,
-select.form-control ~ label{
+select.form-control ~ label,
+.browser-default:focus ~ label, 
+input.browser-default:not(:placeholder-shown) ~ label,
+textarea.browser-default:not(:placeholder-shown) ~ label,
+select.browser-default ~ label {
   top: -14px; 
   left: 0; 
   font-size: 12px;  
   transition: 0.3s;
   color: #333;
 }
-.form-control[required] ~ label:before{
+.form-control[required] ~ label:before, .browser-default[required] ~ label:before{
   content:"*";
   color:#dc3545;
   font-size:0.7em;
@@ -490,14 +501,41 @@ select.form-control ~ label{
 }
 /* color variations */
 /* primary */
-.form-control.primary{border: 1px solid rgba(0, 105, 217, 0.3);}
-.form-control.secondary{border: 1px solid rgba(90, 98, 104, 0.3);}
-.form-control.success{border: 1px solid rgba(33, 136, 56, 0.35);}
-.form-control.danger{border: 1px solid rgba(200, 35, 51, 0.3);}
-.form-control.warning{border: 1px solid rgba(224, 168, 0, 0.4);}
-.form-control.info{border: 1px solid rgba(19, 132, 150, 0.3);}
-.form-control.light{border: 1px solid rgba(226, 230, 234, 0.9);}
-.form-control.dark{border: 1px solid rgba(35, 39, 43, 0.3);}
+.form-control.primary,.browser-default.primary{border: 1px solid rgba(0, 105, 217, 0.3);}
+.form-control.secondary,.browser-default.secondary{border: 1px solid rgba(90, 98, 104, 0.3);}
+.form-control.success,.browser-default.success{border: 1px solid rgba(33, 136, 56, 0.35);}
+.form-control.danger,.browser-default.danger{border: 1px solid rgba(200, 35, 51, 0.3);}
+.form-control.warning,.browser-default.warning{border: 1px solid rgba(224, 168, 0, 0.4);}
+.form-control.info,.browser-default.info{border: 1px solid rgba(19, 132, 150, 0.3);}
+.form-control.light,.browser-default.light{border: 1px solid rgba(226, 230, 234, 0.9);}
+.form-control.dark,.browser-default.dark{border: 1px solid rgba(35, 39, 43, 0.3);}
+/*--------------------- table styles  -------------------------------------------*/
+table.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    border-collapse: collapse;
+}
+table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+table.table-bordered td, table.table-bordered th {
+    border: 1px solid #dee2e6;
+}
+table.table td, table.table th {
+    padding: .75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+table.table a{
+  display:block;
+  text-decoration: none;
+  color:inherit;
+  line-height: inherit;
+}
+table.table a:hover{
+  text-shadow: 0 5px 11px rgba(0, 0, 0, 0.18);
+}
 /* -------------------- Grid System compatible with bootstrap ------------------ */
 .container,
 .container-fluid {

@@ -2351,8 +2351,14 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
-	if(undefined == document.getElementById(sid)&& lcsid != 'pop' && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
-		alert('Error in ajaxPost\n'+sid+' is not defined as a valid object id');
+	if(undefined == document.getElementById(sid) && 
+		lcsid != 'pop' && 
+		lcsid != 'modal' && 
+		cb.indexOf('popupdiv') == -1 && 
+		cb.indexOf('centerpop') == -1 && 
+		lcsid.indexOf('popupdiv') == -1 && 
+		lcsid.indexOf('centerpop') == -1){
+		alert('Error1 in ajaxPost\n'+sid+' is not defined as a valid object id');
 		return false;
     	}
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
@@ -2413,7 +2419,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					popUpDiv('',{id:dname,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 					var atitle='Processing Request';
 					setCenterPopText(dname,txt,{title:atitle,drag:false,close_bot:false});
-					}
+				}
+				else if(lname=='modal'){
+					let modal=wacss.modalPopup('<span class="icon-spin7 w_spin"></span>','Processing Request',{overlay:1});
+				}
 				else if(lname == 'pop'){
 					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
 					}
@@ -2432,7 +2441,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				var val="<b style=\"color:red\">ajaxPost Timed Out Error</b>";
 				if(cb.indexOf('centerpop') != -1 || dname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
-                    }
+                }
+                else if(lname=='modal'){
+					let modal=wacss.modalPopup(val,'Timeout Error',{overlay:1});
+				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'timed out...');
 					}
@@ -2449,7 +2461,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				var val='<div style="display:none" id="ajaxOnError">'+req.responseText+'</div>';
 				if(cb.indexOf('centerpop') != -1 || dname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
-                    }
+                }
+                else if(lname=='modal'){
+					let modal=wacss.modalPopup(val,'ajaxPost Error',{overlay:1});
+				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'error');
 					}
@@ -2476,13 +2491,16 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					if(cb.indexOf('popupdiv') != -1){
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
-                    	}
+                    }
                     else if(lname == 'pop'){
 						popText(this.popNumber,val,this.var2);
 					}
                     else if(cb.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);
-                    	}
+                    }
+                    else if(cb=='modal'){
+						let modal=wacss.modalPopup(val,'Success',{overlay:1});
+					}
 					else{
 						window[this.callback](req,dname);
 						//var str=this.callback+'(req);';
@@ -2499,7 +2517,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					}
                     else if(lname.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);
-                    	}
+                    }
+                    else if(lname=='modal'){
+						let modal=wacss.modalPopup(val,'Success',{overlay:1});
+					}
 					else if(document.getElementById(dname)){
 						if(undefined == document.getElementById(dname).style.display || document.getElementById(dname).style.display=='none'){
 							document.getElementById(dname).style.display='inline';
@@ -2666,8 +2687,14 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
-	if(undefined == document.getElementById(sid) && lcsid != 'pop' && cb.indexOf('popupdiv') == -1 && cb.indexOf('centerpop') == -1 && lcsid.indexOf('popupdiv') == -1 && lcsid.indexOf('centerpop') == -1){
-		alert('Error in ajaxGet\n'+sid+' is not defined as a valid object id in the DOM');
+	if(undefined == document.getElementById(sid) && 
+		lcsid != 'pop' && 
+		lcsid != 'modal' && 
+		cb.indexOf('popupdiv') == -1 && 
+		cb.indexOf('centerpop') == -1 && 
+		lcsid.indexOf('popupdiv') == -1 &&
+		lcsid.indexOf('centerpop') == -1){
+		alert('Error3 in ajaxGet\n'+sid+' is not defined as a valid object id in the DOM');
 		return false;
     }
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
@@ -2703,6 +2730,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						setProcessing(this.showprocessingdiv);
 					}
 				}
+				else if(lname=='modal'){
+					let modal=wacss.modalPopup('<span class="icon-spin7 w_spin"></span>','Processing Request',{overlay:1});
+				}
 				else if(lname == 'pop'){
 					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
 				}
@@ -2718,6 +2748,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
                 }
+                else if(lname=='modal'){
+					let modal=wacss.modalPopup('ajaxGet Timed Out','Timed out Processing Request',{overlay:1});
+				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'timed out...');
 				}
@@ -2730,7 +2763,10 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				var val='<div style="display:none" id="ajaxOnError">'+req.responseText+'</div>';
 				if(cb.indexOf('centerpop') != -1 || lname.indexOf('centerpop') != -1){
 					setCenterPopText(dname,val);
-                    }
+                }
+                else if(lname=='modal'){
+					let modal=wacss.modalPopup(req.responseText,'Error Processing Request',{overlay:1});
+				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'error');
 					}
@@ -2769,6 +2805,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
                         	setCenterPopText(dname,req.responseText);
 						}
                     }
+                    else if(lname=='modal'){
+						let modal=wacss.modalPopup(req.responseText,'Success',{overlay:1});
+					}
 					else{
 						window[this.callback](req,dname);
 						//var str=this.callback+'(req);';
@@ -2793,6 +2832,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
                         	setCenterPopText(dname,req.responseText);
 						}
                     }
+                    else if(lname=='modal'){
+						let modal=wacss.modalPopup(req.responseText,'Success',{overlay:1});
+					}
 					else if(document.getElementById(dname)){
 						if(undefined == document.getElementById(dname).style.display || document.getElementById(dname).style.display=='none'){
 							document.getElementById(dname).style.display='inline';
