@@ -636,7 +636,7 @@ if(isAjax()){
 							'emenu'=>'record',
 							'_menu'=>'contentmanager',
 							'-hide'=>'clone,delete',
-							'-onsubmit'=>"this._preview.value='';ajaxSubmitForm(this,'centerpop');return false;",
+							'-onsubmit'=>"this._preview.value='';ajaxSubmitForm(this,'modal');return false;",
 							'-fields'=>'user_content'
 							);
 						echo addEditDBForm($opts);
@@ -657,7 +657,7 @@ if(isAjax()){
 							'description_width'=>700,
 							'emenu'=>'record',
 							'_menu'=>'contentmanager',
-							'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"
+							'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"
 						);
 						//echo printValue($addopts);
 						echo addEditDBForm($addopts);
@@ -703,7 +703,7 @@ if(isAjax()){
 							'emenu'=>'record',
 							'_menu'=>'editor',
 							'-hide'=>'clone',
-							'-onsubmit'=>"this._preview.value='';ajaxSubmitForm(this,'centerpop');return false;"
+							'-onsubmit'=>"this._preview.value='';ajaxSubmitForm(this,'modal');return false;"
 							);
 						if($_REQUEST['table']=='_pages'){
 		                	$opts['-preview']=$_REQUEST['id'];
@@ -733,7 +733,7 @@ if(isAjax()){
 							'description_width'=>800,
 							'emenu'=>'record',
 							'_menu'=>'editor',
-							'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"
+							'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"
 							));
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
 							echo buildOnLoad("document.addedit.name.focus();");
@@ -1688,7 +1688,7 @@ ENDOFX;
 			echo buildTableBegin(2,0);
 			echo '<tr valign="top"><td>'.PHP_EOL;
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table-add w_primary"></span> Add Multiple Tables.</div>'.PHP_EOL;
-			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'centerpop\');return false;">'.PHP_EOL;
+			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'modal\');return false;">'.PHP_EOL;
 			echo '		<input type="hidden" name="_menu" value="addmultiple">'.PHP_EOL;
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'.PHP_EOL;
 			$val=isset($_REQUEST['_schema'])?$_REQUEST['_schema']:'';
@@ -3886,7 +3886,7 @@ function syncGetChanges($stables=array()){
             	if(!isNum($stagerec['_euser'])){$stage_userid=$stagerec['_cuser'];}
 				if(isset($info['users_stage'][$stage_userid]['username'])){$stage_user=$info['users_stage'][$stage_userid]['username'];}
             	else{$stage_user='Unknown';}
-				$actions=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
+				$actions=' <a href="#" onclick="return ajaxGet(\'\',\'modal\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
             	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				$for="inp_{$index}_{$table}";
             	$stage_date=setValue(array($stagerec['_edate'],$stagerec['_cdate'],'unknown'));
@@ -3919,8 +3919,8 @@ function syncGetChanges($stables=array()){
             	//changes found
             	$changestr=implode("\n",$changes);
             	$for="inp_{$index}_{$table}";
-            	$actions='<label style="cursor:pointer" for="'.$for.'" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_table&diff_table='.$table.'&diff_id='.$index.'\');"><span class="icon-sync-diff w_big w_info"></span></label>';
-            	$actions.=' <a href="#" onclick="return ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
+            	$actions='<label style="cursor:pointer" for="'.$for.'" onclick="ajaxGet(\'\',\'modal\',\'_menu=synchronize&sync_action=diff_table&diff_table='.$table.'&diff_id='.$index.'\');"><span class="icon-sync-diff w_big w_info"></span></label>';
+            	$actions.=' <a href="#" onclick="return ajaxGet(\'\',\'modal\',\'_menu=synchronize&sync_action=sync&sync_items[]='.$index.'--'.$table.'\');"><span class="icon-sync-push w_big w_warning"></span></a>';
             	$actions.=' <a href="/php/admin.php?_menu=edit&_table_='.$table.'&_id='.$index.'"><span class="icon-edit"></span></a>';
 				//check to see if live is newer - if so place an alert icon
             	$date_live_val=setValue(array($info['recs_live'][$table][$index]['_edate'],$info['recs_live'][$table][$index]['_cdate'],'unknown'));
@@ -3991,7 +3991,7 @@ function syncGetChanges($stables=array()){
 		}
 		elseif($rec['stage'] != $rec['live']){
 			//table schema has changed in stage
-			$actions='<a href="#" onclick="ajaxGet(\'\',\'centerpop\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><span class="icon-sync-diff w_big w_info"></span></a>';
+			$actions='<a href="#" onclick="ajaxGet(\'\',\'modal\',\'_menu=synchronize&sync_action=diff_schema&diff_table='.$table.'\');return false;"><span class="icon-sync-diff w_big w_info"></span></a>';
 			$actions .=' <a href="/php/admin.php?_menu=properties&_table_='.$table.'"><span class="icon-properties w_danger" title="properties"></span></a>';
         	$sync_recs['_schema'][]=array(
 				'_id'			=> '<input onclick="highlightObj(\''.$table.'_row\',this.checked,\'#fbd26c\');" type="checkbox" group="_schema_'.$table.'_syncrec" name="sync_items[]" value="'."schema--{$table}".'">',
@@ -4051,7 +4051,7 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .= '	</div>'.PHP_EOL;
 	//build each table's changes in a hidden div
 	$formname='syncform';
-	$rtn .=  buildFormBegin('',array('_menu'=>"synchronize",'-name'=>$formname,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
+	$rtn .=  buildFormBegin('',array('_menu'=>"synchronize",'-name'=>$formname,'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"));
 	$rtn .= '	<input type="hidden" name="sync_action" value="">'.PHP_EOL;
 	$rtn .= '	<div id="syncDiv"></div>'.PHP_EOL;
 	unset($first_table);
@@ -4085,8 +4085,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'.PHP_EOL;
-	$rtn .= '<button type="button" class="w_btn w_btn-secondary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
-	$rtn .= '<button type="button" class="w_btn w_btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'centerpop\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="w_btn w_btn-secondary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="w_btn w_btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }
@@ -4107,7 +4107,7 @@ function editorFileEdit($file){
 	$content=getFileContents($file);
 	$rtn = '';
 	$rtn .= '<div style="position:relative;">'.PHP_EOL;
-	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('emenu'=>'file','_menu'=>"editor",'file'=>$file,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
+	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('emenu'=>'file','_menu'=>"editor",'file'=>$file,'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"));
 	$rtn .= '<table class="w_pad"><tr><td>'.PHP_EOL;
 	$rtn .= '	<div class="w_bold w_bigger w_dblue">Editing File: '.$file.'</div>'.PHP_EOL;
 	$rtn .= '</td><td>'.buildFormSubmit('Save').'</td></tr></table>'.PHP_EOL;
@@ -4135,7 +4135,7 @@ function editorFileAdd($filetype){
 	$rtn = '';
 	$rtn .= '<div style="position:relative;">'.PHP_EOL;
 	$rtn .= '<table class="w_pad"><tr><td><div class="w_bold w_bigger w_dblue">New '.strtoupper($filetype).' File</div></td><td><div id="w_editor_status"></div></td></tr></table>'.PHP_EOL;
-	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('-name'=>'addedit','emenu'=>'file','filetype'=>$filetype,'-onsubmit'=>"ajaxSubmitForm(this,'centerpop');return false;"));
+	$rtn .= buildFormBegin($_SERVER['PHP_SELF'],array('-name'=>'addedit','emenu'=>'file','filetype'=>$filetype,'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"));
 	$rtn .= '<div style="margin-bottom:5px;">FileName: <input type="text" name="filename" data-required="1" style="width:400px;">.'.$filetype.'</div>'.PHP_EOL;
 	$rtn .= '<div style="border:1px inset #000;width:800px;">'.PHP_EOL;
 	$rtn .= '<textarea name="file_content" data-behavior="'.$behavior.'" style="width:800px;height:400px;">'.PHP_EOL;
