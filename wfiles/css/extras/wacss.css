@@ -431,28 +431,32 @@ body{
   margin-top:22px;
   padding-left:0px !important;
 }
-.form-control,.browser-default {
+form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default {
   display: block;
   width: 100%;
   padding: 6px 12px;
-  font-size: 16px; 
+  font-size: 14px; 
   border-radius:4px;
   box-sizing: border-box; 
+  font-family: Arial,"Helvetica Neue",Helvetica,sans-serif;
+  font-weight: 300;
   letter-spacing: 1px;
   border: 0; 
   padding: 5px 12px;  
   position: relative; 
-  background: transparent;
+  background-color: #FFF;
   color: #333;
   border: 1px solid #ccc;
 }
-input.form-control, select.form-control,input.browser-default, select.browser-default{
+form.w_form input, form.w_form select, input.form-control, select.form-control,input.browser-default, select.browser-default{
   height: 34px;
   line-height: 1.42857143;
 }
-.form-control:focus, .browser-default:focus{
-  outline:none;
-  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+form.w_form input:focus, form.w_form select:focus, form.w_form textarea:focus, .form-control:focus, .browser-default:focus{
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
 }
 .form-control ~ label, .browser-default ~ label{
   position: absolute; 

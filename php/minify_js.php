@@ -77,7 +77,7 @@ if(isset($_SESSION['w_MINIFY']['jsfiles']) && is_array($_SESSION['w_MINIFY']['js
     	if(!in_array($file,$files)){$files[]=$file;}
 	}
 }
-//echo printValue($files);exit;
+//echo printValue($_SESSION['w_MINIFY']).printValue($files);exit;
 //include files and set the lastmodifiedtime of any file
 global $jslines;
 global $pre_jslines;
@@ -224,11 +224,6 @@ function minifyFiles($path,$names){
 	//echo $path.implode(',',$names).PHP_EOL;return;
 	foreach($names as $name){
 		//automatically create minified versions if they do not exist - localhost only
-		if($_SERVER['UNIQUE_HOST']=='localhost' && !stringEndsWith($name,'.min') && !is_file("{$path}/{$name}.min.js") && is_file("{$path}/{$name}.js")){
-			$code=getFileContents("{$path}/{$name}.js");
-			$mcode=minifyCode($code,'js');
-			setFileContents("{$path}/{$name}.min.js",$mcode);
-		}
 		if(preg_match('/^http/i',$name)){
 	     	//remote file - expire every week
 	     	$evalstr="return minifyGetExternal('{$name}');";
@@ -239,11 +234,23 @@ function minifyFiles($path,$names){
 			$file=realpath("{$path}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
+		elseif($CONFIG['minify_js'] && is_file("{$path}/{$name}/{$name}.min.js")){
+			$file=realpath("{$path}/{$name}/{$name}.min.js");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		elseif($CONFIG['minify_js'] && is_file("{$path}/{$name}/{$name}.min.js")){
+			$file=realpath("{$path}/{$name}/{$name}.min.js");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
 		elseif(is_file("{$path}/{$name}.js")){
 	    	$file=realpath("{$path}/{$name}.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		else{echo "/* Minify_js Error: NO SUCH NAME:{$name} */".PHP_EOL.PHP_EOL;}
+		elseif(is_file("{$path}/{$name}/{$name}.js")){
+	    	$file=realpath("{$path}/{$name}/{$name}.js");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		else{echo "/* Minify_js Error: NO SUCH NAME:{$name}, Path:{$path} */".PHP_EOL.PHP_EOL;}
 	}
 }
 

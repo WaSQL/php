@@ -2182,8 +2182,6 @@ function addEditDBForm($params=array(),$customcode=''){
 						break;
 				}
 				if(stringContains($opts['behavior'],'editor')){
-					loadExtrasCss('codemirror');
-					loadExtrasJs('codemirror');
 					$opts['data-ajaxid']='centerpopSQL';
 				}
 				//debugValue($dname);
@@ -6777,11 +6775,11 @@ function getDBWhere($params,$info=array()){
 	//echo printValue($info);exit;
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($info[$k])){continue;}
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
+		if(!strlen(trim($params[$k]))){continue;}
+		if(!isset($info[$k])){continue;}
         $params[$k]=str_replace("'","''",$params[$k]);
         $v=databaseEscapeString($params[$k]);
         switch(strtolower($info[$k]['_dbtype'])){
