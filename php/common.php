@@ -11273,6 +11273,11 @@ function postXML($url='',$xml='',$params=array()) {
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 		unset($params['_auth']);
 	}
+	if(isset($params['-noguid'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="WaSQL-NoGUID: 1";
+		unset($params['-noguid']);
+	}
 	return postBody($url,$xml,$params);
 }
 //---------- begin function postBody
