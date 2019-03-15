@@ -60,15 +60,17 @@ var wacss = {
 	navMobileToggle: function(el){
 		let navs=document.querySelectorAll('.nav');
 		for(let n=0;n<navs.length;n++){
-			let mli=navs[n].querySelector('li.mobile');
-			if(mli==el){
-				if(navs[n].className.indexOf('mobile') != -1){
-					removeClass(navs[n],'mobile');	
+			let lis=navs[n].querySelectorAll('li');
+			for(let l=0;l<lis.length;l++){
+				if(lis[l]==el){
+					/* this  is the right nav */
+					if(navs[n].className.indexOf('leftmenu') != -1){
+						removeClass(navs[n],'leftmenu');	
+					}
+					else{
+						addClass(navs[n],'leftmenu');
+					}
 				}
-				else{
-					addClass(navs[n],'mobile');
-				}
-				
 			}
 		}
 		return false;
