@@ -11052,6 +11052,11 @@ function postURL($url,$params=array()) {
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 		unset($params['_auth']);
 	}
+	if(isset($params['-noguid'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="WaSQL-NoGUID: 1";
+		unset($params['-noguid']);
+	}
 	if(!isset($params['-timeout'])){$params['-timeout']=600;}
 	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=600;}
 	//Build data stream from params
@@ -11238,6 +11243,11 @@ function postJSON($url='',$json='',$params=array()) {
 		if(!isset($params['-headers'][0])){$params['-headers']=array();}
 		$params['-headers'][]="WaSQL-Auth: {$params['_auth']}";
 		unset($params['_auth']);
+	}
+	if(isset($params['-noguid'])){
+		if(!is_array($params['-headers'])){$params['-headers']=array();}
+		$params['-headers'][]="WaSQL-NoGUID: 1";
+		unset($params['-noguid']);
 	}
 	return postBody($url,$json,$params);
 }
