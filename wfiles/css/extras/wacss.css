@@ -617,7 +617,8 @@ a.btn{text-decoration: none;}
 .btn-sm, .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
-    line-height: 1.5 !important;
+    height:32px;
+    line-height: 1.5;
     border-radius: 0.2rem;
 }
 form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default,.w_form-control {
