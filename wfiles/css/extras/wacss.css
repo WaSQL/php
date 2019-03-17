@@ -34,7 +34,53 @@ body{
 .bg-white {background: #f8f9fa;color: #212529;}
 .bg-black {background: #343a40;color: #fff;}
 
+/* ---------------------- card ------------------------- */
+.card {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+}
+.card .card-header {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0;
+    color: inherit;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+.card .card-header:first-child {
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
+}
+.card-title {
+    margin-bottom: 0.75rem;
+}
+.card .card-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    padding: 1.25rem;
+}
 /* ---------------------- nav ------------------------- */
+.nav {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.nav > .nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
+}
 .nav {
   font-size: 14px;
   font-family: Arial, sans-serif;
