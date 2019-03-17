@@ -2437,7 +2437,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			$rtn .= '		<td>'.$params['-savebutton'].'</td>'.PHP_EOL;
 		}
 	    elseif(isset($rec['_id']) && isNum($rec['_id'])){
-			$class=isset($params['-save_class'])?$params['-save_class']:'w_btn w_btn-secondary';
+			$class=isset($params['-save_class'])?$params['-save_class']:'btn';
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
 				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;
@@ -2456,7 +2456,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 			}
 		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
-			$class=isset($params['-save_class'])?$params['-save_class']:'w_btn w_btn-secondary';
+			$class=isset($params['-save_class'])?$params['-save_class']:'btn';
 			$action=isset($params['-nosave'])?'':'Add';
 	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
@@ -3569,10 +3569,10 @@ function buildDBPaging($paging=array()){
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
 				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="w_form-control input-sm" />'.PHP_EOL;
-				$rtn .= '	<button type="submit" class="w_btn w_btn-secondary w_btn-sm icon-search"> Search</button>'.PHP_EOL;
-				$rtn .= '	<button type="button" class="w_btn w_btn-secondary w_btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
+				$rtn .= '	<button type="submit" class="btn w_btn-sm icon-search"> Search</button>'.PHP_EOL;
+				$rtn .= '	<button type="button" class="btn w_btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 				if(isset($paging['-bulkedit'])){
-                	$rtn .= '	<button type="button" title="Bulk Edit" class="w_btn w_btn-secondary w_btn-sm" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
+                	$rtn .= '	<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$formname.');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
 				}
 				if(!isset($paging['-noexport'])){
                 	$rtn .= '	<a href="#export" title="Export" class="icon-export w_primary" onclick="setProcessing(this);return pagingExport(document.'.$formname.');"> export</a>'.PHP_EOL;
@@ -3669,7 +3669,7 @@ function buildDBPaging($paging=array()){
 				$rtn .= '<table class="w_nopad"><tr>'.PHP_EOL;
 				$rtn .= '	<td>'.buildFormSelect('_searchfield',$opts,array('message'=>"-- any field --")).'</td>'.PHP_EOL;
 				$rtn .= '	<td><input type="text" class="w_form-control" name="_search" onFocus="this.select();" style="width:200px;" value="'.requestValue('_search').'"></td>'.PHP_EOL;
-				$rtn .= '	<td><button type="submit" class="w_btn w_btn-secondary icon-search">Search</button></td>'.PHP_EOL;
+				$rtn .= '	<td><button type="submit" class="btn icon-search">Search</button></td>'.PHP_EOL;
 				$rtn .= '</tr></table>'.PHP_EOL;
 			}
 		}
@@ -3723,7 +3723,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        	}
 			$arr['_start']=$paging['-first'];
-			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="w_btn w_btn-secondary w_btn-sm icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
+			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-first'].';'.$onsubmit.'" class="btn icon-first" title="first" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
         $rtn .= '</div></th>'.PHP_EOL;
 		$rtn .= '	<th><div style="width:35px;">';
@@ -3737,7 +3737,7 @@ function buildDBPaging($paging=array()){
 				if($key=='_action' && $val=='multi_update'){continue;}
 				$arr[$key]=$val;
 	        	}
-			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="w_btn w_btn-secondary w_btn-sm icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
+			$rtn .= '<button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-prev'].';'.$onsubmit.'" class="btn icon-left" title="prev" style="margin:3px;font-size:1.4em;padding:0px;"></button>'.PHP_EOL;
             }
         $rtn .= '</div></th>'.PHP_EOL;
 
@@ -3755,7 +3755,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" src="/wfiles/icons/next.png"></td>'.PHP_EOL;
-			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="w_btn w_btn-secondary w_btn-sm icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-next'].';'.$onsubmit.'" class="btn icon-right" title="next" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
         if(isset($paging['-last'])){
 			$arr=array();
@@ -3768,7 +3768,7 @@ function buildDBPaging($paging=array()){
 				$arr[$key]=$val;
 	        }
 			//$rtn .= '<td><input type="image" onclick="document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" src="/wfiles/icons/last.png"></td>'.PHP_EOL;
-			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="w_btn w_btn-secondary w_btn-sm icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
+			$rtn .= '<td><button type="submit" onclick="setProcessing(this);document.'.$formname.'._start.value='.$paging['-last'].';'.$onsubmit.'" class="btn icon-last" title="last" style="margin:3px;font-size:1.4em;padding:0px;"></button></td>'.PHP_EOL;
         }
         $rtn .= '</tr></table>'.PHP_EOL;
 	}

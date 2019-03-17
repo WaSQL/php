@@ -887,15 +887,13 @@ if(isAjax()){
 }
 //set a minify session variable
 wasqlSetMinify(1);
-loadExtrasCss('admin');
 //check for user
 if(!isUser()){
 	$params=array(
 		'title'=>$_SERVER['HTTP_HOST'].' Admin Login'
 	);
 	echo buildHtmlBegin($params);
-	//echo '<div id="adminmenu">'.PHP_EOL;
-	echo adminUserLoginMenu();
+	echo adminViewPage('topmenu');
 	echo '	<div style="padding:5px;color:'.$ConfigSettings['mainmenu_text_color'].';">'.PHP_EOL;
 	$formopts=array(
 		'-action'=>'/php/admin.php',
@@ -910,6 +908,7 @@ if(!isUser()){
 	}
 elseif($USER['utype'] != 0){
 	echo buildHtmlBegin();
+	echo adminViewPage('topmenu');
 	echo '<div class="well" style="border-radius:0px;">'.PHP_EOL;
 	echo '	<span class="icon-block w_danger w_biggest w_bold"></span><b class="w_danger w_biggest"> Administration access denied.</b>'.PHP_EOL;
 	echo '	<div class="w_big">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
@@ -1016,9 +1015,9 @@ $js=<<<ENDOFJSSCRIPT
 		c=getObject(c);
 		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
 		for(var i=0;i<tabs.length;i++){
-			setClassName(tabs[i],'w_btn w_btn-secondary');
+			setClassName(tabs[i],'btn');
 		}
-		setClassName(c,'w_btn w_btn-warning active');
+		setClassName(c,'btn yellow active');
 		var sdiv=c.getAttribute('data-div');
 		setText('syncDiv',getText(sdiv));
 		return true;
@@ -1046,9 +1045,7 @@ $params=array(
 	'title'=>$_SERVER['HTTP_HOST'].' Admin'
 	);
 echo buildHtmlBegin($params);
-echo '<div id="admin_menu">'.PHP_EOL;
-echo adminMenu();
-echo '</div>'.PHP_EOL;
+echo adminViewPage('topmenu');
 echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'.PHP_EOL;
 //if user has switched databases from original - show switch back link
 if(isset($_SESSION['dbhost_original'])){
@@ -1168,8 +1165,8 @@ ENDOFX;
 		case 'font_icons':
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'.PHP_EOL;
-			echo '<div class="w_bigger"><b>Usage: </b>'.encodeHtml('<div><span class="icon-tag"></span> this is text</div>').'<div>'.PHP_EOL;
-			echo '<hr size="1" style="padding:0px;margin:0px;margin-bottom:10px;">'.PHP_EOL;
+			echo 'Usage: <span class="icon-tag"></span> <xmp style="display:inline;"><span class="icon-tag"></span></xmp>'.PHP_EOL;
+			echo '<hr size="1" />'.PHP_EOL;
 			$icons=wasqlFontIcons();
 			$sets=arrayColumns($icons,4);
 			echo '<div class="row">'.PHP_EOL;
@@ -1480,7 +1477,7 @@ ENDOFX;
 					//wasql table - do not allow people to change group
                 	echo buildTableTD(array(
                 		tableOptions($table,array('-format'=>'none','-options'=>'list,properties','-notext'=>1)),
-						'<a style="display:block;" class="w_link w_lblue" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
+						'<a class="w_link w_block" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
 						$rec['records'],
 						$rec['fields'],
 						'WaSQL',
@@ -1492,7 +1489,7 @@ ENDOFX;
 					if(!isset($rec['desc'])){$rec['desc']='';}
                 	echo buildTableTD(array(
                 		tableOptions($table,array('-format'=>'none','-options'=>'list,properties','-notext'=>1)),
-						'<a style="display:block;" class="w_link w_lblue" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
+						'<a class="w_link w_block" href="/'.$PAGE['name'].'?_menu=list&_table_='.$rec['name'].'">'.$img.' '.$rec['name'].'</a>',
 						$rec['records'],
 						$rec['fields'],
 						'<input type="text" name="g_'.$rec['name'].'" class="form-control" style="width:100%" maxlength="50" value="'.$rec['group'].'">',
@@ -1540,14 +1537,10 @@ ENDOFX;
 			echo '<div class="w_lblue w_bold"> Available Character Sets:</div>'.PHP_EOL;
 			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'.PHP_EOL;
 			echo '			<input type="hidden" name="_menu" value="charset">'.PHP_EOL;
-			echo '			<select name="_charset">'.PHP_EOL;
-			foreach($charsets as $charset=>$desc){
-				echo '				<option value="'.$charset.'"';
-				if($charset == $current_charset){echo ' selected';}
-				echo '>'.$desc.'</option>'.PHP_EOL;
-            	}
-			echo '			</select>'.PHP_EOL;
+			echo '			<div class="w_flexgroup" style="max-width:400px;margin-bottom:10px;">'.PHP_EOL;
+			echo buildFormSelect('_charset',$charsets,array('value'=>$current_charset));
 			echo buildFormSubmit('Convert');
+			echo '			</div>'.PHP_EOL;
 			echo '		</form>'.PHP_EOL;
 			echo $cmessage;
 			echo databaseListRecords(array(
@@ -1594,7 +1587,7 @@ ENDOFX;
 					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_schema']:'';
 					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'.PHP_EOL;
-					echo '			<div class="w_padtop"><button type="submit" class="w_btn w_btn-secondary">Create</button></div>'.PHP_EOL;
+					echo '			<div class="w_padtop"><button type="submit" class="btn">Create</button></div>'.PHP_EOL;
 					echo '		</form>'.PHP_EOL;
 					echo buildOnLoad('document.new_table._table_.focus();');
 					echo '</td><td>'.PHP_EOL;
@@ -1693,7 +1686,7 @@ ENDOFX;
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'.PHP_EOL;
 			$val=isset($_REQUEST['_schema'])?$_REQUEST['_schema']:'';
 			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$val.'</textarea>'.PHP_EOL;
-			echo '		<div><input type="submit" value="Create"></div>'.PHP_EOL;
+			echo '		<div class="w_padtop"><button type="submit" class="btn">Create</button>'.PHP_EOL;
 			echo '	</form>'.PHP_EOL;
 			echo '</td><td>'.PHP_EOL;
 			//reference: http://www.htmlite.com/mysql003.php
@@ -2675,10 +2668,10 @@ LIST_TABLE:
 
 				}
 			echo '</table>'.PHP_EOL;
-			echo '<input type="submit" name="do" value="Refresh">'.PHP_EOL;
+			echo '<button type="submit" class="btn" name="do">Refresh</button>'.PHP_EOL;
 			if(isset($recs) && is_array($recs)){
 				if(strlen($_REQUEST['message'])){
-					echo '<input type="submit" name="do" value="Send Email" onclick="return confirm(\'Send Email Now to recipients shown?\');">'.PHP_EOL;
+					echo '<button class="btn" type="submit" name="do" onclick="return confirm(\'Send Email Now to recipients shown?\');">Send Email</button>'.PHP_EOL;
 					}
 				echo '<p><b>Recipeints List:</b></p>'.PHP_EOL;
 				echo '<div style="margin-left:25px;height:200px;overflow:auto;padding-right:25px;">'.PHP_EOL;
@@ -3118,9 +3111,9 @@ function sqlPrompt(){
 	$rtn .= '	</tr>'.PHP_EOL;
 	$rtn .= '	<tr valign="top">'.PHP_EOL;
 	$rtn .= '		<td class="w_align_left">'.PHP_EOL;
-	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
-	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
-	$rtn .= '			<button class="w_btn w_btn-secondary" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
+	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
+	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
+	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
 	$rtn .= '		</td>'.PHP_EOL;
 	$rtn .= '	</tr>'.PHP_EOL;
 	$rtn .= '</table>'.PHP_EOL;
@@ -3712,7 +3705,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
 				$spanclass=$tableoptions[$option][1];
-				$class='w_btn w_btn-outline-secondary';
+				$class='btn';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'model'){
                 	if(isset($model['_id'])){
@@ -4044,7 +4037,7 @@ function adminShowSyncChanges($stables=array()){
 		$img='';
 		$src=getImageSrc($table);
 		if(strlen($src)){$img='<img src="'.$src.'" class="w_bottom" alt="" /> ';}
-        $rtn .= '		<button type="button" class="w_btn w_btn-secondary" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'.PHP_EOL;
+        $rtn .= '		<button type="button" class="btn" data-group="synctabletabs" data-div="'.$syncTableDiv.'" id="'.$syncTableTab.'" onclick="syncTableClick(this);">'.PHP_EOL;
         $rtn .= '			<sup title="Your change count">'.$change_user_count.'</sup> '.$img.$table.' <sup title="Total count">'.$change_count.'</sup>'.PHP_EOL;
         $rtn .= '		</button>'.PHP_EOL;
 	}
@@ -4085,8 +4078,8 @@ function adminShowSyncChanges($stables=array()){
 	$rtn .=  buildOnLoad("syncTableClick('{$syncTableTab}');");
 	//show sync and cancel buttons
 	$rtn .= '<br clear="both" />'.PHP_EOL;
-	$rtn .= '<button type="button" class="w_btn w_btn-secondary" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
-	$rtn .= '<button type="button" class="w_btn w_btn-danger" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="btn" onclick="document.'.$formname.'.sync_action.value=\'sync\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-push w_big w_warning"></span> Push Changes Live</button>'.PHP_EOL;
+	$rtn .= '<button type="button" class="btn red" onclick="if(!confirm(\'Cancel selected changes on stage and restore back to live?\')){return false;}document.'.$formname.'.sync_action.value=\'cancel\';ajaxSubmitForm(document.'.$formname.',\'modal\');return false;"><span class="icon-sync-pull w_big w_danger"></span> Restore from Live</button>'.PHP_EOL;
 	$rtn .=  buildFormEnd();
 	return $rtn;
 }

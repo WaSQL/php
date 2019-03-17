@@ -52,7 +52,7 @@
 					<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
 						<div class="col-sm-4">
-							<button type="submit" class="btn primary">Execute</button> <span class="w_small w_grey">(or press F8)</span>
+							<button type="submit" class="btn green">Execute</button> <span class="w_small w_grey">(or press F8)</span>
 						</div>
 						<div class="col-sm-8 text-right w_grey w_small">
 							Note: You can drag and drop .sql files onto the textarea
@@ -79,7 +79,7 @@
 </view:tables_fields>
 
 <view:tabs>
-<div class="nav topmenu">
+<nav class="nav tabs" style="border-bottom:0px;">
 <ul>
 	<li class="nav-item">
 		<input type="radio" id="db_default" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="default" checked />
@@ -93,7 +93,7 @@
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>
 </ul>
-</div>
+</nav>
 </view:tabs>
 
 <view:results>

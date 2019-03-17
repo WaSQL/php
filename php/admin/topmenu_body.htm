@@ -1,0 +1,190 @@
+<view:default>
+<nav class="nav <?=$CONFIG['admin_menu_color'];?> condensed">
+	<ul>
+		<li><a href="#logo"><img src="/wfiles/wasql_admin.png" /></a></li>
+		<view:admin>
+		<!-- Database -->
+		<li><a href="#database" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down">Database</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt"></span> SQL Prompt</a></li>
+				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search"></span> Search</a></li>
+				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save"></span> Backup/Restore</a></li>
+				<li><a href="/php/admin.php?_menu=optimize"><span class="icon-optimize"></span> Optimize</a></li>
+				<li><a href="/php/admin.php?_menu=import"><span class="icon-import"></span> Import</a></li>
+				<li><a href="/php/admin.php?_menu=export"><span class="icon-export"></span> Export</a></li>
+				<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties"></span> Properties</a></li>
+			</ul>
+		</li>
+		<!-- Tables -->
+		<li><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down">Tables</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> Add New</a></li>
+				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add"></span> Add Multiple</a></li>
+				<li><hr size="1" /></li>
+				<view:tables_group>
+				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-group"></span> <?=$key;?> Tables</a>
+					<ul>
+						<view:tables_table>
+						<li><a href="/php/admin.php?_menu=list&_table_=<?=$table;?>" class="dropdown"><span class="icon-list"></span> <?=$table;?></a>
+							<?=renderView('tables_actions',$table,'table');?>
+						</li>
+						</view:tables_table>
+						<?=renderEach('tables_table',$table,'table');?>
+					</ul>
+				</li>
+				</view:tables_group>
+				<?=renderEach('tables_group',$tables,'table');?>
+			</ul>
+		</li>
+		<!-- Pages -->
+		<li><a href="#pages" class="dropdown" onclick="return false;"><span class="icon-file-doc"></span> <span class="hidden-sm-down">Pages</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_pages"><span class="icon-plus"></span> Add New</a></li>
+				<li><hr size="1" /></li>
+				<view:pages_edit>
+				<li><a href="/php/admin.php?_menu=edit&_table_=_pages&_id=<?=$page['_id'];?>"><?=$page['_id'];?>. <?=$page['name'];?></a></li>
+				</view:pages_edit>
+				<?=renderEach('pages_edit',$pages,'page');?>
+			</ul>
+		</li>
+		<!-- Templates -->
+		<li><a href="#templates" class="dropdown" onclick="return false;"><span class="icon-file-docs"></span> <span class="hidden-sm-down">Templates</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> Add New</a></li>
+				<li><hr size="1" /></li>
+				<view:templates_edit>
+				<li><a href="/php/admin.php?_menu=edit&_table_=_templates&_id=<?=$template['_id'];?>"><?=$template['_id'];?>. <?=$template['name'];?></a></li>
+				</view:templates_edit>
+				<?=renderEach('templates_edit',$templates,'template');?>
+			</ul>
+		</li>
+		<!-- Users -->
+		<li><a href="#users" class="dropdown" onclick="return false;"><span class="icon-users"></span> <span class="hidden-sm-down">Users</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> Add New</a></li>
+				<li><hr size="1" /></li>
+				<view:users_edit>
+				<li><a href="/php/admin.php?_menu=edit&_table_=_users&_id=<?=$rec['_id'];?>"><?=$rec['_id'];?>. <?=$rec['username'];?></a></li>
+				</view:users_edit>
+				<?=renderEach('users_edit',$users,'rec');?>
+			</ul>
+		</li>
+		<!-- Crons -->
+		<li><a href="#crons" class="dropdown" onclick="return false;"><span class="icon-cron"></span> <span class="hidden-sm-down">Crons</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-list"></span> List Crons</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_cron"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_cron"><span class="icon-plus"></span> Add New</a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=list&_table_=_cronlog"><span class="icon-cronlog"></span> Run History</a></li>
+				
+			</ul>
+		</li>
+		<!-- Queries -->
+		<li><a href="#queries" class="dropdown" onclick="return false;"><span class="icon-sql"></span> <span class="hidden-sm-down">Queries</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_queries"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_queries"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_queries"><span class="icon-plus"></span> Add New</a></li>
+				
+			</ul>
+		</li>
+		<!-- Access -->
+		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-slideshow"></span> <span class="hidden-sm-down">Access</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_access_summary"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_access_summary"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_access_summary"><span class="icon-plus"></span> Add New</a></li>
+				
+			</ul>
+		</li>
+		<!-- Synchronize -->
+		<li><a href="#sync" class="dropdown" onclick="return false;"><span class="icon-sync"></span> <span class="hidden-sm-down">Synchronize</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync"></span> Pending Changes</a></li>
+				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-history"></span> Sync History</a></li>
+				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-database"></span> Synchronize Database Tables</a></li>
+				
+			</ul>
+		</li>
+		<!-- Git Repo -->
+		<li><a href="/php/admin.php?_menu=git" class="dropdown"><span class="icon-git"></span> <span class="hidden-sm-down">Repo</span></a></li>
+		<!-- Errors -->
+		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-block"></span> <span class="hidden-sm-down">Errors</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=list&_table_=_errors"><span class="icon-list"></span> List</a></li>
+				<li><a href="/php/admin.php?_menu=properties&_table_=_errors"><span class="icon-table-add"></span> Properties</a></li>
+				<li><a href="/php/admin.php?_menu=add&_table_=_errors"><span class="icon-plus"></span> Add New</a></li>
+				
+			</ul>
+		</li>
+
+		<!-- Config -->
+		<li class="right"><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down">Config</span></a></li>
+		<!-- Help -->
+		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-info-circled"></span> <span class="hidden-sm-down">Help</span></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> WaSQL Docs</a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-refresh"></span> Update WaSQL</a></li>
+				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-table"></span> Rebuild WaSQL Tables</a></li>
+				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> About WaSQL</a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> Repo</a></li>
+				<li><a href="/php/admin.php?_menu=phpinfo"><span class="icon-php"></span> Info</a></li>
+				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php"></span> Prompt</a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> Translate Manager</a></li>
+				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> Decode Tools</a></li>
+				<li><a href="/php/admin.php?_menu=ab"><span class="icon-feather"></span> Apache Bench</a></li>
+				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> Terminal</a></li>
+				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Manage Temp Files</a></li>
+				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>
+				<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line"></span> Usage Stats</a></li>
+				<li><a href="/php/admin.php?_menu=email"><span class="icon-list"></span> Send Email</a></li>
+				<li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow"></span> Font Icons</a></li>
+				<li><a href="/php/admin.php?_menu=env"><span class="icon-server"></span> Server Vars</a></li>
+				<li><a href="/php/admin.php?_menu=system"><span class="icon-server"></span> System Info</a></li>
+				<li><a href="/php/admin.php?_menu=list&_table_=_html_entities"><span class="icon-encoding"></span> HTML Entities</a></li>
+			</ul>
+		</li>
+		<!-- User -->
+		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <?=$USER['username'];?></a>
+			<ul>
+				<li><a href="/php/admin.php?_menu=profile"><span class="icon-list"></span> Profile</a></li>
+				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-table-add"></span> postEdit</a></li>
+				<li><a href="/php/admin.php?_logout=1"><span class="icon-plus"></span> Log Off</a></li>
+			</ul>
+		</li>
+		
+		</view:admin>
+	</ul>
+</nav>
+</view:default>
+
+<view:result>
+<div class="w_grey w_small w_pad" style="margin-bottom:10px;"><span class="icon-prompt"></span><?=$cmd;?></div>
+<?=$result;?>
+</view:result>
+
+<view:tables_actions>
+<ul>
+	<li class="w_bigger align-center"><a href="#" onclick="return false;"><?=$table;?> Actions</a></li>
+	<li><hr size="1" /></li>
+	<li><a href="/php/admin.php?_menu=list&_table_=<?=$table;?>"><span class="icon-list"></span> List</a></li>
+	<li><a href="/php/admin.php?_menu=add&_table_=<?=$table;?>"><span class="icon-plus"></span> Add New</a></li>
+	<li><a href="/php/admin.php?_menu=properties&_table_=<?=$table;?>"><span class="icon-table-add"></span> Properties</a></li>
+	
+	<li><a href="/php/admin.php?_menu=indexes&_table_=<?=$table;?>"><span class="icon-optimize"></span> Show Indexes</a></li>
+	<li><a href="/php/admin.php?_menu=add&_table_=_models&name=<?=$table;?>"><span class="icon-toggle-on"></span> Triggers</a></li>
+	<li><a href="/php/admin.php?_menu=backup&_table_=<?=$table;?>"><span class="icon-save"></span> Backup</a></li>
+	<li><a href="/php/admin.php?_menu=truncate&_table_=<?=$table;?>" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- <?=$table;?> --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+	<li><a href="/php/admin.php?_menu=drop&_table_=<?=$table;?>" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- <?=$table;?> --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+</view:tables_actions>

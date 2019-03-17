@@ -1,6 +1,7 @@
 <hosts>
 	<!--
 		Valid Fields:
+			admin_menu_color - the color of the admin menu. blue,gray,green,red,yellow,orange,teal,light,dark
 			name - HTTP_HOST to base filter on
 			dbhost - Database host
 			dbname - Database name

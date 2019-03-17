@@ -1,8 +1,8 @@
 <view:default>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-sm-12">
-			<ul class="nav nav-tabs">
+		<div class="col-sm-12 nav light tabs">
+			<ul>
 				<li class="active"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'json_forms',showprocessing:false});">JSON</a></li>
 				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'base64_forms',showprocessing:false});">BASE64</a></li>
 			</ul>
@@ -18,7 +18,7 @@
 
 <view:forms>
 <div class="row">
-	<div class="col-sm-6" style="border-right:1px solid #CCC;">
+	<div class="col-sm-6">
 		<h3><?=$type;?> Decoder 1</h3>
 		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'decoder1');">
 			<input type="hidden" name="_menu" value="decode">
@@ -38,8 +38,8 @@
 	</div>
 </div>
 <div class="row">
-	<div class="col-sm-6" id="decoder1" style="border-right:1px solid #CCC;border-bottom:1px solid #CCC;">asdf</div>
-	<div class="col-sm-6" id="decoder2" style="border-bottom:1px solid #CCC;">asfsaf</div>
+	<div class="col-sm-6" id="decoder1"></div>
+	<div class="col-sm-6" id="decoder2"></div>
 </div>
 </view:forms>
 

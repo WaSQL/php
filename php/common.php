@@ -168,26 +168,26 @@ function commonSearchFiltersForm($params=array()){
 	}
 	//search button
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+	$rtn .= '				<button type="submit" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//add filter
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="button" class="w_form-control" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
+	$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//bulkedit
 	if(!empty($params['-bulkedit'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Bulk Edit" class="w_form-control" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
 	}
 	//export
 	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="w_form-control" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
     	if(!empty($params['-export_file'])){
     		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="w_form-control" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
     	}
 	}
@@ -206,7 +206,7 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//show prev if offset is not 0
@@ -214,7 +214,7 @@ function commonSearchFiltersForm($params=array()){
 			$offset=$params['-offset']-$params['-limit'];
 			if($offset < 0){$offset=0;}
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '			<div style="margin:0 3px;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
@@ -227,13 +227,13 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-total']-$params['-limit'];
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$rtn .= '				<button type="submit" class="w_form-control" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="submit" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
@@ -1729,7 +1729,7 @@ function buildFormFile($name,$params=array()){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'" class="w_btn w_btn-default"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'" class="btn"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
@@ -2128,7 +2128,7 @@ function buildFormStarRating($name, $params=array()){
 * @usage if(!buildDir('/var/www/test/folder/sub/test')){return 'failed to build dir';}
 */
 function buildFormSubmit($val='Submit',$name='',$onclick='',$class=''){
-	$rtn = '<button class="w_btn w_btn-default '.$class.'" type="submit" value="'.$val.'"';
+	$rtn = '<button class="btn '.$class.'" type="submit" value="'.$val.'"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
 	$rtn .= '> '.$val."</button>";
@@ -2167,9 +2167,6 @@ function buildHtmlBegin($params=array()){
 	}
 	$rtn .= '</head>'.PHP_EOL;
 	$rtn .= '<body style="background:#FFFFFF;margin:0px;padding:0px;max-width:100%;">'.PHP_EOL;
-	$rtn .= '	<div class="container-fluid">'.PHP_EOL;
-	$rtn .= '		<div class="row">'.PHP_EOL;
-	$rtn .= '			<div class="col-xs-12" style="padding:0px;">'.PHP_EOL;
 	return $rtn;
 	}
 
@@ -2181,9 +2178,6 @@ function buildHtmlBegin($params=array()){
 */
 function buildHtmlEnd(){
 	$rtn='';
-	$rtn .= '			</div>'.PHP_EOL;
-	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '</body>'.PHP_EOL;
 	$rtn .= '</html>'.PHP_EOL;
 	return $rtn;

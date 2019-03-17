@@ -94,7 +94,7 @@
     		//pclose(popen($cmd,'r'));
     		//$out=cmdResults($cmd);
     		//pclose(popen("start /B /SHARED ". $cmd, "r"));
-    		$error="websocketd is not running. Run this command from a CMD prompt to start it:<br /> <textarea>{$cmd}</textarea> ";
+    		$error="websocketd is not running. Run this command from a CMD prompt to start it:<br /> <textarea class=\"browser-default form-control\">{$cmd}</textarea> ";
 			setView('error',1);
 			return;
     	}
