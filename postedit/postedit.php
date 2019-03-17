@@ -280,7 +280,10 @@ function writeFiles(){
 		elseif(isWindows()){$cmd="EXPLORER /E";}
 		if(strlen($cmd)){
 			$afolder=preg_replace('/\//',"\\",$afolder);
-			cmdResults("{$cmd} \"{$afolder}\"");
+			$out=cmdResults("{$cmd} \"{$afolder}\"");
+			if($out['rtncode'] !=0){
+				echo printValue($out).PHP_EOL;
+			}
 		}
 	}
 	$firsttime=0;

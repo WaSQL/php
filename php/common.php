@@ -2714,7 +2714,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	//windows OS requires the stderr pipe to be write
 	if(isWindows()){
-		$proc=proc_open($cmd,
+		//echo 'cmdResults: '.$cmd.PHP_EOL;
+		$proc=@proc_open($cmd,
 			array(
 				0=>array('pipe', 'r'), //stdin
 				1=>array('pipe', 'w'), //stdout
@@ -2725,6 +2726,14 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			null,
 			array('bypass_shell'=>true)
 		);
+		if(!$proc){
+			return array(
+				'cmd'=>$cmd,
+				'dir'=>$dir,
+				'rtncode'=>123,
+				'stderr'=>'Create Process Failed - Verify cmd exists'
+			);
+		}
 		stream_set_blocking($pipes[1], 0);
 		stream_set_blocking($pipes[2], 0);
 	}
