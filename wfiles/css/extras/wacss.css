@@ -585,6 +585,31 @@ a.btn{text-decoration: none;}
   margin-top:22px;
   padding-left:0px !important;
 }
+.btn-group, .btn-group-vertical {
+    position: relative;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    vertical-align: middle;
+}
+.btn-group > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .btn-group:not(:last-child) > .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+.btn-group > .btn, .btn-group-vertical > .btn {
+    position: relative;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+.btn-sm, .btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
 form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default,.w_form-control {
   display: block;
   width: 100%;
