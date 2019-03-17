@@ -550,7 +550,7 @@ a.btn{text-decoration: none;}
   box-shadow: 1px 2px 3px 0 rgba(0, 0, 0, 0.15);
 }
 /* default color to white */
-.btn{color: #212529;background-color: #e8e8e8;border-color: #c7c7c7;}
+.btn{color: #6c757d;background-color: #ffffff;border-color: #6c757d;}
 .btn:hover{background-color: #d6d6d6;}
 /* primary */
 .btn.blue{color: #fff;background-color: #007bff;border-color: #007bff;}
@@ -617,7 +617,7 @@ a.btn{text-decoration: none;}
 .btn-sm, .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: 1.5 !important;
     border-radius: 0.2rem;
 }
 form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default,.w_form-control {
