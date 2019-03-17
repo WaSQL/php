@@ -267,7 +267,7 @@ body{
 .nav > ul a {color: #212529;}
 .nav > ul a:hover,
 .nav .active {background: #e2e6ea;}
-.nav {
+.nav.topmenu {
   border-bottom:1px #e2e6ea solid;
   -webkit-box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
   box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
@@ -280,7 +280,7 @@ body{
 .nav.blue > ul a {color: #fff;}
 .nav.blue > ul a:hover,
 .nav.blue .active {background: #105fa6;}
-.nav.blue {
+.nav.topmenu.blue {
   border-bottom:1px solid #105fa6;
   -webkit-box-shadow: inset 0 1px 1px #0086fd, 0 0 8px #105fa6;
   box-shadow: inset 0 1px 1px #0086fd, 0 0 8px #105fa6;
@@ -293,7 +293,7 @@ body{
 .nav.gray > ul a {color: #fff;}
 .nav.gray > ul a:hover,
 .nav.gray .active {background: #5a6268;}
-.nav.gray {
+.nav.topmenu.gray {
   border-bottom:1px solid #5a6268;
   -webkit-box-shadow: inset 0 1px 1px #6c757d, 0 0 8px #5a6268;
   box-shadow: inset 0 1px 1px #6c757d, 0 0 8px #5a6268;
@@ -306,7 +306,7 @@ body{
 .nav.green > ul a {color: #fff;}
 .nav.green > ul a:hover,
 .nav.green .active {background: #218838;}
-.nav.green {
+.nav.topmenu.green {
   border-bottom:1px solid #218838;
   -webkit-box-shadow: inset 0 1px 1px #28a745, 0 0 8px #218838;
   box-shadow: inset 0 1px 1px #28a745, 0 0 8px #218838;
@@ -319,7 +319,7 @@ body{
 .nav.red > ul a {color: #fff;}
 .nav.red > ul a:hover,
 .nav.red .active {background: #c82333;}
-.nav.red {
+.nav.topmenu.red {
   border-bottom:1px solid #c82333;
   -webkit-box-shadow: inset 0 1px 1px #dc3545, 0 0 8px #c82333;
   box-shadow: inset 0 1px 1px #dc3545, 0 0 8px #c82333;
@@ -332,7 +332,7 @@ body{
 .nav.yellow > ul a {color: #212529;}
 .nav.yellow > ul a:hover,
 .nav.yellow .active {background: #e0a800;}
-.nav.yellow {
+.nav.topmenu.yellow {
   border-bottom:1px solid #e0a800;
   -webkit-box-shadow: inset 0 1px 1px #ffc107, 0 0 8px #e0a800;
   box-shadow: inset 0 1px 1px #ffc107, 0 0 8px #e0a800;
@@ -345,7 +345,7 @@ body{
 .nav.orange > ul a {color: #212529;}
 .nav.orange > ul a:hover,
 .nav.orange .active {background: #e68a00;}
-.nav.orange {
+.nav.topmenu.orange {
   border-bottom:1px solid #e68a00;
   -webkit-box-shadow: inset 0 1px 1px #ff9800, 0 0 8px #e68a00;
   box-shadow: inset 0 1px 1px #ff9800, 0 0 8px #e68a00;
@@ -358,7 +358,7 @@ body{
 .nav.teal > ul a {color: #fff;}
 .nav.teal > ul a:hover,
 .nav.teal .active {background: #138496;}
-.nav.teal {
+.nav.topmenu.teal {
   border-bottom:1px solid #138496;
   -webkit-box-shadow: inset 0 1px 1px #17a2b8, 0 0 8px #138496;
   box-shadow: inset 0 1px 1px #17a2b8, 0 0 8px #138496;
@@ -371,7 +371,7 @@ body{
 .nav.white > ul a {color: #212529;}
 .nav.white > ul a:hover,
 .nav.white .active {background: #e2e6ea;}
-.nav.white {
+.nav.topmenu.white {
   border-bottom:1px solid #e2e6ea;
   -webkit-box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
   box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
@@ -384,7 +384,7 @@ body{
 .nav.black > ul a {color: #fff;}
 .nav.black > ul a:hover,
 .nav.black .active {background: #23272b;}
-.nav.black {
+.nav.topmenu.black {
   border-bottom:1px solid #23272b;
   -webkit-box-shadow: inset 0 1px 1px #343a40, 0 0 8px #23272b;
   box-shadow: inset 0 1px 1px #343a40, 0 0 8px #23272b;
@@ -496,16 +496,16 @@ body{
 .modal .modal_title.teal{color:#fff;background-color:#17a2b8;border-bottom:1px dotted #17a2b8;}
 .modal .modal_title.teal .modal_close{color:#fff;}
 .modal .modal_title.teal .modal_close:hover{color:#fff;}
-/* light */
-.modal_overlay.light{background-color: rgba(226, 230, 234, 0.3);}
-.modal .modal_title.light{color:#212529;background-color:#f8f9fa;border-bottom:1px dotted #f8f9fa;}
-.modal .modal_title.light .modal_close{color:#212529;}
-.modal .modal_title.light .modal_close:hover{color:#212529;}
-/* dark */
-.modal_overlay.dark{background-color: rgba(35, 39, 43, 0.4);}
-.modal .modal_title.dark{color:#fff;background-color:#343a40;border-bottom:1px dotted #343a40;}
-.modal .modal_title.dark .modal_close{color:#fff;}
-.modal .modal_title.dark .modal_close:hover{color:#fff;}
+/* white */
+.modal_overlay.white{background-color: rgba(226, 230, 234, 0.3);}
+.modal .modal_title.white{color:#212529;background-color:#f8f9fa;border-bottom:1px dotted #f8f9fa;}
+.modal .modal_title.white .modal_close{color:#212529;}
+.modal .modal_title.white .modal_close:hover{color:#212529;}
+/* black */
+.modal_overlay.black{background-color: rgba(35, 39, 43, 0.4);}
+.modal .modal_title.black{color:#fff;background-color:#343a40;border-bottom:1px dotted #343a40;}
+.modal .modal_title.black .modal_close{color:#fff;}
+.modal .modal_title.black .modal_close:hover{color:#fff;}
 /* content */
 .modal .modal_content{
   position:relative;
@@ -544,7 +544,7 @@ a.btn{text-decoration: none;}
   /*[horizontal offset] [vertical offset] [blur radius] [optional spread radius] [color]*/
   box-shadow: 1px 2px 3px 0 rgba(0, 0, 0, 0.15);
 }
-/* default color to light */
+/* default color to white */
 .btn{color: #212529;background-color: #e8e8e8;border-color: #c7c7c7;}
 .btn:hover{background-color: #d6d6d6;}
 /* primary */
@@ -568,12 +568,12 @@ a.btn{text-decoration: none;}
 /* info */
 .btn.teal{color: #fff;background-color: #17a2b8;border-color: #17a2b8;}
 .btn.teal:hover{background-color: #138496;border-color: #117a8b;}
-/* light */
-.btn.light{color: #212529;background-color: #f8f9fa;border-color: #dae0e5;}
-.btn.light:hover{background-color: #e2e6ea;}
-/* dark */
-.btn.dark{color: #fff;background-color: #343a40;border-color: #343a40;}
-.btn.dark:hover{background-color: #23272b;border-color: #1d2124;}
+/* white */
+.btn.white{color: #212529;background-color: #f8f9fa;border-color: #dae0e5;}
+.btn.white:hover{background-color: #e2e6ea;}
+/* black */
+.btn.black{color: #fff;background-color: #343a40;border-color: #343a40;}
+.btn.black:hover{background-color: #23272b;border-color: #1d2124;}
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/
 .input-field{
   position:relative;
@@ -661,8 +661,8 @@ select.browser-default ~ label {
 .form-control.yellow,.browser-default.yellow{border: 1px solid rgba(224, 168, 0, 0.4);}
 .form-control.orange,.browser-default.orange{border: 1px solid rgba(255, 152, 0, 0.4);}
 .form-control.teal,.browser-default.teal{border: 1px solid rgba(19, 132, 150, 0.3);}
-.form-control.light,.browser-default.light{border: 1px solid rgba(226, 230, 234, 0.9);}
-.form-control.dark,.browser-default.dark{border: 1px solid rgba(35, 39, 43, 0.3);}
+.form-control.white,.browser-default.white{border: 1px solid rgba(226, 230, 234, 0.9);}
+.form-control.black,.browser-default.black{border: 1px solid rgba(35, 39, 43, 0.3);}
 
 /*--------------------- table styles  -------------------------------------------*/
 table.table {
