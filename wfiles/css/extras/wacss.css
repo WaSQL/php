@@ -77,11 +77,26 @@ body{
     list-style: none;
 }
 
-.nav > .nav-link {
+.nav-link {
     display: block;
     padding: 0.5rem 1rem;
 }
-.nav {
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+.nav-tabs .nav-link.active, 
+.nav-tabs .nav-item.show .nav-link {
+  color: #495057;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.nav li {
   font-size: 14px;
   font-family: Arial, sans-serif;
   text-align: left; 
