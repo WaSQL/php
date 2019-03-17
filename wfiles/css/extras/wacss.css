@@ -13,6 +13,11 @@ body{
 }
 .align-justify {text-align: justify;}
 
+.justify-content-center {
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+}
+
 /* ---------------------- colors ------------------------- */
 .blue {color: #0086fd;}
 .gray {color: #6c757d;}
