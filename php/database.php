@@ -7170,20 +7170,23 @@ function getDBRecords($params=array()){
 				$val=call_user_func($params["-eval_{$key}"],$val);
 			}
 			if(isset($params['-index'])){
+				$index='';
 				if(is_array($params['-index']) && count($params['-index'])){
 					$indexes=array();
 					foreach($params['-index'] as $fld){
 						$indexes[] = $row[$fld];
 						}
 					$index=implode(',',$indexes);
+					$index=strtolower($index);
 					$list[$index][$key]=$val;
                 	}
 				elseif(strlen($params['-index']) && !isNum($params['-index']) && isset($row[$params['-index']])){
 					$index=$row[$params['-index']];
+					$index=strtolower($index);
 					$list[$index][$key]=$val;
                 	}
                 //-json?
-                if(isset($jsonfields[$key])){
+                if(strlen($index) && isset($jsonfields[$key])){
 					$list[$index]["{$key}_json"]=json_decode($val,true);
 				}
             }

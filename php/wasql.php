@@ -1,6 +1,18 @@
 <?php
 /*functions only used by wasql*/
 register_shutdown_function('gracefulShutdown');
+//---------- begin function wasqlClearMinCache--------------------------------------
+/**
+* @describe removes all files in the w_min cache directory
+* @usage $ok=wasqlClearMinCache();
+* @return bolean
+*	returns true on success
+*/
+function wasqlClearMinCache(){
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+    if(!is_dir("{$docroot}/w_min")){return false;}
+    return cleanDir("{$docroot}/w_min");
+}
 //---------- begin function wasqlRebuildManual
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual

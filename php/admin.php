@@ -451,6 +451,11 @@ if(isAjax()){
 		case 'datasync':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
+		case 'clearmin':
+			wasqlClearMinCache();
+			echo "Min Cache Cleared";
+			exit;
+		break;
 		case 'export':
 			echo adminViewPage('export');exit;
 		break;

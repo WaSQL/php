@@ -445,7 +445,7 @@ body{
 }
 .modal .modal_title{
   margin:0 0 0 0;
-  height:40px;
+  max-height:40px;
   overflow:hidden;
   font-size:1.3rem;
   font-weight:400;
@@ -466,49 +466,55 @@ body{
   font-weight: 100;
   padding:0 0 10px 10px;
 }
-/* primary */
+/* default color to black */
+.modal_overlay{background-color: rgba(35, 39, 43, 0.4);}
+.modal .modal_title{color:#fff;background-color:#343a40;border-bottom:1px solid #343a40;}
+.modal .modal_title .modal_close{color:#fff;}
+.modal .modal_title .modal_close:hover{color:#fff;}
+.modal .modal_content {color:#212529;}
+/* blue */
 .modal_overlay.blue{background-color: rgba(0, 105, 217, 0.2);}
-.modal .modal_title.blue{color:#fff;background-color:#007bff;border-bottom:1px dotted #007bff;}
+.modal .modal_title.blue{color:#fff;background-color:#007bff;border-bottom:1px solid #007bff;}
 .modal .modal_title.blue .modal_close{color:#fff;}
 .modal .modal_title.blue .modal_close:hover{color:#fff;}
 /* secondary */
 .modal_overlay.gray{background-color: rgba(90, 98, 104, 0.25);}
-.modal .modal_title.gray{color:#fff;background-color:#6c757d;border-bottom:1px dotted #6c757d;}
+.modal .modal_title.gray{color:#fff;background-color:#6c757d;border-bottom:1px solid #6c757d;}
 .modal .modal_title.gray .modal_close{color:#fff;}
 .modal .modal_title.gray .modal_close:hover{color:#fff;}
 /* success */
 .modal_overlay.green{background-color: rgba(33, 136, 56, 0.2);}
-.modal .modal_title.green{color:#fff;background-color:#28a745;border-bottom:1px dotted #28a745;}
+.modal .modal_title.green{color:#fff;background-color:#28a745;border-bottom:1px solid #28a745;}
 .modal .modal_title.green .modal_close{color:#fff;}
 .modal .modal_title.green .modal_close:hover{color:#fff;}
 /* danger */
 .modal_overlay.red{background-color: rgba(200, 35, 51, 0.15);}
-.modal .modal_title.red{color:#fff;background-color:#dc3545;border-bottom:1px dotted #dc3545;}
+.modal .modal_title.red{color:#fff;background-color:#dc3545;border-bottom:1px solid #dc3545;}
 .modal .modal_title.red .modal_close{color:#fff;}
 .modal .modal_title.red .modal_close:hover{color:#fff;}
 /* warning */
 .modal_overlay.yellow{background-color: rgba(224, 168, 0, 0.15);}
-.modal .modal_title.yellow{color:#212529;background-color:#ffc107;border-bottom:1px dotted #ffc107;}
+.modal .modal_title.yellow{color:#212529;background-color:#ffc107;border-bottom:1px solid #ffc107;}
 .modal .modal_title.yellow .modal_close{color:#212529;}
 .modal .modal_title.yellow .modal_close:hover{color:#212529;}
 /* orange */
 .modal_overlay.orange{background-color: rgba(255, 152, 0, 0.15);}
-.modal .modal_title.orange{color:#212529;background-color:#ff9800;border-bottom:1px dotted #e68a00;}
+.modal .modal_title.orange{color:#212529;background-color:#ff9800;border-bottom:1px solid #e68a00;}
 .modal .modal_title.orange .modal_close{color:#212529;}
 .modal .modal_title.orange .modal_close:hover{color:#212529;}
 /* info */
 .modal_overlay.teal{background-color: rgba(19, 132, 150, 0.15);}
-.modal .modal_title.teal{color:#fff;background-color:#17a2b8;border-bottom:1px dotted #17a2b8;}
+.modal .modal_title.teal{color:#fff;background-color:#17a2b8;border-bottom:1px solid #17a2b8;}
 .modal .modal_title.teal .modal_close{color:#fff;}
 .modal .modal_title.teal .modal_close:hover{color:#fff;}
 /* white */
 .modal_overlay.white{background-color: rgba(226, 230, 234, 0.3);}
-.modal .modal_title.white{color:#212529;background-color:#f8f9fa;border-bottom:1px dotted #f8f9fa;}
+.modal .modal_title.white{color:#212529;background-color:#f8f9fa;border-bottom:1px solid rgba(0,0,0,0.19);}
 .modal .modal_title.white .modal_close{color:#212529;}
 .modal .modal_title.white .modal_close:hover{color:#212529;}
 /* black */
 .modal_overlay.black{background-color: rgba(35, 39, 43, 0.4);}
-.modal .modal_title.black{color:#fff;background-color:#343a40;border-bottom:1px dotted #343a40;}
+.modal .modal_title.black{color:#fff;background-color:#343a40;border-bottom:1px solid #343a40;}
 .modal .modal_title.black .modal_close{color:#fff;}
 .modal .modal_title.black .modal_close:hover{color:#fff;}
 /* content */
