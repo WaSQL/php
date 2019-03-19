@@ -1,5 +1,5 @@
 <view:default>
-<nav class="nav <?=$CONFIG['admin_menu_color'];?> condensed" id="admin_menu" data-color="<?=$CONFIG['admin_menu_color'];?>">
+<nav class="nav topmenu <?=$CONFIG['admin_menu_color'];?> condensed" id="admin_menu" data-color="<?=$CONFIG['admin_menu_color'];?>">
 	<ul>
 		<li><a href="#logo"><img src="/wfiles/wasql_admin.png" /></a></li>
 		<view:admin>
@@ -76,6 +76,7 @@
 				<?=renderEach('users_edit',$users,'rec');?>
 			</ul>
 		</li>
+		<view:crons>
 		<!-- Crons -->
 		<li><a href="#crons" class="dropdown" onclick="return false;"><span class="icon-cron"></span> <span class="hidden-sm-down">Crons</span></a>
 			<ul>
@@ -87,6 +88,9 @@
 				
 			</ul>
 		</li>
+		</view:crons>
+		<?=renderViewIf(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1,'crons');?>
+		<view:queries>
 		<!-- Queries -->
 		<li><a href="#queries" class="dropdown" onclick="return false;"><span class="icon-sql"></span> <span class="hidden-sm-down">Queries</span></a>
 			<ul>
@@ -96,6 +100,9 @@
 				
 			</ul>
 		</li>
+		</view:queries>
+		<?=renderViewIf(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1,'queries');?>
+		<view:access>
 		<!-- Access -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-slideshow"></span> <span class="hidden-sm-down">Access</span></a>
 			<ul>
@@ -105,6 +112,9 @@
 				
 			</ul>
 		</li>
+		</view:access>
+		<?=renderViewIf(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1,'access');?>
+		<view:synchronize>
 		<!-- Synchronize -->
 		<li><a href="#sync" class="dropdown" onclick="return false;"><span class="icon-sync"></span> <span class="hidden-sm-down">Synchronize</span></a>
 			<ul>
@@ -114,6 +124,9 @@
 				
 			</ul>
 		</li>
+		</view:synchronize>
+		<?=renderViewIf(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1,'synchronize');?>
+		<view:git>
 		<!-- Git Repo -->
 		<li><a href="/php/admin.php?_menu=git" class="dropdown"><span class="icon-git"></span> <span class="hidden-sm-down">Repo</span></a></li>
 		<!-- Errors -->
@@ -125,7 +138,8 @@
 				
 			</ul>
 		</li>
-
+		</view:git>
+		<?=renderViewIf(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1,'git');?>
 		<!-- Config -->
 		<li class="right"><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down">Config</span></a></li>
 		<!-- Help -->
