@@ -71,6 +71,62 @@ body{
     flex: 1 1 auto;
     padding: 1.25rem;
 }
+/* ---------------------- dropdown ------------------------- */
+.dropdown{
+  position:relative;
+}
+
+.dropdown [data-toggle="dropdown"]{
+  padding-right:0px;
+  border: 1px solid #ccc;
+}
+.dropdown [data-toggle="dropdown"]:after{
+  content:' \23F7';
+  display:inline;
+  vertical-align: middle;
+  padding: .375rem .75rem 0 0;
+  font-size: 1rem;
+  height: 34px;
+  line-height: 1.42857143;
+}
+.dropdown.open [data-toggle="dropdown"]:after{
+  content:' \23F6';
+}
+.dropdown .dropdown-menu{
+  max-height:0px;
+  position:absolute;
+  overflow:hidden;
+  -webkit-transition: max-height .15s; /* Safari */
+  transition: max-height .15s;
+}
+.dropdown.open .dropdown-menu{
+  max-height:200px;
+  overflow:auto;
+  border:1px solid #ccc;
+  background:#fff;
+  padding-right:20px;
+  padding-left:5px;
+  border-bottom-left-radius:4px;
+  border-bottom-right-radius: 4px;
+  z-index:8000;
+}
+.dropdown.open .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: .35rem .5rem 0 0;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+}
+.dropdown.open .dropdown-item:hover {
+    color: #16181b;
+    text-decoration: none;
+    background-color: #f8f9fa;
+}
 /* ---------------------- nav ------------------------- */
 .nav {
     display: -ms-flexbox;
@@ -428,11 +484,12 @@ body{
   top: 50%;
   left: 50%;
   z-index: 9010;
-  transform: translate(-50%, -50%);
-  -o-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  -moz-transform: translate(-50%, -50%);
-  -webkit-transform: translate(-50%, -50%);
+  transform: translateX(-50%) translateY(calc(-50% - .5px)) translate3d( 0, 0, 0);
+  -o-transform: translateX(-50%) translateY(calc(-50% - .5px)) translate3d( 0, 0, 0);
+  -ms-transform: translateX(-50%) translateY(calc(-50% - .5px)) translate3d( 0, 0, 0);
+  -moz-transform: translateX(-50%) translateY(calc(-50% - .5px)) translate3d( 0, 0, 0);
+  -webkit-transform: translateX(-50%) translateY(calc(-50% - .5px)) translate3d( 0, 0, 0);
+  -webkit-font-smoothing: antialiased;
   background: #fff;
   border-radius: 3px;
   -ms-border-radius: 3px;
@@ -450,7 +507,7 @@ body{
   font-size:1.3rem;
   font-weight:400;
   padding: 8px 10px;
-  z-index: 9050
+  z-index: 9050;
 }
 .modal_title{
   position:sticky;
@@ -521,7 +578,7 @@ body{
 .modal .modal_content{
   position:relative;
   padding: 12px 14px;
-  z-index: 9020
+  z-index: 9080;
 }
 
 /* ---------------------- Button controls ------------------------- */

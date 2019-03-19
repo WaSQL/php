@@ -1017,7 +1017,7 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span data-id="'.$params['id'].'" class="w_btn w_btn-secondary w_btn-append" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer"></span></span>'.PHP_EOL;
+	$tag .= '	<span data-id="'.$params['id'].'" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer w_bigger"></span></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
@@ -1207,9 +1207,9 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	//return printValue($pairs);
 	foreach($pairs as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
-    	$litags .= '		<div style="white-space:nowrap;">';
+    	$litags .= '		<div class="dropdown-item">';
     	if(!isNum($tval) && $tval=='--'){
-			$litags .= '--------</li>'.PHP_EOL;
+			$litags .= '--------</div>'.PHP_EOL;
 			continue;
 		}
     	$litags .= '<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
@@ -1231,20 +1231,12 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 
 	$tag='';
-	$tag .= '<div class="dropdown" id="'.$dropdown_classid.'">'.PHP_EOL;
-	$tag .= '	<div class="w_flexgroup" data-toggle="dropdown">'.PHP_EOL;
-	$tag .= ' 		<button class="w_btn '.$params['-size'].' w_btn-default" type="button">'.$dname.PHP_EOL;
-	$tag .= '			<span data-group="'.$params['group'].'" class="'.$icon.'" style="padding-left:10px;margin-right:3px;"></span><span class="icon-arrow-down" style="padding-left:5px;"></span>'.PHP_EOL;
-	$tag .= '		</button>'.PHP_EOL;
-	$tag .= ' 	</div>'.PHP_EOL;
-	$tag .= ' 	<div class="dropdown-menu" style="background:#FFF;z-index:9999;">'.PHP_EOL;
-	//checkall
-	$tag .= '		<div style="border-bottom:1px dashed #ddd;padding-bottom:0px;margin-bottom:2px;padding-left:10px;margin-left:10px;text-align:left;">'.buildFormCheckAll('data-group',$params['group'])."</div>\n";
-	$tag .= '		<ul style="max-height:300px;list-style-type:none;overflow:auto;padding-right:25px;padding-left:10px;text-align:left;margin:10px;border-bottom:1px solid #d9d9d9;">'.PHP_EOL;
+	$tag .= '<div class="dropdown">'.PHP_EOL;
+	$tag .= ' 	<button data-toggle="dropdown" class="btn '.$params['-size'].'" type="button">'.$dname.PHP_EOL;
+	$tag .= '	</button>'.PHP_EOL;
+	$tag .= ' 	<div class="dropdown-menu">'.PHP_EOL;
 	$tag .= $litags;
-	$tag .= '  		</ul>'.PHP_EOL;
-	$tag .= '	<div class="text-right icon-cancel w_grey w_smaller w_pointer" onclick="removeClass(\''.$dropdown_classid.'\',\'open\');" style="margin:3px 10px 3px 0">close</div>'.PHP_EOL;
-	$tag .= '</div>'.PHP_EOL;
+	$tag .= '	</div>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
