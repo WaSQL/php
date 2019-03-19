@@ -66,7 +66,11 @@ function commonSearchFiltersForm($params=array()){
 	}
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
+	if(empty($params['-offset'])){
+		$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
+	}
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
 	$rtn .= '	<textarea name="_filters">'.$params['-filters'].'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
 		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
@@ -197,11 +201,7 @@ function commonSearchFiltersForm($params=array()){
 		//keep pagination buttons together (now wrapping)
 		$rtn .= '	<div data-set="3" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 		if(empty($params['-limit'])){$params['-limit']=15;}
-		if(empty($params['-offset'])){
-			$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
-		}
 		$rtn .= '		<input type="hidden" name="filter_total" value="'.$params['-total'].'" />'.PHP_EOL;
-		$rtn .= '		<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
 		//show first if offset minus limit is not 0
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
