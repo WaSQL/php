@@ -2437,7 +2437,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			$rtn .= '		<td>'.$params['-savebutton'].'</td>'.PHP_EOL;
 		}
 	    elseif(isset($rec['_id']) && isNum($rec['_id'])){
-			$class=isset($params['-save_class'])?$params['-save_class']:'btn';
+			$class=isset($params['-save_class'])?$params['-save_class']:'btn white';
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
 				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;

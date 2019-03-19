@@ -12596,6 +12596,9 @@ function processActions(){
 				$_REQUEST['-action']=preg_replace('/\?.*$/','',$_REQUEST['-action']);
             	}
             //set defaults for fielddata table on new fields
+            if(!isset($_REQUEST['-table']) && isset($_REQUEST['_table'])){
+            	$_REQUEST['-table']=$_REQUEST['_table'];
+            }
             if($_REQUEST['-table']=='_fielddata' && !isset($_REQUEST['_id'])){
 				if(isset($_REQUEST['fieldname'])){
 					$info=getDBFieldInfo($_REQUEST['tablename']);
@@ -12686,10 +12689,10 @@ function processActions(){
             //echo buildTableBegin(4);
             //echo "<tr><td>\n";
 			$title=isset($_REQUEST['_id']) && isNum($_REQUEST['_id'])?'Edit Record':'Add Record';
-            echo '<div class="w_centerpop_title">'.$title.'</div>'.PHP_EOL;
-			echo '<div class="w_centerpop_content">'.PHP_EOL;
+           // echo '<div class="w_centerpop_title">'.$title.'</div>'.PHP_EOL;
+			//echo '<div class="w_centerpop_content">'.PHP_EOL;
 			echo addEditDBForm($_REQUEST);
-			echo '</div>'.PHP_EOL;
+			//echo '</div>'.PHP_EOL;
 			//echo "</td></tr>\n";
 			//echo buildTableEnd();
 			exit;
