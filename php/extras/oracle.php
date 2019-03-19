@@ -1,10 +1,15 @@
 <?php
+//http://php.net/manual/en/oci8.configuration.php
+//connection class to enable better connection pooling
+ini_set('oci8.connection_class','WaSQL');
+//event (FAN)
+ini_set('oci8.events','ON');
 //max number of persistent connections to the database
-ini_set('oci8.max_persistent',5);
+ini_set('oci8.max_persistent',50);
 //seconds a persistent connection will stay alive
-ini_set('oci8.persistent_timeout',30);
+ini_set('oci8.persistent_timeout',-1);
 //number of rows in each DB round trip to cache
-ini_set('oci8.default_prefetch',20);
+ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
 //---------- begin function oracleAddDBRecord ----------
