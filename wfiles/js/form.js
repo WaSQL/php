@@ -2390,6 +2390,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	else if(undefined != theform.centerpop_title){
 		cp_title=theform.centerpop_title.value;
 	}
+	var title='';
+	if(undefined != theform.title){
+		title=theform.title.value;
+	}
     //Set the ajax ID
 	var AJUid=new Date().getTime() + "";
 	//add AjaxRequestUniqueId as a hidden value to the form
@@ -2405,6 +2409,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 			,'timeout':tmeout
 			,'callback':callback
 			,'var2':cp_title
+			,'var3':title
 			,'abort_callback':abort_callback
 			,'showprocessing':showprocessing
 			,'showprocessingdiv':showprocessingdiv
@@ -2499,7 +2504,11 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 						setCenterPopText(dname,val);
                     }
                     else if(cb=='modal'){
-						let modal=wacss.modalPopup(val,'Success',{overlay:1});
+                    	let title='';
+                    	if(this.var2.length){title=this.var2;}
+                    	else if (this.var3.length){title=this.var3;}
+                    	else{title='Success';}
+						let modal=wacss.modalPopup(val,title,{overlay:1});
 					}
 					else{
 						window[this.callback](req,dname);
@@ -2519,7 +2528,11 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 						setCenterPopText(dname,val);
                     }
                     else if(lname=='modal'){
-						let modal=wacss.modalPopup(val,'Success',{overlay:1});
+                    	let title='';
+                    	if(this.var2.length){title=this.var2;}
+                    	else if (this.var3.length){title=this.var3;}
+                    	else{title='Success';}
+						let modal=wacss.modalPopup(val,title,{overlay:1});
 					}
 					else if(document.getElementById(dname)){
 						if(undefined == document.getElementById(dname).style.display || document.getElementById(dname).style.display=='none'){
@@ -2806,7 +2819,11 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						}
                     }
                     else if(lname=='modal'){
-						let modal=wacss.modalPopup(req.responseText,'Success',{overlay:1});
+                    	let title='';
+                    	if(this.var2.length){title=this.var2;}
+                    	else if (this.var3.length){title=this.var3;}
+                    	else{title='Success';}
+						let modal=wacss.modalPopup(req.responseText,title,{overlay:1});
 					}
 					else{
 						window[this.callback](req,dname);
@@ -2833,7 +2850,11 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						}
                     }
                     else if(lname=='modal'){
-						let modal=wacss.modalPopup(req.responseText,'Success',{overlay:1});
+                    	let title='';
+                    	if(this.var2.length){title=this.var2;}
+                    	else if (this.var3.length){title=this.var3;}
+                    	else{title='Success';}
+						let modal=wacss.modalPopup(req.responseText,title,{overlay:1});
 					}
 					else if(document.getElementById(dname)){
 						if(undefined == document.getElementById(dname).style.display || document.getElementById(dname).style.display=='none'){

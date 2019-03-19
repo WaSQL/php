@@ -8,8 +8,12 @@ var wacss = {
 			let mel=m.querySelector('.modal_content');
 			if(undefined != mel){
 				mel.innerHTML=htm;
-				return m;
 			}
+			let mt=m.querySelector('.modal_title_text');
+			if(undefined != mt){
+				mt.innerHTML=title;
+			}
+			return m;
 		}
 		let modal=document.createElement('div');
 		modal.id='wacss_modal';
@@ -32,6 +36,7 @@ var wacss = {
 			}
 			modal_title.appendChild(modal_close);
 			let modal_title_text=document.createElement('div');
+			modal_title_text.className='modal_title_text';
 			modal_title_text.innerHTML=title;
 			modal_title.appendChild(modal_title_text);
 			modal.appendChild(modal_title);

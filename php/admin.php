@@ -2294,11 +2294,11 @@ LIST_TABLE:
 				$id=is_array($frec)?$frec['_id']:0;
 				if(isset($frec['_id'])){
 					//edit
-					$onclick="return ajaxGet('/php/index.php','modal',{title:'Add New Record',_action:'editform','_table':'_fielddata',_id:{$id},_menu:'properties',fieldname:'{$field}',tablename:'{$currentTable}',_table_:'{$currentTable}'});";
+					$onclick="return ajaxGet('/php/index.php','modal',{title:'Edit META for {$currentTable}.{$field} - {$id}',_action:'editform','_table':'_fielddata',_id:{$id},_menu:'properties',fieldname:'{$field}',tablename:'{$currentTable}',_table_:'{$currentTable}'});";
 				}
 				else{
 					//new
-					$onclick="return ajaxGet('/php/index.php','modal',{title:'Edit Record {$id}',_action:'editform','_table':'_fielddata',_id:{$id},_menu:'properties',fieldname:'{$field}',tablename:'{$currentTable}',_table_:'{$currentTable}'});";
+					$onclick="return ajaxGet('/php/index.php','modal',{title:'Add New Record',_action:'editform','_table':'_fielddata',_id:{$id},_menu:'properties',fieldname:'{$field}',tablename:'{$currentTable}',_table_:'{$currentTable}'});";
 				}
 				echo '	<tr class="w_pointer" onclick="'.$onclick.'">'.PHP_EOL;
 
