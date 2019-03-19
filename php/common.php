@@ -861,7 +861,12 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	$tag='<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	if(count($opts)==1){
+		$tag  = '<div>'.PHP_EOL;	
+	}
+	else{
+		$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	}
 	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
@@ -1261,7 +1266,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
-	if(!isset($params['width'])){$params['width']=6;}
+	if(!isset($params['width'])){$params['width']=count($opts)<6?count($opts):6;}
 	if(!isset($params['-icon'])){$params['-icon']='mark';}
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
@@ -1289,7 +1294,12 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
-	$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	if(count($opts)==1){
+		$tag  = '<div>'.PHP_EOL;	
+	}
+	else{
+		$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+	}
 	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
