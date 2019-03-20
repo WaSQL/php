@@ -1479,7 +1479,7 @@ function buildFormTime($name,$params=array()){
     	$params['-value']=date('H:i:s',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;max-width:'.$params['width'].'px;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
