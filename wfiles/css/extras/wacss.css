@@ -137,7 +137,21 @@ body{
     margin-bottom: 0;
     list-style: none;
 }
-
+ul.nav.nav-list{
+  padding:0px;
+}
+ul.nav.nav-list > li {
+  display: block;
+  width:100%;
+}
+ul.nav.nav-list > li >a {
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration:none;
+}
+ul.nav.nav-list > li >a:hover, ul.nav.nav-list > li >a.active, ul.nav.nav-list > li.active >a {
+  background-color: #ccc;
+}
 .nav-link {
     display: block;
     padding: 0.5rem 1rem;
