@@ -120,6 +120,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 		if(isset($CONFIG['authldap_domain'])){
         	$authopts['-domain']=$CONFIG['authldap_domain'];
 		}
+		if(isset($CONFIG['authldap_checkmemberof'])){
+        	$authopts['-checkmemberof']=$CONFIG['authldap_checkmemberof'];
+		}
      	$ldap=ldapAuth($authopts);
 		if(is_array($ldap)){
           	$fields=getDBFields('_users');
