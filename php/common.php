@@ -939,7 +939,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['maxlength']=7;
 	$tag='';
-	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;">'.PHP_EOL;
 	$tag .= '	<input type="text" name="'.$name.'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL;
@@ -1015,7 +1015,7 @@ function buildFormDate($name,$params=array()){
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='min-width:100px;';
 	$params['class']='browser-default w_form-control w_input-prepend';
@@ -1058,7 +1058,7 @@ function buildFormDateTime($name,$params=array()){
     	$params['-value']=date('Y-m-d H:i:s',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="input-group" style="width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='width:100%';
 	$tag .= setTagAttributes($params);
