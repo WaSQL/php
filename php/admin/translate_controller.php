@@ -1,5 +1,7 @@
 <?php
 	loadExtras('translate');
+	loadExtrasCss('wacss');
+	loadExtrasJs('wacss');
 	switch(strtolower($_REQUEST['func'])){
 		case 'list':
 			$locale=addslashes($_REQUEST['locale']);
