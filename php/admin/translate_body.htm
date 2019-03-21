@@ -32,16 +32,14 @@
 </view:list>
 
 <view:edit>
-<div class="w_centerpop_title">Edit <?=$source_locale;?> to <?=$rec['locale'];?></div>
-<div class="w_centerpop_content" style="min-width:400px;padding-right:18px;">
-	<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_padtop">
-		<div class="w_flex w_flexcol w_flexstart w_flexnowrap">
-			<div>Source</div>
-			<div class="form-control"><?=$rec['source'];?></div>
-		</div>
-		<div class="w_flex w_flexcol w_flexstart w_flexnowrap w_padleft">
-			<?=pageEditRec($rec);?>
-		</div>
+<div class="row">
+	<div class="col-sm-5">
+		<div>Source</div>
+		<div class="form-control"><?=$rec['source'];?></div>
+	</div>
+	<div class="col-sm-7">
+		<div>Translation</div>
+		<?=pageEditRec($rec);?>
 	</div>
 </div>
 </view:edit>

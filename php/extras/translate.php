@@ -124,6 +124,19 @@ function translateCheckSchema(){
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>'sha'));
 	return true;
 }
+//---------- begin function translateGetSourceLocale
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function translateGetSourceLocale(){
+	global $CONFIG;
+	//determine source locale
+	if(isset($CONFIG['translate_locale']) && strlen($CONFIG['translate_locale'])){
+		$source_locale=$CONFIG['translate_locale'];
+	}
+	else{$source_locale='en-us';}
+	return $source_locale;
+}
 //---------- begin function translateText
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -135,10 +148,7 @@ function translateText($text,$locale=''){
 	//set the identifier as the sha of the text
 	$identifier=sha1(trim($text));
 	//determine source locale
-	if(isset($CONFIG['translate_locale']) && strlen($CONFIG['translate_locale'])){
-		$source_locale=$CONFIG['translate_locale'];
-	}
-	else{$source_locale='en-us';}
+	$source_locale=translateGetSourceLocale();
 	list($source_lang,$source_country)=translateParseLocale($source_locale);
 	//default locale if not passed in.  
 	if(!strlen($locale)){
