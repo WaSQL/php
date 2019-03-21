@@ -1304,7 +1304,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
 		$minwidth=floor(strlen($dval)*10)+25;
-		$tag .= '		<div style="padding:4px;line-height:1rem;'.$style.'">'.PHP_EOL;
+		$tag .= '		<div style="padding:5px;'.$style.'">'.PHP_EOL;
 		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
 		if($params['required']){$tag .= ' data-required="1"';}
 		//add any data params
