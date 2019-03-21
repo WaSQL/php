@@ -12,21 +12,18 @@
 
 <view:list>
 	<?=translateListRecords($locale);?>
-	<?=buildOnLoad("removeDiv('centerpop');");?>
+	<?=buildOnLoad("removeDiv(document.getElementById('wacss_modal').parentNode);");?>
 </view:list>
 
 <view:edit>
-<div class="w_centerpop_content">Edit Translation</div>
-<div class="w_centerpop_title">
-	<div class="row">
-		<div class="col-sm-5 align-left">
-			<div>Source</div>
-			<div class="form-control"><?=$rec['source'];?></div>
-		</div>
-		<div class="col-sm-7 align-left">
-			<div>Translation</div>
-			<?=translateEditRec($rec);?>
-		</div>
+<div class="row">
+	<div class="col-sm-5 align-left">
+		<div>Source</div>
+		<div class="form-control"><?=$rec['source'];?></div>
+	</div>
+	<div class="col-sm-7 align-left">
+		<div>Translation</div>
+		<?=pageEditRec($rec);?>
 	</div>
 </div>
 </view:edit>
