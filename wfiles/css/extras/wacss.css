@@ -735,7 +735,7 @@ form.w_form input:focus, form.w_form select:focus, form.w_form textarea:focus, .
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
 }
-form.w_form label{
+form label.control-label{
   display:block;
 }
 .form-control ~ label, .browser-default ~ label{
