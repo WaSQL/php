@@ -12,7 +12,7 @@
 
 <view:list>
 	<?=translateListRecords($locale);?>
-	<?=buildOnLoad("removeDiv(document.getElementById('wacss_modal').parentNode);");?>
+	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
 </view:list>
 
 <view:edit>
