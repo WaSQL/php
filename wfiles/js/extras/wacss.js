@@ -5,11 +5,11 @@ var wacss = {
 		if(undefined == params){params={};}
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
-			let mel=m.querySelector('.modal_content');
+			let mel=m.querySelector('.wacss_modal_content');
 			if(undefined != mel){
 				mel.innerHTML=htm;
 			}
-			let mt=m.querySelector('.modal_title_text');
+			let mt=m.querySelector('.wacss_modal_title_text');
 			if(undefined != mt){
 				mt.innerHTML=title;
 			}
@@ -18,7 +18,7 @@ var wacss = {
 		let modal=document.createElement('div');
 		modal.id='wacss_modal';
 		let modal_close=document.createElement('span');
-		modal.className='modal';
+		modal.className='wacss_modal';
 		if(undefined!=title && title.length > 0){
 			//default titlebar color to light if not specified in params
 			if(undefined == params.color){
@@ -28,27 +28,28 @@ var wacss = {
 				else{params.color='white';}
 			}
 			let modal_title=document.createElement('div');
-			modal_title.className='modal_title '+params.color;
-			modal_close.className='modal_close icon-close';
+			modal_title.className='wacss_modal_title '+params.color;
+			modal_close.className='wacss_modal_close icon-close';
 			modal_close.title="Close";
 			modal_close.onclick=function(){
 				removeId(this.pnode);
 			}
 			modal_title.appendChild(modal_close);
 			let modal_title_text=document.createElement('div');
-			modal_title_text.className='modal_title_text';
+			modal_title_text.className='wacss_modal_title_text';
 			modal_title_text.innerHTML=title;
 			modal_title.appendChild(modal_title_text);
 			modal.appendChild(modal_title);
 
 		}
 		let modal_content=document.createElement('div');
-		modal_content.className='modal_content';
+		modal_content.className='wacss_modal_content';
 		modal_content.innerHTML=htm;
 		modal.appendChild(modal_content);
 		if(undefined != params.overlay){
 			let modal_overlay=document.createElement('div');
-			modal_overlay.className='modal_overlay '+params.color;
+			modal_overlay.id='wacss_modal_overlay';
+			modal_overlay.className='wacss_modal_overlay '+params.color;
 			modal_overlay.appendChild(modal);
 			modal_close.pnode=modal_overlay;
 			modal_overlay.onclick = function(){
