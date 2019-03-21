@@ -2,7 +2,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-sm-7">
-			<h2 style="margin:0px;"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
+			<h2 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
 		</div>
 		<div class="col-sm-5 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -100,7 +100,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-sm-9">
-			<h2 style="margin:0px;"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
+			<h2 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
 		</div>
 		<div class="col-sm-3 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -119,10 +119,14 @@
 				<input type="hidden" name="_menu" value="datasync" />
 				<h4>Authorization on Target Site</h4>
 				<div style="max-width:300px;">Provide authorization on the target system in order to synchronize database records. <span class="w_danger">User MUST have admin access.</span></div>
-				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
-				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
+				<div style="position:relative">
+					<label>Username</label>
+					<input type="text" name="sync_target_user" required="required" class="form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
+				</div>
+				<div style="position:relative">
+					<label>Password</label>
+					<input type="password" name="sync_target_pass" required="required" class="form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
+				</div>
 				<div class="w_padtop"><button type="submit" class="btn btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>

@@ -290,6 +290,12 @@ table.w_formtable td, table.w_formtable th {
 table.w_table td{
 	padding: 4px;
 }
+table.w_table td:first-child{
+    padding-left: 0px;
+}
+table.w_table td:last-child{
+    padding-right: 0px;
+}
 table.w_table.w_nopad td{
 	padding: 0px;
 }
@@ -1643,7 +1649,8 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 .w_calendar_time{
 	padding-right:20px !important;
 	border-bottom:1px solid #ddd !important;
-	font-size:11px !important;
+	font-size:12px !important;
+    line-height:1rem;
 	display:block !important;
 	width:100% !important;
 	cursor:pointer;
@@ -1839,7 +1846,7 @@ input[data-type=radio] + label[class*=icon-plus],
 input[data-type=radio] + label[class*=icon-star],
 input[data-type=radio] + label[class*=icon-help]
 {
-	padding:2px 2px 2px 2px;
+	padding:0 2px;
 	border:1px solid #ccc;
 	color:rgba(255,255,255,0.0);
 	-webkit-border-radius: 20px;

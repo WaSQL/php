@@ -4,8 +4,8 @@
 <input type="hidden" name="func" value="sync" />
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-sm-7 w_primaryback w_white w_round">
-			<h3 style="margin:0px;padding:3px;"><span class="icon-sync w_warning"></span> Synchronize</h3>
+		<div class="col-sm-7">
+			<h3 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_warning"></span> Synchronize</h3>
 			<div class="w_smallest"><?=implode(', ',$synctables);?></div>
 		</div>
 		<div class="col-sm-5 text-right">
@@ -114,9 +114,9 @@
 <view:sync_auth>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-sm-9 w_primaryback w_white w_round">
-			<h3 style="margin:0px;padding:3px;"><span class="icon-sync w_warning"></span> Synchronize</h3>
-			<div class="w_smallest"><?=implode(', ',$synctables);?></div>
+		<div class="col-sm-9">
+			<h3 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_warning"></span> Synchronize</h3>
+			<div class="w_smaller"><?=implode(', ',$synctables);?></div>
 		</div>
 		<div class="col-sm-3 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -135,10 +135,14 @@
 				<input type="hidden" name="_menu" value="synchronize" />
 				<h4>Authorization on Target Site</h4>
 				<div style="max-width:300px;">Provide authorization on the target system in order to push changes. <span class="w_danger">User MUST have admin access.</span></div>
-				<label>Username</label>
-				<input type="text" name="sync_target_user" required="required" class="w_form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
-				<label>Password</label>
-				<input type="password" name="sync_target_pass" required="required" class="w_form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
+				<div style="position:relative">
+					<label>Username</label>
+					<input type="text" name="sync_target_user" required="required" class="w_form-control" autofocus="autofocus" value="<?=$_REQUEST['sync_target_user'];?>" autocomplete="new-username" />
+				</div>
+				<div style="position:relative">
+					<label>Password</label>
+					<input type="password" name="sync_target_pass" required="required" class="w_form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
+				</div>
 				<div class="w_padtop"><button type="submit" class="w_btn w_btn-primary btn-lg">Submit</button></div>
 			</form>
 		</div>
