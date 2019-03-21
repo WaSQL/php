@@ -5,6 +5,8 @@
 		$MODULE['title']='<span class="icon-translate w_success"></span> <translate>Translation Manager</translate>';
 	}
 	loadExtras('translate');
+	loadExtrasCss('wacss');
+	loadExtrasJs('wacss');
 	switch(strtolower($_REQUEST['passthru'][0])){
 		case 'locale':
 			$locale=addslashes($_REQUEST['passthru'][1]);
