@@ -1316,7 +1316,7 @@ ENDOFX;
 		case 'profile':
 			//My Profile
 			$uinfo=getUserInfo($USER);
-			echo '<div class="w_lblue w_bold"><span class="'.$uinfo['class'].'"></span> My Profile <a href="#" onclick="return ajaxAddEditForm(\'_users\','.$USER['_id'].');" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
+			echo '<div class="w_lblue w_bold"><span class="'.$uinfo['class'].'"></span> My Profile <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
 			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
