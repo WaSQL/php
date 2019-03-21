@@ -64,6 +64,12 @@ function pageAddExtraInfo($recs){
 		if(isset($templatemap[$id])){
 			$recs[$i]['template']=$id.' - '.$templatemap[$id]['name'];
 		}
+		if($recs[$i]['confirmed']==1){
+			$recs[$i]['confirmed']='<span class="icon-mark w_success"></span>';
+		}
+		else{
+			$recs[$i]['confirmed']='<span class="icon-block w_danger"></span>';
+		}
 	}
 	return $recs;
 }
@@ -77,6 +83,7 @@ function pageEditRec($rec){
 		'-table'=>'_translations',
 		'confirmed'=>1,
 		'-fields'=>pageEditFields(),
+		'-editfields'=>'translation,confirmed',
 		'translation_inputtype'=>'textarea',
 		'translation_class'=>'form-control',
 		'translation_style'=>'width:100%',
