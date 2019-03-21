@@ -290,6 +290,12 @@ table.w_formtable td, table.w_formtable th {
 table.w_table td{
 	padding: 4px;
 }
+table.w_table td:first-child{
+    padding-left: 0px;
+}
+table.w_table td:last-child{
+    padding-right: 0px;
+}
 table.w_table.w_nopad td{
 	padding: 0px;
 }
