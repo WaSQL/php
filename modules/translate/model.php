@@ -85,7 +85,7 @@ function translateListLocales(){
 		'-hidesearch'=>1,
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered w_pointer condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt,failed_cnt',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:0});",
+		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results');",
 		'flag4x3_displayname'=>'Flag',
 		'flag4x3_image'=>1,
 		'entry_cnt_displayname'=>'Entries',
