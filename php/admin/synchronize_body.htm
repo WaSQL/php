@@ -28,9 +28,9 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<ul class="nav nav-tabs">
+			<ul class="nav nav-tabs w_gray">
 				<view:tab>
-				<li class="<?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
+				<li class="nav-link <?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
 				</view:tab>
 				<?=renderEach('tab',$changes,'recs');?>
 			</ul>
@@ -41,9 +41,9 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<button class="w_btn w_btn-secondary btn-lg" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
-			<button class="w_btn w_btn-secondary btn-lg" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
-			<a href="/php/admin.php?_menu=synchronize" class="w_btn w_btn-secondary btn-lg"><span class="icon-refresh"></span> Refresh</a>
+			<button class="btn w_white" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+			<button class="btn w_white" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
+			<a href="/php/admin.php?_menu=synchronize" class="btn w_white"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 	</div>
 </div>
