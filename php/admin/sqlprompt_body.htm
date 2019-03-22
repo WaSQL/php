@@ -51,11 +51,14 @@
 					<input type="hidden" name="cursor_pos" value="" />
 					<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
-						<div class="col-sm-4">
-							<button type="submit" class="btn green">Execute</button> <span class="w_small w_grey">(or press F8)</span>
+						<div class="col-sm-3">
+							<button type="submit" class="btn w_green">Execute</button> <span class="w_small w_grey">(or press F8)</span>
 						</div>
-						<div class="col-sm-8 text-right w_grey w_small">
+						<div class="col-sm-6 text-right w_grey w_small">
 							Note: You can drag and drop .sql files onto the textarea
+						</div>
+						<div class="col-sm-3 align-right">
+							<a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" style="display:none;" id="export_link" class="btn w_orange"><span class="icon-export"></span> export</a>
 						</div>
 					</div>
 				</form>
@@ -97,7 +100,7 @@
 </view:tabs>
 
 <view:results>
-	<div class="text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>
+	<?=buildOnLoad("document.getElementById('export_link').style.display='inline-block';");?>
 	<?=listDBRecords($recs);?>
 </view:results>
 
