@@ -102,20 +102,22 @@ function translateListLocales(){
 function translateEditRec($rec){
 	global $PAGE;
 	$opts=array(
-		'-action'=>"/t/1/{$PAGE['name']}/list/{$rec['locale']}",
-		'-onsubmit'=>"return ajaxSubmitForm(this,'translate_results');",
-		'setprocessing'=>0,
-		'_menu'=>'translate',
-		'func'=>'list',
-		'locale'=>$rec['locale'],
-		'-table'=>'_translations',
-		'-fields'=>translateEditFields(),
-		'translation_inputtype'=>'textarea',
-		'translation_class'=>'form-control browser-default',
-		'translation_style'=>'width:100%;height:150px;',
-		'confirmed'=>1,
-		'_id'=>$rec['_id'],
-		'-hide'=>'clone,delete'
+		'-action'		=> "/t/1/{$PAGE['name']}/list/{$rec['locale']}",
+		'-onsubmit'		=> "return ajaxSubmitForm(this,'translate_results');",
+		'setprocessing'	=> 0,
+		'_menu'			=> 'translate',
+		'func'			=> 'list',
+		'locale'		=> $rec['locale'],
+		'-table'		=> '_translations',
+		'-fields'		=> translateEditFields(),
+		'-editfields'	=> 'translation,confirmed',
+		'-order'		=> 'confirmed',
+		'translation_inputtype'	=> 'textarea',
+		'translation_class'		=> 'form-control browser-default',
+		'translation_style'		=> 'width:100%;height:150px;',
+		'confirmed'		=> 1,
+		'_id'			=> $rec['_id'],
+		'-hide'			=> 'clone,delete'
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);
