@@ -11,6 +11,7 @@
 </view:default>
 
 <view:list>
+	<div id="processing" style="display:inline;float:right;"></div>
 	<?=translateListRecords($locale);?>
 	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
 </view:list>

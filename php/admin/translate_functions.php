@@ -6,7 +6,7 @@ function pageListRecords($locale){
 		'-trclass'=>'w_pointer',
 		'-listfields'=>'page,template,source,translation,confirmed',
 		'-searchfields'=>'source,translation,p_id,t_id',
-		'-onclick'=>"return ajaxGet('{$_SERVER['PHP_SELF']}','modal',{_menu:'translate',func:'edit',id:'%_id%',cp_title:'Add/Edit Translation'})",
+		'-onclick'=>"return ajaxGet('{$_SERVER['PHP_SELF']}','modal',{setprocessing:'set_processing',_menu:'translate',func:'edit',id:'%_id%',cp_title:'Add/Edit Translation'})",
 		'locale'=>$locale,
 		'-sort'=>1,
 		'-results_eval'=>'pageAddExtraInfo',
