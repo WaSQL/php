@@ -15,7 +15,7 @@
 				</tr>
 				<tr>
 					<td class="text-left w_big">
-						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn btn-danger btn-sm w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
+						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn w_white w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
 						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
