@@ -15,18 +15,18 @@ var wacss = {
 			}
 			return m;
 		}
+		if(undefined == params.color){
+			if(undefined != document.getElementById('admin_menu')){
+				params.color=document.getElementById('admin_menu').getAttribute('data-color');
+			}
+			else{params.color='w_black';}
+		}
 		let modal=document.createElement('div');
 		modal.id='wacss_modal';
 		let modal_close=document.createElement('span');
 		modal.className='wacss_modal';
 		if(undefined!=title && title.length > 0){
 			//default titlebar color to light if not specified in params
-			if(undefined == params.color){
-				if(undefined != document.getElementById('admin_menu')){
-					params.color=document.getElementById('admin_menu').getAttribute('data-color');
-				}
-				else{params.color='white';}
-			}
 			let modal_title=document.createElement('div');
 			modal_title.className='wacss_modal_title '+params.color;
 			modal_close.className='wacss_modal_close icon-close';
