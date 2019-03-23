@@ -5,8 +5,8 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-7">
-			<h3 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_warning"></span> Synchronize</h3>
-			<div class="w_smallest"><?=implode(', ',$synctables);?></div>
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-sync w_warning"></span> Synchronize</h2>
+			<div class="w_smallest w_gray"><?=implode(', ',$synctables);?></div>
 		</div>
 		<div class="col-sm-5 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -15,7 +15,7 @@
 				</tr>
 				<tr>
 					<td class="text-left w_big">
-						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn w_white w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
+						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="btn <?=configValue('admin_color');?> w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
 						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
@@ -28,7 +28,7 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<ul class="nav nav-tabs w_gray">
+			<ul class="nav nav-tabs <?=configValue('admin_color');?>">
 				<view:tab>
 				<li class="nav-link <?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
 				</view:tab>
@@ -39,11 +39,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="row">
+	<div class="row" style="margin-bottom:20px;">
 		<div class="col-sm-12">
-			<button class="btn w_white" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
-			<button class="btn w_white" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
-			<a href="/php/admin.php?_menu=synchronize" class="btn w_white"><span class="icon-refresh"></span> Refresh</a>
+			<button class="btn <?=configValue('admin_color');?>" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync w_warning"></span> Syncronize Selected</button>
+			<button class="btn <?=configValue('admin_color');?>" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward w_danger"></span> Revert Selected</button>
+			<a href="/php/admin.php?_menu=synchronize" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 	</div>
 </div>

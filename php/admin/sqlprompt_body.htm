@@ -32,8 +32,8 @@
 </script>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-sm-12 w_primaryback w_white w_round">
-			<h3 style="margin:0px;padding:3px;"><span class="icon-prompt"></span> SQL Prompt</h3>
+		<div class="col-sm-12">
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> SQL Prompt</h3>
 		</div>
 	</div>
 	<div class="row w_padtop">
@@ -52,7 +52,7 @@
 					<textarea class="form-control" data-behavior="loadtextfile" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
 						<div class="col-sm-3">
-							<button type="submit" class="btn w_green">Execute</button> <span class="w_small w_grey">(or press F8)</span>
+							<button type="submit" class="btn <?=configValue('admin_color');?>">Execute</button> <span class="w_small w_grey">(or press F8)</span>
 						</div>
 						<div class="col-sm-6 text-right w_grey w_small">
 							Note: You can drag and drop .sql files onto the textarea
@@ -73,7 +73,7 @@
 	<div class="w_bold w_big">Tables & Fields</div>
 	<div  style="max-height:85vh;overflow:auto;">
 		<view:table>
-			<div><a href="#" class="w_link w_block w_bigger w_dblue" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
+			<div><a href="#" class="w_link w_block w_bigger <?=configValue('admin_color');?>" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
 			</div>
 		</view:table>
@@ -82,8 +82,8 @@
 </view:tables_fields>
 
 <view:tabs>
-<nav class="nav tabs" style="border-bottom:0px;">
-<ul>
+<nav>
+<ul class="nav nav-tabs <?=configValue('admin_color');?>" style="border-bottom:0px;">
 	<li class="nav-item">
 		<input type="radio" id="db_default" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="default" checked />
 		<label for="db_default" class="icon-mark"> </label><label for="db_default">Default</label>

@@ -2,7 +2,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-sm-7">
-			<h2 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
 		</div>
 		<div class="col-sm-5 text-right">
 			<table class="table table-condensed table-striped" style="border:1px solid #ccc;">
@@ -11,7 +11,7 @@
 				</tr>
 				<tr>
 					<td class="text-left w_big">
-						<view:unauth><a href="/php/admin.php?_menu=datasync&func=unauth" class="btn btn-danger btn-sm w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
+						<view:unauth><a href="/php/admin.php?_menu=datasync&func=unauth" class="btn <?=configValue('admin_color');?> w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
 						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
@@ -44,12 +44,12 @@
 					<td><?=$rec['target_records'];?></td>
 					<td><?=$rec['source_fields'];?></td>
 					<td><?=$rec['target_fields'];?></td>
-					<td><div id="actions_<?=$rec['name'];?>" class="w_grey">
+					<td class="w_nowrap align-center align-middle"><div id="actions_<?=$rec['name'];?>" class="w_grey">
 						<view:error><?=$rec['error'];?></view:error>
 						<view:actions>
-							<view:sync_from_target><a href="#" class="w_grey" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
+							<view:sync_from_target><a href="#" class="w_grey" style="display:inline;" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
 							<?=renderViewIf($rec['target_records']>0,'sync_from_target',$rec,'rec');?>
-							<view:sync_to_target><a href="#" class="w_grey w_padleft" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
+							<view:sync_to_target><a href="#" class="w_grey w_padleft" style="display:inline;" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
 							<?=renderViewIf($rec['source_records']>0,'sync_to_target',$rec,'rec');?>
 
 						</view:actions>
