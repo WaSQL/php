@@ -71,19 +71,19 @@
 
 <view:tables_fields>
 	<div class="w_bold w_big">Tables & Fields</div>
-	<div  style="max-height:85vh;overflow:auto;">
+	<ul class="nav-list buttons <?=configValue('admin_color');?>"  style="max-height:80vh;overflow:auto;padding-right:5px">
 		<view:table>
-			<div><a href="#" class="w_link w_block w_bigger <?=configValue('admin_color');?>" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
+			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
-			</div>
+			</li>
 		</view:table>
 		<?=renderEach('table',$tables,'table');?>
-	</div>
+	</ul>
 </view:tables_fields>
 
 <view:tabs>
 <nav>
-<ul class="nav nav-tabs <?=configValue('admin_color');?>" style="border-bottom:0px;">
+<ul class="nav-tabs <?=configValue('admin_color');?>">
 	<li class="nav-item">
 		<input type="radio" id="db_default" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="default" checked />
 		<label for="db_default" class="icon-mark"> </label><label for="db_default">Default</label>
@@ -116,9 +116,11 @@
 </view:block_results>
 
 <view:fields>
+	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>
-		<div><a href="#" class="w_link w_block w_bigger w_dblue"  data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?>" onclick="return false;"><?=$field['_dbfield'];?></a></div>
+		<li><a href="#" style="display:inline-block;" data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?>" onclick="return false;"><?=$field['_dbfield'];?></a></li>
 	</view:field>
 	<?=renderEach('field',$fields,'field');?>
+	</ul>
 </view:fields>
 

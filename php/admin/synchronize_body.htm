@@ -28,9 +28,9 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<ul class="nav nav-tabs <?=configValue('admin_color');?>">
+			<ul class="nav-tabs <?=configValue('admin_color');?>">
 				<view:tab>
-				<li class="nav-link <?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
+				<li <?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
 				</view:tab>
 				<?=renderEach('tab',$changes,'recs');?>
 			</ul>
