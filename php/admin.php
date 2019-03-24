@@ -1242,7 +1242,7 @@ ENDOFX;
             echo buildTableEnd();
 			break;
 		case 'terminal':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-prompt w_bigger" style="color:#bbb;border:1px solid #ccc;background:#000;padding:3px;"></span> Terminal</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-prompt"></span> Terminal</h2>'.PHP_EOL;
 			$shortcuts=array(
 				'Show Help'=>'help',
 				'Identify Server'=>'uname -a'
@@ -1262,7 +1262,7 @@ ENDOFX;
 			echo commonBuildTerminal(array('-shortcuts'=>$shortcuts));
 		break;
 		case 'rebuild':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Rebuild WaSQL Tables</h2>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
             	if(dropDBTable($_REQUEST['_table_'],1)){
 					$ok=createWasqlTables($_REQUEST['_table_']);
@@ -1293,7 +1293,7 @@ ENDOFX;
 			echo '<div>Complete</div>'.PHP_EOL;
     		break;
     	case 'rebuild_meta':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh w_info w_bigger"></span> Rebuild waSQL Tables</div>'.PHP_EOL;
+    		echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Rebuild Meta Tables</h2>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
 				$table=addslashes(trim($_REQUEST['_table_']));
 				addMetaData($table);
@@ -1316,7 +1316,8 @@ ENDOFX;
 		case 'profile':
 			//My Profile
 			$uinfo=getUserInfo($USER);
-			echo '<div class="w_lblue w_bold"><span class="'.$uinfo['class'].'"></span> My Profile <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-user"></span> Profile  <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></h2>'.PHP_EOL;
+			
 			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
@@ -1343,7 +1344,7 @@ ENDOFX;
 			echo adminViewPage('settings');exit;
 		break;
 		case 'update_wasql':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-refresh"></span> Update WaSQL</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL</h2>'.PHP_EOL;
 			if(isWindows()){
 				$cmd="git pull";
 				$out=cmdResults($cmd);
@@ -1359,7 +1360,7 @@ ENDOFX;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-info-circled"></span> About WaSQL</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-info-circled"></span> About WaSQL</h2>'.PHP_EOL;
 			echo '<table class="table table-responsive table-striped table-bordered">'.PHP_EOL;
 			//Database Information
 			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
@@ -1418,7 +1419,7 @@ ENDOFX;
 		case 'stats':
 			//Site Stats from the _access table
 			if(!isDBTable('_access')){$ok=createWasqlTable('_access');}
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-chart-line w_warning w_bigger"></span> Usage Stats</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-chart-line"></span> Usage Stats</h2>'.PHP_EOL;
 			echo getDBSiteStats();
 			//echo printValue($stats);
 			break;
@@ -1430,7 +1431,7 @@ ENDOFX;
 					add column to see records and fields for Stage and Live
 					add links to push data: live to stage, stage to live
 			*/
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table w_biggest"></span> Tables</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-table"></span> Tables</h2>'.PHP_EOL;
 			echo buildFormBegin('',array('_menu'=>'tables','update'=>1));
 			echo '<table class="table table-responsive table-bordered table-striped sortable">'.PHP_EOL;
 			echo '<thead>'.PHP_EOL;
@@ -1510,7 +1511,7 @@ ENDOFX;
 		case 'summary':
 		case 'charset':
 			//Table Summary
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_info w_biggest"></span> Table Properties</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-properties"></span> Table Properties</h2>'.PHP_EOL;
 			$cmessage='';
 			if(isset($_REQUEST['_charset']) && strlen($_REQUEST['_charset'])){
 				$cmessage .= '<h3>'.$_REQUEST['_charset'].' conversion results:</h3><hr>'.PHP_EOL;
@@ -1539,7 +1540,7 @@ ENDOFX;
 			$charsets=getDBCharsets();
 			$current_charset=getDBCharset();
 			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'.PHP_EOL;
-			echo '<div class="w_lblue w_bold"> Available Character Sets:</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'">Available Character Sets</h2>'.PHP_EOL;
 			echo '		<form method="POST" name="charset_form" action="/'.$PAGE['name'].'" class="w_form">'.PHP_EOL;
 			echo '			<input type="hidden" name="_menu" value="charset">'.PHP_EOL;
 			echo '			<div class="w_flexgroup" style="max-width:400px;margin-bottom:10px;">'.PHP_EOL;
@@ -1582,7 +1583,7 @@ ENDOFX;
 					//echo printValue($_REQUEST);
 					echo buildTableBegin(2,0);
 					echo '<tr valign="top"><td>'.PHP_EOL;
-					echo '<div class="w_lblue w_bold w_bigger"><span class="icon-plus"></span> Add New table.</div>'.PHP_EOL;
+					echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-plus"></span> Add New Table</h2>'.PHP_EOL;
 					echo '		<form method="POST" name="new_table" action="/'.$PAGE['name'].'" class="w_form" onSubmit="return submitForm(this);">'.PHP_EOL;
 					echo '			<input type="hidden" name="_menu" value="add">'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_table_']:'';
@@ -1685,7 +1686,7 @@ ENDOFX;
 		case 'addmultiple':
 			echo buildTableBegin(2,0);
 			echo '<tr valign="top"><td>'.PHP_EOL;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-table-add w_primary"></span> Add Multiple Tables.</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-table-add"></span> Add Multiple Tables</h2>'.PHP_EOL;
 			echo '	<form method="POST" name="mform" action="/'.$PAGE['name'].'" class="w_form" onSubmit="ajaxSubmitForm(this,\'modal\');return false;">'.PHP_EOL;
 			echo '		<input type="hidden" name="_menu" value="addmultiple">'.PHP_EOL;
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'.PHP_EOL;
@@ -2154,7 +2155,7 @@ LIST_TABLE:
 			//echo printValue($list);
 			break;
 		case 'postedit':
-			echo '<div class="w_bigger w_lblue w_bold"><span class="icon-postedit w_bigger"></span> PostEdit Manager</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-postedit"></span> PostEdit Manager</h2>'.PHP_EOL;
 			echo '<div style="width:800px;">'.PHP_EOL;
 			echo '<p><b>PostEdit Manager</b> is a php application that WaSQL uses to create pages and templates into a <b>PostEdit</b> folder on your local hard drive.'.PHP_EOL;
 			echo 'This allows you to use any editor you wish to update your pages and templates.'.PHP_EOL;
@@ -2493,7 +2494,7 @@ LIST_TABLE:
 			echo adminViewPage('phpprompt');exit;
 		break;
 		case 'optimize':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-optimize w_gole w_biggest"></span> Optimize Tables</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-optimize"></span> Optimize Tables</h2>'.PHP_EOL;
 			$rtn=optimizeDB();
 			echo "<div>Command: {$rtn['command']}</div>\n";
 			echo nl2br($rtn['result']);
@@ -2501,7 +2502,7 @@ LIST_TABLE:
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-save w_black w_biggest"></span> Backup or <span class="icon-undo w_danger w_biggest"></span> Restore</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-save"></span> Backup / <span class="icon-undo"></span> Restore</h2>'.PHP_EOL;
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
@@ -2639,7 +2640,7 @@ LIST_TABLE:
 			//echo printValue($_REQUEST);
 			break;
 		case 'email':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-mail"></span> Email</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-email"></span> Email</h2>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"email",'-name'=>"emailform"));
 			echo '<table class="table table-responsive table-striped table-bordered">'.PHP_EOL;
 			echo '	<tr valign="top" class="w_align_left">'.PHP_EOL;
@@ -2755,7 +2756,7 @@ LIST_TABLE:
 			//$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 			break;
 		case 'grep':
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-search w_grey w_biggest"></span> Database Search</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-search"></span> Database Search</h2>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
 			echo '<table class="table table-responsive table-striped table-bordered" style="width:600px;">'.PHP_EOL;
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'.PHP_EOL;
@@ -2818,7 +2819,7 @@ LIST_TABLE:
 		break;
 		case 'import':
 			//echo adminViewPage('import');exit;
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-import w_biggest w_warning"></span> Import from file</div>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-import"></span> Import</h2>'.PHP_EOL;
 			$importmsg='';
 			global $progpath;
 			if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){

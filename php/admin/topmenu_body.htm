@@ -1,5 +1,5 @@
 <view:default>
-<nav class="nav topmenu <?=$CONFIG['admin_color'];?> condensed" id="admin_menu" data-color="<?=$CONFIG['admin_menu_color'];?>">
+<nav class="nav topmenu <?=$CONFIG['admin_color'];?> condensed" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>">
 	<ul>
 		<li><a href="#logo"><img src="/wfiles/wasql_admin.png" /></a></li>
 		<view:admin>
@@ -148,7 +148,7 @@
 				<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> WaSQL Docs</a></li>
 				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-refresh"></span> Update WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=rebuild"><span class="icon-table"></span> Rebuild WaSQL Tables</a></li>
-				<li><a href="/php/admin.php?_menu=clearmin" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',color:'<?=$CONFIG['admin_menu_color'];?>'});"><span class="icon-erase"></span> Clear Minify Cache</a></li>
+				<li><a href="/php/admin.php?_menu=clearmin" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> Clear Minify Cache</a></li>
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> About WaSQL</a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> Repo</a></li>
