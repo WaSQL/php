@@ -131,6 +131,12 @@ body{
     text-decoration: none;
     background-color: #f8f9fa;
 }
+[data-toggle="collapse"] ~ div.collapse{
+  display:none;
+}
+[data-toggle="collapse"] ~ div.collapse.in{
+  display:block;
+}
 /* ---------------------- nav ------------------------- */
 .nav {
     display: -ms-flexbox;

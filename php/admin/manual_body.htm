@@ -2,7 +2,7 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-12">
-			<div class="w_bigger w_dblue w_bold"><span class="icon-help-circled"></span> WaSQL Documentation</div>
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-help-circled"></span> WaSQL Documentation</h2>
 		</div>
 	</div>
 	<div class="row">
@@ -10,21 +10,19 @@
 			<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
 				<input type="hidden" name="_menu" value="manual" />
 				<input type="hidden" name="func" value="search" />
-				<div class="input-group">
+				<div class="btn-group">
 					<input type="text" autofocus="true" class="form-control" name="search" placeholder="search for what ..." />
-					<div class="input-group-btn">
-						<button type="submit" class="btn btn-default">Search</button>
-					</div>
+					<button type="submit" class="btn <?=configValue('admin_color');?>">Search</button>
 				</div>
 			</form>
 			<div class="table-responsive well" style="background-color:inherit;margin-top:15px;padding-left:0px;padding-right:0px;max-height:700px;overflow:auto;">
-				<h4>PHP Files</h4>
-				<ul class="nav" id="ul_files">
+				<h4 class="<?=configValue('admin_color');?>"><span class="icon-php"></span> Files</h4>
+				<ul class="nav-list buttons <?=configValue('admin_color');?>" id="ul_files">
 					<view:file>
 					<li><a href="#" data-toggle="collapse" data-target="#filenav_<?=sha1($key);?>" data-parent="#ul_files" class="collapsed">
 						<?=getFileName(getFilePath($key));?>::<?=getFileName($key);?> (<?=count($functions);?>)<span class="icon-dir-down w_right" style="margin-top:8px;"></span></a>
 					  <div class="collapse" style="background:#FFF;padding-left:15px;border-left:1px solid #ccc;border-bottom:1px solid #ccc;margin-left:10px;" id="filenav_<?=sha1($key);?>" style="height: 0px;">
-						<ul class="nav nav-list">
+						<ul class="nav-list <?=configValue('admin_color');?>">
 							<view:function>
 							<li><a href="#" onclick="return ajaxGet('/php/admin.php','results',{_menu:'manual',func:'search',search:'<?=$function['name'];?>'})" style="padding:5px 10px;"><span class="w_right icon-dir-right"></span><?=$function['name'];?></a></li>
 							</view:function>
@@ -53,7 +51,7 @@
 			<div class="w_grey w_small w_right">
 				found on line <?=$function['line'];?> in <?=$function['file'];?>
 			</div>
-			<div class="w_big w_bold w_dblue"><?=$function['name'];?></div>
+			<h3 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><?=$function['name'];?></h3>
 		</div>
 	</div>
 	<view:describe>

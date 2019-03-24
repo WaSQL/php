@@ -93,15 +93,15 @@
 		<td><?=$rec['changed_age'];?></td>
 		<td class="text-right w_nowrap">
 			<view:action_diff>
-			<a href="#" title="Diff" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',marker:'<?=$rec['marker'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
+			<a href="#" title="Diff" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Diff <?=$rec['id'];?>',_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',marker:'<?=$rec['marker'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
 			</view:action_diff>
 			<?=renderViewIf(!preg_match('/^NEW/',$rec['changes']),'action_diff',$rec,'rec');?>
-			<a href="#" title="Sync" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
+			<a href="#" title="Sync" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Sync <?=$rec['id'];?>',_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
 			<view:action_edit>
-			<a href="#" title="Edit" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'synchronize','func':'edit',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-edit w_bigger w_grey"></span></a>
+			<a href="#" title="Edit" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Edit <?=$rec['id'];?>',_menu:'synchronize','func':'edit',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-edit w_bigger w_grey"></span></a>
 			</view:action_edit>
 			<view:action_properties>
-			<a href="/php/admin.php?_menu=properties&_table_=<?=$rec['tablename'];?>" title="Properties" ><span class="icon-properties w_bigger w_primary"></span></a>
+			<a href="/php/admin.php?_menu=properties&_table_=<?=$rec['tablename'];?>" title="Properties" style="display:inline;" ><span class="icon-properties w_bigger w_primary"></span></a>
 			</view:action_properties>
 			<?=renderViewIfElse($rec['marker']=='schema','action_properties','action_edit',$rec,'rec');?>
 		</td>
@@ -115,7 +115,7 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-9">
-			<h3 style="margin:0px;padding:6px;" class="bg-blue w_round"><span class="icon-sync w_warning"></span> Synchronize</h3>
+			<h3 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-sync w_warning"></span> Synchronize</h3>
 			<div class="w_smaller"><?=implode(', ',$synctables);?></div>
 		</div>
 		<div class="col-sm-3 text-right">
@@ -143,7 +143,7 @@
 					<label>Password</label>
 					<input type="password" name="sync_target_pass" required="required" class="w_form-control" value="<?=$_REQUEST['sync_target_pass'];?>" autocomplete="new-password" />
 				</div>
-				<div class="w_padtop"><button type="submit" class="w_btn w_btn-primary btn-lg">Submit</button></div>
+				<div class="w_padtop"><button type="submit" class="btn <?=configValue('admin_color');?>">Submit</button></div>
 			</form>
 		</div>
 		<div class="col-sm-9">
@@ -223,7 +223,7 @@
 		<?=renderEach('sync_id',$ids,'id');?>
 		<label for="sync_verify_notes">Notes/Explanation</label>
 		<textarea name="notes" required="required" class="w_form-control" autofocus="autofocus"><?=$_SESSION['sync_notes'];?></textarea>
-		<div class="w_padtop text-right"><button type="submit" class="w_btn w_btn-secondary"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
+		<div class="w_padtop text-right"><button type="submit" class="btn <?=configValue('admin_color');?>"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
 	</form>
 	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
 </div>

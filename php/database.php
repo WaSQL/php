@@ -87,9 +87,9 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 * 	[-dbpass] - password
 * @return string - html table to display
 * @usage
-*	<?=databaseListRecords(array('-table'=>'notes'));?>
-*	<?=databaseListRecords(array('-list'=>$recs));?>
-*	<?=databaseListRecords("select * from myschema.mytable where ...");?>
+*	databaseListRecords(array('-table'=>'notes'));
+*	databaseListRecords(array('-list'=>$recs));
+*	databaseListRecords("select * from myschema.mytable where ...");
 */
 function databaseListRecords($params=array()){
 	global $CONFIG;
@@ -1761,7 +1761,7 @@ function dropDBIndex($params=array()){
 *	[-focus] string - field name to set focus to
 *	[-readonly] boolean - show values but not form
 * @return string - HTML form
-* @usage <?=addEditDBForm(array('-table'=>"comments"));?>
+* @usage addEditDBForm(array('-table'=>"comments"));
 */
 function addEditDBForm($params=array(),$customcode=''){
 	if(!isset($params['-table'])){return 'addEditDBForm Error: No table';}
@@ -5036,8 +5036,7 @@ function getDBFieldMeta($table,$fields='',$fieldname=''){
 *	[-formname] -  name of the parent form tag
 *	other field/value pairs override defaults in the _fielddata table
 * @return string - html tag to display
-* @usage
-*	<?=getDBFieldTag('-table'=>'notes','-field'=>'comments','width'=>'400'));?> display the comments textarea field and override the default width
+* @usage getDBFieldTag('-table'=>'notes','-field'=>'comments','width'=>'400'));
 */
 function getDBFieldTag($params=array()){
     if(!isset($params['-table'])){return 'getDBFieldTag Error: No table' . printValue($params);}
@@ -7616,8 +7615,8 @@ function getDBUserById($id=0,$fields=array()){
 * @param [customcode] string - html code to append to end - defaults to blank
 * @return string - html table to display
 * @usage
-*	<?=listDBRecords(array('-table'=>'notes'));?>
-*	<?=listDBRecords(array('-list'=>$recs));?>
+*	listDBRecords(array('-table'=>'notes'));
+*	listDBRecords(array('-list'=>$recs));
 */
 function listDBRecords($params=array(),$customcode=''){
 	if(isset($params[0])){
@@ -8377,8 +8376,7 @@ function listDBRecords($params=array(),$customcode=''){
 *	other field/value pairs filter the query results
 * @param [customcode] string - html code to append to end - defaults to blank
 * @return string - html table to display
-* @usage
-*	<?=listDBResults('select title,note_date from notes');?>
+* @usage  listDBResults('select title,note_date from notes');
 */
 function listDBResults($query='',$params=array()){
 	$params['-query']=$query;
