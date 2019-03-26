@@ -1,4 +1,11 @@
 <?php
+/*
+	Config.php - reads config.xml to determine host to connect to.
+
+	*** NOTE *** 
+	Do NOT modify this file.  Make changes to config.xml instead.
+*/
+/*******************************************************************/
 $progpath=dirname(__FILE__);
 //require common to be loaded first
 //Read in the WaSQL configuration xml file to determine what database to connect to
@@ -9,7 +16,9 @@ if(file_exists("$progpath/config.xml")){
 elseif(file_exists("$progpath/../config.xml")){
 	$xml = readXML("$progpath/../config.xml");
 	}
-else{abort("Configuration Error: No config.xml configuration file found.");}
+else{
+	abort("Configuration Error: missing config.xml<hr>".PHP_EOL);
+}
 //convert object to array
 $json=json_encode($xml);
 $xml=json_decode($json,true);
@@ -58,7 +67,9 @@ foreach($checkhosts as $env){
 foreach($allhost as $key=>$val){
 	$CONFIG[$key]=$val;
 }
-if(!strlen($chost)){$CONFIG['error']='No host found for'.$SERVER['HTTP_HOST'];}
+if(!strlen($chost)){
+	abort("Configuration Error: No Host entry found in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
+}
 //echo $chost.printValue($CONFIG).printValue($_SERVER);exit;
 foreach($ConfigXml as $name=>$host){
 	foreach($allhost as $key=>$val){
@@ -92,7 +103,9 @@ foreach($ConfigXml as $name=>$host){
 }
 
 //ksort($CONFIG);echo "chost:{$chost}<br>sameas:{$sameas}<br>".printValue($CONFIG).printValue($ConfigXml);exit;
-if(!isset($CONFIG['dbname'])){abort("Configuration Error: No Host found for {$_SERVER['HTTP_HOST']}<hr>\n" . printValue($_SERVER));}
+if(!isset($CONFIG['dbname'])){
+	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
+}
 //allow users to override dbhost with dbhost and dbauth
 if(isset($_REQUEST['dbhost'])){
 	if(isset($ConfigXml[$_REQUEST['dbhost']]) && isset($_REQUEST['dbauth']) && isset($ConfigXml[$_REQUEST['dbhost']]['dbauth']) && $ConfigXml[$_REQUEST['dbhost']]['dbauth']==$_REQUEST['dbauth']){
