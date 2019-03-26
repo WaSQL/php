@@ -13,6 +13,15 @@
 			//echo $locale.printValue($_REQUEST);exit;
 			setView('default');
 		break;
+		case 'selectlocale':
+			setView('selectlocale',1);
+			return;
+		break;
+		case 'setlocale':
+			$_SESSION['locale']=$_SESSION['REMOTE_LANG']=$_SERVER['locale']=$_SERVER['REMOTE_LANG']=$_REQUEST['passthru'][1];
+			setView('setlocale',1);
+			return;
+		break;
 		case 'list':
 			$locale=addslashes($_REQUEST['passthru'][1]);
 			setView('list',1);

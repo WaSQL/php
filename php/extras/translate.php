@@ -73,10 +73,11 @@ ENDOFQ;
 		'-query'=>$q,
 		'-index'=>'locale'
 	));
-	//echo printValue($locales).printValue($recs);exit;
+	//echo printValue($recs);
 	foreach($locales as $i=>$rec){
 		$locale=strtolower(str_replace('_','-',$rec['locale']));
 		if(!isset($recs[$locale])){
+			//echo "skipping locale: {$locale}<br>".PHP_EOL;
 			unset($locales[$i]);
 			continue;
 		}
@@ -89,6 +90,7 @@ ENDOFQ;
 	foreach($locales as $locale){
 		$recs[]=$locale;
 	}
+	//echo printValue($recs);exit;
 	return $recs;
 }
 //---------- begin function translateCheckSchema
@@ -120,8 +122,8 @@ function translateCheckSchema(){
 		echo "translateCheckSchema Error: ".printValue($ok);exit;
 	}
 	//indexes
+	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"identifier,locale",'-unique'=>1));
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"t_id,p_id,locale"));
-	$ok=addDBIndex(array('-table'=>$table,'-fields'=>'sha'));
 	return true;
 }
 //---------- begin function translateGetSourceLocale
@@ -153,9 +155,11 @@ function translateText($text,$locale=''){
 	//default locale if not passed in.  
 	if(!strlen($locale)){
 		if(isset($_SESSION['locale']) && strlen($_SESSION['locale'])){$locale=$_SESSION['locale'];}
+		elseif(isset($_SESSION['REMOTE_LANG']) && strlen($_SESSION['REMOTE_LANG'])){$locale=$_SESSION['REMOTE_LANG'];}
 		elseif(isset($_SERVER['locale']) && strlen($_SERVER['locale'])){$locale=$_SERVER['locale'];}
 		else{$locale=$_SERVER['REMOTE_LANG'];}
 	}
+	if(strlen($locale)!=5){return $text;}
 	if(!strlen($locale)){
 		$locale=$source_locale;
 	}
@@ -179,7 +183,7 @@ function translateText($text,$locale=''){
 	if($target_lang != $source_lang && isset($CONFIG['translate_source'])){
 		if(!isset($CONFIG['translate_key'])){
 			debugValue('Missing Translate Key in config');
-			return;
+			return $text;
 		}
 		switch(strtolower($CONFIG['translate_source'])){
 			case 'yandex':
@@ -194,11 +198,13 @@ function translateText($text,$locale=''){
 		'identifier'	=> $identifier,
 		't_id'			=> $TEMPLATE['_id'],
 		'p_id'			=> $PAGE['_id'],
-		'translation'	=> $translation,
-		'failed'		=> 0
+		'translation'	=> $translation
 	);
-	if($target_lang != $source_lang && sha1(trim($translation))==sha1($text)){
-		$addopts['failed']=1;
+	$id=addDBRecord($addopts);
+	if($target_lang != $source_lang){
+		$addopts['locale']=$source_locale;
+		$addopts['translation']=$text;
+		$id=addDBRecord($addopts);
 	}
 	//echo "{$target_lang} != {$source_lang}<br>{$translation}<br>{$text}".printValue($addopts);exit;
 	$id=addDBRecord($addopts);

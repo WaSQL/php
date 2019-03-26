@@ -1,4 +1,15 @@
 <?php
+function translateShowLocaleSelections(){
+	global $PAGE;
+	$recs=translateGetLocales();
+	return databaseListRecords(array(
+		'-list'=>$recs,
+		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
+		'-trclass'=>'w_pointer',
+		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
+		'-hidesearch'=>1
+	));
+}
 function translateListRecords($locale){
 	global $PAGE;
 	return databaseListRecords(array(
@@ -87,17 +98,23 @@ function translateListLocales(){
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt,failed_cnt',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'flag4x3_displayname'=>'Flag',
-		'flag4x3_image'=>1,
 		'entry_cnt_displayname'=>'Entries',
 		'entry_cnt_style'=>'text-align:right;',
 		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
 		'failed_cnt_displayname'=>'<span class="icon-block w_danger"></span>',
-		'failed_cnt_style'=>'text-align:center;'
+		'failed_cnt_style'=>'text-align:center;',
+		'-results_eval'=>'translateListLocalesExtra'
 	);
 	if(isset($MODULE['showflags']) && $MODULE['showflags']==0){
 		$opts['-listfields']='locale,entry_cnt,confirmed_cnt,failed_cnt';
 	}
 	return databaseListRecords($opts);
+}
+function translateListLocalesExtra($recs){
+	foreach($recs as $i=>$rec){
+		$recs[$i]['flag4x3']="<div><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></div><div>{$rec['name']}</div>";
+	}
+	return $recs;
 }
 function translateEditRec($rec){
 	global $PAGE;

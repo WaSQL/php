@@ -1,10 +1,16 @@
 <view:default>
-<h3><?=$MODULE['title'];?></h3>
 <div style="display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
+		<div style="display: flex;flex-direction: row;justify-content: space-between;">
+			<h3><?=$MODULE['title'];?></h3>
+			<h3><?=$_SESSION['locale'];?></h3>
+			<button type="button" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>Set Locale</translate></button>
+		</div>
+		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
+		</div>
 	</div>
-	<div id="translate_results" style="flex-grow:4;">
+	<div id="translate_results" style="flex-grow:4;margin-right:10px;">
 		<?=renderViewIf(isset($locale),'list',$locale,'locale');?>
 	</div>
 </div>
@@ -15,6 +21,14 @@
 	<?=translateListRecords($locale);?>
 	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
 </view:list>
+
+<view:selectlocale>
+	<?=translateShowLocaleSelections();?>
+</view:selectlocale>
+
+<view:setlocale>
+	<span class="w_mark w_green"></span><translate>Locale set</translate>: <?=$_SESSION['locale'];?>
+</view:setlocale>
 
 <view:edit>
 <div class="row">
