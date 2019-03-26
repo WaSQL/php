@@ -68,7 +68,7 @@ foreach($ConfigXml as $name=>$host){
 	//check for apache_access_log
 	if(isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 		loadExtras('apache');
-		cronMessage("running apacheParseLogFile...");
+		cronMessage("running apacheParseLogFile...".$CONFIG['apache_access_log']);
 		$msg=apacheParseLogFile();
 		if(strlen($msg)){cronMessage($msg);}
 		cronMessage("apacheParseLogFile completed");
