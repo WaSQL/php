@@ -627,6 +627,10 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
   -ms-border-radius: 5px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
+  visibility: visible;
+  transition: box-shadow .05s ease-in-out;
+  -moz-transition: box-shadow .05s ease-in-out;
+  -webkit-transition: box-shadow .05s ease-in-out;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
   -ms-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
   -moz-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
@@ -653,13 +657,13 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
 }
 .wacss_modal .wacss_modal_title .wacss_modal_close{
   position:absolute;
-  top:6px;
-  right:6px;
+  top:8px;
+  right:8px;
   z-index: 9051;
-  font-size:16px;
+  font-size:18px;
   cursor:pointer;
   font-weight: 100;
-  padding:0 0 10px 10px;
+  padding:0 0 8px 12px;
 }
 /* default color to black */
 .wacss_modal_overlay{background-color: rgba(35, 39, 43, 0.4);}

@@ -1,6 +1,57 @@
 var wacss = {
 	version: '1.1',
 	author: 'WaSQL.com',
+	modalBlink: function(){
+		if(undefined != document.getElementById('wacss_modal')){
+			let m=document.getElementById('wacss_modal');
+			let blink=0;
+			if(undefined == m.getAttribute('data-blink')){
+				m.setAttribute('data-blink',1);
+			}
+			else{
+				blink=parseInt(m.getAttribute('data-blink'),10);
+			}
+			let n=blink+1;
+			m.setAttribute('data-blink',n);
+			//console.log('modalBlink',blink,n);
+			switch(blink){
+				case 0:
+				case 2:
+				case 4:
+					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.8),0 6px 20px 0 rgba(0,0,0,0.79)';
+					setTimeout(wacss.modalBlink,125);
+				break;
+				case 1:
+				case 3:
+				case 5:
+					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)';
+					setTimeout(wacss.modalBlink,125);
+				break;
+				default:
+					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)';
+					m.setAttribute('data-blink',0);
+				break;
+			}
+		}
+	},
+	modalClose: function(){
+		if(undefined != document.getElementById('wacss_modal_overlay')){
+			return wacss.removeObj(document.getElementById('wacss_modal_overlay'));
+		}
+		else if(undefined != document.getElementById('wacss_modal')){
+			return wacss.removeObj(document.getElementById('wacss_modal'));
+		}
+	},
+	modalTitle: function(title){
+		if(undefined != document.getElementById('wacss_modal')){
+			let m=document.getElementById('wacss_modal');
+			let mt=m.querySelector('.wacss_modal_title_text');
+			if(undefined != mt){
+				mt.innerHTML=title;
+			}
+			return m;
+		}
+	},
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={};}
 		if(undefined != document.getElementById('wacss_modal')){
@@ -52,13 +103,25 @@ var wacss = {
 			modal_overlay.className='wacss_modal_overlay '+params.color;
 			modal_overlay.appendChild(modal);
 			modal_close.pnode=modal_overlay;
-			modal_overlay.onclick = function(){
-				//get the element where the click happened using hover
-				let elements = document.querySelectorAll(':hover');
-				let i=elements.length-1;
-				if(this == elements[i]){
-					removeId(this);	
-				}
+			if(undefined != params.overlay_close){
+				modal_overlay.onclick = function(){
+					//get the element where the click happened using hover
+					let elements = document.querySelectorAll(':hover');
+					let i=elements.length-1;
+					if(this == elements[i]){
+						removeId(this);	
+					}
+				};
+			}
+			else{
+				modal_overlay.onclick = function(){
+					//get the element where the click happened using hover
+					let elements = document.querySelectorAll(':hover');
+					let i=elements.length-1;
+					if(this == elements[i]){
+						wacss.modalBlink();	
+					}
+				};
 			}
 			document.body.appendChild(modal_overlay);
 		}
@@ -85,5 +148,37 @@ var wacss = {
 			}
 		}
 		return false;
+	},
+	removeObj: function(obj){
+	//info: removes specified id
+	if(undefined == obj){return false;}
+	try{
+		obj.remove();
+		if(undefined == obj){return true;}
 	}
+	catch(e){}
+	try{
+		if(undefined != obj.parentNode){
+			obj.parentNode.removeChild(obj);
+			if(undefined == obj){return true;}
+		}
+	}
+	catch(e){}
+	try{
+		document.body.removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+	try{
+		document.getElementsByTagName('BODY')[0].removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+	try{
+    	obj.parentNode.removeChild(obj);
+    	if(undefined == obj){return true;}
+	}
+	catch(e){}
+    return false;
+}
 }

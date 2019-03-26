@@ -1,5 +1,5 @@
 <view:default>
-<form method="post" name="syncform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+<form method="post" name="syncform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
 <input type="hidden" name="_menu" value="synchronize" />
 <input type="hidden" name="func" value="sync" />
 <div class="container-fluid">
@@ -158,8 +158,6 @@
 </view:sync_auth>
 
 <view:sync_diffs>
-<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff - <?=$title;?></div>
-<div class="w_centerpop_content" style="padding-bottom:20px;">
 	<ul class="nav nav-tabs">
 		<view:field_tab>
 			<li class="<?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','diff_details',{_menu:'synchronize','func':'diff_details',field:'<?=$key;?>',showprocessing:false});"><?=$key;?></a></li>
@@ -177,12 +175,10 @@
 		</view:diff_details>
 		<?=renderEach('diff_details',$diffs,'diff');?>
 	</div>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Diff {$title}');");?>
 </view:sync_diffs>
 
 <view:sync_diffs_none>
-<div class="w_centerpop_title"><span class="icon-sync-diff w_white"></span> Diff - <?=$title;?></div>
-<div class="w_centerpop_content" style="padding-bottom:20px;">
 	<div class="text-center w_big w_bold">No Differences found</div>
 	<view:sourcetarget>
 	<div class="row">
@@ -203,19 +199,17 @@
 	</div>
 	</view:sourcetarget>
 	<?=renderViewif(isset($diff['source']),'sourcetarget',$diff,'diff');?>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Diff {$title}');");?>
 </view:sync_diffs_none>
 
 <view:sync_verify>
-<div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verification</div>
-<div class="w_centerpop_content">
 	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
 		<tr><th><span class="icon-user w_black"></span> Pushed by</th><td><?=userValue('username');?></td></tr>
 		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="sync_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
@@ -225,42 +219,33 @@
 		<textarea name="notes" required="required" class="w_form-control" autofocus="autofocus"><?=$_SESSION['sync_notes'];?></textarea>
 		<div class="w_padtop text-right"><button type="submit" class="btn <?=configValue('admin_color');?>"><span class="icon-sync w_warning"></span> Push Changes to Target</button></div>
 	</form>
-	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Synchronize Verification');document.sync_verify_form.notes.focus();");?>
 </view:sync_verify>
 
 <view:sync_verified>
-<div class="w_centerpop_title"><span class="icon-sync w_white"></span> Synchronize Verified</div>
-<div class="w_centerpop_content" style="max-width:800px;overflow:auto;">
 	<div class="w_success"><?=implode('<br>',$results);?></div>
-	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="w_btn w_btn-secondary">Refresh</a></div>
-</div>
+	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span> Refresh</a></div>
+	<?=buildOnLoad("wacss.modalTitle('Synchronize Verified');");?>
 </view:sync_verified>
 
 <view:edit_record>
-<div class="w_centerpop_title"><span class="icon-edit w_white"></span> Edit  <?=$table;?>  <?=$id;?></div>
-<div class="w_centerpop_content">
 	<?=addEditDBForm(array('-table'=>$table,'_id'=>$id,'_menu'=>'synchronize','-action'=>'/php/admin.php'));?>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Edit {$table} {$id}');");?>
 </view:edit_record>
 
 <view:error>
-<div class="w_centerpop_title"><span class="icon-warning w_white"></span> Error</div>
-<div class="w_centerpop_content">
 	<h3 class="w_danger"><?=$error;?></h3>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Error');");?>
 </view:error>
 
 <view:revert_verify>
-<div class="w_centerpop_title"><span class="icon-backward w_danger"></span> Revert Verification</div>
-<div class="w_centerpop_content">
 	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
 		<tr><th><span class="icon-user w_black"></span> Reverted by</th><td><?=userValue('username');?></td></tr>
 		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="revert_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
@@ -269,8 +254,7 @@
 		<label>Revert these changes? You will lose any local changes.</label>
 		<div class="w_padtop text-right"><button type="submit" class="w_btn w_btn-danger"><span class="icon-backward w_white"></span> Revert Changes</button></div>
 	</form>
-	<?=buildOnLoad("document.sync_verify_form.notes.focus();");?>
-</div>
+	<?=buildOnLoad("wacss.modalTitle('Revert Verification');document.sync_verify_form.notes.focus();");?>
 </view:revert_verify>
 
 

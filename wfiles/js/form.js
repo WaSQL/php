@@ -2529,8 +2529,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
                     }
                     else if(lname=='modal'){
                     	let title='';
-                    	if(this.var2.length){title=this.var2;}
-                    	else if (this.var3.length){title=this.var3;}
+                    	if(undefined != this.var2 && this.var2.length){title=this.var2;}
+                    	else if (undefined != this.var3 && this.var3.length){title=this.var3;}
                     	else{title='Success';}
 						let modal=wacss.modalPopup(val,title,{overlay:1});
 					}
