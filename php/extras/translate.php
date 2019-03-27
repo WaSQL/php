@@ -200,7 +200,7 @@ function translateText($text,$locale=''){
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
 	$opts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "locale ='{$locale}' and p_id in (0,{$PAGE['_id']}) and t_id in (0,{$TEMPLATE['_id']})"
+		'-where'	=> "locale ='{$locale}' and p_id in (0,{$PAGE['_id']}) and t_id in (0,1,{$TEMPLATE['_id']})"
 	);
 	$recs=getDBRecords($opts);
 	foreach($recs as $rec){
