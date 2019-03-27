@@ -34,7 +34,7 @@ function translateListRecords($locale){
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
 		'-trclass'=>'w_pointer',
 		'-listfields'=>'page,template,source,translation,confirmed',
-		'-searchfields'=>'source,translation,p_id,t_id',
+		'-searchfields'=>'translation',
 		'source_displayname'=>"Source ({$source_locale})",
 		'source_style'=>'white-space: normal;',
 		'translation_displayname'=>"Translation ({$locale})",
