@@ -130,6 +130,22 @@ function commonModalPopup(htm,title,overlay) {
 	}
 	return modal;
 }
+//commonCopyToClipboard
+/**
+* @describe copies txt to clipboard
+* @param txt string  - the content you want in the clipboard
+* @return boolean
+* @usage commonCopyToClipboard(this.innerText);
+*/
+function commonCopyToClipboard(str){
+    const el = document.createElement('textarea');
+    el.value = str;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    return false;
+}
 /**
  * when using w_navbar this toggles the hamburger menu.
  * @returns false

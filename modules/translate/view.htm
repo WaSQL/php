@@ -2,9 +2,9 @@
 <div style="display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
-			<h3><?=$MODULE['title'];?></h3>
-			<h3><?=$_SESSION['locale'];?></h3>
-			<button type="button" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>Set Locale</translate></button>
+			<h3 style="white-space: nowrap;"><?=$MODULE['title'];?></h3>
+			<h3 style="white-space: nowrap;margin:0 10px 0 10px;"><?=$_SESSION['locale'];?></h3>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>Set Locale</translate></button>
 		</div>
 		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
@@ -17,6 +17,7 @@
 </view:default>
 
 <view:list>
+	<h3><img src="<?=$info['flag4x3'];?>" style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);" /> <?=$info['name'];?></h3>
 	<div id="processing" style="display:inline;float:right;"></div>
 	<?=translateListRecords($locale);?>
 	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
@@ -31,14 +32,31 @@
 </view:setlocale>
 
 <view:edit>
-<div class="row">
-	<div class="col-sm-5 align-left">
-		<div>Source</div>
-		<div class="form-control"><?=$rec['source'];?></div>
+<div class="container">
+	<div class="row" style="max-width:100%;">
+		<div class="col-sm-6 align-left">
+			<div><translate>Source</translate></div>
+			<div style="position:relative;">
+				<div class="form-control" id="translate_source"><?=$rec['source'];?></div>
+				<a href="#copy2clipboard" style="position:absolute;top:0px;right:0px;padding:0 0 4px 4px;background:#FFF;border-bottom-left-radius:5px;border-left:1px solid #999;border-bottom:1px solid #999;text-decoration: none;color:#999;z-index:9999;" onclick="return commonCopyToClipboard(getText('translate_source'));"><span class="icon-file-docs" title="<translate>Copy to clipboard</translate>"></span></a>
+			</div>
+		</div>
+		<div class="col-sm-6 align-left">
+			<div><translate>Translation</translate></div>
+			<?=translateEditRec($rec);?>
+		</div>
 	</div>
-	<div class="col-sm-7 align-left">
-		<div>Translation</div>
-		<?=translateEditRec($rec);?>
+	<div class="row">
+		<div class="col-sm-5 align-left">
+			<div id="edit_title" style="display:none;"><translate>Edit Translation</translate></div>
+			<?=buildOnLoad("wacss.modalTitle(getText('edit_title'));");?>
+			<div style="margin-top:10px;vertical-align: middle;">
+				<h3 class="w_gray align-middle" style="display:inline-block;"><translate>Translators</translate>: </h3>
+				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <translate>Google</translate></a>
+				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <translate>Yandex</translate></a>
+				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <translate>Bing</translate></a>
+			</div>
+		</div>
 	</div>
 </div>
 </view:edit>

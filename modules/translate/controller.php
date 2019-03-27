@@ -24,15 +24,13 @@
 		break;
 		case 'list':
 			$locale=addslashes($_REQUEST['passthru'][1]);
+			$info=translateGetLocaleInfo($locale);
 			setView('list',1);
 			return;
 		break;
 		case 'edit':
 			global $CONFIG;
-			if(isset($CONFIG['translate_locale']) && strlen($CONFIG['translate_locale'])){
-				$source_locale=$CONFIG['translate_locale'];
-			}
-			else{$source_locale='en-us';}
+			$source_locale=translateGetSourceLocale();
 			$id=(integer)$_REQUEST['passthru'][1];
 			$rec=getDBRecord(array('-table'=>'_translations','_id'=>$id,'-fields'=>'_id,locale,identifier'));
 			$sopts=array('-table'=>'_translations','locale'=>$source_locale,'identifier'=>$rec['identifier'],'-fields'=>'translation');
@@ -40,6 +38,12 @@
 			//echo printValue($sopts);exit;
 			$source_rec=getDBRecord($sopts);
 			$rec['source']=$source_rec['translation'];
+			//build google translate link
+			list($source_lang,$junk)=translateParseLocale($source_locale);
+			list($lang,$junk)=translateParseLocale($rec['locale']);
+			$rec['google']="https://translate.google.com/#view=home&op=translate&sl={$source_lang}&tl={$lang}&text=".urlencode($rec['source']);
+			$rec['yandex']="https://translate.yandex.com/?lang={$source_lang}-{$lang}&text=".urlencode($rec['source']);
+			$rec['bing']="https://www.bing.com/translator/?from={$source_lang}&to={$lang}&text=".urlencode($rec['source']);
 			setView('edit',1);
 			return;
 		break;

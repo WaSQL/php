@@ -22,6 +22,38 @@ translateCheckSchema();
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
+function translateGetLocaleInfo($locale){
+	global $localesJson;
+	$path=getWasqlPath('php/schema');
+	$flagspath=getWasqlPath('wfiles/flags');
+	if(!is_array($localesJson)){
+		$jsontxt=getFileContents("{$path}/locales.json");
+		$localesJson=json_decode($jsontxt,true);
+		$localesJson=array_change_key_case($localesJson,CASE_LOWER);
+	}
+	$locale=strtolower(str_replace('-','_',$locale));
+	if(!isset($localesJson[$locale])){return array();}
+	list($lang,$country)=translateParseLocale($locale);
+	$country=strtolower($country);
+	$rec=array(
+		'locale'=>str_replace('_','-',$locale),
+		'name'=>$localesJson[$locale],
+		'lang'=>$lang,
+		'country'=>$country
+	);
+	if(file_exists("{$flagspath}/4x3/{$country}.svg")){
+		$rec['flag4x3']="/wfiles/flags/4x3/{$country}.svg";
+	}
+	if(file_exists("{$flagspath}/1x1/{$country}.svg")){
+		$rec['flag1x1']="/wfiles/flags/1x1/{$country}.svg";
+	}
+	//echo $locale.printValue($rec);exit;
+	return $rec;
+}
+//---------- begin function translateCheckSchema
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function translateGetLocales($filters=array()){
 	if(!is_array($filters)){
 		$filters=preg_split('/\,+/',$filters);
@@ -59,14 +91,16 @@ function translateGetLocales($filters=array()){
 */
 function translateGetLocalesUsed(){
 	$locales=translateGetLocales();
+	$source_local=translateGetSourceLocale();
 	$q=<<<ENDOFQ
 		SELECT
 			lower(locale) as locale,
 			count(*) entry_cnt,
-			sum(confirmed) confirmed_cnt,
-			sum(failed) failed_cnt
+			sum(confirmed) confirmed_cnt
 		FROM
 			_translations
+		WHERE
+			locale != '{$source_local}'	
 		GROUP BY locale
 ENDOFQ;
 	$recs=getDBRecords(array(
@@ -112,7 +146,7 @@ function translateCheckSchema(){
 		't_id'			=> databaseDataType('int')." NOT NULL Default 0", //template id
 		'p_id'			=> databaseDataType('int')." NOT NULL Default 0", //page id
 		'locale'		=> databaseDataType('varchar(50)')." NOT NULL",
-		'translation'	=> databaseDataType('varchar(255)')." NULL",
+		'translation'	=> databaseDataType('text')." NULL",
 		'identifier'	=> databaseDataType('char(40)')." NULL",
 		'confirmed'		=> databaseDataType('int')." NOT NULL Default 0",
 		'failed'		=> databaseDataType('int')." NOT NULL Default 0",
@@ -247,7 +281,7 @@ function translateYandex($text,$source_lang,$target_lang){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateParseLocale($locale){
-	list($lang,$country)=preg_split('/\-/',strtolower($locale));
+	list($lang,$country)=preg_split('/[\_\-]/',strtolower($locale));
 	switch($country){
 		case 'chs':
 		case 'cht':

@@ -5,6 +5,8 @@ function translateShowLocaleSelections(){
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
+		'flag4x3_image'=>1,
+		'-listfields'=>'locale,name,country,flag4x3',
 		'-trclass'=>'w_pointer',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
@@ -12,6 +14,7 @@ function translateShowLocaleSelections(){
 }
 function translateListRecords($locale){
 	global $PAGE;
+	$source_locale=translateGetSourceLocale();
 	return databaseListRecords(array(
 		'-table'=>'_translations',
 		'-formaction'=>"/{$PAGE['name']}/locale/{$locale}",
@@ -19,11 +22,14 @@ function translateListRecords($locale){
 		'-trclass'=>'w_pointer',
 		'-listfields'=>'page,template,source,translation,confirmed',
 		'-searchfields'=>'source,translation,p_id,t_id',
-		'p_id_displayname'=>'PageID',
-		't_id_displayname'=>'TemplateID',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/edit/%_id%','modal',{setprocessing:0,cp_title:'Add/Edit Translation'})",
+		'source_displayname'=>"Source ({$source_locale})",
+		'source_style'=>'white-space: normal;',
+		'translation_displayname'=>"Translation ({$locale})",
+		'translation_style'=>'white-space: normal;',
+		'confirmed_style'=>'text-align:center',
+		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/edit/%_id%','modal',{setprocessing:0})",
 		'locale'=>$locale,
-		'-sort'=>1,
+		'-order'=>'confirmed,p_id',
 		'-results_eval'=>'translateAddExtraInfo',
 	));
 }
@@ -95,18 +101,16 @@ function translateListLocales(){
 		'-list'=>translateGetLocalesUsed(),
 		'-hidesearch'=>1,
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered w_pointer condensed striped bordered hover',
-		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt,failed_cnt',
+		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'flag4x3_displayname'=>'Flag',
 		'entry_cnt_displayname'=>'Entries',
 		'entry_cnt_style'=>'text-align:right;',
 		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
-		'failed_cnt_displayname'=>'<span class="icon-block w_danger"></span>',
-		'failed_cnt_style'=>'text-align:center;',
 		'-results_eval'=>'translateListLocalesExtra'
 	);
 	if(isset($MODULE['showflags']) && $MODULE['showflags']==0){
-		$opts['-listfields']='locale,entry_cnt,confirmed_cnt,failed_cnt';
+		$opts['-listfields']='locale,entry_cnt,confirmed_cnt';
 	}
 	return databaseListRecords($opts);
 }
@@ -121,6 +125,7 @@ function translateEditRec($rec){
 	$opts=array(
 		'-action'		=> "/t/1/{$PAGE['name']}/list/{$rec['locale']}",
 		'-onsubmit'		=> "return ajaxSubmitForm(this,'translate_results');",
+		'-name'			=> 'translateEditForm',
 		'setprocessing'	=> 0,
 		'_menu'			=> 'translate',
 		'func'			=> 'list',
@@ -131,10 +136,13 @@ function translateEditRec($rec){
 		'-order'		=> 'confirmed',
 		'translation_inputtype'	=> 'textarea',
 		'translation_class'		=> 'form-control browser-default',
-		'translation_style'		=> 'width:100%;height:150px;',
+		'translation_style'		=> 'height:150px;',
+		'translation_wrap'		=> 'soft',
 		'confirmed'		=> 1,
 		'_id'			=> $rec['_id'],
-		'-hide'			=> 'clone,delete'
+		'-hide'			=> 'clone,delete',
+		'-save'			=> translateText('Save'),
+		'-reset'		=> translateText('Reset')
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);
