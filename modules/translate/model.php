@@ -28,13 +28,14 @@ function translateShowLangSelections(){
 function translateListRecords($locale){
 	global $PAGE;
 	$source_locale=translateGetSourceLocale();
-	return databaseListRecords(array(
+	$opts=array(
 		'-table'=>'_translations',
 		'-formaction'=>"/{$PAGE['name']}/locale/{$locale}",
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
 		'-trclass'=>'w_pointer',
 		'-listfields'=>'page,template,source,translation,confirmed',
-		'-searchfields'=>'translation',
+		'-searchfields'=>'source,translation',
+		'-searchopers'=>'ct',
 		'source_displayname'=>"Source ({$source_locale})",
 		'source_style'=>'white-space: normal;',
 		'translation_displayname'=>"Translation ({$locale})",
@@ -44,7 +45,18 @@ function translateListRecords($locale){
 		'locale'=>$locale,
 		'-order'=>'confirmed,p_id',
 		'-results_eval'=>'translateAddExtraInfo',
-	));
+	);
+	if(isset($_REQUEST['filter_field'])){
+		switch(strtolower($_REQUEST['filter_field'])){
+			case 'source':
+				unset($_REQUEST['filter_field']);
+				$v=str_replace('source-ct-','',$_REQUEST['_filters']);
+				unset($_REQUEST['_filters']);
+				$opts['-where']="identifier in (select identifier from _translations where locale='{$source_locale}' and translation like '%{$v}%')";
+		}
+	}
+	//return printValue($_REQUEST);
+	return databaseListRecords($opts);
 }
 function translateAddExtraInfo($recs){
 	$locale=$recs[0]['locale'];
