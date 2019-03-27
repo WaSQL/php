@@ -200,7 +200,8 @@ function translateText($text,$locale=''){
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
 	$opts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "locale ='{$locale}' and (p_id in (0,{$PAGE['_id']}) or t_id in (0,1,{$TEMPLATE['_id']}))"
+		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$PAGE['_id']}))",
+		'-fields'	=> 'locale,identifier,translation'
 	);
 	$recs=getDBRecords($opts);
 	foreach($recs as $rec){
@@ -220,6 +221,9 @@ function translateText($text,$locale=''){
 		switch(strtolower($CONFIG['translate_source'])){
 			case 'yandex':
 				$translation=translateYandex($translation,$source_lang,$target_lang);
+			break;
+			case 'google':
+				$translation=translateGoogle($translation,$source_lang,$target_lang);
 			break;
 		}
 	}
@@ -246,11 +250,40 @@ function translateText($text,$locale=''){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
+function translateGoogle($text,$source_lang,$target_lang){
+	global $CONFIG;
+	if(!isset($CONFIG['translate_key'])){
+		debugValue('Missing Google Translate Key in config');
+		return $text;
+	}
+	$json=<<<ENDOFJSON
+{
+  'q': '{$text}',
+  'target': '{$target_lang}',
+  'source': '{$source_lang}'
+}
+ENDOFJSON;
+	$post=postJSON($url,$json);
+	echo printValue($post);exit;
+
+    $url = "https://www.googleapis.com/language/translate/v2?key={$CONFIG['translate_key']}&q=".rawurlencode($text)."&source={$source_lang}&target={$target_lang}";
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($handle);
+    //echo printValue($response);
+    $responseDecoded = json_decode($response, true);
+    curl_close($handle);
+	return $responseDecoded['data']['translations'][0]['translatedText'];
+}
+//---------- begin function translateYandex
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function translateYandex($text,$source_lang,$target_lang){
 	global $CONFIG;
 	if(!isset($CONFIG['translate_key'])){
-		debugValue('Missing Translate Key in config');
-		return;
+		debugValue('Missing Yandex Translate Key in config');
+		return $text;
 	}
 	$url='https://translate.yandex.net/api/v1.5/tr.json/translate';
 	$xurl=$url;
