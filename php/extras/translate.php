@@ -188,9 +188,7 @@ function translateText($text,$locale=''){
 	list($source_lang,$source_country)=translateParseLocale($source_locale);
 	//default locale if not passed in.  
 	if(!strlen($locale)){
-		if(isset($_SESSION['locale']) && strlen($_SESSION['locale'])){$locale=$_SESSION['locale'];}
-		elseif(isset($_SESSION['REMOTE_LANG']) && strlen($_SESSION['REMOTE_LANG'])){$locale=$_SESSION['REMOTE_LANG'];}
-		elseif(isset($_SERVER['locale']) && strlen($_SERVER['locale'])){$locale=$_SERVER['locale'];}
+		if(isset($_SESSION['REMOTE_LANG']) && strlen($_SESSION['REMOTE_LANG'])){$locale=$_SESSION['REMOTE_LANG'];}
 		else{$locale=$_SERVER['REMOTE_LANG'];}
 	}
 	if(strlen($locale)!=5){return $text;}

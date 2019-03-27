@@ -12,6 +12,19 @@ function translateShowLocaleSelections(){
 		'-hidesearch'=>1
 	));
 }
+function translateShowLangSelections(){
+	global $PAGE;
+	$recs=translateGetLocales();
+	return databaseListRecords(array(
+		'-list'=>$recs,
+		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
+		'flag4x3_image'=>1,
+		'-listfields'=>'locale,name,country,flag4x3',
+		'-trclass'=>'w_pointer',
+		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
+		'-hidesearch'=>1
+	));
+}
 function translateListRecords($locale){
 	global $PAGE;
 	$source_locale=translateGetSourceLocale();
@@ -48,7 +61,7 @@ function translateAddExtraInfo($recs){
 	$source_locale=translateGetSourceLocale();	
 	$opts=array(
 		'-table'=>'_translations',
-		'-where'=>"locale='{$source_locale}' and p_id in ($p_idstr)",
+		'-where'=>"locale='{$source_locale}' and p_id in ({$p_idstr}) or t_id in ({$t_idstr})",
 		'-index'=>'identifier',
 		'-fields'=>'identifier,translation'
 	);

@@ -3,8 +3,8 @@
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<h3 style="white-space: nowrap;"><?=$MODULE['title'];?></h3>
-			<h3 style="white-space: nowrap;margin:0 10px 0 10px;"><?=$_SESSION['locale'];?></h3>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>Set Locale</translate></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
 		</div>
 		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
@@ -29,9 +29,18 @@
 </view:selectlocale>
 
 <view:setlocale>
-	<span class="w_mark w_green"></span><translate>Locale set</translate>: <?=$_SESSION['locale'];?>
+	<span class="w_mark w_green"></span><translate>Locale set</translate>: <?=$_SESSION['REMOTE_LANG'];?>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=pageValue('name');?>"><translate>Refresh</translate></a></div>
 </view:setlocale>
 
+<view:selectlang>
+	<?=translateShowLangSelections();?>
+</view:selectlang>
+
+<view:addlang>
+	<span class="w_mark w_green"></span><translate>Language Added</translate>: <?=$locale;?>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=pageValue('name');?>"><translate>Refresh</translate></a></div>
+</view:addlang>
 <view:edit>
 <div class="container">
 	<div class="row" style="max-width:100%;">

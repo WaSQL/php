@@ -18,8 +18,25 @@
 			return;
 		break;
 		case 'setlocale':
-			$_SESSION['locale']=$_SESSION['REMOTE_LANG']=$_SERVER['locale']=$_SERVER['REMOTE_LANG']=$_REQUEST['passthru'][1];
+			$_SESSION['REMOTE_LANG']=$_REQUEST['passthru'][1];
 			setView('setlocale',1);
+			return;
+		break;
+		case 'selectlang':
+			setView('selectlang',1);
+			return;
+		break;
+		case 'addlang':
+			$locale=$_REQUEST['passthru'][1];
+			$source_locale=translateGetSourceLocale();
+			$recs=getDBRecords(array(
+				'-table'=>'_translations',
+				'locale'=>$source_locale
+			));
+			foreach($recs as $rec){
+				translateText($rec['translation'],$locale);
+			}
+			setView('addlang',1);
 			return;
 		break;
 		case 'list':
