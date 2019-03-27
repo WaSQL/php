@@ -62,9 +62,17 @@
 			$source=translateGetLocaleInfo($source_locale);
 			$dest=translateGetLocaleInfo($rec['locale']);
 			//build google translate link
-			$rec['google']="https://translate.google.com/#view=home&op=translate&sl={$source['lang']}&tl={$dest['lang']}&text=".urlencode($rec['source']);
+			switch(strtolower($dest['lang'])){
+				case 'zh':
+					$tl=$dest['lang'].'-'.strtoupper($dest['country']);
+				break;
+				default:
+					$tl=$dest['lang'];
+				break;
+			}
+			$rec['google']="https://translate.google.com/#view=home&op=translate&sl={$source['lang']}&tl={$tl}&text=".urlencode($rec['source']);
 			$rec['yandex']="https://translate.yandex.com/?lang={$source['lang']}-{$dest['lang']}&text=".urlencode($rec['source']);
-			$rec['bing']="https://www.bing.com/translator/?from={$source['lang']}&to={$dest['lang']}&text=".urlencode($rec['source']);
+			$rec['bing']="https://www.bing.com/translator/?from={$source['lang']}&to={$tl}&text=".urlencode($rec['source']);
 			setView('edit',1);
 			return;
 		break;
