@@ -2,7 +2,7 @@
 <div style="display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
-			<h3><?=$MODULE['title'];?></h3>
+			<div class="w_big w_bold"><?=$MODULE['title'];?></div>
 			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
 			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
 		</div>
