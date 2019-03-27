@@ -7,6 +7,9 @@
 	loadExtras('translate');
 	loadExtrasCss('wacss');
 	loadExtrasJs('wacss');
+	if(!isset($_SESSION['REMOTE_LANG'])){
+		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
+	}
 	switch(strtolower($_REQUEST['passthru'][0])){
 		case 'locale':
 			$locale=addslashes($_REQUEST['passthru'][1]);
