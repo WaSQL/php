@@ -38,12 +38,13 @@
 			//echo printValue($sopts);exit;
 			$source_rec=getDBRecord($sopts);
 			$rec['source']=$source_rec['translation'];
+			//get info
+			$source=translateGetLocaleInfo($source_locale);
+			$dest=translateGetLocaleInfo($rec['locale']);
 			//build google translate link
-			list($source_lang,$junk)=translateParseLocale($source_locale);
-			list($lang,$junk)=translateParseLocale($rec['locale']);
-			$rec['google']="https://translate.google.com/#view=home&op=translate&sl={$source_lang}&tl={$lang}&text=".urlencode($rec['source']);
-			$rec['yandex']="https://translate.yandex.com/?lang={$source_lang}-{$lang}&text=".urlencode($rec['source']);
-			$rec['bing']="https://www.bing.com/translator/?from={$source_lang}&to={$lang}&text=".urlencode($rec['source']);
+			$rec['google']="https://translate.google.com/#view=home&op=translate&sl={$source['lang']}&tl={$dest['lang']}&text=".urlencode($rec['source']);
+			$rec['yandex']="https://translate.yandex.com/?lang={$source['lang']}-{$dest['lang']}&text=".urlencode($rec['source']);
+			$rec['bing']="https://www.bing.com/translator/?from={$source['lang']}&to={$dest['lang']}&text=".urlencode($rec['source']);
 			setView('edit',1);
 			return;
 		break;

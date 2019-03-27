@@ -70,6 +70,9 @@ var wacss = {
 			if(undefined != document.getElementById('admin_menu')){
 				params.color=document.getElementById('admin_menu').getAttribute('data-color');
 			}
+			else if(undefined != document.getElementById('admin_color')){
+				params.color=document.getElementById('admin_color').innerText;
+			}
 			else{params.color='w_gray';}
 		}
 		let modal=document.createElement('div');
