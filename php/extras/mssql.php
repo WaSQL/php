@@ -655,27 +655,39 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			and table_name = '{$table}'
 		";
 	$recs=mssqlQueryResults($query,$params);
+	//echo $query.printValue($recs);exit;
 	$fields=array();
 	$pkeys=mssqlGetDBTablePrimaryKeys($table,$params);
 	foreach($recs as $rec){
 		$name=strtolower($rec['column_name']);
-		//name, type, length, num, default
-		$fields[$name]=array(
-		 	'name'		=> $name,
-		 	'type'		=> $rec['data_type'],
+		$field=array(
+			'table'	=> $table,
+			'_dbtable'	=> $table,
+			'name'	=> $name,
+			'_dbfield'	=> strtolower($name),
+			'type'	=> $rec['data_type'],
+			'precision'	=> $rec['ordinal_position'],
 			'length'	=> $rec['character_maximum_length'],
-			'num'		=> $rec['ordinal_position'],
 			'default'	=> $rec['column_default'],
 			'nullable'	=> $rec['is_nullable'],
 			'identity' 	=> $rec['identity_field']
 		);
 		//add primary_key flag
 		if(in_array($name,$pkeys)){
-			$fields[$name]['primary_key']=true;
+			$field['primary_key']=true;
 		}
 		else{
-			$fields[$name]['primary_key']=false;
+			$field['primary_key']=false;
 		}
+		$field['_dbtype']=$field['_dbtype_ex']=strtolower($field['type']);
+		if($field['precision'] > 0){
+			$field['_dbtype_ex']=strtolower("{$field['type']}({$field['precision']})");
+		}
+		elseif($field['length'] > 0 && preg_match('/(char|text|blob)/i',$field['_dbtype'])){
+			$field['_dbtype_ex']=strtolower("{$field['type']}({$field['length']})");
+		}
+		$field['_dblength']=$field['length'];
+	    $fields[$name]=$field;
 	}
     ksort($fields);
 	return $fields;
