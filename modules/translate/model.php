@@ -62,18 +62,21 @@ function translateAddExtraInfo($recs){
 	$locale=$recs[0]['locale'];
 	$p_ids=array();
 	$t_ids=array();
+	$ids=array();
 	foreach($recs as $rec){
 		if(!in_array($rec['p_id'],$p_ids)){$p_ids[]=$rec['p_id'];}
 		if(!in_array($rec['t_id'],$t_ids)){$t_ids[]=$rec['t_id'];}
+		$ids[]=$rec['_id'];
 	}
 	if(!count($p_ids)){return $recs;}
 	$p_idstr=implode(',',$p_ids);
 	$t_idstr=implode(',',$t_ids);
+	$idstr=implode(',',$ids);
 	//sourcemap
 	$source_locale=translateGetSourceLocale();	
 	$opts=array(
 		'-table'=>'_translations',
-		'-where'=>"locale='{$source_locale}' and (p_id in ({$p_idstr}) or t_id in ({$t_idstr}))",
+		'-where'=>"locale='{$source_locale}' and identifier in (select identifier from _translations where locale='{$locale}' and _id in ({$idstr}))",
 		'-index'=>'identifier',
 		'-fields'=>'identifier,translation'
 	);
