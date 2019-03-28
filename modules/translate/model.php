@@ -73,11 +73,12 @@ function translateAddExtraInfo($recs){
 	$source_locale=translateGetSourceLocale();	
 	$opts=array(
 		'-table'=>'_translations',
-		'-where'=>"locale='{$source_locale}' and p_id in ({$p_idstr}) or t_id in ({$t_idstr})",
+		'-where'=>"locale='{$source_locale}' and (p_id in ({$p_idstr}) or t_id in ({$t_idstr}))",
 		'-index'=>'identifier',
 		'-fields'=>'identifier,translation'
 	);
 	$sourcemap=getDBRecords($opts);
+	//echo printValue($opts).printValue($sourcemap);exit;
 	//pagemap
 	$opts=array(
 		'-table'=>'_pages',
