@@ -129,9 +129,10 @@ function translateListLocales(){
 	$opts=array(
 		'-list'=>translateGetLocalesUsed(),
 		'-hidesearch'=>1,
-		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered w_pointer condensed striped bordered hover',
+		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
+		'locale_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
+		'entry_cnt_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'flag4x3_displayname'=>'Flag',
 		'entry_cnt_displayname'=>'Entries',
 		'entry_cnt_style'=>'text-align:right;',
@@ -144,8 +145,14 @@ function translateListLocales(){
 	return databaseListRecords($opts);
 }
 function translateListLocalesExtra($recs){
+	global $PAGE;
 	foreach($recs as $i=>$rec){
-		$recs[$i]['flag4x3']="<div><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></div><div>{$rec['name']}</div>";
+		$flag='<div>';
+		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$PAGE['name']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
+		$flag .="	<div><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></div>";
+		$flag .="	<div>{$rec['name']}</div>";
+		$flag .="	</div>";
+		$recs[$i]['flag4x3']=$flag;
 	}
 	return $recs;
 }
@@ -169,9 +176,10 @@ function translateEditRec($rec){
 		'translation_wrap'		=> 'soft',
 		'confirmed'		=> 1,
 		'_id'			=> $rec['_id'],
-		'-hide'			=> 'clone,delete',
+		'-hide'			=> 'clone',
 		'-save'			=> translateText('Save'),
-		'-reset'		=> translateText('Reset')
+		'-reset'		=> translateText('Reset'),
+		'-delete'		=> translateText('Delete')
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);

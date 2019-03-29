@@ -16,6 +16,20 @@
 			//echo $locale.printValue($_REQUEST);exit;
 			setView('default');
 		break;
+		case 'deletelocale':
+			$info=translateGetLocaleInfo($_REQUEST['passthru'][1]);
+			setView('deletelocale',1);
+			return;
+		break;
+		case 'deletelocale_confirmed':
+			$info=translateGetLocaleInfo($_REQUEST['passthru'][1]);
+			$ok=delDBRecord(array(
+				'-table'=>'_translations',
+				'-where'=>"locale='{$info['locale']}'"
+			));
+			$locales=translateGetLocalesUsed();
+			setView('default');
+		break;
 		case 'selectlocale':
 			setView('selectlocale',1);
 			return;
