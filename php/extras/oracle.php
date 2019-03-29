@@ -549,7 +549,7 @@ function oracleExecuteSQL($query='',$params=array()){
     		'function'=>"oracleExecuteSQL",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
-    		'oci_error'=>e,
+    		'oci_error'=>$e,
     		'query'=>$query
     	));
     	oci_free_statement($stid);
