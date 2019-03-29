@@ -149,8 +149,8 @@ function translateListLocalesExtra($recs){
 	foreach($recs as $i=>$rec){
 		$flag='<div>';
 		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$PAGE['name']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
-		$flag .="	<div><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></div>";
-		$flag .="	<div>{$rec['name']}</div>";
+		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$PAGE['name']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\"><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></a></div>";
+		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$PAGE['name']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
 		$flag .="	</div>";
 		$recs[$i]['flag4x3']=$flag;
 	}
