@@ -4,9 +4,9 @@ function translateShowLocaleSelections(){
 	$recs=translateGetLocales();
 	return databaseListRecords(array(
 		'-list'=>$recs,
+		'-anchormap'=>'name',
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
-		'flag4x3_image'=>1,
-		'-listfields'=>'locale,name,country,flag4x3',
+		'-listfields'=>'locale,name,country',
 		'-trclass'=>'w_pointer',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
@@ -18,8 +18,8 @@ function translateShowLangSelections(){
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
-		'flag4x3_image'=>1,
-		'-listfields'=>'locale,name,country,flag4x3',
+		'-listfields'=>'locale,name,country',
+		'-anchormap'=>'name',
 		'-trclass'=>'w_pointer',
 		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
@@ -129,19 +129,17 @@ function translateListLocales(){
 	$opts=array(
 		'-list'=>translateGetLocalesUsed(),
 		'-hidesearch'=>1,
+		'-anchormap'=>'locale',
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
 		'locale_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'entry_cnt_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
-		'flag4x3_displayname'=>'Flag',
-		'entry_cnt_displayname'=>'Entries',
+		'entry_cnt_displayname'=>translateText('Entries'),
 		'entry_cnt_style'=>'text-align:right;',
+		'flag4x3_displayname'=>translateText('Location'),
 		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
 		'-results_eval'=>'translateListLocalesExtra'
 	);
-	if(isset($MODULE['showflags']) && $MODULE['showflags']==0){
-		$opts['-listfields']='locale,entry_cnt,confirmed_cnt';
-	}
 	return databaseListRecords($opts);
 }
 function translateListLocalesExtra($recs){
@@ -149,7 +147,6 @@ function translateListLocalesExtra($recs){
 	foreach($recs as $i=>$rec){
 		$flag='<div>';
 		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$PAGE['name']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
-		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$PAGE['name']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\"><img src=\"{$rec['flag4x3']}\" style=\"max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);\" /></a></div>";
 		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$PAGE['name']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
 		$flag .="	</div>";
 		$recs[$i]['flag4x3']=$flag;

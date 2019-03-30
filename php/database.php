@@ -72,6 +72,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
 *	[-listfields] -  subset of fields to list from the list returned.
+*	[-anchormap] - str - field name to build an achormap from based on first letter or number of the value
 *	[-exportfields] -  subset of fields to export.
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
@@ -355,6 +356,32 @@ function databaseListRecords($params=array()){
 
 		$rtn .= commonSearchFiltersForm($params);
 	}
+	//check for -anchormap
+	$anchor_values=array();
+	if(isset($params['-anchormap'])){
+		$afield=$params['-anchormap'];
+		foreach($params['-list'] as $rec){
+			if(!isset($rec[$afield]) || !strlen($rec[$afield])){continue;}
+			$ch=strtoupper(substr(ltrim($rec[$afield]),0,1));
+			if(!in_array($ch,$anchor_values)){
+				$anchor_values[]=$ch;
+			}
+		}
+		if(count($anchor_values)){
+			$rtn .= '<div style="display: flex;flex-direction: row;justify-content: space-between;padding:3px 5px;border-right:1px solid #ccc;border-top:1px solid #ccc;border-left:1px solid #ccc;">'.PHP_EOL;
+			if(!empty($params[$afield."_displayname"])){
+				$name=$params[$afield."_displayname"];
+			}
+			else{
+				$name=ucwords(trim(str_replace('_',' ',$afield)));
+			}
+			$rtn .= '<span class="w_bold">'.$name.': </span>';
+			foreach($anchor_values as $v){
+				$rtn .= '	<a class="w_link" href="#anchormap_'.$v.'">'.$v.'</a>'.PHP_EOL;
+			}
+			$rtn .= '</div>'.PHP_EOL;
+		}
+	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
 	//add any table attributes pass in with -table
@@ -569,7 +596,15 @@ function databaseListRecords($params=array()){
 				}
 			}
 			$rtn .= setTagAttributes($atts);
-			$rtn .='>'.$value.'</td>'.PHP_EOL;
+			$rtn .='>';
+			if(isset($params['-anchormap']) && $fld==$params['-anchormap']){
+				$ch=strtoupper(substr(trim(removeHtml($value)),0,1)); 
+				if($ch==$anchor_values[0]){
+					$ch=array_shift($anchor_values);
+					$rtn .= '<a name="anchormap_'.$ch.'"></a>';
+				}
+			}
+			$rtn .=$value.'</td>'.PHP_EOL;
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
 	}

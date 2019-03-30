@@ -18,7 +18,7 @@
 </view:default>
 
 <view:list>
-	<h3><img src="<?=$info['flag4x3'];?>" style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);" /> <?=$info['name'];?></h3>
+	<h3><?=$info['name'];?></h3>
 	<div id="processing" style="display:inline;float:right;"></div>
 	<?=translateListRecords($locale);?>
 	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
@@ -35,7 +35,7 @@
 
 <view:deletelocale>
 	<h3 class="align-center"><translate>Are you sure you want to delete translation records for this locale?<br>Click YES to confirm.</translate></h3>
-	<h3 class="align-center"><img src="<?=$info['flag4x3'];?>" style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);" /> <?=$info['name'];?></h3>
+	<h3 class="align-center"><?=$info['name'];?></h3>
 
 	<div style="display: flex;flex-direction: row;justify-content: space-between;">
 		<a href="/<?=pageValue('name');?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>">YES</a>
