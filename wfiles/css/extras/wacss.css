@@ -949,6 +949,10 @@ table.table td, table.table th {
     vertical-align: top;
     border-top: 1px solid #dee2e6;
 }
+table.table.condensed td, table.table.condensed th,
+table.table.table-condensed td, table.table.table-condensed th {
+    padding: .2rem;
+}
 table.table a{
   display:block;
   text-decoration: none;
