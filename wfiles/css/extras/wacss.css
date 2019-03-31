@@ -549,6 +549,15 @@ ul.nav-tabs.w_black > li >a:hover,ul.nav-tabs.w_black > li.active >a,ul.nav-tabs
 ul.nav-tabs.w_black > li.nav-item:hover,ul.nav-tabs.w_black > li.nav-item.active{
   color:#FFF;background:rgba(35, 39, 43, 1.0);
 }
+/* collapse will only show the tab icon on small screens*/
+ul.nav-tabs.collapse > li >a{
+    font-size:0px;
+  }
+@media only screen and (min-width: 601px) {
+  ul.nav-tabs.collapse > li >a{
+    font-size:inherit;
+  } 
+}
 
 /* ---------------------- nav-list ------------------------- */
 ul.nav-list{
