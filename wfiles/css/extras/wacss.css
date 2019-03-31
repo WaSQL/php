@@ -930,16 +930,18 @@ table.table {
     color: #212529;
     border-collapse: collapse;
 }
-table.table-responsive {
+table.table-responsive,table.responsive {
     display: block;
     width: 100%;
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
-table.table-striped tbody tr:nth-of-type(odd) {
+table.table-striped tbody tr:nth-of-type(odd),
+table.striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0,0,0,.05);
 }
-table.table-bordered td, table.table-bordered th {
+table.table-bordered td, table.table-bordered th,
+table.bordered td, table.bordered th {
     border: 1px solid #dee2e6;
 }
 table.table td, table.table th {
