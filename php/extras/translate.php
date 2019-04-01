@@ -98,9 +98,7 @@ function translateGetLocalesUsed(){
 			count(*) entry_cnt,
 			sum(confirmed) confirmed_cnt
 		FROM
-			_translations
-		WHERE
-			locale != '{$source_local}'	
+			_translations	
 		GROUP BY locale
 ENDOFQ;
 	$recs=getDBRecords(array(
