@@ -55,33 +55,31 @@
 </view:addlang>
 
 <view:edit>
-<div class="container">
 	<div class="row" style="max-width:100%;">
-		<div class="col-sm-6 align-left">
+		<div class="col-sm-5 align-left">
 			<div><translate>Source</translate></div>
 			<div style="position:relative;">
 				<div class="form-control" id="translate_source"><?=$rec['source'];?></div>
 				<a href="#copy2clipboard" style="position:absolute;top:0px;right:0px;padding:0 0 1px 3px;background:#FFF;border-bottom-left-radius:8px;border-left:1px solid #999;border-bottom:1px solid #999;text-decoration: none;color:#999;z-index:9999;" onclick="return commonCopyToClipboard(getText('translate_source'));"><span class="icon-file-docs" title="<translate>Copy to clipboard</translate>"></span></a>
 			</div>
 		</div>
-		<div class="col-sm-6 align-left">
+		<div class="col-sm-7 align-left">
 			<div><translate>Translation</translate></div>
 			<?=translateEditRec($rec);?>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-6 align-left">
+		<div class="col-sm-12 align-left">
 			<div id="edit_title" style="display:none;"><?=$source['name'];?> => <?=$dest['name'];?></div>
 			<?=buildOnLoad("wacss.modalTitle(getText('edit_title'));");?>
 			<div style="margin-top:10px;vertical-align: middle;">
-				<h3 class="w_gray align-middle" style="display:inline-block;"><translate>Translators</translate>: </h3>
-				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <translate>Google</translate></a>
-				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <translate>Yandex</translate></a>
-				<a class="btn w_white" style="white-space: normal;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <translate>Bing</translate></a>
+				<div class="w_gray align-middle" style="display:inline-block;"><translate>Translators</translate>: </div>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <translate>Google</translate></a>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <translate>Yandex</translate></a>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <translate>Bing</translate></a>
 			</div>
 		</div>
 	</div>
-</div>
 </view:edit>
 
 
