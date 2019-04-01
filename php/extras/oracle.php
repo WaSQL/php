@@ -12,6 +12,95 @@ ini_set('oci8.persistent_timeout',-1);
 ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
+
+function oracleBulkInsert($table,$recs){
+	$j=array("items"=>$recs);
+    $json=json_encode($j);
+    $info=oracleGetDBFieldInfo($table);
+    $fields=array();
+    $jfields=array();
+    $defines=array();
+    foreach($recs[0] as $field=>$value){
+    	if(!isset($info[$field])){continue;}
+    	$fields[]=$field;
+    	switch(strtolower($info[$field]['_dbtype'])){
+    		case 'timestamp':
+    		case 'date':
+    			//date types have to be converted into a format that Oracle understands
+    			$jfields[]="to_date(substr({$field},1,19),'YYYY-MM-DD HH24:MI:SS' ) as {$field}";
+    		break;
+    		default:
+    			$jfields[]=$field;
+    		break;
+    	}
+    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    }
+    if(!count($fields)){return 'No matching Fields';}
+    $fieldstr=implode(',',$fields);
+    $jfieldstr=implode(',',$jfields);
+    $definestr=implode(','.PHP_EOL,$defines);
+    $query .= <<<ENDOFQ
+    INSERT INTO {$table}
+    	({$fieldstr})
+    SELECT 
+    	{$jfieldstr}
+	FROM JSON_TABLE(
+		:b_json
+		, '\$'
+		COLUMNS (
+			nested path '\$.items[*]'
+			COLUMNS(
+				{$definestr}
+			)
+		)
+	)
+ENDOFQ;
+	$dbh_oracle=oracleDBConnect($params);
+	$stid = oci_parse($dbh_oracle, $query);
+	if (!is_resource($stid)){
+    	debugValue(array(
+    		'function'=>"oracleBulkInsert",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_parse',
+    		'oci_error'=>oci_error($dbh_oracle),
+    		'query'=>$query
+    	));
+    	oci_close($dbh_oracle);
+    	return false;
+    }
+	$descriptor = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
+	if(!oci_bind_by_name($stid, ':b_json', $descriptor, -1, SQLT_CLOB)){
+		debugValue(array(
+    		'function'=>"oracleBulkInsert",
+    		'connection'=>$dbh_oracle,
+    		'stid'=>$stid,
+    		'action'=>'oci_bind_by_name',
+    		'oci_error'=>oci_error($stid),
+    		'query'=>$query,
+    		'field'=>$k,
+    		'_dbtype'=>$fields[$k]['_dbtype'],
+    		'bind'=>$bind,
+    		'value'=>$values[$k]
+    	));
+    	return false;
+	}
+	$descriptor->writeTemporary($json);
+	$r = oci_execute($stid);
+	$e=oci_error($stid);
+	if (!$r) {
+		debugValue(array(
+    		'function'=>"oracleBulkInsert",
+    		'connection'=>$dbh_oracle,
+    		'action'=>'oci_execute',
+    		'stid'=>$stid,
+    		'oci_error'=>$e,
+    		'query'=>$query
+    	));
+    	return false;
+	}
+	return true;
+}
+
 //---------- begin function oracleAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.
