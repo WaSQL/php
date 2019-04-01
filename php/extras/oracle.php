@@ -39,16 +39,16 @@ function oracleAddDBRecord($params){
 	$dbh_oracle=oracleDBConnect($params);
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	//populate cdate and cuser fields
-	if(isset($fields['cdate'])){
+	if(isset($fields['cdate']) && !isset($params['cdate'])){
 		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	elseif(isset($fields['_cdate'])){
+	elseif(isset($fields['_cdate']) && !isset($params['_cdate'])){
 		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	if(isset($fields['cuser'])){
+	if(isset($fields['cuser']) && !isset($params['cuser'])){
 		$params['cuser']=$USER['username'];
 	}
-	elseif(isset($fields['_cuser'])){
+	elseif(isset($fields['_cuser']) && !isset($params['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
 	$values=array();
@@ -318,16 +318,16 @@ function oracleEditDBRecord($params){
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$values=array();
 	$bindars=array();
-	if(isset($fields['edate'])){
+	if(isset($fields['edate']) && !isset($params['edate'])){
 		$params['edate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	elseif(isset($fields['_edate'])){
+	elseif(isset($fields['_edate']) && !isset($params['_edate'])){
 		$params['_edate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	if(isset($fields['euser'])){
+	if(isset($fields['euser']) && !isset($params['euser'])){
 		$params['euser']=$USER['username'];
 	}
-	elseif(isset($fields['_euser'])){
+	elseif(isset($fields['_euser']) && !isset($params['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
 	$values=array();
