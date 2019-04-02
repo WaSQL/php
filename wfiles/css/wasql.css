@@ -207,6 +207,50 @@ table.w_formtable td, table.w_formtable th {
     justify-content: flex-start;
     margin-top:8px;
 }
+.w_flexbutton{
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content: flex-start;
+}
+.w_flexbutton > :first-child {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    line-height: 34px;
+    font-size: 16px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.w_flexbutton > :not(:last-child):not(:first-child) {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    border-left:0px;
+    line-height: 34px;
+    height:34px;
+    font-size: 16px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.w_flexbutton > :last-child {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    border-left:0px;
+    line-height: 34px;
+    height:34px;
+    font-size: 16px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
 .w_flex{
 	display: -webkit-flex;
 	display: -moz-flex;
