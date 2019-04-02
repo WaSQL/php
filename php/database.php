@@ -95,6 +95,10 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 function databaseListRecords($params=array()){
 	global $CONFIG;
 	$info=array();
+	$allfields=0;
+	if(isset($params['-list'])){
+		$allfields=1;
+	}
 	//require -table or -list or -query
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
@@ -335,7 +339,7 @@ function databaseListRecords($params=array()){
 		$params['-listfields']=array();
 		foreach($params['-list'] as $rec){
 			foreach($rec as $k=>$v){
-				if(isWasqlField($k) && $k != '_id'){continue;}
+				if($allfields==0 && isWasqlField($k) && $k != '_id'){continue;}
 				$params['-listfields'][]=$k;
 			}
 			break;

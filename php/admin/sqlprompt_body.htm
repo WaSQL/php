@@ -100,8 +100,13 @@
 </view:tabs>
 
 <view:results>
-	<?=buildOnLoad("document.getElementById('export_link').style.display='inline-block';");?>
-	<?=listDBRecords($recs);?>
+	<div class="w_gray w_smaller">
+		<span class="icon-prompt"></span> <?=$_SESSION['sql_last'];?>
+		<?=buildOnLoad("document.getElementById('export_link').style.display='inline-block';");?>
+	</div>
+	<div class="w_padtop">
+	<?=sqlpromptListResults($recs);?>
+	</div>
 </view:results>
 
 <view:block_results>

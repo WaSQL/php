@@ -247,6 +247,106 @@ function mssqlDBConnect($params=array()){
 		exit;
 	}
 }
+//---------- begin function mssqlAddDBRecords ----------
+/**
+* @describe add multiple records at the same time using json_table.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*   -table - name of the table to add to
+*   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
+*	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return boolean
+* @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
+* @reference https://docs.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-2017
+*/
+function mssqlAddDBRecords($params=array()){
+	if(!isset($params['-table'])){
+		debugValue(array(
+    		'function'=>"oracleAddDBRecords",
+    		'error'=>'No table specified'
+    	));
+    	return false;
+    }
+    if(!isset($params['-list']) || !is_array($params['-list'])){
+		debugValue(array(
+    		'function'=>"oracleAddDBRecords",
+    		'error'=>'No records (list) specified'
+    	));
+    	return false;
+    }
+    //defaults
+    if(!isset($params['-dateformat'])){
+    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
+    }
+	$j=array("items"=>$params['-list']);
+    $json=json_encode($j);
+    $info=mssqlGetDBFieldInfo($params['-table']);
+    $fields=array();
+    $jfields=array();
+    $defines=array();
+    foreach($recs[0] as $field=>$value){
+    	if(!isset($info[$field])){continue;}
+    	$fields[]=$field;
+    	switch(strtolower($info[$field]['_dbtype'])){
+    		case 'timestamp':
+    		case 'date':
+    			//date types have to be converted into a format that Oracle understands
+    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
+    		break;
+    		default:
+    			$jfields[]=$field;
+    		break;
+    	}
+    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    }
+    if(!count($fields)){return 'No matching Fields';}
+    $fieldstr=implode(',',$fields);
+    $jfieldstr=implode(',',$jfields);
+    $definestr=implode(','.PHP_EOL,$defines);
+    $query .= <<<ENDOFQ
+    INSERT INTO {$params['-table']}
+    	({$fieldstr})
+    SELECT 
+    	{$jfieldstr}
+	FROM OPENJSON(
+		?
+		, '\$.items'
+		WITH (
+			{$definestr}
+		)
+	)
+ENDOFQ;
+	$dbh_mssql=mssqlDBConnect($params);
+	$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
+	if (!($stmt)){
+    	debugValue(array(
+    		'function'=>"mssqlAddDBRecords",
+    		'connection'=>$dbh_mssql,
+    		'action'=>'oci_parse',
+    		'mssql_error'=>sqlsrv_errors(),
+    		'query'=>$query
+    	));
+    	oci_close($dbh_oracle);
+    	return false;
+    }
+	if( sqlsrv_execute( $stmt ) === false ) {
+		debugValue(array(
+    		'function'=>"mssqlAddDBRecords",
+    		'connection'=>$dbh_mssql,
+    		'action'=>'oci_execute',
+    		'stmt'=>$stmt,
+    		'mssql_error'=>sqlsrv_errors(),
+    		'query'=>$query
+    	));
+    	return false;
+	}
+	return true;
+}
 //---------- begin function mssqlAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.

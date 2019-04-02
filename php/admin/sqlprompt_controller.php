@@ -100,6 +100,7 @@
 				break;
 				default:
 					$recs=getDBRecords($_SESSION['sql_last']);
+					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 			}
 			setView($view,1);

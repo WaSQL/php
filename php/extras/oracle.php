@@ -12,11 +12,44 @@ ini_set('oci8.persistent_timeout',-1);
 ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
-
-function oracleBulkInsert($table,$recs){
-	$j=array("items"=>$recs);
+//---------- begin function oracleAddDBRecords ----------
+/**
+* @describe add multiple records at the same time using json_table.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*   -table - name of the table to add to
+*   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
+*	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
+*	[-host] - oracle server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return boolean
+* @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
+*/
+function oracleAddDBRecords($params=array()){
+	if(!isset($params['-table'])){
+		debugValue(array(
+    		'function'=>"oracleAddDBRecords",
+    		'error'=>'No table specified'
+    	));
+    	return false;
+    }
+    if(!isset($params['-list']) || !is_array($params['-list'])){
+		debugValue(array(
+    		'function'=>"oracleAddDBRecords",
+    		'error'=>'No records (list) specified'
+    	));
+    	return false;
+    }
+    //defaults
+    if(!isset($params['-dateformat'])){
+    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
+    }
+	$j=array("items"=>$params['-list']);
     $json=json_encode($j);
-    $info=oracleGetDBFieldInfo($table);
+    $info=oracleGetDBFieldInfo($params['-table']);
     $fields=array();
     $jfields=array();
     $defines=array();
@@ -27,7 +60,7 @@ function oracleBulkInsert($table,$recs){
     		case 'timestamp':
     		case 'date':
     			//date types have to be converted into a format that Oracle understands
-    			$jfields[]="to_date(substr({$field},1,19),'YYYY-MM-DD HH24:MI:SS' ) as {$field}";
+    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
     		break;
     		default:
     			$jfields[]=$field;
@@ -40,7 +73,7 @@ function oracleBulkInsert($table,$recs){
     $jfieldstr=implode(',',$jfields);
     $definestr=implode(','.PHP_EOL,$defines);
     $query .= <<<ENDOFQ
-    INSERT INTO {$table}
+    INSERT INTO {$params['-table']}
     	({$fieldstr})
     SELECT 
     	{$jfieldstr}
@@ -59,7 +92,7 @@ ENDOFQ;
 	$stid = oci_parse($dbh_oracle, $query);
 	if (!is_resource($stid)){
     	debugValue(array(
-    		'function'=>"oracleBulkInsert",
+    		'function'=>"oracleAddDBRecords",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
     		'oci_error'=>oci_error($dbh_oracle),
@@ -71,7 +104,7 @@ ENDOFQ;
 	$descriptor = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
 	if(!oci_bind_by_name($stid, ':b_json', $descriptor, -1, SQLT_CLOB)){
 		debugValue(array(
-    		'function'=>"oracleBulkInsert",
+    		'function'=>"oracleAddDBRecords",
     		'connection'=>$dbh_oracle,
     		'stid'=>$stid,
     		'action'=>'oci_bind_by_name',
@@ -89,7 +122,7 @@ ENDOFQ;
 	$e=oci_error($stid);
 	if (!$r) {
 		debugValue(array(
-    		'function'=>"oracleBulkInsert",
+    		'function'=>"oracleAddDBRecords",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'stid'=>$stid,
