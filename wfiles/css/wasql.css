@@ -220,8 +220,7 @@ table.w_formtable td, table.w_formtable th {
 .w_flexbutton > :first-child {
     vertical-align: middle;
     border:1px solid #ccc;
-    line-height: 34px;
-    font-size: 16px;
+    line-height: 1.42857143;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
     border-top-right-radius: 0;
@@ -231,9 +230,7 @@ table.w_formtable td, table.w_formtable th {
     vertical-align: middle;
     border:1px solid #ccc;
     border-left:0px;
-    line-height: 34px;
-    height:34px;
-    font-size: 16px;
+    line-height: 1.42857143;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 0;
@@ -243,9 +240,7 @@ table.w_formtable td, table.w_formtable th {
     vertical-align: middle;
     border:1px solid #ccc;
     border-left:0px;
-    line-height: 34px;
-    height:34px;
-    font-size: 16px;
+    line-height: 1.42857143;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 4px;

@@ -1484,7 +1484,6 @@ function buildFormTime($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['-interval'])){$params['-interval']='30';}
-	$params['width']=115;
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
@@ -1494,21 +1493,31 @@ function buildFormTime($name,$params=array()){
     	$params['data-mask']=$params['mask'];
     	unset($params['mask']);
 	}
-	if(!isset($params['placeholder'])){$params['placeholder']='HH:MM:SS';}
+	if(!isset($params['placeholder'])){$params['placeholder']='HH:MM';}
 	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='w_form-control align-right';}
+	if(!isset($params['style'])){$params['style']='border-left:1px solid #ccc;width:auto;z-index:9999;padding-right:0px;';}
 	if(!isset($params['data-type'])){$params['data-type']='time';}
 	if(!isset($params['name'])){$params['name']=$name;}
-	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
-    	$params['-value']=date('H:i:s',strtotime($params['-value']));
+    	$params['-value']=date('H:i',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;max-width:'.$params['width'].'px;">'.PHP_EOL;
-	$tag .= '	<input type="text"';
-	$tag .= setTagAttributes($params);
-	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span class="icon-clock w_dblue w_bigger w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date Selector"></span>'.PHP_EOL;
+	$tag .= '<div class="w_flexbutton" style="position:relative;">'.PHP_EOL;
+	$opts=array();
+	$start=date('H:i',strtotime('midnight'));
+	for($x=0;$x<60*24;$x+=$params['-interval']){
+		$t=strtotime("midnight +{$x} minutes");
+		$v=date('H:i',$t);
+		$opts[$v]=date('g:i a',$t);
+	}
+	$tag .= buildFormSelect($params['name'],$opts,$params);
+	// $tag .= '	<input type="text"';
+	// $tag .= setTagAttributes($params);
+	// $tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
+	if(!isset($params['-noicon'])){
+		$tag .= '	<span class="icon-clock w_bigger w_pointer w_gray selectonleft" style="padding:0 3px;"></label>'.PHP_EOL;
+	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }

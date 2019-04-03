@@ -919,6 +919,9 @@ select.browser-default ~ label {
   font-size:0.7em;
   vertical-align: top;
 }
+/* align select options based on parent */
+select.align-right option, select.right-align option{text-align: right;text-align-last: right;}
+select.align-left option, select.left-align option{text-align: left;}
 /* color variations */
 .form-control.w_blue,.browser-default.w_blue{border: 1px solid rgba(0, 64, 64, 0.3);}
 .form-control.w_gray,.browser-default.w_gray{border: 1px solid rgba(90, 98, 104, 0.3);}
