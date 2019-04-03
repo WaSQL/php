@@ -858,6 +858,13 @@ input.form-control, select.form-control,input.w_form-control, select.w_form-cont
   height: 34px;
   line-height: 1.42857143;
 }
+/* condensed versions */
+form.w_form input.condensed, form.w_form select.condensed,input.browser-default.condensed, select.browser-default.condensed,
+input.form-control.condensed, select.form-control.condensed,input.w_form-control.condensed, select.w_form-control.condensed {
+  height: 26px;
+  line-height: 1.12857143;
+  padding: 3px 7px;
+}
 form.w_form input:focus, form.w_form select:focus, form.w_form textarea:focus, .form-control:focus, .browser-default:focus{
   border-color: #66afe9;
   outline: 0;
