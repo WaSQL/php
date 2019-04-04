@@ -90,8 +90,8 @@ body{
   vertical-align: middle;
   padding: .375rem .75rem 0 0;
   font-size: 1rem;
-  height: 34px;
-  line-height: 1.42857143;
+  height: 1em;
+  line-height: 1;
 }
 .dropdown.open [data-toggle="dropdown"]:after{
   content:' \23F6';
@@ -168,7 +168,7 @@ body{
 .nav > ul li {position: relative;}
 .nav > ul a {
   padding: 4px 8px;
-  line-height: 32px;
+  line-height: 1;
   font-size:16px;
   display: block;
   text-decoration: none;
@@ -176,12 +176,12 @@ body{
 }
 .nav.condensed > ul > li a {
   padding: 4px 8px;
-  line-height: 28px;
+  line-height: 0.8;
   font-size:15px;
 }
 .nav.condensed > ul > li > ul a {
   padding: 3px 7px;
-  line-height: 23px;
+  line-height: 0.8;
   font-size:13px;
 }
 .nav > ul a:hover,
@@ -746,9 +746,7 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
     user-select: none;
     border: 1px solid;
     padding: .375rem .75rem;
-    font-size: 1rem;
-    height: 34px;
-    line-height: 1.42857143;
+    line-height: 1;
     border-radius: .25rem;
     text-transform: none;
     margin:0;
@@ -832,8 +830,7 @@ a.btn{text-decoration: none;}
 .btn-sm, .btn-group-sm > .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
-    height:32px;
-    line-height: 1.5;
+    line-height: 0.8;
     border-radius: 0.2rem;
 }
 form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default,.w_form-control {
@@ -855,14 +852,12 @@ form.w_form input, form.w_form select, form.w_form textarea, .form-control,.brow
 }
 form.w_form input, form.w_form select,input.browser-default, select.browser-default,
 input.form-control, select.form-control,input.w_form-control, select.w_form-control {
-  height: 34px;
-  line-height: 1.42857143;
+  line-height: 1;
 }
 /* condensed versions */
 form.w_form input.condensed, form.w_form select.condensed,input.browser-default.condensed, select.browser-default.condensed,
 input.form-control.condensed, select.form-control.condensed,input.w_form-control.condensed, select.w_form-control.condensed {
-  height: 26px;
-  line-height: 1.12857143;
+  line-height: 0.8;
   padding: 3px 7px;
 }
 form.w_form input:focus, form.w_form select:focus, form.w_form textarea:focus, .form-control:focus, .browser-default:focus{

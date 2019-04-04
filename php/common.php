@@ -176,22 +176,22 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '			</div>'.PHP_EOL;
 	//add filter
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
+	$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_grey"></span></button>'.PHP_EOL;
 	$rtn .= '			</div>'.PHP_EOL;
 	//bulkedit
 	if(!empty($params['-bulkedit'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_big w_danger w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit  w_danger w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
 	}
 	//export
 	if(!empty($params['-export'])){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_big w_success w_bold"></span></button>'.PHP_EOL;
+    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export  w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
     	if(!empty($params['-export_file'])){
     		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download w_big w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
     	}
 	}
@@ -1473,9 +1473,12 @@ function buildFormTextarea($name,$params=array()){
 * @param params array
 *	[-formname] string - specify the form name - defaults to addedit
 *	[-interval] integer - specify the time interval. 1,5,10,15,30,60 - defaults to 30
+*	[-tformat] string - specify the time format of the true value. defaults to H:i (15:05)
+*	[-dformat] string - specify the time format of the display value. defaults to g:i a (3:05 pm)
 *	[-value] string - specify the current value
 *	[-required] boolean - make it a required field - defaults to addedit false
 *	[id] string - specify the field id - defaults to formname_fieldname
+*	[data-icon] string - icon to show on right side. defaults to &#128348;
 * @return string - html time control
 * @usage echo buildFormTime('mytime');
 */
@@ -1484,41 +1487,38 @@ function buildFormTime($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['-interval'])){$params['-interval']='30';}
+	if(!isset($params['-tformat'])){$params['-tformat']='H:i';}
+	if(!isset($params['-dformat'])){$params['-dformat']='g:i a';}
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
-	//$params['data-mask']='date';
-	if(isset($params['mask'])){
-    	$params['data-mask']=$params['mask'];
-    	unset($params['mask']);
-	}
-	if(!isset($params['placeholder'])){$params['placeholder']='HH:MM';}
-	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='w_form-control align-right';}
-	if(!isset($params['style'])){$params['style']='border-left:1px solid #ccc;width:auto;z-index:9999;padding-right:0px;';}
+	if(!isset($params['message'])){$params['message']=' --:-- ';}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
+	
 	if(!isset($params['data-type'])){$params['data-type']='time';}
+	if(!isset($params['data-icon'])){$params['data-icon']='&#128348;';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(strlen($params['-value'])){
     	$params['-value']=date('H:i',strtotime($params['-value']));
 	}
-	$tag='';
-	$tag .= '<div class="w_flexbutton" style="position:relative;">'.PHP_EOL;
 	$opts=array();
-	$start=date('H:i',strtotime('midnight'));
 	for($x=0;$x<60*24;$x+=$params['-interval']){
 		$t=strtotime("midnight +{$x} minutes");
-		$v=date('H:i',$t);
-		$opts[$v]=date('g:i a',$t);
+		$v=date($params['-tformat'],$t);
+		$opts[$v]=date($params['-dformat'],$t);
 	}
-	$tag .= buildFormSelect($params['name'],$opts,$params);
-	// $tag .= '	<input type="text"';
-	// $tag .= setTagAttributes($params);
-	// $tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	if(!isset($params['-noicon'])){
-		$tag .= '	<span class="icon-clock w_bigger w_pointer w_gray selectonleft" style="padding:0 3px;"></label>'.PHP_EOL;
+	$tag='';
+	if(strlen($params['data-icon'])){
+
+		$tag .= '<label class="timeselector" data-icon="'.$params['data-icon'].'">'.PHP_EOL;
+		$tag .= buildFormSelect($params['name'],$opts,$params);
+		$tag .= '</label>'.PHP_EOL;
 	}
-	$tag .= '</div>'.PHP_EOL;
+	else{
+		unset($params['data-icon']);
+		$tag .= buildFormSelect($params['name'],$opts,$params);
+	}
 	return $tag;
 }
 //---------- begin function buildFormWhiteboard --------------------------------------

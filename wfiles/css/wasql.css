@@ -17,9 +17,7 @@ table.w_formtable td, table.w_formtable th {
     cursor: pointer;
 }
 .w_btn {
-	height: 34px !important;
-    line-height: 1.42857143 !important;
-    font-size: 14px;
+    line-height: 1;
     font-weight:400;
     font-family: Arial;
     padding: 6px 12px;
@@ -52,7 +50,7 @@ table.w_formtable td, table.w_formtable th {
 .w_btn-sm {
     padding: .25rem .5rem;
     font-size: .875rem;
-    line-height: 1.5;
+    line-height: 0.8;
     border-radius: .2rem;
 }
 .w_btn-append, .w_input-append{
@@ -66,7 +64,7 @@ table.w_formtable td, table.w_formtable th {
 .w_btn-lg {
     padding: .5rem 1rem;
     font-size: 1.25rem;
-    line-height: 1.5;
+    line-height: 1.3;
     border-radius: .3rem;
 }
 .w_btn-primary {
@@ -220,7 +218,7 @@ table.w_formtable td, table.w_formtable th {
 .w_flexbutton > :first-child {
     vertical-align: middle;
     border:1px solid #ccc;
-    line-height: 1.42857143;
+    line-height: 1;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
     border-top-right-radius: 0;
@@ -230,7 +228,7 @@ table.w_formtable td, table.w_formtable th {
     vertical-align: middle;
     border:1px solid #ccc;
     border-left:0px;
-    line-height: 1.42857143;
+    line-height: 1;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 0;
@@ -240,7 +238,7 @@ table.w_formtable td, table.w_formtable th {
     vertical-align: middle;
     border:1px solid #ccc;
     border-left:0px;
-    line-height: 1.42857143;
+    line-height: 1;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 4px;
@@ -1689,7 +1687,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	padding-right:20px !important;
 	border-bottom:1px solid #ddd !important;
 	font-size:12px !important;
-    line-height:1rem;
+    line-height:1;
 	display:block !important;
 	width:100% !important;
 	cursor:pointer;
@@ -1977,7 +1975,7 @@ input[data-type=checkbox]:checked + label, input[data-type=radio]:checked + labe
     color: #06223c;
     display: inline-block;
     font-weight: 300;
-    line-height: 20px;
+    line-height: 1;
     margin: 3px 0;
     padding: 3px 15px 2px;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -2003,6 +2001,28 @@ input[data-type=checkbox]:checked + label, input[data-type=radio]:checked + labe
 	background:#ffffc6;
 	cursor:pointer;
 	}
+label.timeselector{
+    position:relative;
+    display:inline-block;
+}
+label.timeselector select{
+   display: inline-block;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
+    padding-right:25px;
+}
+label.timeselector select::-ms-expand {
+     display: none;
+}
+label.timeselector:after{
+    content:attr(data-icon);
+    position:absolute;
+    right:0px;
+    top:5px;
+    padding:2px 5px;
+    font-size:inherit;
+}
 /* Toggle buttons  - round and flip Switches */
 .w_toggle {
   position: absolute;
@@ -2657,7 +2677,7 @@ polyline{
 	    color: #06223c;
 	    display: inline-block;
 	    font-weight: 300;
-	    line-height: 20px;
+	    line-height: 1;
 	    margin: 3px 0;
 	    padding: 3px 15px 2px;
 	    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
