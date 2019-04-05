@@ -830,11 +830,11 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);";
 	if(strlen($onclick)){$params['onclick'].="{$onclick};";}
 	$id='checkall_'.substr(sha1($att.$attval),0,10);
-	$tag='<input id="'.$id.'" type="checkbox" style="display:none;" data-type="checkbox" ';
+	$tag='<input id="'.$id.'" type="checkbox" ';
 	unset($params[$att]);
 	$tag .= setTagAttributes($params);
 	$tag .= ' />';
-	$tag .= '<label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'">'.$params['-label'].'</label>';
+	$tag .= '<label for="'.$id.'">'.$params['-label'].'</label>';
 	return $tag;
 	}
 //---------- begin function buildFormCheckbox--------------------------------------
@@ -896,7 +896,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	foreach($opts as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
 		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;'.$style.'">'.PHP_EOL;
-		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
 
 		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
 		if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
@@ -911,6 +911,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 			$for=false;
 		}
 		elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
+		$tag .= setTagAttributes($params);
 		//add any data params
 		foreach($params as $pk=>$pv){
 			if(preg_match('/^data\-/i',$pk)){
@@ -921,12 +922,10 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
     		$tag .= ' checked';
     		//$checked_cnt++;
 		}
-		$tag .= '> <label';
-		if($for){$tag .= ' for="'.$id.'"';}
-		$tag .= ' class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
+		$tag .= '>';
 		if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$tag .= ' <label style="white-space: normal;"';
+			$tag .= '<label style="white-space: normal;"';
 			if($for){$tag .= ' for="'.$id.'"';}
 			$tag .= ' class=""> '.$dval.'</label>'.PHP_EOL;
 		}

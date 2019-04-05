@@ -2394,7 +2394,7 @@ LIST_TABLE:
             echo '</td></tr>'.PHP_EOL;
             echo '<tr valign="top"><td colspan="2">'.PHP_EOL;
             echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
-            echo buildFormSubmit("Save Changes","do");
+            echo buildFormSubmit("Save Changes","do",'',$CONFIG['admin_color']);
             echo '<table class="table table-responsive table-bordered table-striped table-responsive">'.PHP_EOL;
             //General Table Settings
             echo '	<tr valign="top">'.PHP_EOL;
@@ -2404,18 +2404,9 @@ LIST_TABLE:
 			if(isset($tinfo['synchronize']) && $tinfo['synchronize']){$_REQUEST['synchronize']=$tinfo['synchronize'];}
 			if(isset($tinfo['websockets']) && $tinfo['websockets']){$_REQUEST['websockets']=$tinfo['websockets'];}
 			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<td class="w_dblue">'.PHP_EOL;
-			//echo '<table>';
-			echo buildTableRow(array(
-				'<span class="icon-sync w_warning w_big w_bold"></span> ',
-				buildFormCheckbox('synchronize',array(1=>1),array('id'=>'prop_synchronize')),
-				' Synchronize'
-			));
-			echo buildTableRow(array(
-				'<span class="icon-transfer w_info w_big w_bold"></span> ',
-				buildFormCheckbox('websockets',array(1=>1),array('id'=>'prop_websockets')),
-				' Websockets'
-			));
+			echo '		<td>'.PHP_EOL;
+			echo '			<div>'.buildFormCheckbox('synchronize',array(1=>'Synchronize'),array('class'=>'w_green','id'=>'prop_synchronize')).'</div>'.PHP_EOL;
+			echo '			<div>'.buildFormCheckbox('websockets',array(1=>'Websockets'),array('class'=>'w_orange','id'=>'prop_websockets')).'</div>'.PHP_EOL;
 			//echo '</table>';
 			echo '		</td>'.PHP_EOL;
 			echo '		<td>'.PHP_EOL;
@@ -2482,7 +2473,7 @@ LIST_TABLE:
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
 			echo '</table>'.PHP_EOL;
-			echo buildFormSubmit("Save Changes","do");
+			echo buildFormSubmit("Save Changes","do",'',$CONFIG['admin_color']);
 			echo buildFormEnd();
 			echo '</td></tr>'.PHP_EOL;
 			echo '</table>'.PHP_EOL;

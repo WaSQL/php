@@ -833,100 +833,229 @@ a.btn{text-decoration: none;}
     line-height: 0.8;
     border-radius: 0.2rem;
 }
-form.w_form input, form.w_form select, form.w_form textarea, .form-control,.browser-default,.w_form-control {
-  display: block;
-  width: 100%;
-  padding: 6px 12px;
-  font-size: 14px; 
+select, input[type="text"], textarea{
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
   border-radius:4px;
-  box-sizing: border-box; 
-  font-family: Arial,"Helvetica Neue",Helvetica,sans-serif;
-  font-weight: 300;
-  letter-spacing: 1px;
-  border: 0; 
-  padding: 5px 12px;  
-  position: relative; 
-  background-color: #FFF;
-  color: #333;
-  border: 1px solid #ccc;
+  border:1px solid #ccc;
+  box-sizing: border-box;
+  font-weight:300;
 }
-form.w_form input, form.w_form select,input.browser-default, select.browser-default,
-input.form-control, select.form-control,input.w_form-control, select.w_form-control {
-  line-height: 1;
+select.small, input[type="text"].small{
+  padding: .25rem .5rem;
+  font-size: .875rem;
 }
-/* condensed versions */
-form.w_form input.condensed, form.w_form select.condensed,input.browser-default.condensed, select.browser-default.condensed,
-input.form-control.condensed, select.form-control.condensed,input.w_form-control.condensed, select.w_form-control.condensed {
-  line-height: 0.8;
-  padding: 3px 7px;
+height: calc(1.8125rem + 2px);
+    
+
+::placeholder{
+  color:rgba(0,0,0,0.1);
 }
-form.w_form input:focus, form.w_form select:focus, form.w_form textarea:focus, .form-control:focus, .browser-default:focus{
-  border-color: #66afe9;
-  outline: 0;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+/* Form elements: checkboxes and radio buttons */
+input[type="checkbox"], input[type="radio"] {
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
+  line-height:1;
+  font-size:1rem;
+  margin:0px;
+  box-sizing: border-box;
+  font-weight:300;
+  outline:none;
 }
-form label.control-label{
-  display:block;
+input[type="checkbox"]:focus,input[type="radio"]:focus{
+  outline:none;
 }
-.form-control ~ label, .browser-default ~ label{
-  position: absolute; 
-  left: 14px; 
-  width: 100%; 
-  top: 10px; 
-  color: #aaa; 
-  transition: 0.3s; 
-  z-index: -1; 
-  letter-spacing: 0.5px;
+input[type="checkbox"]:after, input[type="radio"]:after{
+  position:relative;
+  font-size:inherit;
+  font-family:sans-serif;
+  font-weight:300;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+input[type="checkbox"].small:after, input[type="radio"].small:after{
+  padding: .25rem .5rem;
+  font-size: .875rem;
+}
+input[type="checkbox"].btn:after, input[type="radio"].btn:after{
+  margin-right:0px !important;
+  border-top-left-radius:4px;
+  border-bottom-left-radius:4px;
+  border:1px solid #ccc;
+  border-right:0px;
+}
+input[type="checkbox"]:after{
+  content:"\2610";
+  color:#343a40;
+}
+input[type="checkbox"]:checked:after{
+  content:"\01F5F9";
+}
+input[type="radio"]:after{
+  content:"\25CE";
+  color:#343a40;
+}
+input[type="radio"]:checked:after{
+  content:"\25C9";
+}
+input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
+  font-family:sans-serif;
+  cursor:pointer;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight:300;
+  color:#343a40;
+  -moz-user-select: none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+input[type="checkbox"].small + label[for], input[type="radio"].small + label[for]{
+  padding: .25rem .5rem;
+  font-size: .875rem;
 }
 
-/* right align placeholders since labels will be on the left */
-input.form-control::-webkit-input-placeholder,
-input.form-control:-moz-placeholder,
-input.form-control::-moz-placeholder,
-input.form-control:-ms-input-placeholder,
-input.form-control::placeholder,
-input.browser-default::-webkit-input-placeholder,
-input.browser-default:-moz-placeholder,
-input.browser-default::-moz-placeholder,
-input.browser-default:-ms-input-placeholder,
-input.browser-default::placeholder {
-  text-align: right;
+input[type="checkbox"].btn + label[for], input[type="radio"].btn + label[for]{
+  border-top-right-radius:4px;
+  border-bottom-right-radius:4px;
+  border:1px solid #ccc;
+  border-left:0px;
+  margin-left:0px !important;
 }
-
-.form-control:focus ~ label, 
-input.form-control:not(:placeholder-shown) ~ label,
-textarea.form-control:not(:placeholder-shown) ~ label,
-select.form-control ~ label,
-.browser-default:focus ~ label, 
-input.browser-default:not(:placeholder-shown) ~ label,
-textarea.browser-default:not(:placeholder-shown) ~ label,
-select.browser-default ~ label {
-  top: -14px; 
-  left: 0; 
-  font-size: 12px;  
-  transition: 0.3s;
-  color: #333;
-}
-.form-control[required] ~ label:before, .browser-default[required] ~ label:before{
-  content:"*";
-  color:#dc3545;
-  font-size:0.7em;
-  vertical-align: top;
-}
-/* align select options based on parent */
-select.align-right option, select.right-align option{text-align: right;text-align-last: right;}
-select.align-left option, select.left-align option{text-align: left;}
 /* color variations */
-.form-control.w_blue,.browser-default.w_blue{border: 1px solid rgba(0, 64, 64, 0.3);}
-.form-control.w_gray,.browser-default.w_gray{border: 1px solid rgba(90, 98, 104, 0.3);}
-.form-control.w_green,.browser-default.w_green{border: 1px solid rgba(33, 136, 56, 0.35);}
-.form-control.w_red,.browser-default.w_red{border: 1px solid rgba(200, 35, 51, 0.3);}
-.form-control.w_yellow,.browser-default.w_yellow{border: 1px solid rgba(224, 168, 0, 0.4);}
-.form-control.w_orange,.browser-default.w_orange{border: 1px solid rgba(255, 152, 0, 0.4);}
-.form-control.w_teal,.browser-default.w_teal{border: 1px solid rgba(19, 132, 150, 0.3);}
-.form-control.w_white,.browser-default.w_white{border: 1px solid rgba(226, 230, 234, 0.9);}
-.form-control.w_black,.browser-default.w_black{border: 1px solid rgba(35, 39, 43, 0.3);}
+/* w_blue */
+input[type="checkbox"].w_blue.btn:after, input[type="radio"].w_blue.btn:after {border-color:rgba(12, 122, 191, 0.3);}
+input[type="checkbox"].w_blue:checked:after, input[type="radio"].w_blue:checked:after {
+  color: #0c7abf;
+}
+input[type="checkbox"].w_blue.btn + label[for], input[type="radio"].w_blue.btn + label[for]{
+  border-color:rgba(12, 122, 191, 0.3);
+}
+input[type="checkbox"].w_blue.btn:checked + label[for], input[type="radio"].w_blue.btn:checked + label[for]{
+  background-color:rgba(12, 122, 191, 0.1);
+}
+input[type="checkbox"].w_blue.btn:checked:after, input[type="radio"].w_blue.btn:checked:after {
+  background-color:rgba(12, 122, 191, 0.1);
+}
+/* w_gray */
+input[type="checkbox"].w_gray.btn:after, input[type="radio"].w_gray.btn:after {border-color:rgba(90, 98, 104, 0.3);}
+input[type="checkbox"].w_gray:checked:after, input[type="radio"].w_gray:checked:after {
+  color: #6c757d;
+}
+input[type="checkbox"].w_gray.btn + label[for], input[type="radio"].w_gray.btn + label[for]{
+  border-color:rgba(90, 98, 104, 0.3);
+}
+input[type="checkbox"].w_gray.btn:checked:after, input[type="radio"].w_gray.btn:checked:after {
+  background-color:rgba(90, 98, 104, 0.1);
+}
+input[type="checkbox"].w_gray.btn:checked + label[for], input[type="radio"].w_gray.btn:checked + label[for]{
+  background-color:rgba(90, 98, 104, 0.1);
+}
+/* w_green */
+input[type="checkbox"].w_green.btn:after, input[type="radio"].w_green.btn:after {border-color:rgba(33, 136, 56, 0.3);}
+input[type="checkbox"].w_green:checked:after, input[type="radio"].w_green:checked:after {
+  color: #28a745;
+}
+input[type="checkbox"].w_green.btn + label[for], input[type="radio"].w_green.btn + label[for]{
+  border-color:rgba(33, 136, 56, 0.3);
+}
+input[type="checkbox"].w_green.btn:checked:after, input[type="radio"].w_green.btn:checked:after {
+  background-color:rgba(33, 136, 56, 0.1);
+}
+input[type="checkbox"].w_green.btn:checked + label[for], input[type="radio"].w_green.btn:checked + label[for]{
+  background-color:rgba(33, 136, 56, 0.1);
+}
+/* w_red */
+input[type="checkbox"].w_red.btn:after, input[type="radio"].w_red.btn:after {border-color:rgba(200, 35, 51, 0.3);}
+input[type="checkbox"].w_red:checked:after, input[type="radio"].w_red:checked:after {
+  color: #dc3545;
+}
+input[type="checkbox"].w_red.btn + label[for], input[type="radio"].w_red.btn + label[for]{
+  border-color:rgba(200, 35, 51, 0.3);
+}
+input[type="checkbox"].w_red.btn:checked:after, input[type="radio"].w_red.btn:checked:after {
+  background-color:rgba(200, 35, 51, 0.1);
+}
+input[type="checkbox"].w_red.btn:checked + label[for], input[type="radio"].w_red.btn:checked + label[for]{
+  background-color:rgba(200, 35, 51, 0.1);
+}
+/* w_yellow */
+input[type="checkbox"].w_yellow.btn:after, input[type="radio"].w_yellow.btn:after {border-color:rgba(224, 168, 0, 0.3);}
+input[type="checkbox"].w_yellow:checked:after, input[type="radio"].w_yellow:checked:after {
+  color: #ffc107;
+}
+input[type="checkbox"].w_yellow.btn + label[for], input[type="radio"].w_yellow.btn + label[for]{
+  border-color:rgba(224, 168, 0, 0.3);
+}
+input[type="checkbox"].w_yellow.btn:checked:after, input[type="radio"].w_yellow.btn:checked:after {
+  background-color:rgba(224, 168, 0, 0.1);
+}
+input[type="checkbox"].w_yellow.btn:checked + label[for], input[type="radio"].w_yellow.btn:checked + label[for]{
+  background-color:rgba(224, 168, 0, 0.1);
+}
+/* w_orange */
+input[type="checkbox"].w_orange.btn:after, input[type="radio"].w_orange.btn:after {border-color:rgba(255, 152, 0, 0.3);}
+input[type="checkbox"].w_orange:checked:after, input[type="radio"].w_orange:checked:after {
+  color: #ff9800;
+}
+input[type="checkbox"].w_orange.btn + label[for], input[type="radio"].w_orange.btn + label[for]{
+  border-color:rgba(255, 152, 0, 0.3);
+}
+input[type="checkbox"].w_orange.btn:checked:after, input[type="radio"].w_orange.btn:checked:after {
+  background-color:rgba(255, 152, 0, 0.1);
+}
+input[type="checkbox"].w_orange.btn:checked + label[for], input[type="radio"].w_orange.btn:checked + label[for]{
+  background-color:rgba(255, 152, 0, 0.1);
+}
+/* w_teal */
+input[type="checkbox"].w_teal.btn:after, input[type="radio"].w_teal.btn:after {border-color:rgba(19, 132, 150, 0.3);}
+input[type="checkbox"].w_teal:checked:after, input[type="radio"].w_teal:checked:after {
+  color: #17a2b8;
+}
+input[type="checkbox"].w_teal.btn + label[for], input[type="radio"].w_teal.btn + label[for]{
+  border-color:rgba(19, 132, 150, 0.3);
+}
+input[type="checkbox"].w_teal.btn:checked:after, input[type="radio"].w_teal.btn:checked:after {
+  background-color:rgba(19, 132, 150, 0.1);
+}
+input[type="checkbox"].w_teal.btn:checked + label[for], input[type="radio"].w_teal.btn:checked + label[for]{
+  background-color:rgba(19, 132, 150, 0.1);
+}
+/* w_white */
+input[type="checkbox"].w_white.btn:after, input[type="radio"].w_white.btn:after {border-color:rgba(226, 230, 234, 0.3);}
+input[type="checkbox"].w_white:checked:after, input[type="radio"].w_white:checked:after {
+  color: #343a40;
+}
+input[type="checkbox"].w_white.btn + label[for], input[type="radio"].w_white.btn + label[for]{
+  border-color:rgba(226, 230, 234, 0.3);
+}
+input[type="checkbox"].w_white.btn:checked:after, input[type="radio"].w_white.btn:checked:after {
+  background-color:rgba(226, 230, 234, 0.1);
+}
+input[type="checkbox"].w_white.btn:checked + label[for], input[type="radio"].w_white.btn:checked + label[for]{
+  background-color:rgba(226, 230, 234, 0.3);
+}
+/* w_black */
+input[type="checkbox"].w_black.btn:after, input[type="radio"].w_black.btn:after {border-color:rgba(35, 39, 43, 0.3);}
+input[type="checkbox"].w_black:checked:after, input[type="radio"].w_black:checked:after {
+  color: #343a40;
+}
+input[type="checkbox"].w_black.btn + label[for], input[type="radio"].w_black.btn + label[for]{
+  border-color:rgba(35, 39, 43, 0.3);
+}
+input[type="checkbox"].w_black.btn:checked:after, input[type="radio"].w_black.btn:checked:after {
+  background-color:rgba(35, 39, 43, 1);
+  color:#FFF;
+}
+input[type="checkbox"].w_black.btn:checked + label[for], input[type="radio"].w_black.btn:checked + label[for]{
+  background-color:rgba(35, 39, 43, 1);
+  color:#FFF;
+}
 
 /*--------------------- table styles  -------------------------------------------*/
 table.table {
