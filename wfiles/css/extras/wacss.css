@@ -767,9 +767,13 @@ a.btn{text-decoration: none;}
 .btn:hover{background-color: #d6d6d6;}
 /* blue #1b95e0 (27,149,224) and  #0c7abf (0,64,64) */
 .btn.w_blue{color: #fff;background-color: #1b95e0;border-color: #0c7abf;}
-.btn.w_blue:hover{background-color: #0c7abf;border-color: #09598a;}
+.btn.w_blue:hover{background-color: #0c7abf;border-color: #09598a;}textarea {
+  vertical-align: top;
+}
 /* secondary */
-.btn.w_gray{color: #fff;background-color: #6c757d;border-color: #6c757d;}
+.btn.w_gray{color: #fff;background-color: #6c757d;border-color: #6c757dtextarea {
+  vertical-align: top;
+};}
 .btn.w_gray:hover{background-color: #5a6268;border-color: #545b62;}
 /* success */
 .btn.w_green{color: #fff;background-color: #28a745;border-color: #28a745;}
@@ -833,22 +837,29 @@ a.btn{text-decoration: none;}
     line-height: 0.8;
     border-radius: 0.2rem;
 }
+button, input[type="text"], select, textarea {
+
+  -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
+  -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
+  box-sizing: border-box;
+}
+textarea {
+  vertical-align: top;
+}
 select, input[type="text"], textarea{
   padding: .375rem .75rem;
   font-size: 1rem;
-  line-height: 1.5;
   border-radius:4px;
   border:1px solid #ccc;
   box-sizing: border-box;
   font-weight:300;
+  width:100%;
 }
 select.small, input[type="text"].small{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
-height: calc(1.8125rem + 2px);
-    
-
+/* placeholder style */
 ::placeholder{
   color:rgba(0,0,0,0.1);
 }
@@ -872,11 +883,10 @@ input[type="checkbox"]:after, input[type="radio"]:after{
   font-size:inherit;
   font-family:sans-serif;
   font-weight:300;
-  padding: .375rem .75rem;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 1.3rem;
+  display:inline;
 }
-input[type="checkbox"].small:after, input[type="radio"].small:after{
+input[type="checkbox"].btn.small:after, input[type="radio"].btn.small:after{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
@@ -914,10 +924,12 @@ input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
    -webkit-user-select: none;
    -ms-user-select: none;
    user-select: none;
+   display:inline;
 }
 input[type="checkbox"].small + label[for], input[type="radio"].small + label[for]{
   padding: .25rem .5rem;
   font-size: .875rem;
+  
 }
 
 input[type="checkbox"].btn + label[for], input[type="radio"].btn + label[for]{
@@ -926,6 +938,7 @@ input[type="checkbox"].btn + label[for], input[type="radio"].btn + label[for]{
   border:1px solid #ccc;
   border-left:0px;
   margin-left:0px !important;
+
 }
 /* color variations */
 /* w_blue */
