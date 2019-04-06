@@ -1118,7 +1118,7 @@ function remindMeForm(){
 //--------------------------
 function setProcessing(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
-	if(undefined == msg){msg='Processing ...';}
+	if(undefined == msg){msg='';}
 	var str=getProcessingDiv(id,msg,cancel);
 	setText(id,str);
 	return;
@@ -1126,7 +1126,7 @@ function setProcessing(id,msg,cancel){
 //--------------------------
 function getProcessingDiv(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
-	if(undefined == msg){msg='Processing ...';}
+	if(undefined == msg){msg='';}
 	var str='';
 	str += '<span id="processing_div">';
 	str += '<span class="icon-spin7 w_spin"></span>';
