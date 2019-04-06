@@ -837,7 +837,7 @@ a.btn{text-decoration: none;}
     line-height: 0.8;
     border-radius: 0.2rem;
 }
-button, input[type="text"], select, textarea {
+button, input[type="text"], input[type="password"], select, textarea {
   -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
   -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
   box-sizing: border-box;
@@ -845,7 +845,7 @@ button, input[type="text"], select, textarea {
 textarea {
   vertical-align: top;
 }
-select, input[type="text"], textarea{
+select, input[type="text"], input[type="password"], textarea{
   padding: .375rem .75rem;
   font-size: 1rem;
   border-radius:4px;
@@ -854,18 +854,18 @@ select, input[type="text"], textarea{
   font-weight:300;
   width:100%;
 }
-select.small, input[type="text"].small{
+select.small, input[type="text"].small, input[type="password"].small{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
 
 @media (max-width: 575px){
-  select, input[type="text"], textarea{
+  select, input[type="text"], input[type="password"], textarea{
     padding: .2rem .35rem;
     font-size: 1rem;
     border-radius:4px;
   }
-  select.small, input[type="text"].small{
+  select.small, input[type="text"].small, input[type="password"].small{
     padding: .1rem .2rem;
     font-size: .875rem;
   }
