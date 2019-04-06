@@ -838,7 +838,6 @@ a.btn{text-decoration: none;}
     border-radius: 0.2rem;
 }
 button, input[type="text"], select, textarea {
-
   -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
   -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
   box-sizing: border-box;
@@ -859,6 +858,20 @@ select.small, input[type="text"].small{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
+
+@media (max-width: 575px){
+  select, input[type="text"], textarea{
+    padding: .2rem .35rem;
+    font-size: 1rem;
+    border-radius:4px;
+  }
+  select.small, input[type="text"].small{
+    padding: .1rem .2rem;
+    font-size: .875rem;
+  }
+
+}
+
 /* placeholder style */
 ::placeholder{
   color:rgba(0,0,0,0.1);
