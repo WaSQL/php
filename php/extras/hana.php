@@ -168,7 +168,11 @@ ENDOFQUERY;
 function hanaParseConnectParams($params=array()){
 	global $CONFIG;
 	if(!isset($params['-dbname'])){
-		if(isset($CONFIG['dbname_hana'])){
+		if(isset($CONFIG['hana_connect'])){
+			$params['-dbname']=$CONFIG['hana_connect'];
+			$params['-dbname_source']="CONFIG hana_connect";
+		}
+		elseif(isset($CONFIG['dbname_hana'])){
 			$params['-dbname']=$CONFIG['dbname_hana'];
 			$params['-dbname_source']="CONFIG dbname_hana";
 		}
@@ -208,6 +212,9 @@ function hanaParseConnectParams($params=array()){
 	}
 	else{
 		$params['-dbpass_source']="passed in";
+	}
+	if(isset($CONFIG['hana_cursor'])){
+		$params['-cursor']=$CONFIG['hana_cursor'];
 	}
 	return $params;
 }
@@ -264,7 +271,7 @@ function hanaDBConnect($params=array()){
 			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
 		if(!is_resource($dbh_hana)){
 			//wait a few seconds and try again
@@ -420,7 +427,7 @@ function hanaExecuteSQL($query,$params=array()){
 * @return integer returns the autoincriment key
 * @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
-function hanaAddDBRecords($table,$recs){
+function hanaAddDBRecordsOLD($table,$recs){
 	global $USER;
 	if(!strlen($table)){return 'hanaAddDBRecords error: No table.';}
 	$fields=hanaGetDBFieldInfo($table,$params);
@@ -544,6 +551,84 @@ ENDOFQUERY;
 	}
 	return 0;
 }
+function hanaAddDBRecords($params=array()){
+	if(!isset($params['-table'])){
+		debugValue(array(
+    		'function'=>"hanaAddDBRecords",
+    		'error'=>'No table specified'
+    	));
+    	return false;
+    }
+    if(!isset($params['-list']) || !is_array($params['-list'])){
+		debugValue(array(
+    		'function'=>"hanaAddDBRecords",
+    		'error'=>'No records (list) specified'
+    	));
+    	return false;
+    }
+    //defaults
+    if(!isset($params['-dateformat'])){
+    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
+    }
+	$j=array("items"=>$params['-list']);
+    $json=json_encode($j);
+    $info=hanaGetDBFieldInfo($params['-table']);
+    $fields=array();
+    $jfields=array();
+    $defines=array();
+    foreach($recs[0] as $field=>$value){
+    	if(!isset($info[$field])){continue;}
+    	$fields[]=$field;
+    	switch(strtolower($info[$field]['_dbtype'])){
+    		case 'timestamp':
+    		case 'date':
+    			//date types have to be converted into a format that hana understands
+    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
+    		break;
+    		default:
+    			$jfields[]=$field;
+    		break;
+    	}
+    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    }
+    if(!count($fields)){return 'No matching Fields';}
+    $fieldstr=implode(',',$fields);
+    $jfieldstr=implode(',',$jfields);
+    $definestr=implode(','.PHP_EOL,$defines);
+    $query .= <<<ENDOFQ
+    INSERT INTO {$params['-table']}
+    	({$fieldstr})
+    SELECT 
+    	{$jfieldstr}
+	FROM JSON_TABLE(
+		?
+		, '\$'
+		COLUMNS (
+			nested path '\$.items[*]'
+			COLUMNS(
+				{$definestr}
+			)
+		)
+	)
+ENDOFQ;
+	$dbh_hana=hanaDBConnect($params);
+	$stmt = odbc_prepare($dbh_hana, $query);
+	if(!is_resource($hanaAddDBRecordCache[$params['-table']]['stmt'])){
+		$e=odbc_errormsg();
+		$err=array("hanaAddDBRecords prepare Error",$e,$query);
+		debugValue($err);
+		return false;
+	}
+	
+	$success = odbc_execute($stmt,array($json));
+	if(!$success){
+		$e=odbc_errormsg();
+		debugValue(array("hanaAddDBRecords Execute Error",$e,$opts));
+		return false;
+	}
+	return true;
+}
+
 //---------- begin function hanaAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.
@@ -632,7 +717,7 @@ ENDOFQUERY;
 		$success = odbc_execute($hanaAddDBRecordCache[$params['-table']]['stmt'],$opts['values']);
 		if(!$success){
 			$e=odbc_errormsg();
-			debugValue(array("hanaAddDBRecord Execute Error",$e));
+			debugValue(array("hanaAddDBRecord Execute Error",$e,$opts));
     		return "hanaAddDBRecord Execute Error".printValue($e);
 		}
 		if(isset($params['-noidentity'])){return $success;}

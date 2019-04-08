@@ -608,6 +608,10 @@ function mssqlGetDBRecords($params){
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	//offset requires an order by
+	    	if(!isset($params['-order'])){
+	    		$query .= " ORDER BY 1";
+	    	}
 	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
 	    }
 	}
