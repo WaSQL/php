@@ -29,6 +29,7 @@ ini_set('oci8.statement_cache_size',20);
 * @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
 */
 function oracleAddDBRecords($params=array()){
+	global $USER;
 	if(!isset($params['-table'])){
 		debugValue(array(
     		'function'=>"oracleAddDBRecords",
@@ -52,10 +53,10 @@ function oracleAddDBRecords($params=array()){
     //check for cdate and cuser
     foreach($recs as $i=>$rec){
     	if(isset($info['cdate']) && !isset($rec['cdate'])){
-			$recs[$i]['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+			$recs[$i]['cdate']=strtoupper(date('Y-m-d  H:i:s'));
 		}
 		elseif(isset($info['_cdate']) && !isset($rec['_cdate'])){
-			$recs[$i]['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
+			$recs[$i]['_cdate']=strtoupper(date('Y-m-d  H:i:s'));
 		}
 		if(isset($info['cuser']) && !isset($rec['cuser'])){
 			$recs[$i]['cuser']=$USER['username'];
@@ -145,7 +146,8 @@ ENDOFQ;
     		'action'=>'oci_execute',
     		'stid'=>$stid,
     		'oci_error'=>$e,
-    		'query'=>$query
+    		'query'=>$query,
+    		'json'=>$json
     	));
     	return false;
 	}
