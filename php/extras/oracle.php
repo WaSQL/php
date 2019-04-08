@@ -47,13 +47,30 @@ function oracleAddDBRecords($params=array()){
     if(!isset($params['-dateformat'])){
     	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
     }
-	$j=array("items"=>$params['-list']);
-    $json=json_encode($j);
+    $recs=$params['-list'];
     $info=oracleGetDBFieldInfo($params['-table']);
+    //check for cdate and cuser
+    foreach($recs as $i=>$rec){
+    	if(isset($info['cdate']) && !isset($rec['cdate'])){
+			$recs[$i]['cdate']=strtoupper(date('d-M-Y  H:i:s'));
+		}
+		elseif(isset($info['_cdate']) && !isset($rec['_cdate'])){
+			$recs[$i]['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
+		}
+		if(isset($info['cuser']) && !isset($rec['cuser'])){
+			$recs[$i]['cuser']=$USER['username'];
+		}
+		elseif(isset($info['_cuser']) && !isset($rec['_cuser'])){
+			$recs[$i]['_cuser']=$USER['username'];
+		}
+    }
+	$j=array("items"=>$recs);
+    $json=json_encode($j);
+    
     $fields=array();
     $jfields=array();
     $defines=array();
-    $recs=$params['-list'];
+
     foreach($recs[0] as $field=>$value){
     	if(!isset($info[$field])){continue;}
     	$fields[]=$field;
