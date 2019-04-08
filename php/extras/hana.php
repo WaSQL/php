@@ -589,7 +589,7 @@ function hanaAddDBRecords($params=array()){
     			$jfields[]=$field;
     		break;
     	}
-    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
     }
     if(!count($fields)){return 'No matching Fields';}
     $fieldstr=implode(',',$fields);

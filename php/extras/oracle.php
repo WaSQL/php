@@ -53,6 +53,7 @@ function oracleAddDBRecords($params=array()){
     $fields=array();
     $jfields=array();
     $defines=array();
+    $recs=$params['-list'];
     foreach($recs[0] as $field=>$value){
     	if(!isset($info[$field])){continue;}
     	$fields[]=$field;
@@ -66,7 +67,7 @@ function oracleAddDBRecords($params=array()){
     			$jfields[]=$field;
     		break;
     	}
-    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
     }
     if(!count($fields)){return 'No matching Fields';}
     $fieldstr=implode(',',$fields);
