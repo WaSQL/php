@@ -148,6 +148,7 @@ function writeFiles(){
 		'apimethod'	=>"posteditxmlfromjson",
 		'encoding'	=>"base64",
 		'-nossl'=>1,
+		'-ipv4'=>1,
 		'-follow'=>1,
 		'-xml'=>1,
 		'json'=>$json
@@ -380,6 +381,7 @@ function fileChanged($afile){
 		'_table'	=>$table,
 		'_fields'	=>$field,
 		$field		=>$content,
+		'-ipv4'		=>1,
 		'_return'	=>'XML',
 		'-nossl'	=>1,
 		'-follow'	=>1,
