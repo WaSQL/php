@@ -67,9 +67,7 @@ foreach($checkhosts as $env){
 foreach($allhost as $key=>$val){
 	$CONFIG[$key]=$val;
 }
-if(!strlen($chost)){
-	abort("Configuration Error: No Host entry found in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
-}
+
 //echo $chost.printValue($CONFIG).printValue($_SERVER);exit;
 foreach($ConfigXml as $name=>$host){
 	foreach($allhost as $key=>$val){
