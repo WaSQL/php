@@ -29,6 +29,7 @@ ini_set('oci8.statement_cache_size',20);
 * @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
 */
 function oracleAddDBRecords($params=array()){
+	global $USER;
 	if(!isset($params['-table'])){
 		debugValue(array(
     		'function'=>"oracleAddDBRecords",
@@ -47,12 +48,30 @@ function oracleAddDBRecords($params=array()){
     if(!isset($params['-dateformat'])){
     	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
     }
-	$j=array("items"=>$params['-list']);
-    $json=json_encode($j);
+    $recs=$params['-list'];
     $info=oracleGetDBFieldInfo($params['-table']);
+    //check for cdate and cuser
+    foreach($recs as $i=>$rec){
+    	if(isset($info['cdate']) && !isset($rec['cdate'])){
+			$recs[$i]['cdate']=strtoupper(date('Y-m-d  H:i:s'));
+		}
+		elseif(isset($info['_cdate']) && !isset($rec['_cdate'])){
+			$recs[$i]['_cdate']=strtoupper(date('Y-m-d  H:i:s'));
+		}
+		if(isset($info['cuser']) && !isset($rec['cuser'])){
+			$recs[$i]['cuser']=$USER['username'];
+		}
+		elseif(isset($info['_cuser']) && !isset($rec['_cuser'])){
+			$recs[$i]['_cuser']=$USER['username'];
+		}
+    }
+	$j=array("items"=>$recs);
+    $json=json_encode($j);
+    
     $fields=array();
     $jfields=array();
     $defines=array();
+
     foreach($recs[0] as $field=>$value){
     	if(!isset($info[$field])){continue;}
     	$fields[]=$field;
@@ -66,7 +85,7 @@ function oracleAddDBRecords($params=array()){
     			$jfields[]=$field;
     		break;
     	}
-    	$defines[]="{$field} varchar PATH '\$.{$field}'";
+    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
     }
     if(!count($fields)){return 'No matching Fields';}
     $fieldstr=implode(',',$fields);
@@ -127,7 +146,8 @@ ENDOFQ;
     		'action'=>'oci_execute',
     		'stid'=>$stid,
     		'oci_error'=>$e,
-    		'query'=>$query
+    		'query'=>$query,
+    		'json'=>$json
     	));
     	return false;
 	}
