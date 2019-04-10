@@ -753,7 +753,9 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
     -webkit-transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
-label.btn, a.btn {height:auto;}
+label.btn, a.btn {
+  height:auto;
+}
 a.btn{text-decoration: none;}
 .btn + .btn {
   margin-left:5px;
@@ -837,6 +839,46 @@ a.btn{text-decoration: none;}
     line-height: 0.8;
     border-radius: 0.2rem;
 }
+.flexbutton{
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content: flex-start;
+}
+.flexbutton > :first-child {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    line-height: 1;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.flexbutton > :not(:last-child):not(:first-child) {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    border-left:0px;
+    line-height: 1;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.flexbutton > :last-child {
+    vertical-align: middle;
+    border:1px solid #ccc;
+    border-left:0px;
+    line-height: 1;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
 button, input[type="text"], input[type="password"], select, textarea {
   -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
   -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
@@ -844,6 +886,12 @@ button, input[type="text"], input[type="password"], select, textarea {
 }
 textarea {
   vertical-align: top;
+}
+button.btn{
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-weight:300;
 }
 select, input[type="text"], input[type="password"], textarea{
   padding: .375rem .75rem;
@@ -874,14 +922,18 @@ select.small, input[type="text"].small, input[type="password"].small{
 
 /* placeholder style */
 ::placeholder{
-  color:rgba(0,0,0,0.1);
+  color:rgba(0,0,0,0.3);
+  font-size:0.8rem;
+}
+:focus::placeholder{
+  color:rgba(0,0,0,0.2);
+  text-align: right;
 }
 /* Form elements: checkboxes and radio buttons */
 input[type="checkbox"], input[type="radio"] {
   -webkit-appearance:none;
   -moz-appearance:none;
   appearance:none;
-  line-height:1;
   font-size:1rem;
   margin:0px;
   box-sizing: border-box;

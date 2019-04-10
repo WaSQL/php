@@ -11,9 +11,8 @@
 	<div class="row well" style="margin-top:15px;">
 		<div class="col-sm-4">
 			<h3 class="w_nowrap">
-				<input type="checkbox" data-type="checkbox" id="wasql_crons" style="display:none;" name="wasql_crons" value="1"<?=$recs['wasql_crons']['checked'];?> />
-				<label class="icon-mark" for="wasql_crons"></label>
-				<label for="wasql_crons"><span class="hidden-xs">WaSQL</span> Crons <span class="icon-cron"></span></label>
+				<input type="checkbox" class="w_green" id="wasql_crons" name="wasql_crons" value="1"<?=$recs['wasql_crons']['checked'];?> />
+				<label for="wasql_crons"> Crons <span class="icon-cron"></span></label>
 			</h3>
 				WaSQL crons allow you to schedule and manage externals processes - when and how often they run.
 				It also records the results of such processes.
@@ -22,8 +21,7 @@
 			<div class="row">
 				<div class="col-sm-6">
 					<h3 class="w_nowrap">
-						<input type="checkbox" data-type="checkbox" id="wasql_queries" style="display:none;" name="wasql_queries" value="1"<?=$recs['wasql_queries']['checked'];?> />
-						<label class="icon-mark" for="wasql_queries"></label>
+						<input type="checkbox" class="w_green" id="wasql_queries" name="wasql_queries" value="1"<?=$recs['wasql_queries']['checked'];?> />
 						<label for="wasql_queries"><span class="hidden-xs">Query</span> Monitor <span class="icon-database"></span></label>
 					</h3>
 				</div>
@@ -50,8 +48,7 @@
 	<div class="row well">
 		<div class="col-sm-4">
 			<h3 class="w_nowrap">
-				<input type="checkbox" data-type="checkbox" id="wasql_access" style="display:none;" name="wasql_access" value="1"<?=$recs['wasql_access']['checked'];?> />
-				<label class="icon-mark" for="wasql_access"></label>
+				<input type="checkbox" class="w_green" id="wasql_access" name="wasql_access" value="1"<?=$recs['wasql_access']['checked'];?> />
 				<label for="wasql_access"><span class="hidden-xs">WaSQL</span> Analytics <span class="icon-chart-line"></span></label>
 			</h3>
 				Turn Status ON to log all page views into the _access table. This is normally turned OFF. Turning it on also populate the _access_summary table.
@@ -62,8 +59,7 @@
 			<div class="row">
 				<div class="col-sm-6">
 					<h3 class="w_nowrap">
-						<input type="checkbox" data-type="checkbox" id="wasql_synchronize" style="display:none;" name="wasql_synchronize" value="1"<?=$recs['wasql_synchronize']['checked'];?> />
-						<label class="icon-mark" for="wasql_synchronize"></label>
+						<input type="checkbox" class="w_green" id="wasql_synchronize" name="wasql_synchronize" value="1"<?=$recs['wasql_synchronize']['checked'];?> />
 						<label for="wasql_synchronize">Sync<span class="hidden-xs">hronize Sites</span> <span class="icon-sync"></span></label>
 					</h3>
 				</div>
@@ -84,8 +80,7 @@
 	<div class="row well">
 		<div class="col-sm-4">
 			<h3 class="w_nowrap">
-				<input type="checkbox" data-type="checkbox" id="wasql_errors" style="display:none;" name="wasql_errors" value="1"<?=$recs['wasql_errors']['checked'];?> />
-				<label class="icon-mark" for="wasql_errors"></label>
+				<input type="checkbox" class="w_green" id="wasql_errors" name="wasql_errors" value="1"<?=$recs['wasql_errors']['checked'];?> />
 				<label for="wasql_errors"><span class="hidden-xs">Capture</span> Errors <span class="badge w_dangerback">12</span></label>
 			</h3>
 			Capture code errors into the _errors table and errors to the menu when errors exist.
@@ -94,8 +89,7 @@
 			<div class="row">
 				<div class="col-sm-6">
 					<h3 class="w_nowrap">
-						<input type="checkbox" data-type="checkbox" id="wasql_git" style="display:none;" name="wasql_git" value="1"<?=$recs['wasql_git']['checked'];?> />
-						<label class="icon-mark" for="wasql_git"></label>
+						<input type="checkbox" class="w_green" id="wasql_git" name="wasql_git" value="1"<?=$recs['wasql_git']['checked'];?> />
 						<label for="wasql_git"><span class="icon-git w_biggest"></span> <span class="hidden-xs">Repo</span></label>
 					</h3>
 				</div>
@@ -113,8 +107,8 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-6">
-			<button type="submit" class="btn green">Save Settings</button>
-			<a href="/php/admin.php?_menu=settings" class="btn"><span class="icon-refresh"></span> Refresh</a>
+			<button type="submit" class="btn <?=$CONFIG['admin_color'];?>"><span class="icon-save"></span> Save Settings</button>
+			<a href="/php/admin.php?_menu=settings" class="btn <?=$CONFIG['admin_color'];?>"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 
 		<div class="col-sm-6" id="set_process">
