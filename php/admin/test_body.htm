@@ -1,0 +1,225 @@
+<view:default>
+<h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
+<div class="row">
+	<div class="col s2" style="position:sticky;top:59px;">
+		<ul class="nav-list buttons <?=$CONFIG['admin_color'];?>">
+			<li><a href="form-elements" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Form Elements</a></li>
+			<li><a href="nav-tabs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
+			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
+		</ul>
+	</div>
+	<div class="col s10" id="test_content">
+	</div>
+</div>
+</view:default>
+
+<view:form-elements>
+	<div class="row"><div class="col s2">ButtonSelect</div><div class="col s4"><?=buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
+	<div class="row"><div class="col s2">Date</div><div class="col s4"><?=buildFormDate('mydate');?></div></div>
+	<div class="row"><div class="col s2">Checkbox</div><div class="col s4"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
+	<div class="row"><div class="col s2">Color</div><div class="col s4"><?=buildFormColor('x2');?></div></div>
+	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));?></div></div>
+	<div class="row"><div class="col s2">DateTime</div><div class="col s4"><?=buildFormDateTime('xyz');?></div></div>
+	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4');?></div></div>
+	<div class="row"><div class="col s2">Password</div><div class="col s4"><?=buildFormPassword('x5');?></div></div>
+	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));;?></div></div>
+	<div class="row"><div class="col s2">Radio</div><div class="col s4"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>2,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8');?></div></div>
+	<div class="row"><div class="col s2">Textarea</div><div class="col s4"><?=buildFormTextarea('x');?></div></div>
+	<div class="row"><div class="col s2">Time</div><div class="col s4"><?=buildFormTime('x9');?></div></div>
+	<div class="row"><div class="col s2">Whiteboard</div><div class="col s4"><?=buildFormWhiteboard('wb');?></div></div>
+	<div class="row"><div class="col s2">YesNo</div><div class="col s4"><?=buildFormYesNo('x12');?></div></div>
+	<div class="row"><div class="col s2">ToggleRound</div><div class="col s4"><?=buildFormToggleButton('x13',array('a'=>'Man','b'=>'Woman'),array('-format'=>'round'));?></div></div>
+	<div class="row"><div class="col s2">ToggleFlip</div><div class="col s4"><?=buildFormToggleButton('x13b',array('a'=>'Man','b'=>'Woman'),array('-format'=>'flip'));?></div></div>
+	<div class="row"><div class="col s2">Image</div><div class="col s4"><?=buildFormImage('/wfiles/wasql.png','x');?></div></div>
+	<div class="row"><div class="col s2">Select</div><div class="col s4"><?=buildFormSelect('x14',array(1=>'One',2=>'Two'));?></div></div>
+	<div class="row"><div class="col s2">SelectCountry</div><div class="col s4"><?=buildFormSelectCountry('x15');?></div></div>
+	<div class="row"><div class="col s2">SelectMonth</div><div class="col s4"><?=buildFormSelectMonth('x16');?></div></div>
+	<div class="row"><div class="col s2">SelectState</div><div class="col s4"><?=buildFormSelectState('x17');?></div></div>
+	<div class="row"><div class="col s2">SelectTimezone</div><div class="col s4"><?=buildFormSelectTimezone('x18');?></div></div>
+	<div class="row"><div class="col s2">SelectYear</div><div class="col s4"><?=buildFormSelectYear('x19');?></div></div>
+	<div class="row"><div class="col s2">Signature</div><div class="col s4"><?=buildFormSignature('x20');?></div></div>
+	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x20');?></div></div>
+	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22');?></div></div>
+</view:form-elements>
+
+<view:nav-tabs>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs collapse">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_gray">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_green">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_red">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_yellow">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_orange">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_teal">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_white">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<ul class="nav-tabs w_black">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+</view:nav-tabs>
+
+<view:nav-list>
+<div class="row">
+		<div class="col s12 m6 l3">
+			<ul class="nav-list w_black">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col s12 m6 l3">
+			<ul class="nav-list buttons w_gray">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col s12 m6 l3">
+			<ul class="nav-list w_green">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col s12 m6 l3">
+			<ul class="nav-list buttons w_red">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<ul class="nav-list buttons w_yellow">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col-sm-3">
+			<ul class="nav-list buttons w_orange">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col-sm-3">
+			<ul class="nav-list buttons w_teal">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+		<div class="col-sm-3">
+			<ul class="nav-list buttons w_white">         
+				<li><a href="/config/usb" ><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li class="active"><a href="/config/plex" ><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" ><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" ><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+</view:nav-list>
