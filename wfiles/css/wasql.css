@@ -531,7 +531,7 @@ table th a {
 	border-bottom-right-radius: 7px;
 	}
 
-.w_signature{
+.w_signature, .w_whiteboard{
 	border:1px dashed #555555;
 	border-bottom:2px solid #555555;
 	-webkit-border-top-left-radius: 5px;
@@ -542,7 +542,7 @@ table th a {
 	border-top-right-radius: 5px;
 	cursor:crosshair;
 }
-.w_signature:active{
+.w_signature:active, .w_whiteboard:active{
 	cursor:crosshair;
 }
 .w_shadow{
@@ -1715,7 +1715,7 @@ label.timeselector:after{
   visibility: hidden;
 }
 .w_toggle + label {
-  display: block;
+  display: flex !important;
   position: relative;
   cursor: pointer;
   outline: none;
@@ -1790,8 +1790,9 @@ input.w_toggle-round:checked + label:after {
 }
 input.w_toggle-flip + label {
   padding: 2px;
-  width: 64px;
+  width: auto;
   height: 32px;
+  display:block;
 }
 input.w_toggle-flip + label:before, input.w_toggle-flip + label:after {
   display: block;

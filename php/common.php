@@ -768,7 +768,7 @@ function buildFakeContent($title='FAKE for'){
 * @param params array
 *	[value] - sets default selection
 *	[name] - name override
-*	[-button'] - btn-default, btn-primary, btn-warning, btn-danger, btn-info - defaults to btn-default
+*	[class] - string - w_green, w_red, etc..
 * @return string
 * @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
 */
@@ -791,12 +791,16 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$checked=' checked';
 		}
 		$id="{$name}_{$tval}";
-		$tag .= '<input type="radio" data-type="radio" style="display:none"';
+		$class='';
+		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
+		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
+		elseif(isset($params['class'])){$class=$params['class'];}
+		$tag .= '<input type="radio" data-type="radio" class="btn '.$class.'" style="display:none"';
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
 		}
 		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
-        $tag .= '<label for="'.$id.'" class="icon-circle"></label><label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
+        $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -851,88 +855,8 @@ function buildFormCheckAll($att,$attval,$params=array()){
 *	HTML Form checkbox for each pair passed in
 */
 function buildFormCheckbox($name, $opts=array(), $params=array()){
-	if(!strlen(trim($name))){return 'buildFormCheckbox Error: no name';}
-	if(!is_array($opts) || !count($opts)){return 'buildFormCheckbox Error: no opts';}
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
-	if(!isset($params['width'])){$params['width']=6;}
-	if(!isset($params['-icon'])){$params['-icon']='mark';}
-	//make sure width is a number
-	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
-	if(!isNum($params['width'])){$params['width']=6;}
-	$name=preg_replace('/[\[\]]+$/','',$name);
-	if(isset($params['value'])){
-      if(!is_array($params['value'])){
-        $params['-values']=preg_split('/\:/',trim($params['value']));
-      }
-      else{$params['-values']=$params['value'];}
-      unset($params['value']);
-    }
-	if(isset($params['-values'])){
-    	if(!is_array($params['-values'])){
-        	$params['-values']=array($params['-values']);
-		}
-	}
-	elseif(isset($_REQUEST[$name])){
-    	if(!is_array($_REQUEST[$name])){
-        	$params['-values']=array($_REQUEST[$name]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$name];
-		}
-	}
-	else{
-    	$params['-values']=array();
-	}
-	if(count($opts)==1){
-		$tag  = '<div>'.PHP_EOL;	
-	}
-	else{
-		$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
-	}
-	$style=count($opts) > 4?'width:100%;':'';
-	foreach($opts as $tval=>$dval){
-		$id=$params['id'].'_'.$tval;
-		$tag .= '		<div style="margin-top:5px;white-space: normal;display:inline-block;'.$style.'">'.PHP_EOL;
-		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-
-		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1"';}
-		if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-		//if checkbox is readonly or disabled then do not allow them to change it
-		$for=true;
-		if(isset($params["{$tval}_readonly"])){
-			$tag .= ' readonly="'.$params["{$tval}_readonly"].'"';
-			$for=false;
-		}
-		if(isset($params["{$tval}_disabled"])){
-			$tag .= ' disabled="'.$params["{$tval}_disabled"].'"';
-			$for=false;
-		}
-		elseif(isset($params['requiredif'])){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-		$tag .= setTagAttributes($params);
-		//add any data params
-		foreach($params as $pk=>$pv){
-			if(preg_match('/^data\-/i',$pk)){
-				$tag .= " {$pk}=\"{$pv}\"";
-			}
-		}
-		if(in_array($tval,$params['-values'])){
-    		$tag .= ' checked';
-    		//$checked_cnt++;
-		}
-		$tag .= '>';
-		if((isset($params['-nolabel']) && $params['-nolabel']) || ($tval==1 && $dval==1 && count($opts)==1)){}
-		else{
-			$tag .= '<label style="white-space: normal;"';
-			if($for){$tag .= ' for="'.$id.'"';}
-			$tag .= ' class=""> '.$dval.'</label>'.PHP_EOL;
-		}
-		$tag .= '</div>'.PHP_EOL;
-	}
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
+	$params['-type']='checkbox';
+	return buildFormRadioCheckbox($name, $opts, $params);
 }
 //---------- begin function buildFormColor-------------------
 /**
@@ -1104,8 +1028,8 @@ function buildFormGender($name='gender',$params=array()){
 		'M'=>'Male',
 		'F'=>'Female'
 	);
-	$params['M_class']='icon-user-male';
-	$params['F_class']='icon-user-female';
+	$params['M_class']='w_blue';
+	$params['F_class']='w_red';
 	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormHidden--------------------
@@ -1241,7 +1165,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 			$litags .= '--------</div>'.PHP_EOL;
 			continue;
 		}
-    	$litags .= '<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	$litags .= '<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$tag.=' data-required="1"';}
     	$onclick="formSetMultiSelectStatus(this);";
     	if(isset($params['onchange']) && strlen($params['onchange'])){
@@ -1255,7 +1179,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$litags .= ' checked';
         	$checked_cnt++;
 		}
-    	$litags .= ' /><label for="'.$id.'" class="icon-mark"></label> <label for="'.$id.'"> '.$dval.'</label></div>'.PHP_EOL;
+    	$litags .= ' /><label for="'.$id.'"> '.$dval.'</label></div>'.PHP_EOL;
 	}
 
 
@@ -1283,10 +1207,16 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 *	HTML Form radio button for each pair passed in
 */
 function buildFormRadio($name, $opts=array(), $params=array()){
-	if(!strlen(trim($name))){return 'buildFormRadio Error: no name';}
+	$params['-type']='radio';
+	return buildFormRadioCheckbox($name, $opts, $params);
+}
+
+function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
+	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
+	if(!strlen(trim($name))){return 'buildFormRadioCheckbox Error: no name';}
 	if(isset($params['name'])){$name=$params['name'];}
 	$name=preg_replace('/[\[\]]+$/','',$name);
-	if(!is_array($opts) || !count($opts)){return 'buildFormRadio Error: no opts';}
+	if(!is_array($opts) || !count($opts)){return 'buildFormRadioCheckbox Error: no opts';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
@@ -1329,8 +1259,16 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
 		$minwidth=floor(strlen($dval)*10)+25;
 		$tag .= '		<div style="padding:5px;'.$style.'">'.PHP_EOL;
-		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" style="display:none;" data-type="radio" type="radio" name="'.$name.'" value="'.$tval.'"';
+		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="'.$params['-type'].'" type="'.$params['-type'].'" name="'.$name.'" value="'.$tval.'"';
 		if($params['required']){$tag .= ' data-required="1"';}
+		//add class
+		$class='';
+		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
+		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
+		elseif(isset($params['class'])){$class=$params['class'];}
+		if(strlen($class)){
+			$tag .= ' class="'.$class.'"';
+		}
 		//add any data params
 		foreach($params as $pk=>$pv){
 			if(preg_match('/^data\-/i',$pk)){
@@ -1343,7 +1281,7 @@ function buildFormRadio($name, $opts=array(), $params=array()){
     		$tag .= ' checked';
     		$checked_cnt++;
 		}
-		$tag .= '> <label for="'.$id.'" class="icon-'.$params['-icon'].'"></label>'.PHP_EOL;
+		$tag .= '> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
 			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;"> '.$dval.'</label>'.PHP_EOL;
@@ -1534,46 +1472,9 @@ function buildFormTime($name,$params=array()){
 * @return HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
 */
 function buildFormWhiteboard($name,$params=array()){
-	$rtn='';
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
-	if(!isset($params['width'])){$params['width']=300;}
-	if(!isset($params['height'])){$params['height']=75;}
-	if(isset($params['value']) && strlen($params['value'])){$params['-value']=$params['value'];}
-	$canvas_id=$name.'_canvas';
-	$clear_id=$name.'_clear';
-	$base64image='';
-	$barid=$params['id'].'_topbar';
-	$rtn .= '	<div id="'.$barid.'">'.PHP_EOL;
-	//show Toolbar:  upload, clear, save
-	$rtn .= '		<div class="w_right">'.PHP_EOL;
-	if(isset($params['-value']) && strlen($params['-value'])){
-		$reset_id=$name.'_reset';
-		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
-	}
-	$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
-	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '		'.$params['displayname'].PHP_EOL;
-	$rtn .= '	</div>'.PHP_EOL;
-	$rtn .= '    <canvas';
-	if(isset($params['style'])){
-		$rtn .= ' style="'.$params['style'].'"';
-	}
-	if(!isset($params['style']) || !preg_match('/width/i',$params['style'])){
-		$rtn .= ' width="'.$params['width'].'"';
-	}
-	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
-		$rtn .= ' height="'.$params['height'].'"';
-	}
-	$rtn .= ' id="'.$canvas_id.'" data-behavior="whiteboard" data-barid="'.$barid.'" class="w_whiteboard"></canvas>'.PHP_EOL;
-	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'.PHP_EOL;
-	$rtn .= buildOnLoad("resizeSignatureWidthHeight();");
-	return $rtn;
+	if(!isset($params['displayname'])){$params['displayname']='Draw Below:';}
+	if(!isset($params['erase'])){$params['clear']='<span class="icon-erase"></span> Erase';}
+	return buildFormSignature($name,$params);
 }
 //---------- begin function buildFormYesNo--------------------
 /**
@@ -1588,8 +1489,8 @@ function buildFormYesNo($name='yesno',$params=array()){
 		'Y'=>'Yes',
 		'N'=>'No'
 	);
-	$params['Y_class']='icon-thumbs-up';
-	$params['N_class']='icon-thumbs-down';
+	$params['Y_class']='w_green';
+	$params['N_class']='w_red';
 	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormToggleButton--------------------
@@ -2004,6 +1905,7 @@ function buildFormSignature($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
+	if(!isset($params['clear'])){$params['clear']='<span class="icon-pen"></span> Clear';}
 	if(!isset($params['width'])){$params['width']=300;}
 	if(!isset($params['height'])){$params['height']=75;}
 	if(isset($params['value']) && strlen($params['value'])){$params['-value']=$params['value'];}
@@ -2017,12 +1919,12 @@ function buildFormSignature($name,$params=array()){
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
 		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
-		$rtn .= '			<button type="button" class="w_btn w_btn-sm w_btn-default" name="'.$name.'_clear" id="'.$name.'_clear">Clear</button>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
 	}
 
 	$rtn .= '		</div>'.PHP_EOL;

@@ -449,6 +449,7 @@ if(isAjax()){
 		case 'settings':
 		case 'synchronize':
 		case 'datasync':
+		case 'test':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'clearmin':
@@ -1051,16 +1052,6 @@ $params=array(
 	);
 echo buildHtmlBegin($params);
 echo adminViewPage('topmenu');
-echo '<div style="float:right;font-size:10pt;color:#C0C0C0;" align="right">'.PHP_EOL;
-//if user has switched databases from original - show switch back link
-if(isset($_SESSION['dbhost_original'])){
-	echo '	<div class="w_pad w_margin w_dblue "><table class="w_nopad"><tr align="center"><td rowspan="2"><img src="/wfiles/iconsets/32/database_switch.png" alt="db switch" class="w_middle" /></td><td><div class="w_bold w_required w_big">Viewing '.$_SESSION['dbhost'].'</div></td></tr><tr align="center"><td><a class="w_link w_dblue w_block w_big" href="?dbhost=-1&dbauth=-1">Switch Back</a></td></tr></table></div>'.PHP_EOL;
-}
-//echo '	<div id="updatecheck" class="w_big w_padright w_dblue"><span class="icon-info"></span> '.$CONFIG['name'].' - <span class="icon-database-empty"></span> <b class="w_red">'.$CONFIG['dbname'].'</b></div>'.PHP_EOL;
-echo '	<div id="facebook_status" class="w_big w_pad"></div>'.PHP_EOL;
-echo '</div>'.PHP_EOL;
-echo '<br clear="both" />'.PHP_EOL;
-echo '<div style="clear:both;float:left;width:100%;"></div>'.PHP_EOL;
 echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
 //process _menu request
 if(isset($_REQUEST['_menu'])){
@@ -1069,6 +1060,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'git':
 		case 'reports':
 		case 'htmlbox':
+		case 'test':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'export':
