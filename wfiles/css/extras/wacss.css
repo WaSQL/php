@@ -951,6 +951,9 @@ input[type="checkbox"]:after, input[type="radio"]:after{
   font-weight:300;
   font-size: 1.3rem;
   display:inline;
+  line-height: 1;
+  padding:0px;
+  margin:0px;
 }
 input[type="checkbox"].btn.small:after, input[type="radio"].btn.small:after{
   padding: .25rem .5rem;
