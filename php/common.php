@@ -11456,7 +11456,8 @@ function printValue($v='',$exit=0){
 	$type=ucfirst($type);
 	$rtn='';
 	if(!isCLI()){$rtn .= '<pre class="printvalue" type="'.$type.'">'.PHP_EOL;}
-	$j=json_encode($v,JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_LINE_TERMINATORS);
+	//JSON_UNESCAPED_LINE_TERMINATORS was introduced in php 5.4. Value=256
+	$j=json_encode($v,JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | 256);
 	if(strlen($j)){
 		$rtn .= "{$type} object:".PHP_EOL;
 		//$j = preg_replace('/\\\//',"/",$j);
