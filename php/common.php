@@ -1222,6 +1222,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=count($opts)<6?count($opts):6;}
 	if(!isset($params['-icon'])){$params['-icon']='mark';}
+	//for checkboxes allow multiple valuse
+	if($params['-type']=='checkbox'){
+		$name.='[]';
+	}
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
