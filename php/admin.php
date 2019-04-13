@@ -3656,6 +3656,7 @@ function tableOptions($table='',$params=array()){
 					}
 				}
 				$rtn .= '						<li><a title="'.$title.'" class="w_link" href="'.$href.'"';
+				
 				if($option == 'truncate'){
 					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\\r\\n\\r\\nARE YOU SURE you want to Purge all records from '.$table.' table?\\r\\nTHIS IS IRREVERSIBLE!!!\\r\\n\\r\\nClick OK to confirm.\');"';
 		            }
@@ -3664,7 +3665,10 @@ function tableOptions($table='',$params=array()){
 		            }
 		        elseif($option == 'rebuild'){
 					$rtn .= ' onclick="return confirm(\'PLEASE READ THIS CAREFULLY!!!!!!\\r\\nTHIS WILL DROP and REBUILD this table back to WaSQL Defaults!!!\\r\\n\\r\\nARE YOU SURE you want to Rebuild the '.$table.' table?\\r\\n\\r\\nClick OK to confirm.\');"';
-		            }
+		        }
+		        elseif($option == 'add'){
+					$rtn .= ' accesskey="a"';
+				}
 				$rtn .= '>';
 				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
 				if(!isset($params['-notext'])){
@@ -3726,6 +3730,7 @@ function tableOptions($table='',$params=array()){
 					//ajaxAddEditForm(table,id,flds,userparams)
 					$onclick="return ajaxGet('/php/admin.php','modal','_menu=add&_table_={$table}');";
 					$rtn .= ' onclick="'.$onclick.'"';
+					$rtn .= ' accesskey="a"';
 		            }
 		        else{
                 	$rtn .= ' onclick="window.location=\''.$href.'\';"';
@@ -3770,6 +3775,7 @@ function tableOptions($table='',$params=array()){
 					//ajaxAddEditForm(table,id,flds,userparams)
 					$onclick="ajaxAddEditForm('{$table}','',null,'_menu=list&_table_={$table}');return false;";
 					$rtn .= ' onclick="'.$onclick.'"';
+					$rtn .= ' accesskey="a"';
 		            }
 				$rtn .= '>';
 				$rtn .= '<span alt="'.$title.'" class="'.$spanclass.'"></span> ';
