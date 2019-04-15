@@ -651,7 +651,7 @@ function createWasqlTable($table=''){
 			$id=addDBRecord($addopts);
 			addMetaData($table);
 			return 1;
-			break;
+		break;
 		case 'states':
 			$fields['code']=databaseDataType('char(7)')." NOT NULL";
 			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
