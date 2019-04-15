@@ -940,6 +940,7 @@ input[type="checkbox"], input[type="radio"] {
   box-sizing: border-box;
   font-weight:300;
   outline:none;
+  pointer-events: all;
 }
 input[type="checkbox"]:focus,input[type="radio"]:focus{
   outline:none;
@@ -971,7 +972,7 @@ input[type="checkbox"]:after{
   color:#343a40;
 }
 input[type="checkbox"]:checked:after{
-  content:"\01F5F9";
+  content:"\2611";
 }
 input[type="radio"]:after{
   content:"\25CE";
