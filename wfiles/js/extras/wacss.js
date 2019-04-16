@@ -1,6 +1,16 @@
 var wacss = {
 	version: '1.1',
 	author: 'WaSQL.com',
+	copy2Clipboard: function(str){
+		const el = document.createElement('textarea');
+	  	el.value = str;
+	  	document.body.appendChild(el);
+	  	el.select();
+	  	document.execCommand('copy');
+	 	document.body.removeChild(el);
+	 	wacss.toast('Copy Successful');
+	 	return true;
+	},
 	modalBlink: function(){
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
@@ -153,35 +163,70 @@ var wacss = {
 		return false;
 	},
 	removeObj: function(obj){
-	//info: removes specified id
-	if(undefined == obj){return false;}
-	try{
-		obj.remove();
-		if(undefined == obj){return true;}
-	}
-	catch(e){}
-	try{
-		if(undefined != obj.parentNode){
-			obj.parentNode.removeChild(obj);
+		//info: removes specified id
+		if(undefined == obj){return false;}
+		try{
+			obj.remove();
 			if(undefined == obj){return true;}
 		}
+		catch(e){}
+		try{
+			if(undefined != obj.parentNode){
+				obj.parentNode.removeChild(obj);
+				if(undefined == obj){return true;}
+			}
+		}
+		catch(e){}
+		try{
+			document.body.removeChild(obj);
+	    	if(undefined == obj){return true;}
+		}
+		catch(e){}
+		try{
+			document.getElementsByTagName('BODY')[0].removeChild(obj);
+	    	if(undefined == obj){return true;}
+		}
+		catch(e){}
+		try{
+	    	obj.parentNode.removeChild(obj);
+	    	if(undefined == obj){return true;}
+		}
+		catch(e){}
+	    return false;
+	},
+	toast: function(msg){
+		if(undefined == document.getElementById('wacss_toasts')){
+			let ts = document.createElement('div');	
+			ts.id='wacss_toasts';
+			ts.style.position='absolute';
+			ts.style.top='100px';
+			ts.style.right='15px';
+		}
+		let t = document.createElement('div');
+		t.setAttribute('role','alert');
+		t.style.opacity=100;
+		t.style.boxShadow='0 0.25rem 0.75rem rgba(0,0,0,.1)';
+		t.style.borderRadius='.25rem';
+		t.style.border='1px solid rgba(0,0,0,.1)';
+		t.style.backgroundClip='padding-box';
+		t.style.backgroundColor='rgba(255,255,255,.85)';
+		t.style.maxWidth='350px';
+		t.style.overflow='hidden';
+		t.style.transition='all 0.55s ease';
+		t.style.zIndex=99999999;
+		let tbo = document.createElement('div');
+		tbo.className='toast-body';
+		tbo.innerText=msg;
+		t.appendChild(tbo)
+		document.getElementById('wacss_toasts').appendChild(t);
+		setTimeout(function(){
+			wacss.dismiss(t);
+		},2000);
+	},
+	dismiss: function(el){
+		el.style.opacity=0;
+		setTimeout(function(){
+			wacss.removeObj(el);
+		},1000);
 	}
-	catch(e){}
-	try{
-		document.body.removeChild(obj);
-    	if(undefined == obj){return true;}
-	}
-	catch(e){}
-	try{
-		document.getElementsByTagName('BODY')[0].removeChild(obj);
-    	if(undefined == obj){return true;}
-	}
-	catch(e){}
-	try{
-    	obj.parentNode.removeChild(obj);
-    	if(undefined == obj){return true;}
-	}
-	catch(e){}
-    return false;
-}
 }
