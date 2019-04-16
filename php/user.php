@@ -25,6 +25,15 @@ if(function_exists('getallheaders')){
 		}
 	}
 }
+//look for logoff
+if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
+	$_REQUEST=array();
+	userLogout();
+}
+elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
+	$_REQUEST=array();
+	userLogout();
+}
 //SQL injection prevention
 if(isset($_REQUEST['username'])){
 	$_REQUEST['username']=preg_replace('/\'/',"\\'",$_REQUEST['username']);
@@ -99,7 +108,7 @@ elseif(isset($_REQUEST['_sessionid'])){
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>addslashes($_REQUEST['username'])));
-		//echo printValue($rec);
+		//echo printValue($rec);exit;
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW(addslashes($_REQUEST['password']));
 		}
@@ -165,6 +174,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                	$id=addDBRecord($ldap);
                	if(isNum($id)){
                     $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+					userSetWaSQLGUID();
 				}
 				else{
 					$_REQUEST['_login_error']=$id;
@@ -227,6 +237,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                	$id=addDBRecord($opts);
                	if(isNum($id)){
                     $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
+                    userSetWaSQLGUID();
 				}
 				else{
 					$_REQUEST['_login_error']=$id;
@@ -296,9 +307,6 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 									if(isset($info[$key]['_dbtype']) && !preg_match('/^\_/',$key) && (strlen($USER[$key])==0 || $USER[$key] != $val)){
 										$eopts[$key]=$val;
 										}
-									if($key=='password'){
-										$val=preg_replace('/./','*',$val);
-                                    	}
 									$newkey="{$authname}_{$key}";
 									$USER[$newkey]=$val;
                                 	}
@@ -330,6 +338,8 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
     else{
 		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username']),'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
+		//echo printValue($getopts).printValue($USER);exit;
+		userSetWaSQLGUID();
     }
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['email']) && isset($_REQUEST['password'])){
@@ -398,9 +408,6 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 									if(isset($info[$key]['_dbtype']) && !preg_match('/^\_/',$key) && (strlen($USER[$key])==0 || $USER[$key] != $val)){
 										$eopts[$key]=$val;
 										}
-									if($key=='password'){
-										$val=preg_replace('/./','*',$val);
-                                    	}
 									$newkey="{$authname}_{$key}";
 									$USER[$newkey]=$val;
                                 }
@@ -456,6 +463,7 @@ elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_
 		    str_replace(':','',crypt($pw,$rec['username']))
 		);
 		$api=preg_split('/[:]/',decodeBase64($_REQUEST['apikey']));
+		//echo printValue($api).printValue($auth).printValue($rec);exit;
 		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
         	$USER=$rec;
         	userSetWaSQLGUID();
@@ -526,11 +534,11 @@ else{
 	}
 	else{
 		$USER=userAuthorizeWASQLGUID();
+		setUserInfo();
 	}
 }
 if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['active']) && $userfieldinfo['active']['_dbtype']=='int' && $USER['active'] != 1){
 	//do not allow users that are not active to log in
-	$ok=editDBRecord(array('-table'=>'_users','-where'=>"_id={$USER['_id']}",'guid'=>'NULL'));
 	unset($USER);
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
@@ -558,10 +566,16 @@ $SETTINGS=settingsValues($uid);
 /************************************************************************************/
 function userSetWaSQLGUID(){
 	global $USER;
+	global $CONFIG;
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
 	$salt=wguidSalt();
+	if(!isset($USER['password_crc']) || !strlen($USER['password_crc'])){
+		$USER['password_crc']=crc32($USER['password']);
+	}
 	$str=$USER['_id'].encrypt($USER['username'],$salt).$USER['password_crc'];
 	$guid=base64_encode(encrypt($str,$salt));
+	//echo printValue($_REQUEST);exit;
+	//echo "str:{$str}    guid:{$guid}";exit;
 	//expire in a year
 	$expire=time()+(3600*24*365);
 	if(isset($CONFIG['session_domain'])){
@@ -571,6 +585,7 @@ function userSetWaSQLGUID(){
 	else{
     	setcookie("WASQLGUID", $guid, $expire, "/",null,isSSL(),true);
 	}
+	setUserInfo();
 	return $guid;
 }
 function userAuthorizeLogin($rec=array(),$guid=''){
@@ -598,8 +613,10 @@ function userAuthorizeWASQLGUID(){
     	//echo printValue($rec);exit;
     }
     $recstr=$rec['_id'].encrypt($rec['username'],$salt).encodeCRC($rec['password']);
-    //echo "{$recstr} == {$guidstr}";exit;
-    if($recstr == $guidstr){return $rec;}
+    //echo "{$recstr} eq {$guidstr}";exit;
+    if($recstr == $guidstr){
+    	return $rec;
+    }
     return false;
 }
 //---------- begin function userEncryptPW ----
@@ -721,17 +738,13 @@ function userIsEncryptedPW($pw=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 * @history - bbarten 2014-01-02 updated documentation
 */
-function setUserInfo($guid='NULL'){
+function setUserInfo(){
 	global $USER;
 	if(!isUser()){return false;}
 	//set WaSQL_PWE
 	/* update access date */
 	$adate=date("Y-m-d H:i:s");
 	$finfo=getDBFieldInfo("_users");
-	if($finfo['guid']['_dbtype'] != 'char' && $finfo['guid']['_dbtype'] != 'text'){
-		$query="ALTER TABLE _users modify guid char(40) NULL;";
-		$ok=executeSQL($query);
-    }
 	if(!isset($finfo['_sid'])){
 		$query="ALTER TABLE _users ADD _sid varchar(150) NULL;";
 		$ok=executeSQL($query);
@@ -792,12 +805,6 @@ function setUserInfo($guid='NULL'){
 	if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
 		userLogout();
 	}
-	else{
-		if($guid != $USER['guid']){$opts['guid']=$guid;}
-		$opts['guid']=$guid;
-		$num=editDBRecord($opts);
-		//echo printValue($opts).printValue($num);
-    }
 }
 
 //---------- begin function userLogout ----
@@ -811,18 +818,24 @@ function setUserInfo($guid='NULL'){
 */
 function userLogout(){
 	$USER=array();
-	unset($_SERVER['GUID']);
-	unset($_SESSION['GUID']);
-	unset($_COOKIE['GUID']);
-	setcookie("GUID", "", time()-3600);
+	if(isset($_COOKIE['GUID'])){
+		unset($_SERVER['GUID']);
+		unset($_SESSION['GUID']);
+		unset($_COOKIE['GUID']);
+		//setcookie("GUID", "", time()-3600);
+		setcookie('GUID', null, -1, '/');	
+	}
 
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
-	
-	unset($_SERVER['WASQLGUID']);
-	unset($_SESSION['WASQLGUID']);
-	unset($_COOKIE['WASQLGUID']);
-	setcookie("WASQLGUID", "", time()-3600);
+	if(isset($_COOKIE['WASQLGUID'])){
+		unset($_SERVER['WASQLGUID']);
+		unset($_SESSION['WASQLGUID']);
+		unset($_COOKIE['WASQLGUID']);
+		//setcookie("WASQLGUID", "", time()-3600);
+		setcookie('WASQLGUID', null, -1, '/');
+	}
+	//echo "HERE";exit;
 	return true;
 }
 
@@ -1095,7 +1108,6 @@ function userLoginForm($params=array()){
 		}
 	}
 	$form .= ">\n";
-	$form .= '	<input type="hidden" name="guid" value="'.$_SERVER['GUID'].'">'.PHP_EOL;
 	$form .= '	<input type="hidden" name="_login" value="1">'.PHP_EOL;
 	$form .= '	<input type="hidden" name="_pwe" value="1">'.PHP_EOL;
 	//-title

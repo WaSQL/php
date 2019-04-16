@@ -282,6 +282,7 @@ ENDOFQUERY;
 			//request to get sync changes
 			//confirm user is an admin in this system
 			if(!isAdmin()){
+				//echo printValue($_REQUEST);exit;
 				echo base64_encode(json_encode(array('error'=>"get_changes: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
 			}
