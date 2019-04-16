@@ -118,7 +118,7 @@ function synchronizePost($load,$plain=0){
 	}
 	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
-	//echo printValue($post['body']);exit;
+	//echo printValue($postopts).printValue($post['body']);exit;
 	if(isset($post['error'])){
 		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
 	}
@@ -127,6 +127,7 @@ function synchronizePost($load,$plain=0){
 	}
 	else{
 		$json=json_decode(base64_decode($post['body']),true);
+		//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($json);exit;
 		if(!is_array($json)){
 			$json=json_decode($post['body'],true);
 			if(!is_array($json)){

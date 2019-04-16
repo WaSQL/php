@@ -2,6 +2,7 @@
 	/*
 	 * the current database is the master. Get the slave - the database to sync with
 	 * */
+	global $CONFIG;
 	if(!isset($_SESSION['sync_target'])){
 		$_SESSION['sync_target']=syncronizeGetTarget();
 	}
@@ -17,7 +18,7 @@
 		 //echo printValue(array($user,$pass));exit;
 		 $json=synchronizeGetAuth($user,$pass);
 		 //echo printValue($json['error']);exit;
-		 if(isset($json['auth'])){
+		 if(isset($json['auth']) && strlen($json['auth'])){
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
 		else{
