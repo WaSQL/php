@@ -75,6 +75,61 @@ body{
     flex: 1 1 auto;
     padding: 1.25rem;
 }
+/* ---------------------- toasts - called with wacss.toats() function ------------------------- */
+#wacss_toasts{
+  position:absolute;
+  top:50px;
+  right:15px;
+}
+#wacss_toasts .toast{
+  xposition:relative;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.1);
+  border-radius: .25rem;
+  border: 1px solid;
+  background-clip: padding-box;
+  background-color:inherit;
+  padding: .375rem .75rem;
+  max-width: 350px;
+  overflow:auto;
+  opacity: 100;
+  z-index: 999;
+  margin-bottom: 5px;
+  transition: all 0.55s ease;
+}
+#wacss_toasts .toast.dismiss{
+  opacity: 0;
+}
+
+/* default to white */
+#wacss_toasts .toast{border-color:rgba(226, 230, 234, 1.0);}
+#wacss_toasts .toast:hover{background-color:rgba(226, 230, 234, 1.0);}
+
+#wacss_toasts .toast.w_blue{border-color:rgba(12, 122, 191, 0.3);}
+#wacss_toasts .toast.w_blue:hover{color:#FFF;background-color:rgba(12, 122, 191, 1.0);}
+
+#wacss_toasts .toast.w_gray{border-color:rgba(90, 98, 104, 0.3);}
+#wacss_toasts .toast.w_gray:hover{color:#FFF;background-color:rgba(90, 98, 104, 1.0);}
+
+#wacss_toasts .toast.w_green{border-color:rgba(33, 136, 56, 0.3);}
+#wacss_toasts .toast.w_green:hover{color:#FFF;background-color:rgba(33, 136, 56, 1.0);}
+
+#wacss_toasts .toast.w_red{border-color:rgba(200, 35, 51, 0.3);}
+#wacss_toasts .toast.w_red:hover{color:#FFF;background-color:rgba(200, 35, 51, 1.0);}
+
+#wacss_toasts .toast.w_yellow{border-color:rgba(224, 168, 0, 0.3);}
+#wacss_toasts .toast.w_yellow:hover{color:#FFF;background-color:rgba(224, 168, 0, 1.0);}
+
+#wacss_toasts .toast.w_orange{border-color:rgba(255, 152, 0, 0.3);}
+#wacss_toasts .toast.w_orange:hover{color:#FFF;background-color:rgba(255, 152, 0, 1.0);}
+
+#wacss_toasts .toast.w_teal{border-color:rgba(19, 132, 150, 0.3);}
+#wacss_toasts .toast.w_teal:hover{color:#FFF;background-color:rgba(19, 132, 150, 1.0);}
+
+#wacss_toasts .toast.w_white{border-color:rgba(226, 230, 234, 0.3);}
+#wacss_toasts .toast.w_white:hover{color:#FFF;background-color:rgba(226, 230, 234, 1.0);}
+
+#wacss_toasts .toast.w_black{border-color:rgba(35, 39, 43, 0.3);}
+#wacss_toasts .toast.w_black:hover{color:#FFF;background-color:rgba(35, 39, 43, 1.0);}
 /* ---------------------- dropdown ------------------------- */
 .dropdown{
   position:relative;

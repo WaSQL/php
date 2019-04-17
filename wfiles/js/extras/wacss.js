@@ -11,6 +11,18 @@ var wacss = {
 	 	wacss.toast('Copy Successful');
 	 	return true;
 	},
+	color: function(){
+		if(undefined != document.getElementById('admin_menu')){
+				return document.getElementById('admin_menu').getAttribute('data-color');
+			}
+			else if(undefined != document.getElementById('admin_color')){
+				return document.getElementById('admin_color').innerText;
+			}
+			else if(undefined != document.getElementById('wacss_color')){
+				return document.getElementById('wacss_color').innerText;
+			}
+			else{return 'w_gray';}
+	},
 	modalBlink: function(){
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
@@ -77,13 +89,7 @@ var wacss = {
 			return m;
 		}
 		if(undefined == params.color){
-			if(undefined != document.getElementById('admin_menu')){
-				params.color=document.getElementById('admin_menu').getAttribute('data-color');
-			}
-			else if(undefined != document.getElementById('admin_color')){
-				params.color=document.getElementById('admin_color').innerText;
-			}
-			else{params.color='w_gray';}
+			params.color=wacss.color();
 		}
 		let modal=document.createElement('div');
 		modal.id='wacss_modal';
@@ -194,37 +200,41 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
-	toast: function(msg){
+	toast: function(msg,params){
+		if(undefined == params.color){
+			params.color=wacss.color();
+		}
+		if(undefined == params.timer){params.timer=2000;}
+		else{params.timer=parseInt(params.timer)*1000;}
 		if(undefined == document.getElementById('wacss_toasts')){
 			let ts = document.createElement('div');	
 			ts.id='wacss_toasts';
-			ts.style.position='absolute';
-			ts.style.top='100px';
-			ts.style.right='15px';
+			document.body.appendChild(ts);
 		}
+		
 		let t = document.createElement('div');
+		t.className='toast '+params.color;
 		t.setAttribute('role','alert');
-		t.style.opacity=100;
-		t.style.boxShadow='0 0.25rem 0.75rem rgba(0,0,0,.1)';
-		t.style.borderRadius='.25rem';
-		t.style.border='1px solid rgba(0,0,0,.1)';
-		t.style.backgroundClip='padding-box';
-		t.style.backgroundColor='rgba(255,255,255,.85)';
-		t.style.maxWidth='350px';
-		t.style.overflow='hidden';
-		t.style.transition='all 0.55s ease';
-		t.style.zIndex=99999999;
-		let tbo = document.createElement('div');
-		tbo.className='toast-body';
-		tbo.innerText=msg;
-		t.appendChild(tbo)
+		t.innerHTML=msg;
+		t.timer=params.timer;
 		document.getElementById('wacss_toasts').appendChild(t);
+		//console.log('timer',params);
 		setTimeout(function(){
 			wacss.dismiss(t);
-		},2000);
+			},params.timer
+		);
 	},
 	dismiss: function(el){
-		el.style.opacity=0;
+		/* if the user is hovering over it, do not close.*/
+		if(el.parentElement.querySelector(':hover') == el){
+			let wtimer=parseInt(el.timer)*3;
+			setTimeout(function(){
+				wacss.dismiss(el);
+				},wtimer
+			);
+			return;
+		}
+		el.className='toast dismiss';
 		setTimeout(function(){
 			wacss.removeObj(el);
 		},1000);
