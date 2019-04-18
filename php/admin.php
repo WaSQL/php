@@ -2128,8 +2128,8 @@ LIST_TABLE:
 				}
 				echo buildFormCheckbox('_indexfields_',$opts,array('width'=>6));
 				echo '</div>'.PHP_EOL;
-				echo '<input type="checkbox" data-type="checkbox" name="fulltext" value="1" id="fulltextid" style="display:none;"><label for="fulltextid" class="icon-mark"></label><label for="fulltextid"> FullText</label>'.PHP_EOL;
-				echo '<input type="checkbox" data-type="checkbox" name="unique" value="1" id="uniqueid" style="display:none;"><label for="uniqueid" class="icon-mark"></label><label for="uniqueid"> Unique</label>'.PHP_EOL;
+				echo '<input type="checkbox" name="fulltext" value="1" id="fulltextid"><label for="fulltextid"> FullText</label>'.PHP_EOL;
+				echo '<input type="checkbox" name="unique" value="1" id="uniqueid"><label for="uniqueid"> Unique</label>'.PHP_EOL;
 				echo buildFormSubmit("Create Index");
 				echo buildFormEnd();
 				//echo printValue($_REQUEST);
