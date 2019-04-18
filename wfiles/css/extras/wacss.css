@@ -77,7 +77,7 @@ body{
 }
 /* ---------------------- toasts - called with wacss.toats() function ------------------------- */
 #wacss_toasts{
-  position:absolute;
+  position:fixed;
   top:50px;
   right:15px;
 }
