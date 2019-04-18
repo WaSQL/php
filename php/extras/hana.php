@@ -752,8 +752,14 @@ ENDOFQUERY;
 * @return boolean returns true on success
 * @usage $id=hanaEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
-function hanaEditDBRecord($params){
+function hanaEditDBRecord($params,$id=0,$opts=array()){
 	mb_internal_encoding("UTF-8");
+	//check for function overload: editDBRecord(table,id,opts());
+	if(!is_array($params) && strlen($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
+		$opts['-table']=$params;
+		$opts['-where']="_id={$id}";
+		$params=$opts;
+	}
 	if(!isset($params['-table'])){return 'hanaEditDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'hanaEditDBRecord error: No where specified.';}
 	global $USER;

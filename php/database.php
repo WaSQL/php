@@ -4279,8 +4279,14 @@ function optimizeDB(){
 *	));
 *	?>
 */
-function editDBRecord($params=array()){
+function editDBRecord($params=array(),$id=0,$opts=array()){
 	if(isSqlite()){return sqliteEditDBRecord($params);}
+	//check for function overload: editDBRecord(table,id,opts());
+	if(!is_array($params) && isDBTable($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
+		$opts['-table']=$params;
+		$opts['-where']="_id={$id}";
+		$params=$opts;
+	}
 	$function='editDBRecord';
 	if(!isset($params['-table'])){return 'editDBRecord Error: No table <br>' . printValue($params);}
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where <br>' . printValue($params);}

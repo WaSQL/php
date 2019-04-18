@@ -397,7 +397,13 @@ ENDOFQUERY;
 * @return boolean returns true on success
 * @usage $id=sqliteEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
-function sqliteEditDBRecord($params){
+function sqliteEditDBRecord($params,$id=0,$opts=array()){
+	//check for function overload: editDBRecord(table,id,opts());
+	if(!is_array($params) && strlen($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
+		$opts['-table']=$params;
+		$opts['-where']="_id={$id}";
+		$params=$opts;
+	}
 	if(!isset($params['-table'])){return 'sqliteEditDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'sqliteEditDBRecord error: No where specified.';}
 	global $USER;

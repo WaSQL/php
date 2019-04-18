@@ -451,7 +451,13 @@ ENDOFQUERY;
 * @return boolean returns true on success
 * @usage $id=mssqlEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
-function mssqlEditDBRecord($params=array()){
+function mssqlEditDBRecord($params=array(),$id=0,$opts=array()){
+	//check for function overload: editDBRecord(table,id,opts());
+	if(!is_array($params) && strlen($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
+		$opts['-table']=$params;
+		$opts['-where']="_id={$id}";
+		$params=$opts;
+	}
 	if(!isset($params['-table'])){return 'mssqlEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'mssqlEditRecord error: No where specified.';}
 	global $USER;

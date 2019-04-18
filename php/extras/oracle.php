@@ -439,7 +439,13 @@ function oracleDBConnect($params=array()){
 * @return integer return 1 on success
 * @usage $id=oracleEditDBRecord(array('-table'=>'abc','-where'=>'id=4',name'=>'bob','age'=>25));
 */
-function oracleEditDBRecord($params){
+function oracleEditDBRecord($params,$id=0,$opts=array()){
+	//check for function overload: editDBRecord(table,id,opts());
+	if(!is_array($params) && strlen($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
+		$opts['-table']=$params;
+		$opts['-where']="_id={$id}";
+		$params=$opts;
+	}
 	if(!isset($params['-table'])){
 		debugValue(array(
     		'function'=>"oracleEditDBRecord",
