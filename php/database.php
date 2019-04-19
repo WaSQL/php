@@ -80,6 +80,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
+*	[{field}_checkbox] - 1 - adds a checkbox before the field value that holds the field value
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
 *	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function
 *	[-host] - server to connect to
@@ -461,6 +462,10 @@ function databaseListRecords($params=array()){
             $href=str_replace($replace,$field,$href);
             $name='<a href="'.$href.'">'.$name.'</a>';
 		}
+		elseif(!empty($params[$field."_checkbox"])){
+			$cname=$name;
+			$name=buildFormCheckAll('data-group',"{$field}_checkbox",array('-label'=>$name,'style'=>'font-weight:600'));
+		}
 		$rtn .=$name;
 		$rtn .='</th>'.PHP_EOL;
 	}
@@ -494,7 +499,7 @@ function databaseListRecords($params=array()){
 			$sums[$sfld]=0;
 		}
 	}
-	foreach($params['-list'] as $rec){
+	foreach($params['-list'] as $row=>$rec){
 		$rtn .= '		<tr';
 		if(!empty($params['-onclick'])){
 			$href=$params['-onclick'];
@@ -550,6 +555,11 @@ function databaseListRecords($params=array()){
                     $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
                 $value='<a href="#" onclick="'.$href.'">'.$value.'</a>';
+			}
+			elseif(!empty($params[$fld."_checkbox"])){
+				$cval=$value;
+				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$value.'"> ';
+				if(!isNum($cval)){$value .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
 			}
 			elseif(!empty($params[$fld."_href"])){
 				$href=$params[$fld."_href"];

@@ -83,15 +83,15 @@
 
 <view:tabs>
 <nav>
-<ul class="nav-tabs <?=configValue('admin_color');?>">
-	<li class="nav-item">
-		<input type="radio" id="db_default" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="default" checked />
-		<label for="db_default" class="icon-mark"> </label><label for="db_default">Default</label>
+<ul class="nav-tabs collapse <?=configValue('admin_color');?>">
+	<li class="nav-item active">
+		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="default" checked />
+		<label for="db_default">Default</label>
 	</li>
 	<view:tab>
 	<li class="nav-item">
-		<input type="radio" id="db_<?=$tab['name'];?>" data-type="radio" style="display:none" onclick="sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>" class="icon-mark"> </label><label for="db_<?=$tab['name'];?>"><?=$tab['tabname'];?></label>
+		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
+		<label for="db_<?=$tab['name'];?>"><?=$tab['tabname'];?></label>
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>

@@ -25,18 +25,15 @@
 							<?=buildFormCheckall('data-table',$table,array('-label'=>$table));?>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_schema[]" id="ck_<?=$table;?>_schema" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_schema" class="icon-mark"></label>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_schema[]" id="ck_<?=$table;?>_schema" value="<?=$table;?>" />
 							<label for="ck_<?=$table;?>_schema"></label>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_meta[]" id="ck_<?=$table;?>_meta" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_meta" class="icon-mark"></label>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_meta[]" id="ck_<?=$table;?>_meta" value="<?=$table;?>" />
 							<label for="ck_<?=$table;?>_meta"></label>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" style="display:none;" data-type="checkbox" name="export_data[]" id="ck_<?=$table;?>_data" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_data" class="icon-mark"></label>
+							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_data[]" id="ck_<?=$table;?>_data" value="<?=$table;?>" />
 							<label for="ck_<?=$table;?>_data"></label>
 						</td>
 					</tr>
@@ -57,8 +54,7 @@
 					<tr>
 						<td><?=$epage['_id'];?></td>
 						<td>
-							<input data-export="page" type="checkbox" style="display:none;" data-type="checkbox" name="export_pages[]" id="ck_<?=$epage['_id'];?>_page" value="<?=$epage['_id'];?>" />
-							<label for="ck_<?=$epage['_id'];?>_page" class="icon-mark"></label>
+							<input data-export="page" type="checkbox" name="export_pages[]" id="ck_<?=$epage['_id'];?>_page" value="<?=$epage['_id'];?>" />
 							<label for="ck_<?=$epage['_id'];?>_page"><?=$epage['name'];?></label>
 						</td>
 					</tr>
@@ -79,8 +75,7 @@
 					<tr>
 						<td><?=$et['_id'];?></td>
 						<td>
-							<input data-export="template" type="checkbox" style="display:none;" data-type="checkbox" name="export_templates[]" id="ck_<?=$et['_id'];?>_template" value="<?=$et['_id'];?>" />
-							<label for="ck_<?=$et['_id'];?>_template" class="icon-mark"></label>
+							<input data-export="template" type="checkbox" name="export_templates[]" id="ck_<?=$et['_id'];?>_template" value="<?=$et['_id'];?>" />
 							<label for="ck_<?=$et['_id'];?>_template"><?=$et['name'];?></label>
 						</td>
 					</tr>

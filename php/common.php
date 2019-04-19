@@ -826,19 +826,19 @@ function buildFormCalendar($name,$params=array()){
 * @usage echo buildFormCheckAll('id','users');
 */
 function buildFormCheckAll($att,$attval,$params=array()){
-	if(!isset($params['-label'])){$params['-label']='checkall';}
-	$onclick='';
-	if(isset($params['onchange'])){$onclick=$params['onchange'];unset($params['onchange']);}
-	elseif(isset($params['onclick'])){$onclick=$params['onclick'];}
-	if(isset($params['requiredif']) && strlen($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['onclick']="checkAllElements('{$att}','{$attval}',this.checked);";
-	if(strlen($onclick)){$params['onclick'].="{$onclick};";}
-	$id='checkall_'.substr(sha1($att.$attval),0,10);
-	$tag='<input id="'.$id.'" type="checkbox" ';
-	unset($params[$att]);
+	if(isset($params['-label'])){
+		$name=$params['-label'];
+		unset($params['-label']);
+	}
+	else{
+		$name='Checkall';
+	}
+	$id='checkall_'.crc32($att.$attval);
+	$tag="<input id=\"{$id}\" type=\"checkbox\" onclick=\"checkAllElements('{$att}','{$attval}',this.checked);\" />";
+	if(isset($params['for'])){unset($params['for']);}
+	$tag .= '<label for="'.$id.'" ';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />';
-	$tag .= '<label for="'.$id.'">'.$params['-label'].'</label>';
+	$tag .= '>'.$name.'</label>';
 	return $tag;
 	}
 //---------- begin function buildFormCheckbox--------------------------------------

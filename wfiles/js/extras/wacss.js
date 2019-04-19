@@ -1,6 +1,18 @@
 var wacss = {
 	version: '1.1',
 	author: 'WaSQL.com',
+	addClass: function(element, classToAdd) {
+		element=wacss.getObject(element);
+	    var currentClassValue = element.className;
+
+	    if (currentClassValue.indexOf(classToAdd) == -1) {
+	        if ((currentClassValue == null) || (currentClassValue === "")) {
+	            element.className = classToAdd;
+	        } else {
+	            element.className += " " + classToAdd;
+	        }
+	    }
+	},
 	copy2Clipboard: function(str){
 		const el = document.createElement('textarea');
 	  	el.value = str;
@@ -22,6 +34,54 @@ var wacss = {
 				return document.getElementById('wacss_color').innerText;
 			}
 			else{return 'w_gray';}
+	},
+	dismiss: function(el){
+		/* if the user is hovering over it, do not close.*/
+		if(el.parentElement.querySelector(':hover') == el){
+			let wtimer=parseInt(el.timer)*3;
+			setTimeout(function(){
+				wacss.dismiss(el);
+				},wtimer
+			);
+			return;
+		}
+		el.className='toast dismiss';
+		setTimeout(function(){
+			wacss.removeObj(el);
+		},1000);
+	},
+	getObject: function(obj){
+		//info: returns the object identified by the object or id passed in
+		if(typeof(obj)=='object'){return obj;}
+	    else if(typeof(obj)=='string'){
+			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
+			else if(undefined != document.getElementsByName(obj)){
+				var els=document.getElementsByName(obj);
+				if(els.length ==1){return els[0];}
+	        	}
+			else if(undefined != document.all[obj]){return document.all[obj];}
+	    	}
+	    return null;
+	},
+	getParent: function(obj,name){
+		if(undefined != name){
+			var count = 1;
+			while(count < 1000) {
+				obj = obj.parentNode;
+				if(!typeof(obj)){return null;}
+				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
+					return obj;
+				}
+				count++;
+			}
+			return null;	
+		}
+		var cObj=wacss.getObject(obj);
+		if(undefined == cObj){return abort("undefined object passed to getParent");}
+		if(undefined == cObj.parentNode){return cObj;}
+		var pobj=cObj.parentNode;
+		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
+		else{return wacss.getParent(pobj);}
 	},
 	modalBlink: function(){
 		if(undefined != document.getElementById('wacss_modal')){
@@ -102,7 +162,7 @@ var wacss = {
 			modal_close.className='wacss_modal_close icon-close';
 			modal_close.title="Close";
 			modal_close.onclick=function(){
-				removeId(this.pnode);
+				wacss.removeObj(this.pnode);
 			}
 			modal_title.appendChild(modal_close);
 			let modal_title_text=document.createElement('div');
@@ -128,7 +188,7 @@ var wacss = {
 					let elements = document.querySelectorAll(':hover');
 					let i=elements.length-1;
 					if(this == elements[i]){
-						removeId(this);	
+						wacss.removeObj(this);	
 					}
 				};
 			}
@@ -158,15 +218,39 @@ var wacss = {
 				if(lis[l]==el){
 					/* this  is the right nav */
 					if(navs[n].className.indexOf('leftmenu') != -1){
-						removeClass(navs[n],'leftmenu');	
+						wacss.removeClass(navs[n],'leftmenu');	
 					}
 					else{
-						addClass(navs[n],'leftmenu');
+						wacss.addClass(navs[n],'leftmenu');
 					}
 				}
 			}
 		}
 		return false;
+	},
+	removeClass: function(element, classToRemove) {
+		element=wacss.getObject(element);
+		if(undefined == element.className){return;}
+	    var currentClassValue = element.className;
+
+	    // removing a class value when there is more than one class value present
+	    // and the class you want to remove is not the first one
+	    if (currentClassValue.indexOf(" " + classToRemove) != -1) {
+	        element.className = element.className.replace(" " + classToRemove, "");
+	        return;
+	    }
+
+	    // removing the first class value when there is more than one class value present
+	    if (currentClassValue.indexOf(classToRemove + " ") != -1) {
+	        element.className = element.className.replace(classToRemove + " ", "");
+	        return;
+	    }
+
+	    // removing the first class value when there is only one class value present
+	    if (currentClassValue.indexOf(classToRemove) != -1) {
+	        element.className = element.className.replace(classToRemove, "");
+	        return;
+	    }
 	},
 	removeObj: function(obj){
 		//info: removes specified id
@@ -200,6 +284,15 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
+	setActiveTab: function(el){
+	    let p=wacss.getParent(el,'ul');
+	    let list=p.querySelectorAll('li');
+	    for(let i=0;i<list.length;i++){
+	        wacss.removeClass(list[i],'active');
+	    }
+	    wacss.addClass(el,'active');
+	    return false;;
+	},
 	toast: function(msg,params){
 		if(undefined == params.color){
 			params.color=wacss.color();
@@ -216,7 +309,17 @@ var wacss = {
 		t.className='toast '+params.color;
 		t.setAttribute('role','alert');
 		t.innerHTML=msg;
+		t.style.position='relative';
 		t.timer=params.timer;
+		//close button
+		let c = document.createElement('span');
+		c.className='icon-close';
+		c.pnode=t;
+		c.title='Close';
+		c.onclick=function(){
+			wacss.removeObj(this.pnode);
+		};
+		t.appendChild(c);
 		document.getElementById('wacss_toasts').appendChild(t);
 		//console.log('timer',params);
 		setTimeout(function(){
@@ -224,19 +327,31 @@ var wacss = {
 			},params.timer
 		);
 	},
-	dismiss: function(el){
-		/* if the user is hovering over it, do not close.*/
-		if(el.parentElement.querySelector(':hover') == el){
-			let wtimer=parseInt(el.timer)*3;
-			setTimeout(function(){
-				wacss.dismiss(el);
-				},wtimer
-			);
-			return;
+	toggleClass: function(id,class1,class2,myid,myclass1,myclass2){
+		var obj=wacss.getObject(id);
+		if(undefined == obj){return;}
+		if(obj.className.indexOf(class1) != -1){
+	    	wacss.removeClass(obj,class1);
+	    	wacss.addClass(obj,class2);
 		}
-		el.className='toast dismiss';
-		setTimeout(function(){
-			wacss.removeObj(el);
-		},1000);
+		else if(obj.className.indexOf(class2) != -1){
+	    	wacss.removeClass(obj,class2);
+	    	wacss.addClass(obj,class1);
+		}
+		else{wacss.addClass(obj,class1);}
+		//a second set may be set to also modify the caller
+		if(undefined != myid){
+			var obj=wacss.getObject(myid);
+			if(undefined == obj){return;}
+			if(obj.className.indexOf(myclass1) != -1){
+		    	wacss.removeClass(obj,myclass1);
+		    	wacss.addClass(obj,myclass2);
+			}
+			else if(obj.className.indexOf(myclass2) != -1){
+		    	wacss.removeClass(obj,myclass2);
+		    	wacss.addClass(obj,myclass1);
+			}
+			else{wacss.addClass(obj,myclass1);}
+		}
 	}
 }

@@ -82,53 +82,66 @@ body{
   right:15px;
 }
 #wacss_toasts .toast{
-  xposition:relative;
+  position:relative;
   box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.1);
   border-radius: .25rem;
   border: 1px solid;
   background-clip: padding-box;
   background-color:#FFF;
-  padding: .375rem .75rem;
+  padding: .475rem .75rem;
   max-width: 350px;
   overflow:auto;
   opacity: 100;
   margin-bottom: 5px;
   transition: all 0.55s ease;
+  z-index: 9995;
+}
+
+#wacss_toasts .toast span.icon-close{
+  position: absolute;
+  top:0px;
+  right:0px;
+  cursor: pointer;
+  padding: .15rem .15rem .35rem .35rem;
+  font-size: .6rem;
+  font-family: sans-serif;
+  z-index: 99999;
+  opacity:0;
 }
 #wacss_toasts .toast.dismiss{
   opacity: 0;
 }
-
-/* default to white */
+/* color variations - default to white */
+#wacss_toasts .toast:hover span.icon-close{opacity:100;color:rgba(226, 230, 234, 1.0);}
 #wacss_toasts .toast{border-color:rgba(226, 230, 234, 1.0);}
-#wacss_toasts .toast:hover{background-color:rgba(226, 230, 234, 1.0);}
 
+#wacss_toasts .toast.w_blue:hover span.icon-close{opacity:100;color:rgba(12, 122, 191, 0.5);}
 #wacss_toasts .toast.w_blue{border-color:rgba(12, 122, 191, 0.3);}
-#wacss_toasts .toast.w_blue:hover{color:#FFF;background-color:rgba(12, 122, 191, 1.0);}
 
+#wacss_toasts .toast.w_gray:hover span.icon-close{opacity:100;color:rgba(90, 98, 104, 0.5);}
 #wacss_toasts .toast.w_gray{border-color:rgba(90, 98, 104, 0.3);}
-#wacss_toasts .toast.w_gray:hover{color:#FFF;background-color:rgba(90, 98, 104, 1.0);}
 
+#wacss_toasts .toast.w_green:hover span.icon-close{opacity:100;color:rgba(33, 136, 56, 0.5);}
 #wacss_toasts .toast.w_green{border-color:rgba(33, 136, 56, 0.3);}
-#wacss_toasts .toast.w_green:hover{color:#FFF;background-color:rgba(33, 136, 56, 1.0);}
 
+#wacss_toasts .toast.w_red:hover span.icon-close{opacity:100;color:rgba(200, 35, 51, 0.5);}
 #wacss_toasts .toast.w_red{border-color:rgba(200, 35, 51, 0.3);}
-#wacss_toasts .toast.w_red:hover{color:#FFF;background-color:rgba(200, 35, 51, 1.0);}
 
+#wacss_toasts .toast.w_yellow:hover span.icon-close{opacity:100;color:rgba(224, 168, 0, 0.5);}
 #wacss_toasts .toast.w_yellow{border-color:rgba(224, 168, 0, 0.3);}
-#wacss_toasts .toast.w_yellow:hover{color:#FFF;background-color:rgba(224, 168, 0, 1.0);}
 
+#wacss_toasts .toast.w_orange:hover span.icon-close{opacity:100;color:rgba(255, 152, 0, 0.5);}
 #wacss_toasts .toast.w_orange{border-color:rgba(255, 152, 0, 0.3);}
-#wacss_toasts .toast.w_orange:hover{color:#FFF;background-color:rgba(255, 152, 0, 1.0);}
 
+#wacss_toasts .toast.w_teal:hover span.icon-close{opacity:100;color:rgba(19, 132, 150, 0.5);}
 #wacss_toasts .toast.w_teal{border-color:rgba(19, 132, 150, 0.3);}
-#wacss_toasts .toast.w_teal:hover{color:#FFF;background-color:rgba(19, 132, 150, 1.0);}
 
+#wacss_toasts .toast.w_white:hover span.icon-close{opacity:100;color:rgba(226, 230, 234, 0.5);}
 #wacss_toasts .toast.w_white{border-color:rgba(226, 230, 234, 0.3);}
-#wacss_toasts .toast.w_white:hover{color:#FFF;background-color:rgba(226, 230, 234, 1.0);}
 
+#wacss_toasts .toast.w_black:hover span.icon-close{opacity:100;color:rgba(35, 39, 43, 0.5);}
 #wacss_toasts .toast.w_black{border-color:rgba(35, 39, 43, 0.3);}
-#wacss_toasts .toast.w_black:hover{color:#FFF;background-color:rgba(35, 39, 43, 1.0);}
+
 /* ---------------------- dropdown ------------------------- */
 .dropdown{
   position:relative;
@@ -230,13 +243,11 @@ body{
 }
 .nav.condensed > ul > li a {
   padding: 4px 8px;
-  line-height: 0.8;
   font-size:15px;
 }
 .nav.condensed > ul > li > ul a {
   padding: 3px 7px;
-  line-height: 0.8;
-  font-size:13px;
+  font-size:14px;
 }
 .nav > ul a:hover,
 .nav .active {
@@ -555,54 +566,43 @@ ul.nav-tabs > li >a, ul.nav-tabs > li.nav-item {
 /* default to white */
 ul.nav-tabs > li >a,ul.nav-tabs > li.nav-item{color:#6c757d;border-color:rgba(226, 230, 234, 1.0);}
 ul.nav-tabs > li >a:hover,ul.nav-tabs > li.active >a,ul.nav-tabs > li >a.active,
-ul.nav-tabs > li.nav-item:hover,ul.nav-tabs > li.nav-item.active{
-  background:rgba(226, 230, 234, 1.0);
-}
+ul.nav-tabs > li.nav-item:hover,ul.nav-tabs > li.nav-item.active{background:rgba(226, 230, 234, 1.0);}
+
 ul.nav-tabs.w_blue > li >a,ul.nav-tabs.w_blue > li.nav-item{color:rgba(12, 122, 191, 1.0);border-color:rgba(12, 122, 191, 0.3);}
 ul.nav-tabs.w_blue > li >a:hover,ul.nav-tabs.w_blue > li >a.active,ul.nav-tabs.w_blue > li.active >a,
-ul.nav-tabs.w_blue > li.nav-item:hover,ul.nav-tabs.w_blue > li.nav-item.active{
-  color:#FFF;background:rgba(12, 122, 191, 1.0);
-}
+ul.nav-tabs.w_blue > li.nav-item:hover,ul.nav-tabs.w_blue > li.nav-item.active{background:rgba(12, 122, 191, 0.4);}
+
 ul.nav-tabs.w_gray > li >a,ul.nav-tabs.w_gray > li.nav-item{color:rgba(90, 98, 104, 1.0);border-color:rgba(90, 98, 104, 0.3);}
 ul.nav-tabs.w_gray > li >a:hover,ul.nav-tabs.w_gray > li.active >a,ul.nav-tabs.w_gray > li >a.active,
-ul.nav-tabs.w_gray > li.nav-item:hover,ul.nav-tabs.w_gray > li.nav-item.active{
-  color:#FFF;background:rgba(90, 98, 104, 1.0);
-}
+ul.nav-tabs.w_gray > li.nav-item:hover,ul.nav-tabs.w_gray > li.nav-item.active{background:rgba(90, 98, 104, 0.4);}
+
 ul.nav-tabs.w_green > li >a,ul.nav-tabs.w_green > li.nav-item{color:rgba(33, 136, 56, 1.0);border-color:rgba(33, 136, 56, 0.3);}
 ul.nav-tabs.w_green > li >a:hover,ul.nav-tabs.w_green > li.active >a,ul.nav-tabs.w_green > li >a.active,
-ul.nav-tabs.w_green > li.nav-item:hover,ul.nav-tabs.w_green > li.nav-item.active{
-  color:#FFF;background:rgba(33, 136, 56, 1.0);
-}
+ul.nav-tabs.w_green > li.nav-item:hover,ul.nav-tabs.w_green > li.nav-item.active{background:rgba(33, 136, 56, 0.5);}
+
 ul.nav-tabs.w_red > li >a,ul.nav-tabs.w_red > li.nav-item{color:rgba(200, 35, 51, 1.0);border-color:rgba(200, 35, 51, 0.3);}
 ul.nav-tabs.w_red > li >a:hover,ul.nav-tabs.w_red > li.active >a,ul.nav-tabs.w_red > li >a.active,
-ul.nav-tabs.w_red > li.nav-item:hover,ul.nav-tabs.w_red > li.nav-item.active{
-  color:#FFF;background:rgba(200, 35, 51, 1.0);
-}
+ul.nav-tabs.w_red > li.nav-item:hover,ul.nav-tabs.w_red > li.nav-item.active{background:rgba(200, 35, 51, 0.4);}
+
 ul.nav-tabs.w_yellow > li >a,ul.nav-tabs.w_yellow > li.nav-item{color:rgba(224, 168, 0, 1.0);border-color:rgba(224, 168, 0, 0.3);}
 ul.nav-tabs.w_yellow > li >a:hover,ul.nav-tabs.w_yellow > li.active >a,ul.nav-tabs.w_yellow > li >a.active,
-ul.nav-tabs.w_yellow > li.nav-item:hover,ul.nav-tabs.w_yellow > li.nav-item.active{
-  color:#FFF;background:rgba(224, 168, 0, 1.0);
-}
+ul.nav-tabs.w_yellow > li.nav-item:hover,ul.nav-tabs.w_yellow > li.nav-item.active{background:rgba(224, 168, 0, 0.4);}
+
 ul.nav-tabs.w_orange > li >a,ul.nav-tabs.w_orange > li.nav-item{color:rgba(255, 152, 0, 1.0);border-color:rgba(255, 152, 0, 0.3);}
 ul.nav-tabs.w_orange > li >a:hover,ul.nav-tabs.w_orange > li.active >a,ul.nav-tabs.w_orange > li >a.active,
-ul.nav-tabs.w_orange > li.nav-item:hover,ul.nav-tabs.w_orange > li.nav-item.active{
-  color:#FFF;background:rgba(255, 152, 0, 1.0);
-}
+ul.nav-tabs.w_orange > li.nav-item:hover,ul.nav-tabs.w_orange > li.nav-item.active{background:rgba(255, 152, 0, 0.4);}
+
 ul.nav-tabs.w_teal > li >a,ul.nav-tabs.w_teal > li.nav-item{color:rgba(19, 132, 150, 1.0);border-color:rgba(19, 132, 150, 0.3);}
 ul.nav-tabs.w_teal > li >a:hover,ul.nav-tabs.w_teal > li.active >a,ul.nav-tabs.w_teal > li >a.active,
-ul.nav-tabs.w_teal > li.nav-item:hover,ul.nav-tabs.w_teal > li.nav-item.active{
-  color:#FFF;background:rgba(19, 132, 150, 1.0);
-}
+ul.nav-tabs.w_teal > li.nav-item:hover,ul.nav-tabs.w_teal > li.nav-item.active{background:rgba(19, 132, 150, 0.4);}
+
 ul.nav-tabs.w_white > li >a,ul.nav-tabs.w_white > li.nav-item{color:#6c757d;border-color:rgba(226, 230, 234, 1.0);}
 ul.nav-tabs.w_white > li >a:hover,ul.nav-tabs.w_white > li.active >a,ul.nav-tabs.w_white > li >a.active,
-ul.nav-tabs.w_white > li.nav-item:hover,ul.nav-tabs.w_white > li.nav-item.active{
-  background:rgba(226, 230, 234, 1.0);
-}
+ul.nav-tabs.w_white > li.nav-item:hover,ul.nav-tabs.w_white > li.nav-item.active{background:rgba(226, 230, 234, 1.0);}
+
 ul.nav-tabs.w_black > li >a,ul.nav-tabs.w_black > li.nav-item{color:rgba(35, 39, 43, 1.0);border-color:rgba(35, 39, 43, 0.3);}
 ul.nav-tabs.w_black > li >a:hover,ul.nav-tabs.w_black > li.active >a,ul.nav-tabs.w_black > li >a.active,
-ul.nav-tabs.w_black > li.nav-item:hover,ul.nav-tabs.w_black > li.nav-item.active{
-  color:#FFF;background:rgba(35, 39, 43, 1.0);
-}
+ul.nav-tabs.w_black > li.nav-item:hover,ul.nav-tabs.w_black > li.nav-item.active{background:rgba(35, 39, 43, 0.4);}
 /* collapse will only show the tab icon on small screens*/
 ul.nav-tabs.collapse > li >a{
     font-size:0px;

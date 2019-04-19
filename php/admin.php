@@ -1845,12 +1845,11 @@ LIST_TABLE:
 						array_unshift($recopts['-listfields'],'_id');
 					}
 				}
-				elseif(!empty($tinfo['default_listfields'])){
-					$recopts['-listfields']=$tinfo['default_listfields'];
-					//add _id if it does not exist
-					if(!in_array('_id',$recopts['-listfields'])){
-						array_unshift($recopts['-listfields'],'_id');
+				if(!empty($tinfo['sortfields'])){
+					if(is_array($tinfo['sortfields'])){
+						$tinfo['listfields']=implode(', ',$tinfo['sortfields']);
 					}
+					$recopts['-order']=$tinfo['listfields'];
 				}
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
@@ -2607,7 +2606,7 @@ LIST_TABLE:
 				echo '<div style="padding:15px;">'.PHP_EOL;
 				echo databaseListRecords(array(
 					'-list'					=>$list,
-					'-fields'				=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
+					'-listfields'			=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
 					'-tableclass'			=> "table table-responsive table-bordered table-striped",
 					'action_displayname'	=> '<span class="icon-download w_big"></span>  <span class="icon-undo w_big"></span> Actions',
 					'size_verbose_displayname'	=> 'Size',
