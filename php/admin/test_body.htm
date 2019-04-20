@@ -7,6 +7,7 @@
 			<li><a href="nav-tabs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
 			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
+			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
@@ -240,3 +241,46 @@
 	</div>
 	<?=loremIpsum(10000);?>
 </view:javascript> 
+
+<view:flexbutton>
+	<div class="flexbutton">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_blue">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_gray">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_green">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_red">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_yellow">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_orange">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_teal">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_white">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+	<div class="flexbutton w_black">
+		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
+		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
+	</div>
+</view:flexbutton>
