@@ -7,7 +7,6 @@ if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
 if(!isDBTable('_users')){
 	return;
 }
-//get the user GUID stored in a cookie
 global $USER;
 global $CONFIG;
 global $ConfigXml;
@@ -568,12 +567,11 @@ function userSetWaSQLGUID(){
 	global $USER;
 	global $CONFIG;
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
-	$salt=wguidSalt();
 	if(!isset($USER['password_crc']) || !strlen($USER['password_crc'])){
-		$USER['password_crc']=crc32($USER['password']);
+		$USER['password_crc']=encodeCRC($USER['password']);
 	}
-	$str=$USER['_id'].encrypt($USER['username'],$salt).$USER['password_crc'];
-	$guid=base64_encode(encrypt($str,$salt));
+	$str=$USER['_id'].'l'.encodeCRC($USER['username']).$USER['password_crc'];
+	$guid=base64_encode($str);
 	//echo printValue($_REQUEST);exit;
 	//echo "str:{$str}    guid:{$guid}";exit;
 	//expire in a year
@@ -590,29 +588,25 @@ function userSetWaSQLGUID(){
 }
 function userAuthorizeLogin($rec=array(),$guid=''){
 	if(!isset($rec['_id']) || !isset($rec['username']) || !isset($rec['password'])){return false;}
-	$salt=wguidSalt();
 	if(!strlen($guid) && isset($_COOKIE['WASQLGUID']) && strlen($_COOKIE['WASQLGUID'])){
 		$guid=$_COOKIE['WASQLGUID'];
 	}
 	$guidstr=base64_decode($guid);
-    $guidstr=decrypt($guidstr,$salt);
-    $recstr=$rec['_id'].encrypt($rec['username'],$salt).encodeCRC($USER['password']);
+    $recstr=$rec['_id'].'l'.encodeCRC($rec['username']).encodeCRC($rec['password']);
     if($recstr === $guidstr){return true;}
     return false;
 }
 function userAuthorizeWASQLGUID(){
-	$salt=wguidSalt();
 	if(!isset($_COOKIE['WASQLGUID']) || !strlen($_COOKIE['WASQLGUID'])){
 		return false;
 	}
 	$guid=$_COOKIE['WASQLGUID'];
 	$guidstr=base64_decode($guid);
-    $guidstr=decrypt($guidstr,$salt);
     if(preg_match('/^([0-9]+)/',$guidstr,$m)){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
     	//echo printValue($rec);exit;
     }
-    $recstr=$rec['_id'].encrypt($rec['username'],$salt).encodeCRC($rec['password']);
+    $recstr=$rec['_id'].'l'.encodeCRC($rec['username']).encodeCRC($rec['password']);
     //echo "{$recstr} eq {$guidstr}";exit;
     if($recstr == $guidstr){
     	return $rec;
