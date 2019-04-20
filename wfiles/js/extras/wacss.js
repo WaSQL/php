@@ -290,7 +290,14 @@ var wacss = {
 	    for(let i=0;i<list.length;i++){
 	        wacss.removeClass(list[i],'active');
 	    }
-	    wacss.addClass(el,'active');
+	    //add active class to the li
+	    if(el.nodeName.toLowerCase()=='li'){
+	    	wacss.addClass(el,'active');	
+	    }
+	    else{
+	    	let li=wacss.getParent(el,'li');
+	    	wacss.addClass(li,'active');
+	    }
 	    return false;;
 	},
 	toast: function(msg,params){
