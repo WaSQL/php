@@ -1070,6 +1070,7 @@ input[type="checkbox"].btn:after, input[type="radio"].btn:after{
 input[type="radio"]:after{
   content:"\25CE";
   color:#343a40;
+  cursor: pointer;
 }
 input[type="radio"]:checked:after{
   content:"\25C9";
@@ -1077,6 +1078,7 @@ input[type="radio"]:checked:after{
 input[type="checkbox"]:after, input[type="radio"][data-type="checkbox"]:after{
   content:"\2610";
   color:#343a40;
+  cursor: pointer;
 }
 input[type="checkbox"]:checked:after, input[type="radio"][data-type="checkbox"]:checked:after{
   content:"\2611";
