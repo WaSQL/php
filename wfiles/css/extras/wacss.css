@@ -1068,19 +1068,19 @@ input[type="checkbox"].btn:after, input[type="radio"].btn:after{
   border:1px solid #ccc;
   border-right:0px;
 }
-input[type="checkbox"]:after{
-  content:"\2610";
-  color:#343a40;
-}
-input[type="checkbox"]:checked:after{
-  content:"\2611";
-}
 input[type="radio"]:after{
   content:"\25CE";
   color:#343a40;
 }
 input[type="radio"]:checked:after{
   content:"\25C9";
+}
+input[type="checkbox"]:after, input[type="radio"][data-type="checkbox"]:after{
+  content:"\2610";
+  color:#343a40;
+}
+input[type="checkbox"]:checked:after, input[type="radio"][data-type="checkbox"]:checked:after{
+  content:"\2611";
 }
 input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
   font-family:sans-serif;
