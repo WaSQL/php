@@ -1036,7 +1036,7 @@ input[type="checkbox"], input[type="radio"] {
   -webkit-appearance:none;
   -moz-appearance:none;
   appearance:none;
-  font-size:1rem;
+  font-size:inherit;
   margin:0px;
   box-sizing: border-box;
   font-weight:300;
@@ -1051,7 +1051,6 @@ input[type="checkbox"]:after, input[type="radio"]:after{
   font-size:inherit;
   font-family:sans-serif;
   font-weight:300;
-  font-size: 1.3rem;
   display:inline;
   line-height: 1;
   padding:0px;
