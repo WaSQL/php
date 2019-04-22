@@ -85,7 +85,7 @@ function oracleAddDBRecords($params=array()){
     			$jfields[]=$field;
     		break;
     	}
-    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
+    	$defines[]="{$field} varchar2(4000) PATH '\$.{$field}'";
     }
     if(!count($fields)){return 'No matching Fields';}
     $fieldstr=implode(',',$fields);
