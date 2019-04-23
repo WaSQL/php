@@ -7,6 +7,12 @@
 		https://www.convert-in.com/mysql-to-postgresqls-types-mapping.htm
 		https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresqlsql-8bfcd2f4a91e
 		https://stackoverflow.com/questions/15520361/permission-denied-for-relation
+
+	Json_table equivilent in PostgreSQL
+		drop TYPE json_test;
+		create  TYPE json_test AS (id_item int, id_menu varchar(100));
+		select * from json_populate_recordset(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
+
 */
 
 //---------- begin function postgresqlAddDBRecord ----------
@@ -26,16 +32,8 @@
 function postgresqlAddDBRecord($params=array()){
 	global $USER;
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
-	$fields=postgresqlGetDBFieldInfo($params['-table'],$params);
+	$finfo=postgresqlGetDBFieldInfo($params['-table'],$params);
 	$sequence='';
-	$owner='';
-	foreach($fields as $field){
-    	if(isset($field['sequence'])){
-        	$sequence=$field['sequence'];
-        	$owner=$field['owner'];
-        	break;
-		}
-	}
 	$opts=array();
 	if(isset($fields['cdate'])){
 		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
@@ -49,52 +47,81 @@ function postgresqlAddDBRecord($params=array()){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=$USER['username'];
 	}
-	$valstr='';
+	$fields=array();
+	$values=array();
+	$prepares=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
+		if(!isset($finfo[$k])){continue;}
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'integer':
-        	case 'number':
-        		$opts['values'][]=$params[$k];
-        	break;
-        	case 'date':
-				if($k=='cdate' || $k=='_cdate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
-				}
-        		$opts['values'][]="'{$params[$k]}'";
-        	break;
-        	default:
-        		$opts['values'][]="'{$params[$k]}'";
-        	break;
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-
-        $opts['fields'][]=trim(strtoupper($k));
+		$fields[]=$k;
+		$values[]=$params[$k];
+        $prepares[]='$'.count($values);
 	}
-	$fieldstr=implode('","',$opts['fields']);
-	$valstr=implode(',',$opts['values']);
+	$fieldstr=implode(',',$fields);
+	$preparestr=implode(',',$prepares);
 	//determine output field - identity column to return
+	/*
+		PostgreSQL will automatically generate and populate values into the SERIAL column. 
+		This is similar to AUTO_INCREMENT column in MySQL or AUTOINCREMENT column in SQLite.
+		You can create inserts that return a value... so you can return the identity field
+	*/
 	$output='';
-	foreach($fields as $output_field=>$info){
+	$output_field='_id';
+	foreach($finfo as $field=>$info){
 		if($info['identity']==1){
-			$output=" OUTPUT INSERTED.{$output_field}";
+			$output=" returning {$field}";
+			$output_field=$field;
+			break;
+		}
+		elseif($info['sequence']==1){
+			$output=" returning {$field}";
+			$output_field=$field;
+			break;
+		}
+		elseif($field=='_id'){
+			$output=" returning {$field}";
 			break;
 		}
 	}
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
-			("{$fieldstr}")
-		{$output}
+			({$fieldstr})
 		VALUES(
-			{$valstr}
+			{$preparestr}
 		)
+		{$output}
 ENDOFQUERY;
-	$recs=postgresqlQueryResults($query,$params);
+
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect($params);
+	}
+	if(!$dbh_postgresql){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecord',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	if(!pg_prepare($dbh_postgresql,'postgresqlAddDBRecord',$query)){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecord',
+			'message'=>'pg_prepare failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+		pg_close($dbh_postgresql);
+		return;
+	}
+	$data=pg_execute('postgresqlAddDBRecord',$values);
+	$recs = postgresqlEnumQueryResults($data);
+	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
 }
@@ -229,46 +256,86 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-table'])){return 'postgresqlEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'postgresqlEditRecord error: No where specified.';}
 	global $USER;
-	$fields=postgresqlGetDBFieldInfo($params['-table'],$params);
+	$finfo=postgresqlGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
-	if(isset($fields['edate'])){
+	if(isset($finfo['edate'])){
 		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
 	}
-	elseif(isset($fields['_edate'])){
+	elseif(isset($finfo['_edate'])){
 		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
 	}
-	if(isset($fields['euser'])){
+	if(isset($finfo['euser'])){
 		$params['euser']=$USER['username'];
 	}
-	elseif(isset($fields['_euser'])){
+	elseif(isset($finfo['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
+	$sets=array();
+	$values=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		if($k=='cuser' || $k=='cdate'){continue;}
+		if(!isset($finfo[$k])){continue;}
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'date':
-				if($k=='edate' || $k=='_edate'){
-					$params[$k]=date('Y-m-d',strtotime($v));
-				}
-        	break;
-		}
-        $params[$k]=str_replace("'","''",$params[$k]);
-        $updates[]="upper({$k})=upper('{$params[$k]}')";
+		$p=count($sets)+1;
+		$sets[]="{$k}=\${$p}";
+		$values[]=$params[$k];
 	}
-	$updatestr=implode(', ',$updates);
+	$setstr=implode(', ',$sets);
+	$output='';
+	$output_field='_id';
+	foreach($finfo as $field=>$info){
+		if($info['identity']==1){
+			$output=" returning {$field}";
+			$output_field=$field;
+			break;
+		}
+		elseif($info['sequence']==1){
+			$output=" returning {$field}";
+			$output_field=$field;
+			break;
+		}
+		elseif($field=='_id'){
+			$output=" returning {$field}";
+			break;
+		}
+	}
     $query=<<<ENDOFQUERY
 		UPDATE {$params['-table']}
-		SET {$updatestr}
+		SET {$setstr}
 		WHERE {$params['-where']}
+		{$output}
 ENDOFQUERY;
-	postgresqlQueryResults($query,$params);
-	return;
+	//echo $query;exit;
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect($params);
+	}
+	if(!$dbh_postgresql){
+		debugValue(array(
+			'function'=>'postgresqlEditDBRecord',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	if(!pg_prepare($dbh_postgresql,'postgresqlEditDBRecord',$query)){
+		debugValue(array(
+			'function'=>'postgresqlEditDBRecord',
+			'message'=>'pg_prepare failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+		pg_close($dbh_postgresql);
+		return;
+	}
+	$data=pg_execute('postgresqlEditDBRecord',$values);
+	$recs = postgresqlEnumQueryResults($data);
+	pg_close($dbh_postgresql);
+	return $recs;
 }
 //---------- begin function postgresqlExecuteSQL ----------
 /**
@@ -284,28 +351,38 @@ ENDOFQUERY;
 */
 function postgresqlExecuteSQL($query,$params=array()){
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect($params);
-	}
+	$dbh_postgresql=postgresqlDBConnect($params);
 	if(!$dbh_postgresql){
-    	$e=pg_last_error();
-    	debugValue(array("postgresqlExecuteSQL Connect Error",$e));
+		debugValue(array(
+			'function'=>'postgresqlExecuteSQL',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
     	return;
 	}
 	try{
-		$result=@pg_query($query,$dbh_postgresql);
+		$result=@pg_query($dbh_postgresql,$query);
 		if(!$result){
-			$e=pg_last_error();
+			debugValue(array(
+				'function'=>'postgresqlExecuteSQL',
+				'message'=>'pg_query failed',
+				'error'=>pg_last_error(),
+				'query'=>$query
+			));
 			pg_close($dbh_postgresql);
-			debugValue(array("postgresqlExecuteSQL Connect Error",$e));
 			return;
 		}
 		pg_close($dbh_postgresql);
 		return true;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue($err);
+		debugValue(array(
+			'function'=>'postgresqlExecuteSQL',
+			'message'=>'try catch failed',
+			'error'=>$e->errorInfo,
+			'query'=>$query
+		));
 		return false;
 	}
 	return true;
@@ -330,7 +407,12 @@ function postgresqlGetDBCount($params=array()){
 	$recs=postgresqlGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
-		debugValue($recs);
+		debugValue(array(
+			'function'=>'postgresqlGetDBCount',
+			'message'=>'get count failed',
+			'error'=>$recs,
+			'params'=>$params
+		));
 		return 0;
 	}
 	return $recs[0]['cnt'];
@@ -373,17 +455,25 @@ function postgresqlGetDBFieldInfo($table,$params=array()){
 		$dbh_postgresql=postgresqlDBConnect($params);
 	}
 	if(!$dbh_postgresql){
-    	$e=pg_last_error();
-    	debugValue(array("postgresqlQueryResults Connect Error",$e));
+		debugValue(array(
+			'function'=>'postgresqlGetDBFieldInfo',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
     	return;
 	}
-	$query="SELECT * from {$table} where false";
+	//check for identity fields
+	$table=strtolower($table);
+	
+	//echo printValue($idfields);exit;
+	$query="SELECT * from {$table} where 1=0";
 	$res=@pg_query($dbh_postgresql,$query);
 	$fields=array();
 	$i = pg_num_fields($res);
 	for ($j = 0; $j < $i; $j++) {
 	    $fieldname = pg_field_name($res, $j);
-		$fields[$fieldname]=array(
+		$field=array(
 		 	'_dbfield'	=> $fieldname,
 		 	'_dbtype'	=> pg_field_type($res, $j),
 			'length'	=> pg_field_prtlen($res, $j),
@@ -391,8 +481,18 @@ function postgresqlGetDBFieldInfo($table,$params=array()){
 			'size'		=> pg_field_size($res, $j),
 			'nullable'	=> pg_field_is_null($res, $j),
 		);
+		$field['_dbtype']=$field['_dbtype_ex']=strtolower($field['_dbtype']);
+		if($field['size'] > 0){
+			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['size']})");
+		}
+		$fields[$fieldname]=$field;
 	}
 	pg_close($dbh_postgresql);
+	$recs=postgresqlQueryResults("select column_name from information_schema.columns where table_name='{$table}' and is_identity='YES'");
+	$idfields=array();
+	foreach($recs as $rec){
+		$fields[$rec['column_name']]['identity']=1;
+	}
 	ksort($fields);
 	return $fields;
 }
@@ -434,10 +534,16 @@ function postgresqlGetDBRecord($params=array()){
 function postgresqlGetDBRecords($params){
 	global $USER;
 	global $CONFIG;
-	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
-		//they just entered a query
-		$query=$params;
-		$params=array();
+	if(empty($params['-table']) && !is_array($params)){
+		if(stringBeginsWith($params,"select ") || stringBeginsWith($params,"with ") || stringBeginsWith($params,"explain ") || stringContains($params,' returning ')){
+			//they just entered a query
+			$query=$params;
+			$params=array();
+		}
+		else{
+			$ok=postgresqlExecuteSQL($params);
+			return $ok;
+		}
 	}
 	else{
 		//determine fields to return
@@ -686,24 +792,31 @@ function postgresqlParseConnectParams($params=array()){
 * @return array - returns records
 */
 function postgresqlQueryResults($query='',$params=array()){
+	$query=trim($query);
 	global $USER;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect($params);
 	}
 	if(!$dbh_postgresql){
-    	$e=pg_last_error();
-    	debugValue(array("postgresqlQueryResults Connect Error",$e));
+		debugValue(array(
+			'function'=>'postgresqlQueryResults',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
     	return;
 	}
 	$data=@pg_query($dbh_postgresql,$query);
 	if(!$data){return "postgresqlQueryResults Query Error: " . pg_last_error();}
-	if(preg_match('/^insert /i',$query)){
+	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
+
     	$id=databaseAffectedRows($data);
     	pg_close($dbh_postgresql);
     	return $id;
 	}
+
 	$results = postgresqlEnumQueryResults($data);
 	pg_close($dbh_postgresql);
 	return $results;

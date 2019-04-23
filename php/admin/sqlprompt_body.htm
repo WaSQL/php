@@ -54,9 +54,10 @@
 						<div class="col-sm-3">
 							<button type="submit" class="btn <?=configValue('admin_color');?>">Execute</button> <span class="w_small w_grey">(or press F8)</span>
 						</div>
-						<div class="col-sm-6 text-right w_grey w_small">
-							Note: You can drag and drop .sql files onto the textarea
+						<div class="col-sm-4 text-right w_grey w_small">
+							<translate>Note: You can drag and drop .sql files onto the textarea</translate>
 						</div>
+						<div class="col-sm-2 align-right w_gray w_small" id="results_count"></div>
 						<div class="col-sm-3 align-right">
 							<a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" style="display:none;" id="export_link" class="btn w_orange"><span class="icon-export"></span> export</a>
 						</div>
@@ -99,31 +100,20 @@
 </nav>
 </view:tabs>
 
+
 <view:results>
-	<div class="w_gray w_smaller">
-		<span class="icon-prompt"></span> <?=$_SESSION['sql_last'];?>
-		<?=buildOnLoad("document.getElementById('export_link').style.display='inline-block';");?>
-	</div>
-	<div class="w_padtop">
-	<?=sqlpromptListResults($recs);?>
+	<div class="row w_padtop">
+		<div class="col-sm-12" style="overflow:auto;">
+			<?=buildOnLoad("setText('results_count','".count($recs)." results');document.getElementById('export_link').style.display='inline-block';");?>
+			<?=sqlpromptListResults($recs);?>		
+		</div>
 	</div>
 </view:results>
-
-<view:block_results>
-	<div class="row w_padtop">
-		<div class="col-sm-10 w_grey"><span class="icon-prompt"></span>  <?=$_SESSION['sql_last'];?></div>
-		<div class="col-sm-1"><?=count($recs);?></div>
-		<div class="col-sm-1 text-right"><a href="/php/admin.php?_menu=sqlprompt&func=export&AjaxRequestUniqueId=123456" class="w_link w_block"><span class="icon-export"></span> export</a></div>
-	</div>
-	<div class="row w_padtop">
-		<div class="col-sm-12"><?=listDBRecords($recs);?></div>
-	</div>
-</view:block_results>
 
 <view:fields>
 	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>
-		<li><a href="#" style="display:inline-block;" data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?>" onclick="return false;"><?=$field['_dbfield'];?></a></li>
+		<li><a href="#" style="display:inline-block;" data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?><view:identity>  - IDENTITY field</view:identity><?=renderViewIf(isset($field['identity']),'identity');?>" onclick="return false;"><?=$field['_dbfield'];?></a></li>
 	</view:field>
 	<?=renderEach('field',$fields,'field');?>
 	</ul>

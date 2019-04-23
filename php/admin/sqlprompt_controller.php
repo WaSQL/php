@@ -31,7 +31,7 @@
 			return;
 		break;
 		case 'sql':
-			$view='results';
+			$view='block_results';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
@@ -66,8 +66,12 @@
 			switch(strtolower($_REQUEST['db'])){
 				case 'postgresql':
 					loadExtras('postgresql');
+					//echo nl2br($_SESSION['sql_last']);exit;
 					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
+					if(!is_array($recs)){
+						$recs=array(array('result'=>$ok));
+					}
+					//echo nl2br($_SESSION['sql_last']).printValue($recs);exit;
 				break;
 				case 'oracle':
 					loadExtras('oracle');
@@ -103,7 +107,7 @@
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 			}
-			setView($view,1);
+			setView('results',1);
 			return;
 		break;
 		case 'export':
@@ -157,6 +161,7 @@
 				case 'postgresql':
 					loadExtras('postgresql');
 					$fields=postgresqlGetDBFieldInfo($table);
+					//echo printValue($fields);exit;
 				break;
 				case 'oracle':
 					loadExtras('oracle');
