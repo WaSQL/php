@@ -1,4 +1,18 @@
 <view:default>
+<script src="/wfiles/js/extras/c3.js" type="text/javascript"></script>
+<script type="text/javascript">
+	function c3LineChart(){
+		var chart = c3.generate({
+			bindto:'#c3_line',
+		    data: {
+		        json: {
+		        	'data1': [30, 200, 100, 400, 150, 250],
+		            'data2': [50, 20, 10, 40, 15, 25]
+		        }
+		    }
+		});
+	}
+</script>
 <h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
 <div class="row">
 	<div class="col s2" style="position:sticky;top:59px;">
@@ -8,6 +22,7 @@
 			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
+			<li><a href="c3charts" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">C3 Charts</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
@@ -288,3 +303,7 @@
 		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
 	</div>
 </view:flexbutton>
+
+<view:c3charts>
+<div id="c3_line"><?=buildOnLoad("c3LineChart();");?></div>
+</view:c3charts>
