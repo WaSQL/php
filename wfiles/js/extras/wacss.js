@@ -107,10 +107,15 @@ var wacss = {
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
-			let editor=list[i].id+'_editor';
+			let editor_id=list[i].id+'_wacsseditor';
+			//does it already exist?
+			let eobj=wacss.getObject(editor_id);
+			if(undefined != eobj){continue;}
+			//create a contenteditable div
 			let attrs=wacss.getAllAttributes(list[i]);
 			let d = document.createElement('div');
 			d.editor=list[i].id;
+			d.id=editor_id;
 			for(k in attrs){
 				if(k=='id' || k=='editor'){continue;}
 				d.setAttribute(k,attrs[k]);
@@ -122,6 +127,7 @@ var wacss = {
 			}
 			d.setAttribute('contenteditable','true');
 			d.innerHTML = list[i].innerHTML;
+			//hide the textarea and show the contenteditable div in its place
 			list[i].style.display='none';
 			list[i].parentNode.appendChild(d);
 			//list[i].parentNode.replaceChild(d, list[i]);
@@ -140,7 +146,7 @@ var wacss = {
 						console.log('no tobj');
 						return false;
 					}
-					let dobj=getObject(tid+'_editor');
+					let dobj=getObject(tid+'_wacsseditor');
 					if(undefined == dobj){
 						console.log('no dobj');
 						return false;
@@ -148,10 +154,12 @@ var wacss = {
 					if(tobj.style.display=='none'){
 						tobj.style.display='block';
 						dobj.style.display='none';	
+						tobj.focus();
 					}
 					else{
 						dobj.style.display='block';
 						tobj.style.display='none';
+						dobj.focus();
 					}
 					return false;
 				}
