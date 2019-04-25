@@ -339,6 +339,7 @@ body{
 .nav.leftmenu {
   position: fixed;
   height: 100%;
+  top:0px;
 }
 .nav.leftmenu  ul  li {
   display: block;
