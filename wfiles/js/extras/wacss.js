@@ -107,14 +107,24 @@ var wacss = {
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
+			let editor=list[i].id+'_editor';
 			let attrs=wacss.getAllAttributes(list[i]);
 			let d = document.createElement('div');
+			d.editor=list[i].id;
 			for(k in attrs){
+				if(k=='id' || k=='editor'){continue;}
 				d.setAttribute(k,attrs[k]);
+			}
+			d.onchange = function(){
+				let tobj=getObject(this.editor);
+				if(undefined == tobj){return false;}
+				tobj.innerHTML=this.innerHTML;
 			}
 			d.setAttribute('contenteditable','true');
 			d.innerHTML = list[i].innerHTML;
-			list[i].parentNode.replaceChild(d, list[i]);
+			list[i].style.display='none';
+			list[i].parentNode.appendChild(d);
+			//list[i].parentNode.replaceChild(d, list[i]);
 		}
 		list=document.querySelectorAll('button.wacssedit');
 		for(i=0;i<list.length;i++){
@@ -124,29 +134,25 @@ var wacss = {
 			list[i].onclick=function(){
 				let cmd=this.getAttribute('data-cmd');
 				if(cmd=='code'){
-					let eid=this.getAttribute('data-arg');
-					let eobj=wacss.getObject(eid);
-					if(undefined == eobj){return false;}
-					let attrs=wacss.getAllAttributes(eobj);
-					let d=null;
-					console.log(eobj.nodeName);
-					if(eobj.nodeName.toLowerCase() == 'div'){
-						d = document.createElement('textarea');
-						for(k in attrs){d.setAttribute(k,attrs[k]);}
-						d.setAttribute('contenteditable','false');
-						d.innerHTML = eobj.innerHTML;
-						eobj.parentNode.replaceChild(d, eobj);
-						console.log('replaced div with textarea');	
+					let tid=this.getAttribute('data-arg');
+					let tobj=wacss.getObject(tid);
+					if(undefined == tobj){
+						console.log('no tobj');
+						return false;
+					}
+					let dobj=getObject(tid+'_editor');
+					if(undefined == dobj){
+						console.log('no dobj');
+						return false;
+					}
+					if(tobj.style.display=='none'){
+						tobj.style.display='block';
+						dobj.style.display='none';	
 					}
 					else{
-						let d = document.createElement('div');
-						for(k in attrs){d.setAttribute(k,attrs[k]);}
-						d.setAttribute('contenteditable','true');
-						d.innerHTML = eobj.innerHTML;
-						eobj.parentNode.replaceChild(d, eobj);
-						console.log('replaced textara with div');
+						dobj.style.display='block';
+						tobj.style.display='none';
 					}
-					
 					return false;
 				}
 				if(undefined == this.getAttribute('data-arg')){
