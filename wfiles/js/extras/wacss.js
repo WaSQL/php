@@ -54,6 +54,10 @@ var wacss = {
 		//info: returns the object identified by the object or id passed in
 		if(typeof(obj)=='object'){return obj;}
 	    else if(typeof(obj)=='string'){
+	    	//try querySelector
+	    	let qso=document.querySelector(obj);
+	    	if(typeof(qso)=='object'){return qso;}
+	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
 			else if(undefined != document.getElementsByName(obj)){
 				var els=document.getElementsByName(obj);
