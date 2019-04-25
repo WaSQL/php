@@ -28,6 +28,7 @@ include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
+loadExtras('translate');
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
 //check for url_eval
@@ -3013,7 +3014,9 @@ function adminViewPage($menu){
 	}
 	$body=getFileContents("{$progpath}/admin/{$menu}_body.htm");
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
-	return evalPHP(array($controller,$body));
+	$rtn = evalPHP(array($controller,$body));
+	$rtn=processTranslateTags($rtn);
+    return $rtn;
 }
 //---------- begin function adminShowSessionLog ----
 /**

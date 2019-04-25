@@ -50,13 +50,21 @@ var wacss = {
 			wacss.removeObj(el);
 		},1000);
 	},
+	getAllAttributes: function(obj){
+		//info: get all attributes of a specific object or id
+		var node=wacss.getObject(obj);
+		var rv = {};
+	    for(var i=0; i<node.attributes.length; i++){
+	        if(node.attributes.item(i).specified){
+	            rv[node.attributes.item(i).nodeName]=node.attributes.item(i).nodeValue;
+				}
+			}
+	    return rv;
+	},
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in
 		if(typeof(obj)=='object'){return obj;}
 	    else if(typeof(obj)=='string'){
-	    	//try querySelector
-	    	let qso=document.querySelector(obj);
-	    	if(typeof(qso)=='object'){return qso;}
 	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
 			else if(undefined != document.getElementsByName(obj)){
@@ -64,7 +72,10 @@ var wacss = {
 				if(els.length ==1){return els[0];}
 	        	}
 			else if(undefined != document.all[obj]){return document.all[obj];}
-	    	}
+	    	//try querySelector
+	    	let qso=document.querySelector(obj);
+	    	if(typeof(qso)=='object'){return qso;}
+	    }
 	    return null;
 	},
 	getParent: function(obj,name){
@@ -86,6 +97,69 @@ var wacss = {
 		var pobj=cObj.parentNode;
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj);}
+	},
+	init: function(){
+		/*wacssedit*/
+		wacss.initWacssEdit();
+	},
+	initWacssEdit: function(){
+		/*convert texteara to contenteditable div*/
+		let list=document.querySelectorAll('textarea.wacssedit');
+		for(let i=0;i<list.length;i++){
+			if(undefined == list[i].id){continue;}
+			let attrs=wacss.getAllAttributes(list[i]);
+			let d = document.createElement('div');
+			for(k in attrs){
+				d.setAttribute(k,attrs[k]);
+			}
+			d.setAttribute('contenteditable','true');
+			d.innerHTML = list[i].innerHTML;
+			list[i].parentNode.replaceChild(d, list[i]);
+		}
+		list=document.querySelectorAll('button.wacssedit');
+		for(i=0;i<list.length;i++){
+			let cmd=list[i].getAttribute('data-cmd');
+			if(undefined == cmd){continue;}
+			list[i].setAttribute('data-wacssedit-cmd',cmd);
+			list[i].onclick=function(){
+				let cmd=this.getAttribute('data-cmd');
+				if(cmd=='code'){
+					let eid=this.getAttribute('data-arg');
+					let eobj=wacss.getObject(eid);
+					if(undefined == eobj){return false;}
+					let attrs=wacss.getAllAttributes(eobj);
+					let d=null;
+					console.log(eobj.nodeName);
+					if(eobj.nodeName.toLowerCase() == 'div'){
+						d = document.createElement('textarea');
+						for(k in attrs){d.setAttribute(k,attrs[k]);}
+						d.setAttribute('contenteditable','false');
+						d.innerHTML = eobj.innerHTML;
+						eobj.parentNode.replaceChild(d, eobj);
+						console.log('replaced div with textarea');	
+					}
+					else{
+						let d = document.createElement('div');
+						for(k in attrs){d.setAttribute(k,attrs[k]);}
+						d.setAttribute('contenteditable','true');
+						d.innerHTML = eobj.innerHTML;
+						eobj.parentNode.replaceChild(d, eobj);
+						console.log('replaced textara with div');
+					}
+					
+					return false;
+				}
+				if(undefined == this.getAttribute('data-arg')){
+					console.log(cmd);
+					document.execCommand(cmd,false,null);
+				}
+				else{
+					let arg=this.getAttribute('data-arg');
+					console.log(cmd,arg);
+					document.execCommand(cmd,false,arg);
+				}
+			};
+		}
 	},
 	modalBlink: function(){
 		if(undefined != document.getElementById('wacss_modal')){
@@ -366,3 +440,4 @@ var wacss = {
 		}
 	}
 }
+wacss.init();
