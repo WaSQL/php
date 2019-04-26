@@ -162,6 +162,7 @@ var wacss = {
 				'Copy':['copy','','icon-copy','c'],
 				'Paste':['paste','','icon-paste','p'],
 				'Heading':['heading','','',''],
+				'Fontsize':['fontSize','','',''],
 				'Indent':['indent','','icon-indent',''],
 				'Outdent':['outdent','','icon-outdent',''],
 				'Redo':['redo','','icon-redo','y'],
@@ -209,6 +210,29 @@ var wacss = {
 						}
 						
 						li.appendChild(hul);
+
+					break;
+					case 'fontsize':
+						//headings H1-6
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let fsul=document.createElement('ul');
+						for(let fs=1;fs<7;fs++){
+							let fsname='Size '+fs;
+							let fsli=document.createElement('li');
+							fsul.appendChild(fsli);
+							let fsa=document.createElement('button');
+							fsa.className='wacssedit';
+							fsa.innerHTML=fsname;
+							fsa.setAttribute('data-cmd','fontSize');
+							fsa.setAttribute('data-arg',fs);
+							fsli.appendChild(fsa);
+						}
+						
+						li.appendChild(fsul);
 
 					break;
 					case 'justify':
