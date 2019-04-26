@@ -98,6 +98,14 @@ var wacss = {
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj);}
 	},
+	in_array: function(needle, haystack) {
+	    let length = haystack.length;
+	    for(let i = 0; i < length; i++) {
+	    	//console.log('in_array',haystack[i],needle);
+	        if(haystack[i] == needle){return true;}
+	    }
+	    return false;
+	},
 	init: function(){
 		/*wacssedit*/
 		wacss.initWacssEdit();
@@ -107,6 +115,8 @@ var wacss = {
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
+			if(undefined != list[i].getAttribute('data-wacss-init')){continue;}
+			list[i].setAttribute('data-wacss-init',1);
 			let editor_id=list[i].id+'_wacsseditor';
 			//does it already exist?
 			let eobj=wacss.getObject(editor_id);
@@ -137,6 +147,9 @@ var wacss = {
 			//wacssedit_bar
 			let nav = document.createElement('nav');
 			nav.className='nav w_white';
+			if(undefined != list[i].getAttribute('data-bar-color')){
+				nav.className='nav '+list[i].getAttribute('data-bar-color');
+			}
 			let ul = document.createElement('ul');
 		
 			//title,cmd,arg,icon,accesskey
@@ -151,12 +164,25 @@ var wacss = {
 				'Heading':['heading','','',''],
 				'Indent':['indent','','icon-indent',''],
 				'Outdent':['outdent','','icon-outdent',''],
-				'Redo':['redo','','icon-redo',''],
-				'Undo':['undo','','icon-undo',''],
+				'Redo':['redo','','icon-redo','y'],
+				'Undo':['undo','','icon-undo','z'],
 				'Justify':['justify','','',''],
-				'HTMLCode':['code',list[i].id,'icon-code','h']
+				'Htmlcode':['code',list[i].id,'icon-code','h']
 			}
+			let databar=new Array();
+			if(undefined != list[i].getAttribute('data-bar')){
+				let barstr=list[i].getAttribute('data-bar');
+				let btns=barstr.split(',');
+				for(let db=0;db<btns.length;db++){
+					databar.push(wacss.ucwords(btns[db]));
+				}
+			}
+			console.log('databar',databar);
 			for(name in buttons){
+				console.log(name);
+				if(databar.length > 0 && !wacss.in_array(name,databar)){
+					continue;
+				}
 				let li=document.createElement('li');
 				let parts;
 				let a;
@@ -573,4 +599,3 @@ var wacss = {
 		return str;
 	}
 }
-wacss.init();
