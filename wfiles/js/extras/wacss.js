@@ -130,7 +130,7 @@ var wacss = {
 				if(k=='id' || k=='editor'){continue;}
 				d.setAttribute(k,attrs[k]);
 			}
-			d.onblur = function(){
+			d.onkeypress = function(){
 				let tobj=getObject(this.editor);
 				if(undefined == tobj){return false;}
 				tobj.innerHTML=this.innerHTML;
