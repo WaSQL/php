@@ -206,6 +206,7 @@ var wacss = {
 							ha.innerHTML=hname;
 							ha.setAttribute('data-cmd','formatBlock');
 							ha.setAttribute('data-arg','H'+h);
+							ha.setAttribute('data-txt',list[i].id);
 							hli.appendChild(ha);
 						}
 						
@@ -229,6 +230,7 @@ var wacss = {
 							fsa.innerHTML=fsname;
 							fsa.setAttribute('data-cmd','fontSize');
 							fsa.setAttribute('data-arg',fs);
+							fsa.setAttribute('data-txt',list[i].id);
 							fsli.appendChild(fsa);
 						}
 						
@@ -251,6 +253,7 @@ var wacss = {
 							fna.className='wacssedit';
 							fna.setAttribute('data-cmd','fontName');
 							fna.setAttribute('data-arg',fonts[fn]);
+							fna.setAttribute('data-txt',list[i].id);
 							fna.style.fontFamily=fonts[fn];
 							fna.innerHTML=fonts[fn];
 							fnli.appendChild(fna);
@@ -273,6 +276,7 @@ var wacss = {
 							ja=document.createElement('button');
 							ja.className='wacssedit';
 							ja.setAttribute('data-cmd','justify'+jname);
+							ja.setAttribute('data-txt',list[i].id);
 							let jicon=document.createElement('span');
 							jicon.className='icon-justify-'+jopts[j];
 							ja.appendChild(jicon);
@@ -288,6 +292,7 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit';
 						a.title=name;
+						a.setAttribute('data-txt',list[i].id);
 						if(parts[3].length){
 							a.setAttribute('accesskey',parts[3]);
 							a.title=a.title+' (ALT-'+parts[3]+')';
@@ -323,18 +328,18 @@ var wacss = {
 				event.preventDefault();
 				let cmd=this.getAttribute('data-cmd');
 				//console.log('onclick',cmd);
+				let tid=this.getAttribute('data-txt');
+				let tobj=wacss.getObject(tid);
+				if(undefined == tobj){
+					console.log('wacssedit code error: no tobj');
+					return false;
+				}
+				let dobj=getObject(tid+'_wacsseditor');
+				if(undefined == dobj){
+					console.log('wacssedit code error: no dobj');
+					return false;
+				}
 				if(cmd=='code'){
-					let tid=this.getAttribute('data-arg');
-					let tobj=wacss.getObject(tid);
-					if(undefined == tobj){
-						console.log('wacssedit code error: no tobj');
-						return false;
-					}
-					let dobj=getObject(tid+'_wacsseditor');
-					if(undefined == dobj){
-						console.log('wacssedit code error: no dobj');
-						return false;
-					}
 					if(tobj.style.display=='none'){
 						//switch to textarea edit mode
 						dobj.setAttribute('contenteditable','false');
@@ -354,14 +359,15 @@ var wacss = {
 					return false;
 				}
 				if(undefined == this.getAttribute('data-arg')){
-					console.log(cmd);
+					//console.log(cmd);
 					document.execCommand(cmd,false,null);
 				}
 				else{
 					let arg=this.getAttribute('data-arg');
-					console.log(cmd,arg);
+					//console.log(cmd,arg);
 					document.execCommand(cmd,false,arg);
 				}
+				tobj.innerHTML=dobj.innerHTML;
 				return false;
 			};
 		}
