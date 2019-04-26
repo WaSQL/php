@@ -163,6 +163,7 @@ var wacss = {
 				'Paste':['paste','','icon-paste','p'],
 				'Heading':['heading','','',''],
 				'Fontsize':['fontSize','','',''],
+				'Fontname':['fontName','','',''],
 				'Indent':['indent','','icon-indent',''],
 				'Outdent':['outdent','','icon-outdent',''],
 				'Redo':['redo','','icon-redo','y'],
@@ -170,6 +171,10 @@ var wacss = {
 				'Justify':['justify','','',''],
 				'Htmlcode':['code',list[i].id,'icon-code','h']
 			}
+			/*
+				Features to add:
+					fontName
+			*/
 			let databar=new Array();
 			if(undefined != list[i].getAttribute('data-bar')){
 				let barstr=list[i].getAttribute('data-bar');
@@ -234,6 +239,28 @@ var wacss = {
 						
 						li.appendChild(fsul);
 
+					break;
+					case 'fontname':
+						//justify full,left,center,right
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let fnul=document.createElement('ul');
+						let fonts=new Array('Arial','Helvetica','Times New Roman','Times','Courier New','Courier','Verdana','Georgia','Palatino','Garamond','Bookman','Comic Sans MS','Trebuchet MS','Arial Black','Impact');
+						for(let fn=0;fn<fonts.length;fn++){
+							let fnli=document.createElement('li');
+							fnul.appendChild(fnli);
+							fna=document.createElement('button');
+							fna.className='wacssedit';
+							fna.setAttribute('data-cmd','fontName');
+							fna.setAttribute('data-arg',fonts[fn]);
+							fna.style.fontFamily=fonts[fn];
+							fna.innerHTML=fonts[fn];
+							fnli.appendChild(fna);
+						}
+						li.appendChild(fnul);
 					break;
 					case 'justify':
 						//justify full,left,center,right
