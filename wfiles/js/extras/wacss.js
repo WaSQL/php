@@ -130,11 +130,6 @@ var wacss = {
 				if(k=='id' || k=='editor'){continue;}
 				d.setAttribute(k,attrs[k]);
 			}
-			d.onkeypress = function(){
-				let tobj=getObject(this.editor);
-				if(undefined == tobj){return false;}
-				tobj.innerHTML=this.innerHTML;
-			}
 			d.onblur = function(){
 				let tobj=getObject(this.editor);
 				if(undefined == tobj){return false;}
@@ -183,9 +178,9 @@ var wacss = {
 					databar.push(wacss.ucwords(btns[db]));
 				}
 			}
-			console.log('databar',databar);
+			//console.log('databar',databar);
 			for(name in buttons){
-				console.log(name);
+				//console.log(name);
 				if(databar.length > 0 && !wacss.in_array(name,databar)){
 					continue;
 				}
@@ -342,15 +337,18 @@ var wacss = {
 					}
 					if(tobj.style.display=='none'){
 						//switch to textarea edit mode
+						dobj.setAttribute('contenteditable','false');
+						tobj.innerHTML=dobj.innerHTML;
+						dobj.style.display='none';
 						tobj.style.display='block';
-						dobj.style.display='none';	
 						tobj.focus();
 					}
 					else{
 						//switch to wysiwyg edit mode 
+						dobj.setAttribute('contenteditable','true');
 						dobj.innerHTML=tobj.value;
-						dobj.style.display='block';
 						tobj.style.display='none';
+						dobj.style.display='block';
 						dobj.focus();
 					}
 					return false;
