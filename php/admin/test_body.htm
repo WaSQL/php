@@ -311,29 +311,8 @@
 
 <view:wacssEdit>
 <div class="row">
-	<div class="col s12 m6">
-		<button class="wacssedit" accesskey="b" type="button" title="<translate>Bold</translate>" data-cmd="bold"><span class="icon-bold"></span></button>
-		<button class="wacssedit" accesskey="i" type="button" title="<translate>Italic</translate>" data-cmd="italic"><span class="icon-italic"></span></button>
-		<button class="wacssedit" accesskey="u" type="button" title="<translate>Underline</translate>" data-cmd="underline"><span class="icon-underline"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Delete</translate>" data-cmd="delete"><span class="icon-delete"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Cut</translate>" data-cmd="cut"><span class="icon-scissors"></span></button>
-		<button class="wacssedit" accesskey="c" type="button" title="<translate>Copy</translate>" data-cmd="copy"><span class="icon-copy"></span></button>
-		<button class="wacssedit" accesskey="p" type="button" title="<translate>Paste</translate>" data-cmd="Paste"><span class="icon-paste"></span></button>
-		<button class="wacssedit" accesskey="1" type="button" title="<translate>H1 Heading</translate>" data-cmd="heading" data-arg="H1">H1</button>
-		<button class="wacssedit" accesskey="2" type="button" title="<translate>H2 Heading</translate>" data-cmd="heading" data-arg="H2">H2</button>
-		<button class="wacssedit" type="button" title="<translate>Indent</translate>" data-cmd="indent"><span class="icon-indent"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Outdent</translate>" data-cmd="outdent"><span class="icon-outdent"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Redo</translate>" data-cmd="redo"><span class="icon-redo"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Undo</translate>" data-cmd="undo"><span class="icon-undo"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Full Justify</translate>" data-cmd="justifyFull"><span class="icon-justify-full"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Left Justify</translate>" data-cmd="justifyLeft"><span class="icon-justify-left"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Center Justify</translate>" data-cmd="justifyCenter"><span class="icon-justify-center"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Right Justify</translate>" data-cmd="justifyRight"><span class="icon-justify-right"></span></button>
-		<button class="wacssedit" type="button" title="<translate>Select All</translate>" data-cmd="selectAll"><span class="icon-select-all"></span></button>
-		<button class="wacssedit" type="button" title="<translate>HTML Code</translate>" data-cmd="code" data-arg="wacsseditor"><span class="icon-code"></span></button>
+	<div class="col s12 m8">
 		<textarea id="wacsseditor" class="wacssedit" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b></textarea>
-	</div>
-	<div class="col s12 m6">
 		<?=buildOnLoad("wacss.init();");?>
 	</div>
 </div>

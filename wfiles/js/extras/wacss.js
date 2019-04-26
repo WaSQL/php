@@ -120,16 +120,126 @@ var wacss = {
 				if(k=='id' || k=='editor'){continue;}
 				d.setAttribute(k,attrs[k]);
 			}
-			d.onchange = function(){
+			d.onkeypress = function(){
+				let tobj=getObject(this.editor);
+				if(undefined == tobj){return false;}
+				tobj.innerHTML=this.innerHTML;
+			}
+			d.onblur = function(){
 				let tobj=getObject(this.editor);
 				if(undefined == tobj){return false;}
 				tobj.innerHTML=this.innerHTML;
 			}
 			d.setAttribute('contenteditable','true');
-			d.innerHTML = list[i].innerHTML;
+			d.innerHTML = list[i].value;
 			//hide the textarea and show the contenteditable div in its place
 			list[i].style.display='none';
-			list[i].parentNode.appendChild(d);
+			//wacssedit_bar
+			let nav = document.createElement('nav');
+			nav.className='nav w_white';
+			let ul = document.createElement('ul');
+		
+			//title,cmd,arg,icon,accesskey
+			let buttons={
+				'Bold':['bold','','icon-bold','b'],
+				'Italic':['italic','','icon-italic','i'],
+				'Underline':['underline','','icon-underline','u'],
+				'Delete':['delete','','icon-delete',''],
+				'Cut':['cut','','icon-scissors',''],
+				'Copy':['copy','','icon-copy','c'],
+				'Paste':['paste','','icon-paste','p'],
+				'Heading':['heading','','',''],
+				'Indent':['indent','','icon-indent',''],
+				'Outdent':['outdent','','icon-outdent',''],
+				'Redo':['redo','','icon-redo',''],
+				'Undo':['undo','','icon-undo',''],
+				'Justify':['justify','','',''],
+				'HTMLCode':['code',list[i].id,'icon-code','h']
+			}
+			for(name in buttons){
+				let li=document.createElement('li');
+				let parts;
+				let a;
+				let icon;
+				switch(name.toLowerCase()){
+					case 'heading':
+						//headings H1-6
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let hul=document.createElement('ul');
+						for(let h=1;h<7;h++){
+							let hname='H'+h;
+							let hli=document.createElement('li');
+							hul.appendChild(hli);
+							ha=document.createElement('button');
+							ha.className='wacssedit';
+							ha.innerHTML=hname;
+							ha.setAttribute('data-cmd','formatBlock');
+							ha.setAttribute('data-arg','H'+h);
+							hli.appendChild(ha);
+						}
+						
+						li.appendChild(hul);
+
+					break;
+					case 'justify':
+						//justify full,left,center,right
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let jul=document.createElement('ul');
+						let jopts=new Array('full','left','center','right');
+						for(let j=0;j<jopts.length;j++){
+							let jname=wacss.ucwords(jopts[j]);
+							let jli=document.createElement('li');
+							jul.appendChild(jli);
+							ja=document.createElement('button');
+							ja.className='wacssedit';
+							ja.setAttribute('data-cmd','justify'+jname);
+							let jicon=document.createElement('span');
+							jicon.className='icon-justify-'+jopts[j];
+							ja.appendChild(jicon);
+							let jtxt=document.createElement('span');
+							jtxt.innerHTML=' '+jname;
+							ja.appendChild(jtxt);
+							jli.appendChild(ja);
+						}
+						li.appendChild(jul);
+					break;
+					default:
+						parts=buttons[name];
+						a=document.createElement('button');
+						a.className='wacssedit';
+						a.title=name;
+						if(parts[3].length){
+							a.setAttribute('accesskey',parts[3]);
+							a.title=a.title+' (ALT-'+parts[3]+')';
+						}
+						a.setAttribute('data-cmd',parts[0]);
+						if(parts[1].length){
+							a.setAttribute('data-arg',parts[1]);
+						}
+						if(parts[2].length){
+							//icon
+							icon=document.createElement('span');
+							icon.className=parts[2];
+							a.appendChild(icon);
+						}
+						li.appendChild(a);
+					break;
+				}
+				ul.appendChild(li);
+			}
+			nav.appendChild(ul);
+			
+			list[i].parentNode.insertAdjacentElement('afterBegin',d);
+			list[i].parentNode.insertAdjacentElement('afterBegin',nav);
+			
 			//list[i].parentNode.replaceChild(d, list[i]);
 		}
 		list=document.querySelectorAll('button.wacssedit');
@@ -137,8 +247,10 @@ var wacss = {
 			let cmd=list[i].getAttribute('data-cmd');
 			if(undefined == cmd){continue;}
 			list[i].setAttribute('data-wacssedit-cmd',cmd);
-			list[i].onclick=function(){
+			list[i].onclick=function(event){
+				event.preventDefault();
 				let cmd=this.getAttribute('data-cmd');
+				console.log('onclick',cmd);
 				if(cmd=='code'){
 					let tid=this.getAttribute('data-arg');
 					let tobj=wacss.getObject(tid);
@@ -172,6 +284,7 @@ var wacss = {
 					console.log(cmd,arg);
 					document.execCommand(cmd,false,arg);
 				}
+				return false;
 			};
 		}
 	},
@@ -452,6 +565,12 @@ var wacss = {
 			}
 			else{wacss.addClass(obj,myclass1);}
 		}
+	},
+	ucwords: function(str){
+		str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+		    return letter.toUpperCase();
+		});
+		return str;
 	}
 }
 wacss.init();

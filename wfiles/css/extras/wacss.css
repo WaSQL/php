@@ -75,6 +75,30 @@ body{
     flex: 1 1 auto;
     padding: 1.25rem;
 }
+/* ---------------------- wacsseditor  ------------------------- */
+div[id$="_wacsseditor"]{
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border: 1px solid #ccc;
+    border-top:0px;
+    box-sizing: border-box;
+    font-weight: 300;
+    width: 100%;
+}
+button.wacssedit{
+  border:0px;
+  background:inherit;
+  padding: .175rem .45rem;
+  font-size:1.2rem;
+  text-align: center;
+  color:#4a4a4a;
+  cursor:pointer;
+}
+button.wacssedit:hover{
+  color:#000;
+}
 /* ---------------------- toasts - called with wacss.toats() function ------------------------- */
 #wacss_toasts{
   position:fixed;
@@ -233,7 +257,7 @@ body{
   padding: 0;
 }
 .nav > ul li {position: relative;}
-.nav > ul a {
+.nav > ul a, .nav > ul button {
   padding: 4px 8px;
   line-height: 1;
   font-size:16px;
@@ -241,23 +265,23 @@ body{
   text-decoration: none;
   white-space: nowrap;
 }
-.nav.condensed > ul > li a {
+.nav.condensed > ul > li a, .nav.condensed > ul > li button {
   padding: 4px 8px;
   font-size:15px;
 }
-.nav.condensed > ul > li > ul a {
+.nav.condensed > ul > li > ul a, .nav.condensed > ul > li > ul button {
   padding: 3px 7px;
   font-size:14px;
 }
-.nav > ul a:hover,
+.nav > ul a:hover,.nav > ul button:hover
 .nav .active {
   opacity: 1.0; 
 }
 /* dropdown - arrows showing direction */
-.nav > ul a.dropdown:after{
+.nav > ul a.dropdown:after, .nav > ul button.dropdown:after{
   content:' \23F7';
 }
-.nav > ul > li > ul a.dropdown:after{
+.nav > ul > li > ul a.dropdown:after, .nav > ul > li > ul button.dropdown:after{
   content:' \23F5';
 }
 
@@ -330,7 +354,7 @@ body{
 .nav > ul ul ul ul li a {}
 .nav > ul ul ul ul li a:hover {}
 /* Vertically align images and links */
-.nav > ul a, .nav > ul img{
+.nav > ul a, .nav > ul code, .nav > ul img{
   vertical-align: middle;
 }
 
