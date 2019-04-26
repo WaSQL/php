@@ -327,25 +327,28 @@ var wacss = {
 			list[i].onclick=function(event){
 				event.preventDefault();
 				let cmd=this.getAttribute('data-cmd');
-				console.log('onclick',cmd);
+				//console.log('onclick',cmd);
 				if(cmd=='code'){
 					let tid=this.getAttribute('data-arg');
 					let tobj=wacss.getObject(tid);
 					if(undefined == tobj){
-						console.log('no tobj');
+						console.log('wacssedit code error: no tobj');
 						return false;
 					}
 					let dobj=getObject(tid+'_wacsseditor');
 					if(undefined == dobj){
-						console.log('no dobj');
+						console.log('wacssedit code error: no dobj');
 						return false;
 					}
 					if(tobj.style.display=='none'){
+						//switch to textarea edit mode
 						tobj.style.display='block';
 						dobj.style.display='none';	
 						tobj.focus();
 					}
 					else{
+						//switch to wysiwyg edit mode 
+						dobj.innerHTML=tobj.value;
 						dobj.style.display='block';
 						tobj.style.display='none';
 						dobj.focus();
