@@ -143,7 +143,7 @@ function writeFiles(){
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
 		'username'	=>$hosts[$chost]['username'],
-		'_noguid'	=>1,
+		'_auth'		=>1,
 		'postedittables'=>$tables,
 		'apimethod'	=>"posteditxmlfromjson",
 		'encoding'	=>"base64",
@@ -374,7 +374,7 @@ function fileChanged($afile){
 	$postopts=array(
 		'apikey'	=>$hosts[$chost]['apikey'],
 		'username'	=>$hosts[$chost]['username'],
-		'_noguid'	=>1,
+		'_auth'		=>1,
 		'_base64'	=>1,
 		'_id'		=>$id,
 		'_action'	=>'postEdit',

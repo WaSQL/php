@@ -10,10 +10,25 @@ if(!isDBTable('_users')){
 global $USER;
 global $CONFIG;
 global $ConfigXml;
+//Check for any Wasql variables in the header and add to $_REQUEST
 if(function_exists('getallheaders')){
 	$headers=getallheaders();
 	foreach($headers as $name => $value){
 		if(preg_match('/^WaSQL\-(.+?)$/i',$name,$m)){
+			$k=strtolower($m[1]);
+			switch($k){
+				case 'auth':$k='_auth';break;
+				case 'noguid':$k='_noguid';break;
+				case 'sessionid':$k='_sessionid';break;
+			}
+			$_REQUEST[$k]=$value;
+		}
+	}
+}
+else{
+	//PHP-FPM does not have the getallheaders but passes them through via HTTP_ in $_SERVER
+	foreach($_SERVER as $name=>$value){
+		if(preg_match('/^HTTP\_WASQL\_(.+)$/i',$name,$m)){
 			$k=strtolower($m[1]);
 			switch($k){
 				case 'auth':$k='_auth';break;
