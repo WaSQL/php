@@ -1115,18 +1115,24 @@ input[type="radio"]:after{
   content:"\25CE";
   color:#343a40;
   cursor: pointer;
+  font-size: 1.2rem;
 }
 input[type="radio"]:checked:after{
   content:"\25C9";
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 input[type="checkbox"]:after, input[type="radio"][data-type="checkbox"]:after{
   content:"\2610";
   color:#343a40;
   cursor: pointer;
+  font-size: 1.2rem;
 }
 
 input[type="checkbox"]:checked:after, input[type="radio"][data-type="checkbox"]:checked:after{
   content:"\2611";
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
   font-family:sans-serif;

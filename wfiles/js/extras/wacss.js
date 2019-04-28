@@ -13,6 +13,38 @@ var wacss = {
 	        }
 	    }
 	},
+	blink: function(el){
+		el=wacss.getObject(el);
+		if(undefined == el){return;}
+		let blink=0;
+		if(undefined == el.getAttribute('data-blink')){
+			el.setAttribute('data-blink',1);
+			el.setAttribute('data-boxshadow',el.style.boxShadow);
+		}
+		else{
+			blink=parseInt(el.getAttribute('data-blink'),10);
+		}
+		let n=blink+1;
+		el.setAttribute('data-blink',n);
+		switch(blink){
+			case 0:
+			case 2:
+			case 4:
+				el.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.8),0 6px 20px 0 rgba(0,0,0,0.79)';
+				setTimeout(function(){wacss.blink(el);},125);
+			break;
+			case 1:
+			case 3:
+			case 5:
+				el.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)';
+				setTimeout(function(){wacss.blink(el);},125);
+			break;
+			default:
+				el.style.boxShadow=el.getAttribute('data-boxshadow');
+				el.setAttribute('data-blink',0);
+			break;
+		}
+	},
 	copy2Clipboard: function(str){
 		const el = document.createElement('textarea');
 	  	el.value = str;
@@ -98,6 +130,13 @@ var wacss = {
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj);}
 	},
+	guid: function () {
+	    function _p8(s) {
+	        var p = (Math.random().toString(16)+"000000000").substr(2,8);
+	        return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
+	    }
+	    return _p8() + _p8(true) + _p8(true) + _p8();
+	},
 	in_array: function(needle, haystack) {
 	    let length = haystack.length;
 	    for(let i = 0; i < length; i++) {
@@ -133,12 +172,11 @@ var wacss = {
 			}
 			d.addEventListener('input', function() {
 				let eid=this.getAttribute('data-editor');
-				let tobj=getObject(eid);
+				let tobj=wacss.getObject(eid);
 				if(undefined == tobj){
 					console.log('textarea update failed: no eid: '+eid);
 					return false;
 				}
-				setText(eid,'');
 				tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 			});
 			d.setAttribute('contenteditable','true');
@@ -436,7 +474,7 @@ var wacss = {
 							tobj.focus();
 							tobj.addEventListener('input', function() {
 								let eid=this.getAttribute('data-editor');
-								let tobj=getObject(eid);
+								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
 									return false;
@@ -460,7 +498,7 @@ var wacss = {
 							dobj.focus();
 							dobj.addEventListener('input', function() {
 								let eid=this.getAttribute('data-editor');
-								let tobj=getObject(eid);
+								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
 									return false;
@@ -485,39 +523,6 @@ var wacss = {
 					break;
 				}
 			};
-		}
-	},
-	modalBlink: function(){
-		if(undefined != document.getElementById('wacss_modal')){
-			let m=document.getElementById('wacss_modal');
-			let blink=0;
-			if(undefined == m.getAttribute('data-blink')){
-				m.setAttribute('data-blink',1);
-			}
-			else{
-				blink=parseInt(m.getAttribute('data-blink'),10);
-			}
-			let n=blink+1;
-			m.setAttribute('data-blink',n);
-			//console.log('modalBlink',blink,n);
-			switch(blink){
-				case 0:
-				case 2:
-				case 4:
-					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.8),0 6px 20px 0 rgba(0,0,0,0.79)';
-					setTimeout(wacss.modalBlink,125);
-				break;
-				case 1:
-				case 3:
-				case 5:
-					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)';
-					setTimeout(wacss.modalBlink,125);
-				break;
-				default:
-					m.style.boxShadow='0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)';
-					m.setAttribute('data-blink',0);
-				break;
-			}
 		}
 	},
 	modalClose: function(){
@@ -602,7 +607,7 @@ var wacss = {
 					let elements = document.querySelectorAll(':hover');
 					let i=elements.length-1;
 					if(this == elements[i]){
-						wacss.modalBlink();	
+						wacss.blink('wacss_modal');	
 					}
 				};
 			}

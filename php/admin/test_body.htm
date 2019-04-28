@@ -23,7 +23,6 @@
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
 			<li><a href="c3charts" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">C3 Charts</a></li>
-			<li><a href="wacssEdit" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">wacssEdit</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
@@ -39,9 +38,9 @@
 	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));?></div></div>
 	<div class="row"><div class="col s2">DateTime</div><div class="col s4"><?=buildFormDateTime('xyz');?></div></div>
 	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4');?></div></div>
-	<div class="row"><div class="col s2">Password</div><div class="col s4"><?=buildFormPassword('x5');?></div></div>
-	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));;?></div></div>
-	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>2,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5'));?></div></div>
+	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
 	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8');?></div></div>
 	<div class="row"><div class="col s2">Textarea</div><div class="col s4"><?=buildFormTextarea('x');?></div></div>
 	<div class="row"><div class="col s2">Time</div><div class="col s4"><?=buildFormTime('x9');?></div></div>
@@ -59,6 +58,10 @@
 	<div class="row"><div class="col s2">Signature</div><div class="col s4"><?=buildFormSignature('x20');?></div></div>
 	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x20');?></div></div>
 	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22');?></div></div>
+	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
+		<textarea id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
+		<?=buildOnLoad("wacss.init();");?>
+	</div></div>
 </view:form-elements>
 
 <view:nav-tabs>
@@ -309,12 +312,4 @@
 <div id="c3_line"><?=buildOnLoad("c3LineChart();");?></div>
 </view:c3charts>
 
-<view:wacssEdit>
-<div class="row">
-	<div class="col s12 m8">
-		<textarea id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b></textarea>
-		<?=buildOnLoad("wacss.init();");?>
-	</div>
-</div>
-</view:wacssEdit>
 
