@@ -2075,6 +2075,46 @@ function buildFormSubmit($val='Submit',$name='',$onclick='',$class=''){
 	$rtn .= '> '.$val."</button>";
 	return $rtn;
 }
+//---------- begin function buildFormWYSIWYG--------------------
+/**
+* @describe creates an HTML WYSIWYG Editor
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormTextarea('name',$params);
+*/
+function buildFormWYSIWYG($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	unset($params['width']);
+	$params['style']='width:100%';
+	if(!isset($params['height'])){$params['height']=300;}
+	if(!isset($params['class'])){$params['class']='wacssedit';}
+	else{
+		$params['class'] .= ' wacssedit';
+	}
+	//return printValue($params);
+	if(!isset($params['value'])){
+		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['height'])){
+		if(isNum($params['height'])){$params['height'].='px';}
+		if(!stringContains($params['style'],'height')){
+			$params['style'].=";height:{$params['height']};";
+		}
+	}
+	$params['wrap']="off";
+	$params['name']=$name;
+	$tag='';
+	$tag .= '	<textarea';
+	$tag .= setTagAttributes($params);
+	$tag .= ' >';
+	$tag .= encodeHtml($params['value']);
+	$tag .= '</textarea>'.PHP_EOL;
+	return $tag;
+}
 //---------- begin function buildHtmlBegin-------------------
 /**
 * @describe creates beginning html head and body

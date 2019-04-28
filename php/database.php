@@ -2040,6 +2040,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						switch(strtolower($info['fieldinfo'][$cfield]['inputtype'])){
 							case 'text':
 							case 'textarea':
+							case 'wysiwyg':
 							case 'password':
 							case 'select':
 							case 'combo':
@@ -2091,6 +2092,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					switch(strtolower($info['fieldinfo'][$field]['inputtype'])){
 						case 'text':
 						case 'textarea':
+						case 'wysiwyg':
 						case 'password':
 						case 'select':
 						case 'combo':
@@ -5418,6 +5420,10 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'textarea':
 			$tag=buildFormTextarea($info[$field]['name'],$info[$field]);
+			break;
+		case 'wysiwyg':
+			$tag=buildFormWYSIWYG($info[$field]['name'],$info[$field]);
+			$tag .= buildOnLoad("wacss.init();");
 			break;
 		case 'time':
 			$tagopts=array();

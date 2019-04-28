@@ -1310,7 +1310,8 @@ function wasqlGetInputtypes($d=0){
 		'toggle_f'	=> 'Toggle Flip',
 		'signature'	=> 'Signature',
 		'timezone'	=> 'Timezone',
-		'starrating'=> 'Star Rating'
+		'starrating'=> 'Star Rating',
+		'wysiwyg' 	=> 'WYSIWYG Editor'
 	);
 	asort($types);
 	if($d){$vals=array_values($types);}

@@ -124,19 +124,26 @@ var wacss = {
 			//create a contenteditable div
 			let attrs=wacss.getAllAttributes(list[i]);
 			let d = document.createElement('div');
-			d.editor=list[i].id;
 			d.id=editor_id;
+			list[i].setAttribute('data-editor',d.id);
+			d.setAttribute('data-editor',list[i].id);
 			for(k in attrs){
-				if(k=='id' || k=='editor'){continue;}
+				if(k=='id' || k=='data-editor'){continue;}
 				d.setAttribute(k,attrs[k]);
 			}
-			d.onkeypress = function(){
-				let tobj=getObject(this.editor);
-				if(undefined == tobj){return false;}
-				tobj.innerHTML=this.innerHTML;
-			}
+			d.addEventListener('input', function() {
+				let eid=this.getAttribute('data-editor');
+				let tobj=getObject(eid);
+				if(undefined == tobj){
+					console.log('textarea update failed: no eid: '+eid);
+					return false;
+				}
+				setText(eid,'');
+				tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+			});
 			d.setAttribute('contenteditable','true');
 			d.innerHTML = list[i].value;
+			list[i].original = list[i].value;
 			//hide the textarea and show the contenteditable div in its place
 			list[i].style.display='none';
 			//wacssedit_bar
@@ -149,22 +156,25 @@ var wacss = {
 		
 			//title,cmd,arg,icon,accesskey
 			let buttons={
+				'Reset':['reset','','icon-reset','r'],
 				'Bold':['bold','','icon-bold','b'],
 				'Italic':['italic','','icon-italic','i'],
 				'Underline':['underline','','icon-underline','u'],
 				'Delete':['delete','','icon-delete',''],
 				'Cut':['cut','','icon-scissors',''],
 				'Copy':['copy','','icon-copy','c'],
-				'Paste':['paste','','icon-paste','p'],
+				'Quote':['formatBlock','blockquote','icon-code','q'],
 				'Heading':['heading','','',''],
-				'Fontsize':['fontSize','','',''],
-				'Fontname':['fontName','','',''],
-				'Indent':['indent','','icon-indent',''],
-				'Outdent':['outdent','','icon-outdent',''],
+				'Font':['fontName','','',''],
+				'Size':['fontSize','','',''],
+				'Color':['','','icon-color-adjust',''],
+				'Justify':['justify','','',''],
+				'Unordered List':['insertUnorderedList','','icon-list-ul',''],
+				'Ordered List':['insertOrderedList','','icon-list-ol',''],
 				'Redo':['redo','','icon-redo','y'],
 				'Undo':['undo','','icon-undo','z'],
-				'Justify':['justify','','',''],
-				'Htmlcode':['code',list[i].id,'icon-code','h']
+				'Print':['print','','icon-print','p'],
+				'Htmlcode':['code','','icon-file-code','h']
 			}
 			/*
 				Features to add:
@@ -189,6 +199,39 @@ var wacss = {
 				let a;
 				let icon;
 				switch(name.toLowerCase()){
+					case 'color':
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let clul=document.createElement('ul');
+						clul.style.maxHeight='175px';
+						clul.style.overflow='auto';
+						let colors={
+							'Black':'#000000',
+							'Gray': '#808080',
+							'Blue':'#0000FF',
+							'Red':'#FF0000',
+							'Green':'#008000',
+							'Maroon': '#800000',
+							'Teal': '#008080',
+							'Purple':'#800080'
+						};
+						for(cname in colors){
+							let clli=document.createElement('li');
+							clul.appendChild(clli);
+							cla=document.createElement('button');
+							cla.className='wacssedit';
+							cla.setAttribute('data-cmd','foreColor');
+							cla.setAttribute('data-arg',colors[cname]);
+							cla.setAttribute('data-txt',list[i].id);
+							cla.style.color=colors[cname];
+							cla.innerHTML=cname;
+							clli.appendChild(cla);
+						}
+						li.appendChild(clul);
+					break;
 					case 'heading':
 						//headings H1-6
 						a=document.createElement('button');
@@ -197,13 +240,17 @@ var wacss = {
 						a.innerHTML=name;
 						li.appendChild(a);
 						let hul=document.createElement('ul');
+						hul.style.maxHeight='175px';
+						hul.style.overflow='auto';
 						for(let h=1;h<7;h++){
 							let hname='H'+h;
 							let hli=document.createElement('li');
 							hul.appendChild(hli);
 							ha=document.createElement('button');
 							ha.className='wacssedit';
-							ha.innerHTML=hname;
+							let hh=document.createElement(hname);
+							hh.innerHTML=hname;
+							ha.appendChild(hh);
 							ha.setAttribute('data-cmd','formatBlock');
 							ha.setAttribute('data-arg','H'+h);
 							ha.setAttribute('data-txt',list[i].id);
@@ -213,31 +260,7 @@ var wacss = {
 						li.appendChild(hul);
 
 					break;
-					case 'fontsize':
-						//headings H1-6
-						a=document.createElement('button');
-						a.className='wacssedit dropdown';
-						a.title=name;
-						a.innerHTML=name;
-						li.appendChild(a);
-						let fsul=document.createElement('ul');
-						for(let fs=1;fs<7;fs++){
-							let fsname='Size '+fs;
-							let fsli=document.createElement('li');
-							fsul.appendChild(fsli);
-							let fsa=document.createElement('button');
-							fsa.className='wacssedit';
-							fsa.innerHTML=fsname;
-							fsa.setAttribute('data-cmd','fontSize');
-							fsa.setAttribute('data-arg',fs);
-							fsa.setAttribute('data-txt',list[i].id);
-							fsli.appendChild(fsa);
-						}
-						
-						li.appendChild(fsul);
-
-					break;
-					case 'fontname':
+					case 'font':
 						//justify full,left,center,right
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
@@ -245,6 +268,8 @@ var wacss = {
 						a.innerHTML=name;
 						li.appendChild(a);
 						let fnul=document.createElement('ul');
+						fnul.style.maxHeight='175px';
+						fnul.style.overflow='auto';
 						let fonts=new Array('Arial','Helvetica','Times New Roman','Times','Courier New','Courier','Verdana','Georgia','Palatino','Garamond','Bookman','Comic Sans MS','Trebuchet MS','Arial Black','Impact');
 						for(let fn=0;fn<fonts.length;fn++){
 							let fnli=document.createElement('li');
@@ -260,6 +285,33 @@ var wacss = {
 						}
 						li.appendChild(fnul);
 					break;
+					case 'size':
+						//headings H1-6
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let fsul=document.createElement('ul');
+						fsul.style.maxHeight='175px';
+						fsul.style.overflow='auto';
+						for(let fs=1;fs<7;fs++){
+							let fsname='Size '+fs;
+							let fsli=document.createElement('li');
+							fsul.appendChild(fsli);
+							let fsa=document.createElement('button');
+							fsa.className='wacssedit';
+							let fsf=document.createElement('font');
+							fsf.setAttribute('size',fs);
+							fsf.innerHTML=fsname;
+							fsa.appendChild(fsf);
+							fsa.setAttribute('data-cmd','fontSize');
+							fsa.setAttribute('data-arg',fs);
+							fsa.setAttribute('data-txt',list[i].id);
+							fsli.appendChild(fsa);
+						}
+						li.appendChild(fsul);
+					break;
 					case 'justify':
 						//justify full,left,center,right
 						a=document.createElement('button');
@@ -268,17 +320,28 @@ var wacss = {
 						a.innerHTML=name;
 						li.appendChild(a);
 						let jul=document.createElement('ul');
-						let jopts=new Array('full','left','center','right');
+						jul.style.maxHeight='175px';
+						jul.style.overflow='auto';
+						let jopts=new Array('indent','outdent','full','left','center','right',);
 						for(let j=0;j<jopts.length;j++){
 							let jname=wacss.ucwords(jopts[j]);
 							let jli=document.createElement('li');
 							jul.appendChild(jli);
 							ja=document.createElement('button');
 							ja.className='wacssedit';
-							ja.setAttribute('data-cmd','justify'+jname);
 							ja.setAttribute('data-txt',list[i].id);
 							let jicon=document.createElement('span');
-							jicon.className='icon-justify-'+jopts[j];
+							switch(jopts[j]){
+								case 'indent':
+								case 'outdent':
+									ja.setAttribute('data-cmd',jopts[j]);
+									jicon.className='icon-'+jopts[j];
+								break;
+								default:
+									ja.setAttribute('data-cmd','justify'+jname);
+									jicon.className='icon-justify-'+jopts[j];
+								break;	
+							}
 							ja.appendChild(jicon);
 							let jtxt=document.createElement('span');
 							jtxt.innerHTML=' '+jname;
@@ -319,6 +382,9 @@ var wacss = {
 			
 			//list[i].parentNode.replaceChild(d, list[i]);
 		}
+		if(list.length){
+			document.execCommand('styleWithCSS',false,null);
+		}
 		list=document.querySelectorAll('button.wacssedit');
 		for(i=0;i<list.length;i++){
 			let cmd=list[i].getAttribute('data-cmd');
@@ -339,36 +405,85 @@ var wacss = {
 					console.log('wacssedit code error: no dobj');
 					return false;
 				}
-				if(cmd=='code'){
-					if(tobj.style.display=='none'){
-						//switch to textarea edit mode
-						dobj.setAttribute('contenteditable','false');
-						tobj.innerHTML=dobj.innerHTML;
-						dobj.style.display='none';
-						tobj.style.display='block';
-						tobj.focus();
-					}
-					else{
-						//switch to wysiwyg edit mode 
-						dobj.setAttribute('contenteditable','true');
-						dobj.innerHTML=tobj.value;
-						tobj.style.display='none';
-						dobj.style.display='block';
-						dobj.focus();
-					}
+				switch(cmd){
+					case 'reset':
+						if(confirm('Reset back to original?'+dobj.original)){
+							dobj.innerHTML=tobj.original;
+						}
+						return false;
+					break;
+					case 'print':
+						var oPrntWin = window.open("","_blank","width=450,height=470,left=400,top=100,menubar=yes,toolbar=no,location=no,scrollbars=yes");
+						oPrntWin.document.open();
+						oPrntWin.document.write("<!doctype html><html><head><title>Print<\/title><\/head><body onload=\"print();\">" + dobj.innerHTML + "<\/body><\/html>");
+						oPrntWin.document.close();
 					return false;
+					break;
+					case 'code':
+						if(tobj.style.display=='none'){
+							//switch to textarea edit mode
+							dobj.removeEventListener('input', function() {
+								let eid=this.getAttribute('data-editor');
+								let tobj=getObject(eid);
+								if(undefined == tobj){
+									console.log('textarea update failed: no eid: '+eid);
+									return false;
+								}
+								tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+							});
+							dobj.style.display='none';
+							tobj.style.display='block';
+							tobj.focus();
+							tobj.addEventListener('input', function() {
+								let eid=this.getAttribute('data-editor');
+								let tobj=getObject(eid);
+								if(undefined == tobj){
+									console.log('textarea update failed: no eid: '+eid);
+									return false;
+								}
+								tobj.innerHTML=this.value;
+							});
+						}
+						else{
+							//switch to wysiwyg edit mode 
+							tobj.removeEventListener('input', function() {
+								let eid=this.getAttribute('data-editor');
+								let tobj=getObject(eid);
+								if(undefined == tobj){
+									console.log('textarea update failed: no eid: '+eid);
+									return false;
+								}
+								tobj.innerHTML=this.value;
+							});
+							tobj.style.display='none';
+							dobj.style.display='block';
+							dobj.focus();
+							dobj.addEventListener('input', function() {
+								let eid=this.getAttribute('data-editor');
+								let tobj=getObject(eid);
+								if(undefined == tobj){
+									console.log('textarea update failed: no eid: '+eid);
+									return false;
+								}
+								tobj.value=this.innerHTML;
+							});
+						}
+						return false;
+					break;
+					default:
+						if(undefined == this.getAttribute('data-arg')){
+							//console.log(cmd);
+							document.execCommand(cmd,false,null);
+						}
+						else{
+							let arg=this.getAttribute('data-arg');
+							//console.log(cmd,arg);
+							document.execCommand(cmd,false,arg);
+						}
+						tobj.innerHTML=dobj.innerHTML;
+						return false;
+					break;
 				}
-				if(undefined == this.getAttribute('data-arg')){
-					//console.log(cmd);
-					document.execCommand(cmd,false,null);
-				}
-				else{
-					let arg=this.getAttribute('data-arg');
-					//console.log(cmd,arg);
-					document.execCommand(cmd,false,arg);
-				}
-				tobj.innerHTML=dobj.innerHTML;
-				return false;
 			};
 		}
 	},

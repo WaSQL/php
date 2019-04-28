@@ -87,10 +87,13 @@ div[id$="_wacsseditor"]{
     font-weight: 300;
     width: 100%;
 }
+div[id$="_wacsseditor"]:focus,textarea.wacssedit{
+  outline:none;
+}
 button.wacssedit{
   border:0px;
   background:inherit;
-  padding: .175rem .45rem;
+  padding: .175rem .35rem !important;
   font-size:1.2rem;
   text-align: center;
   color:#4a4a4a;
