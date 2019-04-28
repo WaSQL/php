@@ -1068,11 +1068,25 @@ input[type="checkbox"], input[type="radio"] {
   font-size:inherit;
   margin:0px;
   box-sizing: border-box;
-  font-weight:300;
+  font-weight:100;
+  -webkit-outline:none;
+  -moz-outline:none;
   outline:none;
+  border:0px;
   pointer-events: all;
+  margin-right:5px;
+}
+input[type="radio"]:checked,input[type="checkbox"]:checked{
+  background-color:inherit;
+  color:inherit;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
+  border-radius: 0;
 }
 input[type="checkbox"]:focus,input[type="radio"]:focus{
+  -webkit-outline:none;
+  -moz-outline:none;
   outline:none;
 }
 input[type="checkbox"]:after, input[type="radio"]:after{
@@ -1082,8 +1096,9 @@ input[type="checkbox"]:after, input[type="radio"]:after{
   font-weight:300;
   display:inline;
   line-height: 1;
-  padding:0px;
-  margin:0px;
+  padding:0;
+  margin:0;
+  cursor:pointer;
 }
 input[type="checkbox"].btn.small:after, input[type="radio"].btn.small:after{
   padding: .25rem .5rem;
@@ -1109,6 +1124,7 @@ input[type="checkbox"]:after, input[type="radio"][data-type="checkbox"]:after{
   color:#343a40;
   cursor: pointer;
 }
+
 input[type="checkbox"]:checked:after, input[type="radio"][data-type="checkbox"]:checked:after{
   content:"\2611";
 }
@@ -1116,16 +1132,15 @@ input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
   font-family:sans-serif;
   cursor:pointer;
   padding: .375rem .75rem;
-  font-size: 1rem;
   line-height: 1.5;
   font-weight:300;
   color:#343a40;
   -moz-user-select: none;
-   -khtml-user-select: none;
-   -webkit-user-select: none;
-   -ms-user-select: none;
-   user-select: none;
-   display:contents;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  display:contents;
 }
 input[type="checkbox"].btn + label[for], input[type="radio"].btn + label[for]{
   display:inline;
