@@ -1132,6 +1132,7 @@ input[type="checkbox"] + label[for], input[type="radio"] + label[for]{
   font-family:sans-serif;
   cursor:pointer;
   padding: .375rem .75rem;
+  font-size: 1.1rem;
   line-height: 1.5;
   font-weight:300;
   color:#343a40;
