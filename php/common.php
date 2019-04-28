@@ -1377,13 +1377,17 @@ function buildFormTextarea($name,$params=array()){
 			break;
 			case 'editor':
 			case 'tinymce':
-			case 'wysiwyg':
 			case 'nicedit':
 				$white_wrap=1;
 				$params['data-behavior']="nicedit";
 				loadExtrasCss(array('nicedit'));
 				loadExtrasJs(array('nicedit'));
 				$params['wrap']="off";
+			break;
+			case 'wysiwyg':
+				loadExtrasCss(array('wacss'));
+				loadExtrasJs(array('wacss'));
+				$params['wrap']="soft";
 			break;
 			default:
 				loadExtrasJs(array('codemirror'));
@@ -2105,7 +2109,7 @@ function buildFormWYSIWYG($name,$params=array()){
 			$params['style'].=";height:{$params['height']};";
 		}
 	}
-	$params['wrap']="off";
+	$params['wrap']="soft";
 	$params['name']=$name;
 	$tag='';
 	$tag .= '	<textarea';
