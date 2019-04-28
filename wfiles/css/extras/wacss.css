@@ -86,6 +86,7 @@ div[id$="_wacsseditor"]{
     box-sizing: border-box;
     font-weight: 300;
     width: 100%;
+    overflow:auto;
 }
 div[id$="_wacsseditor"]:focus,textarea.wacssedit{
   outline:none;
