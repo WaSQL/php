@@ -295,7 +295,7 @@ function Calendar(target_id,month, year, s) {
 		html += '	</tr>'+"\n";
 		html += '	<tr><td colspan="7" style="display:relative;padding:0px !important;">'+"\n";
 		html += '		<table class="w_calendar_table"><tr>'+"\n";
-		html += '	<td class="w_calendar_now" title="Now" onclick="CalendarSetTarget(\''+this.target_id+'\',1);"><span class="icon-calendar w_link w_block"></span></td>'+"\n";
+		html += '	<td class="w_calendar_now" title="Now" onclick="CalendarSetTarget(\''+this.target_id+'\',1);"><span class="icon-calendar w_link w_block" style="font-family: wasql_icons !important;"></span></td>'+"\n";
 		var val='';
 		if(this.showtime){
 			val='';
