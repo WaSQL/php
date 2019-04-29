@@ -108,7 +108,7 @@ function oracleAddDBRecords($params=array()){
 	)
 ENDOFQ;
 	if(isset($params['-debug'])){
-		return $query;
+		return $query.PHP_EOL.PHP_EOL.$json.PHP_EOL;
 	}
 	$dbh_oracle=oracleDBConnect($params);
 	$stid = oci_parse($dbh_oracle, $query);
