@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)https://www.chartjs.org/samples/latest/charts/pie.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Pie Chart</title>
+	<script src="/wfiles/js/extras/chart.min.js"></script>
+<style type="text/css">/* Chart.js */
+@keyframes chartjs-render-animation{from{opacity:.99}to{opacity:1}}.chartjs-render-monitor{animation:chartjs-render-animation 1ms}.chartjs-size-monitor,.chartjs-size-monitor-expand,.chartjs-size-monitor-shrink{position:absolute;direction:ltr;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1}.chartjs-size-monitor-expand>div{position:absolute;width:1000000px;height:1000000px;left:0;top:0}.chartjs-size-monitor-shrink>div{position:absolute;width:200%;height:200%;left:0;top:0}</style></head>
+
+<body>
+	<div id="canvas-holder" style="width:40%"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+		<canvas id="chart-area" style="display: block; width: 588px; height: 294px;" width="588" height="294" class="chartjs-render-monitor"></canvas>
+	</div>
+	<button id="randomizeData">Randomize Data</button>
+	<script>
+		var randomScalingFactor = function() {
+			return Math.round(Math.random() * 100);
+		};
+
+		var config = {
+            type: "doughnut",
+            data: {
+                datasets: [
+                    {
+                        data: [120,60],
+                        backgroundColor: ['#009300','#f0f0f0'],
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                circumference: Math.PI,
+                rotation: -1 * Math.PI,
+                responsive: true,
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Chart.js Doughnut Chart'
+                    },
+                    animation: {
+                        animateScale: false,
+                        animateRotate: true
+                    }
+            }
+        };
+
+		window.onload = function() {
+			var ctx = document.getElementById('chart-area').getContext('2d');
+			window.myPie = new Chart(ctx, config);
+		};
+
+		document.getElementById('randomizeData').addEventListener('click', function() {
+			config.data.datasets.forEach(function(dataset) {
+				dataset.data = dataset.data.map(function() {
+					return randomScalingFactor();
+				});
+			});
+
+			window.myPie.update();
+		});
+
+		
+        function drawNeedle(radius, radianAngle) {
+            var canvas = document.getElementById("chart-area");
+            var ctx = canvas.getContext('2d');
+            var cw = canvas.offsetWidth;
+            var ch = canvas.offsetHeight;
+            var cx = cw / 2;
+            var cy = ch - (ch / 4);
+
+            ctx.translate(cx, cy);
+            ctx.rotate(radianAngle);
+            ctx.beginPath();
+            ctx.moveTo(0, -5);
+            ctx.lineTo(radius, 0);
+            ctx.lineTo(0, 5);
+            ctx.fillStyle = 'rgba(0, 76, 0, 0.8)';
+            ctx.fill();
+            ctx.rotate(-radianAngle);
+            ctx.translate(-cx, -cy);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+            ctx.fill();
+        }
+	</script>
+
+
+
+</body></html>

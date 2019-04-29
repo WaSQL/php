@@ -22,7 +22,7 @@
 			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
-			<li><a href="c3charts" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">C3 Charts</a></li>
+			<li><a href="chartjs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
@@ -60,7 +60,7 @@
 	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22');?></div></div>
 	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
 		<textarea id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
-		<?=buildOnLoad("wacss.init();");?>
+		<?=buildOnLoad("wacss.initWacssEdit();");?>
 	</div></div>
 </view:form-elements>
 
@@ -311,5 +311,10 @@
 <view:c3charts>
 <div id="c3_line"><?=buildOnLoad("c3LineChart();");?></div>
 </view:c3charts>
+
+<view:chartjs>
+	<div class="chartjs" id="guagechart1" style="width:150px;height:100px" data-type="guage" data-value="90"></div>
+	<?=buildOnLoad("wacss.initChartJs();");?>
+</view:chartjs>
 
 

@@ -1,6 +1,7 @@
 var wacss = {
 	version: '1.1',
 	author: 'WaSQL.com',
+	chartjs:{},
 	addClass: function(element, classToAdd) {
 		element=wacss.getObject(element);
 	    var currentClassValue = element.className;
@@ -148,6 +149,46 @@ var wacss = {
 	init: function(){
 		/*wacssedit*/
 		wacss.initWacssEdit();
+		wacss.initChartJs();
+	},
+	initChartJs: function(){
+		let list=document.querySelectorAll('div.chartjs');
+		for(let i=0;i<list.length;i++){
+			if(undefined == list[i].id){continue;}
+			if(undefined == list[i].getAttribute('data-type')){continue;}
+			let type=list[i].getAttribute('data-type').toLowerCase();
+			switch(type){
+				case 'guage':
+					if(undefined == list[i].getAttribute('data-value')){continue;}
+					let v=parseInt(list[i].getAttribute('data-value'));
+					let v1=parseInt(180*(v/100));
+					let v2=180-v1;
+					//console.log(type,v,v1,v2);
+					let config = {
+						type:'doughnut',
+						data: {
+							datasets: [{
+								data: [v1,v2],
+                        		backgroundColor: ['#009300','#e0e0e0'],
+                        		borderColor:['#000000','#000000'],
+                        		borderWidth: 0
+                    		}]
+            			},
+            			options: {
+            				title:{display:true,text:v+'%',position:'bottom',padding:0},
+                			circumference: Math.PI,
+                			rotation: -1 * Math.PI,
+                			responsive: true,
+                    		animation: {animateScale:false,animateRotate:true}
+            			}
+        			};
+        			let canvas=document.createElement('canvas');
+        			list[i].appendChild(canvas);
+        			let ctx = canvas.getContext('2d');
+					wacss.chartjs[list[i].id]  = new Chart(ctx, config);
+				break;
+			}
+		}
 	},
 	initWacssEdit: function(){
 		/*convert texteara to contenteditable div*/
