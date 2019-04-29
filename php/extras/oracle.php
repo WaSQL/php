@@ -91,7 +91,7 @@ function oracleAddDBRecords($params=array()){
     $fieldstr=implode(',',$fields);
     $jfieldstr=implode(',',$jfields);
     $definestr=implode(','.PHP_EOL,$defines);
-    $query .= <<<ENDOFQ
+    $query = <<<ENDOFQ
     INSERT INTO {$params['-table']}
     	({$fieldstr})
     SELECT 
@@ -107,6 +107,9 @@ function oracleAddDBRecords($params=array()){
 		)
 	)
 ENDOFQ;
+	if(isset($params['-debug'])){
+		return $query;
+	}
 	$dbh_oracle=oracleDBConnect($params);
 	$stid = oci_parse($dbh_oracle, $query);
 	if (!is_resource($stid)){
