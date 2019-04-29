@@ -160,32 +160,82 @@ var wacss = {
 			switch(type){
 				case 'guage':
 					if(undefined == list[i].getAttribute('data-value')){continue;}
-					let v=parseInt(list[i].getAttribute('data-value'));
-					let v1=parseInt(180*(v/100));
-					let v2=180-v1;
+					let gv=parseInt(list[i].getAttribute('data-value'));
+					let gv1=parseInt(180*(gv/100));
+					let gv2=180-gv1;
 					//console.log(type,v,v1,v2);
-					let config = {
+					let gconfig = {
 						type:'doughnut',
 						data: {
 							datasets: [{
-								data: [v1,v2],
+								data: [gv1,gv2],
                         		backgroundColor: ['#009300','#e0e0e0'],
                         		borderColor:['#000000','#000000'],
                         		borderWidth: 0
                     		}]
             			},
             			options: {
-            				title:{display:true,text:v+'%',position:'bottom',padding:0},
+            				title:{display:true,text:gv+'%',position:'bottom',padding:0},
                 			circumference: Math.PI,
                 			rotation: -1 * Math.PI,
                 			responsive: true,
                     		animation: {animateScale:false,animateRotate:true}
             			}
         			};
-        			let canvas=document.createElement('canvas');
-        			list[i].appendChild(canvas);
-        			let ctx = canvas.getContext('2d');
-					wacss.chartjs[list[i].id]  = new Chart(ctx, config);
+        			let gcanvas=document.createElement('canvas');
+        			list[i].appendChild(gcanvas);
+        			let gctx = gcanvas.getContext('2d');
+					wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
+				break;
+				case 'line':
+				case 'bar':
+					if(undefined == list[i].getAttribute('data-x')){continue;}
+					if(undefined == list[i].getAttribute('data-y')){continue;}
+					let ljson=JSON.parse(list[i].innerText);
+					list[i].innerText='';
+					let ldata=new Array();
+					let llabel=new Array();
+					let xkey=list[i].getAttribute('data-x');
+					let ykey=list[i].getAttribute('data-y');
+					for(k in ljson){
+						ldata.push(ljson[k][ykey]);
+						llabel.push(ljson[k][xkey]);
+					}
+					let lconfig = {
+						type:type,
+						data: {
+							labels:llabel,
+							datasets: [{
+								data: ldata,
+	            				borderColor:'#a956a9',
+	            				backgroundColor:'#c893c8',
+	            				borderWidth:1,
+	            				fill:false
+                    		}]
+            			},
+            			options: {
+                			responsive: true,
+                    		tooltips: {
+								mode: 'index',
+								intersect: false,
+							},
+							hover: {
+								mode: 'nearest',
+								intersect: true
+							},
+                    		scales: {
+					            yAxes: [{
+					                stacked: true
+					            }]
+					        }
+            			}
+        			};
+        			let lcanvas=document.createElement('canvas');
+        			list[i].appendChild(lcanvas);
+        			let lctx = lcanvas.getContext('2d');
+					wacss.chartjs[list[i].id]  = new Chart(lctx, lconfig);
+				break;
+				case 'pie':
 				break;
 			}
 		}
