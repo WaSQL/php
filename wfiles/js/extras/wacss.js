@@ -185,7 +185,7 @@ var wacss = {
         			};
         			if(undefined != list[i].getAttribute('data-title')){
         				let title=list[i].getAttribute('data-title');
-        				gconfig.options.title={display:true,padding:0;position:'bottom',text:title};
+        				gconfig.options.title={display:true,padding:0,position:'bottom',text:title};
         			}
         			if(undefined != list[i].getAttribute('data-title-position')){
         				gconfig.options.title.position=list[i].getAttribute('data-title-position');
