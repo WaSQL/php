@@ -164,14 +164,17 @@ var wacss = {
 					let gv1=parseInt(180*(gv/100));
 					if(gv1 > 180){gv1=180;}
 					let gv2=180-gv1;
+					let color='#009300';
+					if(undefined != list[i].getAttribute('data-color')){
+        				color=list[i].getAttribute('data-color');
+        			}
 					//console.log(type,v,v1,v2);
 					let gconfig = {
 						type:'doughnut',
 						data: {
 							datasets: [{
 								data: [gv1,gv2],
-                        		backgroundColor: ['#009300','#e0e0e0'],
-                        		borderColor:['#000000','#000000'],
+                        		backgroundColor: [color,'#e0e0e0'],
                         		borderWidth: 0
                     		}]
             			},
