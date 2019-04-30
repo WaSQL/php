@@ -162,6 +162,7 @@ var wacss = {
 					if(undefined == list[i].getAttribute('data-value')){continue;}
 					let gv=parseInt(list[i].getAttribute('data-value'));
 					let gv1=parseInt(180*(gv/100));
+					if(gv1 > 180){gv1=180;}
 					let gv2=180-gv1;
 					//console.log(type,v,v1,v2);
 					let gconfig = {
@@ -175,13 +176,20 @@ var wacss = {
                     		}]
             			},
             			options: {
-            				title:{display:true,text:gv+'%',position:'bottom',padding:0},
+            				title:{display:false},
                 			circumference: Math.PI,
                 			rotation: -1 * Math.PI,
                 			responsive: true,
                     		animation: {animateScale:false,animateRotate:true}
             			}
         			};
+        			if(undefined != list[i].getAttribute('data-title')){
+        				let title=list[i].getAttribute('data-title');
+        				gconfig.options.title={display:true,padding:0;position:'bottom',text:title};
+        			}
+        			if(undefined != list[i].getAttribute('data-title-position')){
+        				gconfig.options.title.position=list[i].getAttribute('data-title-position');
+        			}
         			let gcanvas=document.createElement('canvas');
         			list[i].appendChild(gcanvas);
         			let gctx = gcanvas.getContext('2d');
@@ -191,28 +199,14 @@ var wacss = {
 				case 'bar':
 					if(undefined == list[i].getAttribute('data-x')){continue;}
 					if(undefined == list[i].getAttribute('data-y')){continue;}
-					let ljson=JSON.parse(list[i].innerText);
-					list[i].innerText='';
-					let ldata=new Array();
-					let llabel=new Array();
 					let xkey=list[i].getAttribute('data-x');
 					let ykey=list[i].getAttribute('data-y');
-					for(k in ljson){
-						ldata.push(ljson[k][ykey]);
-						llabel.push(ljson[k][xkey]);
-					}
 					let lconfig = {
 						type:type,
-						data: {
-							labels:llabel,
-							datasets: [{
-								data: ldata,
-	            				borderColor:'#a956a9',
-	            				backgroundColor:'#c893c8',
-	            				borderWidth:1,
-	            				fill:false
-                    		}]
-            			},
+						data:{
+							labels:[],
+							datasets:[]
+						},
             			options: {
                 			responsive: true,
                     		tooltips: {
@@ -225,11 +219,37 @@ var wacss = {
 							},
                     		scales: {
 					            yAxes: [{
-					                stacked: true
+					                stacked: false
 					            }]
 					        }
             			}
         			};
+        			//look for datasets;
+        			let labels=[];
+        			let datasets=list[i].querySelectorAll('dataset');
+
+        			for(let d=0;d<datasets.length;d++){
+        				
+						if(undefined == datasets[d].getAttribute('data-label')){continue;}
+						
+        				let xdata=new Array();
+        				let json=JSON.parse(datasets[d].innerText);
+        				datasets[d].innerText='';
+        				let dlabel=datasets[d].getAttribute('data-label');
+        				for(k in json){
+							xdata.push(json[k][ykey]);
+						}
+						let dataset={
+							label:dlabel,
+							backgroundColor: "rgba(0,0,0,0)",
+                            borderColor: "rgba(220,220,220,1)",
+                            pointColor: "rgba(200,122,20,1)",
+							data: xdata,
+							fill:false
+						};
+						lconfig.data.datasets.push(dataset);
+        			}
+        			console.log(lconfig);
         			let lcanvas=document.createElement('canvas');
         			list[i].appendChild(lcanvas);
         			let lctx = lcanvas.getContext('2d');
