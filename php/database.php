@@ -72,6 +72,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
 *	[-listfields] -  subset of fields to list from the list returned.
+*   [-translate] - translate column names (displaynames)
 *	[-anchormap] - str - field name to build an achormap from based on first letter or number of the value
 *	[-exportfields] -  subset of fields to export.
 *	[-limit] mixed - query record limit
@@ -99,6 +100,12 @@ function databaseListRecords($params=array()){
 	$allfields=0;
 	if(isset($params['-list'])){
 		$allfields=1;
+	}
+	if(isset($params['-translate'])){
+		global $databaseCache;
+		if(!isset($databaseCache['loadExtras']['translate'])){
+			loadExtras('translate');
+		}
 	}
 	//require -table or -list or -query
 	if(isset($params['-query'])){
@@ -416,6 +423,10 @@ function databaseListRecords($params=array()){
 		}
 		else{
 			$name=ucwords(trim(str_replace('_',' ',$field)));
+		}
+		//check for translate
+		if(isset($params['-translate'])){
+			$name=translateText($name);
 		}
 		if(!isset($params[$field.'_class'])){$params[$field.'_class']='w_nowrap';}
 

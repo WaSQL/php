@@ -525,7 +525,9 @@ if(isAjax()){
 			echo adminViewPage('apachebench');exit;
     	break;
     	case 'translate':
-			echo adminViewPage('translate');exit;
+    		adminSetPageName();
+    		echo includeModule('translate');exit;
+			//echo adminViewPage('translate');exit;
     	break;
     	case 'manual':
 			echo adminViewPage('manual');exit;
@@ -1302,7 +1304,9 @@ ENDOFX;
 			echo adminViewPage('apachebench');exit;
 		break;
 		case 'translate':
-			echo adminViewPage('translate');exit;
+			adminSetPageName();
+			echo includeModule('translate');exit;
+			//echo adminViewPage('translate');exit;
 		break;
 		case 'manual':
 			echo adminViewPage('manual');exit;
@@ -1546,6 +1550,7 @@ ENDOFX;
 			echo databaseListRecords(array(
 				'-query'				=>	"show table status",
 				'-hidesearch'				=> 1,
+				'-translate'	=> 1,
 				'-tableclass'			=> "table table-responsive table-bordered table-striped",
 				'name_href'				=> "/php/admin.php?_menu=list&_table_=%name%",
 				'data_length_eval'		=>	"return verboseSize(%data_length%);",
@@ -1829,6 +1834,7 @@ LIST_TABLE:
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-responsive table-bordered table-striped",
 					'-bulkedit'		=> 1,
+					'-translate'	=> 1,
 					'-export'		=> 1,
 					'_table_'=>$_REQUEST['_table_'],
 					'-table'=>$_REQUEST['_table_'],
@@ -3040,6 +3046,22 @@ function adminShowSessionLog($sessionID){
 	$rtn .= '	<div class="w_bold" style="border-bottom:1px solid #000;padding:10px;">Written ' . $files[0]['_edate_age_verbose'] . ' ago  <a href="#" class="w_link w_bold w_required" onclick="return ajaxGet(\'/php/admin.php\',\'session_errors\',\'_menu=clear_session_errors&t=10\');"><span class="icon-erase w_danger"></span> Clear Error Log</a></div>'.PHP_EOL;
 	$rtn .= getFileContents($errfile);
 	return $rtn;
+}
+function adminSetPageName(){
+	global $PAGE;
+	$PAGE['name']='php/admin.php';
+	if(isset($_SERVER['SCRIPT_NAME'])){$PAGE['name']=$_SERVER['SCRIPT_NAME'];}
+	elseif(isset($_SERVER['PHP_SELF'])){$PAGE['name']=$_SERVER['PHP_SELF'];}
+	$PAGE['name']=preg_replace('/^\//','',$PAGE['name']);
+	if(isset($_REQUEST['_menu'])){
+		$PAGE['name'].="?_menu={$_REQUEST['_menu']}&_pass=";
+	}
+	if(isset($_REQUEST['_pass'])){
+		$_REQUEST['_pass']=preg_replace('/^\//','',$_REQUEST['_pass']);
+		$_REQUEST['_pass']=preg_replace('/\?$/','',$_REQUEST['_pass']);
+		$_REQUEST['passthru']=preg_split('/\//',$_REQUEST['_pass']);
+	}
+	//echo printValue($_REQUEST);exit;
 }
 //---------- begin function adminConfigSettings ----
 /**
