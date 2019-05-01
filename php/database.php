@@ -101,7 +101,13 @@ function databaseListRecords($params=array()){
 	if(isset($params['-list'])){
 		$allfields=1;
 	}
-	if(isset($params['-translate'])){
+	//check for translate
+	$translate=0;
+	if(isset($params['-translate'])){$translate=1;}
+	foreach($params as $k=>$v){
+		if(preg_match('/\_translate$/i',$k)){$translate=1;break;}
+	}
+	if($translate==1){
 		global $databaseCache;
 		if(!isset($databaseCache['loadExtras']['translate'])){
 			loadExtras('translate');
@@ -555,6 +561,9 @@ function databaseListRecords($params=array()){
                     $evalstr=str_replace($replace,strip_tags($rec[$recfld]),$evalstr);
                 }
                 $value=evalPHP('<?' . $evalstr .'?>');
+			}
+			if(!empty($params[$fld."_translate"])){
+				$value=translateText($value);
 			}
 			//check for {field}_onclick and {field}_href
 			if(!empty($params[$fld."_onclick"])){
