@@ -608,7 +608,8 @@ function postgresqlGetDBRecords($params){
 */
 function postgresqlGetDBTables($params=array()){
 	global $CONFIG;
-	$query="SELECT tablename as name from pg_tables where schemaname='public' ORDER BY tablename";
+	if(!isset($CONFIG['postgresql_schema'])){$CONFIG['postgresql_schema']='public';}
+	$query="SELECT tablename as name from pg_tables where schemaname='{$CONFIG['postgresql_schema']}' ORDER BY tablename";
 	$recs = postgresqlQueryResults($query,$params);
 	//echo $query.printValue($recs);exit;
 	$tables=array();
