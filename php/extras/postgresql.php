@@ -535,7 +535,7 @@ function postgresqlGetDBRecords($params){
 	global $USER;
 	global $CONFIG;
 	if(empty($params['-table']) && !is_array($params)){
-		if(stringBeginsWith($params,"select ") || stringBeginsWith($params,"with ") || stringBeginsWith($params,"explain ") || stringContains($params,' returning ')){
+		if(stringBeginsWith($params,"select ") || stringBeginsWith($params,"show ") || stringBeginsWith($params,"with ") || stringBeginsWith($params,"explain ") || stringContains($params,' returning ')){
 			//they just entered a query
 			$query=$params;
 			$params=array();
