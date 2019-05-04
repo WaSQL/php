@@ -1875,24 +1875,27 @@ function pagingSetProcessing(obj){
 	}
 }
 function pagingSubmit(frm,div){
+	//console.log('pagingSubmit',div)
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
 	if(undefined != div){
+		//console.log('pagingSubmit - ajax');
 		return ajaxSubmitForm(frm,div);
 	}
+	//console.log('pagingSubmit - NOT ajax');
 	frm.submit();
 	return false;
 }
 function pagingSetOffset(frm,v){
 	frm.filter_offset.value=v;
-	return pagingSubmit(frm);
+	return frm.onsubmit();
 }
 function pagingSetOrder(frm,v){
 	if(frm.filter_order.value==v && frm.filter_order.value.indexOf('desc')==-1){
 		v=v+' desc';
 	}
 	frm.filter_order.value=v;
-	return pagingSubmit(frm);
+	return frm.onsubmit();
 }
 function pagingBulkEdit(frm){
 	if(frm.filter_field.value.length==0 || frm.filter_field.value=='*'){alert('select a field to edit');return false;}
@@ -1905,15 +1908,13 @@ function pagingBulkEdit(frm){
 	pagingSetFilters(frm);
 	frm.filter_field.value=v;
 	frm.filter_bulkedit.value='1';
-	frm.submit();
-	return true;
+	return frm.onsubmit();
 }
 function pagingExport(frm){
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
 	frm.filter_export.value='1';
-	frm.submit();
-	return false;
+	return frm.onsubmit();
 }
 function pagingAddFilter(frm){
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
