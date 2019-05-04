@@ -2379,7 +2379,6 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		if(theform.noprocessing.value.toLowerCase()=='true'){showprocessing=false;}
 		if(theform.noprocessing.value.toLowerCase()=='1'){showprocessing=false;}
 	}
-	alert(showprocessing);
 	//show processing div
 	var showprocessingdiv=sid;
 	if(undefined != theform.showprocessingdiv){
