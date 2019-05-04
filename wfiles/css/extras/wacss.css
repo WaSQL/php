@@ -1318,7 +1318,7 @@ input[type="checkbox"].w_black.btn:checked + label[for], input[type="radio"].w_b
 table.table {
     width: 0;
     min-width:100%;
-    table-layout: fixed;
+    table-layout: auto;
     margin-bottom: 1rem;
     color: #212529;
     border-collapse: collapse;
@@ -1338,10 +1338,8 @@ table.table td, table.table th {
     padding: .5rem;
     vertical-align: top;
     border-top: 1px solid #dee2e6;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
+
 table.table.condensed td, table.table.condensed th,
 table.table.table-condensed td, table.table.table-condensed th {
     padding: .2rem;
@@ -2289,6 +2287,7 @@ table.table a:hover{
     box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 .truncate {
+    max-width:400px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

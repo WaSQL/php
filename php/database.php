@@ -433,7 +433,6 @@ function databaseListRecords($params=array()){
 		if(isset($params['-translate'])){
 			$name=translateText($name);
 		}
-		if(!isset($params[$field.'_class'])){$params[$field.'_class']='w_nowrap';}
 
 		$rtn .= '			<th';
 		$atts=array();
@@ -448,6 +447,7 @@ function databaseListRecords($params=array()){
 				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}
 		}
+		if(!isset($params[$field.'_class']) && !isset($atts['class'])){$atts['class']='w_nowrap';}
 		$rtn .= setTagAttributes($atts);
 		$rtn .='>';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
