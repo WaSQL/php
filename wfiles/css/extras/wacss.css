@@ -57,13 +57,6 @@ body{
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
 }
-.card.horizontal {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    flex-direction: row;
-}
 .card .card-header {
     padding: 0.75rem 1.25rem;
     margin-bottom: 0;
@@ -2298,6 +2291,20 @@ table.table a:hover{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.flexrow {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: row;
+}
+.flexcol {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
 }
 summary {
     display: list-item;
