@@ -62,6 +62,10 @@ body{
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
+    flex-direction: column;
+}
+.card.horizontal .card-image {
+    max-width: 40%;
 }
 .card .card-header {
     padding: 0.75rem 1.25rem;
