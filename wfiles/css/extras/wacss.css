@@ -57,6 +57,12 @@ body{
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
 }
+.card.horizontal {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}
 .card .card-header {
     padding: 0.75rem 1.25rem;
     margin-bottom: 0;
