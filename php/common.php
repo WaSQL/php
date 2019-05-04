@@ -51,15 +51,15 @@ function commonSearchFiltersForm($params=array()){
 		}
 	}
 	//action override?
-	if(isset($atts['-action'])){
-		$atts['action']=$atts['-action'];
+	if(isset($params['-action'])){
+		$atts['action']=$params['-action'];
 	}
 	if(!isset($atts['action'])){
 		$atts['action']="/{$PAGE['name']}";
 	}
 	//onsubmit override?
-	if(isset($atts['-onsubmit'])){
-		$atts['onsubmit']=$atts['-onsubmit'];
+	if(isset($params['-onsubmit'])){
+		$atts['onsubmit']=$params['-onsubmit'];
 	}
 	if(!isset($atts['onsubmit'])){
 		$atts['onsubmit']="return pagingSubmit(this);";

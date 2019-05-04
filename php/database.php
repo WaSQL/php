@@ -371,7 +371,6 @@ function databaseListRecords($params=array()){
 				$params['-searchfields'][]=$field;
 			}
 		}
-
 		$rtn .= commonSearchFiltersForm($params);
 	}
 	//check for -anchormap
