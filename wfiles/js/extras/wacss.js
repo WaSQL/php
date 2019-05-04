@@ -157,6 +157,9 @@ var wacss = {
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
 			if(undefined == list[i].getAttribute('data-type')){continue;}
+			//check to see if we have already initialized this element
+			if(undefined != list[i].getAttribute('data-initialized')){continue;}
+			list[i].setAttribute('data-initialized',1);
 			let type=list[i].getAttribute('data-type').toLowerCase();
 			switch(type){
 				case 'guage':
@@ -269,6 +272,9 @@ var wacss = {
 		let list=document.querySelectorAll('.truncate');
 		for(let i=0;i<list.length;i++){
 			if(list[i].innerText.length==0){continue;}
+			//check to see if we have already initialized this element
+			if(undefined != list[i].getAttribute('data-initialized')){continue;}
+			list[i].setAttribute('data-initialized',1);
 			list[i].setAttribute('data-tooltip',list[i].innerHTML);
 			list[i].setAttribute('data-tooltip_position','bottom');
 		}
@@ -278,8 +284,9 @@ var wacss = {
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
-			if(undefined != list[i].getAttribute('data-wacss-init')){continue;}
-			list[i].setAttribute('data-wacss-init',1);
+			//check to see if we have already initialized this element
+			if(undefined != list[i].getAttribute('data-initialized')){continue;}
+			list[i].setAttribute('data-initialized',1);
 			let editor_id=list[i].id+'_wacsseditor';
 			//does it already exist?
 			let eobj=wacss.getObject(editor_id);
