@@ -150,6 +150,7 @@ var wacss = {
 		/*wacssedit*/
 		wacss.initWacssEdit();
 		wacss.initChartJs();
+		wacss.initTruncate();
 	},
 	initChartJs: function(){
 		let list=document.querySelectorAll('div.chartjs');
@@ -261,6 +262,15 @@ var wacss = {
 				case 'pie':
 				break;
 			}
+		}
+	},
+	initTruncate: function(){
+		/*convert texteara to contenteditable div*/
+		let list=document.querySelectorAll('.truncate');
+		for(let i=0;i<list.length;i++){
+			if(list[i].innerText.length==0){continue;}
+			list[i].setAttribute('data-tooltip',list[i].innerHTML);
+			list[i].setAttribute('data-tooltip_position','bottom');
 		}
 	},
 	initWacssEdit: function(){
@@ -639,6 +649,20 @@ var wacss = {
 			};
 		}
 	},
+	listen: function(evnt, elem, func) {
+	    if (elem.addEventListener){ 
+	    	// W3C DOM
+	    	elem.addEventListener(evnt,func,false);
+	    }  
+	    else if (elem.attachEvent) { 
+	    	// IE DOM
+	         var r = elem.attachEvent("on"+evnt, func);
+	         return r;
+	    }
+	    else{
+	    	console.log('wacss.listen failed. Browser does not support event listeners');
+	    }
+	},
 	modalClose: function(){
 		if(undefined != document.getElementById('wacss_modal_overlay')){
 			return wacss.removeObj(document.getElementById('wacss_modal_overlay'));
@@ -891,3 +915,4 @@ var wacss = {
 		return str;
 	}
 }
+wacss.listen('load',window,function(){wacss.init();})

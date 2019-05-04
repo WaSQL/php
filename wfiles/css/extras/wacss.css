@@ -1316,17 +1316,16 @@ input[type="checkbox"].w_black.btn:checked + label[for], input[type="radio"].w_b
 
 /*--------------------- table styles  -------------------------------------------*/
 table.table {
-    width: 100%;
+    width: 0;
+    min-width:100%;
+    table-layout: fixed;
     margin-bottom: 1rem;
     color: #212529;
     border-collapse: collapse;
-}
-table.table-responsive,table.responsive {
-    display: block;
-    width: 100%;
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
+
 table.table-striped tbody tr:nth-of-type(odd),
 table.striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0,0,0,.05);
@@ -1339,6 +1338,9 @@ table.table td, table.table th {
     padding: .5rem;
     vertical-align: top;
     border-top: 1px solid #dee2e6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 table.table.condensed td, table.table.condensed th,
 table.table.table-condensed td, table.table.table-condensed th {
@@ -2287,13 +2289,9 @@ table.table a:hover{
     box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 .truncate {
-    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-.truncate:hover::after {
-    content:text;
 }
 summary {
     display: list-item;
