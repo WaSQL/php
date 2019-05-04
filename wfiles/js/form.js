@@ -2367,14 +2367,19 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	}
 	//show processing?
 	var showprocessing=true;
-	if(undefined != theform.showprocessing){
+	if(undefined != theform.setprocessing){
 		if(theform.setprocessing.value.toLowerCase()=='false'){showprocessing=false;}
 		if(theform.setprocessing.value.toLowerCase()=='0'){showprocessing=false;}
+	}
+	else if(undefined != theform.showprocessing){
+		if(theform.showprocessing.value.toLowerCase()=='false'){showprocessing=false;}
+		if(theform.showprocessing.value.toLowerCase()=='0'){showprocessing=false;}
 	}
 	else if(undefined != theform.noprocessing){
 		if(theform.noprocessing.value.toLowerCase()=='true'){showprocessing=false;}
 		if(theform.noprocessing.value.toLowerCase()=='1'){showprocessing=false;}
 	}
+	alert(showprocessing);
 	//show processing div
 	var showprocessingdiv=sid;
 	if(undefined != theform.showprocessingdiv){

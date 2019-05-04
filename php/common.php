@@ -71,7 +71,8 @@ function commonSearchFiltersForm($params=array()){
 	}
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
 	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
-	$rtn .= '	<textarea name="_filters">'.$params['-filters'].'</textarea>'.PHP_EOL;
+	$filters=is_array($params['-filters'])?implode("\r\n",$params['-filters']):$params['-filters'];
+	$rtn .= '	<textarea name="_filters">'.$filters.'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
 		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
 	}
@@ -82,6 +83,7 @@ function commonSearchFiltersForm($params=array()){
 	foreach($params as $k=>$v){
 		if(preg_match('/^\-/',$k)){continue;}
 		if(preg_match('/\_(onclick|eval|href)$/i',$k)){continue;}
+		if(preg_match('/^(class|style)$/i',$k)){continue;}
 		if(is_array($params['-searchfields']) && in_array($k,$params['-searchfields'])){
 			continue;
 		}
