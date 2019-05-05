@@ -11159,7 +11159,12 @@ function postURL($url,$params=array()) {
 	//turn retrieving the header off
 	//curl_setopt ($process, CURLOPT_HEADER, 0);
 	//convert Unix newlines to CRLF newlines
-	curl_setopt ($process, CURLOPT_CRLF, 0);
+	if(isset($params['-crlf']) && $params['-crlf']==1){
+		curl_setopt ($process, CURLOPT_CRLF, 1);
+	}
+	else{
+		curl_setopt ($process, CURLOPT_CRLF, 0);
+	}
 	$return = curl_exec($process);
 	//echo $return;exit;
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
