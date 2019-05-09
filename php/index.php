@@ -102,6 +102,15 @@ $stime=microtime(true);
 include_once("$progpath/user.php");
 $loadtimes['user']=number_format((microtime(true)-$stime),3);
 global $CONFIG;
+if(!isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
+	switch(strtolower($CONFIG['allow_origin'])){
+		case '*':
+		case 'all':
+			$CONFIG['allow_origin']='*';
+		break;
+	}
+	@header("Access-Control-Allow-Origin: {$CONFIG['allow_origin']}");
+}
 if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
 }
