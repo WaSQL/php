@@ -111,6 +111,9 @@ if(isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
 	}
 	@header("Access-Control-Allow-Origin: {$CONFIG['allow_origin']}");
 }
+if(isset($CONFIG['allow_methods']) && strlen($CONFIG['allow_methods'])){
+	@header("Access-Control-Allow-Methods: {$CONFIG['allow_methods']}");
+}
 if(isset($CONFIG['allow_credentials'])){
 	@header('Access-Control-Allow-Credentials:true');
 }
