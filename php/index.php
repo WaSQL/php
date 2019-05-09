@@ -111,6 +111,9 @@ if(isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
 	}
 	@header("Access-Control-Allow-Origin: {$CONFIG['allow_origin']}");
 }
+if(isset($CONFIG['allow_credentials'])){
+	@header('Access-Control-Allow-Credentials:true');
+}
 if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
 	@header('X-Frame-Options: SAMEORIGIN');
 }

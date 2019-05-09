@@ -7,6 +7,8 @@
 			dbname - Database name
 			dbuser - Database username
 			dbpass - Database password
+			allow_origin
+			allow_credentials
 			dbtype - Database type (mysqli,mysql,sqlite,mssql,postgres)
 			showtables="all" will show all tables, including WaSQL tables
 			post_max_size - defaults to 64M
