@@ -342,8 +342,10 @@ var wacss = {
 				'Ordered List':['insertOrderedList','','icon-list-ol',''],
 				'Redo':['redo','','icon-redo','y'],
 				'Undo':['undo','','icon-undo','z'],
+				'Remove':['removeFormat','','icon-erase','-'],
 				'Print':['print','','icon-print','p'],
-				'Htmlcode':['code','','icon-file-code','h']
+				'Htmlcode':['code','','icon-file-code','h'],
+				'Survey':['survey','','icon-chat','']
 			}
 			/*
 				Features to add:
@@ -519,6 +521,30 @@ var wacss = {
 						}
 						li.appendChild(jul);
 					break;
+					case 'survey':
+						//justify full,left,center,right
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title=name;
+						a.innerHTML=name;
+						li.appendChild(a);
+						let sul=document.createElement('ul');
+						sul.style.maxHeight='175px';
+						sul.style.overflow='auto';
+						let types={rating:'Rating',one:'Select One',many:'Select Multiple',text:'Text'};
+						for(let type in types){
+							let sli=document.createElement('li');
+							sul.appendChild(sli);
+							sna=document.createElement('button');
+							sna.className='wacssedit';
+							sna.setAttribute('data-cmd','survey');
+							sna.setAttribute('data-arg',type);
+							sna.setAttribute('data-txt',list[i].id);
+							sna.innerHTML=types[type];
+							sli.appendChild(sna);
+						}
+						li.appendChild(sul);
+					break;
 					default:
 						parts=buttons[name];
 						a=document.createElement('button');
@@ -552,7 +578,7 @@ var wacss = {
 			//list[i].parentNode.replaceChild(d, list[i]);
 		}
 		if(list.length){
-			document.execCommand('styleWithCSS',false,null);
+			document.execCommand('styleWithCSS',true,null);
 		}
 		list=document.querySelectorAll('button.wacssedit');
 		for(i=0;i<list.length;i++){
@@ -575,6 +601,12 @@ var wacss = {
 					return false;
 				}
 				switch(cmd){
+					case 'survey':
+						let arg=this.getAttribute('data-arg');
+						console.log('survey:'+arg);
+					 	document.execCommand("insertHTML", false, "<div class='survey_"+arg+"'>"+ document.getSelection()+'</div>');
+					 	return false;
+					break;
 					case 'reset':
 						if(confirm('Reset back to original?'+dobj.original)){
 							dobj.innerHTML=tobj.original;
@@ -855,10 +887,13 @@ var wacss = {
 	    return false;;
 	},
 	toast: function(msg,params){
+		if(undefined == params){
+			params={color:'w_white',timer:3};
+		}
 		if(undefined == params.color){
 			params.color=wacss.color();
 		}
-		if(undefined == params.timer){params.timer=2000;}
+		if(undefined == params.timer){params.timer=3000;}
 		else{params.timer=parseInt(params.timer)*1000;}
 		if(undefined == document.getElementById('wacss_toasts')){
 			let ts = document.createElement('div');	

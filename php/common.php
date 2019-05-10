@@ -7474,7 +7474,57 @@ function fopen_utf8($filename){
 	}
 	return  ($handle);
 }
-
+	//---------- begin function getCSVFileContents--------------------
+/**
+* @describe returns the contents of a CSV file as an array
+* @param file string - file name and path
+* @param params array
+*	[maxrows] - defaults to 2000000
+*	[maxlen] - defaults to 4096
+*	[separator] - defaults to ,
+*	[fields] - if not supplied uses the first rows as field names
+*	[skiprows] - starting row number
+*	[map] - translation map
+* @return array
+* @usage $csv=getCSVFileContents($file);
+*/
+function csv2Arrays($data,$params=array()){
+	$lines=preg_split('/[\r\n]+/',trim($data));
+	if(!isset($params['separator'])){
+		if(!stringContains($lines[0],',') && stringContains($lines[0],"\t")){
+			$params['separator']="\t";
+		}
+	}
+	if(!isset($params['separator'])){$params['separator']=',';}
+	if(isset($params['fields']) && is_array($params['fields'])){$xfields=$params['fields'];}
+	else{
+		$str=array_shift($lines);
+		$xfields = csvParseLine($str, $params['separator']);
+	}
+	//echo "XFIELDS:".printValue($xfields);fclose($handle);exit;
+	if(!is_array($xfields) || count($xfields)==0){
+		$results['error']="No Fields found: " . printValue($xfields);
+		return $results;
+	}
+	//skip rows if requested
+	if(isset($params['skiprows']) && isNum($params['skiprows'])){
+		for($x=0;$x<$params['skiprows'];$x++){
+			$junk = array_shift($lines);
+		}
+	}
+	$fields=array();
+	foreach($xfields as $field){$fields[]=trim($field);}
+	$recs=array();
+	foreach($lines as $line){
+		$vals=csvParseLine($line,$params['separator']);
+		$rec=array();
+		foreach($fields as $i=>$field){
+			$rec[$field]=$vals[$i];
+		}
+		$recs[]=$rec;
+	}
+	return $recs;
+}
 //---------- begin function getCSVFileContents--------------------
 /**
 * @describe returns the contents of a CSV file as an array
@@ -11204,6 +11254,9 @@ function postURL($url,$params=array()) {
 		$rtn['xml_array']=xml2Array($rtn['body']);
     	}
     elseif(isset($params['-json']) && $params['-json']==1 && strlen($rtn['body'])){
+		$rtn['json_array']=json_decode($rtn['body'],true);
+    	}
+    elseif(isset($params['-csv']) && $params['-csv']==1 && strlen($rtn['body'])){
 		$rtn['json_array']=json_decode($rtn['body'],true);
     	}
 	if(isset($params['skip_error']) && !$params['skip_error'] && !isset($rtn['body']) && isset($rtn['error'])){

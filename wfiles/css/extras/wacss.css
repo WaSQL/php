@@ -103,6 +103,24 @@ button.wacssedit{
 button.wacssedit:hover{
   color:#000;
 }
+
+[contenteditable] .survey_rating,[contenteditable] .survey_one,[contenteditable] .survey_many,[contenteditable] .survey_text{
+  margin-left:10px;
+  color:#707070;
+  font-size:1.2rem;
+}
+[contenteditable] .survey_rating:before{
+  content:"\25C9";
+}
+[contenteditable] .survey_one:before{
+  content:"\2611";
+}
+[contenteditable] .survey_many:before{
+  content:"\2611 \2611";
+}
+[contenteditable] .survey_text:before{
+  content:"\1F5B9";
+}
 /* ---------------------- toasts - called with wacss.toats() function ------------------------- */
 #wacss_toasts{
   position:fixed;
