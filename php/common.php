@@ -11257,7 +11257,7 @@ function postURL($url,$params=array()) {
 		$rtn['json_array']=json_decode($rtn['body'],true);
     	}
     elseif(isset($params['-csv']) && $params['-csv']==1 && strlen($rtn['body'])){
-		$rtn['json_array']=json_decode($rtn['body'],true);
+		$rtn['csv_array']=csv2Arrays($rtn['body']);
     	}
 	if(isset($params['skip_error']) && !$params['skip_error'] && !isset($rtn['body']) && isset($rtn['error'])){
 		echo "<h2>postURL Connection Error</h2><br>\n";
