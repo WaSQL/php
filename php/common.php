@@ -7474,19 +7474,16 @@ function fopen_utf8($filename){
 	}
 	return  ($handle);
 }
-	//---------- begin function getCSVFileContents--------------------
+	//---------- begin function csv2Arrays--------------------
 /**
-* @describe returns the contents of a CSV file as an array
-* @param file string - file name and path
+* @describe returns the contents of a CSV string as an array
+* @param data string - lines of csv data
 * @param params array
-*	[maxrows] - defaults to 2000000
-*	[maxlen] - defaults to 4096
 *	[separator] - defaults to ,
 *	[fields] - if not supplied uses the first rows as field names
 *	[skiprows] - starting row number
-*	[map] - translation map
 * @return array
-* @usage $csv=getCSVFileContents($file);
+* @usage $csv=csv2Arrays($data);
 */
 function csv2Arrays($data,$params=array()){
 	$lines=preg_split('/[\r\n]+/',trim($data));

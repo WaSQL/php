@@ -113,6 +113,9 @@ function databaseListRecords($params=array()){
 			loadExtras('translate');
 		}
 	}
+	if(!isset($params['-listfields']) && isset($params['-fields'])){
+		$params['-listfields']=$params['-fields'];
+	}
 	//require -table or -list or -query
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
@@ -342,6 +345,7 @@ function databaseListRecords($params=array()){
 		return "databaseListRecords error: ".$params['-list'];
 	}
 	//determine -listfields
+	
 	if(!empty($params['-listfields'])){
 		if(!is_array($params['-listfields'])){
 			$params['-listfields']=str_replace(' ','',$params['-listfields']);
