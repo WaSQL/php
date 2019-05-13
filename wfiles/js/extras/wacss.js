@@ -154,15 +154,26 @@ var wacss = {
 	},
 	initChartJs: function(){
 		let list=document.querySelectorAll('div.chartjs');
+		console.log(list);
 		for(let i=0;i<list.length;i++){
-			if(undefined == list[i].id){continue;}
-			if(undefined == list[i].getAttribute('data-type')){continue;}
+			if(undefined == list[i].id){
+				console.log('missing id',list[i]);
+				continue;
+			}
+			if(undefined == list[i].getAttribute('data-type')){
+				console.log('missing data-type',list[i]);
+				continue;
+			}
 			//check for data element
-			if(undefined == document.getElementById(list[i].id+'_data')){continue;}
+			console.log('initChartJs: '+list[i].id);
+			if(undefined == document.getElementById(list[i].id+'_data')){
+				console.log('missing data div',list[i]);
+				continue;
+			}
 			list[i].setAttribute('data-initialized',1);
 			let type=list[i].getAttribute('data-type').toLowerCase();
 			let datadiv=wacss.getObject(list[i].id+'_data');
-			//console.log('switch:'+type);
+			let foundchart=0;
 			switch(type){
 				case 'guage':
 					if(undefined != wacss.chartjs[list[i].id]){
@@ -176,47 +187,49 @@ var wacss = {
 							let gv2=180-gv1;
 							wacss.chartjs[list[i].id].config.data.datasets[0].data=[gv1,gv2];
 	        				wacss.chartjs[list[i].id].update();
-	        				return false;
+	        				foundchart=1;
 		        		}
 					}
-					let gv=parseInt(datadiv.innerText);
-					let gv1=parseInt(180*(gv/100));
-					if(gv1 > 180){gv1=180;}
-					let gv2=180-gv1;
-					let color='#009300';
-					if(undefined != list[i].getAttribute('data-color')){
-        				color=list[i].getAttribute('data-color');
-        			}
-        			
-					console.log(type);
-					let gconfig = {
-						type:'doughnut',
-						data: {
-							datasets: [{
-								data: [gv1,gv2],
-                        		backgroundColor: [color,'#e0e0e0'],
-                        		borderWidth: 0
-                    		}]
-            			},
-            			options: {
-            				title:{display:false},
-                			circumference: Math.PI,
-                			rotation: -1 * Math.PI,
-                			responsive: true,
-                    		animation: {animateScale:false,animateRotate:true}
-            			}
-        			};
-        			if(undefined != list[i].getAttribute('data-title')){
-        				let title=list[i].getAttribute('data-title');
-        				gconfig.options.title={display:true,padding:0,position:'bottom',text:title};
-        			}
-        			if(undefined != list[i].getAttribute('data-title-position')){
-        				gconfig.options.title.position=list[i].getAttribute('data-title-position');
-        			}
-        			let gcanvas=document.createElement('canvas');
-        			list[i].appendChild(gcanvas);
-        			let gctx = gcanvas.getContext('2d');
-					wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
+					if(foundchart==0){
+						let gv=parseInt(datadiv.innerText);
+						let gv1=parseInt(180*(gv/100));
+						if(gv1 > 180){gv1=180;}
+						let gv2=180-gv1;
+						let color='#009300';
+						if(undefined != list[i].getAttribute('data-color')){
+	        				color=list[i].getAttribute('data-color');
+	        			}
+	        			
+						console.log(type);
+						let gconfig = {
+							type:'doughnut',
+							data: {
+								datasets: [{
+									data: [gv1,gv2],
+	                        		backgroundColor: [color,'#e0e0e0'],
+	                        		borderWidth: 0
+	                    		}]
+	            			},
+	            			options: {
+	            				title:{display:false},
+	                			circumference: Math.PI,
+	                			rotation: -1 * Math.PI,
+	                			responsive: true,
+	                    		animation: {animateScale:false,animateRotate:true}
+	            			}
+	        			};
+	        			if(undefined != list[i].getAttribute('data-title')){
+	        				let title=list[i].getAttribute('data-title');
+	        				gconfig.options.title={display:true,padding:0,position:'bottom',text:title};
+	        			}
+	        			if(undefined != list[i].getAttribute('data-title-position')){
+	        				gconfig.options.title.position=list[i].getAttribute('data-title-position');
+	        			}
+	        			let gcanvas=document.createElement('canvas');
+	        			list[i].appendChild(gcanvas);
+	        			let gctx = gcanvas.getContext('2d');
+						wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
+					}
 				break;
 				case 'line':
 				case 'bar':
@@ -233,17 +246,15 @@ var wacss = {
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){	
 							let udatasets=datadiv.querySelectorAll('dataset');
-		        			for(let ud=0;ud<datasets.length;ud++){
+		        			for(let ud=0;ud<udatasets.length;ud++){
 		        				//require data-label
-								if(undefined == datasets[ud].getAttribute('data-label')){continue;}
-		        				let json=JSON.parse(datasets[ud].innerText);
-		        				//clear the div
-		        				udatasets[ud].innerText='';        				
+								if(undefined == udatasets[ud].getAttribute('data-label')){continue;}
+		        				let json=JSON.parse(udatasets[ud].innerText);      				
 								let udataset={
-									label:datasets[d].getAttribute('data-label'),
-									backgroundColor: colors[d],
-		                            borderColor: colors[d],
-		                            pointColor: colors[d],
+									label:udatasets[ud].getAttribute('data-label'),
+									backgroundColor: colors[ud],
+		                            borderColor: colors[ud],
+		                            pointColor: colors[ud],
 		                            type:'line',
 		                            pointRadius:0,
 									data: json,
@@ -251,86 +262,85 @@ var wacss = {
 									lineTension:0,
 									borderWidth: 2
 								};
-								wacss.chartjs[list[i].id].config.data.datasets[ud] = dataset;
+								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
 		        			wacss.chartjs[list[i].id].update();
-		        			return false;
+		        			foundchart=1;
 		        		}
 					}
-					console.log(type);
-					if(undefined == list[i].getAttribute('data-x')){continue;}
-					if(undefined == list[i].getAttribute('data-y')){continue;}
-					let xkey=list[i].getAttribute('data-x');
-					let ykey=list[i].getAttribute('data-y');
-					let lconfig = {
-						type:type,
-						data:{
-							labels:[],
-							datasets:[]
-						}
-					};
-					lconfig.options={
-						scales: {
-							xAxes: [{
-								type: 'time',
-								distribution: 'series',
-								ticks: {
-									source: 'data',
-									autoSkip: true
-								}
-							}],
-							yAxes: [{
-								scaleLabel: {
-									display: true,
-									labelString: list[i].getAttribute('data-ylabel')
-								}
-							}]
-						},
-						tooltips: {
-							intersect: false,
-							mode: 'index',
-							callbacks: {
-								label: function(tooltipItem, myData) {
-									var label = myData.datasets[tooltipItem.datasetIndex].label || '';
-									if (label) {
-										label += ': ';
+					if(foundchart==0){
+						if(undefined == list[i].getAttribute('data-x')){continue;}
+						if(undefined == list[i].getAttribute('data-y')){continue;}
+						let xkey=list[i].getAttribute('data-x');
+						let ykey=list[i].getAttribute('data-y');
+						let lconfig = {
+							type:type,
+							data:{
+								labels:[],
+								datasets:[]
+							}
+						};
+						lconfig.options={
+							scales: {
+								xAxes: [{
+									type: 'time',
+									distribution: 'series',
+									ticks: {
+										source: 'data',
+										autoSkip: true
 									}
-									label += parseFloat(tooltipItem.value).toFixed(2);
-									return label;
+								}],
+								yAxes: [{
+									scaleLabel: {
+										display: true,
+										labelString: list[i].getAttribute('data-ylabel')
+									}
+								}]
+							},
+							tooltips: {
+								intersect: false,
+								mode: 'index',
+								callbacks: {
+									label: function(tooltipItem, myData) {
+										var label = myData.datasets[tooltipItem.datasetIndex].label || '';
+										if (label) {
+											label += ': ';
+										}
+										label += parseFloat(tooltipItem.value).toFixed(2);
+										return label;
+									}
 								}
 							}
-						}
-					};
-        			//look for datasets;
-        			let labels=[];
-        			let datasets=datadiv.querySelectorAll('dataset');
-        			for(let d=0;d<datasets.length;d++){
-        				//require data-label
-						if(undefined == datasets[d].getAttribute('data-label')){continue;}
-        				let json=JSON.parse(datasets[d].innerText);
-        				//clear the div
-        				datasets[d].innerText='';        				
-						let dataset={
-							label:datasets[d].getAttribute('data-label'),
-							backgroundColor: colors[d],
-                            borderColor: colors[d],
-                            pointColor: colors[d],
-                            type:'line',
-                            pointRadius:0,
-							data: json,
-							fill:false,
-							lineTension:0,
-							borderWidth: 2
 						};
-						lconfig.data.datasets.push(dataset);
-        			}
-    				/* set options */
-        			
-					//console.log(lconfig);
-        			let lcanvas=document.createElement('canvas');
-        			list[i].appendChild(lcanvas);
-        			let lctx = lcanvas.getContext('2d');
-					wacss.chartjs[list[i].id]  = new Chart(lctx, lconfig);
+	        			//look for datasets;
+	        			let labels=[];
+	        			let datasets=datadiv.querySelectorAll('dataset');
+	        			for(let d=0;d<datasets.length;d++){
+	        				//require data-label
+							if(undefined == datasets[d].getAttribute('data-label')){continue;}
+	        				let json=JSON.parse(datasets[d].innerText);       				
+							let dataset={
+								label:datasets[d].getAttribute('data-label'),
+								backgroundColor: colors[d],
+	                            borderColor: colors[d],
+	                            pointColor: colors[d],
+	                            type:'line',
+	                            pointRadius:0,
+								data: json,
+								fill:false,
+								lineTension:0,
+								borderWidth: 2
+							};
+							lconfig.data.datasets.push(dataset);
+	        			}
+	    				/* set options */
+	        			
+						//console.log(lconfig);
+	        			let lcanvas=document.createElement('canvas');
+	        			list[i].appendChild(lcanvas);
+	        			let lctx = lcanvas.getContext('2d');
+						wacss.chartjs[list[i].id]  = new Chart(lctx, lconfig);
+					}
 				break;
 				case 'pie':
 				break;
