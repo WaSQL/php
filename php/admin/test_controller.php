@@ -1,6 +1,6 @@
 <?php
 	global $CONFIG;
-	loadExtrasJs(array('chart'));
+	loadExtrasJs(array('moment','chart'));
 	if(isset($_REQUEST['test'])){
 		setView($_REQUEST['test'],1);
 		switch(strtolower($_REQUEST['test'])){

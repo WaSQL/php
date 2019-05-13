@@ -9630,6 +9630,12 @@ function loadExtrasJs($extras){
         			$_SESSION['w_MINIFY']['extras_js'][]='d3';
 				}
 			break;
+			case 'chart':
+				//chartjs requires moment for time series charts
+				if(!in_array('moment',$_SESSION['w_MINIFY']['extras_js'])){
+        			$_SESSION['w_MINIFY']['extras_js'][]='moment';
+				}
+			break;
         	case 'codemirror':
         	case 'tcal':
         	case 'alertify':

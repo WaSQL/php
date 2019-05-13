@@ -213,50 +213,74 @@ var wacss = {
 						data:{
 							labels:[],
 							datasets:[]
+						}
+					};
+					lconfig.options={
+						scales: {
+							xAxes: [{
+								type: 'time',
+								distribution: 'series',
+								ticks: {
+									source: 'data',
+									autoSkip: true
+								}
+							}],
+							yAxes: [{
+								scaleLabel: {
+									display: true,
+									labelString: list[i].getAttribute('data-ylabel')
+								}
+							}]
 						},
-            			options: {
-                			responsive: true,
-                    		tooltips: {
-								mode: 'index',
-								intersect: false,
-							},
-							hover: {
-								mode: 'nearest',
-								intersect: true
-							},
-                    		scales: {
-					            yAxes: [{
-					                stacked: false
-					            }]
-					        }
-            			}
-        			};
+						tooltips: {
+							intersect: false,
+							mode: 'index',
+							callbacks: {
+								label: function(tooltipItem, myData) {
+									var label = myData.datasets[tooltipItem.datasetIndex].label || '';
+									if (label) {
+										label += ': ';
+									}
+									label += parseFloat(tooltipItem.value).toFixed(2);
+									return label;
+								}
+							}
+						}
+					};
         			//look for datasets;
         			let labels=[];
         			let datasets=list[i].querySelectorAll('dataset');
-
+        			let colors = new Array(
+			            'rgb(255, 99, 132)',
+			            'rgb(255, 159, 64)',
+			            'rgb(75, 192, 192)',
+			            'rgb(54, 162, 235)',
+			            'rgb(153, 102, 255)',
+			            'rgb(201, 203, 207)'
+			            );
         			for(let d=0;d<datasets.length;d++){
-        				
+        				//require data-label
 						if(undefined == datasets[d].getAttribute('data-label')){continue;}
-						
-        				let xdata=new Array();
         				let json=JSON.parse(datasets[d].innerText);
-        				datasets[d].innerText='';
-        				let dlabel=datasets[d].getAttribute('data-label');
-        				for(k in json){
-							xdata.push(json[k][ykey]);
-						}
+        				//clear the div
+        				datasets[d].innerText='';        				
 						let dataset={
-							label:dlabel,
-							backgroundColor: "rgba(0,0,0,0)",
-                            borderColor: "rgba(220,220,220,1)",
-                            pointColor: "rgba(200,122,20,1)",
-							data: xdata,
-							fill:false
+							label:datasets[d].getAttribute('data-label'),
+							backgroundColor: colors[d],
+                            borderColor: colors[d],
+                            pointColor: colors[d],
+                            type:'line',
+                            pointRadius:0,
+							data: json,
+							fill:false,
+							lineTension:0,
+							borderWidth: 2
 						};
 						lconfig.data.datasets.push(dataset);
         			}
-        			console.log(lconfig);
+    				/* set options */
+        			
+					//console.log(lconfig);
         			let lcanvas=document.createElement('canvas');
         			list[i].appendChild(lcanvas);
         			let lctx = lcanvas.getContext('2d');
