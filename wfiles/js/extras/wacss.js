@@ -159,8 +159,27 @@ var wacss = {
 			if(undefined == list[i].getAttribute('data-type')){continue;}
 			list[i].setAttribute('data-initialized',1);
 			let type=list[i].getAttribute('data-type').toLowerCase();
+			console.log('switch:'+type);
 			switch(type){
 				case 'guage':
+					if(undefined != wacss.chartjs[list[i].id]){
+						//check for canvas
+						let ck=list[i].querySelector('canvas');
+						if(undefined != ck){
+	        				let udiv=wacss.getObject(list[i].id+'_update');
+							if(undefined != udiv){
+								//update existing chart
+								if(undefined == udiv.getAttribute('data-value')){return false;}
+								let gv=parseInt(udiv.getAttribute('data-value'));
+								let gv1=parseInt(180*(gv/100));
+								if(gv1 > 180){gv1=180;}
+								let gv2=180-gv1;
+								wacss.chartjs[list[i].id].config.data.datasets[0].data=[gv1,gv2];
+		        				wacss.chartjs[list[i].id].update();
+		        				return false;
+		        			}
+		        		}
+					}
 					if(undefined == list[i].getAttribute('data-value')){continue;}
 					let gv=parseInt(list[i].getAttribute('data-value'));
 					let gv1=parseInt(180*(gv/100));
@@ -170,13 +189,8 @@ var wacss = {
 					if(undefined != list[i].getAttribute('data-color')){
         				color=list[i].getAttribute('data-color');
         			}
-        			if(undefined != wacss.chartjs[list[i].id]){
-						//update existing chart
-						wacss.chartjs[list[i].id].config.data.datasets[0].data=[gv1,gv2];
-	        			wacss.chartjs[list[i].id].update();
-	        			return false;
-					}
-					//console.log(type,v,v1,v2);
+        			
+					console.log(type);
 					let gconfig = {
 						type:'doughnut',
 						data: {
@@ -217,31 +231,39 @@ var wacss = {
 			            'rgb(201, 203, 207)'
 			            );
 					if(undefined != wacss.chartjs[list[i].id]){
-						//update existing chart
-						let udatasets=list[i].querySelectorAll('dataset');
-	        			for(let ud=0;ud<datasets.length;ud++){
-	        				//require data-label
-							if(undefined == datasets[ud].getAttribute('data-label')){continue;}
-	        				let json=JSON.parse(datasets[ud].innerText);
-	        				//clear the div
-	        				udatasets[ud].innerText='';        				
-							let udataset={
-								label:datasets[d].getAttribute('data-label'),
-								backgroundColor: colors[d],
-	                            borderColor: colors[d],
-	                            pointColor: colors[d],
-	                            type:'line',
-	                            pointRadius:0,
-								data: json,
-								fill:false,
-								lineTension:0,
-								borderWidth: 2
-							};
-							wacss.chartjs[list[i].id].config.data.datasets[ud] = dataset;
-	        			}
-	        			wacss.chartjs[list[i].id].update();
-	        			return false;
+						//check for canvas
+						let ck=list[i].querySelector('canvas');
+						if(undefined != ck){
+							//update existing chart - look for an id_update
+							let udiv=wacss.getObject(list[i].id+'_update');
+							if(undefined != udiv){	
+								let udatasets=udiv.querySelectorAll('dataset');
+			        			for(let ud=0;ud<datasets.length;ud++){
+			        				//require data-label
+									if(undefined == datasets[ud].getAttribute('data-label')){continue;}
+			        				let json=JSON.parse(datasets[ud].innerText);
+			        				//clear the div
+			        				udatasets[ud].innerText='';        				
+									let udataset={
+										label:datasets[d].getAttribute('data-label'),
+										backgroundColor: colors[d],
+			                            borderColor: colors[d],
+			                            pointColor: colors[d],
+			                            type:'line',
+			                            pointRadius:0,
+										data: json,
+										fill:false,
+										lineTension:0,
+										borderWidth: 2
+									};
+									wacss.chartjs[list[i].id].config.data.datasets[ud] = dataset;
+			        			}
+			        			wacss.chartjs[list[i].id].update();
+			        			return false;
+			        		}
+		        		}
 					}
+					console.log(type);
 					if(undefined == list[i].getAttribute('data-x')){continue;}
 					if(undefined == list[i].getAttribute('data-y')){continue;}
 					let xkey=list[i].getAttribute('data-x');
