@@ -157,8 +157,6 @@ var wacss = {
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
 			if(undefined == list[i].getAttribute('data-type')){continue;}
-			//check to see if we have already initialized this element
-			if(undefined != list[i].getAttribute('data-initialized')){continue;}
 			list[i].setAttribute('data-initialized',1);
 			let type=list[i].getAttribute('data-type').toLowerCase();
 			switch(type){
@@ -172,6 +170,12 @@ var wacss = {
 					if(undefined != list[i].getAttribute('data-color')){
         				color=list[i].getAttribute('data-color');
         			}
+        			if(undefined != wacss.chartjs[list[i].id]){
+						//update existing chart
+						wacss.chartjs[list[i].id].config.data.datasets[0].data=[gv1,gv2];
+	        			wacss.chartjs[list[i].id].update();
+	        			return false;
+					}
 					//console.log(type,v,v1,v2);
 					let gconfig = {
 						type:'doughnut',
@@ -204,6 +208,40 @@ var wacss = {
 				break;
 				case 'line':
 				case 'bar':
+					let colors = new Array(
+			            'rgb(255, 159, 64)',
+			            'rgb(75, 192, 192)',
+			            'rgb(255, 99, 132)',
+			            'rgb(54, 162, 235)',
+			            'rgb(153, 102, 255)',
+			            'rgb(201, 203, 207)'
+			            );
+					if(undefined != wacss.chartjs[list[i].id]){
+						//update existing chart
+						let udatasets=list[i].querySelectorAll('dataset');
+	        			for(let ud=0;ud<datasets.length;ud++){
+	        				//require data-label
+							if(undefined == datasets[ud].getAttribute('data-label')){continue;}
+	        				let json=JSON.parse(datasets[ud].innerText);
+	        				//clear the div
+	        				udatasets[ud].innerText='';        				
+							let udataset={
+								label:datasets[d].getAttribute('data-label'),
+								backgroundColor: colors[d],
+	                            borderColor: colors[d],
+	                            pointColor: colors[d],
+	                            type:'line',
+	                            pointRadius:0,
+								data: json,
+								fill:false,
+								lineTension:0,
+								borderWidth: 2
+							};
+							wacss.chartjs[list[i].id].config.data.datasets[ud] = dataset;
+	        			}
+	        			wacss.chartjs[list[i].id].update();
+	        			return false;
+					}
 					if(undefined == list[i].getAttribute('data-x')){continue;}
 					if(undefined == list[i].getAttribute('data-y')){continue;}
 					let xkey=list[i].getAttribute('data-x');
@@ -250,14 +288,6 @@ var wacss = {
         			//look for datasets;
         			let labels=[];
         			let datasets=list[i].querySelectorAll('dataset');
-        			let colors = new Array(
-			            'rgb(255, 159, 64)',
-			            'rgb(75, 192, 192)',
-			            'rgb(255, 99, 132)',
-			            'rgb(54, 162, 235)',
-			            'rgb(153, 102, 255)',
-			            'rgb(201, 203, 207)'
-			            );
         			for(let d=0;d<datasets.length;d++){
         				//require data-label
 						if(undefined == datasets[d].getAttribute('data-label')){continue;}
