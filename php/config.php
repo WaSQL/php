@@ -136,3 +136,25 @@ elseif(isset($CONFIG['load_extras']) && strlen($CONFIG['load_extras'])){
 	$extras=explode(',',$CONFIG['load_extras']);
 	loadExtras($extras);
 }
+//up the memory limit to resolve the "allowed memory" error
+if(isset($CONFIG['memory_limit']) && strlen($CONFIG['memory_limit'])){ini_set("memory_limit",$CONFIG['memory_limit']);}
+//changes based on config
+if(isset($CONFIG['timezone'])){
+	@date_default_timezone_set($CONFIG['timezone']);
+}
+if(isset($CONFIG['post_max_size'])){
+	@ini_set('POST_MAX_SIZE', $CONFIG['post_max_size']);
+}
+if(isset($CONFIG['upload_max_filesize'])){
+	@ini_set('UPLOAD_MAX_FILESIZE', $CONFIG['upload_max_filesize']);
+}
+if(isset($CONFIG['max_execution_time'])){
+	@ini_set('max_execution_time', $CONFIG['max_execution_time']);
+}
+//set encoding to UTF-8 by default, unless overridden in the config
+if(isset($CONFIG['encoding'])){
+	@mb_internal_encoding($CONFIG['encoding']);
+}
+else{
+	mb_internal_encoding("UTF-8");
+}

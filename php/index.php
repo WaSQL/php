@@ -48,26 +48,6 @@ global $CONFIG;
 $stime=microtime(true);
 include_once("$progpath/config.php");
 $loadtimes['config']=number_format((microtime(true)-$stime),3);
-//changes based on config
-if(isset($CONFIG['timezone'])){
-	@date_default_timezone_set($CONFIG['timezone']);
-}
-if(isset($CONFIG['post_max_size'])){
-	@ini_set('POST_MAX_SIZE', $CONFIG['post_max_size']);
-}
-if(isset($CONFIG['upload_max_filesize'])){
-	@ini_set('UPLOAD_MAX_FILESIZE', $CONFIG['upload_max_filesize']);
-}
-if(isset($CONFIG['max_execution_time'])){
-	@ini_set('max_execution_time', 10000);
-}
-//set encoding to UTF-8 by default, unless overridden in the config
-if(isset($CONFIG['encoding'])){
-	@mb_internal_encoding($CONFIG['encoding']);
-}
-else{
-	mb_internal_encoding("UTF-8");
-}
 $stime=microtime(true);
 include_once("$progpath/wasql.php");
 $loadtimes['wasql']=number_format((microtime(true)-$stime),3);

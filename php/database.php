@@ -41,10 +41,7 @@ if(!$sel){
 	$msg .= "	<div>{$error}</div>".PHP_EOL;
 	$msg .= '</div>'.PHP_EOL;
 	abort($msg);
-	}
-//up the memory limit to resolve the "allowed memory" error
-if(isset($CONFIG['memory_limit']) && strlen($CONFIG['memory_limit'])){ini_set("memory_limit",$CONFIG['memory_limit']);}
-else{ini_set("memory_limit","1024M");}
+}
 /* Load_pages as specified in the conf settings */
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
@@ -88,6 +85,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+*	[-searchclass]  - sets the search form section class
 * @return string - html table to display
 * @usage
 *	databaseListRecords(array('-table'=>'notes'));
