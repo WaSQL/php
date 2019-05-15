@@ -101,7 +101,7 @@ shortcut.add("Down",function() {
 		<form method="post" autocomplete="off" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return terminalCommand(this.cmd.value);">
 			<div class="w_flex w_flexrow w_flexnowrap">
 				<div style="flex-grow:10"><input type="text" autofocus="autofocus" name="cmd" class="browser-default" value="" placeholder="enter command here"></div>
-				<div style="flex-grow:1"><button type="submit" class="browser-default">Run</button></div>
+				<div style="flex-grow:1"><button type="submit" class="btn browser-default">Run</button></div>
 			</div>
 		</form>
 		<div id="<?=$params['-divid'];?>"  style="margin:0px !important;font-size:0.9em;padding:5px;border:4px solid #ccc;background:#000;color:#bbb;height:500px;overflow:auto;width:100%;">

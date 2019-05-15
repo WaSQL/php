@@ -1091,7 +1091,7 @@ input[type="checkbox"], input[type="radio"] {
   margin-right:5px;
 }
 input[type="radio"]:checked,input[type="checkbox"]:checked{
-  background-color:inherit;
+  background-color:transparent;
   color:inherit;
   -webkit-appearance:none;
   -moz-appearance:none;
