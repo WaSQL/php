@@ -418,14 +418,15 @@ var wacss = {
 				'Size':['fontSize','','',''],
 				'Color':['','','icon-color-adjust',''],
 				'Justify':['justify','','',''],
+				'Survey':['survey','','icon-chat',''],
 				'Unordered List':['insertUnorderedList','','icon-list-ul',''],
 				'Ordered List':['insertOrderedList','','icon-list-ol',''],
 				'Redo':['redo','','icon-redo','y'],
 				'Undo':['undo','','icon-undo','z'],
 				'Remove':['removeFormat','','icon-erase','-'],
 				'Print':['print','','icon-print','p'],
-				'Htmlcode':['code','','icon-file-code','h'],
-				'Survey':['survey','','icon-chat','']
+				'Htmlcode':['code','','icon-file-code','h']
+				
 			}
 			/*
 				Features to add:
