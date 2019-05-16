@@ -4,6 +4,11 @@ var wacss = {
 	chartjs:{},
 	addClass: function(element, classToAdd) {
 		element=wacss.getObject(element);
+		if(undefined == element){return false;}
+		if(undefined==element.className){
+			element.className=classToAdd;
+			return true;
+		}
 	    var currentClassValue = element.className;
 
 	    if (currentClassValue.indexOf(classToAdd) == -1) {
@@ -679,19 +684,22 @@ var wacss = {
 				let dobj=getObject(tid+'_wacsseditor');
 				if(undefined == dobj){
 					console.log('wacssedit code error: no dobj');
+					wacss.initWacssEditElements();
 					return false;
 				}
 				switch(cmd){
 					case 'survey':
 						let arg=this.getAttribute('data-arg');
-						console.log('survey:'+arg);
-					 	document.execCommand("insertHTML", false, "<div class='survey_"+arg+"'>"+ document.getSelection()+'</div>');
+						document.execCommand('removeFormat',false);
+					 	document.execCommand("insertHTML", false, "<span class='survey_"+arg+"'>"+ document.getSelection()+'</span>');
+					 	wacss.initWacssEditElements();
 					 	return false;
 					break;
 					case 'reset':
 						if(confirm('Reset back to original?'+dobj.original)){
 							dobj.innerHTML=tobj.original;
 						}
+						wacss.initWacssEditElements();
 						return false;
 					break;
 					case 'print':
@@ -699,7 +707,8 @@ var wacss = {
 						oPrntWin.document.open();
 						oPrntWin.document.write("<!doctype html><html><head><title>Print<\/title><\/head><body onload=\"print();\">" + dobj.innerHTML + "<\/body><\/html>");
 						oPrntWin.document.close();
-					return false;
+						wacss.initWacssEditElements();
+						return false;
 					break;
 					case 'code':
 						if(tobj.style.display=='none'){
@@ -709,6 +718,7 @@ var wacss = {
 								let tobj=getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
+									wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -721,6 +731,7 @@ var wacss = {
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
+									wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.value;
@@ -733,6 +744,7 @@ var wacss = {
 								let tobj=getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
+									wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.value;
@@ -745,11 +757,13 @@ var wacss = {
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
+									wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.value=this.innerHTML;
 							});
 						}
+						wacss.initWacssEditElements();
 						return false;
 					break;
 					default:
@@ -763,10 +777,33 @@ var wacss = {
 							document.execCommand(cmd,false,arg);
 						}
 						tobj.innerHTML=dobj.innerHTML;
+						wacss.initWacssEditElements();
 						return false;
 					break;
 				}
+				wacss.initWacssEditElements();
 			};
+		}
+		wacss.initWacssEditElements();
+	},
+	initWacssEditElements: function(){
+		let list=document.querySelectorAll('[contenteditable] .survey_one');
+		for(let i=0;i<list.length;i++){
+			let p=wacss.getParent(list[i],'div');
+			if(undefined == p || undefined == p.nextSibling){continue;}
+			let lis=p.nextSibling.querySelectorAll('ul li');
+			for(let x=0;x<lis.length;x++){
+				lis[x].className='survey_one';
+			}
+		}
+		list=document.querySelectorAll('[contenteditable] .survey_many');
+		for(let i=0;i<list.length;i++){
+			let p=wacss.getParent(list[i],'div');
+			if(undefined == p || undefined == p.nextSibling){continue;}
+			let lis=p.nextSibling.querySelectorAll('ul li');
+			for(let x=0;x<lis.length;x++){
+				lis[x].className='survey_many';
+			}
 		}
 	},
 	listen: function(evnt, elem, func) {
