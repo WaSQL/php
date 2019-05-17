@@ -140,6 +140,10 @@ div span.survey_one + div{
 [contenteditable] div ul li.survey_many:nth-of-type(2):before{
   content: "\2611";
 }
+[contenteditable] .survey_date:before{
+  content:"\1F5D3";
+  margin-right:4px;
+}
 
 [contenteditable] .survey_text:before{
   content:"\1F5B9";
@@ -150,9 +154,20 @@ div span.survey_one + div{
   margin-left:15px;
   border:1px solid #ccc;
   border-radius:6px;
-  height:45px;
+  height:30px;
   width:90%;
-
+}
+[contenteditable] .survey_textarea:before{
+  content:"\1F5B9";
+}
+[contenteditable] .survey_textarea:after{
+  display:table;
+  content:" ";
+  margin-left:15px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  height:60px;
+  width:90%;
 }
 /* ---------------------- toasts - called with wacss.toats() function ------------------------- */
 #wacss_toasts{

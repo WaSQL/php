@@ -459,10 +459,12 @@ var wacss = {
 					case 'color':
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
-						a.title=name;
-						a.innerHTML=name;
+						a.title='Text Color';
+						let cicon=document.createElement('span');
+						cicon.className='icon-textcolor';
+						a.appendChild(cicon);
 						li.appendChild(a);
-						let swatch={
+						let colors={
 							r1:['#000000','#444444','#666666','#999999','#cccccc','#eeeeee','#f3f3f3','#ffffff'],
 							r2:['#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#0000ff','#9900ff','#ff00ff'],
 							r3:['#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#cfe2f3','#d9d2e9','#ead1dc'],
@@ -472,36 +474,97 @@ var wacss = {
 							r7:['#8d0000','#a45705','#b88b00','#36721c','#124a57','#0b508f','#321a6e','#6e1a43'],
 							r8:['#5f0000','#6f3a04','#775a00','#254b12','#0b313a','#07335c','#1e1149','#48102e']
 						};
-						let colordiv=document.createElement('div');
-						colordiv.style.padding='10px;';
-						colordiv.style.display='flex';
-						
-						let clul=document.createElement('ul');
-						clul.style.maxHeight='175px';
-						clul.style.overflow='auto';
-						let colors={
-							'Black':'#000000',
-							'Gray': '#808080',
-							'Blue':'#0000FF',
-							'Red':'#FF0000',
-							'Green':'#008000',
-							'Maroon': '#800000',
-							'Teal': '#008080',
-							'Purple':'#800080'
-						};
-						for(cname in colors){
-							let clli=document.createElement('li');
-							clul.appendChild(clli);
-							cla=document.createElement('button');
-							cla.className='wacssedit';
-							cla.setAttribute('data-cmd','foreColor');
-							cla.setAttribute('data-arg',colors[cname]);
-							cla.setAttribute('data-txt',list[i].id);
-							cla.style.color=colors[cname];
-							cla.innerHTML=cname;
-							clli.appendChild(cla);
+						let colorflexbox=document.createElement('div');
+						colorflexbox.style.display='flex';
+						/* Background Color */
+						let bgbox=document.createElement('div');
+						bgbox.style.flex='1 1 0';
+						bgbox.style.borderRight='10px solid transparent';
+						let title=document.createElement('div');
+						title.style.textAlign='left';
+						title.style.color='#000000';
+						title.innerText='Background Color';
+						title.style.padding='5px 0 5px 0';
+						bgbox.appendChild(title);
+						let table=document.createElement('table');
+						table.style.width='98%';
+						table.style.borderCollapse='separate';
+						table.style.borderSpacing='2px';
+						for(let k in colors){
+							let tr=document.createElement('tr');
+							for(t=0;t<colors[k].length;t++){
+								let td=document.createElement('td');
+								td.style.padding='0px';
+								let b=document.createElement('button');
+								b.className='wacssedit';
+								b.style.backgroundColor=colors[k][t];
+								b.style.width='16px';
+								b.style.height='16px';
+								b.style.border='1px solid transparent';
+								b.setAttribute('data-cmd','backColor');
+								b.setAttribute('data-arg',colors[k][t]);
+								b.setAttribute('title',colors[k][t]);
+								b.setAttribute('data-txt',list[i].id);
+								b.onmouseover=function(){
+									this.style.border='1px solid #000';
+								};
+								b.onmouseout=function(){
+									this.style.border='1px solid transparent';
+								};
+								td.appendChild(b);
+								tr.appendChild(td);
+							}
+							table.appendChild(tr);
 						}
-						li.appendChild(clul);
+						bgbox.appendChild(table);
+						/* Text Color */
+						let tbox=document.createElement('div');
+						tbox.style.flex='1 1 0';
+						title=document.createElement('div');
+						title.style.textAlign='left';
+						title.style.color='#000000';
+						title.innerText='Text Color';
+						title.style.padding='5px 0 5px 0';
+						tbox.appendChild(title);
+						table=document.createElement('table');
+						table.style.width='98%';
+						table.style.borderCollapse='separate';
+						table.style.borderSpacing='2px';
+						for(let k in colors){
+							let tr=document.createElement('tr');
+							for(t=0;t<colors[k].length;t++){
+								let td=document.createElement('td');
+								td.style.padding='0px';
+								let b=document.createElement('button');
+								b.className='wacssedit';
+								b.style.backgroundColor=colors[k][t];
+								b.style.width='16px';
+								b.style.height='16px';
+								b.style.border='1px solid transparent';
+								b.setAttribute('data-cmd','foreColor');
+								b.setAttribute('data-arg',colors[k][t]);
+								b.setAttribute('title',colors[k][t]);
+								b.setAttribute('data-txt',list[i].id);
+								b.onmouseover=function(){
+									this.style.border='1px solid #000';
+								};
+								b.onmouseout=function(){
+									this.style.border='1px solid transparent';
+								};
+								td.appendChild(b);
+								tr.appendChild(td);
+							}
+							table.appendChild(tr);
+						}
+						tbox.appendChild(table);
+						colorflexbox.appendChild(bgbox);
+						colorflexbox.appendChild(tbox);
+						let cul=document.createElement('ul');
+						cul.style.padding='10px';
+						cul.appendChild(colorflexbox);
+						li.appendChild(cul)
+						break;
+
 					break;
 					case 'heading':
 						//headings H1-6
@@ -560,8 +623,10 @@ var wacss = {
 						//headings H1-6
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
-						a.title=name;
-						a.innerHTML=name;
+						a.title='Text Size';
+						let sicon=document.createElement('span');
+						sicon.className='icon-textsize';
+						a.appendChild(sicon);
 						li.appendChild(a);
 						let fsul=document.createElement('ul');
 						fsul.style.maxHeight='175px';
@@ -631,7 +696,7 @@ var wacss = {
 						let sul=document.createElement('ul');
 						sul.style.maxHeight='175px';
 						sul.style.overflow='auto';
-						let types={rating:'Rating',one:'Select One',many:'Select Multiple',text:'Text'};
+						let types={rating:'Rating',one:"Select One",many:'Select Multiple',date:'Date Picker',text:'Text One',textarea:'Text Multiple'};
 						for(let type in types){
 							let sli=document.createElement('li');
 							sul.appendChild(sli);
