@@ -423,7 +423,7 @@ var wacss = {
 				'Size':['fontSize','','',''],
 				'Color':['','','icon-color-adjust',''],
 				'Justify':['justify','','',''],
-				'Survey':['survey','','icon-chat',''],
+				'Form':['form','','',''],
 				'Unordered List':['insertUnorderedList','','icon-list-ul',''],
 				'Ordered List':['insertOrderedList','','icon-list-ol',''],
 				'Redo':['redo','','icon-redo','y'],
@@ -686,7 +686,7 @@ var wacss = {
 						}
 						li.appendChild(jul);
 					break;
-					case 'survey':
+					case 'form':
 						//justify full,left,center,right
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
@@ -696,13 +696,22 @@ var wacss = {
 						let sul=document.createElement('ul');
 						sul.style.maxHeight='175px';
 						sul.style.overflow='auto';
-						let types={rating:'Rating',one:"Select One",many:'Select Multiple',date:'Date Picker',text:'Text One',textarea:'Text Multiple'};
+						let types={
+							date:'Date Picker <span class="icon-calendar"></span>',
+							rate:'Rating Number 1 - 10',
+							stars:'Rating Stars <span class="icon-star-empty"></span>',
+							one:'Select One <span class="icon-checkbox"></span>',
+							many:'Select Multiple <span class="icon-checkbox"></span> <span class="icon-checkbox"></span>',
+							signature:'Signature',
+							text:'Text One',
+							textarea:'Text Multiple',
+						};
 						for(let type in types){
 							let sli=document.createElement('li');
 							sul.appendChild(sli);
 							sna=document.createElement('button');
 							sna.className='wacssedit';
-							sna.setAttribute('data-cmd','survey');
+							sna.setAttribute('data-cmd','form');
 							sna.setAttribute('data-arg',type);
 							sna.setAttribute('data-txt',list[i].id);
 							sna.innerHTML=types[type];
@@ -767,10 +776,10 @@ var wacss = {
 					return false;
 				}
 				switch(cmd){
-					case 'survey':
+					case 'form':
 						let arg=this.getAttribute('data-arg');
 						document.execCommand('removeFormat',false);
-					 	document.execCommand("insertHTML", false, "<span class='survey_"+arg+"'>"+ document.getSelection()+'</span>');
+					 	document.execCommand("insertHTML", false, "<span class='wacssform_"+arg+"'>"+ document.getSelection()+'</span>');
 					 	wacss.initWacssEditElements();
 					 	return false;
 					break;
@@ -866,22 +875,22 @@ var wacss = {
 		wacss.initWacssEditElements();
 	},
 	initWacssEditElements: function(){
-		let list=document.querySelectorAll('[contenteditable] .survey_one');
+		let list=document.querySelectorAll('[contenteditable] .wacssform_one');
 		for(let i=0;i<list.length;i++){
 			let p=wacss.getParent(list[i],'div');
 			if(undefined == p || undefined == p.nextSibling){continue;}
 			let lis=p.nextSibling.querySelectorAll('ul li');
 			for(let x=0;x<lis.length;x++){
-				lis[x].className='survey_one';
+				lis[x].className='wacssform_one';
 			}
 		}
-		list=document.querySelectorAll('[contenteditable] .survey_many');
+		list=document.querySelectorAll('[contenteditable] .wacssform_many');
 		for(let i=0;i<list.length;i++){
 			let p=wacss.getParent(list[i],'div');
 			if(undefined == p || undefined == p.nextSibling){continue;}
 			let lis=p.nextSibling.querySelectorAll('ul li');
 			for(let x=0;x<lis.length;x++){
-				lis[x].className='survey_many';
+				lis[x].className='wacssform_many';
 			}
 		}
 	},

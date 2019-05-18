@@ -456,7 +456,8 @@ if(isAjax()){
 		break;
 		case 'clearmin':
 			wasqlClearMinCache();
-			echo "Min Cache Cleared";
+			echo "Min Cache Cleared<br />Refreshing Page";
+			echo buildOnLoad("window.location=window.location;");
 			exit;
 		break;
 		case 'export':

@@ -103,52 +103,75 @@ button.wacssedit{
 button.wacssedit:hover{
   color:#000;
 }
-
-[contenteditable] .survey_rating,[contenteditable] .survey_one,[contenteditable] .survey_many,[contenteditable] .survey_text{
+[contenteditable] .wacssform_date,
+[contenteditable] .wacssform_rate,
+[contenteditable] .wacssform_stars,
+[contenteditable] .wacssform_one,
+[contenteditable] .wacssform_many,
+[contenteditable] .wacssform_signature,
+[contenteditable] .wacssform_text,
+[contenteditable] .wacssform_textarea{
   color:#707070;
   font-size:1.2rem;
 }
-[contenteditable] .survey_rating:after{
+[contenteditable] .wacssform_date:before{
+  content:"\1F5D3";
+  margin-right:4px;
+}
+[contenteditable] .wacssform_rate:after{
+  display:table;
+  content:"1 2 3 4 5 6 7 8 9 10";
+  margin-left:4\15px;
+}
+[contenteditable] .wacssform_stars:after{
   display:table;
   content:"\2605 \2605 \2606 \2606 \2606";
   margin-left:15px;
 }
-[contenteditable] span.survey_one:before{
+[contenteditable] span.wacssform_one:before{
   content:"\25C9";
 }
-div span.survey_one + div{
+div span.wacssform_one + div{
   border:1px solid pink;
 }
-[contenteditable] div ul li.survey_one, [contenteditable] div ul li.survey_many{
+[contenteditable] div ul li.wacssform_one, [contenteditable] div ul li.wacssform_many{
   list-style-type:none;
 }
-[contenteditable] div ul li.survey_one:before{
+[contenteditable] div ul li.wacssform_one:before{
   content: "\25CE";
   margin-right:5px;
 }
-[contenteditable] div ul li.survey_one:nth-of-type(2):before{
+[contenteditable] div ul li.wacssform_one:nth-of-type(2):before{
   content: "\25C9";
 }
 
-[contenteditable] .survey_many:before{
+[contenteditable] .wacssform_many:before{
   content:"\2611";
 }
-[contenteditable] div ul li.survey_many:before{
+[contenteditable] div ul li.wacssform_many:before{
   content: "\2610";
   margin-right:5px;
 }
-[contenteditable] div ul li.survey_many:nth-of-type(2):before{
+[contenteditable] div ul li.wacssform_many:nth-of-type(2):before{
   content: "\2611";
 }
-[contenteditable] .survey_date:before{
-  content:"\1F5D3";
-  margin-right:4px;
+
+[contenteditable] .wacssform_signature:after{
+  display:table;
+  content:"Signature";
+  padding:10px;
+  font-family: 'Zapf Chancery', cursive;
+  margin-left:15px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  height:60px;
+  width:90%;
 }
 
-[contenteditable] .survey_text:before{
+[contenteditable] .wacssform_text:before{
   content:"\1F5B9";
 }
-[contenteditable] .survey_text:after{
+[contenteditable] .wacssform_text:after{
   display:table;
   content:" ";
   margin-left:15px;
@@ -157,10 +180,10 @@ div span.survey_one + div{
   height:30px;
   width:90%;
 }
-[contenteditable] .survey_textarea:before{
+[contenteditable] .wacssform_textarea:before{
   content:"\1F5B9";
 }
-[contenteditable] .survey_textarea:after{
+[contenteditable] .wacssform_textarea:after{
   display:table;
   content:" ";
   margin-left:15px;
