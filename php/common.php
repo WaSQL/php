@@ -769,12 +769,14 @@ function buildFakeContent($title='FAKE for'){
 * @return string
 * @usage echo parseWacssEditFormTags($htm);
 */
-function parseWacssEditFormTags($body){
+function parseWacssEditFormTags($body,$answers=array()){
 	//wacssform_date
 	preg_match_all('/\<span class=\"wacssform\_date\"\>(.+?)\<\/span\>/is', $body, $m);
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
 		$name='wacssform_date_'.encodeCRC($label);
+		$params=array();
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field='<label>'.$label.'</label>'.buildFormDate($name);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
@@ -793,6 +795,7 @@ function parseWacssEditFormTags($body){
 			'1_class'=>'w_red',
 			'10_class'=>'w_green'
 		);
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field='<div>'.$label.'</div>';
 		$field.='<div style="display:flex;">';
 		$field .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
@@ -809,6 +812,7 @@ function parseWacssEditFormTags($body){
 		$params=array(
 			'max'=>10
 		);
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field='<div>'.$label.'</div>';
 		$field.='<div style="display:flex;">';
 		$field .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
@@ -830,6 +834,7 @@ function parseWacssEditFormTags($body){
 			$opts[$ms[1][$s]]=$ms[1][$s];
 		}
 		$params=array('width'=>1);
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field='<label>'.$label.'</label>'.buildFormRadio($name,$opts,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
@@ -845,6 +850,7 @@ function parseWacssEditFormTags($body){
 			$opts[$ms[1][$s]]=$ms[1][$s];
 		}
 		$params=array('width'=>1);
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field='<label>'.$label.'</label>'.buildFormCheckbox($name,$opts,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
@@ -853,7 +859,9 @@ function parseWacssEditFormTags($body){
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
 		$name='wacssform_text_'.encodeCRC($label);
-		$field='<label>'.$label.'</label>'.buildFormText($name);
+		$params=array();
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
+		$field='<label>'.$label.'</label>'.buildFormText($name,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
 	//wacssform_textarea
@@ -861,7 +869,9 @@ function parseWacssEditFormTags($body){
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
 		$name='wacssform_textarea_'.encodeCRC($label);
-		$field='<label>'.$label.'</label>'.buildFormTextarea($name);
+		$params=array();
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
+		$field='<label>'.$label.'</label>'.buildFormTextarea($name,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
 	//wacssform_signature
@@ -876,6 +886,7 @@ function parseWacssEditFormTags($body){
 			'style'=>'width:100%;',
 			'displayname'=>$label
 		);
+		if(isset($answers[$name])){$params['value']=$answers[$name];}
 		$field=buildFormSignature($name,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}

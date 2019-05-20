@@ -120,12 +120,13 @@ button.wacssedit:hover{
 }
 [contenteditable] .wacssform_rate:after{
   display:table;
-  content:"1 2 3 4 5 6 7 8 9 10";
+  content:"Disagree \25CE 1 \25CE 2 \25CE 3 \25CE 4 \25CE 5 \25CE 6 \25CE 7 \25CE 8 \25CE 9 \25CE 10 Agree";
   margin-left:4\15px;
 }
 [contenteditable] .wacssform_stars:after{
   display:table;
-  content:"\2605 \2605 \2606 \2606 \2606";
+  content:"Poor \2605 \2605 \2606 \2606 \2606 \2606 \2606 \2606 \2606 \2606 Excellent";
+  font-size:1.4rem;
   margin-left:15px;
 }
 [contenteditable] span.wacssform_one:before{
@@ -160,7 +161,7 @@ div span.wacssform_one + div{
   display:table;
   content:"Signature";
   padding:10px;
-  font-family: 'Zapf Chancery', cursive;
+  font-family: Script MT Bold,Segoe Script, Vivaldi, Brush Script MT, Brush Script Std, cursive;
   margin-left:15px;
   border:1px solid #ccc;
   border-radius:6px;
