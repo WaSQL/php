@@ -7050,7 +7050,18 @@ function getDBFiltersString($table,$filters){
 * @return array
 * @usage $rec=getDBRecord(array('-table'=>$table,'field1'=>$val1...));
 */
-function getDBRecord($params=array()){
+function getDBRecord($params=array(),$id=0,$flds=''){
+	//check for shortcut hack
+	if(!is_array($params) && isset($id) && $id > 0){
+		$params=array(
+			'-table'=>$params,
+			'_id'=>$id
+		);
+		if(isset($flds) && strlen($flds)){
+			$params['-fields']=$flds;
+		}
+		unset($id);
+	}
 	if(isSqlite()){return sqliteGetDBRecord($params);}
 	if(!is_array($params) && is_string($params)){
     	$params=array('-query'=>$params);

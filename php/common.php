@@ -762,6 +762,117 @@ function buildFakeContent($title='FAKE for'){
 	$rtn .= '<p><div class="w_bold">'.loremIpsum(30).'</div> '.loremIpsum(300).'</p>'.PHP_EOL;
 	return $rtn;
 }
+//---------- begin function parseWacssEditFormTags--------------------
+/**
+* @describe converts wacssedit form tags into HTML input fields
+* @param body html 
+* @return string
+* @usage echo parseWacssEditFormTags($htm);
+*/
+function parseWacssEditFormTags($body){
+	//wacssform_date
+	preg_match_all('/\<span class=\"wacssform\_date\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_date_'.encodeCRC($label);
+		$field='<label>'.$label.'</label>'.buildFormDate($name);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_rate - on a scale of 1 to 10
+	preg_match_all('/\<span class=\"wacssform\_rate\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_rate_'.encodeCRC($label);
+		$opts=array();
+		for($x=1;$x<11;$x++){
+			$opts[$x]=$x;
+		}
+		$params=array(
+			'width'=>10,
+			'class'=>'w_orange',
+			'1_class'=>'w_red',
+			'10_class'=>'w_green'
+		);
+		$field='<div>'.$label.'</div>';
+		$field.='<div style="display:flex;">';
+		$field .= '<span class="w_nowrap">Strongly Disagree </span>';
+		$field .= buildFormRadio($name,$opts,$params);
+		$field .= ' <span class="w_nowrap"> Strongly Agree</span>';
+		$field .= '</div>';
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_stars
+	preg_match_all('/\<span class=\"wacssform\_stars\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_stars_'.encodeCRC($label);
+		$field='<label>'.$label.'</label>'.buildFormStarRating($name);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_select_one
+	preg_match_all('/\<span class=\"wacssform\_one\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $body, $m);
+	//echo printValue($m);exit;
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_one_'.encodeCRC($label);
+		$opts=array();
+		preg_match_all('/\<li class=\"wacssform_one\">(.+?)\<\/li\>/',$m[2][$i],$ms);
+		//echo printValue($ms);exit;
+		for($s=0;$s<count($ms[0]);$s++){
+			$opts[$ms[1][$s]]=$ms[1][$s];
+		}
+		$params=array('width'=>1);
+		$field='<label>'.$label.'</label>'.buildFormRadio($name,$opts,$params);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_select_one
+	preg_match_all('/\<span class=\"wacssform\_many\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_one_'.encodeCRC($label);
+		$opts=array();
+		preg_match_all('/\<li class=\"wacssform_many\">(.+?)\<\/li\>/',$m[2][$i],$ms);
+		//echo printValue($ms);exit;
+		for($s=0;$s<count($ms[0]);$s++){
+			$opts[$ms[1][$s]]=$ms[1][$s];
+		}
+		$params=array('width'=>1);
+		$field='<label>'.$label.'</label>'.buildFormCheckbox($name,$opts,$params);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_text
+	preg_match_all('/\<span class=\"wacssform\_text\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_text_'.encodeCRC($label);
+		$field='<label>'.$label.'</label>'.buildFormText($name);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_textarea
+	preg_match_all('/\<span class=\"wacssform\_textarea\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		$label=$m[1][$i];
+		$name='wacssform_textarea_'.encodeCRC($label);
+		$field='<label>'.$label.'</label>'.buildFormTextarea($name);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	//wacssform_signature
+	preg_match_all('/\<span class=\"wacssform\_signature\"\>(.+?)\<\/span\>/is', $body, $m);
+	for($i=0;$i<count($m[0]);$i++){
+		if($i==0){
+			loadExtrasJs('html5');
+		}
+		$label=$m[1][$i];
+		$name='wacssform_signature_'.encodeCRC($label);
+		$params=array(
+			'style'=>'width:100%;',
+			'displayname'=>$label
+		);
+		$field=buildFormSignature($name,$params);
+		$body=str_replace($m[0][$i],$field,$body);
+	}
+	return $body;
+}
 //---------- begin function buildFormButtonSelect--------------------
 /**
 * @describe creates an button selection field
