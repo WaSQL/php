@@ -795,9 +795,9 @@ function parseWacssEditFormTags($body){
 		);
 		$field='<div>'.$label.'</div>';
 		$field.='<div style="display:flex;">';
-		$field .= '<span class="w_nowrap">Strongly Disagree </span>';
+		$field .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
 		$field .= buildFormRadio($name,$opts,$params);
-		$field .= ' <span class="w_nowrap"> Strongly Agree</span>';
+		$field .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
 		$field .= '</div>';
 		$body=str_replace($m[0][$i],$field,$body);
 	}
@@ -806,7 +806,15 @@ function parseWacssEditFormTags($body){
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
 		$name='wacssform_stars_'.encodeCRC($label);
-		$field='<label>'.$label.'</label>'.buildFormStarRating($name);
+		$params=array(
+			'max'=>10
+		);
+		$field='<div>'.$label.'</div>';
+		$field.='<div style="display:flex;">';
+		$field .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
+		$field .= buildFormStarRating($name,$params);
+		$field .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
+		$field .= '</div>';
 		$body=str_replace($m[0][$i],$field,$body);
 	}
 	//wacssform_select_one
@@ -2173,9 +2181,10 @@ function buildFormStarRating($name, $params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
     if(!isset($params['value'])){$params['value']=0;}
-	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;">'.PHP_EOL;
+    if(!isset($params['max'])){$params['max']=5;}
+	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;">'.PHP_EOL;
 	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'" />'.PHP_EOL;
-	for($x=1;$x<=5;$x++){
+	for($x=1;$x<=$params['max'];$x++){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
 		$class .= ' w_biggest';
