@@ -6016,6 +6016,7 @@ function getDBFields($table='',$allfields=0){
 */
 function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	if(isSqlite()){return sqliteGetDBFieldInfo($table);}
+	if(isPostgreSQL()){return postgresTableInfo($table);}
 	global $databaseCache;
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
@@ -6093,12 +6094,37 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	        $name = (string)$finfo->name;
 	        if(strlen($field) && $name != $field){continue;}
 	        $flags=array();
-	        if($finfo->flags & 1){$flags[]='not_null';}
-	        if($finfo->flags & 2){$flags[]='primary_key';}
-	        if($finfo->flags & 4){$flags[]='unique_key';}
+	        if($finfo->flags & 1){
+	        	$flags[]='not_null';
+	        	if(!stringContains($info[$name]['_dbtype_ex'],'NOT NULL')){
+	        		$info[$name]['_dbtype_ex'] .= ' NOT NULL';
+	        	}
+	        }
+	        if($finfo->flags & 2){
+	        	$flags[]='primary_key';
+	        	if(!stringContains($info[$name]['_dbtype_ex'],'Primary Key')){
+	        		$info[$name]['_dbtype_ex'] .= ' Primary Key';
+	        	}
+	        }
+	        if($finfo->flags & 4){
+	        	$flags[]='unique_key';
+	        	if(!stringContains($info[$name]['_dbtype_ex'],'UNIQUE')){
+	        		$info[$name]['_dbtype_ex'] .= ' UNIQUE';
+	        	}
+	        }
 	        if($finfo->flags & 32){$flags[]='unsigned';}
-	        if($finfo->flags & 512){$flags[]='auto_increment';}
-	        if($finfo->flags & 65536){$flags[]='unique';}
+	        if($finfo->flags & 512){
+	        	$flags[]='auto_increment';
+	        	if(!stringContains($info[$name]['_dbtype_ex'],'auto_increment')){
+	        		$info[$name]['_dbtype_ex'] .= ' auto_increment';
+	        	}
+	        }
+	        if($finfo->flags & 65536){
+	        	$flags[]='unique';
+	        	if(!stringContains($info[$name]['_dbtype_ex'],'UNIQUE')){
+	        		$info[$name]['_dbtype_ex'] .= ' UNIQUE';
+	        	}
+	        }
 	        $dbtypeid=(string)$finfo->type;
 	        //echo $name.printValue($finfo);
 	        $info[$name]['_dbtable'] = $finfo->table;
@@ -6109,10 +6135,6 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	        $info[$name]['_dbflags'] = implode(' ',$flags);
 	        $info[$name]['_dbtype'] = isset($dbtypemap[$dbtypeid])?$dbtypemap[$dbtypeid]:$dbtypeid;
     	}
-	}
-	elseif(isPostgreSQL()){
-		$info=postgresTableInfo($table);
-		//echo $table.printValue($info);
 	}
 	else{
 		for ($i=0; $i < $cnt; $i++) {

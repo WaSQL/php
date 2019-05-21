@@ -113,7 +113,7 @@
 <view:fields>
 	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>
-		<li><a href="#" style="display:inline-block;" data-tooltip="<?=$field['_dbfield'];?> <?=$field['_dbtype_ex'];?><view:identity>  - IDENTITY field</view:identity><?=renderViewIf(isset($field['identity']),'identity');?>" onclick="return false;"><?=$field['_dbfield'];?></a></li>
+		<li><?=$field['_dbfield'];?> <span class="w_gray w_small"><?=$field['_dbtype_ex'];?></span></li>
 	</view:field>
 	<?=renderEach('field',$fields,'field');?>
 	</ul>

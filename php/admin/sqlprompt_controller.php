@@ -185,6 +185,7 @@
 				break;
 				default:
 					$fields=getDBFieldInfo($table);
+					//echo printValue($fields);exit;
 				break;
 			}
 			
