@@ -1792,8 +1792,7 @@ function buildFormFile($name,$params=array()){
 		$checked='';
 		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
 		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" style="display:none;" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
-		$tag .= '	<label class="icon-mark " for="'.$params['id'].'_remove"></label>'.PHP_EOL;
+		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
 		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'.PHP_EOL;
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
 		$tag .= '</div>'.PHP_EOL;
@@ -1813,7 +1812,7 @@ function buildFormFile($name,$params=array()){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'" class="btn white"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'" class="btn"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
