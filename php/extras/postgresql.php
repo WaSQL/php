@@ -120,7 +120,7 @@ ENDOFQUERY;
 		return;
 	}
 	$data=pg_execute('postgresqlAddDBRecord',$values);
-	$recs = postgresqlEnumQueryResults($data);
+	$recs = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
@@ -333,7 +333,7 @@ ENDOFQUERY;
 		return;
 	}
 	$data=pg_execute('postgresqlEditDBRecord',$values);
-	$recs = postgresqlEnumQueryResults($data);
+	$recs = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	return $recs;
 }
@@ -829,7 +829,7 @@ function postgresqlQueryResults($query='',$params=array()){
     	return $id;
 	}
 
-	$results = postgresqlEnumQueryResults($data);
+	$results = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	return $results;
 }
