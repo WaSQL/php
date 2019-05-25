@@ -198,6 +198,7 @@ div span.wacssform_one + div{
   position:fixed;
   top:50px;
   right:15px;
+  z-index: 999991;
 }
 #wacss_toasts .toast{
   position:relative;
@@ -212,7 +213,7 @@ div span.wacssform_one + div{
   opacity: 100;
   margin-bottom: 5px;
   transition: all 0.55s ease;
-  z-index: 9995;
+  z-index: 999992;
 }
 
 #wacss_toasts .toast span.icon-close{
@@ -223,7 +224,7 @@ div span.wacssform_one + div{
   padding: .15rem .15rem .35rem .35rem;
   font-size: .6rem;
   font-family: sans-serif;
-  z-index: 99999;
+  z-index: 999993;
   opacity:0;
 }
 #wacss_toasts .toast.dismiss{
