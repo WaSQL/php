@@ -843,7 +843,7 @@ function parseWacssEditFormTags($body,$answers=array()){
 	//echo printValue($m);exit;
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
-		$name='wacssform_one_'.encodeCRC($label);
+		$name='wacssform_many_'.encodeCRC($label);
 		$opts=array();
 		preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
 		//echo printValue($ms);exit;
