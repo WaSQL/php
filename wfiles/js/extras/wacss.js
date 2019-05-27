@@ -1094,7 +1094,7 @@ var wacss = {
 	},
 	toast: function(msg,params){
 		if(undefined == params){
-			params={color:'w_white',timer:3};
+			params={color:'w_red',timer:3};
 		}
 		if(undefined == params.color){
 			params.color=wacss.color();

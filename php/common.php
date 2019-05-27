@@ -828,7 +828,7 @@ function parseWacssEditFormTags($body,$answers=array()){
 		$label=$m[1][$i];
 		$name='wacssform_one_'.encodeCRC($label);
 		$opts=array();
-		preg_match_all('/\<li class=\"wacssform_one\">(.+?)\<\/li\>/',$m[2][$i],$ms);
+		preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
 		//echo printValue($ms);exit;
 		for($s=0;$s<count($ms[0]);$s++){
 			$opts[$ms[1][$s]]=$ms[1][$s];
@@ -838,13 +838,14 @@ function parseWacssEditFormTags($body,$answers=array()){
 		$field='<label>'.$label.'</label>'.buildFormRadio($name,$opts,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
-	//wacssform_select_one
+	//wacssform_select_many
 	preg_match_all('/\<span class=\"wacssform\_many\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $body, $m);
+	//echo printValue($m);exit;
 	for($i=0;$i<count($m[0]);$i++){
 		$label=$m[1][$i];
 		$name='wacssform_one_'.encodeCRC($label);
 		$opts=array();
-		preg_match_all('/\<li class=\"wacssform_many\">(.+?)\<\/li\>/',$m[2][$i],$ms);
+		preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
 		//echo printValue($ms);exit;
 		for($s=0;$s<count($ms[0]);$s++){
 			$opts[$ms[1][$s]]=$ms[1][$s];
