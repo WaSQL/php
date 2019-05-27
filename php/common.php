@@ -777,7 +777,7 @@ function parseWacssEditFormTags($body,$answers=array()){
 		$name='wacssform_date_'.encodeCRC($label);
 		$params=array();
 		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormDate($name);
+		$field='<label>'.$label.'</label>'.buildFormDate($name,$params);
 		$body=str_replace($m[0][$i],$field,$body);
 	}
 	//wacssform_rate - on a scale of 1 to 10
