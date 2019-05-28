@@ -76,6 +76,9 @@ body{
     padding: 1.25rem;
 }
 /* ---------------------- wacsseditor  ------------------------- */
+body{
+  counter-reset: wacssform_section;
+}
 div[id$="_wacsseditor"]{
     padding: .375rem .75rem;
     font-size: 1rem;
@@ -104,26 +107,42 @@ button.wacssedit:hover{
   color:#000;
 }
 [contenteditable] .wacssform_date,
-[contenteditable] .wacssform_rate,
-[contenteditable] .wacssform_stars,
+[contenteditable] .wacssform_raten5,
+[contenteditable] .wacssform_raten10,
+[contenteditable] .wacssform_rates5,
+[contenteditable] .wacssform_rates10,
 [contenteditable] .wacssform_one,
 [contenteditable] .wacssform_many,
+[contenteditable] .wacssform_section,
+[contenteditable] .wacssform_hideonview,
 [contenteditable] .wacssform_signature,
 [contenteditable] .wacssform_text,
+[contenteditable] .wacssform_customcode,
 [contenteditable] .wacssform_textarea{
-  color:#707070;
+  color:#3d7a7a;
   font-size:1.2rem;
 }
 [contenteditable] .wacssform_date:before{
   content:"\1F5D3";
   margin-right:4px;
 }
-[contenteditable] .wacssform_rate:after{
+[contenteditable] .wacssform_raten5:after{
+  display:table;
+  content:"Disagree \25CE 1 \25CE 2 \25CE 3 \25CE 4 \25CE 5 Agree";
+  margin-left:4\15px;
+}
+[contenteditable] .wacssform_raten10:after{
   display:table;
   content:"Disagree \25CE 1 \25CE 2 \25CE 3 \25CE 4 \25CE 5 \25CE 6 \25CE 7 \25CE 8 \25CE 9 \25CE 10 Agree";
   margin-left:4\15px;
 }
-[contenteditable] .wacssform_stars:after{
+[contenteditable] .wacssform_rates5:after{
+  display:table;
+  content:"Poor \2605 \2605 \2606 \2606 \2606 Excellent";
+  font-size:1.4rem;
+  margin-left:15px;
+}
+[contenteditable] .wacssform_rates10:after{
   display:table;
   content:"Poor \2605 \2605 \2606 \2606 \2606 \2606 \2606 \2606 \2606 \2606 Excellent";
   font-size:1.4rem;
@@ -132,8 +151,8 @@ button.wacssedit:hover{
 [contenteditable] span.wacssform_one:before{
   content:"\25C9";
 }
-div span.wacssform_one + div{
-  border:1px solid pink;
+[contenteditable] div ul{
+  margin-top:0;
 }
 [contenteditable] div ul li.wacssform_one, [contenteditable] div ul li.wacssform_many{
   list-style-type:none;
@@ -156,10 +175,31 @@ div span.wacssform_one + div{
 [contenteditable] div ul li.wacssform_many:nth-of-type(2):before{
   content: "\2611";
 }
-
+[contenteditable] .wacssform_section{
+  border-bottom:1px solid #3d7a7a;
+  display:block;
+  width:100%;
+  padding:5px;
+  margin-bottom:10px;
+  counter-increment: wacssform_section;
+}
+[contenteditable] .wacssform_section:before{
+  content:counter(wacssform_section) "\25AE ";
+  margin-right:4px;
+}
+[contenteditable] span.wacssform_hideonview:before{
+  content:"\263D";
+}
+[contenteditable] span.wacssform_customcode:before{
+  content:"\007B \007D";
+  margin-right:4px;
+}
+[contenteditable] .wacssform_signature:before{
+  content:"\2619";
+}
 [contenteditable] .wacssform_signature:after{
   display:table;
-  content:"Signature";
+  content:" ";
   padding:10px;
   font-family: Script MT Bold,Segoe Script, Vivaldi, Brush Script MT, Brush Script Std, cursive;
   margin-left:15px;

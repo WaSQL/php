@@ -766,133 +766,321 @@ function buildFakeContent($title='FAKE for'){
 /**
 * @describe converts wacssedit form tags into HTML input fields
 * @param body html 
+* @param params array
+*	[answers]  array key/value pairs of answers
+*	[sections]  sections to show.  defaults to all sections
+*	[customcode] array key/value pairs of customcode to replace
 * @return string
 * @usage echo parseWacssEditFormTags($htm);
 */
-function parseWacssEditFormTags($body,$answers=array()){
-	//wacssform_date
-	preg_match_all('/\<span class=\"wacssform\_date\"\>(.+?)\<\/span\>/is', $body, $m);
+function parseWacssEditFormTags($body,$params=array()){
+	/*
+		return an array for each element
+			section: defaults to 0 in none are found
+			fieldname:
+			displayname:
+			btag - html body tag to replace with the formfield
+			htm - html field
+	*/
+	$tags=array();
+	//wacssform_section
+	$section_names=array();
+	preg_match_all('/\<div\>\<span class=\"wacssform\_section\"\>(.+?)\<\/span\>\<\/div\>/is', $body, $m);
 	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_date_'.encodeCRC($label);
-		$params=array();
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormDate($name,$params);
-		$body=str_replace($m[0][$i],$field,$body);
+		$section_names[$i]=$m[1][$i];
+		$body=str_replace($m[0][$i],'[WACSSFORM_SECTION]',$body);
 	}
-	//wacssform_rate - on a scale of 1 to 10
-	preg_match_all('/\<span class=\"wacssform\_rate\"\>(.+?)\<\/span\>/is', $body, $m);
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_rate_'.encodeCRC($label);
-		$opts=array();
-		for($x=1;$x<11;$x++){
-			$opts[$x]=$x;
+	$sections=preg_split('/\[WACSSFORM_SECTION\]/is', $body);
+	if(count($sections)==0){
+		$sections_names=array('default');
+		$sections=array($body);
+	}
+	else{
+		if(count($section_names) < count($sections)){
+			array_unshift($section_names,'default');
 		}
-		$params=array(
-			'width'=>10,
-			'class'=>'w_orange',
-			'1_class'=>'w_red',
-			'10_class'=>'w_green'
-		);
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<div>'.$label.'</div>';
-		$field.='<div style="display:flex;">';
-		$field .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
-		$field .= buildFormRadio($name,$opts,$params);
-		$field .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
-		$field .= '</div>';
-		$body=str_replace($m[0][$i],$field,$body);
 	}
-	//wacssform_stars
-	preg_match_all('/\<span class=\"wacssform\_stars\"\>(.+?)\<\/span\>/is', $body, $m);
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_stars_'.encodeCRC($label);
-		$params=array(
-			'max'=>10
-		);
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<div>'.$label.'</div>';
-		$field.='<div style="display:flex;">';
-		$field .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
-		$field .= buildFormStarRating($name,$params);
-		$field .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
-		$field .= '</div>';
-		$body=str_replace($m[0][$i],$field,$body);
-	}
-	//wacssform_select_one
-	preg_match_all('/\<span class=\"wacssform\_one\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $body, $m);
-	//echo printValue($m);exit;
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_one_'.encodeCRC($label);
-		$opts=array();
-		preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
-		//echo printValue($ms);exit;
-		for($s=0;$s<count($ms[0]);$s++){
-			$opts[$ms[1][$s]]=$ms[1][$s];
+	$body=str_replace('[WACSSFORM_SECTION]','',$body);
+	foreach($sections as $sid=>$sbody){
+		//wacssform_date
+		preg_match_all('/\<span class=\"wacssform\_date\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_date_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormDate($tag['fieldname'],$tparams);
+			$tags[$sid][]=$tag;
 		}
-		$params=array('width'=>1);
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormRadio($name,$opts,$params);
-		$body=str_replace($m[0][$i],$field,$body);
-	}
-	//wacssform_select_many
-	preg_match_all('/\<span class=\"wacssform\_many\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $body, $m);
-	//echo printValue($m);exit;
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_many_'.encodeCRC($label);
-		$opts=array();
-		preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
-		//echo printValue($ms);exit;
-		for($s=0;$s<count($ms[0]);$s++){
-			$opts[$ms[1][$s]]=$ms[1][$s];
+		//wacssform_raten5 - on a scale of 1 to 5
+		preg_match_all('/\<span class=\"wacssform\_raten5\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_raten5_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			$topts=array();
+			for($x=1;$x<=5;$x++){
+				$topts[$x]=$x;
+			}
+			$tparams=array(
+				'width'=>5,
+				'class'=>'w_orange',
+				'1_class'=>'w_red',
+				'5_class'=>'w_green'
+			);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
+			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
+			$tag['htm'] .= '</div>';
+			$tags[$sid][]=$tag;
 		}
-		$params=array('width'=>1);
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormCheckbox($name,$opts,$params);
-		$body=str_replace($m[0][$i],$field,$body);
-	}
-	//wacssform_text
-	preg_match_all('/\<span class=\"wacssform\_text\"\>(.+?)\<\/span\>/is', $body, $m);
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_text_'.encodeCRC($label);
-		$params=array();
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormText($name,$params);
-		$body=str_replace($m[0][$i],$field,$body);
-	}
-	//wacssform_textarea
-	preg_match_all('/\<span class=\"wacssform\_textarea\"\>(.+?)\<\/span\>/is', $body, $m);
-	for($i=0;$i<count($m[0]);$i++){
-		$label=$m[1][$i];
-		$name='wacssform_textarea_'.encodeCRC($label);
-		$params=array();
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field='<label>'.$label.'</label>'.buildFormTextarea($name,$params);
-		$body=str_replace($m[0][$i],$field,$body);
-	}
-	//wacssform_signature
-	preg_match_all('/\<span class=\"wacssform\_signature\"\>(.+?)\<\/span\>/is', $body, $m);
-	for($i=0;$i<count($m[0]);$i++){
-		if($i==0){
-			loadExtrasJs('html5');
+		//wacssform_raten10 - on a scale of 1 to 10
+		preg_match_all('/\<span class=\"wacssform\_raten10\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_raten10_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			$topts=array();
+			for($x=1;$x<=10;$x++){
+				$topts[$x]=$x;
+			}
+			$tparams=array(
+				'width'=>10,
+				'class'=>'w_orange',
+				'1_class'=>'w_red',
+				'10_class'=>'w_green'
+			);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
+			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
+			$tag['htm'] .= '</div>';
+			$tags[$sid][]=$tag;
 		}
-		$label=$m[1][$i];
-		$name='wacssform_signature_'.encodeCRC($label);
-		$params=array(
-			'style'=>'width:100%;',
-			'displayname'=>$label
-		);
-		if(isset($answers[$name])){$params['value']=$answers[$name];}
-		$field=buildFormSignature($name,$params);
-		$body=str_replace($m[0][$i],$field,$body);
+		//wacssform_rates5 - 5 star rating
+		preg_match_all('/\<span class=\"wacssform\_rates5\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_rates5_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			$topts=array();
+			for($x=1;$x<=5;$x++){
+				$topts[$x]=$x;
+			}
+			$tparams=array(
+				'max'=>5
+			);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
+			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
+			$tag['htm'] .= '</div>';
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_rates10 - 10 star rating
+		preg_match_all('/\<span class=\"wacssform\_rates10\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_rates10_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			$topts=array();
+			for($x=1;$x<=10;$x++){
+				$topts[$x]=$x;
+			}
+			$tparams=array(
+				'max'=>5
+			);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
+			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
+			$tag['htm'] .= '</div>';
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_select_one
+		preg_match_all('/\<span class=\"wacssform\_one\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $sbody, $m);
+		//echo printValue($m);exit;
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_one_'.encodeCRC($tag['displayname']);
+			$topts=array();
+			preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
+			//echo printValue($ms);exit;
+			for($s=0;$s<count($ms[0]);$s++){
+				$topts[$ms[1][$s]]=$ms[1][$s];
+			}
+			$tparams=array('width'=>1);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormRadio($tag['fieldname'],$topts,$tparams);
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_select_many
+		preg_match_all('/\<span class=\"wacssform\_many\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $sbody, $m);
+		//echo printValue($m);exit;
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_many_'.encodeCRC($tag['displayname']);
+			$topts=array();
+			preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
+			//echo printValue($ms);exit;
+			for($s=0;$s<count($ms[0]);$s++){
+				$topts[$ms[1][$s]]=$ms[1][$s];
+			}
+			$tparams=array('width'=>1);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormCheckbox($tag['fieldname'],$topts,$tparams);
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_text
+		preg_match_all('/\<span class=\"wacssform\_text\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_text_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormText($tag['fieldname'],$tparams);
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_textarea
+		preg_match_all('/\<span class=\"wacssform\_textarea\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_textarea_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormTextarea($tag['fieldname'],$tparams);
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_signature
+		preg_match_all('/\<span class=\"wacssform\_signature\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			if($i==0){
+				loadExtrasJs('html5');
+			}
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_text_'.encodeCRC($tag['displayname']);
+			$tparams=array(
+				'style'=>'width:100%;',
+				'displayname'=>$tag['displayname']
+			);
+			if(isset($params['answers'][$tag['fieldname']])){
+				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			$tag['btag']=$m[0][$i];
+			$tag['htm']=buildFormSignature($tag['fieldname'],$tparams);
+			$tags[$sid][]=$tag;
+		}
+		//wacssform_customcode
+		preg_match_all('/\<span class=\"wacssform\_customcode\"\>(.+?)\<\/span\>/is', $sbody, $m);
+		for($i=0;$i<count($m[0]);$i++){
+			$tag=array();
+			$tag['section_name']=$section_names[$sid];
+			$tag['section_id']=$sid;
+			$tag['displayname']=$m[1][$i];
+			$tag['fieldname']='wacssform_customcode_'.encodeCRC($tag['displayname']);
+			$tparams=array();
+			if(isset($params['customcode'][$tag['displayname']])){
+				$tag['htm']=$params['customcode'][$tag['displayname']];
+			}
+			else{
+				$tag['htm']='<!--wacss_customcode '.$tag['displayname'].' missing value -->';
+			}
+			$tag['btag']=$m[0][$i];
+			$tags[$sid][]=$tag;
+			//return printValue($params).printValue($tag);
+		}
 	}
-	return $body;
+	//echo printValue($sections).printValue($tags);exit;
+	if(isset($params['sections'])){
+		if(!is_array($params['sections'])){
+			$params['sections']=preg_split('/\,/',$params['sections']);
+		}
+	}
+	else{
+		$params['sections']=array();
+	}
+	//replace the tags in the body
+	$bodies=array();
+	foreach($sections as $sid=>$sbody){
+		if(count($params['sections']) && !in_array($sid,$params['sections'])){
+			$sbody=str_replace($sbody,PHP_EOL.'<!--wacss_section '.$sid.' skipped -->'.PHP_EOL,$sbody);
+		}
+		else{
+			foreach($tags[$sid] as $tag){
+				$sbody=str_replace($tag['btag'],$tag['htm'],$sbody);
+			}
+		}
+		$bodies[]=$sbody;
+	}
+	return implode('',$bodies);
 }
+
 //---------- begin function buildFormButtonSelect--------------------
 /**
 * @describe creates an button selection field

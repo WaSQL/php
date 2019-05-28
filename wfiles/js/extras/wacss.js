@@ -688,29 +688,37 @@ var wacss = {
 					break;
 					case 'form':
 						//justify full,left,center,right
+						//Multi-media insert:  https://www.froala.com/wysiwyg-editor/examples/custom-image-button
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title=name;
 						a.innerHTML=name;
+						a.style.color='#3d7a7a';
 						li.appendChild(a);
 						let sul=document.createElement('ul');
-						sul.style.maxHeight='175px';
+						sul.style.maxHeight='325px';
 						sul.style.overflow='auto';
 						let types={
 							date:'Date Picker <span class="icon-calendar"></span>',
-							rate:'Rating Number 1 - 10',
-							stars:'Rating Stars <span class="icon-star-empty"></span>',
+							raten5:'Rating Number 1 - 5 <span class="icon-radio-button w_smaller"></span>',
+							raten10:'Rating Number 1 - 10 <span class="icon-radio-button w_smaller"></span>',
+							rates5:'Rating Stars 1 -5 <span class="icon-star-empty"></span>',
+							rates10:'Rating Stars 1 -10 <span class="icon-star-empty"></span>',
 							one:'Select One <span class="icon-checkbox"></span>',
 							many:'Select Multiple <span class="icon-checkbox"></span> <span class="icon-checkbox"></span>',
-							signature:'Signature',
-							text:'Text One',
-							textarea:'Text Multiple',
+							hideonview:'Hide On View <span class="icon-moon-quarter"></span>',
+							section:'Section Marker <span class="icon-bookmark"></span>',
+							signature:'Signature <span class="icon-signature"></span>',
+							text:'Text One <span class="icon-text"></span>',
+							textarea:'Text Multiple <span class="icon-textarea"></span>',
+							customcode:'Insert Custom Code {}'
 						};
 						for(let type in types){
 							let sli=document.createElement('li');
 							sul.appendChild(sli);
 							sna=document.createElement('button');
 							sna.className='wacssedit';
+							sna.style.color='#3d7a7a';
 							sna.setAttribute('data-cmd','form');
 							sna.setAttribute('data-arg',type);
 							sna.setAttribute('data-txt',list[i].id);
