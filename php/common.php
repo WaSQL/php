@@ -888,11 +888,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['section_id']=$sid;
 			$tag['displayname']=$m[1][$i];
 			$tag['fieldname']='wacssform_rates5_'.encodeCRC($tag['displayname']);
-			$tparams=array();
-			$topts=array();
-			for($x=1;$x<=5;$x++){
-				$topts[$x]=$x;
-			}
 			$tparams=array(
 				'max'=>5
 			);
@@ -915,14 +910,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['section_name']=$section_names[$sid];
 			$tag['section_id']=$sid;
 			$tag['displayname']=$m[1][$i];
-			$tag['fieldname']='wacssform_rates10_'.encodeCRC($tag['displayname']);
-			$tparams=array();
-			$topts=array();
-			for($x=1;$x<=10;$x++){
-				$topts[$x]=$x;
-			}
+			$tag['fieldname']='wacssform_rates10_'.encodeCRC($tag['displayname']);	
 			$tparams=array(
-				'max'=>5
+				'max'=>10
 			);
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
