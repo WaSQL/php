@@ -814,6 +814,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
+			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormDate($tag['fieldname'],$tparams);
 			$tags[$sid][]=$tag;
@@ -839,6 +842,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			);
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
@@ -871,6 +877,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
+			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;">';
@@ -893,6 +902,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			);
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
@@ -917,6 +929,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
+			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;">';
@@ -928,7 +943,6 @@ function parseWacssEditFormTags($body,$params=array()){
 		}
 		//wacssform_select_one
 		preg_match_all('/\<span class=\"wacssform\_one\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $sbody, $m);
-		//echo printValue($m);exit;
 		for($i=0;$i<count($m[0]);$i++){
 			$tag=array();
 			$tag['section_name']=$section_names[$sid];
@@ -945,13 +959,15 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
+			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormRadio($tag['fieldname'],$topts,$tparams);
 			$tags[$sid][]=$tag;
 		}
 		//wacssform_select_many
 		preg_match_all('/\<span class=\"wacssform\_many\"\>(.+?)\<\/span\>.+?\<ul\>(.+?)\<\/ul\>/is', $sbody, $m);
-		//echo printValue($m);exit;
 		for($i=0;$i<count($m[0]);$i++){
 			$tag=array();
 			$tag['section_name']=$section_names[$sid];
@@ -967,6 +983,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tparams=array('width'=>1);
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormCheckbox($tag['fieldname'],$topts,$tparams);
@@ -984,6 +1003,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
+			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormText($tag['fieldname'],$tparams);
 			$tags[$sid][]=$tag;
@@ -999,6 +1021,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tparams=array();
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']='<label>'.$tag['displayname'].'</label>'.buildFormTextarea($tag['fieldname'],$tparams);
@@ -1021,6 +1046,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			);
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
+			}
+			if(isset($params['format']) && $params['format']=='readonly'){
+				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
 			$tag['htm']=buildFormSignature($tag['fieldname'],$tparams);
@@ -1055,20 +1083,28 @@ function parseWacssEditFormTags($body,$params=array()){
 	else{
 		$params['sections']=array();
 	}
-	//replace the tags in the body
-	$bodies=array();
-	foreach($sections as $sid=>$sbody){
-		if(count($params['sections']) && !in_array($sid,$params['sections'])){
-			$sbody=str_replace($sbody,PHP_EOL.'<!--wacss_section '.$sid.' skipped -->'.PHP_EOL,$sbody);
-		}
-		else{
-			foreach($tags[$sid] as $tag){
-				$sbody=str_replace($tag['btag'],$tag['htm'],$sbody);
+	switch(strtolower($params['format'])){
+		case 'data':
+			return $tags;
+		break;
+		default:
+			$bodies=array();
+			foreach($sections as $sid=>$sbody){
+				if(count($params['sections']) && !in_array($sid,$params['sections'])){
+					$sbody=str_replace($sbody,PHP_EOL.'<!--wacss_section '.$sid.' skipped -->'.PHP_EOL,$sbody);
+				}
+				else{
+					foreach($tags[$sid] as $tag){
+						$sbody=str_replace($tag['btag'],$tag['htm'],$sbody);
+					}
+				}
+				$bodies[]=$sbody;
 			}
-		}
-		$bodies[]=$sbody;
+			return implode('',$bodies);
+		break;
 	}
-	return implode('',$bodies);
+	//replace the tags in the body
+	
 }
 
 //---------- begin function buildFormButtonSelect--------------------
@@ -1281,7 +1317,11 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span data-id="'.$params['id'].'" onclick="Calendar(this.getAttribute(\'data-id\'));" title="Date Selector"><span class="icon-calendar w_pointer w_bigger"></span></span>'.PHP_EOL;
+	$tag .= '	<span data-id="'.$params['id'].'"';
+	if(!isset($params['readonly'])){
+		$tag .= ' onclick="Calendar(this.getAttribute(\'data-id\'));"';
+	}
+	$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_bigger"></span></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
@@ -1603,6 +1643,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(in_array($tval,$params['-values'])){
     		$tag .= ' checked';
     		$checked_cnt++;
+		}
+		//readonly?
+		if(isset($params['readonly'])){
+			$tag .= ' disabled="disabled"';
 		}
 		$tag .= '> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
@@ -2377,7 +2421,11 @@ function buildFormStarRating($name, $params=array()){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
 		$class .= ' w_biggest';
-		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;"><span class="'.$class.'" onclick="setStarRating(\''.$params['id'].'\','.$x.');"></span></li>'.PHP_EOL;
+		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;"><span class="'.$class.'"';
+		if(!isset($params['readonly'])){
+			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
+		}
+		$rtn .= '></span></li>'.PHP_EOL;
 	}
 	$rtn .= '</ul>'.PHP_EOL;
 	return $rtn;
