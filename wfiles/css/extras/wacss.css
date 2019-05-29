@@ -447,7 +447,8 @@ button.wacssedit:hover{
   min-width: 150px;
   z-index: 9999999;
 }
-.nav > ul > li:hover > ul {
+.nav > ul > li:hover > ul,
+.nav > ul > li.open > ul {
   display: block;
 }
 .nav > ul ul li a {}
@@ -1140,7 +1141,7 @@ a.btn{text-decoration: none;}
 .flexbutton.w_black > :not(z){color:rgba(35, 39, 43, 1.0);border-color:rgba(35, 39, 43, 1.0) !important;}
 
 
-button, input[type="text"], input[type="password"], input[type="number"], select, textarea {
+button, input[type="text"], input[type="password"], input[type="number"], input[type="url"], select, textarea {
   -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
   -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
   box-sizing: border-box;
@@ -1154,7 +1155,7 @@ button.btn{
   box-sizing: border-box;
   font-weight:300;
 }
-select, input[type="text"], input[type="password"], input[type="number"], textarea{
+select, input[type="text"], input[type="password"], input[type="number"], input[type="url"], textarea{
   padding: .375rem .75rem;
   font-size: 1rem;
   border-radius:4px;
@@ -1163,13 +1164,13 @@ select, input[type="text"], input[type="password"], input[type="number"], textar
   font-weight:300;
   width:100%;
 }
-select.small, input[type="text"].small, input[type="password"].small, input[type="number"].small,{
+select.small, input[type="text"].small, input[type="password"].small, input[type="number"].small, input[type="url"].small,{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
 
 @media (max-width: 575px){
-  select, input[type="text"], input[type="password"], input[type="number"], textarea{
+  select, input[type="text"], input[type="password"], input[type="number"], input[type="url"], textarea{
     padding: .2rem .35rem;
     font-size: 1rem;
     border-radius:4px;
@@ -2403,6 +2404,12 @@ table.table a:hover{
 .badge.w_white {background-color: #f8f9fa;color: #212529;}
 .badge.w_black {background-color: #343a40;color: #fff;}
 /* -------------------- Misc ------------------ */
+[data-before]:before{
+  content:attr(data-before,"");
+  color:#000;
+  display:block;
+}
+
 .well {
     min-height: 20px;
     padding: 19px;

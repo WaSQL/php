@@ -136,6 +136,22 @@ var wacss = {
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj);}
 	},
+	getSiblings: function (elem) {
+		// Setup siblings array and get the first sibling
+		var siblings = [];
+		var sibling = elem.parentNode.firstChild;
+
+		// Loop through each sibling and push to the array
+		while (sibling) {
+			if (sibling.nodeType === 1 && sibling !== elem) {
+				siblings.push(sibling);
+			}
+			sibling = sibling.nextSibling
+		}
+
+		return siblings;
+
+	},
 	guid: function () {
 	    function _p8(s) {
 	        var p = (Math.random().toString(16)+"000000000").substr(2,8);
@@ -159,7 +175,7 @@ var wacss = {
 	},
 	initChartJs: function(){
 		let list=document.querySelectorAll('div.chartjs');
-		console.log(list);
+		//console.log(list);
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){
 				console.log('missing id',list[i]);
@@ -422,6 +438,7 @@ var wacss = {
 				'Font':['fontName','','',''],
 				'Size':['fontSize','','',''],
 				'Color':['','','icon-color-adjust',''],
+				'Media':['','','icon-image',''],
 				'Justify':['justify','','',''],
 				'Form':['form','','',''],
 				'Unordered List':['insertUnorderedList','','icon-list-ul',''],
@@ -456,10 +473,314 @@ var wacss = {
 				let a;
 				let icon;
 				switch(name.toLowerCase()){
+					case 'media':
+						a=document.createElement('button');
+						a.className='wacssedit dropdown';
+						a.title='Multimedia';
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
+						let micon=document.createElement('span');
+						micon.className='icon-image';
+						a.appendChild(micon);
+						li.appendChild(a);
+						let mediabox=document.createElement('div');
+						/* URL */
+						let murl=document.createElement('input');
+						murl.type='text';
+						murl.name='url';
+						murl.placeholder='URL to media';
+						murl.setAttribute('value','');
+						mediabox.appendChild(murl);
+						/* drag n drop or click to upload */
+						let mfilebox=document.createElement('div');
+						mfilebox.style.marginTop='10px';
+						let mfile=document.createElement('input');
+						mfile.type='file';
+						mfile.accept='audio/*,video/*,image/*';
+						mfile.id='mediafile';
+						mfile.setAttribute('multiple','multiple');
+						mfile.style.position='fixed';
+						mfile.style.top='-1000px';
+						mfile.filebox=mfilebox;
+						mfile.onchange=function(evt){
+							wacss.preventDefault(evt);
+							wacss.wacsseditHandleFiles(this);
+							return false;
+						}
+						mediabox.appendChild(mfile);
+						let mdrop=document.createElement('label');
+						mdrop.filebox=mfilebox;
+						mdrop.addEventListener('dragenter',function(evt){
+							wacss.preventDefault(evt);
+							this.style.border='1px dashed #28a745';
+							this.style.color='#28a745';
+							return false;
+						},false);
+						mdrop.addEventListener('dragleave',function(evt){
+							wacss.preventDefault(evt);
+							this.style.border='1px dashed #ccc';
+							this.style.color='#999999';
+							return false;
+						},false);
+						mdrop.addEventListener('dragover',function(evt){
+							wacss.preventDefault(evt);
+						 	return false;
+						},false);
+						mdrop.addEventListener('drop',function(evt){
+							wacss.preventDefault(evt);
+  							this.files = evt.dataTransfer.files;
+  							wacss.wacsseditHandleFiles(this);
+							return false;
+						},false);
+						mdrop.setAttribute('for','mediafile');
+						mdrop.style.display='block';
+						mdrop.style.border='1px dashed #ccc';
+						mdrop.style.borderRadius='5px';
+						mdrop.style.marginTop='10px';
+						mdrop.style.color='#999999';
+						mdrop.style.padding='15px';
+						mdrop.innerHTML='Drag n Drop<br />(or click to browse)';
+						mdrop.style.textAlign='center';
+						mdrop.style.backgroundColor='#FFF';
+						mediabox.appendChild(mdrop);
+						mediabox.appendChild(mfilebox);
+						/* max width and max height */
+						let mmaxbox=document.createElement('div');
+						mmaxbox.style.display='flex';
+						mmaxbox.style.flexDirection='row';
+						mmaxbox.style.marginTop='10px';
+						/* max width */
+						let mwidth=document.createElement('input');
+						mwidth.type='text';
+						mwidth.name='width';
+						mwidth.placeholder='Width';
+						mwidth.title="Max Width - defaults to 200px";
+						mwidth.style.flex='1 1 auto';
+						mwidth.style.marginRight='5px';
+						mwidth.pattern='[0-9px\%]+';
+						mwidth.oninput=function(){this.reportValidity();};
+						mmaxbox.appendChild(mwidth);
+						/* max height */
+						let mheight=document.createElement('input');
+						mheight.type='text';
+						mheight.name='height';
+						mheight.placeholder='Height';
+						mheight.title='Max Height - defaults to 200px';
+						mheight.style.flex='1 1 auto';
+						mheight.style.marginLeft='5px';
+						mheight.pattern='[0-9px\%]+';
+						mheight.oninput=function(){this.reportValidity();};
+						mmaxbox.appendChild(mheight);
+
+						mediabox.appendChild(mmaxbox);
+
+						/* align and border */
+						let mabbox=document.createElement('div');
+						mabbox.style.display='flex';
+						mabbox.style.flexDirection='row';
+						mabbox.style.marginTop='10px';
+						/* align */
+						let malign=document.createElement('select');
+						malign.style.flex='1 1 auto';
+						malign.title='Align';
+						malign.name="align";
+						malign.style.marginRight='5px';
+						let malign_opts=new Array('left','center','right');
+						for(let opt in malign_opts){
+							let malign_opt=document.createElement('option');
+							malign_opt.value=malign_opts[opt];
+							malign_opt.innerText=malign_opts[opt];
+							malign.appendChild(malign_opt);
+						}
+						mabbox.appendChild(malign);
+						/* border */
+						let mborder=document.createElement('input');
+						mborder.type='checkbox';
+						mborder.name="border";
+						mborder.style.flex='1 1 auto';
+						mborder.title='Border';
+						mborder.style.marginLeft='5px';
+						mabbox.appendChild(mborder);
+
+						mediabox.appendChild(mabbox);
+
+						/* save and reset  */
+						let msrbox=document.createElement('div');
+						msrbox.style.display='flex';
+						msrbox.style.flexDirection='row';
+						msrbox.style.marginTop='10px';
+						/* reset */
+						let mreset=document.createElement('button');
+						mreset.style.flex='1 1 auto';
+						mreset.title='Reset';
+						mreset.type='button';
+						mreset.innerText='Reset';
+						mreset.className='btn w_red';
+						mreset.elems=new Array(murl,mfilebox,mwidth,mheight,mborder);
+						mreset.onclick=function(){
+							for(let x in this.elems){
+								switch(this.elems[x].tagName.toLowerCase()){
+									case 'div':
+										this.elems[x].innerHTML='';	
+									break;
+									case 'input':
+										switch(this.elems[x].type.toLowerCase()){
+											case 'text':
+												this.elems[x].value='';
+											break;
+											case 'checkbox':
+												this.elems[x].checked=false;
+											break;
+										}	
+									break;
+								}
+								
+							}
+						}
+						mreset.style.marginRight='5px';
+						msrbox.appendChild(mreset);
+						/* save */
+						let msave=document.createElement('button');
+						msave.style.flex='1 1 auto';
+						msave.title='Reset';
+						msave.type='button';
+						msave.innerText='Save';
+						msave.className='btn w_green';
+						msave.style.marginRight='5px';
+						msave.mwidth=mwidth;
+						msave.mheight=mheight;
+						msave.malign=malign;
+						msave.mborder=mborder;
+						msave.murl=murl;
+						msave.mfiles=mfilebox;
+						msave.li=li;
+						msave.elems=new Array(murl,mfilebox,mwidth,mheight,mborder);
+						msave.onclick=function(){
+							let width='300px';
+							if(undefined != this.mwidth.value && this.mwidth.value.length){width=this.mwidth.value;}
+							if(width.indexOf('px')==-1 && width.indexOf('%')==-1){
+								width=width+'px';
+							}
+							let height='200px';
+							if(undefined != this.mheight.value && this.mheight.value.length){height=this.mheight.value;}
+							if(height.indexOf('px')==-1 && height.indexOf('%')==-1){
+								height=height+'px';
+							}
+							let align=msave.malign.value;
+							let style="max-width:"+width+";max-height:"+height+";";
+							if(undefined != this.mborder && this.mborder.checked){style=style+'border:1px outset #000;';}
+							document.execCommand('removeFormat',false);
+							/* image */
+							let list=this.mfiles.querySelectorAll('img');	
+							for(let y=0;y<list.length;y++){
+								let htm='<div style="text-align:'+align+';"><img src="'+list[y].src+'" style="'+style+'" /></div>';
+							 	document.execCommand("insertHTML", false, htm);
+							}
+							/* audio */
+							list=this.mfiles.querySelectorAll('audio');	
+							for(let y=0;y<list.length;y++){
+								let htm='<div style="text-align:'+align+';"><audio src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
+							 	document.execCommand("insertHTML", false, htm);
+							}
+							/* video */
+							list=this.mfiles.querySelectorAll('video');	
+							for(let y=0;y<list.length;y++){
+								let htm='<div style="text-align:'+align+';"><video src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
+							 	document.execCommand("insertHTML", false, htm);
+							}
+							/* url */
+							if(this.murl.value.length){
+								let ext=this.murl.value.split('.').pop();
+								let style='';
+								let htm='';
+								switch(ext.toLowerCase()){
+									case 'png':
+									case 'jpg':
+									case 'jpeg':
+									case 'gif':
+									case 'svg':
+										htm='<div style="text-align:'+align+';"><img src="'+this.murl.value+'" style="'+style+'" /></div>';
+									 	document.execCommand("insertHTML", false, htm);
+									break;
+									case 'mp3':
+										htm='<div style="text-align:'+align+';"><audio src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
+									 	document.execCommand("insertHTML", false, htm);
+									break;
+									case 'mp4':
+										htm='<div style="text-align:'+align+';"><video src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
+									 	document.execCommand("insertHTML", false, htm);
+									break;
+									default:
+										//check for youtube
+										if(this.murl.value.indexOf('youtube.com') != -1){
+											/* https://www.youtube.com/watch?v=_DmM_6pa-TI replaced with  https://www.youtube.com/embed/_DmM_6pa-TI */
+											let src=this.murl.value.replace('watch?v=','embed/');
+											htm='<div style="text-align:'+align+';"><iframe src="'+src+'" style="'+style+'" ></iframe></div>';
+										}
+										else{
+											htm='<div style="text-align:'+align+';"><embed src="'+this.murl.value+'" style="'+style+'" controls="controls" ></embed></div>';	
+										}
+										
+									 	document.execCommand("insertHTML", false, htm);
+									break;
+								}
+							}
+							wacss.initWacssEditElements();
+							//return false;
+							/* reset the form */
+							for(let x in this.elems){
+								switch(this.elems[x].tagName.toLowerCase()){
+									case 'div':
+										this.elems[x].innerHTML='';	
+									break;
+									case 'input':
+										switch(this.elems[x].type.toLowerCase()){
+											case 'text':
+												this.elems[x].value='';
+											break;
+											case 'checkbox':
+												this.elems[x].checked=false;
+											break;
+										}	
+									break;
+								}
+								
+							}
+							wacss.removeClass(this.li,'open');
+							return false;
+						};
+						msrbox.appendChild(msave);
+
+						mediabox.appendChild(msrbox);
+
+
+						let mul=document.createElement('ul');
+						mul.style.padding='10px';
+						mul.appendChild(mediabox);
+						li.appendChild(mul)
+						break;
+
+					break;
 					case 'color':
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title='Text Color';
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						let cicon=document.createElement('span');
 						cicon.className='icon-textcolor';
 						a.appendChild(cicon);
@@ -571,6 +892,15 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title=name;
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						a.innerHTML=name;
 						li.appendChild(a);
 						let hul=document.createElement('ul');
@@ -599,6 +929,15 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title=name;
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						a.innerHTML=name;
 						li.appendChild(a);
 						let fnul=document.createElement('ul');
@@ -624,6 +963,15 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title='Text Size';
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						let sicon=document.createElement('span');
 						sicon.className='icon-textsize';
 						a.appendChild(sicon);
@@ -653,6 +1001,15 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title=name;
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						a.innerHTML=name;
 						li.appendChild(a);
 						let jul=document.createElement('ul');
@@ -692,6 +1049,15 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
 						a.title=name;
+						a.li=li;
+						a.onclick=function(){
+							let list=wacss.getSiblings(this.li);
+							for(let s=0;s<list.length;s++){
+								wacss.removeClass(list[s],'open');
+							}
+							wacss.toggleClass(this.li,'open');
+							return false;
+						};
 						a.innerHTML=name;
 						a.style.color='#3d7a7a';
 						li.appendChild(a);
@@ -732,6 +1098,7 @@ var wacss = {
 						a=document.createElement('button');
 						a.className='wacssedit';
 						a.title=name;
+						a.onclick=function(){return false;};
 						a.setAttribute('data-txt',list[i].id);
 						if(parts[3].length){
 							a.setAttribute('accesskey',parts[3]);
@@ -1028,6 +1395,12 @@ var wacss = {
 		}
 		return false;
 	},
+	preventDefault: function(evt){
+		evt = evt || window.event;
+		if (evt.preventDefault){evt.preventDefault();}
+		if (evt.stopPropagation){evt.stopPropagation();}
+	 	if (evt.cancelBubble !== null){evt.cancelBubble = true;}
+	},
 	removeClass: function(element, classToRemove) {
 		element=wacss.getObject(element);
 		if(undefined == element.className){return;}
@@ -1169,6 +1542,49 @@ var wacss = {
 		    return letter.toUpperCase();
 		});
 		return str;
+	},
+	wacsseditHandleFiles(el){
+		for(let f=0;f<el.files.length;f++){
+			let reader = new FileReader();
+			reader.filebox=el.filebox;
+			reader.filename=el.files[f].name;
+			reader.filesize=el.files[f].size;
+			reader.filetype=el.files[f].type;
+		    reader.onload = function(){
+		    	if(this.filetype.toLowerCase().indexOf('image') == 0){
+		    		let dataURL = this.result;
+			      	let img = document.createElement('img');
+			      	img.src = dataURL;
+			      	img.style.width='32px';
+			      	img.style.height='32px';
+			      	img.style.margin='5px';
+			      	img.title=this.filename;
+			      	this.filebox.appendChild(img);	
+		    	}
+		    	else if(this.filetype.toLowerCase().indexOf('audio') == 0){
+		    		let dataURL = this.result;
+			      	let aud = document.createElement('audio');
+			      	aud.src = dataURL;
+			      	aud.controls = true;
+			      	aud.title=this.filename;
+			      	aud.style.maxHeight='100px';
+			      	aud.style.maxWidth='150px';
+			      	this.filebox.appendChild(aud);	
+		    	}
+		    	else if(this.filetype.toLowerCase().indexOf('video') == 0){
+		    		let dataURL = this.result;
+			      	let vid = document.createElement('video');
+			      	vid.src = dataURL;
+			      	vid.controls = true;
+			      	vid.title=this.filename;
+			      	vid.style.maxHeight='100px';
+			      	vid.style.maxWidth='150px';
+			      	this.filebox.appendChild(vid);	
+		    	}
+		    	
+		    };
+		    reader.readAsDataURL(el.files[f]);
+		}
 	}
 }
 wacss.listen('load',window,function(){wacss.init();})
