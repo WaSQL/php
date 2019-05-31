@@ -1879,10 +1879,12 @@ function pagingSubmit(frm,div){
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
 	if(undefined != div){
-		//console.log('pagingSubmit - ajax');
+		console.log('pagingSubmit - ajax');
+		frm.setAttribute('pagingSetFilters',0);
 		return ajaxSubmitForm(frm,div);
 	}
 	//console.log('pagingSubmit - NOT ajax');
+	//console.log(frm.filter_export.value);
 	frm.submit();
 	return false;
 }
@@ -2004,6 +2006,11 @@ function pagingSetFilters(frm){
 	}
 	//update filters field
 	frm._filters.value=implode("\r\n",filters);
+	if(undefined != frm.getAttribute('pagingSetFilters')){
+		let check=frm.getAttribute('pagingSetFilters');
+		if(check==1 || check=='1'){return false;}
+	}
+	frm.setAttribute('pagingSetFilters',1);
 	//clear bulk edit if it exists
 	if(undefined != frm.filter_bulkedit){frm.filter_bulkedit.value='';}
 	//clear export if it exists
