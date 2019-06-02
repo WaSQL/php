@@ -744,15 +744,15 @@ function minifyJsFile($v=''){
 		case 'bootstrap':
 			$_SESSION['w_MINIFY']['extras_js'][]='jquery1';
 			$_SESSION['w_MINIFY']['extras_js'][]=$v;
-			$jsfile="/minify_{$v}_{$mfn}.js";
+			$jsfile="minify_{$v}_{$mfn}.js";
 		break;
 		default:
 			if(strlen($v)){
 				$_SESSION['w_MINIFY']['extras_js'][]=$v;
-				$jsfile="/minify_{$v}_{$mfn}.js";
+				$jsfile="minify_{$v}_{$mfn}.js";
 			}
 			else{
-				$jsfile="/minify_x_{$mfn}.js";
+				$jsfile="minify_x_{$mfn}.js";
 			}
 		break;
 	}
