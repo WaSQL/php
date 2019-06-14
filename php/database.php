@@ -517,6 +517,23 @@ function databaseListRecords($params=array()){
 			$sums[$sfld]=0;
 		}
 	}
+	//check for -editfields
+	if(isset($params['-editfields'])){
+		if(!is_array($params['-editfields'])){
+			if($params['-editfields']=='*'){
+				$params['-editfields']=array();
+				foreach($params['-listfields'] as $fld){
+					//skip wasql internal fields
+					if(!preg_match('/^\_/',$fld)){
+						$params['-editfields'][]=$fld;
+					}
+				}
+			}
+			else{
+				$params['-editfields']=preg_split('/\,/',$params['-editfields']);
+			}
+		}
+	}
 	foreach($params['-list'] as $row=>$rec){
 		$rtn .= '		<tr';
 		if(!empty($params['-onclick'])){
@@ -630,6 +647,9 @@ function databaseListRecords($params=array()){
 					}
 				}
 			}
+			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && isset($rec['_id'])){
+				$atts['id']="editfield_{$fld}_{$rec['_id']}";
+			}
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>';
 			if(isset($params['-anchormap']) && $fld==$params['-anchormap']){
@@ -639,7 +659,11 @@ function databaseListRecords($params=array()){
 					$rtn .= '<a name="anchormap_'.$ch.'"></a>';
 				}
 			}
-			$rtn .=$value.'</td>'.PHP_EOL;
+			$rtn .=$value;
+			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && isset($rec['_id'])){
+				$rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$rec['_id'].'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
+			}
+			$rtn .='</td>'.PHP_EOL;
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
 	}

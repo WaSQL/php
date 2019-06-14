@@ -133,7 +133,16 @@ function ajaxAddEditForm(table,id,flds,userparams){
 	ajaxPopup('/php/index.php',params,{id:'centerpop'});
 	return false;
 }
-
+//--------------------------
+function ajaxEditField(table,id,fld,params){
+	if(undefined==params){params={};}
+	params['_action']='EDITFIELD';
+	params.table=table;
+	params.id=id;
+	params.field=fld;
+	if(undefined == params.div){params.div='centerpop';}
+	return ajaxGet('/php/index.php',params.div,params);
+}
 //--------------------------
 function autoGrow(box,maxheight) {
 	//info: allows a textbox to grow as a person types
@@ -2361,6 +2370,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	var cb=callback.toLowerCase();
 	if(undefined == document.getElementById(sid) && 
 		lcsid != 'pop' && 
+		lcsid != 'null' &&
 		lcsid != 'modal' && 
 		cb.indexOf('popupdiv') == -1 && 
 		cb.indexOf('centerpop') == -1 && 
@@ -2443,6 +2453,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				else if(lname == 'pop'){
 					this.popNumber=popWindow(getProcessingDiv(sid),'processing request...');
 					}
+				else if(lname == 'null'){
+				}
 				else if(this.showprocessing){
 					setProcessing(this.showprocessingdiv);
 					}
@@ -2464,12 +2476,15 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'timed out...');
-					}
+				}
+				else if(lname == 'null'){
+					removeId('centerpop');                           
+				}
 				else{setText(dname,val);}
 				if(undefined != theform.setprocessing){
 					setText(theform.setprocessing.value,'');
-					}
 				}
+			}
 			,'onError':function(req){
 				var dname = this.groupName;
 				var lname=dname.toLowerCase();
@@ -2484,7 +2499,10 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 				}
                 else if(lname == 'pop'){
 					popText(this.popNumber,val,'error');
-					}
+				}
+				else if(lname == 'null'){
+					removeId('centerpop');
+				}
 				else{setText(dname,val);}
 				if(undefined != theform.setprocessing){
 					setText(theform.setprocessing.value,'');
@@ -2512,6 +2530,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
                     else if(lname == 'pop'){
 						popText(this.popNumber,val,this.var2);
 					}
+					else if(lname == 'null'){
+						removeId('centerpop');
+					}
                     else if(cb.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);
                     }
@@ -2535,6 +2556,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
                     	}
                     else if(lname == 'pop'){
 						popText(this.popNumber,val,this.var2);
+					}
+					else if(lname == 'null'){
+						removeId('centerpop');
 					}
                     else if(lname.indexOf('centerpop') != -1){
 						setCenterPopText(dname,val);

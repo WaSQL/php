@@ -1842,7 +1842,8 @@ LIST_TABLE:
 					'-formaction'=>'/php/admin.php',
 					'_id_href'=>'/php/admin.php?'.$idurl,
 					'-sorting'=>1,
-					'-theadclass'=>'w_pointer'
+					'-theadclass'=>'w_pointer',
+					'-editfields'=>'*'
 				);
 				//get listfields from tablemeta
 				$tinfo=getDBTableInfo(array('-table'=>$_REQUEST['_table_']));

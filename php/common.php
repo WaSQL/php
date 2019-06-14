@@ -12469,6 +12469,15 @@ function processActions(){
 							}
 						}
 					}
+					if(isset($_REQUEST['_editfield'])){
+						$fld=$_REQUEST['_editfield'];
+						echo $_REQUEST['edit_opts'][$fld];
+						$divid="editfield_{$fld}_{$_REQUEST['edit_rec']['_id']}";
+						echo $rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$_REQUEST['_table'].'\',\''.$_REQUEST['edit_rec']['_id'].'\',\''.$fld.'\',{div:\''.$divid.'\'});"></sup>';
+						//echo $fld.printValue($_REQUEST);
+						exit;
+
+					}
 					$_REQUEST['edit_id']=$rec['_id'];
 					$_REQUEST['edit_table']=$_REQUEST['_table'];
 					//reload the User array if they edited their profile
@@ -12999,6 +13008,50 @@ function processActions(){
             exit;
 			//----------------------------------------------------------------------------------------------------
 			break;
+		case 'EDITFIELD':
+			//require table,id,field
+			if(!isset($_REQUEST['table'])){
+				echo "EditField Error: Missing table";exit;
+			}
+			if(!isset($_REQUEST['id'])){
+				echo "EditField Error: Missing id";exit;
+			}
+			if(!isset($_REQUEST['field'])){
+				echo "EditField Error: Missing field";exit;
+			}
+			$rec=getDBRecord(array(
+				'-table'=>$_REQUEST['table'],
+				'_id'=>$_REQUEST['id'],
+				'-fields',$_REQUEST['field']
+			));
+			$opts=array('value'=>$rec[$_REQUEST['field']]);
+			//centerpop?
+			if(isset($_REQUEST['div']) && $_REQUEST['div']=='centerpop'){
+				echo '<div class="w_centerpop_title">Edit '.$_REQUEST['field'].'</div>'.PHP_EOL;
+				echo '<div class="w_centerpop_content">'.PHP_EOL;
+				$opts['style']='width:100%';
+				echo '<form method="post" name="editfieldform" class="flexbutton w_gray" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
+			}
+			else{
+				echo '<form method="post" name="editfieldform" class="flexbutton w_gray" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
+				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
+			}
+			
+			echo '	<input type="hidden" name="_table" value="'.$_REQUEST['table'].'" />'.PHP_EOL;
+			echo '	<input type="hidden" name="_fields" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
+			echo '	<input type="hidden" name="_id" value="'.$_REQUEST['id'].'" />'.PHP_EOL;
+			echo '	<input type="hidden" name="_action" value="EDIT" />'.PHP_EOL;
+			echo '	<input type="hidden" name="_editfield" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
+			echo buildFormField($_REQUEST['table'],$_REQUEST['field'],$opts);
+			echo '	<button type="submit" title="save" style="padding:3px;"><span class="icon-save w_bigger"></span></button>'.PHP_EOL;
+			echo '</form>'.PHP_EOL;
+			echo buildOnLoad("document.editfieldform.{$_REQUEST['field']}.select();");
+			//centerpop?
+			if(isset($_REQUEST['div']) && $_REQUEST['div']=='centerpop'){
+				echo '</div>'.PHP_EOL;
+			}
+			exit;
+		break;
   		case 'EDITFORM':
 			//show the edit form
 			unset($_REQUEST['template']);
