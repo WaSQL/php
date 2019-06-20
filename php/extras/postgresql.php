@@ -609,22 +609,10 @@ function postgresqlGetDBRecords($params){
 function postgresqlGetDBTables($params=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['postgresql_schema'])){$CONFIG['postgresql_schema']='public';}
-	$query=<<<ENDOFQUERY
-		SELECT
-			p.tablename
-		FROM pg_tables p, pg_class c
-		WHERE
-			p.tablename=c.relname
-			and c.relispartition is false
-			and p.schemaname='{$CONFIG['postgresql_schema']}'
-		ORDER BY p.tablename
-ENDOFQUERY;
-	//select relname from pg_class where relkind in ('p', 'r') and relispartition is false order by relname
-	//$query="SELECT tablename as name from pg_tables where schemaname='{$CONFIG['postgresql_schema']}' ORDER BY tablename";
+	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$CONFIG['postgresql_schema']}' order by tablename";
 	$recs = postgresqlQueryResults($query,$params);
-	//echo $query.printValue($recs);exit;
 	$tables=array();
-	foreach($recs as $rec){$tables[]=$rec['tablename'];}
+	foreach($recs as $rec){$tables[]="{$CONFIG['postgresql_schema']}.{$rec['tablename']}";}
 	return $tables;
 }
 //---------- begin function postgresqlGetDBTablePrimaryKeys ----------

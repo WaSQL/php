@@ -6,6 +6,7 @@
 				case 'postgresql':
 					loadExtras('postgresql');
 					$tables=postgresqlGetDBTables();
+					//echo printValue($tables);
 				break;
 				case 'oracle':
 					loadExtras('oracle');
