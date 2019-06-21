@@ -847,8 +847,8 @@ function parseWacssEditFormTags($body,$params=array()){
 				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
-			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
-			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
 			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
 			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
 			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
@@ -881,8 +881,8 @@ function parseWacssEditFormTags($body,$params=array()){
 				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
-			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
-			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
 			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
 			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
 			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
@@ -907,8 +907,8 @@ function parseWacssEditFormTags($body,$params=array()){
 				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
-			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
-			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
 			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
 			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
 			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
@@ -933,8 +933,8 @@ function parseWacssEditFormTags($body,$params=array()){
 				$tparams['readonly']='readonly';
 			}
 			$tag['btag']=$m[0][$i];
-			$tag['htm']  ='<div>'.$tag['displayname'].'</div>';
-			$tag['htm'] .='<div style="display:flex;">';
+			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
+			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
 			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
 			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
 			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
