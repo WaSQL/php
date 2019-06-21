@@ -1615,7 +1615,13 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag  = '<div>'.PHP_EOL;	
 	}
 	else{
-		$tag  = '<div style="column-count:'.$params['width'].';width:100%;">'.PHP_EOL;
+		if(isset($params['-stretch'])){
+			$tag  = '<div style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
+		}
+		else{
+			$tag  = '<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+		}
+		
 	}
 	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
