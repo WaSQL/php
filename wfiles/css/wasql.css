@@ -330,6 +330,16 @@ table th a {
     opacity: 0;
   }
 }
+/* progress animation */
+.w_progress{
+    position :relative;
+    -webkit-animation: w_progress 5s infinite; /* Safari 4.0 - 8.0 */
+    animation: w_progress 5s infinite;
+}
+@keyframes w_progress {
+    from   {width: 0%;}
+    to  {width: 100%;}
+}
 
 /* spin animation */
 .w_spin {
