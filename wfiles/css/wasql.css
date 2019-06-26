@@ -334,7 +334,7 @@ table th a {
 .w_progress{
     position :relative;
     -webkit-animation: w_progress 5s infinite; /* Safari 4.0 - 8.0 */
-    animation: w_progress 5s infinite;
+    animation: w_progress 10s infinite;
 }
 @keyframes w_progress {
     from   {width: 0%;}
