@@ -69,6 +69,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
 *	[-listfields] -  subset of fields to list from the list returned.
+*	[-hidefields] - subset of fields to exclude
 *   [-translate] - translate column names (displaynames)
 *	[-anchormap] - str - field name to build an achormap from based on first letter or number of the value
 *	[-exportfields] -  subset of fields to export.
@@ -359,6 +360,18 @@ function databaseListRecords($params=array()){
 				$params['-listfields'][]=$k;
 			}
 			break;
+		}
+	}
+	//-hidefields
+	if(isset($params['-hidefields'])){
+		if(!is_array($params['-hidefields'])){
+			$params['-hidefields']=str_replace(' ','',$params['-hidefields']);
+			$params['-hidefields']=preg_split('/\,/',$params['-hidefields']);
+		}
+		foreach($params['-listfields'] as $s=>$fld){
+			if(in_array($fld,$params['-hidefields'])){
+				unset($params['-listfields'][$s]);
+			}
 		}
 	}
 	$rtn='';
