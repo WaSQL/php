@@ -1372,7 +1372,14 @@ function wasqlGetStates($d=0,$country='US'){
 		'-index'=>$d?'name':'code'
 	);
 	$recs=getDBRecords($recopts);
-	if(is_array($recs)){return implode("\r\n",array_keys($recs));}
+	if(is_array($recs)){
+		$vals=array();
+		foreach($recs as $rec){
+			if($d==0){$vals[]=$rec['code'];}
+			else{$vals[]=$rec['name'];}
+		}
+		return implode("\r\n",$vals);
+	}
 	return '';
 }
 //---------- begin function wasqlGetCountries ----------
