@@ -672,7 +672,7 @@ function createWasqlTable($table=''){
 					foreach($csv['items'] as $item){
 		                $item['-table']=$table;
 						if(!isset($item['country'])){$item['country']=$country;}
-						$item['name']=utf8_encode($item['name']);
+						//$item['name']=utf8_encode($item['name']);
 		                $id=addDBRecord($item);
 		                if(!isNum($id)){abort(printValue($id).printValue($item));}
 					}
