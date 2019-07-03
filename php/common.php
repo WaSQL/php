@@ -827,19 +827,44 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag=array();
 			$tag['section_name']=$section_names[$sid];
 			$tag['section_id']=$sid;
-			$tag['displayname']=$m[1][$i];
-			$tag['fieldname']='wacssform_raten5_'.encodeCRC($tag['displayname']);
-			$tparams=array();
-			$topts=array();
-			for($x=1;$x<=5;$x++){
-				$topts[$x]=$x;
-			}
+			$tag['displayname']=$m[1][$i];			
 			$tparams=array(
-				'width'=>5,
 				'class'=>'w_orange',
 				'1_class'=>'w_red',
-				'5_class'=>'w_green'
+				'10_class'=>'w_green',
+				'min'=>1,
+				'max'=>5,
+				'width'=>5,
+				'pre'=>'Disagree',
+				'post'=>'Agree'
 			);
+			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
+				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
+				$pairs=preg_split('/\,/',$p[1]);
+				//echo printValue($pairs);exit;
+				foreach($pairs as $pair){
+					list($k,$v)=preg_split('/\:/',$pair,2);
+					$k=strtolower(trim($k));
+					$k=preg_replace('/^\"/','',$k);
+					$k=preg_replace('/\"$/','',$k);
+					if($k=='default'){$k='value';}
+					$v=trim($v);
+					$v=preg_replace('/^\"/','',$v);
+					$v=preg_replace('/\"$/','',$v);
+					$tparams[$k]=$v;
+				}
+			}
+			//echo printValue($tparams);exit;
+			$vals=range($tparams['min'],$tparams['max']);
+			unset($tparams['min']);
+			unset($tparams['max']);
+			$topts=array();
+			foreach($vals as $val){
+				$topts[$val]=$val;
+			}
+
+			$tag['fieldname']='wacssform_raten10_'.encodeCRC($tag['displayname']);
+			
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
@@ -849,9 +874,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
-			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">'.$tparams['pre'].' </span>';
 			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
-			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> '.$tparams['post'].'</span>';
 			$tag['htm'] .= '</div>';
 			$tags[$sid][]=$tag;
 		}
@@ -861,19 +886,44 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag=array();
 			$tag['section_name']=$section_names[$sid];
 			$tag['section_id']=$sid;
-			$tag['displayname']=$m[1][$i];
-			$tag['fieldname']='wacssform_raten10_'.encodeCRC($tag['displayname']);
-			$tparams=array();
-			$topts=array();
-			for($x=1;$x<=10;$x++){
-				$topts[$x]=$x;
-			}
+			$tag['displayname']=$m[1][$i];			
 			$tparams=array(
-				'width'=>10,
 				'class'=>'w_orange',
 				'1_class'=>'w_red',
-				'10_class'=>'w_green'
+				'10_class'=>'w_green',
+				'min'=>1,
+				'max'=>10,
+				'width'=>10,
+				'pre'=>'Disagree',
+				'post'=>'Agree'
 			);
+			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
+				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
+				$pairs=preg_split('/\,/',$p[1]);
+				//echo printValue($pairs);exit;
+				foreach($pairs as $pair){
+					list($k,$v)=preg_split('/\:/',$pair,2);
+					$k=strtolower(trim($k));
+					$k=preg_replace('/^\"/','',$k);
+					$k=preg_replace('/\"$/','',$k);
+					if($k=='default'){$k='value';}
+					$v=trim($v);
+					$v=preg_replace('/^\"/','',$v);
+					$v=preg_replace('/\"$/','',$v);
+					$tparams[$k]=$v;
+				}
+			}
+			//echo printValue($tparams);exit;
+			$vals=range($tparams['min'],$tparams['max']);
+			unset($tparams['min']);
+			unset($tparams['max']);
+			$topts=array();
+			foreach($vals as $val){
+				$topts[$val]=$val;
+			}
+
+			$tag['fieldname']='wacssform_raten10_'.encodeCRC($tag['displayname']);
+			
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
@@ -883,9 +933,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
-			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Strongly Disagree </span>';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">'.$tparams['pre'].' </span>';
 			$tag['htm'] .= buildFormRadio($tag['fieldname'],$topts,$tparams);
-			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Strongly Agree</span>';
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> '.$tparams['post'].'</span>';
 			$tag['htm'] .= '</div>';
 			$tags[$sid][]=$tag;
 		}
@@ -896,10 +946,31 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['section_name']=$section_names[$sid];
 			$tag['section_id']=$sid;
 			$tag['displayname']=$m[1][$i];
-			$tag['fieldname']='wacssform_rates5_'.encodeCRC($tag['displayname']);
 			$tparams=array(
-				'max'=>5
+				'min'=>1,
+				'max'=>5,
+				'pre'=>'Poor',
+				'post'=>'Excellent'
 			);
+			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
+				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
+				$pairs=preg_split('/\,/',$p[1]);
+				//echo printValue($pairs);exit;
+				foreach($pairs as $pair){
+					list($k,$v)=preg_split('/\:/',$pair,2);
+					$k=strtolower(trim($k));
+					$k=preg_replace('/^\"/','',$k);
+					$k=preg_replace('/\"$/','',$k);
+					if($k=='default'){$k='value';}
+					$v=trim($v);
+					$v=preg_replace('/^\"/','',$v);
+					$v=preg_replace('/\"$/','',$v);
+					$tparams[$k]=$v;
+				}
+			}
+			//echo printValue($tparams);exit;
+			$tag['fieldname']='wacssform_rates5_'.encodeCRC($tag['displayname']);
+			
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
@@ -909,9 +980,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
-			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">'.$tparams['pre'].' </span>';
 			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
-			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> '.$tparams['post'].'</span>';
 			$tag['htm'] .= '</div>';
 			$tags[$sid][]=$tag;
 		}
@@ -922,10 +993,29 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['section_name']=$section_names[$sid];
 			$tag['section_id']=$sid;
 			$tag['displayname']=$m[1][$i];
-			$tag['fieldname']='wacssform_rates10_'.encodeCRC($tag['displayname']);	
 			$tparams=array(
-				'max'=>10
+				'min'=>1,
+				'max'=>10,
+				'pre'=>'Poor',
+				'post'=>'Excellent'
 			);
+			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
+				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
+				$pairs=preg_split('/\,/',$p[1]);
+				//echo printValue($pairs);exit;
+				foreach($pairs as $pair){
+					list($k,$v)=preg_split('/\:/',$pair,2);
+					$k=strtolower(trim($k));
+					$k=preg_replace('/^\"/','',$k);
+					$k=preg_replace('/\"$/','',$k);
+					if($k=='default'){$k='value';}
+					$v=trim($v);
+					$v=preg_replace('/^\"/','',$v);
+					$v=preg_replace('/\"$/','',$v);
+					$tparams[$k]=$v;
+				}
+			}
+			$tag['fieldname']='wacssform_rates10_'.encodeCRC($tag['displayname']);	
 			if(isset($params['answers'][$tag['fieldname']])){
 				$tparams['value']=$tag['answer']=$params['answers'][$tag['fieldname']];
 			}
@@ -935,9 +1025,9 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['btag']=$m[0][$i];
 			$tag['htm']  ='<div style="font-weight:bold;">'.$tag['displayname'].'</div>';
 			$tag['htm'] .='<div style="display:flex;justify-content:flex-start;align-items:center;">';
-			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">Poor </span>';
+			$tag['htm'] .= '<span class="w_nowrap" style="padding-right:10px;">'.$tparams['pre'].' </span>';
 			$tag['htm'] .= buildFormStarRating($tag['fieldname'],$tparams);
-			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> Excellent</span>';
+			$tag['htm'] .= ' <span class="w_nowrap" style="padding-left:10px;"> '.$tparams['post'].'</span>';
 			$tag['htm'] .= '</div>';
 			$tags[$sid][]=$tag;
 		}
