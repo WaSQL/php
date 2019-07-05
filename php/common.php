@@ -1435,11 +1435,11 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span data-id="'.$params['id'].'"';
+	$tag .= '	<span id="'.$params['id'].'_icon" data-id="'.$params['id'].'"';
+	$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_biggest"></span></span>'.PHP_EOL;
 	if(!isset($params['readonly'])){
-		$tag .= ' onclick="Calendar(this.getAttribute(\'data-id\'));"';
+		$tag.=buildOnload("initPikadayCalendar('{$params['id']}','{$params['id']}_icon');");
 	}
-	$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_bigger"></span></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }

@@ -64,7 +64,8 @@ $jspath=realpath("{$progpath}/../wfiles/js");
 //initialize the global files array
 global $files;
 $files=array();
-minifyFiles($jspath,array('common','event','form','calendar','colorpicker'));
+minifyFiles($jspath,array('common','event','form','colorpicker'));
+minifyFiles(realpath("{$jspath}/extras"),array('pikaday'));
 //echo printValue($parts).printValue($_REQUEST).printValue($_SESSION['w_MINIFY']);exit;
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_js']) && is_array($_SESSION['w_MINIFY']['extras_js'])){

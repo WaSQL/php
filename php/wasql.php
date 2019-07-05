@@ -11,7 +11,8 @@ register_shutdown_function('gracefulShutdown');
 function wasqlClearMinCache(){
 	$docroot=$_SERVER['DOCUMENT_ROOT'];
     if(!is_dir("{$docroot}/w_min")){return false;}
-    return cleanDir("{$docroot}/w_min");
+    $ok=cleanDir("{$docroot}/w_min");
+    return $ok;
 }
 //---------- begin function wasqlRebuildManual
 /**

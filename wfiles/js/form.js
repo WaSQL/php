@@ -151,6 +151,40 @@ function autoGrow(box,maxheight) {
 	if (box.scrollHeight < maxheight && box.scrollHeight > box.clientHeight && !window.opera){box.style.height=box.scrollHeight+'px';}
 }
 
+//---------- begin function initPikadayCalendar--------------------
+/**
+* @describe initializes pikaday calendar module
+* @param fieldname string - name of the input field to create
+* @param params array - parameters
+*	[-parent] string - parent object or id to append control to
+* @return object
+* @usage buildFormCalendar('fdate',{'-parent':'myform'});
+*/
+function initPikadayCalendar(field,trigger,params){
+	new Pikaday(
+    {
+        field: getObject(field),
+        trigger: getObject(trigger),
+        position:'bottom right',
+        format: 'YYYY-MM-DD',
+	    toString(date, format) {
+	        // you should do formatting based on the passed format,
+	        // but we will just return 'D/M/YYYY' for simplicity
+	        const day = date.getDate();
+	        const month = date.getMonth() + 1;
+	        const year = date.getFullYear();
+	        return `${year}-${month}-${day}`;
+	    },
+	    parse(dateString, format) {
+	        // dateString is the result of `toString` method
+	        const parts = dateString.split('/');
+	        const day = parseInt(parts[0], 10);
+	        const month = parseInt(parts[1], 10) - 1;
+	        const year = parseInt(parts[2], 10);
+	        return new Date(year, month, day);
+	    }
+	});
+}
 //---------- begin function buildFormCalendar--------------------
 /**
 * @describe creates an HTML calendar control

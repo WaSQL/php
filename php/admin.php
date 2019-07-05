@@ -2368,16 +2368,16 @@ LIST_TABLE:
             	if($height > 700){$height=700;}
             	if($height < 300){$height=300;}
 			}
-			echo '		<textarea name="_schema" wrap="off" style="font-size:9pt;width:400px;height:'.$height.'px;">'.PHP_EOL;
+			echo '		<textarea name="_schema" wrap="off" spellcheck="false" style="font-size:9pt;width:400px;height:'.$height.'px;">'.PHP_EOL;
 			//echo printValue($list);
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
 				$type=$field['_dbtype_ex'];
-				if($field['_dbnull']=='NO'){$type .= ' NOT NULL';}
-				else{$type .= ' NULL';}
-				if(isset($field['_dbkey']) && $field['_dbkey']=='PRI'){$type .= ' Primary Key';}
-				elseif(isset($field['_dbkey']) && $field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
-				if(isset($field['_dbdefault']) && strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
+				// if($field['_dbnull']=='NO'){$type .= ' NOT NULL';}
+				// else{$type .= ' NULL';}
+				// if(isset($field['_dbkey']) && $field['_dbkey']=='PRI'){$type .= ' Primary Key';}
+				// elseif(isset($field['_dbkey']) && $field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
+				// if(isset($field['_dbdefault']) && strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
 				if(isset($field['_dbextra']) && strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],'virtual generated')){
 						echo "{$field['_dbfield']} {$type} {$field['_dbextra']}\r\n";

@@ -67,6 +67,7 @@ $files=array();
 //add wasql CSS file
 minifyFiles($csspath,'wasql');
 minifyFiles($csspath,'wasql_icons');
+minifyFiles(realpath("{$csspath}/extras"),'pikaday');
 //echo printValue($parts).printValue($_REQUEST).printValue($_SESSION['w_MINIFY']);exit;
 //Get any extras
 if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY']['extras_css'])){
