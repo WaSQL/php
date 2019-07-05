@@ -170,10 +170,12 @@ function initPikadayCalendar(field,trigger,params){
 	    toString(date, format) {
 	        // you should do formatting based on the passed format,
 	        // but we will just return 'D/M/YYYY' for simplicity
-	        const day = date.getDate();
-	        const month = date.getMonth() + 1;
-	        const year = date.getFullYear();
-	        return `${year}-${month}-${day}`;
+	        let day = date.getDate();
+	        let month = date.getMonth() + 1;
+	        let year = date.getFullYear();
+	        if(day < 10){day='0'+day;}
+	        if(month < 10){month='0'+month;}
+	        return year+'-'+month+'-'+day;
 	    },
 	    parse(dateString, format) {
 	        // dateString is the result of `toString` method
