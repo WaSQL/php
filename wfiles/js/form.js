@@ -214,7 +214,7 @@ function initPikadayCalendar(field,trigger,params){
 	}
 	//firstDay
 	if(undefined != attrs['data-firstday']){
-		opts.firstDay=attrs['data-firstday'];
+		opts.firstDay=parseInt(attrs['data-firstday']);
 	}
 	//disableWeekends
 	if(undefined != attrs['data-disableweekends']){
