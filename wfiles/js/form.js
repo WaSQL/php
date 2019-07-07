@@ -268,7 +268,9 @@ function initPikadayCalendar(field,trigger,params){
 		}
 		
 	}
-	//console.log(opts);
+	if(undefined != attrs['data-debug']){
+		console.log(opts);
+	}
 	new Pikaday(opts);
 }
 //---------- begin function buildFormCalendar--------------------
