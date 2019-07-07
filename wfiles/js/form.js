@@ -161,9 +161,9 @@ function autoGrow(box,maxheight) {
 * @usage buildFormCalendar('fdate',{'-parent':'myform'});
 */
 function initPikadayCalendar(field,trigger,params){
-	new Pikaday(
-    {
-        field: getObject(field),
+	field=getObject(field);
+	let opts={
+        field: field,
         trigger: getObject(trigger),
         position:'bottom right',
         format: 'YYYY-MM-DD',
@@ -185,7 +185,77 @@ function initPikadayCalendar(field,trigger,params){
 	        const year = parseInt(parts[2], 10);
 	        return new Date(year, month, day);
 	    }
-	});
+	};
+	//check for custom attributes
+	let attrs=getAllAttributes(field);
+	//maxDate
+	if(undefined != attrs['data-maxdate']){
+		switch(attrs['data-maxdate'].toLowerCase()){
+			case 'now':
+			case 'today':
+				opts.maxDate=new Date();
+			break;
+			default:
+				opts.maxDate=new Date(attrs['data-maxdate']);
+			break;
+		}
+	}
+	//minDate
+	if(undefined != attrs['data-mindate']){
+		switch(attrs['data-mindate'].toLowerCase()){
+			case 'now':
+			case 'today':
+				opts.minDate=new Date();
+			break;
+			default:
+				opts.minDate=new Date(attrs['data-mindate']);
+			break;
+		}
+	}
+	//firstDay
+	if(undefined != attrs['data-firstday']){
+		opts.firstDay=attrs['data-firstday'];
+	}
+	//disableWeekends
+	if(undefined != attrs['data-disableweekends']){
+		opts.disableWeekends=true;
+	}
+	//showDaysInNextAndPreviousMonths
+	if(undefined != attrs['data-showalldays']){
+		opts.showDaysInNextAndPreviousMonths=true;
+		opts.enableSelectionDaysInNextAndPreviousMonths=true;
+	}
+	//numberOfMonths
+	if(undefined != attrs['data-numberofmonths']){
+		opts.numberOfMonths=attrs['data-numberofmonths'];
+		if(undefined != attrs['data-maincalendar']){
+			opts.mainCalendar=attrs['data-maincalendar'];
+		}
+	}
+	//pickWholeWeek
+	if(undefined != attrs['data-pickwholeweek']){
+		opts.pickWholeWeek=true;
+	}
+	//theme
+	if(undefined != attrs['data-theme']){
+		opts.theme=attrs['data-theme'];
+	}
+	//yearRange
+	if(undefined != attrs['data-yearrange']){
+		let r=attrs['data-yearrange'].split(/\,/);
+		if(r.length==1){
+			let n=parseInt(attrs['data-yearrange']);
+			opts.yearRange=n;	
+		}
+		else{
+			r[0]=parseInt(r[0]);
+			r[1]=parseInt(r[1]);
+			opts.yearRange=r;
+		}
+		
+	}
+	//console.log(opts);
+	new Pikaday(opts);
 }
 //---------- begin function buildFormCalendar--------------------
 /**
