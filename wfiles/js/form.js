@@ -190,26 +190,40 @@ function initPikadayCalendar(field,trigger,params){
 	let attrs=getAllAttributes(field);
 	//maxDate
 	if(undefined != attrs['data-maxdate']){
-		switch(attrs['data-maxdate'].toLowerCase()){
-			case 'now':
-			case 'today':
-				opts.maxDate=new Date();
-			break;
-			default:
-				opts.maxDate=new Date(attrs['data-maxdate']);
-			break;
+		if(attrs['data-maxdate'].indexOf('-') != -1){
+			let n=parseInt(attrs['data-maxdate']);
+			let d=new Date();
+			opts.maxDate=d.getDate()-n;
+		}
+		else{
+			switch(attrs['data-maxdate'].toLowerCase()){
+				case 'now':
+				case 'today':
+					opts.maxDate=new Date();
+				break;
+				default:
+					opts.maxDate=new Date(attrs['data-maxdate']);
+				break;
+			}
 		}
 	}
 	//minDate
 	if(undefined != attrs['data-mindate']){
-		switch(attrs['data-mindate'].toLowerCase()){
-			case 'now':
-			case 'today':
-				opts.minDate=new Date();
-			break;
-			default:
-				opts.minDate=new Date(attrs['data-mindate']);
-			break;
+		if(attrs['data-mindate'].indexOf('-') != -1){
+			let n=parseInt(attrs['data-mindate']);
+			let d=new Date();
+			opts.minDate=d.getDate()-n;
+		}
+		else{
+			switch(attrs['data-mindate'].toLowerCase()){
+				case 'now':
+				case 'today':
+					opts.minDate=new Date();
+				break;
+				default:
+					opts.minDate=new Date(attrs['data-mindate']);
+				break;
+			}
 		}
 	}
 	//firstDay
