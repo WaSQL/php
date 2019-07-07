@@ -1397,6 +1397,13 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 * @describe creates an HTML date control
 * @param action string
 * @param params array
+*	[data-firstday] - integer - sets the first day of the week (0: Sunday, 1: Monday, etc)
+*	[data-disableweekends] - if set, disallows selection of Saturdays or Sundays
+*	[data-showalldays] - if set, renders days of the calendar grid that fall in the next or previous months and make them selectable
+*	[data-numberofmonths] - integer - set the number of visible calendar months
+*	[data-maincalendar] - left or right - sets where the main calendar is.
+*	[data-pickwholeweek] - if set, selects a whole week instead of a day
+*	[data-theme] - string - define classname so you can define your own css.
 * @return string
 * @usage echo buildFormDate('mydate');
 */
@@ -1417,7 +1424,6 @@ function buildFormDate($name,$params=array()){
 	}
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
 	if(!isset($params['maxlength'])){$params['maxlength']='15';}
-	if(!isset($params['data-type'])){$params['data-type']='date';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){

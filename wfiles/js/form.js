@@ -160,11 +160,10 @@ function autoGrow(box,maxheight) {
 * @return object
 * @usage buildFormCalendar('fdate',{'-parent':'myform'});
 */
-function initPikadayCalendar(field,trigger,params){
+function initPikadayCalendar(field,params){
 	field=getObject(field);
 	let opts={
         field: field,
-        trigger: getObject(trigger),
         position:'bottom right',
         format: 'YYYY-MM-DD',
 	    toString(date, format) {
@@ -231,6 +230,13 @@ function initPikadayCalendar(field,trigger,params){
 			}
 		}
 	}
+	//trigger
+	if(undefined != attrs['data-trigger']){
+		let tobj=getObject(attrs['data-trigger']);
+		if(undefined != tobj){
+			opts.trigger=tobj;
+		}
+	}
 	//firstDay
 	if(undefined != attrs['data-firstday']){
 		opts.firstDay=parseInt(attrs['data-firstday']);
@@ -276,7 +282,15 @@ function initPikadayCalendar(field,trigger,params){
 	if(undefined != attrs['data-debug']){
 		console.log(opts);
 	}
-	new Pikaday(opts);
+	let p=new Pikaday(opts);
+	//{field}_icon - show the calendar if they click on the field icon
+	let icon=getObject(field.id+'_icon');
+	if(undefined != icon){
+		icon.p=p;
+		icon.onclick=function(){
+			this.p.show();
+		};
+	}
 }
 //---------- begin function buildFormCalendar--------------------
 /**
