@@ -1418,6 +1418,7 @@ function buildFormDate($name,$params=array()){
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-mask']='date';
+	$params['data-control']='pikadate';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
     	unset($params['mask']);
