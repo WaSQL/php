@@ -3964,11 +3964,9 @@ THE SOFTWARE.
 	  }
 
 	}
-	//-----
 	function style(element, styles) {
-	  for (var prop in styles)
-	    element.style.setProperty(prop, styles[prop], 'important');
+		for (var prop in styles){
+	    	element.style.setProperty(prop, styles[prop], 'important');
+		}
 	}
 })();
-
-
