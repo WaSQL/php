@@ -1587,4 +1587,4 @@ var wacss = {
 		}
 	}
 }
-wacss.listen('load',window,function(){wacss.init();})
+wacss.listen('load',window,function(){wacss.init();});
