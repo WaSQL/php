@@ -1201,6 +1201,17 @@ function initBehaviors(ajaxdiv){
 				this.style.height=h;
 			});
         }
+        if(in_array("tabs",behaviors)){
+			/* enable tabs */
+			navEls[n].onkeydown = function(e){
+		        if(e.keyCode==9 || e.which==9){
+		            e.preventDefault();
+		            var s = this.selectionStart;
+		            this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+		            this.selectionEnd = s+1; 
+		        }
+		    }
+        }
         if(in_array("chart",behaviors)){
 			/* Chart using Chart.js */
 			var chart_type=navEls[n].getAttribute('data-type') || 'bar';
