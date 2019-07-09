@@ -13193,11 +13193,12 @@ function processActions(){
 				$_REQUEST['-action']=preg_replace('/.+?'.$_SERVER['HTTP_HOST'].'/i','',$_SERVER['HTTP_REFERER']);
 				$_REQUEST['-action']=preg_replace('/\?.*$/','',$_REQUEST['-action']);
             	}
+            //echo printValue($_REQUEST);exit;
             //set defaults for fielddata table on new fields
             if(!isset($_REQUEST['-table']) && isset($_REQUEST['_table'])){
             	$_REQUEST['-table']=$_REQUEST['_table'];
             }
-            if($_REQUEST['-table']=='_fielddata' && !isset($_REQUEST['_id'])){
+            if($_REQUEST['-table']=='_fielddata' && (!isset($_REQUEST['_id']) || $_REQUEST['_id']==0)){
 				if(isset($_REQUEST['fieldname'])){
 					$info=getDBFieldInfo($_REQUEST['tablename']);
 					$fieldname=$_REQUEST['fieldname'];
@@ -13207,6 +13208,7 @@ function processActions(){
 							$_REQUEST['required']=1;
 						}
 	                }
+	                //echo $fieldname.printValue($info);exit;
 	                switch($info[$fieldname]['_dbtype']){
 						case 'string':
 						case 'blob':
