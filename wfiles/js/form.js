@@ -177,7 +177,6 @@ function initPikadayCalendar(field,params){
 	        return year+'-'+month+'-'+day;
 	    },
 	    parse(dateString, format) {
-	        // dateString is the result of `toString` method
 	        const parts = dateString.split('/');
 	        const day = parseInt(parts[0], 10);
 	        const month = parseInt(parts[1], 10) - 1;
@@ -211,9 +210,6 @@ function initPikadayCalendar(field,params){
 	if(undefined != attrs['data-mindate']){
 		if(attrs['data-mindate'].indexOf('-') != -1){
 			let n=parseInt(attrs['data-mindate'])*-1;
-			if(undefined != attrs['data-debug']){
-				console.log('mindate n='+n);
-			}
 			let d=new Date();
 			d.setDate(d.getDate() - n);
 			opts.minDate=d;
@@ -280,10 +276,11 @@ function initPikadayCalendar(field,params){
 		
 	}
 	if(undefined != attrs['data-debug']){
+		//log debug in console
 		console.log(opts);
 	}
 	let p=new Pikaday(opts);
-	//{field}_icon - show the calendar if they click on the field icon
+	//show the calendar if they click on the field icon
 	let icon=getObject(field.id+'_icon');
 	if(undefined != icon){
 		icon.p=p;

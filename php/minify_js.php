@@ -1,5 +1,5 @@
 <?php
-//minify the js files in wfiles/js
+//minify the js files in wfiles/js. updated July 2019
 /* first, lets determine the current page, template, domain, and user */
 error_reporting(E_ALL & ~E_NOTICE);
 $progpath=dirname(__FILE__);
