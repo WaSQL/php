@@ -1,6 +1,11 @@
 <?php
 	global $CONFIG;
 	switch(strtolower($_REQUEST['func'])){
+		case 'monitor':
+			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
+			setView('monitor_sql',1);
+			return;
+		break;
 		case 'setdb':
 			switch(strtolower($_REQUEST['db'])){
 				case 'postgresql':

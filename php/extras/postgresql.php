@@ -843,4 +843,32 @@ function postgresqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
 	}
 	return $results;
 }
-
+function postgresqlMonitorSql($type){
+	switch(strtolower($type)){
+		case 'running_queries':
+			return <<<ENDOFQUERY
+SELECT
+  S.pid,
+  age(clock_timestamp(), query_start),
+  usename,
+  query,
+  L.mode,
+  L.locktype,
+  L.granted
+FROM pg_stat_activity S
+inner join pg_locks L on S.pid = L.pid 
+order by L.granted, L.pid DESC
+ENDOFQUERY;
+		break;
+		case 'table_locks':
+			return <<<ENDOFQUERY
+select pid, 
+       usename, 
+       pg_blocking_pids(pid) as blocked_by, 
+       query as blocked_query
+from pg_stat_activity
+where cardinality(pg_blocking_pids(pid)) > 0
+ENDOFQUERY;
+		break;
+	}
+}

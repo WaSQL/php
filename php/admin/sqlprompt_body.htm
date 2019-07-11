@@ -9,7 +9,12 @@
 	}
 	function sqlpromptSetDB(db){
 		document.sqlprompt.db.value=db;
+		setText('sql_full','');
 		return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
+	}
+	function sqlpromptMonitor(type){
+		var db=document.sqlprompt.db.value;
+		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0})
 	}
 	function sqlpromptFields(table){
 		var t=getText(table+'_fields');
@@ -37,8 +42,15 @@
 		</div>
 	</div>
 	<div class="row w_padtop">
-		<div class="col-sm-3" id="table_fields">
+		<div class="col-sm-3">
+			<div class="w_bold w_big">Tables & Fields</div>
+			<div id="table_fields" style="max-height:40vh;overflow:auto;padding-right:5px">
 			<?=renderView('tables_fields',$tables,'tables');?>
+			</div>
+			<div class="w_bold w_big">Monitor Tools</div>
+			<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
+			<?=renderView('monitor',$tables,'tables');?>
+			</div>
 		</div>
 		<div class="col-sm-9">
 			<?=renderViewIf(count($tabs),'tabs',$tabs,'tabs');?>
@@ -65,14 +77,14 @@
 				</form>
 			</div>
 			<div id="sqlprompt_results"></div>
+			<div style="display:none"><div id="nulldiv"></div></div>
 		</div>
 	</div>
 </div>
 </view:default>
 
 <view:tables_fields>
-	<div class="w_bold w_big">Tables & Fields</div>
-	<ul class="nav-list buttons <?=configValue('admin_color');?>"  style="max-height:80vh;overflow:auto;padding-right:5px">
+	<ul class="nav-list buttons <?=configValue('admin_color');?>"  >
 		<view:table>
 			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');"><?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
@@ -81,6 +93,18 @@
 		<?=renderEach('table',$tables,'table');?>
 	</ul>
 </view:tables_fields>
+
+<view:monitor>
+	<ul class="nav-list buttons <?=configValue('admin_color');?>"  >
+		<li><a href="#" onclick="return sqlpromptMonitor('running_queries');"><span class="icon-spin4"></span> Running Queries</a></li>
+		<li><a href="#" onclick="return sqlpromptMonitor('table_locks');"><span class="icon-lock"></span> Table Locks</a></li>
+	</ul>
+</view:monitor>
+
+<view:monitor_sql>
+	<div id="monitor_sql_query"><?=trim($sql);?></div>
+	<?=buildOnLoad("setText('sql_full','');setText('sql_full',getText('monitor_sql_query'));sqlpromptSubmit(document.sqlprompt);");?>
+</view:monitor_sql>
 
 <view:tabs>
 <nav>
