@@ -1453,7 +1453,16 @@ table.table {
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
-
+table.table-responsive {
+    width: 100%;
+    display:block;
+    height:calc(100vh - 200px);;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    overflow-y: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -webkit-overflow-scrolling: touch;
+  }
 table.table-striped tbody tr:nth-of-type(odd),
 table.striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0,0,0,.05);
