@@ -93,7 +93,11 @@
 				break;
 				case 'mssql':
 					loadExtras('mssql');
+					//echo $_SESSION['sql_full'];exit;
 					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
+					if(!is_array($recs)){
+						$recs=array(array('result'=>$ok));
+					}
 					//echo $_SESSION['sql_last'].printValue($recs);exit;
 				break;
 				case 'hana':

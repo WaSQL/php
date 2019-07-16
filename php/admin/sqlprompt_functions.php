@@ -11,11 +11,15 @@ function sqlpromptListResults($recs){
 		'-tableclass'=>'table striped bordered condensed'
 	));
 }
-function sqlpromptBuildQuery($db,$type){
+function sqlpromptBuildQuery($db,$name){
 	switch(strtolower($db)){
+		case 'mssql':
+			loadExtras('mssql');
+			return trim(mssqlNamedQuery($name));
+		break;
 		case 'postgresql':
 			loadExtras('postgresql');
-			return trim(postgresqlMonitorSql($type));
+			return trim(postgresqlNamedQuery($name));
 		break;
 		case 'oracle':
 
@@ -29,7 +33,7 @@ function sqlpromptBuildQuery($db,$type){
 
 		break;
 		default:
-			switch(strtolower($type)){
+			switch(strtolower($name)){
 				case 'running_queries':
 					return 'show processlist';
 				break;

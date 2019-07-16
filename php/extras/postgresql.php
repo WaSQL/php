@@ -535,7 +535,8 @@ function postgresqlGetDBRecords($params){
 	global $USER;
 	global $CONFIG;
 	if(empty($params['-table']) && !is_array($params)){
-		if(stringBeginsWith($params,"select ") || stringBeginsWith($params,"call ") || stringBeginsWith($params,"show ") || stringBeginsWith($params,"with ") || stringBeginsWith($params,"explain ") || stringContains($params,' returning ')){
+		$params=trim($params);
+		if(preg_match('/^(select|exec|with|explain|returning|show|call)[\t\s\ \r\n]/i',$params)){
 			//they just entered a query
 			$query=$params;
 			$params=array();
@@ -843,8 +844,16 @@ function postgresqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
 	}
 	return $results;
 }
-function postgresqlMonitorSql($type){
-	switch(strtolower($type)){
+//---------- begin function postgresqlNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function postgresqlNamedQuery($name){
+	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT

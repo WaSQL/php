@@ -565,10 +565,17 @@ function mssqlGetDBRecord($params=array()){
 function mssqlGetDBRecords($params){
 	global $USER;
 	global $CONFIG;
-	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
-		//they just entered a query
-		$query=$params;
-		$params=array();
+	if(empty($params['-table']) && !is_array($params)){
+		$params=trim($params);
+		if(preg_match('/^(select|exec|with|explain|returning|show|call)[\t\s\ ]/i',$params)){
+			//they just entered a query
+			$query=$params;
+			$params=array();
+		}
+		else{
+			$ok=mssqlExecuteSQL($params);
+			return $ok;
+		}
 	}
 	else{
 		//determine fields to return
@@ -966,4 +973,37 @@ function mssqlExecuteSQL($query,$params=array()){
 		return false;
 	}
 	return true;
+}
+//---------- begin function mssqlNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function mssqlNamedQuery($name){
+	switch(strtolower($name)){
+		case 'running_queries':
+			return <<<ENDOFQUERY
+SELECT
+    p.spid, p.status, p.hostname, p.loginame, p.cpu, r.start_time, r.command,
+    p.program_name, text 
+FROM
+    sys.dm_exec_requests AS r,
+    master.dbo.sysprocesses AS p 
+    CROSS APPLY sys.dm_exec_sql_text(p.sql_handle)
+WHERE
+    p.status NOT IN ('sleeping', 'background','suspended') 
+AND r.session_id = p.spid
+ENDOFQUERY;
+		break;
+		case 'table_locks':
+			//https://www.mssqltips.com/sqlservertip/2732/different-techniques-to-identify-blocking-in-sql-server/
+			return <<<ENDOFQUERY
+SELECT * from sys.dm_tran_locks
+WHERE request_status = 'CONVERT'
+ENDOFQUERY;
+		break;
+	}
 }
