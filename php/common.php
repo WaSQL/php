@@ -1748,9 +1748,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		
 	}
-	if(count($params['-values'])){
-		$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
-	}
+	$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
