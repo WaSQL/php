@@ -404,6 +404,7 @@ function postgresqlGetDBCount($params=array()){
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
+	//$params['-debug']=1;
 	$recs=postgresqlGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
@@ -550,13 +551,13 @@ function postgresqlGetDBRecords($params){
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){
-				$params['-fields']=str_replace(' ','',$params['-fields']);
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}
 		if(empty($params['-fields'])){$params['-fields']='*';}
 		$fields=postgresqlGetDBFieldInfo($params['-table'],$params);
+		//echo printValue($fields);
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
@@ -566,8 +567,23 @@ function postgresqlGetDBRecords($params){
 	            $params[$k]=implode(':',$params[$k]);
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
-	        $v=strtoupper($params[$k]);
-	        $ands[]="upper({$k})='{$v}'";
+	        switch(strtolower($fields[$k])){
+	        	case 'char':
+	        	case 'varchar':
+	        		$v=strtoupper($params[$k]);
+	        		$ands[]="upper({$k})='{$v}'";
+	        	break;
+	        	case 'int':
+	        	case 'int4':
+	        	case 'numeric':
+	        		$ands[]="{$k}={$v}";
+	        	break;
+	        	default:
+	        		$ands[]="{$k}='{$v}'";
+	        	break;
+
+	        }
+	        
 		}
 		//check for -where
 		if(!empty($params['-where'])){

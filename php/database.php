@@ -116,6 +116,7 @@ function databaseListRecords($params=array()){
 		$params['-listfields']=$params['-fields'];
 	}
 	//require -table or -list or -query
+	//echo printValue($params);
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'oracle':
@@ -126,6 +127,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'mssql':
 				$params['-list']=mssqlQueryResults($params['-query']);
+			break;
+			case 'postgresql':
+				$params['-list']=postgresqlQueryResults($params['-query']);
 			break;
 			case 'sqlite':
 				$params['-list']=sqliteQueryResults($params['-query']);
@@ -153,6 +157,9 @@ function databaseListRecords($params=array()){
 				case 'mssql':
 					$params=array('-list'=>mssqlGetDBRecords($params));
 				break;
+				case 'postgresql':
+					$params=array('-list'=>postgresqlGetDBRecords($params));
+				break;
 				case 'sqlite':
 					$params=array('-list'=>sqliteGetDBRecords($params));
 				break;
@@ -173,6 +180,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'mssql':
 				$info=mssqlGetDBFieldInfo($params['-table']);
+			break;
+			case 'postgresql':
+				$info=postgresqlGetDBFieldInfo($params['-table']);
 			break;
 			case 'sqlite':
 				$info=sqliteGetDBFieldInfo($params['-table']);
@@ -221,6 +231,9 @@ function databaseListRecords($params=array()){
 				case 'mssql':
 					$ok=mssqlEditDBRecord($bulk);
 				break;
+				case 'postgresql':
+					$ok=postgresqlEditDBRecord($bulk);
+				break;
 				case 'sqlite':
 					$ok=sqliteEditDBRecord($bulk);
 				break;
@@ -262,6 +275,9 @@ function databaseListRecords($params=array()){
 				case 'mssql':
 					$recs=mssqlGetDBRecords($params);
 				break;
+				case 'postgresql':
+					$recs=postgresqlGetDBRecords($params);
+				break;
 				case 'sqlite':
 					$recs=sqliteGetDBRecords($params);
 				break;
@@ -300,6 +316,9 @@ function databaseListRecords($params=array()){
 				case 'mssql':
 					$params['-total']=mssqlGetDBCount($params);
 				break;
+				case 'postgresql':
+					$params['-total']=postgresqlGetDBCount($params);
+				break;
 				case 'sqlite':
 					$params['-total']=sqliteGetDBCount($params);
 				break;
@@ -322,6 +341,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'mssql':
 				$params['-list']=mssqlGetDBRecords($params);
+			break;
+			case 'postgresql':
+				$params['-list']=postgresqlGetDBRecords($params);
 			break;
 			case 'sqlite':
 				$params['-list']=sqliteGetDBRecords($params);
