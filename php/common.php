@@ -1777,9 +1777,12 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		//readonly?
 		if(isset($params['readonly'])){
+			$tag .= ' onclick="return false;"';
+		}
+		elseif(isset($params['disabled'])){
 			$tag .= ' disabled="disabled"';
 		}
-		$tag .= '> '.PHP_EOL;
+		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
 			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;"> '.$dval.'</label>'.PHP_EOL;
