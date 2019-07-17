@@ -1707,6 +1707,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['width'])){$params['width']=count($opts)<6?count($opts):6;}
 	if(!isset($params['-icon'])){$params['-icon']='mark';}
 	//for checkboxes allow multiple valuse
+	$oname=$name;
 	if($params['-type']=='checkbox'){
 		$name.='[]';
 	}
@@ -1723,6 +1724,14 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(isset($params['-values'])){
     	if(!is_array($params['-values'])){
         	$params['-values']=array($params['-values']);
+		}
+	}
+	elseif(isset($_REQUEST[$oname])){
+    	if(!is_array($_REQUEST[$oname])){
+        	$params['-values']=array($_REQUEST[$oname]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$oname];
 		}
 	}
 	elseif(isset($_REQUEST[$name])){
@@ -1748,7 +1757,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		
 	}
-	$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
+	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
