@@ -2652,7 +2652,7 @@ function addDBRecord($params=array()){
 		$model_table=implode('.',$table_parts);
 		}
 	//echo printValue($model);exit;
-	if(isset($model['functions']) && strlen(trim($model['functions']))){
+	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
     	$model['check']=1;
@@ -2687,7 +2687,7 @@ function addDBRecord($params=array()){
 	//echo printValue($jsonfields).printValue($params).printValue($info);exit;
 	if(count($jsonfields)){
 		foreach($params as $key=>$val){
-			if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],'virtual generated')){
+			if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],' generated')){
 				unset($params[$key]);
 			    $j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
 			    if(strlen($j)){
@@ -2838,7 +2838,7 @@ function addDBRecord($params=array()){
     //return if no updates were found
 	if(!count($fields)){
 		//failure
-		if(isset($model['functions'])){
+		if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
 	    	if(function_exists("{$model_table}AddFailure")){
 				$params['-error']="addDBRecord Error: No Fields";
@@ -2882,9 +2882,9 @@ function addDBRecord($params=array()){
         	$wrec['_action']='add';
         	wsSendDBRecord($params['-table'],$wrec);
 		}
-    	if(isset($model['functions'])){
+    	if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
-	    	if(function_exists("{$model_table}AddSuccess")){
+	    	if(function_exists("{$model_table}AddSuccess") && !isset($params['-notrigger'])){
 				unset($params['-error']);
 	        	$params=call_user_func("{$model_table}AddSuccess",$params);
 	        	if(isset($params['-error'])){
@@ -2902,7 +2902,7 @@ function addDBRecord($params=array()){
   	}
   	else{
 		$error=getDBError();
-		if(isset($model['functions'])){
+		if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
 	    	if(function_exists("{$model_table}AddFailure")){
 				$params['-error']="addDBRecord Error:".printValue($error);
@@ -4093,7 +4093,7 @@ function delDBRecord($params=array()){
 		$model_table=implode('.',$table_parts);
 	}
 	//echo printValue($model);exit;
-	if(isset($model['functions']) && strlen(trim($model['functions']))){
+	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
     	if(function_exists("{$model_table}DeleteBefore")){
@@ -4115,7 +4115,7 @@ function delDBRecord($params=array()){
   	if($query_result){
 		databaseFreeResult($query_result);
 		if(!isset($params['-nolog']) || $params['-nolog'] != 1){logDBQuery($query,$start,$function,$params['-table']);}
-    	if(isset($model['functions'])){
+    	if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}DeleteSuccess")){
 				unset($params['-error']);
@@ -4129,7 +4129,7 @@ function delDBRecord($params=array()){
   		}
   	else{
 		$error=getDBError();
-		if(isset($model['functions'])){
+		if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
 	    	if(function_exists("{$model_table}DeleteFailure")){
 				$params['-error']="No updates found";
@@ -4395,7 +4395,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 		$params['-dbname']=array_shift($table_parts);
 		$model_table=implode('.',$table_parts);
 	}
-	if(isset($model['functions']) && strlen(trim($model['functions']))){
+	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
     	if(function_exists("{$model_table}EditBefore")){
@@ -4444,7 +4444,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			foreach($recs as $i=>$rec){
 				$jchanges=array();
 				foreach($params as $key=>$val){
-					if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],'virtual generated')){
+					if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],' generated')){
 						unset($params[$key]);
 			        	$j=getDBExpression($params['-table'],$info[$key]['_dbfield']);
 			        	if(strlen($j)){
@@ -4563,7 +4563,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     	}
     //return if no updates were found
 	if(!count($updates)){
-		if(isset($model['functions'])){
+		if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
 	    	if(function_exists("{$model_table}EditFailure")){
 				$params['-error']="No updates found";
@@ -4635,7 +4635,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
         	$wrec['where']=$params['-where'];
         	wsSendDBRecord($params['-table'],$wrec);
 		}
-    	if(isset($model['functions'])){
+    	if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
 	    	if(function_exists("{$model_table}EditSuccess")){
 				unset($params['-error']);
@@ -4650,7 +4650,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
   		}
   	else{
 		$error=getDBError();
-		if(isset($model['functions'])){
+		if(isset($model['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
 	    	if(function_exists("{$model_table}EditFailure")){
 				$params['-error']=$error;
@@ -7538,7 +7538,7 @@ function getDBRecords($params=array()){
 				$dbname=array_shift($table_parts);
 				$model_table=implode('.',$table_parts);
 				}
-			if(isset($model['functions']) && strlen(trim($model['functions']))){
+			if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
 		    	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
 		    	//look for Before trigger
 		    	if(function_exists("{$model_table}GetRecord")){
@@ -8912,7 +8912,7 @@ function databaseDescribeTable($table){
 		else{$vtable=$table;}
 		$recs=getDBRecords(array('-query'=>$query));
 		foreach($recs as $i=>$rec){
-        	if(preg_match('/VIRTUAL GENERATED/i',$rec['extra'])){
+        	if(preg_match('/(VIRTUAL|STORED) GENERATED/i',$rec['extra'])){
 				$recs[$i]['expression']=getDBExpression($vtable,$rec['field']);
 			}
 		}
