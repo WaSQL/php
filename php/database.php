@@ -2981,7 +2981,7 @@ function alterDBTable($table='',$params=array(),$engine=''){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
 			//echo printValue(array($m,$efield,$jfield));exit;
-            $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}')))";
+            $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}'))) STORED";
 		}
 		if(isset($current[$field])){
 			if(isWasqlField($field) && stringBeginsWith($current[$field],'int') && stringBeginsWith($type,'int')){
@@ -3097,7 +3097,7 @@ function createDBTable($table='',$fields=array(),$engine=''){
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
-            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}')))";
+            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}'))) STORED";
 		}
 		//lowercase the fieldname and replace spaces with underscores
 		$field=strtolower(trim($field));
@@ -7687,12 +7687,20 @@ function updateDBSchema($table,$lines,$new=0){
 		if(!strlen($type)){continue;}
 		if(!strlen($name)){continue;}
 		if(preg_match('/^\_/',$name)){continue;}
-		if(preg_match('/^(.+?)VIRTUAL GENERATED(.*)$/i',$type,$m)){
+		if(preg_match('/^(.+?)STORED GENERATED(.*)$/i',$type,$m)){
+			$type=preg_replace('/STORED GENERATED/i','',$type);
+			$type=preg_replace('/NULL/i','',$type);
+			$type=trim($type);
+			$exp=getDBExpression($table,$name);
+        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS ({$exp}) STORED";
+        	continue;
+		}
+		elseif(preg_match('/^(.+?)VIRTUAL GENERATED(.*)$/i',$type,$m)){
 			$type=preg_replace('/VIRTUAL GENERATED/i','',$type);
 			$type=preg_replace('/NULL/i','',$type);
 			$type=trim($type);
 			$exp=getDBExpression($table,$name);
-        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS ({$exp})";
+        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS ({$exp}) STORED";
         	continue;
 		}
 		//virtual from jdoc.Report.value
@@ -7703,7 +7711,7 @@ function updateDBSchema($table,$lines,$new=0){
 			$parts=preg_split('/\./',$m[2]);
 			$field=array_shift($parts);
 			$exp=implode('.',$parts);
-        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$field},'\$.{$exp}')))";
+        	$virtual[$name]="ALTER table {$updatetable} ADD {$name} {$type} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$field},'\$.{$exp}'))) STORED";
         	continue;
 		}
 		$fields[$name]=$type;
