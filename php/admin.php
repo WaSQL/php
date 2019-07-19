@@ -2379,7 +2379,7 @@ LIST_TABLE:
 				// elseif(isset($field['_dbkey']) && $field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
 				// if(isset($field['_dbdefault']) && strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
 				if(isset($field['_dbextra']) && strlen($field['_dbextra'])){
-					if(stringContains($field['_dbextra'],'virtual generated')){
+					if(stringContains($field['_dbextra'],' generated')){
 						echo "{$field['_dbfield']} {$type} {$field['_dbextra']}\r\n";
 						continue;
 					}

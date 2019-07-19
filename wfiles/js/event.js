@@ -59,7 +59,15 @@ function loadTextFileInit(el){
 		this.style.backgroundColor=this.origBgcolor;
 		// FileList object.
 		var files = evt.dataTransfer.files;
+		
 		var obj=this;
+		//check for text
+		if(files.length == 0 && undefined != evt.dataTransfer.getData('text')){
+			let txt=evt.dataTransfer.getData('text');
+			//console.log('insertAtCursor:'+txt);
+			insertAtCursor(this,txt);
+			return false;
+		}
 		// files is a FileList of File objects.
 		for (var i=0;i<files.length;i++){
 			var f=files[i];
@@ -2073,6 +2081,27 @@ function surroundText(text1, text2, textarea){
 		textarea.value += text1 + text2;
 		textarea.focus(textarea.value.length - 1);
 	}
+}
+
+function insertAtCursor(myField, myValue) {
+    //IE support
+    if (document.selection) {
+        myField.focus();
+        sel = document.selection.createRange();
+        sel.text = myValue;
+    }
+    //MOZILLA and others
+    else if (myField.selectionStart || myField.selectionStart == '0') {
+        var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
+        myField.value = myField.value.substring(0, startPos)
+            + myValue
+            + myField.value.substring(endPos, myField.value.length);
+    } 
+    else {
+        myField.value += myValue;
+    }
+    return false;
 }
 
 // Checks if the passed input's value is nothing.
