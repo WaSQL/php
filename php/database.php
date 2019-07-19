@@ -76,6 +76,9 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
 *	[-sumfields] string or array - list of fields to sum
+*	[-editfields] - in-cell edit fields.  * will make all cells editable
+*	[-editfunction] - javascript edit function to call if -editfields is set. return indexEditField('%event_id%','%fieldname%');
+*	[-editid] - id to assign to the table cell.  include %fieldname% if you want teh fieldname as part of the id. edit_%fieldname%_%event_id%
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
@@ -607,6 +610,7 @@ function databaseListRecords($params=array()){
 			//check for {field}_eval
 			if(!empty($params[$fld."_eval"])){
 				$evalstr=$params[$fld."_eval"];
+				$evalstr=str_replace('%fieldname%',$fld,$evalstr);
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
@@ -621,6 +625,7 @@ function databaseListRecords($params=array()){
 			//check for {field}_onclick and {field}_href
 			if(!empty($params[$fld."_onclick"])){
 				$href=$params[$fld."_onclick"];
+				$href=str_replace('%fieldname%',$fld,$href);
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
@@ -637,6 +642,7 @@ function databaseListRecords($params=array()){
 			elseif(!empty($params[$fld."_href"])){
 				$href=$params[$fld."_href"];
 				//substitute and %{field}% with its value in this record
+				$href=str_replace('%fieldname%',$fld,$href);
 				foreach($rec as $recfld=>$recval){
 					if(is_array($recfld) || is_array($recval)){continue;}
 					$replace='%'.$recfld.'%';
@@ -660,6 +666,7 @@ function databaseListRecords($params=array()){
 			foreach($params as $k=>$v){
 				if(preg_match('/^'.$fld.'_(onclick|eval|href|target)$/i',$k)){continue;}
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
+					$v=str_replace('%fieldname%',$fld,$v);
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
 						$replace='%'.$recfld.'%';
@@ -672,6 +679,7 @@ function databaseListRecords($params=array()){
 			foreach($params as $k=>$v){
 				if(preg_match('/^-td(.+)$/',$k,$m)){
 					if(!isset($atts[$m[1]])){
+						$v=str_replace('%fieldname%',$fld,$v);
 						foreach($rec as $recfld=>$recval){
 							if(is_array($recfld) || is_array($recval)){continue;}
 							$replace='%'.$recfld.'%';
@@ -682,8 +690,23 @@ function databaseListRecords($params=array()){
 					}
 				}
 			}
-			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && isset($rec['_id'])){
-				$atts['id']="editfield_{$fld}_{$rec['_id']}";
+			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && (isset($rec['_id']) || isset($params['-editid']))){
+				if(isset($params['-editid'])){
+					$editv=$params['-editid'];
+					$editv=str_replace('%fieldname%',$fld,$editv);
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $editv=str_replace($replace,strip_tags($rec[$recfld]),$editv);
+	                }
+	                $editv=str_replace('"','',$editv);
+	                $atts['id']=$editv;
+				}
+				else{
+					
+					$atts['id']="editfield_{$fld}_{$rec['_id']}";
+				}
+				
 			}
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>';
@@ -694,10 +717,25 @@ function databaseListRecords($params=array()){
 					$rtn .= '<a name="anchormap_'.$ch.'"></a>';
 				}
 			}
-			$rtn .=$value;
-			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && isset($rec['_id'])){
-				$rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$rec['_id'].'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
+			
+			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields'])){
+				if(isset($params['-editfunction'])){
+					$editv=$params['-editfunction'];
+					$editv=str_replace('%fieldname%',$fld,$editv);
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $editv=str_replace($replace,strip_tags($rec[$recfld]),$editv);
+	                }
+	                $editv=str_replace('"','',$editv);
+	                $rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="'.$editv.'"></sup>';
+				}
+				else{
+					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$rec['_id'].'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
+				}
+				
 			}
+			$rtn .=$value;
 			$rtn .='</td>'.PHP_EOL;
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
