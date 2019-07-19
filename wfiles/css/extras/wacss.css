@@ -1141,7 +1141,26 @@ a.btn{text-decoration: none;}
 .flexbutton.w_black > :not(z){color:rgba(35, 39, 43, 1.0);border-color:rgba(35, 39, 43, 1.0) !important;}
 
 
-button, input[type="text"], input[type="password"], input[type="number"], input[type="url"], select, textarea {
+button, 
+input[type="button"],
+input[type="color"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="file"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="range"],
+input[type="reset"],
+input[type="search"],
+input[type="submit"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"],
+select, textarea {
   -webkit-box-sizing: border-box; /* For legacy WebKit based browsers */
   -moz-box-sizing: border-box; /* For legacy (Firefox <29) Gecko based browsers */
   box-sizing: border-box;
@@ -1155,7 +1174,26 @@ button.btn{
   box-sizing: border-box;
   font-weight:300;
 }
-select, input[type="text"], input[type="password"], input[type="number"], input[type="url"], textarea{
+select,
+input[type="button"],
+input[type="color"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="file"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="range"],
+input[type="reset"],
+input[type="search"],
+input[type="submit"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"], 
+textarea{
   padding: .375rem .75rem;
   font-size: 1rem;
   border-radius:4px;
@@ -1164,13 +1202,51 @@ select, input[type="text"], input[type="password"], input[type="number"], input[
   font-weight:300;
   width:100%;
 }
-select.small, input[type="text"].small, input[type="password"].small, input[type="number"].small, input[type="url"].small,{
+select.small,
+input[type="button"].small,
+input[type="color"].small,
+input[type="date"].small,
+input[type="datetime-local"].small,
+input[type="email"].small,
+input[type="file"].small,
+input[type="month"].small,
+input[type="number"].small,
+input[type="password"].small,
+input[type="range"].small,
+input[type="reset"].small,
+input[type="search"].small,
+input[type="submit"].small,
+input[type="tel"].small,
+input[type="text"].small,
+input[type="time"].small,
+input[type="url"].small,
+input[type="week"].small
+textarea.small{
   padding: .25rem .5rem;
   font-size: .875rem;
 }
 
 @media (max-width: 575px){
-  select, input[type="text"], input[type="password"], input[type="number"], input[type="url"], textarea{
+  select,
+  input[type="button"],
+  input[type="color"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="email"],
+  input[type="file"],
+  input[type="month"],
+  input[type="number"],
+  input[type="password"],
+  input[type="range"],
+  input[type="reset"],
+  input[type="search"],
+  input[type="submit"],
+  input[type="tel"],
+  input[type="text"],
+  input[type="time"],
+  input[type="url"],
+  input[type="week"], 
+  textarea{
     padding: .2rem .35rem;
     font-size: 1rem;
     border-radius:4px;
