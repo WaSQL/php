@@ -2565,9 +2565,12 @@ function buildFormStarRating($name, $params=array()){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
 		$class .= ' w_biggest';
-		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;"><span class="'.$class.'"';
+		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
 		if(!isset($params['readonly'])){
 			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
+		}
+		if(!isset($params['style'])){
+			$rtn .= ' style="'.$params['style'].'"';
 		}
 		$rtn .= '></span></li>'.PHP_EOL;
 	}
