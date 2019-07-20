@@ -1795,8 +1795,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$style=isset($params['style'])?$params['style']:'';
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;font-size:inherit;font-size:calc(100% + 1vw);'.$style.'"> '.$dval.'</label>'.PHP_EOL;
+			$style=isset($params['style'])?$params['style']:'font-size:inherit;font-size:calc(100% + 1vw);';
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$style.'"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
