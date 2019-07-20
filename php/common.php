@@ -1795,7 +1795,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;"> '.$dval.'</label>'.PHP_EOL;
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;font-size:inherit;font-size:calc(100% + 1vw);"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
@@ -12060,7 +12060,7 @@ function sgml2XML($sgml){
 /**
 * @describe returns an html block showing the contents of the object,array,or variable specified
 * @param $v mixed The Variable to be examined.
- * @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
+* @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
 * @return string
 *	returns an html block showing the contents of the object,array,or variable specified.
 * @usage
@@ -12095,6 +12095,32 @@ function printValue($v='',$exit=0){
     if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
+//---------- begin function printValueIf---------------------------------------
+/**
+* @describe printValueIf is a Conditional printValue
+* @param condition mixed - condition can be a boolean or an array of boolean=>view sets
+* @param $v mixed The Variable to be examined.
+* @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
+* @return string
+*	returns an html block showing the contents of the object,array,or variable specified.
+* @usage
+*	echo printValue($sampleArray);
+ * printValue($str,1);
+* @author slloyd
+* @history bbarten 2014-01-07 added documentation
+*/
+function printValueIf($conditional,$v='',$exit=0){
+	if(is_array($conditional) && count($conditional)){
+		$opts=$params;
+		$params=$view;
+		foreach($conditional as $condition=>$view){
+			if($condition){return printValue($v,$exit);}
+		}
+		return '';
+	}
+	if($conditional){return printValue($v,$exit);}
+	return '';
+}
 //---------- begin function printValue
 /**
 * @describe returns a hidden html block showing the contents of the object,array,or variable specified
