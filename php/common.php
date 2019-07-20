@@ -2569,7 +2569,7 @@ function buildFormStarRating($name, $params=array()){
 		if(!isset($params['readonly'])){
 			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
 		}
-		if(!isset($params['style'])){
+		if(isset($params['style'])){
 			$rtn .= ' style="'.$params['style'].'"';
 		}
 		$rtn .= '></span></li>'.PHP_EOL;
