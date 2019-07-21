@@ -1773,9 +1773,16 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($class)){
 			$tag .= ' class="'.$class.'"';
 		}
+		//data-color_tval
+		$color='';
+		if(isset($params["data-checked_color_{$tval}"])){$color=$params["data-checked_color_{$tval}"];}
+		elseif(isset($params["data-checked_color_{$dval}"])){$color=$params["data-checked_color_{$dval}"];}
+		if(strlen($color)){
+			$tag .= " style=\"--checked-color:'{$color}';\"";	
+		}
 		//add any data params
 		foreach($params as $pk=>$pv){
-			if(preg_match('/^data\-/i',$pk)){
+			if(preg_match('/^data\-/i',$pk) && !preg_match('/^data\-checked\_color\_/i',$pk)){
 				$tag .= " {$pk}=\"{$pv}\"";
 			}
 		}
