@@ -1793,7 +1793,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			unset($params["data-checked_bgcolor_{$tval}"]);
 		}
 		if(count($styles)){
-			$stylestr=implode(';',$styles);
+			$stylestr=implode(';',$styles).';';
 			$tag .= ' style="'.$stylestr.'"';	
 		}
 		//add any data params
