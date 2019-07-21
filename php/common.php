@@ -1776,19 +1776,19 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		//data-color_tval
 		$styles=array();
 		if(isset($params["data-color_{$tval}"])){
-			$styles[]="--color:{$params["data-color_{$tval}"]};";
+			$styles[]="--color:{$params["data-color_{$tval}"]}";
 			unset($params["data-color_{$tval}"]);
 		}
 		if(isset($params["data-bgcolor_{$tval}"])){
-			$styles[]="--bgcolor:{$params["data-bgcolor_{$tval}"]};";
+			$styles[]="--bgcolor:{$params["data-bgcolor_{$tval}"]}";
 			unset($params["data-bgcolor_{$tval}"]);
 		}
 		if(isset($params["data-checked_color_{$tval}"])){
-			$styles[]="--checked-color:{$params["data-checked_color_{$tval}"]};";
+			$styles[]="--checked-color:{$params["data-checked_color_{$tval}"]}";
 			unset($params["data-checked_color_{$tval}"]);
 		}
 		if(isset($params["data-checked_bgcolor_{$tval}"])){
-			$styles[]="--checked-bgcolor:{$params["data-checked_bgcolor_{$tval}"]};";
+			$styles[]="--checked-bgcolor:{$params["data-checked_bgcolor_{$tval}"]}";
 			unset($params["data-checked_bgcolor_{$tval}"]);
 		}
 		if(count($styles)){
