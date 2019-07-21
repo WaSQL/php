@@ -1773,8 +1773,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($class)){
 			$tag .= ' class="'.$class.'"';
 		}
-		//data-color_tval
+		//create variables to use with the var() function in css  - place them in both the input and the label
 		$styles=array();
+		$stylestr;
 		if(isset($params["data-color_{$tval}"])){
 			$styles[]="--color:{$params["data-color_{$tval}"]}";
 			unset($params["data-color_{$tval}"]);
@@ -1792,7 +1793,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			unset($params["data-checked_bgcolor_{$tval}"]);
 		}
 		if(count($styles)){
-			$tag .= ' style="'.implode(';',$styles).'"';	
+			$stylestr=implode(';',$styles);
+			$tag .= ' style="'.$stylestr.'"';	
 		}
 		//add any data params
 		foreach($params as $pk=>$pv){
@@ -1817,7 +1819,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
 			$style=isset($params['style'])?$params['style']:'font-size:inherit;font-size:calc(100% + 1vw);';
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$style.'"> '.$dval.'</label>'.PHP_EOL;
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$style.'"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
