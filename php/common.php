@@ -1778,7 +1778,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(isset($params["data-checked_color_{$tval}"])){$color=$params["data-checked_color_{$tval}"];}
 		elseif(isset($params["data-checked_color_{$dval}"])){$color=$params["data-checked_color_{$dval}"];}
 		if(strlen($color)){
-			$tag .= " style=\"--checked-color:'{$color}';\"";	
+			$tag .= " style=\"--checked-color:{$color};\"";	
 		}
 		//add any data params
 		foreach($params as $pk=>$pv){
