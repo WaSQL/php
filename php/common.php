@@ -1777,16 +1777,22 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$styles=array();
 		if(isset($params["data-color_{$tval}"])){
 			$styles[]="--color:{$params["data-color_{$tval}"]};";
+			unset($params["data-color_{$tval}"]);
 		}
 		if(isset($params["data-checked_color_{$tval}"])){
 			$styles[]="--checked-color:{$params["data-checked_color_{$tval}"]};";
+			unset($params["data-checked_color_{$tval}"]);
+		}
+		if(isset($params["data-checked_padding_{$tval}"])){
+			$styles[]="--checked-padding:{$params["data-checked_padding_{$tval}"]};";
+			unset($params["data-checked_padding_{$tval}"]);
 		}
 		if(count($styles)){
 			$tag .= ' style="'.implode(';',$styles).'"';	
 		}
 		//add any data params
 		foreach($params as $pk=>$pv){
-			if(preg_match('/^data\-/i',$pk) && !preg_match('/^data\-checked\_color\_/i',$pk)){
+			if(preg_match('/^data\-/i',$pk)){
 				$tag .= " {$pk}=\"{$pv}\"";
 			}
 		}
