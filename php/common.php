@@ -1745,15 +1745,20 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
+	//check for dragsort
+	if(isset($params['behavior']) && preg_match('/dragsort/i',$params['behavior'])){
+		$dragsort=' data-behavior="dragsort"';
+	}
+	else{$dragsort='';}
 	if(count($opts)==1){
 		$tag  = '<div>'.PHP_EOL;	
 	}
 	else{
 		if(isset($params['-stretch'])){
-			$tag  = '<div style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
+			$tag  = '<div'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
 		}
 		else{
-			$tag  = '<div style="column-count:'.$params['width'].';">'.PHP_EOL;
+			$tag  = '<div'.$dragsort.' style="column-count:'.$params['width'].';">'.PHP_EOL;
 		}
 		
 	}
@@ -1762,7 +1767,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
 		$minwidth=floor(strlen($dval)*10)+25;
-		$tag .= '		<div style="'.$style.'">'.PHP_EOL;
+		$tag .= '		<div style="'.$style;
+		if(strlen($dragsort)){$tag .= 'margin-bottom:2px;user-select:all;border:1px dotted #ccc;white-space: nowrap;';}
+		$tag .= '">'.PHP_EOL;
 		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="'.$params['-type'].'" type="'.$params['-type'].'" name="'.$name.'" value="'.$tval.'"';
 		if($params['required']){$tag .= ' data-required="1"';}
 		//add class

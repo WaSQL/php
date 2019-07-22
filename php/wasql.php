@@ -1270,6 +1270,7 @@ function wasqlGetBehaviors($d=0){
 		'xmleditor'	=> '<img src="/wfiles/iconsets/16/xml.png" border="0" class="w_middle" /> XML Editor',
 		'autogrow'	=> '<img src="/wfiles/iconsets/16/resize.png" border="0" class="w_middle" /> Text AutoGrow',
 		'drag'		=> '<img src="/wfiles/iconsets/16/move.png" border="0" class="w_middle" /> Drag and Drop',
+		'dragsort'	=> '<img src="/wfiles/iconsets/16/move.png" border="0" class="w_middle" /> Drag Sort',
 		//'signature'	=> '<img src="/wfiles/pen.png" border="0" class="w_middle" /> Signature',
 	);
 	ksort($behaviors);

@@ -22,6 +22,49 @@ else if(document.attachEvent){
     document.attachEvent("onmousemove",mouseMove);
 	}
 else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
+
+/**
+* @describe enables drag n sort on child elements
+* @param string - query selector string
+* @return false
+* @usage dragSortEnable('[data-behavior*="dragsort"]');
+*/
+function dragSortEnable(querystring) {
+	let sortableLists = document.querySelectorAll(querystring);
+	//console.log('dragSortEnable: '+querystring+' returned '+sortableLists.length+' results' );
+	//console.log(sortableLists);
+	Array.prototype.map.call(sortableLists, list => {dragSortEnableDragList(list);});
+}
+function dragSortEnableDragList(list) {
+	Array.prototype.map.call(list.children, item => {dragSortEnableDragItem(item);});
+}
+function dragSortEnableDragItem(item) {
+	item.setAttribute("draggable", true);
+	item.ondrag = dragSortHandleDrag;
+	item.ondragend = dragSortHandleDrop;
+}
+function dragSortHandleDrag(item) {
+	//console.log('dragSortHandleDrag');
+	//console.log(item);
+	let selectedItem = item.target;
+	let list = selectedItem.parentNode;
+	let x = event.clientX;
+	let y = event.clientY;
+	selectedItem.classList.add("dragsort-active");
+	let swapItem=document.elementFromPoint(x, y) === null?selectedItem:document.elementFromPoint(x, y);
+
+	if (list === swapItem.parentNode) {
+		swapItem=swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
+		list.insertBefore(selectedItem, swapItem);
+	}
+}
+function dragSortHandleDrop(item) {
+	//console.log('dragSortHandleDrop');
+	//console.log(item);
+	item.target.classList.remove("dragsort-active");
+}
+
+
 /**
 * @describe loads the contents of the text file into the element it is dropped on
 * @param element object or id  - the element
@@ -1075,6 +1118,7 @@ function initBehaviors(ajaxdiv){
 	//replace title attributes with ours
 	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
+	try{dragSortEnable('[data-behavior="dragsort"]');}catch(e){}
 	//bootstrap toggles
 	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');
 	for(var i=0;i<buttons.length;i++){

@@ -12,7 +12,9 @@ table.w_formtable td, table.w_formtable th {
     font-family:arial;
     font-size:11pt;
 }
-
+[data-behavior="dragsort"]{
+	padding:4px 0;
+}
 /*********************************************************/
 /* Flex */
 /*********************************************************/
