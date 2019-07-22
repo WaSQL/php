@@ -186,7 +186,7 @@ var wacss = {
 				continue;
 			}
 			//check for data element
-			console.log('initChartJs: '+list[i].id);
+			//console.log('initChartJs: '+list[i].id);
 			if(undefined == document.getElementById(list[i].id+'_data')){
 				console.log('missing data div',list[i]);
 				continue;

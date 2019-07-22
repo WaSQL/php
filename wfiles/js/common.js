@@ -1588,6 +1588,18 @@ function getPos(ctrl) {
 		}
 	return pos;
 	}
+/* check to see if element in in the current viewport */
+function inViewport(elem) {
+	elem=getObject(elem);
+    var bounding = elem.getBoundingClientRect();
+    return (
+        bounding.top >= 0 &&
+        bounding.left >= 0 &&
+        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+/* find element position */
 function findPos(obj){
 	var element=getObject(obj);
     var body = document.body,

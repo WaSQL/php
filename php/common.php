@@ -1780,6 +1780,29 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($class)){
 			$tag .= ' class="'.$class.'"';
 		}
+		//create variables to use with the var() function in css  - place them in both the input and the label
+		$styles=array();
+		$stylestr;
+		if(isset($params["data-color_{$tval}"])){
+			$styles[]="--color:{$params["data-color_{$tval}"]}";
+			unset($params["data-color_{$tval}"]);
+		}
+		if(isset($params["data-bgcolor_{$tval}"])){
+			$styles[]="--bgcolor:{$params["data-bgcolor_{$tval}"]}";
+			unset($params["data-bgcolor_{$tval}"]);
+		}
+		if(isset($params["data-checked_color_{$tval}"])){
+			$styles[]="--checked-color:{$params["data-checked_color_{$tval}"]}";
+			unset($params["data-checked_color_{$tval}"]);
+		}
+		if(isset($params["data-checked_bgcolor_{$tval}"])){
+			$styles[]="--checked-bgcolor:{$params["data-checked_bgcolor_{$tval}"]}";
+			unset($params["data-checked_bgcolor_{$tval}"]);
+		}
+		if(count($styles)){
+			$stylestr=implode(';',$styles).';';
+			$tag .= ' style="'.$stylestr.'"';	
+		}
 		//add any data params
 		foreach($params as $pk=>$pv){
 			if(preg_match('/^data\-/i',$pk)){
@@ -1802,7 +1825,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;"> '.$dval.'</label>'.PHP_EOL;
+			$style=isset($params['style'])?$params['style']:'';
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$style.'"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
@@ -2572,9 +2596,12 @@ function buildFormStarRating($name, $params=array()){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
 		$class .= ' w_biggest';
-		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;"><span class="'.$class.'"';
+		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
 		if(!isset($params['readonly'])){
 			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
+		}
+		if(isset($params['style'])){
+			$rtn .= ' style="'.$params['style'].'"';
 		}
 		$rtn .= '></span></li>'.PHP_EOL;
 	}
@@ -12067,7 +12094,7 @@ function sgml2XML($sgml){
 /**
 * @describe returns an html block showing the contents of the object,array,or variable specified
 * @param $v mixed The Variable to be examined.
- * @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
+* @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
 * @return string
 *	returns an html block showing the contents of the object,array,or variable specified.
 * @usage
@@ -12102,6 +12129,32 @@ function printValue($v='',$exit=0){
     if($exit){echo $rtn;exit;}
 	return $rtn;
 	}
+//---------- begin function printValueIf---------------------------------------
+/**
+* @describe printValueIf is a Conditional printValue
+* @param condition mixed - condition can be a boolean or an array of boolean=>view sets
+* @param $v mixed The Variable to be examined.
+* @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
+* @return string
+*	returns an html block showing the contents of the object,array,or variable specified.
+* @usage
+*	echo printValue($sampleArray);
+ * printValue($str,1);
+* @author slloyd
+* @history bbarten 2014-01-07 added documentation
+*/
+function printValueIf($conditional,$v='',$exit=0){
+	if(is_array($conditional) && count($conditional)){
+		$opts=$params;
+		$params=$view;
+		foreach($conditional as $condition=>$view){
+			if($condition){return printValue($v,$exit);}
+		}
+		return '';
+	}
+	if($conditional){return printValue($v,$exit);}
+	return '';
+}
 //---------- begin function printValue
 /**
 * @describe returns a hidden html block showing the contents of the object,array,or variable specified
