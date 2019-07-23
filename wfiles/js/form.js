@@ -1757,7 +1757,13 @@ function submitForm(theForm,popup,debug,ajax){
                 if(isChecked==0){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
-				 	submitFormAlert(msg,popup,5);
+		            if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
+				 	
 		            theForm[i].focus();
 		            return false;
                 }
@@ -1772,7 +1778,12 @@ function submitForm(theForm,popup,debug,ajax){
                 if(isChecked==0){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
-				 	submitFormAlert(msg,popup,5);
+				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
 		            theForm[i].focus();
 		            return false;
                 }
@@ -1782,7 +1793,12 @@ function submitForm(theForm,popup,debug,ajax){
             	if(cval.length==0){
                 	var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
-				 	submitFormAlert(msg,popup,5);
+				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
 		            theForm[i].focus();
 		            return false;
 				}
@@ -1792,7 +1808,12 @@ function submitForm(theForm,popup,debug,ajax){
             	if(cval.length==0){
                 	var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
-				 	submitFormAlert(msg,popup,5);
+				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
 		            theForm[i].focus();
 		            return false;
 				}
@@ -1800,7 +1821,12 @@ function submitForm(theForm,popup,debug,ajax){
 			else if(theForm[i].value == ''){
 	            var msg=dname+" is required";
 	            if(undefined != requiredmsg){msg=requiredmsg;}
-			 	submitFormAlert(msg,popup,5);
+			 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
 	            theForm[i].focus();
 	            return false;
 			}

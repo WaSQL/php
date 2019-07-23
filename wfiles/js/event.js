@@ -469,7 +469,7 @@ function tooltipDiv(obj,rtimer){
 	tooltipDivObj=obj;
 	var txt=obj.getAttribute('data-tooltip');
 	var position=obj.getAttribute('data-tooltip_position') || '';
-	var ajax='';
+	var params={};
 	if(txt.indexOf('id:')===0){
 		//get tooltip text from an external div
     	var divid=str_replace('id:','',txt);
@@ -482,7 +482,7 @@ function tooltipDiv(obj,rtimer){
 	}
 	else if(txt.indexOf('ajax:')===0){
 		//call a function
-    	ajax=str_replace('ajax:','',txt);
+    	params.ajax=str_replace('ajax:','',txt);
     	txt='';
 	}
 	else if(txt.indexOf('att:')===0){
@@ -496,20 +496,35 @@ function tooltipDiv(obj,rtimer){
 		tooltipDivObj='';
 		removeId(cObj);
 	}
-	var tipdiv = document.createElement("div");
-	tipdiv.setAttribute("id",'w_tooltip');
-	tipdiv.style.zIndex='698999';
-	tipdiv.style.position='absolute';
+	showTooltip(obj,txt,params);
+	return false;
+}
+function showTooltip(obj,txt,params){
+	obj=getObject(obj);
+	if(undefined==obj){return false;}
+	if(undefined==params){params={};}
+	if(undefined==params.position){
+		if(obj.nodeName.toLowerCase()==='img'){
+			params.position='bottom';	
+		}
+		else{
+			params.position='right';
+		}
+	}
+	let tipdiv=getObject('w_tooltip');
+	if(undefined==tipdiv){
+		tipdiv = document.createElement("div");
+		tipdiv.setAttribute("id",'w_tooltip');
+		tipdiv.style.zIndex='698999';
+		tipdiv.style.position='absolute';
+		document.body.appendChild(tipdiv);
+	}
 	//tipdiv.innerHTML=obj.nodeName+':'+txt;
 	tipdiv.innerHTML=txt;
 	var pos=findPos(obj);
 	var x=y=h=w=th=0;
 	h=getHeight(obj);
-	//default image position to bottom
-	if(position==='' && obj.nodeName.toLowerCase()==='img'){
-		position='bottom';
-	}
-	if(position=='bottom'){
+	if(params.position=='bottom'){
     	h=getHeight(obj);
     	w=getWidth(obj);
     	y=pos.y+h+6;
@@ -524,9 +539,9 @@ function tooltipDiv(obj,rtimer){
 	}
 	tipdiv.style.top=y+"px";
     tipdiv.style.left=x+"px";
- 	document.body.appendChild(tipdiv);
- 	if(ajax.length){
-		ajaxGet(ajax,'w_tooltip');
+ 	
+ 	if(undefined != params.ajax){
+		ajaxGet(params.ajax,'w_tooltip');
 	}
 	return false;
 }

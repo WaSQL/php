@@ -1708,6 +1708,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
 	if(!isset($params['width'])){$params['width']=count($opts)<6?count($opts):6;}
 	if(!isset($params['-icon'])){$params['-icon']='mark';}
+	//return printValue($params);
 	//for checkboxes allow multiple valuse
 	$oname=$name;
 	if($params['-type']=='checkbox'){
@@ -1753,14 +1754,14 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	}
 	else{$dragsort='';}
 	if(count($opts)==1){
-		$tag  = '<div>'.PHP_EOL;	
+		$tag  = '<div id="'.$params['id'].'">'.PHP_EOL;	
 	}
 	else{
 		if(isset($params['-stretch'])){
-			$tag  = '<div'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
+			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
 		}
 		else{
-			$tag  = '<div'.$dragsort.' style="column-count:'.$params['width'].';">'.PHP_EOL;
+			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';">'.PHP_EOL;
 		}
 		
 	}
@@ -1773,7 +1774,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($dragsort)){$tag .= 'margin-bottom:2px;user-select:all;border:1px dotted #ccc;white-space: nowrap;';}
 		$tag .= '">'.PHP_EOL;
 		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="'.$params['-type'].'" type="'.$params['-type'].'" name="'.$name.'" value="'.$tval.'"';
-		if($params['required']){$tag .= ' data-required="1"';}
+		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1" data-blink="'.$params['id'].'"';}
+		elseif(isset($params['_required']) && $params['_required']){$tag .= ' data-required="1" data-blink="'.$params['id'].'"';}
 		//add class
 		$class='';
 		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
@@ -2590,10 +2592,13 @@ function buildFormStarRating($name, $params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:0;}
+    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
     if(!isset($params['max'])){$params['max']=5;}
 	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;">'.PHP_EOL;
-	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'" />'.PHP_EOL;
+	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
+	if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
+	elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
+	$rtn .=' />'.PHP_EOL;
 	for($x=1;$x<=$params['max'];$x++){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
