@@ -2590,7 +2590,7 @@ function buildFormStarRating($name, $params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-    if(!isset($params['value'])){$params['value']=0;}
+    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:0;}
     if(!isset($params['max'])){$params['max']=5;}
 	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;">'.PHP_EOL;
 	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'" />'.PHP_EOL;
