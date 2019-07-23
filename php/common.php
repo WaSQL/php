@@ -1437,7 +1437,9 @@ function buildFormDate($name,$params=array()){
 	$tag='';
 	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;">'.PHP_EOL;
 	$tag .= '	<input type="text"';
-	$params['style']='min-width:100px;';
+	$pstyle='';
+	if(isset($params['style'])){$pstyle=$params['style'];}
+	$params['style']='min-width:100px;'.$pstyle;
 	$params['class']='browser-default w_form-control w_input-prepend';
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
