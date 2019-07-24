@@ -496,6 +496,7 @@ function tooltipDiv(obj,rtimer){
 		tooltipDivObj='';
 		removeId(cObj);
 	}
+	if(undefined != rtimer){params.rtimer=rtimer;}
 	showTooltip(obj,txt,params);
 	return false;
 }

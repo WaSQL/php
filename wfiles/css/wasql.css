@@ -2240,9 +2240,9 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 }
 /* Custom tooltips to replace title attributes adapted from http://davidwalsh.name/demo/css-tooltips.php */
 #w_tooltip {
-	background: #eee;
-	border: 1px solid #ccc;
-	padding: 5px;
+	background: #fff;
+	border: 1px solid #c4c4c4;
+	 padding: 5px 7px;
 	border-radius: 4px;
 	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 	position: relative;
