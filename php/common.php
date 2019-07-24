@@ -8126,9 +8126,10 @@ function getCSVFileContents($file,$params=array()){
 			$mapfield[$fields[$x]]=1;
 			}
 		else{
+			if($fields[$x]=='#'){$fields[$x]='row';}
+			$fields[$x]=preg_replace('/\#$/','number',$fields[$x]);
 			$fields[$x]=preg_replace('/\-+/','_',$fields[$x]);
 			$fields[$x]=preg_replace('/\s+/','_',$fields[$x]);
-			if($fields[$x]=='#'){$fields[$x]='row';}
 			$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
 			$fields[$x]=strtolower($fields[$x]);
 			}
