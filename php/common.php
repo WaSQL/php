@@ -4256,7 +4256,26 @@ function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=
 	if($conditional){return renderView($view,$params,$opts);}
 	else{return renderView($viewelse,$params,$opts);}
 }
-
+//---------- begin function renderViewIfs---------------------------------------
+/**
+* @describe renderViewIfs is a renderViewIf with multiple bool,view pairs 
+* @param array  - array of boolean,view pairs
+* @param params array
+* @param options array
+* <?=renderViewIfs(array(array($a==$b,'vequal'),array($a<5,'vless'),array($a>5,'vfive'),array($b==5,'vbfive')),$recs,'recs');?>
+*/
+function renderViewIfs($ifs=array(), $params=array(), $opts=array()){
+	foreach($ifs as $if){
+		if($if[0]){
+			return renderView($if[1],$params,$opts);
+		}
+	}
+	for($x=0;$x<count($values);$x++){
+    	if($str==$values[$x] || $values[$x]=='*'){
+			return renderView($views[$x],$params,$opts);
+		}
+	}
+}
 //---------- begin function renderViewSwitch---------------------------------------
 /**
 * @describe renderViewSwitch is a renderView based on a switch statement
