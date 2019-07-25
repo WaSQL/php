@@ -4266,15 +4266,13 @@ function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=
 */
 function renderViewIfs($ifs=array(), $params=array(), $opts=array()){
 	foreach($ifs as $if){
+		if(!is_array($if)){continue;}
+		if(!count($if)==2){continue;}
 		if($if[0]){
 			return renderView($if[1],$params,$opts);
 		}
 	}
-	for($x=0;$x<count($values);$x++){
-    	if($str==$values[$x] || $values[$x]=='*'){
-			return renderView($views[$x],$params,$opts);
-		}
-	}
+	return '';
 }
 //---------- begin function renderViewSwitch---------------------------------------
 /**
