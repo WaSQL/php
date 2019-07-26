@@ -234,14 +234,16 @@
 					}
 				}
 			}
+			$CONFIG['sqlprompt_tables_filter']='co,st';
 			if(isset($CONFIG['sqlprompt_tables_filter'])){
 				if(!is_array($CONFIG['sqlprompt_tables_filter'])){
 					$CONFIG['sqlprompt_tables_filter']=preg_split('/\,/',$CONFIG['sqlprompt_tables_filter']);
 				}
+				//echo printValue($CONFIG['sqlprompt_tables_filter']);
 				foreach($tables as $i=>$table){
 					$found=0;
 					foreach($CONFIG['sqlprompt_tables_filter'] as $filter){
-						if(stringContains($table,$filter)){$fount+=1;}
+						if(stringContains($table,$filter)){$found+=1;}
 					}
 					if($found==0){
 						unset($tables[$i]);
