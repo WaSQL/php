@@ -47,10 +47,13 @@
 			<div id="table_fields" style="max-height:40vh;overflow:auto;padding-right:5px">
 			<?=renderView('tables_fields',$tables,'tables');?>
 			</div>
+			<view:monitor_tools>
 			<div class="w_bold w_big">Monitor Tools</div>
 			<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
-			<?=renderView('monitor',$tables,'tables');?>
+				<?=renderView('monitor',$tables,'tables');?>
 			</div>
+			</view:monitor_tools>
+			<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools',$tables,'tables');?>
 		</div>
 		<div class="col-sm-9">
 			<?=renderViewIf(count($tabs),'tabs',$tabs,'tabs');?>
