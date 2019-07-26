@@ -234,7 +234,6 @@
 					}
 				}
 			}
-			$CONFIG['sqlprompt_tables_filter']='co,st';
 			if(isset($CONFIG['sqlprompt_tables_filter'])){
 				if(!is_array($CONFIG['sqlprompt_tables_filter'])){
 					$CONFIG['sqlprompt_tables_filter']=preg_split('/\,/',$CONFIG['sqlprompt_tables_filter']);
