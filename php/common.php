@@ -2175,12 +2175,13 @@ function buildFormFile($name,$params=array()){
 	//set path of where to store this file in
 	if(!isset($params['path'])){
     	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
     	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
     	else{$params['path']="/files/{$params['name']}";}
 	}
 	$tag='';
 	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
-	if(isset($params['autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+	if(isset($params['autonumber']) || isset($params['data-autonumber'])|| $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
 		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
     }
     if(strlen($params['value']) && $params['value'] != $params['defaultval']){
