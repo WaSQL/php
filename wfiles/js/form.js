@@ -2527,8 +2527,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		}
 		else{abort_callback='';}
 	}
-	//default timeout to 10 minutes with a 3 minute minimum
-	if(undefined == tmeout){tmeout=600000;}
+	//default timeout to 20 minutes with a 3 minute minimum
+	if(undefined == tmeout){tmeout=1800000;}
 	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
