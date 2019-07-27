@@ -13433,7 +13433,7 @@ function processFileUploads($docroot=''){
 	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
 			if($file['error'] != 0 && !strlen($file['tmp_name'])){
-				$_REQUEST[$name.'_error']="File Upload Error (1) - " . $file['error'];
+				$_REQUEST[$name.'_error']="File Upload Error (1) - " . json_encode($file);
 				continue;
 			}
 			//if editing a record there will be a _prev. If _remove != 1 skip
