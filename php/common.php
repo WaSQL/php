@@ -2169,7 +2169,6 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['text'])){$params['text']='file to upload';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['class']='';
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	//set path of where to store this file in
@@ -2209,21 +2208,23 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['type'])){
 		unset($params['type']);
 	}
-	$atts=array();
-	if(isset($params['onchange'])){
-		$atts['onchange']=$params['onchange'];
-		unset($params['onchange']);
+	$label_params=array('class'=>'btn btn-default w_white');
+	if(isset($params['style'])){
+		$label_params['style']=$params['style'];
+		unset($params['style']);
+	}
+	if(isset($params['class']) && strlen($params['class'])){
+		$label_params['class']=$params['class'];
+		unset($params['class']);
 	}
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
-	$tag .= setTagAttributes($atts);
+	$tag .= setTagAttributes($params);
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	if(!isset($params['class'])){$params['class']='btn btn-default w_white';}
-	unset($params['for']);
 	$tag .= '	<label for="'.$params['id'].'"';
-	$tag .= setTagAttributes($params);
+	$tag .= setTagAttributes($label_params);
 	$tag .= ' ><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
