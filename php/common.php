@@ -2202,6 +2202,7 @@ function buildFormFile($name,$params=array()){
     //remove style attribute since it is not supported
     $params['data-type']='file';
     $params['onchange']="setInputFileName(this);";
+
     if(!isset($params['style'])){
 		unset($params['style']);
 	}
@@ -2213,10 +2214,15 @@ function buildFormFile($name,$params=array()){
 		$label_params['style']=$params['style'];
 		unset($params['style']);
 	}
+	$params['style']='width:1px;max-width:1px;';
 	if(isset($params['class']) && strlen($params['class'])){
 		$label_params['class']=$params['class'];
 		unset($params['class']);
 	}
+	unset($label_params['width']);
+	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
+	$label_params['style'].=';width:100%;';
+	//return printValue($label_params);
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
 	$tag .= setTagAttributes($params);
 	if(isset($params['multiple']) && $params['multiple']){
