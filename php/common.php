@@ -13566,7 +13566,7 @@ function processFileUploads($docroot=''){
 					else{
 						$cmd=$CONFIG['resize_command'];
 						$resize=$_REQUEST[$name.'_resize'];
-                		$cmd="{$cmd} {$resize} '{$abspath}' '{$abspath}'";
+                		$cmd="{$cmd} {$resize} '{$abspath}' -auto-orient '{$abspath}'";
                 		$_REQUEST[$name.'_resize_cmd']=$cmd;
                 		$_REQUEST[$name.'_resize_results']=cmdResults($cmd);
                 	}                	
