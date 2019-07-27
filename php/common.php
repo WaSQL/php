@@ -2183,6 +2183,11 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['autonumber']) || isset($params['data-autonumber'])|| $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
 		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
     }
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
     if(strlen($params['value']) && $params['value'] != $params['defaultval']){
 		$val=encodeHtml($params['value']);
 		/*
@@ -13421,6 +13426,7 @@ function processActions(){
 function processFileUploads($docroot=''){
 	$_REQUEST['ProcessFileUploads_CallCount']+=1;
 	global $USER;
+	global $CONFIG;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
 	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
 	if(is_array($_FILES) && count($_FILES) > 0){
@@ -13550,6 +13556,12 @@ function processFileUploads($docroot=''){
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
 				//resize the image?
+				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize']) && isset($CONFIG['resize_command']) && isImage($absfile)){
+					$cmd=$CONFIG['resize_command'];
+					$resize=$_REQUEST[$name.'_resize'];
+                	$cmd="{$cmd} {$resize} '{$abspath}' '{$abspath}'";
+                	$_REQUEST[$name.'_resize_results']=cmdResults($cmd);                	
+				}
 				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
 					$fname=getFileName($abspath,1);
 					$refile=str_replace($fname,$fname.'_resized',$abspath);
