@@ -13556,11 +13556,20 @@ function processFileUploads($docroot=''){
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
 				//resize the image?
-				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize']) && isset($CONFIG['resize_command']) && isImage($absfile)){
-					$cmd=$CONFIG['resize_command'];
-					$resize=$_REQUEST[$name.'_resize'];
-                	$cmd="{$cmd} {$resize} '{$abspath}' '{$abspath}'";
-                	$_REQUEST[$name.'_resize_results']=cmdResults($cmd);                	
+				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
+					if(!isset($CONFIG['resize_command'])){
+						$_REQUEST[$name.'_resize_results']="Error: resize_command not set";	
+					}
+					elseif(!isImage($absfile)){
+						$_REQUEST[$name.'_resize_results']="Error: not an image";
+					}
+					else{
+						$cmd=$CONFIG['resize_command'];
+						$resize=$_REQUEST[$name.'_resize'];
+                		$cmd="{$cmd} {$resize} '{$abspath}' '{$abspath}'";
+                		$_REQUEST[$name.'_resize_cmd']=$cmd;
+                		$_REQUEST[$name.'_resize_results']=cmdResults($cmd);
+                	}                	
 				}
 				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
 					$fname=getFileName($abspath,1);
