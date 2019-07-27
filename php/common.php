@@ -13560,7 +13560,7 @@ function processFileUploads($docroot=''){
 					if(!isset($CONFIG['resize_command'])){
 						$_REQUEST[$name.'_resize_results']="Error: resize_command not set";	
 					}
-					elseif(!isImage($absfile)){
+					elseif(!stringContains($file['type'],'image')){
 						$_REQUEST[$name.'_resize_results']="Error: not an image";
 					}
 					else{
