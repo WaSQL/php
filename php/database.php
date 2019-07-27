@@ -201,7 +201,7 @@ function databaseListRecords($params=array()){
 		if(isset($_REQUEST['_filters'])){
 			$params['-filters']=preg_split('/[\r\n\;]/',$_REQUEST['_filters']);					
 		}
-		if(empty($params['-order']) && !empty($_REQUEST['filter_order'])){
+		if(isset($_REQUEST['filter_order']) && strlen($_REQUEST['filter_order'])){
 			$params['-order']=$_REQUEST['filter_order'];					
 		}
 		//check for -filters

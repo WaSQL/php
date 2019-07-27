@@ -2209,13 +2209,22 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['type'])){
 		unset($params['type']);
 	}
+	$atts=array();
+	if(isset($params['onchange'])){
+		$atts['onchange']=$params['onchange'];
+		unset($params['onchange']);
+	}
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
-	$tag .= setTagAttributes($params);
+	$tag .= setTagAttributes($atts);
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'" class="btn"><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
+	if(!isset($params['class'])){$params['class']='btn btn-default w_white';}
+	unset($params['for']);
+	$tag .= '	<label for="'.$params['id'].'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' ><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormEnd-------------------
