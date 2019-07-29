@@ -11660,8 +11660,8 @@ function postEditCheck($tables=array()){
 *	[-authuser] - auth username
 *	[-authpass] - auth password
 *	[-follow] - follow location if redirected
-*	[-timeout]  - The maximum number of seconds to allow cURL functions to execute. Defaults to 600
-*	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect. Defaults to 600
+*	[-timeout]  - The maximum number of seconds to allow cURL functions to execute. Defaults to 3600 (1 hour)
+*	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect. Defaults to 600 (5 minutes)
 *	[-xml] - return xml_array as part of the resulting array
 *	other params are passed through as key/value pairs to the URL specified
 * @return array
@@ -11689,7 +11689,7 @@ function postURL($url,$params=array()) {
 		$params['-headers'][]="WaSQL-NoGUID: 1";
 		unset($params['-noguid']);
 	}
-	if(!isset($params['-timeout'])){$params['-timeout']=600;}
+	if(!isset($params['-timeout'])){$params['-timeout']=3600;}
 	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=600;}
 	//Build data stream from params
 	$query=array();
