@@ -175,12 +175,23 @@ var wacss = {
 		wacss.initChartJs();
 		wacss.initTruncate();
 	},
-	initChartJs: function(){
+	initChartJs: function(initid){
 		let list=document.querySelectorAll('div.chartjs');
+		let colors = new Array(
+	        'rgb(255, 159, 64)',
+	        'rgb(75, 192, 192)',
+	        'rgb(255, 99, 132)',
+	        'rgb(54, 162, 235)',
+	        'rgb(153, 102, 255)',
+	        'rgb(201, 203, 207)'
+	    );
 		//console.log(list);
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){
 				console.log('missing id',list[i]);
+				continue;
+			}
+			if(undefined != initid && list[i].id != initid){
 				continue;
 			}
 			if(undefined == list[i].getAttribute('data-type')){
@@ -256,14 +267,6 @@ var wacss = {
 				break;
 				case 'line':
 				case 'bar':
-					let colors = new Array(
-			            'rgb(255, 159, 64)',
-			            'rgb(75, 192, 192)',
-			            'rgb(255, 99, 132)',
-			            'rgb(54, 162, 235)',
-			            'rgb(153, 102, 255)',
-			            'rgb(201, 203, 207)'
-			            );
 					if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
@@ -304,6 +307,7 @@ var wacss = {
 							}
 						};
 						lconfig.options={
+							responsive: true,
 							scales: {
 								xAxes: [{
 									type: 'time',
@@ -366,6 +370,63 @@ var wacss = {
 					}
 				break;
 				case 'pie':
+					if(undefined != wacss.chartjs[list[i].id]){
+						//check for canvas
+						let ck=list[i].querySelector('canvas');
+						if(undefined != ck){
+							//update existing pie chart
+							let labels=[];
+		        			let data=[];
+		        			let datasets=datadiv.querySelectorAll('dataset');
+		        			let json=JSON.parse(datasets[0].innerText); 
+		        			for(let label in json){
+		        				labels.push(label);
+		        				data.push(json[label]);
+		        			}
+		        			wacss.chartjs[list[i].id].config.data.datasets[0].data=data;
+		        			wacss.chartjs[list[i].id].config.data.labels=labels;
+		        			//console.log(wacss.chartjs[list[i].id].config);
+	        				wacss.chartjs[list[i].id].update();
+	        				foundchart=1;
+		        		}
+					}
+					if(foundchart==0){
+						//look for datasets;
+	        			let labels=[];
+	        			let data=[];
+	        			let datasets=datadiv.querySelectorAll('dataset');
+	        			let json=JSON.parse(datasets[0].innerText); 
+	        			for(let label in json){
+	        				labels.push(label);
+	        				data.push(json[label]);
+	        			}
+	        			let pconfig={
+	        				type: 'pie',
+	        				data: {
+	        					labels: labels,
+	        					datasets:[{
+	        						backgroundColor: colors,
+	        						fill: true,
+	        						data: data
+	        					}]
+	        				},
+	        				options: {
+	        					responsive: true,
+	                    		events: false,
+	                    		animation: {animateScale:false,animateRotate:true},
+	        					title:{
+	        						display: false
+	        					},
+	        					rotation: -0.7 * Math.PI
+	        				}
+	        			};
+
+	        			let pcanvas=document.createElement('canvas');
+	        			list[i].appendChild(pcanvas);
+	        			let pctx = pcanvas.getContext('2d');
+						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
+						//console.log(wacss.chartjs[list[i].id].config);
+					}
 				break;
 			}
 		}
