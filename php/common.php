@@ -1767,6 +1767,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	}
 	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
+	unset($params['width']);
 	foreach($opts as $tval=>$dval){
 		$id=$params['-formname'].'_'.$name.'_'.$tval;
 		$minwidth=floor(strlen($dval)*10)+25;
@@ -1829,8 +1830,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		else{
-			$style=isset($params['style'])?$params['style']:'';
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$style.'"> '.$dval.'</label>'.PHP_EOL;
+			$xstyle=isset($params['style'])?$params['style']:'';
+			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"> '.$dval.'</label>'.PHP_EOL;
 		}
 		$tag .= '</div>'.PHP_EOL;
 	}
