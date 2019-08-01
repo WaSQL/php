@@ -537,7 +537,10 @@ if(isAjax()){
 			echo adminViewPage('sqlprompt');exit;
 		break;
 		case 'phpprompt':
-			echo adminViewPage('phpprompt');exit;
+			echo '<div class="container-fluid">'.PHP_EOL;
+			echo adminViewPage('phpprompt');
+			echo '</div>'.PHP_EOL;
+			exit;
 		break;
     	case 'tabledetails':
     		if(isset($_REQUEST['table'])){
@@ -2483,7 +2486,10 @@ LIST_TABLE:
 			echo adminViewPage('sqlprompt');exit;
 		break;
 		case 'phpprompt':
-			echo adminViewPage('phpprompt');exit;
+			echo '<div class="container-fluid">'.PHP_EOL;
+			echo adminViewPage('phpprompt');
+			echo '</div>'.PHP_EOL;
+			exit;
 		break;
 		case 'optimize':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-optimize"></span> Optimize Tables</h2>'.PHP_EOL;

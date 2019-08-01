@@ -21,7 +21,7 @@
 	}
 	document.onkeydown = phppromptCheckKey;
 </script>
-<div class="container-fluid">
+
 	<div class="row">
 		<div class="col-sm-12">
 			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-php"></span> Prompt</h2>
@@ -34,12 +34,11 @@
 				<input type="hidden" name="func" value="php">
 				<input type="hidden" name="php_select" value="">
 				<textarea class="form-control" autofocus="true" style="height:200px;" placeholder="PHP Code" id="php_full" name="php_full"><?=$_SESSION['php_full'];?></textarea>
-				<div class="w_padtop"><button type="submit" class="btn blue">Run</button> <span class="w_small w_grey">(or press F8)</span></div>
+				<div class="w_padtop"><button type="submit" class="btn w_blue">Run</button> <span class="w_small w_grey">(or press F8)</span></div>
 			</form>
 			<div id="phpprompt_results" class="w_padtop"></div>
 		</div>
 	</div>
-</div>
 </view:default>
 
 <view:results>
