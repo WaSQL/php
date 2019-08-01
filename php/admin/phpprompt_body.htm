@@ -29,7 +29,7 @@
 	</div>
 	<div class="row w_padtop">
 		<div class="col-sm-12">
-			<form method="post" action="/php/admin.php" name="phpprompt" onsubmit="return phppromptSubmit(this);">
+			<form method="post" action="<?=$CONFIG['phpprompt_path'];?>" name="phpprompt" onsubmit="return phppromptSubmit(this);">
 				<input type="hidden" name="_menu" value="phpprompt">
 				<input type="hidden" name="func" value="php">
 				<input type="hidden" name="php_select" value="">

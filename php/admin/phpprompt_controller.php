@@ -1,4 +1,9 @@
 <?php
+	global $CONFIG;
+	//echo printValue($CONFIG);exit;
+	if(!isset($CONFIG['phpprompt_path'])){
+		$CONFIG['phpprompt_path']='/php/admin.php';
+	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'php':
 			$_SESSION['php_full']=$_REQUEST['php_full'];
