@@ -33,7 +33,7 @@
 				<input type="hidden" name="_menu" value="phpprompt">
 				<input type="hidden" name="func" value="php">
 				<input type="hidden" name="php_select" value="">
-				<textarea class="form-control" autofocus="true" style="height:200px;" placeholder="PHP Code" id="php_full" name="php_full"><?=$_SESSION['php_full'];?></textarea>
+				<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;" placeholder="PHP Code" id="php_full" name="php_full"><?=$_SESSION['php_full'];?></textarea>
 				<div class="w_padtop"><button type="submit" class="btn w_blue">Run</button> <span class="w_small w_grey">(or press F8)</span></div>
 			</form>
 			<div id="phpprompt_results" class="w_padtop"></div>
