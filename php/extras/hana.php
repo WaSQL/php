@@ -1521,4 +1521,40 @@ function hanaConvert2UTF8($content) {
         } 
     } 
     return $content; 
-} 
+}
+//---------- begin function hanaNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function hanaNamedQuery($name){
+	switch(strtolower($name)){
+		case 'running_queries':
+			return <<<ENDOFQUERY
+SELECT
+	c.host, 
+	c.user_name, 
+	c.connection_status, 
+	c.transaction_id, 
+	s.last_executed_time,
+	round(s.allocated_memory_size/1024/1024/1024,2) as allocated_memory_gb,
+	round(s.used_memory_size/1024/1024/1024,2) as used_mem_gb, s.statement_string
+FROM
+	m_connections c, m_prepared_statements s
+WHERE
+	s.connection_id = c.connection_id 
+	and c.connection_status != 'IDLE'
+ORDER BY
+	s.allocated_memory_size desc
+ENDOFQUERY;
+		break;
+		case 'table_locks':
+			return <<<ENDOFQUERY
+SELECT * from m_table_locks
+ENDOFQUERY;
+		break;
+	}
+}

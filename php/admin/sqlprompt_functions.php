@@ -22,12 +22,12 @@ function sqlpromptBuildQuery($db,$name){
 			return trim(postgresqlNamedQuery($name));
 		break;
 		case 'oracle':
-
-		break;
-
+			loadExtras('oracle');
+			return trim(oracleNamedQuery($name));
 		break;
 		case 'hana':
-
+			loadExtras('hana');
+			return trim(hanaNamedQuery($name));
 		break;
 		case 'sqlite':
 

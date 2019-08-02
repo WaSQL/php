@@ -1362,3 +1362,41 @@ function oracleQueryResults($query='',$params=array()){
 	oci_close($dbh_oracle);
 	return $recs;
 }
+//---------- begin function oracleNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function oracleNamedQuery($name){
+	switch(strtolower($name)){
+		case 'running_queries':
+			return <<<ENDOFQUERY
+SELECT
+	a.sid, 
+	a.username,
+	b.sql_id, 
+	b.sql_fulltext 
+FROM v$session a, v$sql b
+WHERE 
+	a.sql_id = b.sql_id 
+	and a.status = 'ACTIVE' 
+	and a.username != 'SYS'
+ENDOFQUERY;
+		break;
+		case 'table_locks':
+			return <<<ENDOFQUERY
+SELECT 
+	b.owner, 
+	b.object_name, 
+	a.oracle_username, 
+	a.os_user_name  
+FROM v$locked_object a, all_objects b
+WHERE 
+	a.object_id = b.object_id
+ENDOFQUERY;
+		break;
+	}
+}
