@@ -915,10 +915,17 @@ function oracleGetDBRecord($params=array()){
 function oracleGetDBRecords($params){
 	global $USER;
 	global $CONFIG;
-	if(empty($params['-table']) && !is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
-		//they just entered a query
-		$query=$params;
-		$params=array('-lobs'=>1);
+	if(empty($params['-table']) && !is_array($params)){
+		$params=trim($params);
+		if(preg_match('/^(select|exec|with|explain|returning|show|call)[\t\s\ \r\n]/i',$params)){
+			//they just entered a query
+			$query=$params;
+			$params=array('-lobs'=>1);
+		}
+		else{
+			$ok=postgresqlExecuteSQL($params);
+			return $ok;
+		}
 	}
 	else{
 		//determine fields to return
