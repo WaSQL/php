@@ -1878,6 +1878,9 @@ function addDBIndex($params=array()){
 	if(isSqlite()){
 		$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
 	}
+	elseif(isPostgres()){
+		$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	}
 	else{
 	$query="alter table {$params['-table']} add{$fulltext}{$unique} index {$params['-name']} ({$fieldstr})";
 	}
@@ -2669,6 +2672,7 @@ function addEditDBForm($params=array(),$customcode=''){
 */
 function addDBRecord($params=array()){
 	if(isSqlite()){return sqliteAddDBRecord($params);}
+	elseif(isPostgres()){return postgresqlAddDBRecord($params);}
 	$function='addDBRecord';
 	if(!isset($params['-table'])){return 'addDBRecord Error: No table';}
 	$table=$params['-table'];
@@ -6113,7 +6117,7 @@ function getDBFields($table='',$allfields=0){
 */
 function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	if(isSqlite()){return sqliteGetDBFieldInfo($table);}
-	if(isPostgreSQL()){return postgresTableInfo($table);}
+	if(isPostgreSQL()){return postgresqlGetDBFieldInfo($table);}
 	global $databaseCache;
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
@@ -6263,53 +6267,6 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	if(count($info)){$databaseCache['getDBFieldInfo'][$dbcachekey]=$info;}
 	return $info;
 	}
-//---------- begin function postgresTableInfo
-/**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-*/
-function postgresTableInfo($table){
-	$dbtypemap = array(
-	    'bool'		=> 'tinyint',
-	    'int2'		=> 'smallint',
-	    'int4'		=> 'int',
-	    'int8'		=> 'bigint',
-	    'float4'	=> 'float',
-	    'float8'	=> 'double',
-	    'bpchar'	=> 'char',
-	    'timestamp'	=> 'datetime'
-	);
-    $query="SELECT
-		a.attname AS name,
-		t.typname AS type,
-		a.attlen AS size,
-		a.atttypmod AS len,
-		a.attnotnull as notnull
-    FROM
-		pg_attribute a , pg_class c, pg_type t
-    WHERE
-		c.relname = '{$table}'
-		AND a.attstattarget = -1
-    	AND a.attrelid = c.oid AND a.atttypid = t.oid
-	";
-    $recs=getDBRecords(array('-query'=>$query,'-index'=>'name'));
-    $info=array();
-    foreach($recs as $field=>$rec){
-    	$info[$field]=array(
-			'_dbtable' => $table,
-			'_dbtype'	=> isset($dbtypemap[$rec['type']])?$dbtypemap[$rec['type']]:$rec['type'],
-			'_dbsize'	=> $rec['size']
-		);
-		if($rec['notnull']=='t'){$info[$field]['_dbflags']='not_null';}
-		if($rec['len']<0 && $rec['i'] != "x"){
-        	// in case of digits if needed ... (+1 for negative values)
-            $info[$field]['_dblength']=(strlen(pow(2,($q["size"]*8)))+1);
-        }
-        else{
-        	$info[$field]['_dblength']=$rec['len'];
-        }
-	}
-	return $info;
-}
 //---------- begin function mysqlTableInfo
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -8829,6 +8786,7 @@ function databaseConnect($host,$user,$pass,$dbname=''){
                 }
 	elseif(isPostgreSQL()){
 		//Open a persistent PostgreSQL connection
+		loadExtras('postgresql');
 		$conn_string="host={$host} dbname={$dbname} user={$user} password={$pass}";
 		return pg_pconnect($conn_string);
 		}

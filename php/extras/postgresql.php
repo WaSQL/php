@@ -114,9 +114,12 @@ ENDOFQUERY;
 			'function'=>'postgresqlAddDBRecord',
 			'message'=>'pg_prepare failed',
 			'error'=>pg_last_error(),
-			'query'=>$query
+			'query'=>$query,
+			'params'=>$params,
+			'fields'=>$finfo
 		));
 		pg_close($dbh_postgresql);
+		exit;
 		return;
 	}
 	$data=pg_execute('postgresqlAddDBRecord',$values);
@@ -497,6 +500,36 @@ function postgresqlGetDBFieldInfo($table,$params=array()){
 	ksort($fields);
 	return $fields;
 }
+function postgresqlGetDBIndexes($tablename=''){
+	$query=<<<ENDOFQUERY
+	SELECT
+  		U.usename AS user_name,
+	  	ns.nspname               AS schema_name,
+	  	idx.indrelid :: REGCLASS AS table_name,
+	  	i.relname                AS index_name,
+	  	idx.indisunique          AS is_unique,
+	  	idx.indisprimary         AS is_primary,
+	  	am.amname                AS index_type,
+	  	idx.indkey,
+       	to_json(array(
+           SELECT pg_get_indexdef(idx.indexrelid, k + 1, TRUE)
+           FROM
+             generate_subscripts(idx.indkey, 1) AS k
+           ORDER BY k
+       	)) AS index_keys,
+  		(idx.indexprs IS NOT NULL) OR (idx.indkey::int[] @> array[0]) AS is_functional,
+  		idx.indpred IS NOT NULL AS is_partial
+	FROM pg_index AS idx
+  		JOIN pg_class AS i ON i.oid = idx.indexrelid
+  		JOIN pg_am AS am ON i.relam = am.oid
+  		JOIN pg_namespace AS NS ON i.relnamespace = NS.OID
+  		JOIN pg_user AS U ON i.relowner = U.usesysid
+	WHERE NOT nspname LIKE 'pg%'
+ENDOFQUERY;
+	if(strlen($tablename)){
+		$query .= " and idx.indrelid ='{$tablename}' :: REGCLASS ";
+	}
+}
 //---------- begin function postgresqlGetDBRecord ----------
 /**
 * @describe retrieves a single record from DB based on params
@@ -688,6 +721,21 @@ function postgresqlListRecords($params=array()){
 */
 function postgresqlParseConnectParams($params=array()){
 	global $CONFIG;
+	if(isPostgreSQL()){
+		$params['-dbhost']=$CONFIG['dbhost'];
+		if(isset($CONFIG['dbuser'])){
+			$params['-dbuser']=$CONFIG['dbuser'];
+		}
+		if(isset($CONFIG['dbpass'])){
+			$params['-dbpass']=$CONFIG['dbpass'];
+		}
+		if(isset($CONFIG['dbport'])){
+			$params['-dbport']=$CONFIG['dbport'];
+		}
+		if(isset($CONFIG['dbconnect'])){
+			$params['-connect']=$CONFIG['dbconnect'];
+		}
+	}
 	//dbhost
 	if(!isset($params['-dbhost'])){
 		if(isset($CONFIG['dbhost_postgresql'])){

@@ -1220,12 +1220,12 @@ function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
 			'editlist'		=> 1
 		));
 		$ok = createDBTable('_errors',array(
-			'errno'	=> 'integer NOT NULL',
-			'errstr'=> 'varchar(255) NULL',
-			'errfile'=>'varchar(255) NULL',
-			'errline'=>'integer NULL',
-			'errdate'=>'date NOT NULL',
-			'archived'=>'tinyint(1) NOT NULL Default 0'
+			'errno'	=> databaseDataType('integer').' NOT NULL',
+			'errstr'=> databaseDataType('varchar(255)').' NULL',
+			'errfile'=>databaseDataType('varchar(255)').' NULL',
+			'errline'=>databaseDataType('integer').' NULL',
+			'errdate'=>databaseDataType('date').' NOT NULL',
+			'archived'=>databaseDataType('tinyint(1)').' NOT NULL Default 0'
 		),'InnoDB');
 		$ok=addDBIndex(array('-table'=>'_errors','-fields'=>"errdate,errfile,errline",'-unique'=>true));
 
