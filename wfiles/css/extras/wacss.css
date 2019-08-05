@@ -2713,7 +2713,7 @@ img {
 img.responsive,
 img.img-responsive,
 img.img-fluid {
-    display: block;
+    display: inline-block;
     height: auto;
     max-width: 100%;
 }
