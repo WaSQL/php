@@ -10,11 +10,12 @@
  	<meta name="viewport" content="width=device-width, initial-scale=1" />
  	<link type="text/css" rel="stylesheet" href="/wfiles/css/wasql.min.css" />
 	<link type="text/css" rel="stylesheet" href="/wfiles/css/wasql_icons.min.css" />
-	<link type="text/css" rel="stylesheet" href="/wfiles/css/extras/bootstrap.min.css" />
+	<link type="text/css" rel="stylesheet" href="/wfiles/css/extras/wacss.min.css" />
   	<script type="text/javascript" src="/wfiles/js/common.min.js"></script>
 	<script type="text/javascript" src="/wfiles/js/event.min.js"></script>
 	<script type="text/javascript" src="/wfiles/js/form.min.js"></script>
 	<script type="text/javascript" src="/php/admin/setup_js.js"></script>
+	<script type="text/javascript" src="/wfiles/js/extras/wacss.min.js"></script>
 </head>
 <body style="background:#FFFFFF;color:#2c68ac;margin:0px;padding:0px;">
 	<div class="container-fluid" style="margin:15px;padding:15px;">
@@ -93,11 +94,10 @@
 </view:default>
 
 <view:template>
-<div style="float:left;margin-right:15px;margin-bottom:15px;width:200px;height:260px;" class="well">
+<div style="float:left;margin-right:15px;margin-bottom:15px;width:180px;height:240px;" class="well">
 	<label for="starttype_<?=$template['nameonly'];?>"><img src="/?showimage=<?=base64_encode($template['afile']);?>" class="img img-responsive img-thumbnail" /></label>
 	<div class="text-center w_padtop">
-		<input type="radio" id="starttype_<?=$template['nameonly'];?>" name="starttype" _required="1" requiredmsg="Pick a Template First" data-type="checkbox" value="<?=$template['nameonly'];?>" style="display:none" <?=setupTypeChecked($template['nameonly']);?> /> 
-		<label for="starttype_<?=$template['nameonly'];?>" class="icon-mark" style="font-size:1.3em;vertical-align:top;"></label>
+		<input type="radio" data-type="checkbox" id="starttype_<?=$template['nameonly'];?>" name="starttype" _required="1" requiredmsg="Pick a Template First" value="<?=$template['nameonly'];?>" <?=setupTypeChecked($template['nameonly']);?> /> 
 		<label for="starttype_<?=$template['nameonly'];?>"><?=ucfirst($template['nameonly']);?></label>
 	</div>
 	<div class="w_padtop text-left"><?=setupGetDescription($template['afile']);?></div>

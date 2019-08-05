@@ -8787,8 +8787,7 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	elseif(isPostgreSQL()){
 		//Open a persistent PostgreSQL connection
 		loadExtras('postgresql');
-		$conn_string="host={$host} dbname={$dbname} user={$user} password={$pass}";
-		return pg_pconnect($conn_string);
+		return postgresqlDBConnect();
 		}
 	elseif(isSqlite()){
 		global $dbh;

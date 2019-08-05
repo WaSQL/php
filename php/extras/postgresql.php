@@ -33,6 +33,7 @@ function postgresqlAddDBRecord($params=array()){
 	global $USER;
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
 	$finfo=postgresqlGetDBFieldInfo($params['-table'],$params);
+
 	$sequence='';
 	$opts=array();
 	if(isset($fields['cdate'])){
@@ -215,6 +216,7 @@ function postgresqlDBConnect($params=array()){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
 		exit;
 	}
+	//echo printValue($params);
 	global $dbh_postgresql;
 	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	//echo printValue($params);exit;
@@ -723,6 +725,9 @@ function postgresqlParseConnectParams($params=array()){
 	global $CONFIG;
 	if(isPostgreSQL()){
 		$params['-dbhost']=$CONFIG['dbhost'];
+		if(isset($CONFIG['dbname'])){
+			$params['-dbname']=$CONFIG['dbname'];
+		}
 		if(isset($CONFIG['dbuser'])){
 			$params['-dbuser']=$CONFIG['dbuser'];
 		}
