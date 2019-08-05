@@ -76,22 +76,22 @@ body{
     padding: 1.25rem;
 }
 /* ---------------------- ul.checklist ------------------------- */
-ul.checklist{
+ul.checklist,ul[class^="checklist-"]{
   list-style: none;
 }
-ul.checklist li:before {
+ul.checklist li:before,ul[class^="checklist-"] li:before {
   content: "\2714\0020";
   color:#000000;
 }
-ul.checklist.w_blue li:before{color:#1b95e0;}
-ul.checklist.w_gray li:before{color:#6c757d;}
-ul.checklist.w_green li:before{color:#28a745;}
-ul.checklist.w_red li:before{color:#dc3545;}
-ul.checklist.w_yellow li:before{color:#ffc107;}
-ul.checklist.w_orange li:before{color:#ff9800;}
-ul.checklist.w_teal li:before{color:#17a2b8;}
-ul.checklist.w_white li:before{color:#ffffff;}
-ul.checklist.w_black li:before{color:#000000;}
+ul.checklist-blue li:before{color:#1b95e0;}
+ul.checklist-gray li:before{color:#6c757d;}
+ul.checklist-green li:before{color:#28a745;}
+ul.checklist-red li:before{color:#dc3545;}
+ul.checklist-yellow li:before{color:#ffc107;}
+ul.checklist-orange li:before{color:#ff9800;}
+ul.checklist-teal li:before{color:#17a2b8;}
+ul.checklist-white li:before{color:#ffffff;}
+ul.checklist-black li:before{color:#000000;}
 
 
 /* ---------------------- tooltip ------------------------- */
