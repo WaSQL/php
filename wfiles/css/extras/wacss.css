@@ -83,13 +83,13 @@ ul.checklist li:before,ul[class^="checklist-"] li:before {
   content: "\2714\0020";
   color:#000000;
 }
-ul.checklist-blue li:before{color:#1b95e0;}
-ul.checklist-gray li:before{color:#6c757d;}
-ul.checklist-green li:before{color:#28a745;}
-ul.checklist-red li:before{color:#dc3545;}
-ul.checklist-yellow li:before{color:#ffc107;}
+ul.checklist-blue li:before, ul.checklist-primary li:before{color:#1b95e0;}
+ul.checklist-gray li:before, ul.checklist-secondary li:before{color:#6c757d;}
+ul.checklist-green li:before, ul.checklist-success li:before{color:#28a745;}
+ul.checklist-red li:before, ul.checklist-danger li:before{color:#dc3545;}
+ul.checklist-yellow li:before, ul.checklist-warning li:before{color:#ffc107;}
 ul.checklist-orange li:before{color:#ff9800;}
-ul.checklist-teal li:before{color:#17a2b8;}
+ul.checklist-teal li:before, ul.checklist-info li:before{color:#17a2b8;}
 ul.checklist-white li:before{color:#ffffff;}
 ul.checklist-black li:before{color:#000000;}
 
