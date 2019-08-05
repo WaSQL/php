@@ -221,7 +221,7 @@ function postgresqlDBConnect($params=array()){
 	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	//echo printValue($params);exit;
 	try{
-		$dbh_postgresql = pg_connect($params['-connect']);
+		$dbh_postgresql = pg_pconnect($params['-connect']);
 		if(!is_resource($dbh_postgresql)){
 			$err=pg_last_error();
 			echo "postgresqlDBConnect error:{$err}".printValue($params);
