@@ -23,6 +23,36 @@ else if(document.attachEvent){
 	}
 else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
 
+
+function eventBuildOnLoad() {
+	if(document.readyState === "complete") {
+		//console.log('eventBuildOnLoad ready');
+  		eventProcessBuildOnLoad();
+	}
+	else {
+		//console.log('eventBuildOnLoad not ready');
+	  	if (window.addEventListener)  // W3C DOM
+	        window.addEventListener("load",function(){eventProcessBuildOnLoad();},false);
+	    else if (window.attachEvent) { // IE DOM
+	         var r = window.attachEvent("onload", function(){eventProcessBuildOnLoad();});
+	         return r;
+	    }
+	}
+    
+}
+function eventProcessBuildOnLoad(){
+	//console.log('eventProcessBuildOnLoad');
+	let list=document.querySelectorAll('[data-onload]');
+	for(let i=0;i<list.length;i++){
+		if(undefined != list[i].getAttribute('data-onload-ex')){continue;}
+		let str=list[i].getAttribute('data-onload');
+		list[i].setAttribute('data-onload-ex',new Date().getTime());
+		//console.log(str);
+		let strfunc=new Function(str);
+		strfunc();
+	}
+}
+
 /**
 * @describe enables drag n sort on child elements
 * @param string - query selector string
@@ -389,8 +419,9 @@ function setChangeValue(tid,val){
      changeValue[tid]=val;
      }
 function evalChange(tid){
-	eval(changeValue[tid]);
-	}
+	let jsfunc=new Function(changeValue[tid]);
+    jsfunc();
+}
 function hasChanged(tid){
      var el=document.getElementById(tid);
      var changed=0;
@@ -477,8 +508,9 @@ function tooltipDiv(obj,rtimer){
 	}
 	else if(txt.indexOf('js:')===0){
 		//call a function
-    	var f=str_replace('js:','',txt);
-    	txt=eval(f);
+    	let f=str_replace('js:','',txt);
+    	let jsfunc=new Function(f);
+    	txt=jsfunc();
 	}
 	else if(txt.indexOf('ajax:')===0){
 		//call a function
@@ -1500,7 +1532,10 @@ function initBehaviors(ajaxdiv){
 					if(checkMouseLeave(this,e)){
 						this.style.display='none';
 						var onhide=this.getAttribute('onhide');
-						if(onhide){eval(onhide);}
+						if(onhide){
+							let jsfunc=new Function(onhide);
+    						jsfunc();
+						}
 					}
 				}
 			});
@@ -1548,7 +1583,10 @@ function initBehaviors(ajaxdiv){
                                 if(hide){dObj.style.display='none';}
 							}
 							var onhide=this.getAttribute('onhide');
-							if(onhide){eval(onhide);}
+							if(onhide){
+								let jsfunc=new Function(onhide);
+    							jsfunc();
+    						}
 						}
 					}
 				});
@@ -1677,7 +1715,10 @@ function initBehaviors(ajaxdiv){
                                 if(hide){dObj.style.display='none';}
 							}
 							var onhide=this.getAttribute('onhide');
-							if(onhide){eval(onhide);}
+							if(onhide){
+								let jsfunc=new Function(onhide);
+    							jsfunc();
+    						}
 						}
 					}
 				});
@@ -2346,7 +2387,8 @@ function ajaxTimer(id){
         	var func;
 			if(undefined != attr['function']){func=attr['function'];}
 			else{func=attr['data-function'];}
-			eval(func);
+			let jsfunc=new Function(func);
+    		jsfunc();
 		}
 		//reset the timer
 		obj.setAttribute('data-countdown',timer);
@@ -2365,7 +2407,8 @@ function countDown(id){
     var cb=obj.getAttribute('callback');
     if(cb){
     	var func=cb+"('"+id+"','"+number+"')";
-    	eval(func);
+    	let jsfunc=new Function(func);
+    	jsfunc();
 		}
 	TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
 	}
@@ -2561,12 +2604,14 @@ function doMath(id){
 				var txt=getText(mres[1]);
 				//alert('replace '+mname+' with '+txt);
 				var evalstr='str.replace(/'+mname+'/,\''+txt+'\')';
-				str=eval(evalstr);
+				let jsfunc=new Function(evalstr);
+    			str=jsfunc();
 				}
 			}
 		//window.status=str;
 		try{
-			str=eval(str);
+			let jsfunc=new Function(str);
+    		str=jsfunc();
 			setText(id,str);
 			}
 		catch(err){
@@ -2838,7 +2883,10 @@ function initDrop(tagname,tagatt,attval){
 					/*Check for onhide attribute*/
 					var onhide=this.getAttribute('onhide');
 					//window.status="onhide="+onhide;
-					if(onhide){eval(onhide);}
+					if(onhide){
+						let jsfunc=new Function(onhide);
+    					jsfunc();
+    				}
 				}
 			}
 		});

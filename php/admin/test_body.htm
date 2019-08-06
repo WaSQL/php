@@ -49,11 +49,13 @@
 				</div>
 			</div>
 		</form>
+		<?=buildOnLoad("console.log('ONE');");?>
 	</div>
 </div>
 </view:default>
 
 <view:form-elements>
+<form>
 	<div class="row"><div class="col s2">ButtonSelect</div><div class="col s4"><?=buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
 	<div class="row"><div class="col s2">Date</div><div class="col s4"><?=buildFormDate('mydate');?></div></div>
 	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
@@ -61,7 +63,7 @@
 	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));?></div></div>
 	<div class="row"><div class="col s2">DateTime</div><div class="col s4"><?=buildFormDateTime('xyz');?></div></div>
 	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4');?></div></div>
-	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5'));?></div></div>
+	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5','autocomplete'=>'current-password'));?></div></div>
 	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
 	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
 	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8');?></div></div>
@@ -84,7 +86,10 @@
 	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
 		<textarea id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
 		<?=buildOnLoad("wacss.initWacssEdit();");?>
+		<?=buildOnLoad("console.log('TWO');");?>
+		<?=buildOnLoad("console.log('TWO-2');");?>
 	</div></div>
+</form>
 </view:form-elements>
 
 <view:nav-tabs>

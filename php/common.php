@@ -2808,7 +2808,7 @@ function buildMsnCtt($emails=array(),$push=0,$name='msn_contacts.ctt'){
 * @usage echo buildOnLoad("document.myform.myfield.focus();");
 */
 function buildOnLoad($str='',$img='/wfiles/clear.gif',$width=1,$height=1){
-	return '<img class="w_buildonload" src="'.$img.'" alt="onload functions" width="'.$width.'" height="'.$height.'" style="border:0px;" onload="'.$str.'">'.PHP_EOL;
+	return '<img class="w_buildonload" src="'.$img.'" alt="onload functions" width="'.$width.'" height="'.$height.'" style="border:0px;" onload="eventBuildOnLoad();" data-onload="'.$str.'">'.PHP_EOL;
 	}
 //---------- begin function buildShareButtons
 /**
@@ -3896,7 +3896,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'_behavior','display',
 		'required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
-		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg',
+		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg','autocomplete',
 		'action','onsubmit'
 		);
 	if(isset($atts['pattern']) && !isset($atts['oninvalid']) && isset($atts['data-pattern_message'])){
