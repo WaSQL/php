@@ -2167,7 +2167,9 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 */
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['text'])){$params['text']='file to upload';}
+	if(!isset($params['text'])){
+		if(isset($params['multiple'])){$params['text']='files to upload';}
+		else{$params['text']='file to upload';}}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
@@ -2227,7 +2229,7 @@ function buildFormFile($name,$params=array()){
 	}
 	unset($label_params['width']);
 	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-	$label_params['style'].=';width:100%;';
+	$label_params['style'].=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
 	//return printValue($label_params);
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
 	$tag .= setTagAttributes($params);

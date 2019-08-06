@@ -2494,6 +2494,99 @@ function ajaxPopup(url,params,useropts){
 	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif" alt="loading" /> loading...please wait.</div>',opt);
 	ajaxGet(url,'centerpop',params);
 	}
+function ajaxSubmitMultipartForm(theform,sid){
+	//verify that they passed in the form object
+	if(undefined == theform){
+		alert("No form object passed to ajaxSubmitMultipartForm");
+		return false;
+	}
+	//make sure we have not already processed it.
+
+	//console.log(theform);return false;
+	//validate form fields
+	let ok=submitForm(theform,1,0,1);
+	if(!ok){return false;}
+	let data = new FormData();
+	let request = new XMLHttpRequest();
+	//attach files
+	let j=0;
+	for(let i=0;i<theform.length;i++){
+		if(undefined == theform[i].name){continue;}
+		if(theform[i].name.length==0){continue;}
+		switch(theform[i].type.toLowerCase()){
+			case 'color':
+			case 'date':
+			case 'datetime':
+			case 'datetime-local':
+			case 'email':
+			case 'month':
+			case 'number':
+			case 'range':
+			case 'search':
+			case 'tel':
+			case 'time':
+			case 'url':
+			case 'week':
+			//Standard HTML input types
+			case 'text':
+			case 'password':
+			case 'submit':
+			case 'hidden':
+			case 'textarea':
+				data.append(theform[i].name,theform[i].value);
+			break;
+			case 'select-one':
+				if (theform[i].selectedIndex>=0) {
+					data.append(theform[i].name,theform[i].options[theform[i].selectedIndex].value);
+				}
+				break;
+			case 'select-multiple':
+				for (j=0; j<theform[i].options.length; j++) {
+					if (theform[i].options[j].selected) {
+						data.append(theform[i].name,theform[i].options[j].value);
+					}
+				}
+			break;
+			case 'checkbox':
+			case 'radio':
+				if (theform[i].checked) {
+					data.append(theform[i].name,theform[i].value);
+				}
+			break;
+			case 'file':
+				for (j=0; j<theform[i].files.length; j++) {
+					data.append(theform[i].name,theform[i].files[j]);
+				}
+			break;
+		}
+	}
+	for(let pair of data.entries()) {
+   		console.log(pair[0]+ ', '+ pair[1]); 
+	}
+	return false;
+	// AJAX request finished
+	request.addEventListener('load', function(e) {
+		// request.response will hold the response from the server
+		console.log(request.response);
+	});
+
+	// Upload progress on request.upload
+	request.upload.addEventListener('progress', function(e) {
+		var percent_complete = (e.loaded / e.total)*100;
+	
+		// Percentage of upload completed
+		console.log(percent_complete);
+	});
+
+	// If server is sending a JSON response then set JSON response type
+	request.responseType = 'json';
+
+	// Send POST request to the server side script
+	request.open('post', 'upload.php'); 
+	request.send(data);
+	return false;
+
+}
 //--------------------------
 //--Submit form using ajax
 function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {

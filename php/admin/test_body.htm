@@ -26,11 +26,29 @@
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
-		<div style="width:300px;"><div class="w_progress" style="height:20px;background-color: pink;"></div></div>
-		<ul class="checklist-green">
-							  <li>choose and customize from our template library</li>
-							  <li>easily create your custom applications</li>
-							</ul>
+		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return ajaxSubmitMultipartForm(this,'centerpop');">
+			<div class="row">
+				<div class="col s6">
+					<?=buildFormFile('file1',array('autonumber'=>1,'multiple'=>1));?>
+				</div>
+				<div class="col s6">
+					<?=buildFormFile('file2',array('autonumber'=>1));?>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col s6">
+					<?=buildFormText('name',array('placeholder'=>'name','value'=>'john doe'));?>
+				</div>
+				<div class="col s6">
+					<?=buildFormSelect('age',array(12=>12,43=>43,53=>53),array('placeholder'=>'age'));?>
+				</div>
+			</div>
+			<div class="row w_padtop">
+				<div class="col s12 align-right">
+					<button type="submit" class="btn w_blue">Upload</button>
+				</div>
+			</div>
+		</form>
 	</div>
 </div>
 </view:default>
