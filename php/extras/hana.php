@@ -1382,6 +1382,33 @@ function hanaQueryResults($query,$params=array()){
 	}
 	return $recs;
 }
+//---------- begin function postgresqlGetDBTablePrimaryKeys ----------
+/**
+* @describe returns an array of primary key fields for the specified table
+* @param [$params] array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+*	[-host] - postgresql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return array returns array of primary key fields
+* @usage $fields=postgresqlGetDBTablePrimaryKeys();
+*/
+function hanaGetDBTablePrimaryKeys($table,$params=array()){
+	$parts=preg_split('/\./',strtoupper($table),2);
+	$where='';
+	if(count($parts)==2){
+		$query = "SELECT column_name FROM constraints WHERE SCHEMA_NAME = '{$parts[0]}' and table_name='{$parts[1]}'";
+	}
+	else{
+		$query = "SELECT column_name FROM constraints WHERE table_name='{$parts[1]}'";
+	}
+	$tmp = hanaQueryResults($query,$params);
+	$keys=array();
+	foreach($tmp as $rec){
+		$keys[]=$rec['column_name'];
+    }
+	return $keys;
+}
 //---------- begin function hanaBuildPreparedInsertStatement ----------
 /**
 * @describe creates the query needed for a prepared Insert Statement
