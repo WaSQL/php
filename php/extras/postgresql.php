@@ -487,7 +487,7 @@ function postgresqlGetDBFieldInfo($table,$params=array()){
 			'size'		=> pg_field_size($res, $j),
 			'nullable'	=> pg_field_is_null($res, $j),
 		);
-		$field['_dbtype']=$field['_dbtype_ex']=strtolower($field['_dbtype']);
+		$field['_dbtype']=$field['_dbtype_ex']=$field['type']=strtolower($field['_dbtype']);
 		if($field['size'] > 0){
 			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['size']})");
 		}
