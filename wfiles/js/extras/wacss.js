@@ -1524,6 +1524,7 @@ var wacss = {
 	},
 	setActiveTab: function(el){
 	    let p=wacss.getParent(el,'ul');
+	    if(p === null){return false;}
 	    let list=p.querySelectorAll('li');
 	    for(let i=0;i<list.length;i++){
 	        wacss.removeClass(list[i],'active');
