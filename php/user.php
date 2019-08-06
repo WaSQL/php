@@ -582,11 +582,10 @@ function userSetWaSQLGUID(){
 	global $USER;
 	global $CONFIG;
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
-	if(!isset($USER['password_crc']) || !strlen($USER['password_crc'])){
-		$USER['password_crc']=crc32($USER['password']);
+	if(!isset($USER['password_enc']) || !strlen($USER['password_enc'])){
+		$USER['password_enc']=userEncryptPassEnc($USER['password']);
 	}
-	$str=$USER['_id'].'l'.crc32($USER['username']).$USER['password_crc'];
-	$guid=base64_encode($str);
+	$guid=userEncryptGUID($USER['_id'],$USER['username'],$USER['password_enc']);
 	//echo printValue($_REQUEST);exit;
 	//echo "str:{$str}    guid:{$guid}";exit;
 	//expire in a year
@@ -606,9 +605,8 @@ function userAuthorizeLogin($rec=array(),$guid=''){
 	if(!strlen($guid) && isset($_COOKIE['WASQLGUID']) && strlen($_COOKIE['WASQLGUID'])){
 		$guid=$_COOKIE['WASQLGUID'];
 	}
-	$guidstr=base64_decode($guid);
-    $recstr=$rec['_id'].'l'.crc32($rec['username']).crc32($rec['password']);
-    if($recstr === $guidstr){return true;}
+	$checkguid=userEncryptGUID($rec['_id'],$rec['username'],userEncryptPassEnc($rec['password']));
+    if($checkguid === $guid){return true;}
     return false;
 }
 function userAuthorizeWASQLGUID(){
@@ -616,14 +614,12 @@ function userAuthorizeWASQLGUID(){
 		return false;
 	}
 	$guid=$_COOKIE['WASQLGUID'];
-	$guidstr=base64_decode($guid);
-    if(preg_match('/^([0-9]+)/',$guidstr,$m)){
+    if(preg_match('/^([0-9]+)/',base64_decode($guid),$m)){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
-    	//echo printValue($rec);exit;
     }
-    $recstr=$rec['_id'].'l'.crc32($rec['username']).crc32($rec['password']);
-    //echo "{$recstr} eq {$guidstr}";exit;
-    if($recstr == $guidstr){
+    if(!isset($rec['_id'])){return false;}
+    $checkguid=userEncryptGUID($rec['_id'],$rec['username'],userEncryptPassEnc($rec['password']));
+    if($checkguid === $guid){
     	return $rec;
     }
     return false;
@@ -644,6 +640,36 @@ function userEncryptPW($pw){
 	$pw_enc=encrypt($pw,$salt);
 	$pw_enc='~!'.$pw_enc.'^-';
 	return $pw_enc;
+}
+//---------- begin function userEncryptGUID ----
+/**
+* returns a secure encrypted password using WaSQL's security algorythm.
+* @return string
+* @param string $pw - password to be encrypted
+* @usage
+* 	$securePassword = userEncryptPW($originalPassword);
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @history - bbarten 2014-01-02 added documentation
+*/
+function userEncryptGUID($i,$u,$p){
+	$salt='PaRowXdkQQDPbkbOgTiXUblJT3dGFq-umBtVuQA_PX_cH391Xb_22sdnAXtkS8Wzuj36y1rYSG08LgJ6l1Dh80gBbak5BQGms-9lxdV_-6yAWigiRWgWAbIIGK-k6QgGf8iayYWNuKm_gmDyjwzsYpiqUjakCsVz1x6s77o4Xgq';
+	return base64_encode("{$i}l".crypt("{$u}{$p}",$salt));
+}
+//---------- begin function userEncryptPassEnc ----
+/**
+* returns a secure encrypted password using WaSQL's security algorythm.
+* @return string
+* @param string $pw - password to be encrypted
+* @usage
+* 	$securePassword = userEncryptPW($originalPassword);
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @history - bbarten 2014-01-02 added documentation
+*/
+function userEncryptPassEnc($p){
+	$salt='1A2K66RX94lobdRBRNzp3WBS9RQDzrIRXvIrtxmmmHXysj8cfJQVx89dyR8AaOrurFcjpxjN3BJabcCh0VNbtnHB3vMxUUOyEsf5G39A02-2y2fXyonJJnRGGucl5';
+	return base64_encode(crypt($p,$salt));
 }
 //---------- begin function userGetTempAuthLink ----
 /**
@@ -830,14 +856,6 @@ function setUserInfo(){
 */
 function userLogout(){
 	$USER=array();
-	if(isset($_COOKIE['GUID'])){
-		unset($_SERVER['GUID']);
-		unset($_SESSION['GUID']);
-		unset($_COOKIE['GUID']);
-		//setcookie("GUID", "", time()-3600);
-		setcookie('GUID', null, -1, '/');	
-	}
-
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
 	if(isset($_COOKIE['WASQLGUID'])){
