@@ -679,7 +679,7 @@ function postgresqlGetDBTables($params=array()){
 * @usage $fields=postgresqlGetDBTablePrimaryKeys();
 */
 function postgresqlGetDBTablePrimaryKeys($table,$params=array()){
-	$parts=preg_split('/\./',$table,2);
+	$parts=preg_split('/\./',strtolower($table),2);
 	$where='';
 	if(count($parts)==2){
 		$where = " and kc.table_schema='{$parts[0]}' and kc.table_name='{$parts[1]}'";
