@@ -122,6 +122,7 @@ var wacss = {
 		if(undefined != name){
 			var count = 1;
 			while(count < 1000) {
+				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
 				if(!typeof(obj)){return null;}
 				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
