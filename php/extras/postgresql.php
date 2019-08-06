@@ -679,11 +679,22 @@ function postgresqlGetDBTables($params=array()){
 * @usage $fields=postgresqlGetDBTablePrimaryKeys();
 */
 function postgresqlGetDBTablePrimaryKeys($table,$params=array()){
+	$parts=preg_split('/\./',$table,2);
+	$where='';
+	if(count($parts)==2){
+		$where = " and kc.table_schema='{$parts[0]}' and kc.table_name='{$parts[1]}'";
+	}
+	else{
+		$where = " and kc.table_name='{$parts[0]}'";
+	}
 	global $CONFIG;
 	$query=<<<ENDOFQUERY
-		SELECT 
+		SELECT 	
+			kc.table_schema,
+			kc.table_name,
 			kc.column_name,
-			kc.constraint_name
+			kc.constraint_name,
+			kc.ordinal_position
 		FROM  
 		    information_schema.table_constraints tc,  
 		    information_schema.key_column_usage kc  
@@ -691,9 +702,10 @@ function postgresqlGetDBTablePrimaryKeys($table,$params=array()){
 		    tc.constraint_type = 'PRIMARY KEY' 
 		    and kc.table_name = tc.table_name 
 		    and kc.table_schema = tc.table_schema
-		    tc.table_catalog = '{$CONFIG['postgresql_dbname']}'
+		    and tc.table_catalog = '{$CONFIG['postgresql_dbname']}'
 		    and kc.constraint_name = tc.constraint_name
-		order by 1, 2;
+		    {$where}
+		order by kc.ordinal_position
 ENDOFQUERY;
 	$tmp = postgresqlQueryResults($query,$params);
 	$keys=array();
