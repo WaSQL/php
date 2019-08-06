@@ -583,9 +583,9 @@ function userSetWaSQLGUID(){
 	global $CONFIG;
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
 	if(!isset($USER['password_crc']) || !strlen($USER['password_crc'])){
-		$USER['password_crc']=encodeCRC($USER['password']);
+		$USER['password_crc']=crc32($USER['password']);
 	}
-	$str=$USER['_id'].'l'.encodeCRC($USER['username']).$USER['password_crc'];
+	$str=$USER['_id'].'l'.crc32($USER['username']).$USER['password_crc'];
 	$guid=base64_encode($str);
 	//echo printValue($_REQUEST);exit;
 	//echo "str:{$str}    guid:{$guid}";exit;
@@ -607,7 +607,7 @@ function userAuthorizeLogin($rec=array(),$guid=''){
 		$guid=$_COOKIE['WASQLGUID'];
 	}
 	$guidstr=base64_decode($guid);
-    $recstr=$rec['_id'].'l'.encodeCRC($rec['username']).encodeCRC($rec['password']);
+    $recstr=$rec['_id'].'l'.crc32($rec['username']).crc32($rec['password']);
     if($recstr === $guidstr){return true;}
     return false;
 }
@@ -621,7 +621,7 @@ function userAuthorizeWASQLGUID(){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
     	//echo printValue($rec);exit;
     }
-    $recstr=$rec['_id'].'l'.encodeCRC($rec['username']).encodeCRC($rec['password']);
+    $recstr=$rec['_id'].'l'.crc32($rec['username']).crc32($rec['password']);
     //echo "{$recstr} eq {$guidstr}";exit;
     if($recstr == $guidstr){
     	return $rec;
