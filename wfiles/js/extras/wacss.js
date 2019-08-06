@@ -119,6 +119,7 @@ var wacss = {
 	    return null;
 	},
 	getParent: function(obj,name){
+		if(undefined == obj){return null;}
 		if(undefined != name){
 			var count = 1;
 			while(count < 1000) {
