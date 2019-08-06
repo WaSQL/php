@@ -814,6 +814,9 @@ function setUserInfo(){
 	if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
 		userLogout();
 	}
+	else{
+		$ok=editDBRecord($opts);
+	}
 }
 
 //---------- begin function userLogout ----
