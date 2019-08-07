@@ -829,7 +829,7 @@ function setUserInfo(){
 	$USER['_sessionid']=base64_encode("{$USER['_id']}{$rnum}.{$auth}");
 	$USER['_adate']=$adate;
     /* replace the user password with stars */
-	$USER['password']=preg_replace('/./','*',$USER['password']);
+	//$USER['password']=preg_replace('/./','*',$USER['password']);
 	ksort($USER);
 	/* logout? */
 	if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
