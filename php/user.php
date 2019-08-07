@@ -584,6 +584,9 @@ function userSetWaSQLGUID(){
 	if(isset($_COOKIE['GUID'])){
 		setcookie('GUID', null, -1, '/');
 	}
+	if(isset($_COOKIE['WASQL_ERROR'])){
+		setcookie('WASQL_ERROR', null, -1, '/');
+	}
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
 	$guid=userEncryptGUID($USER['_id'],$USER['username'],$USER['password']);
 	userSetCookie("WASQLGUID", $guid);
