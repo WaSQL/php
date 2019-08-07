@@ -1368,15 +1368,18 @@ var wacss = {
 	},
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={};}
+		if(undefined == title){title='';}
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
 			let mel=m.querySelector('.wacss_modal_content');
 			if(undefined != mel){
 				mel.innerHTML=htm;
 			}
-			let mt=m.querySelector('.wacss_modal_title_text');
-			if(undefined != mt){
-				mt.innerHTML=title;
+			if(title.length > 0){
+				let mt=m.querySelector('.wacss_modal_title_text');
+				if(undefined != mt){
+					mt.innerHTML=title;
+				}
 			}
 			return m;
 		}

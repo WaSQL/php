@@ -26,7 +26,11 @@
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
-		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return ajaxSubmitMultipartForm(this,'centerpop');">
+		<button type="button" class="btn w_blue" onclick="wacss.modalPopup('this is modal content','modal title');">Modal Create</button>
+		<button type="button" class="btn w_orange" onclick="wacss.modalPopup(new Date().getTime());">Modal Update</button>
+		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return ajaxSubmitMultipartForm(this,'modal');">
+			<input type="hidden" name="_menu" value="test" />
+			<input type="hidden" name="multipart" value="1" />
 			<div class="row">
 				<div class="col s6">
 					<?=buildFormFile('file1',array('autonumber'=>1,'multiple'=>1,'path'=>'/uploads'));?>

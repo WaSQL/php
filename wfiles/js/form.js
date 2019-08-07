@@ -1283,7 +1283,7 @@ function getProcessingDiv(id,msg,cancel){
 	var str='';
 	str += '<span id="processing_div">';
 	str += '<span class="icon-spin7 w_spin"></span>';
-	str += ' <span class="w_grey"> '+msg+'</span>';
+	str += ' <span class="w_grey processing_message"> '+msg+'</span>';
 	if(cancel==1){
 		str += ' <span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
 	}
@@ -2514,6 +2514,8 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	let ok=submitForm(theform,1,0,1);
 	if(!ok){return false;}
 	let data = new FormData();
+	//AjaxRequestUniqueId
+	data.append('AjaxRequestUniqueId',Math.random().toString(36).substr(2, 9));
 	let request = new XMLHttpRequest();
 	request.formdata=data;
 	//attach files
@@ -2578,9 +2580,11 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	request.params=params;
 	//event: loadstart event is fired when a request has started to load data.
 	request.addEventListener('loadstart', function(e) {
+		console.log('Load: '+this.sid);
 		// request.response will hold the response from the server
 		var txt=getProcessingDiv(this.sid);
         if(this.sid.indexOf('centerpop') != -1){
+        	console.log('setting a centerpop');
 			popUpDiv('',{id:this.sid,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 			var atitle='Processing Request';
 			setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
@@ -2588,10 +2592,12 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         else if(this.sid=='modal'){
         	let title='';
             if(undefined != this.params.title){title=this.params.title;}
-            else{title='Success';}
+            else{title='Processing Request';}
+            console.log('setting a modal');
 			let modal=wacss.modalPopup(txt,title,{overlay:1});
 		}
 		else{
+			console.log('setting a custom');
 			this.prevtxt=getText(this.sid);
 			setText(this.sid,txt);
 		}
@@ -2601,26 +2607,41 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	request.upload.xhr=request;
 	request.upload.addEventListener('progress', function(e) {
 		let percent_complete = parseInt((e.loaded / e.total)*100);
-		let sidobj=getObject(this.sid);
-		if(undefined == sidobj){
-			this.xhr.abort();
+		console.log('Percent Complete: '+percent_complete+'%');
+		console.log(this.sid);
+		let pobj=document.querySelector('#processing_div .processing_message');
+		if(undefined != pobj){
+			setText(pobj,percent_complete+'%');
 			return false;
 		}
 		let txt=getProcessingDiv(this.sid,percent_complete+'%');
 		if(this.sid.indexOf('centerpop') != -1){
 			console.log(percent_complete+'% for centerpop x');
+			let sidobj=getObject(this.sid);
+			if(undefined == sidobj){
+				this.xhr.abort();
+				return false;
+			}
+			
 			updateCenterPopText(this.sid,txt);
         }
         else if(this.sid=='modal'){
+        	let sidobj=getObject('wacss_modal');
+			if(undefined == sidobj){
+				this.xhr.abort();
+				return false;
+			}
         	console.log(percent_complete+'% for model');
 			let modal=wacss.modalPopup(txt);
 		}
 		else{
+			console.log(percent_complete+'% for custom sid');
 			setText(this.sid,txt);
 		}
 	});
 	// event: load - fired when an XMLHttpRequest transaction completes successfully.
 	request.addEventListener('load', function(e) {
+		console.log('Load: '+this.sid);
 		// request.response will hold the response from the server
         if(this.sid.indexOf('centerpop') != -1){
 			//setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
@@ -2628,9 +2649,10 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         }
         else if(this.sid=='modal'){
         	let title='';
-            if(undefined != this.params.title){title=this.params.title;}
+            if(undefined != this.params.success_title){title=this.params.success_title;}
             else{title='Success';}
-			let modal=wacss.modalPopup(txt,title,{overlay:1});
+            
+			let modal=wacss.modalPopup(request.response,title);
 		}
 		else{
 			setText(this.sid,request.response);
@@ -2645,7 +2667,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         }
         else if(this.sid=='modal'){
         	let title='';
-            if(undefined != this.params.title){title=this.params.title;}
+            if(undefined != this.params.error_title){title=this.params.error_title;}
             else{title='Error';}
 			let modal=wacss.modalPopup(request.response,title,{overlay:1});
 		}
@@ -2661,7 +2683,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 			removeId(this.sid);
         }
         else if(this.sid=='modal'){
-        	wacss.modalClose
+        	wacss.modalClose();
 		}
 		else{
 			setText(this.sid,this.prevtxt);
@@ -3026,6 +3048,11 @@ function callWaSQL(id,name,params){
 	}
 //--------------------------
 function ajaxAbort(sid){
+	console.log('ajaxAbort'+sid);
+	if(sid=='modal'){
+		wacss.modalClose();
+		return false;
+	}
 	if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
 		var req=AjaxRequest.ActiveAjaxGroupRequests[sid];
 		//check for abort_callback
