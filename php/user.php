@@ -171,6 +171,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 				if(count($changes)){
                     $changes['-table']='_users';
                     $changes['-where']="_id={$rec['_id']}";
+                    if(isset($changes['password']) && userIsEncryptedPW($changes['password'])){
+						$changes['password']=userEncryptPW($changes['password']);
+					}
                     $ok=editDBRecord($changes);
                     if(!isNum($ok)){
 						$_REQUEST['_login_error']=$ok;
