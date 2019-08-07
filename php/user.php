@@ -873,6 +873,12 @@ function userLogout(){
 	if(isset($_COOKIE['GUID'])){
 		setcookie('GUID', null, -1, '/');
 	}
+	if(isset($_COOKIE['WASQLRP'])){
+		setcookie('WASQLRP', null, -1, '/');
+	}
+	if(isset($_COOKIE['WASQLCP'])){
+		setcookie('WASQLCP', null, -1, '/');
+	}
 	if(isset($_COOKIE['WASQLGUID'])){
 		unset($_SERVER['WASQLGUID']);
 		unset($_SESSION['WASQLGUID']);
