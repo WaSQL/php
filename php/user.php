@@ -586,29 +586,21 @@ function userSetWaSQLGUID(){
 	}
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
 	$guid=userEncryptGUID($USER['_id'],$USER['username'],$USER['password']);
-	//echo $guid;exit;
-	//echo printValue($USER);exit;
-	//echo "str:{$str}    guid:{$guid}";exit;
-	//expire in a year
-	$expire=time()+(3600*24*365);
-	if(isset($CONFIG['session_domain'])){
-		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
-		setcookie("WASQLGUID", $guid, $expire, "/", ".{$CONFIG['session_domain']}",isSSL(),true);
-	}
-	else{
-    	setcookie("WASQLGUID", $guid, $expire, "/",null,isSSL(),true);
-	}
+	userSetCookie("WASQLGUID", $guid);
 	setUserInfo();
 	return $guid;
 }
-function userAuthorizeLogin($rec=array(),$guid=''){
-	if(!isset($rec['_id']) || !isset($rec['username']) || !isset($rec['password'])){return false;}
-	if(!strlen($guid) && isset($_COOKIE['WASQLGUID']) && strlen($_COOKIE['WASQLGUID'])){
-		$guid=urldecode($_COOKIE['WASQLGUID']);
+function userSetCookie($name,$value,$expire=''){
+	if(!strlen($expire)){
+		$expire=time()+(3600*24*365);
 	}
-	$checkguid=userEncryptGUID($rec['_id'],$rec['username'],userEncryptPassEnc($rec['password']));
-    if($checkguid === $guid){return true;}
-    return false;
+	if(isset($CONFIG['session_domain'])){
+		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
+		setcookie($name, $value, $expire, "/", ".{$CONFIG['session_domain']}",isSSL(),true);
+	}
+	else{
+    	setcookie($name, $value, $expire, "/",null,isSSL(),true);
+	}
 }
 function userAuthorizeWASQLGUID(){
 	if(!isset($_COOKIE['WASQLGUID']) || !strlen($_COOKIE['WASQLGUID'])){
@@ -618,11 +610,15 @@ function userAuthorizeWASQLGUID(){
     if(preg_match('/^([0-9]+)/',base64_decode($guid),$m)){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
     }
-    if(!isset($rec['_id'])){return false;}
+    if(!isset($rec['_id'])){
+    	userSetCookie("WASQL_ERROR", "REC");
+    	return false;
+    }
     $checkguid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
     if($checkguid === $guid){
     	return $rec;
     }
+    userSetCookie("WASQL_ERROR", $checkguid);
     return false;
 }
 //---------- begin function userEncryptPW ----
