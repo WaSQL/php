@@ -587,6 +587,9 @@ function userSetWaSQLGUID(){
 	if(isset($_COOKIE['GUID'])){
 		setcookie('GUID', null, -1, '/');
 	}
+	if(isset($_COOKIE['WASQLRP'])){
+		setcookie('WASQLRP', null, -1, '/');
+	}
 	if(isset($_COOKIE['WASQL_ERROR'])){
 		setcookie('WASQL_ERROR', null, -1, '/');
 	}
