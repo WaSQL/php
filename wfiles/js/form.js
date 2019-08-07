@@ -1283,9 +1283,9 @@ function getProcessingDiv(id,msg,cancel){
 	var str='';
 	str += '<span id="processing_div">';
 	str += '<span class="icon-spin7 w_spin"></span>';
-	str += ' <span class="w_grey">'+msg+'</span>';
+	str += ' <span class="w_grey"> '+msg+'</span>';
 	if(cancel==1){
-		str += '<span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
+		str += ' <span class="icon-cancel-circled w_danger w_pointer" onclick="return ajaxAbort(\''+id+'\');"></span>';
 	}
 	str += '</span>';
 	return str;
@@ -2579,8 +2579,8 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	//event: loadstart event is fired when a request has started to load data.
 	request.addEventListener('loadstart', function(e) {
 		// request.response will hold the response from the server
+		var txt=getProcessingDiv(this.sid);
         if(this.sid.indexOf('centerpop') != -1){
-        	var txt=getProcessingDiv(this.sid);
 			popUpDiv('',{id:this.sid,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 			var atitle='Processing Request';
 			setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
@@ -2589,11 +2589,11 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         	let title='';
             if(undefined != this.params.title){title=this.params.title;}
             else{title='Success';}
-            let txt=getProcessingDiv(this.sid);
 			let modal=wacss.modalPopup(txt,title,{overlay:1});
 		}
 		else{
-			setText(this.sid,request.response);
+			this.prevtxt=getText(this.sid);
+			setText(this.sid,txt);
 		}
 	});
 	// Upload progress on request.upload
@@ -2602,20 +2602,21 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	request.upload.addEventListener('progress', function(e) {
 		let percent_complete = parseInt((e.loaded / e.total)*100);
 		let sidobj=getObject(this.sid);
-		if(undefined == sidobj || percent_complete > 10){
+		if(undefined == sidobj){
 			this.xhr.abort();
 			return false;
 		}
+		let txt=getProcessingDiv(this.sid,percent_complete+'%');
 		if(this.sid.indexOf('centerpop') != -1){
-			console.log(percent_complete+'% for centerpop');
-			setText(this.sid,percent_complete+'%');
+			console.log(percent_complete+'% for centerpop x');
+			updateCenterPopText(this.sid,txt);
         }
         else if(this.sid=='modal'){
         	console.log(percent_complete+'% for model');
-			let modal=wacss.modalPopup(percent_complete+'%');
+			let modal=wacss.modalPopup(txt);
 		}
 		else{
-			setText(this.sid,percent_complete+'%');
+			setText(this.sid,txt);
 		}
 	});
 	// event: load - fired when an XMLHttpRequest transaction completes successfully.
@@ -2623,7 +2624,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 		// request.response will hold the response from the server
         if(this.sid.indexOf('centerpop') != -1){
 			//setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
-			setCenterPopText(this.sid,request.response);
+			updateCenterPopText(this.sid,request.response);
         }
         else if(this.sid=='modal'){
         	let title='';
@@ -2640,7 +2641,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 		// request.response will hold the response from the server
         if(this.sid.indexOf('centerpop') != -1){
 			//setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
-			setCenterPopText(this.sid,request.response);
+			updateCenterPopText(this.sid,request.response,'Error');
         }
         else if(this.sid=='modal'){
         	let title='';
@@ -2663,7 +2664,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         	wacss.modalClose
 		}
 		else{
-			setText(this.sid,'');
+			setText(this.sid,this.prevtxt);
 		}
 	});
 	
@@ -2943,6 +2944,36 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	if(returnreq){return getReq;}
 	return false;
 	}
+//-------------------------
+function updateCenterPopText(cpid,cptext,cptitle){
+	let cp=getObject(cpid);
+	if(undefined == cp){
+		console.log('updateCenterPopText Error: No cp');
+		return false;
+	}
+	if(undefined == cptext){cptext='';}
+	if(undefined == cptitle){cptitle='';}
+	console.log(cp);
+	if(cptext.length){
+		let cpt=cp.querySelector('.w_centerpop_content');
+		if(undefined != cpt){
+			console.log('updating centerpop content to'+cptext);
+			setText(cpt,cptext);
+		}
+		else{
+			console.log('updateCenterPopText Error: No cpt');
+		}
+	}
+	if(cptitle.length){
+		let cptt=cp.querySelector('.w_centerpop_title');
+		if(undefined != cptt){
+			setText(cptt,cptitle);
+		}
+		else{
+			console.log('updateCenterPopText Error: No cptt');
+		}
+	}
+}
 //--------------------------
 function setCenterPopText(cpid,cptext,params){
 	//usage: setCenterPopText('','hello there',{title:nice title});
@@ -2961,9 +2992,9 @@ function setCenterPopText(cpid,cptext,params){
 	if(params.close_top){
 		txt += '	<div class="w_centerpop_close_top icon-cancel" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
 	}
-	//txt += '	<div class="w_centerpop_content">'+"\n";
+	txt += '	<div class="w_centerpop_content">'+"\n";
 	txt += '		'+cptext+"\n";
-	//txt += '	</div>'+"\n";
+	txt += '	</div>'+"\n";
 
 	txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
 	if(params.close_bot){
