@@ -581,12 +581,13 @@ $SETTINGS=settingsValues($uid);
 function userSetWaSQLGUID(){
 	global $USER;
 	global $CONFIG;
-	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
-	if(!isset($USER['password_enc']) || !strlen($USER['password_enc'])){
-		$USER['password_enc']=userEncryptPassEnc($USER['password']);
+	if(isset($_COOKIE['GUID'])){
+		setcookie('GUID', null, -1, '/');
 	}
-	$guid=userEncryptGUID($USER['_id'],$USER['username'],$USER['password_enc']);
-	//echo printValue($_REQUEST);exit;
+	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
+	$guid=userEncryptGUID($USER['_id'],$USER['username'],$USER['password']);
+	//echo $guid;exit;
+	//echo printValue($USER);exit;
 	//echo "str:{$str}    guid:{$guid}";exit;
 	//expire in a year
 	$expire=time()+(3600*24*365);
@@ -603,7 +604,7 @@ function userSetWaSQLGUID(){
 function userAuthorizeLogin($rec=array(),$guid=''){
 	if(!isset($rec['_id']) || !isset($rec['username']) || !isset($rec['password'])){return false;}
 	if(!strlen($guid) && isset($_COOKIE['WASQLGUID']) && strlen($_COOKIE['WASQLGUID'])){
-		$guid=$_COOKIE['WASQLGUID'];
+		$guid=urldecode($_COOKIE['WASQLGUID']);
 	}
 	$checkguid=userEncryptGUID($rec['_id'],$rec['username'],userEncryptPassEnc($rec['password']));
     if($checkguid === $guid){return true;}
@@ -613,12 +614,12 @@ function userAuthorizeWASQLGUID(){
 	if(!isset($_COOKIE['WASQLGUID']) || !strlen($_COOKIE['WASQLGUID'])){
 		return false;
 	}
-	$guid=$_COOKIE['WASQLGUID'];
+	$guid=urldecode($_COOKIE['WASQLGUID']);
     if(preg_match('/^([0-9]+)/',base64_decode($guid),$m)){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
     }
     if(!isset($rec['_id'])){return false;}
-    $checkguid=userEncryptGUID($rec['_id'],$rec['username'],userEncryptPassEnc($rec['password']));
+    $checkguid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
     if($checkguid === $guid){
     	return $rec;
     }
@@ -654,7 +655,7 @@ function userEncryptPW($pw){
 */
 function userEncryptGUID($i,$u,$p){
 	$salt='PaRowXdkQQDPbkbOgTiXUblJT3dGFq-umBtVuQA_PX_cH391Xb_22sdnAXtkS8Wzuj36y1rYSG08LgJ6l1Dh80gBbak5BQGms-9lxdV_-6yAWigiRWgWAbIIGK-k6QgGf8iayYWNuKm_gmDyjwzsYpiqUjakCsVz1x6s77o4Xgq';
-	return base64_encode("{$i}l".crypt("{$u}{$p}",$salt));
+	return base64_encode("{$i}l".encrypt("{$u}{$p}",$salt));
 }
 //---------- begin function userEncryptPassEnc ----
 /**
@@ -798,14 +799,6 @@ function setUserInfo(){
 		$opts['_aip']=$_SERVER['REMOTE_ADDR'];
 		$USER['_aip']=$_SERVER['REMOTE_ADDR'];
 	}
-	if(isset($finfo['_env'])){
-		$opts['_env']=getRemoteEnv();
-		$env_array=xml2array($opts['_env']);
-		unset($env_array['env']['env']);
-		if(isset($env_array['env'])){
-			$USER['_env']=$env_array['env'];
-		}
-	}
 	//check for fields that match a SERVER Variable
 	foreach($_SERVER as $k=>$v){
 		$lk=strtolower($k);
@@ -833,7 +826,6 @@ function setUserInfo(){
 	$USER['_sessionid']=base64_encode("{$USER['_id']}{$rnum}.{$auth}");
 	$USER['_adate']=$adate;
     /* replace the user password with stars */
-    $USER['password_enc']=userEncryptPassEnc($USER['password']);
 	$USER['password']=preg_replace('/./','*',$USER['password']);
 	ksort($USER);
 	/* logout? */
@@ -842,6 +834,7 @@ function setUserInfo(){
 	}
 	else{
 		$ok=editDBRecord($opts);
+		//echo $ok.printValue($opts).printValue($USER);
 	}
 }
 
@@ -858,6 +851,9 @@ function userLogout(){
 	$USER=array();
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
+	if(isset($_COOKIE['GUID'])){
+		setcookie('GUID', null, -1, '/');
+	}
 	if(isset($_COOKIE['WASQLGUID'])){
 		unset($_SERVER['WASQLGUID']);
 		unset($_SESSION['WASQLGUID']);
