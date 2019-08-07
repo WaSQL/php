@@ -6194,6 +6194,8 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		while ($finfo = mysqli_fetch_field($query_result)) {
 	        $name = (string)$finfo->name;
 	        if(strlen($field) && $name != $field){continue;}
+	        $info[$name]['name']=$name;
+	        $info[$name]['_dbfield']=strtolower($name);
 	        $flags=array();
 	        if($finfo->flags & 1){
 	        	$flags[]='not_null';
@@ -6228,22 +6230,23 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	        }
 	        $dbtypeid=(string)$finfo->type;
 	        //echo $name.printValue($finfo);
-	        $info[$name]['_dbtable'] = $finfo->table;
+	        $info[$name]['_dbtable'] = $info[$name]['table'] = $finfo->table;
 	        $info[$name]['_dblength'] = (integer)$finfo->length;
 	        if($info[$name]['_dblength']==0){
 	        	$info[$name]['_dblength'] = (integer)$finfo->max_length;
 			}
+			$info[$name]['length']=$info[$name]['_dblength'];
 	        $info[$name]['_dbflags'] = implode(' ',$flags);
-	        $info[$name]['_dbtype'] = isset($dbtypemap[$dbtypeid])?$dbtypemap[$dbtypeid]:$dbtypeid;
+	        $info[$name]['_dbtype'] = $info[$name]['type']= isset($dbtypemap[$dbtypeid])?$dbtypemap[$dbtypeid]:$dbtypeid;
     	}
 	}
 	else{
 		for ($i=0; $i < $cnt; $i++) {
 			$name  = (string) databaseFieldName($query_result, $i);
 			if(strlen($field) && $name != $field){continue;}
-			$info[$name]['_dbtable'] = $table;
-			$info[$name]['_dbtype'] = databaseFieldType($query_result, $i);
-	        $info[$name]['_dblength']  = databaseFieldLength($query_result, $i);
+			$info[$name]['_dbtable'] = $info[$name]['table'] = $table;
+			$info[$name]['_dbtype'] = $info[$name]['type'] = databaseFieldType($query_result, $i);
+	        $info[$name]['_dblength'] = $info[$name]['length']  = databaseFieldLength($query_result, $i);
 		    $info[$name]['_dbflags']  = databaseFieldFlags($query_result, $i);
 		}
 	}

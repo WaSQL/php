@@ -564,6 +564,8 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 	foreach($xrecs as $rec){
 		$name=strtolower($rec['name']);
 		$recs[$name]=array(
+			'table'=>$tablename,
+			'_dbtable'=>$tablename,
 			'name'=>$rec['name'],
 			'_dbfield'=>strtolower($rec['name']),
 			'_dbtype'=>$rec['type'],
@@ -571,6 +573,7 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 			'_dbnull'=>$rec['notnull']==0?'NO':'YES',
 			'_dbprimarykey'=>$rec['pk']==0?'NO':'YES'
 		);
+		$recs[$name]['type']=$recs[$name]['_dbtype'];
 	}
 	if(isset($params['-getmeta']) && $params['-getmeta']){
 		//Get a list of the metadata for this table

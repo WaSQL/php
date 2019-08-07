@@ -852,6 +852,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
 			//'type_raw'	=> oci_field_type_raw($stid, $i),
 		);
 		$field['_dbtype']=$field['_dbtype_ex']=strtolower($field['type']);
+		$field['_dblength']=$field['length'];
 		if($field['precision'] > 0){
 			$field['_dbtype_ex']=strtolower("{$field['type']}({$field['precision']})");
 		}

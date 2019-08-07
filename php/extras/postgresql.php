@@ -480,14 +480,17 @@ function postgresqlGetDBFieldInfo($table,$params=array()){
 	for ($j = 0; $j < $i; $j++) {
 	    $fieldname = pg_field_name($res, $j);
 		$field=array(
-		 	'_dbfield'	=> $fieldname,
+			'_dbtable'	=> $table,
+			'table'		=> $table,
+			'name'		=> $fieldname,
+		 	'_dbfield'	=> strtolower($fieldname),
 		 	'_dbtype'	=> pg_field_type($res, $j),
 			'length'	=> pg_field_prtlen($res, $j),
 			'num'		=> pg_field_num($res, $j),
 			'size'		=> pg_field_size($res, $j),
 			'nullable'	=> pg_field_is_null($res, $j),
 		);
-		$field['name']=$field['_dbfield'];
+		$field['_dblength']=$field['length'];
 		$field['_dbtype']=$field['_dbtype_ex']=$field['type']=strtolower($field['_dbtype']);
 		if($field['size'] > 0){
 			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['size']})");

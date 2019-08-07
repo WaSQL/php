@@ -29,10 +29,10 @@
 		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return ajaxSubmitMultipartForm(this,'centerpop');">
 			<div class="row">
 				<div class="col s6">
-					<?=buildFormFile('file1',array('autonumber'=>1,'multiple'=>1));?>
+					<?=buildFormFile('file1',array('autonumber'=>1,'multiple'=>1,'path'=>'/uploads'));?>
 				</div>
 				<div class="col s6">
-					<?=buildFormFile('file2',array('autonumber'=>1));?>
+					<?=buildFormFile('file2',array('autonumber'=>1,'path'=>'/uploads'));?>
 				</div>
 			</div>
 			<div class="row">

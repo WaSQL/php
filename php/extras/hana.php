@@ -1172,13 +1172,18 @@ function hanaGetDBFieldInfo($table,$params=array()){
 	for($i=1;$i<=odbc_num_fields($result);$i++){
 		$field=strtolower(odbc_field_name($result,$i));
         $recs[$field]=array(
+        	'table'		=> $table,
+        	'_dbtable'	=> $table,
 			'name'		=> $field,
+			'_dbfield'	=> $field,
 			'type'		=> strtolower(odbc_field_type($result,$i)),
 			'scale'		=> strtolower(odbc_field_scale($result,$i)),
 			'precision'	=> strtolower(odbc_field_precision($result,$i)),
 			'length'	=> strtolower(odbc_field_len($result,$i)),
 			'num'		=> strtolower(odbc_field_num($result,$i))
 		);
+		$recs[$field]['_dbtype']=$recs[$field]['type'];
+		$recs[$field]['_dblength']=$recs[$field]['length'];
     }
     odbc_free_result($result);
 	return $recs;

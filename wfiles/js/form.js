@@ -2,13 +2,19 @@
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
 function setInputFileName(fld){
-	if(fld.files && fld.files.length > 1 ){
-		fileName = (fld.getAttribute('data-multiple-caption') || '' ).replace('{count}', fld.files.length);
+	//console.log(fld.files);
+	let names=new Array();
+	for(let i=0;i<fld.files.length;i++){
+		names.push(fld.files[i].name);
+	}
+	if(names.length > 1){
+		fileName = names.length+' files: '+implode(', ',names);	
 	}
 	else{
-		fileName = fld.value.split( '\\' ).pop();
+		fileName = implode(', ',names);
 	}
-	var label=document.querySelector('label[for='+fld.id+']');
+	
+	let label=document.querySelector('label[for='+fld.id+']');
 	//console.log(fileName,label);
 	if(fileName){
 		setText(label,'<span class="icon-upload w_big w_success"></span> '+fileName);
@@ -2494,20 +2500,22 @@ function ajaxPopup(url,params,useropts){
 	popUpDiv('<div class="w_bold w_lblue w_big"><img src="/wfiles/loading_blu.gif" alt="loading" /> loading...please wait.</div>',opt);
 	ajaxGet(url,'centerpop',params);
 	}
-function ajaxSubmitMultipartForm(theform,sid){
+function ajaxSubmitMultipartForm(theform,sid,params){
 	//verify that they passed in the form object
 	if(undefined == theform){
 		alert("No form object passed to ajaxSubmitMultipartForm");
 		return false;
 	}
-	//make sure we have not already processed it.
-
+	if(undefined=='sid'){sid='centerpop';}
+	if(undefined == params){params={};}
+	let url=theform.getAttribute('action');
 	//console.log(theform);return false;
 	//validate form fields
 	let ok=submitForm(theform,1,0,1);
 	if(!ok){return false;}
 	let data = new FormData();
 	let request = new XMLHttpRequest();
+	request.formdata=data;
 	//attach files
 	let j=0;
 	for(let i=0;i<theform.length;i++){
@@ -2554,35 +2562,118 @@ function ajaxSubmitMultipartForm(theform,sid){
 				}
 			break;
 			case 'file':
-				for (j=0; j<theform[i].files.length; j++) {
-					data.append(theform[i].name,theform[i].files[j]);
+				if(theform[i].files.length==1){
+					data.append(theform[i].name,theform[i].files[0]);
+				}
+				else{
+					for (j=0; j<theform[i].files.length; j++) {
+						data.append(theform[i].name+'_'+j,theform[i].files[j]);
+					}
 				}
 			break;
 		}
 	}
-	for(let pair of data.entries()) {
-   		console.log(pair[0]+ ', '+ pair[1]); 
-	}
-	return false;
-	// AJAX request finished
+	//return false;
+	request.sid=sid;
+	request.params=params;
+	//event: loadstart event is fired when a request has started to load data.
+	request.addEventListener('loadstart', function(e) {
+		// request.response will hold the response from the server
+        if(this.sid.indexOf('centerpop') != -1){
+        	var txt=getProcessingDiv(this.sid);
+			popUpDiv('',{id:this.sid,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
+			var atitle='Processing Request';
+			setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
+        }
+        else if(this.sid=='modal'){
+        	let title='';
+            if(undefined != this.params.title){title=this.params.title;}
+            else{title='Success';}
+            let txt=getProcessingDiv(this.sid);
+			let modal=wacss.modalPopup(txt,title,{overlay:1});
+		}
+		else{
+			setText(this.sid,request.response);
+		}
+	});
+	// Upload progress on request.upload
+	request.upload.sid=sid;
+	request.upload.xhr=request;
+	request.upload.addEventListener('progress', function(e) {
+		let percent_complete = parseInt((e.loaded / e.total)*100);
+		let sidobj=getObject(this.sid);
+		if(undefined == sidobj || percent_complete > 10){
+			this.xhr.abort();
+			return false;
+		}
+		if(this.sid.indexOf('centerpop') != -1){
+			console.log(percent_complete+'% for centerpop');
+			setText(this.sid,percent_complete+'%');
+        }
+        else if(this.sid=='modal'){
+        	console.log(percent_complete+'% for model');
+			let modal=wacss.modalPopup(percent_complete+'%');
+		}
+		else{
+			setText(this.sid,percent_complete+'%');
+		}
+	});
+	// event: load - fired when an XMLHttpRequest transaction completes successfully.
 	request.addEventListener('load', function(e) {
 		// request.response will hold the response from the server
-		console.log(request.response);
+        if(this.sid.indexOf('centerpop') != -1){
+			//setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
+			setCenterPopText(this.sid,request.response);
+        }
+        else if(this.sid=='modal'){
+        	let title='';
+            if(undefined != this.params.title){title=this.params.title;}
+            else{title='Success';}
+			let modal=wacss.modalPopup(txt,title,{overlay:1});
+		}
+		else{
+			setText(this.sid,request.response);
+		}
 	});
-
-	// Upload progress on request.upload
-	request.upload.addEventListener('progress', function(e) {
-		var percent_complete = (e.loaded / e.total)*100;
+	// event: error event is fired when the request encountered an error.
+	request.addEventListener('error', function(e) {
+		// request.response will hold the response from the server
+        if(this.sid.indexOf('centerpop') != -1){
+			//setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
+			setCenterPopText(this.sid,request.response);
+        }
+        else if(this.sid=='modal'){
+        	let title='';
+            if(undefined != this.params.title){title=this.params.title;}
+            else{title='Error';}
+			let modal=wacss.modalPopup(request.response,title,{overlay:1});
+		}
+		else{
+			setText(this.sid,request.response);
+		}
+	});
+	// event: abort - fired when a request has been aborted
+	request.addEventListener('abort', function(e) {
+		console.log('abort listener called');
+		// request.response will hold the response from the server
+        if(this.sid.indexOf('centerpop') != -1){
+			removeId(this.sid);
+        }
+        else if(this.sid=='modal'){
+        	wacss.modalClose
+		}
+		else{
+			setText(this.sid,'');
+		}
+	});
 	
-		// Percentage of upload completed
-		console.log(percent_complete);
-	});
 
 	// If server is sending a JSON response then set JSON response type
-	request.responseType = 'json';
+	//request.responseType = 'json';
 
 	// Send POST request to the server side script
-	request.open('post', 'upload.php'); 
+	//console.log('Posting Multipart Form...');
+	request.open('post', url); 
 	request.send(data);
 	return false;
 
