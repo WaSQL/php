@@ -599,7 +599,7 @@ function userSetWaSQLGUID(){
     	userSetCookie("WASQL_ERROR", "USER");
     	return false;
     }
-    userSetCookie("WASQLCP", $rec['password']);
+    //userSetCookie("WASQLCP", $rec['password']);
 	$guid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
 	userSetCookie("WASQLGUID", $guid);
 	setUserInfo();
@@ -629,7 +629,7 @@ function userAuthorizeWASQLGUID(){
     	userSetCookie("WASQL_ERROR", "REC");
     	return false;
     }
-    userSetCookie("WASQLRP", $rec['password']);
+    //userSetCookie("WASQLRP", $rec['password']);
     $checkguid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
     if($checkguid === $guid){
     	return $rec;
