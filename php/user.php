@@ -654,8 +654,15 @@ function userEncryptPW($pw){
 * @history - bbarten 2014-01-02 added documentation
 */
 function userEncryptGUID($i,$u,$p){
-	$salt='PaRowXdkQQDPbkbOgTiXUblJT3dGFq-umBtVuQA_PX_cH391Xb_22sdnAXtkS8Wzuj36y1rYSG08LgJ6l1Dh80gBbak5BQGms-9lxdV_-6yAWigiRWgWAbIIGK-k6QgGf8iayYWNuKm_gmDyjwzsYpiqUjakCsVz1x6s77o4Xgq';
-	return base64_encode("{$i}l".encrypt("{$u}{$p}",$salt));
+	$u=strrev(base64_encode($u));
+	$u=preg_replace('/[\=\+\ ]+/','',$u);
+	$p=strrev(base64_encode($p));
+	$p=preg_replace('/[\=\+\ ]+/','',$p);
+	$str=strrev(base64_encode("{$u}{$p}"));
+	$str=preg_replace('/[\=\+\ ]+/','',$str);
+	$str=base64_encode("{$i}l02".$str);
+	$str=preg_replace('/[\=\+\ ]+/','',$str);
+	return $str;
 }
 //---------- begin function userEncryptPassEnc ----
 /**
