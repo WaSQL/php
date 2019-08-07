@@ -152,6 +152,9 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
           	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
           	if(is_array($rec)){
                	$changes=array();
+               	if(isset($ldap['password']) && userIsEncryptedPW($ldap['password'])){
+					$ldap['password']=userEncryptPW($ldap['password']);
+				}
                	foreach($fields as $field){
                     if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
                         $changes[$field]=$ldap[$field];
@@ -171,9 +174,6 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 				if(count($changes)){
                     $changes['-table']='_users';
                     $changes['-where']="_id={$rec['_id']}";
-                    if(isset($changes['password']) && userIsEncryptedPW($changes['password'])){
-						$changes['password']=userEncryptPW($changes['password']);
-					}
                     $ok=editDBRecord($changes);
                     if(!isNum($ok)){
 						$_REQUEST['_login_error']=$ok;
