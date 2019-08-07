@@ -152,7 +152,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
           	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
           	if(is_array($rec)){
                	$changes=array();
-               	if(isset($ldap['password']) && userIsEncryptedPW($ldap['password'])){
+               	if(isset($ldap['password']) && isset($rec['password'])){
 					$ldap['password']=userEncryptPW($ldap['password']);
 				}
                	foreach($fields as $field){
