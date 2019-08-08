@@ -2523,6 +2523,9 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	for(let i=0;i<theform.length;i++){
 		if(undefined == theform[i].name){continue;}
 		if(theform[i].name.length==0){continue;}
+		if(theform[i].name == 'setprocessing'){
+			params.setprocessing=theform[i].value;
+		}
 		switch(theform[i].type.toLowerCase()){
 			case 'color':
 			case 'date':
@@ -2580,11 +2583,18 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	request.params=params;
 	//event: loadstart event is fired when a request has started to load data.
 	request.addEventListener('loadstart', function(e) {
-		console.log('Load: '+this.sid);
+		if(undefined == this.params.setprocessing){
+			if(this.params.setprocessing == 0){return false;}
+		}
+		//console.log('Load: '+this.sid);
 		// request.response will hold the response from the server
 		var txt=getProcessingDiv(this.sid);
+		if(undefined == this.params.setprocessing){
+			setText(this.params.setprocessing,txt);
+			return false;
+		}
         if(this.sid.indexOf('centerpop') != -1){
-        	console.log('setting a centerpop');
+        	//console.log('setting a centerpop');
 			popUpDiv('',{id:this.sid,width:300,height:50,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
 			var atitle='Processing Request';
 			setCenterPopText(this.sid,txt,{title:atitle,drag:false,close_bot:false});
@@ -2593,22 +2603,23 @@ function ajaxSubmitMultipartForm(theform,sid,params){
         	let title='';
             if(undefined != this.params.title){title=this.params.title;}
             else{title='Processing Request';}
-            console.log('setting a modal');
+            //console.log('setting a modal');
 			let modal=wacss.modalPopup(txt,title,{overlay:1});
 		}
 		else{
-			console.log('setting a custom');
+			//console.log('setting a custom');
 			this.prevtxt=getText(this.sid);
 			setText(this.sid,txt);
 		}
 	});
 	// Upload progress on request.upload
 	request.upload.sid=sid;
+	request.upload.params=params;
 	request.upload.xhr=request;
 	request.upload.addEventListener('progress', function(e) {
 		let percent_complete = parseInt((e.loaded / e.total)*100);
-		console.log('Percent Complete: '+percent_complete+'%');
-		console.log(this.sid);
+		//console.log('Percent Complete: '+percent_complete+'%');
+		//console.log(this.sid);
 		let pobj=document.querySelector('#processing_div .processing_message');
 		if(undefined != pobj){
 			setText(pobj,percent_complete+'%');
@@ -2616,7 +2627,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 		}
 		let txt=getProcessingDiv(this.sid,percent_complete+'%');
 		if(this.sid.indexOf('centerpop') != -1){
-			console.log(percent_complete+'% for centerpop x');
+			//console.log(percent_complete+'% for centerpop x');
 			let sidobj=getObject(this.sid);
 			if(undefined == sidobj){
 				this.xhr.abort();
@@ -2631,11 +2642,11 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 				this.xhr.abort();
 				return false;
 			}
-        	console.log(percent_complete+'% for model');
+        	//console.log(percent_complete+'% for model');
 			let modal=wacss.modalPopup(txt);
 		}
 		else{
-			console.log(percent_complete+'% for custom sid');
+			//console.log(percent_complete+'% for custom sid');
 			setText(this.sid,txt);
 		}
 	});
@@ -2677,7 +2688,7 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 	});
 	// event: abort - fired when a request has been aborted
 	request.addEventListener('abort', function(e) {
-		console.log('abort listener called');
+		//console.log('abort listener called');
 		// request.response will hold the response from the server
         if(this.sid.indexOf('centerpop') != -1){
 			removeId(this.sid);
