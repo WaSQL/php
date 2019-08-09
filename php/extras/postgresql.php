@@ -110,7 +110,7 @@ ENDOFQUERY;
 		));
     	return;
 	}
-	if(!pg_prepare($dbh_postgresql,'postgresqlAddDBRecord',$query)){
+	if(!pg_prepare($dbh_postgresql,'',$query)){
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecord',
 			'message'=>'pg_prepare failed',
@@ -228,6 +228,8 @@ function postgresqlDBConnect($params=array()){
 			exit;
 
 		}
+		//$umeta=pg_meta_data($dbh_postgresql,'_users');
+		//echo "Connected".printValue($umeta);exit;
 		return $dbh_postgresql;
 	}
 	catch (Exception $e) {
@@ -327,7 +329,7 @@ ENDOFQUERY;
 		));
     	return;
 	}
-	if(!pg_prepare($dbh_postgresql,'postgresqlEditDBRecord',$query)){
+	if(!pg_prepare($dbh_postgresql,'',$query)){
 		debugValue(array(
 			'function'=>'postgresqlEditDBRecord',
 			'message'=>'pg_prepare failed',
@@ -453,12 +455,12 @@ ENDOFQUERY;
 * @return boolean returns true on success
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
-function postgresqlGetDBFieldInfo($table,$params=array()){
+function postgresqlGetDBFieldInfo($table){
 	global $CONFIG;
 	global $USER;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect($params);
+		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
 		debugValue(array(
@@ -651,6 +653,89 @@ function postgresqlGetDBRecords($params){
 	if(isset($params['-debug'])){return $query;}
 	return postgresqlQueryResults($query,$params);
 }
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function postgresqlGetDBVersion(){
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect();
+	}
+	return pg_version($dbh_postgresql);	
+}
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function postgresqlTranslateDataType($str){
+	$parts=preg_split('/[,()]/',$str);
+	$name=strtolower($parts[0]);
+	switch(strtolower($name)){
+		case 'tinyint':return 'int2';break;
+		case 'smallint':return 'int4';break;
+    	case 'bigint':return 'bigint';break;
+    	case 'real':return 'float4';break;
+    	case 'integer':
+    	case 'int':
+    		return 'integer';
+    	break;
+    	case 'json':return 'json';break;
+    	case 'date':
+    	case 'seconddate':
+    		return 'date';
+    	break;
+    	case 'time':return 'time';break;
+    	case 'datetime':
+    	case 'timestamp':
+    		return 'timestamp';
+    	break;
+    	case 'numeric':
+    	case 'decimal':
+    	case 'number':
+    		if(count($parts)==3){return "decimal({$parts[1]},{$parts[2]})";}
+    		elseif(count($parts)==2){return "decimal({$parts[1]})";}
+    		else{return 'decimal';}
+    	break;
+    	case 'money':return 'money';break;
+    	case 'tinytext':
+    	case 'mediumtext':
+    	case 'longtext':
+			return 'text';
+		break;
+		case 'varchar':
+		case 'nvarchar':
+		case 'varchar2':
+			if(count($parts)==2){return "varchar({$parts[1]})";}
+    		else{return 'varchar(255)';}
+    	break;
+    	case 'char':
+    	case 'nchar':
+			if(count($parts)==2){
+				//use char ONLY if the len is 1
+				if($parts[1]==1){return "char({$parts[1]})";}
+				else{return "varchar({$parts[1]})";}
+			}
+    		else{return 'varchar(255)';}
+    	break;
+	}
+	return $str;
+}
+//---------- begin function postgresqlIsDBTable ----------
+/**
+* @describe returns true if table already exists
+* @param table string
+* @return boolean
+*	returns true if table already exists
+* @usage if(postgresqlIsDBTable('_users')){...}
+*/
+function postgresqlIsDBTable($table='',$force=0){
+	$table=strtolower($table);
+	$tables=postgresqlGetDBTables();
+	if(in_array($table,$tables)){return true;}
+	return false;
+}
+
 //---------- begin function postgresqlGetDBTables ----------
 /**
 * @describe returns an array of tables
@@ -663,13 +748,31 @@ function postgresqlGetDBRecords($params){
 * @usage $tables=postgresqlGetDBTables();
 */
 function postgresqlGetDBTables($params=array()){
+	global $postgresqlGetDBTablesCache;
+	if(isset($postgresqlGetDBTablesCache[0])){
+		return $postgresqlGetDBTablesCache;
+	}
 	global $CONFIG;
-	if(!isset($CONFIG['postgresql_schema'])){$CONFIG['postgresql_schema']='public';}
-	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$CONFIG['postgresql_schema']}' order by tablename";
+	$include_schema=1;
+	if(isPostgreSQL()){
+		$schema=isset($CONFIG['dbschema'])?$CONFIG['dbschema']:'public';
+		$include_schema=0;
+	}
+	else{
+		$schema=isset($CONFIG['postgresql_schema'])?$CONFIG['postgresql_schema']:'public';
+	}
+	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
 	$recs = postgresqlQueryResults($query,$params);
-	$tables=array();
-	foreach($recs as $rec){$tables[]="{$CONFIG['postgresql_schema']}.{$rec['tablename']}";}
-	return $tables;
+	$postgresqlGetDBTablesCache=array();
+	foreach($recs as $rec){
+		if($include_schema==1){
+			$postgresqlGetDBTablesCache[]=strtolower("{$CONFIG['postgresql_schema']}.{$rec['tablename']}");
+		}
+		else{
+			$postgresqlGetDBTablesCache[]=strtolower($rec['tablename']);
+		}
+	}
+	return $postgresqlGetDBTablesCache;
 }
 //---------- begin function postgresqlGetDBTablePrimaryKeys ----------
 /**
@@ -857,6 +960,7 @@ function postgresqlParseConnectParams($params=array()){
 		else{
 			//build connect - http://php.net/manual/en/function.pg-connect.php
 			//$conn_string = "host=sheep port=5432 dbname=test user=lamb password=bar";
+			//echo printValue($CONFIG);exit;
 			$params['-connect']="host={$CONFIG['postgresql_dbhost']} port={$CONFIG['postgresql_dbport']} dbname={$CONFIG['postgresql_dbname']} user={$CONFIG['postgresql_dbuser']} password={$CONFIG['postgresql_dbpass']}";
 			$params['-connect_source']="manual";
 		}

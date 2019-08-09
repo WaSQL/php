@@ -12,6 +12,7 @@ $progpath=dirname(__FILE__);
 date_default_timezone_set('America/Denver');
 
 //includes
+//echo "Before COMMON";exit;
 include_once("$progpath/common.php");
 global $CONFIG;
 include_once("$progpath/config.php");
@@ -28,6 +29,7 @@ include_once("$progpath/wasql.php");
 include_once("$progpath/database.php");
 include_once("$progpath/sessions.php");
 include_once("$progpath/schema.php");
+
 loadExtras('translate');
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
@@ -36,7 +38,9 @@ if(isset($CONFIG['admin_eval'])){
 	$out=includePage($CONFIG['admin_eval'],array());	
 }
 global $USER;
+
 include_once("$progpath/user.php");
+
 global $wtables;
 $wtables=getWasqlTables();
 //check WaSQL tables

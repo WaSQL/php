@@ -45,8 +45,8 @@ if(!$sel){
 /* Load_pages as specified in the conf settings */
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
-	elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxmlfromjson' && isset($_REQUEST['apikey'])){}
-		elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditsha' && isset($_REQUEST['apikey'])){}
+elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxmlfromjson' && isset($_REQUEST['apikey'])){}
+elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditsha' && isset($_REQUEST['apikey'])){}
 elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	$loads=explode(',',$CONFIG['load_pages']);
 	foreach($loads as $load){
@@ -3110,7 +3110,10 @@ ENDOFSQL;
 *	$ok=createDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function createDBTable($table='',$fields=array(),$engine=''){
-	if(isSqlite()){return sqliteCreateDBTable($table,$fields);}
+	if(isPostgreSQL()){return postgresqlCreateDBTable($table,$fields);}
+	elseif(isSqlite()){return sqliteCreateDBTable($table,$fields);}
+	elseif(isOracle()){return oracleCreateDBTable($table,$fields);}
+	elseif(isMssql()){return mssqlCreateDBTable($table,$fields);}
 	global $databaseCache;
 	$function='createDBTable';
 	if(strlen($table)==0){return "createDBTable error: No table";}
@@ -4414,7 +4417,10 @@ function optimizeDB(){
 *	?>
 */
 function editDBRecord($params=array(),$id=0,$opts=array()){
-	if(isSqlite()){return sqliteEditDBRecord($params);}
+	if(isPostgreSQL()){return postgresqlEditDBRecord($params,$id,$opts);}
+	elseif(isSqlite()){return sqliteEditDBRecord($params,$id,$opts);}
+	elseif(isOracle()){return oracleEditDBRecord($params,$id,$opts);}
+	elseif(isMssql()){return mssqlEditDBRecord($params,$id,$opts);}
 	//check for function overload: editDBRecord(table,id,opts());
 	if(!is_array($params) && isDBTable($params) && isNum($id) && $id > 0 && is_array($opts) && count($opts)){
 		$opts['-table']=$params;
@@ -4728,7 +4734,10 @@ function editDBUser($id='',$opts=array()){
 * @usage $ok=executeSQL($query);
 */
 function executeSQL($query=''){
-	if(isSqlite()){return sqliteExecuteSQL($query);}
+	if(isPostgreSQL()){return postgresqlExecuteSQL($query);}
+	elseif(isSqlite()){return sqliteExecuteSQL($query);}
+	elseif(isOracle()){return oracleExecuteSQL($query);}
+	elseif(isMssql()){return mssqlExecuteSQL($query);}
 	$rtn=array();
 	$rtn['query'] = '<div style="font-size:9pt;margin-left:15px;"><pre><xmp>'.$query.'</xmp></pre></div>'.PHP_EOL;
 	$function='executeSQL';
@@ -6116,8 +6125,10 @@ function getDBFields($table='',$allfields=0){
 * @usage $fields=getDBFieldInfo('notes');
 */
 function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
-	if(isSqlite()){return sqliteGetDBFieldInfo($table);}
-	if(isPostgreSQL()){return postgresqlGetDBFieldInfo($table);}
+	if(isPostgreSQL()){return postgresqlGetDBFieldInfo($table,$getmeta,$field,$force);}
+	elseif(isSqlite()){return sqliteGetDBFieldInfo($table,$getmeta,$field,$force);}
+	elseif(isOracle()){return oracleGetDBFieldInfo($table,$getmeta,$field,$force);}
+	elseif(isMssql()){return mssqlGetDBFieldInfo($table,$getmeta,$field,$force);}
 	global $databaseCache;
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
@@ -7130,6 +7141,11 @@ function getDBFiltersString($table,$filters){
 * @usage $rec=getDBRecord(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecord($params=array(),$id=0,$flds=''){
+	if(isPostgreSQL()){return postgresqlGetDBRecord($params,$id,$flds);}
+	elseif(isSqlite()){return sqliteGetDBRecord($params,$id,$flds);}
+	elseif(isOracle()){return oracleGetDBRecord($params,$id,$flds);}
+	elseif(isMssql()){return mssqlGetDBRecord($params,$id,$flds);}
+
 	//check for shortcut hack
 	if(!is_array($params) && isset($id) && $id > 0){
 		$params=array(
@@ -7141,7 +7157,6 @@ function getDBRecord($params=array(),$id=0,$flds=''){
 		}
 		unset($id);
 	}
-	if(isSqlite()){return sqliteGetDBRecord($params);}
 	if(!is_array($params) && is_string($params)){
     	$params=array('-query'=>$params);
 	}
@@ -7223,7 +7238,10 @@ function processDBRecords($func_name,$params=array()){
 * @usage $recs=getDBRecords(array('-table'=>$table,'field1'=>$val1...));
 */
 function getDBRecords($params=array()){
-	if(isSqlite()){return sqliteGetDBRecords($params);}
+	if(isPostgreSQL()){return postgresqlGetDBRecords($params,$id,$flds);}
+	elseif(isSqlite()){return sqliteGetDBRecords($params,$id,$flds);}
+	elseif(isOracle()){return oracleGetDBRecords($params,$id,$flds);}
+	elseif(isMssql()){return mssqlGetDBRecords($params,$id,$flds);}
 	$function='getDBRecords';
 	global $CONFIG;
 	global $databaseCache;
@@ -8676,7 +8694,10 @@ function isDBPage($str){
 * @usage if(isDBTable('_users')){...}
 */
 function isDBTable($table='',$force=0){
-	if(isSqlite()){return sqliteIsDBTable($table);}
+	if(isPostgreSQL()){return postgresqlIsDBTable($table,$force);}
+	elseif(isSqlite()){return sqliteIsDBTable($table,$force);}
+	elseif(isOracle()){return oracleIsDBTable($table,$force);}
+	elseif(isMssql()){return mssqlIsDBTable($table,$force);}
 	global $databaseCache;
 	$table=strtolower($table);
 	if(isset($databaseCache['isDBTable'][$table])){return $databaseCache['isDBTable'][$table];}
@@ -8705,7 +8726,10 @@ function isDBTable($table='',$force=0){
 * @usage $ok=truncateDBTable('comments');
 */
 function truncateDBTable($table){
-	if(isSqlite()){return sqliteTruncateDBTable($table);}
+	if(isPostgreSQL()){return postgresqlTruncateDBTable($table);}
+	elseif(isSqlite()){return sqliteTruncateDBTable($table);}
+	elseif(isOracle()){return oracleTruncateDBTable($table);}
+	elseif(isMssql()){return mssqlTruncateDBTable($table);}
 	if(is_array($table)){$tables=$table;}
 	else{$tables=array($table);}
 	foreach($tables as $table){
@@ -8750,6 +8774,7 @@ function databaseAffectedRows($resource=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseConnect($host,$user,$pass,$dbname=''){
+
 	//clear the cache so we are not getting false cached data from another database
 	global $databaseCache;
 	$databaseCache=array();
@@ -8804,30 +8829,15 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseDataType($str){
+	if(isPostgreSQL()){return postgresqlTranslateDataType($str);}
+	elseif(isSqlite()){return sqliteTranslateDataType($str);}
+	elseif(isOracle()){return oracleTranslateDataType($str);}
+	elseif(isMssql()){return mssqlTranslateDataType($str);}
 	//integer, real(8,2), int(8)
 	//PostgreSQL does not have a the same data types as mysql
 	//http://en.wikibooks.org/wiki/Converting_MySQL_to_PostgreSQL
 	$parts=preg_split('/[,()]/',$str);
 	$name=strtolower($parts[0]);
-	if(isPostgreSQL()){
-		switch(strtolower($name)){
-			case 'tinyint':return 'int2';break;
-			case 'smallint':return 'int4';break;
-	        	case 'bigint':return 'int8';break;
-	        	case 'real':return 'float4';break;
-	        	case 'datetime':return 'timestamp';break;
-	        	case 'numeric':
-	        		if(count($parts)==3){return "decimal({$parts[1]},{$parts[2]})";}
-	        		elseif(count($parts)==2){return "decimal({$parts[1]})";}
-	        		else{return 'decimal';}
-	        	break;
-	        	case 'tinytext':
-	        	case 'mediumtext':
-	        	case 'longtext':
-				return 'text';
-			break;
-		}
-	}
 	if(isSqlite()){
 		switch(strtolower($name)){
 			case 'int':
@@ -9139,6 +9149,10 @@ function databaseFreeResult($query_result){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseIndexes($table){
+	if(isPostgreSQL()){return postgresqlGetDBTableIndexes($table);}
+	elseif(isSqlite()){return sqliteGetDBTableIndexes($table);}
+	elseif(isOracle()){return oracleGetDBTableIndexes($table);}
+	elseif(isMssql()){return mssqlGetDBTableIndexes($table);}
 	//Get the ID generated in the last query - supports multiple database types
 	if(isMysqli() || isMysql()){
 		return getDBRecords(array('-query'=>"show index from {$table}"));
@@ -9396,6 +9410,10 @@ function databaseSelectDb($dbname){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseTables($dbname='',$force=0){
+	if(isPostgreSQL()){return postgresqlGetDBTables($dbname,$force);}
+	elseif(isSqlite()){return sqliteGetDBTables($dbname,$force);}
+	elseif(isOracle()){return oracleGetDBTables($dbname,$force);}
+	elseif(isMssql()){return mssqlGetDBTables($dbname,$force);}
 	global $databaseCache;
 	global $CONFIG;
 	$dbcachekey=strlen($dbname)?strtolower($dbname):$CONFIG['dbname'];
@@ -9438,6 +9456,10 @@ function databaseTables($dbname='',$force=0){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function databaseVersion(){
+	if(isPostgreSQL()){return postgresqlGetDBVersion();}
+	elseif(isSqlite()){return sqliteGetDBVersion();}
+	elseif(isOracle()){return oracleGetDBVersion();}
+	elseif(isMssql()){return mssqlGetDBVersion();}
 	//Returns an associative array of the current row in the result - supports multiple database types
 	if(isMysqli() || isMysql() || isPostgreSQL()){
 		$recs=getDBRecords(array('-query'=>"select version() as version"));
@@ -9643,6 +9665,10 @@ function getDBSettings($name,$userid,$collapse=0){
 * @usage $results=grepDBTables('searchstring');
 */
 function grepDBTables($search,$tables=array(),$dbname=''){
+	if(isPostgreSQL()){return postgresqlGrepDBTables($search,$tables,$dbname);}
+	elseif(isSqlite()){return sqliteGrepDBTables($search,$tables,$dbname);}
+	elseif(isOracle()){return oracleGrepDBTables($search,$tables,$dbname);}
+	elseif(isMssql()){return mssqlGrepDBTables($search,$tables,$dbname);}
 	if(!is_array($tables)){
 		if(strlen($tables)){$tables=array($tables);}
 		else{$tables=array();}
