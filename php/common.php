@@ -7987,6 +7987,8 @@ function processCSVFileLines($file,$func_name,$params=array()){
 		}
 		else{
 			$line = stream_get_line($fh, 1000000, "\n");
+			//remove BOM
+			$line=str_replace("\xEF\xBB\xBF",'',$line);
 			//csvParseLine($str,$delim=',', $enclose='"', $preserve=false){
 			$fields=csvParseLine($line,$params['separator'],$params['enclose']);
 			$cnt=count($fields);

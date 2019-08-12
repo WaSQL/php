@@ -2,6 +2,71 @@
 /* References:
 	Server/System functions to get information about the server we are running on
 */
+
+function systemGetProcessList(){
+	if(isWindows()){
+		$cmd="tasklist /v /fo csv";
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		//remove the first line
+		$fieldline=strtolower(array_shift($lines));
+		$fieldline=str_replace(' ','_',$fieldline);
+		$fieldline=str_replace('#','_num',$fieldline);
+		$fieldline=str_replace('image_name','command',$fieldline);
+		$fieldline=str_replace('user_name','user',$fieldline);
+	    $fields=csvParseLine($fieldline);
+		$recs=array();
+		$totals=array();
+		foreach($lines as $line){
+			$parts=csvParseLine($line);
+			$rec=array();
+			foreach($fields as $i=>$field){
+				$rec[$field]=$parts[$i];
+			}
+			//mem_usage is given in k with commas
+			$rec['mem_usage']=str_replace(',','',$rec['mem_usage']);
+			$rec['mem_usage']=str_replace(' k','',$rec['mem_usage']);
+			$rec['mem_usage']=$rec['mem_usage']*1000;
+			$totals['mem']+=$rec['mem_usage'];
+			//cpu_time is given in hh:mm:ss. Need to convert to %cpu.  (TotalProcessRuntime / CpuTime) / 100
+			$parts=preg_split('/\:/',$rec['cpu_time'],3);
+			$rec['cpu_time']=$parts[0]*3600+$parts[1]*60+$parts[2];
+			$totals['cpu']+=$rec['cpu_time'];
+			ksort($rec);
+			$recs[]=$rec;
+		}
+		//calculate pcpu
+		foreach($recs as $i=>$rec){
+			$recs[$i]['pcpu']=round(($rec['cpu_time']/$totals['cpu'])*100,2);
+			$recs[$i]['pcpu']=number_format($recs[$i]['pcpu'],2);
+			$recs[$i]['pmem']=round(($rec['mem_usage']/$totals['mem'])*100,2);
+			$recs[$i]['pmem']=number_format($recs[$i]['pmem'],2);
+		}
+		return $recs;
+	}
+	//USER  PID %CPU %MEM VSZ  RSS TTY  STAT START   TIME COMMAND
+	$cmd="ps aux --sort=-pcpu,-pmem,-vsz,-rss";
+	$out=cmdResults($cmd);
+	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	//remove the first line
+    $fields=preg_split('/[\t\s]+/',str_replace('%','p',strtolower(array_shift($lines))),11);
+	$recs=array();
+	foreach($lines as $line){
+		$parts=preg_split('/[\t\s]+/',$line,11);
+		$rec=array();
+		foreach($fields as $i=>$field){
+			$rec[$field]=$parts[$i];
+		}
+		//only show processes that are using cpu or memory
+		if($rec['pcpu'] == 0 && $rec['pmem'] == 0 && $rec['vsz'] == 0 && $rec['rss'] == 0){
+			break;
+		}
+		ksort($rec);
+		$recs[]=$rec;
+	}
+	return $recs;
+}
+
 //---------- begin function getServerInfo
 function getServerInfo(){
 	//info: returns a array structure of load averages, cpu info, memory usage, os, and running processes
@@ -330,6 +395,7 @@ function getServerInfoWindows(){
 	else{$context['operating_system']['name']=trim($context['operating_system']['name']);}
 	//running processes
 	$context['running_processes'] = array();
+	//"Image Name","PID","Session Name","Session#","Mem Usage"
 	$processes = @`tasklist /fo csv /v /nh`;
 	if (!empty($processes)){
 		$processes = explode("\n", $processes);

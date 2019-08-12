@@ -1855,6 +1855,11 @@ function addDBHistory($action,$table,$where){
 * 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
 */
 function addDBIndex($params=array()){
+	if(isPostgreSQL()){return postgresqlAddDBIndex($params);}
+	elseif(isSqlite()){return sqliteAddDBIndex($params);}
+	elseif(isOracle()){return oracleAddDBIndex($params);}
+	elseif(isMssql()){return mssqlAddDBIndex($params);}
+
 	if(!isset($params['-table'])){return 'addDBIndex Error: No table';}
 	if(!isset($params['-fields'])){return 'addDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
@@ -1875,15 +1880,7 @@ function addDBIndex($params=array()){
 	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
-	if(isSqlite()){
-		$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
-	}
-	elseif(isPostgres()){
-		$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
-	}
-	else{
 	$query="alter table {$params['-table']} add{$fulltext}{$unique} index {$params['-name']} ({$fieldstr})";
-	}
 	return executeSQL($query);
 }
 //---------- begin function dropDBIndex--------------------
@@ -1900,6 +1897,10 @@ function dropDBIndex($params=array()){
 	if(!isset($params['-name'])){return 'dropDBIndex Error: No name';}
 	//build and execute
 	$query="alter table {$params['-table']} drop index {$params['-name']}";
+	if(isPostgreSQL()){return postgresqlExecuteSQL($query);}
+	elseif(isSqlite()){return sqliteExecuteSQL($query);}
+	elseif(isOracle()){return oracleExecuteSQL($query);}
+	elseif(isMssql()){return mssqlExecuteSQL($query);}
 	return executeSQL($query);
 }
 //---------- begin function addEditDBForm--------------------
@@ -2671,8 +2672,10 @@ function addEditDBForm($params=array(),$customcode=''){
 *	));
 */
 function addDBRecord($params=array()){
-	if(isSqlite()){return sqliteAddDBRecord($params);}
-	elseif(isPostgres()){return postgresqlAddDBRecord($params);}
+	if(isPostgreSQL()){return postgresqlAddDBRecord($params);}
+	elseif(isSqlite()){return sqliteAddDBRecord($params);}
+	elseif(isOracle()){return oracleAddDBRecord($params);}
+	elseif(isMssql()){return mssqlAddDBRecord($params);}
 	$function='addDBRecord';
 	if(!isset($params['-table'])){return 'addDBRecord Error: No table';}
 	$table=$params['-table'];
@@ -2969,6 +2972,10 @@ function addDBRecord($params=array()){
 *	$ok=alterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function alterDBTable($table='',$params=array(),$engine=''){
+	if(isPostgreSQL()){return postgresqlAlterDBTable($table,$params);}
+	elseif(isSqlite()){return sqliteAlterDBTable($table,$params);}
+	elseif(isOracle()){return oracleAlterDBTable($table,$params);}
+	elseif(isMssql()){return mssqlAlterDBTable($table,$params);}
 	$function='alterDBTable';
 	if(!isDBTable($table)){return "No such table: {$table}";}
 	if(count($params)==0 && !strlen($engine)){return "No params";}

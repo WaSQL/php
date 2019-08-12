@@ -15,6 +15,46 @@
 
 */
 
+//---------- begin function postgresqlAddDBIndex--------------------
+/**
+* @describe add an index to a table
+* @param params array
+*	-table
+*	-fields
+*	[-fulltext]
+*	[-unique]
+*	[-name] name of the index
+* @return boolean
+* @usage
+*	$ok=postgresqlAddDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
+* 	$ok=postgresqlAddDBIndex(array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
+*/
+function postgresqlAddDBIndex($params=array()){
+	if(!isset($params['-table'])){return 'postgresqlAddDBIndex Error: No table';}
+	if(!isset($params['-fields'])){return 'postgresqlAddDBIndex Error: No fields';}
+	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
+	//fulltext or unique
+	$fulltext=$params['-fulltext']?' FULLTEXT':'';
+	$unique=$params['-unique']?' UNIQUE':'';
+	//prefix
+	$prefix='';
+	if(strlen($unique)){$prefix .= 'U';}
+	if(strlen($fulltext)){$prefix .= 'F';}
+	$prefix.='IDX';
+	//name
+	$fieldstr=implode('_',$params['-fields']);
+	//index names cannot be longer than 64 chars long
+	if(strlen($fieldstr) > 60){
+    	$fieldstr=substr($fieldstr,0,60);
+	}
+	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
+	//build and execute
+	$fieldstr=implode(", ",$params['-fields']);
+	$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	return postgresqlExecuteSQL($query);
+}
+
+
 //---------- begin function postgresqlAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.
@@ -99,7 +139,7 @@ ENDOFQUERY;
 
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect($params);
+		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
 		debugValue(array(
@@ -142,7 +182,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	$function='createDBTable';
 	if(strlen($table)==0){return "postgresqlCreateDBTable error: No table";}
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
-	if(isDBTable($table)){return 0;}
+	if(postgresqlIsDBTable($table)){return 0;}
 	global $CONFIG;
 	//verify the wasql fields are there. if not add them
 	if(!isset($fields['_id'])){$fields['_id']=databasePrimaryKeyFieldString();}
@@ -183,13 +223,26 @@ function postgresqlCreateDBTable($table='',$fields=array()){
    	}
     $query .= implode(','.PHP_EOL,$lines).PHP_EOL;
     $query .= ")".PHP_EOL;
-    echo $query;exit;
-	$query_result=@databaseQuery($query);
+
+    global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect();
+	}
+	if(!$dbh_postgresql){
+		debugValue(array(
+			'function'=>'postgresqlEditDBRecord',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	$query_result=pg_query($dbh_postgresql,$query);
 	//echo $query . printValue($query_result);exit;
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
-		//success creating table.  Now to through the fields and create any instant meta data found
+		//success creating table.  Now go through the fields and create any instant meta data found
 		foreach($fields as $field=>$attributes){
         	instantDBMeta($ori_table,$field,$attributes);
 		}
@@ -198,6 +251,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
   	else{
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
 	}
+	return 1;
 }
 //---------- begin function postgresqlDBConnect ----------
 /**
@@ -210,13 +264,14 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 * @return connection resource and sets the global $dbh_postgresql variable.
 * @usage $dbh_postgresql=postgresqlDBConnect($params);
 */
-function postgresqlDBConnect($params=array()){
+function postgresqlDBConnect(){
 	$params=postgresqlParseConnectParams($params);
-	if(!isset($params['-dbname']) && !isset($params['-connect'])){
+	//echo printValue($params);exit;
+	if(!isset($params['-connect'])){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
 		exit;
 	}
-	//echo printValue($params);
+	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	//echo printValue($params);exit;
@@ -318,7 +373,7 @@ ENDOFQUERY;
 	//echo $query;exit;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect($params);
+		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
 		debugValue(array(
@@ -358,7 +413,7 @@ ENDOFQUERY;
 */
 function postgresqlExecuteSQL($query,$params=array()){
 	global $dbh_postgresql;
-	$dbh_postgresql=postgresqlDBConnect($params);
+	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
 		debugValue(array(
 			'function'=>'postgresqlExecuteSQL',
@@ -762,7 +817,8 @@ function postgresqlGetDBTables($params=array()){
 		$schema=isset($CONFIG['postgresql_schema'])?$CONFIG['postgresql_schema']:'public';
 	}
 	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
-	$recs = postgresqlQueryResults($query,$params);
+	$recs = postgresqlQueryResults($query);
+	//echo $query.printValue($recs);exit;
 	$postgresqlGetDBTablesCache=array();
 	foreach($recs as $rec){
 		if($include_schema==1){
@@ -864,18 +920,18 @@ function postgresqlParseConnectParams($params=array()){
 	if(!isset($params['-dbhost'])){
 		if(isset($CONFIG['dbhost_postgresql'])){
 			$params['-dbhost']=$CONFIG['dbhost_postgresql'];
-			$params['-dbhost_source']="CONFIG dbhost_postgresql";
+			//$params['-dbhost_source']="CONFIG dbhost_postgresql";
 		}
 		elseif(isset($CONFIG['postgresql_dbhost'])){
 			$params['-dbhost']=$CONFIG['postgresql_dbhost'];
-			$params['-dbhost_source']="CONFIG postgresql_dbhost";
+			//$params['-dbhost_source']="CONFIG postgresql_dbhost";
 		}
 		else{
 			$params['-dbhost']=$params['-dbhost_source']='localhost';
 		}
 	}
 	else{
-		$params['-dbhost_source']="passed in";
+		//$params['-dbhost_source']="passed in";
 	}
 	$CONFIG['postgresql_dbhost']=$params['-dbhost'];
 	
@@ -883,91 +939,92 @@ function postgresqlParseConnectParams($params=array()){
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_postgresql'])){
 			$params['-dbuser']=$CONFIG['dbuser_postgresql'];
-			$params['-dbuser_source']="CONFIG dbuser_postgresql";
+			//$params['-dbuser_source']="CONFIG dbuser_postgresql";
 		}
 		elseif(isset($CONFIG['postgresql_dbuser'])){
 			$params['-dbuser']=$CONFIG['postgresql_dbuser'];
-			$params['-dbuser_source']="CONFIG postgresql_dbuser";
+			//$params['-dbuser_source']="CONFIG postgresql_dbuser";
 		}
 	}
 	else{
-		$params['-dbuser_source']="passed in";
+		//$params['-dbuser_source']="passed in";
 	}
 	$CONFIG['postgresql_dbuser']=$params['-dbuser'];
 	//dbpass
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_postgresql'])){
 			$params['-dbpass']=$CONFIG['dbpass_postgresql'];
-			$params['-dbpass_source']="CONFIG dbpass_postgresql";
+			//$params['-dbpass_source']="CONFIG dbpass_postgresql";
 		}
 		elseif(isset($CONFIG['postgresql_dbpass'])){
 			$params['-dbpass']=$CONFIG['postgresql_dbpass'];
-			$params['-dbpass_source']="CONFIG postgresql_dbpass";
+			//$params['-dbpass_source']="CONFIG postgresql_dbpass";
 		}
 	}
 	else{
-		$params['-dbpass_source']="passed in";
+		//$params['-dbpass_source']="passed in";
 	}
 	$CONFIG['postgresql_dbpass']=$params['-dbpass'];
 	//dbname
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['dbname_postgresql'])){
 			$params['-dbname']=$CONFIG['dbname_postgresql'];
-			$params['-dbname_source']="CONFIG dbname_postgresql";
+			//$params['-dbname_source']="CONFIG dbname_postgresql";
 		}
 		elseif(isset($CONFIG['postgresql_dbname'])){
 			$params['-dbname']=$CONFIG['postgresql_dbname'];
-			$params['-dbname_source']="CONFIG postgresql_dbname";
+			//$params['-dbname_source']="CONFIG postgresql_dbname";
 		}
 		else{
 			$params['-dbname']=$CONFIG['postgresql_dbuser'];
-			$params['-dbname_source']="set to username";
+			//$params['-dbname_source']="set to username";
 		}
 	}
 	else{
-		$params['-dbname_source']="passed in";
+		//$params['-dbname_source']="passed in";
 	}
 	$CONFIG['postgresql_dbname']=$params['-dbname'];
 	//dbport
 	if(!isset($params['-dbport'])){
 		if(isset($CONFIG['dbport_postgresql'])){
 			$params['-dbport']=$CONFIG['dbport_postgresql'];
-			$params['-dbport_source']="CONFIG dbport_postgresql";
+			//$params['-dbport_source']="CONFIG dbport_postgresql";
 		}
 		elseif(isset($CONFIG['postgresql_dbport'])){
 			$params['-dbport']=$CONFIG['postgresql_dbport'];
-			$params['-dbport_source']="CONFIG postgresql_dbport";
+			//$params['-dbport_source']="CONFIG postgresql_dbport";
 		}
 		else{
 			$params['-dbport']=5432;
-			$params['-dbport_source']="default port";
+			//$params['-dbport_source']="default port";
 		}
 	}
 	else{
-		$params['-dbport_source']="passed in";
+		//$params['-dbport_source']="passed in";
 	}
 	$CONFIG['postgresql_dbport']=$params['-dbport'];
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['postgresql_connect'])){
 			$params['-connect']=$CONFIG['postgresql_connect'];
-			$params['-connect_source']="CONFIG postgresql_connect";
+			//$params['-connect_source']="CONFIG postgresql_connect";
 		}
 		elseif(isset($CONFIG['connect_postgresql'])){
 			$params['-connect']=$CONFIG['connect_postgresql'];
-			$params['-connect_source']="CONFIG connect_postgresql";
+			//$params['-connect_source']="CONFIG connect_postgresql";
 		}
 		else{
 			//build connect - http://php.net/manual/en/function.pg-connect.php
 			//$conn_string = "host=sheep port=5432 dbname=test user=lamb password=bar";
 			//echo printValue($CONFIG);exit;
 			$params['-connect']="host={$CONFIG['postgresql_dbhost']} port={$CONFIG['postgresql_dbport']} dbname={$CONFIG['postgresql_dbname']} user={$CONFIG['postgresql_dbuser']} password={$CONFIG['postgresql_dbpass']}";
-			$params['-connect_source']="manual";
+			//$params['-connect_source']="manual";
 		}
 	}
 	else{
-		$params['-connect_source']="passed in";
+		//$params['-connect_source']="passed in";
 	}
+	//echo printValue($params);exit;
 	return $params;
 }
 //---------- begin function postgresqlQueryResults ----------
@@ -986,7 +1043,7 @@ function postgresqlQueryResults($query='',$params=array()){
 	global $USER;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect($params);
+		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
 		debugValue(array(

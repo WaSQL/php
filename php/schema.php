@@ -649,6 +649,7 @@ function createWasqlTable($table=''){
             $addopts['-table']=$table;
             $addopts['utype']=0;
 			$id=addDBRecord($addopts);
+			//echo printValue($id).printValue($addopts);exit;
 			addMetaData($table);
 			return 1;
 		break;
