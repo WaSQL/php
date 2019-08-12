@@ -500,6 +500,49 @@ ENDOFQUERY;
 	$recs = postgresqlQueryResults($query,$params);
 	return $recs;
 }
+//---------- begin function postgresqlGetDBFields ----------
+/**
+* @describe returns an array of field info. fieldname is the key, Each field returns name, type, length, num, default
+* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return boolean returns true on success
+* @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
+*/
+function postgresqlGetDBFields($table,$allfields=0){
+	global $CONFIG;
+	global $USER;
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect();
+	}
+	if(!$dbh_postgresql){
+		debugValue(array(
+			'function'=>'postgresqlGetDBFields',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	//check for identity fields
+	$table=strtolower($table);
+	
+	//echo printValue($idfields);exit;
+	$query="SELECT * from {$table} where 1=0";
+	$res=@pg_query($dbh_postgresql,$query);
+	$fieldnames=array();
+	$i = pg_num_fields($res);
+	for ($j = 0; $j < $i; $j++) {
+		$name=strtolower(pg_field_name($res, $j));
+		if(!$allfields && preg_match('/^\_/',$name)){continue;}
+	    if(!in_array($name,$fieldnames)){$fieldnames[]=$name;}
+	}
+	pg_close($dbh_postgresql);
+	ksort($fieldnames);
+	return $fieldnames;
+}
 //---------- begin function postgresqlGetDBFieldInfo ----------
 /**
 * @describe returns an array of field info. fieldname is the key, Each field returns name, type, length, num, default

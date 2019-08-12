@@ -491,7 +491,9 @@ function databaseListRecords($params=array()){
 		$rtn .= setTagAttributes($atts);
 		$rtn .='>';
 		//TODO: build in ability to sort by column  pagingSetOrder(document.searchfiltersform,'%field%');
-		if(!empty($params['-sorting']) && $params['-sorting']==1 && isset($info[$field])){
+		$cansort=1;
+		if(!isset($info[$field]) && isset($params['-table'])){$cansort=0;}
+		if(!empty($params['-sorting']) && $params['-sorting']==1 && $cansort==1){
 			$name='<a href="#" onclick="return pagingSetOrder(document.'.$params['-formname'].',\''.$field.'\');">'.$name;
 			//show sorting icon
 			if(!empty($_REQUEST['filter_order'])){
@@ -6065,6 +6067,10 @@ function syncDBAccess($sync_url,$update=1){
 * @usage $fields=getDBFields('notes');
 */
 function getDBFields($table='',$allfields=0){
+	if(isPostgreSQL()){return postgresqlGetDBFields($table,$allfields);}
+	elseif(isSqlite()){return sqliteGetDBFields($table,$allfields);}
+	elseif(isOracle()){return oracleGetDBFields($table,$allfields);}
+	elseif(isMssql()){return mssqlGetDBFields($table,$allfields);}
 	global $databaseCache;
 	$dbcachekey=strtolower($table);
 	if($allfields){$dbcachekey.='_true';}
