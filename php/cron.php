@@ -89,9 +89,9 @@ foreach($ConfigXml as $name=>$host){
 	//echo "Checking {$CONFIG['name']}\n";
 $wherestr=<<<ENDOFWHERE
 active=1 and running != 1 and run_cmd is not null
-	and (date(now()) >= date(begin_date) or begin_date is null or begin_date='')
-	and (date(end_date) <= date(now()) or end_date is null or end_date='')
-    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or run_date='')
+	and (date(now()) >= date(begin_date) or begin_date is null or length(begin_date)=0)
+	and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
+    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
 ENDOFWHERE;
 	$recopts=array(
 		'-table'	=> '_cron',
