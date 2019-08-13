@@ -10268,8 +10268,8 @@ function loadJsFile($files){
         	case 'jquery-ui':
 				$file='http://code.jquery.com/ui/1.10.3/jquery-ui.min.js';
 			break;
-        	case 'codemirror':loadExtrasJs('codemirror');continue;
-			case 'nicedit':loadExtrasJs('nicedit');continue;
+        	case 'codemirror':loadExtrasJs('codemirror');break;
+			case 'nicedit':loadExtrasJs('nicedit');break;
 		}
 		if(!in_array($file,$_SESSION['w_MINIFY']['jsfiles'])){
     		$_SESSION['w_MINIFY']['jsfiles'][]=$file;
