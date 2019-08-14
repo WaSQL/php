@@ -236,7 +236,7 @@ var wacss = {
 	        				color=list[i].getAttribute('data-color');
 	        			}
 	        			
-						console.log(type);
+						//console.log(type);
 						let gconfig = {
 							type:'doughnut',
 							data: {
@@ -269,6 +269,7 @@ var wacss = {
 				break;
 				case 'line':
 				case 'bar':
+					//console.log('barline');
 					if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
@@ -341,6 +342,31 @@ var wacss = {
 								}
 							}
 						};
+						if(undefined != list[i].getAttribute('data-ysteps')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.steps=parseInt(list[i].getAttribute('data-ysteps'));
+						}
+						if(undefined != list[i].getAttribute('data-ystepvalue')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.stepValue=parseInt(list[i].getAttribute('data-ystepvalue'));
+						}
+						if(undefined != list[i].getAttribute('data-ystepsize')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.stepSize=parseInt(list[i].getAttribute('data-ystepsize'));
+						}
+						if(undefined != list[i].getAttribute('data-ymin')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.min=parseInt(list[i].getAttribute('data-ymin'));
+						}
+						if(undefined != list[i].getAttribute('data-ymax')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.max=parseInt(list[i].getAttribute('data-ymax'));
+						}
+						if(undefined != list[i].getAttribute('data-ybeginatzero')){
+							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
+							lconfig.options.scales.yAxes.ticks.beginAtZero=true;
+						}
+						console.log(lconfig.options);
 	        			//look for datasets;
 	        			let labels=[];
 	        			let datasets=datadiv.querySelectorAll('dataset');
@@ -432,6 +458,7 @@ var wacss = {
 				break;
 			}
 		}
+		return true;
 	},
 	initTruncate: function(){
 		/*convert texteara to contenteditable div*/

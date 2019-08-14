@@ -1,8 +1,57 @@
 <?php
 /* References:
 	Server/System functions to get information about the server we are running on
+	https://www.computerhope.com/wmic.htm
 */
-
+function systemGetMemory(){
+	global $systemGetMemoryCache;
+	if(is_array($systemGetMemoryCache)){
+		return $systemGetMemoryCache;
+	}
+	$systemGetMemoryCache=array();
+	if(isWindows()){
+		$cmd='wmic ComputerSystem get TotalPhysicalMemory';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$systemGetMemoryCache['total']=trim($lines[1]);
+		$cmd='wmic OS get FreePhysicalMemory';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$systemGetMemoryCache['free']=trim($lines[1]);
+		$systemGetMemoryCache['used']=$systemGetMemoryCache['total']-$systemGetMemoryCache['free'];
+		$systemGetMemoryCache['pcnt_used']=round(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100,2);
+		//$systemGetMemoryCache['pcnt_used']=number_format($systemGetMemoryCache['pcnt_used'],2);
+	}
+	return $systemGetMemoryCache;
+}
+function systemGetLoadAverage(){
+	if(isWindows()){
+		$cmd='wmic cpu get loadpercentage';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		return trim($lines[1]);
+	}
+	return $systemGetMemoryCache;
+}
+function systemGetDriveSpace(){
+	$space=array();
+	if(isWindows()){
+		$cmd='wmic logicaldisk get Caption,Description,Size,Freespace /format:csv';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$recs=array();
+		foreach($lines as $line){
+			$parts=csvParseLine($line);
+			$rec=array();
+			foreach($fields as $i=>$field){
+				$rec[$field]=$parts[$i];
+			}
+			$recs[]=$rec;
+		}
+		return $recs;
+	}
+}
 function systemGetProcessList(){
 	if(isWindows()){
 		$cmd="tasklist /v /fo csv";
@@ -17,6 +66,7 @@ function systemGetProcessList(){
 	    $fields=csvParseLine($fieldline);
 		$recs=array();
 		$totals=array();
+		$mem=systemGetMemory();
 		foreach($lines as $line){
 			$parts=csvParseLine($line);
 			$rec=array();
@@ -39,7 +89,7 @@ function systemGetProcessList(){
 		foreach($recs as $i=>$rec){
 			$recs[$i]['pcpu']=round(($rec['cpu_time']/$totals['cpu'])*100,2);
 			$recs[$i]['pcpu']=number_format($recs[$i]['pcpu'],2);
-			$recs[$i]['pmem']=round(($rec['mem_usage']/$totals['mem'])*100,2);
+			$recs[$i]['pmem']=round(($rec['mem_usage']/$mem['total'])*100,2);
 			$recs[$i]['pmem']=number_format($recs[$i]['pmem'],2);
 		}
 		return $recs;

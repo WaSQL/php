@@ -7,7 +7,14 @@
 		<?=sysmonProcessList($recs);?>
 	</div>
 	<div class="col s12 m6">
-		<?=printValue($_REQUEST).printValue($totals);?>
+		
+		<div class="chartjs" id="chart1" style="height:650px" data-type="line" data-ystepsize="5" data-ysteps="20" data-x="time" data-y="percent" data-ylabel="Percent"></div>
+		<div id="chart1_data" style="display:none;">
+			<view:dataset>
+			<dataset data-label="<?=$set['label'];?>" ><?=json_encode($set['data']);?></dataset>
+			</view:dataset>
+			<?=renderEach('dataset',$_SESSION['sysmon_charts'],'set');?>
+		</div>
 	</div>
 </div>
 </view:default>

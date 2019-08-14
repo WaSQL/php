@@ -84,6 +84,9 @@ function sysmonProcessList($recs){
 		'pcpu_class'=>'align-right',
 		'pmem_class'=>'align-right',
 		'pid_class'=>'align-right',
+		'command_class'=>'truncate',
+		'user_class'=>'truncate',
+		'command_style'=>'max-width:200px;'
 	);
 	return databaseListRecords($opts);
 }
