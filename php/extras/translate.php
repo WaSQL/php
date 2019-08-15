@@ -31,7 +31,7 @@ function translateGetLocaleInfo($locale){
 		$localesJson=json_decode($jsontxt,true);
 		$localesJson=array_change_key_case($localesJson,CASE_LOWER);
 	}
-	$locale=strtolower(str_replace('-','_',$locale));
+	$locale=strtolower(str_replace('_','-',$locale));
 	if(!isset($localesJson[$locale])){return array();}
 	list($lang,$country)=translateParseLocale($locale);
 	$country=strtolower($country);

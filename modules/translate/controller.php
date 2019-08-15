@@ -85,7 +85,9 @@
 			$source_rec=getDBRecord($sopts);
 			$rec['source']=$source_rec['translation'];
 			//get info
+
 			$source=translateGetLocaleInfo($source_locale);
+			//echo $source_locale.printValue($source);exit;
 			$dest=translateGetLocaleInfo($rec['locale']);
 			//build google translate link
 			switch(strtolower($dest['lang'])){
