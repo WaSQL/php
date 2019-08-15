@@ -38,10 +38,10 @@
 	<h3 class="align-center"><?=$info['name'];?></h3>
 
 	<div style="display: flex;flex-direction: row;justify-content: space-between;">
-		<a href="/<?=pageValue('name');?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>">YES</a>
-		<a href="#" onclick="wacss.modalClose();return false;" class="btn <?=configValue('admin_color');?>">NO</a>
+		<a href="/<?=pageValue('name');?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>"><translate>YES</translate></a>
+		<a href="#" onclick="wacss.modalClose();return false;" class="btn <?=configValue('admin_color');?>"><translate>NO</translate></a>
 	</div>
-	<div id="deletelocale_title" style="display:none;">Confirm Deletion:</div>
+	<div id="deletelocale_title" style="display:none;"><translate>Confirm Deletion</translate>:</div>
 	<?=buildOnLoad("wacss.modalTitle(getText('deletelocale_title'));");?>
 </view:deletelocale>
 

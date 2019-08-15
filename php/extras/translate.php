@@ -90,15 +90,21 @@ function translateGetLocales($filters=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateGetLocalesUsed(){
+	global $CONFIG;
 	$locales=translateGetLocales();
 	$source_local=translateGetSourceLocale();
+	$wherestr='';
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$wherestr="where source_id={$CONFIG['translate_source_id']}";
+	}
 	$q=<<<ENDOFQ
 		SELECT
 			lower(locale) as locale,
 			count(*) entry_cnt,
 			sum(confirmed) confirmed_cnt
 		FROM
-			_translations	
+			_translations
+		{$wherestr}	
 		GROUP BY locale
 ENDOFQ;
 	$recs=getDBRecords(array(
