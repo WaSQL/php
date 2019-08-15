@@ -10,19 +10,22 @@
 	if(!isset($_SESSION['REMOTE_LANG']) || !strlen($_SESSION['REMOTE_LANG'])){
 		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
 	}
-	switch(strtolower($_REQUEST['passthru'][0])){
+	$p=isset($PAGE['passthru_index'])?$PAGE['passthru_index']:0;
+	$p1=$p+1;
+	$p2=$p+2;
+	switch(strtolower($_REQUEST['passthru'][$p])){
 		case 'locale':
-			$locale=addslashes($_REQUEST['passthru'][1]);
+			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			//echo $locale.printValue($_REQUEST);exit;
 			setView('default');
 		break;
 		case 'deletelocale':
-			$info=translateGetLocaleInfo($_REQUEST['passthru'][1]);
+			$info=translateGetLocaleInfo($_REQUEST['passthru'][$p1]);
 			setView('deletelocale',1);
 			return;
 		break;
 		case 'deletelocale_confirmed':
-			$info=translateGetLocaleInfo($_REQUEST['passthru'][1]);
+			$info=translateGetLocaleInfo($_REQUEST['passthru'][$p1]);
 			$ok=delDBRecord(array(
 				'-table'=>'_translations',
 				'-where'=>"locale='{$info['locale']}'"
@@ -35,7 +38,7 @@
 			return;
 		break;
 		case 'setlocale':
-			$_SESSION['REMOTE_LANG']=$_REQUEST['passthru'][1];
+			$_SESSION['REMOTE_LANG']=$_REQUEST['passthru'][$p1];
 			setView('setlocale',1);
 			return;
 		break;
@@ -44,7 +47,7 @@
 			return;
 		break;
 		case 'addlang':
-			$locale=$_REQUEST['passthru'][1];
+			$locale=$_REQUEST['passthru'][$p1];
 			$source_locale=translateGetSourceLocale();
 			$recs=getDBRecords(array(
 				'-table'=>'_translations',
@@ -57,7 +60,7 @@
 			return;
 		break;
 		case 'list':
-			$locale=addslashes($_REQUEST['passthru'][1]);
+			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			$info=translateGetLocaleInfo($locale);
 			setView('list',1);
 			return;
