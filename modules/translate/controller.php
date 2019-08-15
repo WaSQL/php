@@ -77,7 +77,7 @@
 		case 'edit':
 			global $CONFIG;
 			$source_locale=translateGetSourceLocale();
-			$id=(integer)$_REQUEST['passthru'][1];
+			$id=(integer)$_REQUEST['passthru'][$p1];
 			$rec=getDBRecord(array('-table'=>'_translations','_id'=>$id,'-fields'=>'_id,locale,identifier'));
 			$sopts=array('-table'=>'_translations','locale'=>$source_locale,'identifier'=>$rec['identifier'],'-fields'=>'translation');
 			//echo $id.printValue($rec).printValue($sopts);exit;
