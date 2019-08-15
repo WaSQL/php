@@ -1,6 +1,7 @@
 <?php
 function pageListRecords($locale){
-	return databaseListRecords(array(
+	global $CONFIG;
+	$opts=array(
 		'-table'=>'_translations',
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
 		'-trclass'=>'w_pointer',
@@ -10,7 +11,11 @@ function pageListRecords($locale){
 		'locale'=>$locale,
 		'-sort'=>1,
 		'-results_eval'=>'pageAddExtraInfo',
-	));
+	);
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$opts['source_id']=$CONFIG['translate_source_id'];
+	}
+	return databaseListRecords($opts);
 }
 function pageAddExtraInfo($recs){
 	$locale=$recs[0]['locale'];

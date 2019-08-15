@@ -143,6 +143,7 @@ function translateCheckSchema(){
 		'_euser'		=> databaseDataType('int')." NULL",
 		't_id'			=> databaseDataType('int')." NOT NULL Default 0", //template id
 		'p_id'			=> databaseDataType('int')." NOT NULL Default 0", //page id
+		'source_id'		=> databaseDataType('int')." NOT NULL Default 0", //source id set by users in CONFIG
 		'locale'		=> databaseDataType('varchar(50)')." NOT NULL",
 		'translation'	=> databaseDataType('text')." NULL",
 		'identifier'	=> databaseDataType('char(40)')." NULL",
@@ -201,6 +202,9 @@ function translateText($text,$locale=''){
 		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$PAGE['_id']}))",
 		'-fields'	=> 'locale,identifier,translation'
 	);
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$opts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
+	}
 	$recs=getDBRecords($opts);
 	foreach($recs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
@@ -234,6 +238,9 @@ function translateText($text,$locale=''){
 		'p_id'			=> $PAGE['_id'],
 		'translation'	=> $translation
 	);
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$addopts['source_id']=$CONFIG['translate_source_id'];
+	}
 	$id=addDBRecord($addopts);
 	if($target_lang != $source_lang){
 		$addopts['locale']=$source_locale;
@@ -241,7 +248,7 @@ function translateText($text,$locale=''){
 		$id=addDBRecord($addopts);
 	}
 	//echo "{$target_lang} != {$source_lang}<br>{$translation}<br>{$text}".printValue($addopts);exit;
-	$id=addDBRecord($addopts);
+	//$id=addDBRecord($addopts);
 	return $translation;
 }
 //---------- begin function translateYandex

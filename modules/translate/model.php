@@ -27,6 +27,7 @@ function translateShowLangSelections(){
 }
 function translateListRecords($locale){
 	global $PAGE;
+	global $CONFIG;
 	$source_locale=translateGetSourceLocale();
 	$opts=array(
 		'-table'=>'_translations',
@@ -46,6 +47,9 @@ function translateListRecords($locale){
 		'-order'=>'confirmed,p_id',
 		'-results_eval'=>'translateAddExtraInfo',
 	);
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$opts['source_id']=$CONFIG['translate_source_id'];
+	}
 	if(isset($_REQUEST['filter_field'])){
 		switch(strtolower($_REQUEST['filter_field'])){
 			case 'source':
