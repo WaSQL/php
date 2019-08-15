@@ -1,6 +1,6 @@
 <?php
 function translateShowLocaleSelections(){
-	global $PAGE;
+	global $MODULE;
 	$recs=translateGetLocales();
 	return databaseListRecords(array(
 		'-list'=>$recs,
@@ -8,12 +8,12 @@ function translateShowLocaleSelections(){
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
 		'-listfields'=>'locale,name,country',
 		'-trclass'=>'w_pointer',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
+		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
 	));
 }
 function translateShowLangSelections(){
-	global $PAGE;
+	global $MODULE;
 	$recs=translateGetLocales();
 	return databaseListRecords(array(
 		'-list'=>$recs,
@@ -21,17 +21,17 @@ function translateShowLangSelections(){
 		'-listfields'=>'locale,name,country',
 		'-anchormap'=>'name',
 		'-trclass'=>'w_pointer',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
+		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
 	));
 }
 function translateListRecords($locale){
-	global $PAGE;
+	global $MODULE;
 	global $CONFIG;
 	$source_locale=translateGetSourceLocale();
 	$opts=array(
 		'-table'=>'_translations',
-		'-formaction'=>"/{$PAGE['name']}/locale/{$locale}",
+		'-formaction'=>"/{$MODULE['page']}/locale/{$locale}",
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
 		'-trclass'=>'w_pointer',
 		'-listfields'=>'page,template,source,translation,confirmed',
@@ -42,7 +42,7 @@ function translateListRecords($locale){
 		'translation_displayname'=>"Translation ({$locale})",
 		'translation_style'=>'white-space: normal;',
 		'confirmed_style'=>'text-align:center',
-		'-onclick'=>"return ajaxGet('/{$PAGE['name']}/edit/%_id%','modal',{setprocessing:0})",
+		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/edit/%_id%','modal',{setprocessing:0})",
 		'locale'=>$locale,
 		'-order'=>'confirmed,p_id',
 		'-results_eval'=>'translateAddExtraInfo',
@@ -128,7 +128,6 @@ function translateAddExtraInfo($recs){
 	return $recs;
 }
 function translateListLocales(){
-	global $PAGE;
 	global $MODULE;
 	$opts=array(
 		'-list'=>translateGetLocalesUsed(),
@@ -136,8 +135,8 @@ function translateListLocales(){
 		'-anchormap'=>'locale',
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
-		'locale_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
-		'entry_cnt_onclick'=>"return ajaxGet('/{$PAGE['name']}/list/%locale%','translate_results',{setprocessing:'processing'});",
+		'locale_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
+		'entry_cnt_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'entry_cnt_displayname'=>translateText('Entries'),
 		'entry_cnt_style'=>'text-align:right;',
 		'flag4x3_displayname'=>translateText('Location'),
@@ -147,20 +146,20 @@ function translateListLocales(){
 	return databaseListRecords($opts);
 }
 function translateListLocalesExtra($recs){
-	global $PAGE;
+	global $MODULE;
 	foreach($recs as $i=>$rec){
 		$flag='<div>';
-		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$PAGE['name']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
-		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$PAGE['name']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
+		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$MODULE['page']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
+		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
 		$flag .="	</div>";
 		$recs[$i]['flag4x3']=$flag;
 	}
 	return $recs;
 }
 function translateEditRec($rec){
-	global $PAGE;
+	global $MODULE;
 	$opts=array(
-		'-action'		=> "/t/1/{$PAGE['name']}/list/{$rec['locale']}",
+		'-action'		=> "/t/1/{$MODULE['page']}/list/{$rec['locale']}",
 		'-onsubmit'		=> "return ajaxSubmitForm(this,'translate_results');",
 		'-name'			=> 'translateEditForm',
 		'setprocessing'	=> 0,
@@ -173,7 +172,7 @@ function translateEditRec($rec){
 		'-order'		=> 'confirmed',
 		'translation_inputtype'	=> 'textarea',
 		'translation_class'		=> 'form-control browser-default',
-		'translation_style'		=> 'height:150px;',
+		'translation_style'		=> 'height:150px;max-width:100%;',
 		'translation_wrap'		=> 'soft',
 		'confirmed'		=> 1,
 		'_id'			=> $rec['_id'],

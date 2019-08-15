@@ -1,8 +1,17 @@
 <?php
+	/*
+		Module params:
+			page - defaults to page name
+			passthru_index - defaults to 0.  If the page name is t/1/bob/translate then passthru_index should be set to 1
+
+	*/
 	global $PAGE;
 	global $MODULE;
 	if(!isset($MODULE['title'])){
 		$MODULE['title']='<span class="icon-translate w_success"></span> <translate>Translation Manager</translate>';
+	}
+	if(!isset($MODULE['page'])){
+		$MODULE['page']=$PAGE['name'];
 	}
 	loadExtras('translate');
 	loadExtrasCss('wacss');
@@ -10,7 +19,7 @@
 	if(!isset($_SESSION['REMOTE_LANG']) || !strlen($_SESSION['REMOTE_LANG'])){
 		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
 	}
-	$p=isset($PAGE['passthru_index'])?$PAGE['passthru_index']:0;
+	$p=isset($MODULE['passthru_index'])?$MODULE['passthru_index']:0;
 	$p1=$p+1;
 	$p2=$p+2;
 	switch(strtolower($_REQUEST['passthru'][$p])){
