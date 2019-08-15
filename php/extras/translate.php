@@ -174,6 +174,7 @@ function translateGetSourceLocale(){
 }
 //---------- begin function translateText
 /**
+// http://www.lingoes.net/en/translator/langcode.htm
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateText($text,$locale=''){
