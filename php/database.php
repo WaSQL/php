@@ -213,7 +213,6 @@ function databaseListRecords($params=array()){
 			if(count($wheres)){
 				$params['-where']=implode(' and ',$wheres);
 			}
-			//echo printValue($params);exit;
 		}
 		//echo printValue($params);
 		$params['-forceheader']=1;
@@ -223,7 +222,6 @@ function databaseListRecords($params=array()){
 			if(!empty($params['-where'])){$bulk['-where']=$params['-where'];}
 			else{$bulk['-where']='1=1';}
 			$bulk[$_REQUEST['filter_field']]=$_REQUEST['filter_value'];
-			//echo printValue($bulk).printValue($_REQUEST);exit;
 			switch(strtolower($params['-database'])){
 				case 'oracle':
 					$ok=oracleEditDBRecord($bulk);
@@ -1622,8 +1620,6 @@ function checkDBTableSchema($wtable){
     //make sure _queries table has a tablename field
     if($wtable=='_settings'){
 		$finfo=getDBFieldInfo($wtable);
-		//echo printValue($finfo);
-		//exit;
 		if($finfo['key_value']['_dblength'] > 0 && $finfo['key_value']['_dblength'] < 5000){
 			if(isPostgreSQL()){
 				$query="ALTER TABLE {$wtable} ALTER COLUMN key_value TYPE varchar(5000);";
@@ -1957,7 +1953,6 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
-	//echo printValue($info);exit;
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -2310,7 +2305,6 @@ function addEditDBForm($params=array(),$customcode=''){
 	            if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
 		     	if(!isset($opts['behavior'])){$opts['behavior']='';}
 		     	if(!strlen($opts['behavior']) && strlen($current_value)){
-					//echo $info[$field]['value'];exit;
 					if(stringContains($current_value,'/*filetype:css*/')){
 		            	$opts['behavior']='csseditor';
 					}
@@ -2698,7 +2692,6 @@ function addDBRecord($params=array()){
 		$params['-dbname']=array_shift($table_parts);
 		$model_table=implode('.',$table_parts);
 		}
-	//echo printValue($model);exit;
 	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
     	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
     	//look for Before trigger
@@ -2731,7 +2724,6 @@ function addDBRecord($params=array()){
         	$jsonfields[]=$k;
 		}
 	}
-	//echo printValue($jsonfields).printValue($params).printValue($info);exit;
 	if(count($jsonfields)){
 		foreach($params as $key=>$val){
 			if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],' generated')){
@@ -3020,7 +3012,6 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		return 0;
 	}
 	ksort($params);
-	//echo $table.printValue($current).printValue($params);exit;
 	$sets=array();
 	$vsets=array();
 	$changed=array();
@@ -3031,7 +3022,6 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
-			//echo printValue(array($m,$efield,$jfield));exit;
             $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}'))) STORED";
 		}
 		if(isset($current[$field])){
@@ -3100,7 +3090,6 @@ $query=<<<ENDOFSQL
 		and column_name='{$field}'
 ENDOFSQL;
 	$rec=getDBRecord(array('-query'=>$query));
-	//echo $query.printValue($rec);exit;
 	if(!isset($rec['exp'])){return '';}
 	return $rec['exp'];
 	//TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))
@@ -3145,7 +3134,6 @@ function createDBTable($table='',$fields=array(),$engine=''){
 	$ori_table=$table;
 	if(isMssql()){$table="[{$table}]";}
 	$query="create table {$table} (";
-	//echo printValue($fields);exit;
 	foreach($fields as $field=>$attributes){
 		//handle virual generated json field shortcut
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
@@ -3162,7 +3150,6 @@ function createDBTable($table='',$fields=array(),$engine=''){
     $query .= ")";
     if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
 	$query_result=@databaseQuery($query);
-	//echo $query . printValue($query_result);exit;
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
@@ -3341,7 +3328,6 @@ function createDBTableFromFile($afile,$params=array()){
 	//unset($params['-stats']);
 	$params['-schema']=$fields;
 	ksort($params['-schema']);
-	//fclose($handle);echo printValue($fields).printValue($params);exit;
 	rewind($handle);
 	if($removefirst){
 		//remove the first line again.
@@ -7315,7 +7301,6 @@ function getDBRecords($params=array()){
 			$ok=executeSQL($query);
 			return getDBRecords($params);
 		}
-		echo printValue($e).printValue($params).$query;exit;
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){
 				return setWasqlError(debug_backtrace(),getDBError(),$query);
@@ -7708,7 +7693,6 @@ function updateDBSchema($table,$lines,$new=0){
     //remove virtual columns and add them in after.
     $virtual=array();
 	$fields=array();
-	//echo printValue($lines);exit;
 	foreach($lines as $line){
 		if(!strlen(trim($line))){continue;}
 		$line=strtolower($line);
@@ -7745,7 +7729,6 @@ function updateDBSchema($table,$lines,$new=0){
 		}
 		$fields[$name]=$type;
     }
-    //echo printValue($fields).printValue($virtual);exit;
     $rtn=0;
     if(count($fields)){
 		//add common fields
@@ -7979,14 +7962,12 @@ function listDBRecords($params=array(),$customcode=''){
         	if(preg_match('/\_eval$/',$pk)){$paging[$pk]=$pv;}
 		}
 		//$rtn .= printValue($paging).printValue($params);
-		//echo printValue($paging).printValue($params);exit;
 		$rtn .= buildDBPaging($paging);
 		if(!isset($params['-fields']) && isset($params['-table'])){
 			$tinfo=getDBTableInfo(array('-table'=>$params['-table']));
 			 if(!in_array($idfield,$tinfo['fields']) && in_array('id',$tinfo['fields'])){
 				$idfield='id';
 			}
-			//echo $idfield.printValue($tinfo);exit;
 			if(is_array($tinfo)){
 				$xfields=array();
 				if(isset($tinfo['listfields']) && is_array($tinfo['listfields'])){
@@ -7999,7 +7980,6 @@ function listDBRecords($params=array(),$customcode=''){
 					if(!isset($params['-list']) && ($idfield == '_id' || !in_array($idfield,$xfields))){
 						array_unshift($xfields,$idfield);
 					}
-					//echo printValue($tinfo['fields']);exit;
 					$params['-fields']=implode(',',$xfields);
 				}
 	        }
@@ -8017,7 +7997,6 @@ function listDBRecords($params=array(),$customcode=''){
 			$params['-orderX']=$params['-order'];
 	    	$params['-order'] .= ", {$params['-order2']}";
 		}
-		//echo printValue($params);exit;
 		$list=getDBRecords($params);
 		if(isset($params['-orderX'])){
 			$params['-order']=$params['-orderX'];
@@ -9732,7 +9711,6 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 		$where=implode(' or ',$wheres);
 		$fields=implode(',',$fields);
 		$recopts=array('-table'=>$table,'-where'=>$where,'-fields'=>$fields);
-		//echo printValue($recopts);exit;
 		$recs=getDBRecords($recopts);
 		if(is_array($recs)){
 			$cnt=count($recs);
