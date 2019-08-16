@@ -204,6 +204,7 @@ function translateText($text,$locale=''){
 	global $translateTextCache;
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
+	$pid=isset($PAGE['_id']) && isNum($PAGE['_id'])?$PAGE['_id']:0;
 	$topts=array(
 		'-table'	=> '_translations',
 		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$PAGE['_id']}))",
