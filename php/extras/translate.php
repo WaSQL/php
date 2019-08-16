@@ -204,16 +204,16 @@ function translateText($text,$locale=''){
 	global $translateTextCache;
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
-	$opts=array(
+	$topts=array(
 		'-table'	=> '_translations',
 		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$PAGE['_id']}))",
 		'-fields'	=> 'locale,identifier,translation'
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$opts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
+		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
 	}
-	$recs=getDBRecords($opts);
-	foreach($recs as $rec){
+	$trecs=getDBRecords($topts);
+	foreach($trecs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
 		$rec['identifier']=strtolower($rec['identifier']);
 		$translateTextCache[$rec['locale']][$rec['identifier']]=$rec['translation'];
@@ -236,7 +236,7 @@ function translateText($text,$locale=''){
 			break;
 		}
 	}
-	$addopts=array(
+	$taddopts=array(
 		'-table'		=> '_translations',
 		'-ignore'		=> 1,
 		'locale'		=> $locale,
@@ -246,13 +246,13 @@ function translateText($text,$locale=''){
 		'translation'	=> $translation
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$addopts['source_id']=$CONFIG['translate_source_id'];
+		$taddopts['source_id']=$CONFIG['translate_source_id'];
 	}
-	$id=addDBRecord($addopts);
+	$tid=addDBRecord($taddopts);
 	if($target_lang != $source_lang){
-		$addopts['locale']=$source_locale;
-		$addopts['translation']=$text;
-		$id=addDBRecord($addopts);
+		$taddopts['locale']=$source_locale;
+		$taddopts['translation']=$text;
+		$tid=addDBRecord($taddopts);
 	}
 	//echo "{$target_lang} != {$source_lang}<br>{$translation}<br>{$text}".printValue($addopts);exit;
 	//$id=addDBRecord($addopts);
