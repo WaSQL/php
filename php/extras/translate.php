@@ -207,7 +207,7 @@ function translateText($text,$locale=''){
 	$pid=isset($PAGE['_id']) && isNum($PAGE['_id'])?$PAGE['_id']:0;
 	$topts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$PAGE['_id']}))",
+		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$pid}))",
 		'-fields'	=> 'locale,identifier,translation'
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
