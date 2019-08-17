@@ -40,7 +40,7 @@
 				'-order'	=> '_id'
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$topts['-where']="confirmed=0 and locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
+				$topts['-where']="locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
 			}
 			$trecs=getDBRecords($topts);
 			$source['lines']=array();
