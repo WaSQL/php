@@ -227,8 +227,6 @@ function translateUnmapText($source,$target){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateText($text,$locale=''){
-	global $PAGE;
-	global $TEMPLATE;
 	global $CONFIG;
 	$map=translateMapText($text);
 	if(!isset($map['identifier'])){return $text;}
@@ -249,7 +247,6 @@ function translateText($text,$locale=''){
 	global $translateTextCache;
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
-	$pid=isset($PAGE['_id']) && isNum($PAGE['_id'])?$PAGE['_id']:0;
 	$topts=array(
 		'-table'	=> '_translations',
 		'-where'	=> "locale ='{$locale}'",
