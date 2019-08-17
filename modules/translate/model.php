@@ -44,7 +44,7 @@ function translateListRecords($locale){
 		'confirmed_style'=>'text-align:center',
 		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/edit/%_id%','modal',{setprocessing:0})",
 		'locale'=>$locale,
-		'-order'=>'confirmed,p_id',
+		'-order'=>'confirmed,_id',
 		'-results_eval'=>'translateAddExtraInfo',
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
