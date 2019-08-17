@@ -7,6 +7,7 @@
 	*/
 	global $PAGE;
 	global $MODULE;
+	global $CONFIG;
 	if(!isset($MODULE['title'])){
 		$MODULE['title']='<span class="icon-translate w_success"></span> <translate>Translation Manager</translate>';
 	}
@@ -23,6 +24,56 @@
 	$p1=$p+1;
 	$p2=$p+2;
 	switch(strtolower($_REQUEST['passthru'][$p])){
+		case 'bulktranslate':
+			$locale=addslashes($_REQUEST['passthru'][$p1]);
+			$target=translateGetLocaleInfo($locale);
+			$locale=translateGetSourceLocale();
+			$source=translateGetLocaleInfo($locale);
+			//get the source texts
+			$topts=array(
+				'-table'	=> '_translations',
+				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where locale='{$target['locale']}')",
+				'-fields'	=> 'locale,translation',
+				'-order'	=> '_id'
+			);
+			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+				$topts['-where']="locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
+			}
+			$trecs=getDBRecords($topts);
+			$source['lines']=array();
+			foreach($trecs as $trec){$source['lines'][]=trim($trec['translation']);}
+			//echo printValue($topts).printValue($source);exit;
+			//echo $locale.printValue($info);exit;
+			setView('bulktranslate',1);
+			return;
+		break;
+		case 'bulktranslate_process':
+			//echo printValue($_REQUEST);exit;
+			$slines=preg_split('/[\r\n]/',trim($_REQUEST['source']));
+			$tlines=preg_split('/[\r\n]/',trim($_REQUEST['target']));
+			if(count($slines) != count($tlines)){
+				echo '<span class="w_red w_bold">Line Counts do not match between source('.count($slines).') and target('.count($tlines).')</span>';
+				exit;
+			}
+			$locale=addslashes($_REQUEST['locale']);
+			foreach($slines as $i=>$sline){
+				$identifier=sha1(trim($sline));
+				$eopts=array(
+					'-table'=>'_translations',
+					'-where'=>"identifier='{$identifier}' and locale='{$locale}'",
+					'translation'=>$tlines[$i],
+					'confirmed'=>1,
+					'p_id'=> 0,
+					't_id'=> 0
+				);
+				if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+					$eopts['source_id']=$CONFIG['translate_source_id'];
+				}
+				$ok=editDBRecord($eopts);
+			}
+			echo '<span class="icon-mark w_green w_bold"></span> Updated '.count($slines).' translations';
+			exit;
+		break;
 		case 'locale':
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			//echo $locale.printValue($_REQUEST);exit;

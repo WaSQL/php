@@ -3,8 +3,8 @@
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<div class="w_big w_bold"><?=$MODULE['title'];?></div>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=pageValue('name');?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['page'];?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['page'];?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
 		</div>
 		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
@@ -19,10 +19,45 @@
 
 <view:list>
 	<h3><?=$info['name'];?></h3>
-	<div id="processing" style="display:inline;float:right;"></div>
+	<div style="display:inline;float:right;">
+		<button onclick="return ajaxGet('/<?=$MODULE['page'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
+
+	</div>
 	<?=translateListRecords($locale);?>
 	<?=buildOnLoad("if(undefined != document.getElementById('wacss_modal')){removeDiv(document.getElementById('wacss_modal').parentNode);}");?>
 </view:list>
+
+<view:bulktranslate>
+<div>
+	<div class="w_bold w_bigger"><translate>Instructions:</translate></div> 
+	<div> - <translate>Click on the copy icon below to copy the source language to your clipboard.</translate></div>
+	<div> - <translate>Go to <a href="https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?>" target="_blank">https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?></a></translate></div>
+	<div> - <translate>Make sure the target lang on the right side is <?=$target['name'];?></translate></div>
+	<div> - <translate>Paste the clipboard contents into the source area on the left side. You should see the translated version on the right side now.</translate></div>
+	<div> - <translate>Click on the copy icon on the bottom of the target language window to copy to your clipboard</translate></div>
+	<div> - <translate>Paste the new clipboard contents into the target language field in this window.</translate></div>
+	<div> - <translate>Check to make sure the translations on the right line up with the strings on the left</translate></div>
+	<div> - <translate>Click the Process button</translate></div>
+</div>
+<form method="post" action="/<?=$MODULE['page'];?>/bulktranslate_process/<?=$locale;?>" onsubmit="return ajaxSubmitForm(this,'bulktranslate_result');" style="width:800px;">
+	<input type="hidden" name="locale" value="<?=$target['locale'];?>" />
+	<div class="row w_padtop">
+		<div class="col s12 m6">
+			<div class="w_bold w_bigger">Source: <?=$source['name'];?> <span class="icon-copy" title="Copy to Clipboard" onclick="commonCopyToClipboard(getText('bulktranslate_source'));"></span></div>
+			<textarea id="bulktranslate_source" name="source" wrap="off" style="width:100%;height:300px;font-size:1em;" placeholder="Source Lang"><?=implode(PHP_EOL,$source['lines']);?></textarea>
+		</div>
+		<div class="col s12 m6">
+			<div class="w_bold w_bigger">Target: <?=$target['name'];?></div>
+			<textarea name="target" wrap="off" style="width:100%;height:300px;font-size:1em;" placeholder="Target Lang"></textarea>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col s6" id="bulktranslate_result"></div>
+		<div class="col s6 align-right"><button class="btn w_white" type="submit"><translate>Process</translate></button></div>
+	</div>
+</form>
+</view:bulktranslate>
+
 
 <view:selectlocale>
 	<?=translateShowLocaleSelections();?>
@@ -30,7 +65,7 @@
 
 <view:setlocale>
 	<span class="w_mark w_green"></span><translate>Locale set</translate>: <?=$_SESSION['REMOTE_LANG'];?>
-	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=pageValue('name');?>"><translate>Refresh</translate></a></div>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><translate>Refresh</translate></a></div>
 </view:setlocale>
 
 <view:deletelocale>
@@ -38,7 +73,7 @@
 	<h3 class="align-center"><?=$info['name'];?></h3>
 
 	<div style="display: flex;flex-direction: row;justify-content: space-between;">
-		<a href="/<?=pageValue('name');?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>"><translate>YES</translate></a>
+		<a href="/<?=$MODULE['page'];?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>"><translate>YES</translate></a>
 		<a href="#" onclick="wacss.modalClose();return false;" class="btn <?=configValue('admin_color');?>"><translate>NO</translate></a>
 	</div>
 	<div id="deletelocale_title" style="display:none;"><translate>Confirm Deletion</translate>:</div>
@@ -51,7 +86,7 @@
 
 <view:addlang>
 	<span class="w_mark w_green"></span><translate>Language Added</translate>: <?=$locale;?>
-	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=pageValue('name');?>"><translate>Refresh</translate></a></div>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><translate>Refresh</translate></a></div>
 </view:addlang>
 
 <view:edit>
