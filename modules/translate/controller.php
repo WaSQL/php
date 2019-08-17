@@ -41,7 +41,7 @@
 			}
 			$trecs=getDBRecords($topts);
 			$source['lines']=array();
-			foreach($trecs as $trec){$source['lines'][]=trim($trec['translation']);}
+			foreach($trecs as $trec){$source['lines'][]=trim(strip_tags($trec['translation']));}
 			//echo printValue($topts).printValue($source);exit;
 			//echo $locale.printValue($info);exit;
 			setView('bulktranslate',1);
