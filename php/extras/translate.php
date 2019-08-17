@@ -185,6 +185,44 @@ function translateGetSourceLocale(){
 	else{$source_locale='en-us';}
 	return $source_locale;
 }
+function translateMapText($text){
+	preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim($text), $m);
+	$map=array(
+		'text'=>$text,
+		'identifier'=>'',
+		'map'=>array(),
+		'maptext'=>$text,
+	);
+	$map['map'][]="\r\n";
+	$map['map'][]="\n";
+	$map['map'][]="\t";
+	$map['maptext']=str_replace("\r\n",'{0}',$map['maptext']);
+	$map['maptext']=str_replace("\n",'{1}',$map['maptext']);
+	$map['maptext']=str_replace("\t",'{2}',$map['maptext']);
+	$map['maptext']=str_replace('{:)}','{3}',$map['maptext']);
+	$map['maptext']=str_replace('{:(}','{4}',$map['maptext']);
+	foreach($m[0] as $i=>$tag){
+		if(!in_array($tag,$map['map'])){
+			$map['map'][]=$tag;
+		}
+		$mapindex=array_search($tag,$map['map']);
+		$map['maptext']=str_replace($tag,'{'.$mapindex.'}',$map['maptext']);
+	}
+	$map['identifier']=sha1(trim($map['maptext']));
+	return $map;
+}
+function translateUnmapText($source,$target){
+	$map=translateMapText($source);
+	foreach($map['map'] as $i=>$tag){
+		$mtag='{'.$i.'}';
+		$target=str_replace($mtag,$tag,$target);
+		$mtag='{ '.$i.'}';
+		$target=str_replace($mtag,$tag,$target);
+		$mtag='{'.$i.' }';
+		$target=str_replace($mtag,$tag,$target);
+	}
+	return $target;
+}
 //---------- begin function translateText
 /**
 // http://www.lingoes.net/en/translator/langcode.htm
@@ -194,8 +232,10 @@ function translateText($text,$locale=''){
 	global $PAGE;
 	global $TEMPLATE;
 	global $CONFIG;
+	$map=translateMapText($text);
+	if(!isset($map['identifier'])){return $text;}
 	//set the identifier as the sha of the text
-	$identifier=sha1(trim($text));
+	$identifier=$map['identifier'];
 	//determine source locale
 	$source_locale=translateGetSourceLocale();
 	list($source_lang,$source_country)=translateParseLocale($source_locale);
@@ -230,6 +270,8 @@ function translateText($text,$locale=''){
 	global $CONFIG;
 	list($target_lang,$target_country)=translateParseLocale($locale);
 	$translation=$text;
+	//replace HTML TAGS with {1}
+
 	if($target_lang != $source_lang && isset($CONFIG['translate_source'])){
 		if(!isset($CONFIG['translate_key'])){
 			debugValue('Missing Translate Key in config');
@@ -244,11 +286,13 @@ function translateText($text,$locale=''){
 			break;
 		}
 	}
+	$map=translateMapText($translation);
+
 	$taddopts=array(
 		'-table'		=> '_translations',
 		'-ignore'		=> 1,
 		'locale'		=> $locale,
-		'identifier'	=> $identifier,
+		'identifier'	=> $map['identifier'],
 		't_id'			=> $TEMPLATE['_id'],
 		'p_id'			=> $PAGE['_id'],
 		'translation'	=> $translation

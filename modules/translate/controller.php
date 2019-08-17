@@ -44,7 +44,10 @@
 			}
 			$trecs=getDBRecords($topts);
 			$source['lines']=array();
-			foreach($trecs as $trec){$source['lines'][]=trim(strip_tags($trec['translation']));}
+			foreach($trecs as $trec){
+				$map=translateMapText($trec['translation']);
+				$source['lines'][]=$map['maptext'];
+			}
 			//echo printValue($topts).printValue($source);exit;
 			//echo $locale.printValue($info);exit;
 			setView('bulktranslate',1);
@@ -58,21 +61,28 @@
 				echo '<span class="w_red w_bold">Line Counts do not match between source('.count($slines).') and target('.count($tlines).')</span>';
 				exit;
 			}
-			$locale=addslashes($_REQUEST['locale']);
+			$source_locale=addslashes($_REQUEST['source_locale']);
+			$target_locale=addslashes($_REQUEST['target_locale']);
+			$source_map=getDBRecords(array(
+				'-table'=>'_translations',
+				'-fields'=>'identifier,translation',
+				'locale'=>$source_locale,
+				'-index'=>'identifier'
+			));
 			foreach($slines as $i=>$sline){
 				$identifier=sha1(trim($sline));
+				$translation=translateUnmapText($source_map[$identifier]['translation'],$tlines[$i]);
 				$eopts=array(
 					'-table'=>'_translations',
-					'-where'=>"identifier='{$identifier}' and locale='{$locale}'",
-					'translation'=>$tlines[$i],
+					'-where'=>"identifier='{$identifier}' and locale='{$target_locale}'",
+					'translation'=>$translation,
 					'confirmed'=>1,
-					'p_id'=> 0,
-					't_id'=> 0
 				);
 				if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 					$eopts['source_id']=$CONFIG['translate_source_id'];
 				}
 				$ok=editDBRecord($eopts);
+				//echo $ok.printValue($eopts).PHP_EOL.$sline.PHP_EOL.$identifier.PHP_EOL.printValue($source_map).PHP_EOL;
 			}
 			echo '<span class="icon-mark w_green w_bold"></span> Updated '.count($slines).' translations. Refresh to see changes.';
 			exit;

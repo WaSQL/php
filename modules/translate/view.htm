@@ -40,7 +40,8 @@
 	<div> - <translate>Click the Process button</translate></div>
 </div>
 <form method="post" action="/<?=$MODULE['page'];?>/bulktranslate_process/<?=$locale;?>" onsubmit="return ajaxSubmitForm(this,'bulktranslate_result');" style="width:800px;">
-	<input type="hidden" name="locale" value="<?=$target['locale'];?>" />
+	<input type="hidden" name="source_locale" value="<?=$source['locale'];?>" />
+	<input type="hidden" name="target_locale" value="<?=$target['locale'];?>" />
 	<div class="row w_padtop">
 		<div class="col s12 m6">
 			<div class="w_bold w_bigger">Source: <?=$source['name'];?> <span class="icon-copy" title="Copy to Clipboard" onclick="commonCopyToClipboard(getText('bulktranslate_source'));"></span></div>
