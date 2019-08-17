@@ -32,12 +32,12 @@
 			//get the source texts
 			$topts=array(
 				'-table'	=> '_translations',
-				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where locale='{$target['locale']}')",
+				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}')",
 				'-fields'	=> 'locale,translation',
 				'-order'	=> '_id'
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$topts['-where']="locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
+				$topts['-where']="confirmed=0 and locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
 			}
 			$trecs=getDBRecords($topts);
 			$source['lines']=array();
@@ -71,7 +71,7 @@
 				}
 				$ok=editDBRecord($eopts);
 			}
-			echo '<span class="icon-mark w_green w_bold"></span> Updated '.count($slines).' translations';
+			echo '<span class="icon-mark w_green w_bold"></span> Updated '.count($slines).' translations. Refresh to see changes.';
 			exit;
 		break;
 		case 'locale':
@@ -86,10 +86,14 @@
 		break;
 		case 'deletelocale_confirmed':
 			$info=translateGetLocaleInfo($_REQUEST['passthru'][$p1]);
-			$ok=delDBRecord(array(
+			$dopts=array(
 				'-table'=>'_translations',
 				'-where'=>"locale='{$info['locale']}'"
-			));
+			);
+			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+				$dopts['-where'].= " and source_id={$CONFIG['translate_source_id']}";
+			}
+			$ok=delDBRecord($dopts);
 			$locales=translateGetLocalesUsed();
 			setView('default');
 		break;
@@ -109,10 +113,14 @@
 		case 'addlang':
 			$locale=$_REQUEST['passthru'][$p1];
 			$source_locale=translateGetSourceLocale();
-			$recs=getDBRecords(array(
+			$opts=array(
 				'-table'=>'_translations',
 				'locale'=>$source_locale
-			));
+			);
+			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+				$dopts['-where'].= " and source_id={$CONFIG['translate_source_id']}";
+			}
+			$recs=getDBRecords($opts);
 			foreach($recs as $rec){
 				translateText($rec['translation'],$locale);
 			}
@@ -131,7 +139,9 @@
 			$id=(integer)$_REQUEST['passthru'][$p1];
 			$rec=getDBRecord(array('-table'=>'_translations','_id'=>$id,'-fields'=>'_id,locale,identifier'));
 			$sopts=array('-table'=>'_translations','locale'=>$source_locale,'identifier'=>$rec['identifier'],'-fields'=>'translation');
-			//echo $id.printValue($rec).printValue($sopts);exit;
+			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+				$sopts['source_id']=$CONFIG['translate_source_id'];
+			}
 			//echo printValue($sopts);exit;
 			$source_rec=getDBRecord($sopts);
 			$rec['source']=$source_rec['translation'];
