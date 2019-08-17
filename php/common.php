@@ -8974,12 +8974,12 @@ function includeModule($name,$params=array()){
 		$body=getFileContents("{$modulePath}/view.htm");
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		$controller.=getFileContents("{$modulePath}/controller.php");
-		return evalPHP(array($controller,$body));
+		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 	else{
 		$body=getFileContents("{$modulePath}/view.htm");
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
-		return evalPHP(array($controller,$body));
+		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 }
 //---------- begin function includePage---------------------------------------

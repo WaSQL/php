@@ -1,7 +1,14 @@
 <?php
 function translateShowLocaleSelections(){
 	global $MODULE;
-	$recs=translateGetLocales();
+	$recs=translateGetLocalesUsed(1);
+	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
+	foreach($recs as $i=>$rec){
+		if($current_locale ==$rec['locale']){
+			$recs[$i]['name'].=' <span class="icon-mark w_green"></span>';
+		}
+	}
+	$recs=sortArrayByKeys($recs,array('name'=>SORT_ASC,'locale'=>SORT_ASC));
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-anchormap'=>'name',
@@ -15,6 +22,17 @@ function translateShowLocaleSelections(){
 function translateShowLangSelections(){
 	global $MODULE;
 	$recs=translateGetLocales();
+	$used=translateGetLocalesUsed(1);
+	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
+	foreach($recs as $i=>$rec){
+		if($current_locale ==$rec['locale']){
+			$recs[$i]['name'].=' <span class="icon-mark w_green"></span>';
+		}
+		elseif(isset($used[$rec['locale']])){
+			$recs[$i]['name'].=' <span class="icon-mark w_orange"></span>';
+		}
+	}
+	$recs=sortArrayByKeys($recs,array('name'=>SORT_ASC,'locale'=>SORT_ASC));
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
@@ -22,8 +40,16 @@ function translateShowLangSelections(){
 		'-anchormap'=>'name',
 		'-trclass'=>'w_pointer',
 		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
-		'-hidesearch'=>1
+		'-hidesearch'=>1,
+		'-results_eval'=>'translateShowLangSelectionsExtra'
 	));
+}
+function translateShowLangSelectionsExtra($recs){
+	//echo printValue($used);exit;
+	foreach($recs as $i=>$rec){
+
+	}
+	return $recs;
 }
 function translateListRecords($locale){
 	global $MODULE;
@@ -34,7 +60,8 @@ function translateListRecords($locale){
 		'-formaction'=>"/{$MODULE['page']}/locale/{$locale}",
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
 		'-trclass'=>'w_pointer',
-		'-listfields'=>'page,template,source,translation,confirmed',
+		'-listfields'=>'_id,source,translation,confirmed',
+		'confirmed_displayname'=>'<span class="icon-mark w_success"></span>',
 		'-searchfields'=>'source,translation',
 		'-searchopers'=>'ct',
 		'source_displayname'=>"Source ({$source_locale})",
@@ -45,7 +72,7 @@ function translateListRecords($locale){
 		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/edit/%_id%','modal',{setprocessing:0})",
 		'locale'=>$locale,
 		'-order'=>'confirmed,_id',
-		'-results_eval'=>'translateAddExtraInfo',
+		'-results_eval'=>'translateAddExtraInfo'
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$opts['source_id']=$CONFIG['translate_source_id'];
@@ -64,17 +91,10 @@ function translateListRecords($locale){
 }
 function translateAddExtraInfo($recs){
 	$locale=$recs[0]['locale'];
-	$p_ids=array();
-	$t_ids=array();
 	$ids=array();
 	foreach($recs as $rec){
-		if(!in_array($rec['p_id'],$p_ids)){$p_ids[]=$rec['p_id'];}
-		if(!in_array($rec['t_id'],$t_ids)){$t_ids[]=$rec['t_id'];}
 		$ids[]=$rec['_id'];
 	}
-	if(!count($p_ids)){return $recs;}
-	$p_idstr=implode(',',$p_ids);
-	$t_idstr=implode(',',$t_ids);
 	$idstr=implode(',',$ids);
 	//sourcemap
 	$source_locale=translateGetSourceLocale();	
@@ -85,38 +105,11 @@ function translateAddExtraInfo($recs){
 		'-fields'=>'identifier,translation'
 	);
 	$sourcemap=getDBRecords($opts);
-	//echo printValue($opts).printValue($sourcemap);exit;
-	//pagemap
-	$opts=array(
-		'-table'=>'_pages',
-		'-where'=>"_id in ($p_idstr)",
-		'-index'=>'_id',
-		'-fields'=>'_id,name'
-	);
-	$pagemap=getDBRecords($opts);
-	//echo printValue($opts).printValue($pagemap);exit;
-	//templatemap
-	$opts=array(
-		'-table'=>'_templates',
-		'-where'=>"_id in ($t_idstr)",
-		'-index'=>'_id',
-		'-fields'=>'_id,name'
-	);
-	$templatemap=getDBRecords($opts);
-	//echo printValue($opts).printValue($templatemap);exit;
 	if(!count($sourcemap)){return $recs;}
 	foreach($recs as $i=>$rec){
 		$key=$rec['identifier'];
 		if(isset($sourcemap[$key])){
 			$recs[$i]['source']=$sourcemap[$key]['translation'];
-		}
-		$id=$rec['p_id'];
-		if(isset($pagemap[$id])){
-			$recs[$i]['page']=$id.' - '.$pagemap[$id]['name'];
-		}
-		$id=$rec['t_id'];
-		if(isset($templatemap[$id])){
-			$recs[$i]['template']=$id.' - '.$templatemap[$id]['name'];
 		}
 		if($recs[$i]['confirmed']==1){
 			$recs[$i]['confirmed']='<span class="icon-mark w_success"></span>';
@@ -141,18 +134,23 @@ function translateListLocales(){
 		'entry_cnt_style'=>'text-align:right;',
 		'flag4x3_displayname'=>translateText('Location'),
 		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
+		'confirmed_cnt_class'=>'align-right',
 		'-results_eval'=>'translateListLocalesExtra'
 	);
 	return databaseListRecords($opts);
 }
 function translateListLocalesExtra($recs){
 	global $MODULE;
+	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
 	foreach($recs as $i=>$rec){
-		$flag='<div>';
+		$flag = '<div>';
 		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$MODULE['page']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
 		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
 		$flag .="	</div>";
 		$recs[$i]['flag4x3']=$flag;
+		if($current_locale ==strtolower($rec['locale'])){
+			$recs[$i]['locale'].=' <span class="icon-mark w_green"></span>';
+		}
 	}
 	return $recs;
 }

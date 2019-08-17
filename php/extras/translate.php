@@ -89,7 +89,7 @@ function translateGetLocales($filters=array()){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function translateGetLocalesUsed(){
+function translateGetLocalesUsed($ibl=0){
 	global $CONFIG;
 	$locales=translateGetLocales();
 	$source_local=translateGetSourceLocale();
@@ -127,6 +127,13 @@ ENDOFQ;
 	$recs=array();
 	foreach($locales as $locale){
 		$recs[]=$locale;
+	}
+	if($ibl==1){
+		$lrecs=array();
+		foreach($recs as $rec){
+			$lrecs[$rec['locale']]=$rec;
+		}
+		return $lrecs;
 	}
 	//echo printValue($recs);exit;
 	return $recs;
@@ -246,10 +253,18 @@ function translateText($text,$locale=''){
 		'p_id'			=> $PAGE['_id'],
 		'translation'	=> $translation
 	);
+	if($source_locale == $locale){
+		$taddopts['confirmed']=1;
+	}
+	else{
+		$taddopts['confirmed']=0;
+	}
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$taddopts['source_id']=$CONFIG['translate_source_id'];
 	}
+	//echo $source_locale.printValue($taddopts);exit;
 	$tid=addDBRecord($taddopts);
+
 	if($target_lang != $source_lang){
 		$taddopts['locale']=$source_locale;
 		$taddopts['translation']=$text;

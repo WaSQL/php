@@ -14,6 +14,9 @@
 	if(!isset($MODULE['page'])){
 		$MODULE['page']=$PAGE['name'];
 	}
+	if(!isset($MODULE['ajaxpage'])){
+		$MODULE['ajaxpage']=$PAGE['name'];
+	}
 	loadExtras('translate');
 	loadExtrasCss('wacss');
 	loadExtrasJs('wacss');

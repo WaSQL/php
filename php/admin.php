@@ -15,6 +15,7 @@ date_default_timezone_set('America/Denver');
 //echo "Before COMMON";exit;
 include_once("$progpath/common.php");
 global $CONFIG;
+$CONFIG['translate_source_id']=-1;
 include_once("$progpath/config.php");
 //is SSL required for admin?
 if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'true')) && !isSecure()){

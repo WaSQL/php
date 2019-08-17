@@ -3,8 +3,8 @@
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<div class="w_big w_bold"><?=$MODULE['title'];?></div>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['page'];?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['page'];?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
 		</div>
 		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
@@ -20,7 +20,7 @@
 <view:list>
 	<h3><?=$info['name'];?></h3>
 	<div style="display:inline;float:right;">
-		<button onclick="return ajaxGet('/<?=$MODULE['page'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
+		<button onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
 
 	</div>
 	<?=translateListRecords($locale);?>
@@ -105,7 +105,7 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12 align-left">
-			<div id="edit_title" style="display:none;"><?=$source['name'];?> => <?=$dest['name'];?></div>
+			<div id="edit_title" style="display:none;">#<?=$rec['_id'];?> <?=$source['name'];?> => <?=$dest['name'];?></div>
 			<?=buildOnLoad("wacss.modalTitle(getText('edit_title'));");?>
 			<div style="margin-top:10px;vertical-align: middle;">
 				<div class="w_gray align-middle" style="display:inline-block;"><translate>Translators</translate>: </div>
