@@ -154,8 +154,6 @@ function translateCheckSchema(){
 		'_cuser'		=> databaseDataType('int')." NOT NULL",
 		'_edate'		=> databaseDataType('datetime')." NULL",
 		'_euser'		=> databaseDataType('int')." NULL",
-		't_id'			=> databaseDataType('int')." NOT NULL Default 0", //template id
-		'p_id'			=> databaseDataType('int')." NOT NULL Default 0", //page id
 		'source_id'		=> databaseDataType('int')." NOT NULL Default 0", //source id set by users in CONFIG
 		'locale'		=> databaseDataType('varchar(50)')." NOT NULL",
 		'translation'	=> databaseDataType('text')." NULL",
@@ -169,7 +167,7 @@ function translateCheckSchema(){
 	}
 	//indexes
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"identifier,locale",'-unique'=>1));
-	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"t_id,p_id,locale"));
+	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"locale"));
 	return true;
 }
 //---------- begin function translateGetSourceLocale
@@ -254,7 +252,7 @@ function translateText($text,$locale=''){
 	$pid=isset($PAGE['_id']) && isNum($PAGE['_id'])?$PAGE['_id']:0;
 	$topts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "locale ='{$locale}' and (identifier='{$identifier}' or p_id in (0,{$pid}))",
+		'-where'	=> "locale ='{$locale}'",
 		'-fields'	=> 'locale,identifier,translation'
 	);
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
@@ -293,8 +291,6 @@ function translateText($text,$locale=''){
 		'-ignore'		=> 1,
 		'locale'		=> $locale,
 		'identifier'	=> $map['identifier'],
-		't_id'			=> $TEMPLATE['_id'],
-		'p_id'			=> $PAGE['_id'],
 		'translation'	=> $translation
 	);
 	if($source_locale == $locale){
