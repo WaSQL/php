@@ -40,7 +40,7 @@
 				'-order'	=> '_id'
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$topts['-where']="locale ='{$source['locale']}' and  source_id={$CONFIG['translate_source_id']} and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id={$CONFIG['translate_source_id']})";
+				$topts['-where']="locale ='{$source['locale']}' and  source_id in (0,{$CONFIG['translate_source_id']}) and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id in (0,{$CONFIG['translate_source_id']}))";
 			}
 			$trecs=getDBRecords($topts);
 			$source['lines']=array();
@@ -63,12 +63,17 @@
 			}
 			$source_locale=addslashes($_REQUEST['source_locale']);
 			$target_locale=addslashes($_REQUEST['target_locale']);
-			$source_map=getDBRecords(array(
+			$sopts=array(
 				'-table'=>'_translations',
 				'-fields'=>'identifier,translation',
 				'locale'=>$source_locale,
 				'-index'=>'identifier'
-			));
+			);
+			
+			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+				$sopts['-where']="source_id in (0,{$CONFIG['translate_source_id']})";
+			}
+			$source_map=getDBRecords($sopts);
 			foreach($slines as $i=>$sline){
 				$identifier=sha1(trim($sline));
 				$translation=translateUnmapText($source_map[$identifier]['translation'],$tlines[$i]);
