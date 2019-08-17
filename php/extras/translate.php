@@ -197,8 +197,6 @@ function translateMapText($text){
 	$map['maptext']=str_replace("\r\n",'{0}',$map['maptext']);
 	$map['maptext']=str_replace("\n",'{1}',$map['maptext']);
 	$map['maptext']=str_replace("\t",'{2}',$map['maptext']);
-	$map['maptext']=str_replace('{:)}','{3}',$map['maptext']);
-	$map['maptext']=str_replace('{:(}','{4}',$map['maptext']);
 	foreach($m[0] as $i=>$tag){
 		if(!in_array($tag,$map['map'])){
 			$map['map'][]=$tag;
