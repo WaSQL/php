@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title><?=templateMetaTitle();?></title>
+	<link rel="canonical" href="//<?=$_SERVER['HTTP_HOST'];?>/<?=pageValue('name');?>/" />
+	<!-- Icons -->
+	<link rel="apple-touch-icon" sizes="76x76" href="/wfiles/apple-touch-icon.png">
+	<link rel="shortcut icon" href="/wfiles/favicon.ico">
+	<link rel="icon" type="image/png" sizes="32x32" href="/wfiles/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/wfiles/favicon-16x16.png">
+	<link rel="manifest" href="/wfiles/site.webmanifest">
+	<meta name="msapplication-TileColor" content="#2d89ef">
+	<meta name="theme-color" content="#ffffff">
+	<!-- Mobal Meta -->
+	<meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<!-- SEO Meta -->
+	<meta name="description" content="<?=templateMetaDescription();?>" />
+	<meta name="keywords" content="<?=templateMetaKeywords();?>" />
+	<!-- Open graph info for Facebook -->
+	<meta property="og:title" content="<?=templateMetaTitle();?>" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="//<?=$_SERVER['HTTP_HOST'];?>/" />
+	<meta property="og:site_name" content="<?=templateMetaSite();?>" />
+	<meta property="og:image" content="<?=templateMetaImage();?>" />
+	<meta property="og:description" content="<?=templateMetaDescription();?>" />
+	<!-- Twitter card info -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:site" content="<?=templateMetaSite();?>" />
+	<meta name="twitter:title" content="<?=templateMetaTitle();?>" />
+	<meta name="twitter:description" content="<?=templateMetaDescription();?>" />
+	<meta name="twitter:creator" content="@wasqlcom" />
+	<meta name="twitter:image:src" content="<?=templateMetaImage();?>" />
+	<meta name="twitter:domain" content="//<?=$_SERVER['HTTP_HOST'];?>" />
+	<!-- Minified CSS and JS -->
+	<link type="text/css" rel="stylesheet" href="<?=minifyCssFile('bootstrap');?>" />
+  	<script type="text/javascript" src="<?=minifyJsFile('bootstrap');?>"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<?=pageValue('body');?>
+		</div>
+	</div>
+</body>
+</html>
