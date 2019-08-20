@@ -1639,11 +1639,6 @@ table.table-responsive {
     -ms-overflow-style: -ms-autohiding-scrollbar;
     -webkit-overflow-scrolling: touch;
   }
-table.table-striped tbody tr:nth-of-type(odd),
-table.striped tbody tr:nth-of-type(odd),
-div.striped:nth-of-type(odd) {
-    background-color: rgba(0,0,0,.05);
-}
 table.table-bordered td, table.table-bordered th,
 table.bordered td, table.bordered th {
     border: 1px solid #dee2e6;
@@ -1666,6 +1661,57 @@ table.table a{
 }
 table.table a:hover{
   text-shadow: 0 5px 11px rgba(0, 0, 0, 0.18);
+}
+/* ----------------  Striped --------------- */
+table.table-striped tbody tr:nth-of-type(odd),
+table.striped tbody tr:nth-of-type(odd),
+div.striped:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+table.table-striped.w_blue tbody tr:nth-of-type(odd),
+table.striped.w_blue tbody tr:nth-of-type(odd),
+div.striped.w_blue:nth-of-type(odd) {
+    background-color: #0c7abf15;
+}
+table.table-striped.w_gray tbody tr:nth-of-type(odd),
+table.striped.w_gray tbody tr:nth-of-type(odd),
+div.striped.w_gray:nth-of-type(odd) {
+    background-color: #6c757d15;
+}
+table.table-striped.w_green tbody tr:nth-of-type(odd),
+table.striped.w_green tbody tr:nth-of-type(odd),
+div.striped.w_green:nth-of-type(odd) {
+    background-color: #28a74515;
+}
+table.table-striped.w_red tbody tr:nth-of-type(odd),
+table.striped.w_red tbody tr:nth-of-type(odd),
+div.striped.w_red:nth-of-type(odd) {
+    background-color: #dc354515;
+}
+table.table-striped.w_yellow tbody tr:nth-of-type(odd),
+table.striped.w_yellow tbody tr:nth-of-type(odd),
+div.striped.w_yellow:nth-of-type(odd) {
+    background-color: #ffc10715;
+}
+table.table-striped.w_orange tbody tr:nth-of-type(odd),
+table.striped.w_orange tbody tr:nth-of-type(odd),
+div.striped.w_orange:nth-of-type(odd) {
+    background-color: #ff980015;
+}
+table.table-striped.w_teal tbody tr:nth-of-type(odd),
+table.striped.w_teal tbody tr:nth-of-type(odd),
+div.striped.w_teal:nth-of-type(odd) {
+    background-color: #17a2b815;
+}
+table.table-striped.w_white tbody tr:nth-of-type(odd),
+table.striped.w_white tbody tr:nth-of-type(odd),
+div.striped.w_white:nth-of-type(odd) {
+    background-color: #c4cad215;
+}
+table.table-striped.w_black tbody tr:nth-of-type(odd),
+table.striped.w_black tbody tr:nth-of-type(odd),
+div.striped.w_black:nth-of-type(odd) {
+    background-color: #343a4015;
 }
 /* ----------------  Panels --------------- */
 .panel {
