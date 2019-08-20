@@ -1640,7 +1640,8 @@ table.table-responsive {
     -webkit-overflow-scrolling: touch;
   }
 table.table-striped tbody tr:nth-of-type(odd),
-table.striped tbody tr:nth-of-type(odd) {
+table.striped tbody tr:nth-of-type(odd),
+div.striped:nth-of-type(odd) {
     background-color: rgba(0,0,0,.05);
 }
 table.table-bordered td, table.table-bordered th,
