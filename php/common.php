@@ -1673,7 +1673,23 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag .= '<div class="dropdown">'.PHP_EOL;
 	$tag .= ' 	<button data-toggle="dropdown" class="btn '.$params['-size'].'" type="button">'.$dname.PHP_EOL;
 	$tag .= '	</button>'.PHP_EOL;
-	$tag .= ' 	<div class="dropdown-menu">'.PHP_EOL;
+	$onclose='';
+	if(isset($params['onblur']) && strlen($params['onblur'])){
+		$onclose = $params['onblur'];
+	}
+	elseif(isset($params['onleave']) && strlen($params['onleave'])){
+    	$onclose = $params['onleave'];
+	}
+	elseif(isset($params['onclose']) && strlen($params['onclose'])){
+    	$onclose = $params['onclose'];
+	}
+	if(strlen($onclose)){
+		$onclose="if(commonCloseDropdownMenu(this)){{$onclose}}";
+	}
+	else{
+		$onclose="commonCloseDropdownMenu(this);";
+	}
+	$tag .= ' 	<div class="dropdown-menu" onmouseleave="'.$onclose.'">'.PHP_EOL;
 	$tag .= $litags;
 	$tag .= '	</div>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;

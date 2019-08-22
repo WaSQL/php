@@ -1620,6 +1620,13 @@ function findPos(obj){
         x: box.left + scrollLeft - clientLeft};
 }
 /* fadeOut - if remove ==1, the id will be destroyed after fading away */
+function commonCloseDropdownMenu(el){
+	if(isMouseOver(el)){return false;}
+	let p=getParent(el);
+	if(isMouseOver(p)){return false;}
+	p.className='dropdown';
+	return true;
+}
 var commonFadeIdTimeouts=new Array();
 function fadeId(eid,remove,wait){
 	//info: fades, and removes if specified, specified id out
