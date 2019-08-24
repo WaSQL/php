@@ -810,8 +810,11 @@ function setActiveTab(t){
 * @usage onclick="return setActiveNav(this,'/t/1/mypage','results',{showprocessing:false});"
 */
 function setActiveNav(aobj,ajaxurl,ajaxdiv,ajaxparams){
-	var liobj=getParent(aobj);
-	var ulobj=getParent(liobj);
+	var liobj=getParent(aobj,'li');
+	if(undefined == liobj){return false;}
+	var ulobj=getParent(liobj,'ul');
+	if(undefined == ulobj){return false;}
+	if(undefined == ulobj.children){return false;}
 	var lis=ulobj.children;
 	for(var i=0;i<lis.length;i++){
 		removeClass(lis[i],'active');
