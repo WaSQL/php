@@ -340,7 +340,13 @@ var wacss = {
 										return label;
 									}
 								}
-							}
+							},
+							plugins: {
+						        datalabels: {
+						        	display:false,
+									formatter: Math.round
+								}
+						    }
 						};
 						if(undefined != list[i].getAttribute('data-ysteps')){
 							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
@@ -445,7 +451,21 @@ var wacss = {
 	        					title:{
 	        						display: false
 	        					},
-	        					rotation: -0.7 * Math.PI
+	        					rotation: -0.7 * Math.PI,
+	        					plugins: {
+							        datalabels: {
+							            formatter: (value, ctx) => {
+							                let sum = 0;
+							                let dataArr = ctx.chart.data.datasets[0].data;
+							                dataArr.map(data => {
+							                    sum += data;
+							                });
+							                let percentage = (value*100 / sum).toFixed(2)+"%";
+							                return percentage;
+							            },
+							            color: '#fff',
+							        }
+							    }
 	        				}
 	        			};
 

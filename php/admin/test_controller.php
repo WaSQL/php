@@ -1,6 +1,6 @@
 <?php
 	global $CONFIG;
-	loadExtrasJs(array('moment','chart'));
+	loadExtrasJs(array('moment','chart','chartjs-plugin-datalabels'));
 	if(isset($_REQUEST['multipart'])){
 		processFileUploads();
 		echo "PROCESSED ".printValue($_REQUEST);exit;
