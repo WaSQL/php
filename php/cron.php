@@ -116,6 +116,8 @@ ENDOFWHERE;
 			$cnt=count($recs);
 			cronMessage("{$cnt} crons found. Checking...");
 			foreach($recs as $rec){
+				if(isset($ConfigXml[$name]['processed'][$rec['_id']])){continue;}
+				$ConfigXml[$name]['processed'][$rec['_id']]=1;
 				$run=0;
 				//should this cron be run now?  check frequency...
 				$ctime=time();
