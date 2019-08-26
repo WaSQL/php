@@ -112,10 +112,20 @@ ENDOFWHERE;
 	        cronMessage("No crons found.");
 	        continue;
 		}
+		foreach($recs as $ri=>$rec){
+			if(isset($ConfigXml[$name]['processed'][$rec['_id']])){
+				unset($recs[$ri]);
+			}
+		}
+		if(count($recs)==0){
+			unset($ConfigXml[$name]);
+	        cronMessage("No crons found.");
+	        continue;
+		}
 		if(is_array($recs) && count($recs)){
 			$cnt=count($recs);
 			cronMessage("{$cnt} crons found. Checking...");
-			foreach($recs as $rec){
+			foreach($recs as $ri=>$rec){
 				if(isset($ConfigXml[$name]['processed'][$rec['_id']])){continue;}
 				$ConfigXml[$name]['processed'][$rec['_id']]=1;
 				$run=0;
