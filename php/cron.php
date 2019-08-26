@@ -106,6 +106,7 @@ ENDOFWHERE;
 		);
 		$cronfields=getDBFields('_cron');
 		if(!is_array($cronfields)){
+			unset($ConfigXml[$name]);
 			cronMessage("cronfields in _cron is empty.");
 			continue;
 		}
