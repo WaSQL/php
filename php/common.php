@@ -3685,6 +3685,8 @@ function arrays2RSS($recs=array(),$params=array()){
 *	-fields - comma separated list of fields to include in the csv
 *	-fieldmap - field=>mapname array of fieldmaps to change the name on the first line
 *	-noheader - do not include a header row
+*	-delim - delimiter defaults to comma
+*	-enclose - enclosed by defaults to quote
 * @usage
 * 	$csv=arrays2CSV($recs,array(
 * 		'-fields'=>'name,age,color'
@@ -3692,6 +3694,9 @@ function arrays2RSS($recs=array(),$params=array()){
 * @return string - csv formatted output based on the recs array passed in
 */
 function arrays2CSV($recs=array(),$params=array()){
+	//defaults
+	if(!isset($params['-delim'])){$params['-delim']=',';}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	if(!is_array($recs) || !count($recs)){
 		return "No records found";
 	}
@@ -3727,10 +3732,10 @@ function arrays2CSV($recs=array(),$params=array()){
 	$csvlines=array();
 	if(!isset($params['-noheader']) || $params['-noheader']==0){
 		if(isset($params['-force']) && $params['-force']){
-			$csvlines[]=csvImplode(array_values($fieldmap),',','"',1);
+			$csvlines[]=csvImplode(array_values($fieldmap),$params['-delim'],$params['-enclose'],1);
 		}
 		else{
-        	$csvlines[]=csvImplode(array_values($fieldmap));
+        	$csvlines[]=csvImplode(array_values($fieldmap),$params['-delim'],$params['-enclose']);
 		}
 
 	}
@@ -3740,10 +3745,10 @@ function arrays2CSV($recs=array(),$params=array()){
         	$vals[]=$rec[$field];
 		}
 		if(isset($params['-force']) && $params['-force']){
-			$csvlines[]=csvImplode($vals,',','"',1);
+			$csvlines[]=csvImplode($vals,$params['-delim'],$params['-enclose'],1);
 		}
 		else{
-        	$csvlines[]=csvImplode($vals);
+        	$csvlines[]=csvImplode($vals,$params['-delim'],$params['-enclose']);
 		}
 	}
     return implode("\r\n",$csvlines);
