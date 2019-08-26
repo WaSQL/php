@@ -105,6 +105,10 @@ ENDOFWHERE;
 			'-nocache'	=> 1
 		);
 		$cronfields=getDBFields('_cron');
+		if(!is_array($cronfields)){
+			cronMessage("cronfields in _cron is empty.");
+			continue;
+		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 		$recs=getDBRecords($recopts);
 		if(!is_array($recs) || count($recs)==0){
