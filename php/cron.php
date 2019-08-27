@@ -221,14 +221,30 @@ ENDOFWHERE;
 					'_id'		=> $rec['_id'],
 					'-nocache'	=> 1
 				));
-				cronMessage("running {$rec['name']}");
+				if(isset($pages[$lcmd])){
+					//cronMessage("cron is a page");
+					$crontype='Page';
+				}
+				elseif(preg_match('/^<\?\=/',$cmd)){
+	            	//cron is a php command
+	            	$crontype='PHP Command';
+				}
+				elseif(preg_match('/^http/i',$cmd)){
+	            	//cron is a URL.
+	            	$crontype='URL';
+				}
+				else{
+	            	//cron is a command
+	            	$crontype='OS Command';
+				}
+				cronMessage("running {$crontype} {$rec['name']}");
 	        	$cmd=$rec['run_cmd'];
 	        	$result='';
-				$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL;
+				$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
+				$result .= "CronType: {$crontype} ".PHP_EOL;
 				$lcmd=strtolower(trim($cmd));
+				$crontype='unknown';
 				if(isset($pages[$lcmd])){
-					cronMessage("cron is a page");
-	                $result .= 'CronType: page '.PHP_EOL;
 	            	//cron is a page.
 	            	$url="http://{$CONFIG['name']}/{$cmd}";
 	                $result .= "CronURL: {$url}".PHP_EOL;
@@ -256,8 +272,6 @@ ENDOFWHERE;
 				}
 				elseif(preg_match('/^<\?\=/',$cmd)){
 	            	//cron is a php command
-	            	cronMessage("cron is a PHP command");
-	                $result .= 'CronType: PHP '.PHP_EOL;
 	                $result .= 'Output Received:'.PHP_EOL;
 	            	$out=evalPHP($cmd).PHP_EOL;
 	            	if(is_array($out)){$result.=printValue($out).PHP_EOL;}
@@ -265,8 +279,6 @@ ENDOFWHERE;
 				}
 				elseif(preg_match('/^http/i',$cmd)){
 	            	//cron is a URL.
-	                 $result .= 'CronType: URL '.PHP_EOL;
-	            	cronMessage("cron is a url");
 	            	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
 					$result .= 'Headers Sent:'.PHP_EOL.printValue($post['headers_out']).PHP_EOL;
 	            	$result .= 'CURL Info:'.PHP_EOL.printValue($post['curl_info']).PHP_EOL;
@@ -274,13 +286,12 @@ ENDOFWHERE;
 	            	$result .= 'Content Received:'.PHP_EOL.$post['body'].PHP_EOL;
 				}
 				else{
-	            	//cron is a command
-	            	cronMessage("cron is a command");
-	                $result .= 'CronType: command '.PHP_EOL;
+	            	//cron is an OS Command
 	            	$out=cmdResults($cmd);
 	            	$result .= 'Output Received:'.PHP_EOL;
 	            	$result .= printValue($out).PHP_EOL;
 				}
+
 				$stop=time();
 				$run_length=$stop-$start;
 	            $result .= PHP_EOL;
