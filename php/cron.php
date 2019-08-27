@@ -221,6 +221,8 @@ ENDOFWHERE;
 					'_id'		=> $rec['_id'],
 					'-nocache'	=> 1
 				));
+				$cmd=$rec['run_cmd'];
+				$lcmd=strtolower(trim($cmd));
 				if(isset($pages[$lcmd])){
 					//cronMessage("cron is a page");
 					$crontype='Page';
@@ -238,11 +240,11 @@ ENDOFWHERE;
 	            	$crontype='OS Command';
 				}
 				cronMessage("running {$crontype} {$rec['name']}");
-	        	$cmd=$rec['run_cmd'];
+	        	
 	        	$result='';
 				$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
 				$result .= "CronType: {$crontype} ".PHP_EOL;
-				$lcmd=strtolower(trim($cmd));
+				
 				$crontype='unknown';
 				if(isset($pages[$lcmd])){
 	            	//cron is a page.
