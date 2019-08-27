@@ -133,7 +133,7 @@ ENDOFWHERE;
 		}
 		if(is_array($recs) && count($recs)){
 			$cnt=count($recs);
-			cronMessage("{$cnt} crons found. Checking...");
+			//cronMessage("{$cnt} crons found. Checking...");
 			foreach($recs as $ri=>$rec){
 				if(isset($ConfigXml[$name]['processed'][$rec['_id']])){continue;}
 				$ConfigXml[$name]['processed'][$rec['_id']]=1;
@@ -305,7 +305,8 @@ ENDOFWHERE;
 					'run_length'	=> $run_length,
 					'run_result'	=> $result
 				));
-				cronMessage("finished {$rec['name']}. Run Length:{$run_length}");
+				$runtime=verboseTime($run_length);
+				cronMessage("finished {$rec['name']}. Run Length:{$runtime}");
 				//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 				if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 				$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
