@@ -321,8 +321,7 @@ ENDOFWHERE;
 					'run_result'=> $result
 				);
 				$ok=addDBRecord($opts);
-				cronMessage("finished");
-				exit;
+				break;
 			}
 		}
 		
