@@ -14,6 +14,10 @@ set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
+global $logfile;
+$scriptname=basename(__FILE__, '.php');
+$logfile="{$progpath}/{$scriptname}.log";
+//echo $logfile;exit;
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
@@ -321,9 +325,17 @@ exit;
 function cronMessage($msg){
 	global $CONFIG;
 	global $mypid;
+	global $logfile;
 	if(!strlen($mypid)){$mypid=getmypid();}
 	$ctime=time();
-	echo "{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
+	$msg="{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
+	echo $msg;
+	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+        setFileContents($logfile,$msg);
+    }
+    else{
+        appendFileContents($logfile,$msg);
+    }
 	return;
 }
 //---------- begin function cronUpdate
