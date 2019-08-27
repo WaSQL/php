@@ -194,7 +194,7 @@ ENDOFWHERE;
 				$run_date=date('Y-m-d H:i:s');
 				$cron_pid=getmypid();
 				//echo $ok.printValue($rec);
-				cronMessage("handshaking {$rec['name']}");
+				//cronMessage("handshaking {$rec['name']}");
 				$editopts=array(
 					'-table'	=> '_cron',
 					'-where'	=> "running=0 and _id={$rec['_id']}",
@@ -305,7 +305,8 @@ ENDOFWHERE;
 					'run_length'	=> $run_length,
 					'run_result'	=> $result
 				));
-				$runtime=verboseTime($run_length);
+				$runtime=$run_length > 0?verboseTime($run_length):0;
+
 				cronMessage("finished {$rec['name']}. Run Length:{$runtime}");
 				//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 				if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
