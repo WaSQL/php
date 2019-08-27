@@ -118,7 +118,7 @@ ENDOFWHERE;
 		$recs=getDBRecords($recopts);
 		if(!is_array($recs) || count($recs)==0){
 			unset($ConfigXml[$name]);
-	        cronMessage("No crons found.");
+	        //cronMessage("No crons found.");
 	        continue;
 		}
 		foreach($recs as $ri=>$rec){
@@ -128,7 +128,7 @@ ENDOFWHERE;
 		}
 		if(count($recs)==0){
 			unset($ConfigXml[$name]);
-	        cronMessage("No crons found.");
+	        //cronMessage("No crons found.");
 	        continue;
 		}
 		if(is_array($recs) && count($recs)){
