@@ -156,7 +156,7 @@ ENDOFWHERE;
 					$cvalue=date($rec['run_format']);
 					$values=preg_split('/\,/',$rec['run_values']);
 					foreach($values as $value){
-						cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
+						//cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
 	                	if($cvalue==$value){$run=1;break;}
 					}
 
