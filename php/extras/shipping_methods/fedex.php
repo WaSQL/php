@@ -4,7 +4,7 @@ $progpath=dirname(__FILE__);
 	load the fedex common library
 	Technical Support hotline phone: 1.877.339.2774 (When prompted, please say "Web Services")
 */
-require_once("$progpath/fedex/common.php5");
+require_once("{$progpath}/fedex/common.php5");
 date_default_timezone_set('America/Denver');
 //------------------
 function fedexAddressVerification($auth=array(),$addresses=array()){
@@ -13,9 +13,9 @@ function fedexAddressVerification($auth=array(),$addresses=array()){
 	if(!isset($auth['-accuracy'])){$auth['-accuracy']='LOOSE';}
 	//adresses - AddressId, Address - Streetlines, PostalCode, CompanyName
 	$progpath=dirname(__FILE__);
-	$path_to_wsdl = "$progpath/fedex/AddressValidationService_v2.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/AddressValidationService_v2.wsdl";
 	if(isset($auth['-test']) && $auth['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/AddressValidationService_v2_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/AddressValidationService_v2_test.wsdl";
     	}
 	ini_set("soap.wsdl_cache_enabled", "0");
 	$client = new SoapClient($path_to_wsdl, array('trace' => 0)); // Refer to http://us3.php.net/manual/en/ref.soap.php for more information
@@ -88,9 +88,9 @@ function fedexCreatePendingShipment($params=array()){
 	/*Load libraries and wsdls*/
 	$progpath=dirname(__FILE__);
 	date_default_timezone_set('America/Denver');
-	$path_to_wsdl = "$progpath/fedex/ShipService_v7.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/ShipService_v7.wsdl";
 	if(isset($params['-test']) && $params['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/ShipService_v7_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/ShipService_v7_test.wsdl";
     	}
 	$cache=isset($params['-cache'])?$params['-cache']:0;
 	ini_set("soap.wsdl_cache_enabled", "{$cache}");
@@ -290,9 +290,9 @@ function fedexProcessShipment($params=array()){
 	/*Load libraries and wsdls*/
 	$progpath=dirname(__FILE__);
 	date_default_timezone_set('America/Denver');
-	$path_to_wsdl = "$progpath/fedex/ShipService_v7.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/ShipService_v7.wsdl";
 	if(isset($params['-test']) && $params['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/ShipService_v7_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/ShipService_v7_test.wsdl";
     	}
 	$cache=isset($params['-cache'])?$params['-cache']:0;
 	ini_set("soap.wsdl_cache_enabled", "{$cache}");
@@ -467,9 +467,9 @@ function fedexTracking($tn='',$params=array()){
 	/*Load libraries and wsdls*/
 	$progpath=dirname(__FILE__);
 	date_default_timezone_set('America/Denver');
-	$path_to_wsdl = "$progpath/fedex/TrackService_v2.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/TrackService_v2.wsdl";
 	if(isset($params['-test']) && $params['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/TrackService_v2_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/TrackService_v2_test.wsdl";
     	}
 	$cache=isset($params['-cache'])?$params['-cache']:0;
 	ini_set("soap.wsdl_cache_enabled", "{$cache}");
@@ -573,9 +573,9 @@ function fedexTrack($tn='',$params=array()){
 	/*Load libraries and wsdls*/
 	$progpath=dirname(__FILE__);
 	date_default_timezone_set('America/Denver');
-	$path_to_wsdl = "$progpath/fedex/TrackService_v2.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/TrackService_v2.wsdl";
 	if(isset($params['-test']) && $params['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/TrackService_v2_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/TrackService_v2_test.wsdl";
     	}
 	$cache=isset($params['-cache'])?$params['-cache']:0;
 	ini_set("soap.wsdl_cache_enabled", "{$cache}");
@@ -756,9 +756,9 @@ function fedexServices($params=array()){
 	if(!isNum($params['PackageCount'])){$params['PackageCount']=1;}
 	global $progpath;
 	/*Load libraries and wsdls*/
-	$path_to_wsdl = "$progpath/fedex/RateService_v7.wsdl";
+	$path_to_wsdl = "{$progpath}/fedex/RateService_v7.wsdl";
 	if(isset($params['-test']) && $params['-test']==1){
-		$path_to_wsdl = "$progpath/fedex/RateService_v7_test.wsdl";
+		$path_to_wsdl = "{$progpath}/fedex/RateService_v7_test.wsdl";
     	}
 	$cache=isset($params['-cache'])?$params['-cache']:0;
 	ini_set("soap.wsdl_cache_enabled", "{$cache}");
