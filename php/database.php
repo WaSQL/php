@@ -4117,6 +4117,10 @@ function buildDBWhere($params=array()){
 *	));
 */
 function delDBRecord($params=array()){
+	if(isPostgreSQL()){return postgresqlDelDBRecord($table,$fields);}
+	elseif(isSqlite()){return sqliteDelDBRecord($table,$fields);}
+	elseif(isOracle()){return oracleDelDBRecord($table,$fields);}
+	elseif(isMssql()){return mssqlDelDBRecord($table,$fields);}
 	$function='delDBRecord';
 	if(!isset($params['-table'])){return 'editDBRecord Error: No table';}
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where';}

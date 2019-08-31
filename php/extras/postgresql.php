@@ -76,17 +76,17 @@ function postgresqlAddDBRecord($params=array()){
 
 	$sequence='';
 	$opts=array();
-	if(isset($fields['cdate'])){
+	if(isset($finfo['cdate'])){
 		$params['cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	elseif(isset($fields['_cdate'])){
+	elseif(isset($finfo['_cdate'])){
 		$params['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
 	}
-	if(isset($fields['cuser'])){
-		$params['cuser']=$USER['username'];
+	if(isset($finfo['cuser'])){
+		$params['cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
 	}
-	elseif(isset($fields['_cuser'])){
-		$params['_cuser']=$USER['username'];
+	elseif(isset($finfo['_cuser'])){
+		$params['_cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
 	}
 	$fields=array();
 	$values=array();
@@ -148,7 +148,7 @@ ENDOFQUERY;
 			'error'=>pg_last_error(),
 			'query'=>$query
 		));
-    	return;
+    	return null;
 	}
 	if(!pg_prepare($dbh_postgresql,'',$query)){
 		debugValue(array(
@@ -160,10 +160,23 @@ ENDOFQUERY;
 			'fields'=>$finfo
 		));
 		pg_close($dbh_postgresql);
-		exit;
-		return;
+		//exit;
+		return null;
 	}
-	$data=pg_execute('postgresqlAddDBRecord',$values);
+	//echo 'postgresqlAddDBRecord: '.$query.printValue($values).PHP_EOL.'<br />'.PHP_EOL;
+	$data=pg_execute($dbh_postgresql,'',$values);
+	$err=pg_result_error($data);
+	if(strlen($err)){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecord',
+			'message'=>'pg_execute failed',
+			'error'=>$err,
+			'query'=>$query,
+			'values'=>$values,
+		));
+		pg_close($dbh_postgresql);
+		return null;
+	}
 	$recs = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
@@ -179,6 +192,8 @@ ENDOFQUERY;
 *	$ok=postgresqlCreateDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function postgresqlCreateDBTable($table='',$fields=array()){
+	global $postgresqlGetDBTablesCache;
+	$postgresqlGetDBTablesCache=array();
 	$function='createDBTable';
 	if(strlen($table)==0){return "postgresqlCreateDBTable error: No table";}
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
@@ -292,7 +307,27 @@ function postgresqlDBConnect(){
 		exit;
 	}
 }
-
+//---------- begin function postgresqlDelDBRecord ----------
+/**
+* @describe deletes records in table that match -where clause
+* @param params array
+*	-table string - name of table
+*	-where string - where clause to filter what records are deleted
+*	[-model] boolean - set to false to disable model functionality
+* @return boolean
+* @usage
+*	$id=postgresqlDelDBRecord(array(
+*		'-table'		=> '_tabledata',
+*		'-where'		=> "_id=4"
+*	));
+*/
+function postgresqlDelDBRecord($params=array()){
+	global $USER;
+	if(!isset($params['-table'])){return 'postgresqlDelDBRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'postgresqlDelDBRecord Error: No where';}
+	$query="delete from {$params['-table']} where " . $params['-where'];
+	return postgresqlExecuteSQL($query,$params);
+}
 //---------- begin function postgresqlEditDBRecord ----------
 /**
 * @describe edits a record from params passed in based on where.
@@ -327,10 +362,10 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 		$params['_edate']=strtoupper(date('Y-M-d H:i:s'));
 	}
 	if(isset($finfo['euser'])){
-		$params['euser']=$USER['username'];
+		$params['euser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
 	}
 	elseif(isset($finfo['_euser'])){
-		$params['_euser']=$USER['username'];
+		$params['_euser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
 	}
 	$sets=array();
 	$values=array();
@@ -394,7 +429,19 @@ ENDOFQUERY;
 		pg_close($dbh_postgresql);
 		return;
 	}
-	$data=pg_execute('postgresqlEditDBRecord',$values);
+	$data=pg_execute($dbh_postgresql,'',$values);
+	$err=pg_result_error($data);
+	if(strlen($err)){
+		debugValue(array(
+			'function'=>'postgresqlEditDBRecord',
+			'message'=>'pg_execute failed',
+			'error'=>$err,
+			'query'=>$query,
+			'values'=>$values,
+		));
+		pg_close($dbh_postgresql);
+		return null;
+	}
 	$recs = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	return $recs;
@@ -607,6 +654,9 @@ function postgresqlGetDBFieldInfo($table){
 	return $fields;
 }
 function postgresqlGetDBIndexes($tablename=''){
+	return postgresqlGetDBTableIndexes($tablename);
+}
+function postgresqlGetDBTableIndexes($tablename=''){
 	$query=<<<ENDOFQUERY
 	SELECT
   		U.usename AS user_name,
@@ -686,7 +736,18 @@ function postgresqlGetDBRecords($params){
 			return $ok;
 		}
 	}
+	elseif(isset($params['-query'])){
+		return postgresqlQueryResults($params['-query'],$params);
+	}
 	else{
+		if(empty($params['-table'])){
+			debugValue(array(
+				'function'=>'postgresqlGetDBRecords',
+				'message'=>'no table',
+				'params'=>$params
+			));
+	    	return null;
+		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){
@@ -769,11 +830,16 @@ function postgresqlGetDBVersion(){
 function postgresqlTranslateDataType($str){
 	$parts=preg_split('/[,()]/',$str);
 	$name=strtolower($parts[0]);
+	//echo "postgresqlTranslateDataType({$str}):{$name}".printValue($parts).'<hr>'.PHP_EOL;
 	switch(strtolower($name)){
 		case 'tinyint':return 'int2';break;
 		case 'smallint':return 'int4';break;
     	case 'bigint':return 'bigint';break;
-    	case 'real':return 'float4';break;
+    	case 'real':
+    		if(count($parts)==3){return "numeric({$parts[1]},{$parts[2]})";}
+    		elseif(count($parts)==2){return "numeric({$parts[1]})";}
+    		else{return 'numeric';}
+    	break;
     	case 'integer':
     	case 'int':
     		return 'integer';
@@ -1098,6 +1164,18 @@ function postgresqlQueryResults($query='',$params=array()){
     	return;
 	}
 	$data=@pg_query($dbh_postgresql,$query);
+	$err=pg_result_error($data);
+	if(strlen($err)){
+		debugValue(array(
+			'function'=>'postgresqlQueryResults',
+			'message'=>'pq_query failed',
+			'error'=>$err,
+			'query'=>$query,
+			'values'=>$values,
+		));
+		pg_close($dbh_postgresql);
+		return null;
+	}
 	if(!$data){return "postgresqlQueryResults Query Error: " . pg_last_error();}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
@@ -1120,6 +1198,7 @@ function postgresqlQueryResults($query='',$params=array()){
 *	returns records
 */
 function postgresqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
+	if(!is_resource($data)){return null;}
 	$results=array();
 	while ($row = @pg_fetch_assoc($data)){
 		$crow=array();
