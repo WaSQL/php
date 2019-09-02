@@ -191,6 +191,12 @@ ENDOFQUERY;
 		return null;
 	}
 	$recs = postgresqlEnumQueryResults($result,1);
+	debugValue(array(
+		'function'=>'postgresqlAddDBRecord',
+		'query'=>$query,
+		'values'=>$values,
+		'params'=>$params
+	));
 	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
@@ -440,7 +446,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-table'])){return 'postgresqlEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'postgresqlEditRecord error: No where specified.';}
 	global $USER;
-	$finfo=postgresqlGetDBFieldInfo($params['-table'],$params);
+	$finfo=postgresqlGetDBFieldInfo($params['-table']);
 	$opts=array();
 	if(isset($finfo['edate'])){
 		$params['edate']=strtoupper(date('Y-M-d H:i:s'));
@@ -694,11 +700,12 @@ function postgresqlGetDBFields($table,$allfields=0){
 * @return boolean returns true on success
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
-function postgresqlGetDBFieldInfo($table){
+function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 	$table=strtolower($table);
+	$cachekey=$table.$getmeta.$field;
 	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBFieldInfo'][$table])){
-		return $databaseCache['postgresqlGetDBFieldInfo'][$table];
+	if(isset($databaseCache['postgresqlGetDBFieldInfo'][$cachekey])){
+		return $databaseCache['postgresqlGetDBFieldInfo'][$cachekey];
 	}
 	global $CONFIG;
 	global $USER;
@@ -744,14 +751,35 @@ function postgresqlGetDBFieldInfo($table){
 		$fields[$fieldname]=$field;
 	}
 	pg_close($dbh_postgresql);
+	//check for identity fields
 	$recs=postgresqlQueryResults("select column_name from information_schema.columns where table_name='{$table}' and is_identity='YES'");
 	$idfields=array();
 	foreach($recs as $rec){
 		$fields[$rec['column_name']]['identity']=1;
 	}
 	ksort($fields);
-	$databaseCache['postgresqlGetDBFieldInfo'][$table]=$fields;
-	return $databaseCache['postgresqlGetDBFieldInfo'][$table];
+	//meta fields?
+	if($getmeta){
+	    //Get a list of the metadata for this table
+	    $query="select * from _fielddata where tablename='{$table}'";
+	    if(strlen($field)){$query .= " and fieldname='{$field}";}
+	    //echo printValue($metaopts);exit;
+	    $meta_recs=postgresqlQueryResults($query);
+	    //echo $query.printValue($meta_recs);exit;
+	    if(is_array($meta_recs)){
+			foreach($meta_recs as $meta_rec){
+				$name=$meta_rec['fieldname'];
+				if(!isset($fields[$name]['_dbtype'])){continue;}
+				foreach($meta_rec as $key=>$val){
+					if(preg_match('/^\_/',$key)){continue;}
+					$fields[$name][$key]=$val;
+				}
+        	}
+    	}
+	}
+	
+	$databaseCache['postgresqlGetDBFieldInfo'][$cachekey]=$fields;
+	return $databaseCache['postgresqlGetDBFieldInfo'][$cachekey];
 }
 function postgresqlGetDBIndexes($tablename=''){
 	return postgresqlGetDBTableIndexes($tablename);
