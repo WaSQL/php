@@ -13,10 +13,10 @@ date_default_timezone_set('America/Denver');
 
 //includes
 //echo "Before COMMON";exit;
-include_once("$progpath/common.php");
+include_once("{$progpath}/common.php");
 global $CONFIG;
 $CONFIG['translate_source_id']=-1;
-include_once("$progpath/config.php");
+include_once("{$progpath}/config.php");
 //is SSL required for admin?
 if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'true')) && !isSecure()){
 	header("Location: https://{$_SERVER['HTTP_HOST']}/php/admin.php",true,301);
@@ -26,10 +26,10 @@ if(isset($CONFIG['admin_secure']) && in_array($CONFIG['admin_secure'],array(1,'t
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
 }
-include_once("$progpath/wasql.php");
-include_once("$progpath/database.php");
-include_once("$progpath/sessions.php");
-include_once("$progpath/schema.php");
+include_once("{$progpath}/wasql.php");
+include_once("{$progpath}/database.php");
+include_once("{$progpath}/sessions.php");
+include_once("{$progpath}/schema.php");
 
 loadExtras('translate');
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
@@ -40,7 +40,7 @@ if(isset($CONFIG['admin_eval'])){
 }
 global $USER;
 
-include_once("$progpath/user.php");
+include_once("{$progpath}/user.php");
 
 global $wtables;
 $wtables=getWasqlTables();

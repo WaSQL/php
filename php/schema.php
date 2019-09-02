@@ -665,7 +665,7 @@ function createWasqlTable($table=''){
 			//populate the states with states and provinces for USA and Canada
 			if(!schemaUpdateStates()){
 				$progpath=dirname(__FILE__);
-				$files=listFilesEx("$progpath/schema",array('name'=>"states_",'ext'=>"csv"));
+				$files=listFilesEx("{$progpath}/schema",array('name'=>"states_",'ext'=>"csv"));
 				foreach($files as $file){
 					$csv=getCSVFileContents($file['afile']);
 					$tmp=preg_split('/\_/',getFileName($file['name'],1));
@@ -699,7 +699,7 @@ function createWasqlTable($table=''){
 			$fields['countrycode']=databaseDataType('char(5)')." NOT NULL";
 			$fields['countryname']=databaseDataType('varchar(255)')." NULL";
 			$fields['currencycode']=databaseDataType('varchar(150)')." NULL";
-			$fields['east']=databaseDataType('bigint')." NULL";
+			//$fields['east']=databaseDataType('bigint')." NULL";
 			$fields['fipscode']=databaseDataType('char(5)')." NOT NULL";
 			$fields['geonameid']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['isoalpha3']=databaseDataType('char(3)')." NOT NULL";
@@ -707,9 +707,9 @@ function createWasqlTable($table=''){
 			$fields['languages']=databaseDataType('varchar(255)')." NULL";
 			$fields['population']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['population_rank']=databaseDataType('integer')." NOT NULL Default 0";
-			$fields['north']=databaseDataType('bigint')." NULL";
-			$fields['south']=databaseDataType('bigint')." NULL";
-			$fields['west']=databaseDataType('bigint')." NULL";
+			//$fields['north']=databaseDataType('bigint')." NULL";
+			//$fields['south']=databaseDataType('bigint')." NULL";
+			//$fields['west']=databaseDataType('bigint')." NULL";
 			$fields['code']=databaseDataType('char(2)')." NOT NULL";
 			$fields['code3']=databaseDataType('char(3)')." NULL";
 			$fields['name']=databaseDataType('varchar(200)')." NOT NULL";
@@ -722,7 +722,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table if there is a countries.csv
 			$progpath=dirname(__FILE__);
-			if(!schemaUpdateCountries() && is_file("$progpath/schema/countries.csv")){
+			if(!schemaUpdateCountries() && is_file("{$progpath}/schema/countries.csv")){
 				$ok=schemaImportCSV($table,'countries.csv');
             }
             addMetaData($table);
@@ -740,7 +740,7 @@ function createWasqlTable($table=''){
 */
 function schemaImportCSV($table,$file){
 	$progpath=dirname(__FILE__);
-	$csv=getCSVFileContents("$progpath/schema/{$file}");
+	$csv=getCSVFileContents("{$progpath}/schema/{$file}");
 	foreach($csv['items'] as $item){
         $item['-table']=$table;
         $id=addDBRecord($item);
@@ -755,29 +755,46 @@ function schemaUpdateCountries(){
 	$url='http://www.geonames.org/countryInfoJSON';
 	$post=postURL($url,array('-method'=>'GET','-ssl'=>true));
 	$countries=json_decode($post['body'], true);
-	//echo printValue($countries);exit;
-	if(!isset($countries['geonames'][0])){return false;}
+	//echo "schemaUpdateCountries".printValue($countries);exit;
+	if(!isset($countries['geonames'][0])){
+		echo "schemaUpdateCountries".printValue($countries);exit;
+		return false;
+	}
+	//echo "START LOOP".printValue($countries['geonames'][0]);
 	foreach($countries['geonames'] as $country){
     	$country=array_change_key_case($country,CASE_LOWER);
     	$country['code']=$country['countrycode'];
     	$country['code3']=$country['isoalpha3'];
     	$country['name']=$country['countryname'];
     	$country['code']=$country['countrycode'];
+    	$country['north']=$country['north'];
+    	//if(isPostgreSQL()){$country['north'].='::decimal';}
+    	$country['south']=$country['south'];
+    	//if(isPostgreSQL()){$country['south'].='::decimal';}
+    	$country['east']=$country['east'];
+    	//if(isPostgreSQL()){$country['east'].='::decimal';}
+    	$country['west']=$country['west'];
+    	//if(isPostgreSQL()){$country['west'].='::decimal';}
+    	//echo "IN LOOP".printValue($country);exit;
     	$crec=getDBRecord(array(
 			'-table'=>'countries',
 			'geonameid'	=> $country['geonameid'],
 			'-fields'	=> '_id'
 		));
-		//echo printValue($rec).printValue($country);exit;
+		//echo "HERE".printValue($crec).printValue($country);exit;
 		$country['-table']='countries';
 		if(isset($crec['_id'])){
         	$country['-where']="_id={$crec['_id']}";
         	$ok=editDBRecord($country);
 		}
 		else{
+			//echo "Adding";
+			//echo $country['south'];exit;
         	$id=addDBRecord($country);
+        	//echo "ADD".$id.printValue($country);exit;
 		}
 	}
+	//echo "END LOOP";exit;
 	//determine population_rank based on population
 	$recs=getDBRecords(array(
 		'-table'	=> 'countries',
@@ -2125,7 +2142,7 @@ function schemaAddFileData($table){
 	global $CONFIG;
 	if(!isset($CONFIG['starttype'])){return;}
 	$progpath=dirname(__FILE__);
-	$dir=realpath("$progpath/schema/{$CONFIG['starttype']}");
+	$dir=realpath("{$progpath}/schema/{$CONFIG['starttype']}");
 	
 	$files=listFilesEx($dir,array('name'=>$table));
 	//echo $dir.printValue($files);exit;

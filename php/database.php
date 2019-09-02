@@ -1891,14 +1891,14 @@ function addDBIndex($params=array()){
 * @usage $ok=addDBIndex(array('-table'=>$table,'-name'=>"myindex"));
 */
 function dropDBIndex($params=array()){
+	if(isPostgreSQL()){return postgresqlDropDBIndex($params);}
+	elseif(isSqlite()){return sqliteDropDBIndex($params);}
+	elseif(isOracle()){return oracleDropDBIndex($params);}
+	elseif(isMssql()){return mssqlDropDBIndex($params);}
 	if(!isset($params['-table'])){return 'dropDBIndex Error: No table';}
 	if(!isset($params['-name'])){return 'dropDBIndex Error: No name';}
 	//build and execute
 	$query="alter table {$params['-table']} drop index {$params['-name']}";
-	if(isPostgreSQL()){return postgresqlExecuteSQL($query);}
-	elseif(isSqlite()){return sqliteExecuteSQL($query);}
-	elseif(isOracle()){return oracleExecuteSQL($query);}
-	elseif(isMssql()){return mssqlExecuteSQL($query);}
 	return executeSQL($query);
 }
 //---------- begin function addEditDBForm--------------------
@@ -4073,7 +4073,7 @@ function buildDBWhere($params=array()){
 			if(preg_match('/^\-/',$key)){continue;}
 			if(!isset($info[$key]['_dbtype'])){continue;}
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='real'){
-				$ands[] = "$key=$val";
+				$ands[] = "{$key}=$val";
 				}
 			else{
 				//like
@@ -4244,6 +4244,10 @@ function dropDBColumn($table,$columns){
 * @usage $ok=dropDBTable('comments',1);
 */
 	function dropDBTable($table='',$meta=1){
+	if(isPostgreSQL()){return postgresqlDropDBTable($table,$meta);}
+	elseif(isSqlite()){return sqliteDropDBTable($table,$meta);}
+	elseif(isOracle()){return oracleDropDBTable($table,$meta);}
+	elseif(isMssql()){return mssqlDropDBTable($table,$meta);}
 	if(!isDBTable($table)){return "No such table: {$table}";}
 
 	//drop indexes first
@@ -4587,15 +4591,15 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 					if(isset($info[$key]['_dbflags']) && strlen($info[$key]['_dbflags']) && stristr("not_null",$info[$key]['_dbflags'])){$val=0;}
 					else{$val='NULL';}
 					}
-				array_push($updates,"$key=$val");
+				array_push($updates,"{$key}=$val");
 				}
 			else{
 				//echo "[{$key}]".printValue($val)."\n".PHP_EOL;
 				if(is_array($val)){$val=implode(':',$val);}
 				$val=databaseEscapeString($val);
 				if(strlen($val)==0){$val='NULL';}
-				if($val=='NULLDATE' || $val=='NULL'){array_push($updates,"$key=NULL");}
-				else{array_push($updates,"$key='$val'");}
+				if($val=='NULLDATE' || $val=='NULL'){array_push($updates,"{$key}=NULL");}
+				else{array_push($updates,"{$key}='$val'");}
 	        	}
 	        //add sha and size if needed
 	        if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){

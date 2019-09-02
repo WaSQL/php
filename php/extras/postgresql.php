@@ -128,14 +128,38 @@ function postgresqlAddDBRecord($params=array()){
 			break;
 		}
 	}
+	$more='';
+	if(isset($params['-ignore'])){
+		$precs=postgresqlGetDBTableIndexes($params['-table']);
+		if(is_array($precs)){
+			$pflds=array();
+			foreach($precs as $prec){
+				//echo printValue($prec);exit;
+				if($prec['is_unique']=='t'){
+					//echo printValue($prec);
+					$rflds=json_decode($prec['index_keys']);
+					foreach($rflds as $rfld){
+						if($rfld != '_id' && !in_array($rfld,$pflds)){
+							$pflds[]=$rfld;
+						}
+					}
+				}
+			}
+			$pfieldstr=implode(',',$pflds);
+			$more="ON CONFLICT ({$pfieldstr}) DO NOTHING";
+		}
+	}
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
 			({$fieldstr})
 		VALUES(
 			{$preparestr}
 		)
+		{$more}
 		{$output}
+
 ENDOFQUERY;
+
 
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
@@ -146,10 +170,31 @@ ENDOFQUERY;
 			'function'=>'postgresqlAddDBRecord',
 			'message'=>'connect failed',
 			'error'=>pg_last_error(),
-			'query'=>$query
+			'query'=>$query,
+			'params'=>$params
 		));
     	return null;
 	}
+	$result=pg_query_params($dbh_postgresql,$query,$values);
+	if(!is_resource($result)){
+		$err=pg_last_error($dbh_postgresql);
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecord',
+			'message'=>'pg_query_params failed',
+			'error'=>$err,
+			'query'=>$query,
+			'values'=>$values,
+			'params'=>$params
+		));
+		pg_close($dbh_postgresql);
+		//exit;
+		return null;
+	}
+	$recs = postgresqlEnumQueryResults($result,1);
+	pg_close($dbh_postgresql);
+	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
+	return $recs;
+
 	if(!pg_prepare($dbh_postgresql,'',$query)){
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecord',
@@ -163,10 +208,11 @@ ENDOFQUERY;
 		//exit;
 		return null;
 	}
+
 	//echo 'postgresqlAddDBRecord: '.$query.printValue($values).PHP_EOL.'<br />'.PHP_EOL;
 	$data=pg_execute($dbh_postgresql,'',$values);
-	$err=pg_result_error($data);
-	if(strlen($err)){
+	if(!is_resource($data)){
+		$err=pg_last_error($dbh_postgresql);
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecord',
 			'message'=>'pg_execute failed',
@@ -192,8 +238,6 @@ ENDOFQUERY;
 *	$ok=postgresqlCreateDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function postgresqlCreateDBTable($table='',$fields=array()){
-	global $postgresqlGetDBTablesCache;
-	$postgresqlGetDBTablesCache=array();
 	$function='createDBTable';
 	if(strlen($table)==0){return "postgresqlCreateDBTable error: No table";}
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
@@ -245,7 +289,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	}
 	if(!$dbh_postgresql){
 		debugValue(array(
-			'function'=>'postgresqlEditDBRecord',
+			'function'=>'postgresqlCreateDBTable',
 			'message'=>'connect failed',
 			'error'=>pg_last_error(),
 			'query'=>$query
@@ -255,7 +299,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	$query_result=pg_query($dbh_postgresql,$query);
 	//echo $query . printValue($query_result);exit;
 	//clear the cache
-	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
+	clearDBCache(array('postgresqlGetDBTables','postgresqlGetDBFieldInfo','postgresqlIsDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
 		//success creating table.  Now go through the fields and create any instant meta data found
 		foreach($fields as $field=>$attributes){
@@ -267,6 +311,49 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
 	}
 	return 1;
+}
+//---------- begin function postgresqlDropDBIndex--------------------
+/**
+* @describe drop an index previously created
+* @param params array
+*	-table
+*	-name
+* @return boolean
+* @usage $ok=addDBIndex(array('-table'=>$table,'-name'=>"myindex"));
+*/
+function postgresqlDropDBIndex($params=array()){
+	if(!isset($params['-table'])){return 'postgresqlDropDBIndex Error: No table';}
+	if(!isset($params['-name'])){return 'postgresqlDropDBIndex Error: No name';}
+	$params['-table']=strtolower($params['-table']);
+	global $databaseCache;
+	if(isset($databaseCache['postgresqlGetDBTableIndexes'][$params['-table']])){
+		unset($databaseCache['postgresqlGetDBTableIndexes'][$params['-table']]);
+	}
+	//build and execute
+	$query="alter table {$params['-table']} drop index {$params['-name']}";
+	return postgresqlExecuteSQL($query);
+}
+//---------- begin function postgresqlDropDBTable--------------------
+/**
+* @describe drops the specified table
+* @param table string - name of table to drop
+* @param [meta] boolean - also remove metadata in _fielddata and _tabledata tables associated with this table. defaults to true
+* @return 1
+* @usage $ok=dropDBTable('comments',1);
+*/
+function postgresqlDropDBTable($table='',$meta=1){
+	//drop indexes first
+	$recs=postgresqlGetDBTableIndexes($table);
+	if(is_array($recs)){
+		foreach($recs as $rec){
+	    	$key=$rec['key_name'];
+	    	$ok=postgresqlDropDBIndex($table,$key);
+		}
+	}
+	$result=postgresqlExecuteSQL("drop table {$table}");
+	$ok=postgresqlDelDBRecord(array('-table'=>'_tabledata','-where'=>"tablename = '{$table}'"));
+	$ok=postgresqlDelDBRecord(array('-table'=>"_fielddata",'-where'=>"tablename = '{$table}'"));
+    return 1;
 }
 //---------- begin function postgresqlDBConnect ----------
 /**
@@ -558,6 +645,12 @@ ENDOFQUERY;
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
 function postgresqlGetDBFields($table,$allfields=0){
+	$table=strtolower($table);
+	global $databaseCache;
+	$key=$table.$allfields;
+	if(isset($databaseCache['postgresqlGetDBFields'][$key])){
+		return $databaseCache['postgresqlGetDBFields'][$key];
+	}
 	global $CONFIG;
 	global $USER;
 	global $dbh_postgresql;
@@ -588,7 +681,8 @@ function postgresqlGetDBFields($table,$allfields=0){
 	}
 	pg_close($dbh_postgresql);
 	ksort($fieldnames);
-	return $fieldnames;
+	$databaseCache['postgresqlGetDBFields'][$key]=$fieldnames;
+	return databaseCache['postgresqlGetDBFields'][$key];
 }
 //---------- begin function postgresqlGetDBFieldInfo ----------
 /**
@@ -601,6 +695,11 @@ function postgresqlGetDBFields($table,$allfields=0){
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
 function postgresqlGetDBFieldInfo($table){
+	$table=strtolower($table);
+	global $databaseCache;
+	if(isset($databaseCache['postgresqlGetDBFieldInfo'][$table])){
+		return $databaseCache['postgresqlGetDBFieldInfo'][$table];
+	}
 	global $CONFIG;
 	global $USER;
 	global $dbh_postgresql;
@@ -617,7 +716,7 @@ function postgresqlGetDBFieldInfo($table){
     	return;
 	}
 	//check for identity fields
-	$table=strtolower($table);
+	
 	
 	//echo printValue($idfields);exit;
 	$query="SELECT * from {$table} where 1=0";
@@ -651,12 +750,17 @@ function postgresqlGetDBFieldInfo($table){
 		$fields[$rec['column_name']]['identity']=1;
 	}
 	ksort($fields);
-	return $fields;
+	$databaseCache['postgresqlGetDBFieldInfo'][$table]=$fields;
+	return $databaseCache['postgresqlGetDBFieldInfo'][$table];
 }
 function postgresqlGetDBIndexes($tablename=''){
 	return postgresqlGetDBTableIndexes($tablename);
 }
 function postgresqlGetDBTableIndexes($tablename=''){
+	global $databaseCache;
+	if(isset($databaseCache['postgresqlGetDBTableIndexes'][$tablename])){
+		return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
+	}
 	$query=<<<ENDOFQUERY
 	SELECT
   		U.usename AS user_name,
@@ -685,6 +789,8 @@ ENDOFQUERY;
 	if(strlen($tablename)){
 		$query .= " and idx.indrelid ='{$tablename}' :: REGCLASS ";
 	}
+	$databaseCache['postgresqlGetDBTableIndexes'][$tablename]=postgresqlQueryResults($query);
+	return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
 }
 //---------- begin function postgresqlGetDBRecord ----------
 /**
@@ -894,7 +1000,11 @@ function postgresqlTranslateDataType($str){
 * @usage if(postgresqlIsDBTable('_users')){...}
 */
 function postgresqlIsDBTable($table='',$force=0){
+	global $databaseCache;
 	$table=strtolower($table);
+	if($force==0 && isset($databaseCache['postgresqlIsDBTable'][$table])){
+		return $databaseCache['postgresqlIsDBTable'][$table];
+	}
 	$tables=postgresqlGetDBTables();
 	if(in_array($table,$tables)){return true;}
 	return false;
@@ -912,10 +1022,11 @@ function postgresqlIsDBTable($table='',$force=0){
 * @usage $tables=postgresqlGetDBTables();
 */
 function postgresqlGetDBTables($params=array()){
-	global $postgresqlGetDBTablesCache;
-	if(isset($postgresqlGetDBTablesCache[0])){
-		return $postgresqlGetDBTablesCache;
+	global $databaseCache;
+	if(isset($databaseCache['postgresqlGetDBTables'][0])){
+		return $databaseCache['postgresqlGetDBTables'];
 	}
+	$databaseCache['postgresqlGetDBTables']=array();
 	global $CONFIG;
 	$include_schema=1;
 	if(isPostgreSQL()){
@@ -928,30 +1039,31 @@ function postgresqlGetDBTables($params=array()){
 	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
 	$recs = postgresqlQueryResults($query);
 	//echo $query.printValue($recs);exit;
-	$postgresqlGetDBTablesCache=array();
 	foreach($recs as $rec){
 		if($include_schema==1){
-			$postgresqlGetDBTablesCache[]=strtolower("{$CONFIG['postgresql_schema']}.{$rec['tablename']}");
+			$databaseCache['postgresqlGetDBTables'][]=strtolower("{$CONFIG['postgresql_schema']}.{$rec['tablename']}");
 		}
 		else{
-			$postgresqlGetDBTablesCache[]=strtolower($rec['tablename']);
+			$databaseCache['postgresqlGetDBTables'][]=strtolower($rec['tablename']);
 		}
 	}
-	return $postgresqlGetDBTablesCache;
+	return $databaseCache['postgresqlGetDBTables'];
 }
 //---------- begin function postgresqlGetDBTablePrimaryKeys ----------
 /**
 * @describe returns an array of primary key fields for the specified table
-* @param [$params] array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
-*	[-host] - postgresql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
+* @param table string - specified table
 * @return array returns array of primary key fields
-* @usage $fields=postgresqlGetDBTablePrimaryKeys();
+* @usage $fields=postgresqlGetDBTablePrimaryKeys($table);
 */
-function postgresqlGetDBTablePrimaryKeys($table,$params=array()){
-	$parts=preg_split('/\./',strtolower($table),2);
+function postgresqlGetDBTablePrimaryKeys($table){
+	$table=strtolower($table);
+	global $databaseCache;
+	if(isset($databaseCache['postgresqlGetDBTablePrimaryKeys'][$table])){
+		return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
+	}
+	$databaseCache['postgresqlGetDBTablePrimaryKeys'][$table]=array();
+	$parts=preg_split('/\./',$table,2);
 	$where='';
 	if(count($parts)==2){
 		$where = " and kc.table_schema='{$parts[0]}' and kc.table_name='{$parts[1]}'";
@@ -979,12 +1091,11 @@ function postgresqlGetDBTablePrimaryKeys($table,$params=array()){
 		    {$where}
 		order by kc.ordinal_position
 ENDOFQUERY;
-	$tmp = postgresqlQueryResults($query,$params);
-	$keys=array();
+	$tmp = postgresqlQueryResults($query);
 	foreach($tmp as $rec){
-		$keys[]=$rec['column_name'];
+		$databaseCache['postgresqlGetDBTablePrimaryKeys'][$table][]=$rec['column_name'];
     }
-	return $keys;
+	return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
 }
 //---------- begin function postgresqlListRecords
 /**
