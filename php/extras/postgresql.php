@@ -191,12 +191,12 @@ ENDOFQUERY;
 		return null;
 	}
 	$recs = postgresqlEnumQueryResults($result,1);
-	debugValue(array(
-		'function'=>'postgresqlAddDBRecord',
-		'query'=>$query,
-		'values'=>$values,
-		'params'=>$params
-	));
+	// debugValue(array(
+	// 	'function'=>'postgresqlAddDBRecord',
+	// 	'query'=>$query,
+	// 	'values'=>$values,
+	// 	'params'=>$params
+	// ));
 	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;

@@ -1953,6 +1953,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
+	//echo printValue($info);exit;
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -1971,6 +1972,15 @@ function addEditDBForm($params=array(),$customcode=''){
 			array_push($info['formfields'],$line);
         }
     }
+    if(!isset($info['formfields'])){
+    	$info['formfields']=array();
+    	foreach($info['fieldinfo'] as $fld=>$finfo){
+    		if(isWasqlField($fld)){continue;}
+    		if(in_array($fld,$info['formfields'])){continue;}
+    		$info['formfields'][]=$fld;
+    	}
+    }
+    //echo printValue($info['formfields']);exit;
     //check for bootstrap
     if(isExtraCss('bootstrap')){$params['-bootstrap'] = 1;}
 
@@ -1978,6 +1988,7 @@ function addEditDBForm($params=array(),$customcode=''){
     if(!isset($info['formfields']) || !is_array($info['formfields']) || count($info['formfields'])==0){
 		$info['formfields']=$info['default_formfields'];
 	}
+	//echo printValue($info);exit;
     //Build the form fields
     $rtn .= "".PHP_EOL;
     $method=isset($params['-method'])?$params['-method']:'POST';
