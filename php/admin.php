@@ -2771,7 +2771,7 @@ LIST_TABLE:
 		case 'grep':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-search"></span> Database Search</h2>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table class="table table-responsive table-striped table-bordered" style="width:600px;">'.PHP_EOL;
+			echo '<table class="table table-responsive table-striped table-bordered" style="width:600px;height:auto;">'.PHP_EOL;
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'.PHP_EOL;
 			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
 			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";

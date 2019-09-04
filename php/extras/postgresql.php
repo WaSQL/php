@@ -957,6 +957,85 @@ function postgresqlGetDBVersion(){
 	}
 	return pg_version($dbh_postgresql);	
 }
+//---------- begin function postgresqlGrepDBTables ----------
+/**
+* grepDBTables - searches across tables for a specified value
+* @param search string
+* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @return  array of arrays - tablename,_id,fieldname,search_count
+* @usage $results=postgresqlGrepDBTables('searchstring');
+*/
+function postgresqlGrepDBTables($search,$tables=array(),$dbname=''){
+	if(!is_array($tables)){
+		if(strlen($tables)){$tables=array($tables);}
+		else{$tables=array();}
+	}
+	if(!count($tables)){
+		$tables=postgresqlGetDBTables($dbname);
+		//ignore _changelog
+		foreach($tables as $i=>$table){
+			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
+		}
+	}
+	//return $tables;
+	$search=trim($search);
+	if(!strlen($search)){return "grepDBTables Error: no search value";}
+	$results=array();
+	$search=str_replace("'","''",$search);
+	$search=strtolower($search);
+	foreach($tables as $table){
+		if(strlen($dbname)){$table=$dbname.'.'.$table;}
+		if(!postgresqlIsDBTable($table)){return "grepDBTables Error: {$table} is not a table";}
+		$info=postgresqlGetDBFieldInfo($table);
+		$wheres=array();
+		$fields=array();
+		foreach($info as $field=>$finfo){
+			switch($info[$field]['_dbtype']){
+				case 'int':
+				case 'integer':
+				case 'number':
+				case 'float':
+					if(isNum($search)){
+						$wheres[]="{$field}={$search}";
+						$fields[]=$field;
+					}
+				break;
+				case 'varchar':
+				case 'char':
+				case 'string':
+				case 'blob':
+				case 'text':
+				case 'mediumtext':
+					$wheres[]="{$field} like '%{$search}%'";
+					$fields[]=$field;
+				break;
+			}
+		}
+		if(!count($wheres)){continue;}
+		if(!in_array('_id',$fields)){array_unshift($fields,'_id');}
+		$where=implode(' or ',$wheres);
+		$fields=implode(',',$fields);
+		$recopts=array('-table'=>$table,'-where'=>$where,'-fields'=>$fields);
+		$recs=postgresqlGetDBRecords($recopts);
+		if(is_array($recs)){
+			$cnt=count($recs);
+			foreach($recs as $rec){
+				$vals=array();
+				foreach($rec as $key=>$val){
+					if(stringContains($val,$search)){
+						$results[]=array(
+							'tablename'=>$table,
+							'_id'		=> $rec['_id'],
+							'fieldname' => $key,
+							'search_count'=> substr_count(strtolower($val),$search)
+						);
+					}
+				}
+			}
+		}
+	}
+	return $results;
+}
 //---------- begin function
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
