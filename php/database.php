@@ -4341,12 +4341,19 @@ function dumpDB($table=''){
 	elseif(isPostgreSQL()){
     	//PostgreSQL - pg_dump dbname > outfile
     	$dump['command'] = isWindows()?"pg_dump.exe":"pg_dump";
-		$dump['command'] .= " -h {$CONFIG['dbhost']}";
+    	if(strlen($CONFIG['dbpass']) && strlen($CONFIG['dbuser'])){
+			$dump['command'] .=" \"--dbname=postgresql://{$CONFIG['dbuser']}:{$CONFIG['dbpass']}@{$CONFIG['dbhost']}:5432/{$CONFIG['dbname']}\"";
+		}
+		else{
+			$dump['command'] .= " -h {$CONFIG['dbhost']} -Fp -c";	
+		}
 		if(strlen($table)){
 			$dump['command'] .= " -t {$table}";
 			$dump['file'] = $CONFIG['dbname'].'.'.$table.'_' . date("Y-m-d_H-i-s")  . '.sql';
 			$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
 		}
+		
+		
 	}
 	$dump['iswindows']=isWindows();
 	if(!isWindows() || (isset($CONFIG['gzip']) && $CONFIG['gzip']==1)){
@@ -4354,6 +4361,7 @@ function dumpDB($table=''){
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
 	$dump['command'] .= "  > \"{$dump['afile']}\" 2>&1";
+	//echo printValue($dump).printValue($CONFIG);exit;
 	$dump['result']=cmdResults($dump['command']);
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);

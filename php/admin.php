@@ -2575,6 +2575,7 @@ LIST_TABLE:
 					break;
                 	case 'backup':
 					case 'backup now':
+						//echo "here".printValue($_REQUEST);exit;
                 		$dump=dumpDB($_REQUEST['_table_']);
 						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
 							if(file_exists($dump['afile']) && filesize($dump['afile'])){
