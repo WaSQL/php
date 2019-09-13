@@ -269,6 +269,7 @@ var wacss = {
 				break;
 				case 'line':
 				case 'bar':
+				case 'horizontalbar':
 					//console.log('barline');
 					if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
@@ -281,15 +282,15 @@ var wacss = {
 		        				let json=JSON.parse(udatasets[ud].innerText);      				
 								let udataset={
 									label:udatasets[ud].getAttribute('data-label'),
-									backgroundColor: colors[ud],
-		                            borderColor: colors[ud],
-		                            pointColor: colors[ud],
-		                            type:'line',
-		                            pointRadius:0,
+									backgroundColor: udatasets[ud].getAttribute('data-backgroundColor') || colors[ud],
+		                            borderColor: udatasets[ud].getAttribute('data-borderColor') || colors[ud],
+		                            pointColor: udatasets[ud].getAttribute('data-pointColor') || colors[ud],
+		                            type:list[i].getAttribute('data-type'),
+		                            pointRadius: udatasets[ud].getAttribute('data-pointRadius') || 0,
 									data: json,
 									fill:false,
-									lineTension:0,
-									borderWidth: 2
+									lineTension: udatasets[ud].getAttribute('data-lineTension') || 0,
+									borderWidth: udatasets[ud].getAttribute('data-borderWidth') || 2
 								};
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
@@ -298,83 +299,26 @@ var wacss = {
 		        		}
 					}
 					if(foundchart==0){
-						if(undefined == list[i].getAttribute('data-x')){continue;}
-						if(undefined == list[i].getAttribute('data-y')){continue;}
-						let xkey=list[i].getAttribute('data-x');
-						let ykey=list[i].getAttribute('data-y');
 						let lconfig = {
-							type:type,
+							type:list[i].getAttribute('data-type'),
 							data:{
 								labels:[],
 								datasets:[]
 							}
 						};
-						lconfig.options={
-							responsive: true,
-							scales: {
-								xAxes: [{
-									type: 'time',
-									distribution: 'series',
-									ticks: {
-										source: 'data',
-										autoSkip: true
-									}
-								}],
-								yAxes: [{
-									scaleLabel: {
-										display: true,
-										labelString: list[i].getAttribute('data-ylabel')
-									}
-								}]
-							},
-							tooltips: {
-								intersect: false,
-								mode: 'index',
-								callbacks: {
-									label: function(tooltipItem, myData) {
-										var label = myData.datasets[tooltipItem.datasetIndex].label || '';
-										if (label) {
-											label += ': ';
-										}
-										label += parseFloat(tooltipItem.value).toFixed(2);
-										return label;
-									}
-								}
-							},
-							plugins: {
-						        datalabels: {
-						        	display:false,
-									formatter: Math.round
-								}
-						    }
-						};
-						if(undefined != list[i].getAttribute('data-ysteps')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.steps=parseInt(list[i].getAttribute('data-ysteps'));
+						//labels
+						let labelsdiv=datadiv.querySelector('labels');
+						if(undefined != labelsdiv){
+							let labelsjson=wacss.trim(labelsdiv.innerText);
+							lconfig.data.labels=JSON.parse(labelsjson);
 						}
-						if(undefined != list[i].getAttribute('data-ystepvalue')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.stepValue=parseInt(list[i].getAttribute('data-ystepvalue'));
+						//options
+						let optionsdiv=datadiv.querySelector('options');
+						if(undefined != optionsdiv){
+							let optionsjson=wacss.trim(optionsdiv.innerText);
+							lconfig.options=JSON.parse(optionsjson);
 						}
-						if(undefined != list[i].getAttribute('data-ystepsize')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.stepSize=parseInt(list[i].getAttribute('data-ystepsize'));
-						}
-						if(undefined != list[i].getAttribute('data-ymin')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.min=parseInt(list[i].getAttribute('data-ymin'));
-						}
-						if(undefined != list[i].getAttribute('data-ymax')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.max=parseInt(list[i].getAttribute('data-ymax'));
-						}
-						if(undefined != list[i].getAttribute('data-ybeginatzero')){
-							if(undefined == lconfig.options.scales.yAxes.ticks){lconfig.options.scales.yAxes.ticks={};}
-							lconfig.options.scales.yAxes.ticks.beginAtZero=true;
-						}
-						console.log(lconfig.options);
 	        			//look for datasets;
-	        			let labels=[];
 	        			let datasets=datadiv.querySelectorAll('dataset');
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
@@ -382,21 +326,22 @@ var wacss = {
 	        				let json=JSON.parse(datasets[d].innerText);       				
 							let dataset={
 								label:datasets[d].getAttribute('data-label'),
-								backgroundColor: colors[d],
-	                            borderColor: colors[d],
-	                            pointColor: colors[d],
-	                            type:'line',
-	                            pointRadius:0,
+								backgroundColor: datasets[d].getAttribute('data-backgroundColor') || colors[d],
+	                            borderColor: datasets[d].getAttribute('data-borderColor') || colors[d],
+	                            pointColor: datasets[d].getAttribute('data-pointColor') || colors[d],
+	                            type:list[i].getAttribute('data-type'),
+	                            pointRadius: datasets[d].getAttribute('data-pointRadius') || 0,
 								data: json,
 								fill:false,
-								lineTension:0,
-								borderWidth: 2
+								lineTension:datasets[d].getAttribute('data-lineTension') || 0,
+								borderWidth: datasets[d].getAttribute('data-borderWidth') || 2
 							};
 							lconfig.data.datasets.push(dataset);
 	        			}
 	    				/* set options */
-	        			
+	        			//console.log('HERE');
 						//console.log(lconfig);
+
 	        			let lcanvas=document.createElement('canvas');
 	        			list[i].appendChild(lcanvas);
 	        			let lctx = lcanvas.getContext('2d');
@@ -1652,6 +1597,14 @@ var wacss = {
 			}
 			else{wacss.addClass(obj,myclass1);}
 		}
+	},
+	trim: function(str){
+		if (null != str && undefined != str && "" != str){
+			var rval=str.replace(/^[\ \s\0\r\n\t]*/g,"");
+			rval=rval.replace(/[\ \s\0\r\n\t]*$/g,"");
+		    return rval;
+			}
+		else{return "";}
 	},
 	ucwords: function(str){
 		str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {

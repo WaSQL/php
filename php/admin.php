@@ -32,6 +32,7 @@ include_once("{$progpath}/sessions.php");
 include_once("{$progpath}/schema.php");
 
 loadExtras('translate');
+loadExtrasJs('chart');
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
 //check for url_eval
