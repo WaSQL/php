@@ -179,7 +179,7 @@ var wacss = {
 	},
 	initChartJs: function(initid){
 		let list=document.querySelectorAll('div.chartjs');
-		let colors = new Array(
+		let gcolors = new Array(
 	        'rgb(255, 159, 64)',
 	        'rgb(75, 192, 192)',
 	        'rgb(255, 99, 132)',
@@ -209,6 +209,15 @@ var wacss = {
 			list[i].setAttribute('data-initialized',1);
 			let type=list[i].getAttribute('data-type').toLowerCase();
 			let datadiv=wacss.getObject(list[i].id+'_data');
+			//colors
+			let colorsdiv=datadiv.querySelector('colors');
+			if(undefined != colorsdiv){
+				let colorsjson=wacss.trim(colorsdiv.innerText);
+				colors=JSON.parse(colorsjson);
+			}
+			else{
+				colors=gcolors;
+			}
 			let foundchart=0;
 			switch(type){
 				case 'guage':
