@@ -2723,8 +2723,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		}
 	//Pass form through validation before calling ajax
 	if(undefined != tmeout && tmeout=='novalidation'){
-		//default to 30 minutes
-		tmeout=1800000;
+		//default to 60 minutes
+		tmeout=3600000;
 	}
 	else{
 		var ok=submitForm(theform,1,0,1);
@@ -2746,8 +2746,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		}
 		else{abort_callback='';}
 	}
-	//default timeout to 20 minutes with a 3 minute minimum
-	if(undefined == tmeout){tmeout=1800000;}
+	//default timeout to 60 minutes with a 3 minute minimum
+	if(undefined == tmeout){tmeout=3600000;}
 	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
@@ -3145,8 +3145,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	if(undefined == abort_callback){abort_callback='';}
 	if(undefined == returnreq){returnreq=false;}
 	var guid=getCookie('GUID');
-	//default timeout to 30 minutes with a 3 minute minimum
-	if(undefined == tmeout){tmeout=1800000;}
+	//default timeout to 60 minutes with a 3 minute minimum
+	if(undefined == tmeout){tmeout=3600000;}
 	if(tmeout < 180000){tmeout=180000;}
 
 	if(undefined == nosetprocess){
