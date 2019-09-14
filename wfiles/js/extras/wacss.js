@@ -218,6 +218,21 @@ var wacss = {
 			else{
 				colors=gcolors;
 			}
+			//labels
+			let labels={};
+			let labelsdiv=datadiv.querySelector('labels');
+			if(undefined != labelsdiv){
+				let labelsjson=wacss.trim(labelsdiv.innerText);
+				//lconfig.data.labels=JSON.parse(labelsjson);
+				labels=JSON.parse(labelsjson);
+			}
+			//options
+			let optionsdiv=datadiv.querySelector('options');
+			if(undefined != optionsdiv){
+				let optionsjson=wacss.trim(optionsdiv.innerText);
+				//lconfig.options=JSON.parse(optionsjson);
+				options=JSON.parse(optionsjson);
+			}
 			let foundchart=0;
 			switch(type){
 				case 'guage':
@@ -279,6 +294,7 @@ var wacss = {
 				case 'line':
 				case 'bar':
 				case 'horizontalbar':
+				case 'doughnut':
 					//console.log('barline');
 					if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
@@ -303,6 +319,8 @@ var wacss = {
 								};
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
+		        			wacss.chartjs[list[i].id].config.options=options;
+							wacss.chartjs[list[i].id].config.data.labels=labels;
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
 		        		}
@@ -311,23 +329,13 @@ var wacss = {
 						let lconfig = {
 							type:list[i].getAttribute('data-type'),
 							data:{
-								labels:[],
+								labels:labels,
 								datasets:[]
-							}
+							},
+							options:options
 						};
-						//labels
-						let labelsdiv=datadiv.querySelector('labels');
-						if(undefined != labelsdiv){
-							let labelsjson=wacss.trim(labelsdiv.innerText);
-							lconfig.data.labels=JSON.parse(labelsjson);
-						}
-						//options
-						let optionsdiv=datadiv.querySelector('options');
-						if(undefined != optionsdiv){
-							let optionsjson=wacss.trim(optionsdiv.innerText);
-							lconfig.options=JSON.parse(optionsjson);
-						}
 	        			//look for datasets;
+	        			//console.log(colors);
 	        			let datasets=datadiv.querySelectorAll('dataset');
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
@@ -347,10 +355,6 @@ var wacss = {
 							};
 							lconfig.data.datasets.push(dataset);
 	        			}
-	    				/* set options */
-	        			//console.log('HERE');
-						//console.log(lconfig);
-
 	        			let lcanvas=document.createElement('canvas');
 	        			list[i].appendChild(lcanvas);
 	        			let lctx = lcanvas.getContext('2d');

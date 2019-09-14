@@ -346,7 +346,7 @@
 
 <view:chartjs>
 	
-	<div class="chartjs" id="barchart" style="height:750px" data-type="horizontalBar"></div>
+	<div class="chartjs" id="barchart" data-type="bar"></div>
 	<div id="barchart_data" style="display:none;">
 		<options>
 		{
@@ -355,24 +355,17 @@
 				"xAxes": [{
 					"ticks": {
                 		"beginAtZero": true
-            		},
-            		"stacked":true
+            		}
             	}],
 				"yAxes": [{
 					"ticks": {
                 		"beginAtZero": true
             		},
-            		"stacked":true,
 					"scaleLabel": {
 						"display": true,
 						"labelString": "Stock Price"
 					}
 				}]
-			},
-			"tooltips": {
-				"enabled":false,
-				"intersect": false,
-				"mode": "index"
 			},
 			"plugins": {
 			    "datalabels": {
@@ -386,10 +379,13 @@
 			   }
 		}
 		</options>
+		<colors>["blue","yellow","pink","orange","violet"]</colors>
 		<labels>["Mon","Tue","Wed","Thu","Fri"]</labels>
-		<dataset data-label="BPMX" data-backgroundColor="#00830b" data-borderWidth="0">[4,6,10,5,11]</dataset>
+		<dataset data-label="BPMX">[4,6,10,5,11]</dataset>
 		<dataset data-label="F">[7,9,11,8,12]</dataset>
-		
+		<dataset data-label="SQX">[12,4,11,7,12]</dataset>
+		<dataset data-label="ABC">[12,4,11,7,12]</dataset>
+		<dataset data-label="DEF">[12,4,11,7,12]</dataset>	
 	</div>
 
 	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');">Update guage</a></div>
