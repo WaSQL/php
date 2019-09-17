@@ -219,7 +219,7 @@ var wacss = {
 				colors=gcolors;
 			}
 			//labels
-			let labels={};
+			let labels=new Array();
 			let labelsdiv=datadiv.querySelector('labels');
 			if(undefined != labelsdiv){
 				let labelsjson=wacss.trim(labelsdiv.innerText);
@@ -301,26 +301,35 @@ var wacss = {
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){	
 							let udatasets=datadiv.querySelectorAll('dataset');
+							let datasetLabels=new Array();
 		        			for(let ud=0;ud<udatasets.length;ud++){
 		        				//require data-label
-								if(undefined == udatasets[ud].getAttribute('data-label')){continue;}
-		        				let json=JSON.parse(udatasets[ud].innerText);      				
+		        				let json=JSON.parse(udatasets[ud].innerText);  			
 								let udataset={
-									label:udatasets[ud].getAttribute('data-label'),
 									backgroundColor: udatasets[ud].getAttribute('data-backgroundColor') || colors[ud],
-		                            borderColor: udatasets[ud].getAttribute('data-borderColor') || colors[ud],
-		                            pointColor: udatasets[ud].getAttribute('data-pointColor') || colors[ud],
-		                            type:list[i].getAttribute('data-type'),
-		                            pointRadius: udatasets[ud].getAttribute('data-pointRadius') || 0,
+		                            type:udatasets[ud].getAttribute('data-type') || list[i].getAttribute('data-type'),
 									data: json,
-									fill:false,
-									lineTension: udatasets[ud].getAttribute('data-lineTension') || 0,
-									borderWidth: udatasets[ud].getAttribute('data-borderWidth') || 2
+									fill:false
 								};
+								if(undefined != udatasets[ud].getAttribute('data-label')){
+									udataset.label=udatasets[ud].getAttribute('data-label');
+									let dlabel=udatasets[ud].getAttribute('data-label');
+		        					datasetLabels.push(dlabel); 
+								}
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
 		        			wacss.chartjs[list[i].id].config.options=options;
-							wacss.chartjs[list[i].id].config.data.labels=labels;
+		        			if(labels.length==0 && datasetLabels.length > 0){
+								wacss.chartjs[list[i].id].config.data.labels=datasetLabels;
+							}
+							if(undefined != list[i].getAttribute('data-stacked')){
+								if(undefined != wacss.chartjs[list[i].id].config.options.scales.yAxes[0]){
+									wacss.chartjs[list[i].id].config.options.scales.yAxes[0].stacked=true;
+								}
+								if(undefined != wacss.chartjs[list[i].id].config.options.scales.xAxes[0]){
+									wacss.chartjs[list[i].id].config.options.scales.xAxes[0].stacked=true;
+								}
+							}
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
 		        		}
@@ -334,27 +343,38 @@ var wacss = {
 							},
 							options:options
 						};
+						if(undefined != list[i].getAttribute('data-stacked')){
+							if(undefined != undefined != lconfig.options.scales.yAxes[0]){
+								lconfig.options.scales.yAxes[0].stacked=true;	
+							}
+							if(undefined != undefined != lconfig.options.scales.xAxes[0]){
+								lconfig.options.scales.xAxes[0].stacked=true;
+							}
+						}
 	        			//look for datasets;
 	        			//console.log(colors);
 	        			let datasets=datadiv.querySelectorAll('dataset');
+	        			let datasetLabels=new Array();
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
-							if(undefined == datasets[d].getAttribute('data-label')){continue;}
-	        				let json=JSON.parse(datasets[d].innerText);       				
+	        				let json=JSON.parse(datasets[d].innerText);      				
 							let dataset={
-								label:datasets[d].getAttribute('data-label'),
 								backgroundColor: datasets[d].getAttribute('data-backgroundColor') || colors[d],
-	                            borderColor: datasets[d].getAttribute('data-borderColor') || colors[d],
-	                            pointColor: datasets[d].getAttribute('data-pointColor') || colors[d],
-	                            type:list[i].getAttribute('data-type'),
-	                            pointRadius: datasets[d].getAttribute('data-pointRadius') || 0,
+	                            type:datasets[d].getAttribute('data-type') || list[i].getAttribute('data-type'),
 								data: json,
 								fill:false,
-								lineTension:datasets[d].getAttribute('data-lineTension') || 0,
-								borderWidth: datasets[d].getAttribute('data-borderWidth') || 2
 							};
+							if(undefined != datasets[d].getAttribute('data-label')){
+								dataset.label=datasets[d].getAttribute('data-label');
+								let dlabel=datasets[d].getAttribute('data-label');
+	        					datasetLabels.push(dlabel); 
+							}
 							lconfig.data.datasets.push(dataset);
 	        			}
+	        			if(labels.length==0 && datasetLabels.length > 0){
+	        				lconfig.data.labels=datasetLabels;	
+	        			}
+	        			//
 	        			let lcanvas=document.createElement('canvas');
 	        			list[i].appendChild(lcanvas);
 	        			let lctx = lcanvas.getContext('2d');

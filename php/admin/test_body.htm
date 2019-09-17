@@ -345,7 +345,25 @@
 </view:c3charts>
 
 <view:chartjs>
-	
+	<div class="chartjs" id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart" data-stacked="1" style="width:100%;" data-type="bar"></div>
+	<div id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart_data" style="display:none;">
+		<options>{
+			"responsive": true,
+			"showXLabels":10,
+			"scales": {
+				"xAxes": [{"display": true,"scaleLabel": {"display": true,"labelString": "labels"}}],
+				"yAxes": [{"ticks": {"beginAtZero": true},"scaleLabel": {"display": true,"labelString": "percent"}}]
+			},
+			"tooltips": {"enabled":false,"intersect": false,"mode": "index"},
+			"plugins": {"datalabels": {"display":true,"color": "white","font": {"weight": "bold"},"formatter": "Math.round"}}
+		}
+		</options>
+		<dataset data-label="overall_score">[92]</dataset>
+		<dataset data-label="food_score">[89]</dataset>
+		<dataset data-label="service_score">[95]</dataset>
+		<dataset data-label="cleanliness_score">[90]</dataset>
+	</div>
+
 	<div class="chartjs" id="barchart" data-type="bar"></div>
 	<div id="barchart_data" style="display:none;">
 		<options>
