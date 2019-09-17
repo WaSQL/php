@@ -322,7 +322,7 @@ var wacss = {
 		        			if(labels.length==0 && datasetLabels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=datasetLabels;
 							}
-							if(undefined != list[i].getAttribute('data-stacked')){
+							if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
 								if(undefined != wacss.chartjs[list[i].id].config.options.scales.yAxes[0]){
 									wacss.chartjs[list[i].id].config.options.scales.yAxes[0].stacked=true;
 								}
@@ -343,7 +343,7 @@ var wacss = {
 							},
 							options:options
 						};
-						if(undefined != list[i].getAttribute('data-stacked')){
+						if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
 							if(undefined != undefined != lconfig.options.scales.yAxes[0]){
 								lconfig.options.scales.yAxes[0].stacked=true;	
 							}
