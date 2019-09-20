@@ -9214,11 +9214,18 @@ function isDate($str=''){
 	if(stringContains($str,'-')){$ok+=1;}
 	if(stringContains($str,'/')){$ok+=1;}
 	if($ok==0){return false;}
+	//YYYY-mm-dd or mm-dd-YYYY - make sure none of the tuplets are zero  (2015-10-00)
+	if(preg_match('/([0-9]{2,4})[\-\.\/]([0-9]{2,2})[\-\.\/]([0-9]{2,4})/s',$str,$m)){
+		if((integer)$m[1] == 0){return false;}
+		if((integer)$m[2] == 0){return false;}
+		if((integer)$m[3] == 0){return false;}
+	}
 	$time=strtotime($str);
 	if(!strlen($time)|| $time==0){return false;}
 	$m=date('m',$time);
 	$d=date('d',$time);
 	$y=date('Y',$time);
+	//echo "{$m},{$d},{$y}";exit;
 	return checkdate($m,$d,$y);
 	if(checkdate($m,$d,$y)){return true;}
 }
