@@ -38,9 +38,12 @@ Feel free to request changes via github.  You can also help by donating to the c
 	- you can install AppServ by going to https://www.appserv.org/en/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. 
 	- add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
 		- in the "IfModule alias_module" section:
+```
 			- Alias /php/ "d:/wasql/php/"
 			- Alias /wfiles/ "d:/wasql/wfiles/"
-		- Just below the ifModule section create the following:
+		</IfModule>
+```
+		- Just below the ifModule section create the following (changing the path to where you installed wasql):
 ```
 			<Directory "d:/wasql/">
 				Options Indexes FollowSymLinks
@@ -48,13 +51,23 @@ Feel free to request changes via github.  You can also help by donating to the c
 				Require local
 			</Directory>
 ```
-
+- make sure mod_rewrite is enabled (remove the pound sign from the front)
+```
+LoadModule rewrite_module modules/mod_rewrite.so
+```
+- search for "<Directory "C:/AppServ/www">" and make sure AllowOverride is set to "All"
 - copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
+- rename C:\AppServ\www\index.php file to C:\AppServ\www\index_ori.php
+
 - restart Apache.
 - open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
-	- mysql>grant all privileges on *.* to 'wasql_dbuser'@'localhost' identified by 'wasql_dbpass';
+```
+	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED with mysql_native_password BY 'wasql_dbpass';
+	- mysql>GRANT ALL PRIVILEGES ON *.* TO 'wasql_dbuser'@'%' WITH GRANT OPTION;
 	- mysql>flush privileges;
 	- mysql>create database wasql_sample;
+	- mysql>exit
+```
 - **Ready to try**
 	- using a browser open http://localhost.  If all went well you will see the sample website wizard. Select the one you want and click on the Install button.
 	- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
