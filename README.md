@@ -44,7 +44,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 		</IfModule>
 ```
 
-	- Just below the ifModule section create the following (changing the path to where you installed wasql):
+- Just below the ifModule section create the following (changing the path to where you installed wasql):
 
 ```
 			<Directory "d:/wasql/">
