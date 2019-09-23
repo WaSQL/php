@@ -373,7 +373,7 @@ function postgresqlDropDBTable($table='',$meta=1){
 * @usage $dbh_postgresql=postgresqlDBConnect($params);
 */
 function postgresqlDBConnect(){
-	$params=postgresqlParseConnectParams($params);
+	$params=postgresqlParseConnectParams();
 	//echo printValue($params);exit;
 	if(!isset($params['-connect'])){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
