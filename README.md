@@ -31,29 +31,31 @@ Feel free to request changes via github.  You can also help by donating to the c
 	-  you can install git by going to https://git-scm.com/download/win.  This will download the latest git client.  I suggest selecting "Use Git and optional Unix tools from the Windows Command Prompt".  If you are not comfortable with this option, select "Use Git from the Windows Command Prompt" option. Select the default options for the rest.
 - **Install WaSQL**
 	- Open a command prompt and cd to the directory you want to place the wasql folder.  Type the following command and hit enter:
-		- d:\\>git clone https://github.com/WaSQL/php.git wasql
+		- c:\\>git clone https://github.com/WaSQL/php.git wasql
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
 - **Install AppServ**
 	- you can install AppServ by going to https://www.appserv.org/en/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. 
-	- add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
+	- add the following to the Apache httpd.conf file located in the AppServ\Apache24\conf\ folder (changing the path to where you installed wasql):
 		- in the "IfModule alias_module" section:
+		
 ```
-			- Alias /php/ "d:/wasql/php/"
-			- Alias /wfiles/ "d:/wasql/wfiles/"
-		</IfModule>
+	Alias /php/ "c:/wasql/php/"
+	Alias /wfiles/ "c:/wasql/wfiles/"
+</IfModule>
 ```
 
 - Just below the ifModule section create the following (changing the path to where you installed wasql):
 
 ```
-			<Directory "d:/wasql/">
-				Options Indexes FollowSymLinks
-				AllowOverride all
-				Require local
-			</Directory>
+<Directory "c:/wasql/">
+	Options Indexes FollowSymLinks
+	AllowOverride all
+	Require local
+</Directory>
 ```
 - make sure mod_rewrite is enabled (remove the pound sign from the front)
+
 ```
 LoadModule rewrite_module modules/mod_rewrite.so
 ```
