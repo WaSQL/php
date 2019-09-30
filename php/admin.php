@@ -484,9 +484,20 @@ if(isAjax()){
     	case 'add':
     		echo '<div class="w_centerpop_title"> Add Record '.$_REQUEST['_table_'].'</div>'.PHP_EOL;
 			echo '<div class="w_centerpop_content">'.PHP_EOL;
-			if($_REQUEST['_table_']=='_reports' && isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
-				$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
+			switch(strtolower($_REQUEST['_table_'])){
+				case '_pages':
+					$ok=adminDefaultPageValues();
+				break;
+				case '_templates':
+					$ok=adminDefaultTemplateValues();
+				break;
+				case '_reports':
+					if(isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
+						$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
+					}
+				break;
 			}
+			
 			if(isset($CONFIG['dbname_stage'])){
                 $xtables=adminGetSynchronizeTables($CONFIG['dbname_stage']);
                 if(in_array($_REQUEST['_table_'],$xtables)){
@@ -670,6 +681,19 @@ if(isAjax()){
 		    		break;
 		    	case 'add':
 		    		if(isset($_REQUEST['table'])){
+		    			switch(strtolower($_REQUEST['table'])){
+							case '_pages':
+								$ok=adminDefaultPageValues();
+							break;
+							case '_templates':
+								$ok=adminDefaultTemplateValues();
+							break;
+							case '_reports':
+								if(isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
+									$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
+								}
+							break;
+						}
 						//table record add
 			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
 						echo '<div class="w_centerpop_content">'.PHP_EOL;
@@ -745,6 +769,19 @@ if(isAjax()){
 		    		break;
 		    	case 'add':
 		    		if(isset($_REQUEST['table'])){
+		    			switch(strtolower($_REQUEST['table'])){
+							case '_pages':
+								$ok=adminDefaultPageValues();
+							break;
+							case '_templates':
+								$ok=adminDefaultTemplateValues();
+							break;
+							case '_reports':
+								if(isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
+									$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
+								}
+							break;
+						}
 						//table record edit
 			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
 						echo '<div class="w_centerpop_content">'.PHP_EOL;
@@ -1686,6 +1723,19 @@ ENDOFX;
 						}
 					}
 					else{
+						switch(strtolower($_REQUEST['_table_'])){
+							case '_pages':
+								$ok=adminDefaultPageValues();
+							break;
+							case '_templates':
+								$ok=adminDefaultTemplateValues();
+							break;
+							case '_reports':
+								if(isset($_REQUEST['sqlprompt']) && strlen($_REQUEST['sqlprompt_command'])){
+									$_REQUEST['query']=$_REQUEST['sqlprompt_command'];
+								}
+							break;
+						}
 						echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 						echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 						$addopts=array(
@@ -3021,7 +3071,91 @@ echo '</div>'.PHP_EOL;
 echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
-
+//---------- begin function adminDefaultPageValues ----
+/**
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
+function adminDefaultPageValues(){
+	$_REQUEST['body'] = <<<ENDOFDEFAULT
+<view:default>
+</view:default>
+ENDOFDEFAULT;
+	$_REQUEST['controller'] = $_REQUEST['functions'] = <<<ENDOFDEFAULT
+<?php
+?>
+ENDOFDEFAULT;
+	$_REQUEST['css'] = <<<ENDOFDEFAULT
+.pagesamplecss{}
+ENDOFDEFAULT;
+	$_REQUEST['js'] = <<<ENDOFDEFAULT
+function pageSampleJs(){}
+ENDOFDEFAULT;
+}
+//---------- begin function adminDefaultTemplateValues ----
+/**
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
+function adminDefaultTemplateValues(){
+	$_REQUEST['body'] = <<<ENDOFDEFAULT
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title><?=templateMetaTitle();?></title>
+	<link rel="canonical" href="//<?=\$_SERVER['HTTP_HOST'];?>/<?=pageValue('name');?>/" />
+	<!-- Icons -->
+	<link rel="apple-touch-icon" sizes="76x76" href="/wfiles/apple-touch-icon.png">
+	<link rel="shortcut icon" href="/wfiles/favicon.ico">
+	<link rel="icon" type="image/png" sizes="32x32" href="/wfiles/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/wfiles/favicon-16x16.png">
+	<link rel="manifest" href="/wfiles/site.webmanifest">
+	<meta name="msapplication-TileColor" content="#2d89ef">
+	<meta name="theme-color" content="#ffffff">
+	<!-- Mobal Meta -->
+	<meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<!-- SEO Meta -->
+	<meta name="description" content="<?=templateMetaDescription();?>" />
+	<meta name="keywords" content="<?=templateMetaKeywords();?>" />
+	<!-- Open graph info for Facebook -->
+	<meta property="og:title" content="<?=templateMetaTitle();?>" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="//<?=\$_SERVER['HTTP_HOST'];?>/" />
+	<meta property="og:site_name" content="<?=templateMetaSite();?>" />
+	<meta property="og:image" content="<?=templateMetaImage();?>" />
+	<meta property="og:description" content="<?=templateMetaDescription();?>" />
+	<!-- Twitter card info -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:site" content="<?=templateMetaSite();?>" />
+	<meta name="twitter:title" content="<?=templateMetaTitle();?>" />
+	<meta name="twitter:description" content="<?=templateMetaDescription();?>" />
+	<meta name="twitter:creator" content="@wasqlcom" />
+	<meta name="twitter:image:src" content="<?=templateMetaImage();?>" />
+	<meta name="twitter:domain" content="//<?=\$_SERVER['HTTP_HOST'];?>" />
+	<!-- Minified CSS and JS -->
+	<link type="text/css" rel="stylesheet" href="<?=minifyCssFile('wacss');?>" />
+  	<script type="text/javascript" src="<?=minifyJsFile('wacss');?>"></script>
+</head>
+<body>
+	<div class="container">
+		<?=pageValue('body');?>
+	</div>
+	<div style="display:none"><div id="null"></div></div>
+</body>
+</html>
+ENDOFDEFAULT;
+	$_REQUEST['controller'] = $_REQUEST['functions'] = <<<ENDOFDEFAULT
+<?php
+?>
+ENDOFDEFAULT;
+	$_REQUEST['css'] = <<<ENDOFDEFAULT
+.templatesamplecss{}
+ENDOFDEFAULT;
+	$_REQUEST['js'] = <<<ENDOFDEFAULT
+function templateSampleJs(){}
+ENDOFDEFAULT;
+}
 //---------- begin function adminGetPHPInfo ----
 /**
  * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -3128,63 +3262,6 @@ function adminClearSessionLog($sessionID){
 	unlink($errfile);
 	return;
 }
-
-//---------- begin function sqlPrompt ----
-/**
- * @author slloyd
- * @exclude  - this function is for internal use only and thus excluded from the manual
- */
-function sqlPrompt(){
-	$cmd=isset($_REQUEST['sqlprompt_command'])?stripslashes($_REQUEST['sqlprompt_command']):'';
-	$rtn='';
-	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
-	$rtn .= '<tr valign="top">'.PHP_EOL;
-	$rtn .= '<td class="nowrap hidden-xs">'.PHP_EOL;
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-table w_grey"></span> Tables</div>'.PHP_EOL;
-	$rtn .= '<div style="height:500px;overflow:auto;padding-right:30px;">'.PHP_EOL;
-	$rtn .= expandAjaxTables();
-	$rtn .= '</div>'.PHP_EOL;
-	$rtn .= '</td><td width="100%">'.PHP_EOL;
-	$rtn .= '<div class="w_bold w_big" style="border-bottom:1px solid #000;padding-bottom:5px;"><span class="icon-prompt w_black w_biggest"></span> SQL Command Window: <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. For help press F1)</span></div>'.PHP_EOL;
-	$rtn .= '<form method="POST" name="sqlprompt_form" action="/php/admin.php" class="w_form" onsubmit="ajaxSubmitForm(this,\'sqlprompt_results\');return false;">'.PHP_EOL;
-	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'.PHP_EOL;
-	$rtn .= '	<input type="hidden" name="_table_" value="_reports">'.PHP_EOL;
-	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
-	$rtn .= '	<tr valign="top">'.PHP_EOL;
-	$rtn .= '		<td class="w_align_left w_nowrap">'.PHP_EOL;
-	$rtn .= '			<textarea data-gutter="true" preview="Run SQL and View Results" ajaxid="sqlprompt_results" name="sqlprompt_command" id="sqlprompt_command" style="width:100%;height:250px;" data-behavior="sqleditor" focus="1">'.$cmd.'</textarea><br>'.PHP_EOL;
-	$rtn .= '		</td>'.PHP_EOL;
-	$rtn .= '	</tr>'.PHP_EOL;
-	$rtn .= '	<tr valign="top">'.PHP_EOL;
-	$rtn .= '		<td class="w_align_left">'.PHP_EOL;
-	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'sqlprompt\';">Run SQL (F5)</button>'.PHP_EOL;
-	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" onclick="document.sqlprompt_form._menu.value=\'add\';"><span class="icon-chart-pie"></span> Create Report</button>'.PHP_EOL;
-	$rtn .= '			<button class="btn" style="margin-bottom:10px;" type="submit" form="sqlprompt_form2" onclick="setText(document.getElementById(\'sqlprompt_form2\').sqlprompt_command,getText(\'sqlprompt_command\'));"><span class="icon-export"></span> CSV Export</button>'.PHP_EOL;
-	$rtn .= '		</td>'.PHP_EOL;
-	$rtn .= '	</tr>'.PHP_EOL;
-	$rtn .= '</table>'.PHP_EOL;
-	$rtn .= '</form>'.PHP_EOL;
-	$rtn .= '<div class="hidden"><form method="POST" name="sqlprompt_form2" id="sqlprompt_form2" target="_export" action="/php/admin.php" onsubmit="return submitForm(this);">'.PHP_EOL;
-	$rtn .= '	<input type="hidden" name="_menu" value="sqlprompt">'.PHP_EOL;
-	$rtn .= '	<input type="hidden" name="sqlprompt" value="CSV Export">'.PHP_EOL;
-	$rtn .= '	<textarea _required="1" data-requiredmsg="First enter a query to export" name="sqlprompt_command" style="width:10px;height:10px;"></textarea>'.PHP_EOL;
-	$rtn .= '</form></div>'.PHP_EOL;
-	$rtn .= '<table class="w_nopad" width="100%">'.PHP_EOL;
-	//results window
-	$rtn .= '	<tr valign="top">'.PHP_EOL;
-	$rtn .= '		<td class="w_align_left w_nowrap">'.PHP_EOL;
-	$rtn .= '			<div style="padding:3px;font-size:10pt;">'.PHP_EOL;
-	$rtn .= '				<div id="sqlprompt_results">'.PHP_EOL;
-	$rtn .= '				</div>'.PHP_EOL;
-	$rtn .= '			</div>'.PHP_EOL;
-	$rtn .= '		</td>'.PHP_EOL;
-	$rtn .= '	</tr>'.PHP_EOL;
-	$rtn .= '</table>'.PHP_EOL;
-	$rtn .= '		'.buildOnLoad("document.sqlprompt_form.sqlprompt_command.focus();").PHP_EOL;
-	$rtn .= '</td></tr></table>'.PHP_EOL;
-	return $rtn;
-}
-
 //---------- begin function expandAjaxTables ----
 /**
  * @author slloyd

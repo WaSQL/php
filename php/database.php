@@ -2315,52 +2315,6 @@ function addEditDBForm($params=array(),$customcode=''){
 	            if(!strlen($current_value) && isset($_REQUEST[$field])){$current_value=$_REQUEST[$field];}
 	            if(isset($info['fieldinfo'][$field]['behavior']) && strlen($info['fieldinfo'][$field]['behavior'])){$opts['behavior']=$info['fieldinfo'][$field]['behavior'];}
 		     	if(!isset($opts['behavior'])){$opts['behavior']='';}
-		     	if(!strlen($opts['behavior']) && strlen($current_value)){
-					if(stringContains($current_value,'/*filetype:css*/')){
-		            	$opts['behavior']='csseditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:js*/')){
-		            	$opts['behavior']='jseditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:php*/')){
-		            	$opts['behavior']='phpeditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:pl*/')){
-		            	$opts['behavior']='perleditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:rb*/')){
-		            	$opts['behavior']='rubyeditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:xml*/')){
-		            	$opts['behavior']='xmleditor';
-					}
-					elseif(stringContains($current_value,'/*filetype:sql*/')){
-		            	$opts['behavior']='sqleditor';
-					}
-				}
-				switch(strtolower($opts['behavior'])){
-					case 'csseditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using CSS Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'jseditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using Javascript Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'phpeditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using PHP Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'perleditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using Perl Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'rubyeditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using Ruby Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'xmleditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using XML Code editor. Press F1 for help menu.)</span>';
-						break;
-					case 'sqleditor':
-						$dname .= ' <span style="font-size:.8em;color:#7d7d7d;">(Using SQL Code editor. Press F1 for help menu.)</span>';
-						break;
-				}
 				if(stringContains($opts['behavior'],'editor')){
 					$opts['data-ajaxid']='centerpopSQL';
 				}
