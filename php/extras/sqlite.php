@@ -621,6 +621,28 @@ function sqliteGetDBCount($params=array()){
 	}
 	return $recs[0]['cnt'];
 }
+//---------- begin function sqliteListDBDatatypes ----
+/**
+* @describe returns the data types for sqlite
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function sqliteListDBDatatypes(){
+	//default to mysql
+	return <<<ENDOFDATATYPES
+<div class="w_bold w_blue w_padtop">Text Types</div>
+<div class="w_padleft">TEXT - a text string, stored using the database encoding (UTF-8, UTF-16BE or UTF-16LE)</div>
+
+<div class="w_bold w_blue w_padtop">Number Types</div>
+<div class="w_padleft">INTEGER - signed integer, stored in 1, 2, 3, 4, 6, or 8 bytes depending on the magnitude of the value.</div>
+<div class="w_padleft">NUMERIC - may contain values using all five storage classes.</div>
+<div class="w_padleft">REAL( , ) - a floating point value, stored as an 8-byte IEEE floating point number.</div>
+
+<div class="w_bold w_blue w_padtop">Other Types</div>
+<div class="w_padleft">BLOB -  a blob of data, stored exactly as it was input.</div>
+ENDOFDATATYPES;
+}
 //---------- begin function sqliteTruncateDBTable ----------
 /**
 * @describe truncates the specified table

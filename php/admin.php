@@ -1654,48 +1654,7 @@ ENDOFX;
 					echo buildOnLoad('document.new_table._table_.focus();');
 					echo '</td><td>'.PHP_EOL;
 					//reference: http://www.htmlite.com/mysql003.php
-					//Text Types
-					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');"></span> Text Types</div>'.PHP_EOL;
-					echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
-					echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'.PHP_EOL;
-					echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'.PHP_EOL;
-					echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'.PHP_EOL;
-					//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'.PHP_EOL;
-					echo '</div></div>'.PHP_EOL;
-					echo '<div style="margin-left:25px;">'.PHP_EOL;
-					echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'.PHP_EOL;
-					echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'.PHP_EOL;
-					echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'.PHP_EOL;
-					echo 'TEXT	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
-					//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
-					echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
-					//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
-					echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
-					//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
-					echo '</div>'.PHP_EOL;
-					//Number Types
-					echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');"></span> Number Types</div>'.PHP_EOL;
-					echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
-					echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'.PHP_EOL;
-					echo '</div></div>'.PHP_EOL;
-					echo '<div style="margin-left:25px;">'.PHP_EOL;
-					echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'.PHP_EOL;
-					echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'.PHP_EOL;
-					echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'.PHP_EOL;
-					echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'.PHP_EOL;
-					echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'.PHP_EOL;
-					echo 'FLOAT	A small number with a floating decimal point.<br />'.PHP_EOL;
-					echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'.PHP_EOL;
-					echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'.PHP_EOL;
-					echo '</div>'.PHP_EOL;
-					//Date Types
-					echo '<div class="w_lblue w_bold">Date Types</div>'.PHP_EOL;
-					echo '<div style="margin-left:25px;">'.PHP_EOL;
-					echo 'DATE	YYYY-MM-DD.<br />'.PHP_EOL;
-					echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'.PHP_EOL;
-					echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'.PHP_EOL;
-					echo 'TIME	HH:MM:SS.<br />'.PHP_EOL;
-					echo '</div>'.PHP_EOL;
+					echo adminListDataTypes();
 					echo '</td></tr></table>'.PHP_EOL;
                 }
 				else{
@@ -1778,47 +1737,8 @@ ENDOFX;
 			echo '	phone varchar(15)'.PHP_EOL;
 			echo '	email varchar(255)'.PHP_EOL;
 			echo '</pre></div>'.PHP_EOL;
-			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_texttypes\');" alt="text types" ></span> Text Types</div>'.PHP_EOL;
-			echo '<div id="info_texttypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
-			echo '<b class="w_dblue w_bigger">Database Text Types</b><br />CHAR and VARCHAR are the most widely used types. CHAR is a fixed length string and is mainly used when the data is not going to vary much in it\'s length. VARCHAR is a variable length string and is mainly used when the data may vary in length.</p>'.PHP_EOL;
-			echo '<p>CHAR may be faster for the database to process considering the fields stay the same length down the column. VARCHAR may be a bit slower as it calculates each field down the column, but it saves on memory space. Which one to ultimatly use is up to you.</p>'.PHP_EOL;
-			echo '<p>Using both a CHAR and VARCHAR option in the same table, MySQL will automatically change the CHAR into VARCHAR for compatability reasons.</p>'.PHP_EOL;
-			//echo '<p>BLOB stands for Binary Large OBject. Both TEXT and BLOB are variable length types that store large amounts of data. They are similar to a larger version of VARCHAR. These types can store a large piece of data information, but they are also processed much slower.</p>'.PHP_EOL;
-			echo '</div></div>'.PHP_EOL;
-			echo '<div style="margin-left:25px;">'.PHP_EOL;
-			echo 'CHAR( )	A fixed section from 0 to 255 characters long.<br />'.PHP_EOL;
-			echo 'VARCHAR( )	A variable section from 0 to 255 characters long.<br />'.PHP_EOL;
-			echo 'TINYTEXT	A string with a maximum length of 255 characters.<br />'.PHP_EOL;
-			echo 'TEXT	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
-			//echo 'BLOB	A string with a maximum length of 65535 characters.<br />'.PHP_EOL;
-			echo 'MEDIUMTEXT	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
-			//echo 'MEDIUMBLOB	A string with a maximum length of 16777215 characters.<br />'.PHP_EOL;
-			echo 'LONGTEXT	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
-			//echo 'LONGBLOB	A string with a maximum length of 4294967295 characters.<br />'.PHP_EOL;
-			echo '</div>'.PHP_EOL;
-			//Number Types
-			echo '<div class="w_lblue w_bold"><span class="icon-info" style="cursor:pointer;" onclick="centerpopDiv(\'info_numbertypes\');" alt="number types"></span> Number Types</div>'.PHP_EOL;
-			echo '<div id="info_numbertypes" style="display:none;"><div style="width:500px;">'.PHP_EOL;
-			echo '<b class="w_dblue w_bigger">Database Number Types</b><br />The integer types have an extra option called UNSIGNED. Normally, the integer goes from an negative to positive value. Using an UNSIGNED command will move that range up so it starts at zero instead of a negative number.</p>'.PHP_EOL;
-			echo '</div></div>'.PHP_EOL;
-			echo '<div style="margin-left:25px;">'.PHP_EOL;
-			echo 'TINYINT( )	-128 to 127 normal or 0 to 255 UNSIGNED.<br />'.PHP_EOL;
-			echo 'SMALLINT( )	-32768 to 32767 normal or 0 to 65535 UNSIGNED.<br />'.PHP_EOL;
-			echo 'MEDIUMINT( )	-8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.<br />'.PHP_EOL;
-			echo 'INT( )	-2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.<br />'.PHP_EOL;
-			echo 'BIGINT( )	-9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.<br />'.PHP_EOL;
-			echo 'FLOAT	A small number with a floating decimal point.<br />'.PHP_EOL;
-			echo 'DOUBLE( , )	A large number with a floating decimal point.<br />'.PHP_EOL;
-			echo 'DECIMAL( , )	A DOUBLE stored as a string , allowing for a fixed decimal point.<br />'.PHP_EOL;
-			echo '</div>'.PHP_EOL;
-			//Date Types
-			echo '<div class="w_lblue w_bold">Date Types</div>'.PHP_EOL;
-			echo '<div style="margin-left:25px;">'.PHP_EOL;
-			echo 'DATE	YYYY-MM-DD.<br />'.PHP_EOL;
-			echo 'DATETIME	YYYY-MM-DD HH:MM:SS.<br />'.PHP_EOL;
-			echo 'TIMESTAMP	YYYYMMDDHHMMSS.<br />'.PHP_EOL;
-			echo 'TIME	HH:MM:SS.<br />'.PHP_EOL;
-			echo '</div>'.PHP_EOL;
+			echo adminListDataTypes();
+			
 			echo '</td></tr></table>'.PHP_EOL;
 			break;
 		case 'drop':
@@ -2472,16 +2392,16 @@ LIST_TABLE:
 			echo '	</tr>'.PHP_EOL;
 			//synchronize and websockets
 			if(isset($tinfo['synchronize']) && $tinfo['synchronize']){$_REQUEST['synchronize']=$tinfo['synchronize'];}
-			if(isset($tinfo['websockets']) && $tinfo['websockets']){$_REQUEST['websockets']=$tinfo['websockets'];}
+			//if(isset($tinfo['websockets']) && $tinfo['websockets']){$_REQUEST['websockets']=$tinfo['websockets'];}
 			echo '	<tr valign="top">'.PHP_EOL;
 			echo '		<td>'.PHP_EOL;
 			echo '			<div>'.buildFormCheckbox('synchronize',array(1=>'Synchronize'),array('class'=>'w_green','id'=>'prop_synchronize')).'</div>'.PHP_EOL;
-			echo '			<div>'.buildFormCheckbox('websockets',array(1=>'Websockets'),array('class'=>'w_orange','id'=>'prop_websockets')).'</div>'.PHP_EOL;
+			//echo '			<div>'.buildFormCheckbox('websockets',array(1=>'Websockets'),array('class'=>'w_orange','id'=>'prop_websockets')).'</div>'.PHP_EOL;
 			//echo '</table>';
 			echo '		</td>'.PHP_EOL;
 			echo '		<td>'.PHP_EOL;
 			echo '			<div class="w_dblue">Check to synchronize this table</div>'.PHP_EOL;
-			echo '			<div class="w_dblue">Check to enable websocket events for this table</div>'.PHP_EOL;
+			//echo '			<div class="w_dblue">Check to enable websocket events for this table</div>'.PHP_EOL;
 			echo '		</td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
 			//table group and description
@@ -2500,9 +2420,9 @@ LIST_TABLE:
 			echo '		</td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
 			//Table Admin List fields
-            echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<th colspan="2" class="w_align_left"><span class="icon-user-admin w_danger w_big"></span> Administrator Settings</th>'.PHP_EOL;
-			echo '	</tr>'.PHP_EOL;
+   //          echo '	<tr valign="top">'.PHP_EOL;
+			// echo '		<th colspan="2" class="w_align_left"><span class="icon-user-admin w_danger w_big"></span> Administrator Settings</th>'.PHP_EOL;
+			// echo '	</tr>'.PHP_EOL;
             echo '	<tr valign="top">'.PHP_EOL;
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
 			if(isset($tinfo['listfields']) && is_array($tinfo['listfields'])){$_REQUEST['listfields']=array2String($tinfo['listfields']);}
@@ -2515,33 +2435,33 @@ LIST_TABLE:
 			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields">'.$val.'</textarea></td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
 			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form</div></td>'.PHP_EOL;
+			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form. Place fields as you would see them with spaces between fieldnames and carriage returns between rows.</div></td>'.PHP_EOL;
 			if(isset($tinfo['formfields']) && is_array($tinfo['formfields'])){$_REQUEST['formfields']=array2String($tinfo['formfields']);}
-			echo '		<td>'.buildFormField('_tabledata','formfields').'</td>'.PHP_EOL;
+			echo '		<td>'.buildFormTextarea('formfields',array('height'=>170)).'</td>'.PHP_EOL;
 			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
-			//Non Admin Settings
-			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<th colspan="2" class="w_align_left"><span class="icon-user w_big w_grey"></span> Non-Administrator Settings</th>'.PHP_EOL;
-			echo '	</tr>'.PHP_EOL;
-            echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
-			if(isset($tinfo['listfields_mod']) && is_array($tinfo['listfields_mod'])){$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'.PHP_EOL;
-			//echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			echo '	</tr>'.PHP_EOL;
-			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'.PHP_EOL;
-			if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'.PHP_EOL;
-			//echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			echo '	</tr>'.PHP_EOL;
-			echo '	<tr valign="top">'.PHP_EOL;
-			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'.PHP_EOL;
-			if(isset($tinfo['formfields_mod']) && is_array($tinfo['formfields_mod'])){$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);}
-			echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'.PHP_EOL;
-			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			echo '	</tr>'.PHP_EOL;
+			// //Non Admin Settings
+			// echo '	<tr valign="top">'.PHP_EOL;
+			// echo '		<th colspan="2" class="w_align_left"><span class="icon-user w_big w_grey"></span> Non-Administrator Settings</th>'.PHP_EOL;
+			// echo '	</tr>'.PHP_EOL;
+   //          echo '	<tr valign="top">'.PHP_EOL;
+			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
+			// if(isset($tinfo['listfields_mod']) && is_array($tinfo['listfields_mod'])){$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);}
+			// echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'.PHP_EOL;
+			// //echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			// echo '	</tr>'.PHP_EOL;
+			// echo '	<tr valign="top">'.PHP_EOL;
+			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'.PHP_EOL;
+			// if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);}
+			// echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'.PHP_EOL;
+			// //echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			// echo '	</tr>'.PHP_EOL;
+			// echo '	<tr valign="top">'.PHP_EOL;
+			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'.PHP_EOL;
+			// if(isset($tinfo['formfields_mod']) && is_array($tinfo['formfields_mod'])){$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);}
+			// echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'.PHP_EOL;
+			// //echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
+			// echo '	</tr>'.PHP_EOL;
 			echo '</table>'.PHP_EOL;
 			echo buildFormSubmit("Save Changes","do",'',$CONFIG['admin_color']);
 			echo buildFormEnd();
@@ -3079,9 +2999,30 @@ function adminDefaultPageValues(){
 	$_REQUEST['body'] = <<<ENDOFDEFAULT
 <view:default>
 </view:default>
+
+<view:login>
+<?=userLoginForm(array('-action'=>'/'.pageValue('name')));?>
+</view:login>
 ENDOFDEFAULT;
-	$_REQUEST['controller'] = $_REQUEST['functions'] = <<<ENDOFDEFAULT
+	$_REQUEST['controller'] =  <<<ENDOFDEFAULT
 <?php
+//require user
+if(!isUser()){
+	setView('login',1);
+	return;
+}
+global \$USER;
+global \$PASSTHRU;
+switch(strtolower(\$PASSTHRU[0])){
+	default:
+		setView('default');
+	break;
+}
+?>
+ENDOFDEFAULT;
+	$_REQUEST['functions'] = <<<ENDOFDEFAULT
+<?php
+
 ?>
 ENDOFDEFAULT;
 	$_REQUEST['css'] = <<<ENDOFDEFAULT
@@ -3156,6 +3097,13 @@ ENDOFDEFAULT;
 function templateSampleJs(){}
 ENDOFDEFAULT;
 }
+function adminListDataTypes(){
+	if(isPostgreSQL()){return postgresqlListDBDataTypes($params);}
+	elseif(isSqlite()){return sqliteListDBDataTypes($params);}
+	elseif(isOracle()){return oracleListDBDataTypes($params);}
+	elseif(isMssql()){return mssqlListDBDataTypes($params);}
+	return listDBDataTypes();
+}
 //---------- begin function adminGetPHPInfo ----
 /**
  * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -3218,7 +3166,7 @@ function adminSetPageName(){
 	if(isset($_REQUEST['_pass'])){
 		$_REQUEST['_pass']=preg_replace('/^\//','',$_REQUEST['_pass']);
 		$_REQUEST['_pass']=preg_replace('/\?$/','',$_REQUEST['_pass']);
-		$_REQUEST['passthru']=preg_split('/\//',$_REQUEST['_pass']);
+		$_REQUEST['passthru']=$PASSTHRU=preg_split('/\//',$_REQUEST['_pass']);
 	}
 	//echo printValue($_REQUEST);exit;
 }

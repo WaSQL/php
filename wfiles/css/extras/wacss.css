@@ -477,6 +477,9 @@ button.wacssedit:hover{
     margin-bottom: 0;
     list-style: none;
 }
+.nav.inverse{
+
+}
 .nav-link {
     display: block;
     padding: 0.5rem 1rem;
@@ -488,6 +491,7 @@ button.wacssedit:hover{
 }
 .nav.topmenu > ul{
   width:100%;
+  margin:5px 10px;
 }
 .nav > ul,
 .nav > ul ul {
@@ -499,7 +503,6 @@ button.wacssedit:hover{
 .nav > ul a, .nav > ul button {
   padding: 4px 8px;
   line-height: 1;
-  font-size:16px;
   display: block;
   text-decoration: none;
   white-space: nowrap;
@@ -2704,6 +2707,30 @@ div.striped.w_black:nth-of-type(odd) {
 .badge.w_white {background-color: #f8f9fa;color: #212529;}
 .badge.w_black {background-color: #343a40;color: #fff;}
 /* -------------------- Misc ------------------ */
+@media screen and (min-width: 768px)
+.jumbotron {
+    padding-top: 48px;
+    padding-bottom: 48px;
+}
+.jumbotron {
+    padding: 30px;
+    margin-bottom: 30px;
+    font-size: 21px;
+    font-weight: 200;
+    line-height: 1.29;
+    color: inherit;
+    background-color: #eeeeee;
+    max-width: 100%;
+}
+@media screen and (min-width: 768px)
+.jumbotron h1, .jumbotron .h1 {
+    font-size: 63px;
+}
+.jumbotron h1, .jumbotron .h1 {
+    line-height: 1;
+    color: inherit;
+}
+/* -------------------- Misc ------------------ */
 [data-before]:before{
   content:attr(data-before,"");
   color:#000;
@@ -2732,6 +2759,9 @@ div.striped.w_black:nth-of-type(odd) {
     display: -ms-flexbox;
     display: flex;
     flex-direction: row;
+}
+.flexrow input{
+  margin-right:3px;
 }
 .flexcol {
     display: -webkit-box;

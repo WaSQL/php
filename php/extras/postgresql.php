@@ -1430,6 +1430,37 @@ function postgresqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
 	}
 	return $results;
 }
+//---------- begin function postgresqlListDBDatatypes ----
+/**
+* @describe returns the data types for postgres
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function postgresqlListDBDatatypes(){
+	//default to mysql
+	return <<<ENDOFDATATYPES
+<div class="w_bold w_blue w_padtop">Text Types</div>
+<div class="w_padleft">CHAR( ) A fixed length string with a maximum size of 1 GB.</div>
+<div class="w_padleft">VARCHAR( ) A variable length string with a maximum size of 1 GB.</div>
+<div class="w_padleft">TEXT A string with a maximum size of 1 GB.</div>
+<div class="w_padleft">JSON textual JSON data with a maximum size of 1 GB</div>
+<div class="w_padleft">XML textual XML data with a maximum size of 1 GB</div>
+
+<div class="w_bold w_blue w_padtop">Number Types</div>
+<div class="w_padleft">INT2 - signed two-byte integer</div>
+<div class="w_padleft">INT4 or INT - signed four-byte integer</div>
+<div class="w_padleft">INT8 or BIGINT - signed eight-byte integer</div>
+<div class="w_padleft">FLOAT8 - double precision floating-point number (8 bytes)</div>
+<div class="w_padleft">Float4 or REAL - single precision floating-point number (4 bytes)</div>
+<div class="w_padleft">NUMERIC( , ) OR DECIMAL( , ) - exact numeric of selectable precision</div>
+
+<div class="w_bold w_blue w_padtop">Date Types</div>
+<div class="w_padleft">DATE YYYY-MM-DD.</div>
+<div class="w_padleft">TIMESTAMP YYYYMMDDHHMMSS.</div>
+<div class="w_padleft">TIME HH:MM:SS.</div>
+ENDOFDATATYPES;
+}
 //---------- begin function postgresqlNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

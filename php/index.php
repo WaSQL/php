@@ -845,15 +845,15 @@ if(is_array($recs)){
 		}
 	}
 }
-$passthru=0;
-if(isset($CONFIG['passthru']) && $CONFIG['passthru']==1){
-	$passthru=1;
-}
-elseif(isset($CONFIG['passthru']) && strtolower($CONFIG['passthru'])=='true'){
-	$passthru=1;
-}
-elseif(isset($CONFIG['missing_page']) && $CONFIG['missing_page']=='passthru'){
-	$passthru=1;
+//default to passthru
+global $PASSTHRU;
+$PASSTHRU=array();
+$passthru=1;
+switch(strtolower($CONFIG['passthru'])){
+	case 0:
+	case 'false':
+		$passthru=0;
+	break;
 }
 //Check for  /page/a/b/c  /a/b/c/d/e/f
 if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
@@ -869,7 +869,7 @@ if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
 		}
 		if($stripped){$tmp[]=$part;}
 	}
-	$_REQUEST['passthru']=$tmp;
+	$_REQUEST['passthru']=$PASSTHRU=$tmp;
 	$view=includePage($CONFIG['redirect_page'],array('redirect_page'=>$parts));
 	$view=trim($view);
 	$_REQUEST['_view']=$view;
@@ -923,7 +923,7 @@ if(!is_array($PAGE) && stringContains($view,'/') && $passthru==1){
 	$parts=preg_split('/\/+/',$view);
 	$view=array_shift($parts);
 	$_REQUEST['_view']=$view;
-	$_REQUEST['passthru']=$parts;
+	$_REQUEST['passthru']=$PASSTHRU=$parts;
 	$getopts=array(
 		'-table'=>'_pages',
 		'-notimestamp'=>1,

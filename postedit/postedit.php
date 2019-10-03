@@ -167,6 +167,9 @@ function writeFiles(){
 	elseif(stringBeginsWith($post['body'],'You have an error in your SQL syntax;')){
 		abortMessage($post['body']);
 	}
+	elseif(stringContains($post['body'],'form id="loginform"')){
+		abortMessage('Invalid Login Credentials');
+	}
 	elseif(isset($post['xml_array']['result']['fatal_error'])){
 		$msg=str_replace('&quot;','"',$post['xml_array']['result']['fatal_error']);
 		$msg=str_replace('&gt;','>',$msg);

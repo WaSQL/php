@@ -811,6 +811,42 @@ function mssqlGetDBFieldInfo($table,$params=array()){
     ksort($fields);
 	return $fields;
 }
+//---------- begin function mssqlListDBDatatypes ----
+/**
+* @describe returns the data types for MS SQL
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function mssqlListDBDatatypes(){
+	//default to mysql
+	return <<<ENDOFDATATYPES
+<div class="w_bold w_blue w_padtop">Text Types</div>
+<div class="w_padleft">CHAR( n ) A fixed section from 0 to 255 characters long.</div>
+<div class="w_padleft">VARCHAR( n ) A variable section from 0 to 255 characters long.</div>
+<div class="w_padleft">TINYTEXT A string with a maximum length of 255 characters.</div>
+<div class="w_padleft">TEXT A string with a maximum length of 65535 characters.</div>
+<div class="w_padleft">MEDIUMTEXT A string with a maximum length of 16777215 characters.</div>
+<div class="w_padleft">LONGTEXT A string with a maximum length of 4294967295 characters.</div>
+
+<div class="w_bold w_blue w_padtop">Number Types</div>
+<div class="w_padleft">TINYINT - Integer from 0 to 255</div>
+<div class="w_padleft">SMALLINT - Integer from -32768 to 32767</div>
+<div class="w_padleft">INT - Integer from -2147483648 to 2147483647</div>
+<div class="w_padleft">BIGINT - Integer from -9223372036854775808 to 9223372036854775807</div>
+<div class="w_padleft">FLOAT(n) - A small number with a floating decimal point.</div>
+<div class="w_padleft">MONEY - Financial data type from -2^63 (-922 337 203 685 477.5808) to 2^63-1 (922 337 203 685 477.5807) with the precision of one ten-thousandth unit.</div>
+<div class="w_padleft">SMALLMONEY - Financial data type from -2^31 (-214 748.3648) to 2^31-1 (214 748.3647) with the precision of one ten-thousandth unit.</div>
+<div class="w_padleft">DECIMAL(p,s) or NUMERIC(p,s)  - Numeric data type with fixed precision and scale</div>
+<div class="w_padleft">REAL - Numeric data type with float precision that is defined as a float(24).</div>
+
+<div class="w_bold w_blue w_padtop">Date Types</div>
+<div class="w_padleft">DATE YYYY-MM-DD.</div>
+<div class="w_padleft">DATETIME YYYY-MM-DD HH:MM:SS.</div>
+<div class="w_padleft">TIMESTAMP YYYYMMDDHHMMSS.</div>
+<div class="w_padleft">TIME HH:MM:SS.</div>
+ENDOFDATATYPES;
+}
 //---------- begin function mssqlQueryResults ----------
 /**
 * @describe returns the mssql record set

@@ -9712,6 +9712,41 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 	}
 	return $results;
 }
+//---------- begin function listDBDatatypes ----
+/**
+* @describe returns the data types for mysql
+* @return string
+* @author slloyd
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function listDBDatatypes(){
+	//default to mysql
+	return <<<ENDOFDATATYPES
+<div class="w_bold w_blue w_padtop">Text Types</div>
+<div class="w_padleft">CHAR( ) A fixed section from 0 to 255 characters long.</div>
+<div class="w_padleft">VARCHAR( ) A variable section from 0 to 255 characters long.</div>
+<div class="w_padleft">TINYTEXT A string with a maximum length of 255 characters.</div>
+<div class="w_padleft">TEXT A string with a maximum length of 65535 characters.</div>
+<div class="w_padleft">MEDIUMTEXT A string with a maximum length of 16777215 characters.</div>
+<div class="w_padleft">LONGTEXT A string with a maximum length of 4294967295 characters.</div>
+
+<div class="w_bold w_blue w_padtop">Number Types</div>
+<div class="w_padleft">TINYINT( ) -128 to 127 normal or 0 to 255 UNSIGNED.</div>
+<div class="w_padleft">SMALLINT( ) -32768 to 32767 normal or 0 to 65535 UNSIGNED.</div>
+<div class="w_padleft">MEDIUMINT( ) -8388608 to 8388607 normal or 0 to 16777215 UNSIGNED.</div>
+<div class="w_padleft">INT( ) -2147483648 to 2147483647 normal or 0 to 4294967295 UNSIGNED.</div>
+<div class="w_padleft">BIGINT( ) -9223372036854775808 to 9223372036854775807 normal or 0 to 18446744073709551615 UNSIGNED.</div>
+<div class="w_padleft">FLOAT A small number with a floating decimal point.</div>
+<div class="w_padleft">DOUBLE( , ) A large number with a floating decimal point.</div>
+<div class="w_padleft">DECIMAL( , ) A DOUBLE stored as a string , allowing for a fixed decimal point.</div>
+
+<div class="w_bold w_blue w_padtop">Date Types</div>
+<div class="w_padleft">DATE YYYY-MM-DD.</div>
+<div class="w_padleft">DATETIME YYYY-MM-DD HH:MM:SS.</div>
+<div class="w_padleft">TIMESTAMP YYYYMMDDHHMMSS.</div>
+<div class="w_padleft">TIME HH:MM:SS.</div>
+ENDOFDATATYPES;
+}
 //---------- begin function showDBCronPanel ----
 /**
 * @describe shows the cron panel and updates automatically
