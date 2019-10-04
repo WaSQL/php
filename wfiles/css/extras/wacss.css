@@ -489,9 +489,19 @@ button.wacssedit:hover{
   font-family: Arial, sans-serif;
   text-align: left; 
 }
+.nav.topmenu {
+  border-bottom:1px #e2e6ea solid;
+  -webkit-box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
+  box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
+  min-height: 30px;
+}
 .nav.topmenu > ul{
   width:100%;
-  margin:5px 10px;
+}
+.nav.topmenu > ul li a{
+  width:100%;
+  box-sizing:border-box;
+  vertical-align:middle;
 }
 .nav > ul,
 .nav > ul ul {
@@ -530,7 +540,7 @@ button.wacssedit:hover{
 /* Level 1 */
 .nav > ul > li {
   display: inline-block;
-  vertical-align: top;
+  vertical-align: middle;
   margin-left: -4px;
 }
 .nav > ul > li:first-child {
@@ -658,11 +668,6 @@ button.wacssedit:hover{
 .nav > ul a {color: #212529;}
 .nav > ul a:hover,
 .nav .active {background: #e2e6ea;}
-.nav.topmenu {
-  border-bottom:1px #e2e6ea solid;
-  -webkit-box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
-  box-shadow: inset 0 1px 1px #f8f9fa, 0 0 8px #e2e6ea;
-}
 .nav > ul > li > ul{border-top:0px !important;}
 /* blue (primary in bootstrap)  #1b95e0 (27,149,224) and  #0c7abf (0,64,64) */
 .nav.w_blue,
@@ -1795,7 +1800,10 @@ div.striped.w_black:nth-of-type(odd) {
   max-width: 4000px;
   width: 90%;
 }
-
+.container-full {
+  margin: 0 auto;
+  width: 100%;
+}
 @media only screen and (min-width: 601px) {
   .container {
     width: 85%;
@@ -2758,10 +2766,11 @@ div.striped.w_black:nth-of-type(odd) {
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    flex-direction: row;
+    flex-direction: row
 }
-.flexrow input{
-  margin-right:3px;
+.flexrow input, .flexrow button{
+  margin:3px 4px 3px 0;
+  padding: .275rem .65rem;
 }
 .flexcol {
     display: -webkit-box;
@@ -2815,7 +2824,7 @@ h5, .h5 {
 }
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     margin-bottom: 0.5rem;
-    font-family: inherit;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 500;
     line-height: 1.2;
     color: inherit;
