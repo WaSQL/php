@@ -849,6 +849,9 @@ if(is_array($recs)){
 global $PASSTHRU;
 $PASSTHRU=array();
 $passthru=1;
+if(!isset($CONFIG['passthru'])){
+	$CONFIG['passthru']=1;
+}
 switch(strtolower($CONFIG['passthru'])){
 	case 0:
 	case 'false':
