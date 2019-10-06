@@ -82,11 +82,8 @@ LoadModule rewrite_module modules/mod_rewrite.so
 - **Install WaSQL**
 	- From a terminal prompt cd to the directory you want to place the wasql folder.  I usually place it just below document root (/var/www)  Type the following command and hit enter:
 		- >git clone https://github.com/WaSQL/php.git wasql
-		- in the wasql folder copy sample.config.xml to config.xml 
+		- cd to the wasql folder and run> sh initialize.sh
 		- edit config.xml. Change the dbname, dbuser, and dbpass if you want.
-		- in the wasql folder copy sample.htaccess to .htaccess
-		- give execute permission to the .sh files and .pl files
-			- chmod 755 *.sh sh/*.sh *.pl
 		- from your document root run dirsetup.sh as follows.  If you places wasql in /var/www and your documentroot was /var/www/html, then from /var/www/html
 			->../wasql/dirsetup.sh
 		- create a blank database called wasql_sample (to match the dbname in config.xml)

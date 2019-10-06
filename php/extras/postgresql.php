@@ -1496,5 +1496,35 @@ from pg_stat_activity
 where cardinality(pg_blocking_pids(pid)) > 0
 ENDOFQUERY;
 		break;
+		case 'functions':
+			return <<<ENDOFQUERY
+SELECT 
+	routines.specific_schema,
+	routines.routine_catalog,
+	routines.routine_name, 
+	parameters.data_type, 
+	parameters.ordinal_position,
+	routines.routine_definition
+FROM information_schema.routines
+    LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
+WHERE routines.routine_type='FUNCTION' and routines.specific_schema not in ('information_schema','pg_catalog')
+ORDER BY routines.routine_name, parameters.ordinal_position;
+ENDOFQUERY;
+		break;
+		case 'procedures':
+			return <<<ENDOFQUERY
+SELECT 
+	routines.specific_schema,
+	routines.routine_catalog,
+	routines.routine_name, 
+	parameters.data_type, 
+	parameters.ordinal_position,
+	routines.routine_definition
+FROM information_schema.routines
+    LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
+WHERE routines.routine_type='PROCEDURE' and routines.specific_schema not in ('information_schema','pg_catalog')
+ORDER BY routines.routine_name, parameters.ordinal_position;
+ENDOFQUERY;
+		break;
 	}
 }
