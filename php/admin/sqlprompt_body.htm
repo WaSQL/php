@@ -9,20 +9,24 @@
 	}
 	function sqlpromptSetDB(db){
 		document.sqlprompt.db.value=db;
-		setText('sql_full','');
 		return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 	}
 	function sqlpromptMonitor(type){
 		var db=document.sqlprompt.db.value;
+		document.sqlprompt.reset();
+		document.sqlprompt.db.value=db;
 		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0})
 	}
 	function sqlpromptFields(table){
-		var t=getText(table+'_fields');
+		let icon=getObject(table+'_icon');
+		let t=getText(table+'_fields');
 		if(t.length){
+			icon.className='icon-square-plus';
 			setText(table+'_fields','');
 			return;
 		}
 		var db=document.sqlprompt.db.value;
+		icon.className='icon-square-minus';
 		return ajaxGet('/php/admin.php',table+'_fields',{_menu:'sqlprompt',func:'fields',table:table,db:db})
 	}
 	function sqlpromptSubmit(frm){
@@ -36,19 +40,19 @@
 	document.onkeydown = sqlpromptCheckKey;
 </script>
 <div class="container-fluid">
-	<div class="row">
+	<div class="row" style="margin-bottom:0px;">
 		<div class="col-sm-12">
 			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> SQL Prompt</h2>
 		</div>
 	</div>
-	<div class="row w_padtop">
+	<div class="row">
 		<div class="col-sm-3">
 			<div class="w_bold w_big">Tables & Fields</div>
 			<div id="table_fields" style="max-height:40vh;overflow:auto;padding-right:5px">
 			<?=renderView('tables_fields',$tables,'tables');?>
 			</div>
 			<view:monitor_tools>
-			<div class="w_bold w_big">Monitor Tools</div>
+			<div class="w_bold w_big">Admin Tools</div>
 			<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
 				<?=renderView('monitor',$tables,'tables');?>
 			</div>
@@ -87,9 +91,9 @@
 </view:default>
 
 <view:tables_fields>
-	<ul class="nav-list buttons <?=configValue('admin_color');?>"  >
+	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
-			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><?=$table;?></a>
+			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon"></span> <?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
 			</li>
 		</view:table>
@@ -98,9 +102,11 @@
 </view:tables_fields>
 
 <view:monitor>
-	<ul class="nav-list buttons <?=configValue('admin_color');?>"  >
+	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<li><a href="#" onclick="return sqlpromptMonitor('running_queries');"><span class="icon-spin4"></span> Running Queries</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('table_locks');"><span class="icon-lock"></span> Table Locks</a></li>
+		<li><a href="#" onclick="return sqlpromptMonitor('functions');"><span class="icon-th-thumb"></span> Functions</a></li>
+		<li><a href="#" onclick="return sqlpromptMonitor('procedures');"><span class="icon-th-thumb-empty"></span> Procedures</a></li>
 	</ul>
 </view:monitor>
 

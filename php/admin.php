@@ -1416,7 +1416,8 @@ ENDOFX;
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-info-circled"></span> About WaSQL</h2>'.PHP_EOL;
-			echo '<table class="table table-responsive table-striped table-bordered">'.PHP_EOL;
+			echo '<div class="row"><div class="col s12 m6">';
+			echo '<table class="table striped bordered">'.PHP_EOL;
 			//Database Information
 			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
 			ksort($CONFIG);
@@ -1470,6 +1471,7 @@ ENDOFX;
 				echo "<tr valign=\"top\"><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
             	}
             echo '</table>'.PHP_EOL;
+            echo '</div></div>';
 			break;
 		case 'stats':
 			//Site Stats from the _access table

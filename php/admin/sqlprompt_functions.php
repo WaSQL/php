@@ -40,6 +40,12 @@ function sqlpromptBuildQuery($db,$name){
 				case 'table_locks':
 					return 'SHOW OPEN TABLES WHERE In_use > 0';
 				break;
+				case 'functions':
+					return "SHOW FUNCTION STATUS WHERE db != 'sys'";
+				break;
+				case 'procedures':
+					return "SHOW PROCEDURE STATUS where db != 'sys'";
+				break;
 			}
 		break;
 	}
