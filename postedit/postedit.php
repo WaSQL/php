@@ -281,7 +281,7 @@ function writeFiles(){
 	if($firsttime==1){
 		$cmd='';
 		if(isset($settings['editor']['command'])){$cmd=$settings['editor']['command'];}
-		elseif(isWindows()){$cmd="EXPLORER /E";}
+		elseif(isWindows()){$cmd='';}
 		if(strlen($cmd)){
 			$afolder=preg_replace('/\//',"\\",$afolder);
 			$out=cmdResults("{$cmd} \"{$afolder}\"");
