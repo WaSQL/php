@@ -188,6 +188,9 @@ function writeFiles(){
 		$msg=str_replace('&lt;','<',$msg);
 		abortMessage($msg);
 	}
+	elseif(!isset($xml['WASQL_RECORD'])){
+		return;
+	}
 	//fix the one record issue
 	$xml['WASQL_RECORD']=(array)$xml['WASQL_RECORD'];
 	if(isset($xml['WASQL_RECORD']['@attributes'])){
@@ -264,7 +267,10 @@ function writeFiles(){
 	    	file_put_contents($afile,$content);
 	    	$shakey=posteditShaKey($afile);
 	    	$local_shas[$shakey]=posteditSha1($afile);
-	    	if($firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
+	    	if(!isset($info['musername']) && isset($info['user_username'])){
+	    		$info['musername']=$info['user_username'];
+	    	}
+	    	if(isset($info['musername']) && $firsttime != 1 && $hosts[$chost]['username'] != $info['musername']){
 	    		$fname=getFileName($afile);
 	    		$ftable=str_replace('_',' ',$info['table']);
 	    		$changedby=array();
