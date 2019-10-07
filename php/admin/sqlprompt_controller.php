@@ -3,6 +3,8 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'monitor':
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
+			//$recs=getDBRecords($sql);
+			//echo printValue(array_keys($recs[0]));exit;
 			setView('monitor_sql',1);
 			return;
 		break;

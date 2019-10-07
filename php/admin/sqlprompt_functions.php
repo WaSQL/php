@@ -41,10 +41,11 @@ function sqlpromptBuildQuery($db,$name){
 					return 'SHOW OPEN TABLES WHERE In_use > 0';
 				break;
 				case 'functions':
-					return "SHOW FUNCTION STATUS WHERE db != 'sys'";
+					//routine_definition, routine_comment
+					return "SELECT routine_catalog,routine_schema,routine_name,created,last_altered,definer FROM information_schema.ROUTINES WHERE routine_type = 'FUNCTION' and routine_schema != 'sys'";
 				break;
 				case 'procedures':
-					return "SHOW PROCEDURE STATUS where db != 'sys'";
+					return "SELECT routine_catalog,routine_schema,routine_name,created,last_altered,definer FROM information_schema.ROUTINES WHERE routine_type = 'PROCEDURE' and routine_schema != 'sys'";
 				break;
 			}
 		break;
