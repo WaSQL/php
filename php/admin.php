@@ -482,8 +482,8 @@ if(isAjax()){
     		exit;
     		break;
     	case 'add':
-    		echo '<div class="w_centerpop_title"> Add Record '.$_REQUEST['_table_'].'</div>'.PHP_EOL;
-			echo '<div class="w_centerpop_content">'.PHP_EOL;
+    		//echo '<div class="w_centerpop_title"> Add Record '.$_REQUEST['_table_'].'</div>'.PHP_EOL;
+			//echo '<div class="w_centerpop_content">'.PHP_EOL;
 			switch(strtolower($_REQUEST['_table_'])){
 				case '_pages':
 					$ok=adminDefaultPageValues();
@@ -533,7 +533,7 @@ if(isAjax()){
 				//echo printValue($addopts);
 	    		echo addEditDBForm($addopts);
 			}
-			echo '</div>'.PHP_EOL;
+			//echo '</div>'.PHP_EOL;
 			exit;
     		break;
     	case 'decode':
@@ -695,8 +695,8 @@ if(isAjax()){
 							break;
 						}
 						//table record add
-			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
-						echo '<div class="w_centerpop_content">'.PHP_EOL;
+			    		//echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						//echo '<div class="w_centerpop_content">'.PHP_EOL;
 						$addopts=array(
 							'-table'=>'_pages',
 							'-action'=>$_SERVER['PHP_SELF'],
@@ -710,7 +710,7 @@ if(isAjax()){
 						);
 						//echo printValue($addopts);
 						echo addEditDBForm($addopts);
-						echo '</div>'.PHP_EOL;
+						//echo '</div>'.PHP_EOL;
 					}
 		    		break;
 		    	case 'record':
@@ -738,8 +738,8 @@ if(isAjax()){
 		    	case 'edit':
 		    		if(isset($_REQUEST['table']) && isNum($_REQUEST['id'])){
 						//table record edit
-			    		echo '<div class="w_centerpop_title">Editing Record #'.$_REQUEST['id'].' in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
-						echo '<div class="w_centerpop_content">'.PHP_EOL;
+			    		//echo '<div class="w_centerpop_title">Editing Record #'.$_REQUEST['id'].' in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						//echo '<div class="w_centerpop_content">'.PHP_EOL;
 						$opts=array(
 							'-table'=>$_REQUEST['table'],
 							'_id'=>$_REQUEST['id'],
@@ -761,7 +761,7 @@ if(isAjax()){
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
 							echo buildOnLoad("document.addedit.name.focus();");
 						}
-						echo '</div>'.PHP_EOL;
+						//echo '</div>'.PHP_EOL;
 					}
 					elseif(isset($_REQUEST['file'])){
 						echo editorFileEdit($_REQUEST['file']);
@@ -783,8 +783,8 @@ if(isAjax()){
 							break;
 						}
 						//table record edit
-			    		echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
-						echo '<div class="w_centerpop_content">'.PHP_EOL;
+			    		//echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
+						//echo '<div class="w_centerpop_content">'.PHP_EOL;
 						echo addEditDBForm(array(
 							'-table'=>$_REQUEST['table'],
 							'-action'=>$_SERVER['PHP_SELF'],
@@ -800,7 +800,7 @@ if(isAjax()){
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
 							echo buildOnLoad("document.addedit.name.focus();");
 						}
-						echo '</div>'.PHP_EOL;
+						//echo '</div>'.PHP_EOL;
 					}
 					elseif(isset($_REQUEST['filetype'])){
 						echo editorFileAdd($_REQUEST['filetype']);
