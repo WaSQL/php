@@ -1345,7 +1345,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 .w_centerpop .w_centerpop_title{
 	position:relative;
 	left:0px;
-	top:-25px;
+	top:0px;
 	z-index:9991;
 	background:#a7a8a9;
 	color:#FFFFFF;
@@ -1363,7 +1363,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	cursor:move;
 	position:absolute;
 	right:18px;
-	top:-7px;
+	top:7px;
 	width:24px;
 	height:24px;
 	z-index:9992
@@ -1374,7 +1374,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
     cursor: pointer;
     z-index: 9993;
     right: 12px;
-    top: -16px;
+    top: 16px;
     font-weight: bold;
     font-size: 20px;
     content: '\0274c';
@@ -1387,8 +1387,8 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 }
 .w_centerpop .w_centerpop_content{
 	position:relative;
-	top:-15px;
-	padding:0px 10px 0px 10px;
+	top:15px;
+	padding:0px;
 	max-width:800px;
 	max-height:800px;
 	overflow:auto;
