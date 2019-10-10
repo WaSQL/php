@@ -5961,6 +5961,7 @@ function commonAddPrecode($lang,$evalcode){
 	global $CONFIG;
 	global $PAGE;
 	global $TEMPLATE;
+	global $PASSTHRU;
 	$precode=array();
 	//$USER
 	$tmp=commonGetPrecodeForVar($lang,$USER,'USER');
@@ -5973,6 +5974,9 @@ function commonAddPrecode($lang,$evalcode){
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$TEMPLATE
 	$tmp=commonGetPrecodeForVar($lang,$TEMPLATE,'TEMPLATE');
+	if(count($tmp)){$precode=array_merge($precode,$tmp);}
+	//$PASSTHRU
+	$tmp=commonGetPrecodeForVar($lang,$PASSTHRU,'PASSTHRU');
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$_REQUEST
 	$tmp=commonGetPrecodeForVar($lang,$_REQUEST,'REQUEST');
