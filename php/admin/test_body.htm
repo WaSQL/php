@@ -23,6 +23,7 @@
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
 			<li><a href="chartjs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
+			<li><a href="languages" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Languages</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
@@ -465,5 +466,84 @@
 	
 	<?=buildOnLoad("wacss.initChartJs();");?>
 </view:chartjs>
+
+<view:languages>
+<table class="table striped bordered">
+	<tr>
+		<th>Language</th>
+		<th>Sample Code</th>
+		<th>Output</th>
+	</tr>
+	<tr>
+		<th><h3>Python</h3></th>
+		<td>
+			<div class="w_pre">
+			&lt;?python
+				print (&#39;Hello, world!&#39;)
+			?&gt;
+			</div>
+		</td>
+		<td>
+			<div class="w_pre">
+			<?python
+				print ('Hello, world!')
+			?>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><h3>NodeJs</h3></th>
+		<td>
+			<div class="w_pre">
+			&lt;?node
+				console.log(&#39;Hello, world!&#39;)
+			?&gt;
+			</div>
+		</td>
+		<td>
+			<div class="w_pre">
+			<?node
+				console.log('Hello, world!')
+			?>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><h3>Perl</h3></th>
+		<td>
+			<div class="w_pre">
+			&lt;?perl
+				print (&#39;Hello, world!&#39;);
+			?&gt;
+			</div>
+		</td>
+		<td>
+			<div class="w_pre">
+			<?perl
+				print ('Hello, world!');
+			?>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><h3>Lua</h3></th>
+		<td>
+			<div class="w_pre">
+			&lt;?lua
+				print (&#39;Hello, world!&#39;);
+			?&gt;
+			</div>
+		</td>
+		<td>
+			<div class="w_pre">
+			<?lua
+				print('Hello, world!');
+			?>
+			</div>
+		</td>
+	</tr>
+</table>
+
+</view:languages>
 
 

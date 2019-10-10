@@ -94,6 +94,7 @@ while(1){
 exit;
 function checkForChanges(){
 	global $local_shas;
+	global $afolder;
 	if(!is_array($local_shas)){return false;}
 	foreach($local_shas as $afile=>$sha){
 		if(!file_exists($afile)){continue;}
