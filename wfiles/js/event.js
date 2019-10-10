@@ -2398,20 +2398,28 @@ function ajaxTimer(id){
 function countDown(id){
 	//info: used by countdown behavior
 	clearTimeout(TimoutArray[id]);
-	var obj=getObject(id);
+	let obj=getObject(id);
 	if(undefined == obj){return;}
+	let debug=0;
+	if(undefined != obj.getAttribute('data-debug')){
+		debug=parseInt(obj.getAttribute('data-debug'));
+	}
+	if(debug==1){console.log(Array('countDown object',obj));}
 	//Get the start time from the value of id.  HH:MM:SS
-	var number=parseInt(getText(id));
+	let number=getText(obj);
+	if(debug==1){console.log(Array('countDown number is ',number));}
+	number=parseInt(number);
 	number--;
-	setText(id,number);
+	setText(obj,number);
+	if(debug==1){console.log(Array('countDown set number to ',number));}
     var cb=obj.getAttribute('callback');
     if(cb){
-    	var func=cb+"('"+id+"','"+number+"')";
+    	let func=cb+"('"+id+"','"+number+"')";
     	let jsfunc=new Function(func);
     	jsfunc();
-		}
-	TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
 	}
+	TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
+}
 function countDownDate(divid,yr,m,d,hr,min,tz){
 	//info: used by countdowndate behavior
 	if(undefined == tz){tz='';}
