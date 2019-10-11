@@ -8,6 +8,8 @@
 		https://medium.com/coding-blocks/creating-user-database-and-adding-access-on-postgresqlsql-8bfcd2f4a91e
 		https://stackoverflow.com/questions/15520361/permission-denied-for-relation
 
+	NOTE: make sure pgsql.auto_reset_persistent in php.ini is set to On.  this will get rid of "server closed the connection unexpectedly" errors
+
 	Json_table equivilent in PostgreSQL
 		drop TYPE json_test;
 		create  TYPE json_test AS (id_item int, id_menu varchar(100));
@@ -1405,6 +1407,9 @@ function postgresqlQueryResults($query='',$params=array()){
 
 	$results = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
+	if(!is_array($results) && stringContains($results,'server closed the connection unexpectedly')){
+		$results .= " **NOTICE** make sure pgsql.auto_reset_persistent in php.ini is set to On. This usually resolved this issue.";
+	}
 	return $results;
 }
 //---------- begin function postgresqlEnumQueryResults ----------
