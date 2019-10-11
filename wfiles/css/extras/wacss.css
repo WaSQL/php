@@ -906,6 +906,25 @@ ul.nav-tabs.collapse > li >a{
     font-size:inherit;
   } 
 }
+/* ---------------------- colors:; text-color, bg-color (and color-text for compatibility with materialize)  ------------------------- */
+.text-blue, .blue-text {color: #1b95e0;}
+.bg-blue {background-color: #1b95e0;}
+.text-gray, .gray-text {color: #6c757d;}
+.bg-gray {background-color: #6c757d;}
+.text-green, .green-text{color: #28a745;}
+.bg-green {background-color: #28a745;}
+.text-red, .red-text{color: #dc3545;}
+.bg-red {background-color: #dc3545;}
+.text-yellow, .yellow-text {color: #ffc107;}
+.bg-yellow {background-color: #ffc107;}
+.text-orange, .orange-text{color: #ff9800;}
+.bg-orange {background-color: #ff9800;}
+.text-teal, .teal-text{color: #17a2b8;}
+.bg-teal {background-color: #17a2b8;}
+.text-white, .white-text {color: #f8f9fa;}
+.bg-white {background-color: #f8f9fa;}
+.text-black, .black-text {color: #343a40;}
+.bg-black {background-color: #343a40;}
 
 /* ---------------------- nav-list ------------------------- */
 ul.nav-list{
