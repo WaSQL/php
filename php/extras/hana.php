@@ -43,7 +43,9 @@ function hanaListRecords($params=array()){
 * 	[-nofail] - continue instead of failing on errors. Defaults to failing on errors.
 * 	[-checktype] - check data types on insert. Defaults to not check.
 * @return $errors array
-* @usage $ok=hanaAddDBRecordsFromCSV('stgschema.testtable','/mnt/dtxhana/test.csv');
+* @usage 
+*	loadExtras('hana');
+*	$ok=hanaAddDBRecordsFromCSV('stgschema.testtable','/mnt/dtxhana/test.csv');
 */
 function hanaAddDBRecordsFromCSV($table,$csvfile,$params=array()){
 	//error log with same name as csvfile in same path so HANA can write to it.
@@ -162,8 +164,11 @@ ENDOFQUERY;
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+* @exclude  - this function is for internal use and thus excluded from the manual
 * @return $params array
-* @usage $params=hanaParseConnectParams($params);
+* @usage 
+*	loadExtras('hana');
+*	$params=hanaParseConnectParams($params);
 */
 function hanaParseConnectParams($params=array()){
 	global $CONFIG;
@@ -227,23 +232,10 @@ function hanaParseConnectParams($params=array()){
 * 	[-dbpass] - password
 *   [-single] - if you pass in -single it will connect using odbc_connect instead of odbc_pconnect and return the connection
 * @return $dbh_hana resource - returns the odbc connection resource
-* @usage $dbh_hana=hanaDBConnect($params);
-* @usage  example of using -single
-*
-	$conn=hanaDBConnect(array('-single'=>1));
-	odbc_autocommit($conn, FALSE);
-
-	odbc_exec($conn, $query1);
-	odbc_exec($conn, $query2);
-
-	if (!odbc_error()){
-		odbc_commit($conn);
-	}
-	else{
-		odbc_rollback($conn);
-	}
-	odbc_close($conn);
-*
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage 
+*	loadExtras('hana');
+*	$dbh_hana=hanaDBConnect($params);
 */
 function hanaDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
@@ -306,7 +298,9 @@ function hanaDBConnect($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true if table exists
-* @usage if(hanaIsDBTable('abc','abcschema')){...}
+* @usage 
+*	loadExtras('hana');
+*	if(hanaIsDBTable('abc','abcschema')){...}
 */
 function hanaIsDBTable($table,$params=array()){
 	if(!strlen($table)){
@@ -365,7 +359,9 @@ function hanaIsDBTable($table,$params=array()){
 /**
 * @describe clears the hana database connection
 * @return boolean returns true if query succeeded
-* @usage $ok=hanaClearConnection();
+* @usage 
+*	loadExtras('hana');
+*	$ok=hanaClearConnection();
 */
 function hanaClearConnection(){
 	global $dbh_hana;
@@ -381,7 +377,9 @@ function hanaClearConnection(){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true if query succeeded
-* @usage $ok=hanaExecuteSQL("truncate table abc");
+* @usage 
+*	loadExtras('hana');
+*	$ok=hanaExecuteSQL("truncate table abc");
 */
 function hanaExecuteSQL($query,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
@@ -425,7 +423,10 @@ function hanaExecuteSQL($query,$params=array()){
 * 	[-dbpass] - password
 * 	other field=>value pairs to add to the record
 * @return integer returns the autoincriment key
-* @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+* @exclude - old
+* @usage 
+*	loadExtras('hana');
+*	$id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function hanaAddDBRecordsOLD($table,$recs){
 	global $USER;
@@ -640,7 +641,9 @@ ENDOFQ;
 * 	[-dbpass] - password
 * 	other field=>value pairs to add to the record
 * @return integer returns the autoincriment key
-* @usage $id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+* @usage 
+*	loadExtras('hana');
+*	$id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function hanaAddDBRecord($params){
 	global $hanaAddDBRecordCache;
@@ -750,7 +753,9 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * 	other field=>value pairs to edit
 * @return boolean returns true on success
-* @usage $id=hanaEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
+* @usage 
+*	loadExtras('hana');
+*	$id=hanaEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
 function hanaEditDBRecord($params,$id=0,$opts=array()){
 	mb_internal_encoding("UTF-8");
@@ -839,7 +844,9 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * 	other field=>value pairs to add/edit to the record
 * @return integer returns the autoincriment key
-* @usage $id=hanaReplaceDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
+* @usage 
+*	loadExtras('hana');
+*	$id=hanaReplaceDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function hanaReplaceDBRecord($params){
 	global $USER;
@@ -927,6 +934,7 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage 
+*	loadExtras('hana');
 *	$cnt=hanaManageDBSessions('all');
 */
 function hanaManageDBSessions($username='',$idle=1800000,$params=array()){
@@ -968,6 +976,7 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
+*	loadExtras('hana');
 *	$recs=hanaGetDBRecords(array('-table'=>'notes','name'=>'bob'));
 *	$recs=hanaGetDBRecords("select * from notes where name='bob'");
 */
@@ -1045,6 +1054,7 @@ function hanaGetDBRecords($params){
 * 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage 
+*	loadExtras('hana');
 *	$systemtables=hanaGetDBSystemTables();
 */
 function hanaGetDBSystemTables($params=array()){
@@ -1059,7 +1069,8 @@ function hanaGetDBSystemTables($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$schemas=hanaGetDBSchemas();
 */
 function hanaGetDBSchemas($params=array()){
@@ -1103,6 +1114,7 @@ function hanaGetDBSchemas($params=array()){
 * 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage 
+*	loadExtras('hana');
 *	$tables=hanaGetDBTables();
 */
 function hanaGetDBTables($params=array()){
@@ -1146,7 +1158,8 @@ function hanaGetDBTables($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
 */
 function hanaGetDBFieldInfo($table,$params=array()){
@@ -1199,7 +1212,8 @@ function hanaGetDBFieldInfo($table,$params=array()){
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
 * @return array
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$cnt=hanaGetDBCount(array('-table'=>'states','-where'=>"code like 'M%'"));
 */
 function hanaGetDBCount($params=array()){
@@ -1223,7 +1237,8 @@ function hanaGetDBCount($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array a single row array with the column names
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$recs=hanaQueryHeader($query);
 */
 function hanaQueryHeader($query,$params=array()){
@@ -1274,7 +1289,8 @@ function hanaQueryHeader($query,$params=array()){
 * 	[-dbpass] - password
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return $recs array
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$recs=hanaQueryResults('select top 50 * from abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
@@ -1404,7 +1420,8 @@ function hanaQueryResults($query,$params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array returns array of primary key fields
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$fields=postgresqlGetDBTablePrimaryKeys();
 */
 function hanaGetDBTablePrimaryKeys($table,$params=array()){
@@ -1429,7 +1446,8 @@ function hanaGetDBTablePrimaryKeys($table,$params=array()){
 * @param $table string - tablename
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @return $query string
-* @usage 
+* @usage
+*	loadExtras('hana'); 
 *	$query=hanaBuildPreparedInsertStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$params=array()){
@@ -1458,7 +1476,9 @@ function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$params=arra
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @param $primary_keys array - array of primary keys
 * @return $query string
-* @usage $query=hanaBuildPreparedReplaceStatement($table,$fieldinfo,$primary_keys);
+* @usage 
+*	loadExtras('hana');
+*	$query=hanaBuildPreparedReplaceStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
@@ -1495,7 +1515,9 @@ function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @param $primary_keys array - array of primary keys
 * @return $query string
-* @usage $query=hanaBuildPreparedUpdateStatement($table,$fieldinfo,$primary_keys);
+* @usage 
+*	loadExtras('hana');
+*	$query=hanaBuildPreparedUpdateStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
@@ -1532,7 +1554,9 @@ function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @param $primary_keys array - array of primary keys
 * @return $query string
-* @usage $query=hanaBuildPreparedDeleteStatement($table,$fieldinfo,$primary_keys);
+* @usage 
+*	loadExtras('hana');
+*	$query=hanaBuildPreparedDeleteStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
