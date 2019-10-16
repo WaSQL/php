@@ -926,7 +926,8 @@ ENDOFQUERY;
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $cnt=hanaManageDBSessions('all');
+* @usage 
+*	$cnt=hanaManageDBSessions('all');
 */
 function hanaManageDBSessions($username='',$idle=1800000,$params=array()){
 	global $USER;
@@ -967,8 +968,8 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=hanaGetDBRecords(array('-table'=>'notes'));?>
-*	<?=hanaGetDBRecords("select * from myschema.mytable where ...");?>
+*	$recs=hanaGetDBRecords(array('-table'=>'notes','name'=>'bob'));
+*	$recs=hanaGetDBRecords("select * from notes where name='bob'");
 */
 function hanaGetDBRecords($params){
 	global $USER;
@@ -1043,7 +1044,8 @@ function hanaGetDBRecords($params){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $systemtables=hanaGetDBSystemTables();
+* @usage 
+*	$systemtables=hanaGetDBSystemTables();
 */
 function hanaGetDBSystemTables($params=array()){
 	$params['-table_schema']='S';
@@ -1057,7 +1059,8 @@ function hanaGetDBSystemTables($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $schemas=hanaGetDBSchemas();
+* @usage 
+*	$schemas=hanaGetDBSchemas();
 */
 function hanaGetDBSchemas($params=array()){
 	$dbh_hana=hanaDBConnect($params);
@@ -1099,7 +1102,8 @@ function hanaGetDBSchemas($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $tables=hanaGetDBTables();
+* @usage 
+*	$tables=hanaGetDBTables();
 */
 function hanaGetDBTables($params=array()){
 	$dbh_hana=hanaDBConnect($params);
@@ -1142,7 +1146,8 @@ function hanaGetDBTables($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return boolean returns true on success
-* @usage $fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
+* @usage 
+*	$fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
 */
 function hanaGetDBFieldInfo($table,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
@@ -1194,7 +1199,8 @@ function hanaGetDBFieldInfo($table,$params=array()){
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
 * @return array
-* @usage $cnt=hanaGetDBCount(array('-table'=>'states'));
+* @usage 
+*	$cnt=hanaGetDBCount(array('-table'=>'states','-where'=>"code like 'M%'"));
 */
 function hanaGetDBCount($params=array()){
 	$params['-fields']="count(*) as cnt";
@@ -1217,7 +1223,8 @@ function hanaGetDBCount($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array a single row array with the column names
-* @usage $recs=hanaQueryHeader($query);
+* @usage 
+*	$recs=hanaQueryHeader($query);
 */
 function hanaQueryHeader($query,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
@@ -1267,7 +1274,8 @@ function hanaQueryHeader($query,$params=array()){
 * 	[-dbpass] - password
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return $recs array
-* @usage $recs=hanaQueryResults('select top 50 * from abcschema.abc');
+* @usage 
+*	$recs=hanaQueryResults('select top 50 * from abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
 	global $dbh_hana;
@@ -1396,7 +1404,8 @@ function hanaQueryResults($query,$params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array returns array of primary key fields
-* @usage $fields=postgresqlGetDBTablePrimaryKeys();
+* @usage 
+*	$fields=postgresqlGetDBTablePrimaryKeys();
 */
 function hanaGetDBTablePrimaryKeys($table,$params=array()){
 	$parts=preg_split('/\./',strtoupper($table),2);
@@ -1420,7 +1429,8 @@ function hanaGetDBTablePrimaryKeys($table,$params=array()){
 * @param $table string - tablename
 * @param $fieldinfo array - field info obtained from hanaGetDBFieldInfo function
 * @return $query string
-* @usage $query=hanaBuildPreparedInsertStatement($table,$fieldinfo,$primary_keys);
+* @usage 
+*	$query=hanaBuildPreparedInsertStatement($table,$fieldinfo,$primary_keys);
 */
 function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$params=array()){
 	if(!is_array($fieldinfo)){
