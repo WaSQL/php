@@ -2214,7 +2214,7 @@ function buildFormFile($name,$params=array()){
     	$tag .= '<div class="btn btn-default w_white" style="'.$style.'">'.PHP_EOL;
     	if(strlen($params['value'])){
     		$val=encodeHtml($params['value']);
-    		$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+    		$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 			$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
     	}
     	else{
