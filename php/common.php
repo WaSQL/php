@@ -2210,7 +2210,7 @@ function buildFormFile($name,$params=array()){
     }
     if(isset($params['disabled']) || isset($params['readonly'])){
     	$style=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-		$style.=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
+		$style.=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;margin-bottom:5px;';
     	$tag .= '<div class="btn btn-default w_white" style="'.$style.'">'.PHP_EOL;
     	if(strlen($params['value'])){
     		$val=encodeHtml($params['value']);
