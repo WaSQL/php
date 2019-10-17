@@ -2212,11 +2212,11 @@ function buildFormFile($name,$params=array()){
     	$val=encodeHtml($params['value']);
     	$tag .= '<div class="btn btn-default w_white">'.PHP_EOL;
     	if(strlen($params['value'])){
-    		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
+    		$tag .= '	<a class="w_link w_lblue" href="'.$val.'"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 			$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
     	}
     	else{
-    		$tab .= $params['text'];
+    		$tag .= '<span class="icon-upload"></span> ' . $params['text'];
     	}
 		$tag .= '</div>'.PHP_EOL;
 		return $tag;
