@@ -2209,9 +2209,11 @@ function buildFormFile($name,$params=array()){
 		unset($params['data-resize']);
     }
     if(isset($params['disabled']) || isset($params['readonly'])){
-    	$val=encodeHtml($params['value']);
-    	$tag .= '<div class="btn btn-default w_white">'.PHP_EOL;
+    	$style=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
+		$style.=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
+    	$tag .= '<div class="btn btn-default w_white" style="'.$style.'">'.PHP_EOL;
     	if(strlen($params['value'])){
+    		$val=encodeHtml($params['value']);
     		$tag .= '	<a class="w_link w_lblue" href="'.$val.'"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 			$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
     	}
