@@ -2185,7 +2185,8 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['text'])){
 		if(isset($params['multiple'])){$params['text']='files to upload';}
-		else{$params['text']='file to upload';}}
+		else{$params['text']='file to upload';}
+	}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
@@ -2207,7 +2208,15 @@ function buildFormFile($name,$params=array()){
 		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
     }
-    if(strlen($params['value']) && $params['value'] != $params['defaultval']){
+    if((isset($params['disabled']) || isset($params['readonly'])) && strlen($params['value'])){
+    	$val=encodeHtml($params['value']);
+    	$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
+		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
+		$tag .= '</div>'.PHP_EOL;
+		return $tag;
+    }
+    elseif(strlen($params['value']) && $params['value'] != $params['defaultval']){
 		$val=encodeHtml($params['value']);
 		/*
 		<input id="addedit_synchronize_1" data-group="addedit_synchronize_group" style="display:none;" data-type="checkbox" name="synchronize[]" value="1" type="checkbox">
