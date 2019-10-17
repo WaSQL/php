@@ -12421,6 +12421,8 @@ function processInlineFiles(){
 					$crc=encodeCRC(sha1($encodedString));
 					$name=getFileName($name,1) . '_' . $crc . '.' . getFileExtension($name);
 				}
+				//remove spaces from the name
+				$name=str_replace(' ','_',$name);
 				$afile="{$apath}/{$name}";
 				//remove the file if it exists already
 				if(file_exists($afile)){unlink($afile);}
@@ -13503,6 +13505,7 @@ function processFileUploads($docroot=''){
 				//change the filename to be unique
 				$crc=encodeCRC(sha1_file($file['tmp_name']));
 				$file['name']=getFileName($file['name'],1) . '_' . $crc . '.' . getFileExtension($file['name']);
+				$file['name']=str_replace(' ','_',$file['name']);
 			}
 			elseif(isset($_REQUEST[$name.'_rename'])){
 				/*Rename specs:
@@ -13518,6 +13521,7 @@ function processFileUploads($docroot=''){
                 }
 				//change the filename to be unique
 				$file['name']=$rename . ".{$ext}";
+				$file['name']=str_replace(' ','_',$file['name']);
 			}
 			if(strlen($_REQUEST['_dir'])){
 				$cpath =decodeBase64($_REQUEST['_dir']);
