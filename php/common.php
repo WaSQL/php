@@ -1,4 +1,6 @@
 <?php
+/**/
+
 //---------- begin function commonBuildTerminal
 /**
 * @describe returns an HTML5 based terminal window to the server. requires websocketd path to be set in config.xml
