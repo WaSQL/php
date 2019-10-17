@@ -2208,11 +2208,16 @@ function buildFormFile($name,$params=array()){
 		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
     }
-    if((isset($params['disabled']) || isset($params['readonly'])) && strlen($params['value'])){
+    if(isset($params['disabled']) || isset($params['readonly'])){
     	$val=encodeHtml($params['value']);
-    	$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
-		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
-		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
+    	$tag .= '<div class="btn btn-default w_white">'.PHP_EOL;
+    	if(strlen($params['value'])){
+    		$tag .= '	<a class="w_link w_lblue" href="'.$val.'">'.$val.'</a>'.PHP_EOL;
+			$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
+    	}
+    	else{
+    		$tab .= $params['text'];
+    	}
 		$tag .= '</div>'.PHP_EOL;
 		return $tag;
     }
