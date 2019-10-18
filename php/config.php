@@ -26,17 +26,43 @@ $xml=json_decode($json,true);
 if(isset($xml['host']['@attributes'])){
 	$xml['host']=array($xml['host']);
 }
-//echo printValue($xml);exit;
+//check for single database
+if(isset($xml['database']['@attributes'])){
+	$xml['database']=array($xml['database']);
+}
+//remove comments
+if(isset($xml['comment'])){
+	unset($xml['comment']);
+}
+global $DATABASE;
 global $CONFIG;
 global $ALLCONFIG;
 $CONFIG=array();
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
 /* Load Global configurations from allhost if it exists */
+$DATABASE=array();
+if(isset($xml['database'][0])){
+	foreach($xml['database'] as $database){
+		if(!isset($database['@attributes']['name'])){continue;}
+		$name=$database['@attributes']['name'];
+		foreach($database['@attributes'] as $k=>$v){
+			$DATABASE[$name][$k]=$v;
+		}
+	}
+}
 $ConfigXml=array();
 $allhost=array();
 if(isset($xml['allhost']['@attributes'])){
 	foreach($xml['allhost']['@attributes'] as $k=>$v){
-		$allhost[$k]=$v;
+		$k=strtolower(trim($k));
+		$lv=strtolower(trim($v));
+		if($k=='database' && isset($DATABASE[$lv])){
+			foreach($DATABASE[$lv] as $dk=>$dv){
+				if(strtolower($dk)=='name'){continue;}
+				$allhost[$dk]=trim($dv);
+			}
+		}
+		$allhost[$k]=trim($v);
 	}
 }
 
@@ -45,6 +71,14 @@ if(isset($xml['host'][0]['@attributes'])){
 		$chost=array();
 		foreach($host['@attributes'] as $k=>$v){
 			$k=strtolower(trim($k));
+			$lv=strtolower(trim($v));
+			//echo "{$host['@attributes']['name']},{$k},{$lv}<br>".PHP_EOL;
+			if($k=='database' && isset($DATABASE[$lv])){
+				foreach($DATABASE[$lv] as $dk=>$dv){
+					if(strtolower($dk)=='name'){continue;}
+					$chost[$dk]=trim($dv);
+				}
+			}
 			$chost[$k]=trim($v);
 		}
         $name=$chost['name'];
@@ -99,7 +133,7 @@ foreach($ConfigXml as $name=>$host){
 		}
 	}
 }
-
+//echo printValue($DATABASE).printValue($CONFIG);exit;
 //ksort($CONFIG);echo "chost:{$chost}<br>sameas:{$sameas}<br>".printValue($CONFIG).printValue($ConfigXml);exit;
 if(!isset($CONFIG['dbname'])){
 	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);

@@ -65,13 +65,19 @@
 			url_eval - page name to eval before processing.  This gives you control to modify the $_REQUEST variable. etc.. _view should be set to the page name.
 	-->
 	<!-- allhost sets global settings unless overridden by the host entry -->
+	 <database
+        name="my_local"
+        dbhost="localhost"
+        dbname="wacss_sample"
+        dbtype="mysqli"
+        dbuser="wasql_dbpass"
+        dbpass="wasql_dbpass"
+    />
+	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost
 		dbhost="localhost"
 		paging="50"
-		dbtype="mysqli"
-        dbname="wasql_sample"
-        dbuser="wasql_dbuser"
-        dbpass="wasql_dbpass"
+		database="my_local"
         minify_css="1"
         minify_js="1"
         markdown="1"
@@ -82,7 +88,7 @@
 	<!-- create a host entry for each domain and subdomain -->
 	<host
 		name="localhost"
-        dbname="wasql_sample"
+        database="my_local"
 	/>
 </hosts>
 

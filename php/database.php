@@ -55,8 +55,11 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		else{$getopts['-where']="name = '{$load}'";}
 		$ok=includeDBOnce($getopts);
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
-		}
 	}
+}
+function databaseGetDBRecords($db,$params){
+
+}
 //---------- begin function databaseListRecords
 /**
 * @describe returns an html table of records
