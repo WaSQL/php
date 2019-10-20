@@ -1682,7 +1682,6 @@ table.table {
 table.table-responsive, table.responsive {
     width: 100%;
     display:block;
-    height:calc(100vh - 200px);;
     margin-bottom: 15px;
     overflow-x: auto;
     overflow-y: auto;
