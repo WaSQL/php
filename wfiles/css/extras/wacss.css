@@ -1679,7 +1679,7 @@ table.table {
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
-table.table-responsive {
+table.table-responsive, table.responsive {
     width: 100%;
     display:block;
     height:calc(100vh - 200px);;

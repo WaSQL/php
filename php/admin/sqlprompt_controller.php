@@ -1,5 +1,6 @@
 <?php
 	global $CONFIG;
+	global $DATABASE;
 	switch(strtolower($_REQUEST['func'])){
 		case 'monitor':
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
@@ -217,12 +218,11 @@
 		break;
 		default:
 			$tabs=array();
-			$dbs=array('postgresql','oracle','mssql','hana','sqlite');
-			foreach($dbs as $db){
-				if(isset($CONFIG["{$db}_dbname"]) || isset($CONFIG["{$db}_dbhost"])){
-					$tabname=isset($CONFIG["{$db}_tabname"])?$CONFIG["{$db}_tabname"]:$db;
-					$tabs[]=array('name'=>$db,'host'=>$CONFIG["{$db}_dbhost"],'tabname'=>$tabname);
+			foreach($DATABASE as $db){
+				if(!isset($db['displayname'])){
+					$db['displayname']=ucwords(str_replace('_',' ',$db['name']));
 				}
+				$tabs[]=$db;
 			}
 			//echo printValue($CONFIG).printValue($tabs);exit;
 			$tables=getDBTables();

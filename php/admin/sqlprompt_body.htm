@@ -125,7 +125,7 @@
 	<view:tab>
 	<li class="nav-item">
 		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>"><?=$tab['tabname'];?></label>
+		<label for="db_<?=$tab['name'];?>"><?=$tab['displayname'];?></label>
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>
