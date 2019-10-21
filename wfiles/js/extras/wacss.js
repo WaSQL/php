@@ -300,6 +300,9 @@ var wacss = {
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){	
+							if(labels.length > 0){
+								wacss.chartjs[list[i].id].config.data.labels=labels;
+							}
 							let udatasets=datadiv.querySelectorAll('dataset');
 							let datasetLabels=new Array();
 		        			for(let ud=0;ud<udatasets.length;ud++){
