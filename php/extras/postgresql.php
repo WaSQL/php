@@ -376,7 +376,7 @@ function postgresqlDropDBTable($table='',$meta=1){
 */
 function postgresqlDBConnect(){
 	$params=postgresqlParseConnectParams();
-	//echo printValue($params);exit;
+	//echo "postgresqlDBConnect".printValue($params);exit;
 	if(!isset($params['-connect'])){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
 		exit;
@@ -384,11 +384,10 @@ function postgresqlDBConnect(){
 	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
-	//echo printValue($params);exit;
 	try{
 		$dbh_postgresql = pg_pconnect($params['-connect']);
 		if(!is_resource($dbh_postgresql)){
-			$err=pg_last_error();
+			$err=@pg_last_error();
 			echo "postgresqlDBConnect error:{$err}".printValue($params);
 			exit;
 
@@ -1227,6 +1226,13 @@ function postgresqlListRecords($params=array()){
 */
 function postgresqlParseConnectParams($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
+	//echo "HERE".printValue($params);exit;
 	if(isPostgreSQL()){
 		$params['-dbhost']=$CONFIG['dbhost'];
 		if(isset($CONFIG['dbname'])){

@@ -30,6 +30,12 @@ function mssqlListRecords($params=array()){
 */
 function mssqlParseConnectParams($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
 	//dbhost
 	if(!isset($params['-dbhost'])){
 		if(isset($CONFIG['dbhost_mssql'])){

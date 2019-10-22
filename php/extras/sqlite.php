@@ -78,6 +78,12 @@ function sqliteListRecords($params=array()){
 */
 function sqliteParseConnectParams($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
 	//dbname
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['dbname_sqlite'])){

@@ -57,9 +57,107 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
 	}
 }
-function databaseGetDBRecords($db,$params){
+//---------- db functions that allow you to pass in what database first
+//---------- begin function dbGetRecords
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param params mixed - params or a SQL query
 
+* @return array recordsets
+* @usage
+*	$recs=dbGetRecords('pg_local',array('-table'=>'notes','-order'=>'_cdate','-limit'=>10));
+*	$recs=dbGetRecords('pg_local','select * from postgres.notes order by _cdate limit 10')
+*/
+function dbGetRecords($db,$params){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($db['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			loadExtras('postgresql');
+			$tables=postgresqlGetDBTables();
+			//echo printValue($tables);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			$tables=oracleGetDBTables();
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			$tables=mssqlGetDBTables();
+		break;
+		case 'hana':
+			loadExtras('hana');
+			$tables=hanaGetDBTables();
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			$tables=sqliteGetDBTables();
+		break;
+		default:
+			$tables=getDBTables();
+		break;
+	}
 }
+//---------- begin function dbGetTables
+/**
+* @describe returns tables from a database
+* @param db string - database name as specified in the database section of config.xml
+* @return array recordsets
+* @usage
+*	$recs=dbGetTables('pg_local');
+*/
+function dbGetTables($db){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBTables();
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBTables();
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBTables();
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBTables();
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBTables();
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return mysqlGetDBTables();
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+
+
+
+
+
+
 //---------- begin function databaseListRecords
 /**
 * @describe returns an html table of records

@@ -1150,6 +1150,12 @@ function oracleListRecords($params=array()){
 */
 function oracleParseConnectParams($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_oracle'])){
 			$params['-dbuser']=$CONFIG['dbuser_oracle'];

@@ -172,6 +172,12 @@ ENDOFQUERY;
 */
 function hanaParseConnectParams($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['hana_connect'])){
 			$params['-dbname']=$CONFIG['hana_connect'];

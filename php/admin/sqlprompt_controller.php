@@ -1,6 +1,9 @@
 <?php
 	global $CONFIG;
 	global $DATABASE;
+	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
+		$db=$DATABASE[$_REQUEST['db']];
+	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'monitor':
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
@@ -10,8 +13,13 @@
 			return;
 		break;
 		case 'setdb':
-			switch(strtolower($_REQUEST['db'])){
+			//echo printValue($db);exit;
+			$tables=dbGetTables($db['name']);
+			setView('tables_fields',1);
+			return;
+			switch(strtolower($db['dbtype'])){
 				case 'postgresql':
+				case 'postgres':
 					loadExtras('postgresql');
 					$tables=postgresqlGetDBTables();
 					//echo printValue($tables);
