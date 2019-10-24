@@ -1,11 +1,14 @@
 <?php
 	global $CONFIG;
 	global $DATABASE;
+	global $_SESSION;
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
+		$_SESSION['db']=$db;
 	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'monitor':
+			//echo printValue($_REQUEST);exit;
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
 			//$recs=getDBRecords($sql);
 			//echo printValue(array_keys($recs[0]));exit;
@@ -15,35 +18,6 @@
 		case 'setdb':
 			//echo printValue($db);exit;
 			$tables=dbGetTables($db['name']);
-			setView('tables_fields',1);
-			return;
-			switch(strtolower($db['dbtype'])){
-				case 'postgresql':
-				case 'postgres':
-					loadExtras('postgresql');
-					$tables=postgresqlGetDBTables();
-					//echo printValue($tables);
-				break;
-				case 'oracle':
-					loadExtras('oracle');
-					$tables=oracleGetDBTables();
-				break;
-				case 'mssql':
-					loadExtras('mssql');
-					$tables=mssqlGetDBTables();
-				break;
-				case 'hana':
-					loadExtras('hana');
-					$tables=hanaGetDBTables();
-				break;
-				case 'sqlite':
-					loadExtras('sqlite');
-					$tables=sqliteGetDBTables();
-				break;
-				default:
-					$tables=getDBTables();
-				break;
-			}
 			setView('tables_fields',1);
 			return;
 		break;
@@ -98,10 +72,8 @@
 		break;
 		default:
 			$tabs=array();
-			foreach($DATABASE as $db){
-				if(!isset($db['displayname'])){
-					$db['displayname']=ucwords(str_replace('_',' ',$db['name']));
-				}
+			foreach($DATABASE as $d=>$db){
+				if($CONFIG['database']==$d){continue;}
 				$tabs[]=$db;
 			}
 			//echo printValue($CONFIG).printValue($tabs);exit;

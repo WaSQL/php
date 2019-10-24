@@ -133,32 +133,41 @@ foreach($ConfigXml as $name=>$host){
 		}
 	}
 }
+//set the icon and displayname
+foreach($DATABASE as $d=>$db){
+	if(!isset($db['displayname'])){
+		$DATABASE[$d]['displayname']=ucwords(str_replace('_',' ',$db['name']));
+	}
+	switch(strtolower($db['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			$DATABASE[$d]['dbicon']='icon-database-postgresql';
+			//echo printValue($tables);
+		break;
+		case 'oracle':
+			$DATABASE[$d]['dbicon']='icon-database-oracle';
+		break;
+		case 'mssql':
+			$DATABASE[$d]['dbicon']='icon-database-mssql';
+		break;
+		case 'hana':
+			$DATABASE[$d]['dbicon']='';
+		break;
+		case 'sqlite':
+			$DATABASE[$d]['dbicon']='icon-database-sqlite';
+		break;
+		case 'mysql':
+		case 'mysqli':
+			$DATABASE[$d]['dbicon']='icon-database-mysql';
+		break;
+	}
+}
+
 //echo printValue($DATABASE).printValue($CONFIG);exit;
 //ksort($CONFIG);echo "chost:{$chost}<br>sameas:{$sameas}<br>".printValue($CONFIG).printValue($ConfigXml);exit;
 if(!isset($CONFIG['dbname'])){
 	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
 }
-//allow users to override dbhost with dbhost and dbauth
-if(isset($_REQUEST['dbhost'])){
-	if(isset($ConfigXml[$_REQUEST['dbhost']]) && isset($_REQUEST['dbauth']) && isset($ConfigXml[$_REQUEST['dbhost']]['dbauth']) && $ConfigXml[$_REQUEST['dbhost']]['dbauth']==$_REQUEST['dbauth']){
-		$_SESSION['dbhost']=$_REQUEST['dbhost'];
-	}
-	else{
-		unset($_SESSION['dbhost']);
-		unset($_SESSION['dbhost_original']);
-	}
-}
-if(isset($_SESSION['dbhost_original']) && !isset($_SESSION['dbhost'])){
-	unset($_SESSION['dbhost_original']);
-}
-if(isset($_SESSION['dbhost']) && isset($ConfigXml[$_SESSION['dbhost']])){
-	$CONFIG['_source']=$_SESSION['dbhost'];
-	$_SERVER['WaSQL_HOST']=$_SESSION['dbhost'];
-	if($_SESSION['dbhost'] != $CONFIG['dbhost']){
-    	$_SESSION['dbhost_original']=$CONFIG['dbhost'];
-	}
-	foreach($ConfigXml[$_SESSION['dbhost']] as $key=>$val){$CONFIG[$key]=$val;}
-};
 //echo $checkhost.printValue($CONFIG).printValue($ConfigXml[$checkhost]);exit;
 $_SERVER['WaSQL_DBNAME']=$CONFIG['dbname'];
 /* Load additional modules as specified in the conf settings */
@@ -192,3 +201,9 @@ if(isset($CONFIG['encoding'])){
 else{
 	mb_internal_encoding("UTF-8");
 }
+if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']]['dbicon'])){
+	$CONFIG['dbicon']=$DATABASE[$CONFIG['database']]['dbicon'];
+	$CONFIG['displayname']=$DATABASE[$CONFIG['database']]['displayname'];
+}
+ksort($CONFIG);
+//echo printValue($CONFIG);exit;

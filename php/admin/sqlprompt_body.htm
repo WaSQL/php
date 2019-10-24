@@ -54,11 +54,11 @@
 	<div class="row">
 		<div class="col-sm-3">
 			<div class="w_bold w_big"><translate>Tables & Fields</translate></div>
-			<div id="table_fields" style="max-height:40vh;overflow:auto;padding-right:5px">
-			<?=renderView('tables_fields',$tables,'tables');?>
+			<div id="table_fields">
+				<?=renderView('tables_fields',$tables,'tables');?>
 			</div>
 			<view:monitor_tools>
-			<div class="w_bold w_big"><translate>Admin Tools</translate></div>
+			<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><translate>Admin Tools</translate></div>
 			<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
 				<?=renderView('monitor',$tables,'tables');?>
 			</div>
@@ -70,7 +70,7 @@
 			<div class="w_padtop">
 				<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 					<input type="hidden" name="_menu" value="sqlprompt">
-					<input type="hidden" name="db" value="default" />
+					<input type="hidden" name="db" value="<?=configValue('database');?>" />
 					<input type="hidden" name="func" value="sql" />
 					<input type="hidden" name="sql_select" value="" />
 					<input type="hidden" name="cursor_pos" value="" />
@@ -97,6 +97,8 @@
 </view:default>
 
 <view:tables_fields>
+<div class="w_bigger"><span class="<?=$_SESSION['db']['dbicon'];?>"></span> <?=$_SESSION['db']['displayname'];?></div>
+<div style="max-height:40vh;overflow:auto;padding-right:5px">
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
 			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon"></span> <?=$table;?></a>
@@ -105,6 +107,7 @@
 		</view:table>
 		<?=renderEach('table',$tables,'table');?>
 	</ul>
+</div>
 </view:tables_fields>
 
 <view:monitor>
@@ -125,12 +128,14 @@
 <nav>
 <ul class="nav-tabs collapse <?=configValue('admin_color');?>">
 	<li class="nav-item active">
-		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="default" checked />
-		<label for="db_default">Default</label>
+		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
+		<label for="db_default" class="<?=configValue('dbicon');?>"></label>
+		<label for="db_default"><?=configValue('displayname');?></label>
 	</li>
 	<view:tab>
 	<li class="nav-item">
 		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
+		<label for="db_<?=$tab['name'];?>" class="<?=$tab['dbicon'];?>"></label>
 		<label for="db_<?=$tab['name'];?>"><?=$tab['displayname'];?></label>
 	</li>
 	</view:tab>

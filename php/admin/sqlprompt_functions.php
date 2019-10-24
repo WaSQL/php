@@ -12,12 +12,16 @@ function sqlpromptListResults($recs){
 	));
 }
 function sqlpromptBuildQuery($db,$name){
-	switch(strtolower($db)){
+	global $DATABASE;
+	//echo printValue($DATABASE[$db]);exit;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'mssql':
 			loadExtras('mssql');
 			return trim(mssqlNamedQuery($name));
 		break;
 		case 'postgresql':
+		case 'postgres':
+		case 'postgre';
 			loadExtras('postgresql');
 			return trim(postgresqlNamedQuery($name));
 		break;
@@ -30,7 +34,7 @@ function sqlpromptBuildQuery($db,$name){
 			return trim(hanaNamedQuery($name));
 		break;
 		case 'sqlite':
-
+			return '';
 		break;
 		default:
 			switch(strtolower($name)){
