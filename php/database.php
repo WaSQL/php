@@ -77,33 +77,34 @@ function dbGetRecords($db,$params){
 		return "Invalid db: {$db}";
 	}
 	$CONFIG['db']=$db;
-	switch(strtolower($db['dbtype'])){
+	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
-			$tables=postgresqlGetDBTables();
+			return postgresqlGetDBRecords($params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
-			$tables=oracleGetDBTables();
+			return oracleGetDBRecords($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
-			$tables=mssqlGetDBTables();
+			return mssqlGetDBRecords($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
-			$tables=hanaGetDBTables();
+			return hanaGetDBRecords($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
-			$tables=sqliteGetDBTables();
+			return sqliteGetDBRecords($params);
 		break;
 		default:
-			$tables=getDBTables();
+			return getDBRecords($params);
 		break;
 	}
+	return array();
 }
 //---------- begin function dbGetTables
 /**
@@ -147,7 +148,56 @@ function dbGetTables($db){
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
-			return mysqlGetDBTables();
+			return getDBTables();
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbGetTableFields
+/**
+* @describe returns fields of specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - table (and possibly schema) name
+* @return array recordsets
+* @usage
+*	$recs=dbGetTableFields('pg_local');
+*/
+function dbGetTableFields($db,$table){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	//echo printValue($_REQUEST).printValue($DATABASE);exit;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBFieldInfo($table);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBFieldInfo($table);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBFieldInfo($table);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBFieldInfo($table);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBFieldInfo($table);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return getDBFieldInfo($table);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";

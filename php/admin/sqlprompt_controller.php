@@ -79,149 +79,21 @@
 					$view='results';
 				}
 			}
-			$_SESSION['db_last']=$_REQUEST['db'];
-			switch(strtolower($_REQUEST['db'])){
-				case 'postgresql':
-					loadExtras('postgresql');
-					//echo nl2br($_SESSION['sql_last']);exit;
-					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
-					if(!is_array($recs)){
-						$recs=array(array('result'=>$ok));
-					}
-					//echo nl2br($_SESSION['sql_last']).printValue($recs);exit;
-				break;
-				case 'oracle':
-					loadExtras('oracle');
-					$recs=oracleGetDBRecords($_SESSION['sql_last']);
-					//check for an oracle ref cursor
-					if(count($recs)==1 && count(array_keys($recs[0])==1)){
-						foreach($recs[0] as $k=>$v){
-							if(is_array($v)){$recs=$v;}
-							break;
-						}
-					}
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'mssql':
-					loadExtras('mssql');
-					//echo $_SESSION['sql_full'];exit;
-					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
-					if(!is_array($recs)){
-						$recs=array(array('result'=>$ok));
-					}
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'hana':
-					loadExtras('hana');
-					$recs=hanaGetDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'sqlite':
-					loadExtras('sqlite');
-					$sql=preg_replace('/[\r\n]+/',' ',$_SESSION['sql_last']);
-					//echo $sql;exit;
-					$recs=sqliteGetDBRecords($sql);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				default:
-					$recs=getDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-			}
+			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
 			setView('results',1);
 			return;
 		break;
 		case 'export':
-			switch(strtolower($_SESSION['db_last'])){
-				case 'postgresql':
-					loadExtras('postgresql');
-					$recs=postgresqlGetDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'oracle':
-					loadExtras('oracle');
-					$recs=oracleGetDBRecords($_SESSION['sql_last']);
-					//check for an oracle ref cursor
-					if(count($recs)==1 && count(array_keys($recs[0])==1)){
-						foreach($recs[0] as $k=>$v){
-							if(is_array($v)){$recs=$v;}
-							break;
-						}
-					}
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'mssql':
-					loadExtras('mssql');
-					$recs=mssqlGetDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'hana':
-					loadExtras('hana');
-					$recs=hanaGetDBRecords($_SESSION['sql_last']);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'sqlite':
-					loadExtras('sqlite');
-					$sql=preg_replace('/[\r\n]+/',' ',$_SESSION['sql_last']);
-					//echo $sql;exit;
-					$recs=sqliteGetDBRecords($sql);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				default:
-					$recs=getDBRecords($_SESSION['sql_last']);
-				break;
-			}
+			//echo printValue($db).$_SESSION['sql_last'];exit;
+			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
 			$csv=arrays2CSV($recs);
 			pushData($csv,'csv');
 			exit;
 		break;
 		case 'fields':
 			$table=addslashes($_REQUEST['table']);
-			//echo printValue($_REQUEST);exit;
-			switch(strtolower($_REQUEST['db'])){
-				case 'postgresql':
-					loadExtras('postgresql');
-					$fields=postgresqlGetDBFieldInfo($table);
-					//echo printValue($fields);exit;
-				break;
-				case 'oracle':
-					loadExtras('oracle');
-					$fields=oracleGetDBFieldInfo($table);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'mssql':
-					loadExtras('mssql');
-					$fields=mssqlGetDBFieldInfo($table);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'hana':
-					loadExtras('hana');
-					$fields=hanaGetDBFieldInfo($table);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				case 'sqlite':
-					loadExtras('sqlite');
-					$fields=sqliteGetDBFieldInfo($table);
-					//echo $_SESSION['sql_last'].printValue($recs);exit;
-				break;
-				default:
-					$fields=getDBFieldInfo($table);
-					//echo printValue($fields);exit;
-				break;
-			}
-			
-			
-			//echo printValue($fields);exit;
+			$fields=dbGetTableFields($db['name'],$table);
 			setView('fields',1);
-			return;
-		break;
-		case 'export':
-			$id=addslashes($_REQUEST['id']);
-			$report=getDBRecord(array('-table'=>'_reports','active'=>1,'_id'=>$id));
-			$report=reportsRunReport($report);
-			$csv=arrays2CSV($report['recs']);
-			pushData($csv,'csv',$report['name'].'.csv');
-			exit;
 			return;
 		break;
 		default:

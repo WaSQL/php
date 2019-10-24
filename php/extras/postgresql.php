@@ -678,9 +678,11 @@ function postgresqlGetDBFields($table,$allfields=0){
 	
 	//echo printValue($idfields);exit;
 	$query="SELECT * from {$table} where 1=0";
+	//echo $query;exit;
 	$res=@pg_query($dbh_postgresql,$query);
 	$fieldnames=array();
 	$i = pg_num_fields($res);
+	//echo $i.printValue($res);exit;
 	for ($j = 0; $j < $i; $j++) {
 		$name=strtolower(pg_field_name($res, $j));
 		if(!$allfields && preg_match('/^\_/',$name)){continue;}
@@ -689,7 +691,7 @@ function postgresqlGetDBFields($table,$allfields=0){
 	pg_close($dbh_postgresql);
 	ksort($fieldnames);
 	$databaseCache['postgresqlGetDBFields'][$key]=$fieldnames;
-	return databaseCache['postgresqlGetDBFields'][$key];
+	return $databaseCache['postgresqlGetDBFields'][$key];
 }
 //---------- begin function postgresqlGetDBFieldInfo ----------
 /**
@@ -1122,10 +1124,6 @@ function postgresqlIsDBTable($table='',$force=0){
 /**
 * @describe returns an array of tables
 * @param [$params] array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
-*	[-host] - postgresql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array returns array of tables
 * @usage $tables=postgresqlGetDBTables();
 */
@@ -1137,7 +1135,7 @@ function postgresqlGetDBTables($params=array()){
 	$databaseCache['postgresqlGetDBTables']=array();
 	global $CONFIG;
 	$include_schema=1;
-	if(isPostgreSQL()){
+	if(isPostgreSQL() || isset($CONFIG['db'])){
 		$schema=isset($CONFIG['dbschema'])?$CONFIG['dbschema']:'public';
 		$include_schema=0;
 	}
