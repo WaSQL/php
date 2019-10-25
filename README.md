@@ -63,7 +63,10 @@ LoadModule rewrite_module modules/mod_rewrite.so
 - copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
 - rename C:\AppServ\www\index.php file to C:\AppServ\www\index_ori.php
 
-- restart Apache.
+- Open up C:\AppServ\php7\php.ini
+- uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres
+
+- restart Apache. (Click on the windows key and search for "Apache Restart")
 - open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
 ```
 	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED with mysql_native_password BY 'wasql_dbpass';
