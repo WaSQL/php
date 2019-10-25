@@ -73,11 +73,17 @@
         dbuser="wasql_dbpass"
         dbpass="wasql_dbpass"
     />
+    <database
+        name="my_local2"
+        dbhost="localhost"
+        dbname="wacss_sample2"
+        dbtype="mysqli"
+        dbuser="wasql_dbpass"
+        dbpass="wasql_dbpass"
+    />
 	<!-- allhost sets global settings unless overridden by the host entry -->
 	<allhost
-		dbhost="localhost"
 		paging="50"
-		database="my_local"
         minify_css="1"
         minify_js="1"
         markdown="1"
