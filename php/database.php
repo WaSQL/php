@@ -58,6 +58,54 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 //---------- db functions that allow you to pass in what database first
+//---------- begin function dbExecuteSQL
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param sql string - query to execute
+
+* @return array recordsets
+* @usage
+*	$recs=dbExecuteSQL('pg_local',"truncate table test");
+*/
+function dbExecuteSQL($db,$sql){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			loadExtras('postgresql');
+			return postgresqlExecuteSQL($sql);
+			//echo printValue($tables);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleExecuteSQL($sql);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlExecuteSQL($sql);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaExecuteSQL($sql);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteExecuteSQL($sql);
+		break;
+		default:
+			return executeSQL($sql);
+		break;
+	}
+	return 0;
+}
 //---------- begin function dbGetRecords
 /**
 * @describe returns an records set from a database
