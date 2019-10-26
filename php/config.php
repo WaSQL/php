@@ -45,6 +45,7 @@ if(isset($xml['database'][0])){
 	foreach($xml['database'] as $database){
 		if(!isset($database['@attributes']['name'])){continue;}
 		$name=$database['@attributes']['name'];
+		$name=strtolower($name);
 		foreach($database['@attributes'] as $k=>$v){
 			$DATABASE[$name][$k]=$v;
 		}

@@ -63,6 +63,7 @@
 			backup_command - command to backup database - defaults to mysqldump
 			mysql_command - command to import database - defaults to mysql
 			url_eval - page name to eval before processing.  This gives you control to modify the $_REQUEST variable. etc.. _view should be set to the page name.
+			sql_prompt_dbs - comma separated list of database containers to show in the SQL Prompt admin area
 	-->
 	<!-- database container to define database settings.  -->
 	 <database
@@ -95,6 +96,7 @@
 	<host
 		name="localhost"
         database="my_local"
+        sql_prompt_dbs="my_local,my_local2"
 	/>
 </hosts>
 
