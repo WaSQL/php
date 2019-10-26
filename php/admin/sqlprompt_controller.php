@@ -71,9 +71,17 @@
 			return;
 		break;
 		default:
+			$showtabs=array();
+			if(isset($CONFIG['sql_prompt_dbs'])){
+				$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
+			}
 			$tabs=array();
 			foreach($DATABASE as $d=>$db){
-				if($CONFIG['database']==$d){continue;}
+				if($CONFIG['database']==$d){
+					$_SESSION['db']=$db;
+					continue;
+				}
+				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
 				$tabs[]=$db;
 			}
 			//echo printValue($CONFIG).printValue($tabs);exit;

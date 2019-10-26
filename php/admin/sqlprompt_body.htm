@@ -66,8 +66,8 @@
 			<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools',$tables,'tables');?>
 		</div>
 		<div class="col-sm-9">
-			<?=renderViewIf(count($tabs),'tabs',$tabs,'tabs');?>
-			<div class="w_padtop">
+			<?=renderView('tabs',$tabs,'tabs');?>
+			<div>
 				<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 					<input type="hidden" name="_menu" value="sqlprompt">
 					<input type="hidden" name="db" value="<?=configValue('database');?>" />
@@ -129,14 +129,12 @@
 <ul class="nav-tabs collapse <?=configValue('admin_color');?>">
 	<li class="nav-item active">
 		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
-		<label for="db_default" class="<?=configValue('dbicon');?>"></label>
-		<label for="db_default"><?=configValue('displayname');?></label>
+		<label for="db_default"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></label> 
 	</li>
 	<view:tab>
 	<li class="nav-item">
 		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>" class="<?=$tab['dbicon'];?>"></label>
-		<label for="db_<?=$tab['name'];?>"><?=$tab['displayname'];?></label>
+		<label for="db_<?=$tab['name'];?>"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></label>
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>
