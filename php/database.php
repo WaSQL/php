@@ -4668,9 +4668,10 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	$updates=array();
 	//if($params['-table']=='jsontest'){echo printValue($info);exit;}
 	//check for virtual fields
+	//echo "HERE".printValue($params);
 	$jsonfields=array();
 	foreach($info as $k=>$i){
-    	if($i['_dbtype']=='json' && !isset($params[$k])){
+    	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
         	if(is_array($params[$k])){
         		$params[$k]=json_encode($params[$k]);
@@ -4689,6 +4690,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
         	}
 		}
 	}
+	//if($params['-table']=='test'){echo "HERE".printValue($jsonfields).printValue($params).printValue($info);exit;}
 	if(count($jsonfields)){
 		$jsonfields[]='_id';
 		$recs=getDBRecords(array(

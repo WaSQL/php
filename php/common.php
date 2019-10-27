@@ -1732,22 +1732,32 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if($params['-type']=='checkbox'){
 		$name.='[]';
 	}
+	//return printValue($params);
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['value'])){
-      if(!is_array($params['value'])){
-        $params['-values']=preg_split('/\:/',trim($params['value']));
-      }
-      else{$params['-values']=$params['value'];}
-      unset($params['value']);
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$params['value']=json_decode($params['value'],true);
+		}
+     	if(!is_array($params['value'])){
+        	$params['-values']=preg_split('/\:/',trim($params['value']));
+      	}
+      	else{$params['-values']=$params['value'];}
+      	unset($params['value']);
     }
 	if(isset($params['-values'])){
+		if(!is_array($params['-values']) && isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$params['-values']=json_decode($params['-values'],true);
+		}
     	if(!is_array($params['-values'])){
         	$params['-values']=array($params['-values']);
 		}
 	}
 	elseif(isset($_REQUEST[$oname])){
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$_REQUEST[$oname]=json_decode($_REQUEST[$oname],true);
+		}
     	if(!is_array($_REQUEST[$oname])){
         	$params['-values']=array($_REQUEST[$oname]);
 		}
@@ -1756,6 +1766,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 	}
 	elseif(isset($_REQUEST[$name])){
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$_REQUEST[$name]=json_decode($_REQUEST[$name],true);
+		}
     	if(!is_array($_REQUEST[$name])){
         	$params['-values']=array($_REQUEST[$name]);
 		}
@@ -1766,6 +1779,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	else{
     	$params['-values']=array();
 	}
+	//return printValue($params);
 	//check for dragsort
 	if(isset($params['behavior']) && preg_match('/dragsort/i',$params['behavior'])){
 		$dragsort=' data-behavior="dragsort"';
