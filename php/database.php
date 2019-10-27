@@ -2888,8 +2888,24 @@ function addDBRecord($params=array()){
 	foreach($info as $k=>$i){
     	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
+        	if(is_array($params[$k])){
+        		$params[$k]=json_encode($params[$k]);
+        	}
+        	else{
+        		$jval=json_decode($params[$k],true);
+	        	if(!is_array($jval)){
+	        		if(stringContains($params[$k],':')){
+	        			$arr=preg_split('/\:/',$params[$k]);
+	        			$params[$k]=json_encode($arr);
+	        		}
+	        		else{
+	        			$params[$k]=json_encode(array($params[$k]));
+	        		}
+	        	}
+        	}
 		}
 	}
+	//echo printValue($jsonfields).printValue($params).printValue($_REQUEST);exit;
 	if(count($jsonfields)){
 		foreach($params as $key=>$val){
 			if(isset($info[$key]['_dbextra']) && stringContains($info[$key]['_dbextra'],' generated')){
