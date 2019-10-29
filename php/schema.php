@@ -376,7 +376,7 @@ function createWasqlTable($table=''){
 			$fields['page_id']=databaseDataType('integer')." NULL";
 			$fields['row_count']=databaseDataType('integer')." NULL";
 			$fields['field_count']=databaseDataType('integer')." NULL";
-			$fields['function']=databaseDataType('varchar(25)')." NULL";
+			$fields['function_name']=databaseDataType('varchar(25)')." NULL";
 			$fields['fields']=databaseDataType('varchar(255)')." NULL";
 			$fields['tablename']=databaseDataType('varchar(255)')." NULL";
 			$fields['user_id']=databaseDataType('integer')." NULL";
@@ -387,11 +387,11 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "function run_length user_id page_id row_count field_count\r\nfields\r\nquery",
-				'listfields'	=> "_cdate function run_length user_id tablename page_id row_count field_count",
+				'formfields'	=> "function_name run_length user_id page_id row_count field_count\r\nfields\r\nquery",
+				'listfields'	=> "_cdate function_name run_length user_id tablename page_id row_count field_count",
 				'sortfields'	=> 'run_length desc',
-				'formfields_mod'=> "function run_length user_id page_id row_count field_count\r\nfields\r\nquery",
-				'listfields_mod'=> "_cdate function run_length user_id tablename page_id row_count field_count",
+				'formfields_mod'=> "function_name run_length user_id page_id row_count field_count\r\nfields\r\nquery",
+				'listfields_mod'=> "_cdate function_name run_length user_id tablename page_id row_count field_count",
 				'sortfields_mod'	=> 'run_length desc'
 				);
 			$id=addDBRecord($addopts);

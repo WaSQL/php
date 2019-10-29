@@ -6,6 +6,20 @@
 		$db=$DATABASE[$_REQUEST['db']];
 		$_SESSION['db']=$db;
 	}
+	if(!isset($db['name'])){
+		$db=array(
+			'name'=>$CONFIG['dbname'],
+			'displayname'=>$CONFIG['dbname'],
+			'dbname'=>$CONFIG['dbname'],
+			'dbtype'=>$CONFIG['dbtype'],
+			'dbuser'=>$CONFIG['dbuser'],
+			'dbpass'=>$CONFIG['dbpass'],
+			'dbhost'=>$CONFIG['dbhost']
+		);
+		$DATABASE[$CONFIG['dbname']]=$db;
+		$CONFIG['database']=$CONFIG['dbname'];
+		$_SESSION['db']=$db;
+	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'monitor':
 			//echo printValue($_REQUEST);exit;

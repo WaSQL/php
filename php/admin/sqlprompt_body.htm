@@ -74,17 +74,17 @@
 					<input type="hidden" name="func" value="sql" />
 					<input type="hidden" name="sql_select" value="" />
 					<input type="hidden" name="cursor_pos" value="" />
-					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="height:200px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="height:200px;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
 						<div class="col-sm-3">
-							<button type="submit" class="btn <?=configValue('admin_color');?>"><translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
+							<button type="submit" class="btn <?=configValue('admin_color');?>"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
 						</div>
 						<div class="col-sm-4 text-right w_grey w_small">
 							<translate>Note: You can drag and drop .sql files onto the textarea</translate>
 						</div>
 						<div class="col-sm-2 align-right w_gray w_small" id="results_count"></div>
 						<div class="col-sm-3 align-right">
-							<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn w_orange"><span class="icon-export"></span> <translate>export</translate></a>
+							<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
 						</div>
 					</div>
 				</form>

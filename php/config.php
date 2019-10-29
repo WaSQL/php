@@ -206,5 +206,34 @@ if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']]['dbicon'])
 	$CONFIG['dbicon']=$DATABASE[$CONFIG['database']]['dbicon'];
 	$CONFIG['displayname']=$DATABASE[$CONFIG['database']]['displayname'];
 }
+//default dbicon
+if(!isset($CONFIG['dbicon'])){
+	switch(strtolower($CONFIG['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			$CONFIG['dbicon']='icon-database-postgresql';
+			//echo printValue($tables);
+		break;
+		case 'oracle':
+			$CONFIG['dbicon']='icon-database-oracle';
+		break;
+		case 'mssql':
+			$CONFIG['dbicon']='icon-database-mssql';
+		break;
+		case 'hana':
+			$DATABASE[$d]['dbicon']='';
+		break;
+		case 'sqlite':
+			$CONFIG['dbicon']='icon-database-sqlite';
+		break;
+		case 'mysql':
+		case 'mysqli':
+			$CONFIG['dbicon']='icon-database-mysql';
+		break;
+	}
+}
+if(!isset($CONFIG['displayname'])){
+	$CONFIG['displayname']=$CONFIG['dbname'];
+}
 ksort($CONFIG);
 //echo printValue($CONFIG);exit;

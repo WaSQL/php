@@ -6026,6 +6026,7 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	$run_length=round(($stop-$start),3);
 	if(isNum($SETTINGS['wasql_queries_time']) && $run_length < $SETTINGS['wasql_queries_time']){return;}
 	$addopts=array('-table'=>"_queries",
+		'function_name'		=> $function,
 		'function'		=> $function,
 		'query'			=> $query,
 		'row_count'		=> $rowcount,

@@ -137,8 +137,12 @@ function loadTextFileInit(el){
 		//check for text
 		if(files.length == 0 && undefined != evt.dataTransfer.getData('text')){
 			let txt=evt.dataTransfer.getData('text');
-			//console.log('insertAtCursor:'+txt);
-			insertAtCursor(this,txt);
+			let last=this.getAttribute('data-insert');
+			if(txt.length && last != txt){
+				this.setAttribute('data-insert',txt);
+				//console.log('insertAtCursor:'+txt);
+				insertAtCursor(this,txt);
+			}
 			return false;
 		}
 		// files is a FileList of File objects.
