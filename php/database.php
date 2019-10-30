@@ -291,6 +291,8 @@ function dbGetTables($db){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 *	[-searchclass]  - sets the search form section class
+*	[-pretable]  - HTML/text content to add just before the table begins
+*	[-posttable]  - HTML/text to add just after the table ends
 * @return string - html table to display
 * @usage
 *	databaseListRecords(array('-table'=>'notes'));
@@ -638,6 +640,10 @@ function databaseListRecords($params=array()){
 			$rtn .= '</div>'.PHP_EOL;
 		}
 	}
+	//check for pretable content
+	if(isset($params['-pretable'])){
+		$rtn .= $params['-pretable'];
+	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
 	//add any table attributes pass in with -table
@@ -971,6 +977,10 @@ function databaseListRecords($params=array()){
 	}
 	$rtn .= '	</tbody>'.PHP_EOL;
 	$rtn .= '</table>'.PHP_EOL;
+	//check for pretable content
+	if(isset($params['-posttable'])){
+		$rtn .= $params['-posttable'];
+	}
 	return $rtn;
 }
 //---------- begin function checkDBTableSchema
