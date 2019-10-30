@@ -291,8 +291,9 @@ function dbGetTables($db){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 *	[-searchclass]  - sets the search form section class
-*	[-pretable]  - HTML/text content to add just before the table begins
-*	[-posttable]  - HTML/text to add just after the table ends
+*	[-predata]  - HTML/text content to add just before the table begins
+*	[-postdata]  - HTML/text to add just after the table ends
+*	[-listview] - HTML/text to use instead of building a table row for each recordset.  Use [field] in your HTML to show value
 * @return string - html table to display
 * @usage
 *	databaseListRecords(array('-table'=>'notes'));
@@ -641,8 +642,34 @@ function databaseListRecords($params=array()){
 		}
 	}
 	//check for pretable content
-	if(isset($params['-pretable'])){
+	if(isset($params['-predata'])){
+		$rtn .= $params['-predata'];
+	}
+	elseif(isset($params['-pretable'])){
 		$rtn .= $params['-pretable'];
+	}
+	//check for listview
+	if(isset($params['-listview'])){
+		if(!is_array($params['-list']) || !count($params['-list'])){
+			$rtn .= 'No Results'.PHP_EOL;
+			return $rtn;
+		}
+		//loop through each row 
+		foreach($params['-list'] as $rec){
+			$crow=$params['-listview'];	
+			foreach($rec as $cfield=>$cvalue){
+				str_replace("[{$cfield}]", $cvalue, $crow);
+			}
+			$rtn .= $crow.PHP_EOL;
+		}
+		//check for posttable
+		if(isset($params['-postdata'])){
+			$rtn .= $params['-postdata'];
+		}
+		elseif(isset($params['-posttable'])){
+			$rtn .= $params['-posttable'];
+		}
+		return $rtn;
 	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
@@ -978,7 +1005,10 @@ function databaseListRecords($params=array()){
 	$rtn .= '	</tbody>'.PHP_EOL;
 	$rtn .= '</table>'.PHP_EOL;
 	//check for pretable content
-	if(isset($params['-posttable'])){
+	if(isset($params['-postdata'])){
+		$rtn .= $params['-postdata'];
+	}
+	elseif(isset($params['-posttable'])){
 		$rtn .= $params['-posttable'];
 	}
 	return $rtn;
