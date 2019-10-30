@@ -1163,6 +1163,12 @@ a.btn{text-decoration: none;}
 /* black */
 .btn.w_black{color: #fff;background-color: #343a40;border-color: #343a40;}
 .btn.w_black:hover{background-color: #23272b;border-color: #1d2124;}
+
+.btn.small{
+  padding: .25rem .5rem;
+  font-size: .875rem;
+}
+
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/
 .input-field{
   position:relative;
