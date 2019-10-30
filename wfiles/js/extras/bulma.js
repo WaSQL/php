@@ -1,6 +1,5 @@
-// The following code is based off a toggle menu by @Bradcomp
-// source: https://gist.github.com/Bradcomp/a9ef2ef322a8e8017443b626208999c1
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
+	/* Javascript to toggle the burger menu on or off */
     let burger = document.querySelector('.burger');
     if(undefined != burger){
 	    burger.addEventListener('click', function() {
@@ -11,4 +10,4 @@
 	        }
 	    });
 	}
-})();
+}, false);
