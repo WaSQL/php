@@ -1,5 +1,9 @@
 <?php
 $progpath=dirname(__FILE__);
+/*
+	Google Add to Calendar link example:
+	https://www.google.com/calendar/event?action=TEMPLATE&pprop=eidmsgid%3A_9pb5kdai6tc48_16e199f8ba421fb2&dates=20191101T071500%2F20191101T080000&text=I%27d%20like%20a%20demo%20of%20the%20thinkorswim%20platform&location=TD%20Ameritrade&details=Dear%20Steven%20Jones%2C%20%0A%0AHere%20is%20your%20appointment%20information%20so%20that%20you%20may%20update%20your%20calendar.%0A%0AConfirmation%20Number%3A%20NVXD%20%0AActivity%20Name%3A%20%20%20I%27d%20like%20a%20demo%20of%20the%20thinkorswim%20platform%20%0ADate%3A%20Friday%2C%20November%201%2C%202019%20-%207%3A15%20AM%20%0AYou%20can%20use%20the%20following%20link%20to%20cancel%20or%20reschedule%20your%20appointment%3A%0A%0Ahttps%3A%2F%2Fwww.timetrade.com%2Fapp%2Ftdameritrade%2Fworkflows%2Ftd001%2Ffind%3Fattendee_person_lastName%3DJones%26appointmentId%3DNVZD&ctok=c3RldmUubGxveWRAZ21haWwuY29t
+*/
 
 //Google API to access analytics, calendar, etc.
 //http://code.google.com/support/bin/answer.py?answer=62712&topic=10433

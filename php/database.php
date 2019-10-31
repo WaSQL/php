@@ -658,7 +658,7 @@ function databaseListRecords($params=array()){
 		foreach($params['-list'] as $rec){
 			$crow=$params['-listview'];	
 			foreach($rec as $cfield=>$cvalue){
-				str_replace("[{$cfield}]", $cvalue, $crow);
+				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
 			}
 			$rtn .= $crow.PHP_EOL;
 		}
