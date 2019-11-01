@@ -5377,6 +5377,10 @@ function getDBCharset(){
 * @usage $ok=getDBCount(array('-table'=>$table,'field1'=>$val1...))
 */
 function getDBCount($params=array()){
+	if(isPostgreSQL()){return postgresqlGetDBCount($table,$allfields);}
+	elseif(isSqlite()){return sqliteGetDBCount($table,$allfields);}
+	elseif(isOracle()){return oracleGetDBCount($table,$allfields);}
+	elseif(isMssql()){return mssqlGetDBCount($table,$allfields);}
 	$function='getDBCount';
 	$cnt=0;
 	if(isset($params['-table'])){

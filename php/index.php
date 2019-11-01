@@ -766,20 +766,26 @@ if(!isset($_REQUEST['_view']) || strlen($_REQUEST['_view'])==0){
 //check for mobile_index in config file if the client device is a mobile device
 if(isset($CONFIG['mobile_index']) && isMobileDevice() && !isset($_REQUEST['_template']) && preg_match('/^(1|index)$/i',$_REQUEST['_view'])){
 	//make sure the page exists first
-	$query="select _id,name from _pages where";
-	if(isNum($CONFIG['mobile_index'])){$query .= " _id={$CONFIG['mobile_index']}";}
-	else{$query .= " name = '{$CONFIG['mobile_index']}'";}
-	$r=getDBRecords(array('-query'=>$query));
+	$qopts=array(
+		'-table'=>'_pages',
+		'-fields'=>'_id,name'
+	);
+	if(isNum($CONFIG['mobile_template'])){$qopts['_id']=$CONFIG['mobile_index'];}
+	else{$qopts['name']=$CONFIG['mobile_index'];}
+	$r=getDBRecords($qopts);
 	if(isNum($r[0]['_id'])){
 		$_REQUEST['_view']=$r[0]['name'];
 	}
 }
 //check for mobile_template in config file if the client device is a mobile device
 if(isset($CONFIG['mobile_template']) && isMobileDevice() && !isset($_REQUEST['_template'])){
-	$query="select _id from _templates where";
-	if(isNum($CONFIG['mobile_template'])){$query .= " _id={$CONFIG['mobile_template']}";}
-	else{$query .= " name = '{$CONFIG['mobile_template']}'";}
-	$r=getDBRecords(array('-query'=>$query));
+	$qopts=array(
+		'-table'=>'_templates',
+		'-fields'=>'_id'
+	);
+	if(isNum($CONFIG['mobile_template'])){$qopts['_id']=$CONFIG['mobile_template'];}
+	else{$qopts['name']=$CONFIG['mobile_template'];}
+	$r=getDBRecords($qopts);
 	if(isNum($r[0]['_id'])){
 		$_REQUEST['_template']=$r[0]['_id'];
 	}

@@ -36,7 +36,7 @@ function postgresqlAddDBIndex($params=array()){
 	if(!isset($params['-fields'])){return 'postgresqlAddDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
 	//check for schema name
-	if(!stringContains($params[-table],'.')){
+	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetConfigValue('dbschema');
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
@@ -57,7 +57,7 @@ function postgresqlAddDBIndex($params=array()){
 	if(strlen($fieldstr) > 60){
     	$fieldstr=substr($fieldstr,0,60);
 	}
-	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
+	if(!isset($params['-name'])){$params['-name']=str_replace('.','_',"{$prefix}_{$params['-table']}_{$fieldstr}");}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
 	$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
@@ -84,7 +84,7 @@ function postgresqlAddDBRecord($params=array()){
 	global $CONFIG;
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
 	//check for schema name
-	if(!stringContains($params[-table],'.')){
+	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetConfigValue('dbschema');
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
@@ -362,7 +362,7 @@ function postgresqlDropDBIndex($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlDropDBIndex Error: No table';}
 	if(!isset($params['-name'])){return 'postgresqlDropDBIndex Error: No name';}
 	//check for schema name
-	if(!stringContains($params[-table],'.')){
+	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetConfigValue('dbschema');
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
@@ -464,7 +464,7 @@ function postgresqlDelDBRecord($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlDelDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'postgresqlDelDBRecord Error: No where';}
 	//check for schema name
-	if(!stringContains($params[-table],'.')){
+	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetConfigValue('dbschema');
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
@@ -498,7 +498,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-table'])){return 'postgresqlEditRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'postgresqlEditRecord error: No where specified.';}
 	//check for schema name
-	if(!stringContains($params[-table],'.')){
+	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetConfigValue('dbschema');
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
@@ -661,6 +661,14 @@ function postgresqlExecuteSQL($query,$params=array()){
 * @usage $cnt=postgresqlGetDBCount(array('-table'=>'states'));
 */
 function postgresqlGetDBCount($params=array()){
+	if(!isset($params['-table'])){return null;}
+	if(!stringContains($params['-table'],'.')){
+		$schema=postgresqlGetConfigValue('dbschema');
+		if(strlen($schema)){
+			$params['-table']="{$schema}.{$params['-table']}";
+		}
+	}
+	//echo printValue($params);exit;
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
@@ -958,7 +966,7 @@ function postgresqlGetDBRecords($params){
 	    	return null;
 		}
 		//check for schema name
-		if(!stringContains($params[-table],'.')){
+		if(!stringContains($params['-table'],'.')){
 			$schema=postgresqlGetConfigValue('dbschema');
 			if(strlen($schema)){
 				$params['-table']="{$schema}.{$params['-table']}";
