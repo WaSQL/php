@@ -16,6 +16,7 @@ global $firsttime;
 global $afolder;
 $firsttime=1;
 $local_shas=array();
+error_reporting(E_ALL ^ E_WARNING);
 date_default_timezone_set('America/Denver');
 ini_set("allow_url_fopen",1);
 $progpath=dirname(__FILE__);

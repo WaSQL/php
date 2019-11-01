@@ -12813,6 +12813,7 @@ function processActions(){
 					setWasqlError(debug_backtrace(),"No record found");
 					}
 				if(isset($_REQUEST['_return']) && $_REQUEST['_return']=='XML'){
+					$_REQUEST['edit_result']=json_encode($_REQUEST['edit_result']);
 					echo "<timestamp>{$timestamp}</timestamp>";
 					echo "<edit_result>{$_REQUEST['edit_result']}</edit_result>";
 					echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
