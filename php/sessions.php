@@ -37,7 +37,24 @@ if(isset($CONFIG['session_domain'])){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function sessionTable(){
-	return '_sessions';
+	global $CONFIG;
+	switch(strtolower($CONFIG['dbtype'])){
+		case 'mysql':
+		case 'mysqli':
+			return '_sessions';
+		break;
+		case 'postgres':
+		case 'postgresql':
+			$schema=postgresqlGetConfigValue('dbschema');
+			if(strlen($schema)){
+				return "{$schema}._sessions";
+			}
+			return '_sessions';
+		break;
+		default:
+			return '_sessions';
+		break;
+	}
 }
 /**
  * @author slloyd

@@ -163,8 +163,7 @@ foreach($DATABASE as $d=>$db){
 		break;
 	}
 }
-
-//echo printValue($DATABASE).printValue($CONFIG);exit;
+//echo printValue($DATABASE).printValue($CONFIG).printValue($xml);exit;
 //ksort($CONFIG);echo "chost:{$chost}<br>sameas:{$sameas}<br>".printValue($CONFIG).printValue($ConfigXml);exit;
 if(!isset($CONFIG['dbname'])){
 	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
@@ -236,4 +235,4 @@ if(!isset($CONFIG['displayname'])){
 	$CONFIG['displayname']=$CONFIG['dbname'];
 }
 ksort($CONFIG);
-//echo printValue($CONFIG);exit;
+//echo "elho".printValue($CONFIG);exit;

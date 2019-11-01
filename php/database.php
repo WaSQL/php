@@ -3330,6 +3330,7 @@ ENDOFSQL;
 *	$ok=createDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function createDBTable($table='',$fields=array(),$engine=''){
+	//echo $table.printValue($fields);exit;
 	if(isPostgreSQL()){return postgresqlCreateDBTable($table,$fields);}
 	elseif(isSqlite()){return sqliteCreateDBTable($table,$fields);}
 	elseif(isOracle()){return oracleCreateDBTable($table,$fields);}
