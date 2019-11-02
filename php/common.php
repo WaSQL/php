@@ -3947,7 +3947,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 		'id','name','class','style','title','alt','accesskey','tabindex',
 		'onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
 		'_behavior','display',
-		'required','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','readonly','disabled',
+		'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg','autocomplete',
 		'action','onsubmit'
