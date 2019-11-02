@@ -13632,7 +13632,14 @@ function processFileUploads($docroot=''){
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
 				//resize the image?
+				$resize='';
 				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
+					$resize=$_REQUEST[$name.'_resize'];
+				}
+				elseif(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
+					$resize=$_REQUEST['data-resize'];
+				}
+				if(strlen($resize)){
 					if(!isset($CONFIG['resize_command'])){
 						$_REQUEST[$name.'_resize_results']="Error: resize_command not set";	
 					}
@@ -13641,25 +13648,19 @@ function processFileUploads($docroot=''){
 					}
 					else{
 						$cmd=$CONFIG['resize_command'];
-						$resize=$_REQUEST[$name.'_resize'];
-                		$cmd="{$cmd} {$resize} '{$abspath}' -auto-orient '{$abspath}'";
-                		$_REQUEST[$name.'_resize_cmd']=$cmd;
-                		$_REQUEST[$name.'_resize_results']=cmdResults($cmd);
+						$fname=getFileName($abspath,1);
+						$refile=str_replace($fname,$fname.'_resized',$abspath);
+
+                		$cmd="{$cmd} {$resize} '{$abspath}' -auto-orient '{$refile}'";
+                		$ok=cmdResults($cmd);
+                		if(is_file($refile) && filesize($refile) > 0){
+							unlink($abspath);
+							rename($refile,$abspath);
+							$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+	                		$_REQUEST[$name.'_size']=filesize($abspath);
+						}
+	                	$_REQUEST[$name.'_resized']=$ok;
                 	}                	
-				}
-				if(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
-					$fname=getFileName($abspath,1);
-					$refile=str_replace($fname,$fname.'_resized',$abspath);
-                	$cmd="convert -resize '{$_REQUEST['data-resize']}' '{$abspath}' '{$refile}'";
-                	$ok=cmdResults($cmd);
-                	if(is_file($refile) && filesize($refile) > 0){
-						unlink($abspath);
-						rename($refile,$abspath);
-						$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
-                		$_REQUEST[$name.'_size']=filesize($abspath);
-					}
-                	$_REQUEST[$name.'_resized']=$ok;
-                	//echo printValue($_REQUEST);exit;
 				}
 				//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
