@@ -289,6 +289,29 @@ var wacss = {
 	        			list[i].appendChild(gcanvas);
 	        			let gctx = gcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
+						/* check for data-onclick */
+						if(undefined != list[i].getAttribute('data-onclick')){
+							gcanvas.parentobj=list[i];
+							gcanvas.chartobj=wacss.chartjs[list[i].id];
+							gcanvas.onclick_func=list[i].getAttribute('data-onclick');
+							gcanvas.clicked=0;
+							gcanvas.onclick = function(evt){
+								if(this.clicked==0){
+									this.clicked=1;
+							        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
+							        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
+									let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
+							       	if(activePoints.length > 0){
+								        let firstPoint = activePoints[0];
+								        let params={};
+								        params.type=this.parentobj.getAttribute('data-type');
+								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+								        window[this.onclick_func](params);
+								    }
+							    }
+							};
+						}
 					}
 				break;
 				case 'line':
@@ -382,6 +405,29 @@ var wacss = {
 	        			list[i].appendChild(lcanvas);
 	        			let lctx = lcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(lctx, lconfig);
+						/* check for data-onclick */
+						if(undefined != list[i].getAttribute('data-onclick')){
+							lcanvas.parentobj=list[i];
+							lcanvas.chartobj=wacss.chartjs[list[i].id];
+							lcanvas.onclick_func=list[i].getAttribute('data-onclick');
+							lcanvas.clicked=0;
+							lcanvas.onclick = function(evt){
+								if(this.clicked==0){
+									this.clicked=1;
+							        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
+							        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
+									let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
+									if(activePoints.length > 0){
+								        let firstPoint = activePoints[0];
+								        let params={};
+								        params.type=this.parentobj.getAttribute('data-type');
+								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+								        window[this.onclick_func](params);
+								    }
+							    }
+							};
+						}
 					}
 				break;
 				case 'pie':
@@ -454,7 +500,29 @@ var wacss = {
 	        			list[i].appendChild(pcanvas);
 	        			let pctx = pcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
-						//console.log(wacss.chartjs[list[i].id].config);
+						/* check for data-onclick */
+						if(undefined != list[i].getAttribute('data-onclick')){
+							pcanvas.parentobj=list[i];
+							pcanvas.chartobj=wacss.chartjs[list[i].id];
+							pcanvas.onclick_func=list[i].getAttribute('data-onclick');
+							pcanvas.clicked=0;
+							pcanvas.onclick = function(evt){
+								if(this.clicked==0){
+									this.clicked=1;
+							        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
+							        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
+									let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
+							        if(activePoints.length > 0){
+								        let firstPoint = activePoints[0];
+								        let params={};
+								        params.type=this.parentobj.getAttribute('data-type');
+								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+								        window[this.onclick_func](params);
+								    }
+							    }
+							};
+						}
 					}
 				break;
 			}

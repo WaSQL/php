@@ -12,6 +12,9 @@
 		    }
 		});
 	}
+	function chartJsOnclick(p){
+		console.log(p);
+	}
 </script>
 <h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
 <div class="row">
@@ -346,7 +349,7 @@
 </view:c3charts>
 
 <view:chartjs>
-	<div class="chartjs" id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart" data-stacked="1" style="width:100%;" data-type="bar"></div>
+	<div class="chartjs" id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart" data-onclick="chartJsOnclick" data-stacked="1" style="width:100%;" data-type="bar"></div>
 	<div id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart_data" style="display:none;">
 		<options>{
 			"responsive": true,
@@ -365,7 +368,7 @@
 		<dataset data-label="cleanliness_score">[90]</dataset>
 	</div>
 
-	<div class="chartjs" id="barchart" data-type="bar"></div>
+	<div class="chartjs" id="barchart" data-type="bar"  data-onclick="chartJsOnclick"></div>
 	<div id="barchart_data" style="display:none;">
 		<options>
 		{
@@ -408,11 +411,11 @@
 	</div>
 
 	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');">Update guage</a></div>
-	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-value="90"></div>
+	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-value="90"  data-onclick="chartJsOnclick"></div>
 	<div id="guagechart1_data" style="display:none;">90</div>
 
 	<div><a href="#" onclick="setText('piechart1_data',getText('piechart1_data2'));wacss.initChartJs('piechart1');">Update pie chart</a></div>
-	<div class="chartjs" id="piechart1" style="height:300px;width:400px;" data-type="pie" data-ylabel="Genders"></div>
+	<div class="chartjs" id="piechart1" style="height:300px;width:400px;" data-type="pie" data-ylabel="Genders" data-onclick="chartJsOnclick"></div>
 	<div id="piechart1_data" style="display:none;">
 		<dataset>{"m":17,"f":16,"n":8}</dataset>
 	</div>
@@ -422,7 +425,7 @@
 
 
 	<div><a href="#" onclick="setText('linechart_data',getText('linechart_data2'));wacss.initChartJs('linechart');">Update chart</a></div>
-	<div class="chartjs" id="linechart" style="height:650px" data-type="line" data-x="paymentDate" data-y="amount"></div>
+	<div class="chartjs" id="linechart" style="height:650px" data-type="line" data-x="paymentDate" data-y="amount"  data-onclick="chartJsOnclick"></div>
 	<div id="linechart_data" style="display:none;">
 		<options>
 		{
