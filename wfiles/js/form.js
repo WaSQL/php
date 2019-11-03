@@ -76,6 +76,107 @@ function attachDropFiles(fld){
 		fileReader.readAsDataURL(fileToLoad);
 	}
 }
+function formSetFrequency(fid,v){
+	let container=document.querySelector('#'+fid+'_container');
+	if(undefined==container){return false;}
+	let hours=container.querySelectorAll('#frequency_hour');
+	let months=container.querySelectorAll('#frequency_month');
+	let days=container.querySelectorAll('#frequency_day');
+	let field=container.querySelector('#'+fid);
+	let nv={hour:[],month:[],day:[]};
+	if(undefined != v){
+		if(typeof(v)=='string'){
+			v=JSON.parse(v);
+		}
+		for(let x=0;x<hours.length;x++){
+			let hval=parseInt(hours[x].value);
+			if(v.hour[0]==-1){
+				hours[x].checked=true;
+				nv.hour=[-1];
+			}
+			else if(in_array(hval,v.hour)){
+				hours[x].checked=true;
+				nv.hour.push(hval);
+			}
+			else{
+				hours[x].checked=false;
+			}
+		}
+		for(let x=0;x<months.length;x++){
+			let hval=parseInt(months[x].value);
+			if(v.month[0]==-1){
+				months[x].checked=true;
+				nv.month=[-1];
+			}
+			else if(in_array(hval,v.month)){
+				months[x].checked=true;
+				nv.month.push(hval)	
+			}
+			else{months[x].checked=false;}
+		}
+		for(let x=0;x<days.length;x++){
+			let hval=parseInt(days[x].value);
+			if(v.day[0]==-1){
+				days[x].checked=true;
+				nv.day=[-1];
+			}
+			else if(in_array(hval,v.day)){
+				days[x].checked=true;
+				nv.day.push(hval);	
+			}
+			else{days[x].checked=false;}
+		}
+		setText(field,JSON.stringify(nv));
+	}
+	else{
+		for(let x=0;x<hours.length;x++){
+			let hval=parseInt(hours[x].value);
+			if(hours[x].checked){
+				nv.hour.push(hval);
+			}
+		}
+		if(hours.length == nv.hour.length){
+			nv.hour=[-1];
+		}
+		else if(nv.hour.length==0){
+			nv.hour=[0];
+		}
+		for(let x=0;x<months.length;x++){
+			let hval=parseInt(months[x].value);
+			if(months[x].checked){
+				nv.month.push(hval);
+			}
+		}
+		if(months.length == nv.month.length){
+			nv.month=[-1];
+		}
+		else if(nv.month.length == 0){
+			nv.month=[-1]
+		}
+		for(let x=0;x<days.length;x++){
+			let hval=parseInt(days[x].value);
+			if(days[x].checked){
+				nv.day.push(hval);
+			}
+		}
+		if(days.length == nv.day.length){
+			nv.day=[-1];
+		}
+		else if(nv.day.length==0){
+			nv.day=[1];
+		}
+		setText(field,JSON.stringify(nv));
+		formSetFrequency(field.id,field.value);
+	}
+	
+}
+function formSetFrequencyDisplay(fid,s){
+	let wizard=document.querySelector('#'+fid+'_wizard');
+	if(undefined==wizard){return false;}
+	if(s){wizard.style.display='inline-block';}
+	else{wizard.style.display='none';}
+	return false;
+}
 /*----------------------------------------------*/
 function autoFill(theForm,answerid,ro){
 	if(undefined == ro){

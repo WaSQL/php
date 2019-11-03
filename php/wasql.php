@@ -1304,6 +1304,7 @@ function wasqlGetInputtypes($d=0){
 		'select'	=> 'Select',
 		'password'	=> 'Password',
 		'radio'		=> 'Radio',
+		'frequency' => 'Frequency',
 		'slider'	=> 'Slider',
 		'text'		=> 'Text',
 		'textarea'	=> 'Textarea',

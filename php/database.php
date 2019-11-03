@@ -5776,6 +5776,9 @@ function getDBFieldTag($params=array()){
         case 'starrating':
 			$tag=buildFormStarRating($info[$field]['name'],$info[$field]);
 		break;
+		case 'frequency':
+			$tag=buildFormFrequency($info[$field]['name'],$info[$field]);
+		break;
 		case 'toggle_f':
 		case 'toggle_r':
 			$selections=getDBFieldSelections($info[$field]);
