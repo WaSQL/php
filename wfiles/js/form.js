@@ -86,32 +86,41 @@ function formSetFrequency(fid,v){
 	let field=container.querySelector('#'+fid);
 	let nv={minute:[],hour:[],month:[],day:[]};
 	if(undefined != v){
-		if(typeof(v)=='string'){v=JSON.parse(v);}
+		if(typeof(v)=='string'){
+			if(v.length > 0){v=JSON.parse(v);}
+			else{v={minute:[],hour:[],month:[],day:[]};}
+		}
 		if(v.reset){
 			for(let y=0;y<v.reset.length;y++){
 				switch(v.reset[y]){
 					case 'minute':
 						for(let x=0;x<minutes.length;x++){minutes[x].checked=false;}
-						container.querySelector('span[title="clear minutes"]').style.color='#6c757d';
+						let mclear=container.querySelector('span[title="clear minutes"]');
+						if(undefined != mclear){mclear.style.color='#6c757d';}
 					break;
 					case 'hour':
 						for(let x=0;x<hours.length;x++){hours[x].checked=false;}
-						container.querySelector('span[title="clear hours"]').style.color='#6c757d';
+						let hclear=container.querySelector('span[title="clear hours"]');
+						if(undefined != hclear){hclear.style.color='#6c757d';}
 					break;
 					case 'day':
 						for(let x=0;x<days.length;x++){days[x].checked=false;}
-						container.querySelector('span[title="clear days"]').style.color='#6c757d';
+						let dclear=container.querySelector('span[title="clear days"]');
+						if(undefined != dclear){dclear.style.color='#6c757d';}
 					break;
 					case 'month':
 						for(let x=0;x<months.length;x++){months[x].checked=false;}
-						container.querySelector('span[title="clear months"]').style.color='#6c757d';
+						let moclear=container.querySelector('span[title="clear months"]');
+						if(undefined != moclear){moclear.style.color='#6c757d';}
 					break;
 				}
 			}
+			formSetFrequency(field.id);
+			return false;
 		}
 		for(let x=0;x<minutes.length;x++){
 			let hval=parseInt(minutes[x].value);
-			if(v.minute[0]==-1){
+			if(undefined != v.minute && undefined != v.minute[0] && v.minute[0]==-1){
 				minutes[x].checked=true;
 				nv.minute=[-1];
 			}
@@ -125,7 +134,7 @@ function formSetFrequency(fid,v){
 		}
 		for(let x=0;x<hours.length;x++){
 			let hval=parseInt(hours[x].value);
-			if(v.hour[0]==-1){
+			if(undefined != v.hour && undefined != v.hour[0] && v.hour[0]==-1){
 				hours[x].checked=true;
 				nv.hour=[-1];
 			}
@@ -139,7 +148,7 @@ function formSetFrequency(fid,v){
 		}
 		for(let x=0;x<months.length;x++){
 			let hval=parseInt(months[x].value);
-			if(v.month[0]==-1){
+			if(undefined != v.month && undefined != v.month[0] && v.month[0]==-1){
 				months[x].checked=true;
 				nv.month=[-1];
 			}
@@ -151,7 +160,7 @@ function formSetFrequency(fid,v){
 		}
 		for(let x=0;x<days.length;x++){
 			let hval=parseInt(days[x].value);
-			if(v.day[0]==-1){
+			if(undefined != v.day && undefined != v.day[0] && v.day[0]==-1){
 				days[x].checked=true;
 				nv.day=[-1];
 			}

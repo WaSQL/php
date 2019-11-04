@@ -2299,6 +2299,7 @@ function buildFormFile($name,$params=array()){
 * @usage echo buildFormFrequency('{$params['id']}',$params);
 */
 function buildFormFrequency($name,$params=array()){
+	//return printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
@@ -2306,63 +2307,92 @@ function buildFormFrequency($name,$params=array()){
 	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
 	$class=isset($params['class'])?' '.$params['class']:'';
 	$required=isset($params['required']) && $params['required']==1?' required="required"':'';
-	//decide what parts to show
+	//determine what sections to show
+	$sections=array('minute','hour','day','month');
+	if(isset($params['tvals']) && strlen($params['tvals'])){
+		$sections=preg_split('/[\r\n\,]+/',trim($params['tvals']));
+	}
+	if(isset($params['-hide'])){
+		foreach($sections as $i=>$section){
+			if(stringContains($params['-hide'],$section)){
+				unset($sections[$i]);
+			}
+		}
+	}
+	elseif(isset($params['-show'])){
+		$sections=preg_split('/\,/',strtolower(trim($params['-show'])));
+	}
+	if(!count($sections)){return '';}
 	$rtn=<<<ENDOFRTN
 	<div style="display:inline-block;" id="{$params['id']}_container">
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="soft">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" class="w_frequency_wizard">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
-				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('{$params['id']}',{reset:['minute','hour','month','day']});"></span>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});">Every Minute</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1]});">Hourly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1]});">Daily</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]});">Weekly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15]});;">Bi-Monthly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1]});">Monthly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1]});;">Quarterly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1]});;">Yearly</a>
-			</div>
 ENDOFRTN;
+	$sectionstr=implode("','",$sections);
+	$rtn .= '				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('."'{$params['id']}',{reset:['{$sectionstr}']});\"></span>".PHP_EOL;
+	if(stringContains($sectionstr,'minute')){
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});\">Every Minute</a>".PHP_EOL;
+	}
+	if(stringContains($sectionstr,'hour')){
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1]});\">Hourly</a>".PHP_EOL;
+	}
+	if(stringContains($sectionstr,'day') && stringContains($sectionstr,'month')){
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1]});\">Daily</a>".PHP_EOL;
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]});\">Weekly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15]});\">Bi-Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1]});\">Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1]});\">Quarterly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1]});\">Yearly</a>".PHP_EOL;
+	}
+	$rtn .= '			</div>'.PHP_EOL;
+	if(stringContains($sectionstr,'minute')){
 	//minutes
-	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Minutes</span><span class="icon-erase w_pointer" title="clear minutes" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'minute\']});"></span></div>'.PHP_EOL;
-	$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
-	for($x=0;$x<60;$x++){
-		$v=$x;
-		if(strlen($v)==1){$v="0{$x}";}
-		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
-		if(($x+1)%10==0){
-			$rtn .= '		    </div>'.PHP_EOL;
-			$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Minutes</span><span class="icon-erase w_pointer" title="clear minutes" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'minute\']});"></span></div>'.PHP_EOL;
+		$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
+		for($x=0;$x<60;$x++){
+			$v=$x;
+			if(strlen($v)==1){$v="0{$x}";}
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			if(($x+1)%10==0){
+				$rtn .= '		    </div>'.PHP_EOL;
+				$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
+			}
 		}
+		$rtn .= '		    </div>'.PHP_EOL;
 	}
-	$rtn .= '		    </div>'.PHP_EOL;
-	//hours
-	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Hours</span><span class="icon-erase w_pointer" title="clear hours" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'hour\']});"></span></div>'.PHP_EOL;
-	$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
-	for($x=0;$x<24;$x++){
-		$v=$x;
-		if(strlen($v)==1){$v="0{$x}";}
-		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
-		if(($x+1)%12==0){
-			$rtn .= '		    </div>'.PHP_EOL;
-			$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
+	if(stringContains($sectionstr,'hour')){
+		//hours
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Hours</span><span class="icon-erase w_pointer" title="clear hours" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'hour\']});"></span></div>'.PHP_EOL;
+		$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
+		for($x=0;$x<24;$x++){
+			$v=$x;
+			if(strlen($v)==1){$v="0{$x}";}
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			if(($x+1)%12==0){
+				$rtn .= '		    </div>'.PHP_EOL;
+				$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
+			}
 		}
+		$rtn .= '		    </div>'.PHP_EOL;
 	}
-	$rtn .= '		    </div>'.PHP_EOL;
-	//days
-	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Days</span><span class="icon-erase w_pointer" title="clear days" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'day\']});"></span></div>'.PHP_EOL;
-	$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
-	for($x=1;$x<29;$x++){
-		$v=$x;
-		if(strlen($v)==1){$v="0{$x}";}
-		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
-		if($x%7==0){
-			$rtn .= '		    </div>'.PHP_EOL;
-			$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+	if(stringContains($sectionstr,'day')){
+		//days
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Days</span><span class="icon-erase w_pointer" title="clear days" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'day\']});"></span></div>'.PHP_EOL;
+		$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+		for($x=1;$x<29;$x++){
+			$v=$x;
+			if(strlen($v)==1){$v="0{$x}";}
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			if($x%7==0){
+				$rtn .= '		    </div>'.PHP_EOL;
+				$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+			}
 		}
+		$rtn .= '		    </div>'.PHP_EOL;
 	}
-	$rtn .= '		    </div>'.PHP_EOL;
-	$rtn.=<<<ENDOFRTN
+	if(stringContains($sectionstr,'month')){
+		$rtn.=<<<ENDOFRTN
 			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
 		    <div class="w_frequency_row" data-type="months">
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="1" /> Jan</label>
@@ -2380,7 +2410,9 @@ ENDOFRTN;
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="11" /> Nov</label>
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="12" /> Dec</label>
 		    </div>
-		    
+ENDOFRTN;
+	}
+	$rtn.=<<<ENDOFRTN
 	    	<div style="text-align: right;margin-top:5px"><a href="#" class="w_link w_gray" onclick="return formSetFrequencyDisplay('{$params['id']}',0);"><span class="icon-close"></span> done</a></div>
 	    </div>
 	</div>
