@@ -2306,50 +2306,64 @@ function buildFormFrequency($name,$params=array()){
 	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
 	$class=isset($params['class'])?' '.$params['class']:'';
 	$required=isset($params['required']) && $params['required']==1?' required="required"':'';
+	//decide what parts to show
 	$rtn=<<<ENDOFRTN
 	<div style="display:inline-block;" id="{$params['id']}_container">
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="soft">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" class="w_frequency_wizard">
-			<div class="w_frequency_row" style="border-bottom:1px solid #ccc;padding:3px 0;" data-type="hours">
-				<span class="icon-frequency"></span>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[-1],month:[-1],day:[-1]});">Hourly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[-1],day:[-1]});">Daily</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[-1],day:[1,8,15,22]});">Weekly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[-1],day:[1,15]});;">Bi-Monthly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[-1],day:[1]});">Monthly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[1,4,7,10],day:[1]});;">Quarterly</a>
-				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{hour:[0],month:[1],day:[1]});;">Yearly</a>
+			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
+				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('{$params['id']}',{reset:['minute','hour','month','day']});"></span>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});">Every Minute</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1]});">Hourly</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1]});">Daily</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]});">Weekly</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15]});;">Bi-Monthly</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1]});">Monthly</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1]});;">Quarterly</a>
+				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1]});;">Yearly</a>
 			</div>
-		    <div class="w_frequency_row" data-type="hours">
-		      	<label style="margin:3px 10px 3px 0;">AM</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="00" /> 00</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="01" /> 01</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="02" /> 02</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="03" /> 03</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="04" /> 04</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="05" /> 05</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="06" /> 06</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="07" /> 07</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="08" /> 08</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="09" /> 09</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="10" /> 10</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="11" /> 11</label>
-		    </div>
-		    <div class="w_frequency_row" style="border-bottom:1px solid #ccc;" data-type="hours">
-		      	<label style="margin:3px 10px 3px 0;">PM</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="12" /> 12</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="13" /> 13</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="14" /> 14</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="15" /> 15</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="16" /> 16</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="17" /> 17</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="18" /> 18</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="19" /> 19</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="20" /> 20</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="21" /> 21</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="22" /> 22</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_hour" value="23" /> 23</label>
-		    </div>
+ENDOFRTN;
+	//minutes
+	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Minutes</span><span class="icon-erase w_pointer" title="clear minutes" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'minute\']});"></span></div>'.PHP_EOL;
+	$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
+	for($x=0;$x<60;$x++){
+		$v=$x;
+		if(strlen($v)==1){$v="0{$x}";}
+		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+		if(($x+1)%10==0){
+			$rtn .= '		    </div>'.PHP_EOL;
+			$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
+		}
+	}
+	$rtn .= '		    </div>'.PHP_EOL;
+	//hours
+	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Hours</span><span class="icon-erase w_pointer" title="clear hours" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'hour\']});"></span></div>'.PHP_EOL;
+	$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
+	for($x=0;$x<24;$x++){
+		$v=$x;
+		if(strlen($v)==1){$v="0{$x}";}
+		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+		if(($x+1)%12==0){
+			$rtn .= '		    </div>'.PHP_EOL;
+			$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
+		}
+	}
+	$rtn .= '		    </div>'.PHP_EOL;
+	//days
+	$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Days</span><span class="icon-erase w_pointer" title="clear days" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'day\']});"></span></div>'.PHP_EOL;
+	$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+	for($x=1;$x<29;$x++){
+		$v=$x;
+		if(strlen($v)==1){$v="0{$x}";}
+		$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+		if($x%7==0){
+			$rtn .= '		    </div>'.PHP_EOL;
+			$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+		}
+	}
+	$rtn .= '		    </div>'.PHP_EOL;
+	$rtn.=<<<ENDOFRTN
+			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
 		    <div class="w_frequency_row" data-type="months">
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="1" /> Jan</label>
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="2" /> Feb</label>
@@ -2366,42 +2380,7 @@ function buildFormFrequency($name,$params=array()){
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="11" /> Nov</label>
 		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="12" /> Dec</label>
 		    </div>
-		    <div class="w_frequency_row" data-type="days">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="1" /> 1</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="2" /> 2</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="3" /> 3</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="4" /> 4</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="5" /> 5</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="6" /> 6</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="7" /> 7</label>
-		    </div>
-		    <div class="w_frequency_row" data-type="days">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="8" /> 8</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="9" /> 9</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="10" /> 10</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="11" /> 11</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="12" /> 12</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="13" /> 13</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="14" /> 14</label>
-		    </div>
-		    <div class="w_frequency_row" data-type="days">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="15" /> 15</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="16" /> 16</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="17" /> 17</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="18" /> 18</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="19" /> 19</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="20" /> 20</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="21" /> 21</label>
-		    </div>	
-		    <div class="w_frequency_row" style="border-bottom:1px solid #ccc;" data-type="days">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="22" /> 22</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="23" /> 23</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="24" /> 24</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="25" /> 25</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="26" /> 26</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="27" /> 27</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_day" value="28" /> 28</label>
-		    </div>
+		    
 	    	<div style="text-align: right;margin-top:5px"><a href="#" class="w_link w_gray" onclick="return formSetFrequencyDisplay('{$params['id']}',0);"><span class="icon-close"></span> done</a></div>
 	    </div>
 	</div>

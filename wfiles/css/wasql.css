@@ -49,6 +49,18 @@ textarea.w_frequency:focus{
 	user-select:none;
 	padding:0 3px;
 }
+.w_frequency_wizard .w_frequency_row[data-type="section"]{
+	color:#6c757d;
+	border-top:1px solid #ccc;
+	padding-top:4px;
+}
+.w_frequency_wizard .w_frequency_row[data-type="section"] a{
+	color:#6c757d;
+	text-decoration: none;
+}
+.w_frequency_wizard .w_frequency_row[data-type="section"] span{
+	margin-right:3px;
+}
 .w_frequency_wizard .w_frequency_row[data-type="months"] label{
 	min-width:50px;
 }

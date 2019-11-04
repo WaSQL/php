@@ -79,14 +79,49 @@ function attachDropFiles(fld){
 function formSetFrequency(fid,v){
 	let container=document.querySelector('#'+fid+'_container');
 	if(undefined==container){return false;}
+	let minutes=container.querySelectorAll('#frequency_minute');
 	let hours=container.querySelectorAll('#frequency_hour');
 	let months=container.querySelectorAll('#frequency_month');
 	let days=container.querySelectorAll('#frequency_day');
 	let field=container.querySelector('#'+fid);
-	let nv={hour:[],month:[],day:[]};
+	let nv={minute:[],hour:[],month:[],day:[]};
 	if(undefined != v){
-		if(typeof(v)=='string'){
-			v=JSON.parse(v);
+		if(typeof(v)=='string'){v=JSON.parse(v);}
+		if(v.reset){
+			for(let y=0;y<v.reset.length;y++){
+				switch(v.reset[y]){
+					case 'minute':
+						for(let x=0;x<minutes.length;x++){minutes[x].checked=false;}
+						container.querySelector('span[title="clear minutes"]').style.color='#6c757d';
+					break;
+					case 'hour':
+						for(let x=0;x<hours.length;x++){hours[x].checked=false;}
+						container.querySelector('span[title="clear hours"]').style.color='#6c757d';
+					break;
+					case 'day':
+						for(let x=0;x<days.length;x++){days[x].checked=false;}
+						container.querySelector('span[title="clear days"]').style.color='#6c757d';
+					break;
+					case 'month':
+						for(let x=0;x<months.length;x++){months[x].checked=false;}
+						container.querySelector('span[title="clear months"]').style.color='#6c757d';
+					break;
+				}
+			}
+		}
+		for(let x=0;x<minutes.length;x++){
+			let hval=parseInt(minutes[x].value);
+			if(v.minute[0]==-1){
+				minutes[x].checked=true;
+				nv.minute=[-1];
+			}
+			else if(in_array(hval,v.minute)){
+				minutes[x].checked=true;
+				nv.minute.push(hval);
+			}
+			else{
+				minutes[x].checked=false;
+			}
 		}
 		for(let x=0;x<hours.length;x++){
 			let hval=parseInt(hours[x].value);
@@ -129,6 +164,18 @@ function formSetFrequency(fid,v){
 		setText(field,JSON.stringify(nv));
 	}
 	else{
+		for(let x=0;x<minutes.length;x++){
+			let hval=parseInt(minutes[x].value);
+			if(minutes[x].checked){
+				nv.minute.push(hval);
+			}
+		}
+		if(minutes.length == nv.minute.length){
+			nv.minute=[-1];
+		}
+		else if(nv.minute.length==0){
+			nv.minute=[0];
+		}
 		for(let x=0;x<hours.length;x++){
 			let hval=parseInt(hours[x].value);
 			if(hours[x].checked){
@@ -168,6 +215,20 @@ function formSetFrequency(fid,v){
 		setText(field,JSON.stringify(nv));
 		formSetFrequency(field.id,field.value);
 	}
+	//set clear icons
+	if(nv.minute.length > 0){
+		container.querySelector('span[title="clear minutes"]').style.color='#c51017';	
+	}
+	if(nv.hour.length > 0){
+		container.querySelector('span[title="clear hours"]').style.color='#c51017';	
+	}
+	if(nv.day.length > 0){
+		container.querySelector('span[title="clear days"]').style.color='#c51017';	
+	}
+	if(nv.month.length > 0){
+		container.querySelector('span[title="clear months"]').style.color='#c51017';	
+	}
+
 	
 }
 function formSetFrequencyDisplay(fid,s){
