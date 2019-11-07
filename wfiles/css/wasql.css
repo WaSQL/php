@@ -1361,6 +1361,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	border-radius: 6px;
     box-shadow: 0px 5px 30px #818181;
     min-width:300px;
+    margin:10px;
     -webkit-transition: height 1s ease;
 	-moz-transition: height 1s ease;
 	-ms-transition: height 1s ease;
