@@ -1438,7 +1438,6 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	overflow:auto;
 }
 .w_centerpop .w_centerpop_content{
-	position:relative;
 	top:15px;
 	padding:0px;
 	max-width:800px;
