@@ -337,6 +337,9 @@ var wacss = {
 									data: json,
 									fill:false
 								};
+								if(undefined != udatasets[ud].getAttribute('data-yaxis')){
+									udataset.yAxisID=udatasets[ud].getAttribute('data-yaxis');
+								}
 								if(undefined != udatasets[ud].getAttribute('data-label')){
 									udataset.label=udatasets[ud].getAttribute('data-label');
 									let dlabel=udatasets[ud].getAttribute('data-label');
@@ -390,6 +393,9 @@ var wacss = {
 								data: json,
 								fill:false,
 							};
+							if(undefined != datasets[d].getAttribute('data-yaxis')){
+								dataset.yAxisID=datasets[d].getAttribute('data-yaxis');
+							}
 							if(undefined != datasets[d].getAttribute('data-label')){
 								dataset.label=datasets[d].getAttribute('data-label');
 								let dlabel=datasets[d].getAttribute('data-label');

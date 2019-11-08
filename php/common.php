@@ -2114,8 +2114,12 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(isset($params['-onclick'])){
     	$onclick=' onclick="'.$params['-onclick'].'"';
 	}
+	$title='';
+	if(isset($params['title'])){
+    	$title=' title="'.$params['title'].'"';
+	}
 	$tag=<<<ENDOFTAG
-	<div class="switch">
+	<div class="switch"{$title}>
         <input id="{$params['id']}" name="{$name}" value="{$tvals[0]}" {$onclick} class="w_toggle w_toggle-{$format}" type="checkbox"{$required}{$checked}>
         <label for="{$params['id']}" data-on="{$dvals[0]}" data-off="{$dvals[1]}"></label>
     </div>
