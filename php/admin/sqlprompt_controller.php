@@ -6,6 +6,10 @@
 		$db=$DATABASE[$_REQUEST['db']];
 		$_SESSION['db']=$db;
 	}
+	elseif(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+		$_SESSION['db']=$db;
+	}
 	if(!isset($db['name'])){
 		$db=array(
 			'name'=>$CONFIG['dbname'],
@@ -96,9 +100,10 @@
 					continue;
 				}
 				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
+				if($CONFIG['database']==$d){continue;}
 				$tabs[]=$db;
 			}
-			//echo printValue($CONFIG).printValue($tabs);exit;
+			//echo $CONFIG['database'].printValue($tabs);exit;
 			$tables=getDBTables();
 			if(isset($CONFIG['sqlprompt_tables'])){
 				if(!is_array($CONFIG['sqlprompt_tables'])){
