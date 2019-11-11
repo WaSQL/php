@@ -251,7 +251,55 @@ function dbGetTables($db){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbQueryResults
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param query string - SQL query
 
+* @return array recordsets
+* @usage
+*	$recs=dbQueryResults('pg_local',$query);
+*	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
+*/
+function dbQueryResults($db,$query){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			loadExtras('postgresql');
+			return postgresqlQueryResults($query);
+			//echo printValue($tables);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleQueryResults($query);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlQueryResults($query);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaQueryResults($query);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteQueryResults($query);
+		break;
+		default:
+			return getDBRecords($query);
+		break;
+	}
+	return array();
+}
 
 
 
