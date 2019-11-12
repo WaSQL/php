@@ -106,6 +106,68 @@ function dbExecuteSQL($db,$sql){
 	}
 	return 0;
 }
+//---------- begin function dbGetCount
+/**
+* @describe returns tables from a database
+* @param db string - database name as specified in the database section of config.xml
+* @return array params
+* @usage
+*	$recs=dbGetCount('pg_local',array('-table'=>'states','country'=>'US'));
+*/
+function dbGetCount($db,$params){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBCount($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBCount($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBCount($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBCount($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBCount($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return getDBCount($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbGetRecord
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param params mixed - params or a SQL query
+
+* @return array recordset
+* @usage
+*	$rec=dbGetRecord('pg_local',array('-table'=>'notes','_id'=>4545));
+*/
+function dbGetRecord($db,$params){
+	$recs=dbGetRecords($db,$params);
+	if(isset($recs[0])){return $recs[0];}
+	return null;
+}
 //---------- begin function dbGetRecords
 /**
 * @describe returns an records set from a database
