@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<export dbname="bulma2" timestamp="1573708164">
-
-
+<export dbname="wasql_bulma" timestamp="1573749142">
 
 
 
@@ -14,13 +12,13 @@
 	<_cache>0</_cache>
 	<_cdate>2019-11-13 19:01:55</_cdate>
 	<_cuser>1</_cuser>
-	<_edate>2019-11-13 22:08:40</_edate>
+	<_edate>2019-11-14 09:31:21</_edate>
 	<_euser>1</_euser>
-	<_id>6</_id>
+	<_id>2</_id>
 	<_template>2</_template>
 	<body><![CDATA[
 &lt;view:default&gt;
-&lt;div class=&quot;stormboard&quot; id=&quot;sb_all_lanes&quot; data-behavior=&quot;ajax&quot; data-timer=&quot;30&quot; data-url=&quot;/t/1/stormboard/refresh&quot;&gt;
+&lt;div class=&quot;stormboard&quot; id=&quot;sb_all_lanes&quot; data-behavior=&quot;ajax&quot; data-timer=&quot;300&quot; data-url=&quot;/t/1/stormboard/refresh&quot;&gt;
 	&lt;?=renderEach('lane',$lanes,'lane');?&gt;
 &lt;/div&gt;
 &lt;/view:default&gt;
@@ -49,20 +47,28 @@
 
 &lt;view:card&gt;
 &lt;div id=&quot;sb_card_&lt;?=$card['_id'];?&gt;&quot; data-id=&quot;&lt;?=$card['_id'];?&gt;&quot; class=&quot;sb_card&quot; draggable=&quot;true&quot; ondragstart=&quot;stormboardDragObject(event)&quot;&gt;
-	&lt;a style=&quot;float:right;margin-right:3px;&quot; href=&quot;#&quot; onclick=&quot;return stormboardAddEdit(&lt;?=$card['_id'];?&gt;,&lt;?=$card['lane'];?&gt;);&quot;&gt;&lt;span class=&quot;icon-edit&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+	&lt;div style=&quot;display:flex;flex-direction: row;&quot;&gt;
+		&lt;div style=&quot;flex:1 1 auto&quot;&gt;&lt;div style=&quot;width:20px;height:20px;border-radius: 10px;display:inline-block;background-color:&lt;?=$card['color'];?&gt;;&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+		&lt;div style=&quot;flex:3 1 auto&quot;&gt;&lt;?=$card['owner_id_ex']['username'];?&gt;&lt;/div&gt;
+		&lt;div style=&quot;flex:1 1 auto&quot;&gt;&lt;a style=&quot;float:right;margin-right:3px;&quot; href=&quot;#&quot; onclick=&quot;return stormboardAddEdit(&lt;?=$card['_id'];?&gt;,&lt;?=$card['lane_id'];?&gt;);&quot;&gt;&lt;span class=&quot;icon-edit&quot;&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+	&lt;/div&gt;
 	&lt;?=$card['body'];?&gt;
 &lt;/div&gt;
 &lt;/view:card&gt;
 
 &lt;view:addedit&gt;
-&lt;div class=&quot;w_centerpop_title&quot;&gt;Add Edit&lt;/div&gt;
-&lt;div class=&quot;w_centerpop_content&quot;&gt;
+&lt;div class=&quot;w_centerpop_title&quot;&gt;Stormboard Add/Edit &lt;?=$id;?&gt;&lt;/div&gt;
+&lt;div class=&quot;w_centerpop_content&quot; style=&quot;padding:15px&quot;&gt;
 	&lt;?=stormboardAddEdit($id,$lane);?&gt;
 &lt;/div&gt;
 &lt;/view:addedit&gt;
 
 &lt;view:addedit_fields&gt;
-&lt;div class=&quot;w_pad&quot;&gt;&lt;div class=&quot;w_bold&quot;&gt;Body&lt;/div&gt;[body]&lt;/div&gt;
+	&lt;div style=&quot;display:flex;flex-direction: row;&quot;&gt;
+		&lt;div style=&quot;flex:1 1 auto&quot;&gt;&lt;div&gt;Owner&lt;/div&gt;[owner_id]&lt;/div&gt;
+		&lt;div style=&quot;flex:1 1 auto&quot;&gt;&lt;div&gt;Color&lt;/div&gt;[color]&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;w_bold&quot;&gt;Description&lt;/div&gt;[body]
 &lt;/view:addedit_fields&gt;
 
 &lt;view:login&gt;
@@ -73,6 +79,17 @@
 &lt;?php
 /* BEGIN stormboard configuration */
 //setup lanes: each lane MUST have a name and a unique numberic ID greater than 0
+global $lanes;
+global $colors;
+$colors=array(
+	'#374649',
+	'#fd625e',
+	'#f2c80f',
+	'#01b8aa',
+	'#8ad4eb',
+	'#fe9666',
+	'#a66999',
+);
 $lanes=array();
 $lanes[]=array(
 	'id'=&gt;1,
@@ -87,8 +104,9 @@ $lanes[]=array(
 	'name'=&gt;'Lane Three',
 );
 /* END stormboard configuration */
-if(!isDBTable('stormboard')){
 
+if(!isDBTable('stormboard')){
+	stormboardCreateTable();
 }
 //require user
 if(!isUser()){
@@ -124,7 +142,7 @@ switch(strtolower($PASSTHRU[0])){
 		$ok=editDBRecord(array(
 			'-table'=&gt;'stormboard',
 			'-where'=&gt;&quot;_id={$card_id}&quot;,
-			'lane'=&gt;$lane_id
+			'lane_id'=&gt;$lane_id
 		));
 		$cards=stormboardGetCards($lane_id);
 		foreach($lanes as $i=&gt;$lane){
@@ -164,7 +182,7 @@ switch(strtolower($PASSTHRU[0])){
 	margin-right:10px;
 	border:1px solid #00000080;
 	border-radius: 4px;
-	flex:1;
+	flex:1 1 auto;
 	height:90vh;
 	overflow:auto;
 }
@@ -199,35 +217,112 @@ switch(strtolower($PASSTHRU[0])){
 .stormboard .sb_lane .sb_cards .sb_card a{
 	color:#47484980;
 	text-decoration:none;
+}
+#sb_color{
+  	-webkit-appearance: none;
+  	-moz-appearance: none;
+  	appearance: none;
+  	background: url(/wfiles/colorwheel.ico) 96% / 15% no-repeat #EEE;
+}
+#sb_color option[value=&quot;#374649&quot;]{
+	background:#374649;
+	color:#FFF;
+}
+#sb_color option[value=&quot;#fd625e&quot;]{
+	background:#fd625e;
+	color:#FFF;
+}
+#sb_color option[value=&quot;#f2c80f&quot;]{
+	background:#f2c80f;
+	color:#000;
+}
+#sb_color option[value=&quot;#01b8aa&quot;]{
+	background:#01b8aa;
+	color:#FFF;
+}
+#sb_color option[value=&quot;#8ad4eb&quot;]{
+	background:#8ad4eb;
+	color:#000;
+}
+#sb_color option[value=&quot;#fe9666&quot;]{
+	background:#fe9666;
+	color:#FFF;
+}
+#sb_color option[value=&quot;#a66999&quot;]{
+	background:#a66999;
+	color:#FFF;
+}
+#sb_color::-ms-expand {
+    display: none; /* Remove default arrow in Internet Explorer 10 and 11 */
+}
+
+/* Target Internet Explorer 9 to undo the custom arrow */
+@media screen and (min-width:0\0) {
+    #sb_color {
+        background: none\9;
+        padding: 5px\9;
+    }
 }</css>
-	<css_min>.stormboard{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;align-content:stretch}.stormboard .sb_lane{margin-right:10px;border:1px solid #00000080;border-radius:4px;flex:1;height:90vh;overflow:auto}.stormboard .sb_lane.hover{background-color:#f7fcba80}.stormboard .sb_lane:last-child{margin-right:0px}.stormboard .sb_lane .sb_name{text-align:center;color:#FFF;background-color:#00000080;font-size:1.1rem}.stormboard .sb_lane .sb_name a{color:#FFF;text-decoration:none}.stormboard .sb_lane .sb_cards{padding:3px}.stormboard .sb_lane .sb_cards .sb_card{margin-bottom:5px;padding:3px;box-shadow:0px 2px 4px rgba(0, 0, 0, 0.18);background-color:#FFF;color:#474849;border:1px solid rgba(0, 0, 0, 0.125);border-radius:0.25rem}.stormboard .sb_lane .sb_cards .sb_card a{color:#47484980;text-decoration:none}</css_min>
+	<css_min>.stormboard{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;align-content:stretch}.stormboard .sb_lane{margin-right:10px;border:1px solid #00000080;border-radius:4px;flex:1 1 auto;height:90vh;overflow:auto}.stormboard .sb_lane.hover{background-color:#f7fcba80}.stormboard .sb_lane:last-child{margin-right:0px}.stormboard .sb_lane .sb_name{text-align:center;color:#FFF;background-color:#00000080;font-size:1.1rem}.stormboard .sb_lane .sb_name a{color:#FFF;text-decoration:none}.stormboard .sb_lane .sb_cards{padding:3px}.stormboard .sb_lane .sb_cards .sb_card{margin-bottom:5px;padding:3px;box-shadow:0px 2px 4px rgba(0, 0, 0, 0.18);background-color:#FFF;color:#474849;border:1px solid rgba(0, 0, 0, 0.125);border-radius:0.25rem}.stormboard .sb_lane .sb_cards .sb_card a{color:#47484980;text-decoration:none}#sb_color{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:url(/wfiles/colorwheel.ico) 96% / 15% no-repeat #EEE}#sb_color option[value=&quot;#374649&quot;]{background:#374649;color:#FFF}#sb_color option[value=&quot;#fd625e&quot;]{background:#fd625e;color:#FFF}#sb_color option[value=&quot;#f2c80f&quot;]{background:#f2c80f;color:#000}#sb_color option[value=&quot;#01b8aa&quot;]{background:#01b8aa;color:#FFF}#sb_color option[value=&quot;#8ad4eb&quot;]{background:#8ad4eb;color:#000}#sb_color option[value=&quot;#fe9666&quot;]{background:#fe9666;color:#FFF}#sb_color option[value=&quot;#a66999&quot;]{background:#a66999;color:#FFF}#sb_color::-ms-expand{display:none}@media screen and (min-width:0\0){#sb_color{background:none\9;padding:5px\9}}</css_min>
 	<functions><![CDATA[
 &lt;?php
-function stormboardCreateTable(){
+function stormboardCreateTable($rebuild=0){
+	if($rebuild==1){
+		$ok=dropDBTable('stormboard');
+	}
 	$fields=array(
-		'_id'	=&gt; databasePrimaryKeyFieldString(),
-		'_cdate'=&gt; databaseDataType('datetime').databaseDateTimeNow(),
-		'_cuser'=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
-		'_edate'=&gt; databaseDataType('datetime').&quot; NULL&quot;,
-		'_euser'=&gt; databaseDataType('int').&quot; NULL&quot;,
-		'body'	=&gt; 'text NULL',
-		'lane'	=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+		'_id'		=&gt; databasePrimaryKeyFieldString(),
+		'_cdate'	=&gt; databaseDataType('datetime').databaseDateTimeNow(),
+		'_cuser'	=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+		'_edate'	=&gt; databaseDataType('datetime').&quot; NULL&quot;,
+		'_euser'	=&gt; databaseDataType('int').&quot; NULL&quot;,
+		'body'		=&gt; 'text NULL',
+		'lane_id'	=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+		'color'		=&gt; 'varchar(12) NULL',
+		'owner_id'	=&gt; databaseDataType('int').&quot; NULL&quot;
 	);
 	$ok = createDBTable('stormboard',$fields,'InnoDB');
+	//Add tabledata
+	$id=addDBRecord(array('-table'=&gt;&quot;_tabledata&quot;,
+		'tablename'		=&gt; 'stormboard',
+		'formfields'	=&gt; &quot;color owner_id lane_id\r\nbody&quot;,
+		'listfields'	=&gt; &quot;_cdate\r\n_cuser\r\n_edate\r\n_euser\r\nowner_id\r\ncolor&quot;,
+		'sortfields'	=&gt; &quot;_cdate desc&quot;
+	));
+	//colors
+	global $colors;
+	$id=addDBRecord(array('-table'=&gt;'_fielddata',
+		'tablename'		=&gt; 'stormboard',
+		'fieldname'		=&gt; 'color',
+		'inputtype'		=&gt; 'select',
+		'tvals'			=&gt; implode(&quot;\r\n&quot;,$colors),
+		'dvals'			=&gt; implode(&quot;\r\n&quot;,$colors),
+		'required'		=&gt; 1
+	));
+	//owner_id
+	$id=addDBRecord(array('-table'=&gt;'_fielddata',
+		'tablename'		=&gt; 'stormboard',
+		'fieldname'		=&gt; 'owner_id',
+		'inputtype'		=&gt; 'select',
+		'tvals'			=&gt; 'select _id from _users where active=1 order by username',
+		'dvals'			=&gt; 'select username from _users where active=1 order by username',
+		'required'		=&gt; 1
+	));
 	return $ok;
 }
 function stormboardGetCards($lane_id=0){
 	$opts=array(
 		'-table'=&gt;'stormboard',
-		'-limit'=&gt;1000
+		'-limit'=&gt;1000,
+		'-relate'=&gt;array('owner_id'=&gt;'_users')
 	);
 	if($lane_id &gt; 0){
-		$opts['lane']=$lane_id;
+		$opts['lane_id']=$lane_id;
 	}
 	$recs=getDBRecords($opts);
 	$cards=array();
 	foreach($recs as $rec){
-		$cards[$rec['lane']][]=$rec;
+		$cards[$rec['lane_id']][]=$rec;
 	}
 	return $cards;
 }
@@ -237,13 +332,16 @@ function stormboardAddEdit($id,$lane){
 		'-fields'=&gt;getView('addedit_fields'),
 		'-action'=&gt;'/t/1/stormboard/cards/'.$lane,
 		'-onsubmit'=&gt;&quot;return ajaxSubmitForm(this,'sb_lane_{$lane}');&quot;,
-		'setprocessing'=&gt;0
+		'setprocessing'=&gt;0,
+		'body_style'=&gt;&quot;padding:3px;font-size:0.8rem;color:#474849;&quot;,
+		'-save_class'=&gt;'btn button',
+		'color_id'	=&gt; 'sb_color'
 	);
 	if($id &gt; 0){
 		$opts['_id']=$id;
 	}
 	else{
-		$opts['lane']=$lane;
+		$opts['lane_id']=$lane;
 	}
 	return addEditDBForm($opts);
 }
@@ -307,5 +405,249 @@ function stormboardDropObject(ev){ev.preventDefault();let data=ev.dataTransfer.g
 	<title>stormboard</title>
 </xmldata>
 <xmldata name="_templates">
+	<_cdate>2019-10-31 10:23:56</_cdate>
+	<_cuser>0</_cuser>
+	<_id>2</_id>
+	<body><![CDATA[
+&lt;!DOCTYPE HTML&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+	&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; /&gt;
+	&lt;title&gt;&lt;?=templateMetaTitle();?&gt;&lt;/title&gt;
+	&lt;link rel=&quot;canonical&quot; href=&quot;//&lt;?=$_SERVER['HTTP_HOST'];?&gt;/&lt;?=pageValue('name');?&gt;/&quot; /&gt;
+	&lt;!-- Icons --&gt;
+	&lt;link rel=&quot;apple-touch-icon&quot; sizes=&quot;76x76&quot; href=&quot;/wfiles/apple-touch-icon.png&quot;&gt;
+	&lt;link rel=&quot;shortcut icon&quot; href=&quot;/wfiles/favicon.ico&quot;&gt;
+	&lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; sizes=&quot;32x32&quot; href=&quot;/wfiles/favicon-32x32.png&quot;&gt;
+	&lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; sizes=&quot;16x16&quot; href=&quot;/wfiles/favicon-16x16.png&quot;&gt;
+	&lt;link rel=&quot;manifest&quot; href=&quot;/wfiles/site.webmanifest&quot;&gt;
+	&lt;meta name=&quot;msapplication-TileColor&quot; content=&quot;#2d89ef&quot;&gt;
+	&lt;meta name=&quot;theme-color&quot; content=&quot;#ffffff&quot;&gt;
+	&lt;!-- Mobal Meta --&gt;
+	&lt;meta name=&quot;SKYPE_TOOLBAR&quot; content=&quot;SKYPE_TOOLBAR_PARSER_COMPATIBLE&quot; /&gt;
+	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+	&lt;!-- SEO Meta --&gt;
+	&lt;meta name=&quot;description&quot; content=&quot;&lt;?=templateMetaDescription();?&gt;&quot; /&gt;
+	&lt;meta name=&quot;keywords&quot; content=&quot;&lt;?=templateMetaKeywords();?&gt;&quot; /&gt;
+	&lt;!-- Open graph info for Facebook --&gt;
+	&lt;meta property=&quot;og:title&quot; content=&quot;&lt;?=templateMetaTitle();?&gt;&quot; /&gt;
+	&lt;meta property=&quot;og:type&quot; content=&quot;website&quot; /&gt;
+	&lt;meta property=&quot;og:url&quot; content=&quot;//&lt;?=$_SERVER['HTTP_HOST'];?&gt;/&quot; /&gt;
+	&lt;meta property=&quot;og:site_name&quot; content=&quot;&lt;?=templateMetaSite();?&gt;&quot; /&gt;
+	&lt;meta property=&quot;og:image&quot; content=&quot;&lt;?=templateMetaImage();?&gt;&quot; /&gt;
+	&lt;meta property=&quot;og:description&quot; content=&quot;&lt;?=templateMetaDescription();?&gt;&quot; /&gt;
+	&lt;!-- Twitter card info --&gt;
+	&lt;meta name=&quot;twitter:card&quot; content=&quot;summary&quot;&gt;
+	&lt;meta name=&quot;twitter:site&quot; content=&quot;&lt;?=templateMetaSite();?&gt;&quot; /&gt;
+	&lt;meta name=&quot;twitter:title&quot; content=&quot;&lt;?=templateMetaTitle();?&gt;&quot; /&gt;
+	&lt;meta name=&quot;twitter:description&quot; content=&quot;&lt;?=templateMetaDescription();?&gt;&quot; /&gt;
+	&lt;meta name=&quot;twitter:creator&quot; content=&quot;@wasqlcom&quot; /&gt;
+	&lt;meta name=&quot;twitter:image:src&quot; content=&quot;&lt;?=templateMetaImage();?&gt;&quot; /&gt;
+	&lt;meta name=&quot;twitter:domain&quot; content=&quot;//&lt;?=$_SERVER['HTTP_HOST'];?&gt;&quot; /&gt;
+	&lt;!-- Minified CSS and JS --&gt;
+	&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;&lt;?=minifyCssFile('bulma');?&gt;&quot; /&gt;
+  	&lt;script type=&quot;text/javascript&quot; src=&quot;&lt;?=minifyJsFile('bulma');?&gt;&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;!-- START NAV --&gt;
+    &lt;nav class=&quot;navbar is-white&quot;&gt;
+        &lt;div class=&quot;container&quot;&gt;
+            &lt;div class=&quot;navbar-brand&quot;&gt;
+                &lt;a class=&quot;navbar-item brand-text&quot; href=&quot;../index.html&quot;&gt;
+          Bulma Admin
+        &lt;/a&gt;
+                &lt;div class=&quot;navbar-burger burger&quot; data-target=&quot;navMenu&quot;&gt;
+                    &lt;span&gt;&lt;/span&gt;
+                    &lt;span&gt;&lt;/span&gt;
+                    &lt;span&gt;&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div id=&quot;navMenu&quot; class=&quot;navbar-menu&quot;&gt;
+                &lt;div class=&quot;navbar-start&quot;&gt;
+                    &lt;a class=&quot;navbar-item&quot; href=&quot;admin.html&quot;&gt;
+            Home
+          &lt;/a&gt;
+                    &lt;a class=&quot;navbar-item&quot; href=&quot;admin.html&quot;&gt;
+            Orders
+          &lt;/a&gt;
+                    &lt;a class=&quot;navbar-item&quot; href=&quot;admin.html&quot;&gt;
+            Payments
+          &lt;/a&gt;
+                    &lt;a class=&quot;navbar-item&quot; href=&quot;admin.html&quot;&gt;
+            Exceptions
+          &lt;/a&gt;
+                                 &lt;a class=&quot;navbar-item&quot; href=&quot;admin.html&quot;&gt;
+            Reports
+          &lt;/a&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+    &lt;!-- END NAV --&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;?=pageValue('body');?&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]></body>
+	<css>html, body {
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen-Sans, Ubuntu, Cantarell, &quot;Helvetica Neue&quot;, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  height: 100%;
+  background: #ECF0F3;
+}
+nav.navbar {
+  border-top: 4px solid #276cda;
+  margin-bottom: 1rem;
+}
+.navbar-item.brand-text {
+  font-weight: 300;
+}
+.navbar-item, .navbar-link {
+  font-size: 14px;
+  font-weight: 700;
+}
+.columns {
+  width: 100%;
+  height: 100%;
+  margin-left: 0;
+}
+.menu-label {
+  color: #8F99A3;
+  letter-spacing: 1.3;
+  font-weight: 700;
+}
+.menu-list a {
+  color: #0F1D38;
+  font-size: 14px;
+  font-weight: 700;
+}
+.menu-list a:hover {
+  background-color: transparent;
+  color: #276cda;
+}
+.menu-list a.is-active {
+  background-color: transparent;
+  color: #276cda;
+  font-weight: 700;
+}
+.card {
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.18);
+  margin-bottom: 2rem;
+}
+.card-header-title {
+  color: #8F99A3;
+  font-weight: 400;
+}
+.info-tiles {
+  margin: 1rem 0;
+}
+.info-tiles .subtitle {
+  font-weight: 300;
+  color: #8F99A3;
+}
+.hero.welcome.is-info {
+  background: #36D1DC;
+  background: -webkit-linear-gradient(to right, #5B86E5, #36D1DC);
+  background: linear-gradient(to right, #5B86E5, #36D1DC);
+}
+.hero.welcome .title, .hero.welcome .subtitle {
+  color: hsl(192, 17%, 99%);
+}
+.card .content {
+  font-size: 14px;
+}
+.card-footer-item {
+  font-size: 14px;
+  font-weight: 700;
+  color: #8F99A3;
+}
+.card-footer-item:hover {
+}
+.card-table .table {
+  margin-bottom: 0;
+}
+.events-card .card-table {
+  max-height: 250px;
+  overflow-y: scroll;
+}</css>
+	<functions><![CDATA[
+&lt;?php
+global $PAGE;
+function templateActiveMenu($name){
+	global $PAGE;
+	if($PAGE['name']==$name){return ' active';}
+	return '';
+}
+function templateMetaEtag(){
+	global $PAGE;
+	global $TEMPLATE;
+	//get latest edit date and latest create date and sha1 encode them
+	return sha1($PAGE['_cdate'].$PAGE['_edate'].$TEMPLATE['_cdate'].$TEMPLATE['_edate']);
+}
+function templateMetaImage(){
+	global $PAGE;
+	if(strlen($PAGE['meta_image'])){return &quot;//{$_SERVER['HTTP_HOST']}/{$PAGE['meta_image']}&quot;;}
+	return '/images/logo.svg';
+}
+function templateMetaImageType(){
+	global $PAGE;
+	if(strlen($PAGE['meta_image'])){return 'image/'.getFileExtension($PAGE['meta_image']);}
+	return 'image/svg';
+}
+function templateMetaTitle(){
+	global $PAGE;
+	if($PAGE['_id']==1 &amp;&amp; isset($_REQUEST['passthru'][1]) &amp;&amp; $_REQUEST['passthru'][0]=='p'){
+		$sku=addslashes($_REQUEST['passthru'][1]);
+		$filters=array('sku'=&gt;$sku);
+		$products=globalGetProducts($filters);
+		if(isset($products[0]['images'][0]['file'])){
+			$PAGE['meta_image']=$products[0]['images'][0]['file'];
+		}
+		if(isset($products[0]['name'])){
+			$PAGE['meta_title']=$products[0]['name'];
+		}
+		if(isset($products[0]['details'])){
+			$PAGE['meta_description']=trim(removeHtml($products[0]['details']));
+			$PAGE['meta_description']=preg_replace('/[\r\n]+/','. ',$PAGE['meta_description']);
+			$PAGE['meta_description']=preg_replace('/[\s\t]+/',' ',$PAGE['meta_description']);
+			//trim to 160 chars but do not cut off words
+			$PAGE['meta_description']=truncateWords($PAGE['meta_description'],160);
+		}
+		if(isset($products[0]['category'])){
+			$PAGE['meta_keywords']=&quot;{$products[0]['name']},{$products[0]['sku']},{$products[0]['category']}&quot;;
+		}
+	}
+	if(strlen($PAGE['title'])){return $PAGE['title'];}
+	//enter default title below
+	return '';
+}
+function templateMetaSite(){
+	global $PAGE;
+	if(strlen($PAGE['meta_site'])){return $PAGE['meta_site'];}
+	return $_SERVER['HTTP_HOST'];
+}
+function templateMetaDescription(){
+	global $PAGE;
+	if(strlen($PAGE['meta_description'])){return $PAGE['meta_description'];}
+	//enter default description below
+	return '';
+}
+function templateMetaKeywords(){
+	global $PAGE;
+	if(strlen($PAGE['meta_keywords'])){return $PAGE['meta_keywords'];}
+	//enter default keywords below
+	return '';
+}
+?&gt;
+?&gt;
+]]></functions>
+	<js>function template(){}</js>
+	<name>Main</name>
+	<postedit>1</postedit>
+	<synchronize>1</synchronize>
 </xmldata>
 </export>
