@@ -73,18 +73,28 @@ if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentEleme
 		this.insertAdjacentElement(where,parsedText);
 		}
 	}
-/*get all attributes*/
-function getAllAttributes(obj){
+//getAllAttributes
+/**
+* @describe gets all attributes of an element
+* @param el mixed  - object or id
+* @param [filter] string  - skips attribute keys without this filter
+* @usage let atts=getAllAttributes(el,'data-');
+*/
+function getAllAttributes(obj,filter){
 	//info: get all attributes of a specific object or id
-	var node=getObject(obj);
-	var rv = {};
-    for(var i=0; i<node.attributes.length; i++){
+	let node=getObject(obj);
+	if(undefined == node){return null;}
+	let rv = {};
+    for(let i=0; i<node.attributes.length; i++){
         if(node.attributes.item(i).specified){
-            rv[node.attributes.item(i).nodeName]=node.attributes.item(i).nodeValue;
-			}
+        	let key=node.attributes.item(i).nodeName;
+        	//filter?
+        	if(undefined != filter && key.indexOf(filter)==-1){continue;}
+            rv[key]=node.attributes.item(i).nodeValue;
 		}
-    return rv;
 	}
+    return rv;
+}
 //commonModalPopup
 /**
 * @describe creates a responsive modal popup

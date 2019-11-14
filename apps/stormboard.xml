@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="bulma2" timestamp="1573708164">
+
+
+
+
+
+
+
+
+
+
+<xmldata name="_pages">
+	<_cache>0</_cache>
+	<_cdate>2019-11-13 19:01:55</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2019-11-13 22:08:40</_edate>
+	<_euser>1</_euser>
+	<_id>6</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:default&gt;
+&lt;div class=&quot;stormboard&quot; id=&quot;sb_all_lanes&quot; data-behavior=&quot;ajax&quot; data-timer=&quot;30&quot; data-url=&quot;/t/1/stormboard/refresh&quot;&gt;
+	&lt;?=renderEach('lane',$lanes,'lane');?&gt;
+&lt;/div&gt;
+&lt;/view:default&gt;
+
+&lt;view:lanes&gt;
+&lt;?=renderEach('lane',$lanes,'lane');?&gt;
+&lt;?=buildOnLoad(&quot;removeId('centerpop');&quot;);?&gt;
+&lt;/view:lanes&gt;
+
+&lt;view:lane&gt;
+	&lt;div class=&quot;sb_lane&quot; data-id=&quot;&lt;?=$lane['id'];?&gt;&quot; data-lane=&quot;&lt;?=$lane['name'];?&gt;&quot; ondrop=&quot;stormboardDropObject(event);stormboardSetHover(this,0);&quot; ondragover=&quot;stormboardAllowDropObject(event);stormboardSetHover(this,1);&quot; ondragleave=&quot;stormboardSetHover(this,0);&quot;&gt;
+		&lt;div class=&quot;sb_name&quot;&gt;
+			&lt;a style=&quot;float:right;margin-right:3px;&quot; href=&quot;#&quot; onclick=&quot;return stormboardAddEdit(0,&lt;?=$lane['id'];?&gt;);&quot;&gt;&lt;span class=&quot;icon-plus&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+			&lt;?=$lane['name'];?&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;sb_cards&quot; id=&quot;sb_lane_&lt;?=$lane['id'];?&gt;&quot;&gt;
+			&lt;?=renderEach('card',$lane['cards'],'card');?&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+&lt;/view:lane&gt;
+
+&lt;view:cards&gt;
+&lt;?=renderEach('card',$lane['cards'],'card');?&gt;
+&lt;?=buildOnLoad(&quot;removeId('centerpop');&quot;);?&gt;
+&lt;/view:cards&gt;
+
+&lt;view:card&gt;
+&lt;div id=&quot;sb_card_&lt;?=$card['_id'];?&gt;&quot; data-id=&quot;&lt;?=$card['_id'];?&gt;&quot; class=&quot;sb_card&quot; draggable=&quot;true&quot; ondragstart=&quot;stormboardDragObject(event)&quot;&gt;
+	&lt;a style=&quot;float:right;margin-right:3px;&quot; href=&quot;#&quot; onclick=&quot;return stormboardAddEdit(&lt;?=$card['_id'];?&gt;,&lt;?=$card['lane'];?&gt;);&quot;&gt;&lt;span class=&quot;icon-edit&quot;&gt;&lt;/span&gt;&lt;/a&gt;
+	&lt;?=$card['body'];?&gt;
+&lt;/div&gt;
+&lt;/view:card&gt;
+
+&lt;view:addedit&gt;
+&lt;div class=&quot;w_centerpop_title&quot;&gt;Add Edit&lt;/div&gt;
+&lt;div class=&quot;w_centerpop_content&quot;&gt;
+	&lt;?=stormboardAddEdit($id,$lane);?&gt;
+&lt;/div&gt;
+&lt;/view:addedit&gt;
+
+&lt;view:addedit_fields&gt;
+&lt;div class=&quot;w_pad&quot;&gt;&lt;div class=&quot;w_bold&quot;&gt;Body&lt;/div&gt;[body]&lt;/div&gt;
+&lt;/view:addedit_fields&gt;
+
+&lt;view:login&gt;
+&lt;?=userLoginForm(array('-action'=&gt;'/'.pageValue('name')));?&gt;
+&lt;/view:login&gt;
+]]></body>
+	<controller><![CDATA[
+&lt;?php
+/* BEGIN stormboard configuration */
+//setup lanes: each lane MUST have a name and a unique numberic ID greater than 0
+$lanes=array();
+$lanes[]=array(
+	'id'=&gt;1,
+	'name'=&gt;'Lane One',
+);
+$lanes[]=array(
+	'id'=&gt;2,
+	'name'=&gt;'Lane Two',
+);
+$lanes[]=array(
+	'id'=&gt;3,
+	'name'=&gt;'Lane Three',
+);
+/* END stormboard configuration */
+if(!isDBTable('stormboard')){
+
+}
+//require user
+if(!isUser()){
+	setView('login',1);
+	return;
+}
+
+global $USER;
+global $PASSTHRU;
+switch(strtolower($PASSTHRU[0])){
+	case 'addedit':
+		$id=(integer)$PASSTHRU[1];
+		$lane=(integer)$PASSTHRU[2];
+		setView('addedit',1);
+		return;
+	break;
+	case 'cards':
+		$lane_id=(integer)$PASSTHRU[1];
+		$cards=stormboardGetCards($lane_id);
+		foreach($lanes as $i=&gt;$lane){
+			if($lane['id'] = $lane_id){
+				$lane['cards']=$cards[$lane['id']];
+				setView('cards',1);
+				return;
+			}
+		}
+		setView('cards',1);
+		return;
+	break;
+	case 'move':
+		$card_id=(integer)$PASSTHRU[1];
+		$lane_id=(integer)$PASSTHRU[2];
+		$ok=editDBRecord(array(
+			'-table'=&gt;'stormboard',
+			'-where'=&gt;&quot;_id={$card_id}&quot;,
+			'lane'=&gt;$lane_id
+		));
+		$cards=stormboardGetCards($lane_id);
+		foreach($lanes as $i=&gt;$lane){
+			if($lane['id'] = $lane_id){
+				$lane['cards']=$cards[$lane['id']];
+				setView('cards',1);
+				return;
+			}
+		}
+		echo printValue($_REQUEST);exit;
+	break;
+	case 'refresh':
+		$cards=stormboardGetCards();
+		foreach($lanes as $i=&gt;$lane){
+			$lanes[$i]['cards']=$cards[$lane['id']];
+		}
+		setView('lanes');
+	break;
+	default:
+		$cards=stormboardGetCards();
+		foreach($lanes as $i=&gt;$lane){
+			$lanes[$i]['cards']=$cards[$lane['id']];
+		}
+		setView('default');
+	break;
+}
+?&gt;
+]]></controller>
+	<css>.stormboard{
+	display:flex;
+	flex-direction: row;
+	flex-wrap:nowrap;
+	align-items: stretch;
+	align-content:stretch;
+}
+.stormboard .sb_lane{
+	margin-right:10px;
+	border:1px solid #00000080;
+	border-radius: 4px;
+	flex:1;
+	height:90vh;
+	overflow:auto;
+}
+.stormboard .sb_lane.hover{
+	background-color:#f7fcba80;
+}
+.stormboard .sb_lane:last-child{
+	margin-right:0px;
+}
+.stormboard .sb_lane .sb_name{
+	text-align: center;
+	color:#FFF;
+	background-color: #00000080;
+	font-size: 1.1rem;
+}
+.stormboard .sb_lane .sb_name a{
+	color:#FFF;
+	text-decoration:none;
+}
+.stormboard .sb_lane .sb_cards{
+	padding:3px;
+}
+.stormboard .sb_lane .sb_cards .sb_card{
+	margin-bottom:5px;
+	padding:3px;
+	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.18);
+	background-color: #FFF;
+	color:#474849;
+	border: 1px solid rgba(0, 0, 0, 0.125);
+	border-radius: 0.25rem;
+}
+.stormboard .sb_lane .sb_cards .sb_card a{
+	color:#47484980;
+	text-decoration:none;
+}</css>
+	<css_min>.stormboard{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;align-content:stretch}.stormboard .sb_lane{margin-right:10px;border:1px solid #00000080;border-radius:4px;flex:1;height:90vh;overflow:auto}.stormboard .sb_lane.hover{background-color:#f7fcba80}.stormboard .sb_lane:last-child{margin-right:0px}.stormboard .sb_lane .sb_name{text-align:center;color:#FFF;background-color:#00000080;font-size:1.1rem}.stormboard .sb_lane .sb_name a{color:#FFF;text-decoration:none}.stormboard .sb_lane .sb_cards{padding:3px}.stormboard .sb_lane .sb_cards .sb_card{margin-bottom:5px;padding:3px;box-shadow:0px 2px 4px rgba(0, 0, 0, 0.18);background-color:#FFF;color:#474849;border:1px solid rgba(0, 0, 0, 0.125);border-radius:0.25rem}.stormboard .sb_lane .sb_cards .sb_card a{color:#47484980;text-decoration:none}</css_min>
+	<functions><![CDATA[
+&lt;?php
+function stormboardCreateTable(){
+	$fields=array(
+		'_id'	=&gt; databasePrimaryKeyFieldString(),
+		'_cdate'=&gt; databaseDataType('datetime').databaseDateTimeNow(),
+		'_cuser'=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+		'_edate'=&gt; databaseDataType('datetime').&quot; NULL&quot;,
+		'_euser'=&gt; databaseDataType('int').&quot; NULL&quot;,
+		'body'	=&gt; 'text NULL',
+		'lane'	=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+	);
+	$ok = createDBTable('stormboard',$fields,'InnoDB');
+	return $ok;
+}
+function stormboardGetCards($lane_id=0){
+	$opts=array(
+		'-table'=&gt;'stormboard',
+		'-limit'=&gt;1000
+	);
+	if($lane_id &gt; 0){
+		$opts['lane']=$lane_id;
+	}
+	$recs=getDBRecords($opts);
+	$cards=array();
+	foreach($recs as $rec){
+		$cards[$rec['lane']][]=$rec;
+	}
+	return $cards;
+}
+function stormboardAddEdit($id,$lane){
+	$opts=array(
+		'-table'=&gt;'stormboard',
+		'-fields'=&gt;getView('addedit_fields'),
+		'-action'=&gt;'/t/1/stormboard/cards/'.$lane,
+		'-onsubmit'=&gt;&quot;return ajaxSubmitForm(this,'sb_lane_{$lane}');&quot;,
+		'setprocessing'=&gt;0
+	);
+	if($id &gt; 0){
+		$opts['_id']=$id;
+	}
+	else{
+		$opts['lane']=$lane;
+	}
+	return addEditDBForm($opts);
+}
+?&gt;
+]]></functions>
+	<js>function stormboardRefreshLanes(){
+	return ajaxGet('/t/1/stormboard/refresh','sb_lanes',{setprocessing:0});
+}
+function stormboardAddEdit(id,lane){
+	return ajaxGet('/t/1/stormboard/addedit/'+id+'/'+lane,'centerpop');
+}
+
+function stormboardSetHover(obj,c){
+	if(c==1){
+		if(obj.className.indexOf('hover')!=-1){return;}
+		obj.className='sb_lane hover';
+		return;
+	}
+	if(obj.className.indexOf('hover')==-1){return;}
+	obj.className='sb_lane';
+	return;
+}
+function stormboardAllowDropObject(ev) {
+    ev.preventDefault();
+}
+
+function stormboardDragObject(ev) {
+	//set the ID as info to get when dropped
+    ev.dataTransfer.setData(&quot;text&quot;, ev.target.id);
+}
+
+function stormboardDropObject(ev) {
+    ev.preventDefault();
+    let data = ev.dataTransfer.getData(&quot;text&quot;);
+    let card=document.getElementById(data);
+    let card_params=getAllAttributes(card,'data-');
+    let lane=ev.srcElement;
+    let lane_params=getAllAttributes(lane,'data-');
+    //remove the old card
+    card.parentNode.removeChild(card);
+    //add the new card
+    let div='sb_lane_'+lane_params['data-id'];
+    return ajaxGet('/t/1/stormboard/move/'+card_params['data-id']+'/'+lane_params['data-id'],div,{setprocessing:0});
+
+
+}</js>
+	<js_min>function stormboardRefreshLanes(){return ajaxGet('/t/1/stormboard/refresh','sb_lanes',{setprocessing:0})}
+function stormboardAddEdit(id,lane){return ajaxGet('/t/1/stormboard/addedit/'+id+'/'+lane,'centerpop')}
+function stormboardSetHover(obj,c){if(c==1){if(obj.className.indexOf('hover')!=-1){return}
+obj.className='sb_lane hover';return}
+if(obj.className.indexOf('hover')==-1){return}
+obj.className='sb_lane';return}
+function stormboardAllowDropObject(ev){ev.preventDefault()}
+function stormboardDragObject(ev){ev.dataTransfer.setData(&quot;text&quot;,ev.target.id)}
+function stormboardDropObject(ev){ev.preventDefault();let data=ev.dataTransfer.getData(&quot;text&quot;);let card=document.getElementById(data);let card_params=getAllAttributes(card,'data-');let lane=ev.srcElement;let lane_params=getAllAttributes(lane,'data-');card.parentNode.removeChild(card);let div='sb_lane_'+lane_params['data-id'];return ajaxGet('/t/1/stormboard/move/'+card_params['data-id']+'/'+lane_params['data-id'],div,{setprocessing:0})}</js_min>
+	<name>stormboard</name>
+	<page_type>0</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>stormboard</title>
+</xmldata>
+<xmldata name="_templates">
+</xmldata>
+</export>

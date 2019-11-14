@@ -313,6 +313,54 @@ function dbGetTables($db){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbListRecords
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param params mixed - params or a SQL query
+
+* @return array recordset
+* @usage
+*	$rec=dbListRecords('pg_local',array('-table'=>'notes','_id'=>4545));
+*/
+function dbListRecords($db,$params){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			$params['-database']='postgresql';
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			$params['-database']='oracle';
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			$params['-database']='mssql';
+		break;
+		case 'hana':
+			loadExtras('hana');
+			$params['-database']='hana';
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			$params['-database']='sqlite';
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+		break;
+	}
+	return databaseListRecords($params);
+}
 //---------- begin function dbQueryResults
 /**
 * @describe returns an records set from a database
