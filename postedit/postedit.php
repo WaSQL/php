@@ -467,6 +467,7 @@ function successMessage($msg){
 	global $progpath;
 	global $chost;
 	$msg=trim($msg);
+	$msg .= ' - ' . date('g:i:s a');
 	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
 		$ok=posteditBeep(1);
