@@ -13641,7 +13641,11 @@ function processFileUploads($docroot=''){
 	if(is_array($_FILES) && count($_FILES) > 0){
 	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
-			if($file['error'] != 0 && !strlen($file['tmp_name'])){
+	 		if(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
+	 			unset($_FILES[$name]);
+	 			continue;
+	 		}
+			elseif($file['error'] != 0 && !strlen($file['tmp_name'])){
 				$_REQUEST[$name.'_error']="File Upload Error (1) - " . json_encode($file);
 				continue;
 			}
