@@ -5930,6 +5930,21 @@ function getDBFieldTag($params=array()){
             $dname=ucwords(str_replace('_',' ',$name));
             $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelect($name,$options,$info[$field]);
+		break;
+		case 'selectcustom':
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $dname=ucwords(str_replace('_',' ',$name));
+            $info[$field]['message']="-- {$dname} --";
+            $tag=buildFormSelectCustom($name,$options,$info[$field]);
 			break;
         case 'starrating':
 			$tag=buildFormStarRating($info[$field]['name'],$info[$field]);

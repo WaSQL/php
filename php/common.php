@@ -2551,6 +2551,52 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	}
 	return buildFormSelect($name,$opts,$params);
 }
+//---------- begin function buildFormSelectCustom-------------------
+/**
+* @describe creates an HTML form selection tag
+* @param name string - name of select tag
+* @param pairs array - tval/dval pairs array to populate select tag with
+* @param params array - attribute/value pairs to add to select tag
+* @return string - HTML Form select tag
+* @usage echo buildFormSelectCustom('age',array(5=>"Below Five",10=>"5 to 10"));
+*/
+function buildFormSelectCustom($name,$pairs=array(),$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	//return printValue($pairs);
+	$pcnt=count($pairs);
+	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
+    	return buildFormText($name,$params);
+	}
+	//return $pcnt;
+	if(isset($params['value'])){
+		if(strlen($params['value'])){$sval=$params['value'];}
+	}
+	elseif(isset($_REQUEST[$name])){
+		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
+	}
+	$sval=isset($sval)?$sval:'';
+	$params['name']=$name;
+	$skip=array();
+	$rtn='';
+	$rtn .= '<div style="position:relative;display:inline-block;height:22px;">'.PHP_EOL;
+	$rtn .= '	<fieldset class="select" onclick="this.classList.toggle(\'hover\');">'.PHP_EOL;
+	$rtn .= '		<ul >'.PHP_EOL;
+	$cnt=0;
+	foreach($pairs as $tval=>$dval){
+		$txtval=removeHtml($dval);
+		$id=$params['id'].'_'.$cnt;
+		$checked='';
+		if($sval==$tval){$checked=' checked';}
+		$rtn .= '			<li><input type="radio"  name="'.$params['name'].'" id="'.$id.'" value="'.$tval.'" onclick="event.stopPropagation();this.parentNode.parentNode.parentNode.className=\'select\';"'.$checked.' /><span data-value="'.$txtval.'"></span><label for="'.$id.'">'.$dval.'</label></li>'.PHP_EOL;
+		$cnt++;
+	}	
+	$rtn .= '		</ul>'.PHP_EOL;
+	$rtn .= '	</fieldset>'.PHP_EOL;
+	$rtn .= '</div>'.PHP_EOL;
+    return $rtn;
+}
 //---------- begin function buildFormSelectMonth--------------------
 /**
 * @describe creates an Month selection field

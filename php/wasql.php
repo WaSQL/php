@@ -1302,6 +1302,7 @@ function wasqlGetInputtypes($d=0){
 		'hidden'	=> 'Hidden',
 		'multiselect'=> 'Select Multiple',
 		'select'	=> 'Select',
+		'selectcustom'	=> 'Select Custom',
 		'password'	=> 'Password',
 		'radio'		=> 'Radio',
 		'frequency' => 'Frequency',
