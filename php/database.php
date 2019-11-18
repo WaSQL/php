@@ -372,7 +372,7 @@ function dbListRecords($db,$params){
 *	$recs=dbQueryResults('pg_local',$query);
 *	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
-function dbQueryResults($db,$query){
+function dbQueryResults($db,$query,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	$db=strtolower(trim($db));
@@ -385,27 +385,27 @@ function dbQueryResults($db,$query){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
-			return postgresqlQueryResults($query);
+			return postgresqlQueryResults($query,$params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
-			return oracleQueryResults($query);
+			return oracleQueryResults($query,$params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
-			return mssqlQueryResults($query);
+			return mssqlQueryResults($query,$params);
 		break;
 		case 'hana':
 			loadExtras('hana');
-			return hanaQueryResults($query);
+			return hanaQueryResults($query,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
-			return sqliteQueryResults($query);
+			return sqliteQueryResults($query,$params);
 		break;
 		default:
-			return getDBRecords($query);
+			return getDBRecords($query,$params);
 		break;
 	}
 	return array();
