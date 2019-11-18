@@ -256,7 +256,7 @@ function hanaDBConnect($params=array()){
 		}
 		if(!is_resource($dbh_hana_single)){
 			$err=odbc_errormsg();
-			$params['-dbpass']=preg_replace('/[a-z0-9]+/i','*',$params['-dbpass']);
+			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			echo "hanaDBConnect single connect error:{$err}".printValue($params);
 			exit;
 		}
@@ -283,7 +283,7 @@ function hanaDBConnect($params=array()){
 			}
 			if(!is_resource($dbh_hana)){
 				$err=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]+/i','*',$params['-dbpass']);
+				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				echo "hanaDBConnect error:{$err}".printValue($params);
 				exit;
 			}
@@ -332,7 +332,7 @@ function hanaIsDBTable($table,$params=array()){
 	}
 	$dbh_hana=hanaDBConnect($params);
 	if(!is_resource($dbh_hana)){
-		$params['-dbpass']=preg_replace('/[a-z0-9]+/i','*',$params['-dbpass']);
+		$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 		echo "hanaDBConnect error".printValue($params);
 		exit;
 	}
@@ -397,7 +397,7 @@ function hanaExecuteSQL($query,$params=array()){
 		sleep(2);
 		$dbh_hana=hanaDBConnect($params);
 		if(!is_resource($dbh_hana)){
-			$params['-dbpass']=preg_replace('/[a-z0-9]+/i','*',$params['-dbpass']);
+			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			debugValue("hanaDBConnect error".printValue($params));
 			return false;
 		}
