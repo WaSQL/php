@@ -1305,6 +1305,7 @@ function hanaQueryHeader($query,$params=array()){
 */
 function hanaQueryResults($query,$params=array()){
 	global $dbh_hana;
+	$starttime=microtime(true);
 	if(!is_resource($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
@@ -1377,6 +1378,8 @@ function hanaQueryResults($query,$params=array()){
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
+		$logfile=str_replace('.csv','.log',$params['-filename']);
+		setFileContents($logfile,$query.PHP_EOL.PHP_EOL);
 	}
 	else{$recs=array();}
 	if(isset($params['-binmode'])){
@@ -1385,12 +1388,16 @@ function hanaQueryResults($query,$params=array()){
 	if(isset($params['-longreadlen'])){
 		odbc_longreadlen($result,$params['-longreadlen']);
 	}
+	$i=0;
 	while(odbc_fetch_row($result)){
 		$rec=array();
 	    for($z=1;$z<=odbc_num_fields($result);$z++){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
+	    if(isset($params['-results_eval'])){
+			$rec=call_user_func($params['-results_eval'],$rec);
+		}
 	    if(isset($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
@@ -1403,6 +1410,10 @@ function hanaQueryResults($query,$params=array()){
 			}
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
 			fwrite($fh,$csv."\r\n");
+			$i+=1;
+			if($i % 5000 == 0){
+				appendFileContents($logfile,$i.PHP_EOL);
+			}
 			continue;
 		}
 		elseif(isset($params['-process'])){
@@ -1415,9 +1426,11 @@ function hanaQueryResults($query,$params=array()){
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh)){
+	if($fh){
 		@fclose($fh);
-		return 1;
+		$elapsed=microtime(true)-$starttime;
+		appendFileContents($logfile,"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		return $i;
 	}
 	return $recs;
 }
