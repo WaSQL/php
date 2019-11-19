@@ -208,46 +208,13 @@ ENDOFQUERY;
 		//exit;
 		return null;
 	}
-	$recs = postgresqlEnumQueryResults($result,1);
+	$recs = postgresqlEnumQueryResults($result,$params);
 	// debugValue(array(
 	// 	'function'=>'postgresqlAddDBRecord',
 	// 	'query'=>$query,
 	// 	'values'=>$values,
 	// 	'params'=>$params
 	// ));
-	pg_close($dbh_postgresql);
-	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
-	return $recs;
-
-	if(!pg_prepare($dbh_postgresql,'',$query)){
-		debugValue(array(
-			'function'=>'postgresqlAddDBRecord',
-			'message'=>'pg_prepare failed',
-			'error'=>pg_last_error(),
-			'query'=>$query,
-			'params'=>$params,
-			'fields'=>$finfo
-		));
-		pg_close($dbh_postgresql);
-		//exit;
-		return null;
-	}
-
-	//echo 'postgresqlAddDBRecord: '.$query.printValue($values).PHP_EOL.'<br />'.PHP_EOL;
-	$data=pg_execute($dbh_postgresql,'',$values);
-	if(!is_resource($data)){
-		$err=pg_last_error($dbh_postgresql);
-		debugValue(array(
-			'function'=>'postgresqlAddDBRecord',
-			'message'=>'pg_execute failed',
-			'error'=>$err,
-			'query'=>$query,
-			'values'=>$values,
-		));
-		pg_close($dbh_postgresql);
-		return null;
-	}
-	$recs = postgresqlEnumQueryResults($data,1);
 	pg_close($dbh_postgresql);
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
@@ -594,7 +561,7 @@ ENDOFQUERY;
 		pg_close($dbh_postgresql);
 		return null;
 	}
-	$recs = postgresqlEnumQueryResults($data,1);
+	$recs = postgresqlEnumQueryResults($data,$params);
 	pg_close($dbh_postgresql);
 	return $recs;
 }
@@ -1474,6 +1441,7 @@ function postgresqlParseConnectParams($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+* 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return array - returns records
 */
 function postgresqlQueryResults($query='',$params=array()){
@@ -1514,7 +1482,7 @@ function postgresqlQueryResults($query='',$params=array()){
     	return $id;
 	}
 
-	$results = postgresqlEnumQueryResults($data,1);
+	$results = postgresqlEnumQueryResults($data,$params);
 	pg_close($dbh_postgresql);
 	if(!is_array($results) && stringContains($results,'server closed the connection unexpectedly')){
 		$results .= " **NOTICE** make sure pgsql.auto_reset_persistent in php.ini is set to On. This usually resolved this issue.";
@@ -1529,20 +1497,69 @@ function postgresqlQueryResults($query='',$params=array()){
 * @return array
 *	returns records
 */
-function postgresqlEnumQueryResults($data,$showblank=0,$fieldmap=array()){
+function postgresqlEnumQueryResults($data,$params=array()){
 	if(!is_resource($data)){return null;}
-	$results=array();
-	while ($row = @pg_fetch_assoc($data)){
-		$crow=array();
-		foreach($row as $key=>$val){
-			if(!$showblank && !strlen(trim($val))){continue;}
-			$key=strtolower($key);
-			if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
-			$crow[$key]=$val;
-    	}
-    	$results[] = $crow;
+	$header=0;
+	unset($fh);
+	//write to file or return a recordset?
+	if(isset($params['-filename'])){
+		$starttime=microtime(true);
+		if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    	$fh = fopen($params['-filename'],"wb");
+    	if(!$fh){
+			odbc_free_result($result);
+			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			exit;
+		}
+		if(isset($params['-logfile'])){
+			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+		}
+		
 	}
-	return $results;
+	else{$recs=array();}
+	$i=0;
+	while ($row = @pg_fetch_assoc($data)){
+		$rec=array();
+		foreach($row as $key=>$val){
+			$key=strtolower($key);
+			$rec[$key]=$val;
+    	}
+    	if(isset($fh)){
+        	if($header==0){
+            	$csv=arrays2CSV(array($rec));
+            	$header=1;
+            	//add UTF-8 byte order mark to the beginning of the csv
+				$csv="\xEF\xBB\xBF".$csv;
+			}
+			else{
+            	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+			}
+			$csv=preg_replace('/[\r\n]+$/','',$csv);
+			fwrite($fh,$csv."\r\n");
+			$i+=1;
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+				appendFileContents($params['-logfile'],$i.PHP_EOL);
+			}
+			continue;
+		}
+		elseif(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$rec);
+			$x++;
+			continue;
+		}
+		else{
+			$recs[]=$rec;
+		}
+	}
+	if($fh){
+		@fclose($fh);
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		return $i;
+	}
+	return $recs;
 }
 //---------- begin function postgresqlListDBDatatypes ----
 /**

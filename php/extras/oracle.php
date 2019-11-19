@@ -1066,7 +1066,7 @@ ENDOFQUERY;
     }
 	return $keys;
 }
-//---------- begin function oracleGetResourceResults ----------
+//---------- begin function oracleEnumQueryResults ----------
 /**
 * @describe returns the results from a query resource
 * @param $resource resource - resource handle from query call
@@ -1076,10 +1076,28 @@ ENDOFQUERY;
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return $recs array
-* @usage $recs=oracleGetResourceResults($resource);
+* @usage $recs=oracleEnumQueryResults($resource);
 */
-function oracleGetResourceResults($res,$params=array()){
-	$recs=array();
+function oracleEnumQueryResults($res,$params=array()){
+	$header=0;
+	unset($fh);
+	//write to file or return a recordset?
+	if(isset($params['-filename'])){
+		$starttime=microtime(true);
+		if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    	$fh = fopen($params['-filename'],"wb");
+    	if(!$fh){
+			odbc_free_result($result);
+			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			exit;
+		}
+		if(isset($params['-logfile'])){
+			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+		}
+		
+	}
+	else{$recs=array();}
+	$i=0;
 	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
 	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
 	while ($row = oci_fetch_array($res, $fetchopts)) {
@@ -1095,7 +1113,7 @@ function oracleGetResourceResults($res,$params=array()){
 					$xfield=strtolower(oci_field_name($val,$i));
 					$xfields[]=$xfield;
 				}
-				$rec[$field]=oracleGetResourceResults($val,$params);
+				$rec[$field]=oracleEnumQueryResults($val,$params);
 				if(!count($rec[$field]) && isset($params['-forceheader'])){
 					$xrec=array();
 					foreach($xfields as $xfield){
@@ -1109,12 +1127,38 @@ function oracleGetResourceResults($res,$params=array()){
 				$rec[$field]=$val;
 			}
 		}
-		if(isset($params['-process'])){
+		if(isset($fh)){
+        	if($header==0){
+            	$csv=arrays2CSV(array($rec));
+            	$header=1;
+            	//add UTF-8 byte order mark to the beginning of the csv
+				$csv="\xEF\xBB\xBF".$csv;
+			}
+			else{
+            	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+			}
+			$csv=preg_replace('/[\r\n]+$/','',$csv);
+			fwrite($fh,$csv."\r\n");
+			$i+=1;
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+				appendFileContents($params['-logfile'],$i.PHP_EOL);
+			}
+			continue;
+		}
+		elseif(isset($params['-process'])){
 			$ok=call_user_func($params['-process'],$rec);
 			$x++;
 			continue;
 		}
-		$recs[]=$rec;
+		else{$recs[]=$rec;}
+	}
+	if($fh){
+		@fclose($fh);
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		return $i;
 	}
 	return $recs;
 }
@@ -1266,6 +1310,7 @@ function oracleParseConnectParams($params=array()){
 * 	[setmodule] boolean - set to false to not set module, action, and id. Defaults to true
 * 	[-idcolumn] boolean - set to true to include row number as _id column
 *	[-lobs] boolean - add OCI_RETURN_LOBS to the oci_fetch to return lobs in the data
+* 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return array - returns records
 */
 function oracleQueryResults($query='',$params=array()){
@@ -1358,7 +1403,7 @@ function oracleQueryResults($query='',$params=array()){
     	return false;
 	}
 	//read results into a recordset array	
-	$recs=oracleGetResourceResults($stid,$params);
+	$recs=oracleEnumQueryResults($stid,$params);
 	if(!count($recs) && isset($params['-forceheader'])){
 		$fields=array();
 		for($i=1;$i<=oci_num_fields($stid);$i++){

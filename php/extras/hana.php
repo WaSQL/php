@@ -1370,6 +1370,7 @@ function hanaQueryResults($query,$params=array()){
 	}
 	$header=0;
 	unset($fh);
+	//write to file or return a recordset?
 	if(isset($params['-filename'])){
 		if(file_exists($params['-filename'])){unlink($params['-filename']);}
     	$fh = fopen($params['-filename'],"wb");
@@ -1378,8 +1379,10 @@ function hanaQueryResults($query,$params=array()){
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
-		$logfile=str_replace('.csv','.log',$params['-filename']);
-		setFileContents($logfile,$query.PHP_EOL.PHP_EOL);
+		if(isset($params['-logfile'])){
+			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+		}
+		
 	}
 	else{$recs=array();}
 	if(isset($params['-binmode'])){
@@ -1411,8 +1414,8 @@ function hanaQueryResults($query,$params=array()){
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
 			fwrite($fh,$csv."\r\n");
 			$i+=1;
-			if($i % 5000 == 0){
-				appendFileContents($logfile,$i.PHP_EOL);
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+				appendFileContents($params['-logfile'],$i.PHP_EOL);
 			}
 			continue;
 		}
@@ -1428,8 +1431,10 @@ function hanaQueryResults($query,$params=array()){
 	odbc_free_result($result);
 	if($fh){
 		@fclose($fh);
-		$elapsed=microtime(true)-$starttime;
-		appendFileContents($logfile,"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
 		return $i;
 	}
 	return $recs;

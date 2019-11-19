@@ -695,21 +695,7 @@ function sqliteQueryResults($query,$params=array()){
 			//echo $query.printValue($results);exit;
 			return array();
 		}
-		$recs=array();
-		while ($xrec = $results->fetchArray(SQLITE3_ASSOC)) {
-			$rec=array();
-			foreach($xrec as $k=>$v){
-				$k=strtolower($k);
-				$rec[$k]=$v;
-			}
-			if(isset($params['-process'])){
-				$ok=call_user_func($params['-process'],$rec);
-				$x++;
-				continue;
-			}
-			$recs[]=$rec;
-		}
-		$results->finalize();
+		$recs=sqliteEnumQueryResults($results,$params);
 		return $recs;
 	}
 	catch (Exception $e) {
@@ -717,6 +703,79 @@ function sqliteQueryResults($query,$params=array()){
 		debugValue("sqliteQueryResults error: exception".printValue($err));
 		return array();
 	}
+}
+//---------- begin function sqliteEnumQueryResults ----------
+/**
+* @describe enumerates through the data from a pg_query call
+* @exclude - used for internal user only
+* @param data resource
+* @return array
+*	returns records
+*/
+function sqliteEnumQueryResults($data,$params=array()){
+	if(!is_resource($data)){return null;}
+	$header=0;
+	unset($fh);
+	//write to file or return a recordset?
+	if(isset($params['-filename'])){
+		$starttime=microtime(true);
+		if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    	$fh = fopen($params['-filename'],"wb");
+    	if(!$fh){
+			odbc_free_result($result);
+			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			exit;
+		}
+		if(isset($params['-logfile'])){
+			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+		}
+		
+	}
+	else{$recs=array();}
+	$i=0;
+	while ($xrec = $data->fetchArray(SQLITE3_ASSOC)) {
+		$rec=array();
+		foreach($xrec as $k=>$v){
+			$k=strtolower($k);
+			$rec[$k]=$v;
+		}
+    	if(isset($fh)){
+        	if($header==0){
+            	$csv=arrays2CSV(array($rec));
+            	$header=1;
+            	//add UTF-8 byte order mark to the beginning of the csv
+				$csv="\xEF\xBB\xBF".$csv;
+			}
+			else{
+            	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+			}
+			$csv=preg_replace('/[\r\n]+$/','',$csv);
+			fwrite($fh,$csv."\r\n");
+			$i+=1;
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+				appendFileContents($params['-logfile'],$i.PHP_EOL);
+			}
+			continue;
+		}
+		elseif(isset($params['-process'])){
+			$ok=call_user_func($params['-process'],$rec);
+			$x++;
+			continue;
+		}
+		else{
+			$recs[]=$rec;
+		}
+	}
+	$data->finalize();
+	if($fh){
+		@fclose($fh);
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		return $i;
+	}
+	return $recs;
 }
 //---------- begin function sqliteGetDBRecord ----------
 /**

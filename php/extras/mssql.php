@@ -862,6 +862,7 @@ ENDOFDATATYPES;
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
+* 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return array - returns records
 */
 function mssqlQueryResults($query='',$params=array()){
@@ -898,7 +899,7 @@ function mssqlQueryResults($query='',$params=array()){
 			sqlsrv_free_stmt( $stmt);
 			return $id;
 		}
-		$results = mssqlEnumQueryResults($data);
+		$results = mssqlEnumQueryResults($data,$params);
 		return $results;
 	}
 	mssql_query("SET ANSI_NULLS ON",$dbh_mssql);
@@ -911,7 +912,7 @@ function mssqlQueryResults($query='',$params=array()){
     	mssql_close($dbh_mssql);
     	return $id;
 	}
-	$results = mssqlEnumQueryResults($data);
+	$results = mssqlEnumQueryResults($data,$params);
 	mssql_close($dbh_mssql);
 	return $results;
 }
@@ -920,63 +921,138 @@ function mssqlQueryResults($query='',$params=array()){
 * @describe enumerates through the data from a mssql_query call
 * @exclude - used for internal user only
 * @param data resource
+* @param params array - key/value pair or options
+* 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
+* 	[-logfile] - if you pass in a logfile then it will write the query then the count every 5000 rows.
 * @return array
 *	returns records
 */
 function mssqlEnumQueryResults($data,$params=array()){
-	$results=array();
+	$header=0;
+	unset($fh);
+	if(isset($params['-filename'])){
+		$starttime=microtime(true);
+		if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    	$fh = fopen($params['-filename'],"wb");
+    	if(!$fh){
+			odbc_free_result($result);
+			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			exit;
+		}
+		if(isset($params['-logfile'])){
+			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+		}
+		
+	}
+	else{$recs=array();}
+	$recs=array();
+	$i=0;
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		while( $row = sqlsrv_fetch_array( $data, SQLSRV_FETCH_ASSOC) ) {
-			$crow=array();
+			$rec=array();
 			foreach($row as $key=>$val){
-				if(!$showblank && !strlen(trim($val))){continue;}
 				$key=strtolower($key);
-				if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
 				if(preg_match('/(.+?)\:[0-9]{3,3}(PM|AM)$/i',$val,$tmatch)){
 					$newval=$tmatch[1].' '.$tmatch[2];
 					$crow[$key."_zulu"]=$val;
 					$crow[$key."_utime"]=strtotime($newval);
 					$val=date("Y-m-d H:i:s",$crow[$key."_utime"]);
-            		}
-				$crow[$key]=$val;
+            	}
+				$rec[$key]=$val;
 			}
-			if(isset($params['-process'])){
-				$ok=call_user_func($params['-process'],$crow);
+			if(isset($fh)){
+	        	if($header==0){
+	            	$csv=arrays2CSV(array($rec));
+	            	$header=1;
+	            	//add UTF-8 byte order mark to the beginning of the csv
+					$csv="\xEF\xBB\xBF".$csv;
+				}
+				else{
+	            	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+				}
+				$csv=preg_replace('/[\r\n]+$/','',$csv);
+				fwrite($fh,$csv."\r\n");
+				$i+=1;
+				if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+					appendFileContents($params['-logfile'],$i.PHP_EOL);
+				}
+				continue;
+			}
+			elseif(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$rec);
 				$x++;
 				continue;
 			}
-	        $results[] = $crow;
+			else{
+				$recs[] = $rec;
+			}
+	        
 		}
 		sqlsrv_free_stmt( $data);
-		return $results;
+		if($fh){
+			@fclose($fh);
+			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+				$elapsed=microtime(true)-$starttime;
+				appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+			}
+			return $i;
+		}
+		return $recs;
 	}
 	//PHP is lower than 7 use mssql_fetch to retrieve
 	do {
 		while ($row = @mssql_fetch_assoc($data)){
-			$crow=array();
+			$rec=array();
 			foreach($row as $key=>$val){
-				if(!$showblank && !strlen(trim($val))){continue;}
 				$key=strtolower($key);
-				if(isset($fieldmap[$key])){$key=$fieldmap[$key];}
 				if(preg_match('/(.+?)\:[0-9]{3,3}(PM|AM)$/i',$val,$tmatch)){
 					$newval=$tmatch[1].' '.$tmatch[2];
 					$crow[$key."_zulu"]=$val;
 					$crow[$key."_utime"]=strtotime($newval);
 					$val=date("Y-m-d H:i:s",$crow[$key."_utime"]);
-            		}
-				$crow[$key]=$val;
+            	}
+				$rec[$key]=$val;
+			}
+			if(isset($fh)){
+	        	if($header==0){
+	            	$csv=arrays2CSV(array($rec));
+	            	$header=1;
+	            	//add UTF-8 byte order mark to the beginning of the csv
+					$csv="\xEF\xBB\xBF".$csv;
 				}
-			if(isset($params['-process'])){
-				$ok=call_user_func($params['-process'],$crow);
+				else{
+	            	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+				}
+				$csv=preg_replace('/[\r\n]+$/','',$csv);
+				fwrite($fh,$csv."\r\n");
+				$i+=1;
+				if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+					appendFileContents($params['-logfile'],$i.PHP_EOL);
+				}
+				continue;
+			}
+			elseif(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$rec);
 				$x++;
 				continue;
 			}
-	        $results[] = $crow;
-	    	}
-		}
+	        else{
+	        	$recs[] = $rec;
+	        }
+	    }
+	}
 	while ( @mssql_next_result($data) );
-	return $results;
+	//close file?
+	if($fh){
+		@fclose($fh);
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		return $i;
+	}
+	return $recs;
 }
 //---------- begin function mssqlExecuteSQL ----------
 /**
