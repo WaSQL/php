@@ -266,7 +266,7 @@ function oracleAddDBRecord($params){
     		'function'=>"oracleAddDBRecord",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($dbh_oracle),
+    		'error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
@@ -290,7 +290,7 @@ function oracleAddDBRecord($params){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -312,7 +312,7 @@ function oracleAddDBRecord($params){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -333,7 +333,7 @@ function oracleAddDBRecord($params){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -357,7 +357,7 @@ function oracleAddDBRecord($params){
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'stid'=>$stid,
-    		'oci_error'=>$e,
+    		'error'=>$e,
     		'query'=>$query
     	);
     	if(isset($params['-return_errors'])){
@@ -393,7 +393,7 @@ function oracleAutoCommit($stid,$onoff=0){
     		'function'=>"oracleAutoCommit",
     		'stid'=>$stid,
     		'action'=>'oci_execute',
-    		'oci_error'=>oci_error($stid),
+    		'error'=>oci_error($stid),
     		'onoff'=>$onoff
     	);
     	if(isset($params['-return_errors'])){
@@ -588,7 +588,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     		'function'=>"oracleEditDBRecord",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($dbh_oracle),
+    		'error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	);
 
@@ -611,7 +611,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -633,7 +633,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -654,7 +654,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'connection'=>$dbh_oracle,
 			    		'stid'=>$stid,
 			    		'action'=>'oci_bind_by_name',
-			    		'oci_error'=>oci_error($stid),
+			    		'error'=>oci_error($stid),
 			    		'query'=>$query,
 			    		'field'=>$k,
 			    		'_dbtype'=>$fields[$k]['_dbtype'],
@@ -678,7 +678,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
     		'stid'=>$stid,
-    		'oci_error'=>$e,
+    		'error'=>$e,
     		'query'=>$query
     	);
     	if(isset($params['-return_errors'])){
@@ -717,7 +717,7 @@ function oracleExecuteSQL($query='',$params=array()){
     		'function'=>"oracleExecuteSQL",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($dbh_oracle),
+    		'error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
@@ -757,7 +757,7 @@ function oracleExecuteSQL($query='',$params=array()){
 	    		'function'=>"oracleExecuteSQL",
 	    		'connection'=>$dbh_oracle,
 	    		'action'=>'oci_execute',
-	    		'oci_error'=>$e,
+	    		'error'=>$e,
 	    		'query'=>$query
 	    	);
 	    	oci_free_statement($stid);
@@ -787,7 +787,7 @@ function oracleExecuteSQL($query='',$params=array()){
     		'function'=>"oracleExecuteSQL",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_execute',
-    		'oci_error'=>$e,
+    		'error'=>$e,
     		'query'=>$query
     	);
     	oci_free_statement($stid);
@@ -923,7 +923,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
     		'function'=>"oracleGetDBFieldInfo",
     		'connection'=>$dbh_oracle,
     		'action'=>'oci_parse',
-    		'oci_error'=>oci_error($dbh_oracle),
+    		'error'=>oci_error($dbh_oracle),
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
