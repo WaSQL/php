@@ -35,7 +35,7 @@ function oracleAddDBRecords($params=array()){
     		'function'=>"oracleAddDBRecords",
     		'error'=>'No table specified'
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -46,7 +46,7 @@ function oracleAddDBRecords($params=array()){
     		'function'=>"oracleAddDBRecords",
     		'error'=>'No records (list) specified'
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -129,7 +129,7 @@ ENDOFQ;
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -150,7 +150,7 @@ ENDOFQ;
     		'bind'=>$bind,
     		'value'=>$values[$k]
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -169,7 +169,7 @@ ENDOFQ;
     		'query'=>$query,
     		'json'=>$json
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -199,7 +199,7 @@ function oracleAddDBRecord($params){
     		'function'=>"oracleAddDBRecord",
     		'error'=>'No table specified'
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -270,7 +270,7 @@ function oracleAddDBRecord($params){
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -297,7 +297,7 @@ function oracleAddDBRecord($params){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -319,7 +319,7 @@ function oracleAddDBRecord($params){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -340,7 +340,7 @@ function oracleAddDBRecord($params){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -360,7 +360,7 @@ function oracleAddDBRecord($params){
     		'oci_error'=>$e,
     		'query'=>$query
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -396,7 +396,7 @@ function oracleAutoCommit($stid,$onoff=0){
     		'oci_error'=>oci_error($stid),
     		'onoff'=>$onoff
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -504,7 +504,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     		'function'=>"oracleEditDBRecord",
     		'error'=>'No table specified'
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -515,7 +515,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     		'function'=>"oracleEditDBRecord",
     		'error'=>'No where specified'
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -593,7 +593,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     	);
 
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -618,7 +618,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -640,7 +640,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -661,7 +661,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 			    		'bind'=>$bind,
 			    		'value'=>$values[$k]
 			    	);
-			    	if(isset($params['-json_errors'])){
+			    	if(isset($params['-return_errors'])){
 			    		return $out;
 			    	}
 					debugValue($out);
@@ -681,7 +681,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     		'oci_error'=>$e,
     		'query'=>$query
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -721,7 +721,7 @@ function oracleExecuteSQL($query='',$params=array()){
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -762,7 +762,7 @@ function oracleExecuteSQL($query='',$params=array()){
 	    	);
 	    	oci_free_statement($stid);
 	    	oci_close($dbh_oracle);
-	    	if(isset($params['-json_errors'])){
+	    	if(isset($params['-return_errors'])){
 	    		return $out;
 	    	}
 			debugValue($out);
@@ -792,7 +792,7 @@ function oracleExecuteSQL($query='',$params=array()){
     	);
     	oci_free_statement($stid);
 		oci_close($dbh_oracle);
-		if(isset($params['-json_errors'])){
+		if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -855,7 +855,7 @@ function oracleGetDBCount($params=array()){
     		'function'=>"oracleGetDBCount",
     		'error'=>$recs,
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -927,7 +927,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -988,7 +988,7 @@ function oracleGetDBRecord($params=array()){
 	$params['-limit']=1;
 	$recs=oracleGetDBRecords($params);
 	if(!isset($recs[0])){
-		if(isset($params['-json_errors'])){
+		if(isset($params['-return_errors'])){
     		return json_encode($recs);
     	}
 		debugValue($recs);
@@ -1428,7 +1428,7 @@ function oracleQueryResults($query='',$params=array()){
     		'function'=>$params['-process'],
     		'query'=>$query
     	);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -1446,7 +1446,7 @@ function oracleQueryResults($query='',$params=array()){
     		'query'=>$query
     	);
     	oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
@@ -1486,7 +1486,7 @@ function oracleQueryResults($query='',$params=array()){
 	    		'error'=>$e,
 	    		'query'=>$query
 	    	);
-	    	if(isset($params['-json_errors'])){
+	    	if(isset($params['-return_errors'])){
 	    		return $out;
 	    	}
 			debugValue($out);
@@ -1514,7 +1514,7 @@ function oracleQueryResults($query='',$params=array()){
     	);
     	oci_free_statement($stid);
 		oci_close($dbh_oracle);
-    	if(isset($params['-json_errors'])){
+    	if(isset($params['-return_errors'])){
     		return $out;
     	}
 		debugValue($out);
