@@ -458,6 +458,7 @@ if(isAjax()){
 		case 'synchronize':
 		case 'datasync':
 		case 'test':
+		case 'terminal':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'clearmin':
@@ -1117,6 +1118,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'reports':
 		case 'htmlbox':
 		case 'test':
+		case 'terminal':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'export':
@@ -1288,26 +1290,6 @@ ENDOFX;
 			//echo buildTableTH(array('Variable','Value'));
 
             echo buildTableEnd();
-			break;
-		case 'terminal':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-prompt"></span> Terminal</h2>'.PHP_EOL;
-			$shortcuts=array(
-				'Show Help'=>'help',
-				'Identify Server'=>'uname -a'
-			);
-			if(isWindows()){
-				$shortcuts['IPConfig']='ipconfig';
-				$shortcuts['Drive Space']='wmic logicaldisk get size,freespace,caption,description,filesystem';
-		}
-			else{
-				$shortcuts['IFConfig']='ifconfig';
-				$shortcuts['Drive Space']='df -h';
-				$log=getFilePath($CONFIG['websocketd_file'])."/websocketd_terminal.log";
-				$shortcuts['Terminal Log']='tail -n 50 '.$log;
-				$shortcuts['Kill the Terminal']="sudo pkill -f websocketd";
-			}
-			ksort($shortcuts);
-			echo commonBuildTerminal(array('-shortcuts'=>$shortcuts));
 		break;
 		case 'rebuild':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Rebuild WaSQL Tables</h2>'.PHP_EOL;

@@ -1,122 +1,49 @@
 <view:default>
-<script type="text/javascript">
-var waws;
-var waws_history;
-var waws_history_index;
-waws_history_index=-1;
-waws_history=new Array();
-function terminalCommand(msg){
-	waws_history.push(msg);
-	waws_history_index=-1;
-	switch(msg.toLowerCase()){
-		case 'cls':
-		case 'clear':
-			setText('<?=$params['-divid'];?>','');
-		break;
-		default:
-			terminalLog('>'+msg);
-			terminalSetMaxWidth();
-			waws.send(msg);
-		break;
-	}
-	document.terminalform.cmd.value=msg;
-	document.terminalform.cmd.select();
-	document.terminalform.cmd.focus();
-	return false;
-}
-function terminalLog(msg) {
-	//replace tabs with 5 spaces
-	msg=msg.replace(/\t/g, '     ');
-	//replace spaces with &nbsp;
-	msg=msg.replace(/ /g, '\u00a0');
-	if(msg.toLowerCase().indexOf('>') == 0){
-  		msg='<div style="color:#29b6f6;margin-bottom:1px;white-space: nowrap;">'+msg + '</div>\n';
-	}
-	else if(msg.toLowerCase().indexOf('error') != -1){
-  		msg='<div style="margin-left:15px;color:#ff9800;white-space: nowrap;">'+msg + '</div>\n';
-	}
-	else{
-  		msg='<div style="margin-left:15px;white-space: nowrap;">'+msg + '</div>\n';
-	}
-	var divobj=getObject('<?=$params['-divid'];?>');
-	//add the message
-	divobj.innerHTML += msg;
-	//scroll to bottom
-	divobj.scrollTo(0,divobj.scrollHeight);
-}
-function terminalSetMaxWidth(){
-	var tia=getObject('terminalinputarea');
-	var divobj=getObject('<?=$params['-divid'];?>');
-	divobj.style.maxWidth=tia.offsetWidth+'px';
-	tia.style.maxWidth=tia.offsetWidth+'px';
-}
-function terminalStart(){
-	  // setup websocket with callbacks
-	  waws = new WebSocket('<?=$params['-ws'];?>://<?=$params['-host'];?>:<?=$params['-port'];?>/');
-	  waws.onopen = function() {
-	  	terminalLog('++');
-	  };
-	  waws.onclose = function() {
-	    terminalLog('--');
-	  };
-	  waws.onmessage = function(event) {
-	    terminalLog(event.data);
-	  };
-}
-terminalStart();
-shortcut.add("Ctrl+x",function() {
-	//console.log('crtl-c called');
-	waws.close();
-	terminalStart();
-});
-//add history support by using the Up and Down arrow keys
-shortcut.add("Up",function() {
-	if(waws_history.length==0){return true;}
-	if(waws_history_index==-1){
-		waws_history_index=waws_history.length;
-	}
-	waws_history_index=waws_history_index-1;
-	console.log('Up key,'+waws_history_index,waws_history);
-	if(undefined != waws_history[waws_history_index]){
-		document.terminalform.cmd.value=waws_history[waws_history_index];
-	}
-	else{
-		waws_history_index=-1;
-	}
-});
-shortcut.add("Down",function() {
-	if(waws_history.length==0){return true;}
-	waws_history_index=waws_history_index+1;
-	console.log('Down key,'+waws_history_index,waws_history);
-	if(undefined != waws_history[waws_history_index]){
-		document.terminalform.cmd.value=waws_history[waws_history_index];
-	}
-	else{
-		waws_history_index=-1;
-	}
-});
-</script>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> Command Terminal</h2>
 <div class="w_flex w_flexrow w_flexnowrap" style="margin-top:15px;padding: 0 15px;">
 	<div style="flex-grow: 3" id="terminalinputarea" style="overflow:hidden;">
-		<form method="post" autocomplete="off" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return terminalCommand(this.cmd.value);">
-			<div class="w_flex w_flexrow w_flexnowrap">
-				<div style="flex-grow:10"><input type="text" autofocus="autofocus" name="cmd" class="browser-default" value="" placeholder="enter command here"></div>
-				<div style="flex-grow:1"><button type="submit" class="btn browser-default">Run</button></div>
+		<form method="post" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return ajaxSubmitForm(this,'stdout');">
+			<input type="hidden" name="_menu" value="terminal" />
+			<div style="display:inline-flex;align-items: stretch;flex-direction: row;width:100%;">
+				<div style="flex-grow:10">
+					<input type="text" autofocus="autofocus" onfocus="this.select();" name="cmd" list="cmds" class="browser-default" value="" placeholder="enter command here" required="required">
+				</div>
+				<div style="flex-grow:4;margin-left:5px;">
+					<input type="text" onfocus="this.select();" name="dir" list="dirs" class="browser-default" value="" placeholder="directory (optional)">
+				</div>
+				<div style="flex-grow:1;margin-left:5px;"><button type="submit" class="btn browser-default" style="width:100%;">Run</button></div>
 			</div>
 		</form>
-		<div id="<?=$params['-divid'];?>"  style="margin:0px !important;font-size:0.9em;padding:5px;border:4px solid #ccc;background:#000;color:#bbb;height:500px;overflow:auto;width:100%;">
-		
+		<div id="stdout"  style="margin:0px !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:85vh;overflow:auto;width:100%;">
 		</div>
-	</div>
-	<div style="flex-grow: 1;padding-left:15px;">
-		<view:shortcut>
-		<div><a href="#" data-cmd="<?=$rec['cmd'];?>" onclick="return terminalCommand(this.getAttribute('data-cmd'));"><?=$rec['name'];?></a></div>
-		</view:shortcut>
-		<?=renderEach('shortcut',$params['-shortcuts'],'rec');?>
 	</div>
 </div>
 <div><?=$cmd;?></div>
 </view:default>
+
+<view:results>
+	<div><?=$out['dir'];?>> <?=$out['cmd'];?></div>
+	<view:success>
+		<div style="margin:5px 0 0 12px;"><?=nl2br($out['stdout']);?></div>
+	</view:success>
+	<view:failure>
+			<div style="margin:5px 0 0 12px;color:#e7db74;"><?=nl2br($out['stderr']);?></div>
+	</view:failure>
+	<?=renderViewIfElse($out['rtncode']==0,'success','failure',$out,'out');?>
+
+	<datalist id="cmds">
+		<view:command>
+		<option><?=$command;?></option>
+		</view:command>
+		<?=renderEach('command',$_SESSION['terminal_commands'],'command');?>
+	</datalist>
+	<datalist id="dirs">
+		<view:dir>
+		<option><?=$dir;?></option>
+		</view:dir>
+		<?=renderEach('dir',$_SESSION['terminal_dirs'],'dir');?>
+	</datalist>
+</view:results>
 
 <view:error>
 	<div class="w_bold w_big w_danger"><?=$error;?></div>

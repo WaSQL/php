@@ -1801,12 +1801,6 @@ div.w_viewonly{
     display: table-cell;
 }
 /* Form styles. */
-input[list]{
-	background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAJCAYAAADtj3ZXAAAAB3RJTUUH3wMHFxkH6cbPfQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAARnQU1BAACxjwv8YQUAAABaSURBVHjaY2RgYDAA4jkMxIEsID6FLrgOiP8TwNNwmSgNxJ/xaDwPxGz4nJSDQ+MHIFYn5B9mqA3omsOJDA9w4P1B0jiTWI0wMIFYf2IDPEB8gxh/4jOAIAAAbfwl/FxzevIAAAAASUVORK5CYII=');
-	background-repeat:no-repeat;
-	background-position:right;
-	background-origin: content-box;
-}
 input[data-type=file]{
 	width: 0.1px;
     height: 0.1px;
