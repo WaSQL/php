@@ -77,7 +77,7 @@
 					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="height:200px;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
 						<div class="col-sm-3">
-							<button type="submit" class="btn <?=configValue('admin_color');?>"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
+							<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
 						</div>
 						<div class="col-sm-4 text-right w_grey w_small">
 							<translate>Note: You can drag and drop .sql files onto the textarea</translate>
@@ -129,12 +129,37 @@
 <ul class="nav-tabs collapse <?=configValue('admin_color');?>">
 	<li class="nav-item active">
 		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
-		<label for="db_default"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></label> 
+		<label for="db_default">
+			<span data-tooltip="id:tabdetails_db_default"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></span>
+			<div id="tabdetails_db_default" style="display:none;">
+				<div class="w_bold w_big">Database Details</div>
+				<table class="table bordered striped condensed">
+					<tr><td>Type</td><td><?=configValue('dbtype');?></td></tr>
+					<tr><td>Host</td><td><?=configValue('dbhost');?></td></tr>
+					<tr><td>User</td><td><?=configValue('dbuser');?></td></tr>
+					<tr><td>Name</td><td><?=configValue('dbname');?></td></tr>
+					<tr><td>Schema</td><td><?=configValue('dbschema');?></td></tr>
+				</table>
+			</div>
+		</label> 
 	</li>
 	<view:tab>
 	<li class="nav-item">
 		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></label>
+		<label for="db_<?=$tab['name'];?>">
+			<span data-tooltip="id:tabdetails_<?=$tab['name'];?>"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></span>
+			<div id="tabdetails_<?=$tab['name'];?>" style="display:none;">
+				<div class="w_bold w_big">Database Details</div>
+				<table class="table bordered striped condensed">
+					<tr><td>Type</td><td><?=$tab['dbtype'];?></td></tr>
+					<tr><td>Host</td><td><?=$tab['dbhost'];?></td></tr>
+					<tr><td>User</td><td><?=$tab['dbuser'];?></td></tr>
+					<tr><td>Name</td><td><?=$tab['dbname'];?></td></tr>
+					<tr><td>Schema</td><td><?=$tab['dbschema'];?></td></tr>
+				</table>
+			</div>
+		</label>
+		
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>

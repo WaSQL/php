@@ -11361,7 +11361,7 @@ function configValue($field,$e=0){
 		if($e==1){return evalPHP($CONFIG[$field]);}
 		return $CONFIG[$field];
 		}
-	return "Error! Unknown CONFIG field: {$field}";
+	return '';
 	}
 //---------- begin function pageValue---------------------------------------
 /**
