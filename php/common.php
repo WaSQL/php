@@ -10727,17 +10727,17 @@ function minifyCode($code,$type) {
 	if(!strlen($type)){return 'no type';}
 	switch(strtolower($type)){
 		case 'js':
-			//matthiasmullie minifier
-			if(file_exists('d:/minifier/minifyme.php')){
-				file_put_contents('minifyme.js',$code);	
-				$out=cmdResults("php d:/minifier/minifyme.php minifyme.js");
-				$mincode=file_get_contents('minifyme.min.js');
-				unlink('minifyme.js');
-				unlink('minifyme.min.js');
-				return $mincode;
+			//strip out multi-line comments first
+			$code=preg_replace('/\/\*(.+?)\*\//s','',$code);
+			//check each line and remove single line comments
+			$lines=preg_split('/[\r\n]+/',$code);
+			foreach($lines as $i=>$line){
+				$lines[$i]=trim($lines[$i]);
+				if(preg_match('/^\/\//',$lines[$i])){unset($lines[$i]);}
 			}
-			//just strip out carriage returns for now
-			return preg_replace('/[\r\n]+/','',$code);
+			//recombine without carriage returns
+			$code=implode('',$lines);
+			//echo "HERE:{$code}";exit;
 			break;
 		case 'css':
 			require_once("min-css.php");

@@ -1253,7 +1253,7 @@ function initBehaviors(ajaxdiv){
 		}
 	}
 	else{
-		console.log('found jQuery');
+		//console.log('found jQuery');
 	}
 	//
 	eventInitSticky();
