@@ -2307,9 +2307,9 @@ function buildFormFrequency($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	
-	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
 	$class=isset($params['class'])?' '.$params['class']:'';
+	$style=isset($params['style'])?' style="'.$params['style'].'"':' style="width:100%;height:31px;overflow:hidden;"';
+	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
 	$required=isset($params['required']) && $params['required']==1?' required="required"':'';
 	//determine what sections to show
 	$sections=array('minute','hour','day','month');
@@ -2327,10 +2327,11 @@ function buildFormFrequency($name,$params=array()){
 		$sections=preg_split('/\,/',strtolower(trim($params['-show'])));
 	}
 	if(!count($sections)){return '';}
+	//return printValue($params);
 	$rtn=<<<ENDOFRTN
-	<div style="display:inline-block;" id="{$params['id']}_container">
-		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="soft">{$params['value']}</textarea></div>
-		<div id="{$params['id']}_wizard" class="w_frequency_wizard">
+	<div style="display:block;" id="{$params['id']}_container">
+		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
+		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
 ENDOFRTN;
 	$sectionstr=implode("','",$sections);
@@ -4223,6 +4224,8 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 */
 function getView($name){
 	global $PAGE;
+	global $VIEWS;
+	if(isset($VIEWS[$name])){return $VIEWS[$name];}
 	if(preg_match('/\<view\:'.$name.'\>(.+?)\<\/view\:'.$name.'\>/ism',$PAGE['body'],$m)){
 		return $m[1];
 	}

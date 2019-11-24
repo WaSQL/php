@@ -85,7 +85,25 @@ function formSetFrequency(fid,v){
 	let days=container.querySelectorAll('#frequency_day');
 	let field=container.querySelector('#'+fid);
 	let nv={minute:[],hour:[],month:[],day:[]};
+	//check for every minute 
 	if(undefined != v){
+		if(typeof(v)=='number'){
+			switch(v){
+				case 1:v={minute:[-1],hour:[-1],month:[-1],day:[-1]};break;
+				case 5:v={minute:[0,5,10,15,20,25,30,35,40,45,50,55],hour:[-1],month:[-1],day:[-1]};break;
+				case 10:v={minute:[0,10,20,30,40,50],hour:[-1],month:[-1],day:[-1]};break;
+				case 15:v={minute:[0,15,30,45],hour:[-1],month:[-1],day:[-1]};break;
+				case 20:v={minute:[0,20,40],hour:[-1],month:[-1],day:[-1]};break;
+				case 30:v={minute:[0,30],hour:[-1],month:[-1],day:[-1]};break;
+				case 60:v={minute:[0],hour:[-1],month:[-1],day:[-1]};break;
+				case 1440:v={minute:[0],hour:[0],month:[-1],day:[-1]};break;
+				case 720:v={minute:[0],hour:[0,12],month:[-1],day:[-1]};break;
+				case 10080:v={minute:[0],hour:[0],month:[-1],day:[1,8,15,22]};break;
+				case 43829:v={minute:[0],hour:[0],month:[-1],day:[1]};break;
+			}
+			console.log('number');
+			console.log(v);
+		}
 		if(typeof(v)=='string'){
 			if(v.length > 0){v=JSON.parse(v);}
 			else{v={minute:[],hour:[],month:[],day:[]};}
@@ -241,9 +259,15 @@ function formSetFrequency(fid,v){
 	
 }
 function formSetFrequencyDisplay(fid,s){
+	let ev=this.event || window.event;
+	ev.stopPropagation();
 	let wizard=document.querySelector('#'+fid+'_wizard');
 	if(undefined==wizard){return false;}
-	if(s){wizard.style.display='inline-block';}
+	//console.log('formSetFrequencyDisplay: '+s);
+	if(s){
+		wizard.style.display='block';
+		commonOpenClose(wizard,'display','none');
+	}
 	else{wizard.style.display='none';}
 	return false;
 }

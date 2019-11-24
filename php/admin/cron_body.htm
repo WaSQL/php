@@ -1,0 +1,60 @@
+<view:default>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
+	<div id="cron_results" class="w_padtop">
+		<?=renderView('list');?>
+	</div>
+</view:default>
+
+<view:list>
+	<a href="#" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="w_right btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
+	<?=cronList();?>
+	<?=buildOnLoad("wacss.modalClose();");?>
+</view:list>
+
+<view:addedit>
+	<?=cronAddEdit($id);?>
+</view:addedit>
+
+<view:add_fields>
+<div class="row">
+	<div class="col s6 m5"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
+	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
+</div>
+<div class="row">
+	<div class="col s12 m4"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
+	<div class="col s12 m1"><br />OR</div>
+	<div class="col s12 m7"><label><translate>Custom Frequency</translate></label>[run_format]</div>
+</div>
+<div class="row">
+	<div class="col s12 m8"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
+	<div class="col s12 m4"><label><translate>Run As</translate></label>[run_as]</div>
+</div>
+</view:add_fields>
+
+<view:edit_fields>
+<div class="row">
+	<div class="col s6 m5"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
+	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
+</div>
+<div class="row">
+	<div class="col s12 m4"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
+	<div class="col s12 m1"><br />OR</div>
+	<div class="col s12 m7"><label><translate>Custom Frequency</translate></label>[run_format]</div>
+</div>
+<div class="row">
+	<div class="col s12"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
+</div>
+<div class="row">
+	<div class="col s6 m5"><label><translate>Run As</translate></label>[run_as]</div>
+	<div class="col s6 m1"><label class="w_gray"><translate>Running</translate></label>[running]</div>
+	<div class="col s6 m3"><label class="w_gray"><translate>Last Run Date</translate></label>[run_date]</div>
+	<div class="col s6 m3"><label class="w_gray"><translate>Last Run Length</translate></label>[run_length]</div>
+</div>
+<div class="row">
+	<div class="col s12"><label class="w_gray"><translate>Last Run Result</translate></label>[run_result]</div>
+</div>
+</view:edit_fields>

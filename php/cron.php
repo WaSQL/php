@@ -144,8 +144,39 @@ ENDOFWHERE;
 					$runtime=strtotime($rec['run_date']);
 				}
 				else{$runtime=0;}
-				//frequency or run format
-				if($rec['frequency'] > 0){
+				//is run_format a json string?  If so, parse and check
+				if(strlen($rec['run_format']) && preg_match('/\{/', trim($rec['run_format']))){
+					$json=json_decode($rec['run_format'],true);
+					if(is_array($json)){
+						//check month
+						if(isset($json['month'][0])){
+							$cmon=date('n');
+							if($json['month'][0]==-1 || in_array($cmon,$json['month'])){
+								//month passed. check day
+								if(isset($json['day'][0])){
+									$cday=date('j');
+									if($json['day'][0]==-1 || in_array($cday,$json['day'])){
+										//day passed. check hour
+										if(isset($json['hour'][0])){
+											$chour=date('G');
+											if($json['hour'][0]==-1 || in_array($chour,$json['hour'])){
+												//hour passed. check minute
+												if(isset($json['minute'][0])){
+													$cmin=(integer)date('i');
+													if($json['minute'][0]==-1 || in_array($chour,$json['minute'])){
+														//minute passed
+														$run=1;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				elseif($rec['frequency'] > 0){
 					$seconds=$rec['frequency']*60;
 					$diff=$ctime-$runtime;
 					if($diff > $seconds){

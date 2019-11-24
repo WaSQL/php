@@ -461,6 +461,9 @@ if(isAjax()){
 		case 'terminal':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
+		case 'cron':
+			echo adminViewPage('cron');exit;
+		break;
 		case 'clearmin':
 			wasqlClearMinCache();
 			echo "Min Cache Cleared<br />Refreshing Page";
@@ -470,10 +473,6 @@ if(isAjax()){
 		case 'export':
 			echo adminViewPage('export');exit;
 		break;
-    	case 'cronboard':
-    		echo adminCronBoard();
-    		exit;
-    		break;
     	case 'updatecheck':
     		echo wasqlUpdateCheck();
     		exit;
@@ -1120,6 +1119,9 @@ if(isset($_REQUEST['_menu'])){
 		case 'test':
 		case 'terminal':
 			echo adminViewPage($_REQUEST['_menu']);exit;
+		break;
+		case 'cron':
+			echo adminViewPage('cron');exit;
 		break;
 		case 'export':
 			echo adminViewPage('export');exit;

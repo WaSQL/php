@@ -73,6 +73,7 @@ if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentEleme
 		this.insertAdjacentElement(where,parsedText);
 		}
 	}
+
 //getAllAttributes
 /**
 * @describe gets all attributes of an element
@@ -94,6 +95,42 @@ function getAllAttributes(obj,filter){
 		}
 	}
     return rv;
+}
+function commonOpenClose(rel,satt,val){
+	let ev=this.event || window.event;
+	ev.stopPropagation();
+	if(undefined == this.registered){
+		this.registered=new Array();
+		if(undefined == window.commonOpenCloseEl){
+			window.commonOpenCloseEl=this;
+		}
+		if(undefined == window.commonOpenCloseListener){
+			window.commonOpenCloseListener=1;
+			window.addEventListener("click", function(){commonOpenClose();});
+		}
+		
+	};
+	if(undefined == rel){
+		//console.log('commonOpenClose - hel');
+		//get element mouse of over
+		let hels=document.querySelectorAll( ":hover" );
+		//check for registered elements (rel) and set their style att (satt) to val
+		for(let i=0;i<this.registered.length;i++){
+			let el=getObject(this.registered[i].el);
+			//do not close if mouse is over the element
+			let skip=0;
+			for(let h=0;h<hels.length;h++){
+				if(hels[h] === el){skip=1;break;}
+			}
+			if(skip==1){continue;}
+			let att=this.registered[i].att;
+			let val=this.registered[i].val;
+			el.style[att]=val;
+		}
+		return;
+	}
+	let el={el:rel,att:satt,val:val};
+	this.registered.push(el);
 }
 //commonModalPopup
 /**

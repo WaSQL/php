@@ -935,7 +935,7 @@ ul.w_navbar li:last-child{
 }
 /* Since we'll have the "ul li" "float:left"
  * we need to add a clear after the container. */
-ul.w_navbar:after {
+ul.w_navbar::after {
     content:"";
     display:table;
     clear:both;
@@ -1827,7 +1827,7 @@ label.timeselector select{
 label.timeselector select::-ms-expand {
      display: none;
 }
-label.timeselector:after{
+label.timeselector::after{
     content:attr(data-icon);
     position:absolute;
     right:0px;
@@ -1862,7 +1862,7 @@ input.w_toggle-round + label {
   -o-border-radius: 32px;
   border-radius: 32px;
 }
-input.w_toggle-round + label:before, input.w_toggle-round + label:after {
+input.w_toggle-round + label::before, input.w_toggle-round + label::after {
   display: block;
   position: absolute;
   top: 1px;
@@ -1874,7 +1874,7 @@ input.w_toggle-round + label:before, input.w_toggle-round + label:after {
   font-size: 20px;
   line-height: 32px;
 }
-input.w_toggle-round + label:before {
+input.w_toggle-round + label::before {
   right: 1px;
   background-color: #b1b1b1;
   content: attr(data-off);
@@ -1890,7 +1890,7 @@ input.w_toggle-round + label:before {
   -o-transition: background 0.4s;
   transition: background 0.4s;
 }
-input.w_toggle-round + label:after {
+input.w_toggle-round + label::after {
   width: 32px;
   background-color: #fff;
   -webkit-border-radius: 100%;
@@ -1906,13 +1906,13 @@ input.w_toggle-round + label:after {
   -o-transition: margin 0.4s;
   transition: margin 0.4s;
 }
-input.w_toggle-round:checked + label:before {
+input.w_toggle-round:checked + label::before {
   background-color: #5cb85c;
   content: attr(data-on);
   text-align: left;
   padding-left:6px;
 }
-input.w_toggle-round:checked + label:after {
+input.w_toggle-round:checked + label::after {
   margin-left: 35px;
 }
 input.w_toggle-flip + label {
@@ -1921,7 +1921,7 @@ input.w_toggle-flip + label {
   height: 32px;
   display:block;
 }
-input.w_toggle-flip + label:before, input.w_toggle-flip + label:after {
+input.w_toggle-flip + label::before, input.w_toggle-flip + label::after {
   display: block;
   position: absolute;
   top: 0;
@@ -1934,7 +1934,7 @@ input.w_toggle-flip + label:before, input.w_toggle-flip + label:after {
   text-align: center;
   line-height: 32px;
 }
-input.w_toggle-flip + label:before {
+input.w_toggle-flip + label::before {
   background-color: #b1b1b1;
   border-radius:6px;
   content: attr(data-off);
@@ -1948,7 +1948,7 @@ input.w_toggle-flip + label:before {
   -o-backface-visibility: hidden;
   backface-visibility: hidden;
 }
-input.w_toggle-flip + label:after {
+input.w_toggle-flip + label::after {
   background-color: #5cb85c;
   content: attr(data-on);
   border-radius:6px;
@@ -1967,14 +1967,14 @@ input.w_toggle-flip + label:after {
   -o-backface-visibility: hidden;
   backface-visibility: hidden;
 }
-input.w_toggle-flip:checked + label:before {
+input.w_toggle-flip:checked + label::before {
   -webkit-transform: rotateY(180deg);
   -moz-transform: rotateY(180deg);
   -ms-transform: rotateY(180deg);
   -o-transform: rotateY(180deg);
   transform: rotateY(180deg);
 }
-input.w_toggle-flip:checked + label:after {
+input.w_toggle-flip:checked + label::after {
   -webkit-transform: rotateY(0);
   -moz-transform: rotateY(0);
   -ms-transform: rotateY(0);
@@ -2363,7 +2363,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	position: relative;
 }
 /* top */
-#w_tooltip:before {
+#w_tooltip::before {
 	position: absolute;
 	top: -7px;
 	left: 4px;
@@ -2374,7 +2374,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	border-bottom-color: rgba(0, 0, 0, 0.2);
 	content: '';
 }
-#w_tooltip:after {
+#w_tooltip::after {
 	position: absolute;
 	top: -6px;
 	left: 5px;
@@ -2385,7 +2385,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	content: '';
 }
 /* left */
-#w_tooltip.left:before {
+#w_tooltip.left::before {
 	border-top: 7px solid transparent;
 	border-right: 7px solid #eee;
 	border-bottom: 7px solid transparent;
@@ -2393,7 +2393,7 @@ ul.w_list { list-style-image: url("/wfiles/arrow.gif") }
 	left: -14px;
 	top: 4px;
 }
-#w_tooltip.left:after {
+#w_tooltip.left::after {
 	border-top: 6px solid transparent;
 	border-right: 6px solid #eee;
 	border-bottom: 6px solid transparent;
