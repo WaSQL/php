@@ -152,18 +152,22 @@ ENDOFWHERE;
 						if(isset($json['month'][0])){
 							$cmon=date('n');
 							if($json['month'][0]==-1 || in_array($cmon,$json['month'])){
+								//echo $rec['name']." month passed";exit;
 								//month passed. check day
 								if(isset($json['day'][0])){
 									$cday=date('j');
 									if($json['day'][0]==-1 || in_array($cday,$json['day'])){
 										//day passed. check hour
+										//echo $rec['name']." day passed";exit;
 										if(isset($json['hour'][0])){
 											$chour=date('G');
+											//echo $rec['name'].$chour.printValue($json['hour']);exit;
 											if($json['hour'][0]==-1 || in_array($chour,$json['hour'])){
 												//hour passed. check minute
+												//echo $rec['name']." hour passed";exit;
 												if(isset($json['minute'][0])){
 													$cmin=(integer)date('i');
-													if($json['minute'][0]==-1 || in_array($chour,$json['minute'])){
+													if($json['minute'][0]==-1 || in_array($cmin,$json['minute'])){
 														//minute passed
 														$run=1;
 													}
