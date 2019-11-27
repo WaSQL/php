@@ -422,16 +422,33 @@ var wacss = {
 									this.clicked=1;
 							        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
 							        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
-									let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
-									if(activePoints.length > 0){
-								        let firstPoint = activePoints[0];
-								        let params={};
-								        params.type=this.parentobj.getAttribute('data-type');
-								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
-								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
-								        params.axis = this.chartobj.data.datasets[firstPoint._datasetIndex].yAxisID || 'default';
-								        window[this.onclick_func](params);
+							        //get exact element you clicked on
+							        let activePoint = this.chartobj.getElementAtEvent(evt);
+								    if (activePoint.length > 0) {
+								       let clickedDatasetIndex = activePoint[0]._datasetIndex;
+								       let clickedElementIndex = activePoint[0]._index;
+								       let clickedDatasetPoint = this.chartobj.data.datasets[clickedDatasetIndex];
+								       let label = clickedDatasetPoint.label;
+								       let value = clickedDatasetPoint.data[clickedElementIndex]["y"];  
+								       let params={};
+								       params.type=this.parentobj.getAttribute('data-type');
+								       params.label = this.chartobj.data.labels[firstPoint._index] || clickedDatasetPoint.label;
+								       params.value = clickedDatasetPoint.data[firstPoint._index] || clickedDatasetPoint.data[clickedElementIndex]["y"];
+								       params.axis = clickedDatasetPoint.yAxisID || 'default';
+								       window[this.onclick_func](params);   
 								    }
+								    else{
+										let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
+										if(activePoints.length > 0){
+									        let firstPoint = activePoints[0];
+									        let params={};
+									        params.type=this.parentobj.getAttribute('data-type');
+									        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+									        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+									        params.axis = this.chartobj.data.datasets[firstPoint._datasetIndex].yAxisID || 'default';
+									        window[this.onclick_func](params);
+									    }
+									}
 							    }
 							};
 						}
