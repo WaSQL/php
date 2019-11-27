@@ -13,8 +13,14 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'details':
 		$id=(integer)$_REQUEST['id'];
+		$cron=cronDetails($id);
 		setView('details',1);
 		return;
+	break;
+	case 'cron_result':
+		$id=(integer)$_REQUEST['id'];
+		$log=getDBRecordById('_cronlog',$id);
+		setView('cron_result',1);
 	break;
 	case 'list':
 		setView('list',1);

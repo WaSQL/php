@@ -1722,47 +1722,96 @@ div.striped:nth-of-type(odd) {
 table.table-striped.w_blue tbody tr:nth-of-type(odd),
 table.striped.w_blue tbody tr:nth-of-type(odd),
 div.striped.w_blue:nth-of-type(odd) {
-    background-color: #0c7abf15;
+    background-color: #0c7abf14;
 }
 table.table-striped.w_gray tbody tr:nth-of-type(odd),
 table.striped.w_gray tbody tr:nth-of-type(odd),
 div.striped.w_gray:nth-of-type(odd) {
-    background-color: #6c757d15;
+    background-color: #6c757d14;
 }
 table.table-striped.w_green tbody tr:nth-of-type(odd),
 table.striped.w_green tbody tr:nth-of-type(odd),
 div.striped.w_green:nth-of-type(odd) {
-    background-color: #28a74515;
+    background-color: #28a74514;
 }
 table.table-striped.w_red tbody tr:nth-of-type(odd),
 table.striped.w_red tbody tr:nth-of-type(odd),
 div.striped.w_red:nth-of-type(odd) {
-    background-color: #dc354515;
+    background-color: #dc354514;
 }
 table.table-striped.w_yellow tbody tr:nth-of-type(odd),
 table.striped.w_yellow tbody tr:nth-of-type(odd),
 div.striped.w_yellow:nth-of-type(odd) {
-    background-color: #ffc10715;
+    background-color: #ffc10714;
 }
 table.table-striped.w_orange tbody tr:nth-of-type(odd),
 table.striped.w_orange tbody tr:nth-of-type(odd),
 div.striped.w_orange:nth-of-type(odd) {
-    background-color: #ff980015;
+    background-color: #ff980014;
 }
 table.table-striped.w_teal tbody tr:nth-of-type(odd),
 table.striped.w_teal tbody tr:nth-of-type(odd),
 div.striped.w_teal:nth-of-type(odd) {
-    background-color: #17a2b815;
+    background-color: #17a2b814;
 }
 table.table-striped.w_white tbody tr:nth-of-type(odd),
 table.striped.w_white tbody tr:nth-of-type(odd),
 div.striped.w_white:nth-of-type(odd) {
-    background-color: #c4cad215;
+    background-color: #c4cad214;
 }
 table.table-striped.w_black tbody tr:nth-of-type(odd),
 table.striped.w_black tbody tr:nth-of-type(odd),
 div.striped.w_black:nth-of-type(odd) {
-    background-color: #343a4015;
+    background-color: #343a4014;
+}
+/* hover */
+table.hover tr:hover{
+  background-color:#0000000D;
+}
+table.table-striped.w_blue.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_blue.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_blue.hover:nth-of-type(odd):hover {
+    background-color: #0c7abf29;
+}
+table.table-striped.w_gray.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_gray.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_gray.hover:nth-of-type(odd):hover {
+    background-color: #6c757d29;
+}
+table.table-striped.w_green.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_green.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_green.hover:nth-of-type(odd):hover {
+    background-color: #28a74529;
+}
+table.table-striped.w_red.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_red.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_red.hover:nth-of-type(odd):hover {
+    background-color: #dc354529;
+}
+table.table-striped.w_yellow.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_yellow.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_yellow.hover:nth-of-type(odd):hover {
+    background-color: #ffc10729;
+}
+table.table-striped.w_orange.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_orange.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_orange.hover:nth-of-type(odd):hover {
+    background-color: #ff980029;
+}
+table.table-striped.w_teal.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_teal.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_teal.hover:nth-of-type(odd):hover {
+    background-color: #17a2b829;
+}
+table.table-striped.w_white.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_white.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_white.hover:nth-of-type(odd):hover {
+    background-color: #c4cad229;
+}
+table.table-striped.w_black.hover tbody tr:nth-of-type(odd):hover,
+table.striped.w_black.hover tbody tr:nth-of-type(odd):hover,
+div.striped.w_black.hover:nth-of-type(odd):hover {
+    background-color: #343a4029;
 }
 /* ----------------  Panels --------------- */
 .panel {

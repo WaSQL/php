@@ -442,6 +442,9 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
 *	[{field}_checkbox] - 1 - adds a checkbox before the field value that holds the field value
+*	[{field}_checkmark] - 1 - shows checkmark if value is 1
+*	[{field}_verbosetime] - 1 - converts value verboseTime
+*	[{field}_verbosesize] - 1 - converts value verboseSize
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
 *	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function
 *	[-host] - server to connect to
@@ -1048,6 +1051,18 @@ function databaseListRecords($params=array()){
                 $value .= '>'.$hvalue.'</a>';
                 unset($hvalue);
 			}
+			elseif(isset($params[$fld."_checkmark"]) && $params[$fld."_checkmark"]==1){
+				if($value==0){$value='';}
+				elseif($value==1){$value='<div class="text-center"><span class="icon-mark"></span></div>';}
+            }
+            elseif(isset($params[$fld."_verbosetime"]) && $params[$fld."_verbosetime"]==1){
+				if($value==0){$value='';}
+				elseif(isNum($value)){$value=verboseTime($value);}
+            }
+            elseif(isset($params[$fld."_verbosesize"]) && $params[$fld."_verbosesize"]==1){
+				if($value==0){$value='';}
+				elseif(isNum($value)){$value=verboseSize($value);}
+            }
 			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
 				$style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);";
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}

@@ -58,3 +58,54 @@
 	<div class="col s12"><label class="w_gray"><translate>Last Run Result</translate></label>[run_result]</div>
 </div>
 </view:edit_fields>
+
+
+<view:details>
+<div class="row">
+	<div class="col s12">
+		<table class="table condensed striped bordered <?=configValue('admin_color');?>">
+			<tr>
+				<th><translate>ID</translate></th>
+				<th><translate>Name</translate></th>
+				<th><translate>Cmd</translate></th>
+				<th><translate>Frequency</translate></th>
+			</tr>
+			<tr>
+				<td class="w_gray"><?=$cron['_id'];?></td>
+				<td class="w_gray"><?=$cron['name'];?></td>
+				<td class="w_gray"><?=$cron['run_cmd'];?></td>
+				<td class="w_gray"><?=$cron['run_format'];?></td>
+			</tr>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col s4">
+		<div style="max-height:400px;overflow:auto;padding-right:20px;">
+		<table class="table condensed striped bordered <?=configValue('admin_color');?> hover">
+		<tr>
+			<th><translate>Run Date</translate></th>
+			<th><translate>Run Length</translate></th>
+		</tr>
+		<view:log>
+		<tr class="w_pointer" onclick="return ajaxGet('/php/admin.php','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',id:<?=$log['_id'];?>,title:this.title});">
+			<td class="w_nowrap"><?=$log['run_date'];?></td>
+			<td class=""><?=verboseTime($log['run_length']);?></td>
+		</tr>
+		</view:log>
+		<?=renderEach('log',$cron['logs'],'log');?>
+		</table>
+		</div>
+	</div>
+	<div class="col s8"><div id="cron_result" style="width:560px;">
+		<?=renderView('cron_result',$cron,'log');?>
+	</div></div>
+</div>
+</view:details>
+
+<view:cron_result>
+<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;"></div>
+<textarea style="border:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
+<?=$log['run_result'];?>
+</textarea>
+</view:cron_result>

@@ -24,6 +24,20 @@ function cronAddEdit($id=0){
 	}
 	return addEditDBForm($opts);
 }
+function cronDetails($id){
+	/*
+		last_run
+	*/
+	$cron=getDBRecordById('_cron',$id);
+	$cron['logs']=getDBRecords(array(
+		'-table'=>'_cronlog',
+		'cron_id'=>$id,
+		'-order'=>'_id desc',
+		'-limit'=>100,
+		'-fields'=>'_id,run_date,run_length'
+	));
+	return $cron;
+}
 function cronList(){
 	$opts=array(
 		'-table'=>'_cron',
@@ -36,7 +50,9 @@ function cronList(){
 		'run_date_dateage'=>1,
 		'frequency_class'=>'align-right',
 		'run_length_class'=>'align-right',
+		'run_length_verbosetime'=>1,
 		'active_checkmark'=>1,
+		'running_checkmark'=>1,
 		'active_class'=>'align-center',
 		'running_class'=>'align-center',
 		'-results_eval'=>'cronListExtra'
@@ -44,11 +60,38 @@ function cronList(){
 	return databaseListRecords($opts);
 }
 function cronListExtra($recs){
+	$ids=array();
+	foreach($recs as $i=>$rec){
+		if($rec['run_as'] > 0 && !in_array($rec['run_as'],$ids)){
+			$ids[]=$rec['run_as'];
+		}
+	}
+	$umap=array();
+	if(count($ids)){
+		$idstr=implode(',',$ids);
+		$umap=getDBRecords(array(
+			'-table'=>'_users',
+			'-where'=>"_id in ({$idstr})",
+			'-fields'=>'_id,username',
+			'-index'=>'_id'
+		));
+	}
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id'];
-		$recs[$i]['_id'].='<a href="#" class="w_right" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit w_gray"></span></a>';
+		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron">'.$name.'</a>';
+		$recs[$i]['name']='<a href="#" class="w_right w_link w_block" style="margin-right:10px;" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'"><span class="icon-chart-bar"></span></a>';
+		$recs[$i]['name'].='<a href="#" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'">'.$name.'</a>';
+		//run_as
+		if(isset($rec['run_as'])){
+			if((integer)$rec['run_as'] > 0){
+				$recs[$i]['run_as']=$umap[$rec['run_as']]['username'];
+			}
+			else{
+				$recs[$i]['run_as']='';
+			}
+		}
+		
 	}
 	return $recs;
 }
