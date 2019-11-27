@@ -429,6 +429,7 @@ var wacss = {
 								        params.type=this.parentobj.getAttribute('data-type');
 								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+								        params.axis = this.chartobj.data.datasets[firstPoint._datasetIndex].getAttribute('data-yaxis') || 'default';
 								        window[this.onclick_func](params);
 								    }
 							    }
