@@ -425,17 +425,18 @@ var wacss = {
 							        //get exact element you clicked on
 							        let activePoint = this.chartobj.getElementAtEvent(evt);
 								    if (activePoint.length > 0) {
-								       let clickedDatasetIndex = activePoint[0]._datasetIndex;
-								       let clickedElementIndex = activePoint[0]._index;
-								       let clickedDatasetPoint = this.chartobj.data.datasets[clickedDatasetIndex];
-								       let label = clickedDatasetPoint.label;
-								       let value = clickedDatasetPoint.data[clickedElementIndex]["y"];  
-								       let params={};
-								       params.type=this.parentobj.getAttribute('data-type');
-								       params.label = this.chartobj.data.labels[firstPoint._index] || clickedDatasetPoint.label;
-								       params.value = clickedDatasetPoint.data[firstPoint._index] || clickedDatasetPoint.data[clickedElementIndex]["y"];
-								       params.axis = clickedDatasetPoint.yAxisID || 'default';
-								       window[this.onclick_func](params);   
+								    	let firstPoint = activePoint[0];
+								       	let clickedDatasetIndex = firstPoint._datasetIndex;
+								       	let clickedElementIndex = firstPoint._index;
+								       	let clickedDatasetPoint = this.chartobj.data.datasets[clickedDatasetIndex];
+								       	let label = clickedDatasetPoint.label;
+								       	let value = clickedDatasetPoint.data[clickedElementIndex]["y"];  
+								       	let params={};
+								       	params.type=this.parentobj.getAttribute('data-type');
+								       	params.label = this.chartobj.data.labels[firstPoint._index] || clickedDatasetPoint.label;
+								       	params.value = clickedDatasetPoint.data[firstPoint._index] || clickedDatasetPoint.data[clickedElementIndex]["y"];
+								       	params.axis = clickedDatasetPoint.yAxisID || 'default';
+								       	window[this.onclick_func](params);   
 								    }
 								    else{
 										let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
