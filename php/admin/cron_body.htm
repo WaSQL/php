@@ -71,10 +71,13 @@
 				<th><translate>Frequency</translate></th>
 			</tr>
 			<tr>
-				<td class="w_gray"><?=$cron['_id'];?></td>
-				<td class="w_gray"><?=$cron['name'];?></td>
-				<td class="w_gray"><?=$cron['run_cmd'];?></td>
-				<td class="w_gray"><?=$cron['run_format'];?></td>
+				<td class="w_small">
+					<?=$cron['_id'];?>
+					<a href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'edit',id:<?=$cron['_id'];?>,title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>
+				</td>
+				<td class="w_small"><?=$cron['name'];?></td>
+				<td class="w_small"><?=$cron['run_cmd'];?></td>
+				<td class="w_small"><?=$cron['run_format'];?></td>
 			</tr>
 		</table>
 	</div>
