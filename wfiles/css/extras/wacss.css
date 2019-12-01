@@ -1113,15 +1113,19 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    border: 1px solid;
-    padding: .375rem .75rem;
+    border: 1px solid transparent;
     line-height: 1;
     border-radius: .25rem;
     text-transform: none;
+    white-space: nowrap;
+    background-image: none;
     margin:0;
     -webkit-transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
+
+
+
 label.btn, a.btn {
   height:auto;
 }
@@ -1166,6 +1170,7 @@ a.btn{text-decoration: none;}
 
 .btn.small{
   padding: .25rem .5rem;
+  line-height: 1;
   font-size: .875rem;
 }
 
@@ -1205,9 +1210,9 @@ a.btn{text-decoration: none;}
     flex: 1 1 auto;
 }
 .btn-sm, .btn-group-sm > .btn {
-    padding: 0.25rem 0.5rem;
+    padding: 1.0rem 0.75rem;
     font-size: 0.875rem;
-    line-height: 0.8;
+    line-height: 1.0;
     border-radius: 0.2rem;
 }
 .flexbutton{
@@ -1323,12 +1328,6 @@ select, textarea {
 }
 textarea {
   vertical-align: top;
-}
-button.btn{
-  padding: .375rem .75rem;
-  font-size: 1rem;
-  box-sizing: border-box;
-  font-weight:300;
 }
 select,
 input[type="button"],
@@ -1888,30 +1887,19 @@ div.striped.w_black.hover:nth-of-type(odd):hover {
   width: 90%;
 }
 .container-fluid {
-  margin: 0 auto;
   max-width: 4000px;
-  width: 90%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+.topmenu.container-fluid {
+    padding: 0px;
+    min-height: 100px;
 }
 .container-full {
   margin: 0 auto;
   width: 100%;
-}
-@media only screen and (min-width: 601px) {
-  .container {
-    width: 85%;
-  }
-  .container-fluid {
-    width: 95%;
-  }
-}
-
-@media only screen and (min-width: 993px) {
-  .container {
-    width: 80%;
-  }
-  .container-fluid {
-    width: 90%;
-  }
 }
 
 .col .row, [class^="col-"] .row {

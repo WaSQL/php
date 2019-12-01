@@ -3483,7 +3483,6 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 				else{
 					var val=req.responseText;
 					if(lname.indexOf('popupdiv') != -1){
-
 						popUpDiv(val,{id:dname,center:1,drag:1});
 						centerObject(dname);
                     }

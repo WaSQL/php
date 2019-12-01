@@ -1420,8 +1420,9 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	-webkit-animation-duration: .3s;
 	animation-timing-function: ease-in-out;
 	-webkit-animation-timing-function: ease-in-out;
-}
-.w_centerpop {
+	background:#FFF;
+	max-width:90%;
+	max-height:90%;
 	position: relative;
 	padding:0px 0px 25px 0px;
 	border:none;
@@ -1464,7 +1465,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	90% {-webkit-transform: scale(.9);opacity: 0.9;}
 	100% {-webkit-transform: scale(1);opacity: 1;}
 }
-.w_centerpop .w_centerpop_title{
+.w_centerpop_title{
 	position:relative;
 	left:0px;
 	top:0px;
@@ -1481,7 +1482,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
     padding: 7px 30px 7px 30px;
     height: 40px;
 }
-.w_centerpop .w_centerpop_drag{
+.w_centerpop_drag{
 	cursor:move;
 	position:absolute;
 	right:18px;
@@ -1507,11 +1508,10 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
 	max-height:800px;
 	overflow:auto;
 }
-.w_centerpop .w_centerpop_content{
+.w_centerpop_content{
 	top:15px;
-	padding:0px;
-	max-width:800px;
-	max-height:800px;
+	padding:0 15px;
+	max-height:calc(100% - 40px);
 	overflow:auto;
 }
 .w_centerpop_close_bot{
