@@ -1116,6 +1116,7 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
     border: 1px solid transparent;
     line-height: 1;
     border-radius: .25rem;
+    padding:.375rem .75rem;
     text-transform: none;
     white-space: nowrap;
     background-image: none;
@@ -1168,11 +1169,6 @@ a.btn{text-decoration: none;}
 .btn.w_black{color: #fff;background-color: #343a40;border-color: #343a40;}
 .btn.w_black:hover{background-color: #23272b;border-color: #1d2124;}
 
-.btn.small{
-  padding: .25rem .5rem;
-  line-height: 1;
-  font-size: .875rem;
-}
 
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/
 .input-field{
@@ -1209,11 +1205,14 @@ a.btn{text-decoration: none;}
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
 }
-.btn-sm, .btn-group-sm > .btn {
-    padding: 1.0rem 0.75rem;
+.btn.small,.btn-sm, .btn-group-sm > .btn {
+    padding: .25rem .5rem;
     font-size: 0.875rem;
     line-height: 1.0;
     border-radius: 0.2rem;
+}
+.input-group-btn .btn {
+    padding: 1.0rem .75rem;
 }
 .flexbutton{
     display: -webkit-flex;
