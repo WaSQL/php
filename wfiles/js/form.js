@@ -2253,7 +2253,7 @@ function pagingSubmit(frm,div){
 	pagingAddFilter(frm);
 	pagingSetFilters(frm);
 	if(undefined != div){
-		console.log('pagingSubmit - ajax');
+		//console.log('pagingSubmit - ajax');
 		frm.setAttribute('pagingSetFilters',0);
 		return ajaxSubmitForm(frm,div);
 	}

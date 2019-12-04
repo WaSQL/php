@@ -51,7 +51,7 @@ function tinyUrl($url){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function tinyCode($code){
-	$code=strtoupper($code);
+	$code=$oricode=strtoupper($code);
 	if(preg_match('/^(.+?)[\$\!]/',$code,$m)){$code=$m[1];}
 
 	$id=tinyBase2Base($code, 36, 10);
@@ -59,7 +59,14 @@ function tinyCode($code){
 	if(!isNum($id)){return 'ERROR';}
 	//add record to tiny
 	$rec=getDBRecord(array('-table'=>'_tiny','_id'=>$id,'-fields'=>'_id,url'));
-	if(isset($rec['url'])){return $rec['url'];}
+	if(isset($rec['url'])){
+    if(stringContains($rec['url'],'?')){
+      $rec['url'].="&_tiny={$rec['_id']}";
+    }
+    else{
+      $rec['url']="?_tiny={$rec['_id']}";
+    }
+    return $rec['url'];}
 
 	return 'ERROR: No such tiny url';
 }
