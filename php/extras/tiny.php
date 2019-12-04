@@ -64,10 +64,10 @@ function tinyCode($code){
       $rec['url'].="&_tiny={$rec['_id']}";
     }
     else{
-      $rec['url']="?_tiny={$rec['_id']}";
+      $rec['url'].="?_tiny={$rec['_id']}";
     }
-    return $rec['url'];}
-
+    return $rec['url'];
+  }
 	return 'ERROR: No such tiny url';
 }
 //---------- begin function tinyTest
