@@ -1410,10 +1410,12 @@ textarea.small{
 
 /* placeholder style */
 ::placeholder{
-  color:rgba(0,0,0,0.5);
+  color:rgba(0,0,0,0.4);
+  text-align: left;
   font-size:1.0rem;
 }
 :focus::placeholder{
+  color:rgba(0,0,0,0.3);
   text-align: right;
 }
 /* Form elements: checkboxes and radio buttons */
