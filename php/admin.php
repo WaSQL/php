@@ -405,8 +405,8 @@ if(isAdmin() && isset($_REQUEST['_su_']) && isNum($_REQUEST['_su_'])){
 		$ok=editDBUser($USER['_id'],array('guid'=>'NULL'));
 		$ok=editDBUser($suser['_id'],array('guid'=>$guid));
 		setUserInfo($guid);
-		}
-    }
+	}
+}
 $PAGE['name']='php/admin.php';
 $PAGE['_id']=0;
 $TEMPLATE['_id']=0;
