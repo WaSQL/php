@@ -58,6 +58,58 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 //---------- db functions that allow you to pass in what database first
+//---------- begin function dbConnect
+/**
+* @describe returns a handle to a database
+* @param db string - database name as specified in the database section of config.xml
+* @return array params
+* @usage
+*	$pgdbh=dbConnect('pg_local');
+*/
+function dbConnect($db,$params){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlDBConnect($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleDBConnect($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlDBConnect($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaDBConnect($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteDBConnect($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			try{
+				return databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
+			}
+			catch(Exception $e){
+				return false;
+			}
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbExecuteSQL
 /**
 * @describe returns an records set from a database
