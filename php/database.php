@@ -66,7 +66,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 * @usage
 *	$pgdbh=dbConnect('pg_local');
 */
-function dbConnect($db,$params){
+function dbConnect($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	$db=strtolower(trim($db));
