@@ -712,7 +712,12 @@ function minifyCssFile($v=''){
 	$mfn=minifyFilename();
 	$v=strtolower($v);
 	if(strlen($v)){
-		$_SESSION['w_MINIFY']['extras_css'][]=$v;
+		$files=preg_split('/\,/',$v);
+		foreach($files as $file){
+			$file=trim($file);
+			$_SESSION['w_MINIFY']['extras_css'][]=$file;
+		}
+		$v=implode('_',$files);
 		$cssfile = "minify_{$v}_{$mfn}.css";
 	}
 	else{
@@ -741,21 +746,23 @@ function minifyJsFile($v=''){
 	}
 	$mfn=minifyFilename();
 	$v=strtolower($v);
-	switch($v){
-		case 'bootstrap':
-			$_SESSION['w_MINIFY']['extras_js'][]='jquery1';
-			$_SESSION['w_MINIFY']['extras_js'][]=$v;
-			$jsfile="minify_{$v}_{$mfn}.js";
-		break;
-		default:
-			if(strlen($v)){
-				$_SESSION['w_MINIFY']['extras_js'][]=$v;
-				$jsfile="minify_{$v}_{$mfn}.js";
+	if(strlen($v)){
+		$files=preg_split('/\,/',$v);
+		foreach($files as $file){
+			$file=trim($file);
+			//load any dependants
+			switch($file){
+				case 'bootstrap':
+					$_SESSION['w_MINIFY']['extras_js'][]='jquery1';
+				break;
 			}
-			else{
-				$jsfile="minify_x_{$mfn}.js";
-			}
-		break;
+			$_SESSION['w_MINIFY']['extras_js'][]=$file;
+		}
+		$v=implode('_',$files);
+		$jsfile = "minify_{$v}_{$mfn}.js";
+	}
+	else{
+		$jsfile = "minify_x_{$mfn}.js";
 	}
 	$_SESSION['w_MINIFY']['js_filename']=$jsfile;
 	return "/w_min/{$jsfile}";
