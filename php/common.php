@@ -483,10 +483,10 @@ function abort($obj,$title='',$subtitle=''){
 		$heading[]='<img src="'.$CONFIG['logo'].'">';
 	}
 	else{
-		$heading[]='<img src="/wfiles/iconsets/64/wasql.png" style="padding:10px;" />';
+		$heading[]='<img src="/wfiles/iconsets/32/wasql.png" style="padding:10px;" />';
 	}
 	$heading[]=$headstr;
-	$rtn .= '<table>'.PHP_EOL;
+	$rtn .= '<table class="table">'.PHP_EOL;
 	$rtn .= buildTableTD($heading);
 	$rtn .= buildTableEnd();
 	$rtn .= '<div class="w_left w_pad">'.PHP_EOL;
