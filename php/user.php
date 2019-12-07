@@ -1165,9 +1165,9 @@ function userLoginForm($params=array()){
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'.PHP_EOL;
     	}
-    $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username");
+    $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username",'autocomplete'=>'username');
 	foreach($params as $k=>$v){$username_opts[$k]=$v;}
-	$password_opts=array('id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2,'placeholder'=>"password");
+	$password_opts=array('id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
 	foreach($params as $k=>$v){$password_opts[$k]=$v;}
     switch(strtolower($params['-format'])){
 		case 'oneline':
