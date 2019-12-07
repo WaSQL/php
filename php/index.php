@@ -1320,6 +1320,12 @@ function indexUserAccess(){
     	exit;
 	}
 	else{
+		if(!isset($CONFIG['access_title'])){
+			$CONFIG['access_title']=$_SERVER['HTTP_HOST'];
+		}
+		if(!isset($CONFIG['access_subtitle'])){
+			$CONFIG['access_subtitle']="Login required to access this site";
+		}
     	abort(userLoginForm(),$CONFIG['access_title'],$CONFIG['access_subtitle']);
 	}
 }
