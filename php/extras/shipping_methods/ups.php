@@ -41,6 +41,24 @@ $progpath=dirname(__FILE__);
 		The next 5 characters is our invoice number
 		The next 2 digits is the package number, zero filled e.g. Package 1 is "01", 2 is "02"
 		The last and final character is the check digit.
+
+Test Tracking Numbers:
+	TRACKING NUMBER, SERVICE, RESPONSE
+	1Z12345E0205271688 (Signature Availability), 2nd Day Air, Delivered
+	1Z12345E6605272234, World Wide Express, Delivered
+	1Z12345E0305271640, (Second Package: 1Z12345E0393657226), Ground, Delivered
+	1Z12345E1305277940, Next Day Air Saver, ORIGIN SCAN
+	1Z12345E6205277936, Day Air Saver, 2nd Delivery attempt
+	1Z12345E020527079, Invalid Tracking Number
+	1Z12345E1505270452, No Tracking Information Available
+	990728071, UPS Freight LTL, In Transit
+	3251026119, Delivered Origin CFS
+	MI Tracking Number: 9102084383041101186729
+	MI Reference Number: cgish000116630
+	1Z648616E192760718, UPS Worldwide Express Freight, Order Process by UPS
+	5548789114, UPS Express Freight, Response for UPS Air Freight
+	ER751105042015062, UPS Ocean, Response for UPS Ocean Freight
+	1ZWX0692YP40636269, UPS SUREPOST, Response for UPS SUREPOST
 */
 //-----------------------
 function upsAddressValidate($params=array()){
@@ -197,6 +215,183 @@ function upsServices($params=array()){
     }
 //-----------------------
 function upsTrack($params=array()){
+	if(!isset($params['-userid'])){return "No userid";}
+	if(!isset($params['-accesskey'])){return "No accesskey";}
+	if(!isset($params['-password'])){return "No password";}
+	if(!isset($params['-tn'])){return "No tn";}
+	$rtn=array('-params'=>$params,'carrier'=>"UPS");
+	$json_out=<<<ENDOFJSONOUT
+{
+	"UPSSecurity": { 
+		"UsernameToken": { 
+			"Username": "{$params['-userid']}", 
+			"Password": "{$params['-password']}" 
+		}, 
+		"ServiceAccessToken": { 
+			"AccessLicenseNumber": "{$params['-accesskey']}" 
+		} 
+	}, 
+	"TrackRequest": { 
+		"Request": { 
+			"RequestOption": "1", 
+			"TransactionReference": { 
+				"CustomerContext": "Tracking Request" 
+			} 
+		}, 
+		"InquiryNumber": "{$params['-tn']}" 
+	} 
+} 
+ENDOFJSONOUT;
+	if(isset($params['-test'])){
+		$url='https://wwwcie.ups.com/rest/Track';
+	}
+	else{
+		$url='https://onlinetools.ups.com/rest/Track';
+	}
+    $result=postJSON($url,$json_out,array('-ssl'=>false));
+    //check for errors/fault
+    if(isset($result['json_array']['Fault'])){
+    	$rtn['tracking_number']=$params['-tn'];
+		$rtn['error']=$result['json_array']['Fault']['detail']['Errors']['ErrorDetail']['PrimaryErrorCode']['Description'];
+		$rtn['error_code']=$result['json_array']['Fault']['detail']['Errors']['ErrorDetail']['PrimaryErrorCode']['Code'];
+		$rtn['status']='ERROR: '. $rtn['error'];
+    }
+    elseif(isset($result['json_array']['TrackResponse']['Shipment'])){
+    	//Set Service
+        $rtn['service']['code']=$result['json_array']['TrackResponse']['Shipment']['Service']['Code'];
+        $rtn['service']['description']=$result['json_array']['TrackResponse']['Shipment']['Service']['Description'];
+        //Set Tracking Number
+        if(!isset($result['json_array']['TrackResponse']['Shipment']['Package'][0])){
+        	$result['json_array']['TrackResponse']['Shipment']['Package']=array($result['json_array']['TrackResponse']['Shipment']['Package']);
+        }
+        $packages=$result['json_array']['TrackResponse']['Shipment']['Package'];
+        if(count($packages)==1){
+        	$rtn['tracking_number']=$packages[0]['TrackingNumber'];
+
+        	//status
+        	if(isset($packages[0]['Activity']['Status']['Description'])){
+				$rtn['status']=$packages[0]['Activity']['Status']['Description'];
+				$rtn['status_code']=$packages[0]['Activity']['Status']['Code'];
+			}
+			elseif(isset($packages[0]['Activity'][0]['Status']['Description'])){
+				$rtn['status']=$packages[0]['Activity'][0]['Status']['Description'];
+				$rtn['status_code']=$packages[0]['Activity'][0]['Status']['Code'];
+			}
+        	//set the delivery date if the package is delivered
+			if(preg_match('/^delivered$/i',$packages[0]['Activity']['Status']['Description'])){
+				$sdate=$packages[0]['Activity']['Date'];
+				$stime=$packages[0]['Activity']['Time'];
+		        if(strlen($sdate)){
+					//20090908
+					$year=substr($sdate,0,4);
+					$month=substr($sdate,4,2);
+					$day=substr($sdate,6,2);
+					$hh=substr($stime,0,2);
+					$mm=substr($stime,2,2);
+					$ss=substr($stime,4,2);
+					$rtn['delivery_date']="{$year}-{$month}-{$day} {$hh}:{$mm}:{$ss}";
+		            $rtn['delivery_date_utime']=strtotime($rtn['delivery_date']);
+				}
+			}
+			elseif(preg_match('/^delivered$/i',$packages[0]['Activity'][0]['Status']['Description'])){
+				$sdate=$packages[0]['Activity'][0]['Date'];
+				$stime=$packages[0]['Activity'][0]['Time'];
+		        if(strlen($sdate)){
+					//20090908
+					$year=substr($sdate,0,4);
+					$month=substr($sdate,4,2);
+					$day=substr($sdate,6,2);
+					$hh=substr($stime,0,2);
+					$mm=substr($stime,2,2);
+					$ss=substr($stime,4,2);
+					$rtn['delivery_date']="{$year}-{$month}-{$day} {$hh}:{$mm}:{$ss}";
+		            $rtn['delivery_date_utime']=strtotime($rtn['delivery_date']);
+				}
+			}
+			//ship to
+			if(isset($packages[0]['Activity']['ActivityLocation']['Address'])){
+				foreach($packages[0]['Activity']['ActivityLocation']['Address'] as $k=>$v){
+					$k=strtolower($k);
+					$rtn['shipto'][$k]=$v;
+				}
+			}	
+        }
+        else{
+        	foreach($packages as $package){
+        		$pkg=array();
+        		$pkg['tracking_number']=$package['TrackingNumber'];
+        		//status
+	        	if(isset($package['Activity']['Status']['Description'])){
+					$pkg['status']=$package['Activity']['Status']['Description'];
+					$pkg['status_code']=$package['Activity']['Status']['Code'];
+				}
+				elseif(isset($package['Activity'][0]['Status']['Description'])){
+					$pkg['status']=$package['Activity'][0]['Status']['Description'];
+					$pkg['status_code']=$package['Activity'][0]['Status']['Code'];
+				}
+	        	//set the delivery date if the package is delivered
+				if(preg_match('/^delivered$/i',$package['Activity']['Status']['Description'])){
+					$sdate=$package['Activity']['Date'];
+					$stime=$package['Activity']['Time'];
+			        if(strlen($sdate)){
+						//20090908
+						$year=substr($sdate,0,4);
+						$month=substr($sdate,4,2);
+						$day=substr($sdate,6,2);
+						$hh=substr($stime,0,2);
+						$mm=substr($stime,2,2);
+						$ss=substr($stime,4,2);
+						$pkg['delivery_date']="{$year}-{$month}-{$day} {$hh}:{$mm}:{$ss}";
+			            $pkg['delivery_date_utime']=strtotime($pkg['delivery_date']);
+					}
+					//status
+					$pkg['status']=$package['Activity']['Status']['Description'];
+					$pkg['status_code']=$package['Activity']['Status']['Code'];
+				}
+				elseif(preg_match('/^delivered$/i',$package['Activity'][0]['Status']['Description'])){
+					$sdate=$package['Activity'][0]['Date'];
+					$stime=$package['Activity'][0]['Time'];
+			        if(strlen($sdate)){
+						//20090908
+						$year=substr($sdate,0,4);
+						$month=substr($sdate,4,2);
+						$day=substr($sdate,6,2);
+						$hh=substr($stime,0,2);
+						$mm=substr($stime,2,2);
+						$ss=substr($stime,4,2);
+						$pkg['delivery_date']="{$year}-{$month}-{$day} {$hh}:{$mm}:{$ss}";
+			            $pkg['delivery_date_utime']=strtotime($pkg['delivery_date']);
+					}
+					//status
+					$pkg['status']=$package['Activity'][0]['Status']['Description'];
+					$pkg['status_code']=$package['Activity'][0]['Status']['Code'];
+				}
+				//ship to
+				if(isset($package['Activity']['ActivityLocation']['Address'])){
+					foreach($package['Activity']['ActivityLocation']['Address'] as $k=>$v){
+						$k=strtolower($k);
+						$pkg['shipto'][$k]=$v;
+					}
+				}
+				$rtn['packages'][]=$pkg;
+        	}
+        }
+		//Ship_date
+        $sdate=$result['json_array']['TrackResponse']['Shipment']['PickupDate'];
+        if(strlen($sdate)){
+			//20090908
+			$year=substr($sdate,0,4);
+			$month=substr($sdate,4,2);
+			$day=substr($sdate,6,2);
+			$rtn['ship_date']="{$year}-{$month}-{$day}";
+            $rtn['ship_date_utime']=strtotime($rtn['ship_date']);
+		}
+    }
+    //echo printValue($rtn).printValue($result['json_array']);exit;
+    return $rtn;
+}
+//upsTrack depreciated API as of Jan 1 2020
+function upsTrack_OLD($params=array()){
 	if(!isset($params['-userid'])){return "No userid";}
 	if(!isset($params['-accesskey'])){return "No accesskey";}
 	if(!isset($params['-password'])){return "No password";}
