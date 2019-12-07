@@ -8053,10 +8053,37 @@ function getGUID($force=0){
 	$expire=time()+(3600*24*365);
 	if(isset($CONFIG['session_domain'])){
 		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
-		setcookie("GUID", $guid, $expire, "/", ".{$CONFIG['session_domain']}",isSSL(),true);
+		/*Note: SameSite fix -  https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict */
+		if(PHP_VERSION_ID < 70300) {
+			//name,value,expire,path,domain,secure,httponly
+			setcookie("GUID", $guid, $expire, "/; samesite=Strict", ".{$CONFIG['session_domain']}",isSSL(),true);
+		}
+		else{
+			//name,value,expire,path,domain,secure,httponly,samesite
+			setcookie("GUID", $guid, array(
+				'expires'	=> $expire,
+				'path'		=> '/',
+				'domain'	=> ".{$CONFIG['session_domain']}",
+				'secure'	=> isSSL(),
+				'httponly'	=> true,
+				'samesite'	=>'Strict'
+			));	
+		}
 	}
 	else{
-    	setcookie("GUID", $guid, $expire, "/",null,isSSL(),true);
+		if(PHP_VERSION_ID < 70300) {
+    		setcookie("GUID", $guid, $expire, "/; samesite=Lax",null,isSSL(),true);
+    	}
+    	else{
+    		setcookie("GUID", $guid, $expire, "/",null,isSSL(),true,array(
+				'expires'	=> $expire,
+				'path'		=> '/',
+				'domain'	=> null,
+				'secure'	=> isSSL(),
+				'httponly'	=> true,
+				'samesite'	=>'Lax'
+			));
+    	}
 	}
 	$_SERVER['GUID']=$guid;
 	return $guid;
