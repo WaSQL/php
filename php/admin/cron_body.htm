@@ -35,8 +35,13 @@
 
 <view:edit_fields>
 <div class="row">
-	<div class="col s6 m5"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s12 m6"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s12 m6"><label><translate>Groupname</translate></label>[groupname]</div>
+</div>
+<div class="row">
+	<div class="col s6 m1"><label><translate>Paused</translate></label>[paused]</div>
 	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
+	<div class="col s6 m3"><label><translate>Records To Keep</translate></label>[records_to_keep]</div>
 	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
 	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
 </div>
@@ -66,7 +71,10 @@
 		<table class="table condensed striped bordered <?=configValue('admin_color');?>">
 			<tr>
 				<th><translate>ID</translate></th>
+				<th><translate>Group</translate></th>
 				<th><translate>Name</translate></th>
+				<th><translate>Paused</translate></th>
+				<th><translate>Records To Keep</translate></th>
 				<th><translate>Cmd</translate></th>
 				<th><translate>Frequency</translate></th>
 			</tr>
@@ -75,7 +83,10 @@
 					<?=$cron['_id'];?>
 					<a href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'edit',id:<?=$cron['_id'];?>,title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>
 				</td>
+				<td class="w_small"><?=$cron['groupname'];?></td>
 				<td class="w_small"><?=$cron['name'];?></td>
+				<td class="w_small"><?=$cron['paused'];?></td>
+				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
 				<td class="w_small"><?=$cron['run_format'];?></td>
 			</tr>

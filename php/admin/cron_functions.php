@@ -41,7 +41,7 @@ function cronDetails($id){
 function cronList(){
 	$opts=array(
 		'-table'=>'_cron',
-		'-fields'=>'_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as',
+		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>'/php/admin.php',
 		'_menu'=>'cron',
@@ -53,6 +53,8 @@ function cronList(){
 		'run_length_verbosetime'=>1,
 		'active_checkmark'=>1,
 		'running_checkmark'=>1,
+		'groupname_displayname'=>'Group',
+		'name_class'=>'w_nowrap',
 		'active_class'=>'align-center',
 		'running_class'=>'align-center',
 		'-results_eval'=>'cronListExtra'
@@ -94,5 +96,47 @@ function cronListExtra($recs){
 		
 	}
 	return $recs;
+}
+function cronCheckSchema(){
+	$cronfields=getDBFieldInfo('_cron');
+	//add paused and groupname fields?
+	if(!isset($cronfields['paused'])){
+		//paused
+		$query="ALTER TABLE _cron ADD paused ".databaseDataType('integer(1)')." NOT NULL Default 0;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'paused',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'tvals'			=> '1',
+			'editlist'		=> 1,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+		//groupname
+		$query="ALTER TABLE _cron ADD groupname ".databaseDataType('varchar(150)')." NULL;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'groupname',
+			'inputtype'		=> 'text',
+			'width'			=> 150,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
+		//records_to_keep
+		$query="ALTER TABLE _cron ADD records_to_keep ".databaseDataType('integer')." NOT NULL Default 1000;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'records_to_keep',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
+		));
+	}
+	return true;
 }
 ?>

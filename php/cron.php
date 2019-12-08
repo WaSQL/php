@@ -41,6 +41,7 @@ if(isset($CONFIG['timezone'])){
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
+$ok=cronCheckSchema();
 global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
@@ -97,7 +98,7 @@ while($etime < 55){
 		));
 		//echo "Checking {$CONFIG['name']}\n";
 	$wherestr=<<<ENDOFWHERE
-	active=1 and running != 1 and run_cmd is not null
+	active=1 and paused != 1 and running != 1 and run_cmd is not null
 		and (date(now()) >= date(begin_date) or begin_date is null or length(begin_date)=0)
 		and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
 	    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
@@ -274,6 +275,8 @@ ENDOFWHERE;
 	            	//cron is a command
 	            	$crontype='OS Command';
 				}
+				cronMessage("cleaning {$rec['name']}");
+				$ok=cronCleanRecords($rec);
 				cronMessage("running {$crontype} {$rec['name']}");
 	        	
 	        	$result='';
@@ -367,7 +370,98 @@ ENDOFWHERE;
 	}
 }
 exit;
-//---------- begin function cronUpdate
+function cronCleanRecords($cron=array()){
+	if(!isset($cron['name'])){return false;}
+	if(!isNum($cron['records_to_keep'])){return false;}
+	//get the 
+	$recs=getDBRecords(array(
+		'-table'=>'_cronlog',
+		'-order'=>'_id desc',
+		'-limit'=>$cron['records_to_keep'],
+		'-fields'=>'_id',
+		'name'=>$cron['name']
+	));
+	if(!isset($recs[0])){return;}
+	$min=0;
+	foreach($recs as $rec){
+		if($min==0 || $rec['_id'] < $min){$min=$rec['_id'];}
+	}
+	$ok=delDBRecord(array(
+		'-table'=>'_cronlog',
+		'-where'=>"_id < {$min} and name='{$cron['name']}'"
+	));
+	return $ok;
+}
+
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function cronPauseCron($cron_id){
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "_id={$cron_id}",
+		'paused'	=> 1,
+	);
+	$ok=editDBRecord($editopts);
+	return $ok;
+}
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function cronUnPauseCron($cron_id){
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "_id={$cron_id}",
+		'paused'	=> 0,
+	);
+	$ok=editDBRecord($editopts);
+	return $ok;
+}
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function cronCheckSchema(){
+	$cronfields=getDBFieldInfo('_cron');
+	//add paused and groupname fields?
+	if(!isset($cronfields['paused'])){
+		//paused
+		$query="ALTER TABLE _cron ADD paused ".databaseDataType('integer(1)')." NOT NULL Default 0;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'paused',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'tvals'			=> '1',
+			'editlist'		=> 1,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+		//groupname
+		$query="ALTER TABLE _cron ADD groupname ".databaseDataType('varchar(150)')." NULL;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'groupname',
+			'inputtype'		=> 'text',
+			'width'			=> 150,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
+		//records_to_keep
+		$query="ALTER TABLE _cron ADD records_to_keep ".databaseDataType('integer')." NOT NULL Default 1000;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'records_to_keep',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
+		));
+	}
+	return true;
+}
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */

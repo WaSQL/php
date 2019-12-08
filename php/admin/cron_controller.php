@@ -1,5 +1,4 @@
 <?php
-//echo printValue($_REQUEST);exit;
 switch(strtolower($_REQUEST['func'])){
 	case 'add':
 		$id=0;
@@ -27,6 +26,7 @@ switch(strtolower($_REQUEST['func'])){
 		return;
 	break;
 	case 'default':
+		$ok=cronCheckSchema();
 		setView('default');
 	break;
 }
