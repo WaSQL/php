@@ -176,6 +176,7 @@ function createWasqlTable($table=''){
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"cron_id"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
 			//Add tabledata

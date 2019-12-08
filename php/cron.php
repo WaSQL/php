@@ -33,6 +33,7 @@ global $allhost;
 global $dbh;
 global $sel;
 global $CONFIG;
+global $cron_id;
 $_SERVER['HTTP_HOST']='localhost';
 include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
@@ -257,6 +258,9 @@ ENDOFWHERE;
 					'_id'		=> $rec['_id'],
 					'-nocache'	=> 1
 				));
+				$cron_id=$_REQUEST['cron_id']=$rec['_id'];
+				cronMessage("cleaning {$rec['name']}");
+				$ok=cronCleanRecords($rec);
 				$cmd=$rec['run_cmd'];
 				$lcmd=strtolower(trim($cmd));
 				if(isset($pages[$lcmd])){
@@ -275,8 +279,6 @@ ENDOFWHERE;
 	            	//cron is a command
 	            	$crontype='OS Command';
 				}
-				cronMessage("cleaning {$rec['name']}");
-				$ok=cronCleanRecords($rec);
 				cronMessage("running {$crontype} {$rec['name']}");
 	        	
 	        	$result='';
@@ -371,7 +373,7 @@ ENDOFWHERE;
 }
 exit;
 function cronCleanRecords($cron=array()){
-	if(!isset($cron['name'])){return false;}
+	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}
 	//get the 
 	$recs=getDBRecords(array(
@@ -379,7 +381,7 @@ function cronCleanRecords($cron=array()){
 		'-order'=>'_id desc',
 		'-limit'=>$cron['records_to_keep'],
 		'-fields'=>'_id',
-		'name'=>$cron['name']
+		'cron_id'=>$cron['_id']
 	));
 	if(!isset($recs[0])){return;}
 	$min=0;
@@ -388,33 +390,8 @@ function cronCleanRecords($cron=array()){
 	}
 	$ok=delDBRecord(array(
 		'-table'=>'_cronlog',
-		'-where'=>"_id < {$min} and name='{$cron['name']}'"
+		'-where'=>"_id < {$min} and cron_id='{$cron['_id']}'"
 	));
-	return $ok;
-}
-
-/**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-*/
-function cronPauseCron($cron_id){
-	$editopts=array(
-		'-table'	=> '_cron',
-		'-where'	=> "_id={$cron_id}",
-		'paused'	=> 1,
-	);
-	$ok=editDBRecord($editopts);
-	return $ok;
-}
-/**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-*/
-function cronUnPauseCron($cron_id){
-	$editopts=array(
-		'-table'	=> '_cron',
-		'-where'	=> "_id={$cron_id}",
-		'paused'	=> 0,
-	);
-	$ok=editDBRecord($editopts);
 	return $ok;
 }
 /**

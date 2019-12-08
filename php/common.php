@@ -22,6 +22,39 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
+//---------- begin function commonCronPause
+/**
+* @describe sets pause to 1 on the cron id
+* @param params id  - cron _id value.  If not passed in, it looks for $_REQUEST['cron_id']
+* @return ok boolean
+* @usage
+*	<?=commonSearchFiltersForm(array('-table'=>'notes'));?>
+*/
+function commonCronPause($id=''){
+	if(!strlen($id) && isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
+	if(!isNum($id)){return false;}
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "_id={$id}",
+		'paused'	=> 1,
+	);
+	$ok=editDBRecord($editopts);
+	return $ok;
+}
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function commonCronUnpause($id=''){
+	if(!strlen($id) && isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
+	if(!isNum($id)){return false;}
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "_id={$id}",
+		'paused'	=> 0,
+	);
+	$ok=editDBRecord($editopts);
+	return $ok;
+}
 //---------- begin function commonSearchFiltersForm
 /**
 * @describe returns an HTML search/filters form
