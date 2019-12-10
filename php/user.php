@@ -768,7 +768,34 @@ function userIsEncryptedPW($pw=''){
 	if(preg_match('/^\~\!/',$pw) && preg_match('/\^\-$/',$pw)){return true;}
 	return false;
 }
-
+//---------- begin function userLoginAs ----
+/**
+* @describe login as another user - must be admin
+* @param str - user id or username of the user to login as
+* @return boolean 
+* @usage 
+*	$ok=userLoginAs(11);
+*	$ok=userLoginAs('sammy');
+* @author slloyd
+*/
+function userLoginAs($id=0){
+	if(!isAdmin()){return false;}
+	if(!strlen($id) || $id==0){return false;}
+	if(isNum($id) && $id != 0){
+		$rec=getDBRecordById('_users',$id);
+	}
+	else{
+		$rec=getDBRecord(array(
+			'-table'=>'_users',
+			'username'=>$id
+		));
+	}
+	if(!isset($rec['_id'])){return false;}
+	global $USER;
+	$USER=$rec;
+    userSetWaSQLGUID();
+    return true;
+}
 //---------- begin function setUserInfo ----
 /**
 * Updates the User information in the database  with informationn for the current user.

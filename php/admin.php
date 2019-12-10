@@ -398,14 +398,7 @@ if(!isDBTable('_minify')){$ok=createWasqlTable('_minify');}
 $_SERVER['_start_']=microtime(true);
 if(isAdmin() && isset($_REQUEST['_su_']) && isNum($_REQUEST['_su_'])){
 	//Switch User - only if current user is an admin
-	$suser=getDBUserById($_REQUEST['_su_']);
-	if(is_array($suser)){
-		$USER=$suser;
-		$guid=getGUID(1);
-		$ok=editDBUser($USER['_id'],array('guid'=>'NULL'));
-		$ok=editDBUser($suser['_id'],array('guid'=>$guid));
-		setUserInfo($guid);
-	}
+	$ok=userLoginAs($_REQUEST['_su_']);
 }
 $PAGE['name']='php/admin.php';
 $PAGE['_id']=0;
