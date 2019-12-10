@@ -585,38 +585,26 @@ function userSetWaSQLGUID(){
 	global $USER;
 	global $CONFIG;
 	if(isset($_COOKIE['GUID'])){
-		setcookie('GUID', null, -1, '/');
+		commonSetCookie('GUID', null, -1, '/');
 	}
 	if(isset($_COOKIE['WASQLRP'])){
-		setcookie('WASQLRP', null, -1, '/');
+		commonSetCookie('WASQLRP', null, -1, '/');
 	}
 	if(isset($_COOKIE['WASQL_ERROR'])){
-		setcookie('WASQL_ERROR', null, -1, '/');
+		commonSetCookie('WASQL_ERROR', null, -1, '/');
 	}
 	if(!isset($USER['_id']) || !isNum($USER['_id'])){return false;}
 	$rec=getDBRecord(array('-table'=>'_users','_id'=>$USER['_id'],'-fields'=>'_id,username,password'));
 	if(!isset($rec['_id'])){
-    	userSetCookie("WASQL_ERROR", "USER");
+    	commonSetCookie("WASQL_ERROR", "USER");
     	return false;
     }
-    //userSetCookie("WASQLCP", $rec['password']);
 	$guid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
-	userSetCookie("WASQLGUID", $guid);
+	commonSetCookie("WASQLGUID", $guid);
 	setUserInfo();
 	return $guid;
 }
-function userSetCookie($name,$value,$expire=''){
-	if(!strlen($expire)){
-		$expire=time()+(3600*24*365);
-	}
-	if(isset($CONFIG['session_domain'])){
-		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
-		setcookie($name, $value, $expire, "/", ".{$CONFIG['session_domain']}",isSSL(),true);
-	}
-	else{
-    	setcookie($name, $value, $expire, "/",null,isSSL(),true);
-	}
-}
+
 function userAuthorizeWASQLGUID(){
 	if(!isset($_COOKIE['WASQLGUID']) || !strlen($_COOKIE['WASQLGUID'])){
 		return false;
@@ -626,15 +614,14 @@ function userAuthorizeWASQLGUID(){
     	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
     }
     if(!isset($rec['_id'])){
-    	userSetCookie("WASQL_ERROR", "REC");
+    	commonSetCookie("WASQL_ERROR", "REC");
     	return false;
     }
-    //userSetCookie("WASQLRP", $rec['password']);
     $checkguid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
     if($checkguid === $guid){
     	return $rec;
     }
-    userSetCookie("WASQL_ERROR", $checkguid);
+    commonSetCookie("WASQL_ERROR", $checkguid);
     return false;
 }
 //---------- begin function userEncryptPW ----
@@ -871,20 +858,20 @@ function userLogout(){
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);
 	if(isset($_COOKIE['GUID'])){
-		setcookie('GUID', null, -1, '/');
+		commonSetCookie('GUID', null, -1, '/');
 	}
 	if(isset($_COOKIE['WASQLRP'])){
-		setcookie('WASQLRP', null, -1, '/');
+		commonSetCookie('WASQLRP', null, -1, '/');
 	}
 	if(isset($_COOKIE['WASQLCP'])){
-		setcookie('WASQLCP', null, -1, '/');
+		commonSetCookie('WASQLCP', null, -1, '/');
 	}
 	if(isset($_COOKIE['WASQLGUID'])){
 		unset($_SERVER['WASQLGUID']);
 		unset($_SESSION['WASQLGUID']);
 		unset($_COOKIE['WASQLGUID']);
 		//setcookie("WASQLGUID", "", time()-3600);
-		setcookie('WASQLGUID', null, -1, '/');
+		commonSetCookie('WASQLGUID', null, -1, '/');
 	}
 	//echo "HERE";exit;
 	return true;

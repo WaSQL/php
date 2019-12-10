@@ -8084,16 +8084,35 @@ function getGUID($force=0){
 	}
 	//expire in a year
 	$expire=time()+(3600*24*365);
+	$ok=commonSetCookie("GUID", $guid, $expire);
+	$_SERVER['GUID']=$guid;
+	return $guid;
+}
+//---------- begin function commonSetCookie---------------------------------------
+/**
+* @describe sets a cookie
+* @param name string
+* @param value string
+* @param [expire] timestamp - defaults to 1 year in the future
+* @return ok boolean
+* @usage $guid=commonSetCookie("MYCOOKIE",$value);
+*/
+function commonSetCookie($name,$value,$expire=''){
+	global $CONFIG;
+	if(!strlen($expire)){
+		$expire=time()+(3600*24*365);
+	}
+	if(!strlen($value)){$value=NULL;}
 	if(isset($CONFIG['session_domain'])){
 		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
 		/*Note: SameSite fix -  https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict */
 		if(PHP_VERSION_ID < 70300) {
 			//name,value,expire,path,domain,secure,httponly
-			setcookie("GUID", $guid, $expire, "/; samesite=Strict", ".{$CONFIG['session_domain']}",isSSL(),true);
+			setcookie($name, $value, $expire, "/; samesite=Strict", ".{$CONFIG['session_domain']}",isSSL(),true);
 		}
 		else{
 			//name,value,expire,path,domain,secure,httponly,samesite
-			setcookie("GUID", $guid, array(
+			setcookie($name, $value, array(
 				'expires'	=> $expire,
 				'path'		=> '/',
 				'domain'	=> ".{$CONFIG['session_domain']}",
@@ -8105,10 +8124,10 @@ function getGUID($force=0){
 	}
 	else{
 		if(PHP_VERSION_ID < 70300) {
-    		setcookie("GUID", $guid, $expire, "/; samesite=Lax",null,isSSL(),true);
+    		setcookie($name, $value, $expire, "/; samesite=Lax",null,isSSL(),true);
     	}
     	else{
-    		setcookie("GUID", $guid, $expire, "/",null,isSSL(),true,array(
+    		setcookie($name, $value, array(
 				'expires'	=> $expire,
 				'path'		=> '/',
 				'domain'	=> null,
@@ -8118,8 +8137,7 @@ function getGUID($force=0){
 			));
     	}
 	}
-	$_SERVER['GUID']=$guid;
-	return $guid;
+	return true;
 }
 //---------- begin function getFileContentId---------------------------------------
 /**
