@@ -5,7 +5,7 @@ function manualParseFile($file){
 	$cnt=count($lines);
 	for($x=0;$x<$cnt;$x++){
 		$line=trim($lines[$x]);
-		if(preg_match('/^function\ (.+?)\(\$(.+?)\)\ *\{/',$line,$m)){
+		if(preg_match('/^function\ (.+?)\((.*?)\)\ *\{/',$line,$m)){
 			$doc=array(
 				'file'=>$file,
 				'folder'=>getFileName(getFilePath($file)),
@@ -26,7 +26,7 @@ function manualParseFile($file){
 			}
 			$doc['comments']=array_reverse($comments);
 			$key='';
-			//if($doc['name']=='arrayAverage'){echo printValue($doc);}
+			//if(1==1 || $doc['name']=='commonCronUnpause'){echo printValue($doc);}
 			foreach($doc['comments'] as $cline){
 				$cline=trim($cline);
 

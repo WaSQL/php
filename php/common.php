@@ -25,13 +25,16 @@ function commonBuildTerminal($opts=array()){
 //---------- begin function commonCronPause
 /**
 * @describe sets pause to 1 on the cron id
-* @param params id  - cron _id value.  If not passed in, it looks for $_REQUEST['cron_id']
+* @param email string  - email to notify of the pause
+* @param [params] additional parameters to include in the message.
 * @return ok boolean
-* @usage
-*	<?=commonSearchFiltersForm(array('-table'=>'notes'));?>
+* @usage 
+*	if(!$success){$ok=commonCronPause();}
+*	if(!$success){$ok=commonCronPause('bob@mysite.com');}
 */
-function commonCronPause($id=''){
-	if(!strlen($id) && isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
+function commonCronPause($email='',$params=array()){
+	$id='';
+	if(isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
 	if(!isNum($id)){return false;}
 	$editopts=array(
 		'-table'	=> '_cron',
@@ -39,13 +42,59 @@ function commonCronPause($id=''){
 		'paused'	=> 1,
 	);
 	$ok=editDBRecord($editopts);
+	if(isEmail($email)){
+		$cron=getDBRecordById('_cron',$id);
+		if(isset($params['subject'])){
+			$subject=$params['subject'];
+		}
+		else{
+			$subject="Cron Paused - %name%";
+		}
+		if(isset($params['message'])){
+			$message=$params['message'];
+		}
+		else{
+			$message.='<h3>Cron Paused: You will need to un-pause this cron before it will run again.</h3>'.PHP_EOL;
+			$message.='<table border="1" style="border-collapse:collapse;border:1px solid #000;">'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Group</th><td style="text-align:left;padding:3px 5px;">%groupname%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Name</th><td style="text-align:left;padding:3px 5px;">%name%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Cmd</th><td style="text-align:left;padding:3px 5px;">%run_cmd%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Date</th><td style="text-align:left;padding:3px 5px;">%run_date%</td></tr>'.PHP_EOL;
+			$message.='</table>'.PHP_EOL;
+			$message.='<h4>Run Result</h4>'.PHP_EOL;
+			$message.='<div style="border:1px solid #ccc;border-radius:5px;background-color:#f0f0f0;padding:5px;display:block;font-family:monospace;unicode-bidi:embed;white-space:pre-wrap;">%run_result%</div>'.PHP_EOL;
+		}
+		foreach($cron as $k=>$v){
+			$subject=str_replace("%{$k}%",$v,$subject);
+			$message=str_replace("%{$k}%",$v,$message);
+		}
+		foreach($params as $k=>$v){
+			$subject=str_replace("%{$k}%",$v,$subject);
+			$message=str_replace("%{$k}%",$v,$message);
+		}
+		$sendopts=array(
+			'to'=>$email,
+			'subject'=>$subject,
+			'message'=>$message
+		);
+		if(isset($params['from']) && isEmail($params['from'])){
+			$sendopts['from']=$params['from'];
+		}
+		$ok=sendMail($sendopts);
+	}
 	return $ok;
 }
+
+//---------- begin function commonCronUnpause
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @describe sets pause to 0 on the cron id
+* @return ok boolean
+* @usage 
+*	$ok=commonCronUnpause();
 */
-function commonCronUnpause($id=''){
-	if(!strlen($id) && isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
+function commonCronUnpause(){
+	$id='';
+	if(isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
 	if(!isNum($id)){return false;}
 	$editopts=array(
 		'-table'	=> '_cron',
@@ -55,6 +104,7 @@ function commonCronUnpause($id=''){
 	$ok=editDBRecord($editopts);
 	return $ok;
 }
+
 //---------- begin function commonSearchFiltersForm
 /**
 * @describe returns an HTML search/filters form
@@ -65,10 +115,9 @@ function commonCronUnpause($id=''){
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
 *	['-formname'] - formname. defaults to searchfiltersform
-
 * @return string - html table to display
 * @usage
-*	<?=commonSearchFiltersForm(array('-table'=>'notes'));?>
+*	commonSearchFiltersForm(array('-table'=>'notes'));
 */
 function commonSearchFiltersForm($params=array()){
 	if(empty($params['-formname'])){
@@ -548,11 +597,9 @@ function addEditForm($params=array()){return addEditDBForm($params);}
 * @return
 *	a number representing the average of values in the array
 * @usage
-*	<?php
 *	$arr=array(4,7,3,9,2);
 *	echo arrayAverage($arr);
 *	// returns 5
-*	?>
 */
 function arrayAverage($arr=array(),$decimal=2){
 	if(!count($arr)){return '';}
@@ -636,7 +683,7 @@ function arraySearchKeys( $needle, $arr ){
 * @param file string - full path to image file
 * @param [force] boolean - force a redraw
 * @return string
-* @usage <?=asciiArt($logo);?>
+* @usage return asciiArt($logo);
 * @author https://donatstudios.com/Damn-Simple-PHP-ASCII-Art-Generator
 */
 function asciiArt($file,$force=false){
@@ -679,7 +726,7 @@ function asciiEncode($str=''){return encodeAscii($str);}
 * @describe build X-UA-Compatible meta tag for IE
 * @param version string
 * @return string
-* @usage <?=buildIECompatible();?>
+* @usage return buildIECompatible();
 */
 function buildIECompatible($version=0){
 	if(!isset($_SERVER['REMOTE_BROWSER']) || strtolower($_SERVER['REMOTE_BROWSER']) != 'msie'){
@@ -3085,7 +3132,7 @@ function buildOnLoad($str='',$img='/wfiles/clear.gif',$width=1,$height=1){
 *	-title - title to share. default to none
 * @return
 *	links with buttons
-* @usage <?=buildShareButtons();?>
+* @usage return buildShareButtons();
 */
 function buildShareButtons($params=array()){
 	loadExtrasCss('socialbuttons');
@@ -3167,7 +3214,7 @@ function buildShareButtons($params=array()){
 *	-title - title to share. default to none
 * @return
 *	links with buttons
-* @usage <?=buildShareButtons();?>
+* @usage return buildShareButtons();
 */
 function buildShareLinks($params=array()){
 	//set defaults
@@ -3287,7 +3334,7 @@ function buildShareLinks($params=array()){
 *	-tooltip - show tooltip. defaults to false. Possible values are true, false
 * @return string
 *	links with buttons
-* @usage <?=buildShareButtons(array('facebook'=>"http://www.facebook.com/mypage",'-tooltip'=>true));?>
+* @usage return buildShareButtons(array('facebook'=>"http://www.facebook.com/mypage",'-tooltip'=>true));
 */
 function buildSocialButtons($params=array()){
 	//set the CSS to load
@@ -3351,7 +3398,7 @@ function buildSocialButtons($params=array()){
 *	width - defaults to null
 * @return
 *	beginining table tag with specified padding and border
-* @usage <?=buildTableBegin(2,1);?>
+* @usage return buildTableBegin(2,1);
 */
 function buildTableBegin($padding=2,$border=0,$sortable=0,$width=''){
 	$class='w_table';
@@ -4557,7 +4604,8 @@ function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=
 * @param array  - array of boolean,view pairs
 * @param params array
 * @param options array
-* <?=renderViewIfs(array(array($a==$b,'vequal'),array($a<5,'vless'),array($a>5,'vfive'),array($b==5,'vbfive')),$recs,'recs');?>
+* @usage
+* 	renderViewIfs(array(array($a==$b,'vequal'),array($a<5,'vless'),array($a>5,'vfive'),array($b==5,'vbfive')),$recs,'recs');
 */
 function renderViewIfs($ifs=array(), $params=array(), $opts=array()){
 	foreach($ifs as $if){
@@ -4578,8 +4626,9 @@ function renderViewIfs($ifs=array(), $params=array(), $opts=array()){
 * @param params array
 * @param options array
 * @see renderView();
-* <?=renderViewSwitch('red',array('blue','red','pink'),array('_blueimg','_redimg','_pinkimg'),$recs,array('-alias'=>'recs'));?>
-* <?=renderViewSwitch('red',array('blue','red','*'),array('blueimg','redimg','anythingelse'),$recs,'recs');?>
+* @usage
+* 	renderViewSwitch('red',array('blue','red','pink'),array('_blueimg','_redimg','_pinkimg'),$recs,array('-alias'=>'recs'));
+*   renderViewSwitch('red',array('blue','red','*'),array('blueimg','redimg','anythingelse'),$recs,'recs');
 */
 function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 	for($x=0;$x<count($values);$x++){
@@ -5336,7 +5385,7 @@ function checkPHPSyntax($code=''){
 * @param ajaxurl string - url to call via ajax for content
 * @param ajaxopts string - ajax options to pass if ajaxurl is set
 * @return string - html to display for thies node
-* @usage <?=createExpandDiv($title,$expand,'#0d0d7d',1);?>
+* @usage return createExpandDiv($title,$expand,'#0d0d7d',1);
 */
 function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl='',$ajaxopts=''){
 	$id=encodeCRC($content.$title);
@@ -7500,7 +7549,7 @@ function convertLatLon($str) {
 *	full name and path to the file to convert to CSV
 * @return csv data stream
 *	returns the CSV data of the xls file
-* @usage <?=xls2CSV('name');?>
+* @usage return xls2CSV('name');
 */
 function xls2CSV($afile=''){
 	$path=getWasqlPath();
@@ -7516,7 +7565,8 @@ function xls2CSV($afile=''){
 * @param file string
 *	name of the file
 * @return image path to the icon associated with file extension
-* @usage <img src="<?=getFileIcon('info.doc');?>" />
+* @usage 
+*	<img src="<?=getFileIcon('info.doc');?>" />
 */
 function getFileIcon($file=''){
 	$progpath=dirname(__FILE__);
