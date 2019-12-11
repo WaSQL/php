@@ -332,8 +332,8 @@ th {
   padding: 0;
 }
 
-td:not([align]),
-th:not([align]) {
+td:not([align]):not([class*="align"]),
+th:not([align]):not([class*="align"]) {
   text-align: left;
 }
 
@@ -465,8 +465,8 @@ table th {
   vertical-align: top;
 }
 
-table td:not([align]),
-table th:not([align]) {
+table td:not([align]):not([class*="align"]),
+table th:not([align]):not([class*="align"]) {
   text-align: left;
 }
 
@@ -3197,7 +3197,7 @@ fieldset[disabled] .button {
   color: #363636;
 }
 
-.content table th:not([align]) {
+.content table th:not([align]):not([class*="align"]) {
   text-align: left;
 }
 
@@ -3828,7 +3828,7 @@ fieldset[disabled] .button {
   color: #363636;
 }
 
-.table th:not([align]) {
+.table th:not([align]):not([class*="align"]) {
   text-align: left;
 }
 
