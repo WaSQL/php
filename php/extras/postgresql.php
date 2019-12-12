@@ -1425,6 +1425,20 @@ function postgresqlParseConnectParams($params=array()){
 			$params['-connect']="host={$CONFIG['postgresql_dbhost']} port={$CONFIG['postgresql_dbport']} dbname={$CONFIG['postgresql_dbname']} user={$CONFIG['postgresql_dbuser']} password={$CONFIG['postgresql_dbpass']}";
 			//$params['-connect_source']="manual";
 		}
+		//add application_name
+		if(!stringContains($params['-connect'],'options')){
+			if(isset($params['-application_name'])){
+				$appname=$params['-application_name'];
+			}
+			elseif(isset($CONFIG['postgres_application_name'])){
+				$appname=$CONFIG['postgres_application_name'];
+			}
+			else{
+				$appname='WaSQL_on_'.$_SERVER['HTTP_HOST'];
+			}
+			$appname=str_replace(' ','_',$appname);
+			$params['-connect'].=" options='--application_name={$appname}'";
+		}
 	}
 	else{
 		//$params['-connect_source']="passed in";
