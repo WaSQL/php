@@ -3,10 +3,10 @@ $starttime=microtime(true);
 $loadtimes=array();
 //Set upload size
 //Set Post Max Size
-ini_set('POST_MAX_SIZE', '64M');
-ini_set('UPLOAD_MAX_FILESIZE', '60M');
-ini_set('max_execution_time', 10000);
-set_time_limit(5500);
+ini_set('POST_MAX_SIZE', '128M');
+ini_set('UPLOAD_MAX_FILESIZE', '120M');
+ini_set('max_execution_time', 20000);
+set_time_limit(11000);
 error_reporting(E_ALL & ~E_NOTICE);
 $_SERVER['TIME_START']=microtime(true);
 $progpath=dirname(__FILE__);
