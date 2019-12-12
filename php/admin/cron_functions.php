@@ -114,6 +114,8 @@ function cronCheckSchema(){
 			'required'		=> 0
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+	}
+	if(!isset($cronfields['groupname'])){
 		//groupname
 		$query="ALTER TABLE _cron ADD groupname ".databaseDataType('varchar(150)')." NULL;";
 		$ok=executeSQL($query);
@@ -125,6 +127,8 @@ function cronCheckSchema(){
 			'required'		=> 0
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
+	}
+	if(!isset($cronfields['records_to_keep'])){
 		//records_to_keep
 		$query="ALTER TABLE _cron ADD records_to_keep ".databaseDataType('integer')." NOT NULL Default 1000;";
 		$ok=executeSQL($query);
