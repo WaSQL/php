@@ -9764,7 +9764,7 @@ function isLiveUrl($url){
     	return false;
 	}
 	$fh = fopen($url, "rb");
-	if($fh){
+	if(is_resource($fh)){
 		fclose($fh);
 		return true;
 		}
