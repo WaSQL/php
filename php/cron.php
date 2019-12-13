@@ -263,6 +263,23 @@ ENDOFWHERE;
 				$ok=cronCleanRecords($rec);
 				$cmd=$rec['run_cmd'];
 				$lcmd=strtolower(trim($cmd));
+				global $PASSTHRU;
+				$parts=preg_split('/\/+/',$lcmd);
+				if(count($parts) > 1){
+					$lcmd=$parts[0];
+					//remove all parts before $view and set passthru
+					$stripped=0;
+					$tmp=array();
+					foreach($parts as $part){
+				        $part=trim($part);
+				        if($part==$lcmd){
+							$stripped=1;
+							continue;
+						}
+						if($stripped){$tmp[]=$part;}
+					}
+					$_REQUEST['passthru']=$PASSTHRU=$tmp;
+				}
 				if(isset($pages[$lcmd])){
 					//cronMessage("cron is a page");
 					$crontype='Page';
