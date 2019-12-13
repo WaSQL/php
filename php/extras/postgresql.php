@@ -37,7 +37,7 @@ function postgresqlAddDBIndex($params=array()){
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -85,7 +85,7 @@ function postgresqlAddDBRecord($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -234,7 +234,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -255,7 +255,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
 	$ori_table=$table;
-	$schema=postgresqlGetSchema();
+	$schema=postgresqlGetDBSchema();
 	if(strlen($schema) && !stringContains($table,$schema)){
 		$table="{$schema}.{$table}";
 	}
@@ -328,7 +328,7 @@ function postgresqlDropDBIndex($params=array()){
 	if(!isset($params['-name'])){return 'postgresqlDropDBIndex Error: No name';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -354,7 +354,7 @@ function postgresqlDropDBTable($table='',$meta=1){
 	if(!strlen($table)){return 0;}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -430,7 +430,7 @@ function postgresqlDelDBRecord($params=array()){
 	if(!isset($params['-where'])){return 'postgresqlDelDBRecord Error: No where';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -464,7 +464,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-where'])){return 'postgresqlEditRecord error: No where specified.';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -628,7 +628,7 @@ function postgresqlExecuteSQL($query,$params=array()){
 function postgresqlGetDBCount($params=array()){
 	if(!isset($params['-table'])){return null;}
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -693,7 +693,7 @@ function postgresqlGetDBFields($table,$allfields=0){
 	global $USER;
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -750,7 +750,7 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -933,7 +933,7 @@ function postgresqlGetDBRecords($params){
 		}
 		//check for schema name
 		if(!stringContains($params['-table'],'.')){
-			$schema=postgresqlGetSchema();
+			$schema=postgresqlGetDBSchema();
 			if(strlen($schema)){
 				$params['-table']="{$schema}.{$params['-table']}";
 			}
@@ -1188,7 +1188,7 @@ function postgresqlGetDBTables($params=array()){
 	$databaseCache['postgresqlGetDBTables']=array();
 	global $CONFIG;
 	$include_schema=1;
-	$schema=postgresqlGetSchema();
+	$schema=postgresqlGetDBSchema();
 	if(strlen($schema)){
 		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
 	}
@@ -1217,7 +1217,7 @@ function postgresqlGetDBTablePrimaryKeys($table){
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetSchema();
+		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -1259,7 +1259,7 @@ ENDOFQUERY;
     }
 	return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
 }
-function postgresqlGetSchema(){
+function postgresqlGetDBSchema(){
 	global $CONFIG;
 	$params=postgresqlParseConnectParams();
 	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
