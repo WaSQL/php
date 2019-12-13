@@ -41,6 +41,9 @@ function sqlpromptBuildQuery($db,$name){
 				case 'running_queries':
 					return 'show processlist';
 				break;
+				case 'sessions':
+					return "select id, user, host, db, command, time, state, info from information_schema.processlist";
+				break;
 				case 'table_locks':
 					return 'SHOW OPEN TABLES WHERE In_use > 0';
 				break;

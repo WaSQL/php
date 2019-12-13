@@ -1652,6 +1652,26 @@ ORDER BY
 	s.allocated_memory_size desc
 ENDOFQUERY;
 		break;
+		case 'sessions':
+			return <<<ENDOFQUERY
+SELECT 
+	host, 
+	port, 
+	connection_id, 
+	connection_status, 
+	connection_type,
+	transaction_id, 
+	idle_time, 
+	auto_commit,
+	client_host,
+	user_name,
+	current_schema_name,
+	fetched_record_count
+FROM 
+	m_connections 
+ORDER BY connection_status
+ENDOFQUERY;
+		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
 SELECT * from m_table_locks

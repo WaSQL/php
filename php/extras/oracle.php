@@ -1563,6 +1563,18 @@ WHERE
 	and a.username != 'SYS'
 ENDOFQUERY;
 		break;
+		case 'sessions':
+			return <<<ENDOFQUERY
+SELECT 
+	sid,
+    serial#,
+    osuser,
+    machine,
+    program,
+    module
+from v$session
+ENDOFQUERY;
+		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
 SELECT 

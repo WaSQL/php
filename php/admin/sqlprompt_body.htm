@@ -113,6 +113,7 @@
 <view:monitor>
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<li><a href="#" onclick="return sqlpromptMonitor('running_queries');"><span class="icon-spin4"></span> Running Queries</a></li>
+		<li><a href="#" onclick="return sqlpromptMonitor('sessions');"><span class="icon-spin8"></span> Sessions</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('table_locks');"><span class="icon-lock"></span> Table Locks</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('functions');"><span class="icon-th-thumb"></span> Functions</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('procedures');"><span class="icon-th-thumb-empty"></span> Procedures</a></li>
@@ -134,11 +135,12 @@
 			<div id="tabdetails_db_default" style="display:none;">
 				<div class="w_bold w_big">Database Details</div>
 				<table class="table bordered striped condensed">
-					<tr><td>Type</td><td><?=configValue('dbtype');?></td></tr>
-					<tr><td>Host</td><td><?=configValue('dbhost');?></td></tr>
-					<tr><td>User</td><td><?=configValue('dbuser');?></td></tr>
-					<tr><td>Name</td><td><?=configValue('dbname');?></td></tr>
-					<tr><td>Schema</td><td><?=configValue('dbschema');?></td></tr>
+					<tr><td>Name</td><td><?=configValue('name');?></td></tr>
+					<tr><td>DBType</td><td><?=configValue('dbtype');?></td></tr>
+					<tr><td>DBHost</td><td><?=configValue('dbhost');?></td></tr>
+					<tr><td>DBUser</td><td><?=configValue('dbuser');?></td></tr>
+					<tr><td>DBName</td><td><?=configValue('dbname');?></td></tr>
+					<tr><td>DBSchema</td><td><?=configValue('dbschema');?></td></tr>
 				</table>
 			</div>
 		</label> 
@@ -151,11 +153,12 @@
 			<div id="tabdetails_<?=$tab['name'];?>" style="display:none;">
 				<div class="w_bold w_big">Database Details</div>
 				<table class="table bordered striped condensed">
-					<tr><td>Type</td><td><?=$tab['dbtype'];?></td></tr>
-					<tr><td>Host</td><td><?=$tab['dbhost'];?></td></tr>
-					<tr><td>User</td><td><?=$tab['dbuser'];?></td></tr>
-					<tr><td>Name</td><td><?=$tab['dbname'];?></td></tr>
-					<tr><td>Schema</td><td><?=$tab['dbschema'];?></td></tr>
+					<tr><td>Name</td><td><?=$tab['name'];?></td></tr>
+					<tr><td>DBType</td><td><?=$tab['dbtype'];?></td></tr>
+					<tr><td>DBHost</td><td><?=$tab['dbhost'];?></td></tr>
+					<tr><td>DBUser</td><td><?=$tab['dbuser'];?></td></tr>
+					<tr><td>DBName</td><td><?=$tab['dbname'];?></td></tr>
+					<tr><td>DBSchema</td><td><?=$tab['dbschema'];?></td></tr>
 				</table>
 			</div>
 		</label>

@@ -235,4 +235,4 @@ if(!isset($CONFIG['displayname'])){
 	$CONFIG['displayname']=$CONFIG['dbname'];
 }
 ksort($CONFIG);
-//echo "elho".printValue($CONFIG);exit;
+//echo "elho".printValue($DATABASE);exit;

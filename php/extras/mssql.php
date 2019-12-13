@@ -1118,6 +1118,9 @@ WHERE
 AND r.session_id = p.spid
 ENDOFQUERY;
 		break;
+		case 'sessions':
+			return 'exec sp_who';
+		break;
 		case 'table_locks':
 			//https://www.mssqltips.com/sqlservertip/2732/different-techniques-to-identify-blocking-in-sql-server/
 			return <<<ENDOFQUERY

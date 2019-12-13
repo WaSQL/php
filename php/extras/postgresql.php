@@ -37,7 +37,7 @@ function postgresqlAddDBIndex($params=array()){
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -85,7 +85,7 @@ function postgresqlAddDBRecord($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -234,7 +234,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -255,9 +255,7 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
 	$ori_table=$table;
-	if(isset($CONFIG['dbschema'])){$schema=$CONFIG['dbschema'];}
-	elseif(isset($CONFIG['schema'])){$schema=$CONFIG['schema'];}
-	else{$schema='';}
+	$schema=postgresqlGetSchema();
 	if(strlen($schema) && !stringContains($table,$schema)){
 		$table="{$schema}.{$table}";
 	}
@@ -330,7 +328,7 @@ function postgresqlDropDBIndex($params=array()){
 	if(!isset($params['-name'])){return 'postgresqlDropDBIndex Error: No name';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -356,7 +354,7 @@ function postgresqlDropDBTable($table='',$meta=1){
 	if(!strlen($table)){return 0;}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -432,7 +430,7 @@ function postgresqlDelDBRecord($params=array()){
 	if(!isset($params['-where'])){return 'postgresqlDelDBRecord Error: No where';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -466,7 +464,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-where'])){return 'postgresqlEditRecord error: No where specified.';}
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -630,7 +628,7 @@ function postgresqlExecuteSQL($query,$params=array()){
 function postgresqlGetDBCount($params=array()){
 	if(!isset($params['-table'])){return null;}
 	if(!stringContains($params['-table'],'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
@@ -695,7 +693,7 @@ function postgresqlGetDBFields($table,$allfields=0){
 	global $USER;
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -752,7 +750,7 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
@@ -777,6 +775,7 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 	
 	//echo printValue($idfields);exit;
 	$query="SELECT * from {$table} where 1=0";
+	//echo $query;exit;
 	$res=@pg_query($dbh_postgresql,$query);
 	$fields=array();
 	$i = pg_num_fields($res);
@@ -934,7 +933,7 @@ function postgresqlGetDBRecords($params){
 		}
 		//check for schema name
 		if(!stringContains($params['-table'],'.')){
-			$schema=postgresqlGetConfigValue('dbschema');
+			$schema=postgresqlGetSchema();
 			if(strlen($schema)){
 				$params['-table']="{$schema}.{$params['-table']}";
 			}
@@ -1189,16 +1188,15 @@ function postgresqlGetDBTables($params=array()){
 	$databaseCache['postgresqlGetDBTables']=array();
 	global $CONFIG;
 	$include_schema=1;
-
-	if(isset($CONFIG['dbschema'])){$schema=$CONFIG['dbschema'];}
-	elseif(isset($CONFIG['schema'])){$schema=$CONFIG['schema'];}
-	elseif(isset($CONFIG['postgresql_dbschema'])){$schema=$CONFIG['postgresql_dbschema'];}
-	elseif(isset($CONFIG['postgresql_schema'])){$schema=$CONFIG['postgresql_schema'];}
-	else{$schema='';}
-		
-	$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
+	$schema=postgresqlGetSchema();
+	if(strlen($schema)){
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
+	}
+	else{
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables order by tablename";
+	}
 	$recs = postgresqlQueryResults($query);
-	//echo $query.printValue($recs);exit;
+	//echo $query;exit;
 	foreach($recs as $rec){
 		$databaseCache['postgresqlGetDBTables'][]=strtolower($rec['tablename']);
 	}
@@ -1219,11 +1217,12 @@ function postgresqlGetDBTablePrimaryKeys($table){
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetConfigValue('dbschema');
+		$schema=postgresqlGetSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
 	}
+
 	$databaseCache['postgresqlGetDBTablePrimaryKeys'][$table]=array();
 	$parts=preg_split('/\./',$table,2);
 	$where='';
@@ -1260,6 +1259,18 @@ ENDOFQUERY;
     }
 	return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
 }
+function postgresqlGetSchema(){
+	global $CONFIG;
+	$params=postgresqlParseConnectParams();
+	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['postgresql_dbschema'])){return $CONFIG['postgresql_dbschema'];}
+	elseif(isset($CONFIG['postgresql_schema'])){return $CONFIG['postgresql_schema'];}
+	return '';
+}
+
 function postgresqlGetConfigValue($field){
 	//dbschema, dbname
 	global $CONFIG;
@@ -1381,7 +1392,7 @@ function postgresqlParseConnectParams($params=array()){
 			//$params['-dbname_source']="CONFIG postgresql_dbname";
 		}
 		else{
-			$params['-dbname']=$CONFIG['postgresql_dbuser'];
+			$params['-dbname']=$CONFIG['postgresql_dbname'];
 			//$params['-dbname_source']="set to username";
 		}
 	}
@@ -1408,6 +1419,21 @@ function postgresqlParseConnectParams($params=array()){
 		//$params['-dbport_source']="passed in";
 	}
 	$CONFIG['postgresql_dbport']=$params['-dbport'];
+	//dbschema
+	if(!isset($params['-dbschema'])){
+		if(isset($CONFIG['dbschema_postgresql'])){
+			$params['-dbschema']=$CONFIG['dbschema_postgresql'];
+			//$params['-dbuser_source']="CONFIG dbuser_postgresql";
+		}
+		elseif(isset($CONFIG['postgresql_dbschema'])){
+			$params['-dbschema']=$CONFIG['postgresql_dbschema'];
+			//$params['-dbuser_source']="CONFIG postgresql_dbuser";
+		}
+	}
+	else{
+		//$params['-dbuser_source']="passed in";
+	}
+	$CONFIG['postgresql_dbschema']=$params['-dbschema'];
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['postgresql_connect'])){
@@ -1629,6 +1655,20 @@ SELECT
 FROM pg_stat_activity S
 inner join pg_locks L on S.pid = L.pid 
 order by L.granted, L.pid DESC
+ENDOFQUERY;
+		break;
+		case 'sessions':
+			return <<<ENDOFQUERY
+select pid as process_id, 
+       usename as username, 
+       datname as database_name, 
+       client_addr as client_address, 
+       application_name,
+       backend_start,
+       state,
+       state_change
+from pg_stat_activity
+order by state,application_name,database_name,username
 ENDOFQUERY;
 		break;
 		case 'table_locks':
