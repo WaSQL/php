@@ -1188,7 +1188,7 @@ function oracleEnumQueryResults($res,$params=array()){
 		$starttime=microtime(true);
 		if(file_exists($params['-filename'])){unlink($params['-filename']);}
     	$fh = fopen($params['-filename'],"wb");
-    	if(!is_resource($fh)){
+    	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
@@ -1254,7 +1254,7 @@ function oracleEnumQueryResults($res,$params=array()){
 		}
 		else{$recs[]=$rec;}
 	}
-	if(is_resource($fh)){
+	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

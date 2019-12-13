@@ -1374,7 +1374,7 @@ function hanaQueryResults($query,$params=array()){
 	if(isset($params['-filename'])){
 		if(file_exists($params['-filename'])){unlink($params['-filename']);}
     	$fh = fopen($params['-filename'],"wb");
-    	if(!is_resource($fh)){
+    	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
@@ -1401,7 +1401,7 @@ function hanaQueryResults($query,$params=array()){
 	    if(isset($params['-results_eval'])){
 			$rec=call_user_func($params['-results_eval'],$rec);
 		}
-	    if(is_resource($fh)){
+	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1429,7 +1429,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 	}
 	odbc_free_result($result);
-	if(is_resource($fh)){
+	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
