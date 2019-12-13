@@ -1229,7 +1229,7 @@ function oracleEnumQueryResults($res,$params=array()){
 				$rec[$field]=$val;
 			}
 		}
-		if(isset_resource($fh)){
+		if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
