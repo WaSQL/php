@@ -5571,7 +5571,13 @@ function getDBCharsets(){
 	$charsets=array();
 	foreach($recs as $rec){
 		$set=$rec['charset'];
-		$charsets[$set]=$rec['description'];
+		if($rec['maxlen'] > 1){
+			$rec['maxlen'] .= ' bytes';
+		}
+		else{
+			$rec['maxlen'] .= ' byte';
+		}
+		$charsets[$set]="{$rec['charset']} - {$rec['description']} ({$rec['maxlen']})";
     	}
     $databaseCache['getDBCharsets']=$charsets;
     return $charsets;
