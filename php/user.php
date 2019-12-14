@@ -620,6 +620,7 @@ function userAuthorizeWASQLGUID(){
     }
     $checkguid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
     if($checkguid === $guid){
+    	$_SERVER['WASQLGUID']=$guid;
     	return $rec;
     }
     commonSetCookie("WASQL_ERROR", $checkguid);
