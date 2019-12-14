@@ -601,6 +601,7 @@ function userSetWaSQLGUID(){
     }
 	$guid=userEncryptGUID($rec['_id'],$rec['username'],$rec['password']);
 	commonSetCookie("WASQLGUID", $guid);
+	$_SERVER['WASQLGUID']=$guid;
 	setUserInfo();
 	return $guid;
 }
