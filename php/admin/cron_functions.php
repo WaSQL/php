@@ -42,6 +42,7 @@ function cronList(){
 	$opts=array(
 		'-table'=>'_cron',
 		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep',
+		'-listfields'=>'_id,groupname,name,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>'/php/admin.php',
 		'_menu'=>'cron',
@@ -51,15 +52,28 @@ function cronList(){
 		'frequency_class'=>'align-right',
 		'run_length_class'=>'align-right',
 		'run_length_verbosetime'=>1,
-		'active_checkmark'=>1,
-		'running_checkmark'=>1,
 		'groupname_displayname'=>'Group',
-		'name_class'=>'w_nowrap',
+		'name_class'=>'w_nowrap w_link',
 		'active_class'=>'align-center',
+		'paused_class'=>'align-center',
 		'running_class'=>'align-center',
+		'records_to_keep_class'=>'align-right',
+		'last_run_class'=>'align-right',
 		'-results_eval'=>'cronListExtra'
 	);
 	return databaseListRecords($opts);
+}
+function cronIsRunning($rec){
+	if($rec['running']==1){return '<span class="icon-spin4 w_spin w_primary"></span>';}
+	return '';
+}
+function cronIsPaused($rec){
+	if($rec['paused']==1){return '<span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span>';}
+	return '';
+}
+function cronIsActive($rec){
+	if($rec['active']==1){return '<span class="icon-mark w_success"></span>';}
+	return '';
 }
 function cronListExtra($recs){
 	$ids=array();
@@ -80,10 +94,13 @@ function cronListExtra($recs){
 	}
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id'];
+		$recs[$i]['active']=cronIsActive($rec);
+		$recs[$i]['paused']=cronIsPaused($rec);
+		$recs[$i]['running']=cronIsRunning($rec);
+		$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" class="w_right w_link w_block" style="margin-right:10px;" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'"><span class="icon-chart-bar"></span></a>';
-		$recs[$i]['name'].='<a href="#" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'">'.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'">'.$name.'</a>';
 		//run_as
 		if(isset($rec['run_as'])){
 			if((integer)$rec['run_as'] > 0){

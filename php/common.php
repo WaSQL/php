@@ -22,6 +22,7 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
+
 //---------- begin function commonCronPause
 /**
 * @describe sets pause to 1 on the cron id
@@ -85,6 +86,62 @@ function commonCronPause($email='',$params=array()){
 	return $ok;
 }
 
+//---------- begin function commonCronPauseGroup
+/**
+* @describe sets pause to 1 for a group
+* @param group string - groupname in cron table
+* @param email string  - email to notify of the pause
+* @param [params] additional parameters to include in the message.
+* @return ok boolean
+* @usage 
+*	if(!$success){$ok=commonCronPauseGroup('weekly');}
+*	if(!$success){$ok=commonCronPauseGroup('weekly','bob@mysite.com');}
+*/
+function commonCronPauseGroup($group,$email='',$params=array()){
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "groupname='{$group}'",
+		'paused'	=> 1,
+	);
+	$ok=editDBRecord($editopts);
+	if(isEmail($email)){
+		if(isset($params['subject'])){
+			$subject=$params['subject'];
+		}
+		else{
+			$subject="Cron Group Paused - {$group}";
+		}
+		if(isset($params['message'])){
+			$message=$params['message'];
+		}
+		else{
+			$message.='<h3>Cron Paused: You will need to un-pause this cron before it will run again.</h3>'.PHP_EOL;
+			$message.='<table border="1" style="border-collapse:collapse;border:1px solid #000;">'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Group</th><td style="text-align:left;padding:3px 5px;">%groupname%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Name</th><td style="text-align:left;padding:3px 5px;">%name%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Cmd</th><td style="text-align:left;padding:3px 5px;">%run_cmd%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Date</th><td style="text-align:left;padding:3px 5px;">%run_date%</td></tr>'.PHP_EOL;
+			$message.='</table>'.PHP_EOL;
+			$message.='<h4>Run Result</h4>'.PHP_EOL;
+			$message.='<div style="border:1px solid #ccc;border-radius:5px;background-color:#f0f0f0;padding:5px;display:block;font-family:monospace;unicode-bidi:embed;white-space:pre-wrap;">%run_result%</div>'.PHP_EOL;
+		}
+		foreach($params as $k=>$v){
+			$subject=str_replace("%{$k}%",$v,$subject);
+			$message=str_replace("%{$k}%",$v,$message);
+		}
+		$sendopts=array(
+			'to'=>$email,
+			'subject'=>$subject,
+			'message'=>$message
+		);
+		if(isset($params['from']) && isEmail($params['from'])){
+			$sendopts['from']=$params['from'];
+		}
+		$ok=sendMail($sendopts);
+	}
+	return $ok;
+}
+
 //---------- begin function commonCronUnpause
 /**
 * @describe sets pause to 0 on the cron id
@@ -99,6 +156,23 @@ function commonCronUnpause(){
 	$editopts=array(
 		'-table'	=> '_cron',
 		'-where'	=> "_id={$id}",
+		'paused'	=> 0,
+	);
+	$ok=editDBRecord($editopts);
+	return $ok;
+}
+//---------- begin function commonCronUnpauseGroup
+/**
+* @describe sets pause to 0 on the group
+* @param group string - name of group to unpause
+* @return ok boolean
+* @usage 
+*	$ok=commonCronUnpauseGroup('weekly');
+*/
+function commonCronUnpauseGroup($group){
+	$editopts=array(
+		'-table'	=> '_cron',
+		'-where'	=> "groupname='{$group}'",
 		'paused'	=> 0,
 	);
 	$ok=editDBRecord($editopts);

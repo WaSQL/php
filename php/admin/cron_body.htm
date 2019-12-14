@@ -6,7 +6,10 @@
 </view:default>
 
 <view:list>
-	<a href="#" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="w_right btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
+	<div class="w_right">
+		<a href="#" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
+		<a href="/php/admin.php?_menu=cron" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
+	</div>
 	<?=cronList();?>
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
@@ -73,6 +76,7 @@
 				<th><translate>ID</translate></th>
 				<th><translate>Group</translate></th>
 				<th><translate>Name</translate></th>
+				<th><translate>Active</translate></th>
 				<th><translate>Paused</translate></th>
 				<th><translate>Records To Keep</translate></th>
 				<th><translate>Cmd</translate></th>
@@ -85,7 +89,8 @@
 				</td>
 				<td class="w_small"><?=$cron['groupname'];?></td>
 				<td class="w_small"><?=$cron['name'];?></td>
-				<td class="w_small"><?=$cron['paused'];?></td>
+				<td class="w_small align-center"><?=cronIsActive($cron);?></td>
+				<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
 				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
 				<td class="w_small"><?=$cron['run_format'];?></td>
