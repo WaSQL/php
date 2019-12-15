@@ -474,8 +474,8 @@ function listIconsets($params=array()){
 * @param m object, string, or array
 *	object to display in the browser console
 * @return boolean
-*	returns true
-* @usage debugValue($arr);
+*	returns false
+* @usage return debugValue($arr);
 */
 function debugValue($m,$name=''){
 	global $USER;
@@ -517,7 +517,7 @@ function debugValue($m,$name=''){
 		echo "\n</div>\n";
 		echo buildOnLoad("if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('{$id}').innerHTML);}");
 	}
-	return true;
+	return false;
 }
 //---------- begin function gracefulShutdown
 /**

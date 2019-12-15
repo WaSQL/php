@@ -7719,6 +7719,27 @@ function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
 	$rec=getDBRecord($recopts);
 	return $rec;
 	}
+//---------- begin function editDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=editDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function editDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("editDBRecordById Error: No Table");
+	}
+	if(!isNum($id) || $id == 0){return debugValue("getDBRecordById Error: invalid ID");}
+	if(!is_array($params) || !count($params)){return debugValue("getDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("getDBRecordById Error: invalid params");}
+	$params['-table']=$table;
+	$params['-where']="_id={$id}";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return editDBRecord($params);
+	}
 //---------- begin function processDBRecords --------------------
 /**
 * @describe process table records through a function. Returns number of records processed
