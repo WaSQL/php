@@ -932,8 +932,14 @@ function mssqlEnumQueryResults($data,$params=array()){
 	unset($fh);
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
-		if(file_exists($params['-filename'])){unlink($params['-filename']);}
-    	$fh = fopen($params['-filename'],"wb");
+		if(isset($params['-append'])){
+			//append
+    		$fh = fopen($params['-filename'],"ab");
+		}
+		else{
+			if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    		$fh = fopen($params['-filename'],"wb");
+		}
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];

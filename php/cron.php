@@ -118,6 +118,7 @@ ENDOFWHERE;
 		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 		$recs=getDBRecords($recopts);
+		//echo printValue($recs);
 		if(!is_array($recs) || count($recs)==0){
 			unset($ConfigXml[$name]);
 	        //cronMessage("No crons found.");
@@ -324,14 +325,19 @@ ENDOFWHERE;
 					}
 					//echo $url.printValue($postopts);
 	            	$post=postURL($url,$postopts);
-	            	$result .= 'Headers Sent:'.PHP_EOL.printValue($post['headers_out']).PHP_EOL;
-	            	$result .= 'CURL Info:'.PHP_EOL.printValue($post['curl_info']).PHP_EOL;
-	            	$result .= 'Headers Received:'.PHP_EOL.printValue($post['headers']).PHP_EOL;
-	            	$result .= 'Content Received:'.PHP_EOL.$post['body'].PHP_EOL;
+	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$result .= $post['body'].PHP_EOL;
+	            	$result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+	            	$result .= printValue($post['headers_out']).PHP_EOL;
+	            	$result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+	            	$result .= printValue($post['curl_info']).PHP_EOL;
+	            	$result .= '------------------ Headers Received ---------------------------------------------'.PHP_EOL;
+	            	$result .= printValue($post['headers']).PHP_EOL;
+	            	
 				}
 				elseif(preg_match('/^<\?\=/',$cmd)){
 	            	//cron is a php command
-	                $result .= 'Output Received:'.PHP_EOL;
+	                $result .= '------------------ Output Received ---------------------------------------------'.PHP_EOL;
 	            	$out=evalPHP($cmd).PHP_EOL;
 	            	if(is_array($out)){$result.=printValue($out).PHP_EOL;}
 	            	else{$result.=$out.PHP_EOL;}
@@ -339,15 +345,20 @@ ENDOFWHERE;
 				elseif(preg_match('/^http/i',$cmd)){
 	            	//cron is a URL.
 	            	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
-					$result .= 'Headers Sent:'.PHP_EOL.printValue($post['headers_out']).PHP_EOL;
-	            	$result .= 'CURL Info:'.PHP_EOL.printValue($post['curl_info']).PHP_EOL;
-	            	$result .= 'Headers Received:'.PHP_EOL.printValue($post['headers']).PHP_EOL;
-	            	$result .= 'Content Received:'.PHP_EOL.$post['body'].PHP_EOL;
+	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$result .= $post['body'].PHP_EOL;
+	            	$result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+					$result .= printValue($post['headers_out']).PHP_EOL;
+					$result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+	            	$result .= printValue($post['curl_info']).PHP_EOL;
+	            	$result .= '------------------ Headers Received---------------------------------------------'.PHP_EOL;
+	            	$result .= printValue($post['headers']).PHP_EOL;
+	            	
 				}
 				else{
 	            	//cron is an OS Command
 	            	$out=cmdResults($cmd);
-	            	$result .= 'Output Received:'.PHP_EOL;
+	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
 	            	$result .= printValue($out).PHP_EOL;
 				}
 

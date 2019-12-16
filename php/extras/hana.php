@@ -1372,15 +1372,22 @@ function hanaQueryResults($query,$params=array()){
 	unset($fh);
 	//write to file or return a recordset?
 	if(isset($params['-filename'])){
-		if(file_exists($params['-filename'])){unlink($params['-filename']);}
-    	$fh = fopen($params['-filename'],"wb");
+		if(isset($params['-append'])){
+			//append
+    		$fh = fopen($params['-filename'],"ab");
+		}
+		else{
+			if(file_exists($params['-filename'])){unlink($params['-filename']);}
+    		$fh = fopen($params['-filename'],"wb");
+		}
+		
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){
-			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+			setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL.$query.PHP_EOL.PHP_EOL);
 		}
 		
 	}
