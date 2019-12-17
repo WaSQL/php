@@ -1,8 +1,20 @@
 <view:default>
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
-	<div id="cron_results" class="w_padtop">
-		<?=renderView('list');?>
-	</div>
+<script language="javascript">
+function pauseSelected(func){
+	var clist=document.querySelectorAll('input[type="checkbox"][name="cronid[]"]:checked');
+	console.log(clist);
+	if(clist.length==0){alert('No crons selected to pause');return;}
+	let ids=new Array();
+	for(let i=0;i<clist.length;i++){
+		ids.push(clist[i].value);
+	}
+	return ajaxGet('/php/admin.php','cron_results',{_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0});
+}
+</script>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
+<div id="cron_results" class="w_padtop">
+	<?=renderView('list');?>
+</div>
 </view:default>
 
 <view:list>
@@ -11,6 +23,10 @@
 		<a href="/php/admin.php?_menu=cron" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
 	</div>
 	<?=cronList();?>
+	<div class="align-left">
+		<button type="button" class="button btn <?=configValue('admin_color');?>" onclick="pauseSelected('pause')"><span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span> Pause Selected</button>
+		<button type="button" class="button btn <?=configValue('admin_color');?>" onclick="pauseSelected('unpause')"><span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span> Unpause Selected</button>
+	</div>
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
 

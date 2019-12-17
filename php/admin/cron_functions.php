@@ -97,6 +97,7 @@ function cronListExtra($recs){
 		$recs[$i]['active']=cronIsActive($rec);
 		$recs[$i]['paused']=cronIsPaused($rec);
 		$recs[$i]['running']=cronIsRunning($rec);
+		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>';

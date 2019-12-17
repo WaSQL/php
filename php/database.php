@@ -7732,11 +7732,25 @@ function editDBRecordById($table='',$id=0,$params=array()){
 	if(!strlen($table)){
 		return debugValue("editDBRecordById Error: No Table");
 	}
-	if(!isNum($id) || $id == 0){return debugValue("getDBRecordById Error: invalid ID");}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("getDBRecordById Error: invalid ID(s)");}
 	if(!is_array($params) || !count($params)){return debugValue("getDBRecordById Error: No params");}
 	if(isset($params[0])){return debugValue("getDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
 	$params['-table']=$table;
-	$params['-where']="_id={$id}";
+	$params['-where']="_id in ({$idstr})";
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return editDBRecord($params);
 	}

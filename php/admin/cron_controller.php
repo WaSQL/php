@@ -12,6 +12,18 @@ switch(strtolower($_REQUEST['func'])){
 		setView('addedit',1);
 		return;
 	break;
+	case 'pause':
+		$idstr=$_REQUEST['ids'];
+		$ok=editDBRecordById('_cron',$idstr,array('paused'=>1));
+		setView('list',1);
+		return;
+	break;
+	case 'unpause':
+		$idstr=$_REQUEST['ids'];
+		$ok=editDBRecordById('_cron',$idstr,array('paused'=>0));
+		setView('list',1);
+		return;
+	break;
 	case 'details':
 		//echo "details";exit;
 		$id=(integer)$_REQUEST['id'];
