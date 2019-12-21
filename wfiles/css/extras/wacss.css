@@ -844,6 +844,15 @@ ul.nav-tabs{
     margin-bottom: 0;
     list-style: none;
 }
+ul.nav-tabs.align-center{
+  justify-content: center;
+}
+ul.nav-tabs.align-right{
+  justify-content: flex-end;
+}
+ul.nav-tabs.align-left{
+  justify-content: flex-start;
+}
 ul.nav-tabs > li {
   display: inline-block;
 }
