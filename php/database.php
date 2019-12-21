@@ -2409,9 +2409,11 @@ function addEditDBForm($params=array(),$customcode=''){
 		$rec=getDBRecord(array('-table'=>$params['-table'],'-where'=>$params['-where']));
     }
     $preview='';
+    $editmode=0;
     if(isset($rec) && is_array($rec)){
 		if($params['-table']=='_pages'){$preview=$rec['name'];}
 		foreach($rec as $key=>$val){$_REQUEST[$key]=$val;}
+		$editmode=1;
     }
 	global $USER;
 	global $PAGE;
@@ -2419,7 +2421,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
-	//echo printValue($info);exit;
+	
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -2589,6 +2591,9 @@ function addEditDBForm($params=array(),$customcode=''){
 				$cfield=$cm[1][$ex];
 				//make sure cfield is not a pattern
 				if(preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
+				if($editmode==0 && isset($info['fieldinfo'][$cfield]['defaultval'])){
+    				$_REQUEST[$cfield]=$info['fieldinfo'][$cfield]['defaultval'];
+    			}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
 				if(isset($params['-readonly']) || isset($params[$cfield.'_viewonly'])){
 					$cval='<span class="w_viewonly">'.nl2br($value).'</span>';
@@ -2654,6 +2659,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					}
 					if(!isset($params['-focus'])){$params['-focus']=$cfield;}
 					$cval=getDBFieldTag($opts);
+					//$cval= $cfield.printValue($_REQUEST).printValue($opts);
 				}
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
 				if(!isset($params['-readonly']) && !isset($params[$cfield.'_viewonly'])){$fieldlist[]=$cfield;}
