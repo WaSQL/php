@@ -418,11 +418,7 @@ function postgresqlDBConnect(){
 *	-where string - where clause to filter what records are deleted
 *	[-model] boolean - set to false to disable model functionality
 * @return boolean
-* @usage
-*	$id=postgresqlDelDBRecord(array(
-*		'-table'		=> '_tabledata',
-*		'-where'		=> "_id=4"
-*	));
+* @usage $id=postgresqlDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
 */
 function postgresqlDelDBRecord($params=array()){
 	global $USER;

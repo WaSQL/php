@@ -58,6 +58,59 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 //---------- db functions that allow you to pass in what database first
+//---------- begin function dbAddRecord
+/**
+* @describe adds a record
+* @param db string - database name as specified in the database section of config.xml
+* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+*   -table - name of the table to add to
+*	[-host] - postgresql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return integer returns the autoincriment key
+* @usage $id=dbAddRecord($db,array('-table'=>'abc','name'=>'bob','age'=>25));
+*/
+function dbAddRecord($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlAddDBRecord($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleAddDBRecord($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlAddDBRecord($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaAddDBRecord($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteAddDBRecord($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return addDBRecord($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbConnect
 /**
 * @describe returns a handle to a database
@@ -106,6 +159,219 @@ function dbConnect($db,$params=array()){
 			catch(Exception $e){
 				return false;
 			}
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbCreateTable
+/**
+* @describe creates a table with the specified fields
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to add
+* @return mixed - 1 on success, error string on failure
+* @usage $ok=dbCreateTable($db,$table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
+*/
+function dbCreateTable($db,$table,$fields=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlCreateDBTable($table,$fields);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleCreateDBTable($table,$fields);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlCreateDBTable($table,$fields);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaCreateDBTable($table,$fields);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteCreateDBTable($table,$fields);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return createDBTable($table,$fields);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbDelRecord
+/**
+* @describe deletes a record
+* @param db string - database name as specified in the database section of config.xml
+* @param params array
+*	-table string - name of table
+*	-where string - where clause to filter what records are deleted
+*	[-model] boolean - set to false to disable model functionality
+* @return boolean
+* @usage $id=dbDelRecord($db,array('-table'=> '_tabledata','-where'=>"_id=4"));
+*/
+function dbDelRecord($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlDelDBRecord($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleDelDBRecord($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlDelDBRecord($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaDelDBRecord($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteDelDBRecord($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return delDBRecord($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbDropTable
+/**
+* @describe drops a table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - name of table to drop
+* @param [meta] boolean - also remove metadata in _fielddata and _tabledata tables associated with this table. defaults to true
+* @return 1
+* @usage $ok=dbDropTable($db,'comments',1);
+*/
+function dbDropTable($db,$table,$meta=1){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlDropDBTable($table,$meta);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleDropDBTable($table,$meta);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlDropDBTable($table,$meta);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaDropDBTable($table,$meta);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteDropDBTable($table,$meta);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return dropDBTable($table,$meta);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbEditRecord
+/*
+	Functions still to add
+		dbGetTableIndexes
+		dbAddIndex
+		dbDropIndex
+		dbGetVersion
+		dbGrep
+		dbIsTable
+		dbGetTablePrimaryKeys
+		dbEnumQueryResults
+		dbGetRecordById
+		dbDelRecordById
+*/
+/**
+* @describe edits a record
+* @param db string - database name as specified in the database section of config.xml
+* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+*   -table - name of the table to add to
+*   -where - filter criteria
+*	[-host] - postgresql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to edit
+* @return boolean returns true on success
+* @usage $id=dbEditRecord($db,array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
+*/
+function dbEditRecord($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlEditDBRecord($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleEditDBRecord($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlEditDBRecord($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaEditDBRecord($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteEditDBRecord($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return editDBRecord($params);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
