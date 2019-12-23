@@ -5,6 +5,93 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+//---------- begin function sqliteGetDBRecordById--------------------
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=sqliteGetDBRecordById('comments',7);
+*/
+function sqliteGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
+	if(!strlen($table)){return "sqliteGetDBRecordById Error: No Table";}
+	if($id == 0){return "sqliteGetDBRecordById Error: No ID";}
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	if($relate){$recopts['-relate']=1;}
+	if(strlen($fields)){$recopts['-fields']=$fields;}
+	$rec=sqliteGetDBRecord($recopts);
+	return $rec;
+}
+//---------- begin function sqliteEditDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=sqliteEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function sqliteEditDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("sqliteEditDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("sqliteEditDBRecordById Error: invalid ID(s)");}
+	if(!is_array($params) || !count($params)){return debugValue("sqliteEditDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("sqliteEditDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return sqliteEditDBRecord($params);
+}
+//---------- begin function sqliteDelDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=sqliteDelDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function sqliteDelDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("sqliteDelDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("sqliteDelDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return sqliteDelDBRecord($params);
+}
 //---------- begin function sqliteCreateDBTable--------------------
 /**
 * @describe creates table with specified fields

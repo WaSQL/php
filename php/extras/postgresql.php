@@ -219,6 +219,94 @@ ENDOFQUERY;
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
 }
+//---------- begin function postgresqlGetDBRecordById--------------------
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=postgresqlGetDBRecordById('comments',7);
+*/
+function postgresqlGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
+	if(!strlen($table)){return "postgresqlGetDBRecordById Error: No Table";}
+	if($id == 0){return "postgresqlGetDBRecordById Error: No ID";}
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	if($relate){$recopts['-relate']=1;}
+	if(strlen($fields)){$recopts['-fields']=$fields;}
+	$rec=postgresqlGetDBRecord($recopts);
+	return $rec;
+}
+//---------- begin function postgresqlEditDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=postgresqlEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function postgresqlEditDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("postgresqlEditDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("postgresqlEditDBRecordById Error: invalid ID(s)");}
+	if(!is_array($params) || !count($params)){return debugValue("postgresqlEditDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("postgresqlEditDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return postgresqlEditDBRecord($params);
+}
+//---------- begin function postgresqlDelDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=postgresqlEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function postgresqlDelDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("postgresqlDelDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("postgresqlDelDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return postgresqlDelDBRecord($params);
+}
+
 //---------- begin function postgresqlCreateDBTable--------------------
 /**
 * @describe creates postgresql table with specified fields
@@ -1028,7 +1116,54 @@ function postgresqlGrepDBTables($search,$tables=array(),$dbname=''){
 		foreach($tables as $i=>$table){
 			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
 		}
+	}//---------- begin function dbGrep
+/**
+* @describe searches across tables for a specified value
+* @param db string - database name as specified in the database section of config.xml
+* @param search string
+* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @return  array of arrays - tablename,_id,fieldname,search_count
+* @usage $results=dbGrep($db,'searchstring');
+*/
+function dbGrep($db,$search,$tables=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
 	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGrepDBTables($search,$tables);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGrepDBTables($search,$tables);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGrepDBTables($search,$tables);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGrepDBTables($search,$tables);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGrepDBTables($search,$tables);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return grepDBTables($search, $tables);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 	//return $tables;
 	$search=trim($search);
 	if(!strlen($search)){return "grepDBTables Error: no search value";}
@@ -1155,7 +1290,6 @@ function postgresqlTranslateDataType($str){
 * @describe returns true if table already exists
 * @param table string
 * @return boolean
-*	returns true if table already exists
 * @usage if(postgresqlIsDBTable('_users')){...}
 */
 function postgresqlIsDBTable($table='',$force=0){

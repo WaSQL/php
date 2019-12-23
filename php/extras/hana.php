@@ -11,6 +11,94 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+
+//---------- begin function hanaGetDBRecordById--------------------
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=hanaGetDBRecordById('comments',7);
+*/
+function hanaGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
+	if(!strlen($table)){return "hanaGetDBRecordById Error: No Table";}
+	if($id == 0){return "hanaGetDBRecordById Error: No ID";}
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	if($relate){$recopts['-relate']=1;}
+	if(strlen($fields)){$recopts['-fields']=$fields;}
+	$rec=hanaGetDBRecord($recopts);
+	return $rec;
+}
+//---------- begin function hanaEditDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=hanaEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function hanaEditDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("hanaEditDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("hanaEditDBRecordById Error: invalid ID(s)");}
+	if(!is_array($params) || !count($params)){return debugValue("hanaEditDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("hanaEditDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return hanaEditDBRecord($params);
+}
+//---------- begin function hanaDelDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=hanaDelDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function hanaDelDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("hanaDelDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("hanaDelDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return hanaDelDBRecord($params);
+}
 //---------- begin function hanaListRecords
 /**
 * @describe returns an html table of records from a hana database. refer to databaseListRecords

@@ -9,6 +9,93 @@ if((integer)phpversion() < 7){
 }
 global $mssql;
 $mssql=array();
+//---------- begin function mssqlGetDBRecordById--------------------
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=mssqlGetDBRecordById('comments',7);
+*/
+function mssqlGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
+	if(!strlen($table)){return "mssqlGetDBRecordById Error: No Table";}
+	if($id == 0){return "mssqlGetDBRecordById Error: No ID";}
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	if($relate){$recopts['-relate']=1;}
+	if(strlen($fields)){$recopts['-fields']=$fields;}
+	$rec=mssqlGetDBRecord($recopts);
+	return $rec;
+}
+//---------- begin function mssqlEditDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=mssqlEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function mssqlEditDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("mssqlEditDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("mssqlEditDBRecordById Error: invalid ID(s)");}
+	if(!is_array($params) || !count($params)){return debugValue("mssqlEditDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("mssqlEditDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return mssqlEditDBRecord($params);
+}
+//---------- begin function mssqlDelDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=mssqlDelDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function mssqlDelDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("mssqlDelDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("mssqlDelDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return mssqlDelDBRecord($params);
+}
 //---------- begin function mssqlListRecords
 /**
 * @describe returns an html table of records from a mmsql database. refer to databaseListRecords

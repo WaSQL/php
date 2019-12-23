@@ -996,6 +996,95 @@ function oracleGetDBRecord($params=array()){
 	}
 	return $recs[0];
 }
+//---------- begin function oracleGetDBRecordById--------------------
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=oracleGetDBRecordById('comments',7);
+*/
+function oracleGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
+	if(!strlen($table)){return "oracleGetDBRecordById Error: No Table";}
+	if($id == 0){return "oracleGetDBRecordById Error: No ID";}
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	if($relate){$recopts['-relate']=1;}
+	if(strlen($fields)){$recopts['-fields']=$fields;}
+	$rec=oracleGetDBRecord($recopts);
+	return $rec;
+}
+//---------- begin function oracleEditDBRecordById--------------------
+/**
+* @describe edits a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=oracleEditDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function oracleEditDBRecordById($table='',$id=0,$params=array()){
+	if(!strlen($table)){
+		return debugValue("oracleEditDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("oracleEditDBRecordById Error: invalid ID(s)");}
+	if(!is_array($params) || !count($params)){return debugValue("oracleEditDBRecordById Error: No params");}
+	if(isset($params[0])){return debugValue("oracleEditDBRecordById Error: invalid params");}
+	$idstr=implode(',',$ids);
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return oracleEditDBRecord($params);
+}
+//---------- begin function oracleDelDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=oracleDelDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function oracleDelDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("oracleDelDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("oracleDelDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return oracleDelDBRecord($params);
+}
+
+
 //---------- begin function oracleGetDBRecords
 /**
 * @describe returns and array of records
@@ -1026,7 +1115,7 @@ function oracleGetDBRecords($params){
 			$params=array('-lobs'=>1);
 		}
 		else{
-			$ok=postgresqlExecuteSQL($params);
+			$ok=oraclelExecuteSQL($params);
 			return $ok;
 		}
 	}

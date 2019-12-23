@@ -58,6 +58,60 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 //---------- db functions that allow you to pass in what database first
+//---------- begin function dbAddIndex
+/**
+* @describe adds an index to a table
+* @param db string - database name as specified in the database section of config.xml
+* @param params array
+*	-table
+*	-fields
+*	[-fulltext]
+*	[-unique]
+*	[-name] name of the index
+* @return boolean
+* @usage
+*	$ok=dbAddIndex($db,array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
+* 	$ok=dbAddIndex($db,array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
+*/
+function dbAddIndex($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlAddDBIndex($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleAddDBIndex($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlAddDBIndex($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaAddDBIndex($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteAddDBIndex($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return addDBIndex($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbAddRecord
 /**
 * @describe adds a record
@@ -261,6 +315,105 @@ function dbDelRecord($db,$params=array()){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbDelRecordById
+/**
+* @describe deletes a record with said id in said table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=dbDelRecordById($db,'comments',7);
+*/
+function dbDelRecordById($db,$table='',$id=0){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlDelDBRecordById($table,$id);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleDelDBRecordById($table,$id);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlDelDBRecordById($table,$id);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaDelDBRecordById($table,$id);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteDelDBRecordById($table,$id);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return delDBRecordById($table,$id);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbDropIndex
+/**
+* @describe adds an index to a table
+* @param db string - database name as specified in the database section of config.xml
+* @param params array
+*	-table
+*	-name
+* @return boolean
+* @usage
+*	$ok=dbDropIndex($db,array('-table'=>$table,'-name'=>"IDX001"));
+*/
+function dbDropIndex($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlDropDBIndex($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleDropDBIndex($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlDropDBIndex($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaDropDBIndex($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteDropDBIndex($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return dropDBIndex($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbDropTable
 /**
 * @describe drops a table
@@ -310,19 +463,6 @@ function dbDropTable($db,$table,$meta=1){
 	return "Invalid dbtype: {$db['dbtype']}";
 }
 //---------- begin function dbEditRecord
-/*
-	Functions still to add
-		dbGetTableIndexes
-		dbAddIndex
-		dbDropIndex
-		dbGetVersion
-		dbGrep
-		dbIsTable
-		dbGetTablePrimaryKeys
-		dbEnumQueryResults
-		dbGetRecordById
-		dbDelRecordById
-*/
 /**
 * @describe edits a record
 * @param db string - database name as specified in the database section of config.xml
@@ -372,6 +512,55 @@ function dbEditRecord($db,$params=array()){
 		case 'mysqli':
 			loadExtras('mysql');
 			return editDBRecord($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbEditRecordById
+/**
+* @describe edits a record with said id in said table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @param params array - field=>value pairs to edit in this record
+* @return boolean
+* @usage $ok=dbEditRecordById($db,'comments',7,array('name'=>'bob'));
+*/
+function dbEditRecordById($db,$table='',$id=0,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlEditDBRecordById($table,$id,$params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleEditDBRecordById($table,$id,$params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlEditDBRecordById($table,$id,$params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaEditDBRecordById($table,$id,$params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteEditDBRecordById($table,$id,$params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return editDBRecordById($table,$id,$params);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
@@ -471,6 +660,53 @@ function dbGetCount($db,$params){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbGetTableIndexes
+/**
+* @describe returns a list of indexes for the specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - name of table to alter
+* @return array
+* @usage $recs=dbGetTableIndexes($db,$table);
+*/
+function dbGetTableIndexes($db,$table){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBTableIndexes($table);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBTableIndexes($table);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBTableIndexes($table);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBTableIndexes($table);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBTableIndexes($table);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return getDBIndexes($table);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbGetTablePrimaryKeys
 /**
 * @describe drops a table
@@ -532,6 +768,89 @@ function dbGetRecord($db,$params){
 	$recs=dbGetRecords($db,$params);
 	if(isset($recs[0])){return $recs[0];}
 	return null;
+}
+//---------- begin function dbGetRecordById
+/**
+* @describe returns a single multi-dimensional record with said id in said table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param id integer - record ID of record
+* @param relate boolean - defaults to true
+* @param fields string - defaults to blank
+* @return array
+* @usage $rec=dbGetRecordById($db,'comments',7);
+*/
+function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return getDBRecordById($table, $id, $relate, $fields);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function delDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=delDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function delDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("delDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("delDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return delDBRecord($params);
 }
 //---------- begin function dbGetRecords
 /**
@@ -674,6 +993,102 @@ function dbGetTables($db){
 		case 'mysqli':
 			loadExtras('mysql');
 			return getDBTables();
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbGrep
+/**
+* @describe searches across tables for a specified value
+* @param db string - database name as specified in the database section of config.xml
+* @param search string
+* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @return  array of arrays - tablename,_id,fieldname,search_count
+* @usage $results=dbGrep($db,'searchstring');
+*/
+function dbGrep($db,$search,$tables=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGrepDBTables($search,$tables);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGrepDBTables($search,$tables);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGrepDBTables($search,$tables);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGrepDBTables($search,$tables);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGrepDBTables($search,$tables);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return grepDBTables($search, $tables);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
+//---------- begin function dbIsTable
+/**
+* @describe returns true if table already exists
+* @param db string - database name as specified in the database section of config.xml
+* @describe returns true if table already exists
+* @param table string
+* @return boolean
+* @usage if(dbIsTable($db,'_users')){...}
+*/
+function dbIsTable($db,$search,$tables=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlIsDBTable($table);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleIsDBTable($table);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlIsDBTable($table);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaIsDBTable($table);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteIsDBTable($table);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return isDBTable($table);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
@@ -8049,7 +8464,7 @@ function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
 	if(strlen($fields)){$recopts['-fields']=$fields;}
 	$rec=getDBRecord($recopts);
 	return $rec;
-	}
+}
 //---------- begin function editDBRecordById--------------------
 /**
 * @describe edits a record with said id in said table
@@ -8084,7 +8499,7 @@ function editDBRecordById($table='',$id=0,$params=array()){
 	$params['-where']="_id in ({$idstr})";
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return editDBRecord($params);
-	}
+}
 //---------- begin function processDBRecords --------------------
 /**
 * @describe process table records through a function. Returns number of records processed
