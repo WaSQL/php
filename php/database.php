@@ -986,7 +986,13 @@ function databaseListRecords($params=array()){
 	}
 	//check for -results_eval
 	if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
-		$params['-list']=call_user_func($params['-results_eval'],$params['-list']);
+		if(isset($params['-results_eval_params'])){
+			$params['-list']=call_user_func($params['-results_eval'],$params['-list'],$params['-results_eval_params']);
+		}
+		else{
+			$params['-list']=call_user_func($params['-results_eval'],$params['-list']);
+		}
+		
 	}
 	//build the tbody
 	$rtn.='	<tbody ';
