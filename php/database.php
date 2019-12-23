@@ -471,6 +471,53 @@ function dbGetCount($db,$params){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbGetTablePrimaryKeys
+/**
+* @describe drops a table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - specified table
+* @return array returns array of primary key fields
+* @usage $fields=dbGetTablePrimaryKeys($db,$table);
+*/
+function dbGetTablePrimaryKeys($db,$table,$meta=1){
+	global $CONFIG;
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			return postgresqlGetDBTablePrimaryKeys($table);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			return oracleGetDBTablePrimaryKeys($table);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			return mssqlGetDBTablePrimaryKeys($table);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			return hanaGetDBTablePrimaryKeys($table);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			return sqliteGetDBTablePrimaryKeys($table);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return getDBTablePrimaryKeys($table);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbGetRecord
 /**
 * @describe returns an records set from a database
