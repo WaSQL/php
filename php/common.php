@@ -2128,14 +2128,26 @@ function buildFormTextarea($name,$params=array()){
 	$params['name']=$name;
 	$tag='';
 	if($white_wrap==1){$tag.='<div style="background:#FFF;">'.PHP_EOL;}
-	$tag .= '	<textarea';
-	$tag .= setTagAttributes($params);
-	$tag .= ' >';
-	if(isset($params['-fixms'])){
-		$params['value']=fixMicrosoft($params['value']);
+	if(isset($params['data-behavior']) && $params['data-behavior']=='autogrow' && isset($params['disabled'])){
+		$tag .= '	<div';
+		$tag .= setTagAttributes($params);
+		$tag .= ' >';
+		if(isset($params['-fixms'])){
+			$params['value']=fixMicrosoft($params['value']);
+		}
+		$tag .= encodeHtml($params['value']);
+		$tag .= '</div>'.PHP_EOL;
 	}
-	$tag .= encodeHtml($params['value']);
-	$tag .= '</textarea>'.PHP_EOL;
+	else{
+		$tag .= '	<textarea';
+		$tag .= setTagAttributes($params);
+		$tag .= ' >';
+		if(isset($params['-fixms'])){
+			$params['value']=fixMicrosoft($params['value']);
+		}
+		$tag .= encodeHtml($params['value']);
+		$tag .= '</textarea>'.PHP_EOL;
+	}
 	if($white_wrap==1){$tag.='</div>'.PHP_EOL;}
 	//echo printValue($params);exit;
 	return $tag;
