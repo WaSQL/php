@@ -2134,7 +2134,7 @@ function buildFormTextarea($name,$params=array()){
 		$tag .= setTagAttributes($params);
 		$tag .= ' >';
 		if(isset($params['-fixms'])){
-			$params['value']=fixMicrosoft($params['value']);
+			$params['value']=nl2br(fixMicrosoft($params['value']));
 		}
 		$tag .= encodeHtml($params['value']);
 		$tag .= '</div>'.PHP_EOL;
