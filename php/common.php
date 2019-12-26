@@ -12203,16 +12203,20 @@ function postURL($url,$params=array()) {
 	}
 	if(isset($params['-fresh'])){
 		curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
-		}
+	}
 	if(isset($params['-ipv4'])){
 		curl_setopt( $process, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-		}
+	}
 	if(!isset($params['-user_agent'])){
 		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
-		}
+	}
+	if(isset($params['-contenttype'])){
+		if(!isset($params['-headers'][0])){$params['-headers']=array();}
+		$params['-headers'][]=$params['-contenttype'];
+	}
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
-		}
+	}
 	curl_setopt($process, CURLOPT_HEADER, 1);
 	//alernate port?
 	if(isset($params['-port']) && isNum($params['-port'])){
@@ -12360,6 +12364,7 @@ function postJSON($url='',$json='',$params=array()) {
 		$params['-headers'][]="WaSQL-NoGUID: 1";
 		unset($params['-noguid']);
 	}
+	//if(isset($params['-debug'])){echo $url.printValue($params);exit;}
 	return postBody($url,$json,$params);
 }
 
@@ -12423,6 +12428,10 @@ function postBody($url='',$body='',$params=array()) {
 	//encodeing
 	curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
 	//headers
+	if(isset($params['-contenttype'])){
+		if(!isset($params['-headers'][0])){$params['-headers']=array();}
+		$params['-headers'][]=$params['-contenttype'];
+	}
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);
 		$rtn['_debug'][]='set headers' . printValue($params['-headers']);
