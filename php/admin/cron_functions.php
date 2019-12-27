@@ -1,8 +1,12 @@
 <?php
 function cronAddEdit($id=0){
+	$url=configValue('admin_form_url');
+	if(!stringContains($url,'admin.php')){
+		$url='/t/1'.$url;
+	}
 	$opts=array(
 		'-table'=>'_cron',
-		'-action'=>configValue('admin_form_url'),
+		'-action'=>$url,
 		'run_cmd_displayname'=>'Run Cmd: (command, page name, or url)',
 		'_menu'=>'cron',
 		'func'=>'list',
@@ -38,6 +42,18 @@ function cronDetails($id){
 	));
 	return $cron;
 }
+function cronIsRunning($rec){
+	if($rec['running']==1){return '<span class="icon-spin4 w_spin w_primary"></span>';}
+	return '';
+}
+function cronIsPaused($rec){
+	if($rec['paused']==1){return '<span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span>';}
+	return '';
+}
+function cronIsActive($rec){
+	if($rec['active']==1){return '<span class="icon-mark w_success"></span>';}
+	return '';
+}
 function cronList(){
 	$url=configValue('admin_form_url');
 	if(!stringContains($url,'admin.php')){
@@ -67,18 +83,6 @@ function cronList(){
 	);
 	return databaseListRecords($opts);
 }
-function cronIsRunning($rec){
-	if($rec['running']==1){return '<span class="icon-spin4 w_spin w_primary"></span>';}
-	return '';
-}
-function cronIsPaused($rec){
-	if($rec['paused']==1){return '<span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span>';}
-	return '';
-}
-function cronIsActive($rec){
-	if($rec['active']==1){return '<span class="icon-mark w_success"></span>';}
-	return '';
-}
 function cronListExtra($recs){
 	$ids=array();
 	foreach($recs as $i=>$rec){
@@ -97,6 +101,9 @@ function cronListExtra($recs){
 		));
 	}
 	$url=configValue('admin_form_url');
+	if(!stringContains($url,'admin.php')){
+		$url='/t/1'.$url;
+	}
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id'];
 		$recs[$i]['active']=cronIsActive($rec);
