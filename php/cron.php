@@ -60,7 +60,11 @@ while($etime < 55){
 		foreach($host as $k=>$v){
 	    	$CONFIG[$k]=$v;
 		}
-		if(isset($CONFIG['cron']) && $CONFIG['cron']==0){
+		$dbname=$CONFIG['dbname'];
+		$runnow=0;
+		$runnow_afile="{$progpath}/temp/{$dbname}_runnow.txt";
+		//echo $runnow_afile.PHP_EOL;
+		if(!file_exists($runnow_afile) && isset($CONFIG['cron']) && $CONFIG['cron']==0){
 			//cronMessage("Cron set to 0");
 			unset($ConfigXml[$name]);
 	    	continue;
@@ -98,12 +102,21 @@ while($etime < 55){
 			'-index'	=> 'name'
 		));
 		//echo "Checking {$CONFIG['name']}\n";
-	$wherestr=<<<ENDOFWHERE
-	active=1 and paused != 1 and running != 1 and run_cmd is not null
+		//see if there is file called {dbname}_runnow.txt.  If so extract
+		$wherestr=<<<ENDOFWHERE
+		active=1 and paused != 1 and running != 1 and run_cmd is not null
 		and (date(now()) >= date(begin_date) or begin_date is null or length(begin_date)=0)
 		and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
 	    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
 ENDOFWHERE;
+		if(file_exists($runnow_afile)){
+			$runid=getfileContents($runnow_afile);
+			unlink($runnow_afile);
+			$runid=(integer)$runid;
+			$wherestr="_id={$runid} and running != 1";
+			echo "Run Now File found. Set wherestr: {$wherestr}".PHP_EOL;
+			$runnow=1;
+		}
 		$recopts=array(
 			'-table'	=> '_cron',
 			'-fields'	=> '_id,name,run_cmd,running,run_date,frequency,run_format,run_values',
@@ -118,7 +131,7 @@ ENDOFWHERE;
 		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 		$recs=getDBRecords($recopts);
-		//echo printValue($recs);
+		//echo $runnow.printValue($recs).PHP_EOL;
 		if(!is_array($recs) || count($recs)==0){
 			unset($ConfigXml[$name]);
 	        //cronMessage("No crons found.");
@@ -217,6 +230,7 @@ ENDOFWHERE;
 						}
 					}
 				}
+				if($runnow==1){$run=1;}
 				if($run==0){continue;}
 				//get record again to insure another process is not running it.
 				$rec=getDBRecord(array(

@@ -1,5 +1,19 @@
 <?php
+global $CONFIG;
+if(!isset($CONFIG['admin_form_url'])){
+	$CONFIG['admin_form_url']='/php/admin.php';
+}
 switch(strtolower($_REQUEST['func'])){
+	case 'run':
+		$temppath=getWasqlPath('php/temp');
+		$afile="{$temppath}/{$CONFIG['dbname']}_runnow.txt";
+		$id=(integer)$_REQUEST['id'];
+		$ok=setFileContents($afile,$id);
+		usleep(250);
+		$cron=cronDetails($id);
+		setView('details',1);
+		return;
+	break;
 	case 'add':
 		//echo "add";exit;
 		$id=0;

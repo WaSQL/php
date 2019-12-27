@@ -8,7 +8,7 @@ function pauseSelected(func){
 	for(let i=0;i<clist.length;i++){
 		ids.push(clist[i].value);
 	}
-	return ajaxGet('/php/admin.php','cron_results',{_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0});
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',{_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0});
 }
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
@@ -19,8 +19,8 @@ function pauseSelected(func){
 
 <view:list>
 	<div class="w_right">
-		<a href="#" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
-		<a href="/php/admin.php?_menu=cron" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
+		<a href="#" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
+		<a href="<?=configValue('admin_form_url');?>?_menu=cron" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
 	</div>
 	<?=cronList();?>
 	<div class="align-left">
@@ -94,22 +94,28 @@ function pauseSelected(func){
 				<th><translate>Name</translate></th>
 				<th><translate>Active</translate></th>
 				<th><translate>Paused</translate></th>
-				<th><translate>Records To Keep</translate></th>
+				<th><translate>Running</translate></th>
+				<th><translate>LogMax</translate></th>
 				<th><translate>Cmd</translate></th>
 				<th><translate>Frequency</translate></th>
+				<th><translate>Actions</translate></th>
 			</tr>
 			<tr>
-				<td class="w_small">
-					<?=$cron['_id'];?>
-					<a href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'cron',func:'edit',id:<?=$cron['_id'];?>,title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>
-				</td>
+				<td class="w_small"><?=$cron['_id'];?></td>
 				<td class="w_small"><?=$cron['groupname'];?></td>
 				<td class="w_small"><?=$cron['name'];?></td>
 				<td class="w_small align-center"><?=cronIsActive($cron);?></td>
 				<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
+				<td class="w_small align-center"><?=cronIsRunning($cron);?></td>
 				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
 				<td class="w_small"><?=$cron['run_format'];?></td>
+				<td>
+					<a href="#" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'edit',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'details',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Refresh"><span class="icon-refresh w_primary"></span></a>
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'run',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Run Now"><span class="icon-play w_success"></span></a>
+					<span id="cron_processing"></span>
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -119,11 +125,11 @@ function pauseSelected(func){
 		<div style="max-height:400px;overflow:auto;padding-right:20px;">
 		<table class="table condensed striped bordered <?=configValue('admin_color');?> hover">
 		<tr>
-			<th><translate>Run Date</translate></th>
-			<th><translate>Run Length</translate></th>
+			<th><translate>RunDate</translate></th>
+			<th><translate>RunTime</translate></th>
 		</tr>
 		<view:log>
-		<tr class="w_pointer" onclick="return ajaxGet('/php/admin.php','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',id:<?=$log['_id'];?>,title:this.title});">
+		<tr class="w_pointer" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',id:<?=$log['_id'];?>,title:this.title});">
 			<td class="w_nowrap"><?=$log['run_date'];?></td>
 			<td class=""><?=verboseTime($log['run_length']);?></td>
 		</tr>
