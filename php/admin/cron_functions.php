@@ -80,8 +80,14 @@ function cronList(){
 		'running_class'=>'align-center',
 		'records_to_keep_class'=>'align-right',
 		'last_run_class'=>'align-right',
+		'_id_checkall'=>1,
 		'-results_eval'=>'cronListExtra'
 	);
+	//predata
+	$recs=getDBRecords("select count(*) cnt, groupname from _cron where groupname is not null group by groupname order by groupname");
+	if(isset($recs[0])){
+		$opts['-predata']=renderView('groupnames',$recs,'recs');
+	}
 	return databaseListRecords($opts);
 }
 function cronListExtra($recs){
@@ -111,7 +117,13 @@ function cronListExtra($recs){
 		$recs[$i]['paused']=cronIsPaused($rec);
 		$recs[$i]['running']=cronIsRunning($rec);
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
-		$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
+		if(strlen($rec['run_date'])){
+			$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
+		}
+		else{
+			$recs[$i]['last_run']='';
+			$recs[$i]['run_length']='';
+		}
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title,setprocessing:0});" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];

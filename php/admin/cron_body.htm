@@ -10,6 +10,13 @@ function pauseSelected(func){
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',{_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0});
 }
+function cronFilterByGroup(name){
+	pagingClearFilters();
+	document.searchfiltersform.filter_field.value='groupname';
+	document.searchfiltersform.filter_operator.value='eq';
+	document.searchfiltersform.filter_value.value=name;
+	return pagingSubmit(document.searchfiltersform,'cron_results');
+}
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
 <div id="cron_results" class="w_padtop">
@@ -82,6 +89,14 @@ function pauseSelected(func){
 	<div class="col s12"><label class="w_gray"><translate>Last Run Result</translate></label>[run_result]</div>
 </div>
 </view:edit_fields>
+
+
+<view:groupnames>
+	<ul class="nav-tabs">
+		<view:groupname><li><a href="#" onclick="cronFilterByGroup('<?=$rec['groupname'];?>');"><?=$rec['groupname'];?></a></li></view:groupname>
+		<?=renderEach('groupname',$recs,'rec');?>
+	</ul>
+</view:groupnames>
 
 
 <view:details>
