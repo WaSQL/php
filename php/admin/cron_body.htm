@@ -92,7 +92,7 @@ function cronFilterByGroup(name){
 
 
 <view:groupnames>
-	<ul class="nav-tabs">
+	<ul class="nav-tabs <?=configValue('admin_color');?>">
 		<view:groupname><li><a href="#" onclick="cronFilterByGroup('<?=$rec['groupname'];?>');"><?=$rec['groupname'];?></a></li></view:groupname>
 		<?=renderEach('groupname',$recs,'rec');?>
 	</ul>
