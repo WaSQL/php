@@ -39,12 +39,16 @@ function cronDetails($id){
 	return $cron;
 }
 function cronList(){
+	$url=configValue('admin_form_url');
+	if(!stringContains($url,'admin.php')){
+		$url='/t/1'.$url;
+	}
 	$opts=array(
 		'-table'=>'_cron',
 		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep',
 		'-listfields'=>'_id,groupname,name,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
 		'-tableclass'=>'table striped bordered',
-		'-action'=>configValue('admin_form_url'),
+		'-action'=>$url,
 		'_menu'=>'cron',
 		'func'=>'list',
 		'-onsubmit'=>"return ajaxSubmitForm(this,'cron_results');",
