@@ -123,6 +123,10 @@ function cronListExtra($recs){
 			$recs[$i]['last_run']='';
 			$recs[$i]['run_length']='';
 		}
+		if(strlen($rec['run_cmd']) > 50){
+			$truncated=substr($rec['run_cmd'],0,50).'...';
+			$recs[$i]['run_cmd']='<span title="'.$rec['run_cmd'].'">'.$truncated.'</span>';
+		}
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title,setprocessing:0});" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
