@@ -80,7 +80,7 @@ function cronList(){
 		'running_class'=>'align-center',
 		'records_to_keep_class'=>'align-right',
 		'last_run_class'=>'align-right',
-		'_id_checkall'=>1,
+		'_id_class'=>'w_left w_nowrap',
 		'-results_eval'=>'cronListExtra'
 	);
 	//predata
