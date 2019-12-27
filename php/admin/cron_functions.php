@@ -2,7 +2,7 @@
 function cronAddEdit($id=0){
 	$opts=array(
 		'-table'=>'_cron',
-		'-action'=>'/php/admin.php',
+		'-action'=>configValue('admin_form_url'),
 		'run_cmd_displayname'=>'Run Cmd: (command, page name, or url)',
 		'_menu'=>'cron',
 		'func'=>'list',
@@ -44,7 +44,7 @@ function cronList(){
 		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep',
 		'-listfields'=>'_id,groupname,name,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
 		'-tableclass'=>'table striped bordered',
-		'-action'=>'/php/admin.php',
+		'-action'=>configValue('admin_form_url'),
 		'_menu'=>'cron',
 		'func'=>'list',
 		'-onsubmit'=>"return ajaxSubmitForm(this,'cron_results');",
@@ -92,6 +92,7 @@ function cronListExtra($recs){
 			'-index'=>'_id'
 		));
 	}
+	$url=configValue('admin_form_url');
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id'];
 		$recs[$i]['active']=cronIsActive($rec);
@@ -100,9 +101,9 @@ function cronListExtra($recs){
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
-		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>';
+		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title});" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return ajaxGet(\'/php/admin.php\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'">'.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title});" title="Cron Details - '.$name.'">'.$name.'</a>';
 		//run_as
 		if(isset($rec['run_as'])){
 			if((integer)$rec['run_as'] > 0){
