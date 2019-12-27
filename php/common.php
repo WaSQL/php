@@ -9060,22 +9060,139 @@ function getFilePath($file=''){
 //---------- begin function getRandomColor--------------------
 /**
 * @describe returns a random hex color
-* @param showpound boolean - include the pound sign - defaults to true
-* @return string
-* @usage $hexcolor=getRandomColor();
+* @param [showpound] boolean - include the pound sign - defaults to true
+* @param [alpha] integer - integer percent of alpha value you want
+* @return string - hex color
+* @usage 
+*	$hexcolor=getRandomColor();
+* 	$hexcolor=getRandomColor(true,40);
 */
-function getRandomColor($showpound=1) {
-	$hexcolor = $showpound==1?'#':'';
-	$count = 3;
- 	$hexnum = 0;
- 	$hex = array('FF','CC','99','66','33','00');
-	while ($count > 0) {
-  		$hexnum = rand(0,5);
-		$hexcolor .= $hex[$hexnum];
-  		$count--;
-		}
-	return $hexcolor;
+function getRandomColor($showpound=1,$alpha='') {
+	$showpound=(integer)$showpound;
+	$color=sprintf("%02X%02X%02X", mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
+	/*
+		Another way - not sure what one is best/faster though
+			$color=substr('00000' . dechex(mt_rand(0, 0xffffff)), -6);
+	*/
+	if($showpound==1){$color='#'.$color;}
+	if(strlen($alpha)){$color .= getHexAlpha($alpha);}
+	return $color;
+}
+//---------- begin function getHexAlpha--------------------
+/**
+* @describe returns the hex alpha value
+* @param pcnt number - percent
+* @return string
+* @usage $alpha=getHexAlpha(38);
+*/
+function getHexAlpha($pcnt=0) {
+	$pcnt=(integer)$pcnt;
+	switch($pcnt){
+		case 100:return 'FF';break;
+		case 99:return 'FC';break;
+		case 98:return 'FA';break;
+		case 97:return 'F7';break;
+		case 96:return 'F5';break;
+		case 95:return 'F2';break;
+		case 94:return 'F0';break;
+		case 93:return 'ED';break;
+		case 92:return 'EB';break;
+		case 91:return 'E8';break;
+		case 90:return 'E6';break;
+		case 89:return 'E3';break;
+		case 88:return 'E0';break;
+		case 87:return 'DE';break;
+		case 86:return 'DB';break;
+		case 85:return 'D9';break;
+		case 84:return 'D6';break;
+		case 83:return 'D4';break;
+		case 82:return 'D1';break;
+		case 81:return 'CF';break;
+		case 80:return 'CC';break;
+		case 79:return 'C9';break;
+		case 78:return 'C7';break;
+		case 77:return 'C4';break;
+		case 76:return 'C2';break;
+		case 75:return 'BF';break;
+		case 74:return 'BD';break;
+		case 73:return 'BA';break;
+		case 72:return 'B8';break;
+		case 71:return 'B5';break;
+		case 70:return 'B3';break;
+		case 69:return 'B0';break;
+		case 68:return 'AD';break;
+		case 67:return 'AB';break;
+		case 66:return 'A8';break;
+		case 65:return 'A6';break;
+		case 64:return 'A3';break;
+		case 63:return 'A1';break;
+		case 62:return '9E';break;
+		case 61:return '9C';break;
+		case 60:return '99';break;
+		case 59:return '96';break;
+		case 58:return '94';break;
+		case 57:return '91';break;
+		case 56:return '8F';break;
+		case 55:return '8C';break;
+		case 54:return '8A';break;
+		case 53:return '87';break;
+		case 52:return '85';break;
+		case 51:return '82';break;
+		case 50:return '80';break;
+		case 49:return '7D';break;
+		case 48:return '7A';break;
+		case 47:return '78';break;
+		case 46:return '75';break;
+		case 45:return '73';break;
+		case 44:return '70';break;
+		case 43:return '6E';break;
+		case 42:return '6B';break;
+		case 41:return '69';break;
+		case 40:return '66';break;
+		case 39:return '63';break;
+		case 38:return '61';break;
+		case 37:return '5E';break;
+		case 36:return '5C';break;
+		case 35:return '59';break;
+		case 34:return '57';break;
+		case 33:return '54';break;
+		case 32:return '52';break;
+		case 31:return '4F';break;
+		case 30:return '4D';break;
+		case 29:return '4A';break;
+		case 28:return '47';break;
+		case 27:return '45';break;
+		case 26:return '42';break;
+		case 25:return '40';break;
+		case 24:return '3D';break;
+		case 23:return '3B';break;
+		case 22:return '38';break;
+		case 21:return '36';break;
+		case 20:return '33';break;
+		case 19:return '30';break;
+		case 18:return '2E';break;
+		case 17:return '2B';break;
+		case 16:return '29';break;
+		case 15:return '26';break;
+		case 14:return '24';break;
+		case 13:return '21';break;
+		case 12:return '1F';break;
+		case 11:return '1C';break;
+		case 10:return '1A';break;
+		case 9:return '17';break;
+		case 8:return '14';break;
+		case 7:return '12';break;
+		case 6:return '0F';break;
+		case 5:return '0D';break;
+		case 4:return '0A';break;
+		case 3:return '08';break;
+		case 2:return '05';break;
+		case 1:return '03';break;
+		case 0:return '00';break;
 	}
+	return '';
+}
+
 //---------- begin function getRandomString---------------------------------------
 /**
 * @describe returns a random string of specified length
