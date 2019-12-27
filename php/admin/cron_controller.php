@@ -6,7 +6,7 @@ if(!isset($CONFIG['admin_form_url'])){
 switch(strtolower($_REQUEST['func'])){
 	case 'run':
 		$temppath=getWasqlPath('php/temp');
-		$afile="{$temppath}/{$CONFIG['dbname']}_runnow.txt";
+		$afile="{$temppath}/{$CONFIG['name']}_runnow.txt";
 		$id=(integer)$_REQUEST['id'];
 		$ok=setFileContents($afile,$id);
 		usleep(250);

@@ -60,9 +60,8 @@ while($etime < 55){
 		foreach($host as $k=>$v){
 	    	$CONFIG[$k]=$v;
 		}
-		$dbname=$CONFIG['dbname'];
 		$runnow=0;
-		$runnow_afile="{$progpath}/temp/{$dbname}_runnow.txt";
+		$runnow_afile="{$progpath}/temp/{$CONFIG['name']}_runnow.txt";
 		//echo $runnow_afile.PHP_EOL;
 		if(!file_exists($runnow_afile) && isset($CONFIG['cron']) && $CONFIG['cron']==0){
 			//cronMessage("Cron set to 0");
