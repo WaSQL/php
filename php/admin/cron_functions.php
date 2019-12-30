@@ -39,8 +39,16 @@ function cronDetails($id){
 		'cron_id'=>$id,
 		'-order'=>'_id desc',
 		'-limit'=>100,
-		'-fields'=>'_id,run_date,run_length'
+		'-fields'=>'_id,run_date,run_length,run_error'
 	));
+	foreach($cron['logs'] as $i=>$log){
+		if(strlen($log['run_error'])){
+			$cron['logs'][$i]['color']='#d9534f';
+		}
+		else{
+			$cron['logs'][$i]['color']='#5cb85c';
+		}
+	}
 	return $cron;
 }
 function cronIsRunning($rec){
@@ -62,8 +70,8 @@ function cronList(){
 	}
 	$opts=array(
 		'-table'=>'_cron',
-		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep',
-		'-listfields'=>'_id,groupname,name,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
+		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep,run_error',
+		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -75,6 +83,7 @@ function cronList(){
 		'run_length_class'=>'align-right',
 		'run_length_verbosetime'=>1,
 		'groupname_displayname'=>'Group',
+		'err_displayname'=>'',
 		'name_class'=>'w_nowrap w_link',
 		'active_class'=>'align-center',
 		'paused_class'=>'align-center',
@@ -123,6 +132,15 @@ function cronListExtra($recs){
 		else{
 			$recs[$i]['last_run']='';
 			$recs[$i]['run_length']='';
+		}
+		if(strlen($rec['run_error'])){
+			$recs[$i]['err']='<div class="align-middle" style="margin-top:2px;background-color:#d9534f;height:12px;width:12px;border-radius:6px;"></div>';
+		}
+		elseif(strlen($recs[$i]['last_run'])){
+			$recs[$i]['err']='<div class="align-middle" style="margin-top:2px;background-color:#5cb85c;height:12px;width:12px;border-radius:6px;"></div>';
+		}
+		else{
+			$recs[$i]['err']='';
 		}
 		if(strlen($rec['run_cmd']) > 50){
 			$truncated=substr($rec['run_cmd'],0,50).'...';
@@ -187,6 +205,29 @@ function cronCheckSchema(){
 			'width'			=> 100,
 			'mask'			=> 'integer',
 			'required'		=> 1
+		));
+	}
+	if(!isset($cronfields['run_error'])){
+		//records_to_keep
+		$query="ALTER TABLE _cron ADD run_error ".databaseDataType('varchar(2000)')." NULL;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_error',
+			'inputtype'		=> 'textarea',
+			'width'			=> 600
+		));
+	}
+	//check _cronlog table
+	$cronfields=getDBFieldInfo('_cronlog');
+	if(!isset($cronfields['run_error'])){
+		$query="ALTER TABLE _cronlog ADD run_error ".databaseDataType('varchar(2000)')." NULL;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cronlog',
+			'fieldname'		=> 'run_error',
+			'inputtype'		=> 'textarea',
+			'width'			=> 600
 		));
 	}
 	return true;

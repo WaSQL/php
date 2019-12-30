@@ -22,7 +22,40 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
-
+//---------- begin function commonCronError
+/**
+* @describe records an error on this cron run
+* @param msg string  - error message to record
+* @param [email] string  - if email is passed in then it also pauses the cron  - email to notify of the pause
+* @param [params] additional parameters to include in the message.
+* @return ok boolean
+* @usage 
+*	if(!$success){$ok=commonCronError($msg);}
+*	if(!$success){$ok=commonCronError($msg,'bob@mysite.com');}
+*/
+function commonCronError($err,$email='',$params=array()){
+	$id='';
+	if(!isset($_REQUEST['cron_id'])){return 0;}
+	$stop=time();
+	$run_length=$stop-$_REQUEST['start'];
+	$opts=array(
+		'-table'	=> '_cronlog',
+		'cron_id'	=> $_REQUEST['cron_id'],
+		'cron_pid'	=> $_REQUEST['cron_pid'],
+		'name'		=> $_REQUEST['cron_name'],
+		'run_cmd'	=> $_REQUEST['cron_run_cmd'],
+		'run_date'	=> $_REQUEST['cron_run_date'],
+		'run_length'=> $run_length,
+		'run_result'=> $_REQUEST['result'],
+		'run_error'=> $err
+	);
+	$ok=addDBRecord($opts);
+	$ok=editDBRecordById('_cron',$_REQUEST['cron_id'],array('run_error'=>$err));
+	if(isEmail($email)){
+		$ccp=commonCronPause($email,$params);
+	}
+	return 1;
+}
 //---------- begin function commonCronPause
 /**
 * @describe sets pause to 1 on the cron id

@@ -27,13 +27,15 @@ if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
-$_SERVER['TIME_START']=microtime(true);
 global $ConfigXml;
 global $allhost;
 global $dbh;
 global $sel;
 global $CONFIG;
 global $cron_id;
+global $CRONTHRU;
+$CRONTHRU=array();
+$starttime=microtime(true);
 $_SERVER['HTTP_HOST']='localhost';
 include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
@@ -211,12 +213,16 @@ ENDOFWHERE;
 					}
 
 				}
+
 				//skip if it has been run in the last minute
 				if(strlen($rec['run_date'])){
 					$ctime=time();
 	            	$lastruntime=strtotime($rec['run_date']);
 	            	$diff=$ctime-$lastruntime;
-	            	if($diff < 60){$run=0;}
+	            	if($diff < 60){
+	            		cronMessage("skipping - ran in the last minute:{$rec['name']}");
+	            		$run=0;
+	            	}
 				}
 				//reset running if it has been over an hour
 				if($rec['running']==1){
@@ -225,12 +231,15 @@ ENDOFWHERE;
 		            	$lastruntime=strtotime($rec['run_date']);
 		            	$diff=$ctime-$lastruntime;
 		            	if($diff > 7200){
-	                    	$ok=cronUpdate($rec['_id'],array('running'=>0));
+	                    	$ok=editDBRecordById('_cron',$rec['_id'],array('running'=>0));
 						}
 					}
 				}
 				if($runnow==1){$run=1;}
-				if($run==0){continue;}
+				if($run==0){
+					//cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
+					continue;
+				}
 				//get record again to insure another process is not running it.
 				$rec=getDBRecord(array(
 					'-table'	=> '_cron',
@@ -241,7 +250,7 @@ ENDOFWHERE;
 				//skip if running
 				if($rec['running']==1){continue;}
 				//update record to show we are now running
-				$start=time();
+				$start=$CRONTHRU['start']=time();
 				$run_date=date('Y-m-d H:i:s');
 				$cron_pid=getmypid();
 				//echo $ok.printValue($rec);
@@ -251,7 +260,8 @@ ENDOFWHERE;
 					'-where'	=> "running=0 and _id={$rec['_id']}",
 					'cron_pid'	=> $cron_pid,
 					'running'	=> 1,
-					'run_date'	=> $run_date
+					'run_date'	=> $run_date,
+					'run_error'	=> ''
 				);
 				$ok=editDBRecord($editopts);
 				//echo $ok.printValue($editopts);
@@ -272,7 +282,12 @@ ENDOFWHERE;
 					'_id'		=> $rec['_id'],
 					'-nocache'	=> 1
 				));
-				$cron_id=$_REQUEST['cron_id']=$rec['_id'];
+				$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
+				$CRONTHRU['cron_pid']=$cron_pid;
+				$CRONTHRU['cron_run_date']=$run_date;
+				$CRONTHRU['cron_name']=$rec['name'];
+				$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
+
 				cronMessage("cleaning {$rec['name']}");
 				$ok=cronCleanRecords($rec);
 				$cmd=$rec['run_cmd'];
@@ -312,16 +327,20 @@ ENDOFWHERE;
 				}
 				cronMessage("running {$crontype} {$rec['name']}");
 	        	
-	        	$result='';
-				$result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
-				$result .= "CronType: {$crontype} ".PHP_EOL;
-				
+	        	$cron_result='';
+				$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
+				$cron_result .= "CronType: {$crontype} ".PHP_EOL;
+				$CRONTHRU['cron_guid']=generateGUID();
 				$crontype='unknown';
 				if(isset($pages[$lcmd])){
 	            	//cron is a page.
 	            	$url="http://{$CONFIG['name']}/{$cmd}";
-	                $result .= "CronURL: {$url}".PHP_EOL;
-	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID());
+	                $cron_result .= "CronURL: {$url}".PHP_EOL;
+	                $CRONTHRU['cron_result']=$cron_result;
+	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+	            	foreach($CRONTHRU as $k=>$v){
+	            		$postopts[$k]=$v;
+	            	}
 	            	//if they have specified a run_as then login as that person
 	            	if(isset($rec['run_as']) && isNum($rec['run_as'])){
 	                	$urec=getDBRecord(array(
@@ -336,55 +355,59 @@ ENDOFWHERE;
 	                    	$postopts['username']=$urec['username'];
 						}
 					}
-					//echo $url.printValue($postopts);
+					//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
 	            	$post=postURL($url,$postopts);
-	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
-	            	$result .= $post['body'].PHP_EOL;
-	            	$result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($post['headers_out']).PHP_EOL;
-	            	$result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($post['curl_info']).PHP_EOL;
-	            	$result .= '------------------ Headers Received ---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($post['headers']).PHP_EOL;
+	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= $post['body'].PHP_EOL;
+	            	$cron_result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
+	            	$cron_result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
+	            	$cron_result .= '------------------ Headers Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($post['headers']).PHP_EOL;
 	            	
 				}
 				elseif(preg_match('/^<\?\=/',$cmd)){
 	            	//cron is a php command
-	                $result .= '------------------ Output Received ---------------------------------------------'.PHP_EOL;
+	                $cron_result .= '------------------ Output Received ---------------------------------------------'.PHP_EOL;
 	            	$out=evalPHP($cmd).PHP_EOL;
-	            	if(is_array($out)){$result.=printValue($out).PHP_EOL;}
-	            	else{$result.=$out.PHP_EOL;}
+	            	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
+	            	else{$cron_result.=$out.PHP_EOL;}
 				}
 				elseif(preg_match('/^http/i',$cmd)){
 	            	//cron is a URL.
-	            	$post=postURL($cmd,array('-method'=>'GET','-follow'=>1,'-ssl'=>1,'cron_id'=>$rec['_id'],'cron_name'=>$rec['name'],'cron_guid'=>generateGUID()));
-	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
-	            	$result .= $post['body'].PHP_EOL;
-	            	$result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
-					$result .= printValue($post['headers_out']).PHP_EOL;
-					$result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($post['curl_info']).PHP_EOL;
-	            	$result .= '------------------ Headers Received---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($post['headers']).PHP_EOL;
+	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+	            	foreach($CRONTHRU as $k=>$v){
+	            		$postopts[$k]=$v;
+	            	}
+	            	$post=postURL($cmd,$postopts);
+	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= $post['body'].PHP_EOL;
+	            	$cron_result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+					$cron_result .= printValue($post['headers_out']).PHP_EOL;
+					$cron_result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
+	            	$cron_result .= '------------------ Headers Received---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($post['headers']).PHP_EOL;
 	            	
 				}
 				else{
 	            	//cron is an OS Command
 	            	$out=cmdResults($cmd);
-	            	$result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
-	            	$result .= printValue($out).PHP_EOL;
+	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= printValue($out).PHP_EOL;
 				}
 
 				$stop=time();
 				$run_length=$stop-$start;
-	            $result .= PHP_EOL;
-	            $result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
-				//update record to show wer are now finished
-				$ok=cronUpdate($rec['_id'],array(
+	            $cron_result .= PHP_EOL;
+	            $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
+				//update record to show we are now finished
+				$ok=editDBRecordById('_cron',$rec['_id'],array(
 					'running'		=> 0,
 					'cron_pid'		=> 0,
 					'run_length'	=> $run_length,
-					'run_result'	=> $result
+					'run_result'	=> $cron_result
 				));
 				$runtime=$run_length > 0?verboseTime($run_length):0;
 
@@ -399,11 +422,26 @@ ENDOFWHERE;
 					'cron_pid'	=> $cron_pid,
 					'name'		=> $rec['name'],
 					'run_cmd'	=> $rec['run_cmd'],
-					'run_date'	=> $run_date,
-					'run_length'=> $run_length,
-					'run_result'=> $result
+					'run_date'	=> $run_date
 				);
-				$ok=addDBRecord($opts);
+				$lrec=getDBRecord($opts);
+				if(isset($lrec['_id'])){
+					$opts=array(
+						'-table'=>'_cronlog'
+					);
+					$opts['-where']="_id={$lrec['_id']}";
+					$opts['run_length']=$run_length;
+					$opts['run_result']=$cron_result;
+					$ok=editDBRecord($opts);
+				}
+				else{
+					$opts['run_length']=$run_length;
+					$opts['run_result']=$cron_result;
+					$opts['-where']="_id={$lrec['_id']}";
+					$ok=addDBRecord($opts);
+				}
+				//clean up result before looping
+				unset($cron_result);
 				break;
 			}
 		}
