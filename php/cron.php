@@ -437,7 +437,6 @@ ENDOFWHERE;
 				else{
 					$opts['run_length']=$run_length;
 					$opts['run_result']=$cron_result;
-					$opts['-where']="_id={$lrec['_id']}";
 					$ok=addDBRecord($opts);
 				}
 				//clean up result before looping

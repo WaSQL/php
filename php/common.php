@@ -44,12 +44,23 @@ function commonCronError($err,$email='',$params=array()){
 		'cron_pid'	=> $_REQUEST['cron_pid'],
 		'name'		=> $_REQUEST['cron_name'],
 		'run_cmd'	=> $_REQUEST['cron_run_cmd'],
-		'run_date'	=> $_REQUEST['cron_run_date'],
-		'run_length'=> $run_length,
-		'run_result'=> $_REQUEST['result'],
-		'run_error'=> $err
+		'run_date'	=> $_REQUEST['cron_run_date']
 	);
-	$ok=addDBRecord($opts);
+	$lrec=getDBRecord($opts);
+	if(isset($lrec['_id'])){
+		$opts=array(
+			'-table'=>'_cronlog'
+		);
+		$opts['-where']="_id={$lrec['_id']}";
+		$opts['run_length']=$run_length;
+		$opts['run_result']=$_REQUEST['cron_result'];
+		$ok=editDBRecord($opts);
+	}
+	else{
+		$opts['run_length']=$run_length;
+		$opts['run_result']=$_REQUEST['cron_result'];
+		$ok=addDBRecord($opts);
+	}
 	$ok=editDBRecordById('_cron',$_REQUEST['cron_id'],array('run_error'=>$err));
 	if(isEmail($email)){
 		$ccp=commonCronPause($email,$params);
