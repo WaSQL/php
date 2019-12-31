@@ -1211,6 +1211,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-hidefields] - subset of fields to exclude
 *   [-translate] - translate column names (displaynames)
 *	[-anchormap] - str - field name to build an achormap from based on first letter or number of the value
+*	[-sorting] - 1 - allow columns to be sorted
 *	[-exportfields] -  subset of fields to export.
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
