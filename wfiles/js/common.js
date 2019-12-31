@@ -96,41 +96,55 @@ function getAllAttributes(obj,filter){
 	}
     return rv;
 }
+//commonOpenClose(wizard,'display','none')
 function commonOpenClose(rel,satt,val){
 	let ev=this.event || window.event;
 	ev.stopPropagation();
-	if(undefined == this.registered){
-		this.registered=new Array();
-		if(undefined == window.commonOpenCloseEl){
-			window.commonOpenCloseEl=this;
-		}
+	if(undefined == window.commonOpenCloseElements){
+		window.commonOpenCloseElements=new Array();
 		if(undefined == window.commonOpenCloseListener){
 			window.commonOpenCloseListener=1;
-			window.addEventListener("click", function(){commonOpenClose();});
+			window.addEventListener("mousedown", function(){
+				let ev=this.event || window.event;
+				ev.stopPropagation();
+				commonOpenClose();
+			});
 		}
-		
 	};
 	if(undefined == rel){
 		//console.log('commonOpenClose - hel');
 		//get element mouse of over
 		let hels=document.querySelectorAll( ":hover" );
+		//console.log(new Array('Elements mouse is over',hels));
 		//check for registered elements (rel) and set their style att (satt) to val
-		for(let i=0;i<this.registered.length;i++){
-			let el=getObject(this.registered[i].el);
+		for(let i=0;i<window.commonOpenCloseElements.length;i++){
+			let el=getObject(window.commonOpenCloseElements[i].el);
 			//do not close if mouse is over the element
 			let skip=0;
 			for(let h=0;h<hels.length;h++){
 				if(hels[h] === el){skip=1;break;}
 			}
 			if(skip==1){continue;}
-			let att=this.registered[i].att;
-			let val=this.registered[i].val;
+			let att=window.commonOpenCloseElements[i].att;
+			let val=window.commonOpenCloseElements[i].val;
+			//console.log(new Array('commonOpenClose: Set Att Val',el,att,val));
 			el.style[att]=val;
 		}
 		return;
 	}
 	let el={el:rel,att:satt,val:val};
-	this.registered.push(el);
+	let addel=1;
+	for(let x=0;x<window.commonOpenCloseElements.length;x++){
+		if(window.commonOpenCloseElements[x].el == rel){
+			addel=0;
+			break;
+		}
+	}
+	if(addel==1){
+		window.commonOpenCloseElements.push(el);
+		//console.log(new Array('Adding to commonOpenCloseElements',el));
+	}
+	return false;
 }
 //commonModalPopup
 /**

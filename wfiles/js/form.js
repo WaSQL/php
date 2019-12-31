@@ -79,10 +79,10 @@ function attachDropFiles(fld){
 function formSetFrequency(fid,v){
 	let container=document.querySelector('#'+fid+'_container');
 	if(undefined==container){return false;}
-	let minutes=container.querySelectorAll('#frequency_minute');
-	let hours=container.querySelectorAll('#frequency_hour');
-	let months=container.querySelectorAll('#frequency_month');
-	let days=container.querySelectorAll('#frequency_day');
+	let minutes=container.querySelectorAll('input.frequency_minute');
+	let hours=container.querySelectorAll('input.frequency_hour');
+	let months=container.querySelectorAll('input.frequency_month');
+	let days=container.querySelectorAll('input.frequency_day');
 	let field=container.querySelector('#'+fid);
 	let nv={minute:[],hour:[],month:[],day:[]};
 	//check for every minute 
@@ -101,8 +101,8 @@ function formSetFrequency(fid,v){
 				case 10080:v={minute:[0],hour:[0],month:[-1],day:[1,8,15,22]};break;
 				case 43829:v={minute:[0],hour:[0],month:[-1],day:[1]};break;
 			}
-			console.log('number');
-			console.log(v);
+			//console.log('number');
+			//console.log(v);
 		}
 		if(typeof(v)=='string'){
 			if(v.length > 0){v=JSON.parse(v);}
@@ -255,20 +255,25 @@ function formSetFrequency(fid,v){
 	if(nv.month.length > 0){
 		container.querySelector('span[title="clear months"]').style.color='#c51017';	
 	}
-
 	
 }
 function formSetFrequencyDisplay(fid,s){
 	let ev=this.event || window.event;
 	ev.stopPropagation();
-	let wizard=document.querySelector('#'+fid+'_wizard');
-	if(undefined==wizard){return false;}
-	//console.log('formSetFrequencyDisplay: '+s);
+	let fidstr='#'+fid+'_wizard';
+	let wizard=document.querySelector(fidstr);
+	if(undefined==wizard){
+		//console.log(fidstr+' not found');
+		return false;
+	}
 	if(s){
 		wizard.style.display='block';
 		commonOpenClose(wizard,'display','none');
+		//console.log('formSetFrequencyDisplay:'+wizard);
 	}
-	else{wizard.style.display='none';}
+	else{
+		wizard.style.display='none';
+	}
 	return false;
 }
 /*----------------------------------------------*/

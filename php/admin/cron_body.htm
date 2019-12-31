@@ -2,7 +2,7 @@
 <script language="javascript">
 function pauseSelected(func){
 	var clist=document.querySelectorAll('input[type="checkbox"][name="cronid[]"]:checked');
-	console.log(clist);
+	//console.log(clist);
 	if(clist.length==0){alert('No crons selected to pause');return;}
 	let ids=new Array();
 	for(let i=0;i<clist.length;i++){

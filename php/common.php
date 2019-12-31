@@ -2542,7 +2542,7 @@ function buildFormFrequency($name,$params=array()){
 	$rtn=<<<ENDOFRTN
 	<div style="display:block;" id="{$params['id']}_container">
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
-		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;">
+		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
 ENDOFRTN;
 	$sectionstr=implode("','",$sections);
@@ -2569,7 +2569,7 @@ ENDOFRTN;
 		for($x=0;$x<60;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%10==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
@@ -2584,7 +2584,7 @@ ENDOFRTN;
 		for($x=0;$x<24;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%12==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
@@ -2599,7 +2599,7 @@ ENDOFRTN;
 		for($x=1;$x<29;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" id="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
 			if($x%7==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
@@ -2611,20 +2611,20 @@ ENDOFRTN;
 		$rtn.=<<<ENDOFRTN
 			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
 		    <div class="w_frequency_row" data-type="months">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="1" /> Jan</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="2" /> Feb</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="3" /> Mar</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="4" /> Apr</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="5" /> May</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="6" /> Jun</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="1" /> Jan</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="2" /> Feb</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="3" /> Mar</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="4" /> Apr</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="5" /> May</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="6" /> Jun</label>
 		    </div>
 		    <div class="w_frequency_row" style="border-bottom:1px solid #ccc;" data-type="months">      	
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="7" /> Jul</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="8" /> Aug</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="9" /> Sep</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="10" /> Oct</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="11" /> Nov</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" id="frequency_month" value="12" /> Dec</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="7" /> Jul</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="8" /> Aug</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="9" /> Sep</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="10" /> Oct</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="11" /> Nov</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="12" /> Dec</label>
 		    </div>
 ENDOFRTN;
 	}

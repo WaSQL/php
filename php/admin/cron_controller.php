@@ -1,5 +1,8 @@
 <?php
 global $CONFIG;
+if(isset($CONFIG['paging']) && $CONFIG['paging'] < 100){
+	$CONFIG['paging']=100;
+}
 if(!isset($CONFIG['admin_form_url'])){
 	$CONFIG['admin_form_url']='/php/admin.php';
 }
