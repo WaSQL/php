@@ -76,6 +76,7 @@ function cronList(){
 		'-action'=>$url,
 		'_menu'=>'cron',
 		'-export'=>1,
+		'-sorting'=>1,
 		'func'=>'list',
 		'-onsubmit'=>"return pagingSubmit(this,'cron_results');",
 		'run_date_dateage'=>1,
