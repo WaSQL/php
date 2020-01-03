@@ -51,6 +51,20 @@ switch(strtolower($_REQUEST['func'])){
 	case 'cron_result':
 		//echo "cron_result";exit;
 		$id=(integer)$_REQUEST['id'];
+		if($id==0){
+			$id=(integer)$_REQUEST['cron_id'];
+			$path=getWaSQLPath('php/temp');
+			$commonCronLogFile="{$path}/cronlog_{$id}.txt";
+			$log=array('run_error'=>'');
+			if(file_exists($commonCronLogFile)){
+				$log['run_result']=getFileContents($commonCronLogFile);
+			}
+			else{
+				$log['run_result']='No longer running';
+			}
+			setView('cron_result',1);
+			return;
+		}
 		$log=getDBRecordById('_cronlog',$id);
 		setView('cron_result',1);
 	break;

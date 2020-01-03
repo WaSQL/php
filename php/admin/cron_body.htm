@@ -148,7 +148,7 @@ function cronFilterByGroup(name){
 			<th></th>
 		</tr>
 		<view:log>
-		<tr class="w_pointer" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',id:<?=$log['_id'];?>,title:this.title});">
+		<tr class="w_pointer" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:<?=$log['cron_id'];?>,id:<?=$log['_id'];?>,title:this.title});">
 			<td class="w_nowrap"><?=$log['run_date'];?></td>
 			<td class=""><?=verboseTime($log['run_length']);?></td>
 			<td><div class="align-middle" style="margin-top:2px;background-color:<?=$log['color'];?>;height:12px;width:12px;border-radius:6px;"></div></span></td>

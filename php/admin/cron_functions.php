@@ -42,12 +42,27 @@ function cronDetails($id){
 		'-fields'=>'_id,run_date,run_length,run_error'
 	));
 	foreach($cron['logs'] as $i=>$log){
+		$cron['logs'][$i]['cron_id']=$id;
 		if(strlen($log['run_error'])){
 			$cron['logs'][$i]['color']='#d9534f';
 		}
 		else{
 			$cron['logs'][$i]['color']='#5cb85c';
 		}
+	}
+	$path=getWaSQLPath('php/temp');
+	$commonCronLogFile="{$path}/cronlog_{$id}.txt";
+	if(file_exists($commonCronLogFile)){
+		$m=time()-filectime($commonCronLogFile);
+		$rec=array(
+			'_id'=>0,
+			'cron_id'=>$id,
+			'run_date'=>'Running',
+			'run_length'=>$m,
+			'color'=>'#0086ff'
+		);
+		array_unshift($cron['logs'],$rec);
+		$cron['run_result']=getFileContents($commonCronLogFile);
 	}
 	return $cron;
 }

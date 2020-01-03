@@ -67,6 +67,28 @@ function commonCronError($err,$email='',$params=array()){
 	}
 	return 1;
 }
+//---------- begin function commonCronLog
+/**
+* @describe records an error on this cron run
+* @param msg string  - error message to record
+* @return ok boolean
+* @usage 
+*	$ok=commonCronLog($msg);
+*	$ok=commonCronLog($PASSTHRU);
+*/
+function commonCronLog($msg,$echomsg=1){
+	if(!isset($_REQUEST['cron_id'])){return 0;}
+	$id=(integer)$_REQUEST['cron_id'];
+	$path=getWaSQLPath('php/temp');
+	$logfile="{$path}/cronlog_{$id}.txt";
+	if(!is_string($msg)){$msg=json_encode($msg);}
+	$msg=rtrim($msg);
+	$ok=appendFileContents($logfile,$msg.PHP_EOL);
+	if($echomsg==1){
+		echo $msg.PHP_EOL;
+	}
+	return 1;
+}
 //---------- begin function commonCronPause
 /**
 * @describe sets pause to 1 on the cron id

@@ -287,7 +287,11 @@ ENDOFWHERE;
 				$CRONTHRU['cron_run_date']=$run_date;
 				$CRONTHRU['cron_name']=$rec['name'];
 				$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
-
+				$path=getWaSQLPath('php/temp');
+				$commonCronLogFile="{$path}/cronlog_{$rec['_id']}.txt";
+				if(file_exists($commonCronLogFile)){
+					unlink($commonCronLogFile);
+				}
 				cronMessage("cleaning {$rec['name']}");
 				$ok=cronCleanRecords($rec);
 				$cmd=$rec['run_cmd'];
@@ -415,6 +419,9 @@ ENDOFWHERE;
 				//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 				if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 				$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
+				if(file_exists($commonCronLogFile)){
+					unlink($commonCronLogFile);
+				}
 				//add to the _cronlog table
 				$opts=array(
 					'-table'	=> '_cronlog',
