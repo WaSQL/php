@@ -46,6 +46,9 @@ switch(strtolower($_REQUEST['func'])){
 		$id=(integer)$_REQUEST['id'];
 		$cron=cronDetails($id);
 		setView('details',1);
+		if($cron['_id']==0){
+			setView('bottom');
+		}
 		return;
 	break;
 	case 'cron_result':

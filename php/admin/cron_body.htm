@@ -172,7 +172,10 @@ function cronFilterByGroup(name){
 </textarea>
 </view:error>
 <?=renderViewIf(strlen($log['run_error']),'error',$log,'log');?>
-<textarea style="border:1px solid #f1f1f1;border-right:0px;border-bottom:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
+<textarea id="cron_result_textarea" style="border:1px solid #f1f1f1;border-right:0px;border-bottom:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
 <?=$log['run_result'];?>
 </textarea>
+<view:bottom>
+<?=buildOnLoad("document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;");?>
+</view:bottom>
 </view:cron_result>
