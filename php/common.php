@@ -86,8 +86,8 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	$ctime=microtime(true);
 	$diff=$ctime-$commonCronLogCache['last'];
-	$diff=number_format($diff,3);
-	$ctime_formated=number_format($ctime,3);
+	$diff=round($diff,3);
+	$ctime_formated=round($ctime,3);
 	if(!isset($_REQUEST['cron_id'])){return 0;}
 	$id=(integer)$_REQUEST['cron_id'];
 	$path=getWaSQLPath('php/temp');
