@@ -66,6 +66,7 @@ switch(strtolower($_REQUEST['func'])){
 				$log['run_result']='No longer running';
 			}
 			setView('cron_result',1);
+			setView('bottom');
 			return;
 		}
 		$log=getDBRecordById('_cronlog',$id);
