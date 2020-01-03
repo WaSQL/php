@@ -77,16 +77,28 @@ function commonCronError($err,$email='',$params=array()){
 *	$ok=commonCronLog($PASSTHRU);
 */
 function commonCronLog($msg,$echomsg=1){
+	global $commonCronLogCache;
+	if(!isset($commonCronLogCache['start'])){
+		$commonCronLogCache['start']=microtime(true);
+	}
+	if(!isset($commonCronLogCache['last'])){
+		$commonCronLogCache['last']=$commonCronLogCache['start'];
+	}
+	$ctime=microtime(true);
+	$diff=$ctime-$commonCronLogCache['last'];
+	$diff=number_format($diff,3);
 	if(!isset($_REQUEST['cron_id'])){return 0;}
 	$id=(integer)$_REQUEST['cron_id'];
 	$path=getWaSQLPath('php/temp');
 	$logfile="{$path}/cronlog_{$id}.txt";
 	if(!is_string($msg)){$msg=json_encode($msg);}
 	$msg=rtrim($msg);
-	$ok=appendFileContents($logfile,$msg.PHP_EOL);
+
+	$ok=appendFileContents($logfile,"{$ctime},{$diff},{$msg}".PHP_EOL);
 	if($echomsg==1){
 		echo $msg.PHP_EOL;
 	}
+	$commonCronLogCache['last']=$ctime;
 	return 1;
 }
 //---------- begin function commonCronPause
