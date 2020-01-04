@@ -321,7 +321,7 @@ function commonSearchFiltersForm($params=array()){
 	//other fields
 	foreach($params as $k=>$v){
 		if(preg_match('/^\-/',$k)){continue;}
-		if(preg_match('/\_(onclick|eval|href)$/i',$k)){continue;}
+		if(preg_match('/\_(onclick|eval|href|class|style|dateage|verbosetime|displayname)$/i',$k)){continue;}
 		if(preg_match('/^(class|style)$/i',$k)){continue;}
 		if(is_array($params['-searchfields']) && in_array($k,$params['-searchfields'])){
 			continue;
