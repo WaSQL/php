@@ -53,16 +53,20 @@ function cronDetails($id){
 	$path=getWaSQLPath('php/temp');
 	$commonCronLogFile="{$path}/cronlog_{$id}.txt";
 	if(file_exists($commonCronLogFile)){
-		$m=time()-filectime($commonCronLogFile);
+		$t=time()-filectime($commonCronLogFile);
+		$run_length=verboseTime($t);
+		$bottom="{$id},0,'{$run_length}'";
 		$rec=array(
 			'_id'=>0,
 			'cron_id'=>$id,
 			'run_date'=>'Running',
-			'run_length'=>$m,
-			'color'=>'#0086ff'
+			'run_length'=>$t,
+			'color'=>'#0086ff',
+			'bottom'=>$bottom
 		);
 		array_unshift($cron['logs'],$rec);
 		$cron['run_result']=getFileContents($commonCronLogFile);
+		$cron['bottom']=$bottom;
 	}
 	return $cron;
 }

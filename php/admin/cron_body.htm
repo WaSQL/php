@@ -17,6 +17,17 @@ function cronFilterByGroup(name){
 	document.searchfiltersform.filter_value.value=name;
 	return pagingSubmit(document.searchfiltersform,'cron_results');
 }
+function cronRefreshResult(cron_id,id){
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:cron_id,id:id});
+}
+function cronResultScroll(cron_id,id,run_length){
+	document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;
+	setTimeout(function(){cronRefreshResult(cron_id,id);},6000);
+	setText('run_length_'+id,run_length);
+}
+function cronModal(func,id,title){
+	return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'});
+}
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
 <div id="cron_results" class="w_padtop">
@@ -26,8 +37,8 @@ function cronFilterByGroup(name){
 
 <view:list>
 	<div class="w_right">
-		<a href="#" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'add',title:this.title});" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
-		<a href="<?=configValue('admin_form_url');?>?_menu=cron" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
+		<a href="#" onclick="return cronModal('add',0,this.title);" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
+		<a href="#" onclick="return pagingSubmit(document.searchfiltersform,'cron_results');" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
 	</div>
 	<?=cronList();?>
 	<div class="align-left">
@@ -124,14 +135,14 @@ function cronFilterByGroup(name){
 				<td class="w_small"><?=$cron['name'];?></td>
 				<td class="w_small align-center"><?=cronIsActive($cron);?></td>
 				<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
-				<td class="w_small align-center"><?=cronIsRunning($cron);?></td>
+				<td class="w_small align-center" id="is_running"><?=cronIsRunning($cron);?></td>
 				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
 				<td class="w_small"><?=$cron['run_format'];?></td>
 				<td>
-					<a href="#" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'edit',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'details',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Refresh"><span class="icon-refresh w_primary"></span></a>
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:'run',id:<?=$cron['_id'];?>,title:this.title,setprocessing:'cron_processing'});" title="Run Now"><span class="icon-play w_success"></span></a>
+					<a href="#" class="w_link w_block" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('run',<?=$cron['_id'];?>,this.title);" title="Run Now"><span class="icon-play w_success"></span></a>
 					<span id="cron_processing"></span>
 				</td>
 			</tr>
@@ -148,9 +159,9 @@ function cronFilterByGroup(name){
 			<th></th>
 		</tr>
 		<view:log>
-		<tr class="w_pointer" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:<?=$log['cron_id'];?>,id:<?=$log['_id'];?>,title:this.title});">
-			<td class="w_nowrap"><?=$log['run_date'];?></td>
-			<td class=""><?=verboseTime($log['run_length']);?></td>
+		<tr class="w_pointer" onclick="return cronRefreshResult(<?=$log['cron_id'];?>,<?=$log['_id'];?>);">
+			<td class="w_nowrap" id="run_date_<?=$log['_id'];?>"><?=$log['run_date'];?></td>
+			<td class="" id="run_length_<?=$log['_id'];?>"><?=verboseTime($log['run_length']);?></td>
 			<td><div class="align-middle" style="margin-top:2px;background-color:<?=$log['color'];?>;height:12px;width:12px;border-radius:6px;"></div></span></td>
 		</tr>
 		</view:log>
@@ -165,7 +176,6 @@ function cronFilterByGroup(name){
 </view:details>
 
 <view:cron_result>
-<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;"></div>
 <view:error>
 <textarea style="border:1px solid #d9534f;width:100%;height:60px;font-size:0.9rem;color:#d9534f;margin-bottom:5px;" wrap="soft">
 <?=$log['run_error'];?>
@@ -176,6 +186,10 @@ function cronFilterByGroup(name){
 <?=$log['run_result'];?>
 </textarea>
 <view:bottom>
-<?=buildOnLoad("document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;");?>
+<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;color:#CCC;font-size:0.8rem;" data-behavior="countdown">7</div>
+<?=buildOnLoad("cronResultScroll({$log['bottom']});");?>
 </view:bottom>
+<?=renderViewIf(strlen($log['bottom']),'bottom',$log,'log');?>
+<view:not_running><?=buildOnLoad("setText('is_running','');setText('run_date_0','Not Running');");?></view:not_running>
+<?=renderViewIf($log['run_result']=='No longer running','not_running');?>
 </view:cron_result>

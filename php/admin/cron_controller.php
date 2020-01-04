@@ -46,9 +46,6 @@ switch(strtolower($_REQUEST['func'])){
 		$id=(integer)$_REQUEST['id'];
 		$cron=cronDetails($id);
 		setView('details',1);
-		if($cron['_id']==0){
-			setView('bottom');
-		}
 		return;
 	break;
 	case 'cron_result':
@@ -60,13 +57,17 @@ switch(strtolower($_REQUEST['func'])){
 			$commonCronLogFile="{$path}/cronlog_{$id}.txt";
 			$log=array('run_error'=>'');
 			if(file_exists($commonCronLogFile)){
+				$t=time()-filectime($commonCronLogFile);
+				$run_length=verboseTime($t);
+				$log['bottom']="{$id},0,'{$run_length}'";
+				$log['_id']=0;
+				$log['cron_id']=$id;
 				$log['run_result']=getFileContents($commonCronLogFile);
 			}
 			else{
 				$log['run_result']='No longer running';
 			}
 			setView('cron_result',1);
-			setView('bottom');
 			return;
 		}
 		$log=getDBRecordById('_cronlog',$id);
