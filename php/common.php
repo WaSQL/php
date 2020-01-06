@@ -2054,21 +2054,50 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		//create variables to use with the var() function in css  - place them in both the input and the label
 		$styles=array();
-		$stylestr;
-		if(isset($params["data-color_{$tval}"])){
+		$stylestr='';
+		$utval=strtolower($tval);
+		if(isset($params['-shape'])){
+			switch(strtolower($params['-shape'])){
+				case 'btn':
+				case 'button':
+					$styles[] = "--shape:button";
+				break;
+				case 'circle':
+				case 'round':
+					$styles[] = "--shape:circle";
+				break;
+			}	
+		}
+		if(isset($params["data-color_{$utval}"])){
+			$styles[]="--color:{$params["data-color_{$utval}"]}";
+			unset($params["data-color_{$utval}"]);
+		}
+		elseif(isset($params["data-color_{$tval}"])){
 			$styles[]="--color:{$params["data-color_{$tval}"]}";
 			unset($params["data-color_{$tval}"]);
 		}
-		if(isset($params["data-bgcolor_{$tval}"])){
+		if(isset($params["data-bgcolor_{$utval}"])){
+			$styles[]="--bgcolor:{$params["data-bgcolor_{$utval}"]}";
+			unset($params["data-bgcolor_{$utval}"]);
+		}
+		elseif(isset($params["data-bgcolor_{$tval}"])){
 			$styles[]="--bgcolor:{$params["data-bgcolor_{$tval}"]}";
 			unset($params["data-bgcolor_{$tval}"]);
 		}
-		if(isset($params["data-checked_color_{$tval}"])){
-			$styles[]="--checked-color:{$params["data-checked_color_{$tval}"]}";
+		if(isset($params["data-checked_color_{$utval}"])){
+			$styles[]="--checked_color:{$params["data-checked_color_{$utval}"]}";
+			unset($params["data-checked_color_{$utval}"]);
+		}
+		elseif(isset($params["data-checked_color_{$tval}"])){
+			$styles[]="--checked_color:{$params["data-checked_color_{$tval}"]}";
 			unset($params["data-checked_color_{$tval}"]);
 		}
-		if(isset($params["data-checked_bgcolor_{$tval}"])){
-			$styles[]="--checked-bgcolor:{$params["data-checked_bgcolor_{$tval}"]}";
+		if(isset($params["data-checked_bgcolor_{$utval}"])){
+			$styles[]="--checked_bgcolor:{$params["data-checked_bgcolor_{$utval}"]}";
+			unset($params["data-checked_bgcolor_{$utval}"]);
+		}
+		elseif(isset($params["data-checked_bgcolor_{$tval}"])){
+			$styles[]="--checked_bgcolor:{$params["data-checked_bgcolor_{$tval}"]}";
 			unset($params["data-checked_bgcolor_{$tval}"]);
 		}
 		if(count($styles)){
@@ -2077,6 +2106,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		//add any data params
 		foreach($params as $pk=>$pv){
+			if(preg_match('/^data\-(color|bgcolor|checked_color|checked_bgcolor)\_/i',$pk)){continue;}
 			if(preg_match('/^data\-/i',$pk)){
 				$tag .= " {$pk}=\"{$pv}\"";
 			}
