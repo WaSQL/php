@@ -215,7 +215,7 @@ ENDOFWHERE;
 				}
 
 				//skip if it has been run in the last minute
-				if(strlen($rec['run_date'])){
+				if($runnow==0 && strlen($rec['run_date'])){
 					$ctime=time();
 	            	$lastruntime=strtotime($rec['run_date']);
 	            	$diff=$ctime-$lastruntime;

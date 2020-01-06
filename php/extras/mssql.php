@@ -344,30 +344,30 @@ function mssqlDBConnect($params=array()){
 /**
 * @describe add multiple records at the same time using json_table.
 *  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+* @param $params array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
 *   -table - name of the table to add to
 *   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
 *	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
-*	[-host] - oracle server to connect to
+*	[-host] - mssql server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * 	other field=>value pairs to add to the record
 * @return boolean
-* @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
+* @usage $ok=mssqlAddDBRecords(array('-table'=>'abc','-list'=>$list));
 * @reference https://docs.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-2017
 */
 function mssqlAddDBRecords($params=array()){
 	if(!isset($params['-table'])){
 		debugValue(array(
-    		'function'=>"oracleAddDBRecords",
+    		'function'=>"mssqlAddDBRecords",
     		'error'=>'No table specified'
     	));
     	return false;
     }
     if(!isset($params['-list']) || !is_array($params['-list'])){
 		debugValue(array(
-    		'function'=>"oracleAddDBRecords",
+    		'function'=>"mssqlAddDBRecords",
     		'error'=>'No records (list) specified'
     	));
     	return false;
@@ -388,7 +388,7 @@ function mssqlAddDBRecords($params=array()){
     	switch(strtolower($info[$field]['_dbtype'])){
     		case 'timestamp':
     		case 'date':
-    			//date types have to be converted into a format that Oracle understands
+    			//date types have to be converted into a format that mssql understands
     			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
     		break;
     		default:
@@ -424,7 +424,7 @@ ENDOFQ;
     		'mssql_error'=>sqlsrv_errors(),
     		'query'=>$query
     	));
-    	oci_close($dbh_oracle);
+    	oci_close($dbh_mssql);
     	return false;
     }
 	if( sqlsrv_execute( $stmt ) === false ) {

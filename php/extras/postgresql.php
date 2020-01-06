@@ -1116,54 +1116,7 @@ function postgresqlGrepDBTables($search,$tables=array(),$dbname=''){
 		foreach($tables as $i=>$table){
 			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
 		}
-	}//---------- begin function dbGrep
-/**
-* @describe searches across tables for a specified value
-* @param db string - database name as specified in the database section of config.xml
-* @param search string
-* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
-* @return  array of arrays - tablename,_id,fieldname,search_count
-* @usage $results=dbGrep($db,'searchstring');
-*/
-function dbGrep($db,$search,$tables=array()){
-	global $CONFIG;
-	global $DATABASE;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
 	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			return postgresqlGrepDBTables($search,$tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			return oracleGrepDBTables($search,$tables);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			return mssqlGrepDBTables($search,$tables);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			return hanaGrepDBTables($search,$tables);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			return sqliteGrepDBTables($search,$tables);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return grepDBTables($search, $tables);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
-}
 	//return $tables;
 	$search=trim($search);
 	if(!strlen($search)){return "grepDBTables Error: no search value";}

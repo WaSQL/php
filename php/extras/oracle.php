@@ -693,8 +693,8 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 /**
 * @describe executes query and returns succes or error
 * @param $query string - SQL query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
-*	[-host] - mssql server to connect to
+* @param [$params] array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
+*	[-host] - oracle server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
@@ -1496,8 +1496,8 @@ function oracleParseConnectParams($params=array()){
 /**
 * @describe returns the oracle records from query
 * @param $query string - SQL query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
-*	[-host] - mssql server to connect to
+* @param [$params] array - 
+*	[-host] - oracle server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
