@@ -1089,7 +1089,7 @@ function hanaGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			$ok=postgresqlExecuteSQL($params);
+			$ok=hanaExecuteSQL($params);
 			return $ok;
 		}
 	}
@@ -1534,18 +1534,18 @@ function hanaQueryResults($query,$params=array()){
 	}
 	return $recs;
 }
-//---------- begin function postgresqlGetDBTablePrimaryKeys ----------
+//---------- begin function hanaGetDBTablePrimaryKeys ----------
 /**
 * @describe returns an array of primary key fields for the specified table
-* @param [$params] array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
-*	[-host] - postgresql server to connect to
+* @param [$params] array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
+*	[-host] - hana server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array returns array of primary key fields
 * @usage
 *	loadExtras('hana'); 
-*	$fields=postgresqlGetDBTablePrimaryKeys();
+*	$fields=hanaGetDBTablePrimaryKeys();
 */
 function hanaGetDBTablePrimaryKeys($table,$params=array()){
 	$parts=preg_split('/\./',strtoupper($table),2);
