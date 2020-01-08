@@ -8,7 +8,9 @@ function pauseSelected(func){
 	for(let i=0;i<clist.length;i++){
 		ids.push(clist[i].value);
 	}
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',{_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0});
+	let params = {_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0};
+	params._filters=document.searchfiltersform._filters.value;
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
 function cronFilterByGroup(name){
 	pagingClearFilters();
@@ -18,7 +20,9 @@ function cronFilterByGroup(name){
 	return pagingSubmit(document.searchfiltersform,'cron_results');
 }
 function cronRefreshResult(cron_id,id){
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',{_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:cron_id,id:id});
+	let params={_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:cron_id,id:id};
+	params._filters=document.searchfiltersform._filters.value;
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
 }
 function cronResultScroll(cron_id,id,run_length){
 	document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;
@@ -26,7 +30,9 @@ function cronResultScroll(cron_id,id,run_length){
 	setText('run_length_'+id,run_length);
 }
 function cronModal(func,id,title){
-	return ajaxGet('<?=configValue('admin_form_url');?>','modal',{_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'});
+	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
+	params._filters=document.searchfiltersform._filters.value;
+	return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
 }
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>

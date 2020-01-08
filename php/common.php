@@ -487,8 +487,16 @@ function commonSearchFiltersForm($params=array()){
 	if(!empty($params['-filters'])){
         //field-oper-value
         if(is_array($params['-filters'])){$sets=$params['-filters'];}
-    	else{$sets=preg_split('/[\r\n\,]+/',$params['-filters']);}
-    	foreach($sets as $set){
+    	else{
+    		$params['-filters']=trim($params['-filters']);
+    		$params['-filters']=preg_replace('/\,$+/','',$params['-filters']);
+    		$sets=preg_split('/[\r\n\,]+/',$params['-filters']);
+    	}
+    	foreach($sets as $s=>$set){
+    		if(!strlen(trim($set))){
+    			unset($sets[$s]);
+    			continue;
+    		}
         	list($field,$oper,$val)=preg_split('/\-/',trim($set),3);
         	if($field=='null' || $val=='null' || $oper=='null' || strlen($field)==0 || strlen($oper)==0 || strlen($val)==0){
         		if(!strlen($oper) || !in_array($oper,array('ib','nb'))){continue;}
@@ -518,6 +526,7 @@ function commonSearchFiltersForm($params=array()){
         	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
+			//echo printValue($sets);exit;
 			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
 		}
 	}
