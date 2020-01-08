@@ -2,12 +2,18 @@
 /*
 	translate - functions to enable you to build  your website in multiple languages easily
 	To use these functions simply add the translate tag to  your site as follows:
-	<translate:unique_name>
-	This will be translated into whatever language the end user in on.
-	</translate:unique_name>
+	<translate>This will be translated into whatever language the end user in on.</translate>
 
+	To manage the translations use the translate manager in the backend of WaSQL:
+		http://localhost/php/admin.php?_menu=translate
+		
 	you can automatically translate your text using yandex.  https://tech.yandex.com/translate/ - go here to get your free API key
-		to use yandex as your translater add translate_source="yandex" translate_key="{YOUR API KEY}" to config.xml
+		to use yandex as your translater add 
+
+			translate_source="yandex" 
+			translate_key="{YOUR API KEY}" 
+
+		to config.xml
 
 	References: 
 		https://stackoverflow.com/questions/3191664/list-of-all-locales-and-their-short-codes

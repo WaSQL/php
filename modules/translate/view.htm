@@ -11,12 +11,17 @@
 		</div>
 	</div>
 	<div id="translate_results" style="flex-grow:4;margin-right:10px;">
-		<?=renderViewIf(isset($locale),'list',$locale,'locale');?>
+		<?=renderViewIfElse(isset($locale),'list','instructions',$locale,'locale');?>
 	</div>
 </div>
 <div style="display:none" id="admin_color"><?=configValue('admin_color');?></div>
 </view:default>
+<view:instructions>
+<h2><translate>Instructions</translate></h2>
+<translate>To use the translate feature on  your website, simply add translate tags to what  you want translated, as follows:</translate>
+<p><span style="font-size:1.2rem;">&#60;translate&#62;</span><translate>This will be translated into whatever language the end user in on.</translate><span style="font-size:1.2rem;">&#60;/translate&#62;</span></p>
 
+</view:instructions>
 <view:list>
 	<h3><?=$info['name'];?></h3>
 	<div style="display:inline;float:right;">
@@ -44,7 +49,7 @@
 	<input type="hidden" name="target_locale" value="<?=$target['locale'];?>" />
 	<div class="row w_padtop">
 		<div class="col s12 m6">
-			<div class="w_bold w_bigger">Source: <?=$source['name'];?> <span class="icon-copy" title="Copy to Clipboard" onclick="commonCopyToClipboard(getText('bulktranslate_source'));"></span></div>
+			<div class="w_bold w_bigger">Source: <?=$source['name'];?> <span class="icon-copy w_pointer" title="Copy to Clipboard" onclick="commonCopyToClipboard(getText('bulktranslate_source'));"></span></div>
 			<textarea id="bulktranslate_source" name="source" wrap="off" style="width:100%;height:300px;font-size:1em;" placeholder="Source Lang"><?=implode(PHP_EOL,$source['lines']);?></textarea>
 		</div>
 		<div class="col s12 m6">
