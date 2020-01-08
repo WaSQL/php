@@ -502,12 +502,12 @@ function tooltipDiv(obj,rtimer){
 	obj=getObject(obj);
 	if(tooltipDivObj==obj){return false;}
 	tooltipDivObj=obj;
-	var txt=obj.getAttribute('data-tooltip');
-	var position=obj.getAttribute('data-tooltip_position') || '';
-	var params={};
+	let params={};
+	params.position=obj.getAttribute('data-tooltip_position') || '';
+	let txt=obj.getAttribute('data-tooltip') || '';
 	if(txt.indexOf('id:')===0){
 		//get tooltip text from an external div
-    	var divid=str_replace('id:','',txt);
+    	let divid=str_replace('id:','',txt);
     	txt=getText(divid) || '';
 	}
 	else if(txt.indexOf('js:')===0){
@@ -523,11 +523,11 @@ function tooltipDiv(obj,rtimer){
 	}
 	else if(txt.indexOf('att:')===0){
 		//get tooltip from another attribute - att:alt for example
-    	var att=str_replace('att:','',txt);
+    	let att=str_replace('att:','',txt);
     	txt=obj.getAttribute(att) || '';
 	}
 	if(txt.length === 0 || txt==='false' || !txt){txt=' ';}
-	var cObj=getObject('w_tooltip');
+	let cObj=getObject('w_tooltip');
 	if(undefined != cObj){
 		tooltipDivObj='';
 		removeId(cObj);
@@ -558,8 +558,8 @@ function showTooltip(obj,txt,params){
 	}
 	//tipdiv.innerHTML=obj.nodeName+':'+txt;
 	tipdiv.innerHTML=txt;
-	var pos=findPos(obj);
-	var x=y=h=w=th=0;
+	let pos=findPos(obj);
+	let x=y=h=w=th=0;
 	h=getHeight(obj);
 	if(params.position=='bottom'){
     	h=getHeight(obj);

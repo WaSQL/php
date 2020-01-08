@@ -868,44 +868,44 @@ ul.nav-tabs > li >a, ul.nav-tabs > li.nav-item {
 /* color variations */
 /* default to white */
 ul.nav-tabs > li >a,ul.nav-tabs > li.nav-item{color:#6c757d;border-color:rgba(226, 230, 234, 1.0);}
-ul.nav-tabs > li >a:hover,ul.nav-tabs > li.active >a,ul.nav-tabs > li >a.active,
-ul.nav-tabs > li.nav-item:hover,ul.nav-tabs > li.nav-item.active{background:rgba(226, 230, 234, 1.0);}
+ul.nav-tabs > li >a:hover,ul.nav-tabs > li.nav-item:hover{background:rgba(226, 230, 234, 0.3);}
+ul.nav-tabs > li.active >a,ul.nav-tabs > li >a.active,ul.nav-tabs > li.nav-item.active{background:rgba(226, 230, 234, 0.7);}
 
 ul.nav-tabs.w_blue > li >a,ul.nav-tabs.w_blue > li.nav-item{color:rgba(12, 122, 191, 1.0);border-color:rgba(12, 122, 191, 0.3);}
-ul.nav-tabs.w_blue > li >a:hover,ul.nav-tabs.w_blue > li >a.active,ul.nav-tabs.w_blue > li.active >a,
-ul.nav-tabs.w_blue > li.nav-item:hover,ul.nav-tabs.w_blue > li.nav-item.active{background:rgba(12, 122, 191, 0.4);}
+ul.nav-tabs.w_blue > li >a:hover,ul.nav-tabs.w_blue > li.nav-item:hover{background:rgba(12, 122, 191, 0.1);}
+ul.nav-tabs.w_blue > li >a.active,ul.nav-tabs.w_blue > li.active >a,ul.nav-tabs.w_blue > li.nav-item.active{background:rgba(12, 122, 191, 0.3);}
 
 ul.nav-tabs.w_gray > li >a,ul.nav-tabs.w_gray > li.nav-item{color:rgba(90, 98, 104, 1.0);border-color:rgba(90, 98, 104, 0.3);}
-ul.nav-tabs.w_gray > li >a:hover,ul.nav-tabs.w_gray > li.active >a,ul.nav-tabs.w_gray > li >a.active,
-ul.nav-tabs.w_gray > li.nav-item:hover,ul.nav-tabs.w_gray > li.nav-item.active{background:rgba(90, 98, 104, 0.4);}
+ul.nav-tabs.w_gray > li >a:hover,ul.nav-tabs.w_gray > li.nav-item:hover{background:rgba(90, 98, 104, 0.2);}
+ul.nav-tabs.w_gray > li.active >a,ul.nav-tabs.w_gray > li >a.active,ul.nav-tabs.w_gray > li.nav-item.active{background:rgba(90, 98, 104, 0.4);}
 
 ul.nav-tabs.w_green > li >a,ul.nav-tabs.w_green > li.nav-item{color:rgba(33, 136, 56, 1.0);border-color:rgba(33, 136, 56, 0.3);}
-ul.nav-tabs.w_green > li >a:hover,ul.nav-tabs.w_green > li.active >a,ul.nav-tabs.w_green > li >a.active,
-ul.nav-tabs.w_green > li.nav-item:hover,ul.nav-tabs.w_green > li.nav-item.active{background:rgba(33, 136, 56, 0.5);}
+ul.nav-tabs.w_green > li >a:hover,ul.nav-tabs.w_green > li.nav-item:hover{background:rgba(33, 136, 56, 0.1);}
+ul.nav-tabs.w_green > li.active >a,ul.nav-tabs.w_green > li >a.active,ul.nav-tabs.w_green > li.nav-item.active{background:rgba(33, 136, 56, 0.25);}
 
 ul.nav-tabs.w_red > li >a,ul.nav-tabs.w_red > li.nav-item{color:rgba(200, 35, 51, 1.0);border-color:rgba(200, 35, 51, 0.3);}
-ul.nav-tabs.w_red > li >a:hover,ul.nav-tabs.w_red > li.active >a,ul.nav-tabs.w_red > li >a.active,
-ul.nav-tabs.w_red > li.nav-item:hover,ul.nav-tabs.w_red > li.nav-item.active{background:rgba(200, 35, 51, 0.4);}
+ul.nav-tabs.w_red > li >a:hover,ul.nav-tabs.w_red > li.nav-item:hover{background:rgba(200, 35, 51, 0.1);}
+ul.nav-tabs.w_red > li.active >a,ul.nav-tabs.w_red > li >a.active,ul.nav-tabs.w_red > li.nav-item.active{background:rgba(200, 35, 51, 0.25);}
 
 ul.nav-tabs.w_yellow > li >a,ul.nav-tabs.w_yellow > li.nav-item{color:rgba(224, 168, 0, 1.0);border-color:rgba(224, 168, 0, 0.3);}
-ul.nav-tabs.w_yellow > li >a:hover,ul.nav-tabs.w_yellow > li.active >a,ul.nav-tabs.w_yellow > li >a.active,
-ul.nav-tabs.w_yellow > li.nav-item:hover,ul.nav-tabs.w_yellow > li.nav-item.active{background:rgba(224, 168, 0, 0.4);}
+ul.nav-tabs.w_yellow > li >a:hover,ul.nav-tabs.w_yellow > li.nav-item:hover{background:rgba(224, 168, 0, 0.1);}
+ul.nav-tabs.w_yellow > li.active >a,ul.nav-tabs.w_yellow > li >a.active,ul.nav-tabs.w_yellow > li.nav-item.active{background:rgba(224, 168, 0, 0.3);}
 
 ul.nav-tabs.w_orange > li >a,ul.nav-tabs.w_orange > li.nav-item{color:rgba(255, 152, 0, 1.0);border-color:rgba(255, 152, 0, 0.3);}
-ul.nav-tabs.w_orange > li >a:hover,ul.nav-tabs.w_orange > li.active >a,ul.nav-tabs.w_orange > li >a.active,
-ul.nav-tabs.w_orange > li.nav-item:hover,ul.nav-tabs.w_orange > li.nav-item.active{background:rgba(255, 152, 0, 0.4);}
+ul.nav-tabs.w_orange > li >a:hover,ul.nav-tabs.w_orange > li.nav-item:hover{background:rgba(255, 152, 0, 0.1);}
+ul.nav-tabs.w_orange > li.active >a,ul.nav-tabs.w_orange > li >a.active,ul.nav-tabs.w_orange > li.nav-item.active{background:rgba(255, 152, 0, 0.3);}
 
 ul.nav-tabs.w_teal > li >a,ul.nav-tabs.w_teal > li.nav-item{color:rgba(19, 132, 150, 1.0);border-color:rgba(19, 132, 150, 0.3);}
-ul.nav-tabs.w_teal > li >a:hover,ul.nav-tabs.w_teal > li.active >a,ul.nav-tabs.w_teal > li >a.active,
-ul.nav-tabs.w_teal > li.nav-item:hover,ul.nav-tabs.w_teal > li.nav-item.active{background:rgba(19, 132, 150, 0.4);}
+ul.nav-tabs.w_teal > li >a:hover,ul.nav-tabs.w_teal > li.nav-item:hover{background:rgba(19, 132, 150, 0.1);}
+ul.nav-tabs.w_teal > li.active >a,ul.nav-tabs.w_teal > li >a.active,ul.nav-tabs.w_teal > li.nav-item.active{background:rgba(19, 132, 150, 0.3);}
 
 ul.nav-tabs.w_white > li >a,ul.nav-tabs.w_white > li.nav-item{color:#6c757d;border-color:rgba(226, 230, 234, 1.0);}
-ul.nav-tabs.w_white > li >a:hover,ul.nav-tabs.w_white > li.active >a,ul.nav-tabs.w_white > li >a.active,
-ul.nav-tabs.w_white > li.nav-item:hover,ul.nav-tabs.w_white > li.nav-item.active{background:rgba(226, 230, 234, 1.0);}
+ul.nav-tabs.w_white > li >a:hover,ul.nav-tabs.w_white > li.nav-item:hover{background:rgba(226, 230, 234, 0.3);}
+ul.nav-tabs.w_white > li.active >a,ul.nav-tabs.w_white > li >a.active,ul.nav-tabs.w_white > li.nav-item.active{background:rgba(226, 230, 234, 0.7);}
 
 ul.nav-tabs.w_black > li >a,ul.nav-tabs.w_black > li.nav-item{color:rgba(35, 39, 43, 1.0);border-color:rgba(35, 39, 43, 0.3);}
-ul.nav-tabs.w_black > li >a:hover,ul.nav-tabs.w_black > li.active >a,ul.nav-tabs.w_black > li >a.active,
-ul.nav-tabs.w_black > li.nav-item:hover,ul.nav-tabs.w_black > li.nav-item.active{background:rgba(35, 39, 43, 0.4);}
+ul.nav-tabs.w_black > li >a:hover,ul.nav-tabs.w_black > li.nav-item:hover{background:rgba(35, 39, 43, 0.1);}
+ul.nav-tabs.w_black > li.active >a,ul.nav-tabs.w_black > li >a.active,ul.nav-tabs.w_black > li.nav-item.active{background:rgba(35, 39, 43, 0.3);}
 /* collapse will only show the tab icon on small screens*/
 ul.nav-tabs.collapse > li >a{
     font-size:0px;

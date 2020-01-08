@@ -129,9 +129,9 @@
 <nav>
 <ul class="nav-tabs collapse <?=configValue('admin_color');?>">
 	<li class="nav-item active">
-		<input type="radio" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
+		<input type="radio" data-type="radio" style="display:none;" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
 		<label for="db_default">
-			<span data-tooltip="id:tabdetails_db_default"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></span>
+			<span data-tooltip="id:tabdetails_db_default" data-tooltip_position="bottom"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></span>
 			<div id="tabdetails_db_default" style="display:none;">
 				<div class="w_bold w_big">Database Details</div>
 				<table class="table bordered striped condensed">
@@ -147,9 +147,9 @@
 	</li>
 	<view:tab>
 	<li class="nav-item">
-		<input type="radio" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
+		<input type="radio" data-type="radio" style="display:none;" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
 		<label for="db_<?=$tab['name'];?>">
-			<span data-tooltip="id:tabdetails_<?=$tab['name'];?>"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></span>
+			<span data-tooltip="id:tabdetails_<?=$tab['name'];?>" data-tooltip_position="bottom"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></span>
 			<div id="tabdetails_<?=$tab['name'];?>" style="display:none;">
 				<div class="w_bold w_big">Database Details</div>
 				<table class="table bordered striped condensed">
