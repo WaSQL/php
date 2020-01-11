@@ -2594,7 +2594,7 @@ function buildFormFile($name,$params=array()){
 		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
 		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
 		$tag .= '		<div><label for="'.$params['id'].'_remove"><span class="icon-cancel-squared w_gray"></span></label></div>'.PHP_EOL;
-		$tag .= '		<input type="checkbox" value="1" class="w_red" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
+		$tag .= '		<input type="checkbox" style="display:initial;height:initial;padding:initial;margin-right:initial;" value="1" class="w_red" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
 		
 		$tag .= '		<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
 		$tag .= '	</div>'.PHP_EOL;
