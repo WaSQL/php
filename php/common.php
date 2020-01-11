@@ -2523,18 +2523,24 @@ function buildFormFile($name,$params=array()){
     		$val=encodeHtml($params['value']);
     		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
     		$ext=getFileExtension($params['value']);
-			if(strtolower($ext)=='mp3'){
-    			$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-    			$mime=getFileMimeType($afile);
-    			$tag .= '<audio controls>'.PHP_EOL;
-    			$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-    			$tag .= '</audio>'.PHP_EOL;
-    		}
-    		else{
-    			$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
-    		}
-    		
-			
+    		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+			switch(strtolower($ext)){
+				case 'mp3':
+					$mime=getFileMimeType($afile);
+					$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+					$tag .= '</audio></div>'.PHP_EOL;
+				break;
+				case 'mp4':
+					$mime=getFileMimeType($afile);
+					$tag .= '<div style="margin:5px 1px"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+					$tag .= '</video></div>'.PHP_EOL;
+				break;
+				default:
+					$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+				break;
+			}
     	}
     	else{
     		$tag .= '<span class="icon-upload"></span> ' . $params['text'];
@@ -2548,24 +2554,36 @@ function buildFormFile($name,$params=array()){
 		<input id="addedit_synchronize_1" data-group="addedit_synchronize_group" style="display:none;" data-type="checkbox" name="synchronize[]" value="1" type="checkbox">
 		<label class="icon-mark " for="addedit_synchronize_1"></label>
 		*/
-		$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
+		$tag .= '<div class="w_smallest w_lblue" style="display:flex;">'.PHP_EOL;
 		$ext=getFileExtension($params['value']);
-		if(strtolower($ext)=='mp3'){
-			$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-			$mime=getFileMimeType($afile);
-			$tag .= '<audio controls>'.PHP_EOL;
-			$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-			$tag .= '</audio>'.PHP_EOL;
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		switch(strtolower($ext)){
+			case 'mp3':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$tag .= '</audio></div>'.PHP_EOL;
+			break;
+			case 'mp4':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$tag .= '</video></div>'.PHP_EOL;
+			break;
+			default:
+				$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
+			break;
 		}
-		else{
-			$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
-		}
+		//remove checkbox
+		$tag .= '	<div style="text-align:center;">'.PHP_EOL;
 		$checked='';
 		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
 		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
-		$tag .= '	<input type="checkbox" value="1" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
-		$tag .= '	<label for="'.$params['id'].'_remove"> Remove</label>'.PHP_EOL;
-		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
+		$tag .= '		<div><label for="'.$params['id'].'_remove"><span class="icon-cancel-squared w_gray"></span></label></div>'.PHP_EOL;
+		$tag .= '		<input type="checkbox" value="1" class="w_red" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
+		
+		$tag .= '		<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
+		$tag .= '	</div>'.PHP_EOL;
 		$tag .= '</div>'.PHP_EOL;
 	}
     //remove style attribute since it is not supported
