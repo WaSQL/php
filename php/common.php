@@ -2521,8 +2521,20 @@ function buildFormFile($name,$params=array()){
     	$tag .= '<div class="btn btn-default w_white" style="'.$style.'">'.PHP_EOL;
     	if(strlen($params['value'])){
     		$val=encodeHtml($params['value']);
-    		$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
-			$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
+    		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
+    		$ext=getFileExtension($params['value']);
+			if(strtolower($ext)=='mp3'){
+    			$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+    			$mime=getFileMimeType($afile);
+    			$tag .= '<audio controls>'.PHP_EOL;
+    			$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+    			$tag .= '</audio>'.PHP_EOL;
+    		}
+    		else{
+    			$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+    		}
+    		
+			
     	}
     	else{
     		$tag .= '<span class="icon-upload"></span> ' . $params['text'];
@@ -2537,7 +2549,17 @@ function buildFormFile($name,$params=array()){
 		<label class="icon-mark " for="addedit_synchronize_1"></label>
 		*/
 		$tag .= '<div class="w_smallest w_lblue">'.PHP_EOL;
-		$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
+		$ext=getFileExtension($params['value']);
+		if(strtolower($ext)=='mp3'){
+			$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+			$mime=getFileMimeType($afile);
+			$tag .= '<audio controls>'.PHP_EOL;
+			$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+			$tag .= '</audio>'.PHP_EOL;
+		}
+		else{
+			$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
+		}
 		$checked='';
 		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
 		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
