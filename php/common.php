@@ -2537,6 +2537,13 @@ function buildFormFile($name,$params=array()){
 					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
 					$tag .= '</video></div>'.PHP_EOL;
 				break;
+				case 'png':
+				case 'jpg':
+				case 'svg':
+					$mime=getFileMimeType($afile);
+					$tag .= '<div style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
+					$tag .= '</div>'.PHP_EOL;
+				break;
 				default:
 					$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 				break;
@@ -2566,9 +2573,16 @@ function buildFormFile($name,$params=array()){
 			break;
 			case 'mp4':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$tag .= '<div style="margin:5px 1px"><video style="border-radius:3px;" height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
 				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
 				$tag .= '</video></div>'.PHP_EOL;
+			break;
+			case 'png':
+			case 'jpg':
+			case 'svg':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$tag .= '</div>'.PHP_EOL;
 			break;
 			default:
 				$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
