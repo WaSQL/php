@@ -25,6 +25,19 @@ function setInputFileName(fld){
 		label.className='btn btn-default';
 	}
 }
+function formShowPassword(id,sh){
+	let obj=getObject(id);
+	if(undefined == id){return false;}
+	if(undefined == sh){return false;}
+	if(undefined == obj){return false;}
+	if(sh==1){
+		obj.setAttribute('type','text');
+	}
+	else{
+		obj.setAttribute('type','password');
+	}
+	return false;
+}
 /** attachDropFiles **/
 /** https://thiscouldbebetter.wordpress.com/2013/07/03/converting-a-file-to-a-base64-dataurl-in-javascript/ **/
 function attachDropFiles(fld){

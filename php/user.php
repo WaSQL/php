@@ -1270,6 +1270,7 @@ function userLoginForm($params=array()){
 			$form .= '	<div class="flexbutton" style="margin-top:5px;">'.PHP_EOL;
 			$form .= '			<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormPassword('password',$password_opts);
+			$form .= '			<span class="btn w_white" style="padding:" onmouseover="formShowPassword(\''.$password_opts['id'].'\',1);" onmouseout="formShowPassword(\''.$password_opts['id'].'\',0);"><span class="icon-eye"></span></span>'.PHP_EOL;
 			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="w_flexrow"  style="margin-top:5px;">'.PHP_EOL;
 			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
