@@ -2532,7 +2532,6 @@ function buildFormFile($name,$params=array()){
 					$tag .= '</audio></div>'.PHP_EOL;
 				break;
 				case 'mp4':
-				case 'mov':
 					$mime=getFileMimeType($afile);
 					$tag .= '<div style="margin:5px 1px"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
 					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
