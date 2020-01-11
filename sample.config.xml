@@ -61,6 +61,10 @@
 			nocron 0|1 - set nocron=1 to nor run crons  - same as cron=0
 			cronlog_max - number of days to keep cronlog records - default is 365 days
 			backup_command - command to backup database - defaults to mysqldump
+			resize - allows you to auto resize images on upload  e.g. 800x600
+			resize_command - defaults to convert -thumgnail
+			reencode - allows you to auto re-encode files as they are uploaded. e.g.  wav-mp3,midi-mp3,mp3-mp3
+			reencode_command - defaults to ffmpeg -i
 			mysql_command - command to import database - defaults to mysql
 			url_eval - page name to eval before processing.  This gives you control to modify the $_REQUEST variable. etc.. _view should be set to the page name.
 			sql_prompt_dbs - comma separated list of database containers to show in the SQL Prompt admin area

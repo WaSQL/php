@@ -14334,6 +14334,26 @@ function processFileUploads($docroot=''){
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
+            	//if this is a chunk - see if all chunks are here and combine them.
+				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
+					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
+					$xfiles=array();
+					for($x=0;$x<$_SERVER['HTTP_X_CHUNK_TOTAL'];$x++){
+						$i=$x+1;
+						$xfile="{$absdir}/{$realname}.chunk{$i}";
+						if(!file_exists($xfile)){break;}
+						$xfiles[]=$xfile;
+					}
+					if(count($xfiles)==$_SERVER['HTTP_X_CHUNK_TOTAL']){
+                    	if(mergeChunkedFiles($xfiles,"{$absdir}/{$realname}")){
+							$abspath="{$absdir}/{$realname}";
+							$webpath = "{$path}/{$realname}";
+							$_REQUEST[$name.'_abspath']=$abspath;
+						}
+
+					}
+				}
+				$ext=strtolower(getFileExtension($file['name']));
 				//resize the image?
 				$resize='';
 				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
@@ -14365,25 +14385,42 @@ function processFileUploads($docroot=''){
                 	$_REQUEST[$name.'_resized']=$ok;
                                 	
 				}
-				//if this is a chunk - see if all chunks are here and combine them.
-				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
-					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
-					$xfiles=array();
-					for($x=0;$x<$_SERVER['HTTP_X_CHUNK_TOTAL'];$x++){
-						$i=$x+1;
-						$xfile="{$absdir}/{$realname}.chunk{$i}";
-						if(!file_exists($xfile)){break;}
-						$xfiles[]=$xfile;
-					}
-					if(count($xfiles)==$_SERVER['HTTP_X_CHUNK_TOTAL']){
-                    	if(mergeChunkedFiles($xfiles,"{$absdir}/{$realname}")){
-							$abspath="{$absdir}/{$realname}";
-							$webpath = "{$path}/{$realname}";
-							$_REQUEST[$name.'_abspath']=$abspath;
-						}
-
-					}
+				//re-encode the file
+				$reencode='';
+				if(isset($_REQUEST[$name.'_reencode']) && strlen($_REQUEST[$name.'_reencode'])){
+					$reencode=$_REQUEST[$name.'_reencode'];
 				}
+				elseif(isset($_REQUEST['data-reencode']) && strlen($_REQUEST['data-reencode'])){
+					$reencode=$_REQUEST['data-reencode'];
+				}
+				elseif(isset($CONFIG['reencode']) && strlen($CONFIG['reencode'])){
+					$reencode=$CONFIG['reencode'];
+				}
+				if(strlen($reencode)){
+					//echo $reencode;exit;
+					if(!isset($CONFIG['reencode_command'])){
+						$CONFIG['reencode_command']="ffmpeg -i";
+					}
+					$cmd=$CONFIG['reencode_command'];
+					//mp3-mp3,wav-mp3
+					$sets=preg_split('/\,/',strtolower($reencode));
+					//echo printValue
+					foreach($sets as $set){
+						list($from,$to)=preg_split('/\-/',$set,2);
+						if($from==$ext){
+							$fname=getFileName($abspath,1);
+							$tfile="{$absdir}/{$fname}_reencoded.{$to}";
+							$cmd="{$cmd} '{$abspath}' '{$tfile}'";
+		            		$ok=cmdResults($cmd);
+		            		if(is_file($tfile) && filesize($tfile) > 0){
+								unlink($abspath);
+								rename($tfile,$abspath);
+							}
+		                	$_REQUEST[$name.'_reencoded']=$ok;
+						}
+					}            	
+				}
+				//
             	$_REQUEST[$name]=$webpath;
             	$_REQUEST[$name.'_abspath']=$abspath;
             	$_REQUEST[$name.'_webpath']=$webpath;
