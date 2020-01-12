@@ -3747,6 +3747,10 @@ function addEditDBForm($params=array(),$customcode=''){
     $rtn .= '<div id="other_inputs" style="display:none;">'.PHP_EOL;
     if(is_array($params)){
 	    foreach($params as $key=>$val){
+	    	if($key=='_filters'){
+	    		$rtn .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
+	    		continue;
+	    	}
 			if(isset($used[$key])){
 				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
