@@ -2293,7 +2293,7 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['-interval'])){$params['-interval']='30';}
+	if(!isset($params['-interval'])){$params['-interval']='15';}
 	if(!isset($params['-tformat'])){$params['-tformat']='H:i';}
 	if(!isset($params['-dformat'])){$params['-dformat']='g:i a';}
 	if(isset($params['value'])){$params['-value']=$params['value'];}
@@ -2307,7 +2307,10 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['data-icon'])){$params['data-icon']='&#128348;';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(strlen($params['-value'])){
-    	$params['-value']=date('H:i',strtotime($params['-value']));
+    	$params['value']=date('H:i',strtotime($params['-value']));
+	}
+	elseif(strlen($params['value'])){
+    	$params['value']=date('H:i',strtotime($params['value']));
 	}
 	$opts=array();
 	for($x=0;$x<60*24;$x+=$params['-interval']){
@@ -2315,6 +2318,7 @@ function buildFormTime($name,$params=array()){
 		$v=date($params['-tformat'],$t);
 		$opts[$v]=date($params['-dformat'],$t);
 	}
+	//return printValue($opts).printValue($params);
 	$tag='';
 	if(strlen($params['data-icon'])){
 
