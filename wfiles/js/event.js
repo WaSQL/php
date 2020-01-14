@@ -442,7 +442,7 @@ function iframePopup(url,opts){
 	if(undefined == opts['iheight']){opts['iheight']=300;}
 	if(undefined == opts['iscrolling']){opts['iscrolling']='auto';}
 	htm += '<div class="w_centerpop_title">'+opts['title']+'</div>'+"\n";
-	htm += '<div class="w_centerpop_content">'+"\n";
+	htm += '<div class="w_centerpop_content" style="padding:0px;">'+"\n";
 	htm += '<iframe seamless="1" src="'+url+'" width="'+opts['iwidth']+'" height="'+opts['iheight']+'" frameborder="0" marginwidth="0" marginheight="0" scrolling="'+opts['iscrolling']+'" align="center">Your browser does not support iframes.</iframe>';
 	htm += '</div>'+"\n";
 	centerpopDiv(htm,null,0);

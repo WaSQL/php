@@ -1413,7 +1413,7 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
     -webkit-box-shadow: 0px 1px 3px #818181;
 	-khtml-box-shadow: 0px 1px 3px #818181;
 	}
-#centerpop, #centerpop2, #centerpop3, #centerpop4, #centerpop5, #centerpop6, #centerpop7, #centerpop8, #centerpop9, #remindMePopup, #popupdiv{
+#centerpop,#centerpop0,#centerpop1, #centerpop2, #centerpop3, #centerpop4, #centerpop5, #centerpop6, #centerpop7, #centerpop8, #centerpop9, #remindMePopup, #popupdiv{
 	animation-name: centerpopAnimate;
 	-webkit-animation-name: centerpopAnimate;
 	animation-duration: .3s;

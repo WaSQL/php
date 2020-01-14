@@ -3232,25 +3232,47 @@ function setCenterPopText(cpid,cptext,params){
 	if(undefined == params.close_bot){params.close_bot=true;}
 	if(undefined == params.center){params.center=true;}
 	var txt='';
-	txt += '<div class="w_centerpop">'+"\n";
-	if(params.title.length){
-		txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
+	console.log(cptext);
+	if(cptext.includes('w_centerpop_content')){
+		txt=cptext;
 	}
-	if(params.close_top){
-		txt += '	<div class="w_centerpop_close_top icon-cancel" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
-	}
-	txt += '	<div class="w_centerpop_content">'+"\n";
-	txt += '		'+cptext+"\n";
-	txt += '	</div>'+"\n";
+	else{
+		console.log('NOT found');
+		txt += '<div class="w_centerpop">'+"\n";
+		if(params.title.length){
+			txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
+		}
+		if(params.close_top){
+			txt += '	<div class="w_centerpop_close_top icon-cancel" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
+		}
+		txt += '	<div class="w_centerpop_content">'+"\n";
+		txt += '		'+cptext+"\n";
+		txt += '	</div>'+"\n";
 
-	txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
-	if(params.close_bot){
-		txt += '	<div class="w_centerpop_close_bot icon-cancel" style="font-size:18px;" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
+		txt += '	<img src="/wfiles/clear.gif" width="1" height="1" style="position:absolute;top:0px;right:5px;" onload="centerObject(\''+cpid+'\');" alt="" />'+"\n";
+		if(params.close_bot){
+			txt += '	<div class="w_centerpop_close_bot icon-cancel" style="font-size:18px;" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
+		}
+		txt += '</div>'+"\n";
+		cptext=text;
 	}
-	txt += '</div>'+"\n";
 	//set the text in cpid
 	//console.log(txt);
 	setText(cpid,txt);
+	if(!cptext.includes('w_centerpop_close_top') && cptext.includes('w_centerpop_title')){
+		let cpobj=getObject(cpid);
+		if(undefined != cpobj){
+			let tobj=cpobj.querySelector('div.w_centerpop_title');
+			if(undefined != tobj){
+				let div = document.createElement("div");
+				div.setAttribute("class",'w_centerpop_close_top icon-cancel');
+				div.setAttribute("title",'Click to close');
+				div.setAttribute("onclick",'ajaxAbort(\''+cpid+'\');');
+				tobj.appendChild(div);
+			}
+
+		}
+	}
 	//center the object
 	if(params.center){
 		centerObject(cpid);
