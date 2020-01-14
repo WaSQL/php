@@ -562,9 +562,13 @@ if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['activ
 	setWasqlError(debug_backtrace(),"Login Error: Your account has been disabled");
 	}
 elseif(isUser()){
-	if($guid != $oldguid && isset($_REQUEST['_noguid']) && $_REQUEST['_noguid']==1){$guid=$oldguid;}
-	//echo json_encode(array('error'=>'debug','x'=>$_REQUEST));exit;
+	if(isset($_REQUEST['_noguid']) && $_REQUEST['_noguid']==1){
+		if(!isset($guid) || $guid != $oldguid){
+			$guid=$oldguid;
+		}
 	}
+	//echo json_encode(array('error'=>'debug','x'=>$_REQUEST));exit;
+}
 else{
 	unset($USER);
 	unset($_SESSION['authcode']);
