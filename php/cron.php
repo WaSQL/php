@@ -44,6 +44,7 @@ if(isset($CONFIG['timezone'])){
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
+include_once("{$progpath}/extras/system.php");
 $ok=cronCheckSchema();
 global $databaseCache;
 $etime=microtime(true)-$starttime;
