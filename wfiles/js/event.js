@@ -2416,11 +2416,27 @@ function countDown(id){
 	number--;
 	setText(obj,number);
 	if(debug==1){console.log(Array('countDown set number to ',number));}
-    var cb=obj.getAttribute('callback');
-    if(cb){
-    	let func=cb+"('"+id+"','"+number+"')";
-    	let jsfunc=new Function(func);
+    let cb='';
+    if(undefined != obj.getAttribute('data-callback')){
+    	cb=obj.getAttribute('data-callback');
+    }
+    else if(undefined != obj.getAttribute('callback')){
+    	cb=obj.getAttribute('callback');
+    }
+    if(cb.length > 0){
+    	let cbfunc=cb+"('"+id+"','"+number+"')";
+    	let jsfunc=new Function(cbfunc);
     	jsfunc();
+	}
+	else if(number == 0){
+		let fn='';
+	    if(undefined != obj.getAttribute('data-onzero')){
+	    	fn=obj.getAttribute('data-onzero');
+	    }
+	    if(fn.length > 0){
+	    	let fnfunc=new Function(fn);
+	    	fnfunc();
+		}
 	}
 	TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
 }

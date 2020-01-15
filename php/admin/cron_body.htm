@@ -26,7 +26,7 @@ function cronRefreshResult(cron_id,id){
 }
 function cronResultScroll(cron_id,id,run_length){
 	document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;
-	setTimeout(function(){cronRefreshResult(cron_id,id);},6000);
+	setTimeout(function(){cronRefreshResult(cron_id,id);},11000);
 	setText('run_length_'+id,run_length);
 }
 function cronModal(func,id,title){
@@ -192,7 +192,7 @@ function cronModal(func,id,title){
 <?=$log['run_result'];?>
 </textarea>
 <view:bottom>
-<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;color:#CCC;font-size:0.8rem;" data-behavior="countdown">7</div>
+<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;color:#CCC;font-size:0.8rem;" data-behavior="countdown">12</div>
 <?=buildOnLoad("cronResultScroll({$log['bottom']});");?>
 </view:bottom>
 <?=renderViewIf(strlen($log['bottom']),'bottom',$log,'log');?>
