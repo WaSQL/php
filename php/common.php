@@ -8734,7 +8734,15 @@ function csv2Arrays($data,$params=array()){
 		}
 	}
 	$fields=array();
-	foreach($xfields as $field){$fields[]=trim($field);}
+	foreach($xfields as $field){
+		if(isset($params['-lowercase']) && $params['-lowercase']){$field=strtolower($field);}
+		if(isset($params['-nospaces']) && $params['-nospaces']){$field=preg_replace('/\ +/','_',$field);}
+		if(isset($params['-fieldmap'][$field])){
+			$field=$params['-fieldmap'][$field];
+		}
+		$field=trim($field);
+		$fields[]=$field;
+	}
 	$recs=array();
 	foreach($lines as $line){
 		$vals=csvParseLine($line,$params['separator']);
@@ -8744,6 +8752,7 @@ function csv2Arrays($data,$params=array()){
 		}
 		$recs[]=$rec;
 	}
+	//echo printValue($recs);exit;
 	return $recs;
 }
 //---------- begin function getCSVFileContents--------------------
