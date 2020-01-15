@@ -49,6 +49,7 @@ $ok=cronCheckSchema();
 global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
+$pid_check=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	foreach($ConfigXml as $name=>$host){
@@ -90,13 +91,34 @@ while($etime < 55){
 			if(strlen($msg)){cronMessage($msg);}
 			cronMessage("apacheParseLogFile completed");
 		}
-		//if any crons are set to active and running and have been running for over 3 hours then they are not running anymore
-		$ok=editDBRecord(array(
+		//update crons that say they are running but the pids are no longer active
+		$precs=getDBRecords(array(
 			'-table'	=> '_cron',
-			'-where'	=> "running=1 and active=1 and run_date < (NOW() - INTERVAL 4 HOUR)",
-			'running'	=> 0,
-			'cron_pid'	=> 0
+			'-where'	=> "running=1 or cron_pid != 0",
+			'-fields'	=> '_id,cron_pid'
 		));
+		if(isset($precs[0])){
+			$pids=array();
+			foreach($precs as $prec){$pids[$prec['cron_pid']]=$prec['_id'];}
+			if(count($pids)){
+				$irecs=systemGetPidInfo($pids);
+				if(isset($irecs[0])){
+					foreach($irecs as $irec){
+						unset($pids[$irec['pid']]);
+					}
+				}
+			}
+			if(count($pids)){
+				$idstr=implode(',',array_values($pids));
+				cronMessage("Ids no longer running: {$idstr}");
+				$ok=editDBRecord(array(
+					'-table'=>'_cron',
+					'-where'=>"cron_pid = 0 or _id in ({$idstr})",
+					'running'	=> 0,
+					'cron_pid'	=> 0
+				));
+			}
+		}
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
 			'-table'	=> '_pages',

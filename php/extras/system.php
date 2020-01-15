@@ -52,6 +52,7 @@ function systemGetDriveSpace(){
 		return $recs;
 	}
 }
+
 function systemGetProcessList(){
 	if(isWindows()){
 		$cmd="tasklist /v /fo csv";
@@ -116,6 +117,13 @@ function systemGetProcessList(){
 	}
 	return $recs;
 }
+//---------- begin function systemGetPidInfo ----------
+/**
+* @describe returns process information about given process_ids
+* @param pids mixed - array of processids or a string with comma separated process ids
+* @return array
+* @usage $irecs=systemGetPidInfo($pids);
+*/
 function systemGetPidInfo($pids=array()){
 	if(!is_array($pids)){$pids=preg_split('/\,/',$pids);}
 	if(isWindows()){
