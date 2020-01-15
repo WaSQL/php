@@ -176,9 +176,9 @@ function cronListExtra($recs){
 			$recs[$i]['run_cmd']='<span title="'.$rec['run_cmd'].'">'.$truncated.'</span>';
 		}
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
-		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'edit\',id:'.$id.',title:this.title,setprocessing:0});" title="Edit Cron"><span class="icon-edit"></span></a>';
+		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return ajaxGet(\''.$url.'\',\'modal\',{_menu:\'cron\',func:\'details\',id:'.$id.',title:this.title,setprocessing:0});" title="Cron Details - '.$name.'">'.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" title="Cron Details - '.$name.'">'.$name.'</a>';
 		//run_as
 		if(isset($rec['run_as'])){
 			if((integer)$rec['run_as'] > 0){
