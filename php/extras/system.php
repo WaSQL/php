@@ -116,27 +116,31 @@ function systemGetProcessList(){
 	}
 	return $recs;
 }
-function systemGetPidInfo($pid){
-	if(is_array($pid)){$pid=implode(',',$pid);}
+function systemGetPidInfo($pids=array()){
+	if(!is_array($pids)){$pids=preg_split('/\,/',$pids);}
 	if(isWindows()){
-		$cmd="tasklist /FI \"PID eq {$pid}\" /v /fo csv";
-		$out=cmdResults($cmd);
-		$recs=csv2Arrays($out['stdout'],array('-lowercase'=>1,'-nospaces'=>1,'-fieldmap'=>array('session#'=>'session_num')));
-		foreach($recs as $i=>$rec){
+		$precs=array();
+		foreach($pids as $pid){
+			$cmd="tasklist /FI \"PID eq {$pid}\" /v /fo csv";
+			$out=cmdResults($cmd);
+			$recs=csv2Arrays($out['stdout'],array('-lowercase'=>1,'-nospaces'=>1,'-fieldmap'=>array('session#'=>'session_num')));
+			$rec=$recs[0];
 			//fix mem_usage
 			if(isset($rec['mem_usage'])){
-				$recs[$i]['mem_usage']=str_replace(',','',$rec['mem_usage']);
-				if(preg_match('/\ k$/i',$rec['mem_usage'])){$recs[$i]['mem_usage']=(integer)$rec['mem_usage']*1000;}
+				$rec['mem_usage']=str_replace(',','',$rec['mem_usage']);
+				if(preg_match('/\ k$/i',$rec['mem_usage'])){$rec['mem_usage']=(integer)$rec['mem_usage']*1000;}
 			}
+			$precs[]=$rec;
 		}
-		return $recs;
+		return $precs;
 	}
 	else{
 		/*
 			USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 			root       116  0.0  1.1  78664 45560 ?        Ss    2019  23:55 /lib/systemd/systemd-journald
 		*/
-		$cmd="ps -fu -p {$pid}";
+		$pidstr=implode(',',$pids);
+		$cmd="ps -fu -p {$pidstr}";
 		$out=cmdResults($cmd);
 		$out['stdout']=preg_replace('/\ +/',',',$out['stdout']);
 		$recs=csv2Arrays($out['stdout'],array('-lowercase'=>1,'-nospaces'=>1,'-fieldmap'=>array('%cpu'=>'pcnt_cpu','%mem'=>'pcnt_mem')));
