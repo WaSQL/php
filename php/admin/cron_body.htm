@@ -39,6 +39,10 @@ function cronRefreshResult(cron_id,id){
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
 }
 function cronResultScroll(cron_id,id,run_length){
+	let obj=getObject('setprocessing');
+	if(undefined == obj.getAttribute('data-countdown')){
+		return false;
+	}
 	document.getElementById('cron_result_textarea').scrollTop=document.getElementById('cron_result_textarea').scrollHeight;
 	setTimeout(function(){cronRefreshResult(cron_id,id);},11000);
 	setText('run_length_'+id,run_length);
