@@ -9,7 +9,14 @@ function pauseSelected(func){
 		ids.push(clist[i].value);
 	}
 	let params = {_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0};
-	params._filters=document.searchfiltersform._filters.value;
+	if(undefined != document.searchfiltersform){
+		if(undefined != document.searchfiltersform._filters){
+			params._filters=document.searchfiltersform._filters.innerText;
+		}
+		if(undefined != document.searchfiltersform.filter_order){
+			params.filter_order=document.searchfiltersform.filter_order.value;
+		}	
+	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
 function cronFilterByGroup(name){
@@ -21,7 +28,14 @@ function cronFilterByGroup(name){
 }
 function cronRefreshResult(cron_id,id){
 	let params={_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:cron_id,id:id};
-	params._filters=document.searchfiltersform._filters.value;
+	if(undefined != document.searchfiltersform){
+		if(undefined != document.searchfiltersform._filters){
+			params._filters=document.searchfiltersform._filters.innerText;
+		}
+		if(undefined != document.searchfiltersform.filter_order){
+			params.filter_order=document.searchfiltersform.filter_order.value;
+		}	
+	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
 }
 function cronResultScroll(cron_id,id,run_length){
@@ -31,7 +45,14 @@ function cronResultScroll(cron_id,id,run_length){
 }
 function cronModal(func,id,title){
 	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
-	params._filters=document.searchfiltersform._filters.value;
+	if(undefined != document.searchfiltersform){
+		if(undefined != document.searchfiltersform._filters){
+			params._filters=document.searchfiltersform._filters.innerText;
+		}
+		if(undefined != document.searchfiltersform.filter_order){
+			params.filter_order=document.searchfiltersform.filter_order.value;
+		}	
+	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
 }
 </script>
@@ -60,19 +81,23 @@ function cronModal(func,id,title){
 
 <view:add_fields>
 <div class="row">
-	<div class="col s6 m5"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s12 m6"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
+	<div class="col s12 m6"><label><translate>Groupname</translate></label>[groupname]</div>
+</div>
+<div class="row">
+	<div class="col s6 m1"><label><translate>Paused</translate></label>[paused]</div>
 	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
+	<div class="col s6 m2"><label><translate>Records To Keep</translate></label>[records_to_keep]</div>
 	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
 	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
 </div>
 <div class="row">
-	<div class="col s12 m4"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
-	<div class="col s12 m1"><br />OR</div>
-	<div class="col s12 m7"><label><translate>Custom Frequency</translate></label>[run_format]</div>
+	<div class="col s12 m3"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
+	<div class="col s12 m9"><label><translate>Custom Frequency</translate></label>[run_format]</div>
 </div>
 <div class="row">
-	<div class="col s12 m8"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
-	<div class="col s12 m4"><label><translate>Run As</translate></label>[run_as]</div>
+	<div class="col s12 m9"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
+	<div class="col s12 m3"><label><translate>Run As</translate></label>[run_as]</div>
 </div>
 </view:add_fields>
 
@@ -89,9 +114,8 @@ function cronModal(func,id,title){
 	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
 </div>
 <div class="row">
-	<div class="col s12 m4"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
-	<div class="col s12 m1"><br />OR</div>
-	<div class="col s12 m7"><label><translate>Custom Frequency</translate></label>[run_format]</div>
+	<div class="col s12 m3"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
+	<div class="col s12 m9"><label><translate>Custom Frequency</translate></label>[run_format]</div>
 </div>
 <div class="row">
 	<div class="col s12"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
