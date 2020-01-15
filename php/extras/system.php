@@ -136,7 +136,7 @@ function systemGetPidInfo($pid){
 		*/
 		$cmd="ps -fu -p {$pid}";
 		$out=cmdResults($cmd);
-		$out['stdout']=preg_replace('/\ /',',',$out['stdout']);
+		$out['stdout']=preg_replace('/\ +/',',',$out['stdout']);
 		$recs=csv2Arrays($out['stdout'],array('-lowercase'=>1,'-nospaces'=>1,'-fieldmap'=>array('%cpu'=>'pcnt_cpu','%mem'=>'pcnt_mem')));
 		$rec=$recs[0];
 		return $rec;
