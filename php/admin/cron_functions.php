@@ -28,6 +28,12 @@ function cronAddEdit($id=0){
 	else{
 		$opts['-fields']=getView('add_fields');
 	}
+	if(isset($_REQUEST['filter_order']) && strlen($_REQUEST['filter_order'])){
+		$opts['filter_order']=$_REQUEST['filter_order'];
+	}
+	if(isset($_REQUEST['_filters']) && strlen($_REQUEST['_filters'])){
+		$opts['_filters']=$_REQUEST['_filters'];
+	}
 	return addEditDBForm($opts);
 }
 function cronDetails($id){
