@@ -1678,6 +1678,10 @@ input[type="checkbox"].w_black.btn:checked + label[for], input[type="radio"].w_b
   color:#FFF;
 }
 
+input[type="checkbox"][style*="--checked_color"]:checked::after{
+  color:var(--checked_color) !important;
+}
+
 label[for][style*="--shape:button"]{
   display: inline-block !important;
     cursor: pointer !important;
@@ -1739,10 +1743,7 @@ input[type="radio"]:checked ~ label[for][style*="--checked_color"]{
   color:var(--checked_color) !important;
   display:inline-block !important;
 }
-input[type="checkbox"]:checked ~ label[for][style*="--checked_color"]{
-  color:var(--checked_color) !important;
-  display:inline-block !important;
-}
+
 
 label[for][style*="--bgcolor"]{
   background-color:var(--bgcolor) !important;
