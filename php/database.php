@@ -1599,8 +1599,25 @@ function databaseListRecords($params=array()){
 	//check for listview
 	if(isset($params['-listview'])){
 		if(!is_array($params['-list']) || !count($params['-list'])){
-			$rtn .= 'No Results'.PHP_EOL;
-			return $rtn;
+			//check for results_eval
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				$rparams='';
+				if(isset($params['-results_eval_params'])){
+					$params['-list']=call_user_func($params['-results_eval'],array(),$params['-results_eval_params']);
+				}
+				else{
+					$params['-list']=call_user_func($params['-results_eval'],array());
+				}
+				if(!is_array($params['-list']) || !count($params['-list'])){
+					$rtn .= 'No Results'.PHP_EOL;
+					return $rtn;
+				}
+			}
+			else{
+				$rtn .= 'No Results'.PHP_EOL;
+				return $rtn;
+			}
+			
 		}
 		//loop through each row 
 		foreach($params['-list'] as $rec){
@@ -1710,8 +1727,23 @@ function databaseListRecords($params=array()){
 	$rtn .= '		</tr>'.PHP_EOL;
 	$rtn .= '	</thead>'.PHP_EOL;
 	if(!is_array($params['-list']) || !count($params['-list'])){
-		$rtn .= '</table>'.PHP_EOL;
-		return $rtn;
+		if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+			$rparams='';
+			if(isset($params['-results_eval_params'])){
+				$params['-list']=call_user_func($params['-results_eval'],array(),$params['-results_eval_params']);
+			}
+			else{
+				$params['-list']=call_user_func($params['-results_eval'],array());
+			}
+			if(!is_array($params['-list']) || !count($params['-list'])){
+				$rtn .= '</table>'.PHP_EOL;
+				return $rtn;
+			}
+		}
+		else{
+			$rtn .= '</table>'.PHP_EOL;
+			return $rtn;
+		}
 	}
 	//check for -results_eval
 	if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
