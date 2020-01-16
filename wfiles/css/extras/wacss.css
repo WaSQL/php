@@ -1678,10 +1678,6 @@ input[type="checkbox"].w_black.btn:checked + label[for], input[type="radio"].w_b
   color:#FFF;
 }
 
-input[type="checkbox"][style*="--checked_color"]:checked::after{
-  color:var(--checked_color) !important;
-}
-
 label[for][style*="--shape:button"]{
   display: inline-block !important;
     cursor: pointer !important;
@@ -1739,19 +1735,31 @@ label[for][style*="--color"]{
   color:var(--color) !important;
   display:inline-block !important;
 }
-input[type="radio"]:checked ~ label[for][style*="--checked_color"]{
-  color:var(--checked_color) !important;
+label[for][style*="--bgcolor"]{
+  background-color:var(--bgcolor) !important;
   display:inline-block !important;
 }
 
-
-label[for][style*="--bgcolor"]{
-  background-color:var(--bgcolor) !important;
+input[type="radio"]:checked ~ label[for][style*="--checked_color"]{
+  color:var(--checked_color) !important;
   display:inline-block !important;
 }
 input[type="radio"]:checked ~ label[for][style*="--checked_bgcolor"]{
   background-color:var(--checked_bgcolor) !important;
   display:inline-block !important;
+}
+
+input[type="checkbox"][style*="--checked_color"]:checked::after{
+  color:var(--checked_color) !important;
+}
+input[type="checkbox"]:checked ~ label[for][style*="--checked_color"]{
+  color:var(--checked_color) !important;
+}
+input[type="checkbox"][style*="--checked_bgcolor"]:checked::after{
+  background-color:var(--checked_bgcolor) !important;
+}
+input[type="checkbox"]:checked ~ label[for][style*="--checked_bgcolor"]{
+  background-color:var(--checked_bgcolor) !important;
 }
 
 /*--------------------- table styles  -------------------------------------------*/
