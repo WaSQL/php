@@ -1739,6 +1739,10 @@ input[type="radio"]:checked ~ label[for][style*="--checked_color"]{
   color:var(--checked_color) !important;
   display:inline-block !important;
 }
+input[type="checkbox"]:checked ~ label[for][style*="--checked_color"]{
+  color:var(--checked_color) !important;
+  display:inline-block !important;
+}
 
 label[for][style*="--bgcolor"]{
   background-color:var(--bgcolor) !important;
