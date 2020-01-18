@@ -17,6 +17,17 @@ switch(strtolower($_REQUEST['func'])){
 		setView('details',1);
 		return;
 	break;
+	case 'kill':
+		$id=(integer)$_REQUEST['id'];
+		$path=getWaSQLPath('php/temp');
+		$killfile="{$path}/{$CONFIG['name']}_cronkill_{$id}.txt";
+		setFileContents($killfile,time());
+		$ok=commonCronCleanup();
+		usleep(250);
+		$cron=cronDetails($id);
+		setView('details',1);
+		return;
+	break;
 	case 'add':
 		//echo "add";exit;
 		$id=0;
@@ -45,6 +56,7 @@ switch(strtolower($_REQUEST['func'])){
 		//echo "details";exit;
 		$id=(integer)$_REQUEST['id'];
 		$cron=cronDetails($id);
+		$ok=commonCronCleanup();
 		setView('details',1);
 		return;
 	break;
@@ -54,7 +66,7 @@ switch(strtolower($_REQUEST['func'])){
 		if($id==0){
 			$id=(integer)$_REQUEST['cron_id'];
 			$path=getWaSQLPath('php/temp');
-			$commonCronLogFile="{$path}/cronlog_{$id}.txt";
+			$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 			$log=array('run_error'=>'');
 			if(file_exists($commonCronLogFile)){
 				$t=time()-filectime($commonCronLogFile);

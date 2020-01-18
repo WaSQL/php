@@ -176,7 +176,10 @@ function cronModal(func,id,title){
 				<td>
 					<a href="#" class="w_link w_block" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
+
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('run',<?=$cron['_id'];?>,this.title);" title="Run Now"><span class="icon-play w_success"></span></a>
+
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('kill',<?=$cron['_id'];?>,this.title);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
 					<span id="cron_processing"></span>
 				</td>
 			</tr>

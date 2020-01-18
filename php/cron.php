@@ -92,33 +92,7 @@ while($etime < 55){
 			cronMessage("apacheParseLogFile completed");
 		}
 		//update crons that say they are running but the pids are no longer active
-		$precs=getDBRecords(array(
-			'-table'	=> '_cron',
-			'-where'	=> "running=1 or cron_pid != 0",
-			'-fields'	=> '_id,cron_pid'
-		));
-		if(isset($precs[0])){
-			$pids=array();
-			foreach($precs as $prec){$pids[$prec['cron_pid']]=$prec['_id'];}
-			if(count($pids)){
-				$irecs=systemGetPidInfo($pids);
-				if(isset($irecs[0])){
-					foreach($irecs as $irec){
-						unset($pids[$irec['pid']]);
-					}
-				}
-			}
-			if(count($pids)){
-				$idstr=implode(',',array_values($pids));
-				cronMessage("Ids no longer running: {$idstr}");
-				$ok=editDBRecord(array(
-					'-table'=>'_cron',
-					'-where'=>"cron_pid = 0 or _id in ({$idstr})",
-					'running'	=> 0,
-					'cron_pid'	=> 0
-				));
-			}
-		}
+		$ok=commonCronCleanup();
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
 			'-table'	=> '_pages',
@@ -311,7 +285,7 @@ ENDOFWHERE;
 				$CRONTHRU['cron_name']=$rec['name'];
 				$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
 				$path=getWaSQLPath('php/temp');
-				$commonCronLogFile="{$path}/cronlog_{$rec['_id']}.txt";
+				$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
 				if(file_exists($commonCronLogFile)){
 					unlink($commonCronLogFile);
 				}

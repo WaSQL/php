@@ -10,14 +10,21 @@ SDIR=$(dirname $ME)
 cd $SDIR
 
 php cron.php &
-sleep 5
+sleep 6
 php cron.php &
-sleep 5
+sleep 7
 php cron.php &
-sleep 5
+sleep 6
 php cron.php &
-sleep 5
+sleep 7
 php cron.php &
+sleep 6
+php cron.php &
+sleep 7
+php cron.php &
+sleep 6
+php cron.php &
+
 
 
 

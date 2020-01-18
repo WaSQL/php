@@ -22,6 +22,73 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
+function commonCronCleanup(){
+	loadExtras('system');
+	global $CONFIG;
+	//look for killfiles
+	$path=getWaSQLPath('php/temp');
+	$files=listFilesEx($path,array('ext'=>'txt','name'=>"{$CONFIG['name']}_cronkill"));
+	$killids=array();
+	foreach($files as $file){
+		if(preg_match('/cronkill\_([0-9]+)\.txt/i',$file['name'],$m)){
+			$killids[]=$m[1];
+		}
+	}
+	if(count($killids)){
+		$killidstr=implode(',',$killids);
+		$precs=getDBRecords(array(
+			'-table'	=> '_cron',
+			'-where'	=> "_id in ({$killidstr})",
+			'-fields'	=> '_id,cron_pid'
+		));
+		if(isset($precs[0])){
+			foreach($precs as $prec){
+				$logfile="{$path}/{$CONFIG['name']}_cronlog_{$prec['_id']}.txt";
+				$killfile="{$path}/{$CONFIG['name']}_cronkill_{$prec['_id']}.txt";
+				if($prec['cron_pid'] != 0 && file_exists($killfile)){
+					if(isWindows()){
+						$cmd="taskkill /F /PID {$prec['cron_pid']}";
+					}
+					else{
+						$cmd="kill -9 {$prec['cron_pid']}";	
+					}
+					$ok=cmdResults($cmd);
+				}
+				usleep(250);
+				unlink($killfile);
+				unlink($logfile);
+			}
+		}
+	}
+	
+	$precs=getDBRecords(array(
+		'-table'	=> '_cron',
+		'-where'	=> "running=1 or cron_pid != 0",
+		'-fields'	=> '_id,cron_pid'
+	));
+	if(isset($precs[0])){
+		$pids=array();
+		foreach($precs as $prec){
+			$pids[$prec['cron_pid']]=$prec['_id'];
+		}
+		if(count($pids)){
+			$irecs=systemGetPidInfo($pids);
+			if(isset($irecs[0])){
+				foreach($irecs as $irec){
+					unset($pids[$irec['pid']]);
+				}
+			}
+		}
+		if(count($pids)){
+			$idstr=implode(',',array_values($pids));
+			$ok=editDBRecord(array(
+				'-table'=>'_cron',
+				'-where'=>"cron_pid = 0 or _id in ({$idstr})",
+				'running'	=> 0
+			));
+		}
+	}
+}
 //---------- begin function commonCronError
 /**
 * @describe records an error on this cron run
@@ -77,6 +144,7 @@ function commonCronError($err,$email='',$params=array()){
 *	$ok=commonCronLog($PASSTHRU);
 */
 function commonCronLog($msg,$echomsg=1){
+	global $CONFIG;
 	global $commonCronLogCache;
 	if(!isset($commonCronLogCache['start'])){
 		$commonCronLogCache['start']=microtime(true);
@@ -91,7 +159,7 @@ function commonCronLog($msg,$echomsg=1){
 	if(!isset($_REQUEST['cron_id'])){return 0;}
 	$id=(integer)$_REQUEST['cron_id'];
 	$path=getWaSQLPath('php/temp');
-	$logfile="{$path}/cronlog_{$id}.txt";
+	$logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 	if(!is_string($msg)){$msg=json_encode($msg);}
 	$msg=rtrim($msg);
 	if(!file_exists($logfile)){

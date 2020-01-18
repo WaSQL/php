@@ -40,6 +40,7 @@ function cronDetails($id){
 	/*
 		last_run
 	*/
+	global $CONFIG;
 	$cron=getDBRecordById('_cron',$id);
 	$cron['logs']=getDBRecords(array(
 		'-table'=>'_cronlog',
@@ -58,7 +59,7 @@ function cronDetails($id){
 		}
 	}
 	$path=getWaSQLPath('php/temp');
-	$commonCronLogFile="{$path}/cronlog_{$id}.txt";
+	$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 	if(file_exists($commonCronLogFile)){
 		$t=time()-filectime($commonCronLogFile);
 		$run_length=verboseTime($t);
