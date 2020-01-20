@@ -38,7 +38,7 @@ function ms2txtConvertDoc($afile) {
     $outtext = preg_replace("/[^a-zA-Z0-9\s\,\.\-\n\r\t@\/\_\(\)]/","",$outtext);
     return $outtext;
 }
-function ms2txtConvertDocx(){
+function ms2txtConvertDocx($afile){
     $striped_content = '';
     $content = '';
     $zip = zip_open($afile);
