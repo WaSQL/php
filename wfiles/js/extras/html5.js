@@ -35,7 +35,7 @@ function fileUploadBehavior(t, e) {
             var v = e.getAttribute("_mask_name"),
                 h = new RegExp(v, "i");
             if (0 == h.test(u.name)) {
-                var p = u.name + " is an invalid filetype";
+                var p = u.name + " is an invalid filename";
                 return void 0 != e.getAttribute("_mask_namemsg") && (p = e.getAttribute("_mask_namemsg")), alert(p), void 0
             }
         }
@@ -49,7 +49,7 @@ function fileUploadBehavior(t, e) {
         if (void 0 != e.getAttribute("_minsize")) {
             var _ = Math.round(e.getAttribute("_minsize"));
             if (u.size < _) {
-                var p = u.name + " is too big";
+                var p = u.name + " is too small";
                 return void 0 != e.getAttribute("_minsizemsg") && (p = e.getAttribute("_minsizemsg")), alert(p), void 0
             }
         }
