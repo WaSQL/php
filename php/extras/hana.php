@@ -262,6 +262,9 @@ function hanaParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($CONFIG as $k=>$v){
+			if(preg_match('/^hana/i',$k)){unset($CONFIG[$k]);}
+		}
 		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
 			$params["-{$k}"]=$v;
 		}
