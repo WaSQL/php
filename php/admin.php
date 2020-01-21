@@ -63,6 +63,7 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 	switch(strtolower($json['func'])){
 		case 'auth':
 			if(!isAdmin()){
+				$json['password']=preg_replace('/./','*',$json['password']);
 				echo json_encode(array('error'=>"auth: User '{$USER['username']}' is not an admin",'user'=>$USER,'request'=>$json));
 				exit;
 			}
