@@ -1860,8 +1860,8 @@ function buildFormHidden($name,$params=array()){
 * 	[onfocus] - javascript to run on focus
 * 	[requiredif] - set required based on another field
 * 	[value] - set value
-* 	[-lock_icon] - prepend lock icon as part of the input
-* 	[-show_icon] - append show icon to show password on hover     
+* 	[data-lock_icon] - prepend lock icon as part of the input
+* 	[data-show_icon] - append show icon to show password on hover     
 * @return string
 * @usage echo buildFormPassword('password',$params);
 */
@@ -1876,13 +1876,13 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
 	$tag='<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
-	if(isset($params['-lock_icon'])){
+	if(isset($params['data-lock_icon'])){
 		$tag .= '	<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
 	}
 	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL; 
-	if(isset($params['-show_icon'])){
+	if(isset($params['data-show_icon'])){
 		$tag .= '	<span class="btn w_white" style="padding:" onmouseover="formShowPassword(\''.$params['id'].'\',1);" onmouseout="formShowPassword(\''.$params['id'].'\',0);"><span class="icon-eye"></span></span>'.PHP_EOL;
 	}	
 	$tag .= '</div>'.PHP_EOL;

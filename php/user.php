@@ -1187,7 +1187,7 @@ function userLoginForm($params=array()){
     	}
     $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username",'autocomplete'=>'username');
 	foreach($params as $k=>$v){$username_opts[$k]=$v;}
-	$password_opts=array('id'=>$params['-name'].'_password','-lock_icon'=>1,'-show_icon'=>1,'required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
+	$password_opts=array('id'=>$params['-name'].'_password','data-lock_icon'=>1,'data-show_icon'=>1,'required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
 	foreach($params as $k=>$v){$password_opts[$k]=$v;}
     switch(strtolower($params['-format'])){
 		case 'oneline':
