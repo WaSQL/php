@@ -351,13 +351,22 @@ function hanaParseConnectParams($params=array()){
 function hanaDBConnect($params=array()){
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=hanaParseConnectParams($params);
-	if(!isset($params['-dbname'])){return $params;}
+	if(isset($params['-connect'])){
+		$connect_name=$params['-connect'];
+	}
+	elseif(isset($params['-dbname'])){
+		$connect_name=$params['-dbname'];
+	}
+	else{
+		echo "hanaDBConnect error: no dbname or connect param".printValue($params);
+		exit;
+	}
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
-			$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana_single = odbc_connect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 		}
 		if(!is_resource($dbh_hana_single)){
 			$err=odbc_errormsg();
@@ -372,19 +381,19 @@ function hanaDBConnect($params=array()){
 
 	try{
 		if(isset($params['-cursor'])){
-			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
+			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
 		if(!is_resource($dbh_hana)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
-				$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+				$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 			}
 			else{
-				$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'] );
+				$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
 			if(!is_resource($dbh_hana)){
 				$err=odbc_errormsg();
