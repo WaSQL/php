@@ -4325,6 +4325,8 @@ $query=<<<ENDOFSQL
 ENDOFSQL;
 	$rec=getDBRecord(array('-query'=>$query));
 	if(!isset($rec['exp'])){return '';}
+	$rec['exp']=stripslashes($rec['exp']);
+	//$rec['exp']=str_replace('_utf8mb4','',$rec['exp']);
 	return $rec['exp'];
 	//TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))
 	if(preg_match('/json\_extract\((.+?)\,\'\$\.(.+?)\'\)/i',$rec['exp'],$m)){
@@ -7429,135 +7431,83 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
 		return $databaseCache['getDBFieldInfo'][$dbcachekey];
-		}
-	$table_parts=preg_split('/\./', $table);
-	if(count($table_parts) > 1){
-		$tablename=array_pop($table_parts);
-		$db_prefix=implode('.',$table_parts).'.';
-		}
-	else{
-		$db_prefix='';
-		$tablename=$table;
-    	}
+	}
+	$query="show full columns from {$table}";
+	if(strlen($field)){
+		$query .= " like '%{$field}%'";
+	}
+	if(preg_match('/^(.+?)\.(.+)$/',$table,$m)){
+    	$vtable=$m[2];
+	}
+	else{$vtable=$table;}
+	$recopts=array('-query'=>$query,'-nolimit'=>1,'-index'=>'field');
+	$recs=getDBRecords($recopts);
 	$info=array();
-	//get a list of the database info
-	$schema = getDBSchema(array($table));
-	if(!is_array($schema)){return $schema;}
-    foreach($schema as $fld){
-		$name=$fld['field'];
-		foreach($fld as $key=>$val){
-			if(preg_match('/^_/',$key) || !strlen($val)){continue;}
-			if($key=='type'){$key='type_ex';}
-			$info[$name]['_db'.$key]=$val;
-        	}
-    	}
-	if(isMssql()){$table="[{$table}]";}
-	$query="SELECT * FROM $table where 1=0";
-	$query_result=@databaseQuery($query);
-  	if(!$query_result){
-		return setWasqlError(debug_backtrace(),getDBError(),$query);
-  		}
-	$cnt = databaseNumFields($query_result);
-	//mysqli does not have a mysqli_field_name function
-	if(isMysqli()){
-		//$info=mysqlTableInfo($table);
-		$dbtypemap = array(
-		    1=>'tinyint',
-		    2=>'smallint',
-		    3=>'int',
-		    4=>'float',
-		    5=>'double',
-		    7=>'timestamp',
-		    8=>'bigint',
-		    9=>'mediumint',
-		    10=>'date',
-		    11=>'time',
-		    12=>'datetime',
-		    13=>'year',
-		    16=>'bit',
-		    245=>'json',
-		    252=>'blob',
-		    253=>'varchar',
-		    254=>'char',
-		    246=>'decimal'
-		);
-		/*
-		       NOT_NULL_FLAG = 1
-		       PRI_KEY_FLAG = 2
-		       UNIQUE_KEY_FLAG = 4
-		       BLOB_FLAG = 16
-		       UNSIGNED_FLAG = 32
-		       ZEROFILL_FLAG = 64
-		       BINARY_FLAG = 128
-		       ENUM_FLAG = 256
-		       AUTO_INCREMENT_FLAG = 512
-		       TIMESTAMP_FLAG = 1024
-		       SET_FLAG = 2048
-		       NUM_FLAG = 32768
-		       PART_KEY_FLAG = 16384
-		       GROUP_FLAG = 32768
-		       UNIQUE_FLAG = 65536
-		*/
-		while ($finfo = mysqli_fetch_field($query_result)) {
-	        $name = (string)$finfo->name;
-	        if(strlen($field) && $name != $field){continue;}
-	        $info[$name]['name']=$name;
-	        $info[$name]['_dbfield']=strtolower($name);
-	        $flags=array();
-	        if($finfo->flags & 1){
-	        	$flags[]='not_null';
-	        	if(!stringContains($info[$name]['_dbtype_ex'],'NOT NULL')){
-	        		$info[$name]['_dbtype_ex'] .= ' NOT NULL';
-	        	}
-	        }
-	        if($finfo->flags & 2){
-	        	$flags[]='primary_key';
-	        	if(!stringContains($info[$name]['_dbtype_ex'],'Primary Key')){
-	        		$info[$name]['_dbtype_ex'] .= ' Primary Key';
-	        	}
-	        }
-	        if($finfo->flags & 4){
-	        	$flags[]='unique_key';
-	        	if(!stringContains($info[$name]['_dbtype_ex'],'UNIQUE')){
-	        		$info[$name]['_dbtype_ex'] .= ' UNIQUE';
-	        	}
-	        }
-	        if($finfo->flags & 32){$flags[]='unsigned';}
-	        if($finfo->flags & 512){
-	        	$flags[]='auto_increment';
-	        	if(!stringContains($info[$name]['_dbtype_ex'],'auto_increment')){
-	        		$info[$name]['_dbtype_ex'] .= ' auto_increment';
-	        	}
-	        }
-	        if($finfo->flags & 65536){
-	        	$flags[]='unique';
-	        	if(!stringContains($info[$name]['_dbtype_ex'],'UNIQUE')){
-	        		$info[$name]['_dbtype_ex'] .= ' UNIQUE';
-	        	}
-	        }
-	        $dbtypeid=(string)$finfo->type;
-	        //echo $name.printValue($finfo);
-	        $info[$name]['_dbtable'] = $info[$name]['table'] = $finfo->table;
-	        $info[$name]['_dblength'] = (integer)$finfo->length;
-	        if($info[$name]['_dblength']==0){
-	        	$info[$name]['_dblength'] = (integer)$finfo->max_length;
-			}
-			$info[$name]['length']=$info[$name]['_dblength'];
-	        $info[$name]['_dbflags'] = implode(' ',$flags);
-	        $info[$name]['_dbtype'] = $info[$name]['type']= isset($dbtypemap[$dbtypeid])?$dbtypemap[$dbtypeid]:$dbtypeid;
-    	}
-	}
-	else{
-		for ($i=0; $i < $cnt; $i++) {
-			$name  = (string) databaseFieldName($query_result, $i);
-			if(strlen($field) && $name != $field){continue;}
-			$info[$name]['_dbtable'] = $info[$name]['table'] = $table;
-			$info[$name]['_dbtype'] = $info[$name]['type'] = databaseFieldType($query_result, $i);
-	        $info[$name]['_dblength'] = $info[$name]['length']  = databaseFieldLength($query_result, $i);
-		    $info[$name]['_dbflags']  = databaseFieldFlags($query_result, $i);
+	foreach($recs as $key=>$rec){
+    	if(preg_match('/(VIRTUAL|STORED) GENERATED/i',$rec['extra'])){
+			$info[$key]['expression']=getDBExpression($vtable,$rec['field']);
 		}
+		$info[$key]['_dbfield']=$rec['field'];
+		$info[$key]['name']=$rec['field'];
+		$info[$key]['_dbnull']=$rec['null'];
+		$info[$key]['_dbprivileges']=$rec['privileges'];
+		$info[$key]['_dbtablename']=$table;
+		$info[$key]['_dbtable']=$table;
+		$info[$key]['table']=$table;
+		if(preg_match('/^(.+?)\((.+)\)$/',$rec['type'],$m)){
+			$info[$key]['type']=$info[$key]['_dbtype']=$m[1];
+			list($len,$dec)=preg_split('/\,/',$m[2]);
+			$info[$key]['length']=$recs[$key]['_dblength']=$len;
+			$info[$key]['_dbtype_ex']=$rec['type'];
+		}
+		else{
+			$info[$key]['type']=$info[$key]['_dbtype']=$info[$key]['_dbtype_ex']=$rec['type'];
+		}
+		//flags
+		 $flags=array();
+		 if(strtolower($rec['null'])=='no'){
+		 	$info[$key]['_dbtype_ex'] .= ' NOT NULL';
+		 	$flags[]='not_null';
+		 }
+		 switch(strtolower($rec['key'])){
+		 	case 'pri':
+		 		$flags[]='primary_key';
+		 		$info[$key]['_dbtype_ex'] .= ' PRIMARY KEY';
+		 	break;
+		 	case 'uni':
+		 		$flags[]='unique_key';
+		 		$info[$key]['_dbtype_ex'] .= ' UNIQUE';
+		 	break;
+		 }
+		 switch(strtolower($rec['extra'])){
+		 	case 'auto_increment':
+		 		$flags[]='auto_increment';
+		 		$info[$key]['_dbtype_ex'] .= ' auto_increment';
+		 	break;
+		 	case 'stored generated':
+		 		$flags[]='virtual';
+		 		$info[$key]['_dbtype_ex'] .= ' STORED GENERATED';
+		 	break;
+		 	case 'virtual generated':
+		 	case 'virtual from':
+		 		$flags[]='virtual';
+		 		$info[$key]['_dbtype_ex'] .= ' VIRTUAL GENERATED';
+		 	break;
+		 }
+		 $info[$key]['flags']=implode(' ',$flags);
+		 //default
+		 if(strlen($rec['default'])){
+		 	$info[$key]['_dbdef']=$info[$key]['default']=$rec['default'];
+		 	if(isNum($rec['default'])){
+		 		$info[$key]['_dbtype_ex'] .= " Default {$rec['default']}";
+		 	}
+		 	else{
+		 		$info[$key]['_dbtype_ex'] .= " Default '{$rec['default']}'";
+		 	}
+		 }
+		 ksort($info[$key]);
 	}
-	databaseFreeResult($query_result);
+	//if(stringContains($table,'_users')){echo printValue($info).printValue($recs);exit;}
 	if($getmeta){
 	    //Get a list of the metadata for this table
 	    $metaopts=array('-table'=>"{$db_prefix}_fielddata",'-notimestamp'=>1,'tablename'=>$tablename);
@@ -7570,10 +7520,11 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 				foreach($meta_rec as $key=>$val){
 					if(preg_match('/^\_/',$key)){continue;}
 					$info[$name][$key]=$val;
-					}
-            	}
-        	}
-		}
+				}
+            }
+        }
+	}
+	ksort($info);
 	if(count($info)){$databaseCache['getDBFieldInfo'][$dbcachekey]=$info;}
 	return $info;
 	}
@@ -8675,8 +8626,10 @@ function getDBRecords($params=array()){
 			$x++;
 			continue;
 		}
+		if(!isset($params['-lowercase']) || $params['-lowercase'] != false){
+			$row=array_change_key_case($row);
+		}
 		foreach($row as $key=>$val){
-			if(!isset($params['-lowercase']) || $params['-lowercase'] != false){$key=strtolower($key);}
 			if(isset($params['-eval']) && is_callable($params['-eval'])){
 				if(isset($params['-noeval'])){
 					if(!is_array($params['-noeval'])){$params['-noeval']=preg_split('/\,/',$params['-noeval']);}
@@ -8697,16 +8650,23 @@ function getDBRecords($params=array()){
 					$indexes=array();
 					foreach($params['-index'] as $fld){
 						$indexes[] = $row[$fld];
-						}
+					}
 					$index=implode(',',$indexes);
 					$index=strtolower($index);
 					$list[$index][$key]=$val;
-                	}
+                }
 				elseif(strlen($params['-index']) && !isNum($params['-index']) && isset($row[$params['-index']])){
 					$index=$row[$params['-index']];
 					$index=strtolower($index);
 					$list[$index][$key]=$val;
-                	}
+                }
+                else{
+					$list[$x][$key]=$val;
+					//-json?
+	                if(isset($jsonfields[$key])){
+						$list[$x]["{$key}_json"]=json_decode($val,true);
+					}
+				}
                 //-json?
                 if(strlen($index) && isset($jsonfields[$key])){
 					$list[$index]["{$key}_json"]=json_decode($val,true);
@@ -8988,8 +8948,8 @@ function updateDBSchema($table,$lines,$new=0){
 		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
 		'_cuser'=> "int NOT NULL",
 		'_edate'=> databaseDataType('datetime')." NULL",
-		'_euser'=> "int NULL",
-		);
+		'_euser'=> "int NULL"
+	);
 	$table_parts=preg_split('/\./', $table);
 	$updatetable=$table;
 	if(count($table_parts) > 1){
@@ -9027,8 +8987,9 @@ function updateDBSchema($table,$lines,$new=0){
 	$fields=array();
 	foreach($lines as $line){
 		if(!strlen(trim($line))){continue;}
-		$line=strtolower($line);
+		$oriline=$line;
 		list($name,$type)=preg_split('/[\s\t]+/',$line,2);
+		$name=strtolower($name);
 		if(!strlen($type)){continue;}
 		if(!strlen($name)){continue;}
 		if(preg_match('/^\_/',$name)){continue;}
@@ -9065,6 +9026,7 @@ function updateDBSchema($table,$lines,$new=0){
     if(count($fields)){
 		//add common fields
 		foreach($cfields as $key=>$val){$fields[$key]=$val;}
+		//echo $new.printValue($fields);
 		if($new==1){
         	$ok = createDBTable($updatetable,$fields);
 		}
@@ -9073,6 +9035,7 @@ function updateDBSchema($table,$lines,$new=0){
 		}
 		$rtn++;
     }
+    //echo "virtual".printValue($virtual);
     if(count($virtual)){
     	foreach($virtual as $field=>$sql){
 			$ok=executeSQL("ALTER table {$updatetable} DROP {$field}");
