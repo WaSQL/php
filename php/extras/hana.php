@@ -358,6 +358,12 @@ function hanaDBConnect($params=array()){
 
 	try{
 		if(isset($params['-cursor'])){
+			switch(strtoupper($params['-cursor'])){
+				case 'SQL_CUR_USE_ODBC':$params['-cursor']=SQL_CUR_USE_ODBC;break;
+				case 'SQL_CUR_USE_IF_NEEDED':$params['-cursor']=SQL_CUR_USE_IF_NEEDED;break;
+				case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
+				default:$params['-cursor']='';break;
+			}
 			$dbh_hana = @odbc_pconnect($params['-dbname'],$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
