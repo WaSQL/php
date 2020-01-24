@@ -1187,7 +1187,7 @@ function userLoginForm($params=array()){
     	}
     $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username",'autocomplete'=>'username');
 	foreach($params as $k=>$v){$username_opts[$k]=$v;}
-	$password_opts=array('id'=>$params['-name'].'_password','required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
+	$password_opts=array('id'=>$params['-name'].'_password','data-lock_icon'=>1,'data-show_icon'=>1,'required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
 	foreach($params as $k=>$v){$password_opts[$k]=$v;}
     switch(strtolower($params['-format'])){
 		case 'oneline':
@@ -1267,15 +1267,11 @@ function userLoginForm($params=array()){
 			$username_opts['class']='browser-default w_input-append';
 			$password_opts['class']='browser-default w_input-append';
 			$form .= '<div style="max-width:250px;margin-left:10px;">'.PHP_EOL;
-			$form .= '	<div class="flexbutton">'.PHP_EOL;
+			$form .= '	<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;">'.PHP_EOL;
 			$form .= '		<span class="btn w_white"><span class="icon-user"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormText('username',$username_opts);
 			$form .= '	</div>'.PHP_EOL;
-			$form .= '	<div class="flexbutton" style="margin-top:5px;">'.PHP_EOL;
-			$form .= '			<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
 			$form .= '		'.buildFormPassword('password',$password_opts);
-			$form .= '			<span class="btn w_white" style="padding:" onmouseover="formShowPassword(\''.$password_opts['id'].'\',1);" onmouseout="formShowPassword(\''.$password_opts['id'].'\',0);"><span class="icon-eye"></span></span>'.PHP_EOL;
-			$form .= '	</div>'.PHP_EOL;
 			$form .= '	<div class="w_flexrow"  style="margin-top:5px;">'.PHP_EOL;
 			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
 			$form .= '		<div><button type="submit" class="btn">Login</button></div>'.PHP_EOL;

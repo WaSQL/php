@@ -1853,6 +1853,15 @@ function buildFormHidden($name,$params=array()){
 * @describe creates an HTML password field
 * @param name string
 * @param params array
+* 	[-formname] - name of the parent form  - used to set a default id if one is not given
+* 	[name] - name of the input if you want to override the one passed in
+* 	[id] - id of the input - defaults to formname_name
+* 	[class] - css class
+* 	[onfocus] - javascript to run on focus
+* 	[requiredif] - set required based on another field
+* 	[value] - set value
+* 	[data-lock_icon] - prepend lock icon as part of the input
+* 	[data-show_icon] - append show icon to show password on hover     
 * @return string
 * @usage echo buildFormPassword('password',$params);
 */
@@ -1866,9 +1875,18 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
-	$tag = '	<input type="password" value="'.encodeHtml($params['value']).'"';
+	$tag='<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
+	if(isset($params['data-lock_icon'])){
+		$tag .= '	<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
+	}
+	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' />'.PHP_EOL; 
+	if(isset($params['data-show_icon'])){
+		$tag .= '	<span class="btn w_white" style="padding:" onmouseover="formShowPassword(\''.$params['id'].'\',1);" onmouseout="formShowPassword(\''.$params['id'].'\',0);"><span class="icon-eye"></span></span>'.PHP_EOL;
+	}	
+	$tag .= '</div>'.PHP_EOL;
+
 	return $tag;
 }
 //---------- begin FUNCTION buildFormMultiSelect-------------------
