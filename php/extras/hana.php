@@ -266,7 +266,17 @@ function hanaParseConnectParams($params=array()){
 			if(preg_match('/^hana/i',$k)){unset($CONFIG[$k]);}
 		}
 		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
-			$params["-{$k}"]=$v;
+			if(strtolower($k)=='cursor'){
+				switch(strtoupper($v)){
+					case 'SQL_CUR_USE_ODBC':$params['-cursor']=SQL_CUR_USE_ODBC;break;
+					case 'SQL_CUR_USE_IF_NEEDED':$params['-cursor']=SQL_CUR_USE_IF_NEEDED;break;
+					case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
+				}
+			}
+			else{
+				$params["-{$k}"]=$v;
+			}
+			
 		}
 	}
 	if(!isset($params['-dbname'])){
@@ -316,7 +326,11 @@ function hanaParseConnectParams($params=array()){
 		$params['-dbpass_source']="passed in";
 	}
 	if(isset($CONFIG['hana_cursor'])){
-		$params['-cursor']=$CONFIG['hana_cursor'];
+		switch(strtoupper($CONFIG['hana_cursor'])){
+			case 'SQL_CUR_USE_ODBC':$params['-cursor']=SQL_CUR_USE_ODBC;break;
+			case 'SQL_CUR_USE_IF_NEEDED':$params['-cursor']=SQL_CUR_USE_IF_NEEDED;break;
+			case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
+		}
 	}
 	return $params;
 }
