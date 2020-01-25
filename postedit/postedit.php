@@ -47,6 +47,29 @@ file_put_contents($lockfile,$pid);
 echo "{$lockfile} is now mine".PHP_EOL;
 //create the base dir
 $folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
+$basefolder=$folder;
+//check for datestamp
+if(isset($hosts[$chost]['datestamp'])){
+	$folder .= '_'.date('Ymd');
+}
+//check for days to keep
+if(isset($hosts[$chost]['days_to_keep'])){
+	$days_to_keep=(integer)$hosts[$chost]['days_to_keep'];
+	$now = time(); // or your date as well
+	$dirs=listFilesEx("{$progpath}/postEditFiles",array('name'=>"{$basefolder}_",'type'=>'dir'));
+	foreach($dirs as $dir){
+		if(preg_match('/\_([0-9]+)$/',$dir['name'],$m)){
+			$ddate=substr($m[1],0,4).'-'.substr($m[1],4,2).'-'.substr($m[1],6-2);
+			$ddate = strtotime($ddate);
+			$diff=round(($now - $ddate) / (60 * 60 * 24),0);
+			if($diff > $days_to_keep){
+				echo "Removing {$dir['name']} as it is {$diff} days old".PHP_EOL;
+				cleanDir($dir['afile']);
+				rmdir($dir['afile']);
+			}
+		}
+	}
+}
 //allow timer to be set in postedit.xml
 if(isset($hosts[$chost]['timer'])){
 	$timer=(integer)$hosts[$chost]['timer'];

@@ -1,8 +1,13 @@
 <settings>
+	<!-- sound tag will say things -->
 	<sound
 		success="Ok"
 		fail="Error!"
 		gender="m"
+	/>
+	<!-- editor tag will run the command on success.-->
+	<editor
+		command="subl --add"
 	/>
 </settings>
 <hosts>
@@ -14,6 +19,8 @@
 			apikey - apikey of username
 			tables - defaults to getting _models, _pages, _tables
 			groupby - name,field, type, or extension.  Groups files by file name, field(body,controller,functions,js,css), type(models, views, controllers), or extension (html,php,js,css)
+			datestamp - if 1 then the folder will be stamped with the date  (localhost_20200112)
+			days_to_keep - number of days to keep datestamped folders.  Folders older than this will be deleted.
 	-->
 	<host
 		name="localhost"
