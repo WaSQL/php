@@ -8787,7 +8787,7 @@ function fopen_utf8($filename){
 	//---------- begin function csv2Arrays--------------------
 /**
 * @describe returns the contents of a CSV string as an array
-* @param data string - lines of csv data
+* @param data mixed - lines of csv data as either a string or an array
 * @param params array
 *	[separator] - defaults to ,
 *	[fields] - if not supplied uses the first rows as field names
@@ -8795,8 +8795,8 @@ function fopen_utf8($filename){
 * @return array
 * @usage $csv=csv2Arrays($data);
 */
-function csv2Arrays($data,$params=array()){
-	$lines=preg_split('/[\r\n]+/',trim($data));
+function csv2Arrays($lines,$params=array()){
+	if(!is_array($lines)){$lines=preg_split('/[\r\n]+/',trim($lines));}
 	if(!isset($params['separator'])){
 		if(!stringContains($lines[0],',') && stringContains($lines[0],"\t")){
 			$params['separator']="\t";
@@ -8916,7 +8916,9 @@ function getCSVFileContents($file,$params=array()){
     $row_ptr=0;
     if(isset($params['unique'])){$unique=array();}
 	while (($data = fgets($handle, $params['maxlen'])) !== FALSE) {
-		$data=utf8_encode($data);
+		if(isset($params['-utf8_encode']) && $params['-utf8_encode']){
+			$data=utf8_encode($data);
+		}
 		$data=csvParseLine($data,$params['separator'],$params['enclose']);
 		//echo printValue($data);exit;
 		if($results['count'] > $params['maxrows']){break;}
