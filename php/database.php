@@ -64,10 +64,8 @@ function dbISQL($dsn,$user,$pass,$query){
 	$b64=str_replace('=','',$b64);
 	$qfile="{$path}/{$b64}.sql";
 	$ok=setFileContents($qfile,$query);
-	$cmd="isql {$dsn} {$user} {$pass} -d! -c <'{$qfile}'";
-	//echo $cmd;exit;
+	$cmd="isql {$dsn} {$user} {$pass} -d'|' -c <'{$qfile}'";
 	$out=cmdResults($cmd);
-	//echo printValue($out);exit;
 	unlink($qfile);
 	$lines=preg_split('/[\r\n]/',$out['stdout']);
 	$found=0;
