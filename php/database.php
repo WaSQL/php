@@ -60,11 +60,11 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 function dbISQL($dsn,$user,$pass,$query){
 	//isql prd3t1hana tableau T8bl3au123 -d, -c </var/www/wasql_stage/php/temp/q.sql >/var/www/wasql_stage/php/temp/q.csv
 	$path=getWasqlPath('php/temp');
-	$b64=base64_encode($query);
+	$b64=base64_encode($dsn.$user.$query);
 	$b64=str_replace('=','',$b64);
 	$qfile="{$path}/{$b64}.sql";
 	$ok=setFileContents($qfile,$query);
-	$cmd="isql {$dsn} {$user} {$pass} -d, -c <'{$qfile}'";
+	$cmd="isql {$dsn} {$user} {$pass} -d! -c <'{$qfile}'";
 	//echo $cmd;exit;
 	$out=cmdResults($cmd);
 	//echo printValue($out);exit;
@@ -84,9 +84,7 @@ function dbISQL($dsn,$user,$pass,$query){
 	}
 	//lowercase the fields (first line)
 	$lines[0]=strtolower($lines[0]);
-	echo count($lines).printValue($lines);
-	$recs=csv2Arrays($lines);
-	echo printValue($recs);exit;
+	$recs=csv2Arrays($lines,array('separator'=>'|'));
 	return $recs;
 }
 //---------- db functions that allow you to pass in what database first
