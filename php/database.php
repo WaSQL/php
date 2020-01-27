@@ -58,7 +58,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 function dbISQL($dsn,$user,$pass,$query){
-	//isql prd3t1hana tableau T8bl3au123 -d, -c </var/www/wasql_stage/php/temp/q.sql >/var/www/wasql_stage/php/temp/q.csv
+	//isql prd3t1hana tableau T8bl3au123 -d| -c </var/www/wasql_stage/php/temp/q.sql
 	$path=getWasqlPath('php/temp');
 	$b64=base64_encode($dsn.$user.$query);
 	$b64=str_replace('=','',$b64);
