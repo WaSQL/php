@@ -278,8 +278,8 @@ function cronCheckSchema(){
 		));
 	}
 	if(!isset($cronlogfields['run_memory'])){
-		$query="ALTER TABLE _cronlog ADD run_memory ".databaseDataType('integer')." NULL";
-		$ok=executeSQL($query);
+		//$query="ALTER TABLE _cronlog ADD run_memory ".databaseDataType('integer')." NULL";
+		//$ok=executeSQL($query);
 	}
 	return true;
 }
