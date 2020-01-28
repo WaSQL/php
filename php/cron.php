@@ -415,7 +415,7 @@ ENDOFWHERE;
 					'run_memory'	=> $run_memory
 				);
 				$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
-				echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
+				//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
 				$runtime=$run_length > 0?verboseTime($run_length):0;
 
 				cronMessage("finished {$rec['name']}. Run Length:{$runtime}");
