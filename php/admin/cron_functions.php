@@ -156,7 +156,9 @@ function cronListExtra($recs){
 		$recs[$i]['active']=cronIsActive($rec);
 		$recs[$i]['paused']=cronIsPaused($rec);
 		$recs[$i]['running']=cronIsRunning($rec);
-		$recs[$i]['run_memory']=verboseSize($rec['run_memory']);
+		if(isNum($rec['run_memory']) && $rec['run_memory'] > 0){
+			$recs[$i]['run_memory']=verboseSize($rec['run_memory']);
+		}
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		if(strlen($rec['run_date'])){
 			$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
