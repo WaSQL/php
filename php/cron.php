@@ -432,8 +432,7 @@ ENDOFWHERE;
 					'cron_pid'	=> $cron_pid,
 					'name'		=> $rec['name'],
 					'run_cmd'	=> $rec['run_cmd'],
-					'run_date'	=> $run_date,
-					'run_memory'=> $run_memory
+					'run_date'	=> $run_date
 				);
 				$lrec=getDBRecord($opts);
 				if(isset($lrec['_id'])){
@@ -542,11 +541,6 @@ function cronCheckSchema(){
 			'mask'			=> 'integer',
 			'required'		=> 1
 		));
-	}
-	$cronlogfields=getDBFieldInfo('_cronlog');
-	if(!isset($cronlogfields['run_memory'])){
-		$query="ALTER TABLE _cronlog ADD run_memory ".databaseDataType('integer')." NULL";
-		$ok=executeSQL($query);
 	}
 	return true;
 }
