@@ -406,12 +406,16 @@ ENDOFWHERE;
 	            $cron_result .= PHP_EOL;
 	            $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
 				//update record to show we are now finished
-				$ok=editDBRecordById('_cron',$rec['_id'],array(
+				$run_memory=memory_get_usage();
+				$eopts=array(
 					'running'		=> 0,
 					'cron_pid'		=> 0,
 					'run_length'	=> $run_length,
-					'run_result'	=> $cron_result
-				));
+					'run_result'	=> $cron_result,
+					'run_memory'	=> $run_memory
+				);
+				$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
+				echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
 				$runtime=$run_length > 0?verboseTime($run_length):0;
 
 				cronMessage("finished {$rec['name']}. Run Length:{$runtime}");
@@ -428,7 +432,8 @@ ENDOFWHERE;
 					'cron_pid'	=> $cron_pid,
 					'name'		=> $rec['name'],
 					'run_cmd'	=> $rec['run_cmd'],
-					'run_date'	=> $run_date
+					'run_date'	=> $run_date,
+					'run_memory'=> $run_memory
 				);
 				$lrec=getDBRecord($opts);
 				if(isset($lrec['_id'])){
@@ -484,8 +489,8 @@ function cronCleanRecords($cron=array()){
 function cronCheckSchema(){
 	$cronfields=getDBFieldInfo('_cron');
 	//add paused and groupname fields?
+	//paused
 	if(!isset($cronfields['paused'])){
-		//paused
 		$query="ALTER TABLE _cron ADD paused ".databaseDataType('integer(1)')." NOT NULL Default 0;";
 		$ok=executeSQL($query);
 		$id=addDBRecord(array('-table'=>'_fielddata',
@@ -498,7 +503,9 @@ function cronCheckSchema(){
 			'required'		=> 0
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
-		//groupname
+	}
+	//groupname
+	if(!isset($cronfields['groupname'])){
 		$query="ALTER TABLE _cron ADD groupname ".databaseDataType('varchar(150)')." NULL;";
 		$ok=executeSQL($query);
 		$id=addDBRecord(array('-table'=>"_fielddata",
@@ -509,7 +516,9 @@ function cronCheckSchema(){
 			'required'		=> 0
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
-		//records_to_keep
+	}
+	//records_to_keep
+	if(!isset($cronfields['records_to_keep'])){
 		$query="ALTER TABLE _cron ADD records_to_keep ".databaseDataType('integer')." NOT NULL Default 1000;";
 		$ok=executeSQL($query);
 		$id=addDBRecord(array('-table'=>"_fielddata",
@@ -520,6 +529,24 @@ function cronCheckSchema(){
 			'mask'			=> 'integer',
 			'required'		=> 1
 		));
+	}
+	//run_memory
+	if(!isset($cronfields['run_memory'])){
+		$query="ALTER TABLE _cron ADD run_memory ".databaseDataType('integer')." NULL";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_memory',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
+		));
+	}
+	$cronlogfields=getDBFieldInfo('_cronlog');
+	if(!isset($cronlogfields['run_memory'])){
+		$query="ALTER TABLE _cronlog ADD run_memory ".databaseDataType('integer')." NULL";
+		$ok=executeSQL($query);
 	}
 	return true;
 }

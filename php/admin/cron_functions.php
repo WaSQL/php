@@ -97,9 +97,9 @@ function cronList(){
 	}
 	$opts=array(
 		'-table'=>'_cron',
-		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,records_to_keep,run_error',
-		'-searchfields'=>'_id,groupname,name,active,paused,running,records_to_keep',
-		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,records_to_keep',
+		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,run_memory,records_to_keep,run_error',
+		'-searchfields'=>'_id,groupname,name,active,paused,running,run_memory,records_to_keep',
+		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,run_memory,records_to_keep',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -113,6 +113,7 @@ function cronList(){
 		'run_length_class'=>'align-right',
 		'run_length_verbosetime'=>1,
 		'groupname_displayname'=>'Group',
+		'run_memory_displayname'=>'Memory',
 		'err_displayname'=>'',
 		'name_class'=>'w_nowrap w_link',
 		'active_class'=>'align-center',
@@ -155,6 +156,7 @@ function cronListExtra($recs){
 		$recs[$i]['active']=cronIsActive($rec);
 		$recs[$i]['paused']=cronIsPaused($rec);
 		$recs[$i]['running']=cronIsRunning($rec);
+		$recs[$i]['run_memory']=verboseSize($rec['run_memory']);
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		if(strlen($rec['run_date'])){
 			$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,1).' ago';
