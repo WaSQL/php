@@ -121,7 +121,8 @@ ENDOFWHERE;
 			'-table'	=> '_cron',
 			'-fields'	=> '_id,name,run_cmd,running,run_date,frequency,run_format,run_values',
 			'-where'	=> $wherestr,
-			'-nocache'	=> 1
+			'-nocache'	=> 1,
+			'-order'	=> 'run_date'
 		);
 		$cronfields=getDBFields('_cron');
 		if(!is_array($cronfields)){
