@@ -249,6 +249,8 @@ ENDOFWHERE;
 				));
 				//skip if running
 				if($rec['running']==1){continue;}
+				//skip if paused
+				if($rec['paused']==1){continue;}
 				//update record to show we are now running
 				$start=$CRONTHRU['start']=time();
 				$run_date=date('Y-m-d H:i:s');
