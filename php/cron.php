@@ -50,6 +50,7 @@ global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
 $pid_check=1;
+$apache_log=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	foreach($ConfigXml as $name=>$host){
@@ -84,7 +85,8 @@ while($etime < 55){
 	    	continue;
 		}
 		//check for apache_access_log
-		if(isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+			$apache_log=0;
 			loadExtras('apache');
 			cronMessage("running apacheParseLogFile...".$CONFIG['apache_access_log']);
 			$msg=apacheParseLogFile();

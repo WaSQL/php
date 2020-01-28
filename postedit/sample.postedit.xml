@@ -24,8 +24,13 @@
 	-->
 	<host
 		name="localhost"
-		apikey="V2E2UUk6YWRtaW46YWRtaW4="
+		alias="localhost"
+		apikey="YWR6adZEVSMzNnasfdhZHBleHpnMWkFrOmFkcGV4easfdsaRlVaQWs="
 		username="admin"
+		groupby="name"
+		insecure="1"
+		datestamp="1"
+		days_to_keep="30"
 	/>
 </hosts>
 
