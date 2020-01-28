@@ -99,7 +99,7 @@ function cronList(){
 		'-table'=>'_cron',
 		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,run_memory,records_to_keep,run_error',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_memory,records_to_keep',
-		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,run_memory,records_to_keep',
+		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,run_memory,logs,records_to_keep',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -114,6 +114,7 @@ function cronList(){
 		'run_length_verbosetime'=>1,
 		'groupname_displayname'=>'Group',
 		'run_memory_displayname'=>'Memory',
+		'records_to_keep_displayname'=>'Logs Max',
 		'err_displayname'=>'',
 		'name_class'=>'w_nowrap w_link',
 		'active_class'=>'align-center',
@@ -121,6 +122,7 @@ function cronList(){
 		'running_class'=>'align-center',
 		'records_to_keep_class'=>'align-right',
 		'last_run_class'=>'align-right',
+		'logs_class'=>'align-right',
 		'-results_eval'=>'cronListExtra'
 	);
 	//predata
@@ -132,11 +134,17 @@ function cronList(){
 }
 function cronListExtra($recs){
 	$ids=array();
+	$cron_ids=array();
 	foreach($recs as $i=>$rec){
 		if($rec['run_as'] > 0 && !in_array($rec['run_as'],$ids)){
 			$ids[]=$rec['run_as'];
 		}
+		$cron_ids[]=$rec['_id'];
 	}
+	$logcounts=getDBRecords(array(
+		'-query'=>"select count(*) cnt, cron_id from _cronlog group by cron_id",
+		'-index'=>'cron_id'
+	));
 	$umap=array();
 	if(count($ids)){
 		$idstr=implode(',',$ids);
@@ -156,6 +164,12 @@ function cronListExtra($recs){
 		$recs[$i]['active']=cronIsActive($rec);
 		$recs[$i]['paused']=cronIsPaused($rec);
 		$recs[$i]['running']=cronIsRunning($rec);
+		if(isset($logcounts[$id])){
+			$recs[$i]['logs']=$logcounts[$id]['cnt'];
+		}
+		else{
+			$recs[$i]['logs']='';
+		}
 		if(isNum($rec['run_memory']) && $rec['run_memory'] > 0){
 			$recs[$i]['run_memory']=verboseSize($rec['run_memory']);
 		}
