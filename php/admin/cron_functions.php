@@ -239,8 +239,8 @@ function cronCheckSchema(){
 			'required'		=> 1
 		));
 	}
+	//records_to_keep
 	if(!isset($cronfields['run_error'])){
-		//records_to_keep
 		$query="ALTER TABLE _cron ADD run_error ".databaseDataType('varchar(2000)')." NULL;";
 		$ok=executeSQL($query);
 		$id=addDBRecord(array('-table'=>"_fielddata",
@@ -248,6 +248,19 @@ function cronCheckSchema(){
 			'fieldname'		=> 'run_error',
 			'inputtype'		=> 'textarea',
 			'width'			=> 600
+		));
+	}
+	//run_memory
+	if(!isset($cronfields['run_memory'])){
+		$query="ALTER TABLE _cron ADD run_memory ".databaseDataType('integer')." NULL";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_memory',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
 		));
 	}
 	//check _cronlog table
@@ -261,6 +274,10 @@ function cronCheckSchema(){
 			'inputtype'		=> 'textarea',
 			'width'			=> 600
 		));
+	}
+	if(!isset($cronlogfields['run_memory'])){
+		$query="ALTER TABLE _cronlog ADD run_memory ".databaseDataType('integer')." NULL";
+		$ok=executeSQL($query);
 	}
 	return true;
 }
