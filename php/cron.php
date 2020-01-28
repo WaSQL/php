@@ -408,6 +408,10 @@ ENDOFWHERE;
 				$run_length=$stop-$start;
 	            $cron_result .= PHP_EOL;
 	            $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
+	            //limit $cron_result to 65535 chars
+	            if(strlen($cron_result) > 65535){
+	            	$cron_result=substr($cron_result,0,65535);
+	            }
 				//update record to show we are now finished
 				$run_memory=memory_get_usage();
 				$eopts=array(
