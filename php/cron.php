@@ -114,7 +114,7 @@ ENDOFWHERE;
 			unlink($runnow_afile);
 			$runid=(integer)$runid;
 			$wherestr="_id={$runid} and running != 1";
-			echo "Run Now File found. Set wherestr: {$wherestr}".PHP_EOL;
+			$ok=cronMessage("Run Now File found. Set wherestr: {$wherestr}");
 			$runnow=1;
 		}
 		$recopts=array(
