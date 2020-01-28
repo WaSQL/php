@@ -328,7 +328,7 @@ ENDOFWHERE;
 	            	//cron is a command
 	            	$crontype='OS Command';
 				}
-				cronMessage("running {$crontype} {$rec['name']}");
+				cronMessage("running {$crontype} {$rec['run_cmd']}");
 	        	
 	        	$cron_result='';
 				$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
