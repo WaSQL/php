@@ -4159,7 +4159,12 @@ function addDBRecord($params=array()){
     	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
     	$updates=array();
     	foreach($upserts as $k=>$v){
-    		if(!strlen($v)){$v='NULL';}
+    		if(!strlen($v)){
+    			if(isset($info[$k]['default']) && strlen($info[$k]['default'])){
+					$val=$info[$k]['default'];
+				}
+				else{$val='NULL';}
+			}
     		$updates[]="	{$k} = {$v}";
     	}
     	$query .= implode(','.PHP_EOL,$updates);
@@ -5878,8 +5883,15 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
 				if(is_array($val)){$val=(integer)$val[0];}
 				if(strlen($val)==0){
-					if(isset($info[$key]['_dbflags']) && strlen($info[$key]['_dbflags']) && stristr("not_null",$info[$key]['_dbflags'])){$val=0;}
-					else{$val='NULL';}
+					if(isset($info[$key]['_dbflags']) && strlen($info[$key]['_dbflags']) && stristr("not_null",$info[$key]['_dbflags'])){
+						if(isset($info[$key]['default']) && strlen($info[$key]['default'])){
+							$val=$info[$key]['default'];
+						}
+						else{$val=0;}
+					}
+					else{
+						$val='NULL';
+					}
 					}
 				array_push($updates,"{$key}=$val");
 				}
@@ -5887,8 +5899,16 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 				//echo "[{$key}]".printValue($val)."\n".PHP_EOL;
 				if(is_array($val)){$val=implode(':',$val);}
 				$val=databaseEscapeString($val);
-				if(strlen($val)==0){$val='NULL';}
-				if($val=='NULLDATE' || $val=='NULL'){array_push($updates,"{$key}=NULL");}
+				if(strlen($val)==0){
+					if(isset($info[$key]['default']) && strlen($info[$key]['default'])){
+						$val=$info[$key]['default'];
+					}
+					else{$val='NULL';}
+				}
+				if($val=='NULLDATE' || $val=='NULL'){
+					//echo printValue($info[$key]);
+					array_push($updates,"{$key}=NULL");
+				}
 				else{array_push($updates,"{$key}='$val'");}
 	        	}
 	        //add sha and size if needed
@@ -7522,7 +7542,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		 		$info[$key]['_dbtype_ex'] .= ' VIRTUAL GENERATED';
 		 	break;
 		 }
-		 $info[$key]['flags']=implode(' ',$flags);
+		 $info[$key]['flags']=$info[$key]['_dbflags']=implode(' ',$flags);
 		 //default
 		 if(strlen($rec['default'])){
 		 	$info[$key]['_dbdef']=$info[$key]['default']=$rec['default'];
