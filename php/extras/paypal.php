@@ -39,7 +39,7 @@ function paypapClientId(){
 */
 function paypalUrl(){
 	if(isset($CONFIG['paypal_url'])){
-		$CONFIG['paypal_url']
+		return $CONFIG['paypal_url'];
 	}
 	if(isDBStage()){
 		return 'https://api.sandbox.paypal.com';
@@ -124,11 +124,11 @@ function paypalSendInvoice($params=array()){
 		'items'=>array(),
 		'configuration'=>array(
 			'partial_payment'=>array(
-				'allow_partial_payment'=>isset($params['allow_partial_payment']?$params['allow_partial_payment']:false
+				'allow_partial_payment'=>isset($params['allow_partial_payment'])?$params['allow_partial_payment']:false
 			),
-			'allow_tip'=>isset($params['allow_tip']?$params['allow_tip']:true,
-			'tax_calculated_after_discount'=>isset($params['tax_calculated_after_discount']?$params['tax_calculated_after_discount']:true,
-			'tax_inclusive'=>isset($params['tax_inclusive']?$params['tax_inclusive']:false,
+			'allow_tip'=>isset($params['allow_tip'])?$params['allow_tip']:true,
+			'tax_calculated_after_discount'=>isset($params['tax_calculated_after_discount'])?$params['tax_calculated_after_discount']:true,
+			'tax_inclusive'=>isset($params['tax_inclusive'])?$params['tax_inclusive']:false
 		)
 	);
 	//recipeints

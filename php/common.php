@@ -10955,7 +10955,7 @@ function loadExtras($extras){
 		else{
 			$progpath=dirname(__FILE__);
 			//for backward compatibility look for nmi, authnet, paypal - they were moved to merchants folder
-			if(preg_match('/^(nmi|authnet|paypal|ebanx|securenet|stripe)$/i',$extra)){
+			if(preg_match('/^(nmi|authnet|ebanx|securenet|stripe)$/i',$extra)){
             	$extra="merchants/{$extra}";
 			}
 			elseif(preg_match('/^(canada_post|fedex|ups|usps|npf|integracore)$/i',$extra)){
