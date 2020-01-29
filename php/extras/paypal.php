@@ -130,6 +130,29 @@ function paypalSendInvoice($params=array()){
 	}
 	return "Error: no token";
 }
+//---------- begin function paypalSendPayout
+/**
+* @describe sends a paypal/venmo payment to recipient
+* @param params array
+*	sender_batch_id
+*	email_subject
+*	email_message
+*	items - array with the following attributes
+*		recipient_type
+*		amount_value
+*		sender_item_id
+*		receiver
+*		[amount_currency]
+*	[-form{class|style|id|...}] string - sets specified attribute on the form
+*	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
+*	[-limit] integer - number of records to show
+*	[-offset] integer - number to start with - defaults to 0
+*	[-total] integer - number of total records - required to show pagination buttons
+*	['-formname'] - formname. defaults to searchfiltersform
+* @return array - array of results
+* @usage
+*	$result=paypalSendPayout($params);
+*/
 function paypalSendPayout($params=array()){
 	//check for required fields
 	if(!isset($params['sender_batch_id'],$params['email_subject'],$params['email_message'],$params['items'][0])){
