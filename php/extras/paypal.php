@@ -9,6 +9,10 @@
 		set paypal_secret, paypal_clientid, and optionally paypal_url in config.xml
 
 */
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function paypalSecret(){
 	global $CONFIG;
 	if(isset($CONFIG['paypal_secret'])){
@@ -17,6 +21,10 @@ function paypalSecret(){
 	}
 	return $CONFIG['paypal_secret'];
 }
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function paypapClientId(){
 	global $CONFIG;
 	if(isset($CONFIG['paypal_clientid'])){
@@ -25,6 +33,10 @@ function paypapClientId(){
 	}
 	return $CONFIG['paypal_clientid'];
 }
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function paypalUrl(){
 	if(isset($CONFIG['paypal_url'])){
 		$CONFIG['paypal_url']
@@ -239,6 +251,10 @@ function paypalSendPayout($params=array()){
 	}
 	return "Error: no token";
 }
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function paypalNextInvoiceNumber(){
 	$url=paypalUrl().'/v2/invoicing/generate-next-invoice-number';
 	//echo $json;exit;
@@ -255,7 +271,10 @@ function paypalNextInvoiceNumber(){
 	}
 	return date('Ymd').rand(1,100);
 }
-
+//---------- begin function
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function paypalGetAccessToken(){
 	/*
 		curl -v https://api.sandbox.paypal.com/v1/oauth2/token \
