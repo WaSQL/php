@@ -3,41 +3,73 @@
 	Paypal API functions
 	References:
 		https://developer.paypal.com/docs/api/payments.payouts-batch/v1/
-
+		https://developer.paypal.com/docs/payouts/integrate/api-integration/
+		https://developer.paypal.com/developer/applications/
+	Instructions
+		set paypal_secret, paypal_clientid, and optionally paypal_url in config.xml
 
 */
 function paypalSecret(){
-	global $paypal_Secret;
 	global $CONFIG;
-	if(!strlen($paypal_Secret)){
-		if(isset($CONFIG['paypal_secret'])){
-			$paypal_Secret=$CONFIG['paypal_secret'];
-			return $paypal_Secret;
-		}
-		echo "Error: set \$paypal_Secret as a global variable in your code or set paypal_secret in config.xml";
-		exit;
+	if(isset($CONFIG['paypal_secret'])){
+		debugValue('paypal_secret not set in config.xml');
+		return '';
 	}
-	return $paypal_Secret;
+	return $CONFIG['paypal_secret'];
 }
 function paypapClientId(){
-	global $paypal_ClientId;
 	global $CONFIG;
-	if(!strlen($paypal_ClientId)){
-		if(isset($CONFIG['paypal_clientid'])){
-			$paypal_ClientId=$CONFIG['paypal_clientid'];
-			return $paypal_ClientId;
-		}
-		echo "Error: set \$paypal_ClientId as a global variable in your code or set paypal_clientid in config.xml";
-		exit;
+	if(isset($CONFIG['paypal_clientid'])){
+		debugValue('paypal_secret not set in config.xml');
+		return '';
 	}
-	return $paypal_ClientId;
+	return $CONFIG['paypal_clientid'];
 }
 function paypalUrl(){
+	if(isset($CONFIG['paypal_url'])){
+		$CONFIG['paypal_url']
+	}
 	if(isDBStage()){
 		return 'https://api.sandbox.paypal.com';
 	}
 	return 'https://api.paypal.com';
 }
+//---------- begin function paypalSendInvoice
+/**
+* @describe sends a paypal invoice
+* @param params array
+*	from - array of info of sender
+*		firstname
+*		lastname
+*		address_1
+*		city
+*		state
+*		postal_code
+*		country_code
+*		email
+*		website
+*	to - email, comma separated list of emails, or array of emails
+*	[template_id] - uses this template if given
+*	[invoice_number] - defaults to paypalNextInvoiceNumber
+*	[description] - defaults to Services Rendered
+*	[invoice_date] - defaults to YYYY-MM-DD
+*	[currency_code] - defaults to USD
+*	[note] - defaults to Billed Services to Date
+*	[payment_term] - defaults to DUE_ON_RECEIPT
+*	[payment_due] - defaults to YYYY-MM-DD
+*	items - array with the following attributes
+*		[unit_of_measure] - defaults to QUANTITY
+*		name
+*		description
+*		quantity
+*		amount_value
+*		[amount_currency] - defaults to USD
+*		item_date
+
+* @return array - array of results
+* @usage
+*	$result=paypalSendPayout($params);
+*/
 function paypalSendInvoice($params=array()){
 	if(!isset($params['from'],$params['to'],$params['items'][0])){
 		return "Error: Missing required params.";
@@ -46,7 +78,7 @@ function paypalSendInvoice($params=array()){
 	if(!isset($params['description'])){$params['description']='Services Rendered';}
 	if(!isset($params['invoice_date'])){$params['invoice_date']=date('Y-m-d');}
 	if(!isset($params['currency_code'])){$params['currency_code']='USD';}
-	if(!isset($params['note'])){$params['note']='Billed services to date';}
+	if(!isset($params['note'])){$params['note']='Billed Services to Date';}
 	if(!isset($params['payment_term'])){$params['payment_term']='DUE_ON_RECEIPT';}
 	if(!isset($params['payment_due'])){$params['payment_due']=date('Y-m-d');}
 	$invoice=array(
@@ -88,8 +120,14 @@ function paypalSendInvoice($params=array()){
 		)
 	);
 	//recipeints
-	if(!is_array($params['to']) && isEmail($params['to'])){
-		$invoice['primary_recipients'][]=array('email_address'=>$params['to']);
+	if(!is_array($params['to'])){
+		$params['to']=preg_split('/[\,\;]+/',$params['to']);
+		foreach($params['to'] as $to){
+			$to=trim($to);
+			if(isEmail($to)){
+				$invoice['primary_recipients'][]=array('email_address'=>$to);
+			}
+		}	
 	}
 	elseif(is_array($params['to'])){
 		$invoice['primary_recipients']=$params['to'];
@@ -134,28 +172,23 @@ function paypalSendInvoice($params=array()){
 /**
 * @describe sends a paypal/venmo payment to recipient
 * @param params array
-*	sender_batch_id
+*	sender_batch_id - max length 256 chars
 *	email_subject
 *	email_message
 *	items - array with the following attributes
-*		recipient_type
 *		amount_value
-*		sender_item_id
-*		receiver
-*		[amount_currency]
-*	[-form{class|style|id|...}] string - sets specified attribute on the form
-*	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
-*	[-limit] integer - number of records to show
-*	[-offset] integer - number to start with - defaults to 0
-*	[-total] integer - number of total records - required to show pagination buttons
-*	['-formname'] - formname. defaults to searchfiltersform
+*		note - note about item. Max length is 4000 chars
+*		recipient_type  - email, phone, paypal_id (encrypted)
+*		recipient_value - the actual email, phone, or paypal_id to send to
+*		[sender_item_id]  - defaults to YYMMDD-x where x incriments. Tracks the payout in an accounting system
+*		[amount_currency] - defaults to USD
 * @return array - array of results
 * @usage
 *	$result=paypalSendPayout($params);
 */
 function paypalSendPayout($params=array()){
 	//check for required fields
-	if(!isset($params['sender_batch_id'],$params['email_subject'],$params['email_message'],$params['items'][0])){
+	if(!isset($params['recipient_type'],$params['recipient_value'],$params['sender_batch_id'],$params['email_subject'],$params['email_message'],$params['items'][0])){
 		return "Error: Missing required params.";
 	}
 	$payout=array(
@@ -166,22 +199,27 @@ function paypalSendPayout($params=array()){
 		),
 		'items'=>array()
 	);
-	foreach($params['items'] as $item){
+	foreach($params['items'] as $i=>$item){
 		//check for required item fields
-		if(!isset($item['recipient_type'],$item['amount_value'],$item['sender_item_id'],$item['receiver'])){
+		if(!isset($item['amount_value'])){
 			continue;
+		}
+		//default sender_item_id
+		if(!isset($item['sender_item_id'])){
+			$n=$i+1;
+			$item['sender_item_id']=date('Ymd')."-{$n}";
 		}
 		//default currency to USD
 		if(!isset($item['amount_currency'])){$item['amount_currency']='USD';}
 		$payout['items'][]=array(
-			'recipient_type'=>$item['recipient_type'],
+			'recipient_type'=> $params['recipient_type'],
 			'amount'=>array(
 				'value'		=> $item['amount_value'],
 				'currency'	=> $item['amount_currency']
 			),
 			'note'			=> $item['note'],
 			'sender_item_id'=> $item['sender_item_id'],
-			'receiver'		=> $item['receiver'],
+			'receiver'		=> $params['recipient_value'],
 		);
 	}
 	$url=paypalUrl().'/v1/payments/payouts';
