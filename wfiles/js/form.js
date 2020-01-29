@@ -3232,12 +3232,12 @@ function setCenterPopText(cpid,cptext,params){
 	if(undefined == params.close_bot){params.close_bot=true;}
 	if(undefined == params.center){params.center=true;}
 	var txt='';
-	console.log(cptext);
+	//console.log(cptext);
 	if(cptext.includes('w_centerpop_content')){
 		txt=cptext;
 	}
 	else{
-		console.log('NOT found');
+		//console.log('NOT found');
 		txt += '<div class="w_centerpop">'+"\n";
 		if(params.title.length){
 			txt += '	<div class="w_centerpop_title">'+params.title+'</div>'+"\n";
@@ -3254,7 +3254,7 @@ function setCenterPopText(cpid,cptext,params){
 			txt += '	<div class="w_centerpop_close_bot icon-cancel" style="font-size:18px;" title="Click to close" onclick="ajaxAbort(\''+cpid+'\');"></div>'+"\n";
 		}
 		txt += '</div>'+"\n";
-		cptext=text;
+		cptext=txt;
 	}
 	//set the text in cpid
 	//console.log(txt);
