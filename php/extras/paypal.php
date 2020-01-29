@@ -305,4 +305,3 @@ function paypalGetAccessToken(){
 	}
 	return '';
 }
-?>
