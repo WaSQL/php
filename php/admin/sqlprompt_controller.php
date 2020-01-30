@@ -72,11 +72,19 @@
 					$view='results';
 				}
 			}
-			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
+			$params=array(
+				'-binmode'=>ODBC_BINMODE_CONVERT,
+				'-longreadlen'=>65535
+			);
+			$recs=dbGetRecords($db['name'],$_SESSION['sql_last'],$params);
 			setView('results',1);
 			return;
 		break;
 		case 'export':
+			$params=array(
+				'-binmode'=>ODBC_BINMODE_CONVERT,
+				'-longreadlen'=>65535
+			);
 			//echo printValue($db).$_SESSION['sql_last'];exit;
 			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
 			$csv=arrays2CSV($recs);
