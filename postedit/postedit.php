@@ -49,8 +49,9 @@ echo "{$lockfile} is now mine".PHP_EOL;
 $folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
 $basefolder=$folder;
 //check for datestamp
+$cday=date('Ymd');
 if(isset($hosts[$chost]['datestamp'])){
-	$folder .= '_'.date('Ymd');
+	$folder .= '_'.$cday;
 }
 //check for days to keep
 if(isset($hosts[$chost]['days_to_keep'])){
@@ -59,13 +60,15 @@ if(isset($hosts[$chost]['days_to_keep'])){
 	$dirs=listFilesEx("{$progpath}/postEditFiles",array('name'=>"{$basefolder}_",'type'=>'dir'));
 	foreach($dirs as $dir){
 		if(preg_match('/\_([0-9]+)$/',$dir['name'],$m)){
-			$ddate=substr($m[1],0,4).'-'.substr($m[1],4,2).'-'.substr($m[1],6-2);
-			$ddate = strtotime($ddate);
-			$diff=round(($now - $ddate) / (60 * 60 * 24),0);
-			if($diff > $days_to_keep){
-				echo "Removing {$dir['name']} as it is {$diff} days old".PHP_EOL;
-				cleanDir($dir['afile']);
-				rmdir($dir['afile']);
+			if($m[1]!=$cday){
+				$ddate=substr($m[1],0,4).'-'.substr($m[1],4,2).'-'.substr($m[1],6-2);
+				$ddate = strtotime($ddate);
+				$diff=round(($now - $ddate) / (60 * 60 * 24),0);
+				if($diff > $days_to_keep){
+					echo "Removing {$dir['name']}..{} as it is {$diff} days old".PHP_EOL;
+					cleanDir($dir['afile']);
+					rmdir($dir['afile']);
+				}
 			}
 		}
 	}
