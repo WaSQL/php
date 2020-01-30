@@ -4038,6 +4038,8 @@ function adminGetSynchronizeFields($table){
 			case 'largetext':
 			case 'longtext':
 			case 'blob':
+			case 'mediumblob':
+			case 'longblob':
 			case 'varchar':
 			case 'char':
 				$flds[]=$field;
