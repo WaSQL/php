@@ -7558,7 +7558,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	//if(stringContains($table,'_users')){echo printValue($info).printValue($recs);exit;}
 	if($getmeta){
 	    //Get a list of the metadata for this table
-	    $metaopts=array('-table'=>"{$db_prefix}_fielddata",'-notimestamp'=>1,'tablename'=>$tablename);
+	    $metaopts=array('-table'=>"_fielddata",'-notimestamp'=>1,'tablename'=>$table);
 	    if(strlen($field)){$metaopts['fieldname']=$field;}
 	    $meta_recs=getDBRecords($metaopts);
 	    if(is_array($meta_recs)){
