@@ -15,7 +15,7 @@
 */
 function paypalSecret(){
 	global $CONFIG;
-	if(isset($CONFIG['paypal_secret'])){
+	if(!isset($CONFIG['paypal_secret'])){
 		debugValue('paypal_secret not set in config.xml');
 		return '';
 	}
@@ -27,7 +27,7 @@ function paypalSecret(){
 */
 function paypapClientId(){
 	global $CONFIG;
-	if(isset($CONFIG['paypal_clientid'])){
+	if(!isset($CONFIG['paypal_clientid'])){
 		debugValue('paypal_secret not set in config.xml');
 		return '';
 	}
@@ -200,7 +200,7 @@ function paypalSendInvoice($params=array()){
 */
 function paypalSendPayout($params=array()){
 	//check for required fields
-	if(!isset($params['recipient_type'],$params['recipient_value'],$params['sender_batch_id'],$params['email_subject'],$params['email_message'],$params['items'][0])){
+	if(!isset($params['sender_batch_id'],$params['email_subject'],$params['email_message'],$params['items'][0])){
 		return "Error: Missing required params.";
 	}
 	$payout=array(
@@ -224,19 +224,19 @@ function paypalSendPayout($params=array()){
 		//default currency to USD
 		if(!isset($item['amount_currency'])){$item['amount_currency']='USD';}
 		$payout['items'][]=array(
-			'recipient_type'=> $params['recipient_type'],
+			'recipient_type'=> $item['recipient_type'],
 			'amount'=>array(
 				'value'		=> $item['amount_value'],
 				'currency'	=> $item['amount_currency']
 			),
 			'note'			=> $item['note'],
 			'sender_item_id'=> $item['sender_item_id'],
-			'receiver'		=> $params['recipient_value'],
+			'receiver'		=> $item['recipient_value'],
 		);
 	}
 	$url=paypalUrl().'/v1/payments/payouts';
-	$json=json_encode($invoice);
-	//echo $json;exit;
+	$json=json_encode($payout);
+	//echo $url.printValue($payout);exit;
 	$token=paypalGetAccessToken();
 	if(strlen($token)){
 		$post=postJSON($url,$json,array(
@@ -287,6 +287,7 @@ function paypalGetAccessToken(){
 	$ch = curl_init();
 	$clientId = paypapClientId();
 	$secret = paypalSecret();
+	//echo "url:{$url}, clientId:{$clientId}, secret:{$secret}".PHP_EOL;
 
 	curl_setopt($ch, CURLOPT_URL, $url);
 	curl_setopt($ch, CURLOPT_HEADER, false);
@@ -298,6 +299,7 @@ function paypalGetAccessToken(){
 
 	$result = curl_exec($ch);
 	curl_close($ch);
+	//echo $result;exit;
 	if(empty($result)){return '';}
 	else{
 	    $json = json_decode($result,true);
