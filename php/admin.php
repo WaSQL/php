@@ -4036,6 +4036,7 @@ function adminGetSynchronizeFields($table){
 			case 'text':
 			case 'mediumtext':
 			case 'largetext':
+			case 'longtext':
 			case 'blob':
 			case 'varchar':
 			case 'char':
