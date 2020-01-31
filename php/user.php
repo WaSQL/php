@@ -160,6 +160,10 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
                         $changes[$field]=$ldap[$field];
                         $rec[$field]=$ldap[$field];
 					}
+					elseif(isset($_REQUEST[$field]) && $rec[$field] != $_REQUEST[$field]){
+                        $changes[$field]=$_REQUEST[$field];
+                        $rec[$field]=$_REQUEST[$field];
+					}
 				}
 				if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
 					if($rec['utype'] != 0){
@@ -188,6 +192,13 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
 					$ldap['utype']= 0;
 				}
 				else{$ldap['utype']=1;}
+				//add extra fields
+				foreach($fields as $field){
+                   if(isset($_REQUEST[$field]) && !isset($ldap[$field])){
+                        $ldap[$field]=$_REQUEST[$field];
+                        $rec[$field]=$_REQUEST[$field];
+					}
+				}
                	$id=addDBRecord($ldap);
                	if(isNum($id)){
                     $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
