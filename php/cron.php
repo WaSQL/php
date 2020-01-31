@@ -45,7 +45,6 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
 include_once("{$progpath}/extras/system.php");
-$ok=cronCheckSchema();
 global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
@@ -93,6 +92,7 @@ while($etime < 55){
 			if(strlen($msg)){cronMessage($msg);}
 			cronMessage("apacheParseLogFile completed");
 		}
+		$ok=cronCheckSchema();
 		//update crons that say they are running but the pids are no longer active
 		$ok=commonCronCleanup();
 		//get page names to determine if cron is a page
