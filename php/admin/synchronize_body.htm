@@ -251,7 +251,7 @@
 		<view:sync_id><input type="hidden" name="id[]" value="<?=$id;?>" /></view:sync_id>
 		<?=renderEach('sync_id',$ids,'id');?>
 		<label>Revert these changes? You will lose any local changes.</label>
-		<div class="w_padtop align-right"><button type="submit" class="w_btn w_btn-danger"><span class="icon-backward w_white"></span> Revert Changes</button></div>
+		<div class="w_padtop align-right"><button type="submit" class="btn <?=configValue('admin_color');?>"><span class="icon-backward"></span> Revert Changes</button></div>
 	</form>
 	<?=buildOnLoad("wacss.modalTitle('Revert Verification');document.sync_verify_form.notes.focus();");?>
 </view:revert_verify>
