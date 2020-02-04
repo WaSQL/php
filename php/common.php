@@ -210,6 +210,7 @@ function commonCronPause($email='',$params=array()){
 			$message.='<tr><th style="text-align:left;padding:3px 5px;">Name</th><td style="text-align:left;padding:3px 5px;">%name%</td></tr>'.PHP_EOL;
 			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Cmd</th><td style="text-align:left;padding:3px 5px;">%run_cmd%</td></tr>'.PHP_EOL;
 			$message.='<tr><th style="text-align:left;padding:3px 5px;">Run Date</th><td style="text-align:left;padding:3px 5px;">%run_date%</td></tr>'.PHP_EOL;
+			$message.='<tr><th style="text-align:left;padding:3px 5px;">Error</th><td style="text-align:left;padding:3px 5px;">%error%</td></tr>'.PHP_EOL;
 			$message.='</table>'.PHP_EOL;
 			$message.='<h4>Run Result</h4>'.PHP_EOL;
 			$message.='<div style="border:1px solid #ccc;border-radius:5px;background-color:#f0f0f0;padding:5px;display:block;font-family:monospace;unicode-bidi:embed;white-space:pre-wrap;">%run_result%</div>'.PHP_EOL;
