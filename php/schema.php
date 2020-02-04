@@ -81,11 +81,10 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_reports':
-			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_auser']=databaseDataType('integer')." NULL";
 			$fields['name']=databaseDataType('varchar(100)')." NOT NULL";
 			$fields['menu']=databaseDataType('varchar(50)')." NULL";
 			$fields['description']=databaseDataType('varchar(255)')." NULL";
+			$fields['dbname']=databaseDataType('varchar(255)')." NULL";
 			$fields['rowcount']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['runtime']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['icon']=databaseDataType('varchar(50)')." NULL";
@@ -103,10 +102,10 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name menu active\r\ndescription\r\nquery\r\noptions\r\ndepartments\r\nusers",
-				'listfields'	=> "_cdate\r\n_cuser\r\n_edate\r\n_euser\r\n_adate\r\n_auser\r\nname\r\nmenu\r\nactive\r\nrowcount\r\nruntime",
-				'sortfields'	=> "_auser,_adate desc",
-				'formfields_mod'=> "name menu active\r\ndescription\r\nquery\r\noptions\r\ndepartments\r\nusers",
+				'formfields'	=> "name menu active\r\ndbname description\r\nquery\r\noptions\r\ndepartments\r\nusers",
+				'listfields'	=> "_cdate\r\n_cuser\r\n_edate\r\n_euser\r\nname\r\nmenu\r\nactive\r\nrowcount\r\nruntime",
+				'sortfields'	=> "_id desc",
+				'formfields_mod'=> "name menu active\r\ndbname description\r\nquery\r\noptions\r\ndepartments\r\nusers",
 				'listfields_mod'=> "name\r\nmenu\r\nactive",
 				'sortfields_mod'=> "name",
 				'synchronize'	=> 1
@@ -1672,13 +1671,24 @@ function addMetaData($table=''){
 		//_forms
 		case '_reports':
 			$id=addDBRecord(array('-table'=>"_fielddata",
+				'-upsert'		=> 'inputtype,width,inputmax',
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'description',
 				'inputtype'		=> 'text',
-				'width'			=> '600',
+				'width'			=> '400',
 				'inputmax'		=> 255
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
+				'-upsert'		=> 'inputtype,tvals,dvals,inputmax',
+				'tablename'		=> '_reports',
+				'fieldname'		=> 'dbname',
+				'inputtype'		=> 'select',
+				'tvals'			=> '<?='.'wasqlGetDatabases();'.'?>',
+				'dvals'			=> '<?='.'wasqlGetDatabases(1);'.'?>',
+				'inputmax'		=> 255
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'-upsert'		=> 'displayname,inputtype,width,tvals,dvals,required',
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'users',
 				'displayname'	=> 'Limit Access To These Users',
@@ -1689,6 +1699,7 @@ function addMetaData($table=''){
 				'required'		=> 0
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
+				'-upsert'		=> 'displayname,inputtype,width,tvals,required',
 				'tablename'		=> '_reports',
 				'fieldname'		=> 'departments',
 				'displayname'	=> 'Limit Access To These Departments',

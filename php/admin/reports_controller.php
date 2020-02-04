@@ -33,6 +33,7 @@
 			return;
 		break;
 		default:
+			$ok=reportsCheckSchema();
 			$groups=reportsGetGroups();
 			setView('default',1);
 		break;

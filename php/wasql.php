@@ -1285,6 +1285,26 @@ function wasqlGetBehaviors($d=0){
 	else{$vals=array_keys($behaviors);}
 	return implode("\r\n",$vals);
 }
+//---------- begin function wasqlGetDatabases
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wasqlGetDatabases($d=0,$arr=0){
+	global $DATABASE;
+	global $CONFIG;
+	$showdbs=array();
+	if(isset($CONFIG['sql_prompt_dbs'])){
+		$showdbs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
+	}
+	$dbs=array();
+	foreach($DATABASE as $d=>$db){
+		if(count($showdbs) && !in_array($d,$showdbs)){continue;}
+		if($d){$dbs[]=$db['displayname'];}
+		else{$dbs[]=$db['name'];}
+	}
+	if($arr==1){return $dbs;}
+	return implode("\r\n",$dbs);
+}
 //---------- begin function wasqlGetInputtypes ----------
 /**
 * @describe returns a list of valid WaSQL input types. Used in _fielddata
