@@ -1,4 +1,16 @@
 <?php
+/*
+	sqlsrv requires php 7.2 or greater.
+	in order to install sqlsrv you will need pecl and unixodbc 
+	apt install php-pear
+	apt install unixodbc
+	apt install unixodbc-dev
+	pecl install sqlsrv
+	pecl install pdo_sqlsrv
+	you will also need the ODBC driver for sqlsrv
+	https://docs.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-2017
+
+*/
 //settings for old PHP versions that use mssql_connect
 if((integer)phpversion() < 7){
 	ini_set('mssql.charset', 'UTF-8');
@@ -794,7 +806,7 @@ function mssqlGetServerInfo($params=array()){
 * @usage $tables=mssqlGetDBTables();
 */
 function mssqlGetDBTables($params=array()){
-	global $CONFIG;
+	$params=mssqlParseConnectParams($params);
 	$query="
 	SELECT
 		table_catalog as dbname
@@ -805,7 +817,7 @@ function mssqlGetDBTables($params=array()){
 		information_schema.tables
 	WHERE
 		table_type='BASE TABLE'
-		and table_catalog='{$CONFIG['mssql_dbname']}'
+		and table_catalog='{$params['-dbname']}'
 	ORDER BY
 		table_name
 	";
@@ -816,7 +828,7 @@ function mssqlGetDBTables($params=array()){
 }
 
 function mssqlGetDBTablePrimaryKeys($table,$params=array()){
-	global $CONFIG;
+	$params=mssqlParseConnectParams($params);
 	$query="
 	SELECT
 		ccu.column_name
@@ -827,7 +839,7 @@ function mssqlGetDBTablePrimaryKeys($table,$params=array()){
 		information_schema.constraint_column_usage as ccu
 		ON tc.constraint_name = ccu.constraint_name
 	WHERE
-		tc.table_catalog = '{$CONFIG['mssql_dbname']}'
+		tc.table_catalog = '{$params['-dbname']}'
     	and tc.table_schema = 'dbo'
     	and tc.table_name = '{$table}'
     	and tc.constraint_type = 'PRIMARY KEY'
@@ -850,7 +862,7 @@ function mssqlGetDBTablePrimaryKeys($table,$params=array()){
 * @usage $fieldinfo=mssqlGetDBFieldInfo('test');
 */
 function mssqlGetDBFieldInfo($table,$params=array()){
-	global $CONFIG;
+	$params=mssqlParseConnectParams($params);
 	$query="
 		SELECT
 			COLUMN_NAME
@@ -863,7 +875,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 		FROM
 			INFORMATION_SCHEMA.COLUMNS (nolock)
 		WHERE
-			table_catalog = '{$CONFIG['mssql_dbname']}'
+			table_catalog = '{$params['-dbname']}'
     		and table_schema = 'dbo'
 			and table_name = '{$table}'
 		";
