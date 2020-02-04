@@ -276,7 +276,9 @@ function mssqlDBConnect($params=array()){
 		exit;
 	}
 	//php 7 and greater no longer use mssql_connect
-	if((integer)phpversion()>=7){
+	$ver=phpversion();
+	if(preg_match('/^([0-9\.]+)/',$ver,$m)){$ver=$m[1];}
+	if($ver >= 7.2){
 		//$serverName = "serverName\sqlexpress"; //serverName\instanceName
 		//If values for the UID and PWD keys are not specified, the connection will be attempted using Windows Authentication.
 		if(!isset($params['-connect'])){
