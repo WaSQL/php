@@ -377,7 +377,7 @@ function getServerInfoLinux($show_process=0){
 			$additional = '';
 			$statm=@getServerInfoFileData('/proc/' . $proc[0] . '/statm');
 			if(is_array($statm)){$additional = @implode('', $statm);}
-			if ($proc[4]{0} != '[' && strpos($proc[4], ' ') !== false){
+			if ($proc[4][0] != '[' && strpos($proc[4], ' ') !== false){
 				$proc[4] = strtok($proc[4], ' ');
 				}
 			$context['running_processes'][$proc[0]] = array(
