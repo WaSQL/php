@@ -3397,7 +3397,7 @@ function addEditDBForm($params=array(),$customcode=''){
     			}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
 				if(isset($params['-readonly']) || isset($params[$cfield.'_viewonly'])){
-					$cval='<span class="w_viewonly">'.nl2br($value).'</span>';
+					$cval='<div class="w_viewonly">'.nl2br($value).'</div>';
 				}
 				else{
 					$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
