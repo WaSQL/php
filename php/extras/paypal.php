@@ -219,7 +219,7 @@ function paypalSendPayout($params=array()){
 		//default sender_item_id
 		if(!isset($item['sender_item_id'])){
 			$n=$i+1;
-			$item['sender_item_id']=date('Ymd')."-{$n}";
+			$item['sender_item_id']=date('YmdHis')."-{$n}";
 		}
 		//default currency to USD
 		if(!isset($item['amount_currency'])){$item['amount_currency']='USD';}
@@ -249,7 +249,9 @@ function paypalSendPayout($params=array()){
 			'-headers'=>array("Authorization: Bearer {$token}")
 		));
 		if(isset($post['json_array'])){
-			return $post['json_array'];
+			$payout['response']=$post['json_array'];
+			return $payout;
+			//return $post['json_array'];
 		}
 		return "ERROR: ". printValue($post);
 	}
