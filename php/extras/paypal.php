@@ -223,7 +223,7 @@ function paypalSendPayout($params=array()){
 		}
 		//default currency to USD
 		if(!isset($item['amount_currency'])){$item['amount_currency']='USD';}
-		$payout['items'][]=array(
+		$citem=array(
 			'recipient_type'=> $item['recipient_type'],
 			'amount'=>array(
 				'value'		=> $item['amount_value'],
@@ -233,6 +233,10 @@ function paypalSendPayout($params=array()){
 			'sender_item_id'=> $item['sender_item_id'],
 			'receiver'		=> $item['recipient_value'],
 		);
+		if(strtolower($citem['recipient_type']) == 'phone'){
+			$citem['recipient_wallet']='Venmo';
+		}
+		$payout['items'][]=$citem;
 	}
 	$url=paypalUrl().'/v1/payments/payouts';
 	$json=json_encode($payout);
