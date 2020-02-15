@@ -1230,6 +1230,7 @@ function dbQueryResults($db,$query,$params=array()){
 * @param params array - requires either -list or -table or a raw query instead of params
 *	[-list] array - getDBRecords array to use
 *	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-tableheight] string - sets max height of table (i.e 80vh)
 *	[-table{class|style|id|...}] string - sets specified attribute on table
 *	[-thead{class|style|id|...}] string - sets specified attribute on thead
 *	[-tbody{class|style|id|...}] string - sets specified attribute on tbody
@@ -1664,6 +1665,9 @@ function databaseListRecords($params=array()){
 		}
 		return $rtn;
 	}
+	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
+		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;">'.PHP_EOL;
+	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
 	//add any table attributes pass in with -table
@@ -2030,7 +2034,11 @@ function databaseListRecords($params=array()){
 	}
 	$rtn .= '	</tbody>'.PHP_EOL;
 	$rtn .= '</table>'.PHP_EOL;
-	//check for pretable content
+	//check for tableheight
+	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
+		$rtn .= '</div>'.PHP_EOL;
+	}
+	//check for postdata content
 	if(isset($params['-postdata'])){
 		$rtn .= $params['-postdata'];
 	}
