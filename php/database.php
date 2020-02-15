@@ -1666,7 +1666,7 @@ function databaseListRecords($params=array()){
 		return $rtn;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
-		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;">'.PHP_EOL;
+		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
 	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
