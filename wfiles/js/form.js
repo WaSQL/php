@@ -410,6 +410,7 @@ function initPikadayCalendar(field,params){
 		if(attrs['data-maxdate'].indexOf('-') != -1){
 			let dateparts=attrs['data-maxdate'].split("-");
 			if(dateparts.length==3){
+				dateparts[1]=parseInt(dateparts[1])-1;
 				opts.maxDate=new Date(dateparts[0],dateparts[1],dateparts[2])
 			}
 			else{
@@ -436,6 +437,7 @@ function initPikadayCalendar(field,params){
 		if(attrs['data-mindate'].indexOf('-') != -1){
 			let dateparts=attrs['data-mindate'].split("-");
 			if(dateparts.length==3){
+				dateparts[1]=parseInt(dateparts[1])-1;
 				opts.minDate=new Date(dateparts[0],dateparts[1],dateparts[2])
 			}
 			else{
