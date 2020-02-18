@@ -175,6 +175,7 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 * @param latitude float - latitude
 * @param longitude float - longitude
 * @param limit integer - number of records to return - defaults to 1
+* @param distance integer - max number of miles to go - defaults to 25
 * @return array - record set
 * @usage
 *	<?php
@@ -182,8 +183,8 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 *	$rec=zipcodesGetClosestRecords($latitude,$longitude);
 *	?>
 */
-function zipcodesGetClosestRecords($latitude,$longitude,$limit=1){
-	$query="
+function zipcodesGetClosestRecords($latitude,$longitude,$limit=1,$distance=25){
+	$query=<<<ENDOFQUERY
 	SELECT *,
 	3956 * 2 * ASIN(SQRT( POWER(SIN(({$latitude} -
 	abs(
@@ -192,9 +193,9 @@ function zipcodesGetClosestRecords($latitude,$longitude,$limit=1){
 	(dest.latitude) *  pi()/180) * POWER(SIN(({$longitude} -dest.longitude) *  pi()/180 / 2), 2) ))
 	as distance
 	FROM zipcodes dest
-	having distance < 25
+	having distance < {$distance}
 	ORDER BY distance limit {$limit}
-	";
+ENDOFQUERY;
 	$recs=getDBRecords(array('-query'=>$query));
 	if(count($recs)==1){
 		//$recs[0]['_query']=$query;

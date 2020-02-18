@@ -62,9 +62,24 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 	//echo printValue($json);exit;
 	switch(strtolower($json['func'])){
 		case 'auth':
+			if(!isUser()){
+				$json['password']=preg_replace('/./','*',$json['password']);
+				echo json_encode(array('error'=>"Login Failed",'user'=>$USER,'request'=>$json));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				$json['password']=preg_replace('/./','*',$json['password']);
 				echo json_encode(array('error'=>"auth: User '{$USER['username']}' is not an admin",'user'=>$USER,'request'=>$json));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			//send them the _auth
@@ -77,10 +92,20 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 			global $CONFIG;
 			if(!isUser()){
 				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"get_tables: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			$query=<<<ENDOFQUERY
@@ -106,8 +131,22 @@ ENDOFQUERY;
 		break;
 		case 'get_record':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"get_record:User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['id']) || !isset($json['fields'])){
@@ -128,8 +167,22 @@ ENDOFQUERY;
 		break;
 		case 'get_records':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"get_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['limit']) || !isset($json['offset'])){
@@ -151,8 +204,22 @@ ENDOFQUERY;
 		break;
 		case 'datasync_records':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"datasync_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records']) || !isset($json['offset'])){
@@ -182,8 +249,22 @@ ENDOFQUERY;
 		break;
 		case 'get_schema':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"get_schema: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isset($json['table'])){
@@ -201,6 +282,15 @@ ENDOFQUERY;
 		break;
 		case 'update_schemas':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"update_schemas:User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
 				exit;
@@ -225,8 +315,22 @@ ENDOFQUERY;
 		break;
 		case 'update_records':
 			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			if(!isAdmin()){
 				echo base64_encode(json_encode(array('error'=>"update_records: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			if(!isset($json['table']) || !isset($json['records'])){
@@ -288,10 +392,25 @@ ENDOFQUERY;
 				exit;
 			}
 			//request to get sync changes
+			if(!isUser()){
+				//echo printValue($_REQUEST);exit;
+				echo base64_encode(json_encode(array('error'=>"Login Failed. Please try again")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
 			//confirm user is an admin in this system
 			if(!isAdmin()){
 				//echo printValue($_REQUEST);exit;
 				echo base64_encode(json_encode(array('error'=>"get_changes: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
 				exit;
 			}
 			$rtn=array();
