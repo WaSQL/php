@@ -1991,6 +1991,9 @@ function submitForm(theForm,popup,debug,ajax){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 		            if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+		            	if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
 		            	wacss.blink(theForm[i].getAttribute('data-blink'));
 		            }
 		            else{
@@ -2012,6 +2015,9 @@ function submitForm(theForm,popup,debug,ajax){
 					var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+				 		if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
 		            	wacss.blink(theForm[i].getAttribute('data-blink'));
 		            }
 		            else{
@@ -2027,6 +2033,9 @@ function submitForm(theForm,popup,debug,ajax){
                 	var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+				 		if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
 		            	wacss.blink(theForm[i].getAttribute('data-blink'));
 		            }
 		            else{
@@ -2042,6 +2051,9 @@ function submitForm(theForm,popup,debug,ajax){
                 	var msg=dname+" is required";
 		            if(undefined != requiredmsg){msg=requiredmsg;}
 				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+				 		if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
 		            	wacss.blink(theForm[i].getAttribute('data-blink'));
 		            }
 		            else{
@@ -2055,6 +2067,9 @@ function submitForm(theForm,popup,debug,ajax){
 	            var msg=dname+" is required";
 	            if(undefined != requiredmsg){msg=requiredmsg;}
 			 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+			 			if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
 		            	wacss.blink(theForm[i].getAttribute('data-blink'));
 		            }
 		            else{
