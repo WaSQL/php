@@ -61,6 +61,11 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	$_REQUEST['_auth']=1;
 }
 elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
+	if(!isset($_REQUEST['_tauthx'])){
+		$url="{$_SERVER['REQUEST_URI']}&_tauthx=".time();
+		header("Location: {$url}");
+		exit;
+	}
 	//timed auth code - good for 30 minutes
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_tauth'],2);
 	$decoded=decrypt($encoded,"Salt{$key}tlaS");
@@ -627,7 +632,9 @@ function userAuthorizeWASQLGUID(){
 	}
 	$guid=urldecode($_COOKIE['WASQLGUID']);
     if(preg_match('/^([0-9]+)/',base64_decode($guid),$m)){
-    	$rec=getDBRecord(array('-table'=>'_users','_id'=>$m[1],'-relate'=>1));
+    	$opts=array('-table'=>'_users','_id'=>$m[1],'-relate'=>1);
+    	//echo $decguid.printValue($opts).printValue($m);exit;
+    	$rec=getDBRecord($opts);
     }
     if(!isset($rec['_id'])){
     	commonSetCookie("WASQL_ERROR", "REC");
