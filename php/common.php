@@ -2067,7 +2067,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if($params['requiredif']){$params['data-requiredif']=$params['requiredif'];}
-	$params['-values_setby']='';
 	if(isset($params['value'])){
 		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
 			$params['value']=json_decode($params['value'],true);
@@ -2077,7 +2076,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
       	}
       	else{$params['-values']=$params['value'];}
       	unset($params['value']);
-      	$params['-values_setby'] .= 'A';
     }
 	if(isset($params['-values'])){
 		if(!is_array($params['-values']) && isset($params['_dbtype']) && $params['_dbtype']=='json'){
@@ -2086,7 +2084,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
     	if(!is_array($params['-values'])){
         	$params['-values']=array($params['-values']);
 		}
-		$params['-values_setby'] .= 'B';
 	}
 	elseif(isset($_REQUEST[$oname])){
 		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
@@ -2098,7 +2095,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		else{
         	$params['-values']=$_REQUEST[$oname];
 		}
-		$params['-values_setby'] .= 'C';
 	}
 	elseif(isset($_REQUEST[$name])){
 		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
@@ -2110,11 +2106,15 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		else{
         	$params['-values']=$_REQUEST[$name];
 		}
-		$params['-values_setby'] .= 'D';
 	}
 	else{
     	$params['-values']=array();
-    	$params['-values_setby'] .= 'E';
+	}
+	//remove blank values
+	foreach($params['-values'] as $i=>$v){
+		if(!strlen(trim($v))){
+			unset($params['-values'][$i]);
+		}
 	}
 	//return printValue($params);
 	//check for dragsort
@@ -2235,10 +2235,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= '</div>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
-	if(isset($params['-debug'])){
-		return $tag.printValue($opts).printValue($params);
-	}
-	unset($params['-values_setby']);
 	return $tag;
 }
 //---------- begin function buildFormText--------------------
