@@ -11174,4 +11174,4 @@ function showDBCronPanel($ajax=0,$frequency=60){
 		$rtn .= '</div>'.PHP_EOL;
 		}
 	return $rtn;
-	}
+}

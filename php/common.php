@@ -595,7 +595,6 @@ function commonSearchFiltersForm($params=array()){
         	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
-			//echo printValue($sets);exit;
 			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
 		}
 	}
@@ -1128,7 +1127,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1154,7 +1152,6 @@ function parseWacssEditFormTags($body,$params=array()){
 		}
 		//wacssform_ratenX - on a scale of 1 to X
 		preg_match_all('/\<span class=\"wacssform\_raten([0-9]+?)\"\>(.+?)\<\/span\>/is', $sbody, $m);
-		//echo printValue($m);exit;
 		for($i=0;$i<count($m[2]);$i++){
 			$tag=array();
 			$tag['section_name']=$section_names[$sid];
@@ -1172,7 +1169,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1189,7 +1185,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			unset($tparams['min']);
 			unset($tparams['max']);
 			$tparams['width']=count($vals);
-			//echo printValue($tparams);exit;
 			$topts=array();
 			foreach($vals as $val){
 				$topts[$val]=$val;
@@ -1228,7 +1223,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1241,7 +1235,6 @@ function parseWacssEditFormTags($body,$params=array()){
 					$tparams[$k]=$v;
 				}
 			}
-			//echo printValue($tparams);exit;
 			$tag['fieldname']='wacssform_rates'.$m[1][$i].'_'.encodeCRC($tag['displayname']);
 			
 			if(isset($params['answers'][$tag['fieldname']])){
@@ -1272,7 +1265,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1288,7 +1280,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['fieldname']='wacssform_one_'.encodeCRC($tag['displayname']);
 			$topts=array();
 			preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
-			//echo printValue($ms);exit;
 			for($s=0;$s<count($ms[0]);$s++){
 				//check for tval:dval
 				$parts=preg_split('/\:/',$ms[1][$s],2);
@@ -1328,7 +1319,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1344,7 +1334,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			$tag['fieldname']='wacssform_many_'.encodeCRC($tag['displayname']);
 			$topts=array();
 			preg_match_all('/\<li.*?>(.+?)\<\/li\>/',$m[2][$i],$ms);
-			//echo printValue($ms);exit;
 			for($s=0;$s<count($ms[0]);$s++){
 				//check for tval:dval
 				$parts=preg_split('/\:/',$ms[1][$s],2);
@@ -1385,7 +1374,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1420,7 +1408,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1462,7 +1449,6 @@ function parseWacssEditFormTags($body,$params=array()){
 			if(preg_match('/\{(.+?)\}$/',trim($tag['displayname']),$p)){
 				$tag['displayname']=str_replace($p[0],'',$tag['displayname']);
 				$pairs=preg_split('/\,/',$p[1]);
-				//echo printValue($pairs);exit;
 				foreach($pairs as $pair){
 					list($k,$v)=preg_split('/\:/',$pair,2);
 					$k=strtolower(trim($k));
@@ -1504,10 +1490,8 @@ function parseWacssEditFormTags($body,$params=array()){
 			}
 			$tag['btag']=$m[0][$i];
 			$tags[$sid][]=$tag;
-			//return printValue($params).printValue($tag);
 		}
 	}
-	//echo printValue($sections).printValue($tags);exit;
 	if(isset($params['sections'])){
 		if(!is_array($params['sections'])){
 			$params['sections']=preg_split('/\,/',$params['sections']);
@@ -2363,7 +2347,6 @@ function buildFormTextarea($name,$params=array()){
 		$tag .= '</textarea>'.PHP_EOL;
 	}
 	if($white_wrap==1){$tag.='</div>'.PHP_EOL;}
-	//echo printValue($params);exit;
 	return $tag;
 }
 //---------- begin function buildFormTime-------------------
@@ -2508,7 +2491,6 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
         <label for="{$params['id']}" data-on="{$dvals[0]}" data-off="{$dvals[1]}"></label>
     </div>
 ENDOFTAG;
-	//echo "{$name}<xmp>{$tag}</xmp><hr>";
 	return $tag;
 }
 //---------- begin function buildFormBegin-------------------
@@ -2962,7 +2944,6 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
 	$codes=array_keys($codes);
-	//echo printValue($codes);exit;
 	//get countries
 	$recopts=array(
 		'-table'=>'countries',
@@ -3528,13 +3509,11 @@ function buildShareButtons($params=array()){
 		if(!strlen($button)){continue;}
 		$hide[]=$button;
 	}
-	//echo "show".printValue($show)."hide".printValue($hide);
 	$rtn='';
 	$rtn .= '<div class="w_share">'.PHP_EOL;
 	foreach($show as $button){
 		//skip buttons set to hide
 		if(in_array($button,$hide)){continue;}
-		//echo "[{$button}]";
 		switch($button){
         	case 'facebook':
         		$rtn .= '		<a onclick="return w_shareButton(this.href);" href="http://www.facebook.com/sharer.php?u='.$params['-url'].'"><img src="/wfiles/iconsets/'.$params['-size'].'/facebook.png" width="'.$params['-size'].'" height="'.$params['-size'].'" class="w_middle" data-tooltip="Share on Facebook" data-tooltip_position="bottom" alt="Share on Facebook"></a>'.PHP_EOL;
@@ -3611,12 +3590,10 @@ function buildShareLinks($params=array()){
 		if(!strlen($button)){continue;}
 		$hide[]=$button;
 	}
-	//echo "show".printValue($show)."hide".printValue($hide);
 	$rtn='';
 	foreach($show as $button){
 		//skip buttons set to hide
 		if(in_array($button,$hide)){continue;}
-		//echo "[{$button}]";
 		switch($button){
         	case 'facebook':
         		$icon='icon-site-facebook';
@@ -3725,7 +3702,6 @@ function buildSocialButtons($params=array()){
 		$params['RSS']="#";
 		$params['Tagged']="#";
 	}
-	//echo "show".printValue($show)."hide".printValue($hide);
 	$rtn='';
 	$rtn .= '<div class="w_social">'.PHP_EOL;
 	foreach($params as $name=>$url){
@@ -3948,7 +3924,6 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	//windows OS requires the stderr pipe to be write
 	if(isWindows()){
-		//echo 'cmdResults: '.$cmd.PHP_EOL;
 		$proc=@proc_open($cmd,
 			array(
 				0=>array('pipe', 'r'), //stdin
@@ -4895,7 +4870,6 @@ function renderView($view, $params=array(), $opts=array()){
 			unset($opts['-alias']);
 			unset($opts['-format']);
 			unset($opts['-key']);
-			//echo printValue($opts);exit;
 			$ok=sendMail($opts);
 			if(!isNum($ok) && strlen($ok)){return $ok;}
 			return;
@@ -4906,7 +4880,6 @@ function renderView($view, $params=array(), $opts=array()){
             	$opts=$params;
 			}
 			$opts['-formfields']=$rtn;
-			//echo printValue($opts);exit;
 			$rtn=addEditDBForm($opts);
 		break;
 	}
@@ -5156,7 +5129,6 @@ function stringContains($string, $search){
 */
 function stringEquals($string, $search){
 	$check=strcmp(strtolower($string),strtolower($search));
-	//echo "{$check},{$string},{$search}";exit;
 	if($check==0){return true;}
 	return false;
 }
@@ -5306,7 +5278,6 @@ function getCalendar($monthyear='',$params=array()){
         		if($calendar['current']['mon'] != $edate['mon']){continue;}
         		if($params['-view']=='week' && $calendar['current']['wnum'] != $edate['wnum']){continue;}
         		elseif($params['-view']=='day' && $calendar['current']['mday'] != $edate['mday']){continue;}
-        		//echo printValue($callendar['current']).printValue($edate);exit;
         		$rec['_id']=isset($rec['_id'])?$rec['_id']:getGuid();
         		$params['-events']['mday'][$edate['mday']][]=$rec;
 			}
@@ -5391,7 +5362,6 @@ function getCalendar($monthyear='',$params=array()){
 			}
 
 			//$ical_events=icalEvents($ical);
-			//echo printValue($ical_events);exit;
 			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
 			$ical_events=getStoredValue("return icalEvents('".$ical."');",0,$cache);
         	foreach($ical_events as $rec){
@@ -5578,7 +5548,6 @@ function getCalendar($monthyear='',$params=array()){
     ksort($calendar['groupnames']);
     unset($calendar['this_month']);
     unset($calendar[0]);
-    //echo printValue($calendar);exit;
     return $calendar;
 	}
 //---------- begin function calendar
@@ -5789,7 +5758,7 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 *	date string to format
 * @return
 *	date string formatted for mysql.  Date string can also be today, now, thisweek
-* @usage echo date2Mysql('today');
+* @usage <?=date2Mysql('today');?>
 */
 function date2Mysql($str=''){
 	if(preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})$/s',$str,$dmatch)){
@@ -5812,7 +5781,7 @@ function date2Mysql($str=''){
 *	base64 string to decode
 * @return str string
 *	decodes a base64 encodes string - same as base64_decode
-* @usage echo decodeBase64($encoded_string);
+* @usage $dec=decodeBase64($encoded_string);
 */
 function decodeBase64($str=''){
 	return base64_decode($str);
@@ -5896,11 +5865,9 @@ function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
 					break;
 			}
 			$dtime=$ttime - $mtime;
-			//echo "File {$file}, Time:{$ttime}, Mtime:{$mtime}, Dtime:{$dtime}, Ctime:{$ctime}<br>\n";
 		    if ($dtime > $ctime) {
 		    	unlink($dir.'/'.$file);
 		    	$cnt++;
-		    	//echo " - removing {$file}<br>\n";
 		    }
 		}
 	    closedir($handle);
@@ -6420,7 +6387,6 @@ function evalPHP($strings){
 			continue;
 		}
 		preg_match_all('/\<\?(.+?)\?\>/sm',$strings[$sIndex],$evalmatches,PREG_PATTERN_ORDER);
-		//echo printValue($evalmatches);
 		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$strings[$sIndex],$evalmatches2,PREG_PATTERN_ORDER);
 		if(count($evalmatches2[1])){
 			$evalmatches[0]=array_merge($evalmatches[0],$evalmatches2[0]);
@@ -6554,7 +6520,6 @@ function evalPHP($strings){
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
 						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
-					//echo $command;exit;
 					$out = cmdResults($command);
 					if($out['rtncode']==0){
 						unlink("{$tmppath}/{$tmpfile}");
@@ -6589,7 +6554,6 @@ function evalPHP($strings){
 				$ob=ob_get_contents();
 				ob_clean();
 				ob_flush();
-				//echo "VAL".printValue($val)."\n\n";echo "OB".printValue($ob)."\n\n";exit;
 				if(strlen(trim($ob)) && strlen(trim($val))){
 					if(stringContains($ob,'wasqlDebug')){
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
@@ -6861,7 +6825,7 @@ function fileExplorer($startdir='',$param=array()){
 *	-fields=name,description,size,modified,perms
 * @return
 *	Web-based File Manager/Explorer application
-* @usage echo fileManager('/var/www/shared/test');
+* @usage <?=fileManager('/var/www/shared/test');?>
 */
 function fileManager($startdir='',$params=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
@@ -6902,9 +6866,7 @@ function fileManager($startdir='',$params=array()){
 	if(is_file("{$cdir}/filemanager.xml")){
 		//load existing xml into and array to get file descriptions
 		$xml=readXML("{$cdir}/filemanager.xml");
-		//echo printValue($xml);
 		if(isset($xml->items)){
-			//echo "HERE-A";
 			foreach($xml->items->item as $item){
 				$crec=array();
 				$crec['name']=(string)$item->name;
@@ -6915,7 +6877,6 @@ function fileManager($startdir='',$params=array()){
 	        	}
 	        }
 	    elseif(isset($xml->item)){
-			//echo "HERE-B";
 			foreach($xml->item as $item){
 				$crec=array();
 				$crec['name']=(string)$item->name;
@@ -6926,7 +6887,6 @@ function fileManager($startdir='',$params=array()){
 				}
 	        }
 		}
-	//echo printValue($description);
 	//Handle file uploads
 	 if($params['-rights'] == 'all' && is_array($_FILES) && count($_FILES) > 0){
 	 	processFileUploads($cdir);
@@ -7505,7 +7465,6 @@ function formatMoney($number=0,$cents = 1){
 	$key=sha1(printValue($params));
 	if(is_array($timezoneList[$key])){return $timezoneList[$key];}
     $timezones = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
-	//echo printValue($timezones);exit;
     $timezone_offsets = array();
     foreach( $timezones as $timezone ){
         $tz = new DateTimeZone($timezone);
@@ -7546,7 +7505,7 @@ function toFixed($number=0,$decimals = 2){
 *	multi-line string
 * @return
 *	formatted multi-line string
-* @usage echo formatPre($txt);
+* @usage <?=formatPre($txt);?>
 */
 function formatPre($str=''){
 	return nl2br(trim($str));
@@ -7728,7 +7687,6 @@ function getAllVersions(){
 			$name=preg_replace('/\_+/',' ',$name);
 			$name=ucwords($name);
 			try{
-				//echoNow("Trying $fname<br>\n");
 				$ver=@eval('return '.$fname.'();');
 				if(is_array($ver)){
 					if(isset($ver['version'])){$versions[$name]=$ver['version'];}
@@ -8261,7 +8219,6 @@ function setStoredValue($evalstr,$data,$serialize=1){
 	buildDir("{$progpath}/temp");
 	global $CONFIG;
 	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
-	echo $local;exit;
 	if(file_exists($local)){unlink($local);}
     if($serialize){
 		setFileContents($local,serialize($data));
@@ -8464,7 +8421,6 @@ function getGUID($force=0){
 		}
 	}
 	if(isset($duplicate_guids[$_COOKIE['GUID']])){$force=1;}
-	//echo "Here:{$force}".printValue($_COOKIE).printValue($duplicate_guids);exit;
 	if($force != 1 && isset($_COOKIE['GUID'])){
 		$guid=$_COOKIE['GUID'];
 		$_SERVER['GUID']=$guid;
@@ -8815,7 +8771,6 @@ function csv2Arrays($lines,$params=array()){
 		$str=array_shift($lines);
 		$xfields = csvParseLine($str, $params['separator']);
 	}
-	//echo "XFIELDS:".printValue($xfields);fclose($handle);exit;
 	if(!is_array($xfields) || count($xfields)==0){
 		$results['error']="No Fields found: " . printValue($xfields);
 		return $results;
@@ -8845,7 +8800,6 @@ function csv2Arrays($lines,$params=array()){
 		}
 		$recs[]=$rec;
 	}
-	//echo printValue($recs);exit;
 	return $recs;
 }
 //---------- begin function getCSVFileContents--------------------
@@ -8886,7 +8840,6 @@ function getCSVFileContents($file,$params=array()){
 	if(!isset($params['separator'])){$params['separator']=',';}
 	if(isset($params['fields']) && is_array($params['fields'])){$xfields=$params['fields'];}
 	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator']);}
-	//echo "XFIELDS:".printValue($xfields);fclose($handle);exit;
 	if(!is_array($xfields) || count($xfields)==0){
 		$results['error']="No Fields found: " . printValue($xfields);
 		fclose($handle);
@@ -8927,7 +8880,6 @@ function getCSVFileContents($file,$params=array()){
 			$data=utf8_encode($data);
 		}
 		$data=csvParseLine($data,$params['separator'],$params['enclose']);
-		//echo printValue($data);exit;
 		if($results['count'] > $params['maxrows']){break;}
 		$row=array();
 	    $num = count($data);
@@ -9954,8 +9906,6 @@ function includePHPOnce($php_content,$name=''){
 	if(file_exists($phpfile) && md5_file($phpfile) != $content_md5){unlink($phpfile);}
 	//write the php file if needed
 	if(!file_exists($phpfile)){
-		//echo "Writing {$phpfile}<br>\n";
-
 		$fp = fopen($phpfile, "w");
 		fwrite($fp, $php_content);
 		fclose($fp);
@@ -10063,7 +10013,6 @@ function isDate($str=''){
 	$m=date('m',$time);
 	$d=date('d',$time);
 	$y=date('Y',$time);
-	//echo "{$m},{$d},{$y}";exit;
 	return checkdate($m,$d,$y);
 	if(checkdate($m,$d,$y)){return true;}
 }
@@ -10364,7 +10313,6 @@ function isSecure(){return isSSL();}
 */
 function isSSL(){
 	/* Apache */
-	//echo "HERE".printValue($_SERVER);exit;
 	if(isset($_SERVER['https']) && in_array($_SERVER['https'],array(1,'on'))){
 		return true;
 	}
@@ -10892,22 +10840,18 @@ function listFilesEx($dir='.',$params=array()){
 						case 'between':
 							$nums=preg_split('/\ and\ /i',trim($m[2]),2);
 							if((integer)$fileinfo[$key] < (integer)$nums[0] || (integer)$fileinfo[$key] > (integer)$nums[1]){$skip++;}
-							//echo "ListFilesEx1: {$fileinfo[$key]} between {$nums[0]} and {$nums[1]} = {$skip}<br>\n";
 							break;
 						case '>':
 							if((integer)$fileinfo[$key] <= (integer)$m[2]){$skip++;}
-							//echo "ListFilesEx1: {$fileinfo[$key]} [{$d1}],{$val}[{$d2}],{$skip}<br>\n";
 							break;
 						case '<':
 							if((integer)$fileinfo[$key] >= (integer)$m[2]){$skip++;}
 							break;
 						case '>=':
 							if((integer)$fileinfo[$key] < (integer)$m[2]){$skip++;}
-							//echo "ListFilesEx3: {$fileinfo[$key]} [{$d1}],{$val}[{$d2}],{$skip}<br>\n";
 							break;
 						case '<=':
 							if((integer)$fileinfo[$key] > (integer)$m[2]){$skip++;}
-							//echo "ListFilesEx4: {$fileinfo[$key]} [{$d1}],{$val}[{$d2}],{$skip}<br>\n";
 							break;
 						case '=':
 							if((integer)$fileinfo[$key] != (integer)$m[2]){$skip++;}
@@ -11358,7 +11302,6 @@ function minifyCode($code,$type) {
 			}
 			//recombine without carriage returns
 			$code=implode('',$lines);
-			//echo "HERE:{$code}";exit;
 			break;
 		case 'css':
 			require_once("min-css.php");
@@ -11885,7 +11828,6 @@ function getWeekNumber($date){
 	}
 	$stop=microtime(true);
 	$diff=$stop-$start;
-	//echo "getWeekNumber took: $diff<br>\n";
 	return 0;
 }
 //---------- begin function evalPHP_ob
@@ -12073,7 +12015,6 @@ function postEditSha($pextables=array()){
 		'pexetables'=>$pextables
 	);
 	foreach($pextables as $tablename=>$tablefields){
-		//echo printValue($tablefields);
 		$fields=array();
 		if(!is_array($tablefields)){
 			$tablefields=preg_split('/\,/',$tablefields);
@@ -12081,13 +12022,11 @@ function postEditSha($pextables=array()){
 		if(!isset($shas['tables'][$tablename])){
 			$shas['tables'][$tablename]=$tablefields;
 		}
-		//echo printValue($tablefields);exit;
 		foreach($tablefields as $field){
 			$fields[]=$field;
 		}
 		if(!count($fields)){continue;}
 		$fieldstr=implode(',',$fields);
-		//echo printValue($pextables).printValue($tablefields).printValue($fields);exit;
 		$query="select _id,name,{$fieldstr} from {$tablename}";
 		$query_result=@databaseQuery($query);
 		if(!$query_result){
@@ -12220,13 +12159,10 @@ function postEditXmlFromJson($json=array()){
 		'-fields'	=> implode(',',$fields)
 	));
 	//json[table][id][field1], json[table][id][field2]...
-	//echo "Error: JSON:".printValue($json).PHP_EOL;
 	foreach($json as $table=>$tableids){
 		//determine what fields I need for this table
-		//echo "Error: {$table}".PHP_EOL;
 		$finfo=getDBFieldInfo($table,1);
 		//continue;
-		//echo "Error: {$table}".PHP_EOL;continue;
 		//skip tables that do not have a name as a field
 		if(!isset($finfo['name'])){continue;}
 		$fields=array();
@@ -12292,7 +12228,6 @@ function postEditXmlFromJson($json=array()){
         }
     }
     $xml .= "</xmlroot>".PHP_EOL;
-    //echo $xml;exit;
     return $xml;
 }
 function posteditSha1($str){
@@ -12676,7 +12611,6 @@ function postURL($url,$params=array()) {
 		curl_setopt ($process, CURLOPT_CRLF, 0);
 	}
 	$return = curl_exec($process);
-	//echo $return;exit;
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($process);
 	//check for errors
@@ -12725,7 +12659,7 @@ function postURL($url,$params=array()) {
 		echo "<b>Url:</b> {$rtn['url']}<br>\n";
 		echo "<b>Error Message:</b> {$rtn['error']}<br>\n";
 		exit;
-        }
+    }
     //close the handle
 	curl_close($process);
 	return $rtn;
@@ -12767,7 +12701,6 @@ function postJSON($url='',$json='',$params=array()) {
 		$params['-headers'][]="WaSQL-NoGUID: 1";
 		unset($params['-noguid']);
 	}
-	//if(isset($params['-debug'])){echo $url.printValue($params);exit;}
 	return postBody($url,$json,$params);
 }
 
@@ -13039,7 +12972,6 @@ function printValue($v='',$exit=0){
 	if(!isCLI()){$rtn .= '<pre class="printvalue" type="'.$type.'">'.PHP_EOL;}
 	//JSON_UNESCAPED_LINE_TERMINATORS was introduced in php 5.4. Value=256
 	$j=json_encode($v,JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | 256);
-	//echo $j;exit;
 	if(strlen($j)){
 		$rtn .= "{$type} object:".PHP_EOL;
 		//$j = preg_replace('/\\\//',"/",$j);
@@ -13067,8 +12999,7 @@ function printValue($v='',$exit=0){
 * @return string
 *	returns an html block showing the contents of the object,array,or variable specified.
 * @usage
-*	echo printValue($sampleArray);
- * printValue($str,1);
+*	echo printValueIf($USER['_id']==2,$sampleArray);
 * @author slloyd
 * @history bbarten 2014-01-07 added documentation
 */
@@ -13091,7 +13022,7 @@ function printValueIf($conditional,$v='',$exit=0){
 * @return string
 *	returns a hidden html block showing the contents of the object,array,or variable specified.
 * @usage
-*	echo printValue($sampleArray);
+*	echo printValueHidden($sampleArray);
 * @author slloyd
 * @history bbarten 2014-01-07 added documentation
 */
@@ -13108,7 +13039,6 @@ function printValueHidden($v='',$title=''){
 function processWysiwygPost($table,$id,$fields=array()){
 	//converts inline images into images on the server in a dir called /mce/{table}
 	$rec=getDBRecord(array('-table'=>$table,'_id'=>$id,'-fields'=>implode(',',$fields)));
-	//echo "processWysiwygPost";exit;
 	if(!is_array($rec)){return 0;}
 	//do not process if there is not document_root defined as a server global
 	if(!isset($_SERVER['DOCUMENT_ROOT'])){
@@ -13255,7 +13185,6 @@ function processInlineFiles(){
 			}
 			$base64_files=$_REQUEST["{$key}_base64"];
 			if(!is_array($base64_files)){$base64_files=array($base64_files);}
-			echo printValue($base64_files);
 			$efiles=array();
 			foreach($base64_files as $base64_file){
 				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
@@ -13352,7 +13281,7 @@ function processActions(){
 			$sort=encodeURL($_REQUEST['_sort']);
 			echo buildOnLoad("scheduleAjaxGet('cronlist','php/index.php','cronlist','_action=cronlist&_sort={$sort}',1,1);");
 			exit;
-			break;
+		break;
 		case 'CRONLIST':
 			$recopts=array('-table'=>"_cron",'-action'=>'/php/admin.php','_id_href'=>"/php/admin.php?".$idurl);
 			//format the run_date
@@ -13365,7 +13294,7 @@ function processActions(){
 			$recopts['active_align']="center";
 			echo listDBRecords($recopts);
 			exit;
-			break;
+		break;
 		case 'AUTH':
 			header("Content-type: text/xml");
 			echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
@@ -13378,11 +13307,7 @@ function processActions(){
 				if(is_array($rec)){
 					if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && userIsEncryptedPW($rec['password'])){
 						$pass=userEncryptPW($pass);
-						//echo '<encrypted>true</encrypted>'.PHP_EOL;
-						//echo "	<user>{$user}</user>\n";
-						//echo "	<pass>{$pass}</pass>\n";
-						//echo "	<password>{$rec['password']}</password>\n";
-						}
+					}
 					if($rec['password']==$pass){
 						$out=array();
 						foreach($rec as $key=>$val){
@@ -13408,7 +13333,7 @@ function processActions(){
             	}
 	        echo "</main>\n";
 			exit;
-		    break;
+		break;
 		case 'POSTEDIT':
 		case 'EDIT':
 			if(isset($_REQUEST['_auth_required']) && $_REQUEST['_auth_required']==1 && !isNum($USER['_id'])){
@@ -13420,7 +13345,6 @@ function processActions(){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
 			}
 			if(strlen($_REQUEST['_table']) && (integer)$_REQUEST['_id'] > 0 && strlen($_REQUEST['_fields'])){
-				//echo printValue($_REQUEST);exit;
 				$rec=getDBRecord(array('-table'=>$_REQUEST['_table'],'_id'=>$_REQUEST['_id'],'-nocache'=>1));
 				$timestamp=time();
 				$_REQUEST['edit_rec']=$rec;
@@ -13526,7 +13450,6 @@ function processActions(){
                     if(isUser()){$opts['_euser']=$USER['_id'];}
                     $opts['_edate']=date("Y-m-d H:i:s",$timestamp);
                     //edit the record
-                    //echo printValue($opts) . printValue($_REQUEST);
 					$_REQUEST['edit_result']=editDBRecord($opts);
 					if(!isNum($_REQUEST['edit_result'])){
 						setWasqlError(debug_backtrace(),$_REQUEST['edit_result']);
@@ -13609,9 +13532,7 @@ function processActions(){
 						echo $_REQUEST['edit_opts'][$fld];
 						$divid="editfield_{$fld}_{$_REQUEST['edit_rec']['_id']}";
 						echo $rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$_REQUEST['_table'].'\',\''.$_REQUEST['edit_rec']['_id'].'\',\''.$fld.'\',{div:\''.$divid.'\'});"></sup>';
-						//echo $fld.printValue($_REQUEST);
 						exit;
-
 					}
 					$_REQUEST['edit_id']=$rec['_id'];
 					$_REQUEST['edit_table']=$_REQUEST['_table'];
@@ -13751,7 +13672,6 @@ function processActions(){
 					elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
 					elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
-				//echo printValue($opts);exit;
 				$id=addDBRecord($opts);
 				$_REQUEST['add_result']=$id;
 				if(isNum($id)){
@@ -13798,11 +13718,9 @@ function processActions(){
 					$settings=settingsValues($userid,array($setkey));
 					$rec=getDBRecord(array('-table'=>'_settings','-where'=>"key_name='{$setkey}' and user_id={$userid}"));
 					ksort($_REQUEST);
-					//echo printValue($_REQUEST) . printValue($settings);
 					//exit;
 					$val=request2XMLSimple($_REQUEST);
 					$val_array=xml2Array($val);
-					//if($USER['_id']==1){echo "rec" . printValue($val_array) . printValue($settings[$setkey]) . printValue($rec);}
 					if(is_array($rec)){
 						if(sha1(json_encode($val_array)) != sha1(json_encode($settings[$setkey]))){
 							$editopts=array('-table'=>'_settings','-where'=>"_id={$rec['_id']}",'key_value'=>$val);
@@ -13811,7 +13729,6 @@ function processActions(){
 							$_REQUEST['edit_id']=$rec['_id'];
 							$_REQUEST['edit_table']='_settings';
 							$SETTINGS[$setkey]=$val;
-							//if($USER['_id']==1){echo printValue($ok) . printValue($editopts);}
 						}
 					}
 					else{
@@ -13819,7 +13736,6 @@ function processActions(){
 						$id=addDBRecord($addopts);
 						$_REQUEST['add_id']=$id;
 						$_REQUEST['add_table']='_settings';
-						//echo printValue($ok) . printValue($addopts);
 						$SETTINGS[$setkey]=$val;
 			    	}
 			    break;
@@ -14090,13 +14006,11 @@ function processActions(){
 			$isTable=array();
 			foreach($tables as $table){$isTable[$table]=true;}
 			$fieldinfo=getDBFieldInfo($_REQUEST['_table_']);
-			//echo printValue($fieldinfo);
 			$fields=array_keys($fieldinfo);
 			//build any reference tables
 			$reference=array();
 			$refmap=array();
 			foreach($fields as $field){
-				//echo "Checking {$field}\n";
 				if(preg_match('/^(.+)_id$/',$field,$fmatch) && $fieldinfo[$field]['_dbtype']=='int'){
 					//is there a matching table?
 					unset($rtable);
@@ -14105,7 +14019,6 @@ function processActions(){
 					elseif($isTable["_{$fmatch[1]}s"]){$rtable="_{$fmatch[1]}s";}
 					if(isset($rtable)){
 						//get ids
-						//echo "Referencing {$field} to {$rtable}\n";
 						$ids=array();
 						foreach($recs as $rec){$ids[$rec[$field]]+=1;}
 						$ids=array_keys($ids);
@@ -14116,7 +14029,6 @@ function processActions(){
 						}
                     }
                 }
-            //echo printValue($reference);
 			$out=array();
 			foreach($recs as $rec){
 				foreach($fields as $field){
@@ -14198,7 +14110,6 @@ function processActions(){
 				$_REQUEST['-action']=preg_replace('/.+?'.$_SERVER['HTTP_HOST'].'/i','',$_SERVER['HTTP_REFERER']);
 				$_REQUEST['-action']=preg_replace('/\?.*$/','',$_REQUEST['-action']);
             	}
-            //echo printValue($_REQUEST);exit;
             //set defaults for fielddata table on new fields
             if(!isset($_REQUEST['-table']) && isset($_REQUEST['_table'])){
             	$_REQUEST['-table']=$_REQUEST['_table'];
@@ -14213,7 +14124,6 @@ function processActions(){
 							$_REQUEST['required']=1;
 						}
 	                }
-	                //echo $fieldname.printValue($info);exit;
 	                switch($info[$fieldname]['_dbtype']){
 						case 'string':
 						case 'blob':
@@ -14291,15 +14201,8 @@ function processActions(){
 	                }
 	            }
 			}
-            //echo buildTableBegin(4);
-            //echo "<tr><td>\n";
 			$title=isset($_REQUEST['_id']) && isNum($_REQUEST['_id'])?'Edit Record':'Add Record';
-           // echo '<div class="w_centerpop_title">'.$title.'</div>'.PHP_EOL;
-			//echo '<div class="w_centerpop_content">'.PHP_EOL;
 			echo addEditDBForm($_REQUEST);
-			//echo '</div>'.PHP_EOL;
-			//echo "</td></tr>\n";
-			//echo buildTableEnd();
 			exit;
 			break;
 		}
@@ -14315,7 +14218,6 @@ function processFileUploads($docroot=''){
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
 	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
 	if(is_array($_FILES) && count($_FILES) > 0){
-	 	//echo "processFileUploads". printValue($_FILES);exit;
 	 	foreach($_FILES as $name=>$file){
 	 		if(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
 	 			unset($_FILES[$name]);
@@ -14375,12 +14277,10 @@ function processFileUploads($docroot=''){
 				$cpath =decodeBase64($_REQUEST['_dir']);
 				$cpath=str_replace('//','/',$cpath);
 				$abspath=$cpath .'/'. $file['name'];
-				//echo "path: {$cpath}<br>\n";
 				if(!is_dir($cpath) && strlen($_REQUEST[$name.'_path'])){
 					$path=$_REQUEST[$name.'_path'];
 					$cpath=$docroot . $path;
 					$cpath=str_replace('//','/',$cpath);
-					//echo "path: {$cpath}<br>\n";
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
@@ -14400,7 +14300,6 @@ function processFileUploads($docroot=''){
 				else{
 					$cpath=$docroot . $path;
 					$cpath=str_replace('//','/',$cpath);
-					//echo "path: {$cpath}<br>\n";
 					if(!is_dir($cpath)){
 						@trigger_error("");
 						mkdir($cpath,0777,1);
@@ -14413,7 +14312,6 @@ function processFileUploads($docroot=''){
 				$path=$_REQUEST['_path'];
 				$cpath=$docroot . $path;
 				$cpath=str_replace('//','/',$cpath);
-				//echo "path: {$cpath}<br>\n";
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
@@ -14425,7 +14323,6 @@ function processFileUploads($docroot=''){
 				$path='/uploads';
 				$cpath=$docroot . $path;
 				$cpath=str_replace('//','/',$cpath);
-				//echo "path: {$cpath}<br>\n";
 				if(!is_dir($cpath)){
 					@trigger_error("");
 					mkdir($cpath,0777,1);
@@ -14441,7 +14338,6 @@ function processFileUploads($docroot=''){
 				mkdir($absdir,0777,1);
 			}
             if(!is_file($file['tmp_name'])){$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";}
-            //echo "moving {$file['tmp_name']} to {$abspath}<br>\n";
             @trigger_error("");
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
@@ -14509,14 +14405,12 @@ function processFileUploads($docroot=''){
 					$reencode=$CONFIG['reencode'];
 				}
 				if(strlen($reencode)){
-					//echo $reencode;exit;
 					if(!isset($CONFIG['reencode_command'])){
 						$CONFIG['reencode_command']="ffmpeg -i";
 					}
 					$cmd=$CONFIG['reencode_command'];
 					//mp3-mp3,wav-mp3
 					$sets=preg_split('/\,/',strtolower($reencode));
-					//echo printValue
 					foreach($sets as $set){
 						list($from,$to)=preg_split('/\-/',$set,2);
 						if($from==$ext){
@@ -14558,7 +14452,6 @@ function processFileUploads($docroot=''){
 				else{
 					$_REQUEST[$name.'_error']="File Upload Error (3)" . printValue($e);
                 }
-                //echo printValue($e);
             }
         }
 		return 1;
@@ -14657,9 +14550,7 @@ function pushFile($file='',$params=array()){
 	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
 	else{$ctype=getFileContentType($file);}
 	if(!isset($params['-filename'])){$params['-filename']=getFileName($file);}
-	//echo $file.printValue($params);exit;
 	@header("Content-Type: {$ctype}");
-	//echo "HERE:{$ctype}";exit;
 	if($params['-attach']){
 		@header('Content-Description: File Transfer');
     	@header('Content-Disposition: attachment; filename="'.$params['-filename'].'"');
@@ -14720,9 +14611,7 @@ function readRSS($url,$hrs=3,$force=0){
 		
 	}
 	$content = implode('',$lines);
-	//echo $content;exit;
 	//fix malformed links
-	//$content=preg_replace('/\<link\>http(.+?)\<\/link\>/','<link><![CDATA[http$1]]></link>',$content);
 	try{
 		$xml = new SimpleXmlElement($content);
 		}
@@ -14731,12 +14620,10 @@ function readRSS($url,$hrs=3,$force=0){
 		$results['raw']=$content;
 		return $results;
     	}
-	//echo printValue($xml);exit;
     //feedDate
     $results['feedDate']=date('D F j,Y g:i a',$results['feedDate_utime']);
 	// define the namespaces that we are interested in
 	$ns = $xml->getNamespaces(true);
-	//echo printValue($ns);exit;
 	// step 2: extract the channel metadata
 	$channel = array();
 	$channel['title']       = (string)$xml->channel->title;
@@ -15074,7 +14961,6 @@ function trimRequestArray($request=array()){
 */
 function truncateWords($wordstr,$maxlen,$dots=0){
 	$words=preg_split('/\ /',$wordstr);
-	//echo printValue($words);exit;
 	if(!is_array($words)){return $wordstr;}
 	$rtn='';
 	foreach($words as $word){
@@ -15855,7 +15741,6 @@ function verboseSize($bytes=0,$format=''){
     $i=0;
     for ($i=0; $bytes > 1024 && $i < $sizecnt && isset($sizes[$i+1]); $i++){$bytes /= 1024;}
     if(!strlen($format)){$format=$i<3?'%.1f %s':'%.2f %s';}
-    //echo "Format[".$format."], Bytes[".$bytes."], I[".$i."], Size[".$sizes[$i]."]<br>\n";
     $str=sprintf($format, $bytes,$sizes[$i]);
 	return $str;
 	}
@@ -16201,4 +16086,4 @@ function xmlHeader($params=array()){
 	$version=isset($params['version'])?$params['version']:"1.0";
 	$encoding=isset($params['encoding'])?$params['encoding']:"ISO-8859-1";
 	return '<?xml version="'.$version.'" encoding="'.$encoding.'"?>'."\r\n";
-	}
+}

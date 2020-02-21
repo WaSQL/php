@@ -3,7 +3,6 @@ $progpath=dirname(__FILE__);
 //requires common,wasql, and database to be loaded first
 //parse Server Variables
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
-//echo "DEBUG".printValue(headers_list());exit;
 if(!isDBTable('_users')){
 	return;
 }
@@ -69,13 +68,11 @@ elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_ta
 	//timed auth code - good for 30 minutes
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_tauth'],2);
 	$decoded=decrypt($encoded,"Salt{$key}tlaS");
-	//echo $decoded;exit;
 	list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
 	//make sure the atime is within the allowed time frame - 30 minutes
 	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
 	$seconds=$minutes*60;
 	$elapsed=time()-$atime;
-	//echo  "{$decoded},{$key},{$atime}".printValue($_REQUEST);exit;
 	if($elapsed > $seconds){
 		unset($_REQUEST['apikey']);
 		unset($_REQUEST['username']);
@@ -84,7 +81,6 @@ elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_ta
 	else{
 		$_REQUEST['_auth']=1;
 	}
-	//echo printValue($_REQUEST);exit;
 }
 elseif(isset($_REQUEST['_sessionid'])){
 	$str=base64_decode($_REQUEST['_sessionid']);
@@ -113,7 +109,6 @@ elseif(isset($_REQUEST['_sessionid'])){
 	$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:10;
 	$seconds=$minutes*60;
 	$elapsed=time()-$atime;
-	//echo  "{$decoded},{$key},{$atime}".printValue($_REQUEST);exit;
 	if($elapsed > $seconds){
 		unset($_REQUEST['apikey']);
 		unset($_REQUEST['username']);
@@ -122,12 +117,10 @@ elseif(isset($_REQUEST['_sessionid'])){
 	else{
 		$_REQUEST['_auth']=1;
 	}
-	//echo printValue($_REQUEST);exit;
 }
 if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
 		$rec=getDBRecord(array('-table'=>'_users','username'=>addslashes($_REQUEST['username'])));
-		//echo printValue($rec);exit;
 		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
 			$_REQUEST['password']=userEncryptPW(addslashes($_REQUEST['password']));
 		}
@@ -371,7 +364,6 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
     else{
 		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username']),'password'=>$_REQUEST['password']);
 		$USER=getDBRecord($getopts);
-		//echo printValue($getopts).printValue($USER);exit;
 		userSetWaSQLGUID();
     }
 }
@@ -496,7 +488,6 @@ elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_
 		    str_replace(':','',crypt($pw,$rec['username']))
 		);
 		$api=preg_split('/[:]/',decodeBase64($_REQUEST['apikey']));
-		//echo printValue($api).printValue($auth).printValue($rec);exit;
 		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
         	$USER=$rec;
         	userSetWaSQLGUID();
@@ -524,10 +515,7 @@ elseif(isset($_SESSION['apikey']) && isset($_SESSION['username']) &&  strtoupper
 }
 elseif(isset($CONFIG['authhost']) && isset($_SESSION['authcode']) && isset($_SESSION['authkey'])){
 	$authstring=decrypt($_SESSION['authcode'],$_SESSION['authkey']);
-	//echo printValue($_SESSION);
-	//echo "Session authstring:" . printValue($authstring);
 	$tmp=xml2Arrays($authstring);
-	//echo "Session tmp:" . printValue($tmp);
 	if(is_array($tmp) && isEmail($tmp[0]['email'])){
 		//successful authentication - check for local user record.
 		$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
@@ -583,7 +571,6 @@ elseif(isUser()){
 			$guid=$oldguid;
 		}
 	}
-	//echo json_encode(array('error'=>'debug','x'=>$_REQUEST));exit;
 }
 else{
 	unset($USER);
@@ -633,7 +620,6 @@ function userAuthorizeWASQLGUID(){
 	$guid=urldecode($_COOKIE['WASQLGUID']);
     if(preg_match('/^([0-9]+)/',base64_decode($guid),$m)){
     	$opts=array('-table'=>'_users','_id'=>$m[1],'-relate'=>1);
-    	//echo $decguid.printValue($opts).printValue($m);exit;
     	$rec=getDBRecord($opts);
     }
     if(!isset($rec['_id'])){
@@ -891,7 +877,6 @@ function setUserInfo(){
 	}
 	else{
 		$ok=editDBRecord($opts);
-		//echo $ok.printValue($opts).printValue($USER);
 	}
 }
 
@@ -924,7 +909,6 @@ function userLogout(){
 		//setcookie("WASQLGUID", "", time()-3600);
 		commonSetCookie('WASQLGUID', null, -1, '/');
 	}
-	//echo "HERE";exit;
 	return true;
 }
 
@@ -955,7 +939,6 @@ function userLogout(){
 * @history - bbarten 2014-01-02 updated documentation
 */
 function getUserInfo($cuser,$size=16){
-	//echo "cuser:".printValue($cuser);
 	if(!is_array($cuser) && isNum($cuser)){
 		$cuser=getDBRecord(array('-table'=>'_users','_id'=>$cuser));
     	}
@@ -1057,8 +1040,7 @@ function userValue($field){
 * returns  true if a user is logged in
 * @return boolean
 * @usage
-*	$userLoggedIn = isUser();
-*	echo "Hello ".(isUser() ? userValue('username') : "Guest");
+*	if(isUser()){}
 * @author slloyd
 * @history - bbarten 2014-01-02 added documentation
 */
@@ -1075,7 +1057,7 @@ function isUser(){
 * @param array $params - any additional parameters to be included.
 * 	See AddEditDBForm for additional params
 * @usage
-*	<?=userProfileForm();?> //echos an HTML form to change profile data
+*	<?=userProfileForm();?>  returns an HTML form to change profile data
 * @author slloyd
 * @history - bbarten 2014-01-02 added documentation
 */
@@ -1397,7 +1379,6 @@ function wpassGetCategories($str=1){
 	if(!isNum($USER['_id'])){return '';}
 	$query="select distinct(category) from _wpass where _cuser={$USER['_id']} order by category";
 	$recs=getDBRecords(array('-query'=>$query,'-index'=>'category'));
-	//echo $query.printValue($recs);exit;
 	if(!is_array($recs)){return '';}
 	if($str==1){
 		return implode("\r\n",array_keys($recs));

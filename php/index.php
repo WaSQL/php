@@ -27,7 +27,6 @@ if(preg_match('/^w_min\/minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
 }
 //check for special user login path
 $url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
-//echo printValue($_SERVER);exit;
 if($url_parts[0]=='u'){
 	//u=user   /u/username/apikey/pagename/....
 	array_shift($url_parts);
@@ -35,14 +34,12 @@ if($url_parts[0]=='u'){
 	$_REQUEST['apikey']=array_shift($url_parts);
 	$_REQUEST['_auth']=1;
 	$_REQUEST['_view']=implode('/',$url_parts);
-	//echo printValue($_REQUEST['_view']);exit;
 }
 elseif($url_parts[0]=='t'){
 	//t= template  /t/4/forms/....
 	array_shift($url_parts);
 	$_REQUEST['_template']=array_shift($url_parts);
 	$_REQUEST['_view']=implode('/',$url_parts);
-	//echo printValue($_REQUEST['_view']);exit;
 }
 global $CONFIG;
 $stime=microtime(true);
@@ -69,7 +66,6 @@ if($url_parts[0]=='y' && count($url_parts)==2){
 	include_once("$progpath/schema.php");
 	loadExtras('tiny');
 	$url=tinyCode($url_parts[1]);
-	//echo $url;exit;
 	if(preg_match('/^http/i',$url)){
     	header("Location: {$url}");
     	exit;
@@ -242,37 +238,6 @@ if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo buildOnLoad("scheduleHeartbeat('{$div}',{$t});");
 	exit;
 }
-//Check for websocket
-if(isset($_REQUEST['wscmd_completed']) && isNum($_REQUEST['wscmd_completed']) && count($_REQUEST)==1){
-	$port=$_REQUEST['wscmd_completed'];
-	$ok=cmdResults("pkill -f  \"/websocketd --port={$port}\"");
-	echo printValue($ok);
-	exit;
-}
-if(isset($_REQUEST['_websocket']) && count($_REQUEST)==1){
-	loadExtras('websockets');
-	$params=array(
-		'type'=>'access',
-		'site'=>$_SERVER['HTTP_REFERER']
-	);
-	foreach($_SERVER as $k=>$v){
-		if(preg_match('/^REMOTE_(.+)$/i',$k,$m)){
-			$k=strtolower($m[1]);
-    		$params[$k]=$v;
-		}
-	}
-	$msg=json_encode($params);
-	//echo $table.$msg;exit;
-	$params['source']=isDBStage()?'db_stage':'db_live';
-	$params['name']=$table;
-	$params['icon']='icon-website w_success';
-	$ok=wsSendMessage($msg,$params);
-	//set correct header
-	$ctype=getFileContentType("x.{$_REQUEST['_websocket']}");
-	header("Content-type: {$ctype}");
-	echo '';
-	exit;
-}
 //check for favicon request
 if(!isset($_REQUEST['_view']) || strlen(trim($_REQUEST['_view']))==0){
 	if(isset($_REQUEST['favicon.ico'])){
@@ -379,7 +344,6 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		$message .= '<p>Once you login to your account, please change your password.</p>';
 		$message .= "<p>If you didn't ask to change your password, don't worry! Your password is still safe and you can ignore this email.</p>";
 		$message .= "<p>Best regards,</p><p>{$fromname}</p>";
-		//echo $message;exit;
 		//clear out errors
 		@trigger_error("");
 		//attempt to send the email
@@ -440,7 +404,6 @@ if(isAjax() && isUser()){
     	$str=decodeBase64($_REQUEST['_fbupdate']);
     	list($id,$email)=preg_split('/\:/',$str,2);
     	$query="update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}";
-    	//echo $query;exit;
     	executeSQL($query);
     	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
     	exit;
@@ -449,7 +412,6 @@ if(isAjax() && isUser()){
     	$str=decodeBase64($_REQUEST['_fblink']);
     	list($id,$email)=preg_split('/\:/',$str,2);
     	$query="update _users set facebook_id='{$id}',facebook_email='{$email}' where _id={$USER['_id']}";
-    	//echo $query;exit;
     	executeSQL($query);
     	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
     	exit;
@@ -463,7 +425,6 @@ if(isAjax() && isUser()){
         	exit;
 	}
 }
-//echo isUser().printValue($USER).isDBStage().printValue($CONFIG);exit;
 if(!isUser() && isset($CONFIG['access']) && strtolower($CONFIG['access']) == 'user'){
     indexUserAccess();
     exit;
@@ -671,7 +632,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
             $params=array();
             foreach($tables as $table){
             	$finfo=getDBFieldInfo($table,1);
-            	//echo printValue($finfo);exit;
             	$fields=array();
             	foreach($finfo as $field=>$info){
             		if(isWasqlField($field)){continue;}
@@ -683,7 +643,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
             	if(!count($fields)){continue;}
             	$params[$table]=$fields;
             }
-            //echo printValue($params);exit;
 			//return xml of pages and templates
 			header('Content-type: application/json');
 			echo postEditSha($params);
@@ -803,7 +762,6 @@ if(stringContains($view,'.')){
 	$ext=getFileExtension($_REQUEST['_view']);
 	if(in_array($ext,array('xml','json','csv','phtm'))){
 		$view=getFileName($_REQUEST['_view'],1);
-		//echo "Ext:{$ext}, View:{$view}, REQUEST:{$_REQUEST['_view']}<br>\n";exit;
 		//$view=preg_replace('/\.phtm$/i','',$view);
 		$pagefields=getDBFields('_pages');
 		if(in_array($ext,$pagefields)){
@@ -891,7 +849,6 @@ if(!is_array($PAGE) && isset($CONFIG['redirect_page'])){
     	$getopts['-where'] = "_id={$view}";
 	}
 	$recs=getDBRecords($getopts);
-	//echo printValue($getopts).printValue($rec);
 	if(is_array($recs)){
 		if(count($recs)==1){
 			$PAGE=$recs[0];
@@ -1108,7 +1065,6 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		}
 	}
 	//Load template Functions
-	//echo "HERE:::".$TEMPLATE
 	if(strlen(trim($TEMPLATE['functions']))){
 		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$TEMPLATE['_id']}"));
 		if(!isNum($ok) && strlen(trim($ok))){echo $ok;}
