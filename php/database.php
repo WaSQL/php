@@ -4294,6 +4294,7 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		//handle virtual generated fields shortcut
 		//post_status varchar(25) GENERATED ALWAYS AS (JSON_EXTRACT(c, '$.id')),
 		//post_status varchar(25) GENERATED ALWAYS AS (TRIM(BOTH '"' FROM json_extract(jdoc,'$.post_status'))),
+		//alter table surveys_responses add location_code varchar(25) GENERATED ALWAYS AS (TRIM(BOTH '"' FROM json_extract(response,'$.location_code'))) STORED
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
