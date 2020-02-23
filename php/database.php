@@ -1244,6 +1244,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-exportfields] -  subset of fields to export.
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
+*	[-ajaxid] str - ajax id to wrap the table in
 *	[-sumfields] string or array - list of fields to sum
 *	[-editfields] - in-cell edit fields.  * will make all cells editable
 *	[-editfunction] - javascript edit function to call if -editfields is set. return indexEditField('%event_id%','%fieldname%');
@@ -1665,6 +1666,9 @@ function databaseListRecords($params=array()){
 		}
 		return $rtn;
 	}
+	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+		$rtn .= '<div id="'.$params['-tableheight'].'">'.PHP_EOL;
+	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
 	}
@@ -2038,6 +2042,9 @@ function databaseListRecords($params=array()){
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 		$rtn .= '</div>'.PHP_EOL;
 	}
+	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+		$rtn .= '</div>'.PHP_EOL;
+	}	
 	//check for postdata content
 	if(isset($params['-postdata'])){
 		$rtn .= $params['-postdata'];
