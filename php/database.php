@@ -1580,6 +1580,9 @@ function databaseListRecords($params=array()){
 		}
 	}
 	$rtn='';
+	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
+	}
 	//Check for -total to determine if we should show the searchFilterForm
 	if(empty($params['-formname'])){
 		$params['-formname']='searchfiltersform';
@@ -1665,9 +1668,6 @@ function databaseListRecords($params=array()){
 			$rtn .= $params['-posttable'];
 		}
 		return $rtn;
-	}
-	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
-		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
@@ -2041,9 +2041,6 @@ function databaseListRecords($params=array()){
 	//check for tableheight
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 		$rtn .= '</div>'.PHP_EOL;
-	}
-	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
-		$rtn .= '</div>'.PHP_EOL;
 	}	
 	//check for postdata content
 	if(isset($params['-postdata'])){
@@ -2051,6 +2048,9 @@ function databaseListRecords($params=array()){
 	}
 	elseif(isset($params['-posttable'])){
 		$rtn .= $params['-posttable'];
+	}
+	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+		$rtn .= '</div>'.PHP_EOL;
 	}
 	return $rtn;
 }
