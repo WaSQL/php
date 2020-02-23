@@ -1667,7 +1667,7 @@ function databaseListRecords($params=array()){
 		return $rtn;
 	}
 	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
-		$rtn .= '<div id="'.$params['-tableheight'].'">'.PHP_EOL;
+		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
