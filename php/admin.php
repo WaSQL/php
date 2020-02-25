@@ -394,7 +394,7 @@ ENDOFQUERY;
 			//request to get sync changes
 			if(!isUser()){
 				//echo printValue($_REQUEST);exit;
-				echo base64_encode(json_encode(array('error'=>"Login Failed. Please try again")));
+				echo base64_encode(json_encode(array('error'=>"Login Failed. Please try again. [{$_REQUEST['_auth']}]")));
 				foreach($_SESSION as $k=>$v){
 					if(preg_match('/^(sync\_|git\_)/i',$k)){
 						unset($_SESSION[$k]);
