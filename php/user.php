@@ -57,6 +57,7 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	$decoded=decrypt($encoded,$key);
 	//abort($decoded);
 	list($_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,2);
+	$_REQUEST['_auth_code']=$_REQUEST['_auth'];
 	$_REQUEST['_auth']=1;
 }
 elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
