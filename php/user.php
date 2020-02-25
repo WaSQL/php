@@ -51,7 +51,16 @@ elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUE
 }
 $USER=array();
 //check for login request via multiple ways - _auth, _tauth, ldap, user/pass
-if(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
+if(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['username']) && strlen($_REQUEST['username']) && isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])){
+	//apikey code
+	$rec=userDecodeApikeyAuth($_REQUEST['apikey'],$_REQUEST['username']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+	}
+}
+elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 	//auth code
 	$rec=userDecodeAuthCode($_REQUEST['_auth']);
 	//confirm record is valid and active
@@ -135,555 +144,6 @@ if(isset($USER['_id'])){
 	$SETTINGS=settingsValues($uid);
 }
 
-return;
-
-
-
-//SQL injection prevention
-if(isset($_REQUEST['username'])){
-	$_REQUEST['username']=preg_replace('/\'/',"\\'",$_REQUEST['username']);
-}
-$userfieldinfo=getDBFieldInfo("_users");
-
-if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])){
-	//check for _auth request
-	list($key,$encoded)=preg_split('/\./',$_REQUEST['_auth'],2);
-	$decoded=decrypt($encoded,$key);
-	//abort($decoded);
-	list($_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,2);
-	$_REQUEST['_auth_code']=$_REQUEST['_auth'];
-	$_REQUEST['_auth']=1;
-}
-elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
-	//check for _tauth request - temporat\r
-	if(!isset($_REQUEST['_tauthx'])){
-		$url="{$_SERVER['REQUEST_URI']}&_tauthx=".time();
-		header("Location: {$url}");
-		exit;
-	}
-	//timed auth code - good for 30 minutes
-	list($key,$encoded)=preg_split('/\./',$_REQUEST['_tauth'],2);
-	$decoded=decrypt($encoded,"Salt{$key}tlaS");
-	list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
-	//make sure the atime is within the allowed time frame - 30 minutes
-	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
-	$seconds=$minutes*60;
-	$elapsed=time()-$atime;
-	if($elapsed > $seconds){
-		unset($_REQUEST['apikey']);
-		unset($_REQUEST['username']);
-		$_REQUEST['_login_error']="The login link used is no longer valid. {$elapsed}";
-	}
-	else{
-		$_REQUEST['_auth']=1;
-	}
-}
-elseif(isset($_REQUEST['_sessionid'])){
-	$str=base64_decode($_REQUEST['_sessionid']);
-	//sessionid - good for 10 minutes unless specified otherwise in the config sessionid_timeout variable
-	list($key,$encoded)=preg_split('/\./',$str,2);
-	$decoded=decrypt($encoded,"Session{$key}tlaS");
-	if(isEven($key)){
-		list($_REQUEST['username'],$atime,$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
-	}
-	else{
-		list($atime,$_REQUEST['username'],$_REQUEST['apikey'])=preg_split('/\:/',$decoded,3);
-	}
-	$rec=getDBRecord(array('-table'=>'_users','username'=>$_REQUEST['username'],'-fields'=>'_id'));
-	if(!isset($rec['_id'])){
-		unset($_REQUEST['apikey']);
-		unset($_REQUEST['username']);
-		$_REQUEST['_login_error']="Invalid login request (1)";
-	}
-	$id=substr($key,0,strlen($key)-1);
-	if($id != $rec['_id']){
-		unset($_REQUEST['apikey']);
-		unset($_REQUEST['username']);
-		$_REQUEST['_login_error']="Invalid login request (2)";
-	}
-	//make sure the atime is within the allowed time frame - 10 minutes is the default
-	$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:10;
-	$seconds=$minutes*60;
-	$elapsed=time()-$atime;
-	if($elapsed > $seconds){
-		unset($_REQUEST['apikey']);
-		unset($_REQUEST['username']);
-		$_REQUEST['_login_error']="The sessionid used is no longer valid. {$elapsed}";
-	}
-	else{
-		$_REQUEST['_auth']=1;
-	}
-}
-if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['username']) && isset($_REQUEST['password'])){
-	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost']) && !isset($CONFIG['auth365']) && !isset($CONFIG['authldap']) && !isset($CONFIG['authldaps'])){
-		$rec=getDBRecord(array('-table'=>'_users','username'=>addslashes($_REQUEST['username'])));
-		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
-			$_REQUEST['password']=userEncryptPW(addslashes($_REQUEST['password']));
-		}
-	}
-	if((isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-     	loadExtras('ldap');
-     	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
-     	$authopts=array(
-			'-host'		=> $host,
-			'-username'	=> $_REQUEST['username'],
-			'-password'	=> $_REQUEST['password']
-		);
-		if(isset($CONFIG['authldap_domain'])){
-        	$authopts['-domain']=$CONFIG['authldap_domain'];
-		}
-		if(isset($CONFIG['authldap_checkmemberof'])){
-        	$authopts['-checkmemberof']=$CONFIG['authldap_checkmemberof'];
-		}
-     	$ldap=ldapAuth($authopts);
-		if(is_array($ldap)){
-          	$fields=getDBFields('_users');
-          	$admins=array();
-          	if(isset($CONFIG['authldap_admin'])){
-            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
-			}
-          	//add or update this user record
-          	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
-          	if(is_array($rec)){
-               	$changes=array();
-               	if(isset($ldap['password']) && isset($rec['password'])){
-					$ldap['password']=$_REQUEST['password']=userEncryptPW($ldap['password']);
-				}
-               	foreach($fields as $field){
-                    if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
-                        $changes[$field]=$ldap[$field];
-                        $rec[$field]=$ldap[$field];
-					}
-					elseif(isset($_REQUEST[$field]) && $rec[$field] != $_REQUEST[$field]){
-                        $changes[$field]=$_REQUEST[$field];
-                        $rec[$field]=$_REQUEST[$field];
-					}
-				}
-				if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
-					if($rec['utype'] != 0){
-						$changes['utype']=0;
-						$rec['utype']=0;
-					}
-				}
-				elseif($rec['utype'] == 0){
-					$changes['utype']=1;
-					$rec['utype']=1;
-				}
-				if(count($changes)){
-                    $changes['-table']='_users';
-                    $changes['-where']="_id={$rec['_id']}";
-                    $ok=editDBRecord($changes);
-                    if(!isNum($ok)){
-						$_REQUEST['_login_error']=$ok;
-					}
-				}
-				$USER=$rec;
-				userSetWaSQLGUID();
-			}
-			else{
-               	$ldap['-table']='_users';
-               	if(in_array($ldap['username'],$admins) || in_array($ldap['email'],$admins)){
-					$ldap['utype']= 0;
-				}
-				else{$ldap['utype']=1;}
-				//add extra fields
-				foreach($fields as $field){
-                   if(isset($_REQUEST[$field]) && !isset($ldap[$field])){
-                        $ldap[$field]=$_REQUEST[$field];
-                        $rec[$field]=$_REQUEST[$field];
-					}
-				}
-               	$id=addDBRecord($ldap);
-               	if(isNum($id)){
-                    $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
-					userSetWaSQLGUID();
-				}
-				else{
-					$_REQUEST['_login_error']=$id;
-				}
-			}
-		}
-		else{
-          	$_REQUEST['_login_error']=$ldap;
-		}
-	}
-	elseif(isset($CONFIG['auth365'])){
-     	loadExtras('office365');
-     	$authopts=array(
-			'-username'	=> $_REQUEST['username'],
-			'-password'	=> $_REQUEST['password']
-		);
-     	$auth=office365Auth($authopts);
-		if(is_array($auth)){
-          	//currently office365 can only tell me they are valid. I will need to makup the rest for now.
-          	$admins=array();
-          	if(isset($CONFIG['auth365_admin'])){
-            	$admins=preg_split('/[\,\;\:]+/',$CONFIG['auth365_admin']);
-			}
-          	//add or update this user record
-          	$rec=getDBRecord(array('-table'=>'_users','-where'=>"username='{$authopts['-username']}' or email='{$authopts['-username']}'"));
-          	if(is_array($rec)){
-				if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
-					if($rec['utype'] !=0){
-	                	$rec['utype']=0;
-	                	$ok=editDBRecord(array(
-							'-table'	=> "_users",
-							'-where'	=> "_id={$rec['_id']}",
-							'utype'		=> 0
-						));
-					}
-				}
-				elseif($rec['utype']==0){
-                	$rec['utype']=1;
-                	$ok=editDBRecord(array(
-						'-table'	=> "_users",
-						'-where'	=> "_id={$rec['_id']}",
-						'utype'		=> 1
-					));
-					if(!isNum($ok)){
-						$_REQUEST['_login_error']=$ok;
-					}
-				}
-				$USER=$rec;
-				userSetWaSQLGUID();
-			}
-			else{
-				$opts=array(
-					'-table'	=> "_users",
-					'password'	=> substr(sha1($auth['value']),0,25),
-					'username'	=> $authopts['-username'],
-					'utype'		=> 1,
-					'email'		=> $authopts['-username'],
-				);
-				if(in_array($authopts['-username'],$admins)){$opts['utype']=0;}
-               	$id=addDBRecord($opts);
-               	if(isNum($id)){
-                    $USER=getDBRecord(array('-table'=>'_users','_id'=>$id));
-                    userSetWaSQLGUID();
-				}
-				else{
-					$_REQUEST['_login_error']=$id;
-				}
-			}
-		}
-		else{
-          	$_REQUEST['_login_error']=$auth;
-		}
-	}
-	elseif(isset($CONFIG['authhost'])){
-		$authname=$CONFIG['authhost'];
-		switch(strtolower($authname)){
-			case 'openid':
-				//openid authentication coming soon
-			break;
-			default:
-				//authenticate to a different host
-				$authkey=encodeCRC($_REQUEST['username'].time());
-				$authcode=encrypt("{$_REQUEST['username']}:{$_REQUEST['password']}",$authkey);
-				$url="http://{$CONFIG['authhost']}/php/index.php";
-				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>addslashes($_REQUEST['_pwe']));
-				$post=postURL($url,$authopts);
-				if(!isset($post['body']) && isset($post['error'])){
-					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
-					break;
-                	}
-				try {
-					$xml=new SimpleXmlElement($post['body']);
-					//abort("xml:" . printValue($xml));
-					if(strlen((string)$xml->success)){
-						$authcode=(string)$xml->success;
-						$tmp=xml2Arrays(decrypt($authcode,$authkey));
-						unset($_SESSION['authcode']);
-						unset($_SESSION['authkey']);
-						if(is_array($tmp) && isEmail($tmp[0]['email'])){
-							//successful authentication - check for local user record.
-							$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username = '{$tmp[0]['username']}'"));
-							if(!is_array($local) && isEmail($tmp[0]['email'])){
-								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
-                            	}
-                            if(!is_array($local) && isEmail($tmp[0]['email'])){
-								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username = '{$authname}_{$tmp[0]['username']}'"));
-                            	}
-                            if(!is_array($local)){
-								//create a _user record
-								$opts=$tmp[0];
-								//set new users as non-admin
-								$opts['utype']=1;
-								//set username to authhost_{username}
-								$opts['username']="{$tmp[0]['username']}";
-								//set table
-								$opts['-table']="_users";
-								//add the record and load into local
-								$id=addDBRecord($opts);
-								if(isNum($id)){
-                                    $local=getDBRecord(array('-table'=>'_users','_id'=>$id,'-relate'=>1));
-                                	}
-      							}
-							if(is_array($local)){
-								$USER=$local;
-								unset($local);
-								$USER['_local']=true;
-								$eopts=array();
-								$info=getDBFieldInfo("_users");
-								foreach($tmp[0] as $key=>$val){
-									if(isset($info[$key]['_dbtype']) && !preg_match('/^\_/',$key) && (strlen($USER[$key])==0 || $USER[$key] != $val)){
-										$eopts[$key]=$val;
-										}
-									$newkey="{$authname}_{$key}";
-									$USER[$newkey]=$val;
-                                	}
-                                if(count($eopts) > 0){
-									$eopts['-table']="_users";
-									$eopts['-where']="_id={$USER['_id']}";
-									$ok=editDBRecord($eopts);
-									$USER['_updated']=$eopts;
-                                	}
-                            	}
-							$USER['_authhost']=$authname;
-							$_SESSION['authcode']=$authcode;
-							$_SESSION['authkey']=$authkey;
-							userSetWaSQLGUID();
-							}
-						}
-					}
-				catch (Exception $e){
-	        		echo $e->faultstring;
-	        		echo "<hr>\n";
-	        		echo $post['body'];
-	        		echo "<hr>\n";
-	        		echo $url . printValue($authopts);
-	        		exit;
-	        		}
-	        	break;
-			}
-    	}
-    else{
-		$getopts=array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username']),'password'=>$_REQUEST['password']);
-		$USER=getDBRecord($getopts);
-		userSetWaSQLGUID();
-    }
-}
-elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['email']) && isset($_REQUEST['password'])){
-	if(isNum($_REQUEST['_pwe']) && $_REQUEST['_pwe']==1 && !isset($CONFIG['authhost'])){
-		$rec=getDBRecord(array('-table'=>'_users','email'=>addslashes($_REQUEST['email'])));
-		if(is_array($rec) && userIsEncryptedPW($rec['password'])){
-			$_REQUEST['password']=userEncryptPW($_REQUEST['password']);
-		}
-	}
-	if(isset($CONFIG['authhost'])){
-		$authname=$CONFIG['authhost'];
-		switch(strtolower($authname)){
-			case 'openid':
-				//openid authentication coming soon
-				break;
-			default:
-				//authenticate to a different host
-				$authkey=encodeCRC($_REQUEST['username'].time());
-				$authcode=encrypt("{$_REQUEST['username']}:{$_REQUEST['password']}",$authkey);
-				$url="http://{$CONFIG['authhost']}/php/index.php";
-				$authopts=array('skip_error'=>1,'_action'=>"Auth",'_authcode'=>$authcode,'_authkey'=>$authkey,'_pwe'=>addslashes($_REQUEST['_pwe']));
-				$post=postURL($url,$authopts);
-				if(!isset($post['body']) && isset($post['error'])){
-					setWasqlError(debug_backtrace(),"Login Error: " . $post['error']);
-					break;
-                }
-				try {
-					$xml=new SimpleXmlElement($post['body']);
-					//abort("xml:" . printValue($xml));
-					if(strlen((string)$xml->success)){
-						$authcode=(string)$xml->success;
-						$tmp=xml2Arrays(decrypt($authcode,$authkey));
-						unset($_SESSION['authcode']);
-						unset($_SESSION['authkey']);
-						if(is_array($tmp) && isEmail($tmp[0]['email'])){
-							//successful authentication - check for local user record.
-							$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['username']}'"));
-							if(!is_array($local) && isEmail($tmp[0]['email'])){
-								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
-                            	}
-                            if(!is_array($local) && isEmail($tmp[0]['email'])){
-								$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$authname}_{$tmp[0]['username']}'"));
-                            	}
-                            if(!is_array($local)){
-								//create a _user record
-								$opts=$tmp[0];
-								//set new users as non-admin
-								$opts['utype']=1;
-								//set username to authhost_{username}
-								$opts['username']="{$tmp[0]['username']}";
-								//set table
-								$opts['-table']="_users";
-								//add the record and load into local
-								$id=addDBRecord($opts);
-								if(isNum($id)){
-                                    $local=getDBRecord(array('-table'=>'_users','_id'=>$id,'-relate'=>1));
-                                	}
-      							}
-							if(is_array($local)){
-								$USER=$local;
-								unset($local);
-								$USER['_local']=true;
-								$eopts=array();
-								$info=getDBFieldInfo("_users");
-								foreach($tmp[0] as $key=>$val){
-									if(isset($info[$key]['_dbtype']) && !preg_match('/^\_/',$key) && (strlen($USER[$key])==0 || $USER[$key] != $val)){
-										$eopts[$key]=$val;
-										}
-									$newkey="{$authname}_{$key}";
-									$USER[$newkey]=$val;
-                                }
-                                if(count($eopts) > 0){
-									$eopts['-table']="_users";
-									$eopts['-where']="_id={$USER['_id']}";
-									$ok=editDBRecord($eopts);
-									$USER['_updated']=$eopts;
-                                }
-                            }
-							$USER['_authhost']=$authname;
-							$_SESSION['authcode']=$authcode;
-							$_SESSION['authkey']=$authkey;
-							userSetWaSQLGUID();
-						}
-					}
-				}
-				catch (Exception $e){
-	        		echo $e->faultstring;
-	        		echo "<hr>\n";
-	        		echo $post['body'];
-	        		echo "<hr>\n";
-	        		echo $url . printValue($authopts);
-	        		exit;
-	        	}
-	        	break;
-			}
-    	}
-	else{
-		$getopts=array('-table'=>'_users','-relate'=>1,'email'=>addslashes($_REQUEST['email']),'password'=>$_REQUEST['password']);
-		$USER=getDBRecord($getopts);
-		userSetWaSQLGUID();
-    }
-}
-elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['facebook_email']) && isset($_REQUEST['password'])){
-	$getopts=array('-table'=>'_users','-relate'=>1,'facebook_email'=>addslashes($_REQUEST['facebook_email']),'facebook_id'=>addslashes($_REQUEST['password']));
-	$USER=getDBRecord($getopts);
-	userSetWaSQLGUID();
-}
-elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['google_email']) && isset($_REQUEST['password'])){
-	$getopts=array('-table'=>'_users','-relate'=>1,'google_email'=>addslashes($_REQUEST['google_email']),'google_id'=>addslashes($_REQUEST['password']));
-	$USER=getDBRecord($getopts);
-	userSetWaSQLGUID();
-}
-elseif(isset($_REQUEST['apikey']) && isset($_REQUEST['username']) &&  ((isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1) || strtoupper($_SERVER['REQUEST_METHOD'])=='POST')){
-	//apikey login request - requires a POST for security
-	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($_REQUEST['username'])));
-	if(is_array($rec)){
-		$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
-		$auth=array(
-			str_replace(':','',crypt($CONFIG['dbname'],$rec['username'])),
-			str_replace(':','',crypt($rec['username'],$pw)),
-		    str_replace(':','',crypt($pw,$rec['username']))
-		);
-		$api=preg_split('/[:]/',decodeBase64($_REQUEST['apikey']));
-		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
-        	$USER=$rec;
-        	userSetWaSQLGUID();
-  		}
-	}
-}
-elseif(isset($_SESSION['apikey']) && isset($_SESSION['username']) &&  strtoupper($_SERVER['REQUEST_METHOD'])=='GET'){
-	//apikey login request - requires a POST for security
-	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>$_SESSION['username']));
-	if(is_array($rec)){
-		$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
-		$auth=array(
-			str_replace(':','',crypt($CONFIG['dbname'],$pw)),
-			str_replace(':','',crypt($rec['username'],$pw)),
-		    str_replace(':','',crypt($pw,$rec['username']))
-		);
-		$api=preg_split('/[:]/',decodeBase64($_SESSION['apikey']));
-		if($api[0]==$auth[0] && $api[1]==$auth[1] && $api[2]==$auth[2]){
-        	$USER=$rec;
-        	userSetWaSQLGUID();
-  		}
-	}
-	unset($_SESSION['apikey']);
-	unset($_SESSION['username']);
-}
-elseif(isset($CONFIG['authhost']) && isset($_SESSION['authcode']) && isset($_SESSION['authkey'])){
-	$authstring=decrypt($_SESSION['authcode'],$_SESSION['authkey']);
-	$tmp=xml2Arrays($authstring);
-	if(is_array($tmp) && isEmail($tmp[0]['email'])){
-		//successful authentication - check for local user record.
-		$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"email = '{$tmp[0]['email']}'"));
-		if(!is_array($local) && isEmail($tmp[0]['email'])){
-			$local=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username = '{$authname}_{$tmp[0]['username']}'"));
-	    }
-	    if(!is_array($local)){
-			//create a _user record
-			$opts=$tmp[0];
-			//set new users as non-admin
-			$opts['utype']=1;
-			//set username to authhost_{username}
-			$opts['username']="{$authname}_{$tmp[0]['username']}";
-			//set table
-			$opts['-table']="_users";
-			//add the record and load into local
-			$id=addDBRecord($opts);
-			if(isNum($id)){
-	            $local=getDBRecord(array('-table'=>'_users','-relate'=>1,'_id'=>$id));
-	        }
-	    }
-	    $authname=$CONFIG['authhost'];
-		if(is_array($local)){
-			$USER=$local;
-			foreach($tmp[0] as $key=>$val){
-				$newkey="{$authname}_{$key}";
-				$USER[$newkey]=$val;
-	        }
-	    }
-		$USER['_authhost']=$authname;
-		userSetWaSQLGUID();
-	}
-}
-else{
-	if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
-		userLogout();
-	}
-	else{
-		$USER=userAuthorizeWASQLGUID();
-		setUserInfo();
-	}
-}
-if(isUser() && isset($userfieldinfo['active']) && is_array($userfieldinfo['active']) && $userfieldinfo['active']['_dbtype']=='int' && $USER['active'] != 1){
-	//do not allow users that are not active to log in
-	unset($USER);
-	unset($_SESSION['authcode']);
-	unset($_SESSION['authkey']);
-	setWasqlError(debug_backtrace(),"Login Error: Your account has been disabled");
-	}
-elseif(isUser()){
-	if(isset($_REQUEST['_noguid']) && $_REQUEST['_noguid']==1){
-		if(!isset($guid) || $guid != $oldguid){
-			$guid=$oldguid;
-		}
-	}
-}
-else{
-	unset($USER);
-	unset($_SESSION['authcode']);
-	unset($_SESSION['authkey']);
-	if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1){
-		if(!isset($_REQUEST['_login_error'])){
-			$_REQUEST['_login_error']="Login Error: Invalid username or password";
-		}
-
-	}
-}
-global $SETTINGS;
-if(!isDBTable('_settings')){$ok=createWasqlTable('_settings');}
-$uid=isset($USER['_id'])?$USER['_id']:0;
-$SETTINGS=settingsValues($uid);
-
 //****************************************************************************************************************************//
 //---------- begin function userGetApikey ----
 /**
@@ -737,6 +197,21 @@ function userDecodeApikey($apikey,$rec=array()){
 		'username'=>decrypt(decodeBase64($parts[1]),$cryptkey),
 		'password'=>decrypt(decodeBase64($parts[2]),$cryptkey)
 	);
+}
+//---------- begin function userDecodeApikeyAuth ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeApikeyAuth($apikey,$user){
+	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($user)));
+	if(!isset($rec['_id'])){return null;}
+	$info=userDecodeApikey($apikey,$rec);
+	//echo $user.printValue($info);exit;
+	//make sure username and $info['username'] match
+	if(!isset($info['username']) || $user != $info['username']){
+		return null;
+	}
+	return $rec;
 }
 //---------- begin function userGetAuthCode ----
 /**
@@ -1061,6 +536,108 @@ function userGetTempAuthLinkTimout(){
 	global $CONFIG;
 	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
 	return $minutes;
+}
+function userGetTimeout($type,$rec=array()){
+	switch(strtolower($type)){
+		case 'auth':
+		case 'auth_timeout':
+			if(isset($rec['auth_timeout']) && strlen($rec['auth_timeout'])){
+				$timeout=$rec['auth_timeout'];
+			}
+			elseif(isset($CONFIG['auth_timeout']) && strlen($CONFIG['auth_timeout'])){
+				$timeout=$CONFIG['auth_timeout'];
+			}
+			else{
+				$timeout='1 year';
+			}
+		break;
+		case 'tauth':
+		case 'tauth_timeout':
+			if(isset($rec['tauth_timeout']) && strlen($rec['tauth_timeout'])){
+				$timeout=$rec['tauth_timeout'];
+			}
+			elseif(isset($CONFIG['tauth_timeout']) && strlen($CONFIG['tauth_timeout'])){
+				$timeout=$CONFIG['tauth_timeout'];
+			}
+			else{
+				$timeout='30 min';
+			}
+		break;
+		case 'sessionid':
+		case 'sessionid_timeout':
+			if(isset($rec['sessionid_timeout']) && strlen($rec['sessionid_timeout'])){
+				$timeout=$rec['sessionid_timeout'];
+			}
+			elseif(isset($CONFIG['sessionid_timeout']) && strlen($CONFIG['sessionid_timeout'])){
+				$timeout=$CONFIG['sessionid_timeout'];
+			}
+			else{
+				$timeout='10 min';
+			}
+		break;
+		case 'apikey':
+		case 'apikey_timeout':
+			if(isset($rec['apikey_timeout']) && strlen($rec['apikey_timeout'])){
+				$timeout=$rec['apikey_timeout'];
+			}
+			elseif(isset($CONFIG['apikey_timeout']) && strlen($CONFIG['apikey_timeout'])){
+				$timeout=$CONFIG['apikey_timeout'];
+			}
+			else{
+				$timeout='1 year';
+			}
+		break;
+		case 'ldap':
+		case 'ldap_timeout':
+			if(isset($rec['ldap_timeout']) && strlen($rec['ldap_timeout'])){
+				$timeout=$rec['ldap_timeout'];
+			}
+			elseif(isset($CONFIG['ldap_timeout']) && strlen($CONFIG['ldap_timeout'])){
+				$timeout=$CONFIG['ldap_timeout'];
+			}
+			else{
+				$timeout='1 year';
+			}
+		break;
+		default:
+			$timeout='1 year';
+		break;
+	}
+	$parts=preg_split('/\ /',$timeout,2);
+	if(count($parts)==2){
+		switch(strtolower(trim($parts[1]))){
+			case 'year':
+			case 'years':
+				$days=(integer)$parts[0]*365;
+				$seconds=$days*86400;
+			break;
+			case 'month':
+			case 'months':
+				$days=(integer)$parts[0]*30;
+				$seconds=$days*86400;
+			break;
+			case 'day':
+			case 'days':
+				$days=(integer)$parts[0];
+				$seconds=$days*86400;
+			break;
+			case 'hour':
+			case 'hours':
+				$hours=(integer)$parts[0];
+				$seconds=$hours*3600;
+			break;
+			case 'minute':
+			case 'minutes':
+				$minutes=(integer)$parts[0];
+				$seconds=$minutes*60;
+			break;
+			default:
+				$days=365;
+				$seconds=$days*86400;
+			break;
+		}
+	}
+	return $seconds;
 }
 //---------- begin function userGetTempAuthCode ----
 /**

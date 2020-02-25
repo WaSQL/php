@@ -1474,7 +1474,7 @@ ENDOFX;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
-				if(preg_match('/^(utype)$/i',$key)){continue;}
+				if(preg_match('/^(utype|apikey)$/i',$key)){continue;}
 				if(is_array($val)){
 					//echo buildTableTD(array("<b>{$key}</b>",printValue($val)),array('valign'=>'top'));
 					continue;
@@ -1486,11 +1486,17 @@ ENDOFX;
 				echo buildTableTD(array("<b>{$key}</b>",$val),array('valign'=>'top'));
             	}
             echo buildTableTD(array("<b>PHP SessionID</b>",session_id()),array('valign'=>'top'));
-			echo buildTableTD(array("<b>API Auth Key</b> (_auth)",$USER['_auth']),array('valign'=>'top'));
-			echo buildTableTD(array("<b>API Temp Auth Key</b> (_tauth)",$USER['_tauth']),array('valign'=>'top'));
+            echo '<tr><th colspan="2" class="w_primary">Authentication Methods</th></tr>'.PHP_EOL;
+            echo buildTableTD(array("<b>apikey</b> (use with username and _auth=1)",$USER['_auth']),array('valign'=>'top'));
+			echo buildTableTD(array("<b>_auth</b>",$USER['_auth']),array('valign'=>'top'));
+			$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
+			$seconds=$minutes*60;
+			$goodfor=verboseTime($seconds);
+			echo buildTableTD(array("<b>_tauth</b> - good for {$goodfor}",$USER['_tauth']),array('valign'=>'top'));
 			$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:10;
 			$seconds=$minutes*60;
-			echo buildTableTD(array("<b>API SessionID</b> (_sessionid - good for <span id=\"session_countdown\" data-behavior=\"countdown\">{$seconds}</span> seconds)",$USER['_sessionid']),array('valign'=>'top'));
+			$goodfor=verboseTime($seconds);
+			echo buildTableTD(array("<b>_sessionid</b> - good for {$goodfor}",$USER['_sessionid']),array('valign'=>'top'));
             echo buildTableEnd();
 			break;
 		case 'settings':
