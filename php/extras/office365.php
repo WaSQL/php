@@ -4,7 +4,7 @@
 function office365Auth($params=array()){
 	if(!isset($params['-username'])){return 'office365 Auth Error: no username';}
 	if(!isset($params['-password'])){return 'office365 Auth Error: no password';}
-	$token=getSecurityToken($params['-username'], $params['-password']);
+	$token=office365GetSecurityToken($params['-username'], $params['-password']);
 	if(isset($token['value']) && isset($token['expire'])){
     	//valid user
     	return $token;
@@ -20,7 +20,7 @@ function office365Auth($params=array()){
  * @return array
  * @throws Exception
  */
-function getAuthCookies($token, $host) {
+function office365GetAuthCookies($token, $host) {
     $url = $host . "/_forms/default.aspx?wa=wsignin1.0";
 
     $ch = curl_init();
@@ -43,10 +43,10 @@ function getAuthCookies($token, $host) {
     //close connection
     curl_close($ch);     
      
-    return getCookieValue($result);
+    return office365GetCookieValue($result);
 }
  
-function parseToken($id_token) {
+function office365ParseToken($id_token) {
   $token_parts = explode(".", $id_token);
 
   // First part is header, which we ignore
@@ -95,10 +95,10 @@ function parseToken($id_token) {
  * @return string
  * @throws Exception
  */
-function getSecurityToken($username, $password, $endpoint="https://portal.sharepoint.com") {
+function office365GetSecurityToken($username, $password, $endpoint="https://portal.sharepoint.com") {
     $url = "https://login.microsoftonline.com/extSTS.srf";
      
-    $tokenXml = getSecurityTokenXml($username, $password, $endpoint);  
+    $tokenXml = office365GetSecurityTokenXml($username, $password, $endpoint);  
 
     $ch = curl_init();
     curl_setopt($ch,CURLOPT_URL,$url);
@@ -143,7 +143,7 @@ function getSecurityToken($username, $password, $endpoint="https://portal.sharep
  * @param string $endpoint
  * @return type string
  */
-function getSecurityTokenXml($username, $password, $endpoint) {
+function office365GetSecurityTokenXml($username, $password, $endpoint) {
     return <<<TOKEN
     <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
       xmlns:a="http://www.w3.org/2005/08/addressing"
@@ -184,7 +184,7 @@ TOKEN;
  * @param string $header
  * @return array
  */
-function getCookieValue($header)
+function office365GetCookieValue($header)
 {
     $authCookies = array();
     $header_array = explode("\r\n",$header);

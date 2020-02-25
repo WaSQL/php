@@ -21,8 +21,10 @@ if(function_exists('getallheaders')){
 				case 'sessionid':$k='_sessionid';break;
 			}
 			$_REQUEST[$k]=$value;
+			//echo "HERE:{$k} = {$_REQUEST[$k]}<br>".PHP_EOL;
 		}
 	}
+	//echo printValue($_REQUEST);exit;
 }
 else{
 	//PHP-FPM does not have the getallheaders but passes them through via HTTP_ in $_SERVER
@@ -47,13 +49,104 @@ elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUE
 	$_REQUEST=array();
 	userLogout();
 }
+$USER=array();
+//check for login request via multiple ways - _auth, _tauth, ldap, user/pass
+if(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
+	//auth code
+	$rec=userDecodeAuthCode($_REQUEST['_auth']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+	}	
+}
+elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
+	//temporary auth code
+	$rec=userDecodeTempAuthCode($_REQUEST['_tauth']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+	}	
+}
+elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
+	//temporary auth code
+	$rec=userDecodeSessionAuthCode($_REQUEST['_sessionid']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+	}	
+}
+elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['password']) && strlen($_REQUEST['password'])){
+	//login form
+	if(isset($_REQUEST['username']) && strlen($_REQUEST['username'])){
+		//use ldap?
+		if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
+			//ldap auth
+			$rec=userDecodeLDAPAuth($_REQUEST['username'],$_REQUEST['password']);
+			//confirm record is valid and active
+			if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+				$USER=$rec;
+				$ok=userSetCookie($rec);
+			}	
+		}
+		else{
+			//username/password auth
+			$rec=userDecodeUsernameAuth($_REQUEST['username'],$_REQUEST['password']);
+			//confirm record is valid and active
+			 if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+				$USER=$rec;
+				$ok=userSetCookie($rec);
+			}
+		}
+	}
+	elseif(isset($_REQUEST['email']) && strlen($_REQUEST['email'])){
+		//email/password auth
+		$rec=userDecodeEmailAuth($_REQUEST['email'],$_REQUEST['password']);
+		//confirm record is valid and active
+		 if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+			$USER=$rec;
+			$ok=userSetCookie($rec);
+		}
+	}
+	elseif(isset($_REQUEST['phone']) && strlen($_REQUEST['phone'])){
+		//phone/password auth
+		$rec=userDecodePhoneAuth($_REQUEST['phone'],$_REQUEST['password']);
+		//confirm record is valid and active
+		 if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+			$USER=$rec;
+			$ok=userSetCookie($rec);
+		}
+	}
+}
+elseif(isset($_COOKIE['WASQLGUID'])){
+	$rec=userDecodeCookieCode($_COOKIE['WASQLGUID']);
+	//confirm record is valid and active
+	 if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+	}
+}
+global $SETTINGS;
+if(isset($USER['_id'])){
+	if(!isDBTable('_settings')){$ok=createWasqlTable('_settings');}
+	$uid=isset($USER['_id'])?$USER['_id']:0;
+	$SETTINGS=settingsValues($uid);
+}
+
+return;
+
+
+
 //SQL injection prevention
 if(isset($_REQUEST['username'])){
 	$_REQUEST['username']=preg_replace('/\'/',"\\'",$_REQUEST['username']);
 }
 $userfieldinfo=getDBFieldInfo("_users");
+
 if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])){
-	$_REQUEST['_auth']=decodeURL($_REQUEST['_auth']);
+	//check for _auth request
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_auth'],2);
 	$decoded=decrypt($encoded,$key);
 	//abort($decoded);
@@ -62,6 +155,7 @@ if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])
 	$_REQUEST['_auth']=1;
 }
 elseif(isset($_REQUEST['_tauth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_tauth'])){
+	//check for _tauth request - temporat\r
 	if(!isset($_REQUEST['_tauthx'])){
 		$url="{$_SERVER['REQUEST_URI']}&_tauthx=".time();
 		header("Location: {$url}");
@@ -589,6 +683,571 @@ global $SETTINGS;
 if(!isDBTable('_settings')){$ok=createWasqlTable('_settings');}
 $uid=isset($USER['_id'])?$USER['_id']:0;
 $SETTINGS=settingsValues($uid);
+
+//****************************************************************************************************************************//
+//---------- begin function userGetApikey ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetApikey($rec=array()){
+	global $CONFIG;
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+
+	$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$auth=array(
+		encodeBase64(encrypt($CONFIG['dbname'],$cryptkey)),
+		encodeBase64(encrypt($rec['username'],$cryptkey)),
+	    encodeBase64(encrypt($pw,$cryptkey))
+	    );
+	return encodeBase64(implode(':',$auth));
+}
+//---------- begin function userGetApikey ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @infor    - returns dbname,username,password
+
+*/
+function userDecodeApikey($apikey,$rec=array()){
+	global $CONFIG;
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec,1);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$str=decodeBase64($apikey);
+	$parts=preg_split('/\:/',$str,3);
+	return array(
+		'dbname'=>decrypt(decodeBase64($parts[0]),$cryptkey),
+		'username'=>decrypt(decodeBase64($parts[1]),$cryptkey),
+		'password'=>decrypt(decodeBase64($parts[2]),$cryptkey)
+	);
+}
+//---------- begin function userGetAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetAuthCode($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	$rec['apikey']=userGetApikey($rec);
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$auth=encrypt("{$rec['username']}:{$rec['apikey']}",$cryptkey);
+	return base64_encode("{$rec['_id']}.{$auth}");
+}
+//---------- begin function userGetAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeAuthCode($authcode){
+	//decode authcode to id.auth
+	$str=decodeBase64($authcode);
+	list($id,$auth)=preg_split('/\./',$str,2);
+	if(!isNum($id)){return null;}
+	//get user record with that id
+	$rec=getDBRecordById('_users',$id,1);
+	if(!isset($rec['_id'])){return null;}
+	//decode username:apikey
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$str=decrypt($auth,$cryptkey);
+	list($user,$apikey)=preg_split('/\:/',$str,2);
+	if($rec['username'] != $user){return null;}
+	//decode apikey
+	$info=userDecodeApikey($apikey,$rec);
+	//make sure username and $info['username'] match
+	if(!isset($info['username']) || $user != $info['username']){
+		return null;
+	}
+	return $rec;
+}
+//---------- begin function userGetTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetTempAuthCode($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	$rec['apikey']=userGetApikey($rec);
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$rtime=time();	
+	$auth=encrypt("{$rec['username']}:{$rtime}:{$rec['apikey']}",$cryptkey);
+	return base64_encode("{$rec['_id']}.{$auth}");
+}
+//---------- begin function userDecodeTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeTempAuthCode($authcode){
+	global $CONFIG;
+	//decode authcode to id.auth
+	$str=decodeBase64($authcode);
+	list($id,$auth)=preg_split('/\./',$str,2);
+	if(!isNum($id)){return null;}
+	//get user record with that id
+	$rec=getDBRecordById('_users',$id,1);
+	if(!isset($rec['_id'])){return null;}
+	//decode auth to username:ctime:apikey
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$str=decrypt($auth,$cryptkey);
+	list($user,$ctime,$apikey)=preg_split('/\:/',$str,3);
+	if($rec['username'] != $user){return null;}
+	//decode apikey
+	$info=userDecodeApikey($apikey,$rec);
+	//make sure username and $info['username'] match
+	if(!isset($info['username']) || $user != $info['username']){
+		return null;
+	}
+	//make sure the atime is within the allowed time frame - 30 minutes
+	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
+	$seconds=$minutes*60;
+	$elapsed=time()-$ctime;
+	if($elapsed > $seconds){
+		return null;
+	}
+	return $rec;
+}
+//---------- begin function userGetTempAuthLink ----
+/**
+* get a temporary auth link that you can email to a user.
+* @return string
+* @usage
+*	global $USER;
+*	$temp_auth_link=userGetTempAuthLink($USER); 
+*	$auth_link_timeout=userGetTempAuthLinkTimout();
+*/
+function userGetTempAuthLink($rec=array(),$pagename=''){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	//make sure pagename starts with a slash
+	if(strlen($pagename) && !preg_match('/^\//',$pagename)){
+		$pagename="/".$pagename;
+	}
+	$tauth=userGetTempAuthCode($rec);
+	$http=isSSL()?'https://':'http://';
+	$href=$http.$_SERVER['HTTP_HOST'].$pagename.'?_tauth='.$tauth;
+	return $href;
+}
+//---------- begin function userGetTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetSessionAuthCode($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	$rec['apikey']=userGetApikey($rec);
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$rtime=time();	
+	$auth=encrypt("{$rec['_id']}:{$rtime}:{$rec['apikey']}",$cryptkey);
+	return base64_encode("{$rec['_id']}.{$auth}");
+}
+//---------- begin function userDecodeTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeSessionAuthCode($authcode){
+	global $CONFIG;
+	//decode authcode to id.auth
+	$str=decodeBase64($authcode);
+	list($id,$auth)=preg_split('/\./',$str,2);
+	if(!isNum($id)){return null;}
+	//get user record with that id
+	$rec=getDBRecordById('_users',$id,1);
+	if(!isset($rec['_id'])){return null;}
+	//decode auth to username:ctime:apikey
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$str=decrypt($auth,$cryptkey);
+	list($rid,$ctime,$apikey)=preg_split('/\:/',$str,3);
+	if($rec['_id'] != $rid){return null;}
+	//decode apikey
+	$info=userDecodeApikey($apikey,$rec);
+	//make sure username and $info['username'] match
+	if(!isset($info['username']) || $rec['username'] != $info['username']){
+		return null;
+	}
+	//make sure the atime is within the allowed time frame - 10 minutes
+	$minutes=isset($CONFIG['session_timeout'])?$CONFIG['session_timeout']:10;
+	$seconds=$minutes*60;
+	$elapsed=time()-$ctime;
+	if($elapsed > $seconds){
+		return null;
+	}
+	return $rec;
+}
+//---------- begin function userDecodeLDAPAuth ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeLDAPAuth($user,$pass){
+	global $CONFIG;
+	loadExtras('ldap');
+ 	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
+ 	if(!strlen($host)){return null;}
+ 	$authopts=array(
+		'-host'		=> $host,
+		'-username'	=> $_REQUEST['username'],
+		'-password'	=> $_REQUEST['password']
+	);
+	if(isset($CONFIG['authldap_domain'])){
+    	$authopts['-domain']=$CONFIG['authldap_domain'];
+	}
+	if(isset($CONFIG['authldap_checkmemberof'])){
+    	$authopts['-checkmemberof']=$CONFIG['authldap_checkmemberof'];
+	}
+ 	$ldap=ldapAuth($authopts);
+ 	//confirm valid ldap record
+ 	if(!isset($ldap['username'])){
+ 		debugValue($ldap);
+ 		return null;
+ 	}
+   	$fields=getDBFields('_users');
+   	$admins=array();
+    if(isset($CONFIG['authldap_admin'])){
+       	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
+	}
+  	//add or update this user record
+  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
+  	if(isset($rec['_id'])){
+       	$changes=array();
+       	if(isset($ldap['password']) && isset($rec['password'])){
+			$ldap['password']=userEncryptPW($ldap['password']);
+		}
+       	foreach($fields as $field){
+            if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
+                $changes[$field]=$rec[$field]=$ldap[$field];
+			}
+			elseif(isset($_REQUEST[$field]) && $rec[$field] != $_REQUEST[$field]){
+                $changes[$field]=$rec[$field]=$_REQUEST[$field];
+			}
+		}
+		//set utype to 0 for admins
+		if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
+			if($rec['utype'] != 0){
+				$changes['utype']=$rec['utype']=0;
+			}
+		}
+		elseif($rec['utype'] == 0){
+			$changes['utype']=$rec['utype']=1;
+		}
+		if(count($changes)){
+            $ok=editDBRecordById('_table',$rec['_id'],$changes);
+		}
+		return $rec;
+	}
+	else{
+       	$ldap['-table']='_users';
+       	if(in_array($ldap['username'],$admins) || in_array($ldap['email'],$admins)){
+			$ldap['utype']= 0;
+		}
+		else{$ldap['utype']=1;}
+		//add extra fields
+		foreach($fields as $field){
+           if(isset($_REQUEST[$field]) && !isset($ldap[$field])){
+                $ldap[$field]=$_REQUEST[$field];
+			}
+		}
+       	$id=addDBRecord($ldap);
+       	if(isNum($id)){
+       		$rec=getDBRecordById('_users',$id,1);
+       		return $rec;
+		}
+	}
+	return null;
+}
+//---------- begin function userDecodeUsernameAuth ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeUsernameAuth($user,$pass){
+	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($user)));
+	if(!isset($rec['_id'])){return null;}
+	if(userIsEncryptedPW($rec['password'])){
+		$pw=userEncryptPW(addslashes($pass));
+		if($pw != $rec['password']){return null;}
+	}
+	else{
+		if($pass != $rec['password']){return null;}
+	}	
+	return $rec;
+}
+//---------- begin function userDecodeEmailAuth ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeEmailAuth($email,$pass){
+	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'email'=>addslashes($email)));
+	if(!isset($rec['_id'])){return null;}
+	if(userIsEncryptedPW($rec['password'])){
+		$pw=userEncryptPW(addslashes($pass));
+		if($pw != $rec['password']){return null;}
+	}
+	else{
+		if($pass != $rec['password']){return null;}
+	}	
+	return $rec;
+}
+//---------- begin function userDecodeEmailAuth ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodePhoneAuth($phone,$pass){
+	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'phone'=>addslashes($phone)));
+	if(!isset($rec['_id'])){return null;}
+	if(userIsEncryptedPW($rec['password'])){
+		$pw=userEncryptPW(addslashes($pass));
+		if($pw != $rec['password']){return null;}
+	}
+	else{
+		if($pass != $rec['password']){return null;}
+	}	
+	return $rec;
+}
+//---------- begin function userGetTempAuthLinkTimout ----
+/**
+* gets the number of minutes a temporary auth link is valid for. Set by auth_timeout in config.xml.
+* @return number
+* @usage
+*	global $USER;
+*	$temp_auth_link=userGetTempAuthLink($USER); 
+*	$auth_link_timeout=userGetTempAuthLinkTimout();
+*/
+function userGetTempAuthLinkTimout(){
+	global $CONFIG;
+	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
+	return $minutes;
+}
+//---------- begin function userGetTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetCookieCode($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	$rec['apikey']=userGetApikey($rec);
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$ctime=time();	
+	$auth=encrypt("{$rec['username']}:{$ctime}:{$rec['apikey']}",$cryptkey);
+	return base64_encode("{$rec['_id']}.{$auth}");
+}
+//---------- begin function userDecodeTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userDecodeCookieCode($code){
+	global $CONFIG;
+	//decode authcode to id.auth
+	$str=decodeBase64($code);
+	list($id,$auth)=preg_split('/\./',$str,2);
+	if(!isNum($id)){return null;}
+	//get user record with that id
+	$rec=getDBRecordById('_users',$id,1);
+	if(!isset($rec['_id'])){return null;}
+	//decode auth to username:ctime:apikey
+	$cryptkey=userGetUserCryptKey($rec['_id']);
+	$str=decrypt($auth,$cryptkey);
+	list($user,$ctime,$apikey)=preg_split('/\:/',$str,3);
+	if($rec['username'] != $user){return null;}
+	//decode apikey
+	$info=userDecodeApikey($apikey,$rec);
+	//make sure username and $info['username'] match
+	if(!isset($info['username']) || $user != $info['username']){
+		return null;
+	}
+	$login_timeout='';
+	//make sure the atime is within the allowed time frame (days) - check for login_timeout  (2 days,  1 minute, 5 min, 3 hours, 1 hrs)
+	if(isset($rec['login_timeout']) && strlen($rec['login_timeout'])){
+		$login_timeout=$rec['login_timeout'];
+	}
+	elseif(isset($CONFIG['login_timeout']) && isNum($CONFIG['login_timeout'])){
+		$login_timeout=$CONFIG['login_timeout'];
+	}
+	if(strlen($login_timeout)){
+		$parts=preg_split('/\ /',$login_timeout,2);
+		if(count($parts)==2){
+			switch(strtolower(trim($parts[1]))){
+				case 'year':
+				case 'years':
+					$days=(integer)$parts[0]*365;
+					$seconds=$days*86400;
+				break;
+				case 'month':
+				case 'months':
+					$days=(integer)$parts[0]*30;
+					$seconds=$days*86400;
+				break;
+				case 'day':
+				case 'days':
+					$days=(integer)$parts[0];
+					$seconds=$days*86400;
+				break;
+				case 'hour':
+				case 'hours':
+					$hours=(integer)$parts[0];
+					$seconds=$hours*3600;
+				break;
+				case 'minute':
+				case 'minutes':
+					$minutes=(integer)$parts[0];
+					$seconds=$minutes*60;
+				break;
+				default:
+					$days=365;
+					$seconds=$days*86400;
+				break;
+			}
+		}
+		$elapsed=time()-$ctime;
+		if($elapsed > $seconds){
+			return null;
+		}
+	}
+	return $rec;
+}
+//---------- begin function userDecodeTempAuthCode ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userSetCookie($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return null;}
+	//remove old cookies
+	if(isset($_COOKIE['GUID'])){
+		commonSetCookie('GUID', null, -1, '/');
+	}
+	if(isset($_COOKIE['WASQLRP'])){
+		commonSetCookie('WASQLRP', null, -1, '/');
+	}
+	if(isset($_COOKIE['WASQL_ERROR'])){
+		commonSetCookie('WASQL_ERROR', null, -1, '/');
+	}
+	$code=userGetCookieCode($rec);
+	commonSetCookie("WASQLGUID", $code);
+	$_SERVER['WASQLGUID']=$code;
+	$USER=userSetUserInfo($rec);
+	//echo $code.printValue($USER);exit;
+	return $code;
+}
+//---------- begin function userSetUserInfo ----
+/**
+* Updates the User information
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userSetUserInfo($rec=array()){
+	global $USER;
+	if(!is_array($rec) && isNum($rec)){
+		if($rec==0 || $rec == $USER['_id']){
+			$rec=$USER;
+		}
+		else{
+			$rec=getDBRecordById('_users',$rec);
+		}
+	}
+	if(!isset($rec['_id']) || !isNum($rec['_id'])){return 'No ID';}
+	$changes=array();
+	/* update access date */
+	$changes['_adate']=$rec['_adate']=date("Y-m-d H:i:s");
+	$finfo=getDBFieldInfo("_users");
+	if(!isset($finfo['_sid'])){
+		$query="ALTER TABLE _users ADD _sid varchar(150) NULL;";
+		$ok=executeSQL($query);
+    }
+	$changes['_sid']=$rec['_sid']=$rec['_sessionid']=session_id();
+
+	if($finfo['password']['_dblength'] != 255 && $finfo['password']['_dbtype'] != 'text'){
+		//increase password length
+		$ok=@databaseQuery('alter table _users modify password VARCHAR(255)');
+	}
+	if(!userIsEncryptedPW($USER['password'])){
+		$changes['password']=$rec['password']=userEncryptPW($USER['password']);
+	}
+	if(isset($finfo['_aip'])){
+		$changes['_aip']=$rec['_aip']=$_SERVER['REMOTE_ADDR'];
+	}
+	//check for fields that match a SERVER Variable
+	foreach($_SERVER as $k=>$v){
+		$lk=strtolower($k);
+		if(isset($finfo[$lk]) && !isset($opts[$lk]) && !is_array($v)){
+			$changes[$lk]=$rec[$lk]=$v;
+		}
+	}
+	//update the user record
+	if(count($changes)){
+		$ok=editDBRecordById('_users',$rec['_id'],$changes);
+	}
+	//_auth
+	$rec['apikey']=userGetApikey($rec);
+	$rec['_auth']=userGetAuthCode($rec);
+	$rec['_tauth']=userGetTempAuthCode($rec);
+	$rec['_sessionid']=userGetSessionAuthCode($rec);
+    /* replace the user password with stars */
+	//$USER['password']=preg_replace('/./','*',$USER['password']);
+	ksort($rec);
+	return $rec;
+}
+
+/************************************************************************************/
 /************************************************************************************/
 function userSetWaSQLGUID(){
 	global $USER;
@@ -690,48 +1349,9 @@ function userEncryptPassEnc($p){
 	$salt='1A2K66RX94lobdRBRNzp3WBS9RQDzrIRXvIrtxmmmHXysj8cfJQVx89dyR8AaOrurFcjpxjN3BJabcCh0VNbtnHB3vMxUUOyEsf5G39A02-2y2fXyonJJnRGGucl5';
 	return base64_encode(crypt($p,$salt));
 }
-//---------- begin function userGetTempAuthLink ----
-/**
-* get a temporary auth link that you can email to a user.
-* @return string
-* @usage
-*	global $USER;
-*	$temp_auth_link=userGetTempAuthLink($USER); 
-*	$auth_link_timeout=userGetTempAuthLinkTimout();
-*/
-function userGetTempAuthLink($ruser=array(),$pagename=''){
-	if(!is_array($ruser) && isNum($ruser)){
-		$ruser=getDBRecord(array('-table'=>'_users','_id'=>$ruser));
-		if(!isset($ruser['_id'])){return null;}
-	}
-	//make sure pagename starts with a slash
-	if(strlen($pagename) && !preg_match('/^\//',$pagename)){
-		$pagename="/".$pagename;
-	}
-	$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
-	$rtime=time();
-	$salt="Salt{$ruser['_id']}tlaS";
-	$auth=encrypt("{$ruser['username']}:{$rtime}:{$ruser['apikey']}",$salt);
-	$dauth=decrypt($auth,$salt);
-	$ruser['_tauth']="{$ruser['_id']}.{$auth}";
-	$http=isSSL()?'https://':'http://';
-	$href=$http.$_SERVER['HTTP_HOST'].$pagename.'?_tauth='.encodeURL($ruser['_tauth']);
-	return $href;
-}
-//---------- begin function userGetTempAuthLinkTimout ----
-/**
-* gets the number of minutes a temporary auth link is valid for. Set by auth_timeout in config.xml.
-* @return number
-* @usage
-*	global $USER;
-*	$temp_auth_link=userGetTempAuthLink($USER); 
-*	$auth_link_timeout=userGetTempAuthLinkTimout();
-*/
-function userGetTempAuthLinkTimout(){
-	global $CONFIG;
-	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
-	return $minutes;
-}
+
+//**********************************************************************************************************************//
+
 //---------- begin function userDecryptPW ----
 /**
 * returns the original password that was put in and secured by WaSQL's security algorythm.
@@ -1078,18 +1698,29 @@ function userProfileForm($params=array()){
 function encodeUserAuthCode($id=0){
 	global $USER;
 	global $CONFIG;
-	if($id==0 || $id==$USER['_id']){$rec=$USER;}
+	if($id==0 || $id==$USER['_id']){
+		$rec=$USER;
+		$id=$USER['_id'];
+	}
 	else{$rec=getDBRecord(array('-table'=>'_users','_id'=>$id,'-fields'=>'password,username,_id'));}
 	$pw=userIsEncryptedPW($rec['password'])?userDecryptPW($rec['password']):$rec['password'];
+	$cryptkey=userGetUserCryptKey($id);
 	$auth=array(
-		str_replace(':','',crypt($CONFIG['dbname'],$rec['username'])),
-		str_replace(':','',crypt($rec['username'],$pw)),
-	    str_replace(':','',crypt($pw,$rec['username']))
+		str_replace(':','',crypt($CONFIG['dbname'],$cryptkey)),
+		str_replace(':','',crypt($rec['username'],$cryptkey)),
+	    str_replace(':','',crypt($pw,$cryptkey))
 	    );
 	$code=encodeBase64(implode(':',$auth));
 	return $code;
 }
+//---------- begin function userGetUserCryptKey ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function userGetUserCryptKey($id){
+	return "abcde7890fghik{$id}lmnopqr456stu=vwxyz{$id}ABCDEFGHIK{$id}LMNOPQR123!STUVWXYZ{$id}";
 
+}
 //---------- begin function userLoginForm ----
 /**
 * returns the User Login Form.

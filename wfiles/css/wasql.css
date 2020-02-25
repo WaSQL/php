@@ -1504,8 +1504,8 @@ ul.w_navbar.red li a:hover, ul.w_navbar.red li.active a {color: #eef1ec;backgrou
     color:#FFFFFF;
 }
 .printvalue{
-	max-width:800px;
-	max-height:800px;
+	max-width:85hw;
+	max-height:85vh;
 	overflow:auto;
 }
 .w_centerpop_content{

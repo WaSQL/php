@@ -1486,10 +1486,11 @@ ENDOFX;
 				echo buildTableTD(array("<b>{$key}</b>",$val),array('valign'=>'top'));
             	}
             echo buildTableTD(array("<b>PHP SessionID</b>",session_id()),array('valign'=>'top'));
-			echo buildTableTD(array("<b>API Auth Key</b>",$USER['_auth']),array('valign'=>'top'));
+			echo buildTableTD(array("<b>API Auth Key</b> (_auth)",$USER['_auth']),array('valign'=>'top'));
+			echo buildTableTD(array("<b>API Temp Auth Key</b> (_tauth)",$USER['_tauth']),array('valign'=>'top'));
 			$minutes=isset($CONFIG['sessionid_timeout'])?$CONFIG['sessionid_timeout']:10;
 			$seconds=$minutes*60;
-			echo buildTableTD(array("<b>API SessionID</b> (good for <span id=\"session_countdown\" data-behavior=\"countdown\">{$seconds}</span> seconds)",$USER['_sessionid']),array('valign'=>'top'));
+			echo buildTableTD(array("<b>API SessionID</b> (_sessionid - good for <span id=\"session_countdown\" data-behavior=\"countdown\">{$seconds}</span> seconds)",$USER['_sessionid']),array('valign'=>'top'));
             echo buildTableEnd();
 			break;
 		case 'settings':
