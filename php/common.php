@@ -14393,7 +14393,40 @@ function processFileUploads($docroot=''){
                 	$_REQUEST[$name.'_resized']=$ok;
                                 	
 				}
-				//re-encode the file
+				//convert the file
+				$convert='';
+				if(isset($_REQUEST[$name.'_convert']) && strlen($_REQUEST[$name.'_convert'])){
+					$convert=$_REQUEST[$name.'_convert'];
+				}
+				elseif(isset($_REQUEST['data-convert']) && strlen($_REQUEST['data-convert'])){
+					$convert=$_REQUEST['data-convert'];
+				}
+				elseif(isset($CONFIG['convert']) && strlen($CONFIG['convert'])){
+					$convert=$CONFIG['convert'];
+				}
+				if(strlen($convert)){
+					if(!isset($CONFIG['convert_command'])){
+						$CONFIG['convert_command']="convert ";
+					}
+					$cmd=$CONFIG['convert_command'];
+					//bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg
+					$sets=preg_split('/\,/',strtolower($convert));
+					foreach($sets as $set){
+						list($from,$to)=preg_split('/\-/',$set,2);
+						if($from==$ext){
+							$fname=getFileName($abspath,1);
+							$tfile="{$absdir}/{$fname}_reencoded.{$to}";
+							$cmd="{$cmd} '{$abspath}' '{$tfile}'";
+		            		$ok=cmdResults($cmd);
+		            		if(is_file($tfile) && filesize($tfile) > 0){
+								unlink($abspath);
+								rename($tfile,$abspath);
+							}
+		                	$_REQUEST[$name.'_converted']=$ok;
+						}
+					}            	
+				}
+				//reencode the file
 				$reencode='';
 				if(isset($_REQUEST[$name.'_reencode']) && strlen($_REQUEST[$name.'_reencode'])){
 					$reencode=$_REQUEST[$name.'_reencode'];
