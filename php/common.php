@@ -8474,9 +8474,10 @@ function commonSetCookie($name,$value,$expire=''){
 	if(isset($CONFIG['session_domain'])){
 		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
 		/*Note: SameSite fix -  https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict */
+		$samesite=isset($CONFIG['samesite'])?$CONFIG['samesite']:'Strict';
 		if(PHP_VERSION_ID < 70300) {
 			//name,value,expire,path,domain,secure,httponly
-			setcookie($name, $value, $expire, "/; samesite=Strict", ".{$CONFIG['session_domain']}",isSSL(),true);
+			setcookie($name, $value, $expire, "/; samesite={$samesite}", ".{$CONFIG['session_domain']}",isSSL(),true);
 		}
 		else{
 			//name,value,expire,path,domain,secure,httponly,samesite
@@ -8486,13 +8487,14 @@ function commonSetCookie($name,$value,$expire=''){
 				'domain'	=> ".{$CONFIG['session_domain']}",
 				'secure'	=> isSSL(),
 				'httponly'	=> true,
-				'samesite'	=>'Strict'
+				'samesite'	=>$samesite
 			));	
 		}
 	}
 	else{
+		$samesite=isset($CONFIG['samesite'])?$CONFIG['samesite']:'Lax';
 		if(PHP_VERSION_ID < 70300) {
-    		setcookie($name, $value, $expire, "/; samesite=Lax",null,isSSL(),true);
+    		setcookie($name, $value, $expire, "/; samesite={$samesite}",null,isSSL(),true);
     	}
     	else{
     		setcookie($name, $value, array(
@@ -8501,7 +8503,7 @@ function commonSetCookie($name,$value,$expire=''){
 				'domain'	=> null,
 				'secure'	=> isSSL(),
 				'httponly'	=> true,
-				'samesite'	=>'Lax'
+				'samesite'	=>$samesite
 			));
     	}
 	}
