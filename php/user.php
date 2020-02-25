@@ -53,6 +53,7 @@ if(isset($_REQUEST['username'])){
 }
 $userfieldinfo=getDBFieldInfo("_users");
 if(isset($_REQUEST['_auth']) && preg_match('/^([0-9]+?)\./s',$_REQUEST['_auth'])){
+	$_REQUEST['_auth']=decodeURL($_REQUEST['_auth']);
 	list($key,$encoded)=preg_split('/\./',$_REQUEST['_auth'],2);
 	$decoded=decrypt($encoded,$key);
 	//abort($decoded);
