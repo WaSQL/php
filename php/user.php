@@ -151,7 +151,7 @@ if(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['user
           	if(is_array($rec)){
                	$changes=array();
                	if(isset($ldap['password']) && isset($rec['password'])){
-					$ldap['password']=userEncryptPW($ldap['password']);
+					$ldap['password']=$_REQUEST['password']=userEncryptPW($ldap['password']);
 				}
                	foreach($fields as $field){
                     if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
