@@ -1474,18 +1474,19 @@ ENDOFX;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
-				if(preg_match('/^(utype|apikey)$/i',$key)){continue;}
+				if(preg_match('/^(utype_ex|apikey|guid)$/i',$key)){continue;}
+				if($key=='utype'){$val.=' - '.$USER['utype_ex'];}
 				if(is_array($val)){
 					//echo buildTableTD(array("<b>{$key}</b>",printValue($val)),array('valign'=>'top'));
 					continue;
 					}
 				if(strlen($val)==0){continue;}
-				if(preg_match('/\_password$/is',$key)){
+				if(preg_match('/password$/is',$key)){
 					$val=preg_replace('/./','*',$val);
-                	}
+                }
 				echo buildTableTD(array("<b>{$key}</b>",$val),array('valign'=>'top'));
-            	}
-            echo buildTableTD(array("<b>PHP SessionID</b>",session_id()),array('valign'=>'top'));
+            }
+            echo buildTableTD(array("<b>PHP session_id</b>",session_id()),array('valign'=>'top'));
             echo '<tr><th colspan="2" class="w_primary">Authentication Methods</th></tr>'.PHP_EOL;
             echo buildTableTD(array("<b>apikey</b> (use with username and _auth=1)",$USER['_auth']),array('valign'=>'top'));
 			echo buildTableTD(array("<b>_auth</b>",$USER['_auth']),array('valign'=>'top'));
@@ -1498,7 +1499,7 @@ ENDOFX;
 			$goodfor=verboseTime($seconds);
 			echo buildTableTD(array("<b>_sessionid</b> - good for {$goodfor}",$USER['_sessionid']),array('valign'=>'top'));
             echo buildTableEnd();
-			break;
+		break;
 		case 'settings':
 			echo adminViewPage('settings');exit;
 		break;
