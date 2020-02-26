@@ -91,11 +91,11 @@ function synchronizePost($load,$plain=0){
 		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
 			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
 		}
-		elseif(isset($ALLCONFIG[$target]['admin_secure']) && $ALLCONFIG[$target]['admin_secure']==1){
-			$_SESSION['sync_target_url']="https://{$base}/php/admin.php";
+		elseif(isset($ALLCONFIG[$target]['admin_insecure']) && $ALLCONFIG[$target]['admin_insecure']==1){
+			$_SESSION['sync_target_url']="http://{$base}/php/admin.php";
 		}
 		else{
-			$_SESSION['sync_target_url']="http://{$base}/php/admin.php";
+			$_SESSION['sync_target_url']="https://{$base}/php/admin.php";
 		}
 	}
 	if($plain==1){
@@ -115,10 +115,10 @@ function synchronizePost($load,$plain=0){
 			'-follow'	=> 1,
 			'-nossl'	=> 1
 		);
-	}
+	} 
 	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
-	//echo printValue($postopts).printValue($post['body']);exit;
+	//echo printValue($load).printValue($postopts).$post['body'];exit;
 	if(isset($post['error'])){
 		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
 	}
@@ -126,12 +126,16 @@ function synchronizePost($load,$plain=0){
 		return array('error'=>$_SESSION['sync_target_url'].printValue($post));
 	}
 	else{
-		$json=json_decode(base64_decode($post['body']),true);
+		//remove debug errors if they exist
+		$post['body']=preg_replace('/\<div(.+?)\<\/div\>/is','',$post['body']);
+		$post['body']=preg_replace('/\<img(.+?)\>/is','',$post['body']);
+		$body=base64_decode(trim($post['body']));
+		$json=json_decode($body,true);
 		//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($json);exit;
 		if(!is_array($json)){
-			$json=json_decode($post['body'],true);
+			$json=json_decode(trim($post['body']),true);
 			if(!is_array($json)){
-				return array('error'=>$_SESSION['sync_target_url'].$post['body']);
+				return array('error'=>"Failed to decode response.<br />".$post['body']);
 			}
 		}
 		return $json;

@@ -16,8 +16,8 @@
 		 $user=addslashes($_REQUEST['sync_target_user']);
 		 $pass=addslashes($_REQUEST['sync_target_pass']);
 		 //echo printValue(array($user,$pass));exit;
+		 //echo "HH";exit;
 		 $json=synchronizeGetAuth($user,$pass);
-		 //echo printValue($json['error']);exit;
 		 if(isset($json['auth']) && strlen($json['auth'])){
 			$_SESSION['sync_target_auth']=$json['auth'];
 		}
