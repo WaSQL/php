@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<export dbname="miloallman" timestamp="1575057041">
+
+
+
+
+
+
+
+
+<xmldata name="_pages">
+	<_cache>0</_cache>
+	<_cdate>2019-11-28 22:03:03</_cdate>
+	<_cuser>1</_cuser>
+	<_edate>2019-11-29 12:50:07</_edate>
+	<_euser>1</_euser>
+	<_id>3</_id>
+	<_template>2</_template>
+	<body><![CDATA[
+&lt;view:default&gt;
+&lt;div class=&quot;container-fluid&quot;&gt;
+	&lt;div class=&quot;columns&quot; style=&quot;margin-top:30px;&quot;&gt;
+		&lt;div class=&quot;column align-left&quot;&gt;&lt;a href=&quot;/book_me/cal/&lt;?=$calendar['prev_month']['month'];?&gt;/&lt;?=$calendar['prev_month']['year'];?&gt;&quot;&gt;&lt;span class=&quot;icon-arrow-left&quot;&gt;&lt;/span&gt; Prev&lt;/a&gt;&lt;/div&gt;
+		&lt;div class=&quot;column align-center&quot;&gt;
+			&lt;h1 class=&quot;w_biggest&quot;&gt;&lt;?=$calendar['current']['month'];?&gt; &lt;?=$calendar['current']['year'];?&gt;&lt;/h1&gt;
+		&lt;/div&gt;
+		&lt;div class=&quot;column align-right&quot;&gt;&lt;a href=&quot;/book_me/cal/&lt;?=$calendar['next_month']['month'];?&gt;/&lt;?=$calendar['next_month']['year'];?&gt;&quot;&gt;Next &lt;span class=&quot;icon-arrow-right&quot;&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+	&lt;/div&gt;
+	&lt;div class=&quot;columns&quot;&gt;
+		&lt;view:dayname&gt;
+		&lt;div class=&quot;column&quot; style=&quot;padding:0px;&quot;&gt;&lt;div class=&quot;caldayname&quot;&gt;&lt;?=$name;?&gt;&lt;/div&gt;&lt;/div&gt;
+		&lt;/view:dayname&gt;
+		&lt;?=renderEach('dayname',$calendar['daynames']['long'],'name');?&gt;
+	&lt;/div&gt;
+	&lt;view:calrow&gt;
+	&lt;div class=&quot;columns&quot;&gt;
+		&lt;view:calrow_day&gt;
+		&lt;div class=&quot;column&quot; style=&quot;padding:0px;&quot;&gt;&lt;div class=&quot;calday&quot; onclick=&quot;return false;&quot;&gt;
+			&lt;div class=&quot;date&quot; title=&quot;&lt;?=$day['date'];?&gt;&quot;&gt;&lt;?=$day['day'];?&gt;&lt;/div&gt;
+		&lt;/div&gt;&lt;/div&gt;
+		&lt;/view:calrow_day&gt;
+		&lt;?=renderEach('calrow_day',$days,'day');?&gt;
+	&lt;/div&gt;
+	&lt;/view:calrow&gt;
+	&lt;?=renderEach('calrow',$calendar['weeks'],'days');?&gt;
+&lt;/div&gt;
+&lt;/view:default&gt;
+
+&lt;view:login&gt;
+&lt;?=userLoginForm(array('-action'=&gt;'/'.pageValue('name')));?&gt;
+&lt;/view:login&gt;
+]]></body>
+	<controller><![CDATA[
+&lt;?php
+if(!isDBTable('bookings')){
+	pageCreateTable('bookings');
+}
+global $PASSTHRU;
+switch(strtolower($PASSTHRU[0])){
+	case 'cal':
+		$calendar=getCalendar(&quot;{$PASSTHRU[1]} {$PASSTHRU[2]}&quot;);
+		setView('default');
+	break;
+	default:
+		$calendar=getCalendar();
+		setView('default');
+	break;
+}
+?&gt;
+]]></controller>
+	<css>.calday{
+	border:1px solid #CCC;
+	border-top:0px;
+	min-height:100px;
+}
+.column:first-child .caldayname{
+	border-top-left-radius: 5px;
+}
+.column:last-child .caldayname{
+	border-top-right-radius: 5px;
+}
+.column:not(:last-child) .calday,
+.column:not(:last-child) .caldayname{
+	border-right:0px;
+}
+.calday .date{
+	text-align:right;
+	font-size:0.9rem;
+	margin-right:0.25rem;
+}
+.caldayname{
+	border:1px solid #CCC;
+	padding: 0.3rem 0.5rem;
+	font-size:1.3rem;
+	text-align: center;
+	background-color:#141d4780;
+	color:#FFF;
+}</css>
+	<css_min>.calday{border:1px solid #CCC;border-top:0px;min-height:100px}.column:first-child .caldayname{border-top-left-radius:5px}.column:last-child .caldayname{border-top-right-radius:5px}.column:not(:last-child) .calday,.column:not(:last-child) .caldayname{border-right:0px}.calday .date{text-align:right;font-size:0.9rem;margin-right:0.25rem}.caldayname{border:1px solid #CCC;padding:0.3rem 0.5rem;font-size:1.3rem;text-align:center;background-color:#141d4780;color:#FFF}</css_min>
+	<functions><![CDATA[
+&lt;?php
+function pageCreateTable($table){
+	$fields=array(
+		'_id'		=&gt; databasePrimaryKeyFieldString(),
+		'_cdate'	=&gt; databaseDataType('datetime').databaseDateTimeNow(),
+		'_cuser'	=&gt; databaseDataType('int').&quot; NOT NULL&quot;,
+		'_edate'	=&gt; databaseDataType('datetime').&quot; NULL&quot;,
+		'_euser'	=&gt; databaseDataType('int').&quot; NULL&quot;,
+		'startdate'	=&gt; databaseDataType('datetime').&quot; NOT NULL&quot;,
+		'name'		=&gt; 'varchar(255) NOT NULL',
+		'private'	=&gt; databaseDataType('tinyint').&quot; NOT NULL Default 0&quot;,
+	);
+	$ok = createDBTable($table,$fields,'InnoDB');
+	$ok=addDBIndex(array('-table'=&gt;$table,'-fields'=&gt;&quot;startdate&quot;));
+}
+?&gt;
+]]></functions>
+	<js>function pageSampleJs(){}</js>
+	<name>book_me</name>
+	<page_type>0</page_type>
+	<postedit>1</postedit>
+	<sort_order>0</sort_order>
+	<synchronize>1</synchronize>
+	<title>Book Me</title>
+</xmldata>
+<xmldata name="_templates">
+</xmldata>
+</export>

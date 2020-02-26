@@ -1,0 +1,117 @@
+/*
+	Stylesheet for Allergies
+
+*/
+
+.gf::after{
+	border-radius: 50%;
+    background-color: #e2980e;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Gluten Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.df::after{
+	border-radius: 50%;
+    background-color: #1563dd;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Dairy Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.sf::after{
+	border-radius: 50%;
+    background-color: #83c339;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Soy Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.pf::after{
+	border-radius: 50%;
+    background-color: #ecbe78;
+    color: #92642e;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Peanut Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.nf::after{
+	border-radius: 50%;
+    background-color: #b6672e;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Nut Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.ef::after{
+	border-radius: 50%;
+    background-color: #f3debf;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Egg Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.ff::after{
+	border-radius: 50%;
+    background-color: #27d7e2;
+    color: #FFF;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Fish Free";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.v::after{
+	border-radius: 50%;
+    background-color: #9ccb52;
+    color: #206935;
+    display: inline-block;
+    padding: 0.4rem;
+    text-align: center;
+    vertical-align: super;
+    font-size: 0.9rem;
+    content: "Vegan";
+    font-family: Verdana,sans-serif;
+    font-weight:bold;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
