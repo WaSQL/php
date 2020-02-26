@@ -14498,6 +14498,21 @@ function processFileUploads($docroot=''){
  * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
+function commonDenyScriptsInDir($dir){
+	if(!is_dir($dir)){return false;}
+	$code=<<<ENDOFCODE
+<FilesMatch "\.(py|php|php3|php4|phtml|pl|cgi|rb|rhtml|jsp|htm|html)$">
+deny from all
+</FilesMatch>
+ENDOFCODE;
+setFileContents("{$dir}/.htaccess",$code);
+return true;
+}
+//---------- begin function mergeChunkedFiles ----
+/**
+ * @author slloyd
+ * @exclude  - this function is for internal use only and thus excluded from the manual
+ */
 function mergeChunkedFiles($chunks,$name){
 	//return false;
 	if(!is_array($chunks) || !count($chunks)){return false;}
