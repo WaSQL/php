@@ -156,7 +156,7 @@ function paypalSendInvoice($params=array()){
 			'description'	=> $item['description'],
 			'quantity'		=> $item['quantity'],
 			'unit_amount'=>array(
-				'value'		=> $item['amount_value'],
+				'value'		=> round($item['amount_value'],2),
 				'currency'	=> $item['amount_currency']
 			),
 			'item_date'		=> $item['item_date'],
@@ -226,7 +226,7 @@ function paypalSendPayout($params=array()){
 		$citem=array(
 			'recipient_type'=> $item['recipient_type'],
 			'amount'=>array(
-				'value'		=> $item['amount_value'],
+				'value'		=> round($item['amount_value'],2),
 				'currency'	=> $item['amount_currency']
 			),
 			'note'			=> $item['note'],
