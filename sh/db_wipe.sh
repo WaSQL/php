@@ -12,7 +12,7 @@ if [ -f $DIR/db_settings.sh ];
 then
 	source $DIR/db_settings.sh
 	db_name=$1
-	mysql -h $dbhost --user=$dbuser -p$dbpass --execute="DROP DATABASE $db_name; CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_general_ci;"
+	mysql -h $dbhost --user=$dbuser -p$dbpass --execute="DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_general_ci;"
 else
 	echo db_settings file is missing!
 	exit 1

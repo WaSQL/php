@@ -83,6 +83,7 @@ while($etime < 55){
 	    	unset($ConfigXml[$name]);
 	    	continue;
 		}
+		cronMessage("checking");
 		//check for apache_access_log
 		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 			$apache_log=0;
@@ -127,14 +128,16 @@ ENDOFWHERE;
 		$cronfields=getDBFields('_cron');
 		if(!is_array($cronfields)){
 			unset($ConfigXml[$name]);
-			cronMessage("cronfields in _cron is empty.");
+			cronMessage("cronfields in _cron is empty.".PHP_EOL);
 			continue;
 		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 		$recs=getDBRecords($recopts);
+		$rcnt=is_array($recs)?count($recs):0;
 		//echo $runnow.printValue($recs).PHP_EOL;
-		if(!is_array($recs) || count($recs)==0){
+		if($rcnt==0){
 			unset($ConfigXml[$name]);
+			cronMessage("{$rcnt} crons ready".PHP_EOL);
 	        //cronMessage("No crons found.");
 	        continue;
 		}
@@ -145,6 +148,8 @@ ENDOFWHERE;
 		}
 		if(count($recs)==0){
 			unset($ConfigXml[$name]);
+			$pcnt=$rcnt=count($recs);
+			cronMessage("{$pcnt} processed. No other crons ready".PHP_EOL);
 	        //cronMessage("No crons found.");
 	        continue;
 		}
@@ -237,7 +242,7 @@ ENDOFWHERE;
 				}
 				if($runnow==1){$run=1;}
 				if($run==0){
-					//cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
+					cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
 					continue;
 				}
 				//get record again to insure another process is not running it.
@@ -560,7 +565,8 @@ function cronMessage($msg){
 	global $logfile;
 	if(!strlen($mypid)){$mypid=getmypid();}
 	$ctime=time();
-	$msg="{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
+	$cdate=date('Y-m-d h:i:s',$ctime);
+	$msg="{$cdate},{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
 	echo $msg;
 	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
