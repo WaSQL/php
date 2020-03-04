@@ -1263,8 +1263,9 @@ function dbQueryResults($db,$query,$params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 *	[-searchclass]  - sets the search form section class
-*	[-predata]  - HTML/text content to add just before the table begins
-*	[-postdata]  - HTML/text to add just after the table ends
+*	[-presearch]  - HTML/text content to add just before the search form
+*	[-pretable]  - HTML/text content to add just before the table begins
+*	[-posttable]  - HTML/text to add just after the table ends
 *	[-listview] - HTML/text to use instead of building a table row for each recordset.  Use [field] in your HTML to show value
 * @return string - html table to display
 * @usage
@@ -1580,6 +1581,9 @@ function databaseListRecords($params=array()){
 		}
 	}
 	$rtn='';
+	if(isset($params['-presearch'])){
+		$rtn .= $params['-presearch'];
+	}
 	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
