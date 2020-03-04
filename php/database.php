@@ -3237,7 +3237,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$rtn='';
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
-	
+	//return printValue($info);
 	if(isset($params['-formfields'])){$params['-fields']=$params['-formfields'];}
 	if(isset($params['-fields']) && is_array($params['-fields']) && count($params['-fields']) > 0){
 		$info['formfields']=$params['-fields'];
@@ -3260,6 +3260,7 @@ function addEditDBForm($params=array(),$customcode=''){
     	$info['formfields']=array();
     	foreach($info['fieldinfo'] as $fld=>$finfo){
     		if(isWasqlField($fld)){continue;}
+    		if(isset($finfo['_dbtype_ex']) && stringContains($finfo['_dbtype_ex'],' stored ')){continue;}
     		if(in_array($fld,$info['formfields'])){continue;}
     		$info['formfields'][]=$fld;
     	}
@@ -3295,16 +3296,20 @@ function addEditDBForm($params=array(),$customcode=''){
     foreach($info['formfields'] as $fields){
 		if(is_array($fields)){
 			foreach($fields as $field){
+				if(isset($info['fieldinfo'][$field]['_dbtype_ex']) && stringContains($info['fieldinfo'][$field]['_dbtype_ex'],' stored ')){continue;}
 				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='file'){
 	                $enctype="multipart/form-data";
 	                break;
-	            	}
-	        	}
-			}
+            	}
+        	}
+		}
+		elseif(isset($info['fieldinfo'][$fields]['_dbtype_ex']) && stringContains($info['fieldinfo'][$fields]['_dbtype_ex'],' stored ')){
+	        continue;
+	    }
 		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && $info['fieldinfo'][$fields]['inputtype']=='file'){
 	        $enctype="multipart/form-data";
 	        break;
-	        }
+	    }
 		if($enctype=="multipart/form-data"){break;}
 		}
     $rtn .= '<form name="'.$formname.'" class="'.$formclass.'" method="'.$method.'" action="'.$action.'" ';
