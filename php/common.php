@@ -1988,7 +1988,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 	$tag='';
 	$tag .= '<div class="dropdown">'.PHP_EOL;
-	$tag .= ' 	<button data-toggle="dropdown" class="btn '.$params['-size'].'" type="button">'.$dname.PHP_EOL;
+	$tag .= ' 	<button data-toggle="dropdown" id="'.$params['id'].'_button" class="btn '.$params['-size'].'" type="button">'.$dname.PHP_EOL;
 	$tag .= '	</button>'.PHP_EOL;
 	$onclose='';
 	if(isset($params['onblur']) && strlen($params['onblur'])){
