@@ -4310,6 +4310,10 @@ function alterDBTable($table='',$params=array(),$engine=''){
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$type,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
+			//quote the field if it contains colons or dashes
+			if(preg_match('/[\:\-]+/',$jfield)){
+				$jfield='"'.$jfield.'"';
+			}
             $type="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}'))) STORED";
 		}
 		if(isset($current[$field])){
@@ -4430,6 +4434,10 @@ function createDBTable($table='',$fields=array(),$engine=''){
 		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
 			list($efield,$jfield)=preg_split('/\./',$m[2],2);
 			if(!strlen($jfield)){$jfield=$field;}
+			//quote the field if it contains colons or dashes
+			if(preg_match('/[\:\-]+/',$jfield)){
+				$jfield='"'.$jfield.'"';
+			}
             $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}'))) STORED";
 		}
 		//lowercase the fieldname and replace spaces with underscores
