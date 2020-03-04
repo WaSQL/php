@@ -2648,15 +2648,17 @@ function buildFormFile($name,$params=array()){
 		switch(strtolower($ext)){
 			case 'mp3':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
 				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
 				$tag .= '</audio></div>'.PHP_EOL;
+				$params['data-remove_display']=$params['id'].'_remove_display';
 			break;
 			case 'mp4':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px"><video style="border-radius:3px;" height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><video style="border-radius:3px;" height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
 				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
 				$tag .= '</video></div>'.PHP_EOL;
+				$params['data-remove_display']=$params['id'].'_remove_display';
 			break;
 			case 'gif':
 			case 'png':
@@ -2664,11 +2666,13 @@ function buildFormFile($name,$params=array()){
 			case 'jpeg':
 			case 'svg':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
 				$tag .= '</div>'.PHP_EOL;
+				$params['data-remove_display']=$params['id'].'_remove_display';
 			break;
 			default:
-				$tag .= '	<a class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
+				$tag .= '	<a id="'.$params['id'].'_remove_display" class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
+				$params['data-remove_display']=$params['id'].'_remove_display';
 			break;
 		}
 		//remove checkbox
@@ -2678,13 +2682,14 @@ function buildFormFile($name,$params=array()){
 		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
 		$tag .= '		<div><label for="'.$params['id'].'_remove"><span class="icon-cancel-squared w_gray"></span></label></div>'.PHP_EOL;
 		$tag .= '		<input type="checkbox" style="display:initial;height:initial;padding:initial;margin-right:initial;" value="1" class="w_red" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
-		
+		$params['data-remove_checkbox']=$params['id'].'_remove';
 		$tag .= '		<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
 		$tag .= '	</div>'.PHP_EOL;
 		$tag .= '</div>'.PHP_EOL;
 	}
     //remove style attribute since it is not supported
     $params['data-type']='file';
+    $params['data-formname']=$params['-formname'];
     $params['onchange']="setInputFileName(this);";
 
     if(!isset($params['style'])){
@@ -13418,7 +13423,7 @@ function processActions(){
 							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 						}
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
-							//skip file field if used did not check to remove current value
+							//skip file field if user did not check to remove current value
 							if(isset($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
 							//add sha1, width, height, and type if fields exist
 							if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}

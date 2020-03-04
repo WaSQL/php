@@ -24,6 +24,16 @@ function setInputFileName(fld){
 		setText(label,'<span class="icon-upload w_big w_danger"></span> '+fld.getAttribute('data-text'));
 		label.className='btn btn-default';
 	}
+	//check remove box if replacing an existing image
+	if(undefined != fld.getAttribute('data-remove_checkbox')){
+		let robj=getObject(fld.getAttribute('data-remove_checkbox'));
+		robj.checked=true;
+	}
+	//red border the display to be remove
+	if(undefined != fld.getAttribute('data-remove_display')){
+		let robj=getObject(fld.getAttribute('data-remove_display'));
+		robj.style.border='1px solid #dc354b';
+	}
 }
 function formShowPassword(id,sh){
 	let obj=getObject(id);
