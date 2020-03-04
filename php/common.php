@@ -6779,7 +6779,7 @@ function exportFile2Array($file=''){
 		$tablename=$info['name'];
 		$meta=array();
 		foreach($metas as $field=>$val){
-			if(isNum((string)$val)){$meta[$field]=(real)$val;}
+			if(isNum((string)$val)){$meta[$field]=(float)$val;}
 			else{$meta[$field]=removeCdata((string)$val);}
         	}
         if(!is_array($rtn['xmlmeta'][$tablename])){$rtn['xmlmeta'][$tablename]=array();}
@@ -6791,7 +6791,7 @@ function exportFile2Array($file=''){
 		$tablename=$info['name'];
 		$data=array();
 		foreach($datas as $field=>$val){
-			if(isNum((string)$val)){$data[$field]=(real)$val;}
+			if(isNum((string)$val)){$data[$field]=(float)$val;}
 			else{$data[$field]=removeCdata((string)$val);}
         	}
         if(!is_array($rtn['xmldata'][$tablename])){$rtn['xmldata'][$tablename]=array();}
@@ -14693,7 +14693,7 @@ function readRSS($url,$hrs=3,$force=0){
         foreach($item as $citem=>$cval){
 			$key=(string)$citem;
 			if(isset($article[$key])){continue;}
-            if(isNum((string)$cval)){$v=(real)$cval;}
+            if(isNum((string)$cval)){$v=(float)$cval;}
 			else{$v=removeCdata((string)$cval);}
 			if(strlen($v)){$article[$key]=$v;}
 		}
@@ -14704,7 +14704,7 @@ function readRSS($url,$hrs=3,$force=0){
 			foreach($nsitems as $nsitemkey=>$nsitemval){
 				$nsitemkey=(string)$nsitemkey;
                 if(isset($article[$nsitemkey])){continue;}
-				if(isNum((string)$nsitemval)){$v=(real)$nsitemval;}
+				if(isNum((string)$nsitemval)){$v=(float)$nsitemval;}
 				else{$v=removeCdata((string)$nsitemval);}
 				if(strlen($v)){$article[$nsitemkey]=$v;}
 				else{
@@ -15864,7 +15864,7 @@ function xml2Arrays($xmlfile=''){
 		$crec=array();
 		foreach($item as $citem=>$val){
 			$key=(string)$citem;
-			if(isNum((string)$val)){$crec[$key]=(real)$val;}
+			if(isNum((string)$val)){$crec[$key]=(float)$val;}
 			else{$crec[$key]=removeCdata((string)$val);}
 			}
 		array_push($array_out,$crec);
