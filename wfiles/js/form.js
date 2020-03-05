@@ -2279,18 +2279,19 @@ function submitForm(theForm,popup,debug,ajax){
 	}
 	//check for show_upload_progress
 	if(undefined != theForm.show_upload_progress){
-		html='';
-		html+='<div class="w_centerpop_title">Uploading...</div>'+"\n";
-		html+= '<div class="w_centerpop_content">'+"\n";
-		html+= '	<div class="w_padtop"><span class="icon-spin4 w_rotate w_spin"></span> Uploading ...</div>'+"\n";
-		html+= '</div>'+"\n";
-		centerpopDiv(html,0);
+		formShowUploadProgress();
 		//setTimeout('formShowUploadProgress(\''+theForm.show_upload_progress.value+'\')',2000);
 	}
     return true;
 }
-function formShowUploadProgress(name){
-	ajaxGet('/php/index.php','centerpop99',{get_upload_progress_json:1,name:name})
+function formShowUploadProgress(){
+	html='';
+	html+='<div class="w_centerpop_title">Uploading...</div>'+"\n";
+	html+= '<div class="w_centerpop_content">'+"\n";
+	html+= '	<div class="w_padtop"><span class="icon-spin4 w_rotate w_spin"></span> Uploading ...</div>'+"\n";
+	html+= '</div>'+"\n";
+	centerpopDiv(html,0);
+	//ajaxGet('/php/index.php','centerpop99',{get_upload_progress_json:1,name:name})
 }
 function formAddField(frm,fld,val){
 	var input = document.createElement("input");
