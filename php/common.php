@@ -1932,6 +1932,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$icon=isset($checked_cnt) && $checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
+	$dname="-- {$dname} --";
 	//class
 	$class='';
 	if(isset($params['class'])){$class=str_replace('w_form-control','',$params['class']);}
@@ -1952,7 +1953,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$dropdown_classid=$params['id'].'_dropdown';
 	$checked_cnt=0;
 	$litags='';
-	//return printValue($pairs);
+	$checked_vals=array();
 	foreach($pairs as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
     	$litags .= '		<div class="dropdown-item">';
@@ -1960,7 +1961,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 			$litags .= '--------</div>'.PHP_EOL;
 			continue;
 		}
-    	$litags .= '<input data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
+    	$litags .= '<input data-id="'.$params['id'].'" data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
     	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$tag.=' data-required="1"';}
     	//add class
 		$class='';
@@ -1981,6 +1982,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
     	if(in_array($tval,$params['-values'])){
         	$litags .= ' checked';
         	$checked_cnt++;
+        	$checked_vals[]=$dval;
 		}
     	$litags .= ' /><label for="'.$id.'"> '.$dval.'</label></div>'.PHP_EOL;
 	}
@@ -1988,8 +1990,15 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 	$tag='';
 	$tag .= '<div class="dropdown">'.PHP_EOL;
-	$tag .= ' 	<button data-toggle="dropdown" id="'.$params['id'].'_button" class="btn '.$params['-size'].'" type="button">'.$dname.PHP_EOL;
-	$tag .= '	</button>'.PHP_EOL;
+	$tag .= ' 	<button data-dname="'.$dname.'"';
+	if(isset($params['width']) && isNum($params['width'])){
+		$tag .=' style="max-width:'.$params['width'].'px;overflow:hidden;text-overflow:ellipsis;"';
+	}
+	if(count($checked_vals)){
+		$cnt=count($checked_vals);
+		$dname="({$cnt}) ".implode(', ',$checked_vals);
+	}
+	$tag .= ' data-toggle="dropdown" id="'.$params['id'].'_button" class="btn '.$params['-size'].'" type="button">'.$dname.'</button>'.PHP_EOL;
 	$onclose='';
 	if(isset($params['onblur']) && strlen($params['onblur'])){
 		$onclose = $params['onblur'];
@@ -2006,7 +2015,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	else{
 		$onclose="commonCloseDropdownMenu(this);";
 	}
-	$tag .= ' 	<div class="dropdown-menu" onmouseleave="'.$onclose.'">'.PHP_EOL;
+	$tag .= ' 	<div id="'.$params['id'].'_options" class="dropdown-menu" onmouseleave="'.$onclose.'">'.PHP_EOL;
 	$tag .= $litags;
 	$tag .= '	</div>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;

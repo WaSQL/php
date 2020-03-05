@@ -1265,22 +1265,35 @@ function comboComplete(oTextbox, oEvent, vid) {
 	}
 //--------------------------
 function formSetMultiSelectStatus(fld){
-	var group=fld.getAttribute('data-group');
-	var list=GetElementsByAttribute('input','data-group',group);
-	var spans=GetElementsByAttribute('span','data-group',group);
-	var vals=new Array();
-	for(var i=0;i<list.length;i++){
+	if(undefined == fld.getAttribute('data-id')){return false;}
+	let id=fld.getAttribute('data-id');
+	let oid=id+'_options';
+	let options=getObject(oid);
+	if(undefined == options){return false;}
+	let list=options.querySelectorAll('input');
+	let vals=new Array();
+	for(let i=0;i<list.length;i++){
 		//skip if no value
 		if(undefined == list[i].value){continue;}
 		if(list[i].value==''){continue;}
-    	if(list[i].checked){vals.push(list[i].value);}
+		if(undefined == list[i].id){continue;}
+		if(list[i].id==''){continue;}
+    	if(list[i].checked){
+    		let label=document.querySelector('label[for="'+list[i].id+'"]');
+    		vals.push(label.innerText);
+    	}
 	}
-	var cname=vals.length?'icon-checkbox':'icon-checkbox-empty';
-	for(var i=0;i<spans.length;i++){
-		spans[i].className=cname;
+	
+	let btn_id=id+'_button';
+	let bobj=getObject(btn_id);
+	if(vals.length==0){
+		bobj.innerText=bobj.getAttribute('data-dname');
 	}
-	if(fld.checked){fld.checked=true;}
-	return true;
+	else{
+		let str='('+vals.length+') '+implode(', ',vals);
+		bobj.innerText=str;
+	}
+	return false;
 }
 //--------------------------
 //fielddataChange(this);
