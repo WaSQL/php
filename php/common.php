@@ -11734,10 +11734,7 @@ function getAgentLang($agent=''){
 * @usage $path=getWasqlPath('php');
 */
 function getWasqlPath($subdir=''){
-	$progpath=dirname(__FILE__);
-	$path=preg_replace('/php$/i','',$progpath);
-	$path=str_replace("\\","/",$path);
-	$path=preg_replace('/\/$/i','',$path);
+	$path=dirname( dirname(__FILE__) );
 	if(isWindows()){
 		$rtnpath="{$path}\\{$subdir}";
 		$rtnpath=str_replace("/","\\",$rtnpath);

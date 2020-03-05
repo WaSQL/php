@@ -16,7 +16,15 @@ $starttime=microtime(true);
 $progpath=dirname(__FILE__);
 global $logfile;
 $scriptname=basename(__FILE__, '.php');
-$logfile="{$progpath}/{$scriptname}.log";
+$wpath=dirname( dirname(__FILE__) );
+if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){
+	$logpath="{$wpath}\\logs";
+	$logpath=str_replace("/","\\",$logpath);
+}
+else{
+   	$logpath="{$wpath}/'logs";
+}
+$logfile="{$logpath}/{$scriptname}.log";
 //echo $logfile;exit;
 //set the default time zone
 date_default_timezone_set('America/Denver');
