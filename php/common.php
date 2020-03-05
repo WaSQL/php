@@ -1994,11 +1994,12 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['width']) && isNum($params['width'])){
 		$tag .=' style="max-width:'.$params['width'].'px;overflow:hidden;text-overflow:ellipsis;"';
 	}
+	$button_name=$dname;
 	if(count($checked_vals)){
 		$cnt=count($checked_vals);
-		$dname="({$cnt}) ".implode(', ',$checked_vals);
+		$button_name="({$cnt}) ".implode(', ',$checked_vals);
 	}
-	$tag .= ' data-toggle="dropdown" id="'.$params['id'].'_button" class="btn '.$params['-size'].'" type="button">'.$dname.'</button>'.PHP_EOL;
+	$tag .= ' data-toggle="dropdown" id="'.$params['id'].'_button" class="btn '.$params['-size'].'" type="button">'.$button_name.'</button>'.PHP_EOL;
 	$onclose='';
 	if(isset($params['onblur']) && strlen($params['onblur'])){
 		$onclose = $params['onblur'];
@@ -2016,6 +2017,9 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		$onclose="commonCloseDropdownMenu(this);";
 	}
 	$tag .= ' 	<div id="'.$params['id'].'_options" class="dropdown-menu" onmouseleave="'.$onclose.'">'.PHP_EOL;
+	if(count($checked_vals)){
+		$tag .= '<div class="dropdown-item" style="font-size:1.1rem;line-height:1.5;color:#343a4080;"> -- '.$dname.' --</div>';
+	}
 	$tag .= $litags;
 	$tag .= '	</div>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
