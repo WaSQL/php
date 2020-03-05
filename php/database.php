@@ -3321,7 +3321,6 @@ function addEditDBForm($params=array(),$customcode=''){
     if(isset($params['-id']) && $params['-id']){
 		$rtn .= ' id="'.$params['-id'].'"';
 	}
-
 	//enctype
 	if($enctype != "none"){
     	$rtn .= ' enctype="'.$enctype.'"';
@@ -3356,12 +3355,20 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
 	$rtn .= ' onsubmit="'.$onsubmit.'"';
 	$rtn .= '>'.PHP_EOL;
+	//upload progress
+	$upload_progress_enabled=ini_get("session.upload_progress.enabled");
+	if($upload_progress_enabled && $enctype=="multipart/form-data"){
+		$upload_progress_name=ini_get("session.upload_progress.name");
+		$rtn .= '<input type="hidden" name="show_upload_progress" value="Uploading...">'.PHP_EOL;
+		$rtn .= '<input type="hidden" name="'.$upload_progress_name.'" value="123">'.PHP_EOL;
+	}
+	//template?
 	if(isset($params['-template'])){
 		$rtn .= '<input type="hidden" name="_template" value="'.$params['-template'].'">'.PHP_EOL;
-		}
+	}
 	elseif(isset($params['_template'])){
 		$rtn .= '<input type="hidden" name="_template" value="'.$params['_template'].'">'.PHP_EOL;
-		}
+	}
     $rtn .= '<input type="hidden" name="_table" value="'.$params['-table'].'">'.PHP_EOL;
     $rtn .= '<input type="hidden" name="_formname" value="'.$formname.'">'.PHP_EOL;
     $rtn .= '<input type="hidden" name="_enctype" value="'.$enctype.'">'.PHP_EOL;

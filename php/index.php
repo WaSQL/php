@@ -230,6 +230,40 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	echo json_encode($json, JSON_PRETTY_PRINT);
 	exit;
 }
+
+//Check for upload_progress
+if(isset($_REQUEST['get_upload_progress_json']) && $_REQUEST['get_upload_progress_json']==1){
+	$key = ini_get("session.upload_progress.prefix") . $_REQUEST[ini_get("session.upload_progress.name")];	
+	$msg="Key:{$key}<br>".PHP_EOL;
+	$msg.=printValue($_REQUEST).PHP_EOL;
+	if(isset($_SESSION[$key])){
+		echo json_encode($_SESSION[$key], JSON_PRETTY_PRINT);
+		echo buildOnLoad("setTimeout('formShowUploadProgress(\\'{$_REQUEST['name']}\\')',3000);");
+	}
+	else{
+		echo "Upload Complete";
+		//echo buildOnLoad("removeId('centerpop99');");	
+		echo buildOnLoad("setTimeout('formShowUploadProgress(\\'{$_REQUEST['name']}\\')',3000);");
+	}
+	$msg.=printValue($_SESSION).PHP_EOL.PHP_EOL;
+	$wpath=dirname( dirname(__FILE__) );
+	if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){
+		$logfile="{$wpath}\\logs\\upload.log";
+		$logfile=str_replace("/","\\",$logfile);
+	}
+	else{
+	   	$logfile="{$wpath}/logs/upload.log";
+	}
+	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+        setFileContents($logfile,$msg);
+    }
+    else{
+        appendFileContents($logfile,$msg);
+    }
+	exit;
+}
+
+
 //Check for heartbeat
 if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo '<heartbeat>' . time() . '</heartbeat>'."\n";
