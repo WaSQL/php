@@ -18,13 +18,12 @@ global $logfile;
 $scriptname=basename(__FILE__, '.php');
 $wpath=dirname( dirname(__FILE__) );
 if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){
-	$logpath="{$wpath}\\logs";
-	$logpath=str_replace("/","\\",$logpath);
+	$logfile="{$wpath}\\logs\\{$scriptname}.log";
+	$logfile=str_replace("/","\\",$logfile);
 }
 else{
-   	$logpath="{$wpath}/'logs";
+   	$logfile="{$wpath}/logs/{$scriptname}.log";
 }
-$logfile="{$logpath}/{$scriptname}.log";
 //echo $logfile;exit;
 //set the default time zone
 date_default_timezone_set('America/Denver');

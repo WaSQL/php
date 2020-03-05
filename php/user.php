@@ -4,13 +4,12 @@ global $user_logfile;
 $user_scriptname=basename(__FILE__, '.php');
 $wpath=dirname( dirname(__FILE__) );
 if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){
-	$logpath="{$wpath}\\logs";
-	$logpath=str_replace("/","\\",$logpath);
+	$user_logfile="{$wpath}\\logs\\{$user_scriptname}.log";
+	$user_logfile=str_replace("/","\\",$user_logfile);
 }
 else{
-   	$logpath="{$wpath}/'logs";
+   	$user_logfile="{$wpath}/logs/{$user_scriptname}.log";
 }
-$user_logfile="{$logpath}/{$user_scriptname}.log";
 //requires common,wasql, and database to be loaded first
 //parse Server Variables
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
