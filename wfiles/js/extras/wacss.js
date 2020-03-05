@@ -395,12 +395,19 @@ var wacss = {
 	        			let datasetLabels=new Array();
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
-	        				let json=JSON.parse(datasets[d].innerText);      				
+	        				let json=JSON.parse(datasets[d].innerText);   
+	        				let fill=datasets[d].getAttribute('data-fill') || list[i].getAttribute('data-fill');
+							if(undefined != fill){
+								if(fill.indexOf('true') != -1){fill=true;}
+								else if(fill == '1'){fill=true;}
+								else{fill=false;}
+							}   
+							else{fill=false;}				
 							let dataset={
 								backgroundColor: datasets[d].getAttribute('data-backgroundColor') || colors[d],
 	                            type:datasets[d].getAttribute('data-type') || list[i].getAttribute('data-type'),
 								data: json,
-								fill:false,
+								fill:fill,
 							};
 							if(undefined != datasets[d].getAttribute('data-yaxis')){
 								dataset.yAxisID=datasets[d].getAttribute('data-yaxis');
