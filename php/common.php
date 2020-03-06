@@ -13431,6 +13431,13 @@ function processActions(){
 							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 						}
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
+							if($_REQUEST[$field.'_remove'] == 1){
+								if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=null;}
+								if(isset($info[$field.'_size'])){$opts[$field.'_size']=null;}
+								if(isset($info[$field.'_width'])){$opts[$field.'_width']=null;}
+								if(isset($info[$field.'_height'])){$opts[$field.'_height']=null;}
+								if(isset($info[$field.'_type'])){$opts[$field.'_type']=null;}
+							}
 							//skip file field if user did not check to remove current value
 							if(isset($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
 							//add sha1, width, height, and type if fields exist
