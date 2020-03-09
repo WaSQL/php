@@ -2282,6 +2282,16 @@ function submitForm(theForm,popup,debug,ajax){
 		formShowUploadProgress();
 		//setTimeout('formShowUploadProgress(\''+theForm.show_upload_progress.value+'\')',2000);
 	}
+	//disable buttons with class w_disable_on_submit
+	let dlist=document.querySelectorAll('.w_disable_on_submit');
+	for(let d=0;d<dlist.length;d++){
+		dlist[d].setAttribute('disabled','disabled');
+	}
+	//hide buttons with class w_hide_on_submit
+	let hlist=document.querySelectorAll('.w_hide_on_submit');
+	for(let h=0;h<hlist.length;h++){
+		hlist[h].style.display='none';
+	}
     return true;
 }
 function formShowUploadProgress(){
