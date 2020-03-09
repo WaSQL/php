@@ -2303,15 +2303,15 @@ function submitForm(theForm,popup,debug,ajax){
 function formShowUploadProgress(){
 	//disable buttons with class w_disable_on_submit
 	let dlist=document.querySelectorAll('.w_disable_on_submit');
-	console.log('w_disable_on_submit');
-	console.log(dlist);
+	//console.log('w_disable_on_submit');
+	//console.log(dlist);
 	for(let d=0;d<dlist.length;d++){
 		dlist[d].setAttribute('disabled','disabled');
 	}
 	//hide buttons with class w_hide_on_submit
 	let hlist=document.querySelectorAll('.w_hide_on_submit');
-	console.log('w_hide_on_submit');
-	console.log(hlist);
+	//console.log('w_hide_on_submit');
+	//console.log(hlist);
 	for(let h=0;h<hlist.length;h++){
 		hlist[h].style.display='none';
 	}
