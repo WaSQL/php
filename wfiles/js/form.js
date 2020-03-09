@@ -2282,6 +2282,25 @@ function submitForm(theForm,popup,debug,ajax){
 		formShowUploadProgress();
 		//setTimeout('formShowUploadProgress(\''+theForm.show_upload_progress.value+'\')',2000);
 	}
+	else{
+		//disable buttons with class w_disable_on_submit
+		let dlist=document.querySelectorAll('.w_disable_on_submit');
+		//console.log('w_disable_on_submit');
+		//console.log(dlist);
+		for(let d=0;d<dlist.length;d++){
+			dlist[d].setAttribute('disabled','disabled');
+		}
+		//hide buttons with class w_hide_on_submit
+		let hlist=document.querySelectorAll('.w_hide_on_submit');
+		//console.log('w_hide_on_submit');
+		//console.log(hlist);
+		for(let h=0;h<hlist.length;h++){
+			hlist[h].style.display='none';
+		}
+	}
+    return true;
+}
+function formShowUploadProgress(){
 	//disable buttons with class w_disable_on_submit
 	let dlist=document.querySelectorAll('.w_disable_on_submit');
 	//console.log('w_disable_on_submit');
@@ -2296,15 +2315,14 @@ function submitForm(theForm,popup,debug,ajax){
 	for(let h=0;h<hlist.length;h++){
 		hlist[h].style.display='none';
 	}
-    return true;
-}
-function formShowUploadProgress(){
+	//uploading
 	html='';
 	html+='<div class="w_centerpop_title">Uploading...</div>'+"\n";
 	html+= '<div class="w_centerpop_content">'+"\n";
 	html+= '	<div class="w_padtop"><span class="icon-spin4 w_rotate w_spin"></span> Uploading ...</div>'+"\n";
 	html+= '</div>'+"\n";
 	centerpopDiv(html,0);
+
 	//ajaxGet('/php/index.php','centerpop99',{get_upload_progress_json:1,name:name})
 }
 function formAddField(frm,fld,val){
