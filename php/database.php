@@ -3887,27 +3887,27 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
 				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
 				$reset=isset($params['-reset'])?$params['-reset']:'Reset';
-				$rtn .= '		<td><button class="'.$class.'" type="reset" id="resetbutton">'.$reset.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="reset" id="resetbutton">'.$reset.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Delete';
 				$delete=isset($params['-delete'])?$params['-delete']:'Delete';
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">'.$delete.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="deletebutton" onClick="if(!confirm(\'Delete this record?\')){return false;}document.'.$formname.'._action.value=\''.$action.'\';">'.$delete.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/clone/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Add';
 				$clone=isset($params['-clone'])?$params['-clone']:'Clone';
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">'.$clone.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="clonebutton" onClick="if(!confirm(\'Clone this record?\')){return false;}document.'.$formname.'._id.value=\'\';document.'.$formname.'._action.value=\''.$action.'\';">'.$clone.'</button></td>'.PHP_EOL;
 				}
 			}
 		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'btn';
 			$action=isset($params['-nosave'])?'':'Add';
-	    	$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+	    	$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
 	    	}
 	    $rtn .= '	</tr>'.PHP_EOL;
