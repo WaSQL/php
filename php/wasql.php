@@ -1217,6 +1217,7 @@ function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
 	//ignore undefined index errors
 	if(preg_match('/^Undefined\ index/i',$errstr)){return false;}
 	if(!strlen($errstr)){return false;}
+	return true;
 	if(!isDBTable('_errors')){
 		$ok=addDBRecord(array('-table'=>'_fielddata',
 			'tablename'		=> '_errors',
