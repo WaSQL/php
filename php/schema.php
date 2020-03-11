@@ -612,7 +612,7 @@ function createWasqlTable($table=''){
 			$fields['city']=databaseDataType('varchar(50)')." NULL";
 			$fields['country']=databaseDataType('char(2)')." NOT NULL Default 'US'";
 			$fields['email']=databaseDataType('varchar(255)')." NULL";
-			$fields['guid']=databaseDataType('char(40)')." NULL";
+			//$fields['guid']=databaseDataType('char(40)')." NULL";
 			$fields['department']=databaseDataType('varchar(60)')." NULL";
 			$fields['hint']=databaseDataType('varchar(255)')." NULL";
 			$fields['firstname']=databaseDataType('varchar(100)')." NULL";
@@ -634,7 +634,7 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"username",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"active"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"guid"));
+			//$ok=addDBIndex(array('-table'=>$table,'-fields'=>"guid"));
 			//Add admin user as the default admin
 			$addopts=array();
 			foreach($fields as $field=>$type){

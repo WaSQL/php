@@ -2691,11 +2691,6 @@ function checkDBTableSchema($wtable){
 			$ok=executeSQL($query);
 			$rtn .= " added _apage to _users table<br />".PHP_EOL;
         }
-        //check indexes
-        if(!isset($index['guid'])){
-        	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>"active,guid"));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
-		}
 	}
 	//make sure _synchronize table has review_user, review_pass, review_user_id
     if($wtable=='_synchronize'){
@@ -7519,6 +7514,10 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	$dbcachekey=strtolower($table.'_'.$getmeta.'_'.$field);
 	if($force==0 && isset($databaseCache['getDBFieldInfo'][$dbcachekey])){
 		return $databaseCache['getDBFieldInfo'][$dbcachekey];
+	}
+	if(!isDBTable($table)){
+		$databaseCache['getDBFieldInfo'][$dbcachekey]=null;
+		return null;
 	}
 	$query="show full columns from {$table}";
 	if(strlen($field)){

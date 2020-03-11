@@ -8424,19 +8424,6 @@ function getGravatar($email,$params=array()){
 */
 function getGUID($force=0){
 	global $CONFIG;
-	if(isset($_COOKIE['GUID']) && strlen($_COOKIE['GUID']) < 20){
-    	$force=1;
-	}
-	//guarantee the guid is unique.
-	$query="select count(*) cnt, guid from _users where guid != '' and guid is not null group by guid having cnt > 1";
-	$duplicate_guids=getDBRecords(array('-query'=>$query,'-index'=>'guid'));
-	if(is_array($duplicate_guids)){
-		//reset duplicate guids
-    	foreach($duplicate_guids as $guid=>$rec){
-        	$ok=executeSQL("update _users set guid='' where guid='{$guid}'");
-		}
-	}
-	if(isset($duplicate_guids[$_COOKIE['GUID']])){$force=1;}
 	if($force != 1 && isset($_COOKIE['GUID'])){
 		$guid=$_COOKIE['GUID'];
 		$_SERVER['GUID']=$guid;
