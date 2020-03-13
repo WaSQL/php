@@ -344,7 +344,7 @@ function ldapGetUsersAll(){
 * @usage $recs=ldapSearch('billy','name,email,title','dn,cn,sn,title,telephonenumber,givenname,displayname,memberof,employeeid,samaccountname,mail,photo');
 * @reference https://stackoverflow.com/questions/48310553/how-to-do-ldapsearch-with-multiple-filters
 */
-function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=''){
+function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array()){
 	global $ldapInfo;
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
@@ -367,14 +367,16 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	if(!is_array($returnfields) && strlen($returnfields)){
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
-	if(!count($returnfields)){
-		$returnfields=null;
-	}
 	$recs=array();
 	//loop through based on page_size and get the records
 	do {
         ldap_control_paged_result($ldapInfo['connection'], $ldapInfo['page_size'], true, $cookie);
-        $result=ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $filter,$returnfields);
+        if(count($returnfields)){
+        	$result=ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $filter,$returnfields);
+        }
+        else{
+        	$result=ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $filter);
+        }
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
         foreach ($entries as $e) {
