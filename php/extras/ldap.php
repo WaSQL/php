@@ -339,6 +339,7 @@ function ldapGetUsersAll(){
 * @describe returns a list of LDAP users based on search 
 * @param str string - string to search for
 * @param checkfields string - comma separated list of attributes to search in. defaults to sAMAccountName,name,email,title
+*			if a checkfield contains >,<,= then it is added as it. i.e.  lockouttime > 0
 * @param returnfields string - comma separated list of attributes to return. defaults to *
 * @return recs array - record sets of users that match
 * @usage $recs=ldapSearch('billy','name,email,title','dn,cn,sn,title,telephonenumber,givenname,displayname,memberof,employeeid,samaccountname,mail,photo');
@@ -360,7 +361,12 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	}
 	$filters=array();
 	foreach($checkfields as $checkfield){
-		$filters[]="{$checkfield}=*{$str}*";
+		if(preg_match('/[\>\=\<]/',$checkfield)){
+			$filters[]=$checkfield;
+		}
+		else{
+			$filters[]="{$checkfield}=*{$str}*";
+		}
 	}
 	$filterstr=implode(')(',$filters);
 	$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
