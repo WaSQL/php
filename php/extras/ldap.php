@@ -339,7 +339,7 @@ function ldapGetUsersAll(){
 * @describe returns a list of LDAP users based on search 
 * @param str string - string to search for
 * @param [checkfields] string - comma separated list of attributes to search in. defaults to sAMAccountName,name,email,title
-*			if a checkfield contains >,<,= then it is added as it. i.e.  lockouttime > 0
+*			if a checkfield contains gt,lt,eq then it is added as it. i.e.  lockouttime gt 0
 * @param [returnfields] string - comma separated list of attributes to return. defaults to *
 * @param [debug] boolean - setting to true or 1 will show filters in debug console
 * @return recs array - record sets of users that match
@@ -365,7 +365,10 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	}
 	$filters=array();
 	foreach($checkfields as $checkfield){
-		if(preg_match('/[\>\=\<]/',$checkfield)){
+		if(preg_match('/\ (gt|lt|eq)\ /is',$checkfield)){
+			$checkfield=str_replace(' gt ','>',$checkfield);
+			$checkfield=str_replace(' lt ','<',$checkfield);
+			$checkfield=str_replace(' eq ','=',$checkfield);
 			$filters[]=$checkfield;
 		}
 		else{
