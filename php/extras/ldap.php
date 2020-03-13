@@ -355,23 +355,25 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	if(!isset($ldapInfo['page_size'])){
 		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
 	}
-	//set defaults
-	if(!is_array($checkfields) && strlen($checkfields)){
-		if($checkfields=='*'){
-			$checkfields=array();
-		}
-		else{$checkfields=preg_split('/\,/',$checkfields);}
-	}
 	$filters=array();
-	foreach($checkfields as $checkfield){
-		if(preg_match('/\ (gt|lt|eq)\ /is',$checkfield)){
-			$checkfield=str_replace(' gt ','>',$checkfield);
-			$checkfield=str_replace(' lt ','<',$checkfield);
-			$checkfield=str_replace(' eq ','=',$checkfield);
-			$filters[]=$checkfield;
+	//set defaults
+	if($str=='*'){
+		$checkfields=array();
+	}
+	else{
+		if(!is_array($checkfields) && strlen($checkfields)){
+			$checkfields=preg_split('/\,/',$checkfields);
 		}
-		else{
-			$filters[]="{$checkfield}=*{$str}*";
+		foreach($checkfields as $checkfield){
+			if(preg_match('/\ (gt|lt|eq)\ /is',$checkfield)){
+				$checkfield=str_replace(' gt ','>',$checkfield);
+				$checkfield=str_replace(' lt ','<',$checkfield);
+				$checkfield=str_replace(' eq ','=',$checkfield);
+				$filters[]=$checkfield;
+			}
+			else{
+				$filters[]="{$checkfield}=*{$str}*";
+			}
 		}
 	}
 	switch(count($filters)){
