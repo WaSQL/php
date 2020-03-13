@@ -348,6 +348,9 @@ function ldapGetUsersAll(){
 */
 function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array(),$debug=0){
 	global $ldapInfo;
+	if($debug){
+		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields));
+	}
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
 		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
@@ -375,7 +378,7 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
 	if($debug){
-		debugValue($filters);
+		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields,'filters'=>$filters));
 	}
 	$recs=array();
 	//loop through based on page_size and get the records
