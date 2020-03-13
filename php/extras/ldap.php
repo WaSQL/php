@@ -338,14 +338,15 @@ function ldapGetUsersAll(){
 /**
 * @describe returns a list of LDAP users based on search 
 * @param str string - string to search for
-* @param checkfields string - comma separated list of attributes to search in. defaults to sAMAccountName,name,email,title
+* @param [checkfields] string - comma separated list of attributes to search in. defaults to sAMAccountName,name,email,title
 *			if a checkfield contains >,<,= then it is added as it. i.e.  lockouttime > 0
-* @param returnfields string - comma separated list of attributes to return. defaults to *
+* @param [returnfields] string - comma separated list of attributes to return. defaults to *
+* @param [debug] boolean - setting to true or 1 will show filters in debug console
 * @return recs array - record sets of users that match
 * @usage $recs=ldapSearch('billy','name,email,title','dn,cn,sn,title,telephonenumber,givenname,displayname,memberof,employeeid,samaccountname,mail,photo');
 * @reference https://stackoverflow.com/questions/48310553/how-to-do-ldapsearch-with-multiple-filters
 */
-function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array()){
+function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array(),$debug=0){
 	global $ldapInfo;
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
@@ -372,6 +373,9 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
 	if(!is_array($returnfields) && strlen($returnfields)){
 		$returnfields=preg_split('/\,/',$returnfields);
+	}
+	if($debug){
+		debugValue($filters);
 	}
 	$recs=array();
 	//loop through based on page_size and get the records
