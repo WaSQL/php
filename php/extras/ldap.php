@@ -375,8 +375,18 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 			$filters[]="{$checkfield}=*{$str}*";
 		}
 	}
-	$filterstr=implode(')(',$filters);
-	$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
+	switch(count($filters)){
+		case 0:
+			$filter="(&(objectClass=user)(objectCategory=person))";
+		break;
+		case 1:
+			$filter="(&(objectClass=user)(objectCategory=person)({$filters[0]}))";
+		break;
+		default:
+			$filterstr=implode(')(',$filters);
+			$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
+		break;
+	}
 	if(!is_array($returnfields) && strlen($returnfields)){
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
