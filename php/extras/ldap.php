@@ -357,11 +357,10 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	}
 	//set defaults
 	if(!is_array($checkfields) && strlen($checkfields)){
-		$checkfields=preg_split('/\,/',$checkfields);
-	}
-	if(!count($checkfields)){
-		debugValue("ldapSearch requires checkfields");
-		return array();
+		if($checkfields=='*'){
+			$checkfields=array();
+		}
+		else{$checkfields=preg_split('/\,/',$checkfields);}
 	}
 	$filters=array();
 	foreach($checkfields as $checkfield){
