@@ -368,7 +368,7 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
 	if(!count($returnfields)){
-		$returnfields=array('*');
+		$returnfields=null;
 	}
 	$recs=array();
 	//loop through based on page_size and get the records
