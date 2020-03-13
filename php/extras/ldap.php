@@ -334,45 +334,6 @@ function ldapGetUsersAll(){
 	} while($cookie !== null && $cookie != '');
 	return $recs;
 }
-
-function ldapGetUsersAll(){
-	global $ldapInfo;
-	//set the pageSize dynamically
-	if(!isset($ldapInfo['page_size'])){
-		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
-	}
-	//set search to perform
-	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
-	//set cookie to blank - used for paging results
-	$cookie='';
-	//initialize the recs array
-	$recs=array();
-	//loop through based on page_size and get the records
-	do {
-        ldap_control_paged_result($ldapInfo['connection'], $ldapInfo['page_size'], true, $cookie);
-        $result = ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $ldapInfo['lastsearch']);
-        //echo printValue($cookie).printValue($ldapInfo);exit;
-        $entries = ldap_get_entries($ldapInfo['connection'], $result);
-        foreach ($entries as $e) {
-			//lowercase the keys
-			$e=array_change_key_case($e,CASE_LOWER);
-			//do not include Service Accounts
-			if(isset($e['distinguishedname']) && stringContains(ldapValue($e['distinguishedname']),'Service Account')){continue;}
-			if(isset($e['description']) && stringContains(ldapValue($e['description']),'Service Account')){continue;}
-			//do not include Build-in accounts
-			if(isset($e['description']) && stringContains(ldapValue($e['description']),'Built-in account')){continue;}
-			//require a memberof key
-			//echo printValue($e);
-			if(!isset($e['memberof'])){$e['memberof']='USERS';}
-			$rec=ldapParseEntry($e);
-			$recs[]=$rec;
-        }
-    	ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
-    	//if(count($recs) > 400){return $recs;}
-
-	} while($cookie !== null && $cookie != '');
-	return $recs;
-}
 //---------- begin function ldapSearch--------------------
 /**
 * @describe returns a list of LDAP users based on search 
