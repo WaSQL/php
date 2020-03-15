@@ -1410,27 +1410,68 @@ function userGetUserCryptKey($id){
 * returns the User Login Form.
 * @return string
 * @param array $params - any additional parameters to be included.
-*	['title']             adds a title above the login form. No Default
-*	['username']         changes the text for the username field. Default is "Username"
-*	['password']         changes the text for the password field. Default is "Password"
-*	['login']             changes the text for the login submit button. Default is "Log In"
-*	['remind']             changes the text for the "remind me" link. Default is "Remind Me"
-*	['remind_title']     changes the title attribute for the "remind me" link. Default is "Click here if you need your login information emailed to you."
-*	['format']             inline, inline, or standard. Default is "standard"
-*	['icons']             true or false. if true, the Remind Me icon is displayed. Default is true.
-*	['action']             changes the action attribute in the form tag. Defauls to the current page you are viewing
-*	['onsubmit']         changes the onsubmit attribute in the form tag. Default is "return submitForm(this);"
-*	['class']             changes the class attribute in the form tag. Default is "w_form"
-*	['name']             changes the name attribute in the form tag. Default is "login"
-*	['id']                changes the id attribute in the form tag. Default is "loginform"
-*	['method']             changes the method attribute in the form tag. Default is "POST"
-*	['style']             adds the style attribute in the form tag. No Default
-*	[-noremind]			hide the remind me link
+*	[title] text - sets a title above the login form. No Default
+*	[form_action] text - sets the action attribute in the form tag. Defauls to the current page you are viewing
+*	[form_onsubmit] text - sets the onsubmit attribute in the form tag. Default is "return submitForm(this);"
+*	[form_class] text - sets the class attribute in the form tag. Default is "w_form"
+*	[form_name] text - sets the name attribute in the form tag. Default is "login"
+*	[form_id] text - sets the id attribute in the form tag. Default is "loginform"
+*	[form_method] text - sets the method attribute in the form tag. Default is "POST"
+*	[form_style] text - sets the style attribute in the form tag. No Default
+
+*	[username_name] text - sets the name for the username field. Supported options are username,email,phone. Default is "username"
+*	[username_text] text - sets the placeholder text for the username field. Default is "Username"
+*	[username_class] text - sets the class for the username field. Default is "browser-default w_input-append"
+*	[username_style] text - sets the style for the username field. No Default
+*	[username_id] text - sets the id for the username field. Default is "loginform_username"
+*	[username_title] text - sets the title attribute for the username field. No Default
+
+*	[username_pre_text] text - sets the icon prepended before the username field . Default is <span class="icon-user"></span>
+*	[username_pre_class] text - sets the icon class of the icon prepended before the username field . Default is "icon-user"
+*	[username_pre_style] text - sets the icon style of the icon prepended before the username field . No Default
+*	[username_pre_id] text - sets the icon id of the icon prepended before the username field . No Default
+*	[username_pre_title] text - sets the title attribute. No Default
+
+*	[username_post_text] text - sets the icon appended after the username field . No Default
+*	[username_post_class] text - sets the icon class of the icon appended after the username field . No Default
+*	[username_post_style] text - sets the icon style of the icon appended after the username field . No Default
+*	[username_post_id] text - sets the icon id of the icon appended after the username field . No Default
+*	[username_post_title] text - sets the title attribute. No Default
+
+*	[password_text] text - sets the placeholder text for the password field. Default is "password"
+*	[password_class] text - sets the class for the password field. Default is "browser-default w_input-append"
+*	[password_style] text - sets the style for the password field. No Default
+*	[password_id] text - sets the id for the password field. Default is "loginform_password"
+*	[password_title] text - sets the title attribute. No Default
+
+*	[password_pre_text] text - sets the icon prepended before the password field . Default is <span class="icon-lock"></span>
+*	[password_pre_class] text - sets the icon class of the icon prepended before the password field . Default is "icon-lock"
+*	[password_pre_style] text - sets the icon style of the icon prepended before the password field . No Default
+*	[password_pre_id] text - sets the icon id of the icon prepended before the password field . No Default
+*	[password_pre_title] text - sets the title attribute. No Default
+
+*	[password_post_text] text - sets the icon appended after the password field . No Default
+*	[password_post_class] text - sets the icon class of the icon appended after the password field . No Default
+*	[password_post_style] text - sets the icon style of the icon appended after the password field . No Default
+*	[password_post_id] text - sets the icon id of the icon appended after the password field . No Default
+*	[password_post_title] text - sets the title attribute. No Default
+
+*	[remind_text] text - sets the text for the "remind me" link. Default is "Remind Me". If blank then no remind link will be shown
+*	[remind_class] text - sets the class for the remind link. No Default
+*	[remind_style] text - sets the class for the remind link. No Default
+*	[remind_id] text - sets the id for the remind link. No Default
+*	[remind_title] text - sets the title attribute. Default is "Click here if you need your login information emailed to you."
+
+*	[login_text] text - sets the text for the login button. Default is "Login".
+*	[login_class] text - sets the class for the login button. No Default
+*	[login_style] text - sets the class for the login button. No Default
+*	[login_id] text - sets the id for the login button. No Default
+*	[login_title] text - sets the title attribute. No Default
+
 *	Additional params are passed through as hidden key/value pairs
 * @usage
 *	<?=userLoginForm();?> - returns the default wasql login form so a user can sign in.
-*	---
-*	<?=(isUser()?'Welcome User':userLoginForm());?>
+
 * @author slloyd
 * @history - bbarten 2014-01-02 updated documentation
 */
@@ -1439,44 +1480,104 @@ function userLoginForm($params=array()){
 	global $CONFIG;
 	//setup the default params values
 	$defaults=array(
-		'-title'	=> '',
-		'-login'	=> "Login",
-		'-remind'	=> "Remind Me",
-		'-remind_title'	=> "Click here if you need your login information emailed to you.",
-		'-format'		=> "standard",
-		'-icons'		=> true,
-		'-action'		=> isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:"/{$PAGE['name']}",
-		'-onsubmit'		=> "return submitForm(this);",
-		'-class'		=> "w_form",
-		'-name'			=> "loginform",
-		'-id'			=> "loginform",
-		'-method'		=> "POST",
-		'-style'		=> ''
+		'title'					=> '',
+		'form_action'			=> isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:"/{$PAGE['name']}",
+		'form_onsubmit'			=> "return submitForm(this);",
+		'form_class'			=> "w_form",
+		'form_name'				=> "loginform",
+		'form_id'				=> "loginform",
+		'form_method'			=> "POST",
+		'form_style'			=> '',
+		'form_title'			=> '',
+		'username_name'			=> 'username',
+		'username_text'			=> 'Username',
+		'username_class'		=> 'browser-default input',
+		'username_style'		=> '',
+		'username_id'			=> 'loginform_username',
+		'username_title'		=> 'loginform_username',
+		'username_pre_text'		=> '',
+		'username_pre_class'	=> 'icon-user w_biggest',
+		'username_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'username_pre_id'		=> '',
+		'username_pre_title'	=> '',
+		'username_post_text'	=> '',
+		'username_post_class'	=> '',
+		'username_post_style'	=> '',
+		'username_post_id'		=> '',
+		'username_post_title'	=> '',
+		'password_text'			=> 'password',
+		'password_class'		=> 'browser-default input',
+		'password_style'		=> '',
+		'password_id'			=> 'loginform_password',
+		'password_title'		=> 'loginform_password',
+		'password_pre_text'		=> '',
+		'password_pre_class'	=> 'icon-lock w_biggest',
+		'password_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'password_pre_id'		=> '',
+		'password_pre_title'	=> '',
+		'password_post_text'	=> '',
+		'password_post_class'	=> 'icon-eye',
+		'password_post_style'	=> 'vertical-align:middle;margin-left:3px;',
+		'password_post_id'		=> '',
+		'password_post_title'	=> '',
+		'remind_text'			=> 'Remind Me',
+		'remind_class'			=> 'w_small w_gray',
+		'remind_style'			=> 'text-decoration:none;margin-left:30px;',
+		'remind_id'				=> '',
+		'remind_title'			=> 'Click here if you need your login information emailed to you.',
+		'login_text'			=> 'Login',
+		'login_class'			=> 'btn button',
+		'login_style'			=> '',
+		'login_id'				=> '',
+		'login_title'			=> ''		
 	);
+	//check for email and phone names
+	switch(strtolower($params['username_name'])){
+		case 'email':
+			if(!isset($params['username_text'])){
+				$params['username_text']='email address';
+			}
+			if(!isset($params['username_pre_class'])){
+				$params['username_pre_class']='icon-mail w_biggest';
+			}
+		break;
+		case 'phone':
+			if(!isset($params['username_text'])){
+				$params['username_text']='phone number';
+			}
+			if(!isset($params['username_pre_class'])){
+				$params['username_pre_class']='icon-phone w_biggest';
+			}
+		break;
+	}
+	//set params to default if they do not exist
+	foreach($defaults as $key=>$val){
+    	if(!isset($params[$key])){$params[$key]=$val;}
+	}
 	//backward compatibility settings
 	if(isset($params['username_title'])){$params['-username']=$params['username_title'];unset($params['username_title']);}
 	if(isset($params['password_title'])){$params['-password']=$params['password_title'];unset($params['password_title']);}
 	if(isset($params['login_title'])){$params['-login']=$params['login_title'];unset($params['login_title']);}
 	if(isset($params['message'])){$params['-title']=$params['message'];unset($params['message']);}
 	if(isset($params['_action'])){$params['-action']=$params['_action'];unset($params['_action']);}
-
-	//set params to default if they do not exist
-	foreach($defaults as $key=>$val){
-    	if(!isset($params[$key])){$params[$key]=$val;}
+	//If no title and using LDAP
+	if(!isset($params['title'])){
+		if(isset($CONFIG['login_title'])){$params['title']=$CONFIG['login_title'];}
+		elseif(isset($CONFIG['authhost'])){
+			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'.PHP_EOL;
+		}
+		elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
+			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'.PHP_EOL;
+		}
+		elseif(isset($CONFIG['authldaps']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
+			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'.PHP_EOL;
+		}
+		elseif(isset($CONFIG['auth365'])){
+			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'.PHP_EOL;
+		}	
 	}
-	if(isset($CONFIG['login_title'])){$params['-title']=$CONFIG['login_title'];}
-	elseif(isset($CONFIG['authhost'])){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'.PHP_EOL;
-	}
-	elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'.PHP_EOL;
-	}
-	elseif(isset($CONFIG['authldaps']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'.PHP_EOL;
-	}
-	elseif(isset($CONFIG['auth365'])){
-		$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'.PHP_EOL;
-	}
+	
+	
     if(!isset($params['-username'])){
     	$params['-username']='<span class="icon-user w_biggest w_grey"></span>';
 	}
@@ -1490,113 +1591,169 @@ function userLoginForm($params=array()){
 	$attributes=array('id','name','style','class','method','action','onsubmit');
 	$form .= '<form';
 	foreach($attributes as $key){
-		$dashkey="-{$key}";
-		if(isset($params[$dashkey]) && strlen($params[$dashkey])){
-			$form .= " {$key}=\"{$params[$dashkey]}\"";
+		$key1="-{$key}";
+		$key2="form_{$key}";
+		if(isset($params[$key1]) && strlen($params[$key1])){
+			$form .= " {$key}=\"{$params[$key1]}\"";
+		}
+		elseif(isset($params[$key2]) && strlen($params[$key2])){
+			$form .= " {$key}=\"{$params[$key2]}\"";
 		}
 	}
-	$form .= ">\n";
+	$form .= ">".PHP_EOL;
+	$attributes=array('id','style','class','title');
 	$form .= '	<input type="hidden" name="_login" value="1">'.PHP_EOL;
 	$form .= '	<input type="hidden" name="_pwe" value="1">'.PHP_EOL;
-	//-title
+	//title
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'.PHP_EOL;
-    	}
-    $username_opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true','placeholder'=>"username",'autocomplete'=>'username');
-	foreach($params as $k=>$v){$username_opts[$k]=$v;}
-	$password_opts=array('id'=>$params['-name'].'_password','data-lock_icon'=>1,'data-show_icon'=>1,'required'=>1,'tabindex'=>2,'placeholder'=>"password",'autocomplete'=>'current-password');
-	foreach($params as $k=>$v){$password_opts[$k]=$v;}
-    switch(strtolower($params['-format'])){
-		case 'oneline':
-			$form .= '<div id="w_loginform_oneline">'.PHP_EOL;
-			$form .= '<table>';
-			$form .= '	<tr class="w_middle text-right">';
-			//username
-			$opts=array('id'=>$params['-name'].'_username','required'=>1,'tabindex'=>1,'autofocus'=>'true');
-			foreach($params as $k=>$v){$opts[$k]=$v;}
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_username">'.$params['-username'].'</label></th><td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
-			//password
-			$form .= '		<th class="text-left" style="padding-right:10px;"><label for="'.$params['-name'].'_password">'.$params['-password'].'</label></th><td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
-			$form .= '		<td class="text-right w_padright"><button class="w_btn w_btn-secondary w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
-			if(isset($CONFIG['facebook_appid'])){
-				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<td class="w_padright"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
+    }
+    elseif(strlen($params['title'])){
+		$form .= '<div>'.$params['title'].'</div>'.PHP_EOL;
+    }
+    $form .= '<div style="max-width:300px;margin-left:10px;">'.PHP_EOL;
+    //username div
+	$form .= '	<div style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
+	//username_pre
+	$prefix='username_pre';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+	}
+	else{
+		$form .= '<div><span';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
 			}
-			if(isset($CONFIG['google_appid'])){
-    			$form .= '<td class="w_padright"><div id="google_login"></div></td>';
-			}
-			if(!isset($params['-noremind'])){
-				$form .= '		<td class="text-left" style="padding:10px 10px 0 0;">'.PHP_EOL;
-				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
-				if($params['-icons']){
-					$form .= '<span class="icon-mail w_biggest w_padright"></span>';
-				}
-				$form .= " {$params['-remind']}</a>\n";
-				$form .= '		</td>'.PHP_EOL;
-			}
-			$form .= '	</tr>'.PHP_EOL;
-			$form .= '</table>'.PHP_EOL;
-			if(isset($_REQUEST['_login_error'])){
-				$form .= '<div style="display:inline;margin-left:25px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'.PHP_EOL;
-			}
-			$form .= '</div>'.PHP_EOL;
-			break;
-		case 'inline':
-			$form .= '<div id="w_loginform_inline">'.PHP_EOL;
-			$form .= '<table>';
-			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_username" style="padding:0px;">'.$params['-username'].'</label></th>'.PHP_EOL;
-			$form .= '		<th class="text-left"><label for="'.$params['-name'].'_password" style="padding:0px;">'.$params['-password'].'</label></th>'.PHP_EOL;
-			if(isset($CONFIG['facebook_appid']) || isset($CONFIG['google_appid'])){
-				$form .= '		<td class="text-left" colspan="2">'.PHP_EOL;
-			}
-			else{
-				$form .= '		<td class="text-left">'.PHP_EOL;
-			}
-			if(!isset($params['-noremind'])){
-				$form .= '				<a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_smaller w_link w_dblue">';
-				if($params['-icons']){
-					$form .= '<span class="icon-mail w_biggest"  style="padding-right:10px;"></span>';
-				}
-				$form .= " {$params['-remind']}</a>\n";
-			}
-			$form .= '		</td>'.PHP_EOL;
-			$form .= '	</tr>'.PHP_EOL;
-			$form .= '	<tr class="w_middle text-right">';
-			$form .= '		<td>'.buildFormText('username',$username_opts).'</td>'.PHP_EOL;
-			$form .= '		<td>'.buildFormPassword('password',$password_opts).'</td>'.PHP_EOL;
-			$form .= '		<td align="right"><button class="w_btn w_btn-secondary w_formsubmit" tabindex="3" type="submit">'.$params['-login'].'</button></td>'.PHP_EOL;
-			if(isset($CONFIG['facebook_appid'])){
-				if(!isset($CONFIG['facebook_text'])){$CONFIG['facebook_text']='Login with Facebook';}
-    			$form .= '<td style="padding:3px;"><div style="width:152px;overflow:hidden;"><fb:login-button size="medium" scope="public_profile,email" onlogin="facebookCheckLoginState(1);">'.$CONFIG['facebook_text'].'</fb:login-button></div></td>';
-			}
-			if(isset($CONFIG['google_appid'])){
-    			$form .= '<td style="padding:3px;"><div id="google_login"></div></td>';
-			}
-			$form .= '	</tr>'.PHP_EOL;
-			$form .= '</table>'.PHP_EOL;
-			if(isset($_REQUEST['_login_error'])){
-				$form .= '<div style="display:inline;margin-left:15px;" class="w_red w_small icon-warning" id="loginform_msg"> '.$_REQUEST['_login_error'].'</div>'.PHP_EOL;
-			}
-			$form .= '</div>'.PHP_EOL;
-			break;
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= "></span></div>".PHP_EOL;
+	}
+	//username
+	$prefix='username';
+	$tagopts=array('placeholder'=>$params["{$prefix}_text"]);
+	foreach($attributes as $key){
+		$tkey="{$prefix}_{$key}";
+		if(isset($params[$tkey]) && strlen($params[$tkey])){
+			$tagopts[$key]=$params[$tkey];
+		}
+	}
+	switch(strtolower($params['username_name'])){	
+		case 'email':
+			$tagopts['-type']='email';
+			$form .= '		'.buildFormText('email',$tagopts);
+		break;
+		case 'phone':
+			$tagopts['-type']='tel';
+			$form .= '		'.buildFormText('phone',$tagopts);
+		break;
 		default:
-			$username_opts['class']='browser-default w_input-append';
-			$password_opts['class']='browser-default w_input-append';
-			$form .= '<div style="max-width:250px;margin-left:10px;">'.PHP_EOL;
-			$form .= '	<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;">'.PHP_EOL;
-			$form .= '		<span class="btn w_white"><span class="icon-user"></span></span>'.PHP_EOL;
-			$form .= '		'.buildFormText('username',$username_opts);
-			$form .= '	</div>'.PHP_EOL;
-			$form .= '		'.buildFormPassword('password',$password_opts);
-			$form .= '	<div class="w_flexrow"  style="margin-top:5px;">'.PHP_EOL;
-			$form .= '		<div><a title="'.$params['-remind_title'].'" href="#" onClick="remindMeForm(document.'.$params['-name'].'.username.value);return false;" class="w_small w_link w_grey">'.$params['-remind'].'</a></div>'.PHP_EOL;
-			$form .= '		<div><button type="submit" class="btn">Login</button></div>'.PHP_EOL;
-			$form .= '	</div>'.PHP_EOL;
-			$form .= '</div>'.PHP_EOL;
+			//defaults to username
+			$form .= '		'.buildFormText('username',$tagopts);
 		break;
 	}
-	//pass thru params
+	
+	//username_post
+	$prefix='username_post';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+	}
+	else{
+		$form .= '<div><span';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
+			}
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= "></span></div>".PHP_EOL;
+	}
+	$form .= '	</div>'.PHP_EOL;
+	//password div
+	$form .= '	<div style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
+	//password_pre
+	$prefix='password_pre';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+	}
+	else{
+		$form .= '<div><span';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
+			}
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= "></span></div>".PHP_EOL;
+	}
+	//password
+	$prefix='password';
+	$tagopts=array('placeholder'=>$params["{$prefix}_text"]);
+	foreach($attributes as $key){
+		$tkey="{$prefix}_{$key}";
+		if(isset($params[$tkey]) && strlen($params[$tkey])){
+			$tagopts[$key]=$params[$tkey];
+		}
+	}
+	$form .= '		'.buildFormPassword('password',$tagopts);
+	//password_post
+	$prefix='password_post';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+	}
+	else{
+		$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
+			}
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= "></span></div>".PHP_EOL;
+	}
+	$form .= '	</div>'.PHP_EOL;
+	//remind me and login
+	$form .= '	<div style="display:flex;flex-direction:row;justify-content:space-between;margin-top:10px;">'.PHP_EOL;
+	//remind
+	$prefix='remind';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<a href="#" onClick="remindMeForm(document.'.$params['form_name'].'.username.value);return false;"';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
+			}
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= ">{$params["{$prefix}_text"]}</a>".PHP_EOL;
+	}
+	//login
+	$prefix='login';
+	if(strlen($params["{$prefix}_text"])){
+		$form .= '<button type="submit"';
+		$tagopts=array();
+		foreach($attributes as $key){
+			$tkey="{$prefix}_{$key}";
+			if(isset($params[$tkey]) && strlen($params[$tkey])){
+				$tagopts[$key]=$params[$tkey];
+			}
+		}
+		$form .= setTagAttributes($tagopts);
+		$form .= ">{$params["{$prefix}_text"]}</button>".PHP_EOL;
+	}
+	$form .= '	</div>'.PHP_EOL;
+
+	$form .= '</div>'.PHP_EOL;
+	//passthru params
 	$form .= '<div style="display:none;" id="passthru">'.PHP_EOL;
 	foreach($params as $key=>$val){
 		if(stringBeginsWith($key,'-')){continue;}
@@ -1605,14 +1762,13 @@ function userLoginForm($params=array()){
     $form .= '</div>'.PHP_EOL;
 	$form .= '</form>'.PHP_EOL;
 	if(!isset($params['-focus']) || $params['-focus'] == 'username'){
-		$form .= buildOnLoad("document.{$params['-name']}.username.focus();");
+		$form .= buildOnLoad("document.{$params['form_name']}.username.focus();");
 	}
 	if(isset($_REQUEST['_login_error'])){
 		$form .= '<span class="w_red">'.$_REQUEST['_login_error'].'</span>'.PHP_EOL;
 	}
 	$form .= '</div>'.PHP_EOL;
-	//$form .=printValue($_REQUEST);
-    return $form;
+	return $form;
 }
 //---------- begin function wpassSalt ----
 /**

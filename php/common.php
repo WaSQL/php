@@ -1855,7 +1855,7 @@ function buildFormPassword($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
+	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(!isset($params['value'])){$params['value']='';}
@@ -4560,7 +4560,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
 		'id','name','class','style','title','alt','accesskey','tabindex',
-		'onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
+		'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
 		'_behavior','display',
 		'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
