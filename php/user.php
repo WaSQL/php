@@ -530,7 +530,7 @@ function userDecodeLDAPAuth($user,$pass){
 			$changes['utype']=$rec['utype']=1;
 		}
 		if(count($changes)){
-            $ok=editDBRecordById('_table',$rec['_id'],$changes);
+            $ok=editDBRecordById('_users',$rec['_id'],$changes);
 		}
 		return $rec;
 	}
