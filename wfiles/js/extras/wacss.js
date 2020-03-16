@@ -408,6 +408,8 @@ var wacss = {
 	                            type:datasets[d].getAttribute('data-type') || list[i].getAttribute('data-type'),
 								data: json,
 								fill:fill,
+								pointBackgroundColor:[],
+								pointBorderColor: []
 							};
 							if(undefined != datasets[d].getAttribute('data-yaxis')){
 								dataset.yAxisID=datasets[d].getAttribute('data-yaxis');
@@ -416,6 +418,15 @@ var wacss = {
 								dataset.label=datasets[d].getAttribute('data-label');
 								let dlabel=datasets[d].getAttribute('data-label');
 	        					datasetLabels.push(dlabel); 
+							}
+							//check for fillColor in dataset itself
+							for(let ds=0;ds<dataset.data.length;ds++){
+								if(undefined != dataset.data[ds].pointBackgroundColor){
+									dataset.pointBackgroundColor[ds]=dataset.data[ds].pointBackgroundColor;
+								}
+								if(undefined != dataset.data[ds].pointBorderColor){
+									dataset.pointBorderColor[ds]=dataset.data[ds].pointBorderColor;
+								}
 							}
 							lconfig.data.datasets.push(dataset);
 	        			}
