@@ -348,6 +348,9 @@ var wacss = {
 									pointBackgroundColor:[],
 									pointBorderColor: []
 								};
+								if(undefined != udatasets[ud].getAttribute('data-showLine') && udatasets[ud].getAttribute('data-showLine')=='false'){
+									udataset.showLine=false;
+								}
 								if(undefined != udatasets[ud].getAttribute('data-yaxis')){
 									udataset.yAxisID=udatasets[ud].getAttribute('data-yaxis');
 								}
@@ -424,6 +427,9 @@ var wacss = {
 							};
 							if(undefined != datasets[d].getAttribute('data-yaxis')){
 								dataset.yAxisID=datasets[d].getAttribute('data-yaxis');
+							}
+							if(undefined != datasets[d].getAttribute('data-showLine') && datasets[d].getAttribute('data-showLine')=='false'){
+								dataset.showLine=false;
 							}
 							if(undefined != datasets[d].getAttribute('data-label')){
 								dataset.label=datasets[d].getAttribute('data-label');
