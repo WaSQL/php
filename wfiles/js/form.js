@@ -35,6 +35,15 @@ function setInputFileName(fld){
 		robj.style.border='1px solid #dc354b';
 	}
 }
+function formSendPhoneAuth(el){
+	let phone_id=el.getAttribute('data-username_id');
+	let phone=getText(phone_id);
+	if(phone.length < 10){
+		alert('Enter Valid Phone Number to authorize');
+		return false;
+	}
+	return ajaxGet('/php/index.php',el.id,{send_phone_auth:1,phone:phone});
+}
 function formShowPassword(id,sh){
 	let obj=getObject(id);
 	if(undefined == id){return false;}

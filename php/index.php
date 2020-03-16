@@ -263,7 +263,29 @@ if(isset($_REQUEST['get_upload_progress_json']) && $_REQUEST['get_upload_progres
 	exit;
 }
 
-
+//Check for send_phone_auth
+if(isset($_REQUEST['send_phone_auth']) && $_REQUEST['send_phone_auth']==1 && isset($_REQUEST['phone']) && strlen($_REQUEST['phone'])){
+	$ok=loadExtras('plivo');
+	if(!isset($CONFIG['plivo_loaded'])){
+		echo $ok;exit;
+	}
+	$urecs=getDBRecords(array('-table'=>'_users','phone'=>$_REQUEST['phone'],'-fields'=>'_id,phone,password'));
+	if(!isset($urecs[0])){
+		echo 'Account Not Found';
+		exit;
+	}
+	elseif(isset($urecs[1])){
+		echo 'Not Unique Error';
+		echo printValue($urecs);
+		exit;
+	}
+	$pw=mt_rand(100000, 999999);
+	$ok=editDBRecordById('_users',$urecs[0]['_id'],array('password'=>userEncryptPW($pw)));
+	$txt="Your Authorization Code is: {$pw}";
+	$ok=plivoSendMsg($urecs[0]['phone'],$txt,true);
+	echo "Sent";
+	exit;
+}
 //Check for heartbeat
 if(isset($_REQUEST['_heartbeat']) && $_REQUEST['_heartbeat']==1){
 	echo '<heartbeat>' . time() . '</heartbeat>'."\n";

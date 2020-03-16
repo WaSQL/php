@@ -612,18 +612,21 @@ function userDecodeEmailAuth($email,$pass){
 function userDecodePhoneAuth($phone,$pass){
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'phone'=>addslashes($phone)));
 	if(!isset($rec['_id'])){
+		$_REQUEST['_login_error']="Invalid Account";
 		$ok=userLogMessage("userDecodePhoneAuth Failed - no rec for phone {$phone}");
 		return null;
 	}
 	if(userIsEncryptedPW($rec['password'])){
 		$pw=userEncryptPW(addslashes($pass));
 		if($pw != $rec['password']){
+			$_REQUEST['_login_error']="Phone Auth Check 1 Failed";
 			$ok=userLogMessage("userDecodePhoneAuth Failed - password failed for phone {$phone}");
 			return null;
 		}
 	}
 	else{
 		if($pass != $rec['password']){
+			$_REQUEST['_login_error']="Phone Auth Check 2 Failed".printValue($rec);
 			$ok=userLogMessage("userDecodePhoneAuth Failed - password failed for phone {$phone}");
 			return null;
 		}
@@ -1552,7 +1555,25 @@ function userLoginForm($params=array()){
 	}
 	//set params to default if they do not exist
 	foreach($defaults as $key=>$val){
-    	if(!isset($params[$key])){$params[$key]=$val;}
+    	if(!isset($params[$key])){
+    		if(isset($CONFIG["login_{$key}"])){
+    			$params[$key]=$CONFIG["login_{$key}"];
+    		}
+    		else{
+    			$params[$key]=$val;
+    		}
+    	}
+	}
+	//plivo?
+	if($params['username_name']=='phone' && (isset($CONFIG['plivo_auth_id']) || isset($CONFIG['plivo_auth_token']) || isset($CONFIG['plivo_from']))){
+		$ok=loadExtras('plivo');
+		if(!isset($CONFIG['plivo_loaded'])){
+			echo $ok;exit;
+		}
+		if(!strlen($params['username_post_text'])){
+			$params['username_post_text']='<button type="button" id="'.$params['form_name'].'_send_phone_auth" data-username_id="'.$params['username_id'].'" onclick="formSendPhoneAuth(this);" style="margin-left:3px;" class="btn button">Send Auth</button>';	
+		}
+		
 	}
 	//backward compatibility settings
 	if(isset($params['username_title'])){$params['-username']=$params['username_title'];unset($params['username_title']);}
