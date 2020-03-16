@@ -1483,73 +1483,73 @@ function userLoginForm($params=array()){
 	global $CONFIG;
 	//setup the default params values
 	$defaults=array(
-		'title'					=> '',
-		'form_action'			=> isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:"/{$PAGE['name']}",
-		'form_onsubmit'			=> "return submitForm(this);",
-		'form_class'			=> "w_form",
-		'form_name'				=> "loginform",
-		'form_id'				=> "loginform",
-		'form_method'			=> "POST",
-		'form_style'			=> '',
-		'form_title'			=> '',
-		'username_name'			=> 'username',
-		'username_text'			=> 'Username',
-		'username_class'		=> 'browser-default input',
-		'username_style'		=> '',
-		'username_id'			=> 'loginform_username',
-		'username_title'		=> 'loginform_username',
-		'username_pre_text'		=> '',
-		'username_pre_class'	=> 'icon-user w_biggest',
-		'username_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
-		'username_pre_id'		=> '',
-		'username_pre_title'	=> '',
-		'username_post_text'	=> '',
-		'username_post_class'	=> '',
-		'username_post_style'	=> '',
-		'username_post_id'		=> '',
-		'username_post_title'	=> '',
-		'password_text'			=> 'password',
-		'password_class'		=> 'browser-default input',
-		'password_style'		=> '',
-		'password_id'			=> 'loginform_password',
-		'password_title'		=> 'loginform_password',
-		'password_pre_text'		=> '',
-		'password_pre_class'	=> 'icon-lock w_biggest',
-		'password_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
-		'password_pre_id'		=> '',
-		'password_pre_title'	=> '',
-		'password_post_text'	=> '',
-		'password_post_class'	=> 'icon-eye',
-		'password_post_style'	=> 'vertical-align:middle;margin-left:3px;',
-		'password_post_id'		=> '',
-		'password_post_title'	=> '',
-		'remind_text'			=> 'Remind Me',
-		'remind_class'			=> 'w_small w_gray',
-		'remind_style'			=> 'text-decoration:none;margin-left:30px;',
-		'remind_id'				=> '',
-		'remind_title'			=> 'Click here if you need your login information emailed to you.',
-		'login_text'			=> 'Login',
-		'login_class'			=> 'btn button',
-		'login_style'			=> '',
-		'login_id'				=> '',
-		'login_title'			=> ''		
+		'-title'				=> '',
+		'-form_action'			=> isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:"/{$PAGE['name']}",
+		'-form_onsubmit'		=> "return submitForm(this);",
+		'-form_class'			=> "w_form",
+		'-form_name'			=> "loginform",
+		'-form_id'				=> "loginform",
+		'-form_method'			=> "POST",
+		'-form_style'			=> '',
+		'-form_title'			=> '',
+		'-username_name'		=> 'username',
+		'-username_text'		=> 'Username',
+		'-username_class'		=> 'browser-default input',
+		'-username_style'		=> '',
+		'-username_id'			=> 'loginform_username',
+		'-username_title'		=> 'loginform_username',
+		'-username_pre_text'	=> '',
+		'-username_pre_class'	=> 'icon-user w_biggest',
+		'-username_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'-username_pre_id'		=> '',
+		'-username_pre_title'	=> '',
+		'-username_post_text'	=> '',
+		'-username_post_class'	=> '',
+		'-username_post_style'	=> '',
+		'-username_post_id'		=> '',
+		'-username_post_title'	=> '',
+		'-password_text'		=> 'password',
+		'-password_class'		=> 'browser-default input',
+		'-password_style'		=> '',
+		'-password_id'			=> 'loginform_password',
+		'-password_title'		=> 'loginform_password',
+		'-password_pre_text'	=> '',
+		'-password_pre_class'	=> 'icon-lock w_biggest',
+		'-password_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'-password_pre_id'		=> '',
+		'-password_pre_title'	=> '',
+		'-password_post_text'	=> '',
+		'-password_post_class'	=> 'icon-eye',
+		'-password_post_style'	=> 'vertical-align:middle;margin-left:3px;',
+		'-password_post_id'		=> '',
+		'-password_post_title'	=> '',
+		'-remind_text'			=> 'Remind Me',
+		'-remind_class'			=> 'w_small w_gray',
+		'-remind_style'			=> 'text-decoration:none;margin-left:30px;',
+		'-remind_id'			=> '',
+		'-remind_title'			=> 'Click here if you need your login information emailed to you.',
+		'-login_text'			=> 'Login',
+		'-login_class'			=> 'btn button',
+		'-login_style'			=> '',
+		'-login_id'				=> '',
+		'-login_title'			=> ''		
 	);
 	//check for email and phone names
-	switch(strtolower($params['username_name'])){
+	switch(strtolower($params['-username_name'])){
 		case 'email':
-			if(!isset($params['username_text'])){
-				$params['username_text']='email address';
+			if(!isset($params['-username_text'])){
+				$params['-username_text']='email address';
 			}
-			if(!isset($params['username_pre_class'])){
-				$params['username_pre_class']='icon-mail w_biggest';
+			if(!isset($params['-username_pre_class'])){
+				$params['-username_pre_class']='icon-mail w_biggest';
 			}
 		break;
 		case 'phone':
-			if(!isset($params['username_text'])){
-				$params['username_text']='phone number';
+			if(!isset($params['-username_text'])){
+				$params['-username_text']='phone number';
 			}
-			if(!isset($params['username_pre_class'])){
-				$params['username_pre_class']='icon-phone w_biggest';
+			if(!isset($params['-username_pre_class'])){
+				$params['-username_pre_class']='icon-phone w_biggest';
 			}
 		break;
 	}
@@ -1564,46 +1564,39 @@ function userLoginForm($params=array()){
     		}
     	}
 	}
+	//return printValue($params);
 	//plivo?
-	if($params['username_name']=='phone' && (isset($CONFIG['plivo_auth_id']) || isset($CONFIG['plivo_auth_token']) || isset($CONFIG['plivo_from']))){
+	if($params['-username_name']=='phone' && (isset($CONFIG['plivo_auth_id']) || isset($CONFIG['plivo_auth_token']) || isset($CONFIG['plivo_from']))){
 		$ok=loadExtras('plivo');
 		if(!isset($CONFIG['plivo_loaded'])){
 			echo $ok;exit;
 		}
-		if(!strlen($params['username_post_text'])){
-			$params['username_post_text']='<button type="button" id="'.$params['form_name'].'_send_phone_auth" data-username_id="'.$params['username_id'].'" onclick="formSendPhoneAuth(this);" style="margin-left:3px;" class="btn button">Send Auth</button>';	
+		if(!strlen($params['-username_post_text'])){
+			$params['-username_post_text']='<button type="button" id="'.$params['-form_name'].'_send_phone_auth" data-username_id="'.$params['-username_id'].'" onclick="formSendPhoneAuth(this);" style="margin-left:3px;" class="btn button">Send Auth</button>';	
 		}
 		
 	}
 	//backward compatibility settings
-	if(isset($params['username_title'])){$params['-username']=$params['username_title'];unset($params['username_title']);}
-	if(isset($params['password_title'])){$params['-password']=$params['password_title'];unset($params['password_title']);}
-	if(isset($params['login_title'])){$params['-login']=$params['login_title'];unset($params['login_title']);}
+	if(isset($params['username_title'])){$params['-username_text'];unset($params['username_title']);}
+	if(isset($params['password_title'])){$params['-password_text'];unset($params['password_title']);}
+	if(isset($params['login_title'])){$params['-login_text'];unset($params['login_title']);}
 	if(isset($params['message'])){$params['-title']=$params['message'];unset($params['message']);}
-	if(isset($params['_action'])){$params['-action']=$params['_action'];unset($params['_action']);}
+	if(isset($params['_action'])){$params['-form_action']=$params['_action'];unset($params['_action']);}
 	//If no title and using LDAP
-	if(!isset($params['title'])){
-		if(isset($CONFIG['login_title'])){$params['title']=$CONFIG['login_title'];}
+	if(!isset($params['-title'])){
+		if(isset($CONFIG['-login_title'])){$params['-title']=$CONFIG['login_title'];}
 		elseif(isset($CONFIG['authhost'])){
-			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'.PHP_EOL;
+			$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your "'.$CONFIG['authhost'].'" credentials.</div>'.PHP_EOL;
 		}
 		elseif(isset($CONFIG['authldap']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'.PHP_EOL;
+			$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldap'].'" credentials.</div>'.PHP_EOL;
 		}
 		elseif(isset($CONFIG['authldaps']) && (!isset($CONFIG['authldap_network']) || stringBeginsWith($_SERVER['REMOTE_ADDR'],$CONFIG['authldap_network']))){
-			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'.PHP_EOL;
+			$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your LDAP "'.$CONFIG['authldaps'].'" credentials.</div>'.PHP_EOL;
 		}
 		elseif(isset($CONFIG['auth365'])){
-			$params['title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'.PHP_EOL;
+			$params['-title'] .= '<div class="w_big"><b class="w_red">Note: </b>Use your portal.office365.com credentials.</div>'.PHP_EOL;
 		}	
-	}
-	
-	
-    if(!isset($params['-username'])){
-    	$params['-username']='<span class="icon-user w_biggest w_grey"></span>';
-	}
-	if(!isset($params['-password'])){
-    	$params['-password']='<span class="icon-lock w_biggest w_warning"></span>';
 	}
 	//return the user Login form
 	$form='';
@@ -1613,7 +1606,7 @@ function userLoginForm($params=array()){
 	$form .= '<form';
 	foreach($attributes as $key){
 		$key1="-{$key}";
-		$key2="form_{$key}";
+		$key2="-form_{$key}";
 		if(isset($params[$key1]) && strlen($params[$key1])){
 			$form .= " {$key}=\"{$params[$key1]}\"";
 		}
@@ -1629,14 +1622,11 @@ function userLoginForm($params=array()){
     if(strlen($params['-title'])){
 		$form .= '<div>'.$params['-title'].'</div>'.PHP_EOL;
     }
-    elseif(strlen($params['title'])){
-		$form .= '<div>'.$params['title'].'</div>'.PHP_EOL;
-    }
     $form .= '<div style="max-width:300px;margin-left:10px;">'.PHP_EOL;
     //username div
 	$form .= '	<div style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
 	//username_pre
-	$prefix='username_pre';
+	$prefix='-username_pre';
 	if(strlen($params["{$prefix}_text"])){
 		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
 	}
@@ -1653,7 +1643,7 @@ function userLoginForm($params=array()){
 		$form .= "></span></div>".PHP_EOL;
 	}
 	//username
-	$prefix='username';
+	$prefix='-username';
 	$tagopts=array('placeholder'=>$params["{$prefix}_text"]);
 	foreach($attributes as $key){
 		$tkey="{$prefix}_{$key}";
@@ -1661,7 +1651,7 @@ function userLoginForm($params=array()){
 			$tagopts[$key]=$params[$tkey];
 		}
 	}
-	switch(strtolower($params['username_name'])){	
+	switch(strtolower($params['-username_name'])){	
 		case 'email':
 			$tagopts['-type']='email';
 			$form .= '		'.buildFormText('email',$tagopts);
@@ -1677,7 +1667,7 @@ function userLoginForm($params=array()){
 	}
 	
 	//username_post
-	$prefix='username_post';
+	$prefix='-username_post';
 	if(strlen($params["{$prefix}_text"])){
 		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
 	}
@@ -1697,7 +1687,7 @@ function userLoginForm($params=array()){
 	//password div
 	$form .= '	<div style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
 	//password_pre
-	$prefix='password_pre';
+	$prefix='-password_pre';
 	if(strlen($params["{$prefix}_text"])){
 		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
 	}
@@ -1714,7 +1704,7 @@ function userLoginForm($params=array()){
 		$form .= "></span></div>".PHP_EOL;
 	}
 	//password
-	$prefix='password';
+	$prefix='-password';
 	$tagopts=array('placeholder'=>$params["{$prefix}_text"]);
 	foreach($attributes as $key){
 		$tkey="{$prefix}_{$key}";
@@ -1724,12 +1714,12 @@ function userLoginForm($params=array()){
 	}
 	$form .= '		'.buildFormPassword('password',$tagopts);
 	//password_post
-	$prefix='password_post';
+	$prefix='-password_post';
 	if(strlen($params["{$prefix}_text"])){
 		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
 	}
 	else{
-		$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
+		$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['-form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
 		$tagopts=array();
 		foreach($attributes as $key){
 			$tkey="{$prefix}_{$key}";
@@ -1744,9 +1734,9 @@ function userLoginForm($params=array()){
 	//remind me and login
 	$form .= '	<div style="display:flex;flex-direction:row;justify-content:space-between;margin-top:10px;">'.PHP_EOL;
 	//remind
-	$prefix='remind';
+	$prefix='-remind';
 	if(strlen($params["{$prefix}_text"])){
-		$form .= '<a href="#" onClick="remindMeForm(document.'.$params['form_name'].'.username.value);return false;"';
+		$form .= '<a href="#" onClick="remindMeForm(document.'.$params['-form_name'].'.username.value);return false;"';
 		$tagopts=array();
 		foreach($attributes as $key){
 			$tkey="{$prefix}_{$key}";
@@ -1758,7 +1748,7 @@ function userLoginForm($params=array()){
 		$form .= ">{$params["{$prefix}_text"]}</a>".PHP_EOL;
 	}
 	//login
-	$prefix='login';
+	$prefix='-login';
 	if(strlen($params["{$prefix}_text"])){
 		$form .= '<button type="submit"';
 		$tagopts=array();
@@ -1778,13 +1768,12 @@ function userLoginForm($params=array()){
 	$form .= '<div style="display:none;" id="passthru">'.PHP_EOL;
 	foreach($params as $key=>$val){
 		if(stringBeginsWith($key,'-')){continue;}
-		if(preg_match('/\_(text|class|style|id|title)$/i',$key)){continue;}
 		$form .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
     }
     $form .= '</div>'.PHP_EOL;
 	$form .= '</form>'.PHP_EOL;
 	if(!isset($params['-focus']) || $params['-focus'] == 'username'){
-		$form .= buildOnLoad("document.{$params['form_name']}.username.focus();");
+		$form .= buildOnLoad("document.{$params['-form_name']}.username.focus();");
 	}
 	if(isset($_REQUEST['_login_error'])){
 		$form .= '<span class="w_red">'.$_REQUEST['_login_error'].'</span>'.PHP_EOL;
