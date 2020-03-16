@@ -367,6 +367,12 @@ var wacss = {
 									if(undefined != udataset.data[ds].pointBorderColor){
 										udataset.pointBorderColor[ds]=udataset.data[ds].pointBorderColor;
 									}
+									if(undefined != udataset.data[ds].backgroundColor){
+										udataset.backgroundColor[ds]=udataset.data[ds].backgroundColor;
+									}
+									if(undefined != udataset.data[ds].borderColor){
+										udataset.borderColor[ds]=udataset.data[ds].borderColor;
+									}
 								}
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
@@ -443,6 +449,12 @@ var wacss = {
 								}
 								if(undefined != dataset.data[ds].pointBorderColor){
 									dataset.pointBorderColor[ds]=dataset.data[ds].pointBorderColor;
+								}
+								if(undefined != dataset.data[ds].backgroundColor){
+									dataset.backgroundColor[ds]=dataset.data[ds].backgroundColor;
+								}
+								if(undefined != dataset.data[ds].borderColor){
+									dataset.borderColor[ds]=dataset.data[ds].borderColor;
 								}
 							}
 							lconfig.data.datasets.push(dataset);
