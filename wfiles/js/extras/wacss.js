@@ -344,7 +344,9 @@ var wacss = {
 									backgroundColor: udatasets[ud].getAttribute('data-backgroundColor') || colors[ud],
 		                            type:udatasets[ud].getAttribute('data-type') || list[i].getAttribute('data-type'),
 									data: json,
-									fill:false
+									fill:false,
+									pointBackgroundColor:[],
+									pointBorderColor: []
 								};
 								if(undefined != udatasets[ud].getAttribute('data-yaxis')){
 									udataset.yAxisID=udatasets[ud].getAttribute('data-yaxis');
@@ -353,6 +355,15 @@ var wacss = {
 									udataset.label=udatasets[ud].getAttribute('data-label');
 									let dlabel=udatasets[ud].getAttribute('data-label');
 		        					datasetLabels.push(dlabel); 
+								}
+								//check for fillColor in dataset itself
+								for(let ds=0;ds<udataset.data.length;ds++){
+									if(undefined != udataset.data[ds].pointBackgroundColor){
+										udataset.pointBackgroundColor[ds]=udataset.data[ds].pointBackgroundColor;
+									}
+									if(undefined != udataset.data[ds].pointBorderColor){
+										udataset.pointBorderColor[ds]=udataset.data[ds].pointBorderColor;
+									}
 								}
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
