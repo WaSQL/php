@@ -1778,6 +1778,7 @@ function userLoginForm($params=array()){
 	$form .= '<div style="display:none;" id="passthru">'.PHP_EOL;
 	foreach($params as $key=>$val){
 		if(stringBeginsWith($key,'-')){continue;}
+		if(preg_match('/\_(text|class|style|id|title)$/i',$key)){continue;}
 		$form .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
     }
     $form .= '</div>'.PHP_EOL;
