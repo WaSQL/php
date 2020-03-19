@@ -1612,6 +1612,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 *	The name of the checkbox
 * @param opts array tval/dval pairs to display
 * @param params array - options
+*	[-values] array - an array of tval values to mark as checked
 *	[width] how many to show in a row - default to 6
 * 	[-icon] string  - icon to use. Valid options are mark, blank, cancel, close, circle, minus, plus, star. Defaults to mark
 * 	[size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
@@ -2030,6 +2031,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 *	The name of the radio
 * @param opts array tval/dval pairs to display
 * @param params array - options
+*	[-values] array - an array of tval values to mark as checked
 *	[width] how many to show in a row - default to 6
 *  	[-icon] string  - icon to use. Valid options are mark, blank, cancel, close, circle, minus, plus, star. Defaults to mark
 *   [size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
@@ -2040,7 +2042,10 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 	$params['-type']='radio';
 	return buildFormRadioCheckbox($name, $opts, $params);
 }
-
+//---------- begin function buildFormRadioCheckbox
+/**
+* @exclude  - this function in only used internally
+*/
 function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
 	if(!strlen(trim($name))){return 'buildFormRadioCheckbox Error: no name';}
