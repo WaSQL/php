@@ -128,6 +128,10 @@ function dbAddIndex($db,$params=array()){
 			loadExtras('hana');
 			return hanaAddDBIndex($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcAddDBIndex($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteAddDBIndex($params);
@@ -181,6 +185,10 @@ function dbAddRecord($db,$params=array()){
 			loadExtras('hana');
 			return hanaAddDBRecord($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcAddDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteAddDBRecord($params);
@@ -227,6 +235,10 @@ function dbConnect($db,$params=array()){
 		case 'hana':
 			loadExtras('hana');
 			return hanaDBConnect($params);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcDBConnect($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -281,6 +293,10 @@ function dbCreateTable($db,$table,$fields=array()){
 			loadExtras('hana');
 			return hanaCreateDBTable($table,$fields);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcCreateDBTable($table,$fields);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteCreateDBTable($table,$fields);
@@ -331,6 +347,10 @@ function dbDelRecord($db,$params=array()){
 			loadExtras('hana');
 			return hanaDelDBRecord($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcDelDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteDelDBRecord($params);
@@ -379,6 +399,10 @@ function dbDelRecordById($db,$table='',$id=0){
 		case 'hana':
 			loadExtras('hana');
 			return hanaDelDBRecordById($table,$id);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcDelDBRecordById($table,$id);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -430,6 +454,10 @@ function dbDropIndex($db,$params=array()){
 			loadExtras('hana');
 			return hanaDropDBIndex($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcDropDBIndex($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteDropDBIndex($params);
@@ -477,6 +505,10 @@ function dbDropTable($db,$table,$meta=1){
 		case 'hana':
 			loadExtras('hana');
 			return hanaDropDBTable($table,$meta);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcDropDBTable($table,$meta);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -532,6 +564,10 @@ function dbEditRecord($db,$params=array()){
 			loadExtras('hana');
 			return hanaEditDBRecord($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcEditDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteEditDBRecord($params);
@@ -580,6 +616,10 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 		case 'hana':
 			loadExtras('hana');
 			return hanaEditDBRecordById($table,$id,$params);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcEditDBRecordById($table,$id,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -631,6 +671,10 @@ function dbExecuteSQL($db,$sql){
 			loadExtras('hana');
 			return hanaExecuteSQL($sql);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcExecuteSQL($sql);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteExecuteSQL($sql);
@@ -675,6 +719,10 @@ function dbGetCount($db,$params){
 		case 'hana':
 			loadExtras('hana');
 			return hanaGetDBCount($params);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBCount($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -723,6 +771,10 @@ function dbGetTableIndexes($db,$table){
 			loadExtras('hana');
 			return hanaGetDBTableIndexes($table);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBTableIndexes($table);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteGetDBTableIndexes($table);
@@ -769,6 +821,10 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 		case 'hana':
 			loadExtras('hana');
 			return hanaGetDBTablePrimaryKeys($table);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBTablePrimaryKeys($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -834,6 +890,10 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 		case 'hana':
 			loadExtras('hana');
 			return hanaGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -919,6 +979,10 @@ function dbGetRecords($db,$params){
 			loadExtras('hana');
 			return hanaGetDBRecords($params);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBRecords($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteGetDBRecords($params);
@@ -966,6 +1030,10 @@ function dbGetTableFields($db,$table){
 			loadExtras('hana');
 			return hanaGetDBFieldInfo($table);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBFieldInfo($table);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteGetDBFieldInfo($table);
@@ -1012,6 +1080,10 @@ function dbGetTables($db){
 		case 'hana':
 			loadExtras('hana');
 			return hanaGetDBTables();
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGetDBTables();
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1061,6 +1133,10 @@ function dbGrep($db,$search,$tables=array()){
 			loadExtras('hana');
 			return hanaGrepDBTables($search,$tables);
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcGrepDBTables($search,$tables);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			return sqliteGrepDBTables($search,$tables);
@@ -1108,6 +1184,10 @@ function dbIsTable($db,$search,$tables=array()){
 		case 'hana':
 			loadExtras('hana');
 			return hanaIsDBTable($table);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcIsDBTable($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1158,6 +1238,10 @@ function dbListRecords($db,$params){
 			loadExtras('hana');
 			$params['-database']='hana';
 		break;
+		case 'odbc':
+			loadExtras('odbc');
+			$params['-database']='odbc';
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$params['-database']='sqlite';
@@ -1207,6 +1291,10 @@ function dbQueryResults($db,$query,$params=array()){
 		case 'hana':
 			loadExtras('hana');
 			return hanaQueryResults($query,$params);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			return odbcQueryResults($query,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1305,6 +1393,9 @@ function databaseListRecords($params=array()){
 			case 'hana':
 				$params['-list']=hanaQueryResults($params['-query']);
 			break;
+			case 'odbc':
+				$params['-list']=odbcQueryResults($params['-query']);
+			break;
 			case 'mssql':
 				$params['-list']=mssqlQueryResults($params['-query']);
 			break;
@@ -1334,6 +1425,9 @@ function databaseListRecords($params=array()){
 				case 'hana':
 					$params=array('-list'=>hanaGetDBRecords($params));
 				break;
+				case 'odbc':
+					$params=array('-list'=>odbcGetDBRecords($params));
+				break;
 				case 'mssql':
 					$params=array('-list'=>mssqlGetDBRecords($params));
 				break;
@@ -1357,6 +1451,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'hana':
 				$info=hanaGetDBFieldInfo($params['-table']);
+			break;
+			case 'odbc':
+				$info=odbcGetDBFieldInfo($params['-table']);
 			break;
 			case 'mssql':
 				$info=mssqlGetDBFieldInfo($params['-table']);
@@ -1406,6 +1503,9 @@ function databaseListRecords($params=array()){
 				case 'hana':
 					$ok=hanaEditDBRecord($bulk);
 				break;
+				case 'odbc':
+					$ok=odbcEditDBRecord($bulk);
+				break;
 				case 'mssql':
 					$ok=mssqlEditDBRecord($bulk);
 				break;
@@ -1449,6 +1549,9 @@ function databaseListRecords($params=array()){
 				break;
 				case 'hana':
 					$recs=hanaGetDBRecords($params);
+				break;
+				case 'odbc':
+					$recs=odbcGetDBRecords($params);
 				break;
 				case 'mssql':
 					$recs=mssqlGetDBRecords($params);
@@ -1497,6 +1600,9 @@ function databaseListRecords($params=array()){
 				case 'hana':
 					$params['-total']=hanaGetDBCount($params);
 				break;
+				case 'odbc':
+					$params['-total']=odbcGetDBCount($params);
+				break;
 				case 'mssql':
 					$params['-total']=mssqlGetDBCount($params);
 				break;
@@ -1522,6 +1628,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'hana':
 				$params['-list']=hanaGetDBRecords($params);
+			break;
+			case 'odbc':
+				$params['-list']=odbcGetDBRecords($params);
 			break;
 			case 'mssql':
 				$params['-list']=mssqlGetDBRecords($params);
@@ -2083,6 +2192,9 @@ function databaseParseFilters($params=array()){
 					case 'hana':
 						$wheres[]="lower({$field}) like '%{$val}%'";
 					break;
+					case 'odbc':
+						$wheres[]="lower({$field}) like '%{$val}%'";
+					break;
 					case 'mssql':
 						$wheres[]="lower({$field}) like '%{$val}%'";
 					break;
@@ -2102,6 +2214,9 @@ function databaseParseFilters($params=array()){
 						$wheres[]="lower({$field}) not like '%{$val}%'";
 					break;
 					case 'hana':
+						$wheres[]="lower({$field}) not like '%{$val}%'";
+					break;
+					case 'odbc':
 						$wheres[]="lower({$field}) not like '%{$val}%'";
 					break;
 					case 'mssql':
@@ -2127,6 +2242,11 @@ function databaseParseFilters($params=array()){
 						}
 					break;
 					case 'hana':
+						foreach($cvals as $cval){
+							$ors[]="lower({$field}) like '%{$cval}%'";
+						}
+					break;
+					case 'odbc':
 						foreach($cvals as $cval){
 							$ors[]="lower({$field}) like '%{$cval}%'";
 						}
@@ -2165,6 +2285,11 @@ function databaseParseFilters($params=array()){
 							$ands[]="lower({$field}) not like '%{$cval}%'";
 						}
 					break;
+					case 'odbc':
+						foreach($cvals as $cval){
+							$ands[]="lower({$field}) not like '%{$cval}%'";
+						}
+					break;
 					case 'mssql':
 						foreach($cvals as $cval){
 							$ands[]="lower({$field}) not like '%{$cval}%'";
@@ -2189,6 +2314,7 @@ function databaseParseFilters($params=array()){
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
+					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
 						if(isNum($val)){
@@ -2209,6 +2335,7 @@ function databaseParseFilters($params=array()){
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
+					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
 						if(isNum($val)){
@@ -2231,6 +2358,7 @@ function databaseParseFilters($params=array()){
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
+					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
 						foreach($cvals as $cval){
@@ -2259,6 +2387,7 @@ function databaseParseFilters($params=array()){
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
+					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
 						foreach($cvals as $cval){
