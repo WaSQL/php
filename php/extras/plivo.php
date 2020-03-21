@@ -137,7 +137,7 @@ function plivoCreatePlivoLogTable(){
 		'message_uuid'=>databaseDataType('varchar(60)')."NOT NULL UNIQUE",
 		'to_number'=>databaseDataType('varchar(12)')." NOT NULL",
 		'total_amount'=>databaseDataType('float(12,5)')." NOT NULL Default 0",
-		'total_rate'=>databaseDataType('float(12,5')." NOT NULL Default 0",
+		'total_rate'=>databaseDataType('float(12,5)')." NOT NULL Default 0",
 		'units'=>databaseDataType('int')." NULL",
 	);
 	$ok = createDBTable('plivo_log',$fields,'InnoDB');
