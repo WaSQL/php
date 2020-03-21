@@ -62,17 +62,17 @@ function plivoSendMsg($to,$txt,$rtn=true){
 	echo "plivo send error: ".$post['body'];
 	exit;
 }
-//---------- begin function plivoSendMsg ----
+//---------- begin function plivoUpdatePlivoLog ----
 /**
-* sends an sms message using the Plivo API.
-* @param to text - 10 digit phone number to send to
-* @param txt text - message to send
-* @param [rtn] boolean - if set to true then it returns without true, otherwise it return a json array of the response
+* updates the plivo_log table 
+* @param [filters] array - filters
+*		[begin_date] - UTC date to begin with if not logs are found. can also be set in config.xml as plivo_begin_date
 * @usage  $ok=plivoUpdatePlivoLog($filters);
 * @author slloyd
 * @reference https://www.plivo.com/docs/sms/api/message#list-all-messages
 */
 function plivoUpdatePlivoLog($filters=array()){
+	global $CONFIG;
 	if(!isDBTable('plivo_log')){
 		$ok=plivoCreatePlivoLogTable();
 	}
@@ -82,6 +82,13 @@ function plivoUpdatePlivoLog($filters=array()){
 	if(isset($rec['message_time'])){
 		$filters['message_time__gte']=gmdate('Y-m-d H:i:s',strtotime($rec['message_time']));
 	}
+	elseif(isset($filters['begin_date'])){
+		$filters['message_time__gte']=$filters['begin_date'];
+	}
+	elseif(isset($CONFIG['plivo_begin_date'])){
+		$filters['message_time__gte']=$CONFIG['plivo_begin_date'];
+	}
+	
 	$filters['-auth']=plivoAuth();
 	$filters['-json']=1;
 	$filters['-method']='GET';
