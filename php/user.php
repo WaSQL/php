@@ -1327,21 +1327,24 @@ function getUserInfo($cuser,$size=16){
 
 //---------- begin function userValue ----
 /**
-* returns a single user value.
+* returns a single user value. If multiple values are passed in then it returns the first one with a value.
 * @return mixed
-* @param string $field - field to be extracted from the current User array.
+* @param field mixed - array of fields or comma separated list of field or just a field.
 * @usage
-* 	$username = userValue('username');
-*	---
-*	$firstName = userValue('firstname');
+* 	<?=userValue('username');?>
+*	<?=userValue('firstname,username');?>
 * @author slloyd
 * @history - bbarten 2014-01-02 added documentation
 */
-function userValue($field){
+function userValue($fields){
 	global $USER;
-	return $USER[$field];
-	if(isset($USER[$field])){return $USER[$field];}
-	return "Error! Unknown user field: {$field}";
+	if(!is_array($fields)){$fields=preg_split('/\,/',$fields);}
+	foreach($fields as $field){
+		$field=trim($field);
+		if(isset($USER[$field]) && strlen(trim($USER[$field]))){
+			return $USER[$field];
+		}
+	}
 }
 
 //---------- begin function isUser ----
