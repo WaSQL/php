@@ -1551,6 +1551,10 @@ function postgresqlParseConnectParams($params=array()){
 			$appname=str_replace(' ','_',$appname);
 			$params['-connect'].=" options='--application_name={$appname}'";
 		}
+		//add connect_timeout
+		if(!stringContains($params['-connect'],'connect_timeout')){
+			$params['-connect'].=" connect_timeout=5";
+		}
 	}
 	else{
 		//$params['-connect_source']="passed in";
