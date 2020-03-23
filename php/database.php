@@ -959,39 +959,48 @@ function dbGetRecords($db,$params){
 		return "Invalid db: {$db}";
 	}
 	$CONFIG['db']=$db;
-	
+	$recs=array();
 	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
-			return postgresqlGetDBRecords($params);
+			$recs=postgresqlGetDBRecords($params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
-			return oracleGetDBRecords($params);
+			$recs=oracleGetDBRecords($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
-			return mssqlGetDBRecords($params);
+			$recs=mssqlGetDBRecords($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
-			return hanaGetDBRecords($params);
+			$recs=hanaGetDBRecords($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
-			return odbcGetDBRecords($params);
+			$recs=odbcGetDBRecords($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
-			return sqliteGetDBRecords($params);
+			$recs=sqliteGetDBRecords($params);
 		break;
 		default:
-			return getDBRecords($params);
+			$recs=getDBRecords($params);
 		break;
 	}
-	return array();
+	//check for single ref cursor that returns a table
+	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
+		foreach($recs[0] as $k=>$v){
+			if(is_array($v)){
+				$recs=$v;
+				break;
+			}
+		}
+	}
+	return $recs;
 }
 //---------- begin function dbGetTableFields
 /**
