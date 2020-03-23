@@ -803,7 +803,7 @@ function sqliteQueryResults($query,$params=array()){
 *	returns records
 */
 function sqliteEnumQueryResults($data,$params=array()){
-	if(!is_resource($data)){return null;}
+	if(!is_object($data)){return null;}
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
