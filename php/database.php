@@ -1272,39 +1272,49 @@ function dbQueryResults($db,$query,$params=array()){
 		return "Invalid db: {$db}";
 	}
 	$CONFIG['db']=$db;
-	
+	$recs=array();
 	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
-			return postgresqlQueryResults($query,$params);
+			$recs=postgresqlQueryResults($query,$params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
-			return oracleQueryResults($query,$params);
+			$recs=oracleQueryResults($query,$params);
+
 		break;
 		case 'mssql':
 			loadExtras('mssql');
-			return mssqlQueryResults($query,$params);
+			$recs=mssqlQueryResults($query,$params);
 		break;
 		case 'hana':
 			loadExtras('hana');
-			return hanaQueryResults($query,$params);
+			$recs=hanaQueryResults($query,$params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
-			return odbcQueryResults($query,$params);
+			$recs=odbcQueryResults($query,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
-			return sqliteQueryResults($query,$params);
+			$recs=sqliteQueryResults($query,$params);
 		break;
 		default:
-			return getDBRecords($query,$params);
+			$recs=getDBRecords($query,$params);
 		break;
 	}
-	return array();
+	//check for single ref cursor that returns a table
+	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
+		foreach($recs[0] as $k=>$v){
+			if(is_array($v)){
+				$recs=$v;
+				break;
+			}
+		}
+	}
+	return $recs;
 }
 
 

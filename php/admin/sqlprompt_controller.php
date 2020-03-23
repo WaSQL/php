@@ -77,15 +77,6 @@
 				'-longreadlen'=>65535
 			);
 			$recs=dbGetRecords($db['name'],$_SESSION['sql_last'],$params);
-			//check for out cursor
-			if(isset($recs[0]) && count(array_keys($recs[0]))==1){
-				foreach($recs[0] as $k=>$v){
-					if(is_array($v)){
-						$recs=$v;
-						break;
-					}
-				}
-			}
 			setView('results',1);
 			return;
 		break;
@@ -96,15 +87,6 @@
 			);
 			//echo printValue($db).$_SESSION['sql_last'];exit;
 			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
-			//check for out cursor
-			if(isset($recs[0]) && count(array_keys($recs[0]))==1){
-				foreach($recs[0] as $k=>$v){
-					if(is_array($v)){
-						$recs=$v;
-						break;
-					}
-				}
-			}
 			$csv=arrays2CSV($recs);
 			pushData($csv,'csv');
 			exit;
