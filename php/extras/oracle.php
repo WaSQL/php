@@ -463,10 +463,10 @@ function oracleDBConnect($params=array()){
 	try{
 		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
 		if(!is_resource($dbh_oracle)){
-			$err=json_encode(oci_error());
+			$err=oci_error();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			echo "oracleDBConnect error:{$err}".printValue($params);
+			echo "oracleDBConnect resource error. ".printValue($err).printValue($params);
 			exit;
 
 		}
