@@ -367,10 +367,8 @@ ENDOFWHERE;
 							'-fields'=>'_id,username'
 						));
 						if(isset($urec['_id'])){
-	                    	$postopts['apikey']=encodeUserAuthCode($urec['_id']);
+	                    	$postopts['_tauth']=userGetTempAuthCode($urec['_id']);
 	                    	$postopts['_noguid']=1;
-	                    	$postopts['_auth']=1;
-	                    	$postopts['username']=$urec['username'];
 						}
 					}
 					//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
