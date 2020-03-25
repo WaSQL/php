@@ -9831,6 +9831,7 @@ function includeModule($name,$params=array()){
 */
 function includePage($val='',$params=array()){
 	global $CONFIG;
+	global $PASSTHRU;
 	//start with any contents currently in the buffer
 	$rtn=trim(ob_get_contents());
 	ob_clean();
@@ -9851,8 +9852,9 @@ function includePage($val='',$params=array()){
 		$parts=preg_split('/\/+/',$val);
 		if(count($parts) > 1){
 			$val=array_shift($parts);
-			$params['passthru']=$parts;
+			$params['passthru']=$PASSTHRU=$parts;
 		}
+
 	}
 	unset($parts);
 	if(isNum($val)){$opts['-where']="_id={$val}";}
@@ -9872,7 +9874,8 @@ function includePage($val='',$params=array()){
 	}
 	//load  functions
     if(isset($rec['functions']) && strlen(trim($rec['functions']))){
-		$ok=includePHPOnce(trim($rec['functions']),"{$table}_{$val}_functions");
+    	$fname="{$table}_functions_id_{$rec['_id']}";
+		$ok=includePHPOnce(trim($rec['functions']),$fname);
 		if(!isNum($ok)){return "includePage '{$rec['name']}' Error Loading functions:". $ok;}
     }
     //load controller
