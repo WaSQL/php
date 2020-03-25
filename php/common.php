@@ -9845,6 +9845,16 @@ function includePage($val='',$params=array()){
 	$opts=array(
 		'-table'=>$table
 	);
+	//passthru
+	if(!isset($params['passthru'])){
+		$params['passthru']=array();
+		$parts=preg_split('/\/+/',$val);
+		if(count($parts) > 1){
+			$val=array_shift($parts);
+			$params['passthru']=$parts;
+		}
+	}
+	unset($parts);
 	if(isNum($val)){$opts['-where']="_id={$val}";}
 	else{$opts['-where']="name='{$val}'";}
 	$rec=getDBRecord($opts);
