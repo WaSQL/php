@@ -9833,6 +9833,7 @@ function includePage($val='',$params=array()){
 	global $CONFIG;
 	global $PASSTHRU;
 	global $PAGE;
+	$prevpass=$PASSTHRU;
 	//check to make sure this is not an infinite loop - includePage of the page you on with same passthrus
 	$parts=preg_split('/\/+/',$val);
 	if(count($parts) > 1){
@@ -9908,6 +9909,7 @@ function includePage($val='',$params=array()){
 		if(isset($prev[$key])){$_REQUEST[$key]=$prev[$key];}
 		else{unset($_REQUEST[$key]);}
 	}
+	$PASSTHRU=$prevpass;
 	if(isset($params['-notranslate'])){
 		return $rtn;
 	}
