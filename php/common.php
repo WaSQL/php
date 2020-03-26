@@ -9832,30 +9832,39 @@ function includeModule($name,$params=array()){
 function includePage($val='',$params=array()){
 	global $CONFIG;
 	global $PASSTHRU;
+	global $PAGE;
+	//check to make sure this is not an infinite loop - includePage of the page you on with same passthrus
+	$parts=preg_split('/\/+/',$val);
+	if(count($parts) > 1){
+		$val=array_shift($parts);
+	}
+	if(strtolower($PAGE['name'])==strtolower($val)){
+		if(isset($PASSTHRU[0]) && count($parts)==count($PASSTHRU)){
+			$found=0;
+			foreach($parts as $part){
+				if(in_array($part,$PASSTHRU)){$found+=1;}
+			}
+			if($found==count($parts)){
+				return "includePage '{$PAGE['name']}' Recursive Error";
+			}
+		}
+		elseif(!isset($PASSTHRU[0]) && count($parts)==0){
+			return "includePage '{$PAGE['name']}' Recursive Error";
+		}
+	}
+	if(count($parts)){
+		$params['passthru']=$PASSTHRU=$parts;
+	}
 	//start with any contents currently in the buffer
 	$rtn=trim(ob_get_contents());
 	ob_clean();
 	ob_flush();
 	ob_start();
 	//Disallow recursive calls - pages that call themselves
-	global $PAGE;
-	$table='_pages';
-	if(isset($params['-dbname'])){$table="{$params['-dbname']}._pages";}
-	if(strtolower($PAGE['name'])==strtolower($val) && $table=='_pages'){return "includePage '{$PAGE['name']}' Recursive Error";}
 	$fieldname="body";
 	$opts=array(
-		'-table'=>$table
+		'-table'=>'_pages'
 	);
-	//passthru
-	if(!isset($params['passthru'])){
-		$params['passthru']=array();
-		$parts=preg_split('/\/+/',$val);
-		if(count($parts) > 1){
-			$val=array_shift($parts);
-			$params['passthru']=$PASSTHRU=$parts;
-		}
-
-	}
 	unset($parts);
 	if(isNum($val)){$opts['-where']="_id={$val}";}
 	else{$opts['-where']="name='{$val}'";}
@@ -9874,7 +9883,7 @@ function includePage($val='',$params=array()){
 	}
 	//load  functions
     if(isset($rec['functions']) && strlen(trim($rec['functions']))){
-    	$fname="{$table}_functions_id_{$rec['_id']}";
+    	$fname="_pages_functions_id_{$rec['_id']}";
 		$ok=includePHPOnce(trim($rec['functions']),$fname);
 		if(!isNum($ok)){return "includePage '{$rec['name']}' Error Loading functions:". $ok;}
     }
