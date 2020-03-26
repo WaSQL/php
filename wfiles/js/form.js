@@ -1540,7 +1540,7 @@ function getProcessingDiv(id,msg,cancel){
 	if(undefined == cancel){cancel=1;}
 	if(undefined == msg){msg='';}
 	//check for setprocessing_custom
-	let pdiv=document.querySelector('setprocessing_custom');
+	let pdiv=document.querySelector('#setprocessing_custom');
 	if(undefined != pdiv){
 		return pdiv.innerHTML;
 	}
