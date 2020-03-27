@@ -1276,6 +1276,12 @@ function dbListRecords($db,$params){
 function dbQueryResults($db,$query,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1286,28 +1292,34 @@ function dbQueryResults($db,$query,$params=array()){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			$recs=postgresqlQueryResults($query,$params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			$recs=oracleQueryResults($query,$params);
 
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			$recs=mssqlQueryResults($query,$params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			$recs=hanaQueryResults($query,$params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			$recs=odbcQueryResults($query,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			$recs=sqliteQueryResults($query,$params);
 		break;
 		default:
