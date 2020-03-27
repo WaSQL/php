@@ -9853,7 +9853,10 @@ function includePage($val='',$params=array()){
 			return "includePage '{$PAGE['name']}' Recursive Error";
 		}
 	}
-	if(count($parts)){
+	if(isset($params['passthru'][0])){
+		$PASSTHRU=$params['passthru'];
+	}
+	elseif(count($parts) && $parts[0] != $val){
 		$params['passthru']=$PASSTHRU=$parts;
 	}
 	//start with any contents currently in the buffer
