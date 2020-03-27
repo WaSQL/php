@@ -1608,6 +1608,9 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-table{class|style|id|...}] string - sets specified attribute on table
 *	[-thead{class|style|id|...}] string - sets specified attribute on thead
 *	[-tbody{class|style|id|...}] string - sets specified attribute on tbody
+*	[-tr_{attr}] string - sets the tr attribute {attr}. %field% is replaced with the current field value
+*	[-td_{attr}] string - sets the td attribute {attr}. %field% is replaced with the current field value
+*	[-th_{attr}] string - sets the th attribute {attr}.
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
 *	[-listfields] -  subset of fields to list from the list returned.
@@ -2110,12 +2113,15 @@ function databaseListRecords($params=array()){
 		$atts=array();
 		foreach($params as $k=>$v){
 			if(preg_match('/^'.$field.'_(onclick|eval|href)$/i',$k)){continue;}
-			if(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
+			elseif(preg_match('/^'.$field.'_(.+)$/',$k,$m)){
 				$atts[$m[1]]=$v;
 			}
 		}
 		foreach($params as $k=>$v){
-			if(preg_match('/^-th(.+)$/',$k,$m)){
+			if(preg_match('/^\-th\_(.+)$/i',$k,$m)){
+				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
+			}
+			elseif(preg_match('/^-th(.+)$/',$k,$m)){
 				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}
 		}
@@ -2239,9 +2245,20 @@ function databaseListRecords($params=array()){
             }
             $rtn .=" onclick=\"{$href}\"";
 		}
-		//check for -trclass, -trstyle, -trdata-..., -tr*
+		//check for -tr_class, -tr_style, -tr_data-..., -tr*
 		foreach($params as $pk=>$pv){
-			if(preg_match('/^\-tr(.+)$/i',$pk,$pm)){
+			if(preg_match('/^\-tr_(.+)$/i',$pk,$pm)){
+				$patt_name=$pm[1];
+				$patt_val=$pv;
+				//substitute and %{field}% with its value in this record
+				foreach($rec as $recfld=>$recval){
+					if(is_array($recfld) || is_array($recval)){continue;}
+					$replace='%'.$recfld.'%';
+                    $patt_val=str_replace($replace,strip_tags($rec[$recfld]),$patt_val);
+                }
+                $rtn .= " {$patt_name}=\"{$patt_val}\"";
+			}
+			elseif(preg_match('/^\-tr(.+)$/i',$pk,$pm)){
 				$patt_name=$pm[1];
 				$patt_val=$pv;
 				//substitute and %{field}% with its value in this record
@@ -2344,7 +2361,19 @@ function databaseListRecords($params=array()){
 				}
 			}
 			foreach($params as $k=>$v){
-				if(preg_match('/^-td(.+)$/',$k,$m)){
+				if(preg_match('/^-td_(.+)$/',$k,$m)){
+					if(!isset($atts[$m[1]])){
+						$v=str_replace('%fieldname%',$fld,$v);
+						foreach($rec as $recfld=>$recval){
+							if(is_array($recfld) || is_array($recval)){continue;}
+							$replace='%'.$recfld.'%';
+		                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
+		                }
+		                $v=str_replace('"','',$v);
+						$atts[$m[1]]=$v;
+					}
+				}
+				elseif(preg_match('/^-td(.+)$/',$k,$m)){
 					if(!isset($atts[$m[1]])){
 						$v=str_replace('%fieldname%',$fld,$v);
 						foreach($rec as $recfld=>$recval){
