@@ -104,6 +104,12 @@ function dbISQL($dsn,$user,$pass,$query){
 function dbAddIndex($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -114,26 +120,32 @@ function dbAddIndex($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlAddDBIndex($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleAddDBIndex($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlAddDBIndex($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaAddDBIndex($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcAddDBIndex($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteAddDBIndex($params);
 		break;
 		case 'mysql':
@@ -161,6 +173,12 @@ function dbAddIndex($db,$params=array()){
 function dbAddRecord($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -171,26 +189,33 @@ function dbAddRecord($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlAddDBRecord($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleAddDBRecord($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlAddDBRecord($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
+			$dbh_hana='';
 			return hanaAddDBRecord($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcAddDBRecord($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteAddDBRecord($params);
 		break;
 		case 'mysql':
@@ -212,6 +237,12 @@ function dbAddRecord($db,$params=array()){
 function dbConnect($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -222,26 +253,33 @@ function dbConnect($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlDBConnect($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleDBConnect($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlDBConnect($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
+			$dbh_hana='';
 			return hanaDBConnect($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcDBConnect($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteDBConnect($params);
 		break;
 		case 'mysql':
@@ -269,6 +307,12 @@ function dbConnect($db,$params=array()){
 function dbCreateTable($db,$table,$fields=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -279,26 +323,33 @@ function dbCreateTable($db,$table,$fields=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlCreateDBTable($table,$fields);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleCreateDBTable($table,$fields);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlCreateDBTable($table,$fields);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
+			$dbh_hana='';
 			return hanaCreateDBTable($table,$fields);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcCreateDBTable($table,$fields);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteCreateDBTable($table,$fields);
 		break;
 		case 'mysql':
@@ -323,6 +374,12 @@ function dbCreateTable($db,$table,$fields=array()){
 function dbDelRecord($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -333,26 +390,32 @@ function dbDelRecord($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlDelDBRecord($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleDelDBRecord($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlDelDBRecord($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaDelDBRecord($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcDelDBRecord($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteDelDBRecord($params);
 		break;
 		case 'mysql':
@@ -376,6 +439,12 @@ function dbDelRecord($db,$params=array()){
 function dbDelRecordById($db,$table='',$id=0){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -386,26 +455,32 @@ function dbDelRecordById($db,$table='',$id=0){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlDelDBRecordById($table,$id);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleDelDBRecordById($table,$id);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlDelDBRecordById($table,$id);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaDelDBRecordById($table,$id);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcDelDBRecordById($table,$id);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteDelDBRecordById($table,$id);
 		break;
 		case 'mysql':
@@ -430,6 +505,12 @@ function dbDelRecordById($db,$table='',$id=0){
 function dbDropIndex($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -440,26 +521,32 @@ function dbDropIndex($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlDropDBIndex($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleDropDBIndex($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlDropDBIndex($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaDropDBIndex($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcDropDBIndex($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteDropDBIndex($params);
 		break;
 		case 'mysql':
@@ -482,6 +569,12 @@ function dbDropIndex($db,$params=array()){
 function dbDropTable($db,$table,$meta=1){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -492,26 +585,32 @@ function dbDropTable($db,$table,$meta=1){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlDropDBTable($table,$meta);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleDropDBTable($table,$meta);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlDropDBTable($table,$meta);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaDropDBTable($table,$meta);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcDropDBTable($table,$meta);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteDropDBTable($table,$meta);
 		break;
 		case 'mysql':
@@ -540,6 +639,12 @@ function dbDropTable($db,$table,$meta=1){
 function dbEditRecord($db,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -550,26 +655,32 @@ function dbEditRecord($db,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlEditDBRecord($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleEditDBRecord($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlEditDBRecord($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaEditDBRecord($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcEditDBRecord($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteEditDBRecord($params);
 		break;
 		case 'mysql':
@@ -593,6 +704,12 @@ function dbEditRecord($db,$params=array()){
 function dbEditRecordById($db,$table='',$id=0,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -603,26 +720,32 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlEditDBRecordById($table,$id,$params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleEditDBRecordById($table,$id,$params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlEditDBRecordById($table,$id,$params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaEditDBRecordById($table,$id,$params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcEditDBRecordById($table,$id,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteEditDBRecordById($table,$id,$params);
 		break;
 		case 'mysql':
@@ -646,6 +769,12 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 function dbExecuteSQL($db,$sql){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -656,27 +785,33 @@ function dbExecuteSQL($db,$sql){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlExecuteSQL($sql);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleExecuteSQL($sql);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlExecuteSQL($sql);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaExecuteSQL($sql);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcExecuteSQL($sql);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteExecuteSQL($sql);
 		break;
 		default:
@@ -696,6 +831,12 @@ function dbExecuteSQL($db,$sql){
 function dbGetCount($db,$params){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -706,26 +847,32 @@ function dbGetCount($db,$params){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBCount($params);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBCount($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBCount($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBCount($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBCount($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBCount($params);
 		break;
 		case 'mysql':
@@ -747,6 +894,12 @@ function dbGetCount($db,$params){
 function dbGetTableIndexes($db,$table){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -757,26 +910,32 @@ function dbGetTableIndexes($db,$table){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBTableIndexes($table);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBTableIndexes($table);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBTableIndexes($table);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBTableIndexes($table);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBTableIndexes($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBTableIndexes($table);
 		break;
 		case 'mysql':
@@ -798,6 +957,12 @@ function dbGetTableIndexes($db,$table){
 function dbGetTablePrimaryKeys($db,$table,$meta=1){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -808,26 +973,32 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBTablePrimaryKeys($table);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBTablePrimaryKeys($table);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBTablePrimaryKeys($table);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBTablePrimaryKeys($table);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBTablePrimaryKeys($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBTablePrimaryKeys($table);
 		break;
 		case 'mysql':
@@ -867,6 +1038,12 @@ function dbGetRecord($db,$params){
 function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -877,26 +1054,32 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'mysql':
@@ -954,6 +1137,12 @@ function delDBRecordById($table='',$id=0){
 function dbGetRecords($db,$params){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -964,27 +1153,33 @@ function dbGetRecords($db,$params){
 		case 'postgresql':
 		case 'postgres':
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			$recs=postgresqlGetDBRecords($params);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			$recs=oracleGetDBRecords($params);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			$recs=mssqlGetDBRecords($params);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			$recs=hanaGetDBRecords($params);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			$recs=odbcGetDBRecords($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			$recs=sqliteGetDBRecords($params);
 		break;
 		default:
@@ -1014,6 +1209,12 @@ function dbGetRecords($db,$params){
 function dbGetTableFields($db,$table){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1025,26 +1226,32 @@ function dbGetTableFields($db,$table){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBFieldInfo($table);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBFieldInfo($table);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBFieldInfo($table);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBFieldInfo($table);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBFieldInfo($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBFieldInfo($table);
 		break;
 		case 'mysql':
@@ -1066,6 +1273,12 @@ function dbGetTableFields($db,$table){
 function dbGetTables($db){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1076,26 +1289,32 @@ function dbGetTables($db){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGetDBTables();
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGetDBTables();
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGetDBTables();
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGetDBTables();
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGetDBTables();
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGetDBTables();
 		break;
 		case 'mysql':
@@ -1118,6 +1337,12 @@ function dbGetTables($db){
 function dbGrep($db,$search,$tables=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1128,26 +1353,32 @@ function dbGrep($db,$search,$tables=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlGrepDBTables($search,$tables);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleGrepDBTables($search,$tables);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlGrepDBTables($search,$tables);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaGrepDBTables($search,$tables);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcGrepDBTables($search,$tables);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteGrepDBTables($search,$tables);
 		break;
 		case 'mysql':
@@ -1170,6 +1401,12 @@ function dbGrep($db,$search,$tables=array()){
 function dbIsTable($db,$search,$tables=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1180,26 +1417,32 @@ function dbIsTable($db,$search,$tables=array()){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			return postgresqlIsDBTable($table);
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			return oracleIsDBTable($table);
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			return mssqlIsDBTable($table);
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			return hanaIsDBTable($table);
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			return odbcIsDBTable($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			return sqliteIsDBTable($table);
 		break;
 		case 'mysql':
@@ -1223,6 +1466,12 @@ function dbIsTable($db,$search,$tables=array()){
 function dbListRecords($db,$params){
 	global $CONFIG;
 	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1233,26 +1482,32 @@ function dbListRecords($db,$params){
 		case 'postgres':
 			//echo "before loading postgres";exit;
 			loadExtras('postgresql');
+			$dbh_postgres='';
 			$params['-database']='postgresql';
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			$dbh_oracle='';
 			$params['-database']='oracle';
 		break;
 		case 'mssql':
 			loadExtras('mssql');
+			$dbh_mssql='';
 			$params['-database']='mssql';
 		break;
 		case 'hana':
 			loadExtras('hana');
+			$dbh_hana='';
 			$params['-database']='hana';
 		break;
 		case 'odbc':
 			loadExtras('odbc');
+			$dbh_odbc='';
 			$params['-database']='odbc';
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
+			$dbh_sqlite='';
 			$params['-database']='sqlite';
 		break;
 		case 'mysql':
