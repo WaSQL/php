@@ -14341,7 +14341,12 @@ function processFileUploads($docroot=''){
 			elseif(strlen($_REQUEST[$name.'_path'])){
 				$wpath=getWasqlPath();
 				$path=$_REQUEST[$name.'_path'];
-				if(isAdmin() && is_dir($path) && stringContains($path,$wpath)){
+				if($path=='wasql_temp_path'){
+					$cpath=getWasqlPath('php/temp');
+					$webpath="/php/temp/{$file['name']}";
+					$abspath="{$cpath}/{$file['name']}";
+				}
+				elseif(isAdmin() && is_dir($path) && stringContains($path,$wpath)){
                 	$cpath=$path;
                 	$webpath='/'.str_replace($wpath,'',$path).'/'. $file['name'];
                 	$abspath=$path.'/'. $file['name'];

@@ -2909,6 +2909,9 @@ LIST_TABLE:
             	}
 			}
 		break;
+		case 'importx':
+			echo adminViewPage('import');exit;
+		break;
 		case 'import':
 			//echo adminViewPage('import');exit;
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-import"></span> Import</h2>'.PHP_EOL;
@@ -3021,11 +3024,11 @@ LIST_TABLE:
 				echo '<div class="w_red"><span class="icon-cancel w_danger w_big"></span> '.$_REQUEST['file_error'].'</div>'.PHP_EOL;
             	}
             $progpath=dirname(__FILE__);
-			$filepath="{$progpath}/temp";
-			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import",'file_path'=>$filepath,'file_autonumber'=>1));
+			$filepath="wasql_temp_path";
+			echo buildFormBegin('/php/admin.php',array('-class'=>"w_form form-inline",'-multipart'=>true,'_menu'=>"import"));
 			if(!isset($_REQUEST['_types'])){$_REQUEST['_types']=array('xmlschema','xmlmeta','xmldata');}
 			if(!isset($_REQUEST['_options'])){$_REQUEST['_options']=array('drop','ids');}
-			echo buildFormFile('file',array('accept'=>'.xml,.csv','acceptmsg'=>'Only valid xml and csv files are allowed'));
+			echo buildFormFile('file',array('path'=>'wasql_temp_path','autonumber'=>1,'accept'=>'.xml,.csv','acceptmsg'=>'Only valid xml and csv files are allowed'));
 			echo '<div style="width:500px;"'.PHP_EOL;
 			echo '<table class="table"><tr valign="top">'.PHP_EOL;
 			//XML File Options
