@@ -1581,10 +1581,10 @@ function userLoginForm($params=array()){
 		
 	}
 	//backward compatibility settings
-	if(isset($params['username_title'])){$params['-username_text']=$params['username_title'];unset($params['username_title']);}
-	if(isset($params['password_title'])){$params['-password_text']=$params['password_title'];unset($params['password_title']);}
-	if(isset($params['login_title'])){$params['-login_text']=$params['login_title'];unset($params['login_title']);}
-	if(isset($params['message'])){$params['-title']=$params['message'];unset($params['message']);}
+	if(isset($params['-username_title'])){$params['-username_text']=$params['-username_title'];unset($params['-username_title']);}
+	if(isset($params['-password_title'])){$params['-password_text']=$params['-password_title'];unset($params['-password_title']);}
+	if(isset($params['-login_title'])){$params['-title']=$params['-login_title'];unset($params['-login_title']);}
+	elseif(isset($params['-message'])){$params['-title']=$params['-message'];unset($params['message']);}
 	if(isset($params['_action'])){$params['-form_action']=$params['_action'];unset($params['_action']);}
 	//If no title and using LDAP
 	if(!isset($params['-title'])){
