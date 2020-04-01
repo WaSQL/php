@@ -1559,15 +1559,16 @@ function userLoginForm($params=array()){
 	//set params to default if they do not exist
 	foreach($defaults as $key=>$val){
     	if(!isset($params[$key])){
-    		if(isset($CONFIG["login_{$key}"])){
-    			$params[$key]=$CONFIG["login_{$key}"];
+    		$xkey=preg_replace('/^\-/','',$key);
+    		if(isset($CONFIG[$xkey])){
+    			$params[$key]=$CONFIG[$xkey];
     		}
     		else{
     			$params[$key]=$val;
     		}
     	}
 	}
-	//return printValue($params);
+	return printValue($params);
 	//plivo?
 	if($params['-username_name']=='phone' && (isset($CONFIG['plivo_auth_id']) || isset($CONFIG['plivo_auth_token']) || isset($CONFIG['plivo_from']))){
 		$ok=loadExtras('plivo');
@@ -1580,9 +1581,9 @@ function userLoginForm($params=array()){
 		
 	}
 	//backward compatibility settings
-	if(isset($params['username_title'])){$params['-username_text'];unset($params['username_title']);}
-	if(isset($params['password_title'])){$params['-password_text'];unset($params['password_title']);}
-	if(isset($params['login_title'])){$params['-login_text'];unset($params['login_title']);}
+	if(isset($params['username_title'])){$params['-username_text']=$params['username_title'];unset($params['username_title']);}
+	if(isset($params['password_title'])){$params['-password_text']=$params['password_title'];unset($params['password_title']);}
+	if(isset($params['login_title'])){$params['-login_text']=$params['login_title'];unset($params['login_title']);}
 	if(isset($params['message'])){$params['-title']=$params['message'];unset($params['message']);}
 	if(isset($params['_action'])){$params['-form_action']=$params['_action'];unset($params['_action']);}
 	//If no title and using LDAP
