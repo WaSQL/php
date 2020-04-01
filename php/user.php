@@ -534,6 +534,8 @@ function userDecodeLDAPAuth($user,$pass){
 		}
 		if(count($changes)){
             $ok=editDBRecordById('_users',$rec['_id'],$changes);
+            if(is_array($ok)){$ok=json_encode($ok);}
+            $ok=userLogMessage("userDecodeLDAPAuth editDBRecordById {$ok}");
 		}
 		return $rec;
 	}
@@ -552,7 +554,12 @@ function userDecodeLDAPAuth($user,$pass){
        	$id=addDBRecord($ldap);
        	if(isNum($id)){
        		$rec=getDBRecordById('_users',$id,1);
+       		$ok=userLogMessage("userDecodeLDAPAuth addDBRecord {$id}");
        		return $rec;
+		}
+		else{
+			if(is_array($id)){$id=json_encode($id);}
+			$ok=userLogMessage("userDecodeLDAPAuth addDBRecord {$id}");
 		}
 	}
 	$ok=userLogMessage("userDecodeLDAPAuth Failed - unknown reason - user {$user}");
