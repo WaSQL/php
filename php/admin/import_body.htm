@@ -1,0 +1,62 @@
+<view:default>
+<form method="post" name="importform" enctype="multipart/form-data" action="/php/admin.php" onsubmit="return submitForm(this);">
+<input type="hidden" name="_menu" value="import" />
+<input type="hidden" name="func" value="process" />
+<input type="hidden" name="filetype" value="xml" />
+<div class="container">
+	<div class="row">
+		<div class="col-sm-12">
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-import"></span> Import</h2>
+		</div>
+	</div>
+	<view:processed>
+	<div class="row">
+		<div class="col-sm-12" style="border:1px dashed #ccc;padding:3px;border-radius: 3px;">
+			<div class="w_bigger <?=configValue('admin_color');?>"><translate>Import Results</translate></div>
+			<textarea style="height:150px;width:100%;border:0px;"><?=json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);?></textarea>
+		</div>
+	</div>
+	</view:processed>
+	<div class="row">
+		<div class="col-sm-12">
+			<?=importBuildFormField('file');?>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12 col-md-6" style="border-right:1px dashed #ccc;">
+			<div class="w_bold w_bigger"><span class="icon-file-code"></span> XML Import Options</div>
+			<div class="w_padtop"><?=importBuildFormField('xmltypes');?></div>
+			<div><?=importBuildFormField('xmloptions');?></div>
+			<label>Merge Fields</label>
+			<div><?=importBuildFormField('xmlmerge');?></div>
+			<div class="w_padtop w_padbot"><button type="submit" onclick="document.importform.filetype.value='xml';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
+		</div>
+		<div class="col-sm-12 col-md-6">
+			<div class="w_bold w_bigger"><span class="icon-file-txt"></span> CSV Import Options</div>
+			<div class="w_padtop"><?=importBuildFormField('csvtable');?></div>
+			<div class="w_padtop" style="height:100px;width:100%">
+				<div id="newtable" style="display:none;position:absolute;">
+					New Tablename <?=importBuildFormField('csvtable_name');?>
+					<div>This will create a table with fields based on the data in the csv file you upload.</div>
+				</div>
+				<div id="picktable">
+					Select the table you want to import into. Make sure the first line of the csv file matches the field names of the table.
+				</div>
+			</div>
+			<div class="w_padtop"><button type="submit" onclick="document.importform.filetype.value='csv';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
+		</div>
+	</div>
+	<div class="row" style="margin-top:0px;border-top:1px dashed #ccc;">
+		<div class="col-sm-12">
+			<!-- <div class="w_bold w_bigger w_padtop" style="color:#3a3a3a;"><img src="/wfiles/wasql_admin.png" alt="wasql apps" /> Apps</div> -->
+		</div>
+	</div>
+</div>
+</form>
+</view:default>
+
+
+
+
+
+

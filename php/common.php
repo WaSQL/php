@@ -8272,54 +8272,59 @@ function getStoredData($evalstr,$force=0,$hrs=1,$debug=0){
 */
 function importXmlData($items=array(),$params=array()){
 	//set defaults to read all types
-	if(!is_array($params['_types'])){return "No _types: xmlschema,xmlmeta,xmldata";}
-	$importmsg='';
+	if(!is_array($params['xmltypes'])){return "No xmltypes: xmlschema,xmlmeta,xmldata";}
+	$importmsg=array();
 	$newtables=array();
-	foreach($params['_types'] as $imtype){
+	foreach($params['xmltypes'] as $imtype){
 		if($imtype=='xmlschema'){
-			$importmsg .= "Processing " . ucwords($imtype) . "<br />\n";
+			$importmsg[]= "Processing " . ucwords($imtype);
 			foreach($items[$imtype] as $table=>$fields){
 				if(preg_match('/^\_/',$table)){continue;}
-				if(isDBTable($table) && is_array($params['_options']) && !in_array('drop',$params['_options'])){continue;}
+				if(isDBTable($table) && is_array($params['xmloptions']) && !in_array('drop',$params['xmloptions'])){continue;}
 				//drop table
 				if(isDBTable($table)){$ok=dropDBTable($table);}
 				//create table
 				$ok=createDBTable($table,$fields);
 				if(!isNum($ok)){
-					$importmsg .= "{$ok}<br>\n";
-					}
-				else{$importmsg .= " - {$table} <br>\n";}
+					$importmsg[]="createDBTable Error - {$table}";
+					$importmsg[]=$fields;
+					$importmsg[]=$ok;
+				}
+				else{
+					$importmsg[]= " Created {$table}";
+				}
 				$newtables[$table]=1;
-                }
             }
+        }
 		else{
 			if(!isset($items[$imtype])){continue;}
-			$importmsg .= "Processing " . ucwords($imtype) . "<br />\n";
+			$importmsg[]= "Processing " . ucwords($imtype);
 			foreach($items[$imtype] as $table=>$recs){
 				$truncate=0;
-				if(!isset($newtables[$table]) && is_array($params['_options']) && in_array('truncate',$params['_options'])){
+				if(!isset($newtables[$table]) && is_array($params['xmloptions']) && in_array('truncate',$params['xmloptions'])){
 					if(preg_match('/^\_/',$table)){continue;}
 					$ok=truncateDBTable($table);
 					if(!isNum($ok)){
-						$importmsg .= "Truncate Error: {$ok}<br>\n";
-						}
+						$importmsg[]= "Truncate Error: {$table}";
+						$importmsg[]= $ok;
+					}
 					else{
 						$truncate=1;
-						$importmsg .= " - truncating {$table} <br />\n";
-						}
-                    }
+						$importmsg[]=  " - truncating {$table}";
+					}
+                }
                 foreach($recs as $rec){
 					$rec['-table']=$table;
 					if($table=='_users'){unset($rec['guid']);}
 					$merged=0;
 					//set _id or not.
-					if(is_array($params['_options'])){
-						if(!in_array('ids',$params['_options'])){unset($rec['_id']);}
-						}
+					if(is_array($params['xmloptions'])){
+						if(!in_array('ids',$params['xmloptions'])){unset($rec['_id']);}
+					}
 					else{unset($rec['_id']);}
 					if(preg_match('/^\_(tabledata|fielddata)$/i',$table)){unset($rec['_id']);}
-					if(isset($params['_merge']) && strlen($params['_merge'])){
-						$fields=preg_split('/[\r\n\,\s\t]+/',$params['_merge']);
+					if(isset($params['xmlmerge']) && strlen($params['xmlmerge'])){
+						$fields=preg_split('/[\r\n\,\s\t]+/',$params['xmlmerge']);
 						$info=getDBFieldInfo($table,1);
 						foreach($fields as $field){
 							if(!isset($info[$field])){continue;}
@@ -8335,28 +8340,34 @@ function importXmlData($items=array(),$params=array()){
 								unset($rec['_edate']);
 								unset($rec['_euser']);
 								$ok=editDBRecord($rec);
-								if(!isNum($ok)){$importmsg .= "Merge Failed where {$field}={$rec[$field]}<br>\n";}
+								if(!isNum($ok)){
+									$importmsg[]= $ok;
+								}
 								else{
-									$importmsg .= "Merged  where {$field}={$rec[$field]}<br />\n";
+									$importmsg[]=  "Merged  where {$field}={$rec[$field]}";
 									$merged=1;
-									}
-                            	}
+								}
+                            }
                             else{
-								$importmsg .= "No Records found where {$field}={$rec[$field]}<br />\n";
-                            	}
-                        	}
-                    	}
+								$importmsg[]= "No Records found where {$field}={$rec[$field]}";
+                            }
+                        }
+                    }
 					if($merged==0){
 						$ok=addDBRecord($rec);
-						if(!isNum($ok)){$importmsg .= "{$ok}<br>\n" . printValue($rec);}
-						else{$importmsg .= "Added New Record {$ok} <br />\n";}
+						if(!isNum($ok)){
+							$importmsg[]= $ok;
 						}
-                    }
+						else{
+							$importmsg[]= "Added New Record {$ok}";
+						}
+					}
                 }
             }
         }
+    }
     return $importmsg;
-	}
+}
 //---------- begin function int8ToTime--------------------
 /**
 * @describe converts Integer8 to unix timestamps to be used in the date function
