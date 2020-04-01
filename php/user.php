@@ -1568,7 +1568,7 @@ function userLoginForm($params=array()){
     		}
     	}
 	}
-	return printValue($params);
+	//return printValue($params);
 	//plivo?
 	if($params['-username_name']=='phone' && (isset($CONFIG['plivo_auth_id']) || isset($CONFIG['plivo_auth_token']) || isset($CONFIG['plivo_from']))){
 		$ok=loadExtras('plivo');
