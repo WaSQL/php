@@ -19,6 +19,9 @@ if(!isDBTable('_users')){
 global $USER;
 global $CONFIG;
 global $ConfigXml;
+if(isset($CONFIG['userlog'])){
+	$CONFIG['userlog_file']=$userlog_file;
+}
 //Check for any Wasql variables in the header and add to $_REQUEST
 if(function_exists('getallheaders')){
 	$headers=getallheaders();
