@@ -20,7 +20,7 @@
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
 						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
-						<?=$_SESSION['sync_target_url'];?>
+						<a class="w_link" href="<?=$_SESSION['sync_target_url'];?>" target="_blank"><?=$_SESSION['sync_target_url'];?></a>
 					</td>
 				</tr>
 			</table>
@@ -123,7 +123,7 @@
 					<th class="align-left">Target Site</th>
 				</tr>
 				<tr>
-					<td class="align-left"><?=$_SESSION['sync_target'];?></td>
+					<td class="align-left"><a class="w_link" href="<?=$_SESSION['sync_target'];?>" target="_blank"><?=$_SESSION['sync_target'];?></a></td>
 				</tr>
 			</table>
 		</div>
@@ -204,7 +204,7 @@
 <view:sync_verify>
 	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
 		<tr><th><span class="icon-user w_black"></span> Pushed by</th><td><?=userValue('username');?></td></tr>
-		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
+		<tr><th>Target Site</th><td><a class="w_link" href="<?=$_SESSION['sync_target'];?>" target="_blank"><?=$_SESSION['sync_target'];?></a></td></tr>
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
@@ -240,7 +240,7 @@
 <view:revert_verify>
 	<table class="table table-condensed table-striped" style="border:1px solid #CCC;">
 		<tr><th><span class="icon-user w_black"></span> Reverted by</th><td><?=userValue('username');?></td></tr>
-		<tr><th>Target Site</th><td><?=$_SESSION['sync_target'];?></td></tr>
+		<tr><th>Target Site</th><td><a class="w_link" href="<?=$_SESSION['sync_target'];?>" target="_blank"><?=$_SESSION['sync_target'];?></a></td></tr>
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
