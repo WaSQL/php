@@ -1392,12 +1392,23 @@ function oracleListRecords($params=array()){
 function oracleParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $USER;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^oracle/i',$k)){unset($CONFIG[$k]);}
 		}
 		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
 			$params["-{$k}"]=$v;
+		}
+	}
+	//check for user specific
+	if(isUser() && strlen($USER['username'])){
+		foreach($params as $k=>$v){
+			if(stringEndsWith($k,"_{$USER['username']}")){
+				$nk=str_replace("_{$USER['username']}",'',$k);
+				unset($params[$k]);
+				$params[$nk]=$v;
+			}
 		}
 	}
 	if(!isset($params['-dbuser'])){

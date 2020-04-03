@@ -128,6 +128,7 @@ function odbcListRecords($params=array()){
 function odbcParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
+	global $USER;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^odbc/i',$k)){unset($CONFIG[$k]);}
@@ -144,6 +145,16 @@ function odbcParseConnectParams($params=array()){
 				$params["-{$k}"]=$v;
 			}
 			
+		}
+	}
+	//check for user specific
+	if(strlen($USER['username'])){
+		foreach($params as $k=>$v){
+			if(stringEndsWith($k,"_{$USER['username']}")){
+				$nk=str_replace("_{$USER['username']}",'',$k);
+				unset($params[$k]);
+				$params[$nk]=$v;
+			}
 		}
 	}
 	if(!isset($params['-dbname'])){
@@ -311,38 +322,10 @@ function odbcIsDBTable($table,$params=array()){
 			echo "odbcIsDBTable error: to many parts";
 		break;
 	}
-	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
-		$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-		echo "odbcDBConnect error".printValue($params);
-		exit;
+	$tables=odbcGetDBTables($params);
+	foreach($tables as $name){
+		if(strtolower($table) == strtolower($name)){return true;}
 	}
-	try{
-		$result=odbc_tables($dbh_odbc);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc)
-			);
-			echo "odbcIsDBTable error: No result".printValue($err);
-			exit;
-		}
-	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "odbcIsDBTable error: exception".printValue($err);
-		exit;
-	}
-	while(odbc_fetch_row($result)){
-		if(odbc_result($result,"TABLE_TYPE")!="TABLE"){continue;}
-		if(strlen($schema) && odbc_result($result,"TABLE_SCHEM") != strtoupper($schema)){continue;}
-		$schem=odbc_result($result,"TABLE_SCHEM");
-		$name=odbc_result($result,"TABLE_NAME");
-		if(strtolower($table) == strtolower($name)){
-			odbc_free_result($result);
-			return true;
-		}
-	}
-	odbc_free_result($result);
     return false;
 }
 //---------- begin function odbcClearConnection ----------
@@ -924,17 +907,17 @@ function odbcGetDBTables($params=array()){
 	}
 	try{
 		$result=odbc_tables($dbh_odbc);
-		if(!$result){
+		if(!is_resource($result)){
         	$err=array(
         		'error'	=> odbc_errormsg($dbh_odbc)
 			);
-			echo "odbcIsDBTable error: No result".printValue($err);
+			echo "odbcGetDBTables error: No result".printValue($err);
 			exit;
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "odbcIsDBTable error: exception".printValue($err);
+		echo "odbcGetDBTables error: exception".printValue($err);
 		exit;
 	}
 	$tables=array();

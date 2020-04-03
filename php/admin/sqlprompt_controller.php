@@ -2,6 +2,7 @@
 	global $CONFIG;
 	global $DATABASE;
 	global $_SESSION;
+	global $USER;
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
 		$_SESSION['db']=$db;
@@ -110,6 +111,12 @@
 				}
 				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
 				if($CONFIG['database']==$d){continue;}
+				if(isset($db["dbuser_{$USER['username']}"])){
+					$db['dbuser']=$db["dbuser_{$USER['username']}"];
+				}
+				if(isset($db["dbpass_{$USER['username']}"])){
+					$db['dbpass']=$db["dbpass_{$USER['username']}"];
+				}
 				$tabs[]=$db;
 			}
 			//echo $CONFIG['database'].printValue($tabs);exit;
