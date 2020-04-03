@@ -462,6 +462,27 @@ POSTFILE:
 		}
 	}
 	$ok=successMessage(" - Successfully updated");
+	//check for git="1"
+	if(isset($hosts[$chost]['git']) && $hosts[$chost]['git']==1){
+		echo "  -- updating git";
+		$cdir=getFilePath($afile);
+		$args=array(
+			'pull',
+			"commit -a -m \"updated {$filename}\"",
+			'push'
+		);
+		$fails=0;
+		foreach($args as $arg){
+			$out=cmdResults('git',$arg,$cdir);
+			if($out['rtncode']!=0){
+				$ok=errorMessage("git {$arg} FAILED");
+				$fails+=1;
+			}
+		}
+		if($fails==0){
+			$ok=successMessage('git updated successfully');
+		}
+	}
 	$shakey=posteditShaKey($afile);
 	$local_shas[$shakey]=posteditSha1($afile);
 	return true;

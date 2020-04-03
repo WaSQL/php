@@ -244,7 +244,7 @@ function odbcDBConnect($params=array()){
 			$dbh_odbc_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_odbc_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+			$dbh_odbc_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
 		if(!is_resource($dbh_odbc_single)){
 			$err=odbc_errormsg();
