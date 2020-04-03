@@ -102,6 +102,30 @@ if(file_exists($noloop)){
 }
 file_put_contents("{$progpath}/postedit_shas.txt", printValue($local_shas));
 echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
+
+//check for git="1"
+if(isset($hosts[$chost]['git']) && $hosts[$chost]['git']==1){
+	echo "  -- initializing git";
+	$cdir=getFilePath($afile);
+	$args=array(
+		'pull',
+		'add *',
+		"commit -a -m \"postedit\"",
+		'push'
+	);
+	$fails=0;
+	foreach($args as $arg){
+		$out=cmdResults('git',$arg,$cdir);
+		if($out['rtncode']!=0){
+			$ok=errorMessage("git {$arg} FAILED");
+			$fails+=1;
+		}
+	}
+	if($fails==0){
+		$ok=successMessage('git updated successfully');
+	}
+}
+
 //$ok=soundAlarm('ready');
 $ok=posteditBeep(2);
 $countdown=$timer;
