@@ -1958,6 +1958,10 @@ function submitForm(theForm,popup,debug,ajax){
 	var formfields=new Array();
 	for(var i=0;i<theForm.length;i++){
 		if(debug==1){alert("Checking "+theForm[i].name+" of type "+theForm[i].type);}
+		let atts=getAllAttributes(theForm[i]);
+		if(undefined != atts.disabled){continue;}
+		if(undefined != atts.readonly){continue;}
+		if(theForm[i].type == 'hidden'){continue;}
 		/* add this form name to the list of formfields */
 		if(!in_array(theForm[i].name,formfields) && theForm[i].name != '_formfields'){
 			formfields[formfields.length]=theForm[i].name;
