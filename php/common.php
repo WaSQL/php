@@ -1744,9 +1744,13 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span id="'.$params['id'].'_icon" data-id="'.$params['id'].'"';
-	$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_biggest"></span></span>'.PHP_EOL;
-	if(!isset($params['readonly'])){
+	//hide calendar icon if readonly or disabled
+	$show=1;
+	if(isset($params['readonly']) && in_array(strtolower($params['readonly']),array('1','readonly'))){$show=0;}
+	if(isset($params['disabled']) && in_array(strtolower($params['disabled']),array('1','disabled'))){$show=0;}
+	if($show==1){
+		$tag .= '	<span id="'.$params['id'].'_icon" data-id="'.$params['id'].'"';
+		$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_biggest"></span></span>'.PHP_EOL;
 		$tag.=buildOnload("initPikadayCalendar('{$params['id']}','{$params['id']}_icon');");
 	}
 	$tag .= '</div>'.PHP_EOL;
