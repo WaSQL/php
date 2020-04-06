@@ -1669,9 +1669,6 @@ function databaseListRecords($params=array()){
 			loadExtras('translate');
 		}
 	}
-	if(!isset($params['-listfields']) && isset($params['-fields'])){
-		$params['-listfields']=$params['-fields'];
-	}
 	//require -table or -list or -query
 	//echo printValue($params);
 	if(isset($params['-query'])){
@@ -1931,7 +1928,7 @@ function databaseListRecords($params=array()){
 				$params['-list']=sqliteGetDBRecords($params);
 			break;
 			default:
-				//echo printValue($params);
+				//echo printValue($params);exit;
 				$params['-list']=getDBRecords($params);
 			break;
 		}
@@ -1946,6 +1943,9 @@ function databaseListRecords($params=array()){
 	//verify we have records in $params['-list']
 	if(!is_array($params['-list']) && strlen($params['-list'])){
 		return "databaseListRecords error: ".$params['-list'];
+	}
+	if(!isset($params['-listfields']) && isset($params['-fields'])){
+		$params['-listfields']=array_keys($params['-list'][0]);
 	}
 	//determine -listfields
 	
@@ -8663,6 +8663,7 @@ function getDBQuery($params=array()){
     }
     else{$loopfields=array_keys($info);}
     //now add the _utime to any date fields
+    //if($params['-table']=='events_data' && count($loopfields)>1){echo printValue($loopfields);exit;}
     $fields=array();
     foreach ($loopfields as $field){
 		array_push($fields,$field);
@@ -8692,9 +8693,6 @@ function getDBQuery($params=array()){
 		}
 	}
 	$query='select ';
-	if(isMssql() && isset($params['-limit'])){
-		$query .= "top({$params['-limit']}) ";
-		}
 	$query .= implode(',',$fields).' from ' . $params['-table'];
 	//build where clause
 	$where = getDBWhere($params);
@@ -8704,9 +8702,10 @@ function getDBQuery($params=array()){
 	//Set order by if defined
     if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
     //Set limit if defined
-    if((isMysql() || isMysqli()) && isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
+    if(isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
     //Set offset if defined
-    if((isMysql() || isMysqli()) && isset($params['-offset'])){$query .= ' offset '.$params['-offset'];}
+    if(isset($params['-offset'])){$query .= ' offset '.$params['-offset'];}
+    //if($params['-table']=='events_data' && count($loopfields)>1){echo printValue($loopfields).$query;exit;}
     return $query;
 }
 //---------- begin function getDBWhere--------------------
