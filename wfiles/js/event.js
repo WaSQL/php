@@ -1171,10 +1171,10 @@ function initBehaviors(ajaxdiv){
 	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
 	try{dragSortEnable('[data-behavior="dragsort"]');}catch(e){}
-	//check for data-navaction
-	let navels = [...document.querySelectorAll('[data-navaction]')];
-	if(navels.length){
-		try{initNavaction(navels);}catch(e){}
+	//check for data-navigate
+	let navel = document.querySelector('[data-navigate]');
+	if(undefined != navel){
+		try{initNavagate();}catch(e){}
 	}
 	//bootstrap toggles
 	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');
@@ -1903,36 +1903,25 @@ function initBehaviors(ajaxdiv){
 		});
 	}
 }
-var clearNavactionTimout='';
-function clearNavaction(){
-	let els = document.querySelectorAll('[data-navaction-set]');
+var clearNavigateTimout='';
+function clearNavigate(){
+	let els = document.querySelectorAll('[data-navigate-set]');
 	for(let i=0;i<els.length;i++){
-		els[i].removeAttribute('data-navaction-set');
+		els[i].removeAttribute('data-navigate-set');
 	}
 }
-function initNavaction(){
-	clearTimeout(clearNavactionTimout);
-	clearNavactionTimout=setTimeout('clearNavaction()',1000);
-	let navaction_check=document.querySelector('[data-navaction]');
-	if(undefined == navaction_check){return;}
-	let navels = [...document.querySelectorAll('[data-navaction]')];
+function initNavagate(){
+	clearTimeout(clearNavigateTimout);
+	clearNavigateTimout=setTimeout('clearNavigate()',1000);
+	let navigate_check=document.querySelector('[data-navigate]');
+	if(undefined == navigate_check){return;}
+	let navels = [...document.querySelectorAll('[data-navigate]')];
 	for(let i=0;i<navels.length;i++){
 		if(undefined == navels[i].tabindex){
-			navels[i].setAttribute('tabindex',i);
+			navels[i].setAttribute('tabindex',i+1);
+			navels[i].style.color='purple';
 		}
-		navels[i].setAttribute('data-navindex',i);
-		navels[i].onclick=function(e){
-			e=e||window.event;
-			e.preventDefault();
-    		e.stopPropagation();
-			this.focus();
-			if(undefined != this.dataset.navaction && undefined == this.dataset.navactionSet){
-				this.setAttribute('data-navaction-set',1);
-    			let strfunc=new Function(this.dataset.navaction);
-				strfunc();
-				clearNavactionTimout=setTimeout('clearNavaction()',1000);
-    		}
-		}
+		navels[i].setAttribute('data-navigate',i+1);
 	}
 	document.onkeydown=function(e){
 		e=e||window.event;
@@ -1945,16 +1934,17 @@ function initNavaction(){
 	    		e.preventDefault();
 	    		e.stopPropagation();
 	    		let fel=document.activeElement;
-	    		let felindex=parseInt(fel.dataset.navindex);
+	    		let felindex=parseInt(fel.dataset.navigate);
 	    		let previndex=felindex-1;
-	    		let prevel=document.querySelector('[data-navindex="'+previndex+'"]');
+	    		let prevel=document.querySelector('[data-navigate="'+previndex+'"]');
 	    		if(undefined != prevel){
 	    			prevel.focus();
-	    			if(undefined != prevel.dataset.navaction && undefined == prevel.dataset.navactionSet){
-	    				prevel.setAttribute('data-navaction-set',1);
-	    				let strfunc=new Function(prevel.dataset.navaction);
-						strfunc();
-						clearNavactionTimout=setTimeout('clearNavaction()',1000);
+	    			if(undefined != prevel.dataset.navigate && undefined == prevel.dataset.navigateSet){
+	    				prevel.setAttribute('data-navigate-set',1);
+	    				if(undefined != prevel.getAttribute('onclick')){
+	    					simulateEvent(prevel,'click');
+	    				}
+						clearNavigateTimout=setTimeout('clearNavigate()',1000);
 	    			}
 	    		}
 	    	break;
@@ -1964,16 +1954,20 @@ function initNavaction(){
 	    		e.preventDefault();
 	    		e.stopPropagation();
 	    		let xfel=document.activeElement;
-	    		let xfelindex=parseInt(xfel.dataset.navindex);
+	    		let xfelindex=parseInt(xfel.dataset.navigate);
 	    		let nextindex=xfelindex+1;
-	    		let nextel=document.querySelector('[data-navindex="'+nextindex+'"]');
+	    		let nextel=document.querySelector('[data-navigate="'+nextindex+'"]');
 	    		if(undefined != nextel){
 	    			nextel.focus();
-	    			if(undefined != nextel.dataset.navaction && undefined == nextel.dataset.navactionSet){
-	    				nextel.setAttribute('data-navaction-set',1);
-	    				let strfunc=new Function(nextel.dataset.navaction);
-						strfunc();
-						clearNavactionTimout=setTimeout('clearNavaction()',1000);
+	    			if(undefined != nextel.dataset.navigate && undefined == nextel.dataset.navigateSet){
+	    				nextel.setAttribute('data-navigate-set',1);
+	    				if(undefined != nextel.getAttribute('onclick')){
+	    					simulateEvent(nextel,'click');
+	    				}
+	    				simulateEvent(nextel,'click');
+	    				//let strfunc=new Function(nextel,nextel.dataset.navigate);
+						//strfunc();
+						clearNavigateTimout=setTimeout('clearNavigate()',1000);
 	    			}
 	    		}
 	    	break;

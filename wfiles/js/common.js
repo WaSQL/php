@@ -421,6 +421,15 @@ function simulateTab(){
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
 	//info: simulate an event without it actually happening
+	if (element.fireEvent) {
+    	element.fireEvent('on' + eventName);
+  	} else {
+    	let evObj = document.createEvent('Events');
+    	evObj.initEvent(eventName, true, false);
+    	element.dispatchEvent(evObj);
+  	}
+  	return true;
+
 	//usage: simulateEvent(divid,'mouseover');
 	element=getObject(element);
 	if(undefined == element){return false;}
