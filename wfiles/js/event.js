@@ -1919,7 +1919,6 @@ function initNavagate(){
 	for(let i=0;i<navels.length;i++){
 		if(undefined == navels[i].tabindex){
 			navels[i].setAttribute('tabindex',i+1);
-			navels[i].style.color='purple';
 		}
 		navels[i].setAttribute('data-navigate',i+1);
 	}
