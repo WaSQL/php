@@ -1903,16 +1903,13 @@ function initBehaviors(ajaxdiv){
 		});
 	}
 }
-var clearNavigateTimout='';
-function clearNavigate(){
-	let els = document.querySelectorAll('[data-navigate-set]');
-	for(let i=0;i<els.length;i++){
-		els[i].removeAttribute('data-navigate-set');
-	}
-}
+/**
+* @describe initializes elements with a data-navigate tag so you can use the arrow keys to navigate through them
+* @return false
+* @usage initNavagate();
+* @reference https://keycode.info/
+*/
 function initNavagate(){
-	clearTimeout(clearNavigateTimout);
-	clearNavigateTimout=setTimeout('clearNavigate()',1000);
 	let navigate_check=document.querySelector('[data-navigate]');
 	if(undefined == navigate_check){return;}
 	let navels = [...document.querySelectorAll('[data-navigate]')];
@@ -1937,14 +1934,9 @@ function initNavagate(){
 	    		let previndex=felindex-1;
 	    		let prevel=document.querySelector('[data-navigate="'+previndex+'"]');
 	    		if(undefined != prevel){
+	    			prevel.setAttribute('data-navigate-key',key);
 	    			prevel.focus();
-	    			if(undefined != prevel.dataset.navigate && undefined == prevel.dataset.navigateSet){
-	    				prevel.setAttribute('data-navigate-set',1);
-	    				if(undefined != prevel.getAttribute('onclick')){
-	    					simulateEvent(prevel,'click');
-	    				}
-						clearNavigateTimout=setTimeout('clearNavigate()',1000);
-	    			}
+	    			simulateEvent(prevel,'click');
 	    		}
 	    	break;
 	    	case 39:
@@ -1957,21 +1949,14 @@ function initNavagate(){
 	    		let nextindex=xfelindex+1;
 	    		let nextel=document.querySelector('[data-navigate="'+nextindex+'"]');
 	    		if(undefined != nextel){
+	    			nextel.setAttribute('data-navigate-key',key);
 	    			nextel.focus();
-	    			if(undefined != nextel.dataset.navigate && undefined == nextel.dataset.navigateSet){
-	    				nextel.setAttribute('data-navigate-set',1);
-	    				if(undefined != nextel.getAttribute('onclick')){
-	    					simulateEvent(nextel,'click');
-	    				}
-	    				simulateEvent(nextel,'click');
-	    				//let strfunc=new Function(nextel,nextel.dataset.navigate);
-						//strfunc();
-						clearNavigateTimout=setTimeout('clearNavigate()',1000);
-	    			}
+	    			simulateEvent(nextel,'click');
 	    		}
 	    	break;
 	    }
 	 };
+	 return false;
 }
 function cancel(e) {
       if (e.preventDefault) { e.preventDefault(); }
