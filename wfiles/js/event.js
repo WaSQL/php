@@ -1907,11 +1907,11 @@ function initBehaviors(ajaxdiv){
 * @describe initializes elements with a data-navigate tag so you can use the arrow keys to navigate through them
 *	There are two modes: tree and menu. Default is tree
 *	data-navigate-group="mygroup" - sets the navigate group to stay in
-*	data-navigate-right="myfunction"  - overides normal mode and calls your function
-*	data-navigate-left="myfunction"  - overides normal mode and calls your function
-*	data-navigate-up="myfunction"  - overides normal mode and calls your function
-*	data-navigate-down="myfunction"  - overides normal mode and calls your function
-*	data-navigate-all="myfunction"  - overides all normal modes and calls your function
+*	data-navigate-right="myfunction"  - overides normal mode and calls your function passing it the current element
+*	data-navigate-left="myfunction"  - overides normal mode and calls your function passing it the current element
+*	data-navigate-up="myfunction"  - overides normal mode and calls your function passing it the current element
+*	data-navigate-down="myfunction"  - overides normal mode and calls your function passing it the current element
+*	data-navigate-all="myfunction"  - overides all normal modes and calls your function passing it the current element
 *	NOTE: all navigation elements must have a data-navigate attribute.
 * @return false
 * @usage initNavigate();
@@ -1967,8 +1967,8 @@ function initNavigate(){
 	    if(undefined != fel.dataset.navigateAll){
 	    	e.preventDefault();
 	    	e.stopPropagation();
-	    	let func=new Function(fel.dataset.navigateAll);
-    		func(fel);
+	    	let func=fel.dataset.navigateAll;
+		    window[func](fel);
 	    	return false;
 	    }
 	    let index=parseInt(fel.dataset.navigate);
@@ -1984,8 +1984,8 @@ function initNavigate(){
 	    		if(undefined != fel.dataset.navigateUp){
 			    	e.preventDefault();
 			    	e.stopPropagation();
-			    	let func=new Function(fel.dataset.navigateUp);
-		    		func(fel);
+			    	let func=fel.dataset.navigateUp;
+		    		window[func](fel);
 			    	return false;
 			    }
 			    if(undefined != prevel){
@@ -2002,8 +2002,8 @@ function initNavigate(){
 	    		if(undefined != fel.dataset.navigateDown){
 			    	e.preventDefault();
 			    	e.stopPropagation();
-			    	let func=new Function(fel.dataset.navigateDown);
-		    		func(fel);
+			    	let func=fel.dataset.navigateDown;
+		    		window[func](fel);
 			    	return false;
 			    }
 			    if(undefined != nextel){
@@ -2020,8 +2020,8 @@ function initNavigate(){
 	    		if(undefined != fel.dataset.navigateRight){
 			    	e.preventDefault();
 			    	e.stopPropagation();
-			    	let func=new Function(fel.dataset.navigateRight);
-		    		func(fel);
+			    	let func=fel.dataset.navigateRight;
+		    		window[func](fel);
 			    	return false;
 			    }
 	    		if(undefined != nextel){
@@ -2038,8 +2038,8 @@ function initNavigate(){
 	    		if(undefined != fel.dataset.navigateLeft){
 			    	e.preventDefault();
 			    	e.stopPropagation();
-			    	let func=new Function(fel.dataset.navigateLeft);
-		    		func(fel);
+			    	let func=fel.dataset.navigateLeft;
+		    		window[func](fel);
 			    	return false;
 			    }
 			    if(undefined != prevel){
