@@ -1955,12 +1955,12 @@ function initNavigate(){
 		//skip if no element has focus
 		let fel=document.activeElement;
 		if(undefined==fel){
-			console.log('no active element');
+			//console.log('no active element');
 			return true;
 		}
 		//skip if focus element is not a navigate element
 		if(undefined == fel.dataset.navigate){
-			console.log('fel navigate not defined');
+			//console.log('fel navigate not defined');
 			return true;
 		}
 	    //call data-navigate-function if specified
@@ -1978,10 +1978,6 @@ function initNavigate(){
 	    let nextel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+next+'"]');
 	    let prev=gindex-1;
 	    let prevel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+prev+'"]');
-	    console.log('gindex='+gindex+', next='+next+', prev='+prev);
-	    console.log(nextel);
-	    console.log(prevel);
-	    console.log('--------');
 	    switch(parseInt(key)){
 	    	case 38:
 	    		//up
