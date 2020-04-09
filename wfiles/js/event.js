@@ -1174,7 +1174,7 @@ function initBehaviors(ajaxdiv){
 	//check for data-navigate
 	let navel = document.querySelector('[data-navigate]');
 	if(undefined != navel){
-		try{initNavagate();}catch(e){}
+		try{initNavigate();}catch(e){}
 	}
 	//bootstrap toggles
 	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');
@@ -1905,58 +1905,159 @@ function initBehaviors(ajaxdiv){
 }
 /**
 * @describe initializes elements with a data-navigate tag so you can use the arrow keys to navigate through them
+*	There are two modes: tree and menu. Default is tree
+*	data-navigate-group="mygroup" - sets the navigate group to stay in
+*	data-navigate-right="myfunction"  - overides normal mode and calls your function
+*	data-navigate-left="myfunction"  - overides normal mode and calls your function
+*	data-navigate-up="myfunction"  - overides normal mode and calls your function
+*	data-navigate-down="myfunction"  - overides normal mode and calls your function
+*	data-navigate-all="myfunction"  - overides all normal modes and calls your function
+*	NOTE: all navigation elements must have a data-navigate attribute.
 * @return false
-* @usage initNavagate();
-* @reference https://keycode.info/
+* @usage initNavigate();
+* @reference 
+*		https://keycode.info/
+*		https://gomakethings.com/how-to-get-the-next-and-previous-siblings-of-an-element-with-vanilla-js/
+
 */
-function initNavagate(){
+function initNavigate(){
 	let navigate_check=document.querySelector('[data-navigate]');
 	if(undefined == navigate_check){return;}
 	let navels = [...document.querySelectorAll('[data-navigate]')];
+	let groupcounts=new Array();
 	for(let i=0;i<navels.length;i++){
+		//add a tabindex to make it focusable since only a, select, input, button, textarea types are usually focusable
 		if(undefined == navels[i].tabindex){
 			navels[i].setAttribute('tabindex',i+1);
 		}
-		navels[i].setAttribute('data-navigate',i+1);
+		//give this a unique index
+		navels[i].setAttribute('data-navigate',i);
+		//add a group if one is not defined
+		let group='navigate';
+		if(undefined == navels[i].dataset.navigateGroup){
+			navels[i].setAttribute('data-navigate-group',group);
+		}
+		else{
+			group=navels[i].dataset.navigateGroup;
+		}
+		//assign a group index
+		if(undefined == groupcounts[group]){
+			groupcounts[group]=0;
+		}
+		let gi=parseInt(groupcounts[group])+1;
+		groupcounts[group]=gi;
+		navels[i].setAttribute('data-navigate-group-index',gi);
 	}
 	document.onkeydown=function(e){
 		e=e||window.event;
 		if(undefined == e){return true;}
-	    key = e.keyCode; // To find out what key is this 
-	    switch(key){
-	    	case 37:
+		let key = e.keyCode; // To find out what key is this
+		//skip if no element has focus
+		let fel=document.activeElement;
+		if(undefined==fel){
+			console.log('no active element');
+			return true;
+		}
+		//skip if focus element is not a navigate element
+		if(undefined == fel.dataset.navigate){
+			console.log('fel navigate not defined');
+			return true;
+		}
+	    //call data-navigate-function if specified
+	    if(undefined != fel.dataset.navigateAll){
+	    	e.preventDefault();
+	    	e.stopPropagation();
+	    	let func=new Function(fel.dataset.navigateAll);
+    		func(fel);
+	    	return false;
+	    }
+	    let index=parseInt(fel.dataset.navigate);
+	    let group=fel.dataset.navigateGroup;
+	    let gindex=parseInt(fel.dataset.navigateGroupIndex);
+	    let next=gindex+1;
+	    let nextel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+next+'"]');
+	    let prev=gindex-1;
+	    let prevel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+prev+'"]');
+	    console.log('gindex='+gindex+', next='+next+', prev='+prev);
+	    console.log(nextel);
+	    console.log(prevel);
+	    console.log('--------');
+	    switch(parseInt(key)){
 	    	case 38:
-	    		//left or up arrow = back one
-	    		e.preventDefault();
-	    		e.stopPropagation();
-	    		let fel=document.activeElement;
-	    		let felindex=parseInt(fel.dataset.navigate);
-	    		let previndex=felindex-1;
-	    		let prevel=document.querySelector('[data-navigate="'+previndex+'"]');
-	    		if(undefined != prevel){
-	    			prevel.setAttribute('data-navigate-key',key);
-	    			prevel.focus();
-	    			simulateEvent(prevel,'click');
-	    		}
+	    		//up
+	    		if(undefined != fel.dataset.navigateUp){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	let func=new Function(fel.dataset.navigateUp);
+		    		func(fel);
+			    	return false;
+			    }
+			    if(undefined != prevel){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	prevel.focus();
+			    	prevel.setAttribute('data-navigate-key',key);
+			    	simulateEvent(prevel,'click');
+					return false;
+			    }
+	    	break;
+	    	case 40:
+	    		//down
+	    		if(undefined != fel.dataset.navigateDown){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	let func=new Function(fel.dataset.navigateDown);
+		    		func(fel);
+			    	return false;
+			    }
+			    if(undefined != nextel){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	nextel.focus();
+			    	nextel.setAttribute('data-navigate-key',key);
+			    	simulateEvent(nextel,'click');
+					return false;
+			    }
 	    	break;
 	    	case 39:
-	    	case 40:
-	    		//right or down arrow
-	    		e.preventDefault();
-	    		e.stopPropagation();
-	    		let xfel=document.activeElement;
-	    		let xfelindex=parseInt(xfel.dataset.navigate);
-	    		let nextindex=xfelindex+1;
-	    		let nextel=document.querySelector('[data-navigate="'+nextindex+'"]');
+	    		//right
+	    		if(undefined != fel.dataset.navigateRight){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	let func=new Function(fel.dataset.navigateRight);
+		    		func(fel);
+			    	return false;
+			    }
 	    		if(undefined != nextel){
-	    			nextel.setAttribute('data-navigate-key',key);
-	    			nextel.focus();
-	    			simulateEvent(nextel,'click');
-	    		}
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	nextel.focus();
+			    	nextel.setAttribute('data-navigate-key',key);
+			    	simulateEvent(nextel,'click');
+					return false;
+			    }
+	    	break;
+	    	case 37:
+	    		//left
+	    		if(undefined != fel.dataset.navigateLeft){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	let func=new Function(fel.dataset.navigateLeft);
+		    		func(fel);
+			    	return false;
+			    }
+			    if(undefined != prevel){
+			    	e.preventDefault();
+			    	e.stopPropagation();
+			    	prevel.focus();
+			    	prevel.setAttribute('data-navigate-key',key);
+			    	simulateEvent(prevel,'click');
+					return false;
+			    }
 	    	break;
 	    }
 	 };
-	 return false;
+	 return true;
 }
 function cancel(e) {
       if (e.preventDefault) { e.preventDefault(); }
