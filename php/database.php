@@ -1822,6 +1822,7 @@ function databaseListRecords($params=array()){
 			$fields=$params['-fields'];
 			if(isset($params['-exportfields'])){
 				//exportfields may have non-table fields - remove them as they are enriched later
+				$params['-listfields']=$params['-exportfields'];
 				$exportfields=$params['-exportfields'];
 				if(!is_array($exportfields)){$exportfields=preg_split('/\,/',$exportfields);}
 				foreach($exportfields as $x=>$exportfield){
@@ -1868,6 +1869,16 @@ function databaseListRecords($params=array()){
 				}
 				else{
 					$recs=call_user_func($params['-results_eval'],$recs);
+				}
+			}
+			if(is_array($exportfields)){
+				//remove any fields that were enriched that are not in exportfields
+				foreach($recs as $i=>$rec){
+					foreach($recs[$i] as $k=>$v){
+						if(!in_array($k,$exportfields)){
+							unset($recs[$i][$k]);
+						}
+					}
 				}
 			}
 			//set limit back
