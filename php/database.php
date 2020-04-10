@@ -1821,7 +1821,15 @@ function databaseListRecords($params=array()){
 			$limit=$params['-limit'];
 			$fields=$params['-fields'];
 			if(isset($params['-exportfields'])){
-				$params['-fields']=$params['-exportfields'];
+				//exportfields may have non-table fields - remove them as they are enriched later
+				$exportfields=$params['-exportfields'];
+				if(!is_array($exportfields)){$exportfields=preg_split('/\,/',$exportfields);}
+				foreach($exportfields as $x=>$exportfield){
+					if(!isset($info[$exportfield])){
+						unset($exportfields[$x]);
+					}
+				}
+				$params['-fields']=$exportfields;
 			}
 			$params['-limit']=$params['-total'];
 			if(!isNum($params['-limit'])){
