@@ -1873,19 +1873,17 @@ function databaseListRecords($params=array()){
 			}
 			if(is_array($exportfields)){
 				//remove any fields that were enriched that are not in exportfields
+				$xrecs=array();
 				foreach($recs as $i=>$rec){
-					foreach($recs[$i] as $k=>$v){
-						if(!in_array($k,$exportfields)){
-							unset($recs[$i][$k]);
-						}
-						//add any that are missing
-						foreach($exportfields as $efld){
-							if(!isset($recs[$i][$efld])){
-								$recs[$i][$efld]='';
-							}
-						}
+					$xrec=array();
+					foreach($exportfields as $efld){
+						$xrec[$efld]=$rec[$efld];
 					}
+					$xrecs[]=$xrec;
+					unset($recs[$i]);
 				}
+				$recs=$xrecs;
+				unset($xrecs);
 			}
 			//set limit back
 			$params['-limit']=$limit;
