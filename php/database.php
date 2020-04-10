@@ -1878,6 +1878,12 @@ function databaseListRecords($params=array()){
 						if(!in_array($k,$exportfields)){
 							unset($recs[$i][$k]);
 						}
+						//add any that are missing
+						foreach($exportfields as $efld){
+							if(!isset($recs[$i][$efld])){
+								$recs[$i][$efld]='';
+							}
+						}
 					}
 				}
 			}
