@@ -1863,6 +1863,16 @@ function databaseListRecords($params=array()){
 					$recs=getDBRecords($params);
 				break;
 			}
+			//check for results_eval
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				$rparams='';
+				if(isset($params['-results_eval_params'])){
+					$recs=call_user_func($params['-results_eval'],$recs,$params['-results_eval_params']);
+				}
+				else{
+					$recs=call_user_func($params['-results_eval'],$recs);
+				}
+			}
 			if(is_array($exportfields)){
 				//only exportfields
 				$xrecs=array();
@@ -1876,16 +1886,6 @@ function databaseListRecords($params=array()){
 				}
 				$recs=$xrecs;
 				unset($xrecs);
-			}
-			//check for results_eval
-			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
-				$rparams='';
-				if(isset($params['-results_eval_params'])){
-					$recs=call_user_func($params['-results_eval'],$recs,$params['-results_eval_params']);
-				}
-				else{
-					$recs=call_user_func($params['-results_eval'],$recs);
-				}
 			}
 			//set limit back
 			$params['-limit']=$limit;
