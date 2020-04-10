@@ -1825,12 +1825,14 @@ function databaseListRecords($params=array()){
 				$params['-listfields']=$params['-exportfields'];
 				$exportfields=$params['-exportfields'];
 				if(!is_array($exportfields)){$exportfields=preg_split('/\,/',$exportfields);}
+				$exportfields_ori=$exportfields;
 				foreach($exportfields as $x=>$exportfield){
 					if(!isset($info[$exportfield])){
 						unset($exportfields[$x]);
 					}
 				}
 				$params['-fields']=$exportfields;
+				$exportfields=$exportfields_ori;
 			}
 			$params['-limit']=$params['-total'];
 			if(!isNum($params['-limit'])){
@@ -1861,18 +1863,8 @@ function databaseListRecords($params=array()){
 					$recs=getDBRecords($params);
 				break;
 			}
-			//check for results_eval
-			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
-				$rparams='';
-				if(isset($params['-results_eval_params'])){
-					$recs=call_user_func($params['-results_eval'],$recs,$params['-results_eval_params']);
-				}
-				else{
-					$recs=call_user_func($params['-results_eval'],$recs);
-				}
-			}
 			if(is_array($exportfields)){
-				//remove any fields that were enriched that are not in exportfields
+				//only exportfields
 				$xrecs=array();
 				foreach($recs as $i=>$rec){
 					$xrec=array();
@@ -1884,6 +1876,16 @@ function databaseListRecords($params=array()){
 				}
 				$recs=$xrecs;
 				unset($xrecs);
+			}
+			//check for results_eval
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				$rparams='';
+				if(isset($params['-results_eval_params'])){
+					$recs=call_user_func($params['-results_eval'],$recs,$params['-results_eval_params']);
+				}
+				else{
+					$recs=call_user_func($params['-results_eval'],$recs);
+				}
 			}
 			//set limit back
 			$params['-limit']=$limit;
