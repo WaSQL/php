@@ -3655,13 +3655,11 @@ function dropDBIndex($params=array()){
 /**
 * @describe
 *	returns html form used to enter data into specified table
-*	to add/override and event add {field}_{event}=>"function" as a param
-*	to override class for checkbox fields, add {field}_checkclass=>"classname",{field}_checkclasschecked=>"checkedClassName" as params
 * @param params array
-*	-table
+*	-table string - the name of the table
 *	[_id] integer - turns the form into an edit form, editing the record with this ID
 *	[-where] string - turns the form into an edit form, editing the record that matches the where clause
-*	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row
+*	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row. You can also call getView({viewname}) to use a view to define the fields.
 * 	[-editfields] string - use to override comma separated list of fields to edit on the form
 *	[-method] string - POST or GET - defaults to POST
 *	[-class] string - class attribute for form tag - defaults to w_form
@@ -3679,8 +3677,25 @@ function dropDBIndex($params=array()){
 *	[-hide] string - comma separated list of submit buttons to hide. i.e reset, delete, clone
 *	[-focus] string - field name to set focus to
 *	[-readonly] boolean - show values but not form
+*	[{fieldname}_{option}] string - sets {option} for {field}.  age_displayname=>'Your Age'
+*	[{fieldname}_options] array - sets multiple options for {field}  age_options=>array('displayname'=>Your Age','style'=>'...')
+* @note if a {field} is a json datatype you can manually create fields to populate it as follows: {field}>{subfield}>{subsubfield}
 * @return string - HTML form
 * @usage addEditDBForm(array('-table'=>"comments"));
+*	-------- OR ---------
+*		$opts=array(
+*			'-table'=>'test',
+*			'-fields'=>getView('test_fields'),
+*			'memberof>challenges>physical>activities_options'=>array(
+*				'inputtype'=>'checkbox',
+*				'tvals'=>array('pushups','squats','burpees','jumping jacks','russion stars','running')
+*			),
+*			'memberof>challenges>physical>active_options'=>array(
+*				'inputtype'=>'checkbox',
+*				'tvals'=>array(1)
+*			)
+*		);
+*		return addEditDBForm($opts);
 */
 function addEditDBForm($params=array(),$customcode=''){
 	if(!isset($params['-table'])){return 'addEditDBForm Error: No table';}
@@ -4458,7 +4473,7 @@ function addDBRecord($params=array()){
 	$info=getDBFieldInfo($params['-table'],1);
 	if(!is_array($info)){return $info;}
 
-	//check for virtual fields
+	//If a value is colon separated and is for a virtual field, change it to an array 
 	$jsonfields=array();
 	foreach($info as $k=>$i){
     	if($i['_dbtype']=='json' && isset($params[$k])){

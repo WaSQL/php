@@ -13700,6 +13700,24 @@ function processActions(){
 					elseif($field=='js' && !isset($_REQUEST['js_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['js_min'])){
                         $opts['js_min']=minifyCode($_REQUEST[$field],'js');
 					}
+					//json
+					if($info[$field]['_dbtype']=='json'){
+						//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
+						global $_jsonval_;
+						$jval=array();
+						foreach($_REQUEST as $k=>$v){
+							if(!stringBeginsWith($k,"{$field}>")){continue;}
+							$keys=preg_split('/\>/',$k);
+							array_shift($keys);
+							$keystr=implode("']['",$keys);
+							$_jsonval_=$v;
+							$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+							eval($str);
+						}
+						if(is_array($jval) && count($jval)){
+							$_REQUEST[$field]=json_encode($jval);
+						}
+					}
 					//markdown?
 					if($info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
 						if(!strlen(trim($_REQUEST[$field]))){
