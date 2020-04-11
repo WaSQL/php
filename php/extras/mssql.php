@@ -12,12 +12,14 @@
 
 */
 //settings for old PHP versions that use mssql_connect
+global $CONFIG;
 if((integer)phpversion() < 7){
 	ini_set('mssql.charset', 'UTF-8');
 	ini_set('mssql.max_persistent',5);
 	ini_set('mssql.secure_connection ',0);
 	ini_set ( 'mssql.textlimit' , '65536' );
 	ini_set ( 'mssql.textsize' , '65536' );
+	$CONFIG['mssql_old']=1;
 }
 global $mssql;
 $mssql=array();
@@ -1186,6 +1188,34 @@ function mssqlEnumQueryResults($data,$params=array()){
 * @usage $ok=mssqlExecuteSQL("truncate table abc");
 */
 function mssqlExecuteSQL($query,$params=array()){
+	//php 7 and greater no longer use mssql_connect
+	if((integer)phpversion()>=7){
+		$dbh_mssql=mssqlDBConnect($params);
+		$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
+		if (!($stmt)){
+	    	debugValue(array(
+	    		'function'=>"mssqlExecuteSQL",
+	    		'connection'=>$dbh_mssql,
+	    		'action'=>'oci_parse',
+	    		'mssql_error'=>sqlsrv_errors(),
+	    		'query'=>$query
+	    	));
+	    	oci_close($dbh_mssql);
+	    	return false;
+	    }
+		if( sqlsrv_execute( $stmt ) === false ) {
+			debugValue(array(
+	    		'function'=>"mssqlExecuteSQL",
+	    		'connection'=>$dbh_mssql,
+	    		'action'=>'oci_execute',
+	    		'stmt'=>$stmt,
+	    		'mssql_error'=>sqlsrv_errors(),
+	    		'query'=>$query
+	    	));
+	    	return false;
+		}
+		return true;
+	}
 	global $dbh_mssql;
 	if(!is_resource($dbh_mssql)){
 		$dbh_mssql=mssqlDBConnect($params);
