@@ -13438,6 +13438,25 @@ function processActions(){
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
+						//json
+						if($info[$field]['_dbtype']=='json'){
+							//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
+							global $_jsonval_;
+							$jval=array();
+							foreach($_REQUEST as $k=>$v){
+								if(!stringBeginsWith($k,"{$field}>")){continue;}
+								$keys=preg_split('/\>/',$k);
+								array_shift($keys);
+								$keystr=implode("']['",$keys);
+								$_jsonval_=$v;
+								$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+								eval($str);
+							}
+							unset($_jsonval_);
+							if(is_array($jval) && count($jval)){
+								$_REQUEST[$field]=json_encode($jval);
+							}
+						}
 						//decode it if needs be
 						if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 						elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
@@ -13714,6 +13733,7 @@ function processActions(){
 							$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
 							eval($str);
 						}
+						unset($_jsonval_);
 						if(is_array($jval) && count($jval)){
 							$_REQUEST[$field]=json_encode($jval);
 						}
