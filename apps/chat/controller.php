@@ -1,77 +1,40 @@
 <?php
-	loadExtrasCss('accordian');
-	global $USER;
-	processActions();
-	chatCheckSetup();
-	$chatTitle=isset($_REQUEST['chat_title'])?$_REQUEST['chat_title']:'chatjat';
-	if(!isUser()){
-    	setView('login',1);
-    	return;
-	}
+//require user
+global $USER;
+global $PASSTHRU;
+global $PAGE;
+global $CONFIG;
+global $chat;
+
+if(isset($_REQUEST['chat_b64'])){
+	$chat=json_decode(decodeBase64($_REQUEST['chat_b64']),true);
+}
+else{
 	$chat=array();
-	//get users in groups
-	switch(strtolower($_REQUEST['func'])){
-		case 'mychatusers':
-			$users=chatGetMyChatUsers();
-			setView('mychatusers',1);
-			return;
-		break;
-		case 'userlist':
-			$chat['userlist']=chatGetUserList();
-			setView('_userlist',1);
-			return;
-		break;
-		case 'chatlist':
-			$chat['chatlist']=chatGetChatList();
-			setView('chatlist',1);
-			return;
-		break;
-		case 'chatconfig':
-			setView('chatconfig',1);
-			return;
-		break;
-		case 'chatconfig2':
-			setView('chatconfig2',1);
-			return;
-		break;
-		case 'sendmessage':
-			$msg_to=addslashes($_REQUEST['msg_to']);
-			$msg=addslashes($_REQUEST['msg']);
-			if($msg=='*'){
-				$_REQUEST['setfocus']=$msg_to;
-			}
-			//if the msg_to is not active then send the message to backup ids instead
-			$tos=array();
-			if($msg=='*' || $msg=='-'){$tos[]=$msg_to;}
-			else{
-				if(chatIsUserActive($msg_to)){$tos[]=$msg_to;}
-				else{
-					$ids=chatGetBackupIds();
-					foreach($ids as $id){
-						if(chatIsUserActive($id)){$tos[]=$id;}
-					}
-				}
-			}
-			if(!count($tos)){$tos[]=$msg_to;}
-			foreach($tos as $to){
-				$ok=addDBRecord(array(
-					'-table'	=> 'chatlog',
-					'msg_from'	=> $USER['_id'],
-					'msg_to'	=> $to,
-					'msg'		=> $msg
-				));
-			}
-			$chats=chatGetChatList();
-			setView('_chatlist',1);
-			if(isset($_REQUEST['formid'])){
-				$formid=addslashes($_REQUEST['formid']);
-				setView('_focusform');
-			}
-		break;
-    	default:
-    		$chat['userlist']=chatGetUserList();
-    		$chat['chatlist']=chatGetChatList();
-    		setView('default');
-    	break;
+	$chatkeys=array('chat_url','chat_group');
+	foreach($chatkeys as $chatkey){
+		if(isset($_REQUEST[$chatkey])){$chat[$chatkey]=$_REQUEST[$chatkey];}
+		elseif(isset($CONFIG[$chatkey])){$chat[$chatkey]=$CONFIG[$chatkey];}
 	}
+	if(!isset($chat['chat_url'])){$chat['chat_url']='/'.$PAGE['name'];}	
+	if(!isset($chat['chat_group'])){$chat['chat_group']=$_SERVER['HTTP_HOST'];}	
+	$chat['colors']=chatGetColors();
+}
+
+if(!isUser()){
+	setView('login',1);
+	return;
+}
+switch(strtolower($PASSTHRU[0])){
+	case 'msg':
+		$messages=chatAddMessage(stripslashes($_REQUEST['msg']));
+		setView('messages',1);
+		return;
+	break;
+	default:
+		$ok=chatSetup();
+		$messages=chatGetMessages();
+		setView('default');
+	break;
+}
 ?>
