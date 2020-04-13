@@ -13413,7 +13413,6 @@ function processActions(){
 					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
 					$opts=array('-table'=>$_REQUEST['_table'],'-where'=>'_id='.$_REQUEST['_id']);
-
 					//check for xmldata field unless noxmldata is passed also
 					if(!isset($_REQUEST['noxmldata'])){
 						if(isset($info['xmldata'])){
@@ -13434,6 +13433,16 @@ function processActions(){
 								$opts['_xmldata']= request2XML($_REQUEST);
 	                        }
 	                    }
+					}
+					//check for json fields
+					foreach($info as $ffield=>$finfo){
+						if($finfo['_dbtype']=='json'){
+							foreach($fields as $field){
+								if(stringBeginsWith($field,"{$ffield}>") && !in_array($ffield,$fields)){
+									$fields[]=$ffield;
+								}
+							}
+						}
 					}
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
