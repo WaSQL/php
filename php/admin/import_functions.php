@@ -32,41 +32,48 @@ function importProcessCSV($params){
 				//maxlength
 				if(!isset($maxlen[$key]) || strlen($val) > $maxlen[$key]){
 					$maxlen[$key]=strlen($val);
-					}
+				}
 				//type
 				if(isNum($val)){
 					if(!isset($fieldtype[$key])){$fieldtype[$key]='int';}
-                	}
+                }
                 elseif(isDateTime($val)){
 					if(!isset($fieldtype[$key])){$fieldtype[$key]='datetime';}
-                	}
+                }
                 elseif(isDate($val)){
 					if(!isset($fieldtype[$key])){$fieldtype[$key]='date';}
-                	}
+                }
                 else{
-					if(!isset($fieldtype[$key])){$fieldtype[$key]='varchar';}
-                	}
-            	}
-        	}
+					$fieldtype[$key]='varchar';
+                }
+            }
+        }
         foreach($fieldtype as $key=>$type){
 			$fld=preg_replace('/[^a-z0-9]+/i','_',$key);
 			switch($type){
 				case 'int':
-					$fields[$fld]="int NULL";
-					break;
+					if($maxlen[$key] > 11){
+						$fields[$fld]="bigint NULL";	
+					}
+					else{
+						$fields[$fld]="int NULL";
+					}
+				break;
 				case 'datetime':
 					$fields[$fld]=databaseDataType('datetime')." NULL";
-					break;
+				break;
 				case 'date':
 					$fields[$fld]="date NULL";
-					break;
+				break;
 				case 'varchar':
 					$max=$maxlen[$key];
+					//round max up to nearest 5
+					$max=(round($max)%5 === 0) ? round($max) : round(($max+5/2)/5)*5;
 					if($max > 2000){$fields[$fld]="text NULL";}
-					else{$fields[$fld]="varchar({$max}) NULL";}
-					break;
-            	}
-        	}
+					else{$fields[$fld]="varchar({$max}) NULL";}	
+				break;
+            }
+        }
         //create the table
         $params['csvtable']=$params['csvtable_name'];
         $ok = createDBTable($params['csvtable'],$fields);
@@ -95,7 +102,13 @@ function importProcessCSV($params){
 			else{
 				$results[]="addDBRecord Error on row {$row}";
 				$results[]=$id;
+				$results[]="Opts";
 				$results[]=$opts;
+				$results[]="Maxlen";
+				$results[]=$maxlen;
+				$results[]="Fields";
+				$results[]=$fields;
+				return $results;
             }
         }
     }
