@@ -1151,32 +1151,32 @@ a.btn{text-decoration: none;}
 .btn{color: #6c757d;background-color: #ffffff;border-color: #6c757d;}
 .btn:hover{background-color: #d6d6d6;}
 /* blue #1b95e0 (27,149,224) and  #0c7abf (0,64,64) */
-.btn.w_blue,.btn.btn-primary{color: #fff;background-color: #1b95e0;border-color: #0c7abf;}
-.btn.w_blue:hover,.btn.btn-primary:hover{background-color: #0c7abf;border-color: #09598a;}
+.btn.w_blue,.btn.btn-blue,.btn.btn-primary{color: #fff;background-color: #1b95e0;border-color: #0c7abf;}
+.btn.w_blue:hover,.btn.btn-blue:hover,.btn.btn-primary:hover{background-color: #0c7abf;border-color: #09598a;}
 /* secondary */
-.btn.w_gray,.btn.btn-secondary{color: #fff;background-color: #6c757d;border-color: #6c757d;}
-.btn.w_gray:hover,.btn.btn-secondary:hover{background-color: #5a6268;border-color: #545b62;}
+.btn.w_gray,.btn.btn-gray,.btn.btn-secondary{color: #fff;background-color: #6c757d;border-color: #6c757d;}
+.btn.w_gray:hover,.btn.btn-gray:hover,.btn.btn-secondary:hover{background-color: #5a6268;border-color: #545b62;}
 /* success */
-.btn.w_green,.btn.btn-success{color: #fff;background-color: #28a745;border-color: #28a745;}
-.btn.w_green:hover,.btn.btn-success:hover{background-color: #218838;border-color: #1e7e34;}
+.btn.w_green,.btn.btn-green,.btn.btn-success{color: #fff;background-color: #28a745;border-color: #28a745;}
+.btn.w_green:hover,.btn.btn-green:hover,.btn.btn-success:hover{background-color: #218838;border-color: #1e7e34;}
 /* danger */
-.btn.w_red,.btn.btn-danger{color: #fff;background-color: #dc3545;border-color: #dc3545;}
-.btn.w_red:hover,.btn.btn-danger:hover{background-color: #c82333;border-color: #bd2130;}
+.btn.w_red,.btn.btn-red,.btn.btn-danger{color: #fff;background-color: #dc3545;border-color: #dc3545;}
+.btn.w_red:hover,.btn.btn-red:hover,.btn.btn-danger:hover{background-color: #c82333;border-color: #bd2130;}
 /* warning */
-.btn.w_yellow,.btn.btn-warning{color: #212529;background-color: #ffc107;border-color: #ffc107;}
-.btn.w_yellow:hover,.btn.btn-warning:hover{background-color: #e0a800;border-color: #d39e00;}
+.btn.w_yellow,.btn.btn-yellow,.btn.btn-warning{color: #212529;background-color: #ffc107;border-color: #ffc107;}
+.btn.w_yellow:hover,.btn.btn-yellow:hover,.btn.btn-warning:hover{background-color: #e0a800;border-color: #d39e00;}
 /* orange */
-.btn.w_orange{color: #212529;background-color: #ff9800;border-color: #e68a00;}
-.btn.w_orange:hover{background-color: #e68a00;border-color: #ce7b00;}
+.btn.w_orange,.btn.btn-orange{color: #212529;background-color: #ff9800;border-color: #e68a00;}
+.btn.w_orange:hover,.btn.btn-orange:hover{background-color: #e68a00;border-color: #ce7b00;}
 /* info */
-.btn.w_teal,.btn.btn-info{color: #fff;background-color: #17a2b8;border-color: #17a2b8;}
-.btn.w_teal:hover,.btn.btn-info:hover{background-color: #138496;border-color: #117a8b;}
+.btn.w_teal,.btn.btn-teal,.btn.btn-info{color: #fff;background-color: #17a2b8;border-color: #17a2b8;}
+.btn.w_teal:hover,.btn.btn-teal:hover,.btn.btn-info:hover{background-color: #138496;border-color: #117a8b;}
 /* white */
-.btn.w_white{color: #212529;background-color: #f8f9fa;border-color: #dae0e5;}
-.btn.w_white:hover{background-color: #e2e6ea;}
+.btn.w_white,.btn.btn-white{color: #212529;background-color: #f8f9fa;border-color: #dae0e5;}
+.btn.w_white:hover,.btn.btn-white:hover{background-color: #e2e6ea;}
 /* black */
-.btn.w_black{color: #fff;background-color: #343a40;border-color: #343a40;}
-.btn.w_black:hover{background-color: #23272b;border-color: #1d2124;}
+.btn.w_black,.btn.btn-black{color: #fff;background-color: #343a40;border-color: #343a40;}
+.btn.w_black:hover,.btn.btn-black:hover{background-color: #23272b;border-color: #1d2124;}
 
 
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/

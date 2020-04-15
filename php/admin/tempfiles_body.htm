@@ -1,46 +1,79 @@
 <view:default>
-<div class="container-fluid">
-	<div class="row-sm-12">
-		<div class="w_bigger w_lblue w_bold"><span class="icon-file-code"></span> Temp Files Manager - <?=$tempdir;?></div>
-	</div>
-	<div class="row-sm-12">
-		<form method="post" action="/php/admin.php">
-		<input type="hidden" name="_menu" value="tempfiles" />
-		<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
-		<table class="table table-striped table-bordered table-hover table-condensed">
-			<tr>
-				<th><?=buildFormCheckAll('class','file');?></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=name">Name</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=ext">Ext</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=size">Size</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=_cdate_age">Age</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=_adate_age">Last Used</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=_edate_age">Last Edited</a></th>
-				<th><a href="/php/admin.php?_menu=tempfiles&sort=lines">Lines</a></th>
-			</tr>
-			<view:_file>
-			<tr>
-				<td><input type="checkbox" class="file" name="delete[]" value="<?=encodeBase64($file['name']);?>" id="<?=$file['sha_name'];?>" /> <label for="<?=$file['sha_name'];?>"></label></td>
-				<td><a href="#" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',file:'<?=encodeBase64($file['name']);?>'});"><?=getFileName($file['name'],1);?></a></td>
-				<td><?=$file['ext'];?></td>
-				<td class="text-right"><?=$file['size_verbose'];?></td>
-				<td class="text-right"><?=$file['_cdate_age_verbose'];?></td>
-				<td class="text-right"><?=$file['_adate_age_verbose'];?></td>
-				<td class="text-right"><?=$file['_edate_age_verbose'];?></td>
-				<td class="text-right"><?=$file['lines'];?></td>
-			</tr>
-			</view:_file>
-			<?=renderEach('_file',$files,array('-alias'=>'file'));?>
-		</table>
-		<button class="btn btn-primary" type="submit">Remove Selected Files</button>
-		</form>
-	</div>
+<script type="text/javascript">
+	function tempfilesClearFile(el){
+		if(document.tempfiles_form.ext.value.length==0){return false;}
+		let ext=document.tempfiles_form.ext.value;
+		el.dataset.name;
+		return ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',func:'clear_file',ext:ext,file:el.dataset.name});
+	}
+	function tempfilesViewFile(el){
+		el.dataset.name;
+		return ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',func:'view_file',file:el.dataset.name});
+	}
+	function tempfilesNavTab(el){
+		wacss.setActiveTab(el);
+		document.tempfiles_form.ext.value=el.dataset.name;
+		document.tempfiles_form.func.value='list';
+		return ajaxSubmitForm(document.tempfiles_form,'tempfiles_content');
+	}
+	function tempfilesClearTab(){
+		if(document.tempfiles_form.ext.value.length==0){return false;}
+		let ext=document.tempfiles_form.ext.value;
+		if(!confirm('Clear all temp files with a \''+ext+'\' extension?')){return false;}
+		window.location='/php/admin.php?_menu=tempfiles&func=clear_tab&ext='+ext;
+		return false;
+	}
+	function tempfilesClearChecked(){
+		if(document.tempfiles_form.ext.value.length==0){return false;}
+		let ext=document.tempfiles_form.ext.value;
+		if(!confirm('Clear all selected temp files?')){return false;}
+		let checked=new Array();
+		let list=document.querySelectorAll('input[type="checkbox"].selectfile:checked');
+		for(let i=0;i<list.length;i++){
+			checked.push(list[i].value.split('.').slice(0, -1).join('.'));
+		}
+		if(checked.length==0){return false;}
+		let files=implode(';',checked);
+		return ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',ext:ext,func:'clear_checked',files:files});
+	}
+	function tempfilesRefresh(){
+		window.location='/php/admin.php?_menu=tempfiles';
+		return false;
+	}
+</script>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-file-code"></span> <translate>Manage Temp Files</translate></h2>
+<div class="w_right" style="margin-bottom:5px;">
+	<a href="/php/admin.php?_menu=tempfiles&func=clear_all" onclick="if(!confirm('Are you sure?')){return false;}" class="button btn btn-danger"><span class="icon-erase"></span> Clear All Tabs</a>
+	<a href="#clear_tab" onclick="return tempfilesClearTab();" class="button btn btn-orange"><span class="icon-tab"></span> Clear Current Tab</a>
+	<a href="#clear_checked" onclick="return tempfilesClearChecked();" class="button btn btn-yellow"><span class="icon-checkbox"></span> Clear Checked Files</a>
+	<a href="#refresh" onclick="return tempfilesRefresh();" class="button btn btn-blue"><span class="icon-refresh"></span></a>
+</div>
+<form method="post" name="tempfiles_form" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="tempfiles" />
+	<input type="hidden" name="ext" value="<?=$tabs[0]['name'];?>" />
+	<input type="hidden" name="sort" value="name" />
+	<input type="hidden" name="func" value="list" />
+<ul class="nav-tabs <?=configValue('admin_color');?>">
+	<view:tab>
+	<li class="<?=$tab['class'];?>">
+		<a href="#" onclick="return tempfilesNavTab(this);" data-name="<?=$tab['name'];?>"><?=$tab['name'];?> (<?=$tab['count'];?>)</a>
+	</li>
+	</view:tab>
+	<?=renderEach('tab',$tabs,'tab');?>
+</ul>
+<div id="tempfiles_content">
+	<?=tempfilesShowList($tabs[0]['name'],'name');?>
 </div>
 </view:default>
 
-<view:details>
-	<div class="w_centerpop_title">Temp File Details - <?=$file['name'];?></div>
+<view:list>
+	<?=tempfilesShowList($ext,$sort);?>
+</view:list>
+
+
+<view:view_file>
+	<div class="w_centerpop_title">Temp File Details - <?=$file;?></div>
 	<div class="w_centerpop_content">
-		<textarea style="width:700px;height:400px;" data-behavior="<?=$behavior;?>"><?=encodeHtml($content);?></textarea>
+		<textarea style="margin-top:10px;width:700px;height:400px;" wrap="off" data-behavior="<?=$behavior;?>"><?=encodeHtml($content);?></textarea>
 	</div>
-</view:details>
+</view:view_file>

@@ -1771,22 +1771,28 @@ function checkAllElements(att,val,ck){
     //info:check/toggle all checkboxes that have an attribute of value
     //info: returns number of items checked
     //usage: <input type="checkbox" onclick="checkAllElements('cid','mylist', this.checked);">
-    var cust=GetElementsByAttribute('input',att,'^'+val+'$');
-    var cnt = 0;
-    //console.log(cust.length,att,val,ck);
-    for(var i=0;i<cust.length;i++){
-		if(cust[i].type=='checkbox'){
-			//process any onclick attribute
-			if(undefined != cust[i].getAttribute('onclick')){
-				simulateEvent(cust[i], 'click');
-				//console.log(cust[i], 'click');
-			}
-			cust[i].checked=ck;
-			cnt++;
-			}
-    	}
-	return false;
+    let list;
+    switch(att.toLowerCase()){
+    	case 'class':
+    		list=document.querySelectorAll('input[type="checkbox"].'+val);
+    	break;
+    	case 'id':
+    		list=document.querySelectorAll('input[type="checkbox"]#'+val);
+    	break;
+    	default:
+    		list=document.querySelectorAll('input[type="checkbox"]['+att+'="'+val+'"]');
+    		//list=GetElementsByAttribute('input',att,'^'+val+'$');
+    	break;
     }
+    for(var i=0;i<list.length;i++){
+		//process any onclick attribute
+		if(undefined != list[i].dataset.onclick){
+			simulateEvent(list[i], 'click');
+		}
+		list[i].checked=ck;
+    }
+	return false;
+   }
 //--------------------------
 function setTimeField(frmname,fldname){
 	var dt = new Date();

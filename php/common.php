@@ -6161,7 +6161,7 @@ function encodeHtml($string='',$convert_tabs=0){
 	$string=str_replace('?',' ',$string);
 	$string=str_replace('[[!Q!]]','?',$string);
 	//Apr 2018 - no longer seem to need the UTF-8 fix
-	return $string;
+	//return $string;
 	//Aug 7 2012: fix for UTF-8 characters to show properly in textarea
 	$string = str_replace(array('{','}'),array('{','}'),htmlspecialchars($string,ENT_QUOTES));
 	
