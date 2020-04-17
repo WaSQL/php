@@ -626,8 +626,17 @@ ENDOFQUERY;
 */
 function sqliteGetDBTables($params=array()){
 	$tables=array();
-	$query="SELECT name FROM sqlite_master WHERE type='table'";
+	$query=<<<ENDOFQUERY
+	SELECT 
+	    name
+	FROM 
+	    sqlite_master 
+	WHERE 
+	    type ='table' AND 
+	    name NOT LIKE 'sqlite_%'
+ENDOFQUERY;
 	$recs=sqliteQueryResults($query);
+	//echo $query.printValue($recs);exit;
 	foreach($recs as $rec){
 		$tables[]=strtolower($rec['name']);
 	}
@@ -681,7 +690,9 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 			'_dbprimarykey'=>$rec['pk']==0?'NO':'YES'
 		);
 		$recs[$name]['type']=$recs[$name]['_dbtype'];
+		$recs[$name]['_dbtype_ex']=strtolower($recs[$name]['_dbtype']);
 	}
+	//echo printValue($recs);exit;
 	if(isset($params['-getmeta']) && $params['-getmeta']){
 		//Get a list of the metadata for this table
 		$metaopts=array('-table'=>"_fielddata",'-notimestamp'=>1,'tablename'=>$tablename);
