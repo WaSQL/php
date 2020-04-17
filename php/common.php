@@ -8697,32 +8697,28 @@ function processCSVFileLines($file,$func_name,$params=array()){
 	if(!function_exists($func_name)){
 		return 'invalid function:'.$func_name;
 		}
+	if(!isset($params['maxlen'])){$params['maxlen']=1000000;}
 	if(!isset($params['separator'])){$params['separator']=',';}
 	if(!isset($params['enclose'])){$params['enclose']='"';}
+	ini_set('auto_detect_line_endings',TRUE);
 	$linecnt = 0;
-	if ($fh = fopen($file,'r')) {
+	if($fh = fopen($file,'r')){
 		//get the fields
 		if(isset($params['fields']) && is_array($params['fields'])){
 			$fields=$params['fields'];
 		}
 		else{
-			$line = stream_get_line($fh, 1000000, "\n");
-			//remove BOM
-			$line=str_replace("\xEF\xBB\xBF",'',$line);
-			//csvParseLine($str,$delim=',', $enclose='"', $preserve=false){
-			$fields=csvParseLine($line,$params['separator'],$params['enclose']);
-			$cnt=count($fields);
-			for($x=0;$x<$cnt;$x++){
-				$fields[$x]=preg_replace('/[\-\s]+/','_',trim($fields[$x]));
-				$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
-				$fields[$x]=strtolower($fields[$x]);
-			}
+			$fields=array();
 		}
-		while (!feof($fh)) {
-			//stream_get_line is significantly faster than fgets
-			$line = stream_get_line($fh, 1000000, "\n");
-			//startline and stopline
-			if(isset($params['-start']) && $linecnt < $params['-start']-1){
+		while ( ($lineparts = fgetcsv($fh, $params['maxlen'], $params['separator'],$params['enclose']) ) !== FALSE ) {
+			if(count($fields)==0){
+				$fields=$lineparts;
+				echo "fields".printValue($fields);
+				continue;
+			}
+			echo "lineparts".printValue($lineparts);
+			break;
+	        if(isset($params['-start']) && $linecnt < $params['-start']-1){
 				$linecnt++;
 				continue;
 			}
@@ -8730,9 +8726,7 @@ function processCSVFileLines($file,$func_name,$params=array()){
 				$linecnt++;
 				break;
 			}
-			$lineparts=csvParseLine($line,$params['separator'],$params['enclose']);
-			//build an array with this line and some general info about where we are
-			$set=array(
+	        $set=array(
 				'file'			=> $file,
 				'line_number'	=> $linecnt,
 				'line'			=> array()
@@ -8749,8 +8743,8 @@ function processCSVFileLines($file,$func_name,$params=array()){
 			//pass array to function
 			$ok=call_user_func($func_name,$set);
 			$linecnt++;
-		}
-		fclose($fh);
+	    }
+	    fclose($fh);
 	}
 	return $linecnt;
 }
@@ -12701,13 +12695,13 @@ function postURL($url,$params=array()) {
 		}
     }
 	$rtn['url']=$url;
-	if(isset($params['-xml']) && $params['-xml']==1 && strlen($rtn['body'])){
+	if(isset($params['-xml']) && $params['-xml']==1 && isset($rtn['body']) && strlen($rtn['body'])){
 		$rtn['xml_array']=xml2Array($rtn['body']);
     	}
-    elseif(isset($params['-json']) && $params['-json']==1 && strlen($rtn['body'])){
+    elseif(isset($params['-json']) && $params['-json']==1 && isset($rtn['body']) && strlen($rtn['body'])){
 		$rtn['json_array']=json_decode($rtn['body'],true);
     	}
-    elseif(isset($params['-csv']) && $params['-csv']==1 && strlen($rtn['body'])){
+    elseif(isset($params['-csv']) && $params['-csv']==1 && isset($rtn['body']) && strlen($rtn['body'])){
 		$rtn['csv_array']=csv2Arrays($rtn['body']);
     	}
 	if(isset($params['skip_error']) && !$params['skip_error'] && !isset($rtn['body']) && isset($rtn['error'])){
