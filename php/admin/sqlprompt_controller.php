@@ -37,7 +37,10 @@
 		case 'setdb':
 			//echo printValue($db);exit;
 			$tables=dbGetTables($db['name']);
-			echo $db['name'].printValue($tables);exit;
+			if(!is_array($tables)){
+				echo $tables;exit;
+			}
+			//echo $db['name'].printValue($tables);exit;
 			setView('tables_fields',1);
 			return;
 		break;
