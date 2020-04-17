@@ -204,7 +204,9 @@ function writeFiles(){
 		'json'=>$json
 	);
 	$post=postURL($url,$postopts);
-	file_put_contents("{$progpath}/posteditxmlfromjson.txt",$post['body']);
+	if(isset($post['body'])){
+		file_put_contents("{$progpath}/posteditxmlfromjson.txt",$post['body']);
+	}
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code']==404){
 		abortMessage("404 Error - /php/index.php not found");
 	}
