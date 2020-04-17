@@ -879,7 +879,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 	$query="
 		SELECT
 			COLUMN_NAME
-			,ORDINAL_POSITION
+			,numeric_precision
 			,COLUMN_DEFAULT
 			,IS_NULLABLE
 			,DATA_TYPE
@@ -891,6 +891,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			table_catalog = '{$params['-dbname']}'
     		and table_schema = 'dbo'
 			and table_name = '{$table}'
+		ORDER BY ORDINAL_POSITION
 		";
 	$recs=mssqlQueryResults($query,$params);
 	//echo $query.printValue($recs);exit;
@@ -905,7 +906,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			'_dbfield'	=> strtolower($name),
 			'type'	=> $rec['data_type'],
 			'_dbtype'	=> $rec['data_type'],
-			'precision'	=> $rec['ordinal_position'],
+			'precision'	=> $rec['numeric_precision'],
 			'length'	=> $rec['character_maximum_length'],
 			'_dblength'	=> $rec['character_maximum_length'],
 			'default'	=> $rec['column_default'],
