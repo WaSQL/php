@@ -109,6 +109,7 @@ function dbAddIndex($db,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -142,6 +143,11 @@ function dbAddIndex($db,$params=array()){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			return odbcAddDBIndex($params);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeAddDBIndex($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -179,6 +185,7 @@ function dbAddRecord($db,$params=array()){
 	global $dbh_hana;
 	global $dbh_odbc;
 	global $dbh_sqlite;
+	global $dbh_snowflake;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -213,6 +220,11 @@ function dbAddRecord($db,$params=array()){
 			$dbh_odbc='';
 			return odbcAddDBRecord($params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeAddDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -242,6 +254,7 @@ function dbConnect($db,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -276,6 +289,11 @@ function dbConnect($db,$params=array()){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			return odbcDBConnect($params);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeDBConnect($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -312,6 +330,7 @@ function dbCreateTable($db,$table,$fields=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -347,6 +366,11 @@ function dbCreateTable($db,$table,$fields=array()){
 			$dbh_odbc='';
 			return odbcCreateDBTable($table,$fields);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeCreateDBTable($table,$fields);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -379,6 +403,7 @@ function dbDelRecord($db,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -413,6 +438,11 @@ function dbDelRecord($db,$params=array()){
 			$dbh_odbc='';
 			return odbcDelDBRecord($params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeDelDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -444,6 +474,7 @@ function dbDelRecordById($db,$table='',$id=0){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -478,6 +509,11 @@ function dbDelRecordById($db,$table='',$id=0){
 			$dbh_odbc='';
 			return odbcDelDBRecordById($table,$id);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeDelDBRecordById($table,$id);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -510,6 +546,7 @@ function dbDropIndex($db,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -544,6 +581,11 @@ function dbDropIndex($db,$params=array()){
 			$dbh_odbc='';
 			return odbcDropDBIndex($params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeDropDBIndex($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -574,6 +616,7 @@ function dbDropTable($db,$table,$meta=1){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -607,6 +650,11 @@ function dbDropTable($db,$table,$meta=1){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			return odbcDropDBTable($table,$meta);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeDropDBTable($table,$meta);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -678,6 +726,11 @@ function dbEditRecord($db,$params=array()){
 			$dbh_odbc='';
 			return odbcEditDBRecord($params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeEditDBRecord($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -709,6 +762,7 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -743,6 +797,11 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 			$dbh_odbc='';
 			return odbcEditDBRecordById($table,$id,$params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeEditDBRecordById($table,$id,$params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -774,6 +833,7 @@ function dbExecuteSQL($db,$sql){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -809,6 +869,11 @@ function dbExecuteSQL($db,$sql){
 			$dbh_odbc='';
 			return odbcExecuteSQL($sql);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeExecuteSQL($sql);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -836,6 +901,7 @@ function dbGetCount($db,$params){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -870,6 +936,11 @@ function dbGetCount($db,$params){
 			$dbh_odbc='';
 			return odbcGetDBCount($params);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBCount($params);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -899,6 +970,7 @@ function dbGetTableIndexes($db,$table){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -933,6 +1005,11 @@ function dbGetTableIndexes($db,$table){
 			$dbh_odbc='';
 			return odbcGetDBTableIndexes($table);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBTableIndexes($table);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -962,6 +1039,7 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -995,6 +1073,11 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			return odbcGetDBTablePrimaryKeys($table);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBTablePrimaryKeys($table);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1043,6 +1126,7 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1076,6 +1160,11 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			return odbcGetDBRecordById($table,$id,$relate,$fields);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBRecordById($table,$id,$relate,$fields);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1142,6 +1231,7 @@ function dbGetRecords($db,$params){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1176,6 +1266,11 @@ function dbGetRecords($db,$params){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			$recs=odbcGetDBRecords($params);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			$recs=snowflakeGetDBRecords($params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1214,6 +1309,7 @@ function dbGetTableFields($db,$table){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1249,6 +1345,11 @@ function dbGetTableFields($db,$table){
 			$dbh_odbc='';
 			return odbcGetDBFieldInfo($table);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBFieldInfo($table);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -1278,6 +1379,7 @@ function dbGetTables($db){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1312,6 +1414,11 @@ function dbGetTables($db){
 			$dbh_odbc='';
 			return odbcGetDBTables();
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGetDBTables();
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -1342,6 +1449,7 @@ function dbGrep($db,$search,$tables=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1376,6 +1484,11 @@ function dbGrep($db,$search,$tables=array()){
 			$dbh_odbc='';
 			return odbcGrepDBTables($search,$tables);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeGrepDBTables($search,$tables);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -1406,6 +1519,7 @@ function dbIsTable($db,$search,$tables=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1440,6 +1554,11 @@ function dbIsTable($db,$search,$tables=array()){
 			$dbh_odbc='';
 			return odbcIsDBTable($table);
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeIsDBTable($table);
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -1471,6 +1590,7 @@ function dbListRecords($db,$params){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1505,6 +1625,11 @@ function dbListRecords($db,$params){
 			$dbh_odbc='';
 			$params['-database']='odbc';
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			$params['-database']='snowflake';
+		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
@@ -1536,6 +1661,7 @@ function dbQueryResults($db,$query,$params=array()){
 	global $dbh_mssql;
 	global $dbh_hana;
 	global $dbh_odbc;
+	global $dbh_snowflake;
 	global $dbh_sqlite;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -1571,6 +1697,11 @@ function dbQueryResults($db,$query,$params=array()){
 			loadExtras('odbc');
 			$dbh_odbc='';
 			$recs=odbcQueryResults($query,$params);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			$recs=snowflakeQueryResults($query,$params);
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
@@ -1682,6 +1813,9 @@ function databaseListRecords($params=array()){
 			case 'odbc':
 				$params['-list']=odbcQueryResults($params['-query']);
 			break;
+			case 'snowflake':
+				$params['-list']=snowflakeQueryResults($params['-query']);
+			break;
 			case 'mssql':
 				$params['-list']=mssqlQueryResults($params['-query']);
 			break;
@@ -1714,6 +1848,9 @@ function databaseListRecords($params=array()){
 				case 'odbc':
 					$params=array('-list'=>odbcGetDBRecords($params));
 				break;
+				case 'snowflake':
+					$params=array('-list'=>snowflakeGetDBRecords($params));
+				break;
 				case 'mssql':
 					$params=array('-list'=>mssqlGetDBRecords($params));
 				break;
@@ -1740,6 +1877,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'odbc':
 				$info=odbcGetDBFieldInfo($params['-table']);
+			break;
+			case 'snowflake':
+				$info=snowflakeGetDBFieldInfo($params['-table']);
 			break;
 			case 'mssql':
 				$info=mssqlGetDBFieldInfo($params['-table']);
@@ -1791,6 +1931,9 @@ function databaseListRecords($params=array()){
 				break;
 				case 'odbc':
 					$ok=odbcEditDBRecord($bulk);
+				break;
+				case 'snowflake':
+					$ok=snowflakeEditDBRecord($bulk);
 				break;
 				case 'mssql':
 					$ok=mssqlEditDBRecord($bulk);
@@ -1849,6 +1992,9 @@ function databaseListRecords($params=array()){
 				break;
 				case 'odbc':
 					$recs=odbcGetDBRecords($params);
+				break;
+				case 'snowflake':
+					$recs=snowflakeGetDBRecords($params);
 				break;
 				case 'mssql':
 					$recs=mssqlGetDBRecords($params);
@@ -1914,6 +2060,9 @@ function databaseListRecords($params=array()){
 				case 'odbc':
 					$params['-total']=odbcGetDBCount($params);
 				break;
+				case 'snowflake':
+					$params['-total']=snowflakeGetDBCount($params);
+				break;
 				case 'mssql':
 					$params['-total']=mssqlGetDBCount($params);
 				break;
@@ -1942,6 +2091,9 @@ function databaseListRecords($params=array()){
 			break;
 			case 'odbc':
 				$params['-list']=odbcGetDBRecords($params);
+			break;
+			case 'snowflake':
+				$params['-list']=snowflakeGetDBRecords($params);
 			break;
 			case 'mssql':
 				$params['-list']=mssqlGetDBRecords($params);
@@ -2535,6 +2687,9 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 						$wheres[]="lower({$field}) like '%{$val}%'";
 					break;
+					case 'snowflake':
+						$wheres[]="{$field} ilike '%{$val}%'";
+					break;
 					case 'mssql':
 						$wheres[]="lower({$field}) like '%{$val}%'";
 					break;
@@ -2558,6 +2713,9 @@ function databaseParseFilters($params=array()){
 					break;
 					case 'odbc':
 						$wheres[]="lower({$field}) not like '%{$val}%'";
+					break;
+					case 'snowflake':
+						$wheres[]="{$field} not ilike '%{$val}%'";
 					break;
 					case 'mssql':
 						$wheres[]="lower({$field}) not like '%{$val}%'";
@@ -2589,6 +2747,11 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 						foreach($cvals as $cval){
 							$ors[]="lower({$field}) like '%{$cval}%'";
+						}
+					break;
+					case 'snowflake':
+						foreach($cvals as $cval){
+							$ors[]="{$field} ilike '%{$cval}%'";
 						}
 					break;
 					case 'mssql':
@@ -2630,6 +2793,11 @@ function databaseParseFilters($params=array()){
 							$ands[]="lower({$field}) not like '%{$cval}%'";
 						}
 					break;
+					case 'snowflake':
+						foreach($cvals as $cval){
+							$ands[]="{$field} not ilike '%{$cval}%'";
+						}
+					break;
 					case 'mssql':
 						foreach($cvals as $cval){
 							$ands[]="lower({$field}) not like '%{$cval}%'";
@@ -2664,6 +2832,14 @@ function databaseParseFilters($params=array()){
 							$wheres[]="lower({$field}) = '{$val}'";
 						}
 					break;
+					case 'snowflake':
+						if(isNum($val)){
+							$wheres[]="{$field} = {$val}";
+						}
+						else{
+							$wheres[]="{$field} ilike '{$val}'";
+						}
+					break;
 					default:
 						//mysql is case insensitive
 						$wheres[]="{$field} = '{$val}'";
@@ -2683,6 +2859,14 @@ function databaseParseFilters($params=array()){
 						}
 						else{
 							$wheres[]="lower({$field}) != '{$val}'";
+						}
+					break;
+					case 'snowflake':
+						if(isNum($val)){
+							$wheres[]="{$field} != {$val}";
+						}
+						else{
+							$wheres[]="{$field} not ilike '{$val}'";
 						}
 					break;
 					default:
@@ -2707,6 +2891,16 @@ function databaseParseFilters($params=array()){
 							}
 							else{
 								$ors[]="lower({$field}) = '{$cval}'";
+							}
+						}
+					break;
+					case 'snowflake':
+						foreach($cvals as $cval){
+							if(isNum($val)){
+								$ors[]="{$field} = {$cval}";
+							}
+							else{
+								$ors[]="{$field} ilike '{$cval}'";
 							}
 						}
 					break;
@@ -2736,6 +2930,16 @@ function databaseParseFilters($params=array()){
 							}
 							else{
 								$ands[]="lower({$field}) != '{$cval}'";
+							}
+						}
+					break;
+					case 'snowflake':
+						foreach($cvals as $cval){
+							if(isNum($val)){
+								$ands[]="{$field} != '{$cval}'";
+							}
+							else{
+								$ands[]="{$field} not ilike '{$cval}'";
 							}
 						}
 					break;

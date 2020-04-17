@@ -37,7 +37,7 @@
 		case 'setdb':
 			//echo printValue($db);exit;
 			$tables=dbGetTables($db['name']);
-			//echo $db['name'].printValue($tables);exit;
+			echo $db['name'].printValue($tables);exit;
 			setView('tables_fields',1);
 			return;
 		break;
