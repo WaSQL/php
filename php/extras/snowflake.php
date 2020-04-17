@@ -1,17 +1,8 @@
 <?php
 
 /*
-	snowflake Drivers for Snowflake
-		https://sfc-repo.snowflakecomputing.com/snowflake/index.html
-
-	snowflake System Tables
-		http://sapbw.optimieren.de/snowflake/snowflake/html/monitor_views.html
-
-		Sequences:
-		--select * from sequences where sequence_oid like '%1157363%'
-		--select * from sequences where sequence_name like '%1157363%'
-		--select table_name,column_name, column_id from table_columns where table_name ='SAP_FLASH_CARDS' and column_name='ID'
-		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
+	snowflake PDO
+		https://github.com/snowflakedb/pdo_snowflake
 
 */
 
