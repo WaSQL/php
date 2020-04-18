@@ -5,6 +5,9 @@ function importProcessXML($params){
 	return importXmlData($items,$params);
 }
 function importProcessCSV($params){
+	global $results;
+	global $fieldinfo;
+	global $importrecs_total;
 	if(!strlen($params['csvtable'])){
 		return "Select a table for CSV import";
 	}
@@ -13,107 +16,74 @@ function importProcessCSV($params){
 			return "Choose a table name if you want to create a new table";
 		}
 		if(isDBTable($params['csvtable_name'])){
-			return "Table '{$params['csvtable_name']}'' already exists";
+			return "Table '{$params['csvtable_name']}' already exists";
 		}
 	}
-	$lines = getCSVFileContents($params['file_abspath']);
 	if($params['csvtable']=='Create NEW Table'){
-		$fields=array(
-			'_id'	=> databasePrimaryKeyFieldString(),
-			'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
-			'_cuser'=> "int NOT NULL",
-			'_edate'=> databaseDataType('datetime')." NULL",
-			'_euser'=> "int NULL",
-			);
-		$fieldtype=array();
-		$maxlen=array();
-		foreach($lines['items'] as $item){
-			foreach($item as $key=>$val){
-				//maxlength
-				if(!isset($maxlen[$key]) || strlen($val) > $maxlen[$key]){
-					$maxlen[$key]=strlen($val);
-				}
-				//type
-				if(isNum($val)){
-					if(!isset($fieldtype[$key])){$fieldtype[$key]='int';}
-                }
-                elseif(isDateTime($val)){
-					if(!isset($fieldtype[$key])){$fieldtype[$key]='datetime';}
-                }
-                elseif(isDate($val)){
-					if(!isset($fieldtype[$key])){$fieldtype[$key]='date';}
-                }
-                else{
-					$fieldtype[$key]='varchar';
-                }
-            }
-        }
-        foreach($fieldtype as $key=>$type){
-			$fld=preg_replace('/[^a-z0-9]+/i','_',$key);
-			switch($type){
-				case 'int':
-					if($maxlen[$key] > 11){
-						$fields[$fld]="bigint NULL";	
-					}
-					else{
-						$fields[$fld]="int NULL";
-					}
-				break;
-				case 'datetime':
-					$fields[$fld]=databaseDataType('datetime')." NULL";
-				break;
-				case 'date':
-					$fields[$fld]="date NULL";
-				break;
-				case 'varchar':
-					$max=$maxlen[$key];
-					//round max up to nearest 5
-					$max=(round($max)%5 === 0) ? round($max) : round(($max+5/2)/5)*5;
-					if($max > 2000){$fields[$fld]="text NULL";}
-					else{$fields[$fld]="varchar({$max}) NULL";}	
-				break;
-            }
-        }
+		$fields=getCSVSchema($params['file_abspath']);
         //create the table
-        $params['csvtable']=$params['csvtable_name'];
+        $params['csvtable']=$_REQUEST['csvtable']=$params['csvtable_name'];
         $ok = createDBTable($params['csvtable'],$fields);
 		if(!isNum($ok)){
-			return array("Create Table Error: ",$ok);
+			return array("Create Table Error: ",$ok,$fields);
 		}
 	}
-	//populate the table
-	$info=getDBFieldInfo($params['csvtable'],1);
-	$results=array();
-	$importcnt=0;
-	foreach($lines['items'] as $item){
-		$row++;
-		$opts=array();
-		foreach($item as $key=>$val){
-			if(!isset($info[$key])){continue;}
-			if(!strlen($val)){continue;}
-			$opts[$key]=$val;
-        	}
-        if(count($opts) > 0){
-			$opts['-table']=$params['csvtable'];
-			$id=addDBRecord($opts);
-			if(isNum($id)){
-				$importcnt+=1;
-			}
-			else{
-				$results[]="addDBRecord Error on row {$row}";
-				$results[]=$id;
-				$results[]="Opts";
-				$results[]=$opts;
-				$results[]="Maxlen";
-				$results[]=$maxlen;
-				$results[]="Fields";
-				$results[]=$fields;
-				return $results;
-            }
-        }
-    }
-    $results[]="Import Record Count: {$importcnt}";
+	$stime=microtime(true);
+	$fieldinfo=getDBFieldInfo($params['csvtable'],1);
+	$ok=processCSVLines($params['file_abspath'],'importProcessCSVLine');
+	$ok=importProcessCSVRecs();
+	$importrecs_total=number_format($importrecs_total,0);
+	$etime=round((microtime(true)-$stime),4);
+	array_unshift($results,count($results)." import calls as follows:");
+	array_unshift($results,"Total imported time: {$etime} seconds");
+	array_unshift($results,"Total imported record count: {$importrecs_total}");
+	array_unshift($results,"Tablename: {$params['csvtable']}");
     return $results;
+}
+function importProcessCSVLine($line){
+	global $importrecs;
+	global $results;
+	$importrecs[]=$line['line'];
+	if(count($importrecs) >= 1000){
+		$ok=importProcessCSVRecs();
+	}
+}
+function importProcessCSVRecs($recs=array()){
+	global $importrecs;
+	global $importrecs_total;
+	global $results;
+	global $fieldinfo;
+	$stime=microtime(true);
+	//insert into table
+	$importrecs_count=count($importrecs);
+	if($importrecs_count==0){return;}
+	$importrecs_total+=$importrecs_count;
+	$table=$_REQUEST['csvtable'];
+	$fields=array_keys($importrecs[0]);
+	foreach($fields as $i=>$field){
+		if(!isset($fieldinfo[$field])){
+			unset($fields[$i]);
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($importrecs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			$v=databaseEscapeString($v);
+			$rec[$k]="'{$v}'";
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	$ok=executeSQL($query);
+	$importrecs=array();
+	$etime=round((microtime(true)-$stime),4);
+	$results[]="imported {$importrecs_count} records in {$etime} seconds ";
 }
 function importProcessAPPS($params){
 	

@@ -9062,7 +9062,6 @@ function getCSVSchema($file,$params=array()){
 				break;
         }
     }
-    echo printValue($fields);exit;
 	return $fields;
 }
 //---------- begin function fopen_utf8 ----
