@@ -8674,6 +8674,8 @@ function processFileLines($file,$func_name,$params=array()){
 * @describe alias to processCSVLines for backward compatibility
 */
 function processCSVFileLines($file,$func_name,$params=array()){
+	if(isset($params['fields']) && !isset($params['-fields'])){$params['-fields']=$params['fields'];}
+	if(isset($params['map']) && !isset($params['-map'])){$params['-map']=$params['map'];}
 	return processCSVLines($file,$func_name,$params);
 }
 //---------- begin function processCSVLines---------------------------------------
@@ -8716,8 +8718,8 @@ function processCSVLines($file,$func_name,$params=array()){
 	setlocale(LC_ALL, 'en_US.UTF-8');
 	if($fh = fopen_utf8($file,'r')){
 		//get the fields
-		if(isset($params['fields']) && is_array($params['fields'])){
-			$fields=$params['fields'];
+		if(isset($params['-fields']) && is_array($params['-fields'])){
+			$fields=$params['-fields'];
 		}
 		else{
 			$fields=array();
