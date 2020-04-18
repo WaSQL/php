@@ -8672,6 +8672,13 @@ function processFileLines($file,$func_name,$params=array()){
 }
 //---------- begin function processCSVFileLines---------------------------------------
 /**
+* @describe alias to processCSVLines for backward compatibility
+*/
+function processCSVFileLines($file,$func_name,$params=array()){
+	return processCSVLines($file,$func_name,$params);
+}
+//---------- begin function processCSVLines---------------------------------------
+/**
 * @describe sends each line of a CSV file through specified function for processing
 * @param file string
 *	full path and name of the file to inspect
@@ -8682,27 +8689,33 @@ function processFileLines($file,$func_name,$params=array()){
 *		line_number - line number in file
 *		line - CSV array based on first fields
 * @param params array
-*	[separator] - defaults to ,
-*	[enclose] - defaults to "
-*	[fields] - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
-*	[-start] - line to start on
-*	[-stop]  - line to stop on
+*	[-maxlen] int - max row length. defaults to 1000000
+*	[-separator] char - defaults to ,
+*	[-enclose] char - defaults to "
+*	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[-start|skiprows] int - line to start on
+*	[-maxrows|stop]  int - line to stop on
+*	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
-*	$num=processCSVFileLines($afile,'processLine');
+*	$num=processCSVLines($afile,'processLine');
 */
-function processCSVFileLines($file,$func_name,$params=array()){
+function processCSVLines($file,$func_name,$params=array()){
 	//validate function exists
 	if(!function_exists($func_name)){
 		return 'invalid function:'.$func_name;
 		}
-	if(!isset($params['maxlen'])){$params['maxlen']=1000000;}
-	if(!isset($params['separator'])){$params['separator']=',';}
-	if(!isset($params['enclose'])){$params['enclose']='"';}
+	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
+	if(!isset($params['-separator'])){$params['-separator']=',';}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
+	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
+	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
 	ini_set('auto_detect_line_endings',TRUE);
 	$linecnt = 0;
-	if($fh = fopen($file,'r')){
+	$bomchecked=0;
+	setlocale(LC_ALL, 'en_US.UTF-8');
+	if($fh = fopen_utf8($file,'r')){
 		//get the fields
 		if(isset($params['fields']) && is_array($params['fields'])){
 			$fields=$params['fields'];
@@ -8710,43 +8723,348 @@ function processCSVFileLines($file,$func_name,$params=array()){
 		else{
 			$fields=array();
 		}
-		while ( ($lineparts = fgetcsv($fh, $params['maxlen'], $params['separator'],$params['enclose']) ) !== FALSE ) {
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+			if($bomchecked==0){
+				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
+				$bomchecked=1;
+			}
 			if(count($fields)==0){
 				$fields=$lineparts;
-				echo "fields".printValue($fields);
+				//remove spaces and weird chars
+				foreach($fields as $x=>$field){
+					if(isset($params['-map']) && isset($params['-map'][$fields[$x]])){
+						$fields[$x]=$params['-map'][$fields[$x]];
+					}
+					else{
+						if($fields[$x]=='#'){$fields[$x]='row';}
+						$fields[$x]=preg_replace('/\ \%$/','_pcnt',trim($fields[$x]));
+						$fields[$x]=preg_replace('/\ \#$/','_num',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[\.\-\s]+/','_',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
+						$fields[$x]=strtolower($fields[$x]);
+					}
+				}
 				continue;
 			}
-			echo "lineparts".printValue($lineparts);
-			break;
 	        if(isset($params['-start']) && $linecnt < $params['-start']-1){
 				$linecnt++;
 				continue;
 			}
-			elseif(isset($params['-stop']) && $linecnt >= $params['-stop']-1){
-				$linecnt++;
-				break;
-			}
 	        $set=array(
 				'file'			=> $file,
 				'line_number'	=> $linecnt,
+				'processtime'	=> microtime(true),
 				'line'			=> array()
 			);
 			foreach($params as $key=>$val){
-				if(preg_match('/^(\-start|\-stop|separator|enclose)$/i',$key)){continue;}
+				if(stringBeginsWith($key,'-')){continue;}
             	$set[$key]=$val;
 			}
-			$cnt=count($fields);
-			for($x=0;$x<$cnt;$x++){
-            	$key=$fields[$x];
-            	$set['line'][$key]=$lineparts[$x];
+			foreach($fields as $x=>$field){
+				$val=$lineparts[$x];
+				$set['line'][$field]=$lineparts[$x];
 			}
 			//pass array to function
 			$ok=call_user_func($func_name,$set);
 			$linecnt++;
+			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
+				break;
+			}
 	    }
 	    fclose($fh);
 	}
 	return $linecnt;
+}
+//---------- begin function getCSVRecords---------------------------------------
+/**
+* @describe returns csv file contents as recordsets
+* @param file string
+*	full path and name of the file to inspect
+* @param params array
+*	[-function] str - function to send each rec to as it processes the csv file
+*	[-maxlen] int - max row length. defaults to 1000000
+*	[-separator] char - defaults to ,
+*	[-enclose] char - defaults to "
+*	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[-start|skiprows] int - line to start on
+*	[-maxrows|stop] int - max number of rows to return
+*	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
+*	any additional key/values passed in will be added to each rec
+* @return array - recordsets
+* @usage
+*	$recs=getCSVRecords($afile);
+*/
+function getCSVRecords($file,$params=array()){
+	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
+	if(!isset($params['-separator'])){$params['-separator']=',';}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
+	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
+	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
+	ini_set('auto_detect_line_endings',TRUE);
+	$recs=array();
+	$linecnt = 0;
+	$bomchecked=0;
+	setlocale(LC_ALL, 'en_US.UTF-8');
+	if($fh = fopen_utf8($file,'r')){
+		//get the fields
+		if(isset($params['fields']) && is_array($params['fields'])){
+			$fields=$params['fields'];
+		}
+		else{
+			$fields=array();
+		}
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+			if($bomchecked==0){
+				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
+				$bomchecked=1;
+			}
+			if(count($fields)==0){
+				$fields=$lineparts;
+				//remove spaces and weird chars
+				foreach($fields as $x=>$field){
+					if(isset($params['-map']) && isset($params['-map'][$fields[$x]])){
+						$fields[$x]=$params['-map'][$fields[$x]];
+					}
+					else{
+						if($fields[$x]=='#'){$fields[$x]='row';}
+						$fields[$x]=preg_replace('/\ \%$/','_pcnt',trim($fields[$x]));
+						$fields[$x]=preg_replace('/\ \#$/','_num',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[\.\-\s]+/','_',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
+						$fields[$x]=strtolower($fields[$x]);
+					}
+				}
+				continue;
+			}
+	        if(isset($params['-start']) && $linecnt < $params['-start']-1){
+				$linecnt++;
+				continue;
+			}
+	        $rec=array(
+	        	'_id'	=> $linecnt,	
+				'_file'	=> $file
+			);
+			foreach($params as $key=>$val){
+				if(stringBeginsWith($key,'-')){continue;}
+            	$rec[$key]=$val;
+			}
+			foreach($fields as $x=>$field){
+				$val=$lineparts[$x];
+				$rec[$field]=$lineparts[$x];
+			}
+			if(isset($params['-function']) && strlen($params['-function']) && function_exists($params['-function'])){
+				$ok=call_user_func($params['-function'],$rec);	
+				if(is_array($ok)){$rec=$ok;}
+			}
+			$linecnt++;
+			$recs[]=$rec;
+			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
+				break;
+			}
+	    }
+	    fclose($fh);
+	}
+	return $recs;
+}
+//---------- begin function getCSVSchema---------------------------------------
+/**
+* @describe returns suggested schema for data in csv file
+* @param file string
+*	full path and name of the file to inspect
+* @param params array
+*	[-maxlen] int - max row length. defaults to 1000000
+*	[-separator] char - defaults to ,
+*	[-enclose] char - defaults to "
+*	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[-start|skiprows] int - line to start on
+*	[-stop|maxrows] int - max number of rows to check
+* @return array schema fields, including wasql fields.  e.g. array('_cdate'=> "datetime NOT NULL",.....)
+* @usage
+*	$fields=getCSVSchema($afile);
+*/
+function getCSVSchema($file,$params=array()){
+	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
+	if(!isset($params['-separator'])){$params['-separator']=',';}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
+	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
+	ini_set('auto_detect_line_endings',TRUE);
+	$linecnt = 0;
+	$bomchecked=0;
+	setlocale(LC_ALL, 'en_US.UTF-8');
+	$properties=array();
+	if($fh = fopen_utf8($file,'r')){
+		//get the fields
+		if(isset($params['fields']) && is_array($params['fields'])){
+			$fields=$params['fields'];
+		}
+		else{
+			$fields=array();
+		}
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+			if($bomchecked==0){
+				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
+				$bomchecked=1;
+			}
+			if(count($fields)==0){
+				$fields=$lineparts;
+				//remove spaces and weird chars
+				foreach($fields as $x=>$field){
+					if(isset($params['-map']) && isset($params['-map'][$fields[$x]])){
+						$fields[$x]=$params['-map'][$fields[$x]];
+					}
+					else{
+						if($fields[$x]=='#'){$fields[$x]='row';}
+						$fields[$x]=preg_replace('/\ \%$/','_pcnt',trim($fields[$x]));
+						$fields[$x]=preg_replace('/\ \#$/','_num',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[\.\-\s]+/','_',trim($fields[$x]));
+						$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
+						$fields[$x]=strtolower($fields[$x]);
+					}
+				}
+				continue;
+			}
+	        if(isset($params['-start']) && $linecnt < $params['-start']-1){
+				$linecnt++;
+				continue;
+			}
+			foreach($fields as $x=>$field){
+				$val=trim($lineparts[$x]);
+				if($val=='null'){$val='';}
+				if(!strlen($val)){continue;}
+				if(!isset($properties[$field])){
+					$properties[$field]['maxlen']=strlen($val);
+					$properties[$field]['maxval']=$val;
+					if(strlen($val)){
+						$type='varchar';$precision=0;
+						if(strlen($val)==1 && preg_match('/^[0-9]$/',$val)){$type='int';}
+						elseif(ctype_digit($val)){$type='int';}
+						elseif(ctype_alpha($val)){$type='varchar';}
+						elseif(preg_match('/^[0-9\.]+$/',$val)){
+							$type='float';
+							$precision=strlen(substr(strrchr($val, "."), 1));
+						}
+						elseif(isDateTime($val)){
+							$type='datetime';
+						}
+						elseif(isDate($val)){
+							$type='date';
+						}
+						$properties[$field]['type']=$type;
+						$properties[$field]['precision']=$precision;
+						$properties[$field]['first_type']=$type;
+						$properties[$field]['first_val']=$val;
+					}
+					else{
+						$properties[$field]['type']='varchar';
+					}
+				}
+				elseif(strlen($val)){
+					if(strlen($val) > $properties[$field]['maxlen']){
+						$properties[$field]['maxlen']=strlen($val);
+						$properties[$field]['maxval']=$val;		
+					}
+					$type='varchar';$precision=0;
+					if(strlen($val)==1 && preg_match('/^[0-9]$/',$val)){$type='int';}
+					elseif(ctype_digit($val)){$type='int';}
+					elseif(ctype_alpha($val)){$type='varchar';}
+					elseif(preg_match('/^[0-9\.]+$/',$val)){
+						$type='float';
+						$precision=strlen(substr(strrchr($val, "."), 1));
+					}
+					elseif(isDateTime($val)){
+						$type='datetime';
+					}
+					elseif(isDate($val)){
+						$type='date';
+					}
+					if($type != $properties[$field]['type']){
+						$oldtype=$properties[$field]['type'];
+						switch($oldtype){
+							case 'int':
+								if($type=='float'){
+									$properties[$field]['type']=$type;
+									$properties[$field]['precision']=$precision;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+								else{
+									$type='varchar';
+									$properties[$field]['type']=$type;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+							break;
+							case 'float':
+								if($type !='int'){
+									$type='varchar';
+									$properties[$field]['type']=$type;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+							break;
+							case 'date':
+								if($type=='datetime'){
+									$properties[$field]['type']=$type;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+								else{
+									$type='varchar';
+									$properties[$field]['type']=$type;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+							break;
+							case 'datetime':
+								if($type !='date'){
+									$type='varchar';
+									$properties[$field]['type']=$type;
+									$properties[$field]['switches'][]="val:{$val}, oldtype:{$oldtype}, newtype:{$type}";
+								}
+							break;
+						}
+						if(count($properties[$field]['switches']) > 10){
+							echo $field.printValue($properties[$field]['switches']);exit;
+						}
+					}
+				}
+				
+			}
+			$linecnt++;
+			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
+				break;
+			}
+	    }
+	    fclose($fh);
+	}
+	$fields=array(
+		'_id'	=> function_exists('databasePrimaryKeyFieldString')?databasePrimaryKeyFieldString():'autoincrement primary key',
+		'_cdate'=> "datetime NOT NULL",
+		'_cuser'=> "int NOT NULL",
+		'_edate'=> "datetime NULL",
+		'_euser'=> "int NULL",
+		);
+	foreach($properties as $fld=>$info){
+		switch($info['type']){
+			case 'int':
+			case 'integer':
+				$fields[$fld]="integer NULL";
+			break;
+			case 'float':
+				$fields[$fld]="float({$info['maxlen']},{$info['precision']}) NULL";
+			break;
+			case 'datetime':
+				$fields[$fld]="datetime NULL";
+				break;
+			case 'date':
+				$fields[$fld]="date NULL";
+				break;
+			default:
+				//maxlen rounded up to nearest 5
+				$max=round(($info['maxlen']+5/2)/5)*5;
+				if($max > 2000){$fields[$fld]="text NULL";}
+				elseif($max < 11){$fields[$fld]="char({$max}) NULL";}
+				else{$fields[$fld]="varchar({$max}) NULL";}
+				break;
+        }
+    }
+    echo printValue($fields);exit;
+	return $fields;
 }
 //---------- begin function fopen_utf8 ----
 /**
