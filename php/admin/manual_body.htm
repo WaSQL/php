@@ -68,7 +68,7 @@
 		<div class="col-sm-12 w_grey">
 			<div style="margin-left:25px;border-left:1px solid #ccc;padding-left:10px;">
 				<view:describe>
-					<xmp><?=$describe;?></xmp>
+					<xmp><?=html_entity_decode($describe, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp>
 				</view:describe>
 				<?=renderEach('describe',$function['describe'],'describe');?></div>
 		</div>
@@ -81,7 +81,7 @@
 				<view:usagediv>
 				<label>Usage</label>
 				<div class="well">
-					<view:usage><xmp><?=$value;?></xmp></view:usage>
+					<view:usage><xmp><?=html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp></view:usage>
 					<?=renderEach('usage',$function['usage'],'value');?>
 				</div>
 				</view:usagediv>
@@ -90,7 +90,7 @@
 				<view:returndiv>
 				<label>Return</label>
 				<div class="well">
-					<view:return><xmp><?=$value;?></xmp></view:return>
+					<view:return><xmp><?=html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp></view:return>
 					<?=renderEach('return',$function['return'],'value');?>
 				</div>
 				</view:returndiv>
@@ -100,7 +100,7 @@
 				<label>Comments</label>
 				<div class="well">
 					<view:comment>
-						<xmp><?=$comment;?></xmp>
+						<xmp><?=html_entity_decode($comment, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp>
 					</view:comment>
 					<?=renderEach('comment',$function['comments'],'comment');?>
 				</div>

@@ -4345,12 +4345,12 @@ function arrays2RSS($recs=array(),$params=array()){
 /**
 * @describe converts getDBRecords results into CSV file
 * @param arr array - the array you want to convert
-* @param param array - optional parameters as follows:
-*	-fields - comma separated list of fields to include in the csv
-*	-fieldmap - field=>mapname array of fieldmaps to change the name on the first line
-*	-noheader - do not include a header row
-*	-delim - delimiter defaults to comma
-*	-enclose - enclosed by defaults to quote
+* @param params array - optional
+*	[-fields] - comma separated list of fields to include in the csv
+*	[-fieldmap] - field=>mapname array of fieldmaps to change the name on the first line
+*	[-noheader] - do not include a header row
+*	[-delim] - delimiter defaults to comma
+*	[-enclose] - enclosed by defaults to quote
 * @usage
 * 	$csv=arrays2CSV($recs,array(
 * 		'-fields'=>'name,age,color'
@@ -4422,11 +4422,10 @@ function arrays2CSV($recs=array(),$params=array()){
 * @describe converts getDBRecords results into tab delimited file
 * @param arr array
 *	the array you want to convert
-* @param param array
-*	optional parameters as follows:
-*		<li>-fields - comma semarated list of fields to include in the csv</li>
-*		<li>-fieldmap - field=>mapname array of fieldmaps to change the name on the first line</li>
-*		<li>-noheader - do not include a header row</li>
+* @param params array
+*	[-fields] - comma semarated list of fields to include in the csv
+*	[-fieldmap] - field=>mapname array of fieldmaps to change the name on the first line
+*	[-noheader] - do not include a header row
 * @return string
 *	csv formatted output based on the recs array passed in
 */
@@ -4478,10 +4477,10 @@ function arrays2TAB($recs=array(),$params=array()){
 *	the array you want to convert
 * @param param array
 *	optional parameters as follows:
-*		<li>main - name of main xml tag - defaults to main</li>
-*		<li>item - name if item tag  - defaults to item</li>
-*		<li>skip - skip keys that start with an underscore - defaults to 0 (false)</li>
-*		<li>header - include xml header - defaults to 1</li>
+*		[main] - name of main xml tag - defaults to main
+*		[item] - name if item tag  - defaults to item
+*		[skip] - skip keys that start with an underscore - defaults to 0 (false)
+*		[header] - include xml header - defaults to 1
 * @return string
 *	xml based on the recs array passed in
 */
@@ -4824,9 +4823,9 @@ function processTranslateTags($htm){
 *	any object (array, string, etc) you want to pass in to the view. Must be referenced in views as $params
 * @param opts array
 *	optional parameters as follows:
-*		<li>-alias - String - name of the variable you want to use inside the view instead of $params. Do Not include the $</li>
-*		<li>-key - String/PHP Object - will create a variable called $key available to the view with this value</li>
-*		<li>-format - pdf|pdfx|email|addeditdbform
+*		[-alias] - String - name of the variable you want to use inside the view instead of $params. Do Not include the $
+*		[-key] - String/PHP Object - will create a variable called $key available to the view with this value
+*		[-format] - pdf|pdfx|email|addeditdbform
 *			- create a pdf from the rendered view
 *			- sends email with the view as the message.  You must pass in to, from, subject as options also or have those fields in the $params array.
 *			- renders an addEditDBForm with the view as the formfields. you must pass in -table as options or have it and -format in the params array.
@@ -5017,8 +5016,8 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 *	Each item of the array will be passed into the view as $params. Each row must be referenced in views as $params
 * @param opts mixed
 *	optional parameters as follows:
-*		<li>-alias - String - name of the variable you want to use inside the view instead of $params. Do Not include the $</li>
-*		<li>opts that do not start with a dash will be passed through as a key in params
+*		[-alias] - String - name of the variable you want to use inside the view instead of $params. Do Not include the $
+*		opts that do not start with a dash will be passed through as a key in params
 *		if this param is not an array, then the value will be set as -alias
 * @return
 *	Returns Views for each array row with PHP already evaluated
@@ -5169,12 +5168,12 @@ function stringEquals($string, $search){
 /**
 * @describe returns a calendar array for specified date, monthyear, or timestamp
 * @param str string - date, month year, or timestamp of the month and year to show the calendar for
-* @param params array - optional params as follows:
-*	-view string month|week|day - defaults to month
-*	-holidays boolean defaults to true. set to false to not load holidays as events.
-*	-events array - array of event arrays.  An event array needs
-*	-event_table string - table name of the events table to pull events from. Required Fields: startdate,name Optional: icon,user_id,private
-*  	-ical mixed - array of iCal feeds or a single feed to add to the calendar. If the array key is not a number it will be used as the group name.
+* @param params array - optional
+*	[-view] string month|week|day - defaults to month
+*	[-holidays] boolean defaults to true. set to false to not load holidays as events.
+*	[-events] array - array of event arrays.  An event array needs
+*	[-event]_table string - table name of the events table to pull events from. Required Fields: startdate,name Optional: icon,user_id,private
+*  	[-ical] mixed - array of iCal feeds or a single feed to add to the calendar. If the array key is not a number it will be used as the group name.
 *	-ical_hours - integer - number of hours to cache the iCal feed before checking again. Defaults to 12 hours
 *	-ical_icon string - default icon if none are specified for and event
 *	-ical_icons array - array of icons for groups with the groupname as the key
@@ -11749,8 +11748,7 @@ function monthName($month,$format='F'){
 //---------- begin function mysqlDate---------------------------------------
 /**
 * @describe returns mysql formated date
-* @param t timestamp
-*	Optional parameter to return date based on a timestamp
+* @param [t] int -timestamp return date based on a timestamp
 * @return
 *	mysql formated date
 * @usage $cdate = mysqlDate();
@@ -11762,8 +11760,7 @@ function mysqlDate($t=0){
 //---------- begin function mysqlDateTime---------------------------------------
 /**
 * @describe returns mysql formated datetime string
-* @param t timestamp
-*	Optional parameter to return datetime string based on a timestamp
+* @param [t] int -timestamp return date based on a timestamp
 * @return
 *	mysql formated datetime
 * @usage $cdate = mysqlDateTime();

@@ -51,7 +51,8 @@ switch(strtolower($_REQUEST['func'])){
 		foreach($files as $file){
 			$ok=manualParseFile($file['afile']);
 		}
-		$content=json_encode($docs);
+		//echo printValue($docs);exit;
+		$content=json_encode($docs,JSON_UNESCAPED_UNICODE);
 		setFileContents($docfile,$content);
 		setView('default',1);
 	break;
