@@ -2174,6 +2174,42 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 				break;
 			}	
 		}
+		elseif(isset($params['data-shape'])){
+			switch(strtolower($params['data-shape'])){
+				case 'btn':
+				case 'button':
+					$styles[] = "--shape:button";
+				break;
+				case 'circle':
+				case 'round':
+					$styles[] = "--shape:circle";
+				break;
+			}	
+		}
+		elseif(isset($params["data-shape_{$utval}"])){
+			switch(strtolower($params["data-shape_{$utval}"])){
+				case 'btn':
+				case 'button':
+					$styles[] = "--shape:button";
+				break;
+				case 'circle':
+				case 'round':
+					$styles[] = "--shape:circle";
+				break;
+			}	
+		}
+		elseif(isset($params["data-shape_{$tval}"])){
+			switch(strtolower($params["data-shape_{$tval}"])){
+				case 'btn':
+				case 'button':
+					$styles[] = "--shape:button";
+				break;
+				case 'circle':
+				case 'round':
+					$styles[] = "--shape:circle";
+				break;
+			}	
+		}
 		if(isset($params["data-color_{$utval}"])){
 			$styles[]="--color:{$params["data-color_{$utval}"]}";
 			unset($params["data-color_{$utval}"]);
