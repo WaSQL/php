@@ -368,7 +368,7 @@
 		<dataset data-label="cleanliness_score">[90]</dataset>
 	</div>
 
-	<div class="chartjs" id="barchart" data-type="bar"  data-onclick="chartJsOnclick"></div>
+	<div class="chartjs" id="barchart" data-type="line"  data-onclick="chartJsOnclick"></div>
 	<div id="barchart_data" style="display:none;">
 		<options>
 		{
@@ -410,21 +410,23 @@
 		<dataset data-label="DEF">[12,4,11,7,12]</dataset>	
 	</div>
 
-	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');">Update guage</a></div>
+	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');return false;">Update guage</a></div>
 	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-value="90"  data-onclick="chartJsOnclick"></div>
 	<div id="guagechart1_data" style="display:none;">90</div>
 
-	<div><a href="#" onclick="setText('piechart1_data',getText('piechart1_data2'));wacss.initChartJs('piechart1');">Update pie chart</a></div>
+	<div><a href="#" onclick="setText('piechart1_data',getText('piechart1_data2'));wacss.initChartJs('piechart1');return false;">Update pie chart</a></div>
 	<div class="chartjs" id="piechart1" style="height:300px;width:400px;" data-type="pie" data-ylabel="Genders" data-onclick="chartJsOnclick"></div>
 	<div id="piechart1_data" style="display:none;">
-		<dataset>{"m":17,"f":16,"n":8}</dataset>
+		<dataset>[12,25,263]</dataset>
+		<labels>["Pending Action","In Process","Resolved"]</labels>
 	</div>
 	<div id="piechart1_data2" style="display:none;">
-		<dataset>{"m":10,"f":20,"n":5}</dataset>
+		<dataset>[9,29,263]</dataset>
+		<labels>["Pending Action","In Process","Resolved"]</labels>
 	</div>
 
 
-	<div><a href="#" onclick="setText('linechart_data',getText('linechart_data2'));wacss.initChartJs('linechart');">Update chart</a></div>
+	<div><a href="#" onclick="setText('linechart_data',getText('linechart_data2'));wacss.initChartJs('linechart');return false;">Update chart</a></div>
 	<div class="chartjs" id="linechart" style="height:650px" data-type="bar" data-x="paymentDate" data-y="amount"  data-onclick="chartJsOnclick"></div>
 	<div id="linechart_data" style="display:none;">
 		<options>

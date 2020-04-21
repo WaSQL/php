@@ -1,6 +1,22 @@
 <?php
 /*functions only used by wasql*/
 register_shutdown_function('gracefulShutdown');
+//---------- begin function wasqlIsCurrent--------------------------------------
+/**
+* @describe returns true if your WaSQL version is current
+* @usage if(!wasqlIsCurrent()){....update....}
+* @return bolean
+*	returns true on success
+*/
+function wasqlIsCurrent(){
+	//get current version using git rev-parse HEAD and store it in local.version
+	$out=cmdResults('git rev-parse HEAD');
+	$version_local=$out['stdout'];
+	$post=postURL('https://api.github.com/repos/WaSQL/php/commits/master',array('-method'=>'GET','-json'=>1));
+	$version_remote=$post['json_array']['sha'];
+	if($version_local == $version_remote){return true;}
+	return false;
+}
 //---------- begin function wasqlClearMinCache--------------------------------------
 /**
 * @describe removes all files in the w_min cache directory

@@ -139,10 +139,10 @@
 		<!-- Config -->
 		<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <translate>Clear</translate></a></li>
 		<!-- Help -->
-		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-info-circled"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
+		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled w_big"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
 			<ul>
 				<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> <translate>Documentation</translate></a></li>
-				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-git"></span> <translate>Update</translate> WaSQL</a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
 				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <translate>About</translate> WaSQL</a></li>
@@ -175,9 +175,13 @@
 				<li><a href="/php/admin.php?_logout=1"><span class="icon-plus"></span> <translate>Log Off</translate></a></li>
 			</ul>
 		</li>
-		
 		</view:admin>
 	</ul>
+	<view:check_for_updates>
+	<div style="display:none"><div id="topmenu_null"></div></div>
+	<?=buildOnLoad("ajaxGet('/php/admin.php','topmenu_null',{setprocessing:0,_menu:'check_for_updates'});");?>
+	</view:check_for_updates>
+	<?=renderViewIf(!isset($_SESSION['check_for_updates']),'check_for_updates');?>
 </nav>
 </view:default>
 

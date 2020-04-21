@@ -563,6 +563,14 @@ if(isAjax()){
 	}
 
 	switch(strtolower($_REQUEST['_menu'])){
+		case 'check_for_updates':
+			$_SESSION['check_for_updates']=time();
+			if(wasqlIsCurrent()){
+				echo buildOnLoad("document.querySelector('#topmenu_help_icon').classList.add('w_warning');document.querySelector('#helpmenu_wasql_icon').classList.add('w_warning');");
+			}
+			echo PHP_EOL."check_for_updates completed. ".time();
+			exit;
+		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
