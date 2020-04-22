@@ -114,6 +114,12 @@
 				}
 				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
 				if($CONFIG['database']==$d){continue;}
+				//access?
+				if(isset($db['access']) && strtolower($db['access']) != 'all'){
+					$access_users=preg_split('/\,/',strtolower($db['access']));
+					if(!in_array($USER['username'],$access_users)){continue;}
+				}
+				//specific user and pass
 				if(isset($db["dbuser_{$USER['username']}"])){
 					$db['dbuser']=$db["dbuser_{$USER['username']}"];
 				}

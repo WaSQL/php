@@ -20,7 +20,7 @@
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
 						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
-						<a class="w_link" href="<?=$_SESSION['sync_target_url'];?>" target="_blank"><?=$_SESSION['sync_target_url'];?></a>
+						<a class="w_link" href="<?=$_SESSION['sync_target_url'];?>?_menu=synchronize" target="_blank"><?=$_SESSION['sync_target_url'];?></a>
 					</td>
 				</tr>
 			</table>

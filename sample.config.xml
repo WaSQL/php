@@ -71,6 +71,17 @@
 			userlog 0|1 - set to 1 to log auth requests to your database. Logs to user.log in the same directory as user.php in WaSQL
 	-->
 	<!-- database container to define database settings.  -->
+	<database
+        name="sample_pg"
+        displayname="Sample Postgres DB"
+        dbtype="postgres"
+        dbhost="some.remoteserver.net"
+        dbuser="user"
+        dbpass="pass"
+        dbname="postgres"
+        schema="postgres"
+        access="username1,username2"
+    />
 	 <database
         name="my_local"
         dbhost="localhost"
