@@ -1761,6 +1761,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
 *	[{field}_checkbox] - 1 - adds a checkbox before the field value that holds the field value
+*	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_checkmark] - 1 - shows checkmark if value is 1
 *	[{field}_verbosetime] - 1 - converts value verboseTime
 *	[{field}_verbosesize] - 1 - converts value verboseSize
@@ -2487,6 +2488,11 @@ function databaseListRecords($params=array()){
 				$cval=$value;
 				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$value.'"> ';
 				if(!isNum($cval)){$value .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
+			}
+			elseif(!empty($params[$fld."_radio"])){
+				$cval=$value;
+				$value='<input type="radio" data-group="'.$fld.'_radio" id="'.$fld.'_radio_'.$row.'" name="'.$fld.'[]" value="'.$value.'"> ';
+				if(!isNum($cval)){$value .= '<label for="'.$fld.'_radio_'.$row.'">'.$cval.'</label>';}
 			}
 			elseif(!empty($params[$fld."_href"])){
 				$href=$params[$fld."_href"];
