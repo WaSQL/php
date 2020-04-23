@@ -2526,7 +2526,7 @@ function databaseListRecords($params=array()){
 					$value .= ' onclick="'.$onclick.'"';
 				}
 				if(!empty($params[$fld."_checkbox_checked"])){
-					$checkbox_checked=$params[$fld."_checkbox_value"];
+					$checkbox_checked=$params[$fld."_checkbox_checked"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
@@ -2574,7 +2574,7 @@ function databaseListRecords($params=array()){
 					$value .= ' onclick="'.$onclick.'"';
 				}
 				if(!empty($params[$fld."_radio_checked"])){
-					$radio_checked=$params[$fld."_radio_value"];
+					$radio_checked=$params[$fld."_radio_checked"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
