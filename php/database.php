@@ -2495,7 +2495,7 @@ function databaseListRecords($params=array()){
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
 						$replace='%'.$recfld.'%';
-	                    $value=str_replace($replace,strip_tags($rec[$recfld]),$value);
+	                    $onclick=str_replace($replace,strip_tags($rec[$recfld]),$onclick);
 	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
@@ -2511,7 +2511,7 @@ function databaseListRecords($params=array()){
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
 						$replace='%'.$recfld.'%';
-	                    $value=str_replace($replace,strip_tags($rec[$recfld]),$value);
+	                    $onclick=str_replace($replace,strip_tags($rec[$recfld]),$onclick);
 	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
