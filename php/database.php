@@ -2491,6 +2491,12 @@ function databaseListRecords($params=array()){
 				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$value.'"';
 				if(!empty($params[$fld."_checkbox_onclick"])){
 					$onclick=$params[$fld."_checkbox_onclick"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $value=str_replace($replace,strip_tags($rec[$recfld]),$value);
+	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
 				$value.=' /> ';
@@ -2501,6 +2507,12 @@ function databaseListRecords($params=array()){
 				$value='<input type="radio" data-group="'.$fld.'_radio" id="'.$fld.'_radio_'.$row.'" name="'.$fld.'[]" value="'.$value.'"';
 				if(!empty($params[$fld."_radio_onclick"])){
 					$onclick=$params[$fld."_radio_onclick"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $value=str_replace($replace,strip_tags($rec[$recfld]),$value);
+	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
 				$value.=' /> ';
