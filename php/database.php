@@ -1762,8 +1762,14 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
 *	[{field}_checkbox] - 1 - adds a checkbox before the field value that holds the field value
 *	[{field}_checkbox_onclick] - string - adds a onclick value if checkbox was specifid
+*	[{field}_checkbox_id] - string - sets id of checkbox
+*	[{field}_checkbox_value] - string - sets value of checkbox
+*	[{field}_checkbox_checked] - string - checks the box if string equals checkbox id
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_radio_onclick] - string - adds a onclick value if radio was specifid
+*	[{field}_radio_id] - string - sets id of radio
+*	[{field}_radio_value] - string - sets value of radio
+*	[{field}_radio_checked] - string - checks the box if string equals radio id
 *	[{field}_checkmark] - 1 - shows checkmark if value is 1
 *	[{field}_verbosetime] - 1 - converts value verboseTime
 *	[{field}_verbosesize] - 1 - converts value verboseSize
@@ -2488,7 +2494,27 @@ function databaseListRecords($params=array()){
 			}
 			elseif(!empty($params[$fld."_checkbox"])){
 				$cval=$value;
-				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$fld.'_checkbox_'.$row.'" name="'.$fld.'[]" value="'.$value.'"';
+				$checkbox_id=$fld.'_checkbox_'.$row;
+				if(!empty($params[$fld."_checkbox_id"])){
+					$checkbox_id=$params[$fld."_checkbox_id"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $checkbox_id=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_id);
+	                }
+				}
+				$checkbox_value=$value;
+				if(!empty($params[$fld."_checkbox_value"])){
+					$checkbox_value=$params[$fld."_checkbox_value"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $checkbox_value=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_value);
+	                }
+				}
+				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$checkbox_id.'" name="'.$fld.'[]" value="'.$checkbox_value.'"';
 				if(!empty($params[$fld."_checkbox_onclick"])){
 					$onclick=$params[$fld."_checkbox_onclick"];
 					//substitute and %{field}% with its value in this record
@@ -2499,12 +2525,44 @@ function databaseListRecords($params=array()){
 	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
+				if(!empty($params[$fld."_checkbox_checked"])){
+					$checkbox_checked=$params[$fld."_checkbox_value"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $checkbox_checked=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_checked);
+	                }
+	                if($checkbox_checked==$checkbox_id){
+	                	$value .= ' checked';
+	                }
+				}
 				$value.=' /> ';
-				if(!isNum($cval)){$value .= '<label for="'.$fld.'_checkbox_'.$row.'">'.$cval.'</label>';}
+				if(!isNum($cval)){$value .= '<label for="'.$checkbox_id.'">'.$cval.'</label>';}
 			}
 			elseif(!empty($params[$fld."_radio"])){
 				$cval=$value;
-				$value='<input type="radio" data-group="'.$fld.'_radio" id="'.$fld.'_radio_'.$row.'" name="'.$fld.'[]" value="'.$value.'"';
+				$radio_id=$fld.'_radio_'.$row;
+				if(!empty($params[$fld."_radio_id"])){
+					$radio_id=$params[$fld."_radio_id"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $radio_id=str_replace($replace,strip_tags($rec[$recfld]),$radio_id);
+	                }
+				}
+				$radio_value=$value;
+				if(!empty($params[$fld."_radio_value"])){
+					$radio_value=$params[$fld."_radio_value"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $radio_value=str_replace($replace,strip_tags($rec[$recfld]),$radio_value);
+	                }
+				}
+				$value='<input type="radio" data-group="'.$fld.'_radio" id="'.$radio_id.'" name="'.$fld.'[]" value="'.$radio_value.'"';
 				if(!empty($params[$fld."_radio_onclick"])){
 					$onclick=$params[$fld."_radio_onclick"];
 					//substitute and %{field}% with its value in this record
@@ -2515,8 +2573,20 @@ function databaseListRecords($params=array()){
 	                }
 					$value .= ' onclick="'.$onclick.'"';
 				}
+				if(!empty($params[$fld."_radio_checked"])){
+					$radio_checked=$params[$fld."_radio_value"];
+					//substitute and %{field}% with its value in this record
+					foreach($rec as $recfld=>$recval){
+						if(is_array($recfld) || is_array($recval)){continue;}
+						$replace='%'.$recfld.'%';
+	                    $radio_checked=str_replace($replace,strip_tags($rec[$recfld]),$radio_checked);
+	                }
+	                if($radio_checked==$radio_id){
+	                	$value .= ' checked';
+	                }
+				}
 				$value.=' /> ';
-				if(!isNum($cval)){$value .= '<label for="'.$fld.'_radio_'.$row.'">'.$cval.'</label>';}
+				if(!isNum($cval)){$value .= '<label for="'.$radio_id.'">'.$cval.'</label>';}
 			}
 			elseif(!empty($params[$fld."_href"])){
 				$href=$params[$fld."_href"];
