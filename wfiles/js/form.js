@@ -2426,6 +2426,10 @@ function pagingBulkEdit(frm){
 }
 function pagingExport(frm){
 	let div=frm._export_formname.value+'_exportbutton';
+	let obj=getObject(div);
+	if(undefined==div){return false;}
+	obj.innerHTML='<span class="icon-spin7 w_spin"></span>';
+	obj.style.display='inline-block';
 	let exportForm=document.createElement('FORM');
 	exportForm.method='POST';
 	exportForm.action='/php/index.php';
