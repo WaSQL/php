@@ -197,8 +197,12 @@ if(isset($_REQUEST['_pushfile'])){
 if(isset($_REQUEST['_pushexport']) && $_REQUEST['_pushexport']==1 && isset($_REQUEST['_pushparams'])){
 	$params=json_decode(base64_decode($_REQUEST['_pushparams']),true);
 	$params['-export_now']=1;
+	//load the page to get extra functions
+	if(isset($params['-page_name'])){
+		$inc=includePage($params['-page_name']);
+	}
 	//echo printValue($params);exit;
-	sleep(1);
+	//sleep(1);
 	$afile=databaseListRecords($params);
 	if(file_exists($afile)){
 		$bfile=base64_encode($afile);

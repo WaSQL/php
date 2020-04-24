@@ -344,11 +344,11 @@ function commonCronUnpauseGroup($group){
 *	commonSearchFiltersForm(array('-table'=>'notes'));
 */
 function commonSearchFiltersForm($params=array()){
+	global $PAGE;
 	if(empty($params['-formname'])){
 		$params['-formname']='searchfiltersform';
 	}
 	$params['class']='browser-default';
-	global $PAGE;
 	//beginning Form tag
 	$rtn = '<form method="post"';
 	//add any attributes pass in with -form
@@ -394,6 +394,16 @@ function commonSearchFiltersForm($params=array()){
 		}
 		if(isset($export_params['-searchfields'])){
 			unset($export_params['-searchfields']);
+		}
+		foreach($export_params as $k=>$v){
+			if(stringEndsWith($k,'_class')){unset($export_params[$k]);}
+			if(stringEndsWith($k,'_style')){unset($export_params[$k]);}
+			if(stringEndsWith($k,'_onclick')){unset($export_params[$k]);}
+			if(stringEndsWith($k,'_image')){unset($export_params[$k]);}
+		}
+		if(isset($PAGE['_id'])){
+			$export_params['-page_id']=$PAGE['_id'];
+			$export_params['-page_name']=$PAGE['name'];
 		}
 		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params)).'</textarea>'.PHP_EOL;
 		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" />'.PHP_EOL;
