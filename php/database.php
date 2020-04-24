@@ -1778,6 +1778,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_radio_value] - string - sets value of radio
 *	[{field}_radio_checked] - string - checks the box if string equals radio id
 *	[{field}_checkmark] - 1 - shows checkmark if value is 1
+*	[{field}_map] - array - shows mapped value instead.  i.e. array(0=>'',1=>'<span class="icon-mark"></span>')
 *	[{field}_verbosetime] - 1 - converts value verboseTime
 *	[{field}_verbosesize] - 1 - converts value verboseSize
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
@@ -2766,6 +2767,9 @@ function databaseListRecords($params=array()){
 			elseif(isset($params[$fld."_checkmark"]) && $params[$fld."_checkmark"]==1){
 				if($value==0){$value='';}
 				elseif($value==1){$value='<div class="text-center"><span class="icon-mark"></span></div>';}
+            }
+			elseif(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
+				$value=$params[$fld."_map"][$value];
             }
             elseif(isset($params[$fld."_verbosetime"]) && $params[$fld."_verbosetime"]==1){
 				if($value==0){$value='';}
