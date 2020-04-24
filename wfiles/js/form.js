@@ -2428,7 +2428,7 @@ function pagingExport(frm){
 	let div=frm._export_formname.value+'_exportbutton';
 	let obj=getObject(div);
 	if(undefined==div){return false;}
-	obj.innerHTML='<span class="icon-spin7 w_spin"></span>';
+	obj.innerHTML='<span class="icon-spin7 w_spin" style="margin-top:5px;"></span>';
 	obj.style.display='inline-block';
 	let exportForm=document.createElement('FORM');
 	exportForm.method='POST';
@@ -2437,7 +2437,7 @@ function pagingExport(frm){
 	inp.type='hidden';
 	inp.name='setprocessing';
 	inp.value='0';
-	exportForm.appendChild(inp1);
+	exportForm.appendChild(inp);
 	let inp1=document.createElement('INPUT');
 	inp1.type='hidden';
 	inp1.name='_pushexport';
