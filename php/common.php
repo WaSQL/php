@@ -404,6 +404,7 @@ function commonSearchFiltersForm($params=array()){
 		if(isset($PAGE['_id'])){
 			$export_params['-page_id']=$PAGE['_id'];
 			$export_params['-page_name']=$PAGE['name'];
+			$export_params['-page_template']=$PAGE['_template'];
 		}
 		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params)).'</textarea>'.PHP_EOL;
 		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" />'.PHP_EOL;
