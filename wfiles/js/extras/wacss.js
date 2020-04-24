@@ -517,16 +517,21 @@ var wacss = {
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){
 							//update existing pie chart
-							let labels=[];
+							let pielabels=[];
 		        			let data=[];
 		        			let datasets=datadiv.querySelectorAll('dataset');
 		        			let json=JSON.parse(datasets[0].innerText); 
-		        			for(let label in json){
-		        				labels.push(label);
-		        				data.push(json[label]);
+		        			for(let tval in json){
+		        				pielabels.push(tval);
+		        				data.push(json[tval]);
 		        			}
 		        			wacss.chartjs[list[i].id].config.data.datasets[0].data=data;
-		        			wacss.chartjs[list[i].id].config.data.labels=labels;
+		        			if(labels.length > 0){
+								wacss.chartjs[list[i].id].config.data.labels=labels;
+							}
+		        			else{
+		        				wacss.chartjs[list[i].id].config.data.labels=pielabels;
+		        			}
 		        			//console.log(wacss.chartjs[list[i].id].config);
 	        				wacss.chartjs[list[i].id].update();
 	        				foundchart=1;
@@ -534,13 +539,13 @@ var wacss = {
 					}
 					if(foundchart==0){
 						//look for datasets;
-	        			let labels=[];
+	        			let pielabels=[];
 	        			let data=[];
 	        			let datasets=datadiv.querySelectorAll('dataset');
 	        			let json=JSON.parse(datasets[0].innerText); 
-	        			for(let label in json){
-	        				labels.push(label);
-	        				data.push(json[label]);
+	        			for(let tval in json){
+	        				pielabels.push(tval);
+	        				data.push(json[tval]);
 	        			}
 	        			let pconfig={
 	        				type: 'pie',
@@ -576,11 +581,14 @@ var wacss = {
 							    }
 	        				}
 	        			};
-
+	        			if(labels.length > 0){
+							pconfig.data.labels=labels;
+						}
 	        			let pcanvas=document.createElement('canvas');
 	        			list[i].appendChild(pcanvas);
 	        			let pctx = pcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
+						console.log(pconfig);
 						/* check for data-onclick */
 						if(undefined != list[i].getAttribute('data-onclick')){
 							pcanvas.parentobj=list[i];
