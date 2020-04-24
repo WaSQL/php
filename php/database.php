@@ -1604,36 +1604,43 @@ function dbListRecords($db,$params){
 			loadExtras('postgresql');
 			$dbh_postgres='';
 			$params['-database']='postgresql';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'oracle':
 			loadExtras('oracle');
 			$dbh_oracle='';
 			$params['-database']='oracle';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'mssql':
 			loadExtras('mssql');
 			$dbh_mssql='';
 			$params['-database']='mssql';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'hana':
 			loadExtras('hana');
 			$dbh_hana='';
 			$params['-database']='hana';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'odbc':
 			loadExtras('odbc');
 			$dbh_odbc='';
 			$params['-database']='odbc';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'snowflake':
 			loadExtras('snowflake');
 			$dbh_snowflake='';
 			$params['-database']='snowflake';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			$dbh_sqlite='';
 			$params['-database']='sqlite';
+			$params['-db']=$CONFIG['db'];
 		break;
 		case 'mysql':
 		case 'mysqli':
@@ -1810,7 +1817,10 @@ function databaseListRecords($params=array()){
 		}
 	}
 	//require -table or -list or -query
-	//echo printValue($params);
+	if(isset($params['-db'])){
+		$CONFIG['db']=$params['-db'];
+	}
+	//echo printValue($params);exit;
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'oracle':
