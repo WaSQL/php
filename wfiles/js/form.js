@@ -2426,8 +2426,22 @@ function pagingBulkEdit(frm){
 }
 function pagingExport(frm){
 	let div=frm._export_formname.value+'_exportbutton';
-	let pushparams=frm._export_params_.innerText;
-	return ajaxGet('/php/index.php',div,{_pushexport:1,_pushparams:pushparams});
+	let exportForm=document.createElement('FORM');
+	exportForm.method='POST';
+	exportForm.action='/php/index.php';
+	let inp1=document.createElement('INPUT');
+	inp1.type='hidden';
+	inp1.name='_pushexport';
+	inp1.value='1';
+	exportForm.appendChild(inp1);
+	let inp2=document.createElement('TEXTAREA');
+	inp2.name='_pushparams';
+	inp2.innerText=frm._export_params_.innerText;
+	exportForm.appendChild(inp2);
+	document.body.appendChild(exportForm);
+	ajaxSubmitForm(exportForm,div);
+	exportForm.parentNode.removeChild(exportForm);
+	return false;
 	//pagingAddFilter(frm);
 	//pagingSetFilters(frm);
 	//frm.filter_export.value='1';
