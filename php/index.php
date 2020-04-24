@@ -193,6 +193,21 @@ if(isset($_REQUEST['_pushfile'])){
 	}
  	$ok=pushFile($afile,$params);
 }
+//push export
+if(isset($_REQUEST['_pushexport']) && $_REQUEST['_pushexport']==1 && isset($_REQUEST['_pushparams'])){
+	$params=json_decode(base64_decode($_REQUEST['_pushparams']),true);
+	$params['-export_now']=1;
+	//echo printValue($params);exit;
+	$afile=databaseListRecords($params);
+	if(file_exists($afile)){
+		$bfile=base64_encode($afile);
+		echo '<a href="/php/index.php?_pushfile='.$bfile.'" onclick="removeDiv(this);" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>';
+	}
+	else{
+		echo '<a href="#" onclick="alert(this.title);removeDiv(this);return false;" style="text-decoration:none;padding-top:7px;" title="FAILED to Create CSV Export" class="btn" ><span class="icon-block w_danger w_bold"></span></a>';
+	}
+	exit;
+}
 //Fix up REQUEST
 foreach($_REQUEST as $key=>$val){
 	if(is_array($val)){continue;}

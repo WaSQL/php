@@ -2425,10 +2425,13 @@ function pagingBulkEdit(frm){
 	return frm.onsubmit();
 }
 function pagingExport(frm){
-	pagingAddFilter(frm);
-	pagingSetFilters(frm);
-	frm.filter_export.value='1';
-	return frm.onsubmit();
+	let div=frm._export_formname.value+'_exportbutton';
+	let pushparams=frm._export_params_.innerText;
+	return ajaxGet('/php/index.php',div,{_pushexport:1,_pushparams:pushparams});
+	//pagingAddFilter(frm);
+	//pagingSetFilters(frm);
+	//frm.filter_export.value='1';
+	//return frm.onsubmit();
 }
 function pagingAddFilter(frm){
 	if(undefined != frm.bulkedit){return false;}

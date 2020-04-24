@@ -1968,7 +1968,7 @@ function databaseListRecords($params=array()){
 			}
 		}
 		//check for -export and filter_export
-		if(!empty($params['-export']) && !empty($_REQUEST['filter_export']) && $_REQUEST['filter_export']==1){
+		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
 			//remove limit temporarily
 			$limit=$params['-limit'];
 			$fields=$params['-fields'];
@@ -2053,6 +2053,7 @@ function databaseListRecords($params=array()){
 			$ename=sha1($csv).'.csv';
 			$efile="{$epath}/".$ename;
 			setFileContents($efile,$csv);
+			return $efile;
 			$params['-export_file']="/php/temp/{$ename}";
 			//clean up any csv files in this folder older than 1 hour
 			$ok=cleanupDirectory($epath,1,'hours','csv');

@@ -385,6 +385,18 @@ function commonSearchFiltersForm($params=array()){
 		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
 	}
 	if(isset($params['-export'])){
+		$export_params=$params;
+		if(isset($export_params['-table'])){
+			unset($export_params['-list']);
+		}
+		if(isset($export_params['-bulkedit'])){
+			unset($export_params['-bulkedit']);
+		}
+		if(isset($export_params['-searchfields'])){
+			unset($export_params['-searchfields']);
+		}
+		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params)).'</textarea>'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" />'.PHP_EOL;
 		$rtn .= '	<input type="hidden" name="filter_export" value="" />'.PHP_EOL;
 	}
 	//other fields
@@ -499,11 +511,12 @@ function commonSearchFiltersForm($params=array()){
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
     	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export  w_success w_bold"></span></button>'.PHP_EOL;
     	$rtn .= '			</div>'.PHP_EOL;
-    	if(!empty($params['-export_file'])){
-    		$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-	    	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
-	    	$rtn .= '			</div>'.PHP_EOL;
-    	}
+    	$rtn .= '			<div style="margin:0 3px;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
+    	// if(!empty($params['-export_file'])){
+    	// 	$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
+	    // 	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+	    // 	$rtn .= '			</div>'.PHP_EOL;
+    	// }
 	}
 	$rtn .= '		</div>'.PHP_EOL;
 	//Paging buttons - first, prev, next, and last
