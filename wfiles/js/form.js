@@ -2433,6 +2433,11 @@ function pagingExport(frm){
 	let exportForm=document.createElement('FORM');
 	exportForm.method='POST';
 	exportForm.action='/php/index.php';
+	let inp=document.createElement('INPUT');
+	inp.type='hidden';
+	inp.name='setprocessing';
+	inp.value='0';
+	exportForm.appendChild(inp1);
 	let inp1=document.createElement('INPUT');
 	inp1.type='hidden';
 	inp1.name='_pushexport';
