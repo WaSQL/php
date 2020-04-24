@@ -1607,12 +1607,19 @@ function initBehaviors(ajaxdiv){
   			if(undefined == dname){dname=navEls[n].getAttribute('display');}
 			if(dname){
 				addEventHandler(navEls[n],'click',function(e){
-					var dname=this.getAttribute('data-display');
+					var dname=this.dataset.display;
 					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
-					if(dObj){
-						if(dObj.style.display == 'block'){return true;}
-						dObj.style.display='block';
+					if(undefined != dObj){
+						//check for custom dislay
+						if(undefined != dObj.dataset.display){
+							if(dObj.style.display == dObj.dataset.display){return true;}
+							dObj.style.display=dObj.dataset.display;
+						}
+						else{
+							if(dObj.style.display == 'block'){return true;}
+							dObj.style.display='block';
+						}
 					}
 					var dmouse=this.getAttribute('mouse');
 					var dx=this.getAttribute('x');
@@ -1658,9 +1665,16 @@ function initBehaviors(ajaxdiv){
 					var dname=this.getAttribute('data-display');
 					if(undefined == dname){dname=this.getAttribute('display');}
 					dObj=getObject(dname);
-					if(dObj){
-						if(dObj.style.display == 'block'){return true;}
-						dObj.style.display='block';
+					if(undefined != dObj){
+						//check for custom dislay
+						if(undefined != dObj.dataset.display){
+							if(dObj.style.display == dObj.dataset.display){return true;}
+							dObj.style.display=dObj.dataset.display;
+						}
+						else{
+							if(dObj.style.display == 'block'){return true;}
+							dObj.style.display='block';
+						}
 					}
 					var dmouse=this.getAttribute('mouse');
 					var dx=this.getAttribute('x');
