@@ -1814,24 +1814,45 @@ function databaseListRecords($params=array()){
 	if(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'oracle':
+				if(!function_exists('oracleQueryResults')){
+					loadExtras('oracle');
+				}
 				$params['-list']=oracleQueryResults($params['-query']);
 			break;
 			case 'hana':
+				if(!function_exists('hanaQueryResults')){
+					loadExtras('hana');
+				}
 				$params['-list']=hanaQueryResults($params['-query']);
 			break;
 			case 'odbc':
+				if(!function_exists('odbcQueryResults')){
+					loadExtras('odbc');
+				}
 				$params['-list']=odbcQueryResults($params['-query']);
 			break;
 			case 'snowflake':
+				if(!function_exists('snowflakeQueryResults')){
+					loadExtras('snowflake');
+				}
 				$params['-list']=snowflakeQueryResults($params['-query']);
 			break;
 			case 'mssql':
+				if(!function_exists('mssqlQueryResults')){
+					loadExtras('mssql');
+				}
 				$params['-list']=mssqlQueryResults($params['-query']);
 			break;
 			case 'postgresql':
+				if(!function_exists('postgresqlQueryResults')){
+					loadExtras('postgresql');
+				}
 				$params['-list']=postgresqlQueryResults($params['-query']);
 			break;
 			case 'sqlite':
+				if(!function_exists('sqliteQueryResults')){
+					loadExtras('sqlite');
+				}
 				$params['-list']=sqliteQueryResults($params['-query']);
 			break;
 			default:
@@ -1849,24 +1870,45 @@ function databaseListRecords($params=array()){
 			//they just entered a query. convert it to a list
 			switch(strtolower($params['-database'])){
 				case 'oracle':
+					if(!function_exists('oracleGetDBRecords')){
+						loadExtras('oracle');
+					}
 					$params=array('-list'=>oracleGetDBRecords($params));
 				break;
 				case 'hana':
+					if(!function_exists('hanaGetDBRecords')){
+						loadExtras('hana');
+					}
 					$params=array('-list'=>hanaGetDBRecords($params));
 				break;
 				case 'odbc':
+					if(!function_exists('odbcGetDBRecords')){
+						loadExtras('odbc');
+					}
 					$params=array('-list'=>odbcGetDBRecords($params));
 				break;
 				case 'snowflake':
+					if(!function_exists('snowflakeGetDBRecords')){
+						loadExtras('snowflake');
+					}
 					$params=array('-list'=>snowflakeGetDBRecords($params));
 				break;
 				case 'mssql':
+					if(!function_exists('mssqlGetDBRecords')){
+						loadExtras('mssql');
+					}
 					$params=array('-list'=>mssqlGetDBRecords($params));
 				break;
 				case 'postgresql':
+					if(!function_exists('postgresqlGetDBRecords')){
+						loadExtras('postgresql');
+					}
 					$params=array('-list'=>postgresqlGetDBRecords($params));
 				break;
 				case 'sqlite':
+					if(!function_exists('sqliteGetDBRecords')){
+						loadExtras('sqlite');
+					}
 					$params=array('-list'=>sqliteGetDBRecords($params));
 				break;
 				default:
@@ -1879,24 +1921,45 @@ function databaseListRecords($params=array()){
 		//get the list from the table. First lets get the table fields
 		switch(strtolower($params['-database'])){
 			case 'oracle':
+				if(!function_exists('oracleGetDBFieldInfo')){
+					loadExtras('oracle');
+				}
 				$info=oracleGetDBFieldInfo($params['-table']);
 			break;
 			case 'hana':
+				if(!function_exists('hanaGetDBFieldInfo')){
+					loadExtras('hana');
+				}
 				$info=hanaGetDBFieldInfo($params['-table']);
 			break;
 			case 'odbc':
+				if(!function_exists('odbcGetDBFieldInfo')){
+					loadExtras('odbc');
+				}
 				$info=odbcGetDBFieldInfo($params['-table']);
 			break;
 			case 'snowflake':
+				if(!function_exists('snowflakeGetDBFieldInfo')){
+					loadExtras('snowflake');
+				}
 				$info=snowflakeGetDBFieldInfo($params['-table']);
 			break;
 			case 'mssql':
+				if(!function_exists('mssqlGetDBFieldInfo')){
+					loadExtras('mssql');
+				}
 				$info=mssqlGetDBFieldInfo($params['-table']);
 			break;
 			case 'postgresql':
+				if(!function_exists('postgresqlGetDBFieldInfo')){
+					loadExtras('postgresql');
+				}
 				$info=postgresqlGetDBFieldInfo($params['-table']);
 			break;
 			case 'sqlite':
+				if(!function_exists('sqliteGetDBFieldInfo')){
+					loadExtras('sqlite');
+				}
 				$info=sqliteGetDBFieldInfo($params['-table']);
 			break;
 			default:
@@ -1933,24 +1996,45 @@ function databaseListRecords($params=array()){
 			$bulk[$_REQUEST['filter_field']]=$_REQUEST['filter_value'];
 			switch(strtolower($params['-database'])){
 				case 'oracle':
+					if(!function_exists('oracleEditDBRecord')){
+						loadExtras('oracle');
+					}
 					$ok=oracleEditDBRecord($bulk);
 				break;
 				case 'hana':
+					if(!function_exists('hanaEditDBRecord')){
+						loadExtras('hana');
+					}
 					$ok=hanaEditDBRecord($bulk);
 				break;
 				case 'odbc':
+					if(!function_exists('odbcEditDBRecord')){
+						loadExtras('odbc');
+					}
 					$ok=odbcEditDBRecord($bulk);
 				break;
 				case 'snowflake':
+					if(!function_exists('snowflakeEditDBRecord')){
+						loadExtras('snowflake');
+					}
 					$ok=snowflakeEditDBRecord($bulk);
 				break;
 				case 'mssql':
+					if(!function_exists('mssqlEditDBRecord')){
+						loadExtras('mssql');
+					}
 					$ok=mssqlEditDBRecord($bulk);
 				break;
 				case 'postgresql':
+					if(!function_exists('postgresqlEditDBRecord')){
+						loadExtras('postgresql');
+					}
 					$ok=postgresqlEditDBRecord($bulk);
 				break;
 				case 'sqlite':
+					if(!function_exists('sqliteEditDBRecord')){
+						loadExtras('sqlite');
+					}
 					$ok=sqliteEditDBRecord($bulk);
 				break;
 				default:
@@ -1994,24 +2078,45 @@ function databaseListRecords($params=array()){
 			//run query to get records for export
 			switch(strtolower($params['-database'])){
 				case 'oracle':
+					if(!function_exists('oracleQueryResults')){
+						loadExtras('oracle');
+					}
 					$recs=oracleGetDBRecords($params);
 				break;
 				case 'hana':
+					if(!function_exists('hanaGetDBRecords')){
+						loadExtras('hana');
+					}
 					$recs=hanaGetDBRecords($params);
 				break;
 				case 'odbc':
+					if(!function_exists('odbcGetDBRecords')){
+						loadExtras('odbc');
+					}
 					$recs=odbcGetDBRecords($params);
 				break;
 				case 'snowflake':
+					if(!function_exists('snowflakeGetDBRecords')){
+						loadExtras('snowflake');
+					}
 					$recs=snowflakeGetDBRecords($params);
 				break;
 				case 'mssql':
+					if(!function_exists('mssqlGetDBRecords')){
+						loadExtras('mssql');
+					}
 					$recs=mssqlGetDBRecords($params);
 				break;
 				case 'postgresql':
+					if(!function_exists('postgresqlGetDBRecords')){
+						loadExtras('postgresql');
+					}
 					$recs=postgresqlGetDBRecords($params);
 				break;
 				case 'sqlite':
+					if(!function_exists('sqliteGetDBRecords')){
+						loadExtras('sqlite');
+					}
 					$recs=sqliteGetDBRecords($params);
 				break;
 				default:
@@ -2053,33 +2158,54 @@ function databaseListRecords($params=array()){
 			$ename=sha1($csv).'.csv';
 			$efile="{$epath}/".$ename;
 			setFileContents($efile,$csv);
-			return $efile;
-			$params['-export_file']="/php/temp/{$ename}";
+			//$params['-export_file']="/php/temp/{$ename}";
 			//clean up any csv files in this folder older than 1 hour
 			$ok=cleanupDirectory($epath,1,'hours','csv');
+			return $efile;
 		}
 		//get total number of records
 		if(empty($params['-total'])){
 			switch(strtolower($params['-database'])){
 				case 'oracle':
+					if(!function_exists('oracleQueryResults')){
+						loadExtras('oracle');
+					}
 					$params['-total']=oracleGetDBCount($params);
 				break;
 				case 'hana':
+					if(!function_exists('hanaGetDBCount')){
+						loadExtras('hana');
+					}
 					$params['-total']=hanaGetDBCount($params);
 				break;
 				case 'odbc':
+					if(!function_exists('odbcGetDBCount')){
+						loadExtras('odbc');
+					}
 					$params['-total']=odbcGetDBCount($params);
 				break;
 				case 'snowflake':
+					if(!function_exists('snowflakeGetDBCount')){
+						loadExtras('snowflake');
+					}
 					$params['-total']=snowflakeGetDBCount($params);
 				break;
 				case 'mssql':
+					if(!function_exists('mssqlGetDBCount')){
+						loadExtras('mssql');
+					}
 					$params['-total']=mssqlGetDBCount($params);
 				break;
 				case 'postgresql':
+					if(!function_exists('postgresqlGetDBCount')){
+						loadExtras('postgresql');
+					}
 					$params['-total']=postgresqlGetDBCount($params);
 				break;
 				case 'sqlite':
+					if(!function_exists('sqliteGetDBCount')){
+						loadExtras('sqlite');
+					}
 					$params['-total']=sqliteGetDBCount($params);
 				break;
 				default:
@@ -2094,24 +2220,45 @@ function databaseListRecords($params=array()){
 		//get the list of records to display
 		switch(strtolower($params['-database'])){
 			case 'oracle':
+				if(!function_exists('oracleQueryResults')){
+					loadExtras('oracle');
+				}
 				$params['-list']=oracleGetDBRecords($params);
 			break;
 			case 'hana':
+				if(!function_exists('hanaGetDBRecords')){
+					loadExtras('hana');
+				}
 				$params['-list']=hanaGetDBRecords($params);
 			break;
 			case 'odbc':
+				if(!function_exists('odbcGetDBRecords')){
+					loadExtras('odbc');
+				}
 				$params['-list']=odbcGetDBRecords($params);
 			break;
 			case 'snowflake':
+				if(!function_exists('snowflakeGetDBRecords')){
+					loadExtras('snowflake');
+				}
 				$params['-list']=snowflakeGetDBRecords($params);
 			break;
 			case 'mssql':
+				if(!function_exists('mssqlGetDBRecords')){
+					loadExtras('mssql');
+				}
 				$params['-list']=mssqlGetDBRecords($params);
 			break;
 			case 'postgresql':
+				if(!function_exists('postgresqlGetDBRecords')){
+					loadExtras('postgresql');
+				}
 				$params['-list']=postgresqlGetDBRecords($params);
 			break;
 			case 'sqlite':
+				if(!function_exists('sqliteGetDBRecords')){
+					loadExtras('sqlite');
+				}
 				$params['-list']=sqliteGetDBRecords($params);
 			break;
 			default:
