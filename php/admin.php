@@ -580,6 +580,7 @@ if(isAjax()){
 		case 'datasync':
 		case 'test':
 		case 'terminal':
+		case 'checktables':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1239,6 +1240,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'htmlbox':
 		case 'test':
 		case 'terminal':
+		case 'checktables':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':

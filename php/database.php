@@ -2921,7 +2921,7 @@ function databaseListRecords($params=array()){
 	}
 	return $rtn;
 }
-//---------- begin function checkDBTableSchema
+//---------- begin function databaseParseFilters
 /**
 * @describe function to check for required fields in certain wasql pages
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -3253,6 +3253,24 @@ function databaseParseFilters($params=array()){
 		}
 	}
 	return $wheres;
+}
+//---------- begin function checkDBTables
+/**
+* @describe function to check table status
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function checkDBTables($tables=array()){
+	if(!isset($tables[0])){
+		$tables=getDBTables();
+	}
+	$recs=array();
+	foreach($tables as $table){
+		$q="check table {$table}";
+		$rec=getDBRecord($q);
+		//echo $q.printValue($rec);exit;
+		$recs[]=$rec;
+	}
+	return $recs;
 }
 //---------- begin function checkDBTableSchema
 /**
