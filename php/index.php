@@ -199,8 +199,7 @@ if(isset($_REQUEST['_pushexport']) && $_REQUEST['_pushexport']==1 && isset($_REQ
 	$params['-export_now']=1;
 	//load the page to get extra functions
 	if(isset($params['-page_name'])){
-		$inc=includePage($params['-page_name']);
-		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id=1"));
+		$inc=loadPage($params['-page_name']);
 	}
 	//echo printValue($params);exit;
 	//sleep(1);
