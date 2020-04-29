@@ -902,7 +902,7 @@ function buildFormDate(fieldname,params){
 	}
 	tagdiv.appendChild(tagspan);
 	if(params['-control']=='date'){
-    	initPikadayCalendar(tagdiv,tagspan);
+    	initPikadayCalendar(tag.id,tagspan.id);
 	}
 	
 	if(undefined != params['-parent']){
