@@ -1747,8 +1747,9 @@ function buildFormDate($name,$params=array()){
     	$params['data-mask']=$params['mask'];
     	unset($params['mask']);
 	}
-	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
 	if(!isset($params['maxlength'])){$params['maxlength']='15';}
+	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
+	if(!isset($params['class'])){$params['class']='input browser-default form-control w_form-control w_input-prepend';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
@@ -1764,7 +1765,6 @@ function buildFormDate($name,$params=array()){
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
-	$params['class']='input browser-default form-control w_form-control w_input-prepend';
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
