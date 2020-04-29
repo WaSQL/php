@@ -1764,7 +1764,7 @@ function buildFormDate($name,$params=array()){
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
-	$params['class']='browser-default form-control w_form-control w_input-prepend';
+	$params['class']='input browser-default form-control w_form-control w_input-prepend';
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;

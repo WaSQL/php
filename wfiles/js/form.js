@@ -827,7 +827,7 @@ function buildFormCombo(fieldname,opts,params){
 }
 //---------- begin function buildFormDate-------------------
 /**
-* @describe creates an HTML color control
+* @describe creates an HTML date control
 * @param name string - field name
 * @param params array - parameters
 *	[-parent] string - parent object or id to append control to
@@ -845,7 +845,7 @@ function buildFormDate(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	if(undefined == params['-control']){params['-control']='date';}
 	var spanclass='';
 	switch(params['-control']){
@@ -893,7 +893,7 @@ function buildFormDate(fieldname,params){
 	tagdiv.appendChild(tag);
 	var tagspan = document.createElement("span");
 	tagspan.id=iconid;
-	tagspan.setAttribute('onclick',"return Calendar('"+params.id+"');");
+	//tagspan.setAttribute('onclick',"return Calendar('"+params.id+"');");
 	tagspan.className=spanclass;
 	tagspan.style.color=iconcolor+';padding-left:3px !important;padding-right:6px !important;';
 	tagspan.title=params.title;
@@ -901,6 +901,10 @@ function buildFormDate(fieldname,params){
     	tagspan.innerHTML='<span class="icon-clock"></span>';
 	}
 	tagdiv.appendChild(tagspan);
+	if(params['-control']=='date'){
+    	initPikadayCalendar(tagdiv,tagspan);
+	}
+	
 	if(undefined != params['-parent']){
 		var pobj=getObject(params['-parent']);
 		if(undefined != pobj){
