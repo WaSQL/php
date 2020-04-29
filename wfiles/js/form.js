@@ -734,7 +734,7 @@ function buildFormColor(fieldname,params){
 	var iconcolor='#c0c0c0';
 	if(undefined != params.value){iconcolor=params.value;}
 	if(undefined == params.placeholder){params.placeholder='#HEXVAL';}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	params['maxlength']=7;
 	var tagdiv = document.createElement("div");
 	tagdiv.className="input-group";
@@ -792,7 +792,7 @@ function buildFormCombo(fieldname,opts,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	var datalist_id=params.id+'_datalist';
 	var tagdiv = document.createElement("div");
 	var tag = document.createElement("input");
@@ -983,7 +983,7 @@ function buildFormPassword(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	var tag = document.createElement("input");
 	tag.type='password';
 	tag.name=fieldname;
@@ -1041,7 +1041,7 @@ function buildFormText(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	var tag = document.createElement("input");
 	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
@@ -1075,7 +1075,7 @@ function buildFormTextarea(fieldname,params){
 	if(undefined == params){params={};}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
 	if(undefined == params.height){params.height=50;}
 	if(undefined != params.behavior){params['data-behavior']=params.behavior;}
 	var tag = document.createElement("textarea");
@@ -1153,7 +1153,7 @@ function buildFormSelect(fieldname, opts, params){
 	if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
 	if(undefined == params['-formname']){params['-formname']='addedit';}
 	if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
-	if(undefined == params.classname){params.classname='form-control';}
+	if(undefined == params.classname){params.classname='form-control input';}
     var tag = document.createElement("select");
 	tag.className=params.classname;
 	if(params.required){tag.setAttribute('required',params.required);}
