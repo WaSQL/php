@@ -901,9 +901,6 @@ function buildFormDate(fieldname,params){
     	tagspan.innerHTML='<span class="icon-clock"></span>';
 	}
 	tagdiv.appendChild(tagspan);
-	if(params['-control']=='date'){
-    	initPikadayCalendar(tag.id,tagspan.id);
-	}
 	
 	if(undefined != params['-parent']){
 		var pobj=getObject(params['-parent']);
@@ -911,6 +908,9 @@ function buildFormDate(fieldname,params){
 			pobj.appendChild(tagdiv);
 		}
 		else{console.log(params['-parent']+' does not exist');}
+	}
+	if(params['-control']=='date'){
+    	initPikadayCalendar(tag.id,tagspan.id);
 	}
 	return tagdiv;
 }
