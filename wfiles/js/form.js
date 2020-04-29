@@ -910,8 +910,10 @@ function buildFormDate(fieldname,params){
 		else{console.log(params['-parent']+' does not exist');}
 	}
 	if(params['-control']=='date'){
-    	initPikadayCalendar(tag.id,tagspan.id);
+    	//initPikadayCalendar(tag.id,tagspan.id);
 	}
+	tagdiv.setAttribute('data-tagid',tag.id);
+	tagdiv.setAttribute('data-spanid',tagspan.id);
 	return tagdiv;
 }
 //---------- begin function buildFormDateTime-------------------
