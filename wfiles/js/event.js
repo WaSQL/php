@@ -1965,322 +1965,55 @@ function initNavigate(){
 	document.onkeydown=function(e){
 		e=e||window.event;
 		if(undefined == e){return true;}
-		let key = e.keyCode; // To find out what key is this
-		let shift = e.shiftKey; //was the shift key also pressed
-		let alt = e.altKey; //was the alt key also pressed
-		let ctrl = e.ctrlKey; //was the ctrl key also pressed
-		let focusel='';
-		//check for data-navigate-focus
-		switch(parseInt(key)){
-	    	case 35:
-	    		if(shift){
-	    			//Shift+End
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+End" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+End
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+End" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+End
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+End" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//End
-		    		focusel=document.querySelector('[data-navigate-focus="End" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 36:
-	    		if(shift){
-	    			//Shift+Home
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+Home" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+Home
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+Home" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+Home
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+Home" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//Home
-		    		focusel=document.querySelector('[data-navigate-focus="Home" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 112:
-	    		if(shift){
-	    			//Shift+F1
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F1" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F1
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F1" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F1
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F1" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F1
-		    		focusel=document.querySelector('[data-navigate-focus="F1" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 113:
-	    		if(shift){
-	    			//Shift+F2
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F2" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F2
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F2" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F2
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F2" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F2
-		    		focusel=document.querySelector('[data-navigate-focus="F2" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 114:
-	    		if(shift){
-	    			//Shift+F3
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F3" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F3
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F3" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F3
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F3" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F3
-		    		focusel=document.querySelector('[data-navigate-focus="F3" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 115:
-	    		if(shift){
-	    			//Shift+F4
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F4" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F4
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F4" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F4
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F4" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F4
-		    		focusel=document.querySelector('[data-navigate-focus="F4" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 116:
-	    		if(shift){
-	    			//Shift+F5
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F5" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F5
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F5" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F5
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F5" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F5
-		    		focusel=document.querySelector('[data-navigate-focus="F5" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 117:
-	    		if(shift){
-	    			//Shift+F6
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F6" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F6
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F6" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F6
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F6" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F6
-		    		focusel=document.querySelector('[data-navigate-focus="F6" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 118:
-	    		if(shift){
-	    			//Shift+F7
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F7" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F7
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F7" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F7
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F7" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F7
-		    		focusel=document.querySelector('[data-navigate-focus="F7" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 119:
-	    		if(shift){
-	    			//Shift+F8
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F8" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F8
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F8" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F8
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F8" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F8
-		    		focusel=document.querySelector('[data-navigate-focus="F8" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 120:
-	    		if(shift){
-	    			//Shift+F9
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F9" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F9
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F9" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F9
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F9" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F9
-		    		focusel=document.querySelector('[data-navigate-focus="F9" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 121:
-	    		if(shift){
-	    			//Shift+F10
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F10" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F10
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F10" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F10
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F10" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F10
-		    		focusel=document.querySelector('[data-navigate-focus="F10" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 122:
-	    		if(shift){
-	    			//Shift+F11
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F11" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F11
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F11" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F11
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F11" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F11
-		    		focusel=document.querySelector('[data-navigate-focus="F11" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    	case 123:
-	    		if(shift){
-	    			//Shift+F12
-		    		focusel=document.querySelector('[data-navigate-focus="Shift+F12" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(alt){
-	    			//Alt+F12
-		    		focusel=document.querySelector('[data-navigate-focus="Alt+F12" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else if(ctrl){
-	    			//Ctrl+F12
-		    		focusel=document.querySelector('[data-navigate-focus="Ctrl+F12" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-	    		}
-	    		else{
-		    		//F12
-		    		focusel=document.querySelector('[data-navigate-focus="F12" i]');
-		    		if(undefined != focusel){return eventProcessNavigateHome(e,focusel,key);}
-		    	}
-	    	break;
-	    }
+		let nav={};
+		nav.keycode = e.which || e.keyCode || e.charCode; // To find out what key is this
+		nav.key = String.fromCharCode(nav.keycode); //what char was pressed
+		nav.shift = e.shiftKey; //was the shift key also pressed
+		nav.alt = e.altKey; //was the alt key also pressed
+		nav.ctrl = e.ctrlKey; //was the ctrl key also pressed
+		nav.focus = '';
+		//fix chars that are not letters
+		switch(nav.keycode){
+			case 8:nav.key='Backspace';break;
+			case 9:nav.key='Tab';break;
+			case 13:nav.key='Enter';break;
+			case 33:nav.key='PageUp';break;
+			case 34:nav.key='PageDown';break;
+			case 35:nav.key='End';break;
+			case 36:nav.key='Home';break;
+			case 37:nav.key='Left';break;
+			case 38:nav.key='Up';break;
+			case 39:nav.key='Right';break;
+			case 40:nav.key='Down';break;		
+			case 45:nav.key='Insert';break;
+			case 46:nav.key='Delete';break;
+
+		}
+		if(nav.shift){
+			nav.focus='Shift+'+nav.key;
+		}
+		else if(nav.ctrl && nav.alt){
+			nav.focus='Ctrl+Alt+'+nav.key;
+		}
+		else if(nav.alt){
+			nav.focus='Alt+'+nav.key;
+		}
+		else if(nav.ctrl){
+			nav.focus='Ctrl+'+nav.key;
+		}
+		else{
+    		nav.focus=nav.key;
+    	}
+    	if(nav.focus.length){
+    		nav.el=document.querySelector('[data-navigate-focus="'+nav.focus+'" i]');
+    		if(undefined != nav.el){
+    			e.preventDefault();
+	    		e.stopPropagation();
+	    		nav.el.focus();
+				simulateEvent(nav.el,'click');
+	    		return false;
+	    	}
+    	}
 		//skip if no element has focus
 		let fel=document.activeElement;
 		if(undefined==fel){
@@ -2307,7 +2040,7 @@ function initNavigate(){
 	    let nextel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+next+'"]');
 	    let prev=gindex-1;
 	    let prevel=document.querySelector('[data-navigate-group="'+group+'"][data-navigate-group-index="'+prev+'"]');
-	    switch(parseInt(key)){
+	    switch(parseInt(nav.keycode)){
 	    	case 13:
 	    		//enter
 	    		if(undefined != fel.dataset.navigateEnter){
@@ -2404,14 +2137,6 @@ function initNavigate(){
 	    }
 	 };
 	 return true;
-}
-function eventProcessNavigateHome(e,el,key){
-	e.preventDefault();
-	e.stopPropagation();
-	el.focus();
-	el.setAttribute('data-navigate-key',key);
-	simulateEvent(el,'click');
-	return false;
 }
 function cancel(e) {
       if (e.preventDefault) { e.preventDefault(); }
