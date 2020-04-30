@@ -2053,8 +2053,6 @@ function initNavigate(){
     	if(nav.focus.length){
     		nav.el=document.querySelector('[data-navigate-focus="'+nav.focus+'" i]');
     		if(undefined != nav.el){
-    			e.preventDefault();
-	    		e.stopPropagation();
 	    		nav.el.focus();
 				simulateEvent(nav.el,'click');
 	    		return true;
