@@ -2057,7 +2057,7 @@ function initNavigate(){
 	    		e.stopPropagation();
 	    		nav.el.focus();
 				simulateEvent(nav.el,'click');
-	    		return false;
+	    		return true;
 	    	}
     	}
 		//skip if no element has focus
