@@ -1936,8 +1936,50 @@ function initBehaviors(ajaxdiv){
 */
 function initNavigate(){
 	let navigate_check=document.querySelector('[data-navigate]');
-	if(undefined == navigate_check){return;}
+	if(undefined == navigate_check){
+		console.log('initNavigate - check failed');
+		return;
+	}
+	//mark any data-navigate-focus
+	let fels = [...document.querySelectorAll('[data-navigate-focus^="Ctrl+" i]')];
+	//console.log('initNavigate - ctrl focus count = '+fels.length);
+	for(let i=0;i<fels.length;i++){
+		//set title
+		fels[i].title='Access Key = '+fels[i].dataset.navigateFocus;
+		//check for data-navigate-text span
+		let span=fels[i].querySelector('.navigate-text');
+		if(undefined == span){continue;}
+		let letter = fels[i].dataset.navigateFocus.replace('Ctrl+','');
+		if(letter.length==1){
+			let str=span.innerText;
+			if(undefined != span.dataset.navigateColor){
+				span.innerHTML=str.replace(letter,'<span style="border-bottom:1px solid '+span.dataset.navigateColor+';">'+letter+'</span>');
+			}
+			else{
+				span.innerHTML=str.replace(letter,'<span style="border-bottom:1px solid #d70000;">'+letter+'</span>');
+			}
+		}
+	}
+	fels = [...document.querySelectorAll('[data-navigate-focus^="Alt+" i]')];
+	//console.log('initNavigate - alt focus count = '+fels.length);
+	for(let i=0;i<fels.length;i++){
+		fels[i].title='Access Key = '+fels[i].dataset.navigateFocus;
+		//check for data-navigate-text span
+		let span=fels[i].querySelector('.navigate-text');
+		if(undefined == span){continue;}
+		let letter = fels[i].dataset.navigateFocus.replace('Alt+','');
+		if(letter.length==1){
+			let str=span.innerText;
+			if(undefined != span.dataset.navigateColor){
+				span.innerHTML=str.replace(letter,'<span style="border-bottom: 1px solid '+span.dataset.navigateColor+';">'+letter+'</span>');
+			}
+			else{
+				span.innerHTML=str.replace(letter,'<span style="border-bottom:1px solid #0000e8;">'+letter+'</span>');
+			}
+		}
+	}
 	let navels = [...document.querySelectorAll('[data-navigate]')];
+	//console.log('initNavigate - navigate count = '+navels.length);
 	let groupcounts=new Array();
 	for(let i=0;i<navels.length;i++){
 		//add a tabindex to make it focusable since only a, select, input, button, textarea types are usually focusable
@@ -1964,7 +2006,10 @@ function initNavigate(){
 	}
 	document.onkeydown=function(e){
 		e=e||window.event;
-		if(undefined == e){return true;}
+		if(undefined == e){
+			//console.log('initNavigate onkeydown - no e');
+			return true;
+		}
 		let nav={};
 		nav.keycode = e.which || e.keyCode || e.charCode; // To find out what key is this
 		nav.key = String.fromCharCode(nav.keycode); //what char was pressed
@@ -2004,6 +2049,7 @@ function initNavigate(){
 		else{
     		nav.focus=nav.key;
     	}
+    	//console.log(nav);
     	if(nav.focus.length){
     		nav.el=document.querySelector('[data-navigate-focus="'+nav.focus+'" i]');
     		if(undefined != nav.el){
