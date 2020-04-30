@@ -2121,7 +2121,7 @@ function initNavigate(){
 			    	e.preventDefault();
 			    	e.stopPropagation();
 			    	prevel.focus();
-			    	prevel.setAttribute('data-navigate-key',key);
+			    	prevel.setAttribute('data-navigate-key',nav.keycode);
 			    	simulateEvent(prevel,'click');
 					return false;
 			    }
@@ -2139,7 +2139,7 @@ function initNavigate(){
 			    	e.preventDefault();
 			    	e.stopPropagation();
 			    	nextel.focus();
-			    	nextel.setAttribute('data-navigate-key',key);
+			    	nextel.setAttribute('data-navigate-key',nav.keycode);
 			    	simulateEvent(nextel,'click');
 					return false;
 			    }
@@ -2157,7 +2157,7 @@ function initNavigate(){
 			    	e.preventDefault();
 			    	e.stopPropagation();
 			    	nextel.focus();
-			    	nextel.setAttribute('data-navigate-key',key);
+			    	nextel.setAttribute('data-navigate-key',nav.keycode);
 			    	simulateEvent(nextel,'click');
 					return false;
 			    }
@@ -2175,7 +2175,7 @@ function initNavigate(){
 			    	e.preventDefault();
 			    	e.stopPropagation();
 			    	prevel.focus();
-			    	prevel.setAttribute('data-navigate-key',key);
+			    	prevel.setAttribute('data-navigate-key',nav.keycode);
 			    	simulateEvent(prevel,'click');
 					return false;
 			    }
