@@ -189,7 +189,7 @@ var wacss = {
 	 
 	    var text = chart.config.centerText.text,
 	    textX = Math.round((width - ctx.measureText(text).width) / 2),
-	    textY = height-10;
+	    textY = height-20;
 	 
 	    ctx.fillText(text, textX, textY);
 	    ctx.save();
@@ -315,7 +315,7 @@ var wacss = {
 	            			},
 	            			centerText:{
 	            				display:true,
-	            				text:"123"
+	            				text: gv1
 	            			}
 	        			};
 	        			if(undefined != list[i].getAttribute('data-title')){
