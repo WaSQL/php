@@ -411,8 +411,12 @@
 	</div>
 
 	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');return false;">Update guage</a></div>
-	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-value="90"  data-onclick="chartJsOnclick"></div>
-	<div id="guagechart1_data" style="display:none;">90</div>
+
+	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-max="100" data-value="90"  data-onclick="chartJsOnclick"></div>
+	<div id="guagechart1_data" style="display:none;">
+		
+		<colors>["#009300","#000000"]</colors>
+	</div>
 
 	<div><a href="#" onclick="setText('piechart1_data',getText('piechart1_data2'));wacss.initChartJs('piechart1');return false;">Update pie chart</a></div>
 	<div class="chartjs" id="piechart1" style="height:300px;width:400px;" data-type="pie" data-ylabel="Genders" data-onclick="chartJsOnclick"></div>

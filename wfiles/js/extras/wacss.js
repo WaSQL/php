@@ -177,7 +177,33 @@ var wacss = {
 		wacss.initChartJs();
 		wacss.initTruncate();
 	},
+	chartjsDrawTotals: function(chart){
+		var width = chart.chart.width,
+	    height = chart.chart.height,
+	    ctx = chart.chart.ctx;
+	 
+	    ctx.restore();
+	    var fontSize = (height / 60).toFixed(2);
+	    ctx.font = fontSize + "em sans-serif";
+	    ctx.textBaseline = "middle";
+	 
+	    var text = chart.config.centerText.text,
+	    textX = Math.round((width - ctx.measureText(text).width) / 2),
+	    textY = height-10;
+	 
+	    ctx.fillText(text, textX, textY);
+	    ctx.save();
+	},
 	initChartJs: function(initid){
+		Chart.Chart.pluginService.register({
+		    beforeDraw: function(chart) {
+		    	if(undefined != chart.config.centerText){
+		        	if ( undefined != chart.config.centerText.display){
+		        		wacss.chartjsDrawTotals(chart);	
+		        	} 
+		        }
+		    },
+		});
 		let list=document.querySelectorAll('div.chartjs');
 		let gcolors = new Array(
 	        'rgb(255, 159, 64)',
@@ -216,7 +242,7 @@ var wacss = {
 				continue;
 			}
 			list[i].setAttribute('data-initialized',1);
-			let type=list[i].getAttribute('data-type').toLowerCase();
+			let type=list[i].dataset.type.toLowerCase();
 			let datadiv=wacss.getObject(list[i].id+'_data');
 			//colors
 			let colorsdiv=datadiv.querySelector('colors');
@@ -261,13 +287,11 @@ var wacss = {
 					}
 					if(foundchart==0){
 						let gv=parseInt(datadiv.innerText);
-						let gv1=parseInt(180*(gv/100));
-						if(gv1 > 180){gv1=180;}
-						let gv2=180-gv1;
-						let color='#009300';
-						if(undefined != list[i].getAttribute('data-color')){
-	        				color=list[i].getAttribute('data-color');
-	        			}
+						let max=list[i].dataset.max||180;
+						let gv1=parseInt(max*(gv/100));
+						if(gv1 > max){gv1=max;}
+						let gv2=max-gv1;
+						let color=list[i].dataset.color || '#009300';
 	        			
 						//console.log(type);
 						let gconfig = {
@@ -275,7 +299,7 @@ var wacss = {
 							data: {
 								datasets: [{
 									data: [gv1,gv2],
-	                        		backgroundColor: [color,'#e0e0e0'],
+	                        		backgroundColor: colors,
 	                        		borderWidth: 0
 	                    		}]
 	            			},
@@ -284,7 +308,14 @@ var wacss = {
 	                			circumference: Math.PI,
 	                			rotation: -1 * Math.PI,
 	                			responsive: true,
+	                			legend:{
+	                				display:false
+	                			},
 	                    		animation: {animateScale:false,animateRotate:true}
+	            			},
+	            			centerText:{
+	            				display:true,
+	            				text:"123"
 	            			}
 	        			};
 	        			if(undefined != list[i].getAttribute('data-title')){
