@@ -195,15 +195,17 @@ var wacss = {
 	    ctx.save();
 	},
 	initChartJs: function(initid){
-		Chart.Chart.pluginService.register({
-		    beforeDraw: function(chart) {
-		    	if(undefined != chart.config.centerText){
-		        	if ( undefined != chart.config.centerText.display){
-		        		wacss.chartjsDrawTotals(chart);	
-		        	} 
-		        }
-		    },
-		});
+		if(undefined != Chart){
+			Chart.Chart.pluginService.register({
+			    beforeDraw: function(chart) {
+			    	if(undefined != chart.config.centerText){
+			        	if ( undefined != chart.config.centerText.display){
+			        		wacss.chartjsDrawTotals(chart);	
+			        	} 
+			        }
+			    },
+			});
+		}
 		let list=document.querySelectorAll('div.chartjs');
 		let gcolors = new Array(
 	        'rgb(255, 159, 64)',
@@ -619,7 +621,7 @@ var wacss = {
 	        			list[i].appendChild(pcanvas);
 	        			let pctx = pcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
-						console.log(pconfig);
+						//console.log(pconfig);
 						/* check for data-onclick */
 						if(undefined != list[i].getAttribute('data-onclick')){
 							pcanvas.parentobj=list[i];
