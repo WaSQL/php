@@ -2076,7 +2076,10 @@ function initNavigate(){
 	    	e.preventDefault();
 	    	e.stopPropagation();
 	    	let func=fel.dataset.navigateAll;
-		    window[func](fel);
+		    if(function_exists(func)){
+	    		window[func](fel);
+	    	}
+	    	else{eval(func);}
 	    	return false;
 	    }
 	    let index=parseInt(fel.dataset.navigate);
@@ -2096,7 +2099,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+			    	else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 	    	break;
@@ -2109,7 +2118,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 	    	break;
@@ -2123,7 +2138,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 			    if(undefined != prevel){
@@ -2145,7 +2166,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 			    if(undefined != nextel){
@@ -2167,7 +2194,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+			    	else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 	    		if(undefined != nextel){
@@ -2189,7 +2222,13 @@ function initNavigate(){
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
-		    		window[func](fel);
+		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
+			    		//do nothing
+			    	}
+		    		else if(function_exists(func)){
+			    		window[func](fel);
+			    	}
+			    	else{eval(func);}
 			    	return false;
 			    }
 			    if(undefined != prevel){
@@ -2212,9 +2251,16 @@ function navigateSetFocus(focus){
 		el.focus();
 		simulateEvent(el,'click');
 		let fel=document.activeElement;
-		if(undefined != fel){
-			simulateEvent(fel,'mouseout');
-		}
+	}
+	return false;
+}
+function navigateHideAndSetFocus(hide,focus){
+	hideId(hide);
+	let el=document.querySelector('[data-navigate-focus="'+focus+'" i]');
+	if(undefined != el){
+		el.focus();
+		simulateEvent(el,'click');
+		let fel=document.activeElement;
 	}
 	return false;
 }

@@ -417,6 +417,13 @@ function simulateTab(){
 	document.dispatchEvent(keyboardEvent);
 	return true;
 }
+function function_exists( function_name ) {    
+    if (typeof function_name == 'string'){  
+        return (typeof window[function_name] == 'function');  
+    } else{  
+        return (function_name instanceof Function);  
+    }  
+}
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){

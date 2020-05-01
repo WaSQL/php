@@ -291,13 +291,19 @@
 	<div><span class="w_gray w_bold">data-navigate-up="yourCustomJavascriptFunction();"</span>  - run a custom javascript function when this element has focus and the up key is pressed. "up, down, left, right, enter, and tab" are all supported</div>
 	<div><xmp style="display:inline;" class="w_gray w_bold"><span class="navigate-text">Element Text</span></xmp> - by placing this class around the text, the access key will be underlined with red for Ctrl or blue for Alt access keys</div>
 </p>
-<p>Test this by hitting Ctrl+d using your keyboard to set the focus to the first element below then use the arrow keys to navigate through the menu. <?=buildOnLoad("navigateSetFocus('Ctrl+D');");?>  There is also a javascript function called <span class="w_gray w_bold">navigateSetFocus</span> where you can set the focus as follows  <span class="w_gray w_bold">buildOnLoad("navigateSetFocus('Ctrl+D');")</span>
+<p>Test this by hitting Ctrl+d using your keyboard to set the focus to the first element below then use the arrow keys to navigate through the menu. <?=buildOnLoad("navigateSetFocus('Ctrl+D');");?>  
+<p>There is also a javascript function called <span class="w_gray w_bold">navigateSetFocus</span> where you can set the focus as follows  <span class="w_gray w_bold">buildOnLoad("navigateSetFocus('Ctrl+D');")</span>
+<p>There is also a javascript function called <span class="w_gray w_bold">navigateHideAndSetFocus</span> where you can hide and id and set the focus as follows  <span class="w_gray w_bold">navigateHideAndSetFocus('run_detail_menu','Alt+T')</span>
+
 <ul class="nav-tabs">
 	<li>
 		<a data-navigate-focus="Ctrl+D" data-navigate="1" data-navigate-group="submenu" href="/databases" data-div="commissions_content" onclick="setText('navigate_content',this.innerText);return false;"><span class="icon-database"></span>  <span class="navigate-text"><translate>Databases</translate></span></a>
 	</li>
 	<li data-behavior="menu" data-display="run_detail_menu">
-		<a data-navigate-focus="Alt+n" data-navigate="1" data-navigate-group="submenu" data-navigate-right="Alt+T" href="#" onclick="setText('navigate_content',this.innerText);return false;"><span class="icon-nav-last"></span> <span class="navigate-text"><translate>Submenu</translate></span> <span class="icon-dir-down" style="margin-left:5px;"></span></a>
+		<a data-navigate-focus="Alt+n" data-navigate="1" data-navigate-group="submenu"
+		data-navigate-up="return false;"
+		data-navigate-left="navigateHideAndSetFocus('run_detail_menu','Ctrl+D');" 
+		data-navigate-right="navigateHideAndSetFocus('run_detail_menu','Alt+T');" href="#" onclick="setText('navigate_content',this.innerText);return false;"><span class="icon-nav-last"></span> <span class="navigate-text"><translate>Submenu</translate></span> <span class="icon-dir-down" style="margin-left:5px;"></span></a>
 		<div id="run_detail_menu" style="display: none;position:fixed;background:#FFF;z-index:99999;border:1px solid #ccc" data-display="block"> 
 			<ul class="nav-list w_gray">
 				<li><a data-navigate="1" data-navigate-group="submenu" href="#" onclick="setText('navigate_content',this.innerText);return false;"><translate>Submenu One</translate></a></li>
