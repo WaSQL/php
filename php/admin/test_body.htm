@@ -449,9 +449,9 @@
 		<dataset data-label="DEF">[12,4,11,7,12]</dataset>	
 	</div>
 
-	<div><a href="#" onclick="document.getElementById('guagechart1_data').innerText=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');return false;">Update guage</a></div>
+	<div><a href="#" onclick="document.getElementById('guagechart1').dataset.value=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');return false;">Update guage</a></div>
 
-	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;" data-type="guage" data-max="100" data-value="90"  data-onclick="chartJsOnclick"></div>
+	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;"  data-labels="true" data-type="guage" data-max="100" data-value="90"  data-onclick="chartJsOnclick"></div>
 	<div id="guagechart1_data" style="display:none;">
 		
 		<colors>["#009300","#000000"]</colors>

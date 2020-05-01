@@ -195,17 +195,6 @@ var wacss = {
 	    ctx.save();
 	},
 	initChartJs: function(initid){
-		if(undefined != Chart){
-			Chart.Chart.pluginService.register({
-			    beforeDraw: function(chart) {
-			    	if(undefined != chart.config.centerText){
-			        	if ( undefined != chart.config.centerText.display){
-			        		wacss.chartjsDrawTotals(chart);	
-			        	} 
-			        }
-			    },
-			});
-		}
 		let list=document.querySelectorAll('div.chartjs');
 		let gcolors = new Array(
 	        'rgb(255, 159, 64)',
@@ -278,17 +267,21 @@ var wacss = {
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){
 							//update existing chart
-							let gv=parseInt(datadiv.innerText);
-							let gv1=parseInt(180*(gv/100));
-							if(gv1 > 180){gv1=180;}
-							let gv2=180-gv1;
+							let gv=list[i].dataset.value || datadiv.innerText;
+							gv=parseInt(gv);
+							let max=list[i].dataset.max||180;
+							let gv1=parseInt(max*(gv/100));
+							if(gv1 > max){gv1=max;}
+							let gv2=max-gv1;
+							wacss.chartjs[list[i].id].config.centerText.text=gv1;
 							wacss.chartjs[list[i].id].config.data.datasets[0].data=[gv1,gv2];
 	        				wacss.chartjs[list[i].id].update();
 	        				foundchart=1;
 		        		}
 					}
 					if(foundchart==0){
-						let gv=parseInt(datadiv.innerText);
+						let gv=list[i].dataset.value || datadiv.innerText;
+						gv=parseInt(gv);
 						let max=list[i].dataset.max||180;
 						let gv1=parseInt(max*(gv/100));
 						if(gv1 > max){gv1=max;}
@@ -310,9 +303,8 @@ var wacss = {
 	                			circumference: Math.PI,
 	                			rotation: -1 * Math.PI,
 	                			responsive: true,
-	                			legend:{
-	                				display:false
-	                			},
+	                			plugins:{datalabels:{display:true}},
+	                			legend:{display:false},
 	                    		animation: {animateScale:false,animateRotate:true}
 	            			},
 	            			centerText:{
@@ -320,17 +312,31 @@ var wacss = {
 	            				text: gv1
 	            			}
 	        			};
-	        			if(undefined != list[i].getAttribute('data-title')){
-	        				let title=list[i].getAttribute('data-title');
-	        				gconfig.options.title={display:true,padding:0,position:'bottom',text:title};
+	        			if(undefined != list[i].dataset.labels && list[i].dataset.labels=='false'){
+	        				gconfig.options.plugins.datalabels.display=false;
 	        			}
-	        			if(undefined != list[i].getAttribute('data-title-position')){
-	        				gconfig.options.title.position=list[i].getAttribute('data-title-position');
+	        			if(undefined != list[i].dataset.title){
+	        				gconfig.options.title={display:true,padding:0,position:'bottom',text:list[i].dataset.title};
+	        			}
+	        			if(undefined != list[i].dataset.titlePosition){
+	        				gconfig.options.title.position=list[i].dataset.titlePosition;
 	        			}
 	        			let gcanvas=document.createElement('canvas');
 	        			list[i].appendChild(gcanvas);
 	        			let gctx = gcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
+						Chart.pluginService.register({
+						    afterDraw: function(chart) {
+						    	if(undefined != chart.config.centerText){
+						        	if ( undefined != chart.config.centerText.display){
+						        		//console.log(chart);
+						        		wacss.chartjsDrawTotals(chart);	
+						        	} 
+						        }
+						    }
+						});
+						
+
 						/* check for data-onclick */
 						if(undefined != list[i].getAttribute('data-onclick')){
 							gcanvas.parentobj=list[i];
