@@ -1,62 +1,34 @@
-function chatlistTimer(){
-	if(undefined != document.activeElement && document.activeElement.name=='msg'){return;}
-	ajaxGet('/apps/chat','chat_chatlist',{_template:1,func:'chatlist',nosetprocess:1});
+function chatMessagesLoaded(){
+	let frm=document.app_chat_form;
+	let app=document.querySelector('div[data-app-settings="1"]');
+	if(undefined == frm){return false;}
+	if(undefined != frm.msg){frm.msg.value='';frm.msg.focus();}
+	t=parseInt(app.dataset.timer)*1000;
+	let msgs=document.querySelector('#chat_msgs');
+	msgs.scrollTop = msgs.scrollHeight;
+	window.setTimeout(function(){chatCheckForNewMessages();},t);
 }
-function chatShowMyChatUsers(){
-	var obj=getObject('chat_mychatusers');
-	if(obj.style.display!='none'){
-		obj.style.display='none';
-		return;
-	}
-	return ajaxGet('/apps/chat','chat_mychatusers',{_template:1,func:'mychatusers',nosetprocess:1});
+function chatNotify(){
+	let notify=document.querySelector('#notify');
+	console.log(notify);
+	notify.play();
 }
-function chatShowConfig(){
-	return ajaxGet('/apps/chat','centerpop',{_template:1,func:'chatconfig',nosetprocess:1});
+function chatSetTimer(){
+	let app=document.querySelector('div[data-app-settings="1"]');
+	t=parseInt(app.dataset.timer)*1000;
+	window.setTimeout(function(){chatCheckForNewMessages();},t);
 }
-function chatSetFocus(id){
-	if(undefined == document.getElementById('chatform_'+id)){
-		console.log('chatform_'+id+' does not exist to focus on');
-		return;
-	}
-	document.getElementById('chatform_'+id).msg.focus();
+function chatCheckForNewMessages(){
+	let el=document.querySelector('div[data-last-message]');
+	let app=document.querySelector('div[data-app-settings="1"]');
+	ajaxGet(app.dataset.ajaxurl+'/check_for_new_messages','chatnull',{last_message:el.dataset.lastMessage,setprocessing:0});
 }
-function chatScrollToBottom(id){
-	if(undefined == document.getElementById('chatbox_chats_'+id)){
-		console.log('chatbox_chats_'+id+' does not exist to scroll to bottom of');
-		return;
-	}
-	var element=document.getElementById('chatbox_chats_'+id);
-	element.scrollTop = element.scrollHeight;
+function chatGetNewMessages(){
+	let app=document.querySelector('div[data-app-settings="1"]');
+	ajaxGet(app.dataset.ajaxurl+'/get_new_messages','chat_msgs',{setprocessing:0});
+}
+function chatConfig(){
+	let app=document.querySelector('div[data-app-settings="1"]');
+	return ajaxGet(app.dataset.ajaxurl+'/config','modal',{setprocessing:0,title:'User Settings'});
 }
 
-function chatSendMessage(msg_to,msg){
-	hideId('chat_mychatusers');
-	if(undefined == msg || !msg.length){msg='*';}
-	document.chat_searchform.search.value='';
-	chatSearchList();
-	return ajaxGet('/apps/chat','chat_chatlist',{_template:1,func:'sendmessage',msg_to:msg_to,msg:msg,nosetprocess:1});
-}
-/* autocomplete functionality for chat search field */
-function chatSearchList(str){
-	if(undefined==str){str='';}
-	str=str.toLowerCase();
-	var list=document.querySelectorAll('div[data-userlist]');
-	var cnt=0;
-	for(var i=0;i<list.length;i++){
-		var val=list[i].getAttribute('data-userlist');
-		if(!str.length || val.indexOf(str)==-1){
-    		list[i].style.display='none';
-		}
-		else{
-        	list[i].style.display='block';
-        	cnt++;
-		}
-	}
-	if(cnt>0){
-    	document.querySelector('div#chat_userlist').style.display='block';
-	}
-	else{
-    	document.querySelector('div#chat_userlist').style.display='none';
-	}
-	return false;
-}

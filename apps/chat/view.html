@@ -1,32 +1,64 @@
 <view:default>
-<div id="chat_msgs" style="width:100%;min-height:200px;">
+<div id="chat_msgs" style="width:100%;min-height:200px;max-height:80vh;overflow:auto;">
 	<?=renderView('messages',$messages,'messages');?>
 </div>
-<form method="post" name="app_chat_form" action="/t/1<?=$chat['chat_url'];?>/msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
-	<div style="display:flex;">
+<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
+	<div style="display:flex;" class="action_row">
 		<?=chatToField();?>
 		<?=chatInputField();?>
 		<button type="submit" class="chat_button" style="flex-grow:1;"><span class="icon-arrow-right"></span></button>
+		<button type="button" class="chat_button" onclick="return chatConfig();" style="border-left:1px solid #ccc;flex-grow:1;"><span class="icon-gear w_bigger w_gray"></span></button>
 	</div>
 	<div style="display:none">
 		<input type="hidden" name="setprocessing" value="0" />
 		<textarea name="chat_b64"><?=encodeBase64(json_encode($chat));?></textarea>
 	</div>
 </form>
+<div style="display:none" 
+	data-app-settings="1"
+	data-url="<?=$APP['-url'];?>"
+	data-ajaxurl="<?=$APP['-ajaxurl'];?>"
+	data-group="<?=$APP['-group'];?>"
+	data-timer="<?=$APP['-timer'];?>"
+	data-notify="<?=$APP['-ajaxurl'];?>/playsound/notify.mp3"
+	>
+	<div id="chatnull"></div>
+	<audio id="notify" controls>
+  		<source src="<?=$APP['-ajaxurl'];?>/playsound/notify.mp3" type="audio/mpeg">
+	</audio>
+</div>
 </view:default>
 
 <view:messages>
+<? global $APP;?>
 <view:message>
 	<div style="display:flex;align-items: center;">
-		<span class="<?=$message['msg_icon'];?>" style="margin-right:5px;color:<?=$message['msg_from_color'];?>E6;"></span>
-		<span style="margin-right:5px;color:<?=$message['msg_from_color'];?>E6;" title="Posted on <?=$message['_cdate'];?>"><?=$message['msg_from_name'];?>: </span>
-		<div class="chat_msg"><?=$message['msg'];?></div>
+		<div>
+			<view:pic><div><img src="<?=$message['msg_from_photo'];?>" alt="" style="margin-right:5px;border-radius: 13px;width:24px;height:24px;"></span></div></view:pic>
+			<view:nopic><div><span class="icon-user" style="margin-right:5px;color:<?=$message['msg_from_color'];?>E6;"></span></div></view:nopic>
+			<?=renderViewIfElse(strlen($message['msg_from_photo']),'pic','nopic',$message,'message');?>
+			
+			<div><span class="<?=$message['msg_icon'];?>" style="margin-right:5px;"></span></div>
+		</div>
+		<div class="chat_message_wrapper">
+			<div><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
+			<div class="chat_message_text"><?=$message['msg'];?></div>
+		</div>
 	</div>
 </view:message>
+<view:notify>
+NOTIFY
+<?=buildOnLoad("chatNotify();");?>
+</view:notify>
+<div style="display:none" data-last-message="<?=$APP['last_message_id'];?>"></div>
 <?=renderEach('message',$messages,'message');?>
-<?=buildOnLoad("document.app_chat_form.msg.value='';document.app_chat_form.msg.focus();");?>
+<?=buildOnLoad("chatMessagesLoaded();");?>
 </view:messages>
 
-<view:login>
-<?=userLoginForm(array('-action'=>$chat['chat_url']));?>
-</view:login>
+<view:get_new_messages>last:<?=$last_message_id;?>, Cnt:<?=$cnt;?> <?=buildOnLoad("chatGetNewMessages();");?></view:get_new_messages>
+
+<view:do_nothing>nothing to do <?=buildOnLoad("chatSetTimer();");?></view:do_nothing>
+
+<view:login><?=userLoginForm(array('-action'=>$APP['-url']));?></view:login>
+
+<view:config><?=chatConfigForm();?></view:config>

@@ -10095,17 +10095,14 @@ function includeFile($file,$params=array()){
 */
 function includeApp($app,$params=array()){
 	global $CONFIG;
+	global $APP;
 	$app_path=getWasqlPath("apps/{$app}");
 	if(!is_dir($app_path)){
     	return "includeApp Error:{$app_path} does not exist";
 	}
 	//Load any params into the Request array, saving existing values in prev array
-    $prev=array();
-    foreach($params as $key=>$pval){
-		if(preg_match('/^\-\-/',$key)){continue;}
-		if(isset($_REQUEST[$key])){$prev[$key]=$_REQUEST[$key];}
-		$_REQUEST[$key]=$pval;
-	}
+    $APP=$params;
+    $APP['-app_path']=$app_path;
 	//include functions
 	if(is_file("{$app_path}/model.php")){
     	include_once("{$app_path}/model.php");
@@ -10132,20 +10129,17 @@ function includeApp($app,$params=array()){
 	elseif(is_file("{$app_path}/{$app}.html")){
     	$view=getFileContents("{$app_path}/{$app}.html");
 	}
-	//prep css
-	if(is_file("{$app_path}/style.css")){
-		$_SESSION['w_MINIFY']['cssfiles'][]="{$app_path}/style.css";
+	//load any css
+	$files=listFilesEx($app_path,array('ext'=>'css'));
+	foreach($files as $file){
+		$_SESSION['w_MINIFY']['cssfiles'][]=$file['afile'];
 	}
-	elseif(is_file("{$app_path}/{$app}.css")){
-		$_SESSION['w_MINIFY']['cssfiles'][]="{$app_path}/{$app}.css";
+	//load any js files
+	$files=listFilesEx($app_path,array('ext'=>'js'));
+	foreach($files as $file){
+		$_SESSION['w_MINIFY']['jsfiles'][]=$file['afile'];
 	}
-	//prep js
-	if(is_file("{$app_path}/javascript.js")){
-		$_SESSION['w_MINIFY']['jsfiles'][]="{$app_path}/javascript.js";
-	}
-	elseif(is_file("{$app_path}/{$app}.js")){
-		$_SESSION['w_MINIFY']['jsfiles'][]="{$app_path}/{$app}.js";
-	}
+	
 	//start with any contents currently in the buffer
 	$rtn=trim(ob_get_contents());
 	ob_clean();
@@ -10156,11 +10150,6 @@ function includeApp($app,$params=array()){
 	}
 	else{
 	    $rtn .=  evalPHP($view);
-	}
-    //unset and restore any request values
-    foreach($params as $key=>$val){
-		if(isset($prev[$key])){$_REQUEST[$key]=$prev[$key];}
-		else{unset($_REQUEST[$key]);}
 	}
     return $rtn;
 }
