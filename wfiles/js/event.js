@@ -1926,6 +1926,7 @@ function initBehaviors(ajaxdiv){
 *	data-navigate-up="myfunction"  - overides normal mode and calls your function passing it the current element
 *	data-navigate-down="myfunction"  - overides normal mode and calls your function passing it the current element
 *	data-navigate-all="myfunction"  - overides all normal modes and calls your function passing it the current element
+*	data-navigate-focus="myfunction" - calls this function on focus, defaults to the onclick event
 *	NOTE: all navigation elements must have a data-navigate attribute.
 * @return false
 * @usage initNavigate();
@@ -2153,6 +2154,17 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	prevel.focus();
 			    	prevel.setAttribute('data-navigate-key',nav.keycode);
+			    	if(undefined != prevel.dataset.navigateFocus){
+			    		let clickFunc=prevel.dataset.navigateFocus;
+			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
+			    		//do nothing
+				    	}
+			    		else if(function_exists(clickFunc)){
+				    		window[clickFunc](fel);
+				    	}
+				    	else{eval(clickFunc);}
+				    	return false;
+			    	}
 			    	simulateEvent(prevel,'click');
 					return false;
 			    }
@@ -2181,6 +2193,17 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	nextel.focus();
 			    	nextel.setAttribute('data-navigate-key',nav.keycode);
+			    	if(undefined != nextel.dataset.navigateFocus){
+			    		let clickFunc=nextel.dataset.navigateFocus;
+			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
+			    		//do nothing
+				    	}
+			    		else if(function_exists(clickFunc)){
+				    		window[clickFunc](fel);
+				    	}
+				    	else{eval(clickFunc);}
+				    	return false;
+			    	}
 			    	simulateEvent(nextel,'click');
 					return false;
 			    }
@@ -2209,6 +2232,17 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	nextel.focus();
 			    	nextel.setAttribute('data-navigate-key',nav.keycode);
+			    	if(undefined != nextel.dataset.navigateFocus){
+			    		let clickFunc=nextel.dataset.navigateFocus;
+			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
+			    		//do nothing
+				    	}
+			    		else if(function_exists(clickFunc)){
+				    		window[clickFunc](fel);
+				    	}
+				    	else{eval(clickFunc);}
+				    	return false;
+			    	}
 			    	simulateEvent(nextel,'click');
 					return false;
 			    }
@@ -2237,6 +2271,17 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	prevel.focus();
 			    	prevel.setAttribute('data-navigate-key',nav.keycode);
+			    	if(undefined != prevel.dataset.navigateFocus){
+			    		let clickFunc=prevel.dataset.navigateFocus;
+			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
+			    		//do nothing
+				    	}
+			    		else if(function_exists(clickFunc)){
+				    		window[clickFunc](fel);
+				    	}
+				    	else{eval(clickFunc);}
+				    	return false;
+			    	}
 			    	simulateEvent(prevel,'click');
 					return false;
 			    }
