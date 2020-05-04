@@ -2154,8 +2154,8 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	prevel.focus();
 			    	prevel.setAttribute('data-navigate-key',nav.keycode);
-			    	if(undefined != prevel.dataset.navigateFocus){
-			    		let clickFunc=prevel.dataset.navigateFocus;
+			    	if(undefined != prevel.dataset.navigateClick){
+			    		let clickFunc=prevel.dataset.navigateClick;
 			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
 			    		//do nothing
 				    	}
@@ -2193,8 +2193,8 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	nextel.focus();
 			    	nextel.setAttribute('data-navigate-key',nav.keycode);
-			    	if(undefined != nextel.dataset.navigateFocus){
-			    		let clickFunc=nextel.dataset.navigateFocus;
+			    	if(undefined != nextel.dataset.navigateClick){
+			    		let clickFunc=nextel.dataset.navigateClick;
 			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
 			    		//do nothing
 				    	}
@@ -2232,8 +2232,8 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	nextel.focus();
 			    	nextel.setAttribute('data-navigate-key',nav.keycode);
-			    	if(undefined != nextel.dataset.navigateFocus){
-			    		let clickFunc=nextel.dataset.navigateFocus;
+			    	if(undefined != nextel.dataset.navigateClick){
+			    		let clickFunc=nextel.dataset.navigateClick;
 			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
 			    		//do nothing
 				    	}
@@ -2271,8 +2271,8 @@ function initNavigate(){
 			    	simulateEvent(fel,'mouseout');
 			    	prevel.focus();
 			    	prevel.setAttribute('data-navigate-key',nav.keycode);
-			    	if(undefined != prevel.dataset.navigateFocus){
-			    		let clickFunc=prevel.dataset.navigateFocus;
+			    	if(undefined != prevel.dataset.navigateClick){
+			    		let clickFunc=prevel.dataset.navigateClick;
 			    		if(clickFunc.length==0 || clickFunc=='false' || clickFunc.indexOf('return false')==0){
 			    		//do nothing
 				    	}
