@@ -20,7 +20,7 @@ if(!isset($APP['-ajaxurl'])){
 	}
 }
 if(!isset($APP['-timer'])){
-	$APP['-timer']=5;
+	$APP['-timer']=15;
 }
 
 if(!isUser()){
