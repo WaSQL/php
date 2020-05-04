@@ -2,7 +2,7 @@
 <div id="chat_msgs" style="width:100%;min-height:200px;max-height:80vh;overflow:auto;">
 	<?=renderView('messages',$messages,'messages');?>
 </div>
-<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
+<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
 	<div style="display:flex;" class="action_row">
 		<?=chatToField();?>
 		<?=chatInputField();?>
@@ -20,11 +20,11 @@
 	data-ajaxurl="<?=$APP['-ajaxurl'];?>"
 	data-group="<?=$APP['-group'];?>"
 	data-timer="<?=$APP['-timer'];?>"
-	data-notify="<?=$APP['-ajaxurl'];?>/playsound/notify.mp3"
+	data-notify="<?=$APP['-ajaxurl'];?>/app_chat_playsound/notify.mp3"
 	>
 	<div id="chatnull"></div>
 	<audio id="notify" controls>
-  		<source src="<?=$APP['-ajaxurl'];?>/playsound/notify.mp3" type="audio/mpeg">
+  		<source src="<?=$APP['-ajaxurl'];?>/app_chat_playsound/notify.mp3" type="audio/mpeg">
 	</audio>
 </div>
 </view:default>

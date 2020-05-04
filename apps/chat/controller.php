@@ -28,11 +28,11 @@ if(!isUser()){
 	return;
 }
 switch(strtolower($PASSTHRU[0])){
-	case 'config':
+	case 'app_chat_config':
 		setView('config',1);
 		return;
 	break;
-	case 'playsound':
+	case 'app_chat_playsound':
 		$soundfile="{$APP['-app_path']}/notify.mp3";
 		header('Content-Type: audio/mpeg');
 		header('Content-Disposition: inline;filename="notify.mp3"');
@@ -42,7 +42,7 @@ switch(strtolower($PASSTHRU[0])){
 		readfile($soundfile);
 		exit;
 	break;
-	case 'check_for_new_messages':
+	case 'app_chat_check_for_new_messages':
 		$last_message_id=(integer)$_REQUEST['last_message'];
 		$cnt=chatCheckForNewMessages($last_message_id);
 		if($cnt > 0){
@@ -54,12 +54,12 @@ switch(strtolower($PASSTHRU[0])){
 		}
 		return;
 	break;
-	case 'get_new_messages':
+	case 'app_chat_get_new_messages':
 		$messages=chatGetMessages();
 		setView(array('messages','notify'),1);
 		return;
 	break;
-	case 'msg':
+	case 'app_chat_msg':
 		$messages=chatAddMessage(stripslashes($_REQUEST['msg']),(integer)$_REQUEST['msg_to']);
 		setView('messages',1);
 		return;
