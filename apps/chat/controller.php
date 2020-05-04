@@ -70,7 +70,7 @@ switch(strtolower($PASSTHRU[0])){
 	break;
 	case 'app_chat_msg':
 		$messages=chatAddMessage(stripslashes($_REQUEST['msg']),(integer)$_REQUEST['msg_to']);
-		setView('messages',1);
+		setView(array('messages','clearinput'),1);
 		return;
 	break;
 	default:

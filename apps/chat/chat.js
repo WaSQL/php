@@ -1,12 +1,14 @@
 function chatMessagesLoaded(){
-	let frm=document.app_chat_form;
 	let app=document.querySelector('div[data-app-settings="1"]');
-	if(undefined == frm){return false;}
-	if(undefined != frm.msg){frm.msg.value='';frm.msg.focus();}
 	t=parseInt(app.dataset.timer)*1000;
 	let msgs=document.querySelector('#chat_msgs');
 	msgs.scrollTop = msgs.scrollHeight;
 	window.setTimeout(function(){chatCheckForNewMessages();},t);
+}
+function chatMessagesClearInput(){
+	let frm=document.app_chat_form;
+	if(undefined == frm){return false;}
+	if(undefined != frm.msg){frm.msg.value='';frm.msg.focus();}
 }
 function chatNotify(){
 	let notify=document.querySelector('#notify');

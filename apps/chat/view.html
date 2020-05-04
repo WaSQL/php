@@ -57,6 +57,9 @@ NOTIFY
 <div style="display:none" data-last-message="<?=$APP['last_message_id'];?>"></div>
 <?=renderEach('message',$messages,'message');?>
 <?=buildOnLoad("chatMessagesLoaded();");?>
+<view:clearinput>
+<?=buildOnLoad("chatMessagesClearInput();");?>
+</view:clearinput>
 </view:messages>
 
 <view:get_new_messages>last:<?=$last_message_id;?>, Cnt:<?=$cnt;?> <?=buildOnLoad("chatGetNewMessages();");?></view:get_new_messages>
