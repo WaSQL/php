@@ -14,6 +14,17 @@
     border-radius: 4px;
     padding:3px 9px;
 }
+.chat_delete{
+    display:inline;
+    margin-left:15px;
+    font-size:0.5em;
+    position:relative;
+    top:-12px;
+    right:-12px;
+    padding:3px 5px;
+    background:transparent;
+    border-radius: 15px;
+}
 .action_row input:focus,
 .action_row select:focus,
 .action_row button:focus {

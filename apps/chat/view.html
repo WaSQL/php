@@ -41,7 +41,11 @@
 			<div><span class="<?=$message['msg_icon'];?>" style="margin-right:5px;"></span></div>
 		</div>
 		<div class="chat_message_wrapper">
-			<div><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
+			<view:delete>
+			<div style="float:right"><a href="#" class="chat_delete" onclick="return chatDelete(this);" data-id="<?=$message['_id'];?>"><span class="icon-close w_gray"></span></a></div>
+			</view:delete>
+			<?=renderViewIf($message['_cuser']==$USER['_id'],'delete',$message,'message');?>
+			<div class="w_nowrap"><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
 			<div class="chat_message_text"><?=$message['msg'];?></div>
 		</div>
 	</div>

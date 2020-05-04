@@ -59,6 +59,15 @@ switch(strtolower($PASSTHRU[0])){
 		setView(array('messages','notify'),1);
 		return;
 	break;
+	case 'app_chat_delete':
+		$id=(integer)$PASSTHRU[1];
+		$opts=array('-table'=>'app_chat','-where'=>"_id={$id} and _cuser={$USER['_id']}");
+		$ok=delDBRecord($opts);
+		//echo printValue($ok).printValue($opts);exit;
+		$messages=chatGetMessages();
+		setView(array('messages'),1);
+		return;
+	break;
 	case 'app_chat_msg':
 		$messages=chatAddMessage(stripslashes($_REQUEST['msg']),(integer)$_REQUEST['msg_to']);
 		setView('messages',1);

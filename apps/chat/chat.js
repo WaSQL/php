@@ -30,4 +30,10 @@ function chatConfig(){
 	let app=document.querySelector('div[data-app-settings="1"]');
 	return ajaxGet(app.dataset.ajaxurl+'/app_chat_config','modal',{setprocessing:0,title:'User Settings'});
 }
+function chatDelete(el){
+	if(!confirm('Delete this entry?')){return false;}
+	let app=document.querySelector('div[data-app-settings="1"]');
+	let id=el.dataset.id;
+	return ajaxGet(app.dataset.ajaxurl+'/app_chat_delete/'+id,'chat_msgs',{setprocessing:0});
+}
 
