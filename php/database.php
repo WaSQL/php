@@ -4362,7 +4362,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'.PHP_EOL;
 		}
 	$forcedatts=array(
-		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex','x-webkit-speech',
+		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
 		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help','autofocus',
 		'group_id','group_class','group_style','checkclass','checkclasschecked',
@@ -4699,7 +4699,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			//opts
 			$forcedatts=array(
 				'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
-				'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap','x-webkit-speech',
+				'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
 				'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help',
 				'group_id','group_class','group_style','checkclass','checkclasschecked',
 				'spellcheck','max','min','pattern','placeholder','readonly','step'

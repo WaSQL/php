@@ -407,7 +407,49 @@ function autoGrow(box,maxheight) {
 	if(undefined==maxheight){maxheight=400;}
 	if (box.scrollHeight < maxheight && box.scrollHeight > box.clientHeight && !window.opera){box.style.height=box.scrollHeight+'px';}
 }
-
+//---------- begin function formDictate --------------------
+/**
+* @describe enables speech recognition for an input field
+* @param inp mixed - id or element for input field
+* @param [ico] mixed - id or element for icon to blink while speech is on
+* @return false
+* @usage onclick="return formDictate('inputid','iconid');"
+*/
+function formDictate(inp,ico) {
+  	inp=getObject(inp);
+  	if(undefined != inp){return false;}
+  	ico=getObject(ico);
+    if (window.hasOwnProperty('webkitSpeechRecognition')) {
+		let recognition = new webkitSpeechRecognition();
+      	recognition.continuous = false;
+      	recognition.interimResults = false;
+      	recognition.lang = "en-US";
+      	if(undefined != ico){
+	      	ico.classList.add('w_blink');
+	      	ico.classList.add('w_success');
+	      	recognition.ico=ico;
+	      }
+      	recognition.inp=inp;
+      	recognition.start();
+      	recognition.onresult = function(e) {
+        	this.inp.value = e.results[0][0].transcript;
+        	if(undefined != this.ico){
+	        	this.ico.classList.remove('w_blink');
+	        	this.ico.classList.remove('w_success');
+	        }
+        	this.stop();
+		};
+      	recognition.onerror = function(e) {
+      		if(undefined != this.ico){
+	      		this.ico.classList.remove('w_blink');
+	      		this.ico.classList.remove('w_success');
+	      		this.ico.classList.add('w_danger');
+	      	}
+        	this.stop();
+      	}
+    }
+    return false;
+}
 //---------- begin function initPikadayCalendar--------------------
 /**
 * @describe initializes pikaday calendar module
