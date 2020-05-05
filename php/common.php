@@ -2657,6 +2657,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 */
 function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
 		if(isset($params['multiple'])){$params['text']='files to upload';}
 		else{$params['text']='file to upload';}
@@ -2719,7 +2720,7 @@ function buildFormFile($name,$params=array()){
 			}
     	}
     	else{
-    		$tag .= '<span class="icon-upload"></span> ' . $params['text'];
+    		$tag .= '<span class="'.$params['-icon'].'"></span> ' . $params['text'];
     	}
 		$tag .= '</div>'.PHP_EOL;
 		return $tag;
@@ -2808,7 +2809,7 @@ function buildFormFile($name,$params=array()){
 	$tag .= ' />'.PHP_EOL;
 	$tag .= '	<label for="'.$params['id'].'"';
 	$tag .= setTagAttributes($label_params);
-	$tag .= ' ><span class="icon-upload w_big w_danger"></span> '.$params['text'].'</label>'.PHP_EOL;
+	$tag .= ' ><span class="'.$params['-icon'].'"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormFrequency --------------------
