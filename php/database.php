@@ -2134,6 +2134,12 @@ function databaseListRecords($params=array()){
 					$recs=getDBRecords($params);
 				break;
 			}
+			//strip tags
+			foreach($recs as $i=>$rec){
+				foreach($rec as $k=>$v){
+					$recs[$i][$k]=strip_tags($v);
+				}
+			}
 			//check for results_eval
 			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
 				$rparams='';
