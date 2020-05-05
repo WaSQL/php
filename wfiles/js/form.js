@@ -417,7 +417,10 @@ function autoGrow(box,maxheight) {
 */
 function formDictate(inp,ico) {
   	inp=getObject(inp);
-  	if(undefined != inp){return false;}
+  	if(undefined == inp){
+  		console.log('formDictate error: undefined input '+inp);
+  		return false;
+  	}
   	ico=getObject(ico);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
 		let recognition = new webkitSpeechRecognition();
@@ -428,7 +431,7 @@ function formDictate(inp,ico) {
 	      	ico.classList.add('w_blink');
 	      	ico.classList.add('w_success');
 	      	recognition.ico=ico;
-	      }
+	    }
       	recognition.inp=inp;
       	recognition.start();
       	recognition.onresult = function(e) {
@@ -446,7 +449,7 @@ function formDictate(inp,ico) {
 	      		this.ico.classList.add('w_danger');
 	      	}
         	this.stop();
-      	}
+      	};
     }
     return false;
 }
