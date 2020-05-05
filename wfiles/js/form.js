@@ -446,7 +446,7 @@ function formDictate(inp,ico,frm) {
 	        }
         	this.stop();
         	if(undefined != this.frm){
-        		sumulateEvent(this.frm,'submit');
+        		simulateEvent(this.frm,'submit');
         	}
         	
 		};
