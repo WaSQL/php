@@ -2663,7 +2663,7 @@ function buildFormFile($name,$params=array()){
 		else{$params['text']='file to upload';}
 	}
 	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	//set path of where to store this file in
