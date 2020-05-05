@@ -441,6 +441,7 @@ function formDictate(inp,ico) {
 	        	this.ico.classList.remove('w_success');
 	        }
         	this.stop();
+        	simulateEvent(this.inp,'enter');
 		};
       	recognition.onerror = function(e) {
       		if(undefined != this.ico){
