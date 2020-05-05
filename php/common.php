@@ -4642,7 +4642,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	$htmlatts=array(
 		'id','name','class','style','title','alt','accesskey','tabindex',
 		'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
-		'_behavior','display',
+		'_behavior','display','x-webkit-speech',
 		'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg','autocomplete',
