@@ -415,13 +415,14 @@ function autoGrow(box,maxheight) {
 * @return false
 * @usage onclick="return formDictate('inputid','iconid');"
 */
-function formDictate(inp,ico) {
+function formDictate(inp,ico,frm) {
   	inp=getObject(inp);
   	if(undefined == inp){
   		console.log('formDictate error: undefined input '+inp);
   		return false;
   	}
   	ico=getObject(ico);
+  	frm=getObject(frm);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
 		let recognition = new webkitSpeechRecognition();
       	recognition.continuous = false;
@@ -432,6 +433,9 @@ function formDictate(inp,ico) {
 	      	ico.classList.add('w_success');
 	      	recognition.ico=ico;
 	    }
+	    if(undefined != frm){
+	    	recognition.frm=frm;
+	    }
       	recognition.inp=inp;
       	recognition.start();
       	recognition.onresult = function(e) {
@@ -441,7 +445,10 @@ function formDictate(inp,ico) {
 	        	this.ico.classList.remove('w_success');
 	        }
         	this.stop();
-        	simulateEvent(this.inp,'enter');
+        	if(undefined != this.frm){
+        		sumulateEvent(this.frm,'submit');
+        	}
+        	
 		};
       	recognition.onerror = function(e) {
       		if(undefined != this.ico){
