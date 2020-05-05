@@ -15,8 +15,27 @@ function setInputFileName(fld){
 	}
 	
 	let label=document.querySelector('label[for='+fld.id+']');
-	//console.log(fileName,label);
-	if(fileName){
+	//console.log('setInputFileName');
+	//console.log(fld.files);
+	//console.log(fld.dataset.thumbnail);
+	if(undefined != fld.dataset.thumbnail){
+		let reader = new FileReader();
+		reader.label=label;
+		reader.filename=fileName;
+		reader.onload = function (e) {
+			//console.log('onload');
+			console.log(e.target);
+			//console.log(this.fld);
+			let img=document.createElement('img');
+			img.style='margin-top:2px;display:block;max-width:200px;max-height:200px;border-radius:3px;border:1px solid #ccc;';
+			img.src=e.target.result;
+			setText(this.label,this.filename);
+			this.label.style='padding:0px;border:0px;background:transparent;';
+			this.label.appendChild(img);
+		}
+		reader.readAsDataURL(fld.files[0]);
+	}
+	else if(fileName){
 		setText(label,'<span class="icon-upload w_big w_success"></span> '+fileName);
 		label.className='btn btn-default';
 	}

@@ -2779,6 +2779,10 @@ function buildFormFile($name,$params=array()){
     //remove style attribute since it is not supported
     $params['data-type']='file';
     $params['data-formname']=$params['-formname'];
+    $params['-thumbnail']=1;
+    if(isset($params['-thumbnail'])){
+    	$params['data-thumbnail']=$params['-thumbnail'];
+    }
     $params['onchange']="setInputFileName(this);";
 
     if(!isset($params['style'])){
