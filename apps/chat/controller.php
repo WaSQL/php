@@ -59,6 +59,19 @@ switch(strtolower($PASSTHRU[0])){
 		setView(array('messages','notify'),1);
 		return;
 	break;
+	case 'app_chat_edit':
+		$id=(integer)$PASSTHRU[1];
+		echo chatEditMessage($id);exit;
+		setView('message_edit',1);
+		return;
+	break;
+	case 'app_chat_edit_processed':
+		$id=(integer)$PASSTHRU[1];
+		$rec=getDBRecordById('app_chat',$id);
+		echo $rec['msg'];exit;
+		setView('message_edit',1);
+		return;
+	break;
 	case 'app_chat_delete':
 		$id=(integer)$PASSTHRU[1];
 		$opts=array('-table'=>'app_chat','-where'=>"_id={$id} and _cuser={$USER['_id']}");

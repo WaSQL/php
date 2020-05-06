@@ -38,4 +38,10 @@ function chatDelete(el){
 	let id=el.dataset.id;
 	return ajaxGet(app.dataset.ajaxurl+'/app_chat_delete/'+id,'chat_msgs',{setprocessing:0});
 }
+function chatEdit(el){
+	let app=document.querySelector('div[data-app-settings="1"]');
+	let id=el.dataset.id;
+	let div='chat_message_'+id;
+	return ajaxGet(app.dataset.ajaxurl+'/app_chat_edit/'+id,div,{setprocessing:0});
+}
 

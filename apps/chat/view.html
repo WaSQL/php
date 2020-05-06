@@ -7,6 +7,7 @@
 		<?=chatToField();?>
 		<?=chatInputField();?>
 		<button type="submit" class="chat_button" style="flex-grow:1;"><span class="icon-arrow-right"></span></button>
+		<button type="button" class="chat_button" onclick="formDictate('addedit_msg','addedit_dictate',document.app_chat_form)" style="border-left:1px solid #ccc;flex-grow:1;"><span id="addedit_dictate" class="icon-mic"></span></button>
 		<button type="button" class="chat_button" onclick="return chatConfig();" style="border-left:1px solid #ccc;flex-grow:1;"><span class="icon-gear w_bigger w_gray"></span></button>
 	</div>
 	<div style="display:none">
@@ -41,15 +42,19 @@
 			<div><span class="<?=$message['msg_icon'];?>" style="margin-right:5px;"></span></div>
 		</div>
 		<div class="chat_message_wrapper">
-			<view:delete>
-			<div style="float:right"><a href="#" class="chat_delete" onclick="return chatDelete(this);" data-id="<?=$message['_id'];?>"><span class="icon-close w_gray"></span></a></div>
-			</view:delete>
-			<?=renderViewIf($message['_cuser']==$USER['_id'],'delete',$message,'message');?>
+			<view:user_actions>
+			<div class="user_actions">
+				<a href="#" title="Edit" class="chat_edit" onclick="return chatEdit(this);" data-id="<?=$message['_id'];?>"><span class="icon-pencil w_dblue"></span></a>
+				<a href="#" title="Delete" class="chat_delete" style="margin-left:4px;" onclick="return chatDelete(this);" data-id="<?=$message['_id'];?>"><span class="icon-close w_gray"></span></a>
+			</div>
+			</view:user_actions>
+			<?=renderViewIf($message['_cuser']==$USER['_id'],'user_actions',$message,'message');?>
 			<div class="w_nowrap"><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
-			<div class="chat_message_text"><?=$message['msg'];?></div>
+			<div class="chat_message_text" id="chat_message_<?=$message['_id'];?>"><?=$message['msg'];?></div>
 		</div>
 	</div>
 </view:message>
+
 <view:notify>
 NOTIFY
 <?=buildOnLoad("chatNotify();");?>

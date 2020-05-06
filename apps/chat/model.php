@@ -1,4 +1,21 @@
 <?php
+function chatEditMessage($id){
+	global $APP;
+	$opts=array(
+		'-table'=>'app_chat',
+		'_id'=>$id,
+		'-fields'=>'<div>[msg]</div>',
+		'-formname'=>"edit_message_form_{$id}",
+		'_action'=>'EDIT',
+		'setprocessing'=>0,
+		'-hide'=>'clone,delete,reset,save',
+		'-action'=>$APP['-ajaxurl']."/app_chat_edit_processed/{$id}",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'chat_message_{$id}');"
+	);
+	//return printValue($opts);
+	return addEditDBForm($opts).buildOnLoad("document.edit_message_form_{$id}.msg.focus();");
+
+}
 function chatConfigForm(){
 	global $USER;
 	global $APP;
