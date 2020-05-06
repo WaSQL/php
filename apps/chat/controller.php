@@ -61,15 +61,13 @@ switch(strtolower($PASSTHRU[0])){
 	break;
 	case 'app_chat_edit':
 		$id=(integer)$PASSTHRU[1];
-		echo chatEditMessage($id);exit;
 		setView('message_edit',1);
 		return;
 	break;
 	case 'app_chat_edit_processed':
 		$id=(integer)$PASSTHRU[1];
 		$rec=getDBRecordById('app_chat',$id);
-		echo $rec['msg'];exit;
-		setView('message_edit',1);
+		setView('message_edit_processed',1);
 		return;
 	break;
 	case 'app_chat_delete':

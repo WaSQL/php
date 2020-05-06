@@ -1,10 +1,14 @@
 <?php
+/*
+<div style="border-left:1px solid #ccc;flex-grow:1;"><?=chatFileField();?></div>
+*/
+
 function chatEditMessage($id){
 	global $APP;
 	$opts=array(
 		'-table'=>'app_chat',
 		'_id'=>$id,
-		'-fields'=>'<div>[msg]</div>',
+		'-fields'=>getView('message_edit_fields'),
 		'-formname'=>"edit_message_form_{$id}",
 		'_action'=>'EDIT',
 		'setprocessing'=>0,
@@ -155,7 +159,7 @@ function chatGetMessages($offset=0){
 			}
 			
 		}
-		if(isset($APP['-message_eval'])){
+		if(isset($APP['-message_eval']) && function_exists($APP['-message_eval'])){
 			$recs[$i]=call_user_func($APP['-message_eval'],$recs[$i]);
 		}
 	}
@@ -181,12 +185,49 @@ function chatToField(){
 	$params=array(
 		'message'=>'To Everyone',
 		'style'=>'font-size:0.8rem;flex-grow:2;width:15%;',
+		'data-navigate'=>1,
+		'data-navigate-group'=>'app_chat',
+		'data-navigate-focus'=>'Alt+u',
+		'data-navigate-up'=>'false',
+		'data-navigate-down'=>'false',
+		'data-navigate-left'=>'false',
+		'data-navigate-right'=>'false',
 	);
 	//echo printValue($opts);exit;
 	return buildFormSelect('msg_to',$opts,$params);
 }
 function chatInputField(){
-	return buildFormText('msg',array('autofocus'=>'autofocus','class'=>'input chat_input','style'=>'flex-grow:9;'));
+	global $USER;
+	return buildFormText('msg',array(
+		'autofocus'=>'autofocus',
+		'class'=>'input chat_input',
+		'style'=>'flex-grow:9;',
+		'data-navigate'=>1,
+		'data-navigate-group'=>'app_chat',
+		'data-navigate-focus'=>'Alt+c',
+		'data-navigate-up'=>'chatEditLast();',
+		'data-navigate-down'=>'false',
+		'data-navigate-left'=>'false',
+		'data-navigate-right'=>'false',
+
+	));
+}
+function chatFileField(){
+	global $USER;
+	return buildFormFile('msg_file',array(
+		'-icon'=>'icon-attach',
+		'text'=>'',
+		'class'=>'input chat_input',
+		'style'=>'flex-grow:1;',
+		'data-navigate'=>1,
+		'data-navigate-group'=>'app_chat',
+		'data-navigate-focus'=>'Alt+f',
+		'data-navigate-up'=>'false',
+		'data-navigate-down'=>'false',
+		'data-navigate-left'=>'false',
+		'data-navigate-right'=>'false',
+
+	));
 }
 function chatSetup(){
 	$table='app_chat';

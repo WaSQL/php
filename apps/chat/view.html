@@ -7,8 +7,8 @@
 		<?=chatToField();?>
 		<?=chatInputField();?>
 		<button type="submit" class="chat_button" style="flex-grow:1;"><span class="icon-arrow-right"></span></button>
-		<button type="button" class="chat_button" onclick="formDictate('addedit_msg','addedit_dictate',document.app_chat_form)" style="border-left:1px solid #ccc;flex-grow:1;"><span id="addedit_dictate" class="icon-mic"></span></button>
-		<button type="button" class="chat_button" onclick="return chatConfig();" style="border-left:1px solid #ccc;flex-grow:1;"><span class="icon-gear w_bigger w_gray"></span></button>
+		<button type="button" data-navigate="1" data-navigate-group="app_chat" data-navigate-up="false" data-navigate-down="false" data-navigate-focus="Alt+s" class="chat_button" onclick="formDictate('addedit_msg','addedit_dictate',document.app_chat_form)" style="border-left:1px solid #ccc;flex-grow:1;"><span id="addedit_dictate" class="icon-mic"></span></button>
+		<button type="button" data-navigate="1" data-navigate-group="app_chat" data-navigate-up="false" data-navigate-down="false" data-navigate-focus="Alt+g" class="chat_button" onclick="return chatConfig();" style="border-left:1px solid #ccc;flex-grow:1;"><span class="icon-gear w_bigger w_gray"></span></button>
 	</div>
 	<div style="display:none">
 		<input type="hidden" name="setprocessing" value="0" />
@@ -66,6 +66,10 @@ NOTIFY
 <?=buildOnLoad("chatMessagesClearInput();");?>
 </view:clearinput>
 </view:messages>
+
+<view:message_edit><?=chatEditMessage($id);?></view:message_edit>
+<view:message_edit_fields><div>[msg]</div></view:message_edit_fields>
+<view:message_edit_processed><?=$rec['msg'];?></view:message_edit_processed>
 
 <view:get_new_messages>last:<?=$last_message_id;?>, Cnt:<?=$cnt;?> <?=buildOnLoad("chatGetNewMessages();");?></view:get_new_messages>
 
