@@ -1665,7 +1665,7 @@ SELECT
 	a.username,
 	b.sql_id, 
 	b.sql_fulltext 
-FROM v$session a, v$sql b
+FROM v\$session a, v\$sql b
 WHERE 
 	a.sql_id = b.sql_id 
 	and a.status = 'ACTIVE' 
@@ -1681,7 +1681,7 @@ SELECT
     machine,
     program,
     module
-from v$session
+from v\$session
 ENDOFQUERY;
 		break;
 		case 'table_locks':
@@ -1691,7 +1691,7 @@ SELECT
 	b.object_name, 
 	a.oracle_username, 
 	a.os_user_name  
-FROM v$locked_object a, all_objects b
+FROM v\$locked_object a, all_objects b
 WHERE 
 	a.object_id = b.object_id
 ENDOFQUERY;
