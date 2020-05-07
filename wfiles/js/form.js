@@ -1985,7 +1985,7 @@ function submitForm(theForm,popup,debug,ajax){
 	quickmask['zipcode'] = '^[0-9]{5,5}(\\\-[0-9]{4,4})*$';
 	//alert("theForm type="+typeof(theForm));
 	if(theForm.length ==0){return false;}
-	if(debug==1){alert("submitForm Debug Begin. Form length: "+theForm.length);}
+	if(debug==1){console.log("submitForm Debug Begin. Form length: "+theForm.length);}
 	var formfields=new Array();
 	for(var i=0;i<theForm.length;i++){
 		if(debug==1){console.log(" - Checking "+theForm[i].name+" of type "+theForm[i].type);}
