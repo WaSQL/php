@@ -2045,7 +2045,7 @@ function submitForm(theForm,popup,debug,ajax){
 				required=1;
 			}
 		}
-        if(required == 1 || required.toLowerCase() == 'required'){
+        if(required == 1 || required == 'required'){
 			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
 			if(undefined == requiredmsg){requiredmsg=theForm[i].getAttribute('requiredmsg');}
 			//checkboxes
