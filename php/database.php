@@ -2585,7 +2585,7 @@ function databaseListRecords($params=array()){
 		}
 	}
 	foreach($params['-list'] as $row=>$rec){
-		$rtn .= '		<tr';
+		$rtn .= '		<tr data-row="'.$row.'"';
 		if(!empty($params['-onclick'])){
 			$href=$params['-onclick'];
 			//substitute and %{field}% with its value in this record
@@ -2601,7 +2601,12 @@ function databaseListRecords($params=array()){
 			if(preg_match('/^\-tr_(.+)$/i',$pk,$pm)){
 				$patt_name=$pm[1];
 				//check for [$row]
-				if(preg_match('/\['.$row.'\]/',$patt_name,$rm) && $rm[1] != $row){continue;}
+				if(preg_match('/\[([0-9]+)\]$/',$patt_name,$rm)){
+					if($rm[1] != $row){continue;}
+					else{
+						$patt_name=preg_replace('/\[([0-9]+)\]$/','',$patt_name);
+					}
+				}
 				$patt_val=$pv;
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
