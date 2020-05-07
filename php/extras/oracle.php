@@ -1658,6 +1658,7 @@ function oracleQueryResults($query='',$params=array()){
 */
 function oracleNamedQuery($name){
 	global $CONFIG;
+	global $DATABASE;
 	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
@@ -1698,7 +1699,7 @@ WHERE
 ENDOFQUERY;
 		break;
 		case 'functions':
-			$owner=strtoupper($CONFIG['dbschema']);
+			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
 	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
@@ -1708,7 +1709,7 @@ and owner = '{$owner}'
 ENDOFQUERY;
 		break;
 		case 'procedures':
-			$owner=strtoupper($CONFIG['dbschema']);
+			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
 	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
@@ -1718,7 +1719,7 @@ and owner = '{$owner}'
 ENDOFQUERY;
 		break;
 		case 'packages':
-			$owner=strtoupper($CONFIG['dbschema']);
+			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
 	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp

@@ -1179,6 +1179,76 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbNamedQuery
+/**
+* @describe returns a named query
+* @param db string - database name as specified in the database section of config.xml
+* @param name string
+* @return string
+* @usage
+*	$query=dbNamedQuery($db,'functions');
+*/
+function dbNamedQuery($db,$name){
+	global $CONFIG;
+	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_snowflake;
+	global $dbh_sqlite;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			$dbh_postgres='';
+			return postgresqlNamedQuery($name);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			$dbh_oracle='';
+			return oracleNamedQuery($name);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			$dbh_mssql='';
+			return mssqlNamedQuery($name);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			$dbh_hana='';
+			return hanaNamedQuery($name);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			$dbh_odbc='';
+			return odbcNamedQuery($name);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeNamedQuery($name);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			$dbh_sqlite='';
+			return sqliteNamedQuery($name);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return namedQuery($name);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function delDBRecordById--------------------
 /**
 * @describe deletes a record with said id in said table
