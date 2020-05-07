@@ -2097,11 +2097,16 @@ function initNavigate(){
 			    	e.preventDefault();
 			    	e.stopPropagation();
 			    	let func=fel.dataset.navigateEnter;
+			    	let funcEl=document.querySelector(func);
 			    	if((func.indexOf('Ctrl')==0 || func.indexOf('Alt')==0) && func.indexOf('+') != -1){
 			    		return navigateSetFocus(func);
 			    	}
 			    	else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
+			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
 			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
@@ -2122,6 +2127,10 @@ function initNavigate(){
 		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
 			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
+			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
 			    	}
@@ -2141,6 +2150,10 @@ function initNavigate(){
 			    	}
 		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
+			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
 			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
@@ -2181,6 +2194,10 @@ function initNavigate(){
 		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
 			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
+			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
 			    	}
@@ -2219,6 +2236,10 @@ function initNavigate(){
 			    	}
 			    	else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
+			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
 			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
@@ -2259,6 +2280,10 @@ function initNavigate(){
 		    		else if(func.length==0 || func=='false' || func.indexOf('return false')==0){
 			    		//do nothing
 			    	}
+			    	else if(func.indexOf('group:')==0){
+			    		let group=func.replace('group:','');
+			    		return navigateSetFocusGroup(group);
+			    	}
 		    		else if(function_exists(func)){
 			    		window[func](fel);
 			    	}
@@ -2290,12 +2315,28 @@ function initNavigate(){
 	 };
 	 return true;
 }
+function navigateSetFocusGroup(group){
+	let el=document.querySelector('[data-navigate-group="'+group+'" i]');
+	if(undefined != el){
+		el.focus();
+		simulateEvent(el,'click');
+	}
+	return false;
+}
+function navigateHideAndSetFocusGroup(hide,group){
+	hideId(hide);
+	let el=document.querySelector('[data-navigate-group="'+group+'" i]');
+	if(undefined != el){
+		el.focus();
+		simulateEvent(el,'click');
+	}
+	return false;
+}
 function navigateSetFocus(focus){
 	let el=document.querySelector('[data-navigate-focus="'+focus+'" i]');
 	if(undefined != el){
 		el.focus();
 		simulateEvent(el,'click');
-		let fel=document.activeElement;
 	}
 	return false;
 }
@@ -2305,7 +2346,6 @@ function navigateHideAndSetFocus(hide,focus){
 	if(undefined != el){
 		el.focus();
 		simulateEvent(el,'click');
-		let fel=document.activeElement;
 	}
 	return false;
 }
