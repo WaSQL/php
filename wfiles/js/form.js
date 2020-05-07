@@ -407,60 +407,7 @@ function autoGrow(box,maxheight) {
 	if(undefined==maxheight){maxheight=400;}
 	if (box.scrollHeight < maxheight && box.scrollHeight > box.clientHeight && !window.opera){box.style.height=box.scrollHeight+'px';}
 }
-//---------- begin function formDictate --------------------
-/**
-* @describe enables speech recognition for an input field
-* @param inp mixed - id or element for input field
-* @param [ico] mixed - id or element for icon to blink while speech is on
-* @return false
-* @usage onclick="return formDictate('inputid','iconid');"
-*/
-function formDictate(inp,ico,frm) {
-  	inp=getObject(inp);
-  	if(undefined == inp){
-  		console.log('formDictate error: undefined input '+inp);
-  		return false;
-  	}
-  	ico=getObject(ico);
-  	frm=getObject(frm);
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
-		let recognition = new webkitSpeechRecognition();
-      	recognition.continuous = false;
-      	recognition.interimResults = false;
-      	recognition.lang = "en-US";
-      	if(undefined != ico){
-	      	ico.classList.add('w_blink');
-	      	ico.classList.add('w_success');
-	      	recognition.ico=ico;
-	    }
-	    if(undefined != frm){
-	    	recognition.frm=frm;
-	    }
-      	recognition.inp=inp;
-      	recognition.start();
-      	recognition.onresult = function(e) {
-        	this.inp.value = e.results[0][0].transcript;
-        	if(undefined != this.ico){
-	        	this.ico.classList.remove('w_blink');
-	        	this.ico.classList.remove('w_success');
-	        }
-        	this.stop();
-        	if(undefined != this.frm){
-        		simulateEvent(this.frm,'submit');
-        	}
-        	
-		};
-      	recognition.onerror = function(e) {
-      		if(undefined != this.ico){
-	      		this.ico.classList.remove('w_blink');
-	      		this.ico.classList.remove('w_success');
-	      		this.ico.classList.add('w_danger');
-	      	}
-        	this.stop();
-      	};
-    }
-    return false;
-}
+
 //---------- begin function initPikadayCalendar--------------------
 /**
 * @describe initializes pikaday calendar module
@@ -2038,10 +1985,10 @@ function submitForm(theForm,popup,debug,ajax){
 	quickmask['zipcode'] = '^[0-9]{5,5}(\\\-[0-9]{4,4})*$';
 	//alert("theForm type="+typeof(theForm));
 	if(theForm.length ==0){return false;}
-	if(debug==1){alert("Form length: "+theForm.length);}
+	if(debug==1){alert("submitForm Debug Begin. Form length: "+theForm.length);}
 	var formfields=new Array();
 	for(var i=0;i<theForm.length;i++){
-		if(debug==1){alert("Checking "+theForm[i].name+" of type "+theForm[i].type);}
+		if(debug==1){console.log(" - Checking "+theForm[i].name+" of type "+theForm[i].type);}
 		let atts=getAllAttributes(theForm[i]);
 		if(undefined != atts.disabled){continue;}
 		if(undefined != atts.readonly){continue;}
@@ -2053,6 +2000,7 @@ function submitForm(theForm,popup,debug,ajax){
 	  	/* Password confirm */
 	  	if(theForm[i].name == 'password'  && undefined != theForm.password_confirm){
 	  		if(theForm[i].value.length == 0 || theForm.password_confirm.value.length == 0){
+	  			if(debug==1){console.log(theForm[i].name+' is required');}
 				submitFormAlert('Password is required',popup,5);
                 theForm[i].focus();
                 return false;
@@ -2066,6 +2014,7 @@ function submitForm(theForm,popup,debug,ajax){
 		/* email confirm */
 	  	if(theForm[i].name == 'email'  && undefined != theForm.email_confirm){
 	  		if(theForm[i].value.length == 0 || theForm.email_confirm.value.length == 0){
+	  			if(debug==1){console.log(theForm[i].name+' is required');}
 				submitFormAlert('Email is required',popup,3);
                 theForm[i].focus();
                 return false;
@@ -2096,7 +2045,7 @@ function submitForm(theForm,popup,debug,ajax){
 				required=1;
 			}
 		}
-        if(required == 1){
+        if(required == 1 || required.toLowerCase() == 'required'){
 			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
 			if(undefined == requiredmsg){requiredmsg=theForm[i].getAttribute('requiredmsg');}
 			//checkboxes
@@ -2124,7 +2073,7 @@ function submitForm(theForm,popup,debug,ajax){
 		            else{
 		            	submitFormAlert(msg,popup,5);	
 		            }
-				 	
+				 	if(debug==1){console.log(msg);}
 		            theForm[i].focus();
 		            return false;
                 }
@@ -2148,6 +2097,7 @@ function submitForm(theForm,popup,debug,ajax){
 		            else{
 		            	submitFormAlert(msg,popup,5);	
 		            }
+		            if(debug==1){console.log(msg);}
 		            theForm[i].focus();
 		            return false;
                 }
@@ -2166,6 +2116,7 @@ function submitForm(theForm,popup,debug,ajax){
 		            else{
 		            	submitFormAlert(msg,popup,5);	
 		            }
+		            if(debug==1){console.log(msg);}
 		            theForm[i].focus();
 		            return false;
 				}
@@ -2184,6 +2135,7 @@ function submitForm(theForm,popup,debug,ajax){
 		            else{
 		            	submitFormAlert(msg,popup,5);	
 		            }
+		            if(debug==1){console.log(msg);}
 		            theForm[i].focus();
 		            return false;
 				}
@@ -2200,6 +2152,7 @@ function submitForm(theForm,popup,debug,ajax){
 		            else{
 		            	submitFormAlert(msg,popup,5);	
 		            }
+		        if(debug==1){console.log(msg);}
 	            theForm[i].focus();
 	            return false;
 			}
@@ -2218,6 +2171,7 @@ function submitForm(theForm,popup,debug,ajax){
                     var msg = dname+" must be of valid credit card number ";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
+                    if(debug==1){console.log(msg);}
                     theForm[i].focus();
                     return false;
                 }
@@ -2229,6 +2183,7 @@ function submitForm(theForm,popup,debug,ajax){
                     var msg = dname+" must be a valid date ";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
+                    if(debug==1){console.log(msg);}
                     theForm[i].focus();
                     return false;
                 }
@@ -2240,6 +2195,7 @@ function submitForm(theForm,popup,debug,ajax){
                     var msg = dname+" must be of valid date in the future ";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
+                    if(debug==1){console.log(msg);}
                     theForm[i].focus();
                     return false;
                 }
@@ -2251,6 +2207,7 @@ function submitForm(theForm,popup,debug,ajax){
                     var msg = dname+" must be of valid date in the past ";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
+                    if(debug==1){console.log(msg);}
                     theForm[i].focus();
                     return false;
                 }
@@ -2262,6 +2219,7 @@ function submitForm(theForm,popup,debug,ajax){
                     var msg = dname+" must be a valid phone number";
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
+                    if(debug==1){console.log(msg);}
                     theForm[i].focus();
                     return false;
                     }
@@ -2282,6 +2240,7 @@ function submitForm(theForm,popup,debug,ajax){
                     if(undefined != fldmsg){msg=fldmsg;}
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
+                    if(debug==1){console.log(msg);}
                     return false;
                     }
            		}
@@ -2294,6 +2253,7 @@ function submitForm(theForm,popup,debug,ajax){
                 var msg = dname+" must be less than "+max+" characters\nYou entered "+len+" characters.";
                 if(theForm[i].getAttribute('maxlengthmsg')){msg=theForm[i].getAttribute('maxlengthmsg');}
                 submitFormAlert(msg,popup,5);
+                if(debug==1){console.log(msg);}
                 theForm[i].focus();
                 return false;
             }
@@ -2306,6 +2266,7 @@ function submitForm(theForm,popup,debug,ajax){
                 var msg = dname+" must be at least "+minlength+" characters.\nYou entered "+len+" characters.";
                 if(theForm[i].getAttribute('minlengthmsg')){msg=theForm[i].getAttribute('minlengthmsg');}
                 submitFormAlert(msg,popup,5);
+                if(debug==1){console.log(msg);}
                 theForm[i].focus();
                 return false;
             }
@@ -2318,6 +2279,7 @@ function submitForm(theForm,popup,debug,ajax){
                 var msg = dname+" must be at least "+minwords+" words in length.\nYou entered "+cnt+" words.";
                 if(theForm[i].getAttribute('minwordsmsg')){msg=theForm[i].getAttribute('minwordsmsg');}
                 submitFormAlert(msg,popup,5);
+                if(debug==1){console.log(msg);}
                 theForm[i].focus();
                 return false;
             }
@@ -2330,6 +2292,7 @@ function submitForm(theForm,popup,debug,ajax){
                 var msg = dname+" must be less than "+maxwords+" words in length.\nYou entered "+cnt+" words.";
                 if(theForm[i].getAttribute('maxwordsmsg')){msg=theForm[i].getAttribute('maxwordsmsg');}
                 submitFormAlert(msg,popup,5);
+                if(debug==1){console.log(msg);}
                 theForm[i].focus();
                 return false;
             }
@@ -2349,6 +2312,7 @@ function submitForm(theForm,popup,debug,ajax){
             	var msg = dname+" must be of valid file type:  "+allow;
                 if(theForm[i].getAttribute('acceptmsg')){msg=theForm[i].getAttribute('acceptmsg');}
                 submitFormAlert(msg,popup,5);
+                if(debug==1){console.log(msg);}
                 theForm[i].focus();
                 return false;
                 }
