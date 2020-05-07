@@ -2600,6 +2600,8 @@ function databaseListRecords($params=array()){
 		foreach($params as $pk=>$pv){
 			if(preg_match('/^\-tr_(.+)$/i',$pk,$pm)){
 				$patt_name=$pm[1];
+				//check for [$row]
+				if(preg_match('/\['.$row.'\]/',$patt_name,$rm) && $rm[1] != $row){continue;}
 				$patt_val=$pv;
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
