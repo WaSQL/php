@@ -1657,6 +1657,7 @@ function oracleQueryResults($query='',$params=array()){
 * @return query string
 */
 function oracleNamedQuery($name){
+	global $CONFIG;
 	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
@@ -1694,6 +1695,36 @@ SELECT
 FROM v\$locked_object a, all_objects b
 WHERE 
 	a.object_id = b.object_id
+ENDOFQUERY;
+		break;
+		case 'functions':
+			$owner=strtoupper($CONFIG['dbschema']);
+			return <<<ENDOFQUERY
+SELECT 
+	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+FROM ALL_OBJECTS 
+WHERE OBJECT_TYPE = 'FUNCTION' 
+and owner = '{$owner}'
+ENDOFQUERY;
+		break;
+		case 'procedures':
+			$owner=strtoupper($CONFIG['dbschema']);
+			return <<<ENDOFQUERY
+SELECT 
+	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+FROM ALL_OBJECTS 
+WHERE OBJECT_TYPE = 'PROCEDURE' 
+and owner = '{$owner}'
+ENDOFQUERY;
+		break;
+		case 'packages':
+			$owner=strtoupper($CONFIG['dbschema']);
+			return <<<ENDOFQUERY
+SELECT 
+	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+FROM ALL_OBJECTS 
+WHERE OBJECT_TYPE = 'PACKAGE' 
+and owner = '{$owner}'
 ENDOFQUERY;
 		break;
 	}
