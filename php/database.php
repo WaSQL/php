@@ -1244,7 +1244,7 @@ function dbNamedQuery($db,$name){
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
-			return namedQuery($name);
+			return mysqlNamedQuery($name);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";

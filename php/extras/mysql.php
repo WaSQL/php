@@ -294,3 +294,87 @@ function mysqlGetDBTables($params=array()){
 	}
 	return $tables;
 }
+
+//---------- begin function mysqlNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function mysqlNamedQuery($name){
+	global $CONFIG;
+	global $DATABASE;
+	$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
+	if(isset($CONFIG['dbname'])){
+		$dbname=$CONFIG['dbname'];
+	}
+	else{
+		$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
+	}
+	switch(strtolower($name)){
+		case 'running_queries':
+			return <<<ENDOFQUERY
+show processlist
+ENDOFQUERY;
+		break;
+		case 'sessions':
+			return <<<ENDOFQUERY
+SELECT 
+	id, user, host, db, command, time, state, info 
+FROM information_schema.processlist
+ENDOFQUERY;
+		break;
+		case 'table_locks':
+			return <<<ENDOFQUERY
+SHOW OPEN TABLES WHERE In_use > 0
+ENDOFQUERY;
+		break;
+		case 'functions':
+			return <<<ENDOFQUERY
+SELECT 
+	routine_catalog,
+	routine_schema,
+	routine_name,
+	created,
+	last_altered,
+	definer
+FROM information_schema.ROUTINES 
+WHERE routine_type = 'FUNCTION' and routine_schema = '{$dbname}'
+ENDOFQUERY;
+		break;
+		case 'procedures':
+			return <<<ENDOFQUERY
+SELECT 
+	routine_catalog,
+	routine_schema,
+	routine_name,
+	created,
+	last_altered,
+	definer
+FROM information_schema.ROUTINES 
+WHERE routine_type = 'PROCEDURE' and routine_schema = '{$dbname}'
+ENDOFQUERY;
+		break;
+		case 'tables':
+			return <<<ENDOFQUERY
+SELECT
+	t.table_name as name,
+	t.table_rows as row_count,
+	c.field_count,
+	round(((data_length + index_length) / 1024 / 1024), 2) as mb_size,
+	t.auto_increment,
+	t.create_time,
+	t.update_time,
+	t.table_collation,
+	t.table_comment
+FROM information_schema.tables t,
+(select count(*) field_count,table_name from information_schema.columns where table_schema='{$dbname}' group by table_name ) c 
+WHERE
+	t.table_name =c.table_name 
+	and t.table_schema='{$dbname}'
+ENDOFQUERY;
+		break;
+	}
+}
