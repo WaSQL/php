@@ -1393,6 +1393,9 @@ function oracleParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	if(!isset($CONFIG['db']) && isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
+		$CONFIG['db']=$_REQUEST['db'];
+	}
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^oracle/i',$k)){unset($CONFIG[$k]);}
@@ -1659,6 +1662,9 @@ function oracleQueryResults($query='',$params=array()){
 function oracleNamedQuery($name){
 	global $CONFIG;
 	global $DATABASE;
+	if(!isset($CONFIG['db']) && isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
+		$CONFIG['db']=$_REQUEST['db'];
+	}
 	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
