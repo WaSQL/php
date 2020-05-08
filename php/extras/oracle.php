@@ -1728,5 +1728,27 @@ WHERE OBJECT_TYPE = 'PACKAGE'
 and owner = '{$owner}'
 ENDOFQUERY;
 		break;
+		case 'tables':
+			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
+			return <<<ENDOFQUERY
+select 
+	t.segment_name as name,
+	r.row_count,
+	c.field_count,
+	round(t.bytes/1024/1024,2) as mb_size,
+	t.segment_type,
+	r.logging,
+	r.backed_up,
+	r.partitioned  
+from dba_segments t,
+(select count(*) field_count,table_name from all_tab_cols where owner='{$owner}' group by table_name ) c,
+(select num_rows as row_count,table_name,logging,backed_up,partitioned from dba_tables where owner='{$owner}' ) r
+where 
+	t.segment_name =c.table_name
+	and c.table_name=r.table_name
+	and owner='{$owner}' and segment_type in ('TABLE','TABLE_PARTITION') 
+order by round(bytes/1024/1024,2) desc
+ENDOFQUERY;
+		break;
 	}
 }
