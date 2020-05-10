@@ -1348,7 +1348,9 @@ function dbGetRecords($db,$params){
 			$recs=sqliteGetDBRecords($params);
 		break;
 		default:
-			$recs=getDBRecords($params);
+			loadExtras('mysql');
+			$dbh_mysql='';
+			$recs=mysqlGetDBRecords($params);
 		break;
 	}
 	//check for single ref cursor that returns a table
@@ -1428,7 +1430,7 @@ function dbGetTableFields($db,$table){
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
-			return getDBFieldInfo($table);
+			return mysqlGetDBFieldInfo($table);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
@@ -1497,6 +1499,8 @@ function dbGetTables($db){
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
+			$dbh_mysql='';
+			return mysqlGetDBTables();
 			return getDBTables();
 		break;
 	}

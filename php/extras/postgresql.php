@@ -1654,8 +1654,8 @@ function postgresqlEnumQueryResults($data,$params=array()){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			odbc_free_result($result);
-			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			pg_free_result($result);
+			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){
