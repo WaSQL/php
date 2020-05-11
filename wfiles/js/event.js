@@ -1949,6 +1949,9 @@ function initEnlighterJs(){
 			if(undefined != els[i].dataset.enlighterIndent){
 				params.indent=els[i].dataset.enlighterIndent;
 			}
+			if(undefined != els[i].dataset.enlighterHighlight){
+				params.highlight=els[i].dataset.enlighterHighlight;
+			}
 			els[i].enlight(params);
 			els[i].dataset.enlightened=1;
 		}
