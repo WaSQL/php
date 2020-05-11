@@ -245,7 +245,7 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 		$parts=preg_split('/\ +/',$json['loadavg']);
 		$json['loadavg_1']=$parts[0];
 		$json['loadavg_5']=$parts[1];
-		$json['loadavg_15']=$parts[0];
+		$json['loadavg_15']=$parts[2];
 		
 		//contains two numbers: the uptime of the system (seconds), and the amount of time spent in idle process
 		$out=cmdResults('cat /proc/uptime');
