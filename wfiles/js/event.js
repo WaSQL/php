@@ -1932,7 +1932,10 @@ function initBehaviors(ajaxdiv){
 function initEnlighterJs(){
 	let els=document.querySelectorAll('[data-enlighter-language]');
 	for(let i=0;i<els.length;i++){
-		els[i].enlight({language:els[i].dataset.enlighterLanguage});
+		if(undefined == els[i].dataset.enlightened){
+			els[i].enlight({language:els[i].dataset.enlighterLanguage});
+			els[i].dataset.enlightened=1;
+		}
 	}
 	return false;
 }
