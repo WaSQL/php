@@ -400,6 +400,58 @@ function ajaxEditField(table,id,fld,params){
 	if(undefined == params.div){params.div='centerpop';}
 	return ajaxGet('/php/index.php',params.div,params);
 }
+/**
+* @describe enables speech recognition for an input field
+* @param inp mixed - id or element for input field
+* @param [ico] mixed - id or element for icon to blink while speech is on
+* @return false
+* @usage onclick="return formDictate('inputid','iconid');"
+*/
+function formDictate(inp,ico,frm) {
+  	inp=getObject(inp);
+  	if(undefined == inp){
+  		console.log('formDictate error: undefined input '+inp);
+  		return false;
+  	}
+  	ico=getObject(ico);
+  	frm=getObject(frm);
+    if (window.hasOwnProperty('webkitSpeechRecognition')) {
+		let recognition = new webkitSpeechRecognition();
+      	recognition.continuous = false;
+      	recognition.interimResults = false;
+      	recognition.lang = "en-US";
+      	if(undefined != ico){
+	      	ico.classList.add('w_blink');
+	      	ico.classList.add('w_success');
+	      	recognition.ico=ico;
+	    }
+	    if(undefined != frm){
+	    	recognition.frm=frm;
+	    }
+      	recognition.inp=inp;
+      	recognition.start();
+      	recognition.onresult = function(e) {
+        	this.inp.value = e.results[0][0].transcript;
+        	if(undefined != this.ico){
+	        	this.ico.classList.remove('w_blink');
+	        	this.ico.classList.remove('w_success');
+	        }
+        	this.stop();
+        	if(undefined != this.frm){
+        		simulateEvent(this.frm,'submit');
+        	}
+		};
+      	recognition.onerror = function(e) {
+      		if(undefined != this.ico){
+	      		this.ico.classList.remove('w_blink');
+	      		this.ico.classList.remove('w_success');
+	      		this.ico.classList.add('w_danger');
+	      	}
+        	this.stop();
+      	};
+    }
+    return false;
+}
 //--------------------------
 function autoGrow(box,maxheight) {
 	//info: allows a textbox to grow as a person types
