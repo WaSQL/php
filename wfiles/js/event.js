@@ -1933,7 +1933,23 @@ function initEnlighterJs(){
 	let els=document.querySelectorAll('[data-enlighter-language]');
 	for(let i=0;i<els.length;i++){
 		if(undefined == els[i].dataset.enlightened){
-			els[i].enlight({language:els[i].dataset.enlighterLanguage});
+			let params={language:els[i].dataset.enlighterLanguage,rawButton:false,infoButton:false,windowButton:false};
+			if(undefined != els[i].dataset.enlighterRawbutton && els[i].dataset.enlighterRawbutton.indexOf('false')==-1){
+				params.rawButton=true;
+			}
+			if(undefined != els[i].dataset.enlighterWindowbutton && els[i].dataset.enlighterWindowbutton.indexOf('false')==-1){
+				params.windowButton=true;
+			}
+			if(undefined != els[i].dataset.enlighterInfobutton && els[i].dataset.enlighterInfobutton.indexOf('false')==-1){
+				params.infoButton=true;
+			}
+			if(undefined != els[i].dataset.enlighterTheme){
+				params.theme=els[i].dataset.enlighterTheme;
+			}
+			if(undefined != els[i].dataset.enlighterIndent){
+				params.indent=els[i].dataset.enlighterIndent;
+			}
+			els[i].enlight(params);
 			els[i].dataset.enlightened=1;
 		}
 	}
