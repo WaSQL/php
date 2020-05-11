@@ -4062,8 +4062,8 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	}
     //fwrite($pipes[0], $args);
 	fclose($pipes[0]);
-    $stdout=stream_get_contents($pipes[1]);fclose($pipes[1]);
-    $stderr=stream_get_contents($pipes[2]);fclose($pipes[2]);
+    $stdout=@stream_get_contents($pipes[1]);fclose($pipes[1]);
+    $stderr=@stream_get_contents($pipes[2]);fclose($pipes[2]);
     $rtncode=proc_close($proc);
     $rtn=array(
     	'cmd'	=> $cmd,

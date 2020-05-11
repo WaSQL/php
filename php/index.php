@@ -242,12 +242,30 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 	if(!isWindows()){
 		$out=cmdResults('cat /proc/loadavg');
 		$json['loadavg']=$out['stdout'];
+		$parts=preg_split('/\ +/',$json['loadavg']);
+		$json['loadavg_1']=$parts[0];
+		$json['loadavg_5']=$parts[1];
+		$json['loadavg_15']=$parts[0];
+		
+		//contains two numbers: the uptime of the system (seconds), and the amount of time spent in idle process
 		$out=cmdResults('cat /proc/uptime');
-		$json['uptime']=$out['stdout'];
+		list($uptime,$idle)=preg_split('/\ /',trim($out['stdout']));
+		$json['uptime']=$uptime;
+		$json['uptime_verbose']=verboseTime($json['uptime']);
 	}
-	
-	header("Content-Type: application/json; charset=UTF-8");
-	echo json_encode($json, JSON_PRETTY_PRINT);
+	else{
+		$out=cmdResults('wmic os get lastbootuptime');
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$boottime=(integer)$lines[1];
+		$bootdate=substr($boottime, 0,4).'-'.substr($boottime, 4,2).'-'.substr($boottime, 6,2);
+		$bootdate .= ' '.substr($boottime, 8,2).':'.substr($boottime, 10,2).':'.substr($boottime, 12,2);
+		$json['bootdate']=$bootdate;
+		$json['uptime']=time()-strtotime($bootdate);
+		$json['uptime_verbose']=verboseTime($json['uptime']);
+	}
+	$json=json_encode($json);
+	echo base64_encode(encrypt($json,$_SERVER['HTTP_HOST']));
+	//header("Content-Type: application/json; charset=UTF-8");
 	exit;
 }
 
