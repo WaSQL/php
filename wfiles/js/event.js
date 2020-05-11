@@ -1176,6 +1176,11 @@ function initBehaviors(ajaxdiv){
 	if(undefined != navel){
 		try{initNavigate();}catch(e){}
 	}
+	//check for EnlighterJS markup. data-enlighter-language
+	navel = document.querySelector('[data-enlighter-language]');
+	if(undefined != navel){
+		try{initEnlighterJs();}catch(e){}
+	}
 	//bootstrap toggles
 	var buttons=document.querySelectorAll('[data-toggle="buttons"] .btn');
 	for(var i=0;i<buttons.length;i++){
@@ -1916,6 +1921,20 @@ function initBehaviors(ajaxdiv){
     		event.preventDefault();
 		});
 	}
+}
+/**
+* @describe initializes EnlighterJS elements
+* @return false
+* @usage initEnlighterJs();
+* @reference 
+*		https://enlighterjs.org/Documentation.html
+*/
+function initEnlighterJs(){
+	let els=document.querySelectorAll('[data-enlighter-language]');
+	for(let i=0;i<els.length;i++){
+		els[i].enlight({language:els[i].dataset.enlighterLanguage});
+	}
+	return false;
 }
 /**
 * @describe initializes elements with a data-navigate tag so you can use the arrow keys to navigate through them
