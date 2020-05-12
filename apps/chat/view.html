@@ -3,6 +3,10 @@
 	<?=renderView('messages',$messages,'messages');?>
 </div>
 <form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
+	<div style="display:flex;flex-wrap:wrap;margin-bottom:3px;padding:3px;" id="chat_msg_attachments">
+        
+
+    </div>
 	<div style="display:flex;" class="action_row">
 		<?=chatToField();?>
 		<?=chatInputField();?>
@@ -27,6 +31,7 @@
 	<audio id="notify" controls>
   		<source src="<?=$APP['-ajaxurl'];?>/app_chat_playsound/notify.mp3" type="audio/mpeg">
 	</audio>
+	<?=buildOnLoad("chatInitAcceptAttachments();");?>
 </div>
 </view:default>
 
@@ -49,8 +54,37 @@
 			</div>
 			</view:user_actions>
 			<?=renderViewIf($message['_cuser']==$USER['_id'],'user_actions',$message,'message');?>
-			<div class="w_nowrap"><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
-			<div class="chat_message_text" id="chat_message_<?=$message['_id'];?>"><?=$message['msg'];?></div>
+			<div style="display:flex;flex-direction: row;">
+				<div>
+					<div class="w_nowrap"><span class="chat_message_from"><?=$message['msg_from_name'];?></span> <span class="chat_message_timestamp" title="<?=$message['_cdate'];?>"><?=date('n/j h:i a',strtotime($message['_cdate']));?></span></div>
+					<div class="chat_message_text" id="chat_message_<?=$message['_id'];?>"><?=$message['msg'];?></div>
+				</div>
+				<div style="display:flex;align-items: center;margin-left:5px;flex-wrap:wrap;">
+				<view:images>
+					<view:image>
+						<img src="<?=$image;?>" class="w_pointer" title="click to enlarge" onclick="chatExpandImage(this);" alt="" style="margin-left:5px;max-height:150px;max-width:150px;" />
+					</view:image>
+					<?=renderEach('image',$images,'image');?>
+				</view:images>
+				<?=renderViewIf(isset($message['attachments']['image'][0]),'images',$message['attachments']['image'],'images');?>
+				<view:audios>
+					<view:audio>
+						<audio controls src="<?=$audio;?>" style="margin-left:5px;max-height:150px;" />
+					</view:audio>
+					<?=renderEach('audio',$audios,'audio');?>
+				</view:audios>
+				<?=renderViewIf(isset($message['attachments']['audio'][0]),'audios',$message['attachments']['audio'],'audios');?>
+				<view:videos>
+					<view:video>
+						<video controls style="margin-left:5px;max-height:150px;">
+							<source src="<?=$video;?>" />
+						</video>
+					</view:video>
+					<?=renderEach('video',$videos,'video');?>
+				</view:videos>
+				<?=renderViewIf(isset($message['attachments']['video'][0]),'videos',$message['attachments']['video'],'videos');?>
+				</div>
+			</div>
 		</div>
 	</div>
 </view:message>

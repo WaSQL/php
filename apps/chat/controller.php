@@ -80,7 +80,7 @@ switch(strtolower($PASSTHRU[0])){
 		return;
 	break;
 	case 'app_chat_msg':
-		$messages=chatAddMessage(stripslashes($_REQUEST['msg']),(integer)$_REQUEST['msg_to']);
+		$messages=chatAddMessage($_REQUEST);
 		setView(array('messages','clearinput'),1);
 		return;
 	break;

@@ -57,9 +57,10 @@ function chatCheckForNewMessages($last){
 	);
 	return getDBCount($opts);
 }
-function chatAddMessage($msg,$msg_to=0){
+function chatAddMessage($params){
 	global $USER;
 	global $APP;
+	$msg=stripslashes($params['msg']);
 	$msg_to=(integer)$msg_to;
 	$addopts=array(
 		'-table'=>'app_chat',
@@ -68,6 +69,55 @@ function chatAddMessage($msg,$msg_to=0){
 		'msg_group'=>$APP['-group'],
 		'msg'=>$msg
 	);
+	//process attachments
+	$path=$_SERVER['DOCUMENT_ROOT'].'/app_chat_files';
+	if(!is_dir($path)){
+		buildDir($path);
+	}
+	$attachments=array();
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'msg_attachment_')){
+	    	list($data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$v,4);
+            //make sure it is an extension we support
+            $ftype='';
+            unset($ext);
+            if(preg_match('/^(image|audio|video|text)\/(.+)$/i',$type,$m)){
+            	$ext=$m[2];
+            	$ftype=$m[1];
+            }
+            elseif(stringContains($type,'gzip')){
+            	$ftype=='file';
+            	$ext='gz';
+            }
+            elseif(stringContains($type,'zip')){
+            	$ftype=='file';
+            	$ext='zip';
+            }
+            elseif(stringContains($type,'pdf')){
+            	$ftype=='file';
+            	$ext='pdf';
+            }
+			if(!isset($ext)){
+				echo "invalid type: {$type}<br>";
+				continue;
+			}
+			$crc=encodeCRC($encodedString);
+        	$file="{$k}_{$crc}.{$ext}";
+			$decoded=base64_decode($encodedString);
+			$afile="{$path}/{$file}";
+			//remove the file if it exists already
+			if(file_exists($afile)){unlink($afile);}
+			//save the file
+			file_put_contents($afile,$decoded);
+			if(file_exists($afile)){
+				//replace all instances of this image with the src path to the saved file
+                $attachments[$ftype][]="/app_chat_files/{$file}";
+			}
+		}
+	}
+	if(count($attachments)){
+		$addopts['attachments']=json_encode($attachments);
+	}
 	$id=addDBRecord($addopts);
 	if(!isNum($id)){
 		echo printValue($id);exit;
@@ -92,13 +142,18 @@ function chatGetMessages($offset=0){
 		if(!in_array($rec['msg_from'],$uids)){$uids[]=$rec['msg_from'];}
 		if(!in_array($rec['msg_to'],$uids)){$uids[]=$rec['msg_to'];}
 	}
-	$uidstr=implode(',',$uids);
-	$usermap=getDBRecords(array(
-		'-table'=>'_users',
-		'active'=>1,
-		'-where'=>"_id in ({$uidstr})",
-		'-index'=>'_id'
-	));
+	if(count($uids)){
+		$uidstr=implode(',',$uids);
+		$usermap=getDBRecords(array(
+			'-table'=>'_users',
+			'active'=>1,
+			'-where'=>"_id in ({$uidstr})",
+			'-index'=>'_id'
+		));
+	}
+	else{
+		$usermap=array();
+	}
 	//echo printValue($usermap);exit;
 	//set the last message id in APP
 	foreach($recs as $i=>$rec){
@@ -111,6 +166,10 @@ function chatGetMessages($offset=0){
 		else{
 			//To Everyone
 			$recs[$i]['msg_icon']='icon-users w_red';
+		}
+		//attachments
+		if(strlen($rec['attachments'])){
+			$recs[$i]['attachments']=json_decode($rec['attachments'],true);
 		}
 		//map user name and photo/picture
 		if(isset($usermap[$rec['msg_to']])){
@@ -209,7 +268,8 @@ function chatInputField(){
 		'data-navigate-down'=>'false',
 		'data-navigate-left'=>'false',
 		'data-navigate-right'=>'false',
-
+		'data-accept'=>"attachments",
+		'data-accept-target'=>"chat_msg_attachments"
 	));
 }
 function chatFileField(){
@@ -237,7 +297,9 @@ function chatSetup(){
 			'msg_to'	=> 'integer NOT NULL Default 0',
 			'msg'		=> "varchar(1500) NOT NULL Default ''",
 			'msg_group'	=> 'varchar(50) NOT NULL',
-			'active'	=> 'tinyint(1) NOT NULL Default 1'
+			'active'	=> 'tinyint(1) NOT NULL Default 1',
+			'attachments'=>'json NULL'
+
 		);
 		$ok = createDBTable($table,$fields);
 		if($ok != 1){return false;}
