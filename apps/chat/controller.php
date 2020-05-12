@@ -73,7 +73,22 @@ switch(strtolower($PASSTHRU[0])){
 	case 'app_chat_delete':
 		$id=(integer)$PASSTHRU[1];
 		$opts=array('-table'=>'app_chat','-where'=>"_id={$id} and _cuser={$USER['_id']}");
-		$ok=delDBRecord($opts);
+		$rec=getDBRecord($opts);
+		if(isset($rec['_id'])){
+			$ok=delDBRecord($opts);
+			if(strlen($rec['attachments'])){
+				$json=json_decode($rec['attachments'],true);
+				foreach($json as $type=>$files){
+					foreach($files as $file){
+						$afile=$_SERVER['DOCUMENT_ROOT'].$file;
+						if(file_exists($afile)){
+							unlink($afile);
+						}
+					}
+				}
+			}
+		}
+		
 		//echo printValue($ok).printValue($opts);exit;
 		$messages=chatGetMessages();
 		setView(array('messages'),1);
