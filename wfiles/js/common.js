@@ -428,66 +428,10 @@ function function_exists( function_name ) {
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
 	//info: simulate an event without it actually happening
-	if (element.fireEvent) {
-    	element.fireEvent('on' + eventName);
-  	} else {
-    	let evObj = document.createEvent('Events');
-    	evObj.initEvent(eventName, true, false);
-    	element.dispatchEvent(evObj);
-  	}
+    let evObj = document.createEvent('Events');
+    evObj.initEvent(eventName, true, false);
+    element.dispatchEvent(evObj);
   	return true;
-
-	//usage: simulateEvent(divid,'mouseover');
-	element=getObject(element);
-	if(undefined == element){return false;}
-	//console.log('simulateEvent',element);
-	var options = arguments[2] || {};
-    var oEvent, eventType = null;
-    var eventMatchers = {'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/}
-	var defaultOptions = {
-	    pointerX: 0,
-	    pointerY: 0,
-	    button: 0,
-	    ctrlKey: false,
-	    altKey: false,
-	    shiftKey: false,
-	    metaKey: false,
-	    bubbles: true,
-	    cancelable: true
-	}
-	//set default option for any not passed in
-	for (var property in defaultOptions){
-		if(undefined == options[property]){options[property]=defaultOptions[property];}
-	}
-    for (var name in eventMatchers){
-    	if (eventMatchers[name].test(eventName)) { eventType = name; break; }
-    }
-	if (!eventType){
-    	console.log('simulateEvent Error: "'+eventName+'" is not a supported event. Only HTMLEvents and MouseEvents are supported');
-		return false;
-	}
-    if (document.createEvent){
-    	oEvent = document.createEvent(eventType);
-    	//console.log('createEvent',oEvent,options);
-    	if (eventType == 'HTMLEvents'){
-        	oEvent.initEvent(eventName, options.bubbles, options.cancelable);
-        }
-        else{
-            oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView,
-          	options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY,
-          	options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
-        }
-        element.dispatchEvent(oEvent);
-    }
-    else{
-        options.clientX = options.pointerX;
-        options.clientY = options.pointerY;
-        var evt = document.createEventObject();
-        oEvent = extend(evt, options);
-        //console.log('fireEvent',eventName,oEvent);
-        element.fireEvent('on' + eventName, oEvent);
-    }
-    return true;
 }
 //isDate
 /**
