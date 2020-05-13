@@ -228,12 +228,16 @@ function chatGetMessages($offset=0){
 function chatToField(){
 	global $USER;
 	global $APP;
-	$recs=getDBRecords(array(
+	$getopts=array(
 		'-table'=>'_users',
 		'active'=>1,
 		'-fields'=>'firstname,lastname,username,_id',
 		'-order'=>'firstname,lastname,username,_id'
-	));
+	);
+	if(isset($APP['-user_filter'])){
+		$getopts['-filter']=$APP['-user_filter'];
+	}
+	$recs=getDBRecords($getopts);
 	$opts=array();
 	foreach($recs as $rec){
 		$name="{$rec['firstname']} {$rec['lastname']}";
