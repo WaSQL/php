@@ -75,6 +75,7 @@ function chatInitAcceptAttachments(){
 	      				let reader = new FileReader();
 				    	reader.el=this;
 				    	reader.type=type;
+				    	reader.name=blob.name;
 				    	reader.onload = function(event) {
 				    		if(undefined != this.el.dataset.acceptTarget){
 				    			let t=getObject(this.el.dataset.acceptTarget);
@@ -82,6 +83,7 @@ function chatInitAcceptAttachments(){
 				    				let tlist=t.querySelectorAll('span');
 				    				let fname=this.el.name+'_attachment_'+tlist.length;
 				    				let span=document.createElement('span');
+				    				span.title=this.name;
 					    			if(this.type.indexOf('audio')===0){
 					    				span.className='icon-file-audio w_bigger';
 					    			}
@@ -115,6 +117,13 @@ function chatInitAcceptAttachments(){
 				    				fld.style.display='none';
 				    				fld.innerText=event.target.result;
 				    				t.appendChild(fld);
+				    				let fld2=document.createElement('input');
+				    				fld2.type='hidden';
+				    				fld2.name=fname+'_name';
+				    				fld2.style.display='none';
+				    				fld2.value=this.name;
+				    				//console.log(fld2);
+				    				t.appendChild(fld2);
 				    				//console.log(img);
 				    			}
 				    		}
@@ -131,13 +140,16 @@ function chatInitAcceptAttachments(){
     				let reader = new FileReader();
 			    	reader.el=this;
 			    	reader.type=type;
+			    	reader.name=blob.name;
 			    	reader.onload = function(event) {
+			    		console.log(this);
 			    		if(undefined != this.el.dataset.acceptTarget){
 			    			let t=getObject(this.el.dataset.acceptTarget);
 			    			if(undefined != t){
 			    				let tlist=t.querySelectorAll('span');
 			    				let fname=this.el.name+'_attachment_'+tlist.length;
 			    				let span=document.createElement('span');
+			    				span.title=this.name;
 				    			if(this.type.indexOf('audio')===0){
 				    				span.className='icon-file-audio w_bigger';
 				    			}
@@ -171,6 +183,13 @@ function chatInitAcceptAttachments(){
 			    				fld.style.display='none';
 			    				fld.innerText=event.target.result;
 			    				t.appendChild(fld);
+			    				let fld2=document.createElement('input');
+				    			fld2.type='hidden';
+			    				fld2.name=fname+'_name';
+			    				fld2.style.display='none';
+			    				fld2.value=this.name;
+			    				//console.log(fld2);
+			    				t.appendChild(fld);
 			    				//console.log(img);
 			    			}
 			    		}
@@ -182,14 +201,33 @@ function chatInitAcceptAttachments(){
 		};
 	}
 }
+function chatAjaxSubmitForm(frm,div){
+	let msg=trim(frm.msg.value);
+	if(msg.length==0){
+		//console.log('msg is blank');
+		let a=0;
+		for(let i=0;i<frm.length;i++){
+			if(undefined == frm[i].name){continue;}
+			//console.log(frm[i].name);
+			if(frm[i].name.indexOf('attach') != -1){a=1;break;}
+		}
+		if(a==0){
+			frm.msg.focus();
+			return false;
+		}
+	}
+	ajaxSubmitForm(frm,div);
+	return false;
+
+}
 function chatShowAttachment(span){
 	let src=document.app_chat_form[span.dataset.src].value;
-	htm='<div style="padding:5px 8px;"><img src="'+src+'" alt="" style="max-width:800px;max-height:800px;" /></div>';
-	wacss.modalPopup(htm);
+	htm='<div style="padding:5px 8px;"><img src="'+src+'" alt="" style="max-width:1000px;max-height:800px;" /></div>';
+	wacss.modalPopup(htm,'Image Viewer',{overlay:1});
 	return false;
 }
 function chatExpandImage(img){
-	htm='<div style="padding:5px 8px;"><img src="'+img.src+'" alt="" style="max-width:800px;max-height:800px;" /></div>';
+	htm='<div style="padding:5px 8px;"><img src="'+img.src+'" alt="" style="max-width:1000px;max-height:800px;" /></div>';
 	wacss.modalPopup(htm,'Image Viewer',{overlay:1});
 	return false;
 }
@@ -209,7 +247,7 @@ function chatMessagesClearInput(){
 	let attach=document.querySelector('#chat_msg_attachments');
 	if(undefined != attach){
 		attach.innerText='';
-		console.log('cleared chat_msg_attachments');
+		//console.log('cleared chat_msg_attachments');
 	}
 }
 function chatNotify(){
@@ -223,7 +261,9 @@ function chatSetTimer(){
 }
 function chatCheckForNewMessages(){
 	let el=document.querySelector('div[data-last-message]');
+	if(undefined==el){return false;}
 	let app=document.querySelector('div[data-app-settings="1"]');
+	if(undefined==app){return false;}
 	ajaxGet(app.dataset.ajaxurl+'/app_chat_check_for_new_messages','chatnull',{last_message:el.dataset.lastMessage,setprocessing:0});
 }
 function chatGetNewMessages(){

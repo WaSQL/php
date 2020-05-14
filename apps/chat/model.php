@@ -69,14 +69,14 @@ function chatAddMessage($params){
 		'msg_group'=>$APP['-group'],
 		'msg'=>$msg
 	);
-	//process attachments
+	//process extras
 	$path=$_SERVER['DOCUMENT_ROOT'].'/app_chat_files';
 	if(!is_dir($path)){
 		buildDir($path);
 	}
 	$attachments=array();
 	foreach($params as $k=>$v){
-		if(stringBeginsWith($k,'msg_attachment_')){
+		if(stringBeginsWith($k,'msg_attachment_') && !stringEndsWith($k,'_name')){
 	    	list($data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$v,4);
             //make sure it is an extension we support
             $ftype='';
@@ -85,24 +85,36 @@ function chatAddMessage($params){
             	$ext=$m[2];
             	$ftype=$m[1];
             }
+            elseif(preg_match('/^(text)\/(.+)$/i',$type,$m)){
+            	$ext=$m[2];
+            	$ftype='file';
+            }
             elseif(stringContains($type,'gzip')){
-            	$ftype=='file';
+            	$ftype='file';
             	$ext='gz';
             }
             elseif(stringContains($type,'zip')){
-            	$ftype=='file';
+            	$ftype='file';
             	$ext='zip';
             }
             elseif(stringContains($type,'pdf')){
-            	$ftype=='file';
+            	$ftype='file';
             	$ext='pdf';
             }
-			if(!isset($ext)){
+            if(isset($params["{$k}_name"]) && strlen($params["{$k}_name"])){
+            	$ext=getFileExtension($params["{$k}_name"]);
+            	$ftype='file';
+            }
+			if(!isset($ext) || !strlen($ext)){
 				echo "invalid type: {$type}<br>";
 				continue;
 			}
 			$crc=encodeCRC($encodedString);
-        	$file="{$k}_{$crc}.{$ext}";
+			if(isset($params["{$k}_name"]) && strlen($params["{$k}_name"])){
+				$file=getFileName($params["{$k}_name"],1);
+				$file.="_{$crc}.{$ext}";
+			}
+			else{$file="{$k}_{$crc}.{$ext}";}
 			$decoded=base64_decode($encodedString);
 			$afile="{$path}/{$file}";
 			//remove the file if it exists already
@@ -115,9 +127,20 @@ function chatAddMessage($params){
 			}
 		}
 	}
+	$addopts['extras']=array();
 	if(count($attachments)){
-		$addopts['attachments']=json_encode($attachments);
+		$addopts['extras']=array('attachments'=>$attachments);
 	}
+	if(isset($APP['-add_eval']) && function_exists($APP['-add_eval'])){
+		$addopts=call_user_func($APP['-add_eval'],$addopts);
+	}
+	if(count($addopts['extras'])){
+		$addopts['extras']=json_encode($addopts['extras']);
+	}
+	if(!strlen($addopts['msg'])){
+		$addopts['msg']=' ';
+	}
+	//echo printValue($addopts).printValue($params);exit;
 	$id=addDBRecord($addopts);
 	if(!isNum($id)){
 		echo printValue($id);exit;
@@ -168,8 +191,8 @@ function chatGetMessages($offset=0){
 			$recs[$i]['msg_icon']='icon-users w_red';
 		}
 		//attachments
-		if(strlen($rec['attachments'])){
-			$recs[$i]['attachments']=json_decode($rec['attachments'],true);
+		if(strlen($rec['extras'])){
+			$recs[$i]['extras']=json_decode($rec['extras'],true);
 		}
 		//map user name and photo/picture
 		if(isset($usermap[$rec['msg_to']])){
@@ -302,7 +325,7 @@ function chatSetup(){
 			'msg'		=> "varchar(1500) NOT NULL Default ''",
 			'msg_group'	=> 'varchar(50) NOT NULL',
 			'active'	=> 'tinyint(1) NOT NULL Default 1',
-			'attachments'=>'json NULL'
+			'extras'=>'json NULL'
 
 		);
 		$ok = createDBTable($table,$fields);

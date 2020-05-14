@@ -215,6 +215,46 @@ function mysqlDBConnect($params=array()){
 		exit;
 	}
 }
+//---------- begin function mysqlExecuteSQL ----------
+/**
+* @describe executes a query and returns without parsing the results
+* @param $query string - query to execute
+* @param [$params] array - These can also be set in the CONFIG file with dbname_mysql,dbuser_mysql, and dbpass_mysql
+*	[-host] - mysql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* @return boolean returns true if query succeeded
+* @usage $ok=mysqlExecuteSQL("truncate table abc");
+*/
+function mysqlExecuteSQL($query,$params=array()){
+	global $dbh_mysql;
+	if(!is_resource($dbh_mysql)){
+		$dbh_mysql=mysqlDBConnect();
+	}
+	if(!$dbh_mysql){
+		debugValue(array(
+			'function'=>'mysqlQueryResults',
+			'message'=>'connect failed',
+			'error'=>mysqli_connect_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	$result=@mysqli_query($dbh_mysql,$query);
+	if(!$result){
+		debugValue(array(
+			'function'=>'mysqlQueryResults',
+			'message'=>'mysqli_query failed',
+			'error'=>mysqli_error($dbh_mysql),
+			'query'=>$query
+		));
+		mysqli_close($dbh_mysql);
+		return null;
+	}
+	mysqli_close($dbh_mysql);
+	return true;
+}
 //---------- begin function mysqlGetDBFieldInfo--------------------
 /**
 * @describe returns an array containing type,length, and flags for each field in said table

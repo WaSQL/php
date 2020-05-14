@@ -2,11 +2,8 @@
 <div id="chat_msgs" style="width:100%;min-height:200px;max-height:80vh;overflow:auto;">
 	<?=renderView('messages',$messages,'messages');?>
 </div>
-<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return ajaxSubmitForm(this,'chat_msgs');">
-	<div style="display:flex;flex-wrap:wrap;margin-bottom:3px;padding:3px;" id="chat_msg_attachments">
-        
-
-    </div>
+<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return chatAjaxSubmitForm(this,'chat_msgs');">
+	<div style="display:flex;flex-wrap:wrap;margin-bottom:3px;padding:3px;" id="chat_msg_attachments"></div>
 	<div style="display:flex;" class="action_row">
 		<?=chatToField();?>
 		<?=chatInputField();?>
@@ -66,14 +63,14 @@
 					</view:image>
 					<?=renderEach('image',$images,'image');?>
 				</view:images>
-				<?=renderViewIf(isset($message['attachments']['image'][0]),'images',$message['attachments']['image'],'images');?>
+				<?=renderViewIf(isset($message['extras']['attachments']['image'][0]),'images',$message['extras']['attachments']['image'],'images');?>
 				<view:audios>
 					<view:audio>
 						<audio controls src="<?=$audio;?>" style="margin-left:5px;max-height:150px;" />
 					</view:audio>
 					<?=renderEach('audio',$audios,'audio');?>
 				</view:audios>
-				<?=renderViewIf(isset($message['attachments']['audio'][0]),'audios',$message['attachments']['audio'],'audios');?>
+				<?=renderViewIf(isset($message['extras']['attachments']['audio'][0]),'audios',$message['extras']['attachments']['audio'],'audios');?>
 				<view:videos>
 					<view:video>
 						<video controls style="margin-left:5px;max-height:150px;">
@@ -82,7 +79,14 @@
 					</view:video>
 					<?=renderEach('video',$videos,'video');?>
 				</view:videos>
-				<?=renderViewIf(isset($message['attachments']['video'][0]),'videos',$message['attachments']['video'],'videos');?>
+				<?=renderViewIf(isset($message['extras']['attachments']['video'][0]),'videos',$message['extras']['attachments']['video'],'videos');?>
+				<view:files>
+					<view:file>
+						<a href="<?=$file;?>" class="chat_message_file"><span class="icon-download"></span> <?=getFileName($file);?></a>
+					</view:file>
+					<?=renderEach('file',$files,'file');?>
+				</view:files>
+				<?=renderViewIf(isset($message['extras']['attachments']['file'][0]),'files',$message['extras']['attachments']['file'],'files');?>
 				</div>
 			</div>
 		</div>
