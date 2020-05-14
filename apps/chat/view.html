@@ -2,7 +2,7 @@
 <div id="chat_msgs" style="width:100%;min-height:200px;max-height:80vh;overflow:auto;">
 	<?=renderView('messages',$messages,'messages');?>
 </div>
-<form method="post" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return chatAjaxSubmitForm(this,'chat_msgs');">
+<form method="post" autocomplete="off" name="app_chat_form" action="<?=$APP['-ajaxurl'];?>/app_chat_msg" onsubmit="return chatAjaxSubmitForm(this,'chat_msgs');">
 	<div style="display:flex;flex-wrap:wrap;margin-bottom:3px;padding:3px;" id="chat_msg_attachments"></div>
 	<div style="display:flex;" class="action_row">
 		<?=chatToField();?>
