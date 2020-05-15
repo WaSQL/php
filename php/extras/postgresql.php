@@ -1614,6 +1614,25 @@ function postgresqlQueryResults($query='',$params=array()){
 		pg_close($dbh_postgresql);
 		return null;
 	}
+	if(!$data){
+		//lets try one more time
+		usleep(100);
+		$dbh_postgresql='';
+		$dbh_postgresql=postgresqlDBConnect();
+		$data=@pg_query($dbh_postgresql,$query);
+		$err=pg_result_error($data);
+		if(strlen($err)){
+			debugValue(array(
+				'function'=>'postgresqlQueryResults',
+				'message'=>'pq_query failed',
+				'error'=>$err,
+				'query'=>$query,
+				'values'=>$values,
+			));
+			pg_close($dbh_postgresql);
+			return null;
+		}
+	}
 	if(!$data){return "postgresqlQueryResults Query Error: " . pg_last_error();}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
