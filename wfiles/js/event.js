@@ -3012,7 +3012,12 @@ function countdownTime(id){
 		if(s.toString().length==1){s='0'+s;}
 		if(repeat==0){
 			el.innerHTML='00:00:00';
-			countdownBeep();
+			if(undefined != el.dataset.end){
+				let func=el.dataset.end;
+			    if(function_exists(func)){
+		    		window[func](el);
+		    	}
+			}
 		}
 		else{el.innerText=h+':'+m+':'+s;}
 	}
@@ -3026,7 +3031,12 @@ function countdownTime(id){
 		if(s.toString().length==1){s='0'+s;}
 		if(repeat==0){
 			el.innerHTML='00:00';
-			countdownBeep();
+			if(undefined != el.dataset.end){
+				let func=el.dataset.end;
+			    if(function_exists(func)){
+		    		window[func](el);
+		    	}
+			}
 		}
 		else{el.innerText=m+':'+s;}
 	}
