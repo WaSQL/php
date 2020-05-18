@@ -348,7 +348,7 @@ ENDOFQUERY;
 					//new record - add it
 					$opts=array();
 					foreach($rec as $k=>$v){
-						if(isWasqlField($k)){continue;}
+						if(isWasqlField($k) && $k != '_template'){continue;}
 						if(!strlen($v) || $v=='null'){continue;}
 						$opts[$k]=base64_decode($v);
 					}
