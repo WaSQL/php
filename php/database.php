@@ -2857,7 +2857,7 @@ function databaseListRecords($params=array()){
 				elseif($value==1){
 					$mark='icon-mark';
 					if(isset($params[$fld."_checkmark_icon"])){
-						$mark=$params[$fld."_checkmark_icon"]
+						$mark=$params[$fld."_checkmark_icon"];
 					}
 					$value='<div class="text-center"><span class="'.$mark.'"></span></div>';
 				}
@@ -10908,7 +10908,7 @@ function listDBRecords($params=array(),$customcode=''){
 				elseif($val==1){
 					$mark='icon-mark';
 					if(isset($params[$fld."_checkmark_icon"])){
-						$mark=$params[$fld."_checkmark_icon"]
+						$mark=$params[$fld."_checkmark_icon"];
 					}
 					$val='<div class="text-center"><span class="'.$mark.'"></span></div>';
 				}
