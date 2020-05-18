@@ -367,7 +367,7 @@ ENDOFQUERY;
 					//existing record - edit it
 					$opts=array();
 					foreach($rec as $k=>$v){
-						if(isWasqlField($k)){continue;}
+						if(isWasqlField($k) && $k != '_template'){continue;}
 						if(sha1($v) != sha1($recs[$id][$k])){
 							$opts[$k]=base64_decode($v);
 						}
