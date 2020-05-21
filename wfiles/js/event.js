@@ -3041,6 +3041,7 @@ function countdownTime(id){
 		else{el.innerText=m+':'+s;}
 	}
 	if(repeat==1){
+		if(undefined != this.timer){clearTimeout(this.timer);}
 		this.timer=window.setTimeout(countdownTime,1000,id);
 	}
 }
