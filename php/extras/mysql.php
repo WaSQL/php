@@ -5,7 +5,6 @@
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
 */
-
 //---------- begin function mysqlGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
