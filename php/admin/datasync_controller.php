@@ -114,8 +114,13 @@
 				}
 				else{
 					foreach($source_tables[$table]['fields'] as $field=>$type){
-						if(sha1($type) != sha1($target_tables[$table]['fields'][$field])){
-							$recs[$table]['error']="Field '{$field}' type mismatch";
+						$stype=preg_replace('/\([0-9\,]+?\)/','',$type);
+						$stype=trim($stype);
+						$ttype=preg_replace('/\([0-9\,]+?\)/','',$target_tables[$table]['fields'][$field]);
+						$ttype=trim($ttype);
+						if(sha1($stype) != sha1($ttype)){
+							$recs[$table]['error']="Field '{$field}' type mismatch: (".printValue($stype).' != '.printValue($ttype).')';
+
 						}
 					}
 				}
