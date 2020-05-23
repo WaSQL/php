@@ -108,6 +108,10 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 				}
 				exit;
 			}
+			$tables=getDBTables();
+			foreach($tables as $table){
+				$ok=executeSQL("ANALYZE TABLE `{$table}`;");
+			}
 			$query=<<<ENDOFQUERY
 				SELECT
 					table_name tablename
@@ -189,7 +193,14 @@ ENDOFQUERY;
 				echo base64_encode(json_encode(array('error'=>'missing params')));
 				exit;
 			}
-			$recs=getDBRecords(array('-table'=>$json['table'],'-limit'=>$json['limit'],'-offset'=>$json['offset'],'-order'=>'_id'));
+			$fields=getDBFieldInfo($json['table']);
+			$rfields=array();
+			foreach($fields as $field=>$finfo){
+				if(!stringContains($finfo['_dbtype_ex'],'generated')){
+					$rfields[]=$field;
+				}
+			}
+			$recs=getDBRecords(array('-table'=>$json['table'],'-fields'=>implode(',',$rfields),'-limit'=>$json['limit'],'-offset'=>$json['offset'],'-order'=>'_id'));
 			if(!is_array($recs)){$recs=array();}
 			//convert the record values into Base64 so they will for sure convert to json
 			foreach($recs as $i=>$rec){

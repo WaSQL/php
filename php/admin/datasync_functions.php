@@ -35,6 +35,7 @@ ENDOFQUERY;
 	foreach($recs as $table=>$rec){
 		$frecs=getDBFieldInfo($table);
 		foreach($frecs as $field=>$frec){
+			if(stringContains($frec['_dbtype_ex'],'generated')){continue;}
 			$recs[$table]['fields'][$field]=$frec['_dbtype_ex'];
 		}
 	}
@@ -45,7 +46,15 @@ function datasyncGetTargetTables(){
 	$load=array(
 		'func'		=> 'get_tables',
 	);
-	return datasyncPost($load,0);
+	$tables= datasyncPost($load,0);
+	foreach($tables as $table=>$rec){
+		foreach($rec['fields'] as $field=>$type){
+			if(stringContains($type,'generated')){
+				unset($tables[$table]['fields'][$field]);
+			}
+		}
+	}
+	return $tables;
 }
 function datasyncFromTarget($table){
 	//copy all records here to Target in chunks of
@@ -53,7 +62,11 @@ function datasyncFromTarget($table){
 	$offset=0;
 	//set limit to 100 for tables with large data values
 	$fields=getDBFieldInfo($table);
+	$rfields=array();
 	foreach($fields as $field=>$info){
+		if(!stringContains($info['_dbtype_ex'],'generated')){
+			$rfields[]=$field;
+		}
 		switch(strtolower($info['_dbtype'])){
 			case 'binary':
 			case 'blob':
@@ -97,7 +110,11 @@ function datasyncToTarget($table){
 	$offset=0;
 	//set limit to 100 for tables with large data values
 	$fields=getDBFieldInfo($table);
+	$rfields=array();
 	foreach($fields as $field=>$info){
+		if(!stringContains($info['_dbtype_ex'],'generated')){
+			$rfields[]=$field;
+		}
 		switch(strtolower($info['_dbtype'])){
 			case 'binary':
 			case 'blob':
@@ -111,7 +128,7 @@ function datasyncToTarget($table){
 	$results=array();
 	$cnt=0;
 	while(1){
-		$recs=getDBRecords(array('-table'=>$table,'-limit'=>$limit,'-offset'=>$offset,'-order'=>'_id'));
+		$recs=getDBRecords(array('-table'=>$table,'-fields'=>implode(',',$rfields),'-limit'=>$limit,'-offset'=>$offset,'-order'=>'_id'));
 		if(!is_array($recs)){break;}
 		//convert the record values into Base64 so they will for sure convert to json
 		foreach($recs as $i=>$rec){

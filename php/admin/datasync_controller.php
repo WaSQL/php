@@ -83,6 +83,7 @@
 		default:
 			$target_tables=datasyncGetTargetTables();
 			$source_tables=datasyncGetSourceTables();
+			//echo printValue($target_tables['test']).printValue($source_tables['test']);exit;
 			$recs=array();
 			foreach($source_tables as $table=>$rec){
 				$recs[$table]=array(

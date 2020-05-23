@@ -248,6 +248,8 @@ function synchronizeGetChanges($tables){
 		else{
 			$info=getDBFieldInfo($table);
 			foreach($info as $field=>$f){
+				//skip virtual fields
+				if(stringContains($f['_dbtype_ex'],'generated')){continue;}
 				if(!isset($target_recs['_schema_'][$table][$field])){
 					//field in this table is new
 					$changes[]="New Field: {$field} {$f['_dbtype_ex']}";
