@@ -448,6 +448,30 @@ table th a {
 	-moz-animation: w_blink_animation 2s linear infinite;
 	-o-animation: w_blink_animation 2s linear infinite;
 }
+/* blink animation once */
+.w_blink_once {
+    animation: w_blink_animation 2s linear;
+	-webkit-animation: w_blink_animation 2s linear;
+	-moz-animation: w_blink_animation 2s linear;
+	-o-animation: w_blink_animation 2s linear;
+	animation-iteration-count: 1
+}
+/* blink animation twice */
+.w_blink_twice {
+    animation: w_blink_animation 2s linear;
+	-webkit-animation: w_blink_animation 2s linear;
+	-moz-animation: w_blink_animation 2s linear;
+	-o-animation: w_blink_animation 2s linear;
+	animation-iteration-count: 2
+}
+/* blink animation thrice */
+.w_blink_thrice {
+    animation: w_blink_animation 2s linear;
+	-webkit-animation: w_blink_animation 2s linear;
+	-moz-animation: w_blink_animation 2s linear;
+	-o-animation: w_blink_animation 2s linear;
+	animation-iteration-count: 1
+}
 @keyframes w_blink_animation {
   50% {
     opacity: 0;
