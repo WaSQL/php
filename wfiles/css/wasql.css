@@ -477,6 +477,52 @@ table th a {
     opacity: 0;
   }
 }
+
+/* slideshow: fade in */
+.w_fadein_1{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 1s;
+	-webkit-animation-duration: 1s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+/* slideshow: fade in */
+.w_fadein_2{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 2s;
+	-webkit-animation-duration: 2s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+/* slideshow: fade in */
+.w_fadein_3{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 3s;
+	-webkit-animation-duration: 3s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+/* slideshow: fade in */
+.w_fadein_4{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 4s;
+	-webkit-animation-duration: 4s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+/* slideshow: fade in */
+.w_fadein_5{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 5s;
+	-webkit-animation-duration: 5s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
 /* progress animation */
 .w_progress{
     position :relative;
