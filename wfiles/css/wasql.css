@@ -523,6 +523,46 @@ table th a {
 	animation-timing-function: ease-in-out;
 	-webkit-animation-timing-function: ease-in-out;
 }
+.w_fadein_6{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 6s;
+	-webkit-animation-duration: 6s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+.w_fadein_7{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 7s;
+	-webkit-animation-duration: 7s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+.w_fadein_8{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 8s;
+	-webkit-animation-duration: 8s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+.w_fadein_9{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 9s;
+	-webkit-animation-duration: 9s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
+.w_fadein_10{
+	animation-name: fadeIn;
+	-webkit-animation-name: fadeIn;
+	animation-duration: 10s;
+	-webkit-animation-duration: 10s;
+	animation-timing-function: ease-in-out;
+	-webkit-animation-timing-function: ease-in-out;
+}
 /* progress animation */
 .w_progress{
     position :relative;
