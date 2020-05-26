@@ -424,6 +424,20 @@ function commonSearchFiltersForm($params=array()){
 	//default class to w_form-control
 	if(empty($params['class'])){$params['class']='w_form-control';}
 	//if(empty($params['style'])){$params['style']='min-width:75px';}
+	if(isset($params['-quickfilters'])){
+		//button => filter_field filter_operator filter_value, ...
+		$buttons=array();
+		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
+		foreach($params['-quickfilters'] as $name=>$str){
+			$buttons[]='<button type="button" style="margin-right:4px;" class="'.$quickclass.'" onclick="pagingAddFilters(getParent(this,\'form\'),\''.$str.'\',1);">'.$name.'</button>';
+			$sets=preg_split('/\,/',$str);
+			foreach($sets as $set){
+				list($fld,$oper,$val)=preg_split('/\ +/',$set,3);	
+			}
+			
+		}
+		$rtn .= '<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">'.implode(' ',$buttons).'</div>';
+	}
 	//flex wrapper
 	$rtn .= '	<div class="w_flex w_flexgroup w_flexwrap">'.PHP_EOL;
 	//search fields
@@ -452,13 +466,13 @@ function commonSearchFiltersForm($params=array()){
 	//operators
 	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	$vals=array(
-		'ct'	=> 'Contains',
-		'nct'	=> 'Not Contains',
-		'ca'	=> 'Contains Any of These',
-		'nca'	=> 'Not Contain Any of These',
 		'eq'	=> 'Equals',
-		'neq'	=> 'Not Equals',
 		'ea'	=> 'Equals Any of These',
+		'ct'	=> 'Contains',
+		'ca'	=> 'Contains Any of These',
+		'nct'	=> 'Not Contains',
+		'nca'	=> 'Not Contain Any of These',
+		'neq'	=> 'Not Equals',
 		'nea'	=> 'Not Equals Any of These',
 		'gt'	=> 'Greater Than',
 		'lt'	=> 'Less Than',
@@ -619,7 +633,7 @@ function commonSearchFiltersForm($params=array()){
         	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
-			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
+			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
 		}
 	}
 	$rtn .= '	</div>'.PHP_EOL;

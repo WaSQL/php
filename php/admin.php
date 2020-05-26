@@ -2060,6 +2060,9 @@ LIST_TABLE:
                 	case '_users':
                 		$_REQUEST['filter_field']='lastname';
                 	break;
+                	case 'states':
+                		$recopts['-quickfilters']=array('USA'=>"country eq US");
+                	break;
                 	case '_queries':
                 		global $SETTINGS;
 						$recopts['run_length_align']="right";

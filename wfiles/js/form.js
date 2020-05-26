@@ -2567,69 +2567,83 @@ function pagingAddFilter(frm){
 		frm.filter_value.focus();
 		return false;
 	}
-	var id=frm.filter_field.value+frm.filter_operator.value+frm.filter_value.value;
-	var obj=getObject(id);
-	var filters=new Array();
-	if(undefined != obj){
-		obj.style.display='inline-block';
-	}
-	else{
-		var d=document.createElement('div');
-		d.className='w_pagingfilter';
-		d.setAttribute('data-field',frm.filter_field.value);
-		d.setAttribute('data-operator',frm.filter_operator.value);
-		d.setAttribute('data-value',frm.filter_value.value);
-		d.id=id;
-		var dfield=frm.filter_field.value;
-		if(dfield=='*'){dfield='Any Field';}
-		var doper=frm.filter_operator.value;
-		var dval='\''+frm.filter_value.value+'\'';
-		switch(doper){
-        	case 'ct': 	doper='Contains';break;
-        	case 'nct': doper='Not Contains';break;
-        	case 'ca': 	doper='Contains Any of These';break;
-        	case 'nca': doper='Not Contain Any of These';break;
-			case 'eq': 	doper='Equals';break;
-			case 'neq': doper='Not Equals';break;
-			case 'ea': 	doper='Equals Any of These';break;
-			case 'nea': doper='Not Equals Any of These';break;
-			case 'gt': doper='Greater Than';break;
-			case 'lt': doper='Less Than';break;
-			case 'egt': doper='Equals or Greater than';break;
-			case 'elt': doper='Less than or Equals';break;
-			case 'ib': doper='Is Blank';dval='';break;
-			case 'nb': doper='Is Not Blank';dval='';break;
-		}
-		d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+id+'\');"></span>';
-		var p=getObject('send_to_filters');
-		p.appendChild(d);
-	}
-	var f=document.querySelectorAll('.w_pagingfilter');
-	var filter_count=0;
-	for(var i=0;i<f.length;i++){
-    	if(f[i].style.display=='none'){continue;}
-    	if(undefined == f[i].getAttribute('data-field') || f[i].getAttribute('data-field')=='null'){continue;}
-  		filter_count=filter_count+1;
-	}
-	if(filter_count > 0){
-		//Clear Filters button
-		obj=getObject('paging_clear_filters');
-		if(undefined != obj){removeId(obj);}
-		var d=document.createElement('div');
-		d.className='w_pagingfilter icon-erase w_big w_danger';
-		d.id='paging_clear_filters';
-		d.setAttribute('title','Clear All Filters');
-		d.onclick=function(){
-			pagingClearFilters();
-		};
-		var p=getObject('send_to_filters');
-		p.appendChild(d);
-	}
+	let str=frm.filter_field.value+' '+frm.filter_operator.value+' '+frm.filter_value.value;
+	pagingAddFilters(frm,str);
 	frm.filter_value.value='';
 	frm.filter_value.focus();
 }
+function pagingAddFilters(frm,filters,clear){
+	if(undefined != clear){
+		pagingClearFilters(frm);
+	}
+	let sets=filters.split(",");
+	for(let s=0;s<sets.length;s++){
+		let fltrs=sets[s].split(" ");
+		let id=fltrs[0]+fltrs[1]+fltrs[2];
+		let obj=getObject(id);
+		let filters=new Array();
+		if(undefined != obj){
+			obj.style.display='inline-block';
+		}
+		else{
+			let d=document.createElement('div');
+			d.className='w_pagingfilter';
+			d.setAttribute('data-field',fltrs[0]);
+			d.setAttribute('data-operator',fltrs[1]);
+			d.setAttribute('data-value',fltrs[2]);
+			d.id=id;
+			let dfield=fltrs[0];
+			if(dfield=='*'){dfield='Any Field';}
+			let doper=fltrs[1];
+			let dval='\''+fltrs[2]+'\'';
+			switch(doper){
+	        	case 'ct': 	doper='Contains';break;
+	        	case 'nct': doper='Not Contains';break;
+	        	case 'ca': 	doper='Contains Any of These';break;
+	        	case 'nca': doper='Not Contain Any of These';break;
+				case 'eq': 	doper='Equals';break;
+				case 'neq': doper='Not Equals';break;
+				case 'ea': 	doper='Equals Any of These';break;
+				case 'nea': doper='Not Equals Any of These';break;
+				case 'gt': doper='Greater Than';break;
+				case 'lt': doper='Less Than';break;
+				case 'egt': doper='Equals or Greater than';break;
+				case 'elt': doper='Less than or Equals';break;
+				case 'ib': doper='Is Blank';dval='';break;
+				case 'nb': doper='Is Not Blank';dval='';break;
+			}
+			d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+id+'\');"></span>';
+			let p=getObject('send_to_filters');
+			p.appendChild(d);
+		}
+		let f=frm.querySelectorAll('.w_pagingfilter');
+		let filter_count=0;
+		for(let i=0;i<f.length;i++){
+	    	if(f[i].style.display=='none'){continue;}
+	    	if(undefined == f[i].getAttribute('data-field') || f[i].getAttribute('data-field')=='null'){continue;}
+	  		filter_count=filter_count+1;
+		}
+		if(filter_count > 0){
+			//Clear Filters button
+			let obj=frm.querySelector('#paging_clear_filters');
+			if(undefined != obj){removeId(obj);}
+			let d=document.createElement('div');
+			d.className='w_pagingfilter icon-erase w_big w_danger';
+			d.id='paging_clear_filters';
+			d.setAttribute('title','Clear All Filters');
+			d.onclick=function(){
+				pagingClearFilters(getParent(this,'form'));
+			};
+			let p=getObject('send_to_filters');
+			p.appendChild(d);
+		}
+		frm.filter_value.value='';
+		frm.filter_value.focus();
+	}
+	simulateEvent(frm,'submit');
+}
 function pagingSetFilters(frm){
-	var f=document.querySelectorAll('.w_pagingfilter');
+	var f=frm.querySelectorAll('.w_pagingfilter');
 	var filters=new Array();
 	for(var i=0;i<f.length;i++){
     	if(f[i].style.display=='none'){continue;}
@@ -2651,8 +2665,9 @@ function pagingSetFilters(frm){
 	//clear export if it exists
 	if(undefined != frm.filter_export){frm.filter_export.value='';}
 }
-function pagingClearFilters(){
-	var f=document.querySelectorAll('.w_pagingfilter');
+function pagingClearFilters(frm){
+	var f=frm.querySelectorAll('.w_pagingfilter');
+	if(undefined == f){return false;}
 	for(var i=0;i<f.length;i++){
 		removeId(f[i]);
 	}
