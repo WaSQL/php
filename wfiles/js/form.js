@@ -2573,10 +2573,13 @@ function pagingAddFilter(frm){
 	frm.filter_value.focus();
 }
 function pagingAddFilters(frm,filters,clear){
+	//console.log(frm);
+	//console.log(filters);
 	if(undefined != clear){
 		pagingClearFilters(frm);
 	}
 	let sets=filters.split(";");
+	//console.log(sets);
 	for(let s=0;s<sets.length;s++){
 		let fltrs=sets[s].split(" ");
 		let id=fltrs[0]+fltrs[1]+fltrs[2];
