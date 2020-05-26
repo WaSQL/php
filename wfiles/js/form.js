@@ -2583,7 +2583,7 @@ function pagingAddFilters(frm,filters,clear){
 	for(let s=0;s<sets.length;s++){
 		let fltrs=sets[s].split(" ");
 		let id=fltrs[0]+fltrs[1]+fltrs[2];
-		let obj=getObject(id);
+		let obj=frm.querySelector('#'+id);
 		let filters=new Array();
 		if(undefined != obj){
 			obj.style.display='inline-block';
@@ -2616,7 +2616,7 @@ function pagingAddFilters(frm,filters,clear){
 				case 'nb': doper='Is Not Blank';dval='';break;
 			}
 			d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+id+'\');"></span>';
-			let p=getObject('send_to_filters');
+			let p=frm.querySelector('#send_to_filters');
 			p.appendChild(d);
 		}
 		let f=frm.querySelectorAll('.w_pagingfilter');
@@ -2637,7 +2637,7 @@ function pagingAddFilters(frm,filters,clear){
 			d.onclick=function(){
 				pagingClearFilters(getParent(this,'form'));
 			};
-			let p=getObject('send_to_filters');
+			let p=frm.querySelector('#send_to_filters');
 			p.appendChild(d);
 		}
 		frm.filter_value.value='';
