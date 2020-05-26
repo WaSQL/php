@@ -1863,7 +1863,7 @@ function dbQueryResults($db,$query,$params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 *	[-searchclass]  - sets the search form section class
-*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, comma separate pairs
+*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs
 *	[-quickfilters_class] - set quickfilter button class
 *	[-presearch]  - HTML/text content to add just before the search form
 *	[-pretable]  - HTML/text content to add just before the table begins
