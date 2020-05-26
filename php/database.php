@@ -1887,18 +1887,11 @@ function databaseListRecords($params=array()){
 			$fields=$params['-fields'];
 			if(isset($params['-exportfields'])){
 				//exportfields may have non-table fields - remove them as they are enriched later
-				$params['-listfields']=$params['-exportfields'];
 				$exportfields=$params['-exportfields'];
 				if(!is_array($exportfields)){$exportfields=preg_split('/\,/',$exportfields);}
-				$exportfields_ori=$exportfields;
-				foreach($exportfields as $x=>$exportfield){
-					if(!isset($info[$exportfield])){
-						unset($exportfields[$x]);
-					}
-				}
-				$params['-fields']=$exportfields;
 			}
 			$recs=$params['-list'];
+			//echo printValue($recs);exit;
 			//check for results_eval
 			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
 				$rparams='';
@@ -1909,6 +1902,7 @@ function databaseListRecords($params=array()){
 					$recs=call_user_func($params['-results_eval'],$recs);
 				}
 			}
+			//echo printValue($recs);exit;
 			if(is_array($exportfields)){
 				//only exportfields
 				$xrecs=array();
@@ -1923,12 +1917,14 @@ function databaseListRecords($params=array()){
 				$recs=$xrecs;
 				unset($xrecs);
 			}
+			//echo printValue($recs);exit;
 			//strip tags
 			foreach($recs as $i=>$rec){
 				foreach($rec as $k=>$v){
 					$recs[$i][$k]=strip_tags($v);
 				}
 			}
+
 			//create a csv file
 			$csv=arrays2csv($recs);
 			//add UTF-8 byte order mark to the beginning of the csv
