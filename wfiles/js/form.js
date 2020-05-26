@@ -2582,7 +2582,10 @@ function pagingAddFilters(frm,filters,clear){
 	//console.log(sets);
 	for(let s=0;s<sets.length;s++){
 		let fltrs=sets[s].split(" ");
-		let id=fltrs[0]+fltrs[1]+fltrs[2].replace(/\,/g,"");
+		let id=fltrs[0]+fltrs[1];
+		if(undefined != fltrs[2]){
+			id=id+fltrs[2].replace(/\,/g,"");
+		}
 		let obj=frm.querySelector('#'+id);
 		let filters=new Array();
 		if(undefined != obj){
