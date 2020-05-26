@@ -1881,6 +1881,66 @@ function databaseListRecords($params=array()){
 	$allfields=0;
 	if(isset($params['-list'])){
 		$allfields=1;
+		//check for -export and filter_export
+		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
+			//remove limit temporarily
+			$fields=$params['-fields'];
+			if(isset($params['-exportfields'])){
+				//exportfields may have non-table fields - remove them as they are enriched later
+				$params['-listfields']=$params['-exportfields'];
+				$exportfields=$params['-exportfields'];
+				if(!is_array($exportfields)){$exportfields=preg_split('/\,/',$exportfields);}
+				$exportfields_ori=$exportfields;
+				foreach($exportfields as $x=>$exportfield){
+					if(!isset($info[$exportfield])){
+						unset($exportfields[$x]);
+					}
+				}
+				$params['-fields']=$exportfields;
+			}
+			$recs=$params['-list'];
+			//check for results_eval
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				$rparams='';
+				if(isset($params['-results_eval_params'])){
+					$recs=call_user_func($params['-results_eval'],$recs,$params['-results_eval_params']);
+				}
+				else{
+					$recs=call_user_func($params['-results_eval'],$recs);
+				}
+			}
+			if(is_array($exportfields)){
+				//only exportfields
+				$xrecs=array();
+				foreach($recs as $i=>$rec){
+					$xrec=array();
+					foreach($exportfields as $efld){
+						$xrec[$efld]=$rec[$efld];
+					}
+					$xrecs[]=$xrec;
+					unset($recs[$i]);
+				}
+				$recs=$xrecs;
+				unset($xrecs);
+			}
+			//strip tags
+			foreach($recs as $i=>$rec){
+				foreach($rec as $k=>$v){
+					$recs[$i][$k]=strip_tags($v);
+				}
+			}
+			//create a csv file
+			$csv=arrays2csv($recs);
+			//add UTF-8 byte order mark to the beginning of the csv
+			$csv="\xEF\xBB\xBF".$csv;
+			$epath=getWasqlTempPath();
+			$ename=sha1($csv).'.csv';
+			$efile="{$epath}/".$ename;
+			setFileContents($efile,$csv);
+			//clean up any csv files in this folder older than 1 hour
+			$ok=cleanupDirectory($epath,1,'hours','csv');
+			return $efile;
+		}
 	}
 	//check for translate
 	$translate=0;
