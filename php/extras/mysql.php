@@ -201,7 +201,8 @@ function mysqlDBConnect($params=array()){
 	global $dbh_mysql;
 	if($dbh_mysql){return $dbh_mysql;}
 	try{
-		$dbh_mysql = mysqli_connect($params['-dbhost'],$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
+		$host=gethostbyname($params['-dbhost']);
+		$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
 		if(!is_object($dbh_mysql)){
 			$err=@mysqli_connect_error();
 			echo "mysqlDBConnect error:{$err}".printValue($params);
