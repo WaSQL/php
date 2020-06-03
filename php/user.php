@@ -884,6 +884,10 @@ function userSetCookie($rec=array()){
 	$_SERVER['WASQLGUID']=$code;
 	$USER=userSetUserInfo($rec);
 	//echo $code.printValue($USER);exit;
+	//look for login trigger
+	if(function_exists("_usersLogin") && isUser()){
+    	$ok=call_user_func("_usersLogin",$USER);
+	}
 	return $code;
 }
 //---------- begin function userSetUserInfo ----
@@ -1209,6 +1213,11 @@ function setUserInfo(){
 * @history - bbarten 2014-01-02 updated documentation
 */
 function userLogout(){
+	global $USER;
+	//look for logout trigger
+	if(function_exists("_usersLogout") && isUser()){
+    	$ok=call_user_func("_usersLogout",$USER);
+	}
 	$USER=array();
 	unset($_SESSION['authcode']);
 	unset($_SESSION['authkey']);

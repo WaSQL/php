@@ -8,7 +8,246 @@
 	Instructions
 		set paypal_secret, paypal_clientid, and optionally paypal_url in config.xml
 
+Paypal Javascript SDK for payment buttons
+https://stackoverflow.com/questions/56414640/paypal-checkout-javascript-with-smart-payment-buttons-create-order-problem
+<script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
+<script>
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [
+                            {
+                                reference_id: "PUHF",
+                                description: "Sporting Goods",
+
+                                custom_id: "CUST-HighFashions",
+                                soft_descriptor: "HighFashions",
+                                amount: {
+                                    currency_code: "USD",
+                                    value: "230.00",
+                                    breakdown: {
+                                        item_total: {
+                                            currency_code: "USD",
+                                            value: "180.00"
+                                        },
+                                        shipping: {
+                                            currency_code: "USD",
+                                            value: "30.00"
+                                        },
+                                        handling: {
+                                            currency_code: "USD",
+                                            value: "10.00"
+                                        },
+                                        tax_total: {
+                                            currency_code: "USD",
+                                            value: "20.00"
+                                        },
+                                        shipping_discount: {
+                                            currency_code: "USD",
+                                            value: "10"
+                                        }
+                                    }
+                                },
+                                items: [
+                                    {
+                                        name: "T-Shirt",
+                                        description: "Green XL",
+                                        sku: "sku01",
+                                        unit_amount: {
+                                            currency_code: "USD",
+                                            value: "90.00"
+                                        },
+                                        tax: {
+                                            currency_code: "USD",
+                                            value: "10.00"
+                                        },
+                                        quantity: "1",
+                                        category: "PHYSICAL_GOODS"
+                                    },
+                                    {
+                                        name: "Shoes",
+                                        description: "Running, Size 10.5",
+                                        sku: "sku02",
+                                        unit_amount: {
+                                            currency_code: "USD",
+                                            value: "45.00"
+                                        },
+                                        tax: {
+                                            currency_code: "USD",
+                                            value: "5.00"
+                                        },
+                                        quantity: "2",
+                                        category: "PHYSICAL_GOODS"
+                                    }
+                                ],
+                                shipping: {
+                                    method: "United States Postal Service",
+                                    address: {
+                                        name: {
+                                            full_name:"John",
+                                            surname:"Doe"
+                                        },
+                                        address_line_1: "123 Townsend St",
+                                        address_line_2: "Floor 6",
+                                        admin_area_2: "San Francisco",
+                                        admin_area_1: "CA",
+                                        postal_code: "94107",
+                                        country_code: "US"
+                                    }
+                                }
+                            }
+                        ]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        alert('Transaction completed by ' + details.payer.name.given_name);
+                        // Call your server to save the transaction
+                        return fetch('/api/paypal-transaction-complete', {
+                            method: 'post',
+                            headers: {
+                                'content-type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                orderID: data.orderID
+                            })
+                        });
+                    });
+                }
+            }).render('#paypal-button-container');
+        </script>
+
+
+
 */
+
+function paypalCheckout(){
+	global $CONFIG;
+	if(!isset($CONFIG['paypal_clientid'])){
+		debugValue('paypal_secret not set in config.xml');
+		return 'ERROR';
+	}
+	$purchase=array(
+		'purchase_units' => array(
+			array(
+				'reference_id'=>"PUHF",
+                'description'=>"Sporting Goods",
+				'custom_id'=>"CUST-HighFashions",
+                'soft_descriptor'=>"HighFashions",
+                'amount'=>array(
+                	'currency_code'=>'USD',
+                	'value'=>'0.25',
+                	'breakdown'=>array(
+                		'item_total'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.10"
+                        ),
+                        'shipping'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.05"
+                        ),
+                        'handling'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.05"
+                        ),
+                        'tax_total'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.05"
+                        ),
+                        'shipping_discount'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.00"
+                        )	
+                	)
+                ),
+                'items'=>array(
+                	array(
+                		'name'=>"T-Shirt",
+                        'description'=>"Green XL",
+                        'sku'=>"sku01",
+                        'quantity'=>"1",
+                        'category'=>"PHYSICAL_GOODS",
+                        'unit_amount'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.04"
+                        ),
+                        'tax'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.01"
+                        ), 
+                	),
+                	array(
+                		'name'=>"Shoes",
+                        'description'=>"Running, Size 10.5",
+                        'sku'=>"sku02",
+                        'quantity'=>"2",
+                        'category'=>"PHYSICAL_GOODS",
+                        'unit_amount'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.03"
+                        ),
+                        'tax'=>array(
+                            'currency_code'=>"USD",
+                            'value'=>"0.02"
+                        ), 
+                	)
+                ),
+                'shipping'=>array(
+                    'method'=>"United States Postal Service",
+                    'address'=>array(
+                        'name'=>array(
+                            'full_name'=>"Steven",
+                            'surname'=>"Lloyd"
+                        ),
+                        'address_line_1'=>"2325 N 600 W",
+                        'address_line_2'=>"Attn: Sales",
+                        'admin_area_2'=>"Pleasant Grove",
+                        'admin_area_1'=>"UT",
+                        'postal_code'=>"84062",
+                        'country_code'=>"US"
+                    )
+                )
+			)
+		)
+	);
+	$purchase_json=json_encode($purchase,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+	$rtn=<<<ENDOFRTN
+	<div id="paypalcheckout_purchase" style="display:none">{$purchase_json}</div>
+	<script src="https://www.paypal.com/sdk/js?client-id={$CONFIG['paypal_clientid']}"></script>
+<script>
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create(JSON.parse(getText('paypalcheckout_purchase')));
+                },
+                onApprove: function(data, actions) {
+                	console.log('onApprove');
+                	console.log(data);
+                    return actions.order.capture().then(function(details) {
+                    	console.log('capture');
+                		console.log(details);
+                		let rtn={
+                			order_id:details.id,
+                			order_cdate:details.create_time,
+                			order_edate:details.update_time,
+                			order_status:details.status,
+                			order_amount:details.purchase_units[0].amount.value,
+                			order_ordernumber:details.purchase_units[0].custom_id,
+                			payer_id:details.payer.payer_id,
+                			payer_email:details.payer.email_address,
+                			payer_country_code:details.payer.address.country_code,
+                			payer_firstname:details.payer.name.given_name,
+                			payer_lastname:details.payer.name.surname
+                		};
+                        return ajaxGet('/t/1/index/process','nulldiv',rtn);
+                    });
+                }
+            }).render('#paypal-button-container');
+        </script>
+        <div id="paypal-button-container"></div>
+ENDOFRTN;
+	return $rtn;
+}
+
 //---------- begin function
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
