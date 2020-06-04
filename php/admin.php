@@ -592,6 +592,7 @@ if(isAjax()){
 		case 'test':
 		case 'terminal':
 		case 'checktables':
+		case 'meta':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1470,6 +1471,9 @@ ENDOFX;
 		case 'decode':
 			echo adminViewPage('decode');exit;
 		break;
+		case 'meta':
+			echo adminViewPage('meta');exit;
+		break;
 		case 'ab':
 			echo adminViewPage('apachebench');exit;
 		break;
@@ -1936,7 +1940,7 @@ ENDOFX;
 			$output = ob_get_contents();
 			ob_end_clean();
 			echo $output;
-			break;
+		break;
 		case 'list':
 LIST_TABLE:
 			if(isset($_REQUEST['_table_'])){

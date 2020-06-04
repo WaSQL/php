@@ -3192,6 +3192,28 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 //--------------------------
 //--Submit form using ajax
 function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
+	//check for file fields
+	let fields=theform.querySelectorAll('input[type="file"]');
+	for(let i=0;i<fields.length;i++){
+		if(undefined == fields[i].id){continue;}
+		let img=theform.querySelector('label[for="'+fields[i].id+'"] img');
+		if(undefined != img){
+			let name=fields[i].value.split('\\').pop().split('/').pop();
+			if(undefined != theform[fields[i].name]){
+				fields[i].parentNode.removeChild(fields[i]);
+			}
+			let h=document.createElement('input');
+			h.type='hidden';
+			h.name=fields[i].name;
+			h.value=name;
+			theform.appendChild(h);
+			h=document.createElement('textarea');
+			h.style.display='none';
+			h.name=fields[i].name+'_base64';
+			h.value=name+';'+name+';'+img.src;
+			theform.appendChild(h);
+		}
+	}
 	//verify that they passed in the form object
 	if(undefined == theform){
 		alert("No form object passed to ajaxPost");

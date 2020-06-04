@@ -13644,7 +13644,10 @@ function processInlineFiles(){
 				}
 				//remove spaces from the name
 				$name=str_replace(' ','_',$name);
+				$apath=str_replace('//','/',$apath);
+				$path=str_replace('//','/',$path);
 				$afile="{$apath}/{$name}";
+
 				//remove the file if it exists already
 				if(file_exists($afile)){unlink($afile);}
 				//save the file
@@ -13789,6 +13792,8 @@ function processActions(){
 		    	//auth required
 		    	return 0;
 			}
+			$ok=processInlineFiles();
+			//echo "EDIT" . printValue($_REQUEST);exit;
 			$_REQUEST['process_action']='edit';
 			if(!isset($_REQUEST['_fields']) && isset($_REQUEST['_formfields'])){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
@@ -14575,16 +14580,17 @@ function processActions(){
 				'_id'=>$_REQUEST['id'],
 				'-fields',$_REQUEST['field']
 			));
-			$opts=array('value'=>$rec[$_REQUEST['field']]);
+			$opts=array('style'=>'width:90%;','value'=>$rec[$_REQUEST['field']]);
+			$finfo=getDBFieldInfo($_REQUEST['table'],1);
 			//centerpop?
 			if(isset($_REQUEST['div']) && $_REQUEST['div']=='centerpop'){
 				echo '<div class="w_centerpop_title">Edit '.$_REQUEST['field'].'</div>'.PHP_EOL;
 				echo '<div class="w_centerpop_content">'.PHP_EOL;
 				$opts['style']='width:100%';
-				echo '<form method="post" name="editfieldform" class="flexbutton w_gray" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
+				echo '<form method="post" name="editfieldform" enctype="multipart/form-data" class="flexbutton" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
 			}
 			else{
-				echo '<form method="post" name="editfieldform" class="flexbutton w_gray" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
+				echo '<form method="post" name="editfieldform" enctype="multipart/form-data" class="flexbutton" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
 				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
 			}
 			
