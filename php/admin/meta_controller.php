@@ -37,12 +37,12 @@
 			'required'		=> 0
 		));
 	}
-	if(!isset($finfo['meta_title'])){
-		$sql="alter table _pages add meta_title varchar(75) NULL";
+	if(!isset($finfo['title'])){
+		$sql="alter table _pages add title varchar(75) NULL";
 		$ok=executeSQL($sql);
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',
-			'fieldname'		=> 'meta_title',
+			'fieldname'		=> 'title',
 			'inputtype'		=> 'text',
 			'synchronize'	=> 1,
 			'width'			=> 200,
