@@ -39,7 +39,7 @@ ENDOFTEXT;
 			<ul>
 				<li>Don’t put emphasis on the number of characters, as Google might pull Meta description text from your content based on a user’s query.</li>
 				<li>Do not add duplicate Meta Descriptions</li>
-				<li>Add clear Call-to-action (CTA) in your descriptions like Apply today, Check-out, Contact us today etc. See these CTA keywords for marketing campaigns</li>
+				<li>Add clear Call-to-action (CTA) in your descriptions like Apply today, Check-out, Contact us today etc.</li>
 				<li>Add your targeted keywords in descriptions</li>
 				<li>Strategically provide solutions to a problem</li>
 				<li>Write for your users and encourage them to click with specific and relevant content</li>
