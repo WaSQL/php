@@ -13944,6 +13944,15 @@ function processActions(){
 						setWasqlError(debug_backtrace(),$_REQUEST['edit_result']);
 						}
 					else{
+						if($opts['-table']=='_users' && $opts['_id']==$USER['_id']){
+							foreach($opts as $k=>$v){
+								if(isWasqlField($k)){continue;}
+								if(preg_match('/^\-/',$k)){continue;}
+								if(isset($USER[$k]) && $USER[$k] != $v){
+									$USER[$k]=$v;
+								}
+							}
+						}
                     	if(count($tinymce)){processWysiwygPost($_REQUEST['_table'],$rec['_id'],$tinymce);}
                     	//remove affected css and js file if table is _pages, or _templates
                     	if(preg_match('/^\_(pages|templates)$/i',$opts['-table'])){
