@@ -606,6 +606,10 @@ function initPikadayCalendar(field,params){
 	if(undefined != attrs['data-firstday']){
 		opts.firstDay=parseInt(attrs['data-firstday']);
 	}
+	//showWeekNumber
+	if(undefined != attrs['data-showweeknumber']){
+		opts.showWeekNumber=true;
+	}
 	//disableWeekends
 	if(undefined != attrs['data-disableweekends']){
 		opts.disableWeekends=true;
@@ -646,6 +650,10 @@ function initPikadayCalendar(field,params){
 	}
 	if(undefined != attrs['data-debug']){
 		//log debug in console
+		console.log(opts);
+	}
+	if(undefined != attrs['data-debug']){
+		console.log('Pikaday calendar opts');
 		console.log(opts);
 	}
 	let p=new Pikaday(opts);
