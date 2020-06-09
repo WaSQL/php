@@ -404,20 +404,21 @@ function ajaxEditField(table,id,fld,params){
 * @describe enables speech recognition for an input field
 * @param inp mixed - id or element for input field
 * @param [ico] mixed - id or element for icon to blink while speech is on
+* @params[frm] mixed - form element to submit or function to call
+* @params[continuous] boolean - set to true for continuous listening
 * @return false
 * @usage onclick="return formDictate('inputid','iconid');"
 */
-function formDictate(inp,ico,frm) {
+function formDictate(inp,ico,frm,continuous) {
   	inp=getObject(inp);
   	if(undefined == inp){
   		console.log('formDictate error: undefined input '+inp);
   		return false;
   	}
   	ico=getObject(ico);
-  	frm=getObject(frm);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
 		let recognition = new webkitSpeechRecognition();
-      	recognition.continuous = false;
+      	recognition.continuous = continuous||false;
       	recognition.interimResults = false;
       	recognition.lang = "en-US";
       	if(undefined != ico){
@@ -431,23 +432,68 @@ function formDictate(inp,ico,frm) {
       	recognition.inp=inp;
       	recognition.start();
       	recognition.onresult = function(e) {
+      		if(undefined != this.frm && undefined != window[this.frm]){
+        		try {
+        			window[this.frm](e.results[0][0].transcript);
+  					this.stop();
+					this.start();
+				}
+				catch (e) {}
+        		return;
+        	}
         	this.inp.value = e.results[0][0].transcript;
         	if(undefined != this.ico){
 	        	this.ico.classList.remove('w_blink');
 	        	this.ico.classList.remove('w_success');
 	        }
-        	this.stop();
+        	try {
+  					this.stop();
+				}
+			catch (e) {}
         	if(undefined != this.frm){
         		simulateEvent(this.frm,'submit');
         	}
 		};
+		recognition.onend = function(e){
+			if(this.continuous){
+				try {
+					this.start();
+				}
+				catch (e) {}
+			}
+			else{
+      			try {
+  					this.stop();
+				}
+				catch (e) {}
+      			if(undefined != this.ico){
+		      		this.ico.classList.remove('w_blink');
+		      		this.ico.classList.remove('w_success');
+		      	}
+      		}
+		}
       	recognition.onerror = function(e) {
-      		if(undefined != this.ico){
-	      		this.ico.classList.remove('w_blink');
-	      		this.ico.classList.remove('w_success');
-	      		this.ico.classList.add('w_danger');
-	      	}
-        	this.stop();
+      		if(this.continuous){
+      			if(undefined != e.error && e.error=='no-speech'){
+      				try {
+						this.restart();
+					}
+					catch (e) {}
+      			}
+      			else{
+      				console.log(e);
+      			}
+			}
+      		else{
+      			try {
+  					this.stop();
+				}
+				catch (e) {}
+      			if(undefined != this.ico){
+		      		this.ico.classList.remove('w_blink');
+		      		this.ico.classList.remove('w_success');
+		      	}
+      		} 
       	};
     }
     return false;
