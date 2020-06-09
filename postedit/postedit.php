@@ -28,11 +28,24 @@ include_once("$progpath/../php/common.php");
 // exit;
 getHosts();
 getSettings();
+if(strtolower($argv[1]) == '--list'){
+	ksort($hosts);
+	$i=1;
+	echo "HOSTS Found in postedit.xml".PHP_EOL;
+	$hosts=sortArrayByKeys($hosts,array('alias'=>SORT_ASC));
+	foreach($hosts as $key=>$info){
+		if(isset($found[$info['name']])){continue;}
+		$found[$info['name']]=1;
+		echo "	{$i}. {$info['alias']}".PHP_EOL;
+		$i+=1;
+	}
+	exit;
+}
 if(isset($argv[1])){
 	if(isset($hosts[$argv[1]])){$chost=$argv[1];}
 }
 if(!isset($chost)){
-	abortMessage($argv[1]." was not found in postedit.xml");
+	abortMessage($argv[1]." was not found in postedit.xml. Pass in --list to see list.");
 }
 // acquire an exclusive lock
 $lock=preg_replace('/[^a-z0-9]+/i','',$chost);
