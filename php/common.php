@@ -12914,6 +12914,8 @@ function postEditCheck($tables=array()){
 *	[-ssl] - if true set both SSL options to false (ignore)
 *	[-authuser] - auth username
 *	[-authpass] - auth password
+*	[-keyfile] - path to ssl key file (pem)
+*	[-keypass] - if your keyfile has a password...
 *	[-follow] - follow location if redirected
 *	[-timeout]  - The maximum number of seconds to allow cURL functions to execute. Defaults to 3600 (1 hour)
 *	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect. Defaults to 600 (5 minutes)
@@ -12995,7 +12997,7 @@ function postURL($url,$params=array()) {
 		curl_setopt( $process, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 	}
 	if(!isset($params['-user_agent'])){
-		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
+		$params['-user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36';
 	}
 	if(isset($params['-contenttype'])){
 		if(!isset($params['-headers'][0])){$params['-headers']=array();}
@@ -13012,6 +13014,15 @@ function postURL($url,$params=array()) {
 	if(isset($params['-user_agent'])){
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
+	//-keyfile
+	if(isset($params['-keyfile'])){
+		curl_setopt($process, CURLOPT_SSLKEY, $params['-keyfile']);
+	}
+	//-keypass
+	if(isset($params['-keypass'])){
+		curl_setopt($process, CURLOPT_SSLKEYPASSWD, $params['-keypass']);
+	}
+	//disable SSL verification?
 	if(isset($params['-nossl']) && $params['-nossl'] != 0){
 		curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($process, CURLOPT_SSL_VERIFYHOST, false);
