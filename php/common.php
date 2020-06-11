@@ -13014,6 +13014,10 @@ function postURL($url,$params=array()) {
 	if(isset($params['-user_agent'])){
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
+	//-http_version
+	if(isset($params['-http_version'])){
+		curl_setopt($process, CURLOPT_HTTP_VERSION, $params['-http_version']);
+	}
 	//-keyfile
 	if(isset($params['-keyfile'])){
 		curl_setopt($process, CURLOPT_SSLKEY, $params['-keyfile']);
