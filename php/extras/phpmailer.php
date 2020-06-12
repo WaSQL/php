@@ -179,13 +179,13 @@ function phpmailerSendMail($params=array()){
 			$params['-unsubscribe_email']=$params['from'];
 		}
 		$params['-unsubscribe_link']=str_replace('%email%',$params['to'],$params['-unsubscribe_link']);
-		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe>, <{$params['-unsubscribe_link']}>");
+		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe From {$_SERVER['HTTP_HOST']}>, <{$params['-unsubscribe_link']}>");
 	}
 	else{
 		if(!isset($params['-unsubscribe_email'])){
 			$params['-unsubscribe_email']=$params['from'];
 		}
-		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe>");
+		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe From {$_SERVER['HTTP_HOST']}>");
 	}
 	//From
 	if(isset($params['fromname'])){
