@@ -503,27 +503,27 @@ function tooltipDiv(obj,rtimer){
 	if(tooltipDivObj==obj){return false;}
 	tooltipDivObj=obj;
 	let params={};
-	params.position=obj.getAttribute('data-tooltip_position') || '';
+	params.position=obj.getAttribute('data-tooltip_position') || obj.getAttribute('data-tip_position') || '';
 	let txt=obj.getAttribute('data-tooltip') || '';
 	if(txt.indexOf('id:')===0){
 		//get tooltip text from an external div
-    	let divid=str_replace('id:','',txt);
+    	let divid=trim(str_replace('id:','',txt));
     	txt=getText(divid) || '';
 	}
 	else if(txt.indexOf('js:')===0){
 		//call a function
-    	let f=str_replace('js:','',txt);
+    	let f=trim(str_replace('js:','',txt));
     	let jsfunc=new Function(f);
     	txt=jsfunc();
 	}
 	else if(txt.indexOf('ajax:')===0){
 		//call a function
-    	params.ajax=str_replace('ajax:','',txt);
+    	params.ajax=trim(str_replace('ajax:','',txt));
     	txt='';
 	}
 	else if(txt.indexOf('att:')===0){
 		//get tooltip from another attribute - att:alt for example
-    	let att=str_replace('att:','',txt);
+    	let att=trim(str_replace('att:','',txt));
     	txt=obj.getAttribute(att) || '';
 	}
 	if(txt.length === 0 || txt==='false' || !txt){txt=' ';}
@@ -1908,6 +1908,25 @@ function initBehaviors(ajaxdiv){
        }
     //data tooltips
 	var tobs=GetElementsByAttribute('*', 'data-tooltip','.+');
+	for(var i=0;i<tobs.length;i++){
+		addEventHandler(tobs[i],'mouseover', function(event){
+			tooltipDiv(this);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
+		addEventHandler(tobs[i],'focus', function(event){
+			tooltipDiv(this);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
+		addEventHandler(tobs[i],'mouseout', function(event){
+			tooltipDivObj='';
+			fadeId('w_tooltip',1,1);
+			event.stopPropagation();
+    		event.preventDefault();
+		});
+	}
+	var tobs=GetElementsByAttribute('*', 'data-tip','.+');
 	for(var i=0;i<tobs.length;i++){
 		addEventHandler(tobs[i],'mouseover', function(event){
 			tooltipDiv(this);
