@@ -504,7 +504,7 @@ function tooltipDiv(obj,rtimer){
 	tooltipDivObj=obj;
 	let params={};
 	params.position=obj.getAttribute('data-tooltip_position') || obj.getAttribute('data-tip_position') || '';
-	let txt=obj.getAttribute('data-tooltip') || '';
+	let txt=obj.getAttribute('data-tooltip') || obj.getAttribute('data-tip') || '';
 	if(txt.indexOf('id:')===0){
 		//get tooltip text from an external div
     	let divid=trim(str_replace('id:','',txt));
