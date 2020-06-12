@@ -10243,12 +10243,12 @@ function includePage($val='',$params=array()){
 	global $PASSTHRU;
 	global $PAGE;
 	$prevpass=$PASSTHRU;
+	$prevview=$_REQUEST['_view'];
 	//check to make sure this is not an infinite loop - includePage of the page you on with same passthrus
 	$parts=preg_split('/\/+/',$val);
-	if(count($parts) > 1){
-		$val=array_shift($parts);
-	}
+	$val=$_REQUEST['_view']=array_shift($parts);
 	if(strtolower($PAGE['name'])==strtolower($val)){
+		//name is the same. check for recursive issue
 		if(isset($PASSTHRU[0]) && count($parts)==count($PASSTHRU)){
 			$found=0;
 			foreach($parts as $part){
@@ -10265,7 +10265,7 @@ function includePage($val='',$params=array()){
 	if(isset($params['passthru'][0])){
 		$PASSTHRU=$params['passthru'];
 	}
-	elseif(count($parts) && $parts[0] != $val){
+	elseif(count($parts)){
 		$params['passthru']=$PASSTHRU=$parts;
 	}
 	//start with any contents currently in the buffer
@@ -10322,6 +10322,7 @@ function includePage($val='',$params=array()){
 		else{unset($_REQUEST[$key]);}
 	}
 	$PASSTHRU=$prevpass;
+	$_REQUEST['_view']=$prevview;
 	if(isset($params['-notranslate'])){
 		return $rtn;
 	}

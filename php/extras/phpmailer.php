@@ -173,6 +173,20 @@ function phpmailerSendMail($params=array()){
 			$mail->addCustomHeader($header);
 		}
 	}
+	//list-unsubscribe?
+	if(isset($params['-unsubscribe_link'])){
+		if(!isset($params['-unsubscribe_email'])){
+			$params['-unsubscribe_email']=$params['from'];
+		}
+		$params['-unsubscribe_link']=str_replace('%email%',$params['to'],$params['-unsubscribe_link']);
+		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe>, <{$params['-unsubscribe_link']}>");
+	}
+	else{
+		if(!isset($params['-unsubscribe_email'])){
+			$params['-unsubscribe_email']=$params['from'];
+		}
+		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe>");
+	}
 	//From
 	if(isset($params['fromname'])){
 		$mail->SetFrom($params['from'], $params['fromname']);

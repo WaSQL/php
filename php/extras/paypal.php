@@ -121,11 +121,15 @@ https://stackoverflow.com/questions/56414640/paypal-checkout-javascript-with-sma
 
 */
 
-function paypalCheckout(){
+function paypalCheckout($cart=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['paypal_clientid'])){
-		debugValue('paypal_secret not set in config.xml');
-		return 'ERROR';
+		debugValue('paypal_clientid not set in config.xml');
+		return 'paypalCheckout ERROR - no clientid specified';
+	}
+	if(!isset($cart['items'][0])){
+		debugValue('No items in cart');
+		return 'paypalCheckout - No items in cart';
 	}
 	$purchase=array(
 		'purchase_units' => array(
