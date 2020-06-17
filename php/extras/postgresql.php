@@ -659,43 +659,49 @@ ENDOFQUERY;
 * @return boolean returns true if query succeeded
 * @usage $ok=postgresqlExecuteSQL("truncate table abc");
 */
-function postgresqlExecuteSQL($query,$params=array()){
+function postgresqlExecuteSQL($query,$return_error=1){
 	global $dbh_postgresql;
 	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
-		debugValue(array(
+		$err=array(
 			'function'=>'postgresqlExecuteSQL',
 			'message'=>'connect failed',
 			'error'=>pg_last_error(),
 			'query'=>$query
-		));
-    	return;
+		);
+		debugValue($err);
+		if($return_error==1){return $err;}
+    	return 0;
 	}
 	try{
 		$result=@pg_query($dbh_postgresql,$query);
 		if(!$result){
-			debugValue(array(
+			$err=array(
 				'function'=>'postgresqlExecuteSQL',
 				'message'=>'pg_query failed',
 				'error'=>pg_last_error(),
 				'query'=>$query
-			));
+			);
+			debugValue($err);
 			pg_close($dbh_postgresql);
-			return;
+			if($return_error==1){return $err;}
+			return 0;
 		}
 		pg_close($dbh_postgresql);
-		return true;
+		return 0;
 	}
 	catch (Exception $e) {
-		debugValue(array(
+		$err=array(
 			'function'=>'postgresqlExecuteSQL',
 			'message'=>'try catch failed',
 			'error'=>$e->errorInfo,
 			'query'=>$query
-		));
-		return false;
+		);
+		debugValue($err);
+		if($return_error==1){return $err;}
+		return 0;
 	}
-	return true;
+	return 0;
 }
 //---------- begin function postgresqlGetDBCount--------------------
 /**
