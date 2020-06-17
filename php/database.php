@@ -825,7 +825,7 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 * @usage
 *	$recs=dbExecuteSQL('pg_local',"truncate table test");
 */
-function dbExecuteSQL($db,$sql){
+function dbExecuteSQL($db,$sql,$return_error=1){
 	global $CONFIG;
 	global $DATABASE;
 	global $dbh_postgres;
@@ -846,7 +846,7 @@ function dbExecuteSQL($db,$sql){
 		case 'postgres':
 			loadExtras('postgresql');
 			$dbh_postgres='';
-			return postgresqlExecuteSQL($sql);
+			return postgresqlExecuteSQL($sql,$return_error);
 			//echo printValue($tables);
 		break;
 		case 'oracle':
