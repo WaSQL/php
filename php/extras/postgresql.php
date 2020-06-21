@@ -684,6 +684,25 @@ function postgresqlExecuteSQL($query,$return_error=1){
 			);
 			debugValue($err);
 			pg_close($dbh_postgresql);
+			if(stringContains($err['error'],'server closed the connection unexpectedly')){
+				//try one more time
+				usleep(100);
+				$dbh_postgresql='';
+				$dbh_postgresql=postgresqlDBConnect();
+				$result=@pg_query($dbh_postgresql,$query);
+				if(!$result){
+					$err=array(
+						'function'=>'postgresqlExecuteSQL',
+						'message'=>'pg_query failed twice',
+						'error'=>pg_last_error(),
+						'query'=>$query
+					);
+					debugValue($err);
+					pg_close($dbh_postgresql);
+					if($return_error==1){return $err;}
+					return 0;
+				}
+			}
 			if($return_error==1){return $err;}
 			return 0;
 		}
@@ -1630,7 +1649,7 @@ function postgresqlQueryResults($query='',$params=array()){
 		if(strlen($err)){
 			debugValue(array(
 				'function'=>'postgresqlQueryResults',
-				'message'=>'pq_query failed',
+				'message'=>'pq_query failed twice',
 				'error'=>$err,
 				'query'=>$query,
 				'values'=>$values,

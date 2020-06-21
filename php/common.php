@@ -8860,6 +8860,7 @@ function processCSVLines($file,$func_name,$params=array()){
 			}
 			//pass array to function
 			$ok=call_user_func($func_name,$set);
+			unset($set);
 			$linecnt++;
 			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
 				break;
@@ -9174,7 +9175,7 @@ function fopen_utf8($filename){
 		// UTF16 Byte Order Mark present
 		$encoding = 'UTF-16';
 	} else {
-		$file_sample = fread($handle, 1000) + 'e'; //read first 1000 bytes
+		$file_sample = @fread($handle, 1000) + 'e'; //read first 1000 bytes
 		// + e is a workaround for mb_string bug
 		rewind($handle);
 
@@ -10262,6 +10263,21 @@ function includePage($val='',$params=array()){
 			return "includePage '{$PAGE['name']}' Recursive Error";
 		}
 	}
+	elseif(strtolower($PAGE['permalink'])==strtolower($val)){
+		//name is the same. check for recursive issue
+		if(isset($PASSTHRU[0]) && count($parts)==count($PASSTHRU)){
+			$found=0;
+			foreach($parts as $part){
+				if(in_array($part,$PASSTHRU)){$found+=1;}
+			}
+			if($found==count($parts)){
+				return "includePage '{$PAGE['permalink']}' Recursive Error";
+			}
+		}
+		elseif(!isset($PASSTHRU[0]) && count($parts)==0){
+			return "includePage '{$PAGE['permalink']}' Recursive Error";
+		}
+	}
 	if(isset($params['passthru'][0])){
 		$PASSTHRU=$params['passthru'];
 	}
@@ -10280,7 +10296,7 @@ function includePage($val='',$params=array()){
 	);
 	unset($parts);
 	if(isNum($val)){$opts['-where']="_id={$val}";}
-	else{$opts['-where']="name='{$val}'";}
+	else{$opts['-where']="name='{$val}' or permalink='{$val}'";}
 	$rec=getDBRecord($opts);
 	if(isset($rec['-error'])){
 		return '<img src="/wfiles/alert.gif" alt="Alert" title="' . $rec['-error'] . '"> Error: ' . $rec['-error'];

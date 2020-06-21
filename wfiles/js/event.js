@@ -1326,6 +1326,93 @@ function initBehaviors(ajaxdiv){
 		        }
 		    }
         }
+        if(in_array("paypal_checkout",behaviors)){
+			/* Paypal Checkout */
+			if(undefined != navEls[n].id){
+				let paypal_checkout={
+					style: {
+				        shape: navEls[n].dataset.shape  || 'pill',
+				        color: navEls[n].dataset.color  || 'blue',
+				        layout:navEls[n].dataset.layout || 'vertical',
+				        label: navEls[n].dataset.label  || 'paypal' 
+				    }
+	            };
+	            paypal_checkout.renderid=navEls[n].id;
+	            paypal_checkout.cartinfo=JSON.parse(trim(getText(navEls[n])));
+	            paypal_checkout.createOrder=function(data, actions) {
+	                return actions.order.create(paypal_checkout.cartinfo);
+	            };
+	            paypal_checkout.debug=navEls[n].dataset.debug || 0;
+	            if(undefined != navEls[n].dataset.onapprove){
+	            	if(paypal_checkout.debug==1){
+	            		console.log('paypal_checkout - onapprove set');
+	            	}
+	            	paypal_checkout.onapprove_func=navEls[n].dataset.onapprove;
+	            	paypal_checkout.onApprove=function(data, actions) {
+	                    return actions.order.capture().then(function(details) {
+	                		let rtn={
+	                			order_id:details.id,
+	                			order_cdate:details.create_time,
+	                			order_edate:details.update_time,
+	                			order_status:details.status,
+	                			order_amount:details.purchase_units[0].amount.value,
+	                			order_reference_id:details.purchase_units[0].reference_id || '',
+	                			order_custom_id:details.purchase_units[0].custom_id || '',
+	                			payee_email:details.purchase_units[0].payee.email_address,
+	                			payee_merchant_id:details.purchase_units[0].payee.merchant_id,
+	                			payer_id:details.payer.payer_id,
+	                			payer_email:details.payer.email_address,
+	                			shipping_full_name:details.purchase_units[0].shipping.name.full_name,
+	                			shipping_address_line_1:details.purchase_units[0].shipping.address.address_line_1,
+	                			shipping_address_line_2:details.purchase_units[0].shipping.address.address_line_2,
+	                			shipping_city:details.purchase_units[0].shipping.address.admin_area_2,
+	                			shipping_state:details.purchase_units[0].shipping.address.admin_area_1,
+	                			shipping_postal_code:details.purchase_units[0].shipping.address.postal_code,
+	                			shipping_country_code:details.purchase_units[0].shipping.address.country_code,
+	                			payer_country_code:details.payer.address.country_code,
+	                			payer_firstname:details.payer.name.given_name,
+	                			payer_lastname:details.payer.name.surname,
+	                			payment_status:details.purchase_units[0].payments.captures[0].status,
+	                			payment_id:details.purchase_units[0].payments.captures[0].id
+	                		};
+	                		if(paypal_checkout.debug==1){
+	                			console.log('paypal_checkout - onApprove called');
+	                			console.log(details);
+	                		}
+	                		parent.window[paypal_checkout.onapprove_func](rtn);
+	                		//let jsfunc=new Function(paypal_checkout.onapprove_func);
+    						//jsfunc(rtn);
+	                    });
+	            	};
+	            }
+	            if(undefined != navEls[n].dataset.oncancel){
+	            	paypal_checkout.oncancel_func=navEls[n].dataset.oncancel;
+	            	if(paypal_checkout.debug==1){
+	            		console.log('paypal_checkout - onCancel set');
+	            	}
+	            	paypal_checkout.onCancel=function(data) {
+	            		if(paypal_checkout.debug==1){
+	            			console.log('paypal_checkout - onCancel called');
+	            		}
+    					parent.window[paypal_checkout.oncancel_func]();
+	            	};
+	            }
+	            setText(navEls[n],'');
+	            try{
+					paypal.Buttons(paypal_checkout).render('#'+paypal_checkout.renderid);
+				}
+				catch(e){
+					if(undefined != navEls[n].dataset.onfail){
+						parent.window[navEls[n].dataset.onfail](e);
+					}
+					else{
+						console.log('paypal_checkout - paypal.Buttons render failed');
+						console.log(e);
+					}
+		        }
+				
+			}
+		}
         if(in_array("chart",behaviors)){
 			/* Chart using Chart.js */
 			var chart_type=navEls[n].getAttribute('data-type') || 'bar';
