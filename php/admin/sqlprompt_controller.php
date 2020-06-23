@@ -91,10 +91,21 @@
 				'-query'=>$_SESSION['sql_last'],
 				'-process'=>'sqlpromptCaptureFirstRows'
 			);
+			$recs_show=30;
 			$recs=array();
 			$recs_count=dbGetRecords($db['name'],$params);
-
-			setView('results',1);
+			if(!isNum($recs_count)){
+				$error=$recs_count;
+				$recs_count='ERROR';
+				setView(array('results','failure'),1);
+			}
+			elseif($recs_count < 30){
+				$recs_show=$recs_count;
+				setView(array('results','success'),1);
+			}
+			else{
+				setView(array('results','success'),1);
+			}
 			return;
 		break;
 		case 'export':
