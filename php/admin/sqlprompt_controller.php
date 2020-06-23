@@ -140,12 +140,24 @@
 					exit;
 				}
 			}
+			if(file_exists($afile)){
+				unlink($afile);
+			}
 			$params=array(
 				'-binmode'=>ODBC_BINMODE_CONVERT,
-				'-longreadlen'=>65535
+				'-longreadlen'=>65535,
+				'-filename'=>$afile,
+				'-query'=>$_SESSION['sql_last'],
 			);
+			$recs=array();
+			$recs_count=dbGetRecords($db['name'],$params);
+			if(file_exists($afile)){
+				pushFile($afile);
+				exit;
+			}
+			unset($params['-filename']);
 			//echo printValue($db).$_SESSION['sql_last'];exit;
-			$recs=dbGetRecords($db['name'],$_SESSION['sql_last']);
+			$recs=dbGetRecords($db['name'],$params);
 			$csv=arrays2CSV($recs);
 			pushData($csv,'csv');
 			exit;
