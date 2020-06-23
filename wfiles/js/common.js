@@ -427,8 +427,10 @@ function function_exists( function_name ) {
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
+	element=getObject(element);
+	if(undefined == element){return false;}
 	//info: simulate an event without it actually happening
-    let evObj = document.createEvent('Events');
+    let evObj = document.createEvent('Event');
     evObj.initEvent(eventName, true, false);
     element.dispatchEvent(evObj);
   	return true;

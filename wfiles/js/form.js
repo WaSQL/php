@@ -462,7 +462,7 @@ function formDictate(inp,ico,frm,continuous) {
   	}
   	ico=getObject(ico);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
-		let recognition = new webkitSpeechRecognition();
+		var recognition = new webkitSpeechRecognition();
       	recognition.continuous = continuous||false;
       	recognition.interimResults = false;
       	recognition.lang = "en-US";
@@ -483,11 +483,7 @@ function formDictate(inp,ico,frm,continuous) {
   					this.stop();
 					this.start();
 				}
-				catch (e) {
-					this.stop();
-					this.start();
-				}
-        		return;
+				catch (e) {}
         	}
         	this.inp.value = e.results[0][0].transcript;
         	if(undefined != this.ico){
