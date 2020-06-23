@@ -3,55 +3,100 @@
 /*----------------------------------------------*/
 function setInputFileName(fld){
 	//console.log(fld.files);
-	let names=new Array();
-	for(let i=0;i<fld.files.length;i++){
-		names.push(fld.files[i].name);
-	}
-	if(names.length > 1){
-		fileName = names.length+' files: '+implode(', ',names);	
-	}
-	else{
-		fileName = implode(', ',names);
-	}
-	
+	let multiple=0;
+	if(fld.multiple){multiple=1;}
 	let label=document.querySelector('label[for='+fld.id+']');
-	//console.log('setInputFileName');
-	//console.log(fld.files);
-	//console.log(fld.dataset.thumbnail);
-	if(undefined != fld.dataset.thumbnail){
+	let labeltxt=document.querySelector('label[for='+fld.id+'] span.input_file_text');
+	if(undefined == labeltxt.dataset.text){
+		labeltxt.dataset.text=getText(labeltxt);
+	}
+	if(undefined == fld.files || fld.files.length==0){
+		setText(labeltxt,labeltxt.dataset.text);
+		return;
+	}
+	if(multiple==0){
+		setText(labeltxt,'');
+	}
+	for(let f=0;f<fld.files.length;f++){
 		let reader = new FileReader();
 		reader.label=label;
-		reader.filename=fileName;
+		reader.labeltxt=labeltxt;
+		reader.fld=fld;
+		reader.cfile=fld.files[f];
+		reader.filename=fld.files[f].name;
+		reader.f=f;
+		reader.fmax=fld.files.length-1;
 		reader.onload = function (e) {
-			//console.log('onload');
-			console.log(e.target);
-			//console.log(this.fld);
-			let img=document.createElement('img');
-			img.style='margin-top:2px;display:block;max-width:200px;max-height:200px;border-radius:3px;border:1px solid #ccc;';
-			img.src=e.target.result;
-			setText(this.label,this.filename);
-			this.label.style='padding:0px;border:0px;background:transparent;';
-			this.label.appendChild(img);
+			let ext=this.filename.split('.').pop().toLowerCase();
+			if(this.result.indexOf('data:image') == 0){
+				let img=document.createElement('img');
+				img.style.display='inline';
+				img.style.height='24px';
+				img.src=e.target.result;
+				img.title=this.filename;
+				this.labeltxt.appendChild(img);
+			}
+			else if(this.result.indexOf('data:audio') == 0){
+				let span=document.createElement('span');
+				span.className='w_gray icon-file-audio';
+				span.style.fontSize='26px';
+				span.title=this.filename;
+				this.labeltxt.appendChild(span);
+			}
+			else if(this.result.indexOf('data:video') == 0){
+				let span=document.createElement('span');
+				span.className='w_gray icon-file-video';
+				span.style.fontSize='26px';
+				span.title=this.filename;
+				this.labeltxt.appendChild(span);
+			}
+			else{
+				let cname='w_gray ';
+				switch(ext){
+					case 'pdf':cname=cname+'icon-file-pdf2';break;
+					case 'xls':
+					case 'xlsx':
+						cname=cname+'icon-file-excel';
+					break;
+					case 'doc':
+					case 'docx':
+						cname=cname+'icon-file-word';
+					break;
+					case 'zip':
+					case 'gz':
+						cname=cname+'icon-file-zip';
+					break;
+					case 'txt':
+					case 'csv':
+						cname=cname+'icon-file-txt';
+					break;
+					default:
+						cname=cname+'icon-file-doc';
+					break;
+				}
+				let span=document.createElement('span');
+				span.className=cname;
+				span.style.fontSize='26px';
+				span.title=this.filename;
+				this.labeltxt.appendChild(span);
+			}
+			if(this.f==this.fmax && undefined == labeltxt.querySelector('span.icon-erase')){
+				let span=document.createElement('span');
+				span.className='w_danger icon-erase';
+				span.style.fontSize='16px';
+				span.style.marginLeft='10px';
+				span.title='Clear';
+				span.fld=fld;
+				span.labeltxt=labeltxt;
+				span.onclick=function(e){
+					cancelBubble(e);
+					this.fld.value='';
+					setText(this.labeltxt,this.labeltxt.dataset.text);
+				}
+				labeltxt.appendChild(span);
+			}
 		}
-		reader.readAsDataURL(fld.files[0]);
-	}
-	else if(fileName){
-		setText(label,'<span class="icon-upload w_big w_success"></span> '+fileName);
-		label.className='btn btn-default';
-	}
-	else{
-		setText(label,'<span class="icon-upload w_big w_danger"></span> '+fld.getAttribute('data-text'));
-		label.className='btn btn-default';
-	}
-	//check remove box if replacing an existing image
-	if(undefined != fld.getAttribute('data-remove_checkbox')){
-		let robj=getObject(fld.getAttribute('data-remove_checkbox'));
-		robj.checked=true;
-	}
-	//red border the display to be remove
-	if(undefined != fld.getAttribute('data-remove_display')){
-		let robj=getObject(fld.getAttribute('data-remove_display'));
-		robj.style.border='1px solid #dc354b';
+		reader.readAsDataURL(fld.files[f]);
 	}
 }
 function formSendPhoneAuth(el){
@@ -438,7 +483,10 @@ function formDictate(inp,ico,frm,continuous) {
   					this.stop();
 					this.start();
 				}
-				catch (e) {}
+				catch (e) {
+					this.stop();
+					this.start();
+				}
         		return;
         	}
         	this.inp.value = e.results[0][0].transcript;
