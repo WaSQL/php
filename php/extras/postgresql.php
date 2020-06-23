@@ -1024,6 +1024,7 @@ function postgresqlGetDBRecords($params){
 			$params=array();
 		}
 		else{
+			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
 			$ok=postgresqlExecuteSQL($params);
 			return $ok;
 		}

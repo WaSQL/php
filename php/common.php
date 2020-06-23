@@ -2692,6 +2692,138 @@ function buildFormFile($name,$params=array()){
 	}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
+	if(isset($params['-value'])){$params['value']=$params['-value'];}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){
+		$params['value']=$_REQUEST[$name];
+	}
+	$params['name']=$name;
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$params['name']}";}
+	}
+	//create path if it does not exist
+	$apath=$_SERVER['DOCUMENT_ROOT'].$params['path'];
+	if(!is_dir($apath)){
+		buildDir($apath);
+	}
+	$tag='';
+	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	//autonumber?
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    //resize after upload?
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
+    //remove checkbox
+    $tag .= '		<input type="checkbox" style="display:none;" value="1" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove" />'.PHP_EOL;
+
+    $params['data-type']='file';
+    $params['data-formname']=$params['-formname'];
+    $params['-thumbnail']=1;
+    if(isset($params['-thumbnail'])){
+    	$params['data-thumbnail']=$params['-thumbnail'];
+    }
+    $params['onchange']="setInputFileName(this);";
+
+    
+	$label_params=array(
+		'class'=>'btn btn-default w_white'
+	);
+	if(isset($params['style'])){
+		$label_params['style']=$params['style'];
+		unset($params['style']);
+	}
+	$params['style']='width:1px;max-width:1px;';
+	if(isset($params['class']) && strlen($params['class'])){
+		$label_params['class']=$params['class'];
+		unset($params['class']);
+	}
+	unset($label_params['width']);
+	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
+	$label_params['style'].=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
+	//return printValue($label_params);
+	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
+	$tag .= setTagAttributes($params);
+	if(isset($params['multiple']) && $params['multiple']){
+    	$tag .= ' multiple ';
+	}
+	$tag .= ' />'.PHP_EOL;
+	$tag .= '	<label for="'.$params['id'].'"';
+	$tag .= setTagAttributes($label_params);
+	$tag .= ' ><span class="'.$params['-icon'].'"></span><span class="input_file_text" style="margin-left:5px;display:inline-flex;align-items:center;">';
+	//check for value
+	if(strlen($params['value'])){
+		$val=encodeHtml($params['value']);	
+		$ext=getFileExtension($params['value']);
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		$mime=getFileMimeType($afile);
+		if(stringBeginsWith($mime,'image/')){
+			$tag .= '<img style="display:inline;height:24px;" src="'.$params['value'].'" />'.PHP_EOL;
+		}
+		elseif(stringBeginsWith($mime,'audio/')){
+			$tag .= '<span class="w_gray icon-file-audio" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+		}
+		elseif(stringBeginsWith($mime,'video/')){
+			$tag .= '<span class="w_gray icon-file-video" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+		}
+		else{
+			switch(strtolower($ext)){
+				case 'pdf':
+					$tag .= '<span class="w_gray icon-file-pdf2" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+				case 'xls':
+				case 'xlsx':
+					$tag .= '<span class="w_gray icon-file-excel" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+				case 'doc':
+				case 'docx':
+					$tag .= '<span class="w_gray icon-file-word" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+				case 'zip':
+				case 'gz':
+					$tag .= '<span class="w_gray icon-file-zip" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+				case 'txt':
+				case 'csv':
+					$tag .= '<span class="w_gray icon-file-txt" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+				default:
+					$tag .= '<span class="w_gray icon-file-doc" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
+				break;
+			}
+		}
+		$tag .= '<span class="w_danger icon-erase" style="font-size:16px;margin-left:10px;" title="Clear" onclick="document.getElementById(\''.$params['id'].'\').value=\'\';document.querySelector(\'label[for='.$params['id'].'] span.input_file_text\').innerText=\''.$params['text'].'\';return false;"></span>'.PHP_EOL;
+	}
+	else{
+		$tag.=$params['text'];
+	}
+	$tag .='</span></label>'.PHP_EOL;
+	return $tag;
+}
+//---------- begin function buildFormFile--------------------
+/**
+* @describe creates an HTML file upload field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormFile('file',$params);
+*/
+function buildFormFile_old($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
+	if(!isset($params['text'])){
+		if(isset($params['multiple'])){$params['text']='files to upload';}
+		else{$params['text']='file to upload';}
+	}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
 	$params['name']=$name;
 	//set path of where to store this file in

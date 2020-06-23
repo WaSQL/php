@@ -81,10 +81,60 @@
 				'-longreadlen'=>65535
 			);
 			$recs=dbGetRecords($db['name'],$_SESSION['sql_last'],$params);
+			//save this result in a temp file
+			if(is_array($recs) && count($recs)){
+				$tpath=getWasqlPath('php/temp');
+				$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
+				$afile="{$tpath}/{$filename}";
+				$csv=arrays2CSV($recs);
+				setFileContents($afile,$csv);
+			}
 			setView('results',1);
 			return;
 		break;
 		case 'export':
+			$_SESSION['sql_full']=$_REQUEST['sql_full'];
+			$sql_select=stripslashes($_REQUEST['sql_select']);
+			$sql_full=stripslashes($_REQUEST['sql_full']);
+			if(strlen($sql_select) && $sql_select != $sql_full){
+				$_SESSION['sql_last']=$sql_select;
+				$view='block_results';
+			}
+			else{
+				$_SESSION['sql_last']=$sql_full;
+				//run the query where the cursor position is
+				$queries=preg_split('/\;/',$sql_full);
+				//echo printValue($queries);exit;
+				$cpos=$_REQUEST['cursor_pos'];
+				if(count($queries) > 1){
+					$p=0;
+					foreach($queries as $query){
+						$end=$p+strlen($query);
+						if($cpos > $p && $cpos < $end){
+							$_SESSION['sql_last']=$query;
+							$view='block_results';
+							break;
+						}
+						$p=$end;
+					}
+				}
+				else{
+					$_SESSION['sql_last']=$sql_full;
+					$view='results';
+				}
+			}
+			$tpath=getWasqlPath('php/temp');
+			$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
+			$afile="{$tpath}/{$filename}";
+			if(file_exists($afile)){
+				$mtime=filemtime($afile);
+				$dtime=time()-$mtime;
+				//echo "mtime:{$mtime}, dtime:{$dtime}";exit;
+				if($dtime < 120){
+					pushFile($afile);
+					exit;
+				}
+			}
 			$params=array(
 				'-binmode'=>ODBC_BINMODE_CONVERT,
 				'-longreadlen'=>65535

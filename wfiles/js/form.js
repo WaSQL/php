@@ -99,6 +99,9 @@ function setInputFileName(fld){
 		reader.readAsDataURL(fld.files[f]);
 	}
 }
+function formClearFileField(id){
+	
+}
 function formSendPhoneAuth(el){
 	let phone_id=el.getAttribute('data-username_id');
 	let phone=getText(phone_id);
