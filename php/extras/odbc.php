@@ -792,6 +792,10 @@ function odbcGetDBRecords($params){
 			return $ok;
 		}
 	}
+	elseif(isset($params['-query'])){
+		$query=$params['-query'];
+		unset($params['-query']);
+	}
 	else{
 		//determine fields to return
 		if(!empty($params['-fields'])){
@@ -1201,6 +1205,9 @@ function odbcQueryResults($query,$params=array()){
 			$i+=1;
 			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
 				appendFileContents($params['-logfile'],$i.PHP_EOL);
+			}
+			if(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$rec);
 			}
 			continue;
 		}

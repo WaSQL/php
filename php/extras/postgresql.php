@@ -1030,7 +1030,8 @@ function postgresqlGetDBRecords($params){
 		}
 	}
 	elseif(isset($params['-query'])){
-		return postgresqlQueryResults($params['-query'],$params);
+		$query=$params['-query'];
+		unset($params['-query']);
 	}
 	else{
 		if(empty($params['-table'])){

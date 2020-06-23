@@ -942,6 +942,10 @@ function sqliteGetDBRecords($params){
 		$query=$params;
 		$params=array();
 	}
+	elseif(isset($params['-query'])){
+		$query=$params['-query'];
+		unset($params['-query']);
+	}
 	else{
 		//determine fields to return
 		if(!empty($params['-fields'])){
