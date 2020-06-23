@@ -179,7 +179,7 @@
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
 	<div class="row w_padtop">
 		<div class="col-sm-12" style="overflow:auto;">
-			<?=buildOnLoad("setText('results_count','".count($recs)." results');document.getElementById('export_link').style.display='inline-block';");?>
+			<?=buildOnLoad("setText('results_count','First 30 of ".$recs_count." results');document.getElementById('export_link').style.display='inline-block';");?>
 			<?=sqlpromptListResults($recs);?>		
 		</div>
 	</div>

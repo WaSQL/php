@@ -3,6 +3,8 @@
 	global $DATABASE;
 	global $_SESSION;
 	global $USER;
+	global $recs;
+	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
 		$_SESSION['db']=$db;
@@ -76,19 +78,22 @@
 					$view='results';
 				}
 			}
+			$tpath=getWasqlPath('php/temp');
+			$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
+			$afile="{$tpath}/{$filename}";
+			if(file_exists($afile)){
+				unlink($afile);
+			}
 			$params=array(
 				'-binmode'=>ODBC_BINMODE_CONVERT,
-				'-longreadlen'=>65535
+				'-longreadlen'=>65535,
+				'-filename'=>$afile,
+				'-query'=>$_SESSION['sql_last'],
+				'-process'=>'sqlpromptCaptureFirstRows'
 			);
-			$recs=dbGetRecords($db['name'],$_SESSION['sql_last'],$params);
-			//save this result in a temp file
-			if(is_array($recs) && count($recs)){
-				$tpath=getWasqlPath('php/temp');
-				$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
-				$afile="{$tpath}/{$filename}";
-				$csv=arrays2CSV($recs);
-				setFileContents($afile,$csv);
-			}
+			$recs=array();
+			$recs_count=dbGetRecords($db['name'],$params);
+
 			setView('results',1);
 			return;
 		break;

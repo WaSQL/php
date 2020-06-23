@@ -1549,6 +1549,9 @@ function hanaQueryResults($query,$params=array()){
 			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
 				appendFileContents($params['-logfile'],$i.PHP_EOL);
 			}
+			if(isset($params['-process'])){
+				$ok=call_user_func($params['-process'],$rec);
+			}
 			continue;
 		}
 		elseif(isset($params['-process'])){

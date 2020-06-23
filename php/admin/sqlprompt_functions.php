@@ -1,5 +1,12 @@
 <?php
 loadExtras('translate');
+function sqlpromptCaptureFirstRows($rec,$max=30){
+	global $recs;
+	if(count($recs) < $max){
+		$recs[]=$rec;
+	}
+	return;
+}
 function sqlpromptListResults($recs){
 	if(!is_array($recs) || !count($recs)){
 		if(strlen($recs)){return $recs;}
