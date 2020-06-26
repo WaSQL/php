@@ -1152,7 +1152,7 @@ function odbcQueryResults($query,$params=array()){
 			$error=array("odbcQueryResults Error",$e,$query);
 			debugValue($error);
 			if(!strlen($e)){return json_encode($error);}
-			if(stringContains($e,'session not connected')){
+			if(stringContains($e,'session not connected') || stringContains($e,'Receive Error')){
 				$dbh_odbc='';
 				usleep(200);
 				odbc_close_all();
