@@ -689,7 +689,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_object($fh)){
+    	if(!isset($fh) || !is_resource($fh)){
 			$data=null;
 			$error=array("ctreeEnumQueryResults File Open Error",$params,$query);
 		    debugValue($error);
@@ -717,7 +717,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 				$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
 			}
     	}
-    	if(isset($fh) && is_object($fh)){
+    	if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -748,7 +748,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 		}
 	}
 	$data=null;
-	if(isset($fh) && is_object($fh)){
+	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
