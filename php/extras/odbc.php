@@ -1,5 +1,5 @@
 <?php
-
+global $dbh_odbc;
 /*
 	ODBC Drivers for Snowflake
 		https://sfc-repo.snowflakecomputing.com/odbc/index.html
@@ -227,6 +227,7 @@ function odbcParseConnectParams($params=array()){
 *	$dbh_odbc=odbcDBConnect($params);
 */
 function odbcDBConnect($params=array()){
+	global $dbh_odbc;
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=odbcParseConnectParams($params);
 	if(isset($params['-connect'])){
@@ -247,14 +248,14 @@ function odbcDBConnect($params=array()){
 			$dbh_odbc_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
 		if(!is_resource($dbh_odbc_single)){
-			$err=odbc_errormsg();
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-			echo "odbcDBConnect single connect error:{$err}".printValue($params);
-			exit;
+			$e=odbc_errormsg();
+			$error=array("odbcDBConnect Error",$e);
+	    	debugValue($error);
+	    	return json_encode($error);
 		}
 		return $dbh_odbc_single;
 	}
-	global $dbh_odbc;
+	
 	if(is_resource($dbh_odbc)){return $dbh_odbc;}
 
 	try{
@@ -274,18 +275,19 @@ function odbcDBConnect($params=array()){
 				$dbh_odbc = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
 			if(!is_resource($dbh_odbc)){
-				$err=odbc_errormsg();
+				$e=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				echo "odbcDBConnect error:{$err}".printValue($params);
-				exit;
+				$error=array("odbcDBConnect Error",$e,$params);
+			    debugValue($error);
+			    return json_encode($error);
 			}
 		}
 		return $dbh_odbc;
 	}
 	catch (Exception $e) {
-		echo "odbcDBConnect exception" . printValue($e);
-		exit;
-
+		$error=array("odbcDBConnect Exception",$e);
+	    debugValue($error);
+	    return json_encode($error);
 	}
 }
 //---------- begin function odbcIsDBTable ----------
@@ -304,22 +306,26 @@ function odbcDBConnect($params=array()){
 */
 function odbcIsDBTable($table,$params=array()){
 	if(!strlen($table)){
-		echo "odbcIsDBTable error: No table";
-		exit;
+		$error=array("odbcIsDBTable Error","No table");
+	    debugValue($error);
+	    return false;
 	}
 	//split out table and schema
 	$parts=preg_split('/\./',$table);
 	switch(count($parts)){
 		case 1:
-			echo "odbcIsDBTable error: no schema defined in tablename";
-			exit;
+			$error=array("odbcIsDBTable Error","No schema defined in tablename");
+	    	debugValue($error);
+	    	return false;
 		break;
 		case 2:
 			$schema=$parts[0];
 			$table=$parts[1];
 		break;
 		default:
-			echo "odbcIsDBTable error: to many parts";
+			$error=array("odbcIsDBTable Error","To many parts");
+	    	debugValue($error);
+	    	return false;
 		break;
 	}
 	$tables=odbcGetDBTables($params);
@@ -355,19 +361,17 @@ function odbcClearConnection(){
 *	$ok=odbcExecuteSQL("truncate table abc");
 */
 function odbcExecuteSQL($query,$params=array()){
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
 	if(!is_resource($dbh_odbc)){
-		//wait a couple of seconds and try again
-		sleep(2);
+		$dbh_odbc='';
+		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
-		if(!is_resource($dbh_odbc)){
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-			debugValue("odbcDBConnect error".printValue($params));
-			return false;
-		}
-		else{
-			debugValue("odbcDBConnect recovered connection ");
-		}
+	}
+	if(!is_resource($dbh_odbc)){
+    	$e=odbc_errormsg();
+    	debugValue(array("odbcExecuteSQL Connect Error",$e));
+    	return json_encode($e);
 	}
 	try{
 		$result=odbc_exec($dbh_odbc,$query);
@@ -388,18 +392,14 @@ function odbcExecuteSQL($query,$params=array()){
 }
 function odbcAddDBRecords($params=array()){
 	if(!isset($params['-table'])){
-		debugValue(array(
-    		'function'=>"odbcAddDBRecords",
-    		'error'=>'No table specified'
-    	));
-    	return false;
+		$error=array("odbcAddDBRecords Error",'No Table');
+		debugValue($error);
+		return false;
     }
     if(!isset($params['-list']) || !is_array($params['-list'])){
-		debugValue(array(
-    		'function'=>"odbcAddDBRecords",
-    		'error'=>'No records (list) specified'
-    	));
-    	return false;
+		$error=array("odbcAddDBRecords Error",'No -list specified');
+		debugValue($error);
+		return false;
     }
     //defaults
     if(!isset($params['-dateformat'])){
@@ -446,7 +446,18 @@ function odbcAddDBRecords($params=array()){
 		)
 	)
 ENDOFQ;
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
+    	$e=odbc_errormsg();
+    	debugValue(array("odbcAddRecords Connect Error",$e));
+    	return json_encode($e);
+	}
 	$stmt = odbc_prepare($dbh_odbc, $query);
 	if(!is_resource($odbcAddDBRecordCache[$params['-table']]['stmt'])){
 		$e=odbc_errormsg();
@@ -482,6 +493,7 @@ ENDOFQ;
 function odbcAddDBRecord($params){
 	global $odbcAddDBRecordCache;
 	global $USER;
+	global $dbh_odbc;
 	if(!isset($params['-table'])){return 'odbcAddDBRecord error: No table.';}
 	$fields=odbcGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
@@ -534,11 +546,17 @@ function odbcAddDBRecord($params){
 		VALUES
 			({$bindstr})
 ENDOFQUERY;
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
-    	debugValue(array("odbcAddDBRecord Connect Error",$e));
-    	return "odbcAddDBRecord Connect Error".printValue($e);
+    	debugValue(array("odbcAddRecord Connect Error",$e));
+    	return json_encode($e);
 	}
 	try{
 		if(!isset($odbcAddDBRecordCache[$params['-table']]['stmt'])){
@@ -643,13 +661,16 @@ function odbcEditDBRecord($params,$id=0,$opts=array()){
 		WHERE {$params['-where']}
 ENDOFQUERY;
 	global $dbh_odbc;
+	$dbh_odbc=odbcDBConnect($params);
 	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
-    	debugValue(array("odbcEditDBRecord2 Connect Error",$e));
-    	return;
+    	debugValue(array("odbcEditRecord Connect Error",$e));
+    	return json_encode($e);
 	}
 	try{
 		$odbc_stmt    = odbc_prepare($dbh_odbc, $query);
@@ -684,7 +705,11 @@ ENDOFQUERY;
 */
 function odbcReplaceDBRecord($params){
 	global $USER;
-	if(!isset($params['-table'])){return 'odbcAddRecord error: No table specified.';}
+	if(!isset($params['-table'])){
+		$error=array("odbcReplaceDBRecord Error",'No table');
+		debugValue($error);
+		return json_encode($error);
+	}
 	$fields=odbcGetDBFieldInfo($params['-table'],$params);
 	$opts=array();
 	if(isset($fields['cdate'])){
@@ -730,29 +755,31 @@ function odbcReplaceDBRecord($params){
 		values({$valstr})
 		WITH PRIMARY KEY
 ENDOFQUERY;
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcReplaceDBRecord Connect Error",$e));
-    	return;
+    	return json_encode($e);
 	}
 	try{
 		$result=odbc_exec($dbh_odbc,$query);
 		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc),
-				'query'	=> $query
-			);
-			debugValue($err);
-			return "odbcReplaceDBRecord Error".printValue($err).$query;
+			$error=array("odbcReplaceDBRecord Error",odbc_errormsg($dbh_odbc),$query);
+			debugValue($error);
+			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		$err['query']=$query;
-		odbc_free_result($result);
-		debugValue(array("odbcReplaceDBRecord Connect Error",$e));
-		return "odbcReplaceDBRecord Error".printValue($err);
+		if($result){odbc_free_result($result);}
+		$error=array("odbcReplaceDBRecord Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	odbc_free_result($result);
 	return true;
@@ -859,26 +886,31 @@ function odbcGetDBRecords($params){
 *	$schemas=odbcGetDBSchemas();
 */
 function odbcGetDBSchemas($params=array()){
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcGetDBSchemas Connect Error",$e));
-    	return;
+    	return json_encode($e);
 	}
 	try{
 		$result=odbc_tables($dbh_odbc);
 		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc)
-			);
-			echo "odbcIsDBTable error: No result".printValue($err);
-			exit;
+			$e=odbc_errormsg($dbh_odbc);
+			$error=array("odbcGetDBSchemas Error",$e,$query);
+			debugValue($error);
+			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "odbcIsDBTable error: exception".printValue($err);
-		exit;
+		$error=array("odbcGetDBSchemas Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	$recs=array();
 	while(odbc_fetch_row($result)){
@@ -903,26 +935,31 @@ function odbcGetDBSchemas($params=array()){
 *	$tables=odbcGetDBTables();
 */
 function odbcGetDBTables($params=array()){
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
-    	debugValue(array("odbcGetDBSchemas Connect Error",$e));
-    	return;
+    	debugValue(array("odbcGetDBTables Connect Error",$e));
+    	return json_encode($e);
 	}
 	try{
 		$result=odbc_tables($dbh_odbc);
 		if(!is_resource($result)){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc)
-			);
-			echo "odbcGetDBTables error: No result".printValue($err);
-			exit;
+			$e=odbc_errormsg($dbh_odbc);
+			$error=array("odbcGetDBTables Error",$e);
+			debugValue($error);
+			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "odbcGetDBTables error: exception".printValue($err);
-		exit;
+		$error=array("odbcGetDBSchemas Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	$tables=array();
 	while($row=odbc_fetch_array($result)){
@@ -955,28 +992,32 @@ function odbcGetDBTables($params=array()){
 *	$fieldinfo=odbcGetDBFieldInfo('abcschema.abc');
 */
 function odbcGetDBFieldInfo($table,$params=array()){
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
-    	debugValue(array("odbcGetDBSchemas Connect Error",$e));
-    	return;
+    	debugValue(array("odbcGetDBFieldInfo Connect Error",$e));
+    	return json_encode($e);
 	}
 	$query="select * from {$table} where 1=0";
 	try{
 		$result=odbc_exec($dbh_odbc,$query);
 		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc),
-        		'query'	=> $query
-			);
-			echo "odbcGetDBFieldInfo error: No result".printValue($err);
-			exit;
+			$e=odbc_errormsg($dbh_odbc);
+			$error=array("odbcGetDBSchemas Error",$e,$query);
+			debugValue($error);
+			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "odbcGetDBFieldInfo error: exception".printValue($err);
-		exit;
+		$error=array("odbcGetDBSchemas Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	$recs=array();
 	for($i=1;$i<=odbc_num_fields($result);$i++){
@@ -1016,7 +1057,8 @@ function odbcGetDBCount($params=array()){
 	$recs=odbcGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
-		debugValue($recs);
+		$error=array("odbcGetDBCount Error",$e,$query);
+		debugValue($error);
 		return 0;
 	}
 	return $recs[0]['cnt'];
@@ -1034,11 +1076,17 @@ function odbcGetDBCount($params=array()){
 *	$recs=odbcQueryHeader($query);
 */
 function odbcQueryHeader($query,$params=array()){
+	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
+		$dbh_odbc=odbcDBConnect($params);
+	}
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
-    	debugValue(array("odbcGetDBSchemas Connect Error",$e));
-    	return;
+    	debugValue(array("odbcQueryHeader Connect Error",$e));
+    	return json_encode($e);
 	}
 	if(!preg_match('/limit\ /is',$query)){
 		$query .= " limit 0";
@@ -1046,18 +1094,16 @@ function odbcQueryHeader($query,$params=array()){
 	try{
 		$result=odbc_exec($dbh_odbc,$query);
 		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_odbc),
-        		'query'	=> $query
-			);
-			echo "odbcQueryHeader error:".printValue($err);
-			exit;
+			$e=odbc_errormsg($dbh_odbc);
+			$error=array("odbcQueryHeader Error",$e,$query);
+			debugValue($error);
+			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "odbcQueryHeader error: exception".printValue($err);
-		exit;
+		$error=array("odbcGetDBSchemas Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	$fields=array();
 	for($i=1;$i<=odbc_num_fields($result);$i++){
@@ -1086,12 +1132,15 @@ function odbcQueryHeader($query,$params=array()){
 *	$recs=odbcQueryResults('select top 50 * from abcschema.abc');
 */
 function odbcQueryResults($query,$params=array()){
-	global $dbh_odbc;
 	$starttime=microtime(true);
+	global $dbh_odbc;
+	$dbh_odbc=odbcDBConnect($params);
 	if(!is_resource($dbh_odbc)){
+		$dbh_odbc='';
+		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!$dbh_odbc){
+	if(!is_resource($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcQueryResults Connect Error",$e));
     	return json_encode($e);
@@ -1099,37 +1148,32 @@ function odbcQueryResults($query,$params=array()){
 	try{
 		$result=odbc_exec($dbh_odbc,$query);
 		if(!$result){
-			$errstr=odbc_errormsg($dbh_odbc);
-			if(!strlen($errstr)){return array();}
-        	$err=array(
-        		'error'	=> $errstr,
-        		'query' => $query
-			);
-			if(stringContains($errstr,'session not connected')){
+			$e=odbc_errormsg($dbh_odbc);
+			$error=array("odbcQueryResults Error",$e,$query);
+			debugValue($error);
+			if(!strlen($e)){return json_encode($error);}
+			if(stringContains($e,'session not connected')){
 				$dbh_odbc='';
-				sleep(1);
+				usleep(200);
 				odbc_close_all();
 				$dbh_odbc=odbcDBConnect($params);
 				$result=odbc_exec($dbh_odbc,$query);
 				if(!$result){
-					$errstr=odbc_errormsg($dbh_odbc);
-					if(!strlen($errstr)){return array();}
-					$err=array(
-						'error'	=> $errstr,
-						'query' => $query,
-						'retry'	=> 1
-					);
-					return json_encode($err);
+					$e=odbc_errormsg($dbh_odbc);
+					$error=array("odbcQueryResults Error",$e,$query);
+					debugValue($error);
+					return json_encode($error);
 				}
 			}
 			else{
-				return json_encode($err);
+				return json_encode($error);
 			}
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		return json_encode($err);
+		$error=array("odbcQueryResults Error",$e,$query);
+		debugValue($error);
+		return json_encode($error);
 	}
 	$rowcount=odbc_num_rows($result);
 	if($rowcount==0 && isset($params['-forceheader'])){
@@ -1165,8 +1209,9 @@ function odbcQueryResults($query,$params=array()){
 		
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
-			return 'odbcQueryResults error: Failed to open '.$params['-filename'];
-			exit;
+			$error=array("odbcQueryResults Error",'Failed to open file',$query,$params);
+			debugValue($error);
+			return json_encode($error);
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL.$query.PHP_EOL.PHP_EOL);
