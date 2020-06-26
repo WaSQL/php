@@ -111,6 +111,7 @@ function dbAddIndex($db,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -185,6 +186,7 @@ function dbAddRecord($db,$params=array()){
 	global $dbh_hana;
 	global $dbh_odbc;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	global $dbh_snowflake;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
@@ -256,6 +258,7 @@ function dbConnect($db,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -300,6 +303,11 @@ function dbConnect($db,$params=array()){
 			$dbh_sqlite='';
 			return sqliteDBConnect($params);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeDBConnect($params);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -332,6 +340,7 @@ function dbCreateTable($db,$table,$fields=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -405,6 +414,7 @@ function dbDelRecord($db,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -476,6 +486,7 @@ function dbDelRecordById($db,$table='',$id=0){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -548,6 +559,7 @@ function dbDropIndex($db,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -618,6 +630,7 @@ function dbDropTable($db,$table,$meta=1){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -693,6 +706,7 @@ function dbEditRecord($db,$params=array()){
 	global $dbh_hana;
 	global $dbh_odbc;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -764,6 +778,7 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -835,6 +850,7 @@ function dbExecuteSQL($db,$sql,$return_error=1){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -879,6 +895,11 @@ function dbExecuteSQL($db,$sql,$return_error=1){
 			$dbh_sqlite='';
 			return sqliteExecuteSQL($sql);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeExecuteSQL($sql);
+		break;
 		default:
 			return executeSQL($sql);
 		break;
@@ -903,6 +924,7 @@ function dbGetCount($db,$params){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -946,6 +968,11 @@ function dbGetCount($db,$params){
 			$dbh_sqlite='';
 			return sqliteGetDBCount($params);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBCount($params);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -972,6 +999,7 @@ function dbGetTableIndexes($db,$table){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1015,6 +1043,11 @@ function dbGetTableIndexes($db,$table){
 			$dbh_sqlite='';
 			return sqliteGetDBTableIndexes($table);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBTableIndexes($table);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1041,6 +1074,7 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1083,6 +1117,11 @@ function dbGetTablePrimaryKeys($db,$table,$meta=1){
 			loadExtras('sqlite');
 			$dbh_sqlite='';
 			return sqliteGetDBTablePrimaryKeys($table);
+		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBTablePrimaryKeys($table);
 		break;
 		case 'mysql':
 		case 'mysqli':
@@ -1128,6 +1167,7 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1171,6 +1211,11 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 			$dbh_sqlite='';
 			return sqliteGetDBRecordById($table,$id,$relate,$fields);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBRecordById($table,$id,$relate,$fields);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1198,6 +1243,7 @@ function dbNamedQuery($db,$name){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1240,6 +1286,11 @@ function dbNamedQuery($db,$name){
 			loadExtras('sqlite');
 			$dbh_sqlite='';
 			return sqliteNamedQuery($name);
+		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeNamedQuery($name);
 		break;
 		case 'mysql':
 		case 'mysqli':
@@ -1303,6 +1354,7 @@ function dbGetRecords($db,$params){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1347,6 +1399,11 @@ function dbGetRecords($db,$params){
 			$dbh_sqlite='';
 			$recs=sqliteGetDBRecords($params);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			$recs=ctreeGetDBRecords($params);
+		break;
 		default:
 			loadExtras('mysql');
 			$dbh_mysql='';
@@ -1383,6 +1440,7 @@ function dbGetTableFields($db,$table){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1427,6 +1485,11 @@ function dbGetTableFields($db,$table){
 			$dbh_sqlite='';
 			return sqliteGetDBFieldInfo($table);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBFieldInfo($table);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1453,6 +1516,7 @@ function dbGetTables($db){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1496,6 +1560,11 @@ function dbGetTables($db){
 			$dbh_sqlite='';
 			return sqliteGetDBTables();
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeGetDBTables();
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1525,6 +1594,7 @@ function dbGrep($db,$search,$tables=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1595,6 +1665,7 @@ function dbIsTable($db,$search,$tables=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1638,6 +1709,11 @@ function dbIsTable($db,$search,$tables=array()){
 			$dbh_sqlite='';
 			return sqliteIsDBTable($table);
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			return ctreeIsDBTable($table);
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1666,6 +1742,7 @@ function dbListRecords($db,$params){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1716,6 +1793,12 @@ function dbListRecords($db,$params){
 			$params['-database']='sqlite';
 			$params['-db']=$CONFIG['db'];
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			$params['-database']='ctree';
+			$params['-db']=$CONFIG['db'];
+		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -1744,6 +1827,7 @@ function dbQueryResults($db,$query,$params=array()){
 	global $dbh_odbc;
 	global $dbh_snowflake;
 	global $dbh_sqlite;
+	global $dbh_ctree;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1788,6 +1872,11 @@ function dbQueryResults($db,$query,$params=array()){
 			loadExtras('sqlite');
 			$dbh_sqlite='';
 			$recs=sqliteQueryResults($query,$params);
+		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			$recs=ctreeQueryResults($query,$params);
 		break;
 		default:
 			$recs=getDBRecords($query,$params);
@@ -12068,6 +12157,24 @@ function isSqlite(){
 	}
 	else{$isSqliteCache=false;}
 	return $isSqliteCache;
+}
+//---------- begin function isCtree ----------
+/**
+* @describe returns true if database driver is cTREE
+* @return boolean
+* @usage if(isSqlite()){...}
+*/
+function isCtree(){
+	global $isCtreeCache;
+	if(isset($isCtreeCache)){return $isCtreeCache;}
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='ctree'){
+		loadExtras('ctree');
+		$isCtreeCache=true;
+	}
+	else{$isCtreeCache=false;}
+	return $isCtreeCache;
 }
 //---------- begin function isMssql ----------
 /**
