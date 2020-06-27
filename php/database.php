@@ -1935,6 +1935,8 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_checkbox_id] - string - sets id of checkbox
 *	[{field}_checkbox_value] - string - sets value of checkbox
 *	[{field}_checkbox_checked] - string - checks the box if string equals checkbox id
+*	[{field}_badge] - wraps the value in a span class="badge"
+*	[{field}_badge_class] - add additional class value to badge
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_radio_onclick] - string - adds a onclick value if radio was specifid
 *	[{field}_radio_id] - string - sets id of radio
@@ -2874,6 +2876,9 @@ function databaseListRecords($params=array()){
 			if(!empty($params[$fld."_translate"])){
 				$value=translateText($value);
 			}
+			if(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
+				$value=$params[$fld."_map"][$value];
+            }
 			//check for {field}_onclick and {field}_href
 			if(!empty($params[$fld."_onclick"])){
 				$href=$params[$fld."_onclick"];
@@ -3009,9 +3014,10 @@ function databaseListRecords($params=array()){
 					$value='<div class="text-center"><span class="'.$mark.'"></span></div>';
 				}
             }
-			elseif(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
-				$value=$params[$fld."_map"][$value];
-            }
+            elseif(!empty($params[$fld."_badge"])){
+				$class=isset($params[$fld."_badge_class"])?$params[$fld."_badge_class"]:'';
+                $value='<span class="badge '.$class.'">'.$value.'</span>';
+			}
             elseif(isset($params[$fld."_verbosetime"]) && $params[$fld."_verbosetime"]==1){
 				if($value==0){$value='';}
 				elseif(isNum($value)){$value=verboseTime($value);}
