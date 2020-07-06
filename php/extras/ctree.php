@@ -28,8 +28,14 @@ function ctreeDBConnect(){
 	global $dbh_ctree;
 	if(is_object($dbh_ctree)){return $dbh_ctree;}
 	try{
-		$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],array(PDO::ATTR_PERSISTENT => true));
-		$dbh_ctree->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
+		$options=array(
+			PDO::ATTR_PERSISTENT 	=> false,
+			PDO::ATTR_ERRMODE 		=> PDO::ERRMODE_EXCEPTION,
+			PDO::ATTR_CASE 			=> PDO::CASE_NATURAL,
+    		PDO::ATTR_ORACLE_NULLS 	=> PDO::NULL_EMPTY_STRING
+		);
+		$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
