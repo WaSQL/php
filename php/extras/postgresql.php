@@ -1740,7 +1740,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 		}
 		elseif(isset($params['-process'])){
 			$ok=call_user_func($params['-process'],$rec);
-			$x++;
+			$i++;
 			continue;
 		}
 		else{
@@ -1753,6 +1753,9 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
+		return $i;
+	}
+	elseif(isset($params['-process'])){
 		return $i;
 	}
 	return $recs;
