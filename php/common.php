@@ -1601,9 +1601,13 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		unset($params['name']);
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 
-	$tag='<div class="w_flexgroup">'.PHP_EOL;
+	$tag='<div class="w_flexgroup"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
 	foreach($opts as $tval=>$dval){
 		$checked='';
 		if($tval==$params['value'] || $dval==$params['value']){
@@ -1696,7 +1700,6 @@ function buildFormColor($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$iconid=$params['id'].'_icon';
 	//force witdh
 	$params['width']=115;
@@ -1709,7 +1712,12 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['maxlength']=7;
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
 	$tag .= '	<input type="text" name="'.$name.'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL;
@@ -1775,7 +1783,6 @@ function buildFormDate($name,$params=array()){
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['data-mask']='date';
 	$params['data-control']='pikadate';
 	if(isset($params['mask'])){
@@ -1795,7 +1802,12 @@ function buildFormDate($name,$params=array()){
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
 	$tag .= '	<input type="text" autocomplete="off"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
@@ -1832,7 +1844,6 @@ function buildFormDateTime($name,$params=array()){
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	//$params['data-mask']='date';
 	if(isset($params['mask'])){
     	$params['data-mask']=$params['mask'];
@@ -1848,7 +1859,12 @@ function buildFormDateTime($name,$params=array()){
     	$params['-value']=date('Y-m-d H:i:s',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;">'.PHP_EOL;
+	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .= '>'.PHP_EOL;
 	$tag .= '	<input type="text"';
 	$params['style']='width:100%';
 	$tag .= setTagAttributes($params);
@@ -1889,7 +1905,6 @@ function buildFormHidden($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['value'])){
 		$params['value']=$_REQUEST[$name];
 	}
@@ -1923,11 +1938,15 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
-	$tag='<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;">'.PHP_EOL;
+	$tag='<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
 	if(isset($params['data-lock_icon'])){
 		$tag .= '	<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
 	}
@@ -1955,7 +1974,6 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['width']=isNum($params['width'])?$params['width']:200;
 	$params['-checkall']=isset($params['-checkall'])?$params['-checkall']:'Select All';
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
@@ -2057,7 +2075,12 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 
 
 	$tag='';
-	$tag .= '<div class="dropdown">'.PHP_EOL;
+	$tag .= '<div class="dropdown"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .= '>'.PHP_EOL;
 	$tag .= ' 	<button data-dname="'.$dname.'"';
 	if(isset($params['width']) && isNum($params['width'])){
 		$tag .=' style="max-width:'.$params['width'].'px;overflow:hidden;text-overflow:ellipsis;"';
@@ -2134,7 +2157,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['value'])){
 		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
 			$params['value']=json_decode($params['value'],true);
@@ -2191,17 +2213,22 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	}
 	else{$dragsort='';}
 	if(count($opts)==1){
-		$tag  = '<div id="'.$params['id'].'">'.PHP_EOL;	
+		$tag  = '<div id="'.$params['id'].'"';	
 	}
 	else{
 		if(isset($params['-stretch'])){
-			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';">'.PHP_EOL;
+			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';"';
 		}
 		else{
-			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';">'.PHP_EOL;
+			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';"';
 		}
 		
 	}
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
 	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
 	unset($params['width']);
@@ -2498,7 +2525,6 @@ function buildFormTime($name,$params=array()){
 	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['message'])){$params['message']=' --:-- ';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	
@@ -2518,7 +2544,12 @@ function buildFormTime($name,$params=array()){
 		$opts[$v]=date($params['-dformat'],$t);
 	}
 	//return printValue($opts).printValue($params);
-	$tag='';
+	$tag='<span';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag.= '>';
 	if(strlen($params['data-icon'])){
 
 		$tag .= '<label class="timeselector" data-icon="'.$params['data-icon'].'">'.PHP_EOL;
@@ -2529,6 +2560,7 @@ function buildFormTime($name,$params=array()){
 		unset($params['data-icon']);
 		$tag .= buildFormSelect($params['name'],$opts,$params);
 	}
+	$tag .= '</span>';
 	return $tag;
 }
 //---------- begin function buildFormWhiteboard --------------------------------------
@@ -2597,7 +2629,6 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if($params['required']){$required=' required';}
 	else{$required='';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	switch(strtolower($params['-format'])){
     	case 'flip':$format='flip';break;
     	default:$format='round';break;
@@ -2610,6 +2641,10 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(isset($params['title'])){
     	$title=' title="'.$params['title'].'"';
 	}
+	if(isset($params['displayif'])){
+		$title .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
 	$class='';
 	if(isset($params['class'])){
     	$class=' class="'.$params['class'].'"';
@@ -2618,6 +2653,7 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(isset($params['style'])){
     	$style=' style="'.$params['style'].'"';
 	}
+
 	$tag=<<<ENDOFTAG
 	<div class="switch"{$title}>
         <input id="{$params['id']}" name="{$name}" value="{$tvals[0]}" {$onclick} class="w_toggle w_toggle-{$format}" type="checkbox"{$required}{$checked}>
@@ -2708,7 +2744,6 @@ function buildFormFile($name,$params=array()){
 		else{$params['text']='file to upload';}
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
 	if(isset($params['-value'])){$params['value']=$params['-value'];}
@@ -2728,7 +2763,12 @@ function buildFormFile($name,$params=array()){
 	if(!is_dir($apath)){
 		buildDir($apath);
 	}
-	$tag='';
+	$tag='<span';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .= '>';
 	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
 	//autonumber?
 	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
@@ -2824,6 +2864,7 @@ function buildFormFile($name,$params=array()){
 		$tag.=$params['text'];
 	}
 	$tag .='</span></label>'.PHP_EOL;
+	$tag .= '</span>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormFile--------------------
@@ -3009,7 +3050,6 @@ function buildFormFrequency($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$class=isset($params['class'])?' '.$params['class']:'';
 	$style=isset($params['style'])?' style="'.$params['style'].'"':' style="width:100%;height:31px;overflow:hidden;"';
 	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
@@ -3030,9 +3070,14 @@ function buildFormFrequency($name,$params=array()){
 		$sections=preg_split('/\,/',strtolower(trim($params['-show'])));
 	}
 	if(!count($sections)){return '';}
+	$displayif=' style="display:block;"';
+	if(isset($params['displayif'])){
+		$displayif = ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
 	//return printValue($params);
 	$rtn=<<<ENDOFRTN
-	<div style="display:block;" id="{$params['id']}_container">
+	<div id="{$params['id']}_container"{$displayif}>
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
@@ -3220,8 +3265,6 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
@@ -3271,7 +3314,6 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	//return printValue($pairs);
 	$pcnt=count($pairs);
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
@@ -3288,7 +3330,12 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 	$params['name']=$name;
 	$skip=array();
 	$rtn='';
-	$rtn .= '<div style="position:relative;display:inline-block;height:22px;">'.PHP_EOL;
+	$rtn .= '<div style="position:relative;display:inline-block;height:22px;"';
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$rtn .='>'.PHP_EOL;
 	$rtn .= '	<fieldset class="select" onclick="this.classList.toggle(\'hover\');">'.PHP_EOL;
 	$rtn .= '		<ul >'.PHP_EOL;
 	$cnt=0;
@@ -3420,13 +3467,17 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['width'])){$params['width']=300;}
 	if(!isset($params['height'])){$params['height']=75;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['value']) && strlen($params['value'])){$params['-value']=$params['value'];}
 	$canvas_id=$name.'_canvas';
 	$clear_id=$name.'_clear';
 	$base64image='';
 	$barid=$params['id'].'_topbar';
-	$rtn .= '	<div id="'.$barid.'">'.PHP_EOL;
+	$rtn .= '	<div id="'.$barid.'"';
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$rtn .='>'.PHP_EOL;
 	//show clear button on right
 	$rtn .= '		<div class="w_right">'.PHP_EOL;
 	if(isset($params['-value']) && strlen($params['-value'])){
@@ -3496,7 +3547,6 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['min_displayname'])){$params['min_displayname']=$params['min'];}
 	if(!isset($params['max_displayname'])){$params['max_displayname']=$params['max'];}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	//IE does not support slider until version 10 - build a select list instead -
 	if($_SERVER['REMOTE_BROWSER']=='msie' && $_SERVER['REMOTE_BROWSER_VERSION'] < 10){
     	$opts=array();
@@ -3512,7 +3562,12 @@ function buildFormSlider($name, $params=array()){
 	}
 	//build the slider control
 	$params['onchange'].=";setSliderText(this);";
-	$rtn='';
+	$rtn='<div';
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$rtn .= '>'.PHP_EOL;
 	if(isset($params['title'])){
 		$rtn .= '	<div>'.$params['title'].'</div>'.PHP_EOL;
 	}
@@ -3541,6 +3596,7 @@ function buildFormSlider($name, $params=array()){
 	$rtn .= ' value="'.$params['value'].'" /> '.$params['max_displayname'].'</div>'.PHP_EOL;
 	$rtn .= '	<div class="input_range_text" id="'.$params['label'].'" align="center">'.$val.'</div>'.PHP_EOL;
     //$rtn .= printValue($params);
+    $rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
 //---------- begin function buildFormStarRating-------------------
@@ -3561,8 +3617,12 @@ function buildFormStarRating($name, $params=array()){
     if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
     if(!isset($params['max'])){$params['max']=5;}
     if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;">'.PHP_EOL;
+	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;"';
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$rtn .= '>'.PHP_EOL;
 	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
 	if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
 	elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
