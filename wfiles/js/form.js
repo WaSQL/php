@@ -39,9 +39,13 @@ function formChanged(frm){
 			//console.log(display);
 			//console.log(els[i]);
 			if(display==1){
+				console.log('display - block');
+				console.log(els[i]);
 				els[i].style.display='block';
 			}
 			else{
+				console.log('display - none');
+				console.log(els[i]);
 				els[i].style.display='none';
 			}
 		}
