@@ -36,13 +36,13 @@ function formChanged(frm){
 					break;
 				}
 			}
-			console.log(display);
-			console.log(els[i]);
+			//console.log(display);
+			//console.log(els[i]);
 			if(display==1){
-				els[i].display='block';
+				els[i].style.display='block';
 			}
 			else{
-				els[i].display='none';
+				els[i].style.display='none';
 			}
 		}
 		else{
