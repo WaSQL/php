@@ -1922,7 +1922,9 @@ input[data-type=file]{
 input[data-type=file] + label[class*=icon-upload]{
 
 }
-
+form [data-displayif]{
+	display:none;
+}
 label.timeselector{
     position:relative;
     display:inline-block;

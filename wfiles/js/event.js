@@ -1158,6 +1158,17 @@ function initCarousels(){
 		list[i].appendChild(e);
 	}
 }
+function initDisplayif(){
+	let els=document.querySelectorAll('form [data-displayif]');
+	for(let i=0;i<els.length;i++){
+		let frm=getParent(els[i],'form');
+		if(undefined != frm){
+			if(undefined == frm.getAttribute('onchange')){
+				frm.setAttribute('onchange','formChanged(this);');
+			}
+		}
+	}
+}
 /* initPin - function to assign hover to dom objects that have data-behavior="pin" so they hide onMouseOut */
 function initBehaviors(ajaxdiv){
 	//info: initializes special data-behavior atrributes
@@ -1175,6 +1186,11 @@ function initBehaviors(ajaxdiv){
 	let navel = document.querySelector('[data-navigate]');
 	if(undefined != navel){
 		try{initNavigate();}catch(e){}
+	}
+	//check for data-displayif
+	let displayif = document.querySelector('form [data-displayif]');
+	if(undefined != displayif){
+		try{initDisplayif();}catch(e){}
 	}
 	//check for EnlighterJS markup. data-enlighter-language
 	navel = document.querySelector('[data-enlighter-language]');

@@ -1,6 +1,52 @@
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
+function formChanged(frm){
+	let els=frm.querySelectorAll('[data-displayif]');
+	for(let i=0;i<els.length;i++){
+		let ifel=frm.querySelectorAll('[name="'+els[i].dataset.displayif+'"]');
+		if(undefined == ifel){continue;}
+		if(ifel.length > 0){
+			let display=0;
+			for(let f=0;f<ifel.length;f++){
+				let cval='';
+				switch(ifel[f].type.toLowerCase()){
+					case 'select-one':
+            			cval=ifel[f].options[ifel[f].selectedIndex].value;
+            			if(cval.toLowerCase() == 1 ){display=1;}
+            			if(cval.toLowerCase() == 'y' ){display=1;}
+            			if(cval.toLowerCase() == 'yes' ){display=1;}
+					break;
+					case 'radio':
+					case 'checkbox':
+						if(ifel[f].checked){cval=ifel[f].value||1;}
+						if(cval.toLowerCase() == 1 ){display=1;}
+            			if(cval.toLowerCase() == 'y' ){display=1;}
+            			if(cval.toLowerCase() == 'yes' ){display=1;}
+					break;
+					case 'textarea':
+						if(trim(ifel.innerText).length){display=1;}
+					break;
+					default:
+						cval=ifel[f].value;
+						if(cval.toLowerCase() == 1 ){display=1;}
+            			if(cval.toLowerCase() == 'y' ){display=1;}
+            			if(cval.toLowerCase() == 'yes' ){display=1;}
+					break;
+				}
+			}
+			if(display==1){
+				els[i].display='block';
+			}
+			else{
+				els[i].display='none';
+			}
+		}
+		else{
+			els[i].display='none';
+		}
+	}
+}
 function setInputFileName(fld){
 	//console.log(fld.files);
 	let multiple=0;
