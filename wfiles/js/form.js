@@ -39,13 +39,12 @@ function formChanged(frm){
 			//console.log(display);
 			//console.log(els[i]);
 			if(display==1){
-				console.log('display - block');
-				console.log(els[i]);
-				els[i].style.display='block';
+				if(undefined != els[i].dataset.display){
+					els[i].style.display=els[i].dataset.display;	
+				}
+				else{els[i].style.display='block';}
 			}
 			else{
-				console.log('display - none');
-				console.log(els[i]);
 				els[i].style.display='none';
 			}
 		}

@@ -1602,7 +1602,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 
-	$tag='<div class="w_flexgroup"';
+	$tag='<div class="w_flexgroup" data-display="inline-flex"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -1712,7 +1712,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['maxlength']=7;
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
+	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -1802,7 +1802,7 @@ function buildFormDate($name,$params=array()){
     	$params['-value']=date('Y-m-d',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;"';
+	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -1859,7 +1859,7 @@ function buildFormDateTime($name,$params=array()){
     	$params['-value']=date('Y-m-d H:i:s',strtotime($params['-value']));
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
+	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -1941,7 +1941,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
-	$tag='<div class="flexbutton" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;"';
+	$tag='<div class="flexbutton" data-display="inline-flex" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -3077,7 +3077,7 @@ function buildFormFrequency($name,$params=array()){
 	}
 	//return printValue($params);
 	$rtn=<<<ENDOFRTN
-	<div id="{$params['id']}_container"{$displayif}>
+	<div id="{$params['id']}_container" data-display="block" {$displayif}>
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
