@@ -6,7 +6,7 @@ function formChanged(frm){
 	for(let i=0;i<els.length;i++){
 		let ifel=frm.querySelectorAll('[name="'+els[i].dataset.displayif+'"]');
 		if(undefined == ifel){continue;}
-		console.log(els[i].dataset.displayif+' = '+ifel.length);
+		//console.log(els[i].dataset.displayif+' = '+ifel.length);
 		if(ifel.length > 0){
 			let display=0;
 			for(let f=0;f<ifel.length;f++){
@@ -36,6 +36,8 @@ function formChanged(frm){
 					break;
 				}
 			}
+			console.log(display);
+			console.log(els[i]);
 			if(display==1){
 				els[i].display='block';
 			}
