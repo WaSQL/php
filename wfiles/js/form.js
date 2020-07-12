@@ -2,9 +2,17 @@
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
 function formChanged(frm){
+	//console.log('formChanged');
 	let els=frm.querySelectorAll('[data-displayif]');
 	for(let i=0;i<els.length;i++){
-		let ifel=frm.querySelectorAll('[name="'+els[i].dataset.displayif+'"]');
+		let parts=els[i].dataset.displayif.split(':');
+		let name=els[i].dataset.displayif;
+		let vals=new Array(1,'y','yes');
+		if(parts.length==2){
+			name=parts[0];
+			vals=new Array(parts[1]);
+		}
+		let ifel=frm.querySelectorAll('[name="'+name+'"]');
 		if(undefined == ifel){continue;}
 		//console.log(els[i].dataset.displayif+' = '+ifel.length);
 		if(ifel.length > 0){
@@ -14,25 +22,25 @@ function formChanged(frm){
 				switch(ifel[f].type.toLowerCase()){
 					case 'select-one':
             			cval=ifel[f].options[ifel[f].selectedIndex].value;
-            			if(cval.toLowerCase() == 1 ){display=1;}
-            			if(cval.toLowerCase() == 'y' ){display=1;}
-            			if(cval.toLowerCase() == 'yes' ){display=1;}
+            			for(let v=0;v<vals.length;v++){
+            				if(cval.toLowerCase() == vals[v]){display=1;}
+            			}
 					break;
 					case 'radio':
 					case 'checkbox':
 						if(ifel[f].checked){cval=ifel[f].value||1;}
-						if(cval.toLowerCase() == 1 ){display=1;}
-            			if(cval.toLowerCase() == 'y' ){display=1;}
-            			if(cval.toLowerCase() == 'yes' ){display=1;}
+						for(let v=0;v<vals.length;v++){
+            				if(cval.toLowerCase() == vals[v]){display=1;}
+            			}
 					break;
 					case 'textarea':
 						if(trim(ifel.innerText).length){display=1;}
 					break;
 					default:
 						cval=ifel[f].value;
-						if(cval.toLowerCase() == 1 ){display=1;}
-            			if(cval.toLowerCase() == 'y' ){display=1;}
-            			if(cval.toLowerCase() == 'yes' ){display=1;}
+						for(let v=0;v<vals.length;v++){
+            				if(cval.toLowerCase() == vals[v]){display=1;}
+            			}
 					break;
 				}
 			}
@@ -42,7 +50,7 @@ function formChanged(frm){
 				if(undefined != els[i].dataset.display){
 					els[i].style.display=els[i].dataset.display;	
 				}
-				else{els[i].style.display='block';}
+				else{els[i].style.display='initial';}
 			}
 			else{
 				els[i].style.display='none';

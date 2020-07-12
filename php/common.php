@@ -1941,7 +1941,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 	if(!isset($params['value'])){$params['value']='';}
 	$params['name']=$name;
-	$tag='<div class="flexbutton" data-display="inline-flex" style="display:flex;flex-direction:row;justify-content:flex-start;margin-top:5px;"';
+	$tag='<div class="flexbutton" data-display="inline-flex" style="display:flex;flex-direction:row;justify-content:flex-start;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);

@@ -1167,6 +1167,8 @@ function initDisplayif(){
 			if(undefined == frm.getAttribute('onchange')){
 				frm.setAttribute('onchange','formChanged(this);');
 			}
+			//initial call
+			formChanged(frm);
 		}
 	}
 }
