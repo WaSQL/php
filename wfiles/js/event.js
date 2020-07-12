@@ -1160,7 +1160,7 @@ function initCarousels(){
 }
 function initDisplayif(){
 	let els=document.querySelectorAll('form [data-displayif]');
-	console.log('initDisplayif: '+els.length);
+	//console.log('initDisplayif: '+els.length);
 	for(let i=0;i<els.length;i++){
 		let frm=getParent(els[i],'form');
 		if(undefined != frm){
