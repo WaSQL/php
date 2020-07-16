@@ -559,8 +559,14 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
           	case 'telephonenumber':$rec['phone']=ldapValue($val);break;
           	case 'manager':
           		$val=ldapValue($val);
-          		if(preg_match('/CN\=(.+?)\,/',$val,$m)){$rec['manager']=$m[1];}
-          		elseif(preg_match('/CN\=(.+?)$/',$val,$m)){$rec['manager']=$m[1];}
+          		if(preg_match('/CN\=(.+?)\,/',$val,$m)){
+          			$rec['manager_dn']=$val;
+          			$rec['manager']=$m[1];
+          		}
+          		elseif(preg_match('/CN\=(.+?)$/',$val,$m)){
+          			$rec['manager_dn']=$val;
+          			$rec['manager']=$m[1];
+          		}
 				else{$rec['manager']=$val;}
 			break;
             default:
