@@ -5094,11 +5094,14 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		</div>'.PHP_EOL;
 				}
 			else{
+				if($info['fieldinfo'][$field]['_dbtype']=='json'){
+					$rtn .= '<div class="w_right w_pointer" title="Format JSON" style="margin-right:5px;"><span class="icon-json-pretty w_primary" data-id="'.$opts['id'].'" onclick="formJsonPretty(this.dataset.id);"></span></div>';
+				}
 				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
 					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
-				}
+			}
 			$rtn .= '		</td>'.PHP_EOL;
 			if(!isset($used[$field])){$used[$field]=1;}
 			$used[$field]+=1;

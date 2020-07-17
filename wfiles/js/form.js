@@ -1,3 +1,10 @@
+function formJsonPretty(id){
+	let txt=getText(id);
+	let jsonobj=JSON.parse(txt);
+	let ptxt=JSON.stringify(jsonobj,null,'\t');
+	setText(id,ptxt);
+
+}
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
