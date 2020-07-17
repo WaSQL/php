@@ -184,10 +184,7 @@ ENDOFQ;
 *  if cdate, and cuser exists as fields then they are populated with the create date and create username
 * @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
 *   -table - name of the table to add to
-*	[-host] - oracle server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
+*	[-return] - name of the field you want to return from the inserted record. For instance, id
 * 	other field=>value pairs to add to the record
 * @return integer returns the autoincriment key
 * @usage $id=oracleAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
@@ -266,6 +263,9 @@ function oracleAddDBRecord($params){
 	$fieldstr=implode(', ',$fields);
 	$bindstr=implode(', ',array_values($bindvars));
     $query="INSERT INTO {$params['-table']} ({$fieldstr}) values ({$bindstr})";
+    if(isset($params['-return'])){
+    	$query .= "RETURNING {$params['-return']} as :returnval";
+    }
     $stid = oci_parse($dbh_oracle, $query);
     if (!is_resource($stid)){
     	$out=array(
@@ -355,6 +355,26 @@ function oracleAddDBRecord($params){
     		break;
     	}
     }
+    if(isset($params['-return'])){
+    	if(!oci_bind_by_name($stid, ':returnval', $returnval, -1, SQLT_INT)){
+			$out=array(
+	    		'function'=>"oracleAddDBRecord",
+	    		'connection'=>$dbh_oracle,
+	    		'stid'=>$stid,
+	    		'action'=>'oci_bind_by_name',
+	    		'error'=>oci_error($stid),
+	    		'query'=>$query,
+	    		'field'=>$k,
+	    		'_dbtype'=>$fields[$k]['_dbtype'],
+	    		'bind'=>$bind
+	    	);
+	    	if(isset($params['-return_errors'])){
+	    		return $out;
+	    	}
+			debugValue($out);
+	    	return false;
+		}
+    }
 	$r = oci_execute($stid);
 	$e=oci_error($stid);
 	if (!$r) {
@@ -371,6 +391,9 @@ function oracleAddDBRecord($params){
     	}
 		debugValue($out);
     	return false;
+	}
+	if(isset($params['-return'])){
+		return $returnval;
 	}
 	return true;
 }
