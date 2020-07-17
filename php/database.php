@@ -240,6 +240,83 @@ function dbAddRecord($db,$params=array()){
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
 }
+//---------- begin function dbAddRecord
+/**
+* @describe adds a record
+* @param db string - database name as specified in the database section of config.xml
+* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+*   -table - name of the table to add to
+*	[-host] - postgresql server to connect to
+* 	[-dbname] - name of ODBC connection
+* 	[-dbuser] - username
+* 	[-dbpass] - password
+* 	other field=>value pairs to add to the record
+* @return integer returns the autoincriment key
+* @usage $id=dbAddRecord($db,array('-table'=>'abc','name'=>'bob','age'=>25));
+*/
+function dbAddRecords($db,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_sqlite;
+	global $dbh_ctree;
+	global $dbh_snowflake;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			//echo "before loading postgres";exit;
+			loadExtras('postgresql');
+			$dbh_postgres='';
+			return postgresqlAddDBRecords($params);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			$dbh_oracle='';
+			return oracleAddDBRecords($params);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			$dbh_mssql='';
+			return mssqlAddDBRecords($params);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			$dbh_hana='';
+			$dbh_hana='';
+			return hanaAddDBRecords($params);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			$dbh_odbc='';
+			return odbcAddDBRecords($params);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			return snowflakeAddDBRecords($params);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			$dbh_sqlite='';
+			return sqliteAddDBRecords($params);
+		break;
+		case 'mysql':
+		case 'mysqli':
+			loadExtras('mysql');
+			return addDBRecords($params);
+		break;
+	}
+	return "Invalid dbtype: {$db['dbtype']}";
+}
 //---------- begin function dbConnect
 /**
 * @describe returns a handle to a database
