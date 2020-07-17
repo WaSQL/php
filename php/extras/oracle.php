@@ -264,7 +264,7 @@ function oracleAddDBRecord($params){
 	$bindstr=implode(', ',array_values($bindvars));
     $query="INSERT INTO {$params['-table']} ({$fieldstr}) values ({$bindstr})";
     if(isset($params['-return'])){
-    	$query .= "RETURNING {$params['-return']} as :returnval";
+    	$query .= " RETURNING {$params['-return']} INTO :returnval";
     }
     $stid = oci_parse($dbh_oracle, $query);
     if (!is_resource($stid)){
