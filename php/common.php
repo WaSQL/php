@@ -15259,10 +15259,20 @@ function processFileUploads($docroot=''){
 				$e=error_get_last();
 				if($e['message']!==''){
 		    		// An error occurred uploading the file
-		    		$_REQUEST[$name.'_error']="File Upload Error (2) - " . $e['message'];
+		    		$_REQUEST[$name.'_error']=array(
+						"File Upload Error (2)",
+						$e,
+						$file,
+						$abspath
+					);
 				}
 				else{
-					$_REQUEST[$name.'_error']="File Upload Error (3)" . printValue($e);
+					$_REQUEST[$name.'_error']=array(
+						"File Upload Error (3)",
+						$e,
+						$file,
+						$abspath
+					);
                 }
             }
         }
