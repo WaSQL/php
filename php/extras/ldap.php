@@ -365,13 +365,16 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 			$checkfields=preg_split('/\,/',$checkfields);
 		}
 		foreach($checkfields as $checkfield){
-			if(preg_match('/\ (gt|lt|eq)\ /is',$checkfield)){
+			if(preg_match('/^[\&\|\(]/is',trim($checkfield),$m)){
+				$filters[]=$checkfield;
+			}
+			elseif(preg_match('/^([a-z]+?)\=(.+)$/is',trim($checkfield))){
+				$filters[]=$checkfield;
+			}
+			elseif(preg_match('/\ (gt|lt|eq)\ /is',$checkfield)){
 				$checkfield=str_replace(' gt ','>',$checkfield);
 				$checkfield=str_replace(' lt ','<',$checkfield);
 				$checkfield=str_replace(' eq ','=',$checkfield);
-				$filters[]=$checkfield;
-			}
-			elseif(preg_match('/^([a-z]+?)\=(.+)$/is',trim($checkfield),$m)){
 				$filters[]=$checkfield;
 			}
 			else{
