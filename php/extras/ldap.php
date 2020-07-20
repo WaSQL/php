@@ -371,6 +371,9 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 				$checkfield=str_replace(' eq ','=',$checkfield);
 				$filters[]=$checkfield;
 			}
+			elseif(preg_match('/^([a-z]+?)\=(.+)$/is',trim($checkfield),$m)){
+				$filters[]=$checkfield;
+			}
 			else{
 				$filters[]="{$checkfield}=*{$str}*";
 			}
