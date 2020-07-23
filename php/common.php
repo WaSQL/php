@@ -2765,7 +2765,7 @@ function buildFormFile($name,$params=array()){
 	}
 	$params['name']=$name;
 	$tag='';
-	if(isset($params['readonly']) && $params['readonly']==1){
+	if(isset($params['viewonly']) && $params['viewonly']==1){
 		$val=encodeHtml($params['value']);
 		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
 		if(!strlen($params['value'])){return $tag;}
