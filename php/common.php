@@ -2387,7 +2387,20 @@ function buildFormText($name,$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['name']=$name;
-	if(!isset($params['value'])){$params['value']='';}
+	$val='';
+	if(isset($params['value']) && strlen($params['value'])){
+		$val=$params['value'];
+	}
+	if(isset($params['-value']) && strlen($params['-value'])){
+		$val=$params['-value'];
+	}
+	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
+		$val=$_REQUEST[$name];
+	}
+	$params['value']=$val;
+	if(isset($params['readonly'])){
+		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
+	}
 	$tag = '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	//check for tvals and build a datalist if present
@@ -2751,6 +2764,42 @@ function buildFormFile($name,$params=array()){
 		$params['value']=$_REQUEST[$name];
 	}
 	$params['name']=$name;
+	$tag='';
+	if(isset($params['readonly']) && $params['readonly']==1){
+		$val=encodeHtml($params['value']);
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
+		if(!strlen($params['value'])){return $tag;}
+		$ext=getFileExtension($params['value']);
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		switch(strtolower($ext)){
+			case 'mp3':
+			case 'wav':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$tag .= '</audio></div>'.PHP_EOL;
+			break;
+			case 'mp4':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$tag .= '</video></div>'.PHP_EOL;
+			break;
+			case 'gif':
+			case 'png':
+			case 'jpg':
+			case 'jpeg':
+			case 'svg':
+				$mime=getFileMimeType($afile);
+				$tag .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-height:100%;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$tag .= '</div>'.PHP_EOL;
+			break;
+			default:
+				$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+			break;
+		}
+		return $tag;
+	}
 	//set path of where to store this file in
 	if(!isset($params['path'])){
     	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
@@ -3218,6 +3267,20 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//return printValue($pairs);
+	$val='';
+	if(isset($params['value']) && strlen($params['value'])){
+		$val=$params['value'];
+	}
+	if(isset($params['-value']) && strlen($params['-value'])){
+		$val=$params['-value'];
+	}
+	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
+		$val=$_REQUEST[$name];
+	}
+	$params['value']=$val;
+	if(isset($params['readonly'])){
+		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
+	}
 	$pcnt=count($pairs);
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
     	return buildFormText($name,$params);

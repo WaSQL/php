@@ -4710,72 +4710,74 @@ function addEditDBForm($params=array(),$customcode=''){
     				$_REQUEST[$cfield]=$info['fieldinfo'][$cfield]['defaultval'];
     			}
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
-				if(isset($params['-readonly']) || isset($params[$cfield.'_viewonly'])){
-					$cval='<div class="w_viewonly">'.nl2br($value).'</div>';
+				
+				$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
+				if(isset($params['-viewonly']) || isset($params['-readonly']) || isset($params[$cfield.'_viewonly']) || isset($params[$cfield.'_readonly'])){
+					//$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
+                	//$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+					//$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
+					$opts['readonly']=1;
 				}
-				else{
-					$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
-					//dataopts
-					if(isset($dataopts[$cfield])){
-						foreach($dataopts[$cfield] as $k=>$v){$opts[$k]=$v;}
-					}
-					//forcedatts
-					foreach($forcedatts as $copt){
-						if(isset($params[$cfield.'_'.$copt])){
-							$opts[$copt]=$params[$cfield.'_'.$copt];
-							$used[$cfield.'_'.$copt]=1;
-						}
-					}
-					//check for field_options array - the easier, new way to override options
-					if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
-						$used[$cfield.'_options']=1;
-						foreach($params[$cfield.'_options'] as $okey=>$oval){
-							if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){
-								$opts[$okey]=$oval;
-								$used[$cfield.'_'.$okey]=1;
-							}
-						}
-					}
-					if(isset($params[$cfield.'_checkall'])){
-						$opts['-checkall']=1;
-						$used[$cfield.'_checkall']=1;
-					}
-					if(isset($params[$cfield.'_wrap'])){
-						$opts['wrap']=$params[$cfield.'_wrap'];
-						$used[$cfield.'_wrap']=1;
-						}
-					if(isset($params[$cfield.'_tvals'])){
-						$opts['tvals']=$params[$cfield.'_tvals'];
-						$used[$cfield.'_tvals']=1;
-					}
-					if(isset($params[$cfield.'_dvals'])){
-						$opts['dvals']=$params[$cfield.'_dvals'];
-						$used[$field.'_dvals']=1;
-					}
-					if(isset($params['-bootstrap'])){
-						switch(strtolower($info['fieldinfo'][$cfield]['inputtype'])){
-							case 'text':
-							case 'textarea':
-							case 'wysiwyg':
-							case 'password':
-							case 'select':
-							case 'combo':
-							case 'multiselect':
-							case 'signature':
-								$opts['style']='width:100%';
-							break;
-						}
-					}
-					if(isset($params['-class_all']) && !isset($params[$cfield.'_class'])){
-						$opts['class']=$params['-class_all'];
-					}
-					if(isset($params['-style_all']) && !isset($params[$cfield.'_style'])){
-						$opts['style']=$params['-style_all'];
-					}
-					if(!isset($params['-focus'])){$params['-focus']=$cfield;}
-					$cval=getDBFieldTag($opts);
-					//$cval= $cfield.printValue($_REQUEST).printValue($opts);
+				//dataopts
+				if(isset($dataopts[$cfield])){
+					foreach($dataopts[$cfield] as $k=>$v){$opts[$k]=$v;}
 				}
+				//forcedatts
+				foreach($forcedatts as $copt){
+					if(isset($params[$cfield.'_'.$copt])){
+						$opts[$copt]=$params[$cfield.'_'.$copt];
+						$used[$cfield.'_'.$copt]=1;
+					}
+				}
+				//check for field_options array - the easier, new way to override options
+				if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
+					$used[$cfield.'_options']=1;
+					foreach($params[$cfield.'_options'] as $okey=>$oval){
+						if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){
+							$opts[$okey]=$oval;
+							$used[$cfield.'_'.$okey]=1;
+						}
+					}
+				}
+				if(isset($params[$cfield.'_checkall'])){
+					$opts['-checkall']=1;
+					$used[$cfield.'_checkall']=1;
+				}
+				if(isset($params[$cfield.'_wrap'])){
+					$opts['wrap']=$params[$cfield.'_wrap'];
+					$used[$cfield.'_wrap']=1;
+					}
+				if(isset($params[$cfield.'_tvals'])){
+					$opts['tvals']=$params[$cfield.'_tvals'];
+					$used[$cfield.'_tvals']=1;
+				}
+				if(isset($params[$cfield.'_dvals'])){
+					$opts['dvals']=$params[$cfield.'_dvals'];
+					$used[$field.'_dvals']=1;
+				}
+				if(isset($params['-bootstrap'])){
+					switch(strtolower($info['fieldinfo'][$cfield]['inputtype'])){
+						case 'text':
+						case 'textarea':
+						case 'wysiwyg':
+						case 'password':
+						case 'select':
+						case 'combo':
+						case 'multiselect':
+						case 'signature':
+							$opts['style']='width:100%';
+						break;
+					}
+				}
+				if(isset($params['-class_all']) && !isset($params[$cfield.'_class'])){
+					$opts['class']=$params['-class_all'];
+				}
+				if(isset($params['-style_all']) && !isset($params[$cfield.'_style'])){
+					$opts['style']=$params['-style_all'];
+				}
+				if(!isset($params['-focus'])){$params['-focus']=$cfield;}
+				$cval=getDBFieldTag($opts);
+				//$cval= $cfield.printValue($_REQUEST).printValue($opts);
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
 				if(!isset($params['-readonly']) && !isset($params[$cfield.'_viewonly'])){$fieldlist[]=$cfield;}
 				if(!isset($used[$cfield])){$used[$cfield]=1;}
@@ -4937,12 +4939,13 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 				$field_dname=$opts['id'].'_dname';
 				$field_content=$opts['id'].'_content';
-				if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
-					$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                	$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
-					$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
+				if(isset($params['-viewonly']) || isset($params['-readonly']) || isset($params[$field.'_viewonly']) || isset($params[$field.'_readonly'])){
+					//$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
+                	//$rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+					//$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
+					$opts['readonly']=1;
 				}
-				elseif(isset($params[$field.'_group_id'])){
+				if(isset($params[$field.'_group_id'])){
 					$group_id = $params[$field.'_group_id'];
 					$used[$field.'_group_id']=1;
 					$rtn .= '		<div id="'.$group_id.'"';
