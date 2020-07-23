@@ -2791,7 +2791,7 @@ function buildFormFile($name,$params=array()){
 			case 'jpeg':
 			case 'svg':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-height:100%;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$tag .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:200px;max-height:200px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
 				$tag .= '</div>'.PHP_EOL;
 			break;
 			default:
