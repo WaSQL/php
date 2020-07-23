@@ -2398,7 +2398,7 @@ function buildFormText($name,$params=array()){
 		$val=$_REQUEST[$name];
 	}
 	$params['value']=$val;
-	if(isset($params['readonly'])){
+	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
 	$tag = '	<input type="'.$params['-type'].'" value="'.encodeHtml($params['value']).'"';
@@ -3278,7 +3278,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		$val=$_REQUEST[$name];
 	}
 	$params['value']=$val;
-	if(isset($params['readonly'])){
+	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
 	$pcnt=count($pairs);
