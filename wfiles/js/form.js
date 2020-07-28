@@ -2814,7 +2814,7 @@ function pagingAddFilters(frm,filters,clear){
 		frm.filter_value.value='';
 		frm.filter_value.focus();
 	}
-	simulateEvent(frm,'submit');
+	//simulateEvent(frm,'submit');
 }
 function pagingSetFilters(frm){
 	var f=frm.querySelectorAll('.w_pagingfilter');

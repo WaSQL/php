@@ -2746,6 +2746,21 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 * @describe creates an HTML file upload field
 * @param name string
 * @param params array
+*	[-formname] string - specify the formname this field is identified with. Defaults to addedit
+*	[-icon] string - icon class to use. Defaults to 'icon-upload w_big w_danger'
+*	[text] string - text to display. Defaults to 'file to upload'
+*	[multiple] bool - allows multiple files
+*	[requiredif] string - make required if another value is true
+*	[name] string - override name
+*	[id] string - specify id. Default will be given otherwise
+*	[value] string - current value when in edit mode
+*	[-noview] 0|1 - do not display the viewer. Defaults to true
+*	[viewonly] 0|1 - viewonly mode. Defaults to false
+*	[path] string - relative path to where to store the files. Defaults to '/files/{name}'
+*	[autonumber] 0|1 - assign an autonumber to the file on upload to prevent overriding files with same name. 
+*	[displayif] - only display if another value is true or selected. format is {field}:{value}
+*	[onchange] string - javascript to run on change
+*	[resize] string - size ({width}x{height}) to resize to on upload. Imagemagick must be installed on server. 
 * @return string
 * @usage echo buildFormFile('file',$params);
 */
@@ -2765,25 +2780,24 @@ function buildFormFile($name,$params=array()){
 	}
 	$params['name']=$name;
 	$tag='';
-	if(isset($params['viewonly']) && $params['viewonly']==1){
+	$viewer='';
+	if(strlen($params['value'])){
 		$val=encodeHtml($params['value']);
-		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
-		if(!strlen($params['value'])){return $tag;}
 		$ext=getFileExtension($params['value']);
 		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
 		switch(strtolower($ext)){
 			case 'mp3':
 			case 'wav':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
-				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-				$tag .= '</audio></div>'.PHP_EOL;
+				$viewer .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '</audio></div>'.PHP_EOL;
 			break;
 			case 'mp4':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
-				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-				$tag .= '</video></div>'.PHP_EOL;
+				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '</video></div>'.PHP_EOL;
 			break;
 			case 'gif':
 			case 'png':
@@ -2791,15 +2805,27 @@ function buildFormFile($name,$params=array()){
 			case 'jpeg':
 			case 'svg':
 				$mime=getFileMimeType($afile);
-				$tag .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:200px;max-height:200px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
-				$tag .= '</div>'.PHP_EOL;
+				$viewer .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:200px;max-height:200px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$viewer .= '</div>'.PHP_EOL;
 			break;
 			default:
-				$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+				$viewer .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 			break;
 		}
+	}
+	//$params['viewonly']=1;
+	if(isset($params['viewonly']) && $params['viewonly']==1){	
+		if(!strlen($params['value'])){return $tag;}
+		$tag .= $viewer;
 		return $tag;
 	}
+	$tag='';
+	$viewer_id=$params['id'].'_viewer';
+	if(isset($params['-noview'])){$viewer='';}
+	if(strlen($viewer)){
+		$tag .='	<div id="'.$viewer_id.'" style="display:none;">'.$viewer.'</div>';
+	}
+	$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
 	//set path of where to store this file in
 	if(!isset($params['path'])){
     	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
@@ -2812,7 +2838,7 @@ function buildFormFile($name,$params=array()){
 	if(!is_dir($apath)){
 		buildDir($apath);
 	}
-	$tag='<span';
+	$tag .='<span';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
@@ -2863,7 +2889,11 @@ function buildFormFile($name,$params=array()){
     	$tag .= ' multiple ';
 	}
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'"';
+	$tag .= '	<label';
+	if(strlen($viewer)){
+		$tag .=' data-tooltip="id:'.$viewer_id.'"';
+	}
+	$tag .=' for="'.$params['id'].'"';
 	$tag .= setTagAttributes($label_params);
 	$tag .= ' ><span class="'.$params['-icon'].'"></span><span class="input_file_text" style="margin-left:5px;display:inline-flex;align-items:center;">';
 	//check for value
