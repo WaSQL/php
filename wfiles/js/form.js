@@ -2743,7 +2743,8 @@ function pagingAddFilter(frm){
 function pagingAddFilters(frm,filters,clear){
 	//console.log(frm);
 	//console.log(filters);
-	if(undefined != clear){
+	if(undefined == clear){clear=0;}
+	if(clear==1){
 		pagingClearFilters(frm);
 	}
 	let sets=filters.split(";");
@@ -2814,7 +2815,9 @@ function pagingAddFilters(frm,filters,clear){
 		frm.filter_value.value='';
 		frm.filter_value.focus();
 	}
-	//simulateEvent(frm,'submit');
+	if(clear==1){
+		simulateEvent(frm,'submit');
+	}
 }
 function pagingSetFilters(frm){
 	var f=frm.querySelectorAll('.w_pagingfilter');
