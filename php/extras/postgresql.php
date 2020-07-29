@@ -219,6 +219,123 @@ ENDOFQUERY;
 	if(isset($recs[0][$output_field])){return $recs[0][$output_field];}
 	return $recs;
 }
+//---------- begin function postgresqlAddDBRecords ----------
+/**
+* @describe add multiple records at the same time using json_table.
+*  if cdate, and cuser exists as fields then they are populated with the create date and create username
+* @param $params array - 
+*   -table - name of the table to add to
+*   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
+*	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
+* 	other field=>value pairs to add to the record
+* @return boolean
+* @usage $ok=postgresqlAddDBRecords(array('-table'=>'abc','-list'=>$list));
+*/
+function postgresqlAddDBRecords($params=array()){
+	global $USER;
+	if(!isset($params['-table'])){
+		$out=array(
+    		'function'=>"postgresqlAddDBRecords",
+    		'error'=>'No table specified'
+    	);
+    	if(isset($params['-return_errors'])){
+    		return $out;
+    	}
+		debugValue($out);
+    	return false;
+    }
+    if(!isset($params['-list']) || !is_array($params['-list'])){
+    	$out=array(
+    		'function'=>"postgresqlAddDBRecords",
+    		'error'=>'No records (list) specified'
+    	);
+    	if(isset($params['-return_errors'])){
+    		return $out;
+    	}
+		debugValue($out);
+    	return false;
+    }
+    //defaults
+    if(!isset($params['-dateformat'])){
+    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
+    }
+    $recs=$params['-list'];
+    $info=postgresqlGetDBFieldInfo($params['-table']);
+    //check for cdate and cuser
+    foreach($recs as $i=>$rec){
+    	if(isset($info['cdate']) && !isset($rec['cdate'])){
+			$recs[$i]['cdate']=strtoupper(date('Y-m-d  H:i:s'));
+		}
+		elseif(isset($info['_cdate']) && !isset($rec['_cdate'])){
+			$recs[$i]['_cdate']=strtoupper(date('Y-m-d  H:i:s'));
+		}
+		if(isset($info['cuser']) && !isset($rec['cuser'])){
+			$recs[$i]['cuser']=$USER['username'];
+		}
+		elseif(isset($info['_cuser']) && !isset($rec['_cuser'])){
+			$recs[$i]['_cuser']=$USER['username'];
+		}
+    }
+	$j=array("items"=>$recs);
+    $json=json_encode($j);
+    
+    $fields=array();
+    $jfields=array();
+    $defines=array();
+
+    foreach($recs[0] as $field=>$value){
+    	if(!isset($info[$field])){continue;}
+    	$fields[]=$field;
+    	switch(strtolower($info[$field]['_dbtype'])){
+    		case 'timestamp':
+    		case 'date':
+    			//date types have to be converted into a format that Oracle understands
+    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
+    		break;
+    		default:
+    			$jfields[]=$field;
+    		break;
+    	}
+    	$defines[]="{$field} varchar2(4000) PATH '\$.{$field}'";
+    }
+    if(!count($fields)){return 'No matching Fields';}
+    $fieldstr=implode(',',$fields);
+    $jfieldstr=implode(',',$jfields);
+    $definestr=implode(','.PHP_EOL,$defines);
+    $query = <<<ENDOFQ
+    INSERT INTO {$params['-table']}
+    	({$fieldstr})
+    SELECT 
+    	{$jfieldstr}
+    FROM json_populate_recordset(null::{$params['-table']},$1::json->'items')
+ENDOFQ;
+	if(isset($params['-return'])){
+		$query.=PHP_EOL."returning {$params['-return']}";
+	}
+	if(isset($params['-debug'])){
+		return $query.PHP_EOL.PHP_EOL.$json.PHP_EOL;
+	}
+	global $dbh_postgresql;
+	if(!is_resource($dbh_postgresql)){
+		$dbh_postgresql=postgresqlDBConnect();
+	}
+	if(!$dbh_postgresql){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecords',
+			'message'=>'connect failed',
+			'error'=>pg_last_error(),
+			'query'=>$query
+		));
+    	return;
+	}
+	$result = pg_query_params($dbh_postgresql, $query, array($json));
+    if(isset($params['-return'])){
+    	$recs=postgresqlEnumQueryResults($result);
+    	return $recs;
+    }
+    return true;
+}
+
 //---------- begin function postgresqlGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
