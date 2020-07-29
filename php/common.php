@@ -610,7 +610,7 @@ function commonSearchFiltersForm($params=array()){
         if(is_array($params['-filters'])){$sets=$params['-filters'];}
     	else{
     		$params['-filters']=trim($params['-filters']);
-    		$params['-filters']=preg_replace('/\,$+/','',$params['-filters']);
+    		$params['-filters']=preg_replace('/\,+$/','',$params['-filters']);
     		$sets=preg_split('/[\r\n\,]+/',$params['-filters']);
     	}
     	foreach($sets as $s=>$set){
