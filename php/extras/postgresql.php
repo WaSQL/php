@@ -1924,6 +1924,7 @@ ENDOFDATATYPES;
 * @return query string
 */
 function postgresqlNamedQuery($name){
+	$schema=postgresqlGetDBSchema();
 	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
@@ -1953,6 +1954,15 @@ select pid as process_id,
 from pg_stat_activity
 order by state,application_name,database_name,username
 ENDOFQUERY;
+		break;
+		case 'tables':
+			if(strlen($schema)){
+				$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
+			}
+			else{
+				$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables order by tablename";
+			}
+			return $query;
 		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
