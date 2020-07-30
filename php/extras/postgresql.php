@@ -281,27 +281,20 @@ function postgresqlAddDBRecords($params=array()){
     
     $fields=array();
     $jfields=array();
-    $defines=array();
 
     foreach($recs[0] as $field=>$value){
     	if(!isset($info[$field])){continue;}
     	$fields[]=$field;
     	switch(strtolower($info[$field]['_dbtype'])){
-    		case 'timestamp':
-    		case 'date':
-    			//date types have to be converted into a format that Oracle understands
-    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
-    		break;
+    		
     		default:
     			$jfields[]=$field;
     		break;
     	}
-    	$defines[]="{$field} varchar2(4000) PATH '\$.{$field}'";
     }
     if(!count($fields)){return 'No matching Fields';}
     $fieldstr=implode(',',$fields);
     $jfieldstr=implode(',',$jfields);
-    $definestr=implode(','.PHP_EOL,$defines);
     $query = <<<ENDOFQ
     INSERT INTO {$params['-table']}
     	({$fieldstr})
