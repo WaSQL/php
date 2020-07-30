@@ -277,7 +277,7 @@ function postgresqlAddDBRecords($params=array()){
 		}
     }
 	$j=array("items"=>$recs);
-    $json=json_encode($j);
+    $json=json_encode($j,JSON_UNESCAPED_UNICODE);
     
     $fields=array();
     $jfields=array();
