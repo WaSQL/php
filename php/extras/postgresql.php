@@ -322,6 +322,20 @@ ENDOFQ;
     	return;
 	}
 	$result = pg_query_params($dbh_postgresql, $query, array($json));
+	if(!is_resource($result)){
+		$err=pg_last_error($dbh_postgresql);
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecords',
+			'message'=>'pg_query_params failed',
+			'error'=>$err,
+			'query'=>$query,
+			'json'=>$json,
+			'params'=>$params
+		));
+		pg_close($dbh_postgresql);
+		//exit;
+		return null;
+	}
     if(isset($params['-return'])){
     	$recs=postgresqlEnumQueryResults($result);
     	return $recs;
