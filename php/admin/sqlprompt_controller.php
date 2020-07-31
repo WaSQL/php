@@ -98,6 +98,9 @@
 				$error=$recs_count;
 				$recs_count='ERROR';
 				setView(array('results','failure'),1);
+				if(file_exists($afile)){
+					unlink($afile);
+				}
 			}
 			elseif($recs_count < 30){
 				$recs_show=$recs_count;
