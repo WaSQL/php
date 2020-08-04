@@ -9984,21 +9984,26 @@ function getDBRecords($params=array()){
 	$random=array();
 	if(isset($params['-random']) && isNum($params['-random'])){
 		$cnt=databaseNumRows($query_result);
-		$max=$cnt-1;
-		while((count($random) < $params['-random']*10) && (count($random) < $max)){
-			$r=rand(0,$max);
+		$max=$params['-random'];
+		while((count($random) < $cnt) && (count($random) < $max)){
+			$r=rand(0,$cnt-1);
 			if(isNum($r) && !in_array($r,$random)){$random[]=$r;}
         }
         $randompick=1;
+        //echo "random:".printValue($random);
 	}
 	$rx=0;
 	while ($row = databaseFetchAssoc($query_result)) {
 		if($randompick==1){
-			$rx+=1;
 			if(count($list) >= count($random)){
 				break;
 			}
-			if(!in_array($rx,$random)){continue;}
+			//echo "rx:{$rx}<br />";
+			if(!in_array($rx,$random)){
+				$rx+=1;
+				continue;
+			}
+			
 			//get out of the loop once we have filled our random count
         }
         if(isset($params['-process'])){
@@ -10063,6 +10068,7 @@ function getDBRecords($params=array()){
 		if($randompick==1 && count($list) >= $params['-random']){break;}
 		//if(isset($list[$x]) && is_array($list[$x])){ksort($list[$x]);}
 		$x++;
+		$rx+=1;
 		}
 	//Free the resources associated with the result set
 	databaseFreeResult($query_result);
