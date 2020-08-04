@@ -93,7 +93,15 @@
 			);
 			$recs_show=30;
 			$recs=array();
+			$begin=microtime(true);
 			$recs_count=dbGetRecords($db['name'],$params);
+			$qtime=microtime(true)-$begin;
+			if($qtime < 1){
+				$qtime_verbose=number_format($qtime,3).' seconds';
+			}
+			else{
+				$qtime_verbose=verboseTime($qtime);
+			}
 			if(!isNum($recs_count)){
 				$error=$recs_count;
 				$recs_count='ERROR';

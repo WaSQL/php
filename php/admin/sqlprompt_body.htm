@@ -180,7 +180,7 @@
 	<div class="row w_padtop">
 		<div class="col-sm-12" style="overflow:auto;">
 			<view:success>
-			<?=buildOnLoad("setText('results_count','First ".$recs_show." of ".$recs_count." results');document.getElementById('export_link').style.display='inline-block';");?>
+				<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results. Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
 			<?=sqlpromptListResults($recs);?>		
 			</view:success>
 			<view:failure>
