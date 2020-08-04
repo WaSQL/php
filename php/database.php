@@ -3575,7 +3575,15 @@ function databaseParseFilters($params=array()){
 			case 'nb':
 				//is not blank
 				if(!isNum($val)){
-					$wheres[]="{$field} is not null and LENGTH({$field}) > 0";
+					switch(strtolower($params['-database'])){
+						case 'postgres':
+						case 'postgresql':
+							$wheres[]="{$field} is not null and LENGTH({$field}::text) > 0";
+						break;
+						default:
+							$wheres[]="{$field} is not null and LENGTH({$field}) > 0";
+						break;
+					}
 				}
 			break;
 		}
