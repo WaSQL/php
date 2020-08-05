@@ -191,12 +191,28 @@
 	</div>
 </view:results>
 
-<view:fields>
+<view:fieldsx>
 	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>
 		<li><span draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$field['_dbfield'];?>')"><?=$field['_dbfield'];?></span> <span class="w_gray w_small"><?=$field['_dbtype_ex'];?></span></li>
 	</view:field>
 	<?=renderEach('field',$fields,'field');?>
 	</ul>
+</view:fieldsx>
+
+<view:tabledetails>
+	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
+	<?=renderView('fields',$fields,'fields');?>
+	<?=renderView('indexes',$indexes,'indexes');?>
+	</div>
+</view:tabledetails>
+
+<view:fields>
+	<?=sqlpromptListFields($fields);?>
 </view:fields>
+
+
+<view:indexes>
+	<?=sqlpromptListIndexes($indexes);?>
+</view:indexes>
 

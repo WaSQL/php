@@ -187,7 +187,9 @@
 		case 'fields':
 			$table=addslashes($_REQUEST['table']);
 			$fields=dbGetTableFields($db['name'],$table);
-			setView('fields',1);
+			$indexes=dbGetTableIndexes($db['name'],$table);
+			//echo printValue($fields);exit;
+			setView('tabledetails',1);
 			return;
 		break;
 		default:

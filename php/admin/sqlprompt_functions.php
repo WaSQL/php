@@ -29,6 +29,42 @@ function sqlpromptListResults($recs){
 	}
 	return databaseListRecords($opts);
 }
+function sqlpromptListFields($recs){
+	if(!is_array($recs) || !count($recs)){
+		if(strlen($recs)){return $recs;}
+		return translateText('No indexes defined');
+	}
+	$opts=array(
+		'-list'=>$recs,
+		'-hidesearch'=>1,
+		'-tableclass'=>'table striped condensed',
+		'-listfields'=>'_dbfield,_dbtype_ex',
+		'-thclass'=>'w_smaller',
+		'-tdclass'=>'w_smaller',
+		'_dbfield_displayname'=>'Field',
+		'_dbtype_ex_displayname'=>'Type'
+	);
+	return databaseListRecords($opts);
+}
+function sqlpromptListIndexes($recs){
+	if(!is_array($recs) || !count($recs)){
+		if(strlen($recs)){return $recs;}
+		return translateText('No indexes defined');
+	}
+	$opts=array(
+		'-list'=>$recs,
+		'-hidesearch'=>1,
+		'-tableclass'=>'table striped condensed',
+		'-listfields'=>'key_name,column_name,seq_in_index,non_unique',
+		'-thclass'=>'w_smaller',
+		'-tdclass'=>'w_smaller',
+		'key_name_displayname'=>'Index',
+		'column_name_displayname'=>'Column',
+		'seq_in_index_displayname'=>'Seq',
+		'index_type_displayname'=>'Type'
+	);
+	return databaseListRecords($opts);
+}
 function sqlpromptBuildQuery($db,$name){
 	global $DATABASE;
 	//echo printValue($DATABASE[$db]);exit;
