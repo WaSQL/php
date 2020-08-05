@@ -170,7 +170,7 @@ function ctreeGetDBFieldInfo($table){
 		admin.syscolumns c
 		left outer join admin.sysindexes i on c.col=i.colname and i.tbl=c.tbl
 	WHERE
-		c.tbl='{$tablename}'
+		c.tbl='{$table}'
 	GROUP BY
 		c.col
 		,c.coltype
@@ -180,6 +180,7 @@ function ctreeGetDBFieldInfo($table){
 	ORDER BY 6 desc,1
 ENDOFQUERY;
 	$recs=ctreeQueryResults($query);
+	//echo $query.printValue($recs);exit;
 	$fields=array();
 	foreach($recs as $rec){
 	    $fieldname = strtolower($rec['col']);
@@ -211,15 +212,16 @@ function ctreeGetDBIndexes($tablename=''){
 	return ctreeGetDBTableIndexes($tablename);
 }
 function ctreeGetDBTableIndexes($tablename=''){
+	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
 		SELECT
-			idxname,
-			colname,
-			idxtype,
-			idxseq
+			idxname as key_name,
+			colname as column_name,
+			idxtype as index_type,
+			idxseq as seq_in_index
 		FROM admin.sysindexes
 		WHERE tbl='{$tablename}'
-		ORDER BY idxorder
+		ORDER BY idxname,idxseq
 ENDOFQUERY;
 	return ctreeQueryResults($query);
 }

@@ -188,7 +188,7 @@
 			$table=addslashes($_REQUEST['table']);
 			$fields=dbGetTableFields($db['name'],$table);
 			$indexes=dbGetTableIndexes($db['name'],$table);
-			//echo printValue($fields);exit;
+			//echo printValue($indexes);exit;
 			setView('tabledetails',1);
 			return;
 		break;

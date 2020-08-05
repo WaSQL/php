@@ -1071,6 +1071,7 @@ function postgresqlGetDBTableIndexes($tablename=''){
 	if(isset($databaseCache['postgresqlGetDBTableIndexes'][$tablename])){
 		return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
 	}
+	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
 	SELECT
   		U.usename AS user_name,
@@ -1097,9 +1098,26 @@ function postgresqlGetDBTableIndexes($tablename=''){
 	WHERE NOT nspname LIKE 'pg%'
 ENDOFQUERY;
 	if(strlen($tablename)){
+		$schema=postgresqlGetDBSchema();
+		if(strlen($schema)){
+			$tablename="{$schema}.{$tablename}";
+		}
 		$query .= " and idx.indrelid ='{$tablename}' :: REGCLASS ";
 	}
-	$databaseCache['postgresqlGetDBTableIndexes'][$tablename]=postgresqlQueryResults($query);
+	$recs=postgresqlQueryResults($query);
+	$xrecs=array();
+	foreach($recs as $rec){
+		$cols=json_decode($rec['index_keys'],true);
+		foreach($cols as $i=>$col){
+			$xrec=$rec;
+			$xrec['key_name']=$rec['index_name'];
+			$xrec['column_name']=$col;
+			$xrec['seq_in_index']=$i;
+			$xrecs[]=$xrec;
+		}
+	}
+	//echo printValue($recs).printValue($xrecs);exit;
+	$databaseCache['postgresqlGetDBTableIndexes'][$tablename]=$xrecs;
 	return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
 }
 //---------- begin function postgresqlGetDBRecord ----------

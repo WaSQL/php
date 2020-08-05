@@ -32,7 +32,7 @@ function sqlpromptListResults($recs){
 function sqlpromptListFields($recs){
 	if(!is_array($recs) || !count($recs)){
 		if(strlen($recs)){return $recs;}
-		return translateText('No indexes defined');
+		return translateText('No fields defined');
 	}
 	$opts=array(
 		'-list'=>$recs,
