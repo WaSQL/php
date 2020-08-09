@@ -28,6 +28,32 @@
 		$_SESSION['db']=$db;
 	}
 	switch(strtolower($_REQUEST['func'])){
+		case 'last_records':
+			$table=addslashes($_REQUEST['table']);
+			switch(strtolower($db['dbtype'])){
+				case 'mssql':
+					$sql="select * from {$table} order by 1 desc limit 5";
+				break;
+				case 'oracle':
+					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
+				break;
+				case 'ctree':
+					$sql="select top 5 * from admin.{$table} order by 1 desc";
+				break;
+				case 'postgresql':
+				case 'postgres':
+					if(strlen($db['dbschema'])){
+						$table="{$db['dbschema']}.{$table}";
+					}
+					$sql="select * from {$table} order by 1 desc limit 5";
+				break;
+				default:
+					$sql="select * from {$table} order by 1 desc limit 5";
+				break;
+			}
+			setView('monitor_sql',1);
+			return;
+		break;
 		case 'monitor':
 			//echo printValue($_REQUEST);exit;
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);

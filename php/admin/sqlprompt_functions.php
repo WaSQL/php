@@ -71,20 +71,28 @@ function sqlpromptBuildQuery($db,$name){
 	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'mssql':
 			loadExtras('mssql');
+			global $dbh_mssql;
+			$dbh_mssql='';
 			return trim(mssqlNamedQuery($name));
 		break;
 		case 'postgresql':
 		case 'postgres':
 		case 'postgre';
 			loadExtras('postgresql');
+			global $dbh_postgresql;
+			$dbh_postgresql='';
 			return trim(postgresqlNamedQuery($name));
 		break;
 		case 'oracle':
 			loadExtras('oracle');
+			global $dbh_oracle;
+			$dbh_oracle='';
 			return trim(oracleNamedQuery($name));
 		break;
 		case 'hana':
 			loadExtras('hana');
+			global $dbh_hana;
+			$dbh_hana='';
 			return trim(hanaNamedQuery($name));
 		break;
 		case 'sqlite':
@@ -92,6 +100,8 @@ function sqlpromptBuildQuery($db,$name){
 		break;
 		default:
 			loadExtras('mysql');
+			global $dbh_mysql;
+			$dbh_mysql='';
 			return trim(mysqlNamedQuery($name));
 		break;
 	}

@@ -17,6 +17,12 @@
 		document.sqlprompt.db.value=db;
 		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0})
 	}
+	function sqlpromptLastRecords(table){
+		var db=document.sqlprompt.db.value;
+		document.sqlprompt.reset();
+		document.sqlprompt.db.value=db;
+		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0})
+	}
 	function sqlpromptFields(table){
 		let icon=getObject(table+'_icon');
 		let t=getText(table+'_fields');
@@ -202,6 +208,7 @@
 
 <view:tabledetails>
 	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
+	<div style="margin-bottom:10px;"><a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Show Last Records</a></div>
 	<?=renderView('fields',$fields,'fields');?>
 	<?=renderView('indexes',$indexes,'indexes');?>
 	</div>
