@@ -1454,8 +1454,8 @@ function hanaQueryResults($query,$params=array()){
 			);
 			if(stringContains($errstr,'session not connected')){
 				//lets retry
-				odbc_close_all();
-				sleep(2);
+				odbc_close($dbh_hana);
+				sleep(1);
 				$dbh_hana='';
 				$dbh_hana=hanaDBConnect($params);
 				$result=odbc_exec($dbh_hana,$query);
