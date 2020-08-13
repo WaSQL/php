@@ -342,6 +342,35 @@ function commonCronUnpauseGroup($group){
 	$ok=editDBRecord($editopts);
 	return $ok;
 }
+//---------- begin function commonFormatPhone
+/**
+* @describe formats a phone number
+* @param string phone number
+* @return string - formatted phone number (xxx) xxx-xxxx
+* @usage
+*	commonFormatPhone('8014584741');
+*/
+function commonFormatPhone($phone) {
+	// note: making sure we have something
+	if(!isset($phone{3})) { return ''; }
+	// note: strip out everything but numbers 
+	$phone = preg_replace("/[^0-9]/", "", $phone);
+	$length = strlen($phone);
+	switch($length) {
+		case 7:
+			return preg_replace("/([0-9]{3})([0-9]{4})/", "$1-$2", $phone);
+		break;
+		case 10:
+			return preg_replace("/([0-9]{3})([0-9]{3})([0-9]{4})/", "($1) $2-$3", $phone);
+		break;
+		case 11:
+			return preg_replace("/([0-9]{1})([0-9]{3})([0-9]{3})([0-9]{4})/", "$1($2) $3-$4", $phone);
+		break;
+		default:
+			return $phone;
+		break;
+	}
+}
 
 //---------- begin function commonSearchFiltersForm
 /**
@@ -2805,7 +2834,13 @@ function buildFormFile($name,$params=array()){
 			case 'jpeg':
 			case 'svg':
 				$mime=getFileMimeType($afile);
-				$viewer .= '<div style="margin:5px 1px;max-width:200px;max-height:200px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:200px;max-height:200px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				if(!isset($params['view_width'])){
+					$params['view_width']=300;
+				}
+				if(!isset($params['view_height'])){
+					$params['view_height']=300;
+				}
+				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
 				$viewer .= '</div>'.PHP_EOL;
 			break;
 			default:
