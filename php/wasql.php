@@ -422,7 +422,7 @@ function wasqlBuildManualTree(){
 	$rtn .= '<p></p><p></p>'."\n";
 	return $rtn;
 }
-//---------- begin function wasqlMagicQuotesFix
+//---------- begin function wasqlMagicQuotesFix - depreciated as of v7.4
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -430,44 +430,45 @@ function wasqlMagicQuotesFix(){
 	//exclude: true
 	if(isset($_SERVER['wasqlMagicQuotesFix'])){return;}
 	$_SERVER['wasqlMagicQuotesFix']=1;
-	$gmq=false;
-	if(function_exists('get_magic_quotes_gpc')){
-		$gmq=get_magic_quotes_gpc();
-	}
-	if($gmq===false || $gmq=='off'){}
-	else{
-		//GET
-		foreach($_GET as $key=>$val){
-        	if(is_array($val)){
-				foreach($val as $vkey=>$vval){
-					$_GET[$key][$vkey]=stripslashes($vval);
-				}
-				continue;
-			}
-        	$_GET[$key]=stripslashes($val);
-		}
-		//POST
-		foreach($_POST as $key=>$val){
-        	if(is_array($val)){
-				foreach($val as $vkey=>$vval){
-					$_POST[$key][$vkey]=stripslashes($vval);
-				}
-				continue;
-			}
-        	$_POST[$key]=stripslashes($val);
-		}
-		//REQUEST
-		foreach($_REQUEST as $key=>$val){
-        	if(is_array($val)){
-				foreach($val as $vkey=>$vval){
-					$_REQUEST[$key][$vkey]=stripslashes($vval);
-				}
-				continue;
-			}
-        	$_REQUEST[$key]=stripslashes($val);
-		}
-	}
 	return 1;
+	// $gmq=false;
+	// if(function_exists('get_magic_quotes_gpc')){
+	// 	$gmq=get_magic_quotes_gpc();
+	// }
+	// if($gmq===false || $gmq=='off'){}
+	// else{
+	// 	//GET
+	// 	foreach($_GET as $key=>$val){
+ //        	if(is_array($val)){
+	// 			foreach($val as $vkey=>$vval){
+	// 				$_GET[$key][$vkey]=stripslashes($vval);
+	// 			}
+	// 			continue;
+	// 		}
+ //        	$_GET[$key]=stripslashes($val);
+	// 	}
+	// 	//POST
+	// 	foreach($_POST as $key=>$val){
+ //        	if(is_array($val)){
+	// 			foreach($val as $vkey=>$vval){
+	// 				$_POST[$key][$vkey]=stripslashes($vval);
+	// 			}
+	// 			continue;
+	// 		}
+ //        	$_POST[$key]=stripslashes($val);
+	// 	}
+	// 	//REQUEST
+	// 	foreach($_REQUEST as $key=>$val){
+ //        	if(is_array($val)){
+	// 			foreach($val as $vkey=>$vval){
+	// 				$_REQUEST[$key][$vkey]=stripslashes($vval);
+	// 			}
+	// 			continue;
+	// 		}
+ //        	$_REQUEST[$key]=stripslashes($val);
+	// 	}
+	// }
+	// return 1;
 }
 //---------- begin function
 /**
