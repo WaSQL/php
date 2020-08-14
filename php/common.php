@@ -352,7 +352,7 @@ function commonCronUnpauseGroup($group){
 */
 function commonFormatPhone($phone) {
 	// note: making sure we have something
-	if(!isset($phone{3})) { return ''; }
+	if(!isset($phone[3])) { return ''; }
 	// note: strip out everything but numbers 
 	$phone = preg_replace("/[^0-9]/", "", $phone);
 	$length = strlen($phone);
@@ -2824,7 +2824,13 @@ function buildFormFile($name,$params=array()){
 			break;
 			case 'mp4':
 				$mime=getFileMimeType($afile);
-				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				if(!isset($params['view_width'])){
+					$params['view_width']=300;
+				}
+				if(!isset($params['view_height'])){
+					$params['view_height']=300;
+				}
+				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\','.$params['view_height'].');" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
 				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
 				$viewer .= '</video></div>'.PHP_EOL;
 			break;
