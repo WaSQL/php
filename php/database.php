@@ -2682,36 +2682,20 @@ function databaseListRecords($params=array()){
 	//check for listview
 	if(isset($params['-listview'])){
 		if(!is_array($params['-list']) || !count($params['-list'])){
-			//check for results_eval
-			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
-				$rparams='';
-				if(isset($params['-results_eval_params'])){
-					$params['-list']=call_user_func($params['-results_eval'],array(),$params['-results_eval_params']);
-				}
-				else{
-					$params['-list']=call_user_func($params['-results_eval'],array());
-				}
-				if(!is_array($params['-list']) || !count($params['-list'])){
-					$rtn .= 'No Results'.PHP_EOL;
-					return $rtn;
-				}
+			$params['-list']=array();
+		}
+		//check for results_eval
+		if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+			$rparams='';
+			if(isset($params['-results_eval_params'])){
+				$params['-list']=call_user_func($params['-results_eval'],$params['-list'],$params['-results_eval_params']);
 			}
 			else{
-				$rtn .= 'No Results'.PHP_EOL;
-				return $rtn;
+				$params['-list']=call_user_func($params['-results_eval'],$params['-list']);
 			}
-			
 		}
 		//loop through each row 
 		foreach($params['-list'] as $rec){
-			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
-				if(isset($params['-results_eval_params'])){
-					$rec=call_user_func($params['-results_eval'],$rec,$params['-results_eval_params']);
-				}
-				else{
-					$rec=call_user_func($params['-results_eval'],$rec);
-				}
-			}
 			$crow=$params['-listview'];	
 			foreach($rec as $cfield=>$cvalue){
 				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
