@@ -2704,6 +2704,14 @@ function databaseListRecords($params=array()){
 		}
 		//loop through each row 
 		foreach($params['-list'] as $rec){
+			if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
+				if(isset($params['-results_eval_params'])){
+					$rec=call_user_func($params['-results_eval'],$rec,$params['-results_eval_params']);
+				}
+				else{
+					$rec=call_user_func($params['-results_eval'],$rec);
+				}
+			}
 			$crow=$params['-listview'];	
 			foreach($rec as $cfield=>$cvalue){
 				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
