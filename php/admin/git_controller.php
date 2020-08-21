@@ -42,6 +42,7 @@
 				foreach($_REQUEST['files'] as $bfile){
 					$file=addslashes(base64_decode($bfile));
 					$recs[]=gitCommand("rm \"{$file}\"");
+					//echo "{$file}<br>";
 				}
 			}
 			gitFileInfo();

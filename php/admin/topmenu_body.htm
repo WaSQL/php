@@ -126,7 +126,10 @@
 		<?=renderViewIf(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1,'synchronize');?>
 		<view:git>
 		<!-- Git Repo -->
-		<li><a href="/php/admin.php?_menu=git" class="dropdown"><span class="icon-git"></span> <span class="hidden-sm-down"><translate>Repo</translate></span></a></li>
+		<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> <span class="hidden-sm-down"><translate>Repo</translate></span></a></li>
+		</view:git>
+		<?=renderViewIf(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1,'git');?>
+		<view:errors>
 		<!-- Errors -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-block"></span> <span class="hidden-sm-down"><translate>Errors</translate></span></a>
 			<ul>
@@ -136,8 +139,8 @@
 				
 			</ul>
 		</li>
-		</view:git>
-		<?=renderViewIf(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1,'git');?>
+		</view:errors>
+		<?=renderViewIf(isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1,'errors');?>
 		<!-- Config -->
 		<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <translate>Clear</translate></a></li>
 		<!-- Help -->

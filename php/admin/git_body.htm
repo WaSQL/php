@@ -29,8 +29,7 @@ function gitCall(func,div){
 				<view:file>
 				<tr>
 					<td>
-						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" style="display:none;" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>" />
-						<label for="id_<?=$file['sha'];?>" class="icon-mark"></label>
+						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>" />
 					</td>
 					<td>
 						<div class="w_right">
