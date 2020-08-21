@@ -32,10 +32,13 @@ function gitCall(func,div){
 						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>" />
 					</td>
 					<td>
+						<view:compare>
 						<div class="w_right">
 							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=$file['b64'];?>'});" title="compare"><span class="icon-compare w_big"></span></a>
 							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=$file['b64'];?>'});"  title="view history log"><span class="icon-history w_big"></span></a>
 						</div>
+						</view:compare>
+						<?=renderViewIf($file['status'] != 'new','compare',$file,'file');?>
 						<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=$file['name'];?></label>
 					</td>
 					<td><a href="#" title="Check all off this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=$file['status'];?></a></td>
