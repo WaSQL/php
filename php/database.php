@@ -4696,7 +4696,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
 		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help','autofocus',
 		'group_id','group_class','group_style','checkclass','checkclasschecked',
-		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap','text'
+		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap','text','path','autonumber'
 		);
 	//data opts
 	$dataopts=array();

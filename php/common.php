@@ -2406,13 +2406,17 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 * @usage echo buildFormText('name',$params);
 */
 function buildFormText($name,$params=array()){
+
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['inputtype'])){$params['-type']=$params['inputtype'];}
 	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){
+		$params['value']=$_REQUEST[$name];
+	}
+	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['name']=$name;
@@ -2420,13 +2424,14 @@ function buildFormText($name,$params=array()){
 	if(isset($params['value']) && strlen($params['value'])){
 		$val=$params['value'];
 	}
-	if(isset($params['-value']) && strlen($params['-value'])){
+	elseif(isset($params['-value']) && strlen($params['-value'])){
 		$val=$params['-value'];
 	}
 	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
 		$val=$_REQUEST[$name];
 	}
 	$params['value']=$val;
+	//ksort($params);return printValue($params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
@@ -2808,6 +2813,7 @@ function buildFormFile($name,$params=array()){
 		$params['value']=$_REQUEST[$name];
 	}
 	$params['name']=$name;
+	//ksort($params);return printValue($params);
 	$tag='';
 	$viewer='';
 	if(strlen($params['value'])){
@@ -14498,6 +14504,7 @@ function processActions(){
 		    	return 0;
 			}
 		  	$_REQUEST['process_action']='add';
+		  	$ok=processInlineFiles();
 			//check for a hidden css spam _honeypot field - its value should be blank
 			$spam=0;
 			if(isset($_REQUEST['_honeypot']) && strlen($_REQUEST[$_REQUEST['_honeypot']])){$spam=1;}
