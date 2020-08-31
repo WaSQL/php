@@ -19,7 +19,7 @@ function formChanged(frm){
 			name=parts[0];
 			vals=new Array(parts[1]);
 		}
-		let ifel=frm.querySelectorAll('[name="'+name+'"]');
+		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(undefined == ifel){continue;}
 		//console.log(els[i].dataset.displayif+' = '+ifel.length);
 		if(ifel.length > 0){
