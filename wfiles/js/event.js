@@ -3045,8 +3045,6 @@ function countDown(id){
 function countDownDate(divid,yr,m,d,hr,min,tz){
 	//info: used by countdowndate behavior
 	let args=new Array(divid,yr,m,d,hr,min,tz);
-	console.log('countDownDate');
-	console.log(args);
 	if(undefined == tz){tz='';}
 	var divobj=getObject(divid);
 	if(undefined==divobj){
@@ -3073,8 +3071,9 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 	else{
 		var todaystring=Date.parse(todaystring1);
 	}
-	var futurestring1=(montharray[m-1]+" "+d+", "+yr+" "+hr+":"+min);
-	var futurestring=Date.parse(futurestring1)-(today.getTimezoneOffset()*(1000*60));
+	d=parseInt(d);
+	var futurestring1=(montharray[m-1]+" "+d+", "+yr+" "+hr+":"+min+':00');
+	var futurestring=Date.parse(futurestring1);
 	var dd=futurestring-todaystring;
 	var dday=Math.floor(dd/(60*60*1000*24)*1);
 	var dhour=Math.floor((dd%(60*60*1000*24))/(60*60*1000)*1);
