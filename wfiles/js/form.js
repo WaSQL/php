@@ -631,30 +631,71 @@ function autoGrow(box,maxheight) {
 */
 function initPikadayCalendar(field,params){
 	field=getObject(field);
-	let opts={
-        field: field,
-        position:'bottom right',
-        format: 'YYYY-MM-DD',
-	    toString(date, format) {
-	        // you should do formatting based on the passed format,
-	        // but we will just return 'D/M/YYYY' for simplicity
-	        let day = date.getDate();
-	        let month = date.getMonth() + 1;
-	        let year = date.getFullYear();
-	        if(day < 10){day='0'+day;}
-	        if(month < 10){month='0'+month;}
-	        return year+'-'+month+'-'+day;
-	    },
-	    parse(dateString, format) {
-	        const parts = dateString.split('/');
-	        const day = parseInt(parts[0], 10);
-	        const month = parseInt(parts[1], 10) - 1;
-	        const year = parseInt(parts[2], 10);
-	        return new Date(year, month, day);
-	    }
-	};
 	//check for custom attributes
 	let attrs=getAllAttributes(field);
+	let opts={};
+	//showTime  - YYYY-mm-dd
+	if(undefined != attrs['data-showtime']){
+		opts={
+	        field: field,
+	        showTime:true,
+	        showMinutes:true,
+	        showSeconds:false,
+	        use24hour:false,
+	        incrementHourBy:1,
+	        incrementMinuteBy:5,
+	        position:'bottom right',
+	        format: 'YYYY-MM-DD HH:mm',
+		    toString(date, format) {
+		        // you should do formatting based on the passed format,
+		        // but we will just return 'D/M/YYYY' for simplicity
+		        let day = date.getDate();
+		        let month = date.getMonth() + 1;
+		        let year = date.getFullYear();
+		        let hour = date.getHours();
+		        let min = date.getMinutes();
+		        if(day < 10){day='0'+day;}
+		        if(month < 10){month='0'+month;}
+		        if(hour < 10){hour='0'+hour;}
+		        if(min < 10){min='0'+min;}
+		        return year+'-'+month+'-'+day+' '+hour+':'+min+':00';
+		    },
+		    parse(dateString, format) {
+		        let parts = dateString.split(/[\/\ \:\-]+/);
+		        let year = parseInt(parts[0], 10);
+		        let month = parseInt(parts[1], 10) - 1;
+		        let day = parseInt(parts[2], 10);
+		        let hour = parseInt(parts[3], 10);
+		        let min = parseInt(parts[4], 10);
+		        return new Date(year, month, day, hour, min, 0);
+		    }
+		};
+	}
+	else{
+		opts={
+	        field: field,
+	        position:'bottom right',
+	        format: 'YYYY-MM-DD',
+		    toString(date, format) {
+		        // you should do formatting based on the passed format,
+		        // but we will just return 'D/M/YYYY' for simplicity
+		        let day = date.getDate();
+		        let month = date.getMonth() + 1;
+		        let year = date.getFullYear();
+		        if(day < 10){day='0'+day;}
+		        if(month < 10){month='0'+month;}
+		        return year+'-'+month+'-'+day;
+		    },
+		    parse(dateString, format) {
+		        let parts = dateString.split(/[\/\ \:\-]+/);
+		        if(parts.length < 2){return '';}
+		        let year = parseInt(parts[0], 10);
+		        let month = parseInt(parts[1], 10) - 1;
+		        let day = parseInt(parts[2], 10);
+		        return new Date(year, month, day);
+		    }
+		};
+	}
 	//maxDate
 	if(undefined != attrs['data-maxdate']){
 		if(attrs['data-maxdate'].indexOf('-') != -1){
@@ -761,10 +802,6 @@ function initPikadayCalendar(field,params){
 			opts.yearRange=r;
 		}
 		
-	}
-	if(undefined != attrs['data-debug']){
-		//log debug in console
-		console.log(opts);
 	}
 	if(undefined != attrs['data-debug']){
 		console.log('Pikaday calendar opts');

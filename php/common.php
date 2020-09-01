@@ -1825,10 +1825,16 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
 		//strip off any time value
-		if(preg_match('/^(.+?)\ [0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}/',$params['-value'],$m)){
-			$params['-value']=$m[1];
-		}
-    	$params['-value']=date('Y-m-d',strtotime($params['-value']));
+		if(isset($params['data-showtime']) && $params['data-showtime']==1){
+			unset($params['data-mask']);
+			$params['maxlength']=30;
+	    }
+	    else{
+	    	if(preg_match('/^(.+?)\ [0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}/',$params['-value'],$m)){
+				$params['-value']=$m[1];
+			}
+	    	$params['-value']=date('Y-m-d',strtotime($params['-value']));
+	    }
 	}
 	$tag='';
 	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
@@ -1865,42 +1871,8 @@ function buildFormDate($name,$params=array()){
 * @usage echo buildFormDateTime('mydate');
 */
 function buildFormDateTime($name,$params=array()){
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['width']=220;
-	if(isset($params['value'])){$params['-value']=$params['value'];}
-	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
-	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	//$params['data-mask']='date';
-	if(isset($params['mask'])){
-    	$params['data-mask']=$params['mask'];
-    	unset($params['mask']);
-	}
-	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD HH:MM:SS';}
-	if(!isset($params['maxlength'])){$params['maxlength']='25';}
-	if(!isset($params['class'])){$params['class']='browser-default w_form-control';}
-	if(!isset($params['data-type'])){$params['data-type']='datetime';}
-	if(!isset($params['name'])){$params['name']=$name;}
-	if(!isset($params['id'])){$params['id']=$params['id'];}
-	if(strlen($params['-value'])){
-    	$params['-value']=date('Y-m-d H:i:s',strtotime($params['-value']));
-	}
-	$tag='';
-	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$tag .= '>'.PHP_EOL;
-	$tag .= '	<input type="text"';
-	$params['style']='width:100%';
-	$tag .= setTagAttributes($params);
-	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	$tag .= '	<span class="icon-calendar w_pointer input-group-addon" style="padding-left:3px !important;padding-right:6px !important;" onclick="Calendar(\''.$params['id'].'\');" title="Date and Time Selector"><span class="icon-clock" style="padding:0px !important;"></span></span>'.PHP_EOL;
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
+	$params['data-showtime']=1;
+	return buildFormDate($name,$params);
 }
 //---------- begin function buildFormGender--------------------
 /**
