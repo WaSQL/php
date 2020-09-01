@@ -25,6 +25,7 @@
 			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
 			<li><a href="data-navigate" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Data-Navigate</a></li>
 			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
+			<li><a href="behaviors" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Behaviors</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
 			<li><a href="chartjs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
 			<li><a href="languages" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Languages</a></li>
@@ -100,6 +101,8 @@
 	</div></div>
 </form>
 </view:form-elements>
+
+
 
 <view:nav-tabs>
 	<div class="row">
@@ -319,6 +322,10 @@
 </ul>
 <div id="navigate_content" style="margin-top:15px;padding:15px"></div>
 </view:data-navigate>
+
+<view:behaviors>
+	<div>countdowndate:  <span id="countdown_6" data-behavior="countdowndate" data-year="2020" data-month="09" data-day="16" data-hour="18" data-minute="00"></span></div>
+</view:behaviors>
 
 <view:javascript>
 	<div><a href="#toast" accesskey="s" onclick="return wacss.toast(getText('steve'),{timer:3});">From Steve</a></div>

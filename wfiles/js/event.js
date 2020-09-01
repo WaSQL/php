@@ -1508,28 +1508,21 @@ function initBehaviors(ajaxdiv){
 		}
 		else if(in_array("countdowndate",behaviors)){
 			/* COUNTDOWNDATE */
-  			var id=navEls[n].getAttribute('id');
+  			let id=navEls[n].getAttribute('id');
 			if(id){
-				var yr=navEls[n].getAttribute('data-year');
-				if(undefined != yr){yr=navEls[n].getAttribute('year');}
-				var mon=navEls[n].getAttribute('data-month');
-				if(undefined != mon){mon=navEls[n].getAttribute('month');}
-				var day=navEls[n].getAttribute('data-day');
-				if(undefined != day){day=navEls[n].getAttribute('day');}
-				var hr=navEls[n].getAttribute('data-hour');
-				if(undefined != hr){hr=navEls[n].getAttribute('hour');}
-				var m=navEls[n].getAttribute('minute');
-				if(undefined != m){m=navEls[n].getAttribute('minute');}
-				var t=navEls[n].getAttribute('tz');
-				if(undefined != t){t=navEls[n].getAttribute('tz');}
-				countDownDate(id,yr,mon,day,hr,m,t);
+				let year=navEls[n].dataset.year || navEls[n].getAttribute('year');
+				let month=navEls[n].dataset.month || navEls[n].getAttribute('month');
+				let day=navEls[n].dataset.day || navEls[n].getAttribute('day');
+				let hour=navEls[n].dataset.hour || navEls[n].getAttribute('hour');
+				let minute=navEls[n].dataset.minute || navEls[n].getAttribute('minute');
+				let tz=navEls[n].dataset.tz || navEls[n].getAttribute('tz');
+				countDownDate(id,year,month,day,hour,minute,tz);
 			}
 		}
 		if(in_array("drag",behaviors)){
 			/* DRAG - Make object draggable */
-			var head=navEls[n].getAttribute('data-head');
-			if(undefined == head){head=navEls[n].getAttribute('head');}
-			var headobj=getObject(head);
+			let head=navEls[n].dataset.head || navEls[n].getAttribute('head');
+			let headobj=getObject(head);
 			navEls[n].style.position='relative';
             if(undefined == headobj){
 				//alert('drag behavior error. no head defined: '+navEls[n].getAttribute('id'));
@@ -1637,9 +1630,8 @@ function initBehaviors(ajaxdiv){
 			/* FLOAT */
 			var id=navEls[n].getAttribute('id');
 			if(id){
-				var t=navEls[n].getAttribute('data-top');
-				if(undefined != t){t=navEls[n].getAttribute('top');}
-				floatDiv(id, t);
+				let top=navEls[n].dataset.top || navEls[n].getAttribute('top');
+				floatDiv(id, top);
             }
 		}
 		if(in_array("marquee",behaviors)){
@@ -1667,13 +1659,11 @@ function initBehaviors(ajaxdiv){
         }
 		else if(in_array("dropdown",behaviors)){
 			/* Dropdown MENU - */
-  			var dname=navEls[n].getAttribute('data-display');
-  			if(undefined == dname){dname=navEls[n].getAttribute('display');}
+			var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 			if(dname){
 				navEls[n].style.position='relative';
 				addEventHandler(navEls[n],'click',function(e){
-					var dname=this.getAttribute('data-display');
-					if(undefined == dname){dname=this.getAttribute('display');}
+					let dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 					dObj=getObject(dname);
 					if(dObj){
 						if(dObj.style.display == 'block'){return true;}
@@ -1690,8 +1680,7 @@ function initBehaviors(ajaxdiv){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
-							var dname=this.getAttribute('data-display');
-							if(undefined == dname){dname=this.getAttribute('display');}
+							let dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 							dObj=getObject(dname);
 							if(dObj){
 								var hide=0;
@@ -1719,8 +1708,7 @@ function initBehaviors(ajaxdiv){
 		}
 		else if(in_array("menu",behaviors)){
 			/* MENU - */
-  			var dname=navEls[n].getAttribute('data-display');
-  			if(undefined == dname){dname=navEls[n].getAttribute('display');}
+  			var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 			if(dname){
 				addEventHandler(navEls[n],'click',function(e){
 					var dname=this.dataset.display;
@@ -1778,8 +1766,7 @@ function initBehaviors(ajaxdiv){
                     }
                 });
                 addEventHandler(navEls[n],'mouseover',function(e){
-					var dname=this.getAttribute('data-display');
-					if(undefined == dname){dname=this.getAttribute('display');}
+					var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 					dObj=getObject(dname);
 					if(undefined != dObj){
 						//check for custom dislay
@@ -1836,8 +1823,7 @@ function initBehaviors(ajaxdiv){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
-							var dname=this.getAttribute('data-display');
-							if(undefined == dname){dname=this.getAttribute('display');}
+							var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 							dObj=getObject(dname);
 							if(dObj){
 								var hide=0;
@@ -1866,10 +1852,8 @@ function initBehaviors(ajaxdiv){
 		if(in_array("scrolltable",behaviors)){
 			/* SCROLLTABLE  */
 			var id=navEls[n].getAttribute('id');
-  			var h=navEls[n].getAttribute('data-scrollheight');
-  			if(undefined == h){h=navEls[n].getAttribute('scrollheight');}
-  			var w=navEls[n].getAttribute('data-scrollwidth');
-  			if(undefined == w){w=navEls[n].getAttribute('scrollwidth');}
+			var h=navEls[n].dataset.scrollheight || navEls[n].getAttribute('scrollheight');
+  			var w=navEls[n].dataset.scrollwidth || navEls[n].getAttribute('scrollwidth');
 			if(id){scrollableTable(navEls[n],h,w);}
 		}
 		if(in_array("slideshow",behaviors)){
@@ -1877,20 +1861,16 @@ function initBehaviors(ajaxdiv){
 			var id=navEls[n].getAttribute('id');
 			if(id){
 				addClass(navEls[n],'w_slideshow');
-				var t=navEls[n].getAttribute('data-timer');
-				if(undefined == t){t=navEls[n].getAttribute('timer');}
-				if(undefined == t){t=15;}
+				var t=navEls[n].dataset.timer || navEls[n].getAttribute('timer') || 15;
 				//add navigation
 				var navobj=getObject(id+'_nav');
 				if(undefined != navobj){
-					var tag=navEls[n].getAttribute('data-tag');
-					if(undefined == tag){tag='img';}
+					var tag=navEls[n].dataset.tag || navEls[n].getAttribute('tag') || 'img';
 					var objs=navEls[n].getElementsByTagName(tag);
 					if(objs.length!=0){
                     	var txt='';
                     	for(var n=0;n<objs.length;n++){
-							var navtitle=objs[n].getAttribute('title');
-							if(undefined == navtitle){navtitle='';}
+							var navtitle=objs[n].getAttribute('title') || '';
 							if(t){
                         		txt+='<div id="'+id+'_nav_'+n+'" data-tooltip="'+navtitle+'" data-tooltip_position="bottom" class="" onclick="slideShow(\''+id+'\','+n+','+t+');"></div>';
 							}
@@ -2878,7 +2858,7 @@ function slideShow(divid,idx,s){
 	var ms=Math.round(s*1000);
 	idx=Math.round(idx+0)
 	var divobj=getObject(divid);
-	var transition=divobj.getAttribute('data-transition');
+	var transition=navEls[n].dataset.transition || navEls[n].getAttribute('transition');
 	id='slideshow'+divid;
 	clearTimeout(TimoutArray[id]);
 	if(isMouseOver(divid)){
@@ -3064,6 +3044,9 @@ function countDown(id){
 }
 function countDownDate(divid,yr,m,d,hr,min,tz){
 	//info: used by countdowndate behavior
+	let args=new Array(divid,yr,m,d,hr,min,tz);
+	console.log('countDownDate');
+	console.log(args);
 	if(undefined == tz){tz='';}
 	var divobj=getObject(divid);
 	if(undefined==divobj){
@@ -3098,6 +3081,7 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 	var dmin=Math.floor(((dd%(60*60*1000*24))%(60*60*1000))/(60*1000)*1);
 	var dsec=Math.floor((((dd%(60*60*1000*24))%(60*60*1000))%(60*1000))/1000*1);
 	if(dday<=0&&dhour<=0&&dmin<=0&&dsec<=0){
+		alert('here');
 		divobj.style.display='none';
 		return;
 	}
@@ -3235,8 +3219,7 @@ function startUTCClock(id,live){
     if(h > 24){h=h-24;p='am';}
     else if(h > 12){h=h-12;p='pm';}
     else if(h==12){p='pm';}
-    var format=obj.getAttribute('data-format');
-    if(undefined == format){format='h:m:s p';}
+    var format=obj.getAttribute('data-format') || 'h:m:s p';
     //set the timer based on if they need seconds or not
     var t=1000;
     if(format.indexOf('s') == -1){
