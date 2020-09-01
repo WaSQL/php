@@ -15229,7 +15229,10 @@ function processFileUploads($docroot=''){
 				@trigger_error("");
 				mkdir($absdir,0777,1);
 			}
-            if(!is_file($file['tmp_name'])){$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";}
+    		if(!file_exists($file['tmp_name'])){
+            	$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";
+            	continue;
+            }
             @trigger_error("");
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
