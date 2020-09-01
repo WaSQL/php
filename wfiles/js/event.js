@@ -3081,7 +3081,6 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 	var dmin=Math.floor(((dd%(60*60*1000*24))%(60*60*1000))/(60*1000)*1);
 	var dsec=Math.floor((((dd%(60*60*1000*24))%(60*60*1000))%(60*1000))/1000*1);
 	if(dday<=0&&dhour<=0&&dmin<=0&&dsec<=0){
-		alert('here');
 		divobj.style.display='none';
 		return;
 	}
