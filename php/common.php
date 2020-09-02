@@ -2875,7 +2875,7 @@ function buildFormFile($name,$params=array()){
 		unset($params['data-resize']);
     }
     //remove checkbox
-    $tag .= '		<input type="checkbox" style="display:none;" value="1" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove" />'.PHP_EOL;
+    $tag .= '		<input type="hidden" style="display:none;" value="0" name="'.$name.'_remove"  id="'.$params['id'].'_remove" />'.PHP_EOL;
 
     $params['data-type']='file';
     $params['data-formname']=$params['-formname'];
@@ -2956,7 +2956,7 @@ function buildFormFile($name,$params=array()){
 				break;
 			}
 		}
-		$tag .= '<span class="w_danger icon-erase" style="font-size:16px;margin-left:10px;" title="Clear" onclick="document.getElementById(\''.$params['id'].'\').value=\'\';document.querySelector(\'label[for='.$params['id'].'] span.input_file_text\').innerText=\''.$params['text'].'\';return false;"></span>'.PHP_EOL;
+		$tag .= '<span class="w_danger icon-erase" style="font-size:16px;margin-left:10px;" title="Clear" onclick="document.getElementById(\''.$params['id'].'\').value=\'\';document.getElementById(\''.$params['id'].'_remove\').value=1;document.querySelector(\'label[for='.$params['id'].'] span.input_file_text\').innerText=\''.$params['text'].'\';return false;"></span>'.PHP_EOL;
 	}
 	else{
 		$tag.=$params['text'];
