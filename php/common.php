@@ -14274,7 +14274,7 @@ function processActions(){
 								if(isset($info[$field.'_type'])){$opts[$field.'_type']=null;}
 							}
 							//skip file field if user did not check to remove current value
-							if(isset($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
+							if(strlen($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
 							//add sha1, width, height, and type if fields exist
 							if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
 							if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
