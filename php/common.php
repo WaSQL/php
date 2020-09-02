@@ -14161,6 +14161,7 @@ function processActions(){
 		    	return 0;
 			}
 			$ok=processInlineFiles();
+
 			//echo "EDIT" . printValue($_REQUEST);exit;
 			$_REQUEST['process_action']='edit';
 			if(!isset($_REQUEST['_fields']) && isset($_REQUEST['_formfields'])){
@@ -14209,6 +14210,7 @@ function processActions(){
 							}
 						}
 					}
+					//echo "EDIT".printValue($_FILES).printValue($_REQUEST);exit;
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
@@ -14266,21 +14268,25 @@ function processActions(){
 							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 						}
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
+							
 							if($_REQUEST[$field.'_remove'] == 1){
 								if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=null;}
 								if(isset($info[$field.'_size'])){$opts[$field.'_size']=null;}
 								if(isset($info[$field.'_width'])){$opts[$field.'_width']=null;}
 								if(isset($info[$field.'_height'])){$opts[$field.'_height']=null;}
 								if(isset($info[$field.'_type'])){$opts[$field.'_type']=null;}
+								$opts[$field]=null;
 							}
-							//skip file field if user did not check to remove current value
-							if(strlen($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] != 1){continue;}
-							//add sha1, width, height, and type if fields exist
-							if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
-							if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
-							if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
-							if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
-							if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+							else{
+								$opts[$field]=$_REQUEST[$field];
+								//add sha1, width, height, and type if fields exist
+								if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
+								if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
+								if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
+								if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
+								if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+							}
+							//ksort($_REQUEST);echo "EDIT".printValue($_FILES).printValue($_REQUEST).printValue($opts);exit;
 							}
 						else{
 							if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));}
@@ -15099,10 +15105,12 @@ function processActions(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function processFileUploads($docroot=''){
+	if(isset($_REQUEST['ProcessFileUploads_CallCount'])){return false;}
 	$_REQUEST['ProcessFileUploads_CallCount']+=1;
 	global $USER;
 	global $CONFIG;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
+	//echo printValue($_FILES).printValue($_REQUEST);exit;
 	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
 	if(is_array($_FILES) && count($_FILES) > 0){
 	 	foreach($_FILES as $name=>$file){
@@ -15112,11 +15120,6 @@ function processFileUploads($docroot=''){
 	 		}
 			elseif($file['error'] != 0 && !strlen($file['tmp_name'])){
 				$_REQUEST[$name.'_error']="File Upload Error (1) - " . json_encode($file);
-				continue;
-			}
-			//if editing a record there will be a _prev. If _remove != 1 skip
-			if(isset($_REQUEST[$name.'_prev']) && strlen($_REQUEST[$name.'_prev']) && $_REQUEST[$name.'_prev'] != 'NULL' && $_REQUEST[$name.'_remove'] != 1){
-				$_REQUEST[$name.'_skipped']=1;
 				continue;
 			}
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
@@ -15237,6 +15240,7 @@ function processFileUploads($docroot=''){
             $_REQUEST[$name.'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
+            	$_REQUEST[$name]=$webpath;
             	//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
 					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
@@ -15392,8 +15396,10 @@ function processFileUploads($docroot=''){
                 }
             }
         }
+        //ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
 		return 1;
 	}
+	//ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
     return 0;
 }
 //---------- begin function mergeChunkedFiles ----
