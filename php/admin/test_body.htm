@@ -324,7 +324,52 @@
 </view:data-navigate>
 
 <view:behaviors>
-	<div>countdowndate:  <span id="countdown_6" data-behavior="countdowndate" data-year="2020" data-month="09" data-day="01" data-hour="14" data-minute="30"></span></div>
+	<div class="w_biggest">Behaviors are javascript based and are initiated by an element attribute: data-behavior</div>
+	<div class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">countdown (with beep at end)
+			<sup title="copy code" class="w_pointer" onclick="setText('countdown_x','');wacss.trim(wacss.copy2Clipboard(getText('countdown_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="countdown_code" style="width:100px;" class="align-left"><div class="align-right" id="countdown_x" data-behavior="countdown" data-onzero="countdownBeep">19</div></div>
+	</div>
+	<div class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">countdowntime (with beep at end)
+			<sup title="copy code" class="w_pointer" onclick="setText('countdowntime_x','');wacss.trim(wacss.copy2Clipboard(getText('countdowntime_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="countdowntime_code" style="width:100px;" class="align-left"><div class="align-right" id="countdowntime_x" data-behavior="countdowntime" data-end="countdownBeep">1:20</div></div>
+	</div>
+	<div class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">stopwatch (with beep at end)
+			<sup title="copy code" class="w_pointer" onclick="setText('stopwatch_x','');wacss.trim(wacss.copy2Clipboard(getText('stopwatch_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="stopwatch_code" style="width:100px;" class="align-left"><div class="align-right" id="stopwatch_x" data-behavior="stopwatch" data-end="countdownBeep">00:00:00</div></div>
+	</div>
+	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">countdowndate
+			<sup title="copy code" class="w_pointer" onclick="setText('countdowndate_x','');wacss.trim(wacss.copy2Clipboard(getText('countdowndate_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="countdowndate_code"><div class="align-right" id="countdowndate_x" data-behavior="countdowndate"  data-year="<?=date('Y');?>" data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+2 day'));?>" data-hour="<?=date('H');?>" minute="22"></div></div>
+	</div>
+	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">clock
+			<sup title="copy code" class="w_pointer" onclick="setText('clock_x','');wacss.trim(wacss.copy2Clipboard(getText('clock_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="clock_code" style="width:100px;"><div class="align-right" id="clock_x" data-behavior="clock"></div></div>
+	</div>
+	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">utcclock
+			<sup title="copy code" class="w_pointer" onclick="setText('utcclock_x','');wacss.trim(wacss.copy2Clipboard(getText('utcclock_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="utcclock_code" style="width:100px;"><div class="align-right" id="utcclock_x" data-behavior="utcclock"></div></div>
+	</div>
+	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">raid
+			<sup title="copy code" class="w_pointer" onclick="setText('raid_x','');wacss.trim(wacss.copy2Clipboard(getText('raid_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="raid_code">
+<form><textarea id="raid_txt" data-behavior="@raid(raid_x)" class="textarea" placeholder="type here to raid below"></textarea></form>
+
+<div class="align-left" class="w_bigger" id="raid_x"></div></div>
+	</div>
 </view:behaviors>
 
 <view:javascript>

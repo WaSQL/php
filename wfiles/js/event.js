@@ -1711,8 +1711,7 @@ function initBehaviors(ajaxdiv){
   			var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
 			if(dname){
 				addEventHandler(navEls[n],'click',function(e){
-					var dname=this.dataset.display;
-					if(undefined == dname){dname=this.getAttribute('display');}
+					var dname=this.dataset.display || this.getAttribute('display');
 					dObj=getObject(dname);
 					if(undefined != dObj){
 						//check for custom dislay
@@ -1766,7 +1765,7 @@ function initBehaviors(ajaxdiv){
                     }
                 });
                 addEventHandler(navEls[n],'mouseover',function(e){
-					var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
+					var dname=this.dataset.display || this.getAttribute('display');
 					dObj=getObject(dname);
 					if(undefined != dObj){
 						//check for custom dislay
@@ -1823,7 +1822,7 @@ function initBehaviors(ajaxdiv){
 					if(undefined == e){e = fixE(e);}
 					if(undefined != e){
 						if(checkMouseLeave(this,e)){
-							var dname=navEls[n].dataset.display || navEls[n].getAttribute('display');
+							var dname=this.dataset.display || this.getAttribute('display');
 							dObj=getObject(dname);
 							if(dObj){
 								var hide=0;
@@ -1957,6 +1956,7 @@ function initBehaviors(ajaxdiv){
 	        if (res && res.length > 0){
 				var func=res[1].toLowerCase();
 				var str=res[2].toLowerCase();
+
 				switch (func){
 					case 'sum':
 						var result=0;
@@ -3025,22 +3025,30 @@ function countDown(id){
     else if(undefined != obj.getAttribute('callback')){
     	cb=obj.getAttribute('callback');
     }
+    let stop=0;
     if(cb.length > 0){
     	let cbfunc=cb+"('"+id+"','"+number+"')";
     	let jsfunc=new Function(cbfunc);
     	jsfunc();
 	}
 	else if(number == 0){
-		let fn='';
-	    if(undefined != obj.getAttribute('data-onzero')){
-	    	fn=obj.getAttribute('data-onzero');
-	    }
-	    if(fn.length > 0){
-	    	let fnfunc=new Function(fn);
-	    	fnfunc();
+		if(undefined != obj.dataset.end){
+			let func=obj.dataset.end;
+		    if(function_exists(func)){
+	    		window[func](obj);
+	    	}
 		}
+		else if(undefined != obj.dataset.onzero){
+			let func=obj.dataset.onzero;
+		    if(function_exists(func)){
+	    		window[func](obj);
+	    	}
+		}
+		stop=1;
 	}
-	TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
+	if(stop==0){
+		TimoutArray[id]=setTimeout("countDown('"+id+"')",1000);
+	}
 }
 function countDownDate(divid,yr,m,d,hr,min,tz){
 	//info: used by countdowndate behavior
