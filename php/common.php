@@ -1822,7 +1822,6 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
 	if(!isset($params['class'])){$params['class']='input browser-default form-control w_form-control w_input-prepend';}
 	if(!isset($params['name'])){$params['name']=$name;}
-	if(!isset($params['id'])){$params['id']=$params['id'];}
 	if(strlen($params['-value'])){
 		//strip off any time value
 		if(isset($params['data-showtime']) && $params['data-showtime']==1){
@@ -6292,7 +6291,7 @@ function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
 	if ($handle = opendir($dir)) {
 		while (false !== ($file = readdir($handle))) {
 			if ($file[0] == '.' || is_dir($dir.'/'.$file)) {continue;}
-			if(strlen($ext) && strtolower(getFileExtension($file)) != strtolower($ext)){continue;}
+			if(strlen($ext) && !stringEndsWith($file,".{$ext}")){continue;}
 			$mtime=filemtime($dir.'/'.$file);
 			$ttime=time();
 			switch(strtolower($unit)){
