@@ -3090,21 +3090,26 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 		return;
 	}
 	else {
+		let dd=dday;
+		let dh=dhour;
+		let dm=dmin;
+		let ds=dsec;
+		if (dday<=9) { dday = "0" + dday; }
 		if (dhour<=9) { dhour = "0" + dhour; }
 		if (dmin<=9) { dmin = "0" + dmin; }
 		if (dsec<=9) { dsec = "0" + dsec; }
 		let rtn='<table  class="w_countdown">'+"\r\n";
 		rtn+='<tr align="center">';
-		if(dday > 0){rtn+='<th>'+dday+'</th>';}
-		if(dhour > 0){rtn+='<th>'+dhour+'</th>';}
-		if(dmin > 0){rtn+='<th>'+dmin+'</th>';}
-		if(dsec > 0){rtn+='<th>'+dsec+'</th>';}
+		if(dd > 0){rtn+='<th>'+dday+'</th>';}
+		if(dh > 0 || dd > 0){rtn+='<th>'+dhour+'</th>';}
+		if(dm > 0 || dh > 0 || dd > 0){rtn+='<th>'+dmin+'</th>';}
+		if(ds > 0 || dm > 0 || dh > 0 || dd > 0){rtn+='<th>'+dsec+'</th>';}
 		rtn+='</tr>'+"\r\n";
 		rtn+='<tr align="center">';
-		if(dday > 0){rtn+='<td>Day</td>';}
-		if(dhour > 0){rtn+='<td>Hour</td>';}
-		if(dmin > 0){rtn+='<td>Min</td>';}
-		if(dsec > 0){rtn+='<td>Sec</td>';}
+		if(dd > 0){rtn+='<td>Day</td>';}
+		if(dh > 0 || dd > 0){rtn+='<td>Hour</td>';}
+		if(dm > 0 || dh > 0 || dd > 0){rtn+='<td>Min</td>';}
+		if(ds > 0 || dm > 0 || dh > 0 || dd > 0){rtn+='<td>Sec</td>';}
 		rtn+='</tr>'+"\r\n";
 		rtn+='</table>'+"\r\n";
 		setText(divobj,rtn);
