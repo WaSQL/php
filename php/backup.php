@@ -32,9 +32,6 @@ if(file_exists($backupfile)){
 }
 include_once("{$progpath}/common.php");
 include_once("{$progpath}/config.php");
-$folders=array(
-	'/var/www/efeedbackplus.com/survey_files'
-);
 $cdate=date('Ymd_his');
 foreach($ALLCONFIG as $site=>$host){
 	$sendopts=array();
@@ -90,7 +87,7 @@ foreach($ALLCONFIG as $site=>$host){
 	if(!isset($host['backup_retain_days'])){$host['backup_retain_days']=5;}
 	$days=(integer)$host['backup_retain_days'];
 	if($days < 1){$days=1;}
-	$ok=cleanupDirectory('/var/www/shared/bkup_efp',$days);
+	$ok=cleanupDirectory($host['backup_dir'],$days);
 	//email
 	if(isset($host['backup_email']) && isEmail($host['backup_email'])){
 		$send=1;
