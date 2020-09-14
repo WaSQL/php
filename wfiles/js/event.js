@@ -3052,41 +3052,39 @@ function countDown(id){
 }
 function countDownDate(divid,yr,m,d,hr,min,tz){
 	//info: used by countdowndate behavior
-	let args=new Array(divid,yr,m,d,hr,min,tz);
-	if(undefined == tz){tz='';}
-	var divobj=getObject(divid);
+	let divobj=getObject(divid);
 	if(undefined==divobj){
 		return;
 	}
-	theyear=yr;themonth=m;theday=d;thehour=hr;theminute=min;
-	var montharray=new Array("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
-	var today=new Date();
-	var todayy=today.getYear();
-	if (todayy < 1000) {todayy+=1900;}
-	var todaym=today.getMonth();
-	var todayd=today.getDate();
-	var todayh=today.getHours();
-	var todaymin=today.getMinutes();
-	var todaysec=today.getSeconds();
-	//if (todayh<=9) { todayh = "0" + todayh;}
-	//if (todaymin<=9) { todaymin = "0" + todaymin;}
-	//if (todaysec<=9) { todaysec = "0" + todaysec;}
-	var todaystring1=montharray[todaym]+" "+todayd+", "+todayy+" "+todayh+":"+todaymin+":"+todaysec;
-	//adjust for timezone if passed in
-	if(tz.length==0){
-		var todaystring=Date.parse(todaystring1)+(tz*1000*60*60);
+	//a will be today and b will be the dataset defined date
+	let a=new Date();
+	let bstr=divobj.dataset.year+'-'+divobj.dataset.month+'-'+divobj.dataset.day;
+	if(undefined != divobj.dataset.hour){
+		bstr=bstr+' '+divobj.dataset.hour+':'+divobj.dataset.minute;
+	}
+	if(undefined != divobj.dataset.second){
+		bstr=bstr+':'+divobj.dataset.second;
 	}
 	else{
-		var todaystring=Date.parse(todaystring1);
+		bstr=bstr+':00';
 	}
-	d=parseInt(d);
-	var futurestring1=(montharray[m-1]+" "+d+", "+yr+" "+hr+":"+min+':00');
-	var futurestring=Date.parse(futurestring1);
-	var dd=futurestring-todaystring;
-	var dday=Math.floor(dd/(60*60*1000*24)*1);
-	var dhour=Math.floor((dd%(60*60*1000*24))/(60*60*1000)*1);
-	var dmin=Math.floor(((dd%(60*60*1000*24))%(60*60*1000))/(60*1000)*1);
-	var dsec=Math.floor((((dd%(60*60*1000*24))%(60*60*1000))%(60*1000))/1000*1);
+	if(undefined != divobj.dataset.tz){
+		bstr=bstr+' '+divobj.dataset.tz;
+	}
+	let b=new Date(bstr)
+	if(undefined == b){
+		setText(divobj,'Date Conversion Error: '+bstr);
+		return;
+	}
+	let utca = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate(),a.getHours(),a.getMinutes(),a.getSeconds());
+  	let utcb = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate(),b.getHours(),b.getMinutes(),b.getSeconds());
+  	//difference
+  	let dd=utcb-utca;
+	let dday=Math.floor(dd/(60*60*1000*24)*1);
+	let dhour=Math.floor((dd%(60*60*1000*24))/(60*60*1000)*1);
+	let dmin=Math.floor(((dd%(60*60*1000*24))%(60*60*1000))/(60*1000)*1);
+	let dsec=Math.floor((((dd%(60*60*1000*24))%(60*60*1000))%(60*1000))/1000*1);
+	//display
 	if(dday<=0&&dhour<=0&&dmin<=0&&dsec<=0){
 		divobj.style.display='none';
 		return;
@@ -3095,17 +3093,22 @@ function countDownDate(divid,yr,m,d,hr,min,tz){
 		if (dhour<=9) { dhour = "0" + dhour; }
 		if (dmin<=9) { dmin = "0" + dmin; }
 		if (dsec<=9) { dsec = "0" + dsec; }
-		var rtn='<table  class="w_countdown">'+"\r\n";
-		rtn+='<tr align="center"><th>'+dday+'</th><th>'+dhour+'</th><th>'+dmin+'</th><th>'+dsec+'</th></tr>'+"\r\n";
-		rtn+='<tr align="center"><td>Day</td><td>Hour</td><td>Min</td><td>Sec</td></tr>'+"\r\n";
+		let rtn='<table  class="w_countdown">'+"\r\n";
+		rtn+='<tr align="center">';
+		if(dday > 0){rtn+='<th>'+dday+'</th>';}
+		if(dhour > 0){rtn+='<th>'+dhour+'</th>';}
+		if(dmin > 0){rtn+='<th>'+dmin+'</th>';}
+		if(dsec > 0){rtn+='<th>'+dsec+'</th>';}
+		rtn+='</tr>'+"\r\n";
+		rtn+='<tr align="center">';
+		if(dday > 0){rtn+='<td>Day</td>';}
+		if(dhour > 0){rtn+='<td>Hour</td>';}
+		if(dmin > 0){rtn+='<td>Min</td>';}
+		if(dsec > 0){rtn+='<td>Sec</td>';}
+		rtn+='</tr>'+"\r\n";
 		rtn+='</table>'+"\r\n";
 		setText(divobj,rtn);
-		if(tz.length==0){
-			setTimeout("countDownDate('"+divid+"',theyear,themonth,theday,thehour,theminute)",1000);
-		}
-		else{
-        	setTimeout("countDownDate('"+divid+"',theyear,themonth,theday,thehour,theminute,tz)",1000);
-		}
+		setTimeout(countDownDate,1000,divid);
 	}
 }
 function countdownTime(id){

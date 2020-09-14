@@ -347,7 +347,13 @@
 		<div class="w_bigger">countdowndate
 			<sup title="copy code" class="w_pointer" onclick="setText('countdowndate_x','');wacss.trim(wacss.copy2Clipboard(getText('countdowndate_code')));return false;"><span class="icon-copy"></span></sup>
 		</div>
-		<div id="countdowndate_code"><div class="align-right" id="countdowndate_x" data-behavior="countdowndate"  data-year="<?=date('Y');?>" data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+2 day'));?>" data-hour="<?=date('H');?>" minute="22"></div></div>
+		<div id="countdowndate_code">
+			<div class="w_padtop">data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+0 day'));?>" data-hour="<?=date('H',strtotime('+ 7 hours'));?>" minute="<?=date('i',strtotime('+ 14 min'));?>"</div>
+			<div class="align-right" id="countdowndate_x" data-behavior="countdowndate"  data-year="<?=date('Y');?>" data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+0 day'));?>" data-hour="<?=date('H',strtotime('+ 7 hours'));?>" data-minute="<?=date('i',strtotime('+ 14 min'));?>"></div>
+
+			<div class="w_padtop">data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+10 day'));?>" data-hour="<?=date('H');?>" minute="22"</div>
+			<div class="align-right" id="countdowndate_y" data-behavior="countdowndate"  data-year="<?=date('Y');?>" data-month="<?=date('m');?>" data-day="<?=date('d',strtotime('+10 day'));?>" data-hour="<?=date('H');?>" data-minute="22"></div>
+		</div>
 	</div>
 	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
 		<div class="w_bigger">clock
