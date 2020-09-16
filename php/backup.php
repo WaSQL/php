@@ -35,6 +35,7 @@ include_once("{$progpath}/config.php");
 $cdate=date('Ymd_his');
 foreach($ALLCONFIG as $site=>$host){
 	$sendopts=array();
+	$filenames=array();
 	if(!isset($host['backup'])){continue;}
 	if(!in_array($host['backup'],array(1,'true'))){continue;}
 	$ok=backupMessage("*** Begin backup for {$site} ***");
@@ -53,6 +54,7 @@ foreach($ALLCONFIG as $site=>$host){
 		appendFileContents($backupfile,$filename.PHP_EOL);
 		if(isset($host['backup_email']) && isEmail($host['backup_email'])){
 			$sendopts['attach']=array($outfile);
+			$filenames[]=$filename;
 		}
 	}
 	//folders?
@@ -102,6 +104,7 @@ foreach($ALLCONFIG as $site=>$host){
 				$host['backup_email_subject']="Backup for {$site}";
 			}
 			$sendopts['subject']=$host['backup_email_subject'];
+			$sendopts['message']="Files Attached:".PHP_EOL.implode(PHP_EOL,$filenames);
 			$ok=sendMail($sendopts);
 			$ok=backupMessage("sendmail - {$ok}");
 		}
