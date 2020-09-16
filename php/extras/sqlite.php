@@ -161,7 +161,9 @@ function sqliteGetDBTableIndexes($tablename=''){
 		m.tbl_name as table_name,
 		il.name as key_name,
 		ii.name as column_name,
-		case il.origin when 'pk' then 1 else 0 END as is_primary,
+		CASE il.origin when 'pk' then 1 else 0 END as is_primary,
+		CASE il.[unique] when 1 then 0 else 1 END as non_unique,
+		il.[unique] as is_unique,
 		il.partial,
 		il.seq as seq_in_index
   	FROM sqlite_master AS m,
