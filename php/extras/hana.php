@@ -1444,7 +1444,16 @@ function hanaQueryResults($query,$params=array()){
     	return json_encode($e);
 	}
 	try{
-		$result=odbc_exec($dbh_hana,$query);
+		//check for -timeout
+		if(isset($params['-timeout']) && isNum($params['-timeout'])){
+			//sets the query to timeout after X seconds
+			$result = odbc_prepare($dbh_hana,$query);
+			odbc_setoption($result, 2, 0, $params['-timeout']);
+			odbc_execute($result);
+		}
+		else{
+			$result=odbc_exec($dbh_hana,$query);	
+		}
 		if(!$result){
 			$errstr=odbc_errormsg($dbh_hana);
 			if(!strlen($errstr)){return array();}
