@@ -531,7 +531,15 @@ function hanaExecuteSQL($query,$params=array()){
 		}
 	}
 	try{
-		$result=odbc_exec($dbh_hana,$query);
+		if(isset($params['-timeout']) && isNum($params['-timeout'])){
+			//sets the query to timeout after X seconds
+			$result = odbc_prepare($dbh_hana,$query);
+			odbc_setoption($result, 2, 0, $params['-timeout']);
+			odbc_execute($result);
+		}
+		else{
+			$result=odbc_exec($dbh_hana,$query);	
+		}
 		if(!$result){
 			$err=odbc_errormsg($dbh_hana);
 			debugValue($err);
@@ -1310,7 +1318,9 @@ function hanaGetDBFieldInfo($table,$params=array()){
 	}
 	$query="select * from {$table} where 1=0";
 	try{
-		$result=odbc_exec($dbh_hana,$query);
+		$result = odbc_prepare($dbh_hana,$query);
+		odbc_setoption($result, 2, 0, 30);
+		odbc_execute($result);
 		if(!$result){
         	$err=array(
         		'error'	=> odbc_errormsg($dbh_hana),
@@ -1391,7 +1401,16 @@ function hanaQueryHeader($query,$params=array()){
 		$query .= " limit 0";
 	}
 	try{
-		$result=odbc_exec($dbh_hana,$query);
+		//check for -timeout
+		if(isset($params['-timeout']) && isNum($params['-timeout'])){
+			//sets the query to timeout after X seconds
+			$result = odbc_prepare($dbh_hana,$query);
+			odbc_setoption($result, 2, 0, $params['-timeout']);
+			odbc_execute($result);
+		}
+		else{
+			$result=odbc_exec($dbh_hana,$query);	
+		}
 		if(!$result){
         	$err=array(
         		'error'	=> odbc_errormsg($dbh_hana),
@@ -1467,7 +1486,15 @@ function hanaQueryResults($query,$params=array()){
 				sleep(1);
 				$dbh_hana='';
 				$dbh_hana=hanaDBConnect($params);
-				$result=odbc_exec($dbh_hana,$query);
+				if(isset($params['-timeout']) && isNum($params['-timeout'])){
+					//sets the query to timeout after X seconds
+					$result = odbc_prepare($dbh_hana,$query);
+					odbc_setoption($result, 2, 0, $params['-timeout']);
+					odbc_execute($result);
+				}
+				else{
+					$result=odbc_exec($dbh_hana,$query);	
+				}
 				if(!$result){
 					$errstr=odbc_errormsg($dbh_hana);
 					if(!strlen($errstr)){return array();}
