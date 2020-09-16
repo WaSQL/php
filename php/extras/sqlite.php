@@ -144,6 +144,45 @@ function sqliteCreateDBTable($table='',$fields=array()){
 	}
 }
 
+function sqliteGetDBIndexes($tablename=''){
+	return sqliteGetDBTableIndexes($tablename);
+}
+function sqliteGetDBTableIndexes($tablename=''){
+	global $databaseCache;
+	if(isset($databaseCache['sqliteGetDBTableIndexes'][$tablename])){
+		return $databaseCache['sqliteGetDBTableIndexes'][$tablename];
+	}
+	$filter='';
+	if(strlen($tablename)){
+		$filter="and m.tbl_name = '{$tablename}'";
+	}
+	$query=<<<ENDOFQUERY
+	SELECT 
+		m.tbl_name as table_name,
+		il.name as key_name,
+		ii.name as column_name,
+		case il.origin when 'pk' then 1 else 0 END as is_primary,
+		il.partial,
+		il.seq as seq_in_index
+  	FROM sqlite_master AS m,
+	    pragma_index_list(m.name) AS il,
+	    pragma_index_info(il.name) AS ii
+ 	WHERE 
+ 		m.type = 'table'
+ 		{$filter}
+ 	GROUP BY
+ 		m.tbl_name,
+		il.name,
+		ii.name,
+		il.origin,
+		il.partial,
+		il.seq
+ 	ORDER BY 1,6
+ENDOFQUERY;
+	$recs=sqliteQueryResults($query);
+	$databaseCache['sqliteGetDBTableIndexes'][$tablename]=$recs;
+	return $databaseCache['sqliteGetDBTableIndexes'][$tablename];
+}
 
 //---------- begin function sqliteListRecords
 /**
