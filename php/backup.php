@@ -10,6 +10,7 @@
 			backup_dir="/var/www/bkup" - directory to backup files to (defaults to sh/backup)
 			backup_retain_days="10" - keeps backup for 10 days (defaults to 5 days)
 			backup_folder[_x]="/var/www/shared" - folder to backup. change x to a number or comma separate folders. No default
+			backup_folder[_x]_exts="php,jpg,png" - only backup these file extensions in this folder
 			backup_email="you@yourdomain.com" - if set, send backup files to this email also
 			backup_email_days="1,15" - if set only send backup files to email on these days
 			backup_email_subject="backup for mysite" - defaults to backup for {sitename}
@@ -60,28 +61,44 @@ foreach($ALLCONFIG as $site=>$host){
 	//folders?
 	$folders=array();
 	foreach($host as $k=>$v){
-		if(stringBeginsWith($k,'backup_folder')){
+		if(stringBeginsWith($k,'backup_folder') && !stringEndsWith($k,'_exts')){
 			$cdirs=preg_split('/[\,\;]+/',$v);
 			foreach($cdirs as $cdir){
 				if(is_dir($cdir) && !in_array($cdir,$folders)){
 					$folders[]=$cdir;
+					$filename=str_replace('/',' ',$cdir);
+					$filename=trim($filename);
+					$filename=str_replace(' ','_',$filename);
+					$filename.="_{$cdate}.tar.gz";
+					$outfile="{$host['backup_dir']}/{$filename}";
+					if(isset($host["{$k}_exts"])){
+						//find {$cdir} -name "*.php" -o -name "*.html" | tar -cf my_archive -T -
+						$exts=preg_split('/[;,\ ]+/',$host["{$k}_exts"]);
+						$parts=array();
+						foreach($exts as $i=>$ext){
+							//use -o -name [pattern] for each new condition
+							if($i==0){
+								$parts[]="-name *.{$ext}";
+							}
+							else{
+								$parts[]="-o -name *.{$ext}";
+							}
+						}
+						$partstr=implode(' ',$parts);
+						$cmd="find {$cdir} {$partstr} | tar -czf {$outfile} -T -";
+					}
+					else{
+						$cmd="tar -czf {$outfile} {$cdir}/";
+					}
+					$ok=backupMessage($cmd);
+					$out=cmdResults($cmd);
+					if(file_exists($outfile)){
+						appendFileContents($backupfile,$filename.PHP_EOL);
+						if(isset($host['backup_email']) && isEmail($host['backup_email'])){
+							$sendopts['attach'][]=$outfile;
+						}
+					}
 				}
-			}
-		}
-	}
-	foreach($folders as $folder){
-		$filename=str_replace('/',' ',$folder);
-		$filename=trim($filename);
-		$filename=str_replace(' ','_',$filename);
-		$filename.="_{$cdate}.tar.gz";
-		$outfile="{$host['backup_dir']}/{$filename}";
-		$cmd="tar -cvzf {$outfile} {$folder}/";
-		$ok=backupMessage($cmd);
-		$out=cmdResults($cmd);
-		if(file_exists($outfile)){
-			appendFileContents($backupfile,$filename.PHP_EOL);
-			if(isset($host['backup_email']) && isEmail($host['backup_email'])){
-				$sendopts['attach'][]=$outfile;
 			}
 		}
 	}
