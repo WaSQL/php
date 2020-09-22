@@ -767,7 +767,7 @@ function cloneTableRow(tid,opts){
 					if(clone.tagName=='TEXTAREA'){clone.innerHTML='';}
 					if(clone.tagName=='SELECT'){clone.options[clone.selectedIndex].value = false;}
 					if(clone.tagName=='IMG' && undefined != clone.dataset.clear && clone.dataset.clear==1){
-						clone.src='//:0';
+						clone.src='/wfiles/clear.gif';
 					}
 				}
 				//change the tabindex of this element
