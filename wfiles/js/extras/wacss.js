@@ -1767,7 +1767,8 @@ var wacss = {
 	    return false;;
 	},
 	showImage: function(el,z){
-		el=wacss.getObject(el) || return false;
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
 		if(undefined==z){z=1020;}
 		let d=document.createElement('div');
 		d.id="modal1";
