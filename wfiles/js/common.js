@@ -761,11 +761,13 @@ function cloneTableRow(tid,opts){
 						clone.name=match[1]+newnum;
 					}
 					else{clone.name=clone.name+xval;}
-					if(undefined != clone.tagName){
-						if(clone.tagName=='INPUT'){clone.value='';}
-						if(clone.tagName=='TEXTAREA'){clone.innerHTML='';}
-						if(clone.tagName=='SELECT'){clone.options[clone.selectedIndex].value = false;}
-
+				}
+				if(undefined != clone.tagName){
+					if(clone.tagName=='INPUT'){clone.value='';}
+					if(clone.tagName=='TEXTAREA'){clone.innerHTML='';}
+					if(clone.tagName=='SELECT'){clone.options[clone.selectedIndex].value = false;}
+					if(clone.tagName=='IMG' && undefined != clone.dataset.clear && clone.dataset.clear==1){
+						clone.src='//:0';
 					}
 				}
 				//change the tabindex of this element
