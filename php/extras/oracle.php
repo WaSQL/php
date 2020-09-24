@@ -1224,17 +1224,23 @@ function oracleGetDBRecords($params){
 */
 function oracleGetDBTables($params=array()){
 	global $CONFIG;
+	global $DATABASE;
+	$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
+	if(strlen($owner)){
+		return array("ERROR: No dbschema specified");
+	}
 	$query=<<<ENDOFQUERY
 		SELECT 
 			owner,table_name,last_analyzed,num_rows,pct_free 
 		FROM 
 			all_tables 
 		WHERE 
-			owner not in ('SYS','SYSTEM') 
+			owner ='{$owner}' 
 			and tablespace_name not in ('SYS','SYSAUX','SYSTEM') 
 			and status='VALID'
 		ORDER BY 
 			owner,table_name
+		offset 0 rows fetch next 5000 rows only
 ENDOFQUERY;
 	$recs = oracleQueryResults($query,$params);
 	$tables=array();
