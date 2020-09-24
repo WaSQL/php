@@ -1226,7 +1226,7 @@ function oracleGetDBTables($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
-	if(strlen($owner)){
+	if(!strlen($owner)){
 		return array("ERROR: No dbschema specified");
 	}
 	$query=<<<ENDOFQUERY
