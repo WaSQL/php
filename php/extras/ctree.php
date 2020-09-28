@@ -138,14 +138,20 @@ function ctreeGetDBCount($params=array()){
 function ctreeGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
 	$query=<<<ENDOFQUERY
-		SELECT col
-		WHERE tbl='{$table}'
-		order by collation
+		SELECT
+			sc.tbl as table, 
+			sc.col as column,
+			sc.coltype as datatype, 
+			sc.width as datasize
+		FROM admin.syscolumns sc, admin.systables st
+		WHERE sc.tbl = st.tbl AND st.tbltype = 'S'
+		and sc.tbl = '{$table}'
+		ORDER BY sc.tbl, sc.col
 ENDOFQUERY;
 	$recs=ctreeQueryResults($query);
 	$fields=array();
 	foreach($recs as $rec){
-		$fields[]=$rec['col'];
+		$fields[]=$rec['column'];
 	}
 	return $fields;
 }
@@ -159,7 +165,7 @@ ENDOFQUERY;
 function ctreeGetDBFieldInfo($table){
 	$table=strtolower($table);
 	$query=<<<ENDOFQUERY
-		SELECT
+	SELECT
 		c.col
 		,c.coltype
 		,c.width
