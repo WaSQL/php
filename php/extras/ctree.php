@@ -171,7 +171,7 @@ function ctreeGetDBFieldInfo($table){
 		,c.width
 		,c.scale
 		,c.nullflag
-		,max(case when i.idxtype='U' then 'P' when length(i.idxtype) > 0 then 'I' else '' end) as findex
+		,max(case when i.idxtype='U' then 'P' when length(i.idxtype) > 0 then 'I' else ' ' end) as findex
 	FROM
 		admin.syscolumns c
 		left outer join admin.sysindexes i on c.col=i.colname and i.tbl=c.tbl
@@ -200,7 +200,7 @@ ENDOFQUERY;
 			'num'		=> $rec['width'],
 			'size'		=> $rec['scale'],
 			'nullable'	=> $rec['nullflag'],
-			'findex'	=> $rec['findex']
+			'findex'	=> trim($rec['findex'])
 		);
 		$field['_dblength']=$field['length'];
 		$field['_dbtype']=$field['_dbtype_ex']=$field['type']=strtolower($field['_dbtype']);
