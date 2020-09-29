@@ -14209,7 +14209,7 @@ function processActions(){
 							}
 						}
 					}
-					//echo "EDIT".printValue($_FILES).printValue($_REQUEST);exit;
+					//echo "EDIT".printValue($info).printValue($_REQUEST);exit;
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
@@ -14233,8 +14233,14 @@ function processActions(){
 							}
 						}
 						//decode it if needs be
-						if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
-						elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+						if(isset($_REQUEST[$field])){
+							if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){
+								$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);
+							}
+							elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){
+								$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);
+							}
+						}
 						//css_min minifycode
 						if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
                         	//only call minifyCode if the css has changed
@@ -14266,9 +14272,10 @@ function processActions(){
 							elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
 							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
 						}
+						//file type
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
-							
-							if($_REQUEST[$field.'_remove'] == 1){
+							//echo "EDIT".printValue($info[$field]).printValue($_REQUEST);exit;
+							if(isset($_REQUEST[$field.'_remove']) && $_REQUEST[$field.'_remove'] == 1){
 								if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=null;}
 								if(isset($info[$field.'_size'])){$opts[$field.'_size']=null;}
 								if(isset($info[$field.'_width'])){$opts[$field.'_width']=null;}
@@ -14277,24 +14284,33 @@ function processActions(){
 								$opts[$field]=null;
 							}
 							else{
-								$opts[$field]=$_REQUEST[$field];
-								//add sha1, width, height, and type if fields exist
-								if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
-								if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
-								if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
-								if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
-								if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+								if((!isset($_REQUEST[$field]) || !strlen($_REQUEST[$field])) && isset($_REQUEST[$field.'_prev'])){
+									$opts[$field]=$_REQUEST[$field]=$_REQUEST[$field.'_prev'];
+								}
+								else{
+									$opts[$field]=$_REQUEST[$field];
+									//add sha1, width, height, and type if fields exist
+									if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
+									if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
+									if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
+									if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
+									if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+								}
 							}
 							//ksort($_REQUEST);echo "EDIT".printValue($_FILES).printValue($_REQUEST).printValue($opts);exit;
-							}
+						}
 						else{
-							if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));}
-							if(isset($info[$field.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
+							if(isset($info[$field.'_sha1'])){
+								$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));
 							}
+							if(isset($info[$field.'_size'])){
+								$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));
+							}
+						}
 						if($opts['-table']=="_users" && $field=='password' && !userIsEncryptedPW($_REQUEST[$field])){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
-							}
-						else{
+						}
+						elseif(!isset($opts[$field])){
 							$opts[$field]=$_REQUEST[$field];
 							if($action=='POSTEDIT'){
 								//removed to make brazil characters render correctly.  Cant remember why it was added.
@@ -14303,7 +14319,7 @@ function processActions(){
 						}
 
 						unset($_REQUEST[$field]);
-						}
+					}
 					$_REQUEST['edit_opts']=$opts;
 					unset($_REQUEST['_fields']);
 					unset($_REQUEST['_action']);
