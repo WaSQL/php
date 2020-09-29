@@ -14285,7 +14285,7 @@ function processActions(){
 							}
 							else{
 								if((!isset($_REQUEST[$field]) || !strlen($_REQUEST[$field])) && isset($_REQUEST[$field.'_prev'])){
-									$opts[$field]=$_REQUEST[$field]=$_REQUEST[$field.'_prev'];
+									$opts[$field]=$_REQUEST[$field.'_prev'];
 								}
 								else{
 									$opts[$field]=$_REQUEST[$field];
@@ -14310,12 +14310,8 @@ function processActions(){
 						if($opts['-table']=="_users" && $field=='password' && !userIsEncryptedPW($_REQUEST[$field])){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
 						}
-						elseif(!isset($opts[$field])){
+						if(!isset($opts[$field]) && isset($_REQUEST[$field])){
 							$opts[$field]=$_REQUEST[$field];
-							if($action=='POSTEDIT'){
-								//removed to make brazil characters render correctly.  Cant remember why it was added.
-								//$opts[$field]=utf8_encode($opts[$field]);
-							}
 						}
 
 						unset($_REQUEST[$field]);
