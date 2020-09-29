@@ -14274,7 +14274,7 @@ function processActions(){
 						}
 						//file type
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
-							//echo "EDIT".printValue($info[$field]).printValue($_REQUEST);exit;
+							
 							if(isset($_REQUEST[$field.'_remove']) && $_REQUEST[$field.'_remove'] == 1){
 								if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=null;}
 								if(isset($info[$field.'_size'])){$opts[$field.'_size']=null;}
@@ -14284,20 +14284,39 @@ function processActions(){
 								$opts[$field]=null;
 							}
 							else{
+								if(isset($_REQUEST[$field])){
+									$afile=$_SERVER['DOCUMENT_ROOT'].$_REQUEST[$field];
+									if(is_dir($afile) || !file_exists($afile)){
+										unset($_REQUEST[$field]);
+									}
+								}
+								//echo "EDIT".printValue($opts).printValue($_REQUEST);exit;
 								if((!isset($_REQUEST[$field]) || !strlen($_REQUEST[$field])) && isset($_REQUEST[$field.'_prev'])){
 									$opts[$field]=$_REQUEST[$field.'_prev'];
+									//echo "A ".printValue($opts).printValue($_REQUEST);exit;
 								}
 								else{
-									$opts[$field]=$_REQUEST[$field];
-									//add sha1, width, height, and type if fields exist
-									if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
-									if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
-									if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
-									if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
-									if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+									if(!isset($opts[$field]) && isset($_REQUEST[$field])){
+										$opts[$field]=$_REQUEST[$field];
+										//add sha1, width, height, and type if fields exist
+										if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){
+											$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];
+										}
+										if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){
+											$opts[$field.'_type']=$_REQUEST[$field.'_type'];
+										}
+										if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){
+											$opts[$field.'_size']=$_REQUEST[$field.'_size'];
+										}
+										if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){
+											$opts[$field.'_width']=$_REQUEST[$field.'_width'];
+										}
+										if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];
+										}
+										//echo "B ".printValue($opts).printValue($_REQUEST);exit;
+									}
 								}
 							}
-							//ksort($_REQUEST);echo "EDIT".printValue($_FILES).printValue($_REQUEST).printValue($opts);exit;
 						}
 						else{
 							if(isset($info[$field.'_sha1'])){
@@ -14323,6 +14342,7 @@ function processActions(){
 					//update the _edate and _euser fields on edit
                     if(isUser()){$opts['_euser']=$USER['_id'];}
                     $opts['_edate']=date("Y-m-d H:i:s",$timestamp);
+
                     //edit the record
 					$_REQUEST['edit_result']=editDBRecord($opts);
 					if(!isNum($_REQUEST['edit_result'])){
