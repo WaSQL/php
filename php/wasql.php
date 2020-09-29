@@ -729,10 +729,15 @@ function minifyCssFile($v=''){
 	$mfn=minifyFilename();
 	$v=strtolower($v);
 	if(strlen($v)){
+		if(!isset($_SESSION['w_MINIFY']['extras_css']) || !is_array($_SESSION['w_MINIFY']['extras_css'])){
+	    	$_SESSION['w_MINIFY']['extras_css']=array();
+		}
 		$files=preg_split('/\,/',$v);
 		foreach($files as $file){
 			$file=trim($file);
-			$_SESSION['w_MINIFY']['extras_css'][]=$file;
+			if(!in_array($file,$_SESSION['w_MINIFY']['extras_css'])){
+				$_SESSION['w_MINIFY']['extras_css'][]=$file;
+			}
 		}
 		$v=implode('_',$files);
 		$cssfile = "minify_{$v}_{$mfn}.css";
