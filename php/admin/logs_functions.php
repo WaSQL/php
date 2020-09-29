@@ -1,0 +1,40 @@
+<?php
+function logsGetLogs(){
+	global $CONFIG;
+	$logs=array();
+	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
+	foreach($CONFIG as $k=>$v){
+		if(strtolower($k)=='logs_rowcount'){continue;}
+		if(preg_match('/^logs\_(.+)$/is',$k,$m) && file_exists($v)){
+			$lk=str_replace(' ','_',strtolower(trim($m[1])));
+			$out=cmdResults("tail -n {$rowcount} {$v}");
+			$lines=preg_split('/[\r\n]+/',$out['stdout']);
+			$lines=array_reverse($lines);
+			foreach($lines as $i=>$line){
+				$flag='';
+				if(stringContains($line,'fatal errror:') || stringContains($line,':fatal')){
+					$flag='<span class="icon-circle w_danger w_blink"></span> ';
+				}
+				elseif(stringContains($line,'warning:') || stringContains($line,':warn')){
+					$flag='<span class="icon-circle w_warning"></span> ';
+				}
+				elseif(stringContains($line,'error:') || stringContains($line,':error')){
+					$flag='<span class="icon-circle w_danger"></span> ';
+				}
+				elseif(stringContains($line,'notice:') || stringContains($line,':notice')){
+					$flag='<span class="icon-circle w_info"></span> ';
+				}
+				$lines[$i]="<div style=\"padding:2px;margin-bottom:3px;\">{$flag}{$line}</div>";
+			}
+			//echo $v.printValue($out);exit;
+			$logs[$lk]=array(
+				'name'=>$m[1],
+				'file'=>$v,
+				'key'=>$lk,
+				'tail'=>implode(PHP_EOL,$lines)
+			);
+		}
+	}
+	return $logs;
+}
+?>

@@ -1,0 +1,26 @@
+<view:default>
+<div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
+	<div class="w_bigger" style="flex:15;margin-bottom: 0px;"><span class="icon-file-txt"></span> Logs</div>
+	<a style="margin:10px 10px;text-align:right;flex:1;font-size:1.2rem;text-decoration: none;" href="?_menu=logs">
+		<span style="font-size:0.6rem;" class="w_gray" id="refresh" data-behavior="countdown">16</span>
+		<span class="icon-refresh"></span>
+	</a>
+</div>
+<div style="display:flex;flex-wrap: nowrap;align-items: center;">
+	<view:log>
+	<div class="align-top align-left" style="flex-grow:1;flex-basis: 0;margin-right:5px;">
+		<div class="w_big" style="margin-bottom: 0px;"><?=ucwords($log['name']);?> Log</div>
+		<div class="w_gray w_smaller"><?=$log['file'];?></div>
+		<div style="border:1px solid #ccc;padding:3px;max-width:100%;background:#e5e5e5;font-family: arial;font-size:0.9rem; border-radius: 3px;height: 70vh;overflow: auto;">
+			<div><?=$log['tail'];?></div>
+		</div>
+	</div>
+	</view:log>
+	<?=renderEach('log',$logs,'log');?>
+</div>
+<?=buildOnLoad("setTimeout(function(){window.location.reload(1);}, 15000);");?>
+</view:default>
+
+
+
+
