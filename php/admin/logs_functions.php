@@ -5,6 +5,7 @@ function logsGetLogs(){
 	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
 	foreach($CONFIG as $k=>$v){
 		if(strtolower($k)=='logs_rowcount'){continue;}
+		if(strtolower($k)=='logs_refresh'){continue;}
 		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
 			if(!file_exists($v)){
 				echo "Logs File error for {$k}  - no such file or no access: {$v}<br>";
