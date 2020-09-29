@@ -18,7 +18,7 @@
 	</view:log>
 	<?=renderEach('log',$logs,'log');?>
 </div>
-<?=buildOnLoad("setTimeout(function(){window.location.reload(1);}, 15000);");?>
+<?=buildOnLoad("setTimeout(function(){window.location.reload(1);}, {$refresh}000);");?>
 </view:default>
 
 

@@ -5,7 +5,11 @@ function logsGetLogs(){
 	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
 	foreach($CONFIG as $k=>$v){
 		if(strtolower($k)=='logs_rowcount'){continue;}
-		if(preg_match('/^logs\_(.+)$/is',$k,$m) && file_exists($v)){
+		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
+			if(!file_exists($v)){
+				echo "Logs File error for {$k}  - no such file or no access: {$v}<br>";
+				continue;
+			}
 			$lk=str_replace(' ','_',strtolower(trim($m[1])));
 			$out=cmdResults("tail -n {$rowcount} {$v}");
 			$lines=preg_split('/[\r\n]+/',$out['stdout']);
