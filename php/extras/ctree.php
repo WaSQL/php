@@ -715,7 +715,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 		
 	}
 	else{$recs=array();}
-	$i=0;
+	$rowcount=0;
 	for($i=0; $row = $data->fetch(PDO::FETCH_ASSOC); $i++){
 		$rec=array();
 		foreach($row as $key=>$val){
@@ -733,6 +733,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 				$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
 			}
     	}
+    	$rowcount+=1;
     	if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
@@ -745,8 +746,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 			}
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
 			fwrite($fh,$csv."\r\n");
-			$i+=1;
-			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $rowcount % 5000 == 0){
 				appendFileContents($params['-logfile'],$i.PHP_EOL);
 			}
 			if(isset($params['-process'])){
@@ -768,7 +768,7 @@ function ctreeEnumQueryResults($data,$params=array()){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
-			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+			appendFileContents($params['-logfile'],"Line count:{$rowcount}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
 		return $i;
 	}
