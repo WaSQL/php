@@ -670,7 +670,7 @@ function ctreeQueryResults($query='',$params=array()){
 	}
 	try{
 		$data = $dbh_ctree->query($query);
-		$recs = ctreeEnumQueryResults($data,$params);
+		$recs = ctreeEnumQueryResults($data,$params,$query);
 		$dbh_ctree=null;
 		return $recs;
 	}
@@ -688,7 +688,7 @@ function ctreeQueryResults($query='',$params=array()){
 * @return array
 *	returns records
 */
-function ctreeEnumQueryResults($data,$params=array()){
+function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	if(!is_object($data)){return null;}
 	$header=0;
 	unset($fh);
