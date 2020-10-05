@@ -355,10 +355,14 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	if(!isset($ldapInfo['page_size'])){
 		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
 	}
+	$filter='';
 	$filters=array();
 	//set defaults
 	if($str=='*'){
 		$checkfields=array();
+	}
+	elseif(!is_array($checkfields) && strlen($checkfields) && stringBeginsWith($checkfields,'(')){
+		$filter=$checkfields;
 	}
 	else{
 		if(!is_array($checkfields) && strlen($checkfields)){
@@ -382,18 +386,22 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 			}
 		}
 	}
-	switch(count($filters)){
-		case 0:
-			$filter="(&(objectClass=user)(objectCategory=person))";
-		break;
-		case 1:
-			$filter="(&(objectClass=user)(objectCategory=person)({$filters[0]}))";
-		break;
-		default:
-			$filterstr=implode(')(',$filters);
-			$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
-		break;
+	//if no filter create one
+	if(!strlen($filter)){
+		switch(count($filters)){
+			case 0:
+				$filter="(&(objectClass=user)(objectCategory=person))";
+			break;
+			case 1:
+				$filter="(&(objectClass=user)(objectCategory=person)({$filters[0]}))";
+			break;
+			default:
+				$filterstr=implode(')(',$filters);
+				$filter="(&(objectClass=user)(objectCategory=person)(|({$filterstr})))";
+			break;
+		}
 	}
+	
 	if(!is_array($returnfields) && strlen($returnfields)){
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
