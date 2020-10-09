@@ -4530,6 +4530,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	global $PAGE;
 	$includeFields=array();
 	$rtn='';
+	$geolocation='';
+	if(isset($params['-geolocation'])){
+		$geolocation=$params['-geolocation'];
+	}
 	//get table info for this table
 	$info=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>1));
 	//return printValue($info);
@@ -4712,6 +4716,9 @@ function addEditDBForm($params=array(),$customcode=''){
 			$cnt=count($cm[1]);
 			for($ex=0;$ex<$cnt;$ex++){
 				$cfield=$cm[1][$ex];
+				if(!isset($params['-geolocation']) && in_array($cfield,array('latlong','geolocation'))){
+					$geolocation="document.{$formname}.{$cfield}";
+				}
 				//make sure cfield is not a pattern
 				if(preg_match('/^(0\-9|a\-z)/i',$cfield)){continue;}
 				if($editmode==0 && isset($info['fieldinfo'][$cfield]['defaultval'])){
@@ -4818,6 +4825,10 @@ function addEditDBForm($params=array(),$customcode=''){
 			foreach($fields as $field){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
+				//check for geolocation
+				if(!isset($params['-geolocation']) && in_array($field,array('latlong','geolocation'))){
+					$geolocation="document.{$formname}.{$field}";
+				}
 				$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
 				if(isset($params['-bootstrap'])){
 					switch(strtolower($info['fieldinfo'][$field]['inputtype'])){
@@ -5003,6 +5014,10 @@ function addEditDBForm($params=array(),$customcode=''){
 			$field=(string)$fields;
 			if(!strlen($field)){continue;}
 			$includeFields[$field]=1;
+			//check for geolocation
+			if(!isset($params['-geolocation']) && in_array($field,array('latlong','geolocation'))){
+				$geolocation="document.{$formname}.{$field}";
+			}
 			$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
 			if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
 			if(isset($params['-class_all']) && !isset($params[$field.'_class'])){$opts['class']=$params['-class_all'];}
@@ -5154,7 +5169,11 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(!is_array($val) && strlen(trim($val))==0){
 				$rtn .= '	<!--skipped '.$key.': blank value -->'.PHP_EOL;
 				continue;
-				}
+			}
+			//check for geolocation
+			if(!isset($params['-geolocation']) && in_array($key,array('latlong','geolocation'))){
+				$geolocation="document.{$formname}.{$key}";
+			}
 			if(!isset($used[$key])){$used[$key]=1;}
 			else{$used[$key]+=1;}
 			if(is_array($val)){
@@ -5215,6 +5234,10 @@ function addEditDBForm($params=array(),$customcode=''){
     //initBehaviors?
     if($hasBehaviors && isset($_REQUEST['AjaxRequestUniqueId'])){
 		$rtn .= buildOnLoad("initBehaviors();");
+    }
+    //geolocation?
+    if(strlen($geolocation)){
+    	$rtn .= buildOnLoad("getGeoLocation({$geolocation});");
     }
     //set focus field?
     if(isset($params['-focus']) && strlen($params['-focus']) && $params['-focus'] != 0){

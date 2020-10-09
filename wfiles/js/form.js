@@ -2210,6 +2210,12 @@ function textboxReplaceSelect (oTextbox, sText) {
 		}
    	oTextbox.focus();
 	}
+function getGeoLocation(fld){
+	//get latlong if the field is geolocation or latlong
+	if(function_exists(wacss.geoLocation)){
+		wacss.geoLocation(fld);
+	}
+}
 //--------------------------
 function submitForm(theForm,popup,debug,ajax){
 	//info: submitForm -- parses through theForm and validates input based in additonal field attributes

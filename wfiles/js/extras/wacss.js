@@ -90,6 +90,13 @@ var wacss = {
 			wacss.removeObj(el);
 		},1000);
 	},
+	function_exists: function(function_name){   
+    	if (typeof function_name == 'string'){  
+        	return (typeof window[function_name] == 'function');  
+    	} else{  
+        	return (function_name instanceof Function);  
+    	}
+	},
 	getAllAttributes: function(obj){
 		//info: get all attributes of a specific object or id
 		var node=wacss.getObject(obj);
@@ -100,6 +107,52 @@ var wacss = {
 				}
 			}
 	    return rv;
+	},
+	geoLocation: function(fld,opts){
+		console.log('wacss.geoLocation');
+		console.log(fld);
+		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
+		fld=wacss.getObject(fld);
+		if(undefined==fld){
+			console.log("wacss.getGeoLocation error: "+fld+' is undefined');
+			return false;
+		}
+  		if(navigator.geolocation) {
+    		let options = {
+      			enableHighAccuracy: true,
+      			timeout: 10000,
+      			maximumAge: 5000
+    		};
+    		//allow options to be set
+    		if(undefined != opts){
+    			for(let k in opts){
+    				options[k]=opts[k];
+    			}
+    		}
+    		navigator.geoSetFld=fld;
+    		navigator.geolocation.getCurrentPosition(
+    			function(position){
+    				console.log(position);
+    				console.log(navigator.geoSetFld);
+    				if (wacss.function_exists(navigator.geoSetFld)){
+    					console.log('function');
+    					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude);
+    				}
+    				else{
+    					console.log('field');
+    					navigator.geoSetFld.value='['+position.coords.latitude+','+position.coords.longitude+']';	
+    				}
+    				
+    				return false; 
+    			},
+    			function(err){
+    				console.log(err);
+    				return false;
+    			},
+    			options
+    		);
+  		} 
+		return false;
 	},
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in
