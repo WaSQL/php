@@ -1764,12 +1764,12 @@ var wacss = {
 	    	let li=wacss.getParent(el,'li');
 	    	wacss.addClass(li,'active');
 	    }
-	    return false;;
+	    return false;
 	},
 	showImage: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		if(undefined==z){z=1020;}
+		z=z||1020;
 		let d=document.createElement('div');
 		d.id="modal1";
 		//d.className='modal open';
