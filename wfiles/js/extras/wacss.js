@@ -109,8 +109,6 @@ var wacss = {
 	    return rv;
 	},
 	geoLocation: function(fld,opts){
-		console.log('wacss.geoLocation');
-		console.log(fld);
 		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
 		fld=wacss.getObject(fld);
 		if(undefined==fld){
@@ -132,21 +130,17 @@ var wacss = {
     		navigator.geoSetFld=fld;
     		navigator.geolocation.getCurrentPosition(
     			function(position){
-    				console.log(position);
-    				console.log(navigator.geoSetFld);
     				if (wacss.function_exists(navigator.geoSetFld)){
-    					console.log('function');
     					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude);
     				}
     				else{
-    					console.log('field');
     					navigator.geoSetFld.value='['+position.coords.latitude+','+position.coords.longitude+']';	
     				}
     				
     				return false; 
     			},
     			function(err){
-    				console.log(err);
+    				console.log('wacss.getGeoLocation error: '+err);
     				return false;
     			},
     			options
