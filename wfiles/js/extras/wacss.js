@@ -124,7 +124,12 @@ var wacss = {
     		//allow options to be set
     		if(undefined != opts){
     			for(let k in opts){
-    				options[k]=opts[k];
+    				if(k == 'onerror'){
+    					navigator.geoSetFldFailed=opts[k];
+    				}
+    				else{
+    					options[k]=opts[k];
+    				}
     			}
     		}
     		navigator.geoSetFld=fld;
@@ -140,7 +145,14 @@ var wacss = {
     				return false; 
     			},
     			function(err){
-    				console.log('wacss.getGeoLocation error: '+err);
+    				if(undefined != navigator.geoSetFldFailed){
+    					if (wacss.function_exists(navigator.geoSetFldFailed)){
+	    					window[navigator.geoSetFldFailed]();
+	    				}
+    				}
+    				else{
+    					console.log('wacss.getGeoLocation error: '+err);
+    				}
     				return false;
     			},
     			options
