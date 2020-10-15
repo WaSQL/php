@@ -1324,7 +1324,7 @@ function oracleEnumQueryResults($res,$params=array()){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
-			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			return 'oracleEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){
