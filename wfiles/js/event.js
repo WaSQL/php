@@ -1534,7 +1534,7 @@ function initBehaviors(ajaxdiv){
         }
         if(in_array("email-link",behaviors)){
 			/* email link:  /info/wasql/com/  */
-			var email=getText(navEls[n]);
+			var email=navEls[n].dataset.value || navEls[n].innerText;
 			email=email.replace(/^[\/]+/,'',email);
 			email=email.replace(/[\/]+$/,'',email);
 			email=email.replace(/[\/]/,'@',email);
