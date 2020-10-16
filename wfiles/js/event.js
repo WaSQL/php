@@ -1540,7 +1540,6 @@ function initBehaviors(ajaxdiv){
 			email=email.replace(/[\/]/,'@',email);
 			email=email.replace(/[\/]/,'.',email);
 			navEls[n].href='mailto:'+email;
-			setText(navEls[n],email);
 			navEls[n].setAttribute('data-behavior','processed');
 		}
 		if(in_array("loadtextfile",behaviors)){
