@@ -1799,6 +1799,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 *	[data-maincalendar] - left or right - sets where the main calendar is.
 *	[data-pickwholeweek] - if set, selects a whole week instead of a day
 *	[data-theme] - string - define classname so you can define your own css.
+*	[data-yearrange] - mixed - number of years or [start,end] years to show
 * @return string
 * @usage echo buildFormDate('mydate');
 */

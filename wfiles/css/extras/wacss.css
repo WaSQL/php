@@ -1113,25 +1113,15 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
 
 /* ---------------------- Button controls ------------------------- */
 .btn,button.w_form-control {
-    display: inline-block;
-    cursor:pointer;
-    font-weight: 400;
-    text-align: center;
-    vertical-align: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    border: 1px solid transparent;
-    line-height: 1;
-    border-radius: .25rem;
-    padding:.375rem .75rem;
-    text-transform: none;
-    white-space: nowrap;
-    background-image: none;
-    margin:0;
-    -webkit-transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  display: inline-block;
+  cursor:pointer;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  border-radius:4px;
+  border:1px solid #ccc !important;
+  box-sizing: border-box;
+  font-weight:300;
+  width:100%;
 }
 
 
