@@ -4480,6 +4480,7 @@ function dropDBIndex($params=array()){
 *	[-onsubmit] string - onsubmit attribute for form tag - defaults to 'return submitForm(this);'
 *	[-ajax] string - changes the onsubmit attribute to ajaxSubmitForm(this,'{$params['-ajax']}');return false;"
 *	[-enctype] string - defaults to application/x-www-form-urlencoded. If the form has an file upload field changes to multipart/form-data
+*	[-autocomplete] string - sets the autocomplete attribute for form tag (off|on)
 *	[-id] string - sets the id attribute for form tag
 *	[-accept-charset] - sets the accept-charset attribute - defaults to the database charset
 *	[-utf8] - sets the accept-charset attribute to "utf-8"
@@ -4619,6 +4620,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	//enctype
 	if($enctype != "none"){
     	$rtn .= ' enctype="'.$enctype.'"';
+	}
+	//autocomplete
+	if(isset($params['-autocomplete']) && strlen($params['-autocomplete'])){
+		$rtn .= ' autocomplete="'.$params['-autocomplete'].'"';
 	}
     //charset - if not set, look at the database and see what it is using to set charset
     //charset reference: http://www.w3schools.com/tags/ref_charactersets.asp
