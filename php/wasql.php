@@ -1308,9 +1308,14 @@ function wasqlGetBehaviors($d=0){
 	else{$vals=array_keys($behaviors);}
 	return implode("\r\n",$vals);
 }
-//---------- begin function wasqlGetDatabases
+//---------- begin function wasqlGetDatabases ----------
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @describe returns a list of database tags
+* @param d - dvals  1=return dvals, 0=return tvals. defaults to 0
+* @param arr - array  1=return as array, 0=return as carriage separated list, defaults to 0
+* @return
+*	list of valid database tags separated by carriage return.
+* @usage <?=wasqlGetDatabases(1);?>
 */
 function wasqlGetDatabases($d=0,$arr=0){
 	global $DATABASE;
