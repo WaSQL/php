@@ -728,6 +728,10 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 				//these are integers
 				$rec[$key]=$m[1];
 			}
+			elseif(preg_match('/^(status)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
+				//these are integers
+				$rec[$key]=$m[1];
+			}
 			elseif(preg_match('/\_phone$/i',$key)){
 				//remove anything but numbers, dashes, periods, and plus
 				$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
