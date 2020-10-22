@@ -181,7 +181,12 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	$ok=appendFileContents($logfile,"{$ctime_formated},{$diff},{$msg}".PHP_EOL);
 	if($echomsg==1){
-		echo $msg.PHP_EOL;
+		echo $msg;
+		//line break if a browser
+		if(isset($_SERVER['REMOTE_BROWSER'])){
+			echo '<br />';
+		}
+		echo PHP_EOL;
 	}
 	$commonCronLogCache['last']=$ctime;
 	return 1;
