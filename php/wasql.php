@@ -1311,7 +1311,7 @@ function wasqlGetBehaviors($d=0){
 //---------- begin function wasqlGetDatabases ----------
 /**
 * @describe returns a list of database tags
-* @param d - dvals  1=return dvals, 0=return tvals. defaults to 0
+* @param d - dvalstvals  1=return dvals, 0=return tvals. defaults to 0
 * @param arr - array  1=return as array, 0=return as carriage separated list, defaults to 0
 * @return
 *	list of valid database tags separated by carriage return.
