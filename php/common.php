@@ -14215,7 +14215,7 @@ function processActions(){
 							}
 						}
 					}
-					//echo "EDIT".printValue($info).printValue($_REQUEST);exit;
+					//echo "EDIT".printValue($fields).printValue($_REQUEST);exit;
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
 						if(!isset($info[$field])){continue;}
@@ -14335,8 +14335,17 @@ function processActions(){
 						if($opts['-table']=="_users" && $field=='password' && !userIsEncryptedPW($_REQUEST[$field])){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
 						}
+						//echo "Field:{$field}, opts:{$opts[$field]}, req: {$_REQUEST[$field]}, type:{$info[$field]['inputtype']}<br>";
 						if(!isset($opts[$field]) && isset($_REQUEST[$field])){
 							$opts[$field]=$_REQUEST[$field];
+						}
+						elseif(!isset($opts[$field]) && !isset($_REQUEST[$field])){
+							if(isset($info[$field]['_dbdef'])){
+								$opts[$field]=$info[$field]['_dbdef'];
+							}
+							elseif(isset($info[$field]['defaultval'])){
+								$opts[$field]=$info[$field]['defaultval'];
+							}
 						}
 
 						unset($_REQUEST[$field]);
