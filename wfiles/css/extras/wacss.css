@@ -1121,6 +1121,7 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
   border:1px solid #ccc !important;
   box-sizing: border-box;
   font-weight:300;
+  white-space: nowrap;
 }
 
 
