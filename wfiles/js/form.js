@@ -2608,12 +2608,12 @@ function submitForm(theForm,popup,debug,ajax){
 	}
 	//check for show_upload_progress
 	if(undefined != theForm.show_upload_progress){
-		formShowUploadProgress();
+		formShowUploadProgress(theForm);
 		//setTimeout('formShowUploadProgress(\''+theForm.show_upload_progress.value+'\')',2000);
 	}
 	else{
 		//disable buttons with class w_disable_on_submit
-		let dlist=document.querySelectorAll('.w_disable_on_submit');
+		let dlist=theForm.querySelectorAll('.w_disable_on_submit');
 		//console.log('w_disable_on_submit');
 		//console.log(dlist);
 		for(let d=0;d<dlist.length;d++){
@@ -2629,9 +2629,9 @@ function submitForm(theForm,popup,debug,ajax){
 	}
     return true;
 }
-function formShowUploadProgress(){
+function formShowUploadProgress(theForm){
 	//disable buttons with class w_disable_on_submit
-	let dlist=document.querySelectorAll('.w_disable_on_submit');
+	let dlist=theForm.querySelectorAll('.w_disable_on_submit');
 	//console.log('w_disable_on_submit');
 	//console.log(dlist);
 	for(let d=0;d<dlist.length;d++){
