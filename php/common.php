@@ -384,6 +384,7 @@ function commonFormatPhone($phone) {
 *	[-form{class|style|id|...}] string - sets specified attribute on the form
 *	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
 *	[-limit] integer - number of records to show
+*	[-navonly] integer - 1=only show navigation buttons, not search
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
 *	['-formname'] - formname. defaults to searchfiltersform
@@ -507,91 +508,93 @@ function commonSearchFiltersForm($params=array()){
 		}
 	}
 	//keep field and operator together (nowrap)
-	$rtn .= '	<div data-set="1" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= buildFormSelect('filter_field',$vals,$params);
-	$rtn .= '			</div>'.PHP_EOL;
-	//operators
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$vals=array(
-		'eq'	=> 'Equals',
-		'ea'	=> 'Equals Any of These',
-		'ct'	=> 'Contains',
-		'ca'	=> 'Contains Any of These',
-		'nct'	=> 'Not Contains',
-		'nca'	=> 'Not Contain Any of These',
-		'neq'	=> 'Not Equals',
-		'nea'	=> 'Not Equals Any of These',
-		'gt'	=> 'Greater Than',
-		'lt'	=> 'Less Than',
-		'egt'	=> 'Equals or Greater than',
-		'elt'	=> 'Less than or Equals',
-		'ib'	=> 'Is Blank',
-		'nb'	=> 'Is Not Blank'
-	);
-	if(!empty($params['-searchopers'])){
-		if(!is_array($params['-searchopers'])){
-			$params['-searchopers']=preg_split('/\,/',$params['-searchopers']);
+	if(!isset($params['-navonly'])){
+		$rtn .= '	<div data-set="1" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$rtn .= buildFormSelect('filter_field',$vals,$params);
+		$rtn .= '			</div>'.PHP_EOL;
+		//operators
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$vals=array(
+			'eq'	=> 'Equals',
+			'ea'	=> 'Equals Any of These',
+			'ct'	=> 'Contains',
+			'ca'	=> 'Contains Any of These',
+			'nct'	=> 'Not Contains',
+			'nca'	=> 'Not Contain Any of These',
+			'neq'	=> 'Not Equals',
+			'nea'	=> 'Not Equals Any of These',
+			'gt'	=> 'Greater Than',
+			'lt'	=> 'Less Than',
+			'egt'	=> 'Equals or Greater than',
+			'elt'	=> 'Less than or Equals',
+			'ib'	=> 'Is Blank',
+			'nb'	=> 'Is Not Blank'
+		);
+		if(!empty($params['-searchopers'])){
+			if(!is_array($params['-searchopers'])){
+				$params['-searchopers']=preg_split('/\,/',$params['-searchopers']);
+			}
+			$tmp=array();
+			foreach($params['-searchopers'] as $k){
+				$tmp[$k]=$vals[$k];
+			}
+			$vals=$tmp;
 		}
-		$tmp=array();
-		foreach($params['-searchopers'] as $k){
-			$tmp[$k]=$vals[$k];
-		}
-		$vals=$tmp;
-	}
-	$rtn .= buildFormSelect('filter_operator',$vals,$params);
-	$rtn .= '			</div>'.PHP_EOL;
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$params['placeholder']='value';
-	$params['autofocus']='autofocus';
+		$rtn .= buildFormSelect('filter_operator',$vals,$params);
+		$rtn .= '			</div>'.PHP_EOL;
+		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$params['placeholder']='value';
+		$params['autofocus']='autofocus';
 
-	$rtn .= buildFormText('filter_value',$params);
-	unset($params['autofocus']);
-	$rtn .= '			</div>'.PHP_EOL;
-	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
-	//order
-	if(!empty($params['-showorder']) && $params['-showorder']==1){
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$vals=array();
-		foreach($params['-listfields'] as $fld){
-			$dname=ucwords(trim(str_replace('_',' ',$fld)));
-			$vals[$fld]='Order By '.$dname;
-			$vals["{$fld} desc"]='Order By '.$dname.' desc';
+		$rtn .= buildFormText('filter_value',$params);
+		unset($params['autofocus']);
+		$rtn .= '			</div>'.PHP_EOL;
+		$rtn .= '		</div>'.PHP_EOL;
+		$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+		//order
+		if(!empty($params['-showorder']) && $params['-showorder']==1){
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$vals=array();
+			foreach($params['-listfields'] as $fld){
+				$dname=ucwords(trim(str_replace('_',' ',$fld)));
+				$vals[$fld]='Order By '.$dname;
+				$vals["{$fld} desc"]='Order By '.$dname.' desc';
+			}
+			$rtn .= buildFormSelect('filter_order',$vals,$params);
+			$rtn .= '			</div>'.PHP_EOL;	
 		}
-		$rtn .= buildFormSelect('filter_order',$vals,$params);
-		$rtn .= '			</div>'.PHP_EOL;	
-	}
-	else{
-		$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
-	}
-	//search button
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
-	$rtn .= '			</div>'.PHP_EOL;
-	//add filter
-	$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_grey"></span></button>'.PHP_EOL;
-	$rtn .= '			</div>'.PHP_EOL;
-	//bulkedit
-	if(!empty($params['-bulkedit'])){
+		else{
+			$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
+		}
+		//search button
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit  w_danger w_bold"></span></button>'.PHP_EOL;
-    	$rtn .= '			</div>'.PHP_EOL;
-	}
-	//export
-	if(!empty($params['-export'])){
+		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+		$rtn .= '			</div>'.PHP_EOL;
+		//add filter
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export  w_success w_bold"></span></button>'.PHP_EOL;
-    	$rtn .= '			</div>'.PHP_EOL;
-    	$rtn .= '			<div style="margin:0 3px;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
-    	// if(!empty($params['-export_file'])){
-    	// 	$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-	    // 	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
-	    // 	$rtn .= '			</div>'.PHP_EOL;
-    	// }
+		$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_grey"></span></button>'.PHP_EOL;
+		$rtn .= '			</div>'.PHP_EOL;
+		//bulkedit
+		if(!empty($params['-bulkedit'])){
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit  w_danger w_bold"></span></button>'.PHP_EOL;
+	    	$rtn .= '			</div>'.PHP_EOL;
+		}
+		//export
+		if(!empty($params['-export'])){
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="btn" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export  w_success w_bold"></span></button>'.PHP_EOL;
+	    	$rtn .= '			</div>'.PHP_EOL;
+	    	$rtn .= '			<div style="margin:0 3px;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
+	    	// if(!empty($params['-export_file'])){
+	    	// 	$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
+		    // 	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
+		    // 	$rtn .= '			</div>'.PHP_EOL;
+	    	// }
+		}
+		$rtn .= '		</div>'.PHP_EOL;
 	}
-	$rtn .= '		</div>'.PHP_EOL;
 	//Paging buttons - first, prev, next, and last
 	if(!empty($params['-total'])){
 		//keep pagination buttons together (now wrapping)
