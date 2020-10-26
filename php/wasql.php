@@ -1313,11 +1313,12 @@ function wasqlGetBehaviors($d=0){
 * @describe returns a list of database tags
 * @param d - dvalstvals  1=return dvals, 0=return tvals. defaults to 0
 * @param arr - array  1=return as array, 0=return as carriage separated list, defaults to 0
+* @param showtype - 1=show (dbtype) after name
 * @return
 *	list of valid database tags separated by carriage return.
 * @usage <?=wasqlGetDatabases(1);?>
 */
-function wasqlGetDatabases($d=0,$arr=0){
+function wasqlGetDatabases($d=0,$arr=0,$showtype=0){
 	global $DATABASE;
 	global $CONFIG;
 	$showdbs=array();
@@ -1325,9 +1326,15 @@ function wasqlGetDatabases($d=0,$arr=0){
 		$showdbs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
 	}
 	$dbs=array();
-	foreach($DATABASE as $d=>$db){
-		if(count($showdbs) && !in_array($d,$showdbs)){continue;}
-		if($d){$dbs[]=$db['displayname'];}
+	foreach($DATABASE as $dbkey=>$db){
+		if(count($showdbs) && !in_array($dbkey,$showdbs)){continue;}
+		if($d==1){
+			$dname=$db['displayname'];
+			if($showtype==1){
+				$dname .= " ({$db['dbtype']})";
+			}
+			$dbs[]=$dname;
+		}
 		else{$dbs[]=$db['name'];}
 	}
 	if($arr==1){return $dbs;}
