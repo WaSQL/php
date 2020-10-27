@@ -15363,7 +15363,7 @@ function commonProcessFileActions($name,$afile){
 	$adir=getFilePath($afile);
 	$ext=getFileExtension($afile);
 	$mimetype=getFileMimeType($afile);
-	//echo "{$mimetype} - commonProcessFileActions({$name},{$afile})";
+	//echo "Mime:{$mimetype},ext:{$ext} - commonProcessFileActions({$name},{$afile})<br>";
 	$resize='';
 	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
 		$resize=$_REQUEST[$name.'_resize'];
@@ -15374,7 +15374,7 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
 		$resize=$CONFIG['resize'];
 	}
-	//echo "resize:{$resize}";
+	//echo "resize:{$resize}<br>";
 	if(strlen($resize) && stringContains($mimetype,'image')){
 		if(!isset($CONFIG['resize_command'])){
 			$CONFIG['resize_command']="convert -thumbnail";
@@ -15383,7 +15383,7 @@ function commonProcessFileActions($name,$afile){
 		$cmd=$CONFIG['resize_command'];
 		$fname=getFileName($afile,1);
 		$refile=str_replace($fname,$fname.'_resized',$afile);
-		$cmd="{$cmd} {$resize} '{$afile}' -auto-orient '{$refile}'";
+		$cmd="{$cmd} {$resize} \"{$afile}\" -auto-orient \"{$refile}\"";
 		$ok=cmdResults($cmd);
 		if(is_file($refile) && filesize($refile) > 0){
 			unlink($afile);
@@ -15404,6 +15404,7 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['convert']) && strlen($CONFIG['convert'])){
 		$convert=$CONFIG['convert'];
 	}
+	//echo "convert:{$convert}<br>";
 	if(strlen($convert)){
 		if(!isset($CONFIG['convert_command'])){
 			$CONFIG['convert_command']="convert ";
@@ -15413,10 +15414,11 @@ function commonProcessFileActions($name,$afile){
 		$sets=preg_split('/\,/',strtolower($convert));
 		foreach($sets as $set){
 			list($from,$to)=preg_split('/\-/',$set,2);
+			//echo " -- convert: {$from}=={$ext}<br>";
 			if($from==$ext){
 				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
-				$cmd="{$cmd} '{$afile}' '{$tfile}'";
+				$cmd="{$cmd} \"{$afile}\" \"{$tfile}\"";
         		$ok=cmdResults($cmd);
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
@@ -15437,6 +15439,7 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['reencode']) && strlen($CONFIG['reencode'])){
 		$reencode=$CONFIG['reencode'];
 	}
+	//echo "reencode:{$reencode}<br>";
 	if(strlen($reencode)){
 		if(!isset($CONFIG['reencode_command'])){
 			$CONFIG['reencode_command']="ffmpeg -i";
@@ -15449,7 +15452,7 @@ function commonProcessFileActions($name,$afile){
 			if($from==$ext){
 				$fname=getFileName($abspath,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
-				$cmd="{$cmd} '{$afile}' '{$tfile}'";
+				$cmd="{$cmd} \"{$afile}\" \"{$tfile}\"";
         		$ok=cmdResults($cmd);
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
