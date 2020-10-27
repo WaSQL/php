@@ -14012,11 +14012,13 @@ function processInlineFiles(){
 			if(!is_array($base64_files)){$base64_files=array($base64_files);}
 			$efiles=array();
 			foreach($base64_files as $base64_file){
+				if(!strlen(trim($base64_file))){continue;}
 				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
 				$decoded=base64_decode($encodedString);
+				$ext=getFileExtension($name);
 				if(isset($_REQUEST["{$key}_autonumber"])){
 					$crc=encodeCRC(sha1($encodedString));
-					$name=getFileName($name,1) . '_' . $crc . '.' . getFileExtension($name);
+					$name=getFileName($name,1) . '_' . $crc . '.' . $ext;
 				}
 				//remove spaces from the name
 				$name=str_replace(' ','_',$name);
@@ -14028,7 +14030,7 @@ function processInlineFiles(){
 				if(file_exists($afile)){unlink($afile);}
 				//save the file
 				file_put_contents($afile,$decoded);
-				if(file_exists($afile)){
+				if(file_exists($afile) && filesize($afile) > 0){
 			        $efiles[]="/{$path}/{$name}";
 				}
 				else{
