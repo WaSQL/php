@@ -14032,6 +14032,7 @@ function processInlineFiles(){
 				file_put_contents($afile,$decoded);
 				if(file_exists($afile) && filesize($afile) > 0){
 			        $efiles[]="/{$path}/{$name}";
+			        $ok=commonProcessFileActions($key,$afile);
 				}
 				else{
 					debugValue("processInlineFiles error: unable to find or create file: {$afile}");
@@ -15312,103 +15313,7 @@ function processFileUploads($docroot=''){
 					}
 				}
 				$ext=strtolower(getFileExtension($file['name']));
-				//resize the image?
-				$resize='';
-				if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
-					$resize=$_REQUEST[$name.'_resize'];
-				}
-				elseif(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
-					$resize=$_REQUEST['data-resize'];
-				}
-				elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
-					$resize=$CONFIG['resize'];
-				}
-				if(strlen($resize) && stringContains($file['type'],'image')){
-					if(!isset($CONFIG['resize_command'])){
-						$CONFIG['resize_command']="convert -thumbnail";
-					}
-					//resize
-					$cmd=$CONFIG['resize_command'];
-					$fname=getFileName($abspath,1);
-					$refile=str_replace($fname,$fname.'_resized',$abspath);
-
-            		$cmd="{$cmd} {$resize} '{$abspath}' -auto-orient '{$refile}'";
-            		$ok=cmdResults($cmd);
-            		if(is_file($refile) && filesize($refile) > 0){
-						unlink($abspath);
-						rename($refile,$abspath);
-						$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
-                		$_REQUEST[$name.'_size']=filesize($abspath);
-					}
-                	$_REQUEST[$name.'_resized']=$ok;
-                                	
-				}
-				//convert the file
-				$convert='';
-				if(isset($_REQUEST[$name.'_convert']) && strlen($_REQUEST[$name.'_convert'])){
-					$convert=$_REQUEST[$name.'_convert'];
-				}
-				elseif(isset($_REQUEST['data-convert']) && strlen($_REQUEST['data-convert'])){
-					$convert=$_REQUEST['data-convert'];
-				}
-				elseif(isset($CONFIG['convert']) && strlen($CONFIG['convert'])){
-					$convert=$CONFIG['convert'];
-				}
-				if(strlen($convert)){
-					if(!isset($CONFIG['convert_command'])){
-						$CONFIG['convert_command']="convert ";
-					}
-					$cmd=$CONFIG['convert_command'];
-					//bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg
-					$sets=preg_split('/\,/',strtolower($convert));
-					foreach($sets as $set){
-						list($from,$to)=preg_split('/\-/',$set,2);
-						if($from==$ext){
-							$fname=getFileName($abspath,1);
-							$tfile="{$absdir}/{$fname}_reencoded.{$to}";
-							$cmd="{$cmd} '{$abspath}' '{$tfile}'";
-		            		$ok=cmdResults($cmd);
-		            		if(is_file($tfile) && filesize($tfile) > 0){
-								unlink($abspath);
-								rename($tfile,$abspath);
-							}
-		                	$_REQUEST[$name.'_converted']=$ok;
-						}
-					}            	
-				}
-				//reencode the file
-				$reencode='';
-				if(isset($_REQUEST[$name.'_reencode']) && strlen($_REQUEST[$name.'_reencode'])){
-					$reencode=$_REQUEST[$name.'_reencode'];
-				}
-				elseif(isset($_REQUEST['data-reencode']) && strlen($_REQUEST['data-reencode'])){
-					$reencode=$_REQUEST['data-reencode'];
-				}
-				elseif(isset($CONFIG['reencode']) && strlen($CONFIG['reencode'])){
-					$reencode=$CONFIG['reencode'];
-				}
-				if(strlen($reencode)){
-					if(!isset($CONFIG['reencode_command'])){
-						$CONFIG['reencode_command']="ffmpeg -i";
-					}
-					$cmd=$CONFIG['reencode_command'];
-					//mp3-mp3,wav-mp3
-					$sets=preg_split('/\,/',strtolower($reencode));
-					foreach($sets as $set){
-						list($from,$to)=preg_split('/\-/',$set,2);
-						if($from==$ext){
-							$fname=getFileName($abspath,1);
-							$tfile="{$absdir}/{$fname}_reencoded.{$to}";
-							$cmd="{$cmd} '{$abspath}' '{$tfile}'";
-		            		$ok=cmdResults($cmd);
-		            		if(is_file($tfile) && filesize($tfile) > 0){
-								unlink($abspath);
-								rename($tfile,$abspath);
-							}
-		                	$_REQUEST[$name.'_reencoded']=$ok;
-						}
-					}            	
-				}
+				$ok=commonProcessFileActions($name,$abspath);
 				//
             	$_REQUEST[$name]=$webpath;
             	$_REQUEST[$name.'_abspath']=$abspath;
@@ -15453,6 +15358,105 @@ function processFileUploads($docroot=''){
 	//ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
     return 0;
 }
+function commonProcessFileActions($name,$afile){
+	$adir=getFilePath($afile);
+	$resize='';
+	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
+		$resize=$_REQUEST[$name.'_resize'];
+	}
+	elseif(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
+		$resize=$_REQUEST['data-resize'];
+	}
+	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
+		$resize=$CONFIG['resize'];
+	}
+	if(strlen($resize) && stringContains($file['type'],'image')){
+		if(!isset($CONFIG['resize_command'])){
+			$CONFIG['resize_command']="convert -thumbnail";
+		}
+		//resize
+		$cmd=$CONFIG['resize_command'];
+		$fname=getFileName($afile,1);
+		$refile=str_replace($fname,$fname.'_resized',$afile);
+		$cmd="{$cmd} {$resize} '{$afile}' -auto-orient '{$refile}'";
+		$ok=cmdResults($cmd);
+		if(is_file($refile) && filesize($refile) > 0){
+			unlink($afile);
+			rename($refile,$afile);
+			$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+    		$_REQUEST[$name.'_size']=filesize($afile);
+		}
+    	$_REQUEST[$name.'_resized']=$ok;       	
+	}
+	//convert the file
+	$convert='';
+	if(isset($_REQUEST[$name.'_convert']) && strlen($_REQUEST[$name.'_convert'])){
+		$convert=$_REQUEST[$name.'_convert'];
+	}
+	elseif(isset($_REQUEST['data-convert']) && strlen($_REQUEST['data-convert'])){
+		$convert=$_REQUEST['data-convert'];
+	}
+	elseif(isset($CONFIG['convert']) && strlen($CONFIG['convert'])){
+		$convert=$CONFIG['convert'];
+	}
+	if(strlen($convert)){
+		if(!isset($CONFIG['convert_command'])){
+			$CONFIG['convert_command']="convert ";
+		}
+		$cmd=$CONFIG['convert_command'];
+		//bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg
+		$sets=preg_split('/\,/',strtolower($convert));
+		foreach($sets as $set){
+			list($from,$to)=preg_split('/\-/',$set,2);
+			if($from==$ext){
+				$fname=getFileName($afile,1);
+				$tfile="{$adir}/{$fname}_reencoded.{$to}";
+				$cmd="{$cmd} '{$afile}' '{$tfile}'";
+        		$ok=cmdResults($cmd);
+        		if(is_file($tfile) && filesize($tfile) > 0){
+					unlink($afile);
+					rename($tfile,$afile);
+				}
+            	$_REQUEST[$name.'_converted']=$ok;
+			}
+		}            	
+	}
+	//reencode the file
+	$reencode='';
+	if(isset($_REQUEST[$name.'_reencode']) && strlen($_REQUEST[$name.'_reencode'])){
+		$reencode=$_REQUEST[$name.'_reencode'];
+	}
+	elseif(isset($_REQUEST['data-reencode']) && strlen($_REQUEST['data-reencode'])){
+		$reencode=$_REQUEST['data-reencode'];
+	}
+	elseif(isset($CONFIG['reencode']) && strlen($CONFIG['reencode'])){
+		$reencode=$CONFIG['reencode'];
+	}
+	if(strlen($reencode)){
+		if(!isset($CONFIG['reencode_command'])){
+			$CONFIG['reencode_command']="ffmpeg -i";
+		}
+		$cmd=$CONFIG['reencode_command'];
+		//mp3-mp3,wav-mp3
+		$sets=preg_split('/\,/',strtolower($reencode));
+		foreach($sets as $set){
+			list($from,$to)=preg_split('/\-/',$set,2);
+			if($from==$ext){
+				$fname=getFileName($abspath,1);
+				$tfile="{$adir}/{$fname}_reencoded.{$to}";
+				$cmd="{$cmd} '{$afile}' '{$tfile}'";
+        		$ok=cmdResults($cmd);
+        		if(is_file($tfile) && filesize($tfile) > 0){
+					unlink($afile);
+					rename($tfile,$afile);
+				}
+            	$_REQUEST[$name.'_reencoded']=$ok;
+			}
+		}            	
+	}
+}
+
+
 //---------- begin function mergeChunkedFiles ----
 /**
  * @author slloyd
