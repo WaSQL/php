@@ -15359,7 +15359,11 @@ function processFileUploads($docroot=''){
     return 0;
 }
 function commonProcessFileActions($name,$afile){
+	global $CONFIG;
 	$adir=getFilePath($afile);
+	$ext=getFileExtension($afile);
+	$mimetype=getFileMimeType($afile);
+	//echo "{$mimetype} - commonProcessFileActions({$name},{$afile})";
 	$resize='';
 	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
 		$resize=$_REQUEST[$name.'_resize'];
@@ -15370,7 +15374,8 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
 		$resize=$CONFIG['resize'];
 	}
-	if(strlen($resize) && stringContains($file['type'],'image')){
+	//echo "resize:{$resize}";
+	if(strlen($resize) && stringContains($mimetype,'image')){
 		if(!isset($CONFIG['resize_command'])){
 			$CONFIG['resize_command']="convert -thumbnail";
 		}
@@ -15454,6 +15459,7 @@ function commonProcessFileActions($name,$afile){
 			}
 		}            	
 	}
+	//echo printValue($_REQUEST);
 }
 
 
