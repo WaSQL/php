@@ -1,5 +1,5 @@
 <?php
-function logsGetLogs(){
+function logsGetLogs($includes=array(),$excludes=array()){
 	global $CONFIG;
 	$logs=array();
 	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
@@ -16,6 +16,30 @@ function logsGetLogs(){
 			$lines=preg_split('/[\r\n]+/',$out['stdout']);
 			$lines=array_reverse($lines);
 			foreach($lines as $i=>$line){
+				if(count($includes)){
+					$found=0;
+					foreach($includes as $include){
+						if(stringContains($line,$include)){
+							$found+=1;
+						}
+					}
+					if($found==0){
+						unset($lines[$i]);
+						continue;
+					}
+				}
+				if(count($excludes)){
+					$found=0;
+					foreach($excludes as $exclude){
+						if(stringContains($line,$exclude)){
+							$found+=1;
+						}
+					}
+					if($found!=0){
+						unset($lines[$i]);
+						continue;
+					}
+				}
 				$flag='';
 				if(stringContains($line,'fatal errror:') || stringContains($line,':fatal')){
 					$flag='<span class="icon-circle w_danger w_blink"></span> ';

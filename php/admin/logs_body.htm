@@ -1,11 +1,23 @@
 <view:default>
+<script language="javascript">
+	function logsRefresh(){
+		document.logform.submit();
+	}
+</script>
 <div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
 	<div class="w_bigger" style="flex:15;margin-bottom: 0px;"><span class="icon-file-txt"></span> Logs</div>
 	<view:refresh>
-	<a style="margin:10px 10px;text-align:right;flex:1;font-size:1.2rem;text-decoration: none;" href="?_menu=logs">
-		<span style="font-size:0.6rem;" class="w_gray" id="refresh" data-behavior="countdown"><?=$refresh;?></span>
-		<span class="icon-refresh"></span>
-	</a>
+	<form method="POST" name="logform" action="/php/admin.php">
+		<input type="hidden" name="_menu" value="logs" />
+		<div style="display:flex;flex-wrap: nowrap;align-items: center;">
+			<input style="margin-right:5px;" type="text" name="includes" class="input" placeholder="Includes" value="<?=$_REQUEST['includes'];?>" />
+			<input style="margin-right:5px;" type="text" name="excludes" class="input" placeholder="Excludes" value="<?=$_REQUEST['excludes'];?>"  />
+            <button type="submit" class="btn button btn-primary w_nowrap">
+            	<span style="font-size:0.6rem;" class="w_white" id="refresh" data-behavior="countdown" data-onzero="logsRefresh"><?=$refresh;?></span>
+            	<span class="icon-refresh"></span>
+            </button>
+        </div>
+    </form>
 	</view:refresh>
 </div>
 <div style="display:flex;flex-wrap: nowrap;align-items: center;">
@@ -20,9 +32,6 @@
 	</view:log>
 	<?=renderEach('log',$logs,'log');?>
 </div>
-<view:refresh>
-<?=buildOnLoad("setTimeout(function(){window.location.reload(1);}, {$refresh}000);");?>
-</view:refresh>
 </view:default>
 
 
