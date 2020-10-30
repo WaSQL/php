@@ -222,9 +222,7 @@ function websiteGraderImages(){
 			if(!isset($atts['alt'])){
 				$missing[]="missing alt attribute";
 			}
-			if(!isset($atts['title'])){
-				$missing[]="missing title attribute";
-			}
+			//if(!isset($atts['title'])){$missing[]="missing title attribute";}
 			if(count($missing)){
 				$recs[]=array(
 					'source'=>"{$page['_id']} - {$page['name']}",
