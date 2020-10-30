@@ -2,7 +2,8 @@
 <div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
 	<div class="w_bigger" style="flex:15;margin-bottom: 0px;"><span class="icon-globe w_success"></span> Website Checker</div>
 </div>
-<div class="w_bigger w_bold w_gray">Head Check <?=$recs['head_grade'];?></div>
+<div class="w_bigger w_bold w_gray">Base URL <?=websiteGraderGetBaseURL();?></div>
+<div class="w_bigger w_bold w_gray w_padtop">Head Check <?=$recs['head_grade'];?></div>
 <?=websiteGraderList($recs['head']);?>
 <div class="w_bigger w_bold w_gray">Images Check <?=$recs['images_grade'];?></div>
 <?=websiteGraderList($recs['images']);?>

@@ -269,11 +269,20 @@ function websiteGraderGetPageBody($name){
 	if(isset($websiteGraderGetPageBodyCache[$name])){
 		return $websiteGraderGetPageBodyCache[$name];
 	}
-	$prefix=isSSL()?'https':'http';
-	$url="{$prefix}://{$_SERVER['HTTP_HOST']}/{$page['name']}";
+	$baseurl=websiteGraderGetBaseURL();
+	$url="{$baseurl}/{$page['name']}";
 	$post=postURL($url,array('-method'=>'GET'));
 	$websiteGraderGetPageBodyCache[$name]=$post['body'];
 	return $websiteGraderGetPageBodyCache[$name];
+}
+function websiteGraderGetBaseURL(){
+	global $websiteGraderGetBaseURLCache;
+	if(strlen($websiteGraderGetBaseURLCache)){
+		return $websiteGraderGetBaseURLCache;
+	}
+	$prefix=isSSL()?'https':'http';
+	$websiteGraderGetBaseURLCache="{$prefix}://{$_SERVER['HTTP_HOST']}/";
+	return $websiteGraderGetBaseURLCache;
 }
 function websiteGraderList($recs,$listopts=array()){
 	$opts=array(
