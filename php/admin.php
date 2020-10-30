@@ -1254,6 +1254,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'terminal':
 		case 'checktables':
 		case 'logs':
+		case 'website_grader':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
