@@ -280,7 +280,10 @@ function websiteGraderGetBaseURL(){
 	if(strlen($websiteGraderGetBaseURLCache)){
 		return $websiteGraderGetBaseURLCache;
 	}
-	$prefix=isSSL()?'https':'http';
+	$prefix='http';
+	if(isSSL()){$prefix='https';}
+	elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){$prefix='https';}
+	elseif(isset($_SERVER['HTTP_X_FORWARDED_SERVER'])){$prefix='https';}
 	$websiteGraderGetBaseURLCache="{$prefix}://{$_SERVER['HTTP_HOST']}/";
 	return $websiteGraderGetBaseURLCache;
 }
