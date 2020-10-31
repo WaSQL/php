@@ -21,15 +21,16 @@
 	$stats=array();
 	//check if all images have alt tags
 	$recs=array();
+	//misc
+	$recs['misc']=websiteGraderMisc();
+	if(!count($recs['misc'])){
+		$recs['misc_grade']='<span class="icon-mark w_success"></span>';
+	}
 	//head
-	$recs['head']=websiteGraderHead();
-	if(!count($recs['head'])){
-		$recs['head_grade']='<span class="icon-mark w_success"></span>';
+	$recs['page']=websiteGraderPage();
+	if(!count($recs['page'])){
+		$recs['page_grade']='<span class="icon-mark w_success"></span>';
 	}
-	//images
-	$recs['images']=websiteGraderImages();
-	if(!count($recs['images'])){
-		$recs['images_grade']='<span class="icon-mark w_success"></span>';
-	}
+
 	setView('default');
 ?>

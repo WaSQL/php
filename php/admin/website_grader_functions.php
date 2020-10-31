@@ -12,16 +12,48 @@
 	DONE: twitter meta tags
 	Header tags
 	DONE: viewport meta tag for responsive
+	broken links
+	DONE: images that are too large
+	DONE: sitemap.xml
+	DONE: robots.txt
+	meta description actually describes page content
+	short descriptive URLs (page names)
+	one H1 tag on each page
+	revelent external links
+	descriptive alt tags of images
+	loads fast
+	check for duplicate content
+	socail media links - instagram, facebook, youtube
+	SSL
+	enough content
+	title tag has to be unique per page
 */
-function websiteGraderHead(){
+function websiteGraderMisc(){
+	$recs=array();
+	$baseurl=websiteGraderGetBaseURL();
+	$files=array('robots.txt','sitemap.xml');
+	foreach($files as $file){
+		//check for robots.txt
+		$info=websiteGraderGetURLHeader("{$baseurl}/{$file}");
+		if($info['http_code']==404 || $info['download_content_length'] == -1){
+			$recs[]=array(
+				'source'=>"/",
+				'element'=>"/{$file}",
+				'suggestions'=>"{$file} is missing"
+			);
+		}
+	}
+	return $recs;
+}
+function websiteGraderPage(){
 	$recs=array();
 	$pages=websiteGraderActivePages();
 	foreach($pages as $page){
 		$body=websiteGraderGetPageBody($page['name']);
 		if(!preg_match('/<head>(.*)<\/head>/si',$body,$m)){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp><head></head></xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\"><head></head></xmp>",
 				'suggestions'=>'Head tag is missing all together'
 			);
 			continue;
@@ -35,24 +67,25 @@ function websiteGraderHead(){
 		//title should be between 40 - 80 chars in length
 		if(!strlen($title)){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp><title></title></xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\"><title></title></xmp>",
 				'suggestions'=>'Title is missing'
 			);
 		}
 		else{
-			if(strlen($title) > 80){
+			$len=strlen($title);
+			if($len > 80){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>"<xmp><title>{$title}</title></xmp>",
-					'suggestions'=>'Title is too long (> 80 chars)'
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
+					'suggestions'=>'Title is too long ({$len} chars. Best between 40 and 80)'
 				);
 			}
-			elseif(strlen($title) < 40){
+			elseif($len < 40){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>"<xmp><title>{$title}</title></xmp>",
-					'suggestions'=>'Title is too short (< 40 chars)'
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
+					'suggestions'=>"Title is too short ({$len} chars. Best between 40 and 80)"
 				);
 			}
 		}
@@ -81,68 +114,69 @@ function websiteGraderHead(){
 		//description should be between 150 - 160 chars in length
 		if(!isset($meta['description'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>'<xmp><meta name="description" content="{your description here}" /></xmp>',
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>'<xmp style="margin:0px;"><meta name="description" content="{your description here}" /></xmp>',
 				'suggestions'=>'Meta description tag is missing'
 			);
 		}
 		elseif(!isset($meta['description']['atts']['content'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$meta['description']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
 				'suggestions'=>'Meta description tag is missing content attribute'
 			);
 		}
 		else{
-			if(strlen($meta['description']['atts']['content']) > 160){
+			$len=strlen($meta['description']['atts']['content']);
+			if($len > 160){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>"<xmp>{$meta['description']['str']}</xmp>",
-					'suggestions'=>'Meta description is too long (> 160 chars)'
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
+					'suggestions'=>"Meta description is too long ({$len} chars. Best between 140 and 160)"
 				);
 			}
-			elseif(strlen($meta['description']['atts']['content']) < 140){
+			elseif($len < 140){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>"<xmp>{$meta['description']['str']}</xmp>",
-					'suggestions'=>'Meta description is too short (< 140 chars)'
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
+					'suggestions'=>"Meta description is too short ({$len} chars. Best between 140 and 160)"
 				);
 			}
 		}
 		//robots
 		if(!isset($meta['robots'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>'<xmp><meta name="robots" content="index, follow" /></xmp>',
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>',
 				'suggestions'=>'Meta robots tag is missing'
 			);
 		}
 		elseif(!isset($meta['robots']['atts']['content'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$meta['robots']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
 				'suggestions'=>'Meta robots tag is missing content attribute'
 			);
 		}
 		elseif(stringContains($meta['robots']['atts']['content'],'noindex')){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$meta['robots']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
 				'suggestions'=>'Meta robots tag specifies to NOT index this page'
 			);
 		}
 		//viewport
 		if(!isset($meta['viewport'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>'<xmp><meta name="viewport" content="width=device-width,initial-scale=1.0" /></xmp>',
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>'<xmp style="margin:0px;"><meta name="viewport" content="width=device-width,initial-scale=1.0" /></xmp>',
 				'suggestions'=>'Meta robots tag is missing'
 			);
 		}
 		elseif(!isset($meta['viewport']['atts']['content'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$meta['viewport']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$meta['viewport']['str']}</xmp>",
 				'suggestions'=>'Meta viewport tag is missing content attribute'
 			);
 		}
@@ -151,8 +185,8 @@ function websiteGraderHead(){
 		foreach($check_fields as $field){
 			if(!isset($meta["og:{$field}"])){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>'<xmp><meta property="og:'.$field.'" content="{your content here}" /></xmp>',
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>'<xmp style="margin:0px;"><meta property="og:'.$field.'" content="{your content here}" /></xmp>',
 					'suggestions'=>"Open Graph Meta {$field} is missing"
 				);
 			}
@@ -162,8 +196,8 @@ function websiteGraderHead(){
 		foreach($check_fields as $field){
 			if(!isset($meta["twitter:{$field}"])){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>'<xmp><meta name="twitter:'.$field.'" content="{your content here}" /></xmp>',
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>'<xmp style="margin:0px;"><meta name="twitter:'.$field.'" content="{your content here}" /></xmp>',
 					'suggestions'=>"Twitter Meta {$field} is missing"
 				);
 			}
@@ -184,55 +218,81 @@ function websiteGraderHead(){
 		//canonical tag check
 		if(!isset($link['canonical'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>'<xmp><link rel="canonical" href="{your href here}" /></xmp>',
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>'<xmp style="margin:0px;"><link rel="canonical" href="{your href here}" /></xmp>',
 				'suggestions'=>'Canonical link is missing'
 			);
 		}
 		elseif(!isset($link['canonical']['atts']['href'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$link['canonical']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
 				'suggestions'=>'Canonical link is missing href attribute'
 			);
 		}
 		elseif(!stringContains($link['canonical']['atts']['href'],$page['name'])){
 			$recs[]=array(
-				'source'=>"{$page['_id']} - {$page['name']}",
-				'element'=>"<xmp>{$link['canonical']['str']}</xmp>",
+				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
 				'suggestions'=>'Canonical link is should include page name'
 			);
 		}
-	}
-	//echo printValue($meta);
-	return $recs;
-}
-//check if all images have alt tags
-function websiteGraderImages(){
-	$recs=array();
-	$pages=websiteGraderActivePages();
-	$pattern = '/<img[^>]* src=\"([^\"]*)\"[^>]*>/si';
-	foreach($pages as $page){
-		$body=websiteGraderGetPageBody($page['name']);
-		preg_match_all($pattern, $body, $matches);
+		/**** Check img tags ***/
+		$img=array();
+		preg_match_all('/<img[^>]*>/si', $body, $matches);
 		foreach($matches[0] as $str){
-			//confirm it has an alt and title attribute
 			$atts=parseHtmlTagAttributes($str);
 			$missing=array();
 			if(!isset($atts['alt'])){
 				$missing[]="missing alt attribute";
 			}
-			//if(!isset($atts['title'])){$missing[]="missing title attribute";}
+			if(!isset($atts['src'])){
+				$missing[]="missing src attribute";
+			}
+			else{
+				$src=$atts['src'];
+				if(stringBeginsWith($src,'//')){
+					$src='https:'.$src;
+				}
+				elseif(stringBeginsWith($src,'/')){
+					$src=websiteGraderGetBaseURL().$src;
+				}
+				$info=websiteGraderGetURLHeader($src);
+				//max filesize of 300,000 bytes
+				if($info['download_content_length'] > 300000){
+					$missing[]="image size is too large (>300k)";
+				}
+			}
+			///<a href="/php/admin.php?_menu=edit&_table_=_pages&_id=1
 			if(count($missing)){
 				$recs[]=array(
-					'source'=>"{$page['_id']} - {$page['name']}",
-					'element'=>"<xmp>{$str}</xmp>",
+					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'element'=>"<xmp style=\"margin:0px;\">{$str}</xmp>",
 					'suggestions'=>implode('<br />'.PHP_EOL,$missing)
 				);
 			}
 		}
+		ksort($link);
 	}
+	//echo printValue($meta);
 	return $recs;
+}
+function websiteGraderPageEditLink($id,$name){
+	$link="<a target=\"_blank\" class=\"w_link\" href=\"/php/admin.php?_menu=edit&_table_=_pages&_id={$id}\">{$id} - {$name} <sup class=\"icon-edit w_smallest\"></sup></a>";
+	return $link;
+}
+function websiteGraderGetURLHeader($url){
+	$info=array();
+	$curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_FILETIME, true);
+    curl_setopt($curl, CURLOPT_NOBODY, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_HEADER, true);
+    $header = curl_exec($curl);
+    $info = curl_getinfo($curl);
+    curl_close($curl);
+    return $info;
 }
 function websiteGraderActivePages(){
 	global $websiteGraderActivePagesCache;
@@ -282,7 +342,7 @@ function websiteGraderGetBaseURL(){
 	if(isSSL()){$prefix='https';}
 	elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){$prefix='https';}
 	elseif(isset($_SERVER['HTTP_X_FORWARDED_SERVER'])){$prefix='https';}
-	$websiteGraderGetBaseURLCache="{$prefix}://{$_SERVER['HTTP_HOST']}/";
+	$websiteGraderGetBaseURLCache="{$prefix}://{$_SERVER['HTTP_HOST']}";
 	return $websiteGraderGetBaseURLCache;
 }
 function websiteGraderList($recs,$listopts=array()){
@@ -292,6 +352,7 @@ function websiteGraderList($recs,$listopts=array()){
 		'-hidesearch'=>1,
 		'suggestions_class'=>'w_nowrap',
 		'source_class'=>'w_nowrap',
+		'page_class'=>'w_nowrap',
 		'element_style'=>'max-width:70vw;text-overflow:ellipsis;overflow:hidden;'
 	);
 	foreach($listopts as $k=>$v){

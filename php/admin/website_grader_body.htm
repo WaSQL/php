@@ -4,10 +4,10 @@
 </div>
 <div class="w_bigger w_bold w_gray">Base URL <?=websiteGraderGetBaseURL();?></div>
 <div class="w_bigger w_bold w_gray">Base Template ID <?=websiteGraderActiveTemplate();?></div>
-<div class="w_bigger w_bold w_gray w_padtop">Head Check <?=$recs['head_grade'];?></div>
-<?=websiteGraderList($recs['head']);?>
-<div class="w_bigger w_bold w_gray">Images Check <?=$recs['images_grade'];?></div>
-<?=websiteGraderList($recs['images']);?>
+<div class="w_bigger w_bold w_gray w_padtop">Pages Check <?=$recs['page_grade'];?></div>
+<?=websiteGraderList($recs['page']);?>
+<div class="w_bigger w_bold w_gray w_padtop">Misc Checks <?=$recs['misc_grade'];?></div>
+<?=websiteGraderList($recs['misc']);?>
 
 </view:default>
 
