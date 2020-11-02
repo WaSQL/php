@@ -353,10 +353,9 @@ function websiteGraderList($recs,$listopts=array()){
 		'-list'=>$recs,
 		'-tableclass'=>'table bordered is-narrow condensed striped',
 		'-hidesearch'=>1,
-		'suggestions_class'=>'w_nowrap',
 		'source_class'=>'w_nowrap',
 		'page_class'=>'w_nowrap',
-		'element_style'=>'max-width:70vw;text-overflow:ellipsis;overflow:hidden;'
+		'element_style'=>'max-width:60vw;text-overflow:ellipsis;overflow:hidden;'
 	);
 	foreach($listopts as $k=>$v){
 		if(!strlen($v)){unset($opts[$k]);}
