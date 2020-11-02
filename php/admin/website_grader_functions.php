@@ -9,6 +9,9 @@
 	DONE: Alt and title attributes in images
 	DONE: Robots meta tag
 	DONE: Open graph meta tags for facebook
+		https://developers.facebook.com/tools/debug
+		https://www.opengraph.xyz/
+		The recommended resolution for an OG image is 1200 pixels x 627 pixels (1.91/1 ratio) but don't exceed the 5MB size limit.
 	DONE: twitter meta tags
 	Header tags
 	DONE: viewport meta tag for responsive
@@ -192,7 +195,7 @@ function websiteGraderPage(){
 			}
 		}
 		//twitter
-		$check_fields=array('title','description','image','site','creator');
+		$check_fields=array('title','description','image:src','site','creator');
 		foreach($check_fields as $field){
 			if(!isset($meta["twitter:{$field}"])){
 				$recs[]=array(
