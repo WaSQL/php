@@ -233,7 +233,7 @@ function websiteGraderPage(){
 				'suggestions'=>'Canonical link is missing href attribute'
 			);
 		}
-		elseif(!stringContains($link['canonical']['atts']['href'],$page['name'])){
+		elseif($page['name'] != 'index' && !stringEndsWith($link['canonical']['atts']['href'],"/{$page['name']}/")){
 			$recs[]=array(
 				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
