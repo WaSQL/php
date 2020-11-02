@@ -331,7 +331,7 @@ function websiteGraderGetPageBody($name){
 		return $websiteGraderGetPageBodyCache[$name];
 	}
 	$baseurl=websiteGraderGetBaseURL();
-	$url="{$baseurl}/{$gpage['name']}";
+	$url="{$baseurl}/{$name}";
 	$post=postURL($url,array('-method'=>'GET'));
 	$websiteGraderGetPageBodyCache[$name]=$post['body'];
 	return $websiteGraderGetPageBodyCache[$name];
