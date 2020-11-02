@@ -38,7 +38,7 @@ function websiteGraderMisc(){
 	foreach($files as $file){
 		//check for robots.txt
 		$info=websiteGraderGetURLHeader("{$baseurl}/{$file}");
-		if($info['http_code']==404 || $info['download_content_length'] == -1){
+		if($info['http_code']==404){
 			$recs[]=array(
 				'source'=>"/",
 				'element'=>"/{$file}",
