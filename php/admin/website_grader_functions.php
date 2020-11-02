@@ -237,7 +237,7 @@ function websiteGraderPage(){
 			$recs[]=array(
 				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
-				'suggestions'=>'Canonical link is should include page name'
+				'suggestions'=>"Canonical link is should include page name [{$page['name']}"
 			);
 		}
 		/**** Check img tags ***/
