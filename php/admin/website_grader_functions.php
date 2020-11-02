@@ -50,12 +50,12 @@ function websiteGraderMisc(){
 }
 function websiteGraderPage(){
 	$recs=array();
-	$pages=websiteGraderActivePages();
-	foreach($pages as $page){
-		$body=websiteGraderGetPageBody($page['name']);
+	$gpages=websiteGraderActivePages();
+	foreach($gpages as $gpage){
+		$body=websiteGraderGetPageBody($gpage['name']);
 		if(!preg_match('/<head>(.*)<\/head>/si',$body,$m)){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\"><head></head></xmp>",
 				'suggestions'=>'Head tag is missing all together'
 			);
@@ -70,7 +70,7 @@ function websiteGraderPage(){
 		//title should be between 40 - 80 chars in length
 		if(!strlen($title)){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\"><title></title></xmp>",
 				'suggestions'=>'Title is missing'
 			);
@@ -79,14 +79,14 @@ function websiteGraderPage(){
 			$len=strlen($title);
 			if($len > 80){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
 					'suggestions'=>'Title is too long ({$len} chars. Best between 40 and 80)'
 				);
 			}
 			elseif($len < 40){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
 					'suggestions'=>"Title is too short ({$len} chars. Best between 40 and 80)"
 				);
@@ -117,14 +117,14 @@ function websiteGraderPage(){
 		//description should be between 150 - 160 chars in length
 		if(!isset($meta['description'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>'<xmp style="margin:0px;"><meta name="description" content="{your description here}" /></xmp>',
 				'suggestions'=>'Meta description tag is missing'
 			);
 		}
 		elseif(!isset($meta['description']['atts']['content'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
 				'suggestions'=>'Meta description tag is missing content attribute'
 			);
@@ -133,14 +133,14 @@ function websiteGraderPage(){
 			$len=strlen($meta['description']['atts']['content']);
 			if($len > 160){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
 					'suggestions'=>"Meta description is too long ({$len} chars. Best between 140 and 160)"
 				);
 			}
 			elseif($len < 140){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
 					'suggestions'=>"Meta description is too short ({$len} chars. Best between 140 and 160)"
 				);
@@ -149,21 +149,21 @@ function websiteGraderPage(){
 		//robots
 		if(!isset($meta['robots'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>',
 				'suggestions'=>'Meta robots tag is missing'
 			);
 		}
 		elseif(!isset($meta['robots']['atts']['content'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
 				'suggestions'=>'Meta robots tag is missing content attribute'
 			);
 		}
 		elseif(stringContains($meta['robots']['atts']['content'],'noindex')){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
 				'suggestions'=>'Meta robots tag specifies to NOT index this page'
 			);
@@ -171,14 +171,14 @@ function websiteGraderPage(){
 		//viewport
 		if(!isset($meta['viewport'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>'<xmp style="margin:0px;"><meta name="viewport" content="width=device-width,initial-scale=1.0" /></xmp>',
 				'suggestions'=>'Meta robots tag is missing'
 			);
 		}
 		elseif(!isset($meta['viewport']['atts']['content'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$meta['viewport']['str']}</xmp>",
 				'suggestions'=>'Meta viewport tag is missing content attribute'
 			);
@@ -188,7 +188,7 @@ function websiteGraderPage(){
 		foreach($check_fields as $field){
 			if(!isset($meta["og:{$field}"])){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>'<xmp style="margin:0px;"><meta property="og:'.$field.'" content="{your content here}" /></xmp>',
 					'suggestions'=>"Open Graph Meta {$field} is missing"
 				);
@@ -199,7 +199,7 @@ function websiteGraderPage(){
 		foreach($check_fields as $field){
 			if(!isset($meta["twitter:{$field}"])){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>'<xmp style="margin:0px;"><meta name="twitter:'.$field.'" content="{your content here}" /></xmp>',
 					'suggestions'=>"Twitter Meta {$field} is missing"
 				);
@@ -221,23 +221,23 @@ function websiteGraderPage(){
 		//canonical tag check
 		if(!isset($link['canonical'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>'<xmp style="margin:0px;"><link rel="canonical" href="{your href here}" /></xmp>',
 				'suggestions'=>'Canonical link is missing'
 			);
 		}
 		elseif(!isset($link['canonical']['atts']['href'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
 				'suggestions'=>'Canonical link is missing href attribute'
 			);
 		}
-		elseif($page['name'] != 'index' && !stringContains($link['canonical']['atts']['href'],$page['name'])){
+		elseif($gpage['name'] != 'index' && !stringContains($link['canonical']['atts']['href'],$gpage['name'])){
 			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
-				'suggestions'=>"Canonical link is should include page name [{$link['canonical']['atts']['href']}] missing [{$page['name']}]"
+				'suggestions'=>"Canonical link is should include page name "
 			);
 		}
 		/**** Check img tags ***/
@@ -269,7 +269,7 @@ function websiteGraderPage(){
 			///<a href="/php/admin.php?_menu=edit&_table_=_pages&_id=1
 			if(count($missing)){
 				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($page['_id'],$page['name']),
+					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\">{$str}</xmp>",
 					'suggestions'=>implode('<br />'.PHP_EOL,$missing)
 				);
@@ -331,7 +331,7 @@ function websiteGraderGetPageBody($name){
 		return $websiteGraderGetPageBodyCache[$name];
 	}
 	$baseurl=websiteGraderGetBaseURL();
-	$url="{$baseurl}/{$page['name']}";
+	$url="{$baseurl}/{$gpage['name']}";
 	$post=postURL($url,array('-method'=>'GET'));
 	$websiteGraderGetPageBodyCache[$name]=$post['body'];
 	return $websiteGraderGetPageBodyCache[$name];
