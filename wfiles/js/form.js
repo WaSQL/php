@@ -2210,10 +2210,14 @@ function textboxReplaceSelect (oTextbox, sText) {
 		}
    	oTextbox.focus();
 	}
-function getGeoLocation(fld){
+function getGeoLocation(fld,opts){
 	//get latlong if the field is geolocation or latlong
+	if(undefined==opts){opts={};}
 	if(function_exists(wacss.geoLocation)){
-		wacss.geoLocation(fld);
+		wacss.geoLocation(fld,opts);
+	}
+	else{
+		console.log('Error: You must enable wacss in your template to use getGeoLocation');
 	}
 }
 //--------------------------
