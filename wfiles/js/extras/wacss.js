@@ -157,13 +157,14 @@ var wacss = {
 	    						wacss.setText(err.message);
 	    					}
 	    					else{
-	    						console.log('wacss.getGeoLocation error');
+	    						console.log('wacss.getGeoLocation error. Invalid onerror value');
+	    						console.log(navigator.geoSetFldFailed);
 	    						console.log(err.message);
 	    					}
 	    				}
     				}
     				else{
-    					console.log('wacss.getGeoLocation error');
+    					console.log('wacss.getGeoLocation error. No onerror set.');
     					console.log(err.message);
     				}
     				return false;
