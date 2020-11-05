@@ -145,13 +145,26 @@ var wacss = {
     				return false; 
     			},
     			function(err){
+    				//err returns err.code and err.message
+    				//err.code: 1=permission denied, 2=position unavailable, 3=timeout
     				if(undefined != navigator.geoSetFldFailed){
     					if (wacss.function_exists(navigator.geoSetFldFailed)){
-	    					window[navigator.geoSetFldFailed]();
+	    					window[navigator.geoSetFldFailed]({code:err.code,message:err.message});
+	    				}
+	    				else{
+	    					let errfld=document.querySelector(navigator.geoSetFldFailed);
+	    					if(undefined != errfld){
+	    						wacss.setText(err.message);
+	    					}
+	    					else{
+	    						console.log('wacss.getGeoLocation error');
+	    						console.log(err.message);
+	    					}
 	    				}
     				}
     				else{
-    					console.log('wacss.getGeoLocation error: '+err);
+    					console.log('wacss.getGeoLocation error');
+    					console.log(err.message);
     				}
     				return false;
     			},
