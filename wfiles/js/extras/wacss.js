@@ -53,14 +53,15 @@ var wacss = {
 			break;
 		}
 	},
-	copy2Clipboard: function(str){
+	copy2Clipboard: function(str,msg){
+		if(undefined==msg){msg='Copy Successful';}
 		const el = document.createElement('textarea');
 	  	el.value = str;
 	  	document.body.appendChild(el);
 	  	el.select();
 	  	document.execCommand('copy');
 	 	document.body.removeChild(el);
-	 	wacss.toast('Copy Successful');
+	 	wacss.toast(msg);
 	 	return true;
 	},
 	color: function(){
