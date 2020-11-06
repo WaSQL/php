@@ -1325,6 +1325,9 @@ function wasqlGetDatabases($d=0,$arr=0,$showtype=0){
 	if(isset($CONFIG['sql_prompt_dbs'])){
 		$showdbs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
 	}
+	elseif(isset($CONFIG['databases'])){
+		$showdbs=preg_split('/\,/',$CONFIG['databases']);
+	}
 	$dbs=array();
 	foreach($DATABASE as $dbkey=>$db){
 		if(count($showdbs) && !in_array($dbkey,$showdbs)){continue;}

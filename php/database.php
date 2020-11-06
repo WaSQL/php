@@ -2021,7 +2021,8 @@ function dbQueryResults($db,$query,$params=array()){
 *	[{field}_verbosetime] - 1 - converts value verboseTime
 *	[{field}_verbosesize] - 1 - converts value verboseSize
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
-*	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function
+*	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function. It MUST return the array back
+*	[-results_eval_params] - additonal params to send the the results_eval function as a second param
 *	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
@@ -4490,6 +4491,8 @@ function dropDBIndex($params=array()){
 *	[-hide] string - comma separated list of submit buttons to hide. i.e reset, delete, clone
 *	[-focus] string - field name to set focus to
 *	[-readonly] boolean - show values but not form
+*	[-rec_eval] - function name to send the record to for additional processing
+*	[-rec_eval_params] - additonal params to send the the rec_eval function as a second param
 *	[{fieldname}_{option}] string - sets {option} for {field}.  age_displayname=>'Your Age'
 *	[{fieldname}_options] array - sets multiple options for {field}  age_options=>array('displayname'=>Your Age','style'=>'...')
 * @note if a {field} is a json datatype you can manually create fields to populate it as follows: {field}>{subfield}>{subsubfield}
@@ -4523,6 +4526,15 @@ function addEditDBForm($params=array(),$customcode=''){
     $preview='';
     $editmode=0;
     if(isset($rec) && is_array($rec)){
+    	//check for -rec_eval
+    	if(isset($params['-rec_eval']) && function_exists($params['-rec_eval'])){
+			if(isset($params['-rec_eval_params'])){
+				$rec=call_user_func($params['-rec_eval'],$rec,$params['-rec_eval_params']);
+			}
+			else{
+				$rec=call_user_func($params['-rec_eval'],$rec);
+			}
+		}
 		if($params['-table']=='_pages'){$preview=$rec['name'];}
 		foreach($rec as $key=>$val){$_REQUEST[$key]=$val;}
 		$editmode=1;

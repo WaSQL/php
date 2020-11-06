@@ -2393,6 +2393,9 @@ function buildFormText($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['value']) && isset($params['-value'])){
+		$params['value']=$params['-value'];
+	}
 	if(!isset($params['value']) && isset($_REQUEST[$name])){
 		$params['value']=$_REQUEST[$name];
 	}

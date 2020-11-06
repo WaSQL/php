@@ -67,7 +67,8 @@
 			reencode_command - defaults to ffmpeg -i
 			mysql_command - command to import database - defaults to mysql
 			url_eval - page name to eval before processing.  This gives you control to modify the $_REQUEST variable. etc.. _view should be set to the page name.
-			sql_prompt_dbs - comma separated list of database containers to show in the SQL Prompt admin area
+			sql_prompt_dbs - comma separated list of database containers to show in the SQL Prompt 
+			databases - same as sql_prompt_dbs
 			userlog 0|1 - set to 1 to log auth requests to your database. Logs to user.log in the same directory as user.php in WaSQL
 	-->
 	<!-- database container to define database settings.  -->
