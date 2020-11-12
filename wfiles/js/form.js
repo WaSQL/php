@@ -1793,19 +1793,21 @@ function changeModelType(srcObj){
 function remindMeForm(){
 	var dname="remindMePopup";
 	var txt='';
+	txt +=  '	<div class="w_centerpop_title">Remind Me</div>'+"\n";
 	txt +=  '	<div class="w_centerpop_content" id="remindmediv" style="width:350px;padding:0 30px 0 30px;">'+"\n";
-	txt +=	'		<form method="POST" name="remindMe" class="w_form" action="/php/index.php" onSubmit="ajaxSubmitForm(this,\'remindmediv\');return false;">'+"\n";
+	txt +=	'		<form method="POST" name="remindMe" class="w_form w_padtop" action="/php/index.php" onSubmit="ajaxSubmitForm(this,\'remindmediv\');return false;">'+"\n";
 	txt +=  '			<input type="hidden" name="_remind" value="1">'+"\n";
 	txt +=  '			<input type="hidden" name="tname" value="remind me">'+"\n";
-	txt +=	'			<label for="remind_me_email" class="w_bigger w_grey" style="font-weight:300;"><span class="icon-mail"></span> Enter your email address.</label>'+"\n";
-	txt +=	' 			<div><input type="email" maxlength="255" id="remind_me_email" name="email" placeholder="your email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="form-control input-lg"></div>'+"\n";
+	txt +=	'			<label for="remind_me_email" class="w_bigger w_gray" style="font-weight:300;"><span class="icon-mail"></span> Enter your email address.</label>'+"\n";
+	txt +=	' 			<div><input type="email" maxlength="255" id="remind_me_email" name="email" placeholder="your email address" pattern=".+@.+..{2,6}" data-pattern-msg="Invalid Email Address" required="1" data-requiredmsg="Enter the email address you registered with." value="" onFocus="this.select();" class="input browser-default"></div>'+"\n";
 	txt +=	'			<div class="text-right w_padtop"><button type="submit" class="btn btn-default w_formsubmit btn-lg">Remind Me</button></div>'+"\n";
 	txt +=  '		</form>';
 	txt +=	'	</div>'+"\n";
 	var rtitle='Remind Me';
-	popUpDiv('',{id:dname,width:300,height:50,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
-	setCenterPopText(dname,txt,{title:rtitle});
-	document.remindMe.email.focus();
+	//popUpDiv('',{id:dname,width:300,height:50,drag:1,notop:1,nobot:1,noborder:1,nobackground:1,bodystyle:"padding:0px;border:0px;background:none;"});
+	//setCenterPopText(dname,txt,{title:rtitle});
+	centerpopDiv(txt);
+	//document.remindMe.email.focus();
 	return false;
 	}
 
@@ -3736,7 +3738,7 @@ function setCenterPopText(cpid,cptext,params){
 	if(undefined == params.center){params.center=true;}
 	var txt='';
 	//console.log(cptext);
-	if(cptext.includes('w_centerpop_content')){
+	if(cptext.indexOf('w_centerpop_content') != -1){
 		txt=cptext;
 	}
 	else{
