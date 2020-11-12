@@ -73,6 +73,7 @@ if(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['userna
 		$ok=userSetCookie($rec);
 		$ok=userLogMessage("Apikey Auth passed for user {$rec['username']}");
 	}
+	else{$_REQUEST['login_failed']=1;}
 }
 elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 	//auth code
@@ -82,7 +83,8 @@ elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 		$USER=$rec;
 		$ok=userSetCookie($rec);
 		$ok=userLogMessage("Auth passed for user {$rec['username']}");
-	}	
+	}
+	else{$_REQUEST['login_failed']=1;}	
 }
 elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
 	//temporary auth code
@@ -92,7 +94,8 @@ elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
 		$USER=$rec;
 		$ok=userSetCookie($rec);
 		$ok=userLogMessage("Temp Auth passed for user {$rec['username']}");
-	}	
+	}
+	else{$_REQUEST['login_failed']=1;}	
 }
 elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
 	//temporary auth code
@@ -102,7 +105,8 @@ elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
 		$USER=$rec;
 		$ok=userSetCookie($rec);
 		$ok=userLogMessage("Session Auth passed for user {$rec['username']}");
-	}	
+	}
+	else{$_REQUEST['login_failed']=1;}	
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['password']) && strlen($_REQUEST['password'])){
 	//login form
@@ -116,7 +120,8 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				$USER=$rec;
 				$ok=userSetCookie($rec);
 				$ok=userLogMessage("LDAP Auth passed for user {$rec['username']}");
-			}	
+			}
+			else{$_REQUEST['login_failed']=1;}	
 		}
 		else{
 			//username/password auth
@@ -127,6 +132,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				$ok=userSetCookie($rec);
 				$ok=userLogMessage("Username Auth passed for user {$rec['username']}");
 			}
+			else{$_REQUEST['login_failed']=1;}
 		}
 	}
 	elseif(isset($_REQUEST['email']) && strlen($_REQUEST['email'])){
@@ -138,6 +144,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			$ok=userSetCookie($rec);
 			$ok=userLogMessage("Email Auth passed for user {$rec['username']}");
 		}
+		else{$_REQUEST['login_failed']=1;}
 	}
 	elseif(isset($_REQUEST['phone']) && strlen($_REQUEST['phone'])){
 		//phone/password auth
@@ -148,6 +155,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			$ok=userSetCookie($rec);
 			$ok=userLogMessage("Phone Auth passed for user {$rec['username']}");
 		}
+		else{$_REQUEST['login_failed']=1;}
 	}
 }
 elseif(isset($_COOKIE['WASQLGUID'])){
@@ -157,6 +165,7 @@ elseif(isset($_COOKIE['WASQLGUID'])){
 		$USER=$rec;
 		$ok=userSetCookie($rec);
 	}
+	else{$_REQUEST['login_failed']=1;}
 }
 global $SETTINGS;
 if(isset($USER['_id'])){
