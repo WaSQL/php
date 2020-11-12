@@ -1737,13 +1737,14 @@ function userLoginForm($params=array()){
 	}
 	//password
 	$prefix='-password';
-	$tagopts=array('placeholder'=>$params["{$prefix}_text"]);
+	$tagopts=array('required'=>'required','placeholder'=>$params["{$prefix}_text"]);
 	foreach($attributes as $key){
 		$tkey="{$prefix}_{$key}";
 		if(isset($params[$tkey]) && strlen($params[$tkey])){
 			$tagopts[$key]=$params[$tkey];
 		}
 	}
+	//$form .= printValue($tagopts);
 	$form .= '		'.buildFormPassword('password',$tagopts);
 	//password_post
 	$prefix='-password_post';
