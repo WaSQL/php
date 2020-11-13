@@ -310,24 +310,32 @@ ENDOFWHERE;
 				$ok=cronCleanRecords($rec);
 				$cmd=$rec['run_cmd'];
 				$lcmd=strtolower(trim($cmd));
+				/*
+					look for passthru
+						/cron_test/a/b
+						/t/1/cron_test/a/b
+				*/
+				$crontype='';
 				global $PASSTHRU;
 				$parts=preg_split('/\/+/',$lcmd);
 				if(count($parts) > 1){
-					$lcmd=$parts[0];
 					//remove all parts before $view and set passthru
 					$stripped=0;
 					$tmp=array();
 					foreach($parts as $part){
 				        $part=trim($part);
-				        if($part==$lcmd){
+				        if(!strlen($part)){continue;}
+				        if(isset($pages[$part])){
 							$stripped=1;
+							$crontype='Page';
 							continue;
 						}
 						if($stripped){$tmp[]=$part;}
 					}
 					$_REQUEST['passthru']=$PASSTHRU=$tmp;
 				}
-				if(isset($pages[$lcmd])){
+				if(strlen($crontype)){}
+				elseif(isset($pages[$lcmd])){
 					//cronMessage("cron is a page");
 					$crontype='Page';
 				}
@@ -349,9 +357,9 @@ ENDOFWHERE;
 				$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
 				$cron_result .= "CronType: {$crontype} ".PHP_EOL;
 				$CRONTHRU['cron_guid']=generateGUID();
-				$crontype='unknown';
-				if(isset($pages[$lcmd])){
+				if(strtolower($crontype)=='page'){
 	            	//cron is a page.
+	            	$cmd=preg_replace('/^\/+/','',$cmd);
 	            	$url="http://{$CONFIG['name']}/{$cmd}";
 	                $cron_result .= "CronURL: {$url}".PHP_EOL;
 	                $CRONTHRU['cron_result']=$cron_result;
