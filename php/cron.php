@@ -317,22 +317,28 @@ ENDOFWHERE;
 				*/
 				$crontype='';
 				global $PASSTHRU;
-				$parts=preg_split('/\/+/',$lcmd);
-				if(count($parts) > 1){
-					//remove all parts before $view and set passthru
-					$stripped=0;
-					$tmp=array();
-					foreach($parts as $part){
-				        $part=trim($part);
-				        if(!strlen($part)){continue;}
-				        if(isset($pages[$part])){
-							$stripped=1;
-							$crontype='Page';
-							continue;
+				if(preg_match('/^http/i',$cmd)){
+	            	//cron is a URL.
+	            	$crontype='URL';
+				}
+				else{
+					$parts=preg_split('/\/+/',$lcmd);
+					if(count($parts) > 1){
+						//remove all parts before $view and set passthru
+						$stripped=0;
+						$tmp=array();
+						foreach($parts as $part){
+					        $part=trim($part);
+					        if(!strlen($part)){continue;}
+					        if(isset($pages[$part])){
+								$stripped=1;
+								$crontype='Page';
+								continue;
+							}
+							if($stripped){$tmp[]=$part;}
 						}
-						if($stripped){$tmp[]=$part;}
+						$_REQUEST['passthru']=$PASSTHRU=$tmp;
 					}
-					$_REQUEST['passthru']=$PASSTHRU=$tmp;
 				}
 				if(strlen($crontype)){}
 				elseif(isset($pages[$lcmd])){
@@ -342,10 +348,6 @@ ENDOFWHERE;
 				elseif(preg_match('/^<\?\=/',$cmd)){
 	            	//cron is a php command
 	            	$crontype='PHP Command';
-				}
-				elseif(preg_match('/^http/i',$cmd)){
-	            	//cron is a URL.
-	            	$crontype='URL';
 				}
 				else{
 	            	//cron is a command
@@ -391,14 +393,14 @@ ENDOFWHERE;
 	            	$cron_result .= printValue($post['headers']).PHP_EOL;
 	            	
 				}
-				elseif(preg_match('/^<\?\=/',$cmd)){
+				elseif(strtolower($crontype)=='php command'){
 	            	//cron is a php command
 	                $cron_result .= '------------------ Output Received ---------------------------------------------'.PHP_EOL;
 	            	$out=evalPHP($cmd).PHP_EOL;
 	            	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
 	            	else{$cron_result.=$out.PHP_EOL;}
 				}
-				elseif(preg_match('/^http/i',$cmd)){
+				elseif(strtolower($crontype)=='url'){
 	            	//cron is a URL.
 	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
 	            	foreach($CRONTHRU as $k=>$v){
