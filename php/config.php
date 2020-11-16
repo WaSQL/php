@@ -139,6 +139,7 @@ foreach($DATABASE as $d=>$db){
 	if(!isset($db['displayname'])){
 		$DATABASE[$d]['displayname']=ucwords(str_replace('_',' ',$db['name']));
 	}
+	if(isset($db['dbicon'])){continue;}
 	switch(strtolower($db['dbtype'])){
 		case 'postgresql':
 		case 'postgres':
@@ -152,7 +153,7 @@ foreach($DATABASE as $d=>$db){
 			$DATABASE[$d]['dbicon']='icon-database-mssql';
 		break;
 		case 'hana':
-			$DATABASE[$d]['dbicon']='';
+			$DATABASE[$d]['dbicon']='icon-database-hana';
 		break;
 		case 'sqlite':
 			$DATABASE[$d]['dbicon']='icon-database-sqlite';
@@ -224,6 +225,9 @@ if(!isset($CONFIG['dbicon'])){
 		break;
 		case 'sqlite':
 			$CONFIG['dbicon']='icon-database-sqlite';
+		break;
+		case 'hana':
+			$CONFIG['dbicon']='icon-database-hana';
 		break;
 		case 'mysql':
 		case 'mysqli':
