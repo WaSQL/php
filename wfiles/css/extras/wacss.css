@@ -837,12 +837,12 @@ button.wacssedit:hover{
 /* ---------------------- nav-tabs ------------------------- */
 ul.nav-tabs{
   display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    padding-left: 0;
-    margin-bottom: 0;
-    list-style: none;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  padding-left: 0;
+  margin-bottom: 1px;
+  list-style: none;
 }
 ul.nav-tabs.align-center{
   justify-content: center;
@@ -855,6 +855,8 @@ ul.nav-tabs.align-left{
 }
 ul.nav-tabs > li {
   display: inline-block;
+  margin-top:5px;
+  margin-right:1px;
 }
 ul.nav-tabs > li >a, ul.nav-tabs > li.nav-item {
   display: block;
