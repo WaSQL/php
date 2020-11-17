@@ -1783,6 +1783,17 @@ table.table td, table.table th {
     vertical-align: top;
     border-top: 1px solid #dee2e6;
 }
+table.is-sticky, table.sticky{
+  position:relative;
+  z-index:500;
+}
+table.is-sticky tr:first-child th, table.sticky tr:first-child th{
+  background-color: #FFF;
+  background-image: linear-gradient(#FFF 95%, #999);
+  position:sticky;
+  top:0;
+  z-index:505;
+}
 
 table.table.condensed td, table.table.condensed th,
 table.table.table-condensed td, table.table.table-condensed th {
