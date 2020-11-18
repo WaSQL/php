@@ -621,7 +621,8 @@ function ctreeParseConnectParams($params=array()){
 			$params['-connect']=$CONFIG['connect_ctree'];
 		}
 		else{
-			$params['-connect']="host={$CONFIG['ctree_dbhost']} port={$CONFIG['ctree_dbport']} dbname={$CONFIG['ctree_dbname']} user={$CONFIG['ctree_dbuser']} password={$CONFIG['ctree_dbpass']}";
+			//ODBC;DSN=REPL01;HOST=repl01.dot.infotraxsys.com;UID=dot_dels;DATABASE=liveSQL;SERVICE=6597;CHARSET NAME=;MAXROWS=;OPTIONS=;;PRSRVCUR=OFF;;FILEDSN=;SAVEFILE=;FETCH_SIZE=;QUERY_TIMEOUT=;SCROLLCUR=OF
+			$params['-connect']="odbc:Driver={c-treeACE ODBC Driver};Host={$CONFIG['ctree_dbhost']};Database={$CONFIG['ctree_dbname']};Port={$CONFIG['ctree_dbport']};FETCH_SIZE=16000;CHARSET NAME=CP_UTF8";
 		}
 		//add application_name
 		if(!stringContains($params['-connect'],'options')){
@@ -635,11 +636,11 @@ function ctreeParseConnectParams($params=array()){
 				$appname='WaSQL_on_'.$_SERVER['HTTP_HOST'];
 			}
 			$appname=str_replace(' ','_',$appname);
-			$params['-connect'].=" options='--application_name={$appname}'";
+			$params['-connect'].=";APP={$appname}";
 		}
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=" connect_timeout=5";
+			$params['-connect'].=";CONNECT_TIMEOUT=5";
 		}
 	}
 	else{
