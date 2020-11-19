@@ -3122,6 +3122,12 @@ function countdownTime(id){
 	let timeArray=el.innerText.split(/[:]+/);
 	let c=new Date();
 	let repeat=1;
+	if(undefined != el.dataset.paused){
+		if(parseInt(el.dataset.paused)==1){
+			this.timer=window.setTimeout(countdownTime,1000,id);
+			return;
+		}
+	}
 	if(timeArray.length==3){
 		//hh:mm:ss
 		let t=new Date(c.getFullYear(),c.getMonth(),c.getDay(),timeArray[0],timeArray[1],timeArray[2]-1);
