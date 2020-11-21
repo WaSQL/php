@@ -42,7 +42,13 @@ body{
 .bg-teal {background: #17a2b8;color: #fff;}
 .bg-white {background: #f8f9fa;color: #212529;}
 .bg-black {background: #343a40;color: #fff;}
-
+/* ---------------------- bulma css helpers----------------- */
+@media only screen and (max-width: 769px) {
+	.columns.reverse-column-order-mobile {
+    	display: flex;
+    	flex-direction: column-reverse;
+  	}
+}
 /* ---------------------- card ------------------------- */
 .card {
     position: relative;
@@ -1793,6 +1799,14 @@ table.is-sticky tr:first-child th, table.sticky tr:first-child th{
   position:sticky;
   top:0;
   z-index:505;
+}
+@media only screen and (min-width: 769px) {
+	table.is-sticky tr:first-child th, table.sticky tr:first-child th{
+  		background-color: #FFF;
+  		background-image: none;
+  		position:relative;
+  		z-index:505;
+	}
 }
 
 table.table.condensed td, table.table.condensed th,
