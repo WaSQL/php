@@ -2061,7 +2061,7 @@ function initEnlighterJs(){
 			if(undefined != els[i].dataset.enlighterHighlight){
 				params.highlight=els[i].dataset.enlighterHighlight;
 			}
-			els[i].enlight(params);
+			EnlighterJS.enlight(els[i],params);
 			els[i].dataset.enlightened=1;
 		}
 	}
