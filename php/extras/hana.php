@@ -11,7 +11,112 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
-
+//---------- begin function hanaGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=hanaGetAllTableFields();
+*/
+function hanaGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'hanaGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=hanaGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('hanaGetAllTableFields error: schema is not defined in config.xml');
+		return null;
+	}
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name as table_name,
+			column_name as field_name,
+			data_type_name as type_name
+		FROM table_columns
+		WHERE
+			schema_name='{$schema}'
+		ORDER BY 1,2
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function hanaGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=hanaGetAllTableIndexes();
+*/
+function hanaGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'hanaGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=hanaGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('hanaGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT
+		si.table_name as table_name,
+		si.index_name as index_name,
+		string_agg(sic.column_name,',') as index_keys,
+		case index_type when 'CPBTREE UNIQUE' then 1 else 0 end as is_unique
+	FROM sys.indexes si, sys.index_columns sic
+	WHERE 
+		si.table_name = sic.table_name
+		and schema_name='{$schema}'
+	GROUP BY 
+		si.table_name,
+		si.index_name,
+		case index_type when 'CPBTREE UNIQUE' then 1 else 0 end
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>'.printValue($recs);exit;
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$index_keys=preg_split('/\,+/',$rec['index_keys']);
+		sort($index_keys);
+		$rec['index_keys']=implode(', ',$index_keys);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+function hanaGetDBSchema(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=hanaParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['hana_dbschema'])){return $CONFIG['hana_dbschema'];}
+	elseif(isset($CONFIG['hana_schema'])){return $CONFIG['hana_schema'];}
+	return '';
+}
 //---------- begin function hanaGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
