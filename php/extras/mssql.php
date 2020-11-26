@@ -23,6 +23,120 @@ if((integer)phpversion() < 7){
 }
 global $mssql;
 $mssql=array();
+//---------- begin function mssqlGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=mssqlGetAllTableFields();
+*/
+function mssqlGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mssqlGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=mssqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('mssqlGetAllTableFields error: schema is not defined in config.xml');
+		return null;
+	}
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name as table_name,
+			column_name as field_name,
+			data_type as type_name
+		FROM information_schema.columns
+		WHERE
+			table_schema='{$schema}'
+		ORDER BY table_name,column_name
+ENDOFQUERY;
+	$recs=mssqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function mssqlGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=mssqlGetAllTableIndexes();
+*/
+function mssqlGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mssqlGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=mssqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('mssqlGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT 
+		t.name as table_name,
+		i.name as index_name,
+	    substring(column_names, 1, len(column_names)-1) as index_keys,
+	    i.is_unique
+	FROM sys.objects t
+	    INNER JOIN sys.indexes i on t.object_id = i.object_id
+	    CROSS APPLY (SELECT col.[name] + ', '
+	                    FROM sys.index_columns ic
+	                        INNER JOIN sys.columns col
+	                            on ic.object_id = col.object_id
+	                            and ic.column_id = col.column_id
+	                    WHERE ic.object_id = t.object_id
+	                        and ic.index_id = i.index_id
+	                        and ic.is_included_column = 0
+	                    ORDER BY key_ordinal
+	                            for xml path ('') ) D (column_names)
+	WHERE t.is_ms_shipped <> 1
+		and index_id > 0
+		and t.type = 'U'
+		and schema_name(t.schema_id)='{$schema}'
+	ORDER BY 1,2
+
+
+ENDOFQUERY;
+	$recs=mssqlQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>';
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+function mssqlGetDBSchema(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=mssqlParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['mysql_dbschema'])){return $CONFIG['mysql_dbschema'];}
+	elseif(isset($CONFIG['mysql_schema'])){return $CONFIG['mysql_schema'];}
+	return '';
+}
 //---------- begin function mssqlGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table

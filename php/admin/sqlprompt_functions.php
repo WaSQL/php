@@ -1,5 +1,20 @@
 <?php
 loadExtras('translate');
+function sqlpromptShowlist($recs,$listopts=array()){
+	$opts=array(
+		'-list'=>$recs,
+		'-tableclass'=>'table bordered striped',
+		'-hidesearch'=>1,
+		'-sorting'=>1
+	);
+	if(is_array($listopts) && count($listopts)){
+		foreach($listopts as $k=>$v){
+			$opts[$k]=$v;
+		}
+	}
+	//unset($opts['-list']);echo printValue($opts);exit;
+	return databaseListRecords($opts);
+}
 function sqlpromptCaptureFirstRows($rec,$max=30){
 	global $recs;
 	if(count($recs) < $max){

@@ -1661,8 +1661,19 @@ var wacss = {
 			if(undefined != mt){
 				mt.innerHTML=title;
 			}
+			centerObject(m);
 			return m;
 		}
+	},
+	modalPopupId: function(id,title,params){
+		let htm='';
+		if(undefined != document.querySelector(id)){
+			htm=document.querySelector(id).innerHTML;
+		}
+		else if(undefined != document.querySelector('#'+id)){
+			htm=document.querySelector('#'+id).innerHTML;
+		}
+		return wacss.modalPopup(htm,title,params);
 	},
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={};}
@@ -1679,6 +1690,7 @@ var wacss = {
 					mt.innerHTML=title;
 				}
 			}
+			centerObject(m);
 			return m;
 		}
 		if(undefined == params.color){
@@ -1741,6 +1753,7 @@ var wacss = {
 			modal_close.pnode=modal;
 			document.body.appendChild(modal);
 		}
+		centerObject(modal);
 		return modal;
 	},
 	navMobileToggle: function(el){

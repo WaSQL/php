@@ -15,7 +15,13 @@
 		var db=document.sqlprompt.db.value;
 		document.sqlprompt.reset();
 		document.sqlprompt.db.value=db;
-		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0})
+		let div='nulldiv';
+		let params={_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0};
+		if(type.toLowerCase()=='optimizations'){
+			div='sqlprompt_results';
+			params.setprocessing=div;
+		}
+		return ajaxGet('/php/admin.php',div,params)
 	}
 	function sqlpromptLastRecords(table){
 		var db=document.sqlprompt.db.value;
@@ -127,6 +133,7 @@
 		<li><a href="#" onclick="return sqlpromptMonitor('tables');"><span class="icon-table"></span> Tables</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('functions');"><span class="icon-th-thumb"></span> Functions</a></li>
 		<li><a href="#" onclick="return sqlpromptMonitor('procedures');"><span class="icon-th-thumb-empty"></span> Procedures</a></li>
+		<li><a href="#" onclick="return sqlpromptMonitor('optimizations');"><span class="icon-optimize"></span> Optimizations</a></li>
 	</ul>
 </view:monitor>
 
@@ -222,4 +229,8 @@
 <view:indexes>
 	<?=sqlpromptListIndexes($indexes);?>
 </view:indexes>
+
+<view:showlist>
+	<?=sqlpromptShowlist($recs,$listopts);?>
+</view:showlist>
 

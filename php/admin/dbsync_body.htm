@@ -1,0 +1,61 @@
+<view:default>
+<script type="text/javascript">
+	function dbsyncFunc(el){
+		if(undefined != el.dataset.confirm && !confirm(el.dataset.confirm)){return false;
+}		let params=el.dataset;
+		params['_menu']='dbsync';
+		if(undefined==params.div){
+			if(undefined != el.id){
+				params.div=el.id;
+			}
+			else{
+				params.div='dbsync_content';
+			}
+		}
+		if(undefined==params.setprocessing){
+			params.setprocessing=el;
+		}
+		//console.log(params);
+		return ajaxGet('/php/admin.php',params.div,params)
+	}
+</script>
+<div class="container-fluid">
+	<div class="row" style="margin-bottom:10px;">
+		<div class="col-sm-12">
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-database"></span> <translate>DB Sync Tool</translate></h2>
+			<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'dbsync_content');">
+				<input type="hidden" name="_menu" value="dbsync" />
+				<input type="hidden" name="func" value="compare" />
+				<div style="display:flex;align-items: flex-end;">
+					<div><label><translate>Source DB</translate></label><?=dbsyncFormField('source');?></div>
+					<div><label><translate>Target DB</translate></label><?=dbsyncFormField('target');?></div>
+					<div style="text-align: center;margin:0 5px;"><div><label><translate>Diffs</translate></label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
+					<div><label>&nbsp;</label><button type="submit" class="btn"><span class="icon-sync-diff"></span> <translate>Compare</translate></button></div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="row" style="margin-bottom:0px;">
+		<div class="col-sm-12">
+			<div id="dbsync_content"></div>
+		</div>
+	</div>
+</div>
+</view:default>
+
+<view:compare>
+	<?=dbsyncCompare($source,$target,$diffs);?>
+	<?=buildOnLoad("removeId('centerpop');");?>
+</view:compare>
+
+<view:view_diff>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content">
+<?=$diff;?>
+</div>
+</view:view_diff>
+
+<view:showlist>
+	<?=dbsyncShowlist($recs,$listopts);?>
+</view:showlist>
+

@@ -1010,8 +1010,8 @@ ul.nav-list.buttons.w_black > li >a:hover{background:rgba(35, 39, 43, 1.0);color
   position:relative;
   display: inline-block;
   vertical-align: middle; /* Center vertically, part 2 */
-  max-height: calc(100% - 100px);
-  max-width: 90%;
+  max-height: calc(100vh - 100px);
+  max-width: calc(100vw - 50px) !important;
   min-width:300px;
   min-height:50px;
   z-index: 9010;
@@ -1792,15 +1792,18 @@ table.table td, table.table th {
 table.is-sticky, table.sticky{
   position:relative;
   z-index:500;
+  border-top:0px !important;
 }
+
 table.is-sticky tr:first-child th, table.sticky tr:first-child th{
   background-color: #FFF;
   background-image: linear-gradient(#FFF 95%, #999);
   position:sticky;
   top:0;
   z-index:505;
+  border-top:0px !important;
 }
-@media only screen and (min-width: 769px) {
+@media only screen and (max-width: 769px) {
 	table.is-sticky tr:first-child th, table.sticky tr:first-child th{
   		background-color: #FFF;
   		background-image: none;

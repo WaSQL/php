@@ -6,7 +6,122 @@
 		https://www.yumpu.com/en/document/read/30279025/sql-reference-guide-cove-systems
 		https://docs.faircom.com/doc/sqlref/sqlref.pdf
 */
-
+//---------- begin function ctreeGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=ctreeGetAllTableFields();
+syscolumns fields
+	charset	nvarchar
+	col	nvarchar
+	collation	nvarchar
+	coltype	nvarchar
+	dflt_value	nvarchar
+	id	integer
+	logicalid	integer
+	nullflag	nvarchar
+	owner	nvarchar
+	scale	integer
+	tbl	nvarchar
+	width	integer
+*/
+function ctreeGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'ctreeGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$query=<<<ENDOFQUERY
+		SELECT
+			sc.tbl as table_name, 
+			sc.col as field_name,
+			sc.coltype as type_name
+		FROM admin.syscolumns sc, admin.systables st
+		WHERE sc.tbl = st.tbl AND st.tbltype != 'S'
+ENDOFQUERY;
+	$recs=ctreeQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		//$field=strtolower($rec['field_name']);
+		//$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	ksort($databaseCache[$cachekey]);
+	return $databaseCache[$cachekey];
+}
+//---------- begin function ctreeGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=ctreeGetAllTableIndexes();
+colname
+id
+idxcompress
+idxmethod
+idxname
+idxorder
+idxowner
+idxsegid
+idxseq
+idxtype
+rssid
+tbl
+tblowner
+*/
+function ctreeGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'ctreeGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT
+		tbl as table_name,
+		idxname as key_name,
+		colname as column_name,
+		idxtype as index_type,
+		idxseq as seq_in_index,
+		tblowner as table_owner
+		FROM admin.sysindexes
+		WHERE tblowner='admin'
+ENDOFQUERY;
+	$recs=ctreeQueryResults($query);
+	//group by table and key
+	$indexes=array();
+	foreach($recs as $rec){
+		$key=$rec['table_name'].$rec['key_name'];
+		$indexes[$key][]=$rec;
+	}
+	ksort($indexes);
+	//echo printValue($indexes);exit;
+	//json_agg
+	$recs=array();
+	foreach($indexes as $key=>$krecs){
+		$index_keys=array();
+		$krecs=sortArrayByKeys($krecs, array('seq_in_index'=>SORT_ASC));
+		foreach($krecs as $krec){$index_keys[]=$krec['column_name'];}
+		$is_unique=$krecs[0]['index_type']=='U'?1:0;
+		$rec=array(
+			'table_name'=>$krecs[0]['table_name'],
+			'key_name'=>$krecs[0]['key_name'],
+			'index_keys'=>json_encode($index_keys),
+			'is_unique'=>$is_unique
+		);
+		$recs[]=$rec;
+	}
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function ctreeDBConnect ----------
 /**
 * @describe returns connection resource
@@ -427,6 +542,9 @@ ENDOFQUERY;
 function ctreeGetDBSchema(){
 	global $CONFIG;
 	$params=ctreeParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
 	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
 	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
 	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
@@ -622,7 +740,7 @@ function ctreeParseConnectParams($params=array()){
 		}
 		else{
 			//ODBC;DSN=REPL01;HOST=repl01.dot.infotraxsys.com;UID=dot_dels;DATABASE=liveSQL;SERVICE=6597;CHARSET NAME=;MAXROWS=;OPTIONS=;;PRSRVCUR=OFF;;FILEDSN=;SAVEFILE=;FETCH_SIZE=;QUERY_TIMEOUT=;SCROLLCUR=OF
-			$params['-connect']="odbc:Driver={c-treeACE ODBC Driver};Host={$CONFIG['ctree_dbhost']};Database={$CONFIG['ctree_dbname']};Port={$CONFIG['ctree_dbport']};FETCH_SIZE=16000;CHARSET NAME=CP_UTF8";
+			$params['-connect']="odbc:Driver={c-treeACE ODBC Driver};Host={$CONFIG['ctree_dbhost']};Database={$CONFIG['ctree_dbname']};Port={$CONFIG['ctree_dbport']};FETCH_SIZE=16000;";
 		}
 		//add application_name
 		if(!stringContains($params['-connect'],'options')){

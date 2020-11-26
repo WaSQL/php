@@ -55,10 +55,19 @@
 			return;
 		break;
 		case 'monitor':
-			//echo printValue($_REQUEST);exit;
+			switch(strtolower($_REQUEST['type'])){
+				case 'optimizations':
+					$listopts=array(
+						'priority_class'=>'w_nowrap',
+						'advice_style'=>'white-space: unset;',
+						'details_style'=>'white-space: unset;',
+					);
+					$recs=dbOptimizations($_REQUEST['db']);
+					setView('showlist',1);
+					return;
+				break;
+			}
 			$sql=sqlpromptBuildQuery($_REQUEST['db'],$_REQUEST['type']);
-			//$recs=getDBRecords($sql);
-			//echo printValue(array_keys($recs[0]));exit;
 			setView('monitor_sql',1);
 			return;
 		break;

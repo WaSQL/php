@@ -5,7 +5,115 @@
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
 */
-
+//---------- begin function mysqlGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=mysqlGetAllTableFields();
+*/
+function mysqlGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mysqlGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=mysqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('mysqlGetAllTableFields error: schema is not defined in config.xml');
+		return null;
+	}
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name as table_name,
+			column_name as field_name,
+			column_type as type_name
+		FROM information_schema.columns
+		WHERE
+			table_schema='{$schema}'
+		ORDER BY table_name,column_name
+ENDOFQUERY;
+	$recs=mysqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function mysqlGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=mysqlGetAllTableIndexes();
+*/
+function mysqlGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mysqlGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=mysqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('mysqlGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT table_name,
+       index_name,
+       JSON_ARRAYAGG(column_name) as index_keys,
+       case non_unique
+            when 1 then 0
+            else 1
+            end as is_unique
+	FROM information_schema.statistics
+	WHERE table_schema not in ('information_schema', 'mysql',
+	                           'performance_schema', 'sys')
+	    and index_schema = '{$schema}'
+	GROUP BY index_schema,
+	         index_name,
+	         non_unique,
+	         table_name
+	ORDER BY 1,2
+ENDOFQUERY;
+	$recs=mysqlQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>'.printValue($recs);exit;
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$index_keys=json_decode($rec['index_keys'],true);
+		sort($index_keys);
+		$rec['index_keys']=json_encode($index_keys);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+function mysqlGetDBSchema(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=mysqlParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['mysql_dbschema'])){return $CONFIG['mysql_dbschema'];}
+	elseif(isset($CONFIG['mysql_schema'])){return $CONFIG['mysql_schema'];}
+	return '';
+}
 //---------- begin function mysqlGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
@@ -104,6 +212,190 @@ function mysqlDelDBRecordById($table='',$id=0){
 * @usage $params=mysqlParseConnectParams($params);
 */
 function mysqlParseConnectParams($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	global $USER;
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
+		foreach($CONFIG as $k=>$v){
+			if(preg_match('/^mysql/i',$k)){unset($CONFIG[$k]);}
+		}
+		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
+			$params["-{$k}"]=$v;
+		}
+	}
+	//check for user specific
+	if(isUser() && strlen($USER['username'])){
+		foreach($params as $k=>$v){
+			if(stringEndsWith($k,"_{$USER['username']}")){
+				$nk=str_replace("_{$USER['username']}",'',$k);
+				unset($params[$k]);
+				$params[$nk]=$v;
+			}
+		}
+	}
+	if(isMysql()){
+		$params['-dbhost']=$CONFIG['dbhost'];
+		if(isset($CONFIG['dbname'])){
+			$params['-dbname']=$CONFIG['dbname'];
+		}
+		if(isset($CONFIG['dbuser'])){
+			$params['-dbuser']=$CONFIG['dbuser'];
+		}
+		if(isset($CONFIG['dbpass'])){
+			$params['-dbpass']=$CONFIG['dbpass'];
+		}
+		if(isset($CONFIG['dbport'])){
+			$params['-dbport']=$CONFIG['dbport'];
+		}
+		if(isset($CONFIG['dbconnect'])){
+			$params['-connect']=$CONFIG['dbconnect'];
+		}
+	}
+	//dbhost
+	if(!isset($params['-dbhost'])){
+		if(isset($CONFIG['dbhost_mysql'])){
+			$params['-dbhost']=$CONFIG['dbhost_mysql'];
+			//$params['-dbhost_source']="CONFIG dbhost_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbhost'])){
+			$params['-dbhost']=$CONFIG['mysql_dbhost'];
+			//$params['-dbhost_source']="CONFIG mysql_dbhost";
+		}
+		else{
+			$params['-dbhost']=$params['-dbhost_source']='localhost';
+		}
+	}
+	else{
+		//$params['-dbhost_source']="passed in";
+	}
+	$CONFIG['mysql_dbhost']=$params['-dbhost'];
+	
+	//dbuser
+	if(!isset($params['-dbuser'])){
+		if(isset($CONFIG['dbuser_mysql'])){
+			$params['-dbuser']=$CONFIG['dbuser_mysql'];
+			//$params['-dbuser_source']="CONFIG dbuser_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbuser'])){
+			$params['-dbuser']=$CONFIG['mysql_dbuser'];
+			//$params['-dbuser_source']="CONFIG mysql_dbuser";
+		}
+	}
+	else{
+		//$params['-dbuser_source']="passed in";
+	}
+	$CONFIG['mysql_dbuser']=$params['-dbuser'];
+	//dbpass
+	if(!isset($params['-dbpass'])){
+		if(isset($CONFIG['dbpass_mysql'])){
+			$params['-dbpass']=$CONFIG['dbpass_mysql'];
+			//$params['-dbpass_source']="CONFIG dbpass_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbpass'])){
+			$params['-dbpass']=$CONFIG['mysql_dbpass'];
+			//$params['-dbpass_source']="CONFIG mysql_dbpass";
+		}
+	}
+	else{
+		//$params['-dbpass_source']="passed in";
+	}
+	$CONFIG['mysql_dbpass']=$params['-dbpass'];
+	//dbname
+	if(!isset($params['-dbname'])){
+		if(isset($CONFIG['dbname_mysql'])){
+			$params['-dbname']=$CONFIG['dbname_mysql'];
+			//$params['-dbname_source']="CONFIG dbname_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbname'])){
+			$params['-dbname']=$CONFIG['mysql_dbname'];
+			//$params['-dbname_source']="CONFIG mysql_dbname";
+		}
+		else{
+			$params['-dbname']=$CONFIG['mysql_dbname'];
+			//$params['-dbname_source']="set to username";
+		}
+	}
+	else{
+		//$params['-dbname_source']="passed in";
+	}
+	$CONFIG['mysql_dbname']=$params['-dbname'];
+	//dbport
+	if(!isset($params['-dbport'])){
+		if(isset($CONFIG['dbport_mysql'])){
+			$params['-dbport']=$CONFIG['dbport_mysql'];
+			//$params['-dbport_source']="CONFIG dbport_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbport'])){
+			$params['-dbport']=$CONFIG['mysql_dbport'];
+			//$params['-dbport_source']="CONFIG mysql_dbport";
+		}
+		else{
+			$params['-dbport']=5432;
+			//$params['-dbport_source']="default port";
+		}
+	}
+	else{
+		//$params['-dbport_source']="passed in";
+	}
+	$CONFIG['mysql_dbport']=$params['-dbport'];
+	//dbschema
+	if(!isset($params['-dbschema'])){
+		if(isset($CONFIG['dbschema_mysql'])){
+			$params['-dbschema']=$CONFIG['dbschema_mysql'];
+			//$params['-dbuser_source']="CONFIG dbuser_mysql";
+		}
+		elseif(isset($CONFIG['mysql_dbschema'])){
+			$params['-dbschema']=$CONFIG['mysql_dbschema'];
+			//$params['-dbuser_source']="CONFIG mysql_dbuser";
+		}
+	}
+	else{
+		//$params['-dbuser_source']="passed in";
+	}
+	$CONFIG['mysql_dbschema']=$params['-dbschema'];
+	//connect
+	if(!isset($params['-connect'])){
+		if(isset($CONFIG['mysql_connect'])){
+			$params['-connect']=$CONFIG['mysql_connect'];
+			//$params['-connect_source']="CONFIG mysql_connect";
+		}
+		elseif(isset($CONFIG['connect_mysql'])){
+			$params['-connect']=$CONFIG['connect_mysql'];
+			//$params['-connect_source']="CONFIG connect_mysql";
+		}
+		else{
+			//build connect - http://php.net/manual/en/function.pg-connect.php
+			//$conn_string = "host=sheep port=5432 dbname=test user=lamb password=bar";
+			//echo printValue($CONFIG);exit;
+			$params['-connect']="host={$CONFIG['mysql_dbhost']} port={$CONFIG['mysql_dbport']} dbname={$CONFIG['mysql_dbname']} user={$CONFIG['mysql_dbuser']} password={$CONFIG['mysql_dbpass']}";
+			//$params['-connect_source']="manual";
+		}
+		//add application_name
+		if(!stringContains($params['-connect'],'options')){
+			if(isset($params['-application_name'])){
+				$appname=$params['-application_name'];
+			}
+			elseif(isset($CONFIG['mysql_application_name'])){
+				$appname=$CONFIG['mysql_application_name'];
+			}
+			else{
+				$appname='WaSQL_on_'.$_SERVER['HTTP_HOST'];
+			}
+			$appname=str_replace(' ','_',$appname);
+			$params['-connect'].=" options='--application_name={$appname}'";
+		}
+		//add connect_timeout
+		if(!stringContains($params['-connect'],'connect_timeout')){
+			$params['-connect'].=" connect_timeout=5";
+		}
+	}
+	else{
+		//$params['-connect_source']="passed in";
+	}
+	//echo printValue($params);exit;
+	return $params;
+}
+function mysqlParseConnectParamsOLD($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
@@ -248,7 +540,7 @@ function mysqlExecuteSQL($query,$params=array()){
 	$result=@mysqli_query($dbh_mysql,$query);
 	if(!$result){
 		debugValue(array(
-			'function'=>'mysqlQueryResults',
+			'function'=>'mysqlExecuteSQL',
 			'message'=>'mysqli_query failed',
 			'error'=>mysqli_error($dbh_mysql),
 			'query'=>$query
@@ -598,14 +890,14 @@ function mysqlGetDBTables($params=array()){
 * @param [$params] array
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return array - returns records
+
 */
 function mysqlQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_mysql;
-	if(!is_resource($dbh_mysql)){
-		$dbh_mysql=mysqlDBConnect();
-	}
+	$dbh_mysql='';
+	$dbh_mysql=mysqlDBConnect();
 	if(!$dbh_mysql){
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
@@ -616,7 +908,7 @@ function mysqlQueryResults($query='',$params=array()){
     	return;
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
-	if(!$result){
+	if(1==2 && !$result){
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
 			'message'=>'mysqli_query failed',
@@ -801,4 +1093,99 @@ WHERE
 ENDOFQUERY;
 		break;
 	}
+}
+/*
+	https://github.com/acropia/MySQL-Tuner-PHP/blob/master/mt.php
+
+*/
+function mysqlOptimizations($params=array()){
+	$results=array();
+	//version
+	$recs=mysqlQueryResults('SELECT version() as val');
+	$results['version']=$recs[0]['val'];
+	//get status
+	$recs=mysqlQueryResults("show global status");
+	foreach($recs as $rec){
+		$key=strtolower($rec['variable_name']);
+		$results[$key]=strtolower($rec['value']);
+	}
+	//variables
+	$recs=mysqlQueryResults("show global variables");
+	foreach($recs as $rec){
+		$key=strtolower($rec['variable_name']);
+		$results[$key]=strtolower($rec['value']);
+	}
+	$results['avg_qps']=$results['questions']/$results['uptime'];
+	$results['slow_queries_pcnt']=$results['slow_queries']/$results['questions'];
+	$results['thread_cache_hit_rate']=100 - (($results['threads_created']/$results['connections'])*100);
+	$results['aborted_connects_pcnt']=$results['aborted_connects']/$results['connections'];
+	//engines
+	$recs=mysqlQueryResults("SELECT Engine, Support, Comment, Transactions, XA, Savepoints FROM information_schema.ENGINES ORDER BY Engine ASC");
+	foreach($recs as $rec){
+		$key=strtolower($rec['engine']);
+		$xrecs=mysqlQueryResults("SELECT COUNT(*) as count FROM information_schema.tables WHERE table_type = 'BASE TABLE' and ENGINE = '{$rec['engine']}'");
+		$rec['count']=$xrecs[0]['count'];
+		$results['engines'][$key]=$rec;
+	}
+	//aria
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='Aria'");
+	$results['aria_index_length']=(integer)$recs[0]['val'];
+	$results['aria_keys_from_memory_pcnt']=(integer)(100 - (($results['aria_pagecache_reads']/$results['aria_pagecache_read_requests'])*100));
+	//innoDB
+	$results['innodb_buffer_pool_read_ratio']=$results['innodb_buffer_pool_reads'] * 100 / $results['innodb_buffer_pool_read_requests'];
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val from information_schema.TABLES where ENGINE='InnoDB'");
+	$results['innodb_index_length']=(integer)$recs[0]['val'];
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(DATA_LENGTH),0) AS data_length from information_schema.TABLES where ENGINE='InnoDB'");
+	$results['innodb_data_length']=(integer)$recs[0]['val'];
+	if($results['innodb_index_length'] > 0){
+		$results['innodb_buffer_pool_free_pcnt']=$results['innodb_buffer_pool_pages_free']/$results['innodb_buffer_pool_pages_total'];
+	}
+	if(!isset($results['log_bin']) || $results['log_bin']!='on'){
+		$results['binlog_cache_size']=0;
+	}
+	if($results['max_heap_table_size'] < $results['tmp_table_size']){
+		$results['effective_tmp_table_size']=(integer)$results['max_heap_table_size'];
+	}
+	else{
+		$results['effective_tmp_table_size']=$results['tmp_table_size'];
+	}
+	$results['per_thread_buffer_size']=$results['read_buffer_size']+$results['read_rnd_buffer_size']+$results['sort_buffer_size']+$results['thread_stack']+$results['net_buffer_length']+$results['join_buffer_size']+$results['binlog_cache_size'];
+	$results['per_thread_buffers']=$results['per_thread_buffer_size']*$results['max_connections'];
+	$results['per_thread_max_buffers']=$results['per_thread_buffer_size']*$results['max_used_connections'];
+	$results['innodb_buffer_pool_size']=(integer)$results['innodb_buffer_pool_size'];
+	$results['innodb_additional_mem_pool_size']=(integer)$results['innodb_additional_mem_pool_size'];
+	$results['innodb_log_buffer_size']=(integer)$results['innodb_log_buffer_size'];
+	$results['query_cache_size']=(integer)$results['query_cache_size'];
+	$results['global_buffer_size']=$results['tmp_table_size']+$results['innodb_buffer_pool_size']+$results['innodb_additional_mem_pool_size']+$results['innodb_log_buffer_size']+$results['key_buffer_size']+$results['query_cache_size']+$results['aria_pagecache_buffer_size'];
+	//max_memory
+	$results['max_memory']=$results['global_buffer_size']+$results['per_thread_max_buffers'];
+	//total_memory
+	$results['total_memory']=$results['global_buffer_size']+$results['per_thread_buffers'];
+	//key buffer size
+	if((integer)$results['key_reads']==0){
+		$results['key_cache_miss_rate']=0;
+		$results['key_buffer_free_pcnt']=$results['key_blocks_unused']*$results['key_cache_block_size']/$results['key_buffer_size']*100;
+		$results['key_buffer_used_pcnt']=100-$results['key_buffer_free_pcnt'];
+		$results['key_buffer_used']=$results['key_buffer_size']-(($results['key_buffer_size']/100)*$results['key_buffer_free_pcnt']);
+	}
+	else{
+		$results['key_cache_miss_rate']=$results['key_read_requests']/$results['key_reads'];
+		if(!empty($results['key_blocks_unused'])){
+			$results['key_buffer_free_pcnt']=$results['key_blocks_unused']*$results['key_cache_block_size']/$results['key_buffer_size']*100;
+			$results['key_buffer_used_pcnt']=100-$results['key_buffer_free_pcnt'];
+			$results['key_buffer_used']=$results['key_buffer_size']-(($results['key_buffer_size']/100)*$results['key_buffer_free_pcnt']);
+		}
+		else{
+			$results['key_buffer_free_pcnt']='unknown';
+		}
+	}
+	/* MyISAM Index Length */
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='MyISAM'");
+	$results['myisam_index_length']=$recs[0]['val'];
+	
+	echo printValue($results);exit;
+	$recs=array();
+	//order by priority
+	$recs=sortArrayByKeys($recs,array('priority'=>SORT_ASC));
+	return $recs;
 }

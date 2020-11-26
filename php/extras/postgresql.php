@@ -546,10 +546,6 @@ function postgresqlDropDBIndex($params=array()){
 		}
 	}
 	$params['-table']=strtolower($params['-table']);
-	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBTableIndexes'][$params['-table']])){
-		unset($databaseCache['postgresqlGetDBTableIndexes'][$params['-table']]);
-	}
 	//build and execute
 	$query="alter table {$params['-table']} drop index {$params['-name']}";
 	return postgresqlExecuteSQL($query);
@@ -918,9 +914,10 @@ ENDOFQUERY;
 function postgresqlGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
 	global $databaseCache;
-	$key=$table.$allfields;
-	if(isset($databaseCache['postgresqlGetDBFields'][$key])){
-		return $databaseCache['postgresqlGetDBFields'][$key];
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBFields'.$table.$allfields);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
 	global $CONFIG;
 	global $USER;
@@ -961,8 +958,98 @@ function postgresqlGetDBFields($table,$allfields=0){
 	}
 	pg_close($dbh_postgresql);
 	ksort($fieldnames);
-	$databaseCache['postgresqlGetDBFields'][$key]=$fieldnames;
-	return $databaseCache['postgresqlGetDBFields'][$key];
+	$databaseCache[$cachekey]=$fieldnames;
+	return $databaseCache[$cachekey];
+}
+//---------- begin function postgresqlGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=postgresqlGetAllTableFields();
+*/
+function postgresqlGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetAllFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetAllFields error: schema is not defined in config.xml');
+		return null;
+	}
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name as table_name,
+			column_name as field_name,
+			udt_name as type_name
+		FROM information_schema.columns
+		WHERE
+			table_schema='{$schema}'
+		ORDER BY table_name,column_name
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]="{$field} {$type}";
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function postgresqlGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=postgresqlGetAllTableIndexes();
+*/
+function postgresqlGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetAllIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetAllIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT
+	  	idx.indrelid :: REGCLASS AS table_name,
+	  	i.relname                AS index_name,
+	  	idx.indisunique          AS is_unique,
+	  	idx.indisprimary         AS is_primary,
+       	to_json(array(
+           SELECT pg_get_indexdef(idx.indexrelid, k + 1, TRUE)
+           FROM
+             generate_subscripts(idx.indkey, 1) AS k
+           ORDER BY k
+       	)) AS index_keys
+	FROM pg_index AS idx
+  		JOIN pg_class AS i ON i.oid = idx.indexrelid
+  		JOIN pg_namespace AS ns ON i.relnamespace = NS.OID
+	WHERE ns.nspname = '{$schema}'
+	ORDER BY 1,2
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
 }
 //---------- begin function postgresqlGetDBFieldInfo ----------
 /**
@@ -976,10 +1063,11 @@ function postgresqlGetDBFields($table,$allfields=0){
 */
 function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 	$table=strtolower($table);
-	$cachekey=$table.$getmeta.$field;
 	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBFieldInfo'][$cachekey])){
-		return $databaseCache['postgresqlGetDBFieldInfo'][$cachekey];
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBFieldInfo'.$table.$getmeta.$field);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
@@ -988,7 +1076,6 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 			$table="{$schema}.{$table}";
 		}
 	}
-	global $CONFIG;
 	global $USER;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
@@ -1060,16 +1147,18 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
     	}
 	}
 	
-	$databaseCache['postgresqlGetDBFieldInfo'][$cachekey]=$fields;
-	return $databaseCache['postgresqlGetDBFieldInfo'][$cachekey];
+	$databaseCache[$cachekey]=$fields;
+	return $databaseCache[$cachekey];
 }
 function postgresqlGetDBIndexes($tablename=''){
 	return postgresqlGetDBTableIndexes($tablename);
 }
 function postgresqlGetDBTableIndexes($tablename=''){
 	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBTableIndexes'][$tablename])){
-		return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBTableIndexes'.$tablename);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
@@ -1117,8 +1206,8 @@ ENDOFQUERY;
 		}
 	}
 	//echo printValue($recs).printValue($xrecs);exit;
-	$databaseCache['postgresqlGetDBTableIndexes'][$tablename]=$xrecs;
-	return $databaseCache['postgresqlGetDBTableIndexes'][$tablename];
+	$databaseCache[$cachekey]=$xrecs;
+	return $databaseCache[$cachekey];
 }
 //---------- begin function postgresqlGetDBRecord ----------
 /**
@@ -1415,13 +1504,20 @@ function postgresqlTranslateDataType($str){
 * @usage if(postgresqlIsDBTable('_users')){...}
 */
 function postgresqlIsDBTable($table='',$force=0){
-	global $databaseCache;
 	$table=strtolower($table);
-	if($force==0 && isset($databaseCache['postgresqlIsDBTable'][$table])){
-		return $databaseCache['postgresqlIsDBTable'][$table];
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlIsDBTable'.$table);
+	if($force==0 && isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
+
 	$tables=postgresqlGetDBTables();
-	if(in_array($table,$tables)){return true;}
+	if(in_array($table,$tables)){
+		$databaseCache[$cachekey]=true;
+		return true;
+	}
+	$databaseCache[$cachekey]=false;
 	return false;
 }
 
@@ -1434,10 +1530,12 @@ function postgresqlIsDBTable($table='',$force=0){
 */
 function postgresqlGetDBTables($params=array()){
 	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBTables'][0])){
-		return $databaseCache['postgresqlGetDBTables'];
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBTables');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
-	$databaseCache['postgresqlGetDBTables']=array();
+	$databaseCache[$cachekey]=array();
 	global $CONFIG;
 	$include_schema=1;
 	$schema=postgresqlGetDBSchema();
@@ -1450,9 +1548,9 @@ function postgresqlGetDBTables($params=array()){
 	$recs = postgresqlQueryResults($query);
 	//echo $query;exit;
 	foreach($recs as $rec){
-		$databaseCache['postgresqlGetDBTables'][]=strtolower($rec['tablename']);
+		$databaseCache[$cachekey][]=strtolower($rec['tablename']);
 	}
-	return $databaseCache['postgresqlGetDBTables'];
+	return $databaseCache[$cachekey];
 }
 //---------- begin function postgresqlGetDBTablePrimaryKeys ----------
 /**
@@ -1464,8 +1562,10 @@ function postgresqlGetDBTables($params=array()){
 function postgresqlGetDBTablePrimaryKeys($table){
 	$table=strtolower($table);
 	global $databaseCache;
-	if(isset($databaseCache['postgresqlGetDBTablePrimaryKeys'][$table])){
-		return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBTablePrimaryKeys'.$table);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
 	//check for schema name
 	if(!stringContains($table,'.')){
@@ -1475,7 +1575,7 @@ function postgresqlGetDBTablePrimaryKeys($table){
 		}
 	}
 
-	$databaseCache['postgresqlGetDBTablePrimaryKeys'][$table]=array();
+	$databaseCache[$cachekey]=array();
 	$parts=preg_split('/\./',$table,2);
 	$where='';
 	if(count($parts)==2){
@@ -1484,7 +1584,6 @@ function postgresqlGetDBTablePrimaryKeys($table){
 	else{
 		$where = " and kc.table_name='{$parts[0]}'";
 	}
-	global $CONFIG;
 	$dbname=postgresqlGetConfigValue('dbname');
 	$query=<<<ENDOFQUERY
 		SELECT 	
@@ -1507,14 +1606,18 @@ function postgresqlGetDBTablePrimaryKeys($table){
 ENDOFQUERY;
 	$tmp = postgresqlQueryResults($query);
 	foreach($tmp as $rec){
-		$databaseCache['postgresqlGetDBTablePrimaryKeys'][$table][]=$rec['column_name'];
+		$databaseCache[$cachekey][]=$rec['column_name'];
     }
-	return $databaseCache['postgresqlGetDBTablePrimaryKeys'][$table];
+	return $databaseCache[$cachekey];
 }
 function postgresqlGetDBSchema(){
 	global $CONFIG;
+	global $DATABASE;
 	$params=postgresqlParseConnectParams();
-	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
 	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
 	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
 	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
@@ -1772,6 +1875,7 @@ function postgresqlQueryResults($query='',$params=array()){
 	}
 	$data=@pg_query($dbh_postgresql,$query);
 	$err=pg_result_error($data);
+	//echo printValue(array($err,$query,$data,$dbh_postgresql));
 	if(strlen($err)){
 		debugValue(array(
 			'function'=>'postgresqlQueryResults',
@@ -1785,11 +1889,12 @@ function postgresqlQueryResults($query='',$params=array()){
 	}
 	if(!$data){
 		//lets try one more time
-		usleep(100);
+		usleep(200);
 		$dbh_postgresql='';
 		$dbh_postgresql=postgresqlDBConnect();
 		$data=@pg_query($dbh_postgresql,$query);
 		$err=pg_result_error($data);
+		//echo printValue(array($err,$query,$data,$dbh_postgresql));
 		if(strlen($err)){
 			debugValue(array(
 				'function'=>'postgresqlQueryResults',
@@ -2023,4 +2128,492 @@ ORDER BY routines.routine_name, parameters.ordinal_position;
 ENDOFQUERY;
 		break;
 	}
+}
+function postgresqlOptimizations($params=array()){
+	global $DATABASE;
+	global $CONFIG;
+	$db=$CONFIG['db'];
+	$db_user=$DATABASE[$db]['dbuser'];
+	$postgres=array();
+	//get pg_settings
+	$recs=postgresqlQueryResults("select name,setting from pg_settings");
+	foreach($recs as $rec){
+		$key=strtolower($rec['name']);
+		$postgres[$key]=$rec['setting'];
+	}
+	//all_databases_size
+	$recs=postgresqlQueryResults('select sum(pg_database_size(datname)) as val from pg_database');
+	$postgres['all_databases_size']=$recs[0]['val'];
+	//uptime
+	$recs=postgresqlQueryResults('select extract(epoch from now()-pg_postmaster_start_time()) as val');
+	$postgres['uptime']=$recs[0]['val'];
+	//current_connections
+	$recs=postgresqlQueryResults('select count(1) as val from pg_stat_activity');
+	$postgres['current_connections']=$recs[0]['val'];
+	//pg_backend_pid
+	$recs=postgresqlQueryResults('select pg_backend_pid() as val');
+	$postgres['pg_backend_pid']=$recs[0]['val'];
+	//prepared_xact_count
+	$recs=postgresqlQueryResults('select count(1) as val from pg_prepared_xacts');
+	$postgres['prepared_xact_count']=$recs[0]['val'];
+	//prepared_xact_lock_count
+	$recs=postgresqlQueryResults('select count(1) as val from pg_locks where transactionid in (select transaction from pg_prepared_xacts)');
+	$postgres['prepared_xact_lock_count']=$recs[0]['val'];
+	//connection_age_average
+	$recs=postgresqlQueryResults('select extract(epoch from avg(now()-backend_start)) as val from pg_stat_activity');
+	$postgres['connection_age_average']=$recs[0]['val'];
+	//sum_total_relation_size
+	$recs=postgresqlQueryResults("select sum(pg_total_relation_size(schemaname||'.'||quote_ident(tablename))) as val from pg_tables");
+	$postgres['sum_total_relation_size']=$recs[0]['val'];
+	//sum_table_size
+	$recs=postgresqlQueryResults("select sum(pg_table_size(schemaname||'.'||quote_ident(tablename))) as val from pg_tables");
+	$postgres['sum_table_size']=$recs[0]['val'];
+	//shared_buffer_heap_hit_rate
+	$recs=postgresqlQueryResults("select sum(heap_blks_hit)*100/(sum(heap_blks_read)+sum(heap_blks_hit)+1) as val from pg_statio_all_tables");
+	$postgres['shared_buffer_heap_hit_rate']=$recs[0]['val'];
+	//shared_buffer_toast_hit_rate
+	$recs=postgresqlQueryResults("select sum(toast_blks_hit)*100/(sum(toast_blks_read)+sum(toast_blks_hit)+1) as val from pg_statio_all_tables");
+	$postgres['shared_buffer_toast_hit_rate']=$recs[0]['val'];
+	//shared_buffer_idx_hit_rate
+	$recs=postgresqlQueryResults("select sum(idx_blks_hit)*100/(sum(idx_blks_read)+sum(idx_blks_hit)+1) as val from pg_statio_all_tables");
+	$postgres['shared_buffer_idx_hit_rate']=$recs[0]['val'];
+	//expiring_soon_users
+	$recs=postgresqlQueryResults("select usename from pg_user where valuntil='invalid' or valuntil < now()+interval'7 days'");
+	foreach($recs as $rec){
+		$postgres['expiring_soon_users'][]=$rec['usename'];
+	}
+	//bad_password_users
+	$recs=postgresqlQueryResults("select usename from pg_shadow where passwd='md5'||md5(usename||usename)");
+	foreach($recs as $rec){
+		$postgres['bad_password_users'][]=$rec['usename'];
+	}
+	//databases
+	$recs=postgresqlQueryResults('SELECT datname FROM pg_database WHERE NOT datistemplate AND datallowconn');
+	foreach($recs as $rec){
+		$postgres['databases'][]=$rec['datname'];
+	}
+	//users
+	$recs=postgresqlQueryResults('select * from pg_user');
+	foreach($recs as $rec){
+		$postgres['users'][$rec['usename']]=$rec;
+	}
+	//extensions
+	$recs=postgresqlQueryResults('select extname from pg_extension');
+	foreach($recs as $rec){
+		$postgres['extensions'][]=$rec['extname'];
+	}
+	//modified_costs
+	$recs=postgresqlQueryResults("select name from pg_settings where name like '%cost%' and setting<>boot_val");
+	foreach($recs as $rec){
+		$postgres['modified_costs'][]=$rec['name'];
+	}
+	//tablespaces_in_pgdata
+	$postgres['tablespaces_in_pgdata']=postgresqlQueryResults("select spcname,pg_tablespace_location(oid) from pg_tablespace where pg_tablespace_location(oid) like (select setting from pg_settings where name='data_directory')||'/%'");
+	//Invalid_indexes
+	$q=<<<ENDOFSQL
+	SELECT
+		concat(n.nspname, '.', c.relname) as index
+	FROM
+		pg_catalog.pg_class c,
+		pg_catalog.pg_namespace n,
+		pg_catalog.pg_index i
+	WHERE
+		i.indisvalid = false AND
+		i.indexrelid = c.oid AND
+		c.relnamespace = n.oid
+	ENDOFSQL;
+	$postgres['invalid_indexes']=postgresqlQueryResults($q);
+	//unused_indexes
+	$q=<<<ENDOFSQL
+	SELECT 
+		relname||'.'||indexrelname as index_name 
+	FROM pg_stat_user_indexes 
+	WHERE 
+		idx_scan=0 and not exists (select 1 from pg_constraint where conindid=indexrelid) 
+	ORDER BY relname, indexrelname
+	ENDOFSQL;
+	$postgres['unused_indexes']=postgresqlQueryResults($q);
+	//default_cost_procs
+	$q=<<<ENDOFSQL
+	SELECT 
+		n.nspname||'.'||p.proname as proc_name 
+	FROM pg_catalog.pg_proc p 
+		left join pg_catalog.pg_namespace n on n.oid = p.pronamespace 
+	WHERE pg_catalog.pg_function_is_visible(p.oid) and n.nspname not in ('pg_catalog','information_schema','sys') and p.prorows<>1000 and p.procost<>10 and p.proname not like 'uuid_%' and p.proname != 'pg_stat_statements_reset'
+	ENDOFSQL;
+	$postgres['default_cost_procs']=postgresqlQueryResults($q);
+	//calculate other values based on above info
+	//sum_index_size
+	$postgres['sum_index_size']=$postgres['sum_total_relation_size']-$postgres['sum_table_size'];
+	//index_percent
+	$postgres['index_percent']=$postgres['sum_index_size']*100/$postgres['sum_total_relation_size'];
+	//current_connections_percent
+	$postgres['current_connections_percent']=$postgres['current_connections']*100/$postgres['max_connections'];
+	//superuser_reserved_connections_ratio
+	$postgres['superuser_reserved_connections_ratio']=$postgres['superuser_reserved_connections']*100/$postgres['max_connections'];
+	//work_mem_total
+	$postgres['work_mem_total']=$postgres['work_mem']*$postgres['work_mem_per_connection_percent']/100*$postgres['max_connections'];
+	//maintenance_work_mem_total
+	$postgres['maintenance_work_mem_total']=$postgres['maintenance_work_mem']*$postgres['autovacuum_max_workers'];
+	//max_memory
+	$postgres['max_memory']=$postgres['shared_buffers']+$postgres['work_mem_total']+$postgres['maintenance_work_mem_total']+$postgres['track_activity_size'];
+	//shared_buffers_usage
+	$postgres['shared_buffers_usage']=$postgres['all_databases_size']/$postgres['shared_buffers'];
+	//buffercache_declared_size
+	$postgres['buffercache_declared_size'] = $postgres['effective_cache_size'] - $postgres['shared_buffers'];
+	//checkpoint_dirty_writing_time_window
+	$postgres['checkpoint_dirty_writing_time_window']=$postgres['checkpoint_timeout'] * $postgres['checkpoint_completion_target'];
+	//average_w
+	$postgres['average_w']=$postgres['max_wal_size']/$postgres['checkpoint_dirty_writing_time_window'];
+
+	//postgres + server calculations
+	//percent_postgresql_max_memory
+
+	//create a report
+	$recs=array();
+	//super user
+	if(strtolower($postgres['users'][$db_user]['usesuper'])!='t'){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'Error: You need superuser rights.',
+			'details'=>"{$db_user} does not have super user rights."
+		);
+	}
+	//server_version
+	if(preg_match('/(devel|rc|beta)/i',$postgres['server_version'])){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'running a Non-production database version',
+			'details'=>"{$postgres['server_version']} is not a production stable version."
+		);
+	}
+	if($postgres['server_version'] < 13){
+		$report['advice'][]="Postgres version {$postgres['server_version']} is not the latest stable version. Upgrade to the latest stable PostgreSQL version";
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Not the latest stable version.',
+			'details'=>"Postgres version {$postgres['server_version']} is not the latest stable version. Upgrade to the latest stable PostgreSQL version"
+		);
+	}
+	//uptime
+	$oneday=24*60*60;
+	if($postgres['uptime'] < $oneday){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'Uptime less than 1 day',
+			'details'=>"Uptime less than 1 day.  This report may be inaccurate"
+		);
+	}
+	//pg_stat_statements
+	$pg_stat_statements=0;
+	foreach($postgres['extensions'] as $ext){
+		if(stringContains($ext,'pg_stat_statements')){$pg_stat_statements=1;break;}
+	}
+	if($pg_stat_statements==0){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'Enable pg_stat_statements',
+			'details'=>"Enable pg_stat_statements in database to collect statistics on all queries (not only those longer than log_min_duration_statement)"
+		);
+	}
+	//expiring_soon_users
+	if(isset($postgres['expiring_soon_users'][0])){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'Expiring user accounts found',
+			'details'=>"These user accounts will expire in less than 7 days: ".json_encode($postgres['expiring_soon_users'])
+		);
+	}
+	//bad_password_users
+	if(isset($postgres['bad_password_users'][0])){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Users with bad passwords Found',
+			'details'=>"These user passwords are the same as the username: ".json_encode($postgres['bad_password_users'])
+		);
+	}
+	//password_encryption
+	if(strtolower($postgres['password_encryption'])=='off'){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'Password encryption is disabled',
+			'details'=>"password_encryption is set to off so passwords are not being encrypted.",
+		);
+	}
+	//current_connections_percent
+	if($postgres['current_connections_percent'] > 70){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Over 70% of max connections',
+			'details'=>"You are using more than 70% ({$postgres['current_connections_percent']}) of the connections slots.  Increase max_connections to avoid saturation of connection slots"
+		);
+	}
+	//superuser_reserved_connections
+	if($postgres['superuser_reserved_connections'] == 0){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'No connection slot is reserved for the superuser',
+			'details'=>"No connection slot is reserved for the superuser.  In case of connection saturation you will not be able to connect to investigate or kill connections"
+		);
+	}
+	//superuser_reserved_connections_ratio
+	if($postgres['superuser_reserved_connections_ratio'] > 20 ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'To many connection slots reserved for the superuser',
+			'details'=>"{$postgres['superuser_reserved_connections_ratio']}% of connections are reserved for super user.  This is too much and may limit other users connections"
+		);
+	}
+	//connection_age_average
+	if($postgres['connection_age_average'] < 60 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Use a connection pooler to limit new connections/second',
+			'details'=>"The average connection age is less than 1 minute.  Use a connection pooler to limit new connections/second"
+		);
+	}
+	elseif($postgres['connection_age_average'] < 600 ){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'Use a connection pooler to limit new connections/second',
+			'details'=>"The average connection age is less than 10 minutes.  Use a connection pooler to limit new connections/second"
+		);
+	}
+	//pre_auth_delay
+	if($postgres['pre_auth_delay'] > 0 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Set pre_auth_delay to 0',
+			'details'=>"pre_auth_delay={$postgres['pre_auth_delay']}: this is a developer feature for debugging and increases the connection delay by {$postgres['pre_auth_delay']} seconds"
+		);
+	}
+	//post_auth_delay
+	if($postgres['post_auth_delay'] > 0 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'Set post_auth_delay to 0',
+			'details'=>"post_auth_delay={$postgres['post_auth_delay']}: this is a developer feature for debugging and increases the connection delay by {$postgres['post_auth_delay']} seconds"
+		);
+	}
+	//maintenance_work_mem
+	$default=65536;
+	if($postgres['maintenance_work_mem'] <= $default ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'increase maintenance_work_mem',
+			'details'=>"maintenance_work_mem specifies the maximum amount of memory to be used by maintenance operations, such as VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY. The current value ({$postgres['maintenance_work_mem']}) is less or equal to its default value of {$default}. Max is 2147483647.  Increase it to reduce maintenance tasks duration"
+		);
+	}
+	//shared_buffers_usage
+	if($postgres['shared_buffers_usage'] < 0.7 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'shared_buffers is too big',
+			'details'=>"shared_buffers size ({$postgres['shared_buffers']})  is too big for the total databases size, uselessly using memory"
+		);
+	}
+	//effective_cache_size
+	if($postgres['effective_cache_size'] < $postgres['shared_buffers'] ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'increase effective_cache_size',
+			'details'=>"effective_cache_size sets the planner's assumption about the effective size of the disk cache that is available to a single query. This is factored into estimates of the cost of using an index; a higher value makes it more likely index scans will be used, a lower value makes it more likely sequential scans will be used. When setting this parameter you should consider both PostgreSQL's shared buffers and the portion of the kernel's disk cache that will be used for PostgreSQL data files, though some data might exist in both places. Also, take into account the expected number of concurrent queries on different tables, since they will have to share the available space. effective_cache_size({$postgres['effective_cache_size']}) < shared_buffers ({$postgres['shared_buffers']}).  This is inadequate, as effective_cache_size value must be (shared buffers) + (size in bytes of the kernel's storage buffercache that will be used for PostgreSQL data files)"
+		);
+	}
+	//buffercache_declared_size
+	if($postgres['buffercache_declared_size'] < 4000000000 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'increase effective_cache_size',
+			'details'=>"The declared buffercache size ( effective_cache_size - shared_buffers ) is less than 4GB.  effective_cache_size value is probably inadequate.  It must be (shared buffers) + (size in bytes of the kernel's storage buffercache that will be used for PostgreSQL data files). effective_cache_size sets the planner's assumption about the effective size of the disk cache that is available to a single query. This is factored into estimates of the cost of using an index; a higher value makes it more likely index scans will be used, a lower value makes it more likely sequential scans will be used. When setting this parameter you should consider both PostgreSQL's shared buffers and the portion of the kernel's disk cache that will be used for PostgreSQL data files, though some data might exist in both places. Also, take into account the expected number of concurrent queries on different tables, since they will have to share the available space. "
+		);
+	}
+	//huge_pages
+	if($postgres['huge_pages'] == 'on' ){
+		$recs[]=array(
+			'priority'=>'4-info',
+			'advice'=>'check for hugepage support in the OS',
+			'details'=>"huge_pages=on, therefore PostgreSQL needs Huge Pages and will not start if the kernel doesn't provide them. You can check for hugepage support  on the OS by running 'cat /proc/sys/vm/nr_hugepages'"
+		);
+	}
+	elseif($postgres['huge_pages'] != 'try' ){
+		$recs[]=array(
+			'priority'=>'4-info',
+			'advice'=>'check for hugepage support in the OS',
+			'details'=>"Enable huge_pages to enhance memory allocation performance, and if necessary also enable them at OS level. You can check for hugepage support  on the OS by running 'cat /proc/sys/vm/nr_hugepages'"
+		);
+	}
+	//log_hostname
+	if($postgres['log_hostname'] == 'on'  ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'turn off log_hostname',
+			'details'=>"log_hostname is on: this will decrease connection performance (because PostgreSQL has to do DNS lookups)"
+		);
+	}
+	//log_min_duration_statement
+	if($postgres['log_min_duration_statement'] == -1  ){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'set log_min_duration_statement to something > 1000 (ms)',
+			'details'=>"Log of long queries is deactivated.  It will be more difficult to optimize query performance. Setting log_min_duration_statement causes the duration of each completed statement to be logged if the statement ran for at least the specified amount of time. If this value is specified without units, it is taken as milliseconds. Setting this to zero prints all statement durations. Minus-one (the default) disables logging statement durations. For example, if you set it to 250ms then all SQL statements that run 250ms or longer will be logged. Enabling this parameter can be helpful in tracking down unoptimized queries in your applications."
+		);
+	}
+	elseif((integer)$postgres['log_min_duration_statement'] < 1000  ){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'increase log_min_duration_statement to something > 1000 (ms)',
+			'details'=>"log_min_duration_statement={$postgres['log_min_duration_statement']}: any request during less than 1 sec will be written in log.  It may be storage-intensive (I/O and space). Setting log_min_duration_statement causes the duration of each completed statement to be logged if the statement ran for at least the specified amount of time. If this value is specified without units, it is taken as milliseconds. Setting this to zero prints all statement durations. Minus-one (the default) disables logging statement durations. For example, if you set it to 250ms then all SQL statements that run 250ms or longer will be logged. Enabling this parameter can be helpful in tracking down unoptimized queries in your applications. "
+		);
+	}
+	//log_statement
+	if($postgres['log_statement'] == 'all'  ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set log_statement to ddl',
+			'details'=>"log_statement=all is very storage-intensive and only usefull for debuging"
+		);
+	}
+	elseif($postgres['log_statement'] == 'mod'  ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set log_statement to ddl',
+			'details'=>"log_statement=mod is storage-intensive"
+		);
+	}
+	//autovacuum
+	if($postgres['autovacuum'] != 'on'  ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set autovacuum to on',
+			'details'=>"autovacuum is not activated.  This is normally bad."
+		);
+	}
+	//checkpoint_completion_target
+	$msg_CCT="checkpoint_completion_target is low.  Some checkpoints may abruptly overload the storage with write commands for a long time, slowing running queries down.  To avoid such temporary overload you may balance checkpoint writes using a higher value";
+	if($postgres['checkpoint_completion_target'] == 0 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set checkpoint_completion_target to somewhere between 0.7 and 0.9',
+			'details'=>"checkpoint_completion_target value is 0.  This is absurd. {$msg_CCT}"
+		);
+	}
+	elseif($postgres['checkpoint_completion_target'] < 0.5 ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set checkpoint_completion_target to somewhere between 0.5 and 0.9',
+			'details'=>"Checkpoint_completion_target ({$postgres['checkpoint_completion_target']}) is lower than its default value (0.5). {$msg_CCT}"
+		);
+	}
+	elseif($postgres['checkpoint_completion_target'] > 0.9){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set checkpoint_completion_target to somewhere between 0.7 and 0.9',
+			'details'=>"Checkpoint_completion_target ({$postgres['checkpoint_completion_target']}) is too high. Reduce checkpoint_completion_target value."
+		);
+	}
+	//checkpoint_dirty_writing_time_window
+	if($postgres['checkpoint_dirty_writing_time_window'] < 10){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set checkpoint_timeout / checkpoint_completion_target a number > 10',
+			'details'=>"(checkpoint_timeout / checkpoint_completion_target) is probably too low"
+		);
+	}
+	//fsync
+	if($postgres['fsync'] != 'on'  ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'turn of fsync',
+			'details'=>"fsync is off.  You may lose data after a crash, DANGER!"
+		);
+	}
+	//synchronize_seqscans
+	if($postgres['synchronize_seqscans'] != 'on'  ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'set synchronize_seqscans to on',
+			'details'=>"set synchronize_seqscans to 'on' to reduce I/O load"
+		);
+	}
+	//wal_level
+	if($postgres['wal_level'] == 'minimal'  ){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set wal_level to replica or logical',
+			'details'=>"minimal WAL does not contain enough information to reconstruct the data from a base backup and the WAL logs, so replica or logical must be used to enable WAL archiving (archive_mode) and streaming replication."
+		);
+	}
+	//modified_costs
+	if(isset($postgres['modified_costs'][0])){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set modified costs settings to default value',
+			'details'=>"Some I/O cost settings are not set to their default value: ".json_encode($postgres['modified_costs'])
+		);
+	}
+	//disabled_plan_functions
+	$disabled=array();
+	foreach($postgres as $k=>$v){
+		if(stringBeginsWith($k,'enable_') && strtolower($v)=='off'){
+			$disabled[]=$k;
+		}
+	}
+	if(count($disabled)){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'set plan features to on',
+			'details'=>"Some plan features are disabled: ".json_encode($disabled)
+		);
+	}
+	//tablespaces_in_pgdata
+	if(isset($postgres['tablespaces_in_pgdata'][0])){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'move tablespaces outside of PGDATA folder',
+			'details'=>"Some tablespaces defined in PGDATA. Move them outside of this folder "
+		);
+	}
+	//shared_buffer_idx_hit_rate
+	if($postgres['shared_buffer_idx_hit_rate'] > 99.99 ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'decrease shared_buffer memory',
+			'details'=>"shared_buffer_idx_hit_rate is too high. Decrease shared_buffer memory to lower hit rate."
+		);
+	}
+	elseif($postgres['shared_buffer_idx_hit_rate'] < 90 ){
+		$recs[]=array(
+			'priority'=>'1-high',
+			'advice'=>'increase shared_buffer memory',
+			'details'=>"shared_buffer_idx_hit_rate is too low. Increase shared_buffer memory to increase hit rate."
+		);
+	}
+	//invalid_indexes
+	if(isset($postgres['invalid_indexes'][0])){
+		$recs[]=array(
+			'priority'=>'2-medium',
+			'advice'=>'check/reindex any invalid index',
+			'details'=>"List of invalid index in the database: ".json_encode($postgres['invalid_indexes'])
+		);
+	}
+	//unused_indexes
+	if(isset($postgres['unused_indexes'][0])){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'remove unused indexes',
+			'details'=>"You have unused indexes in the database since the last statistics run.  Please remove them if they are rarely or not used. List of unused indexes not used since the last statistics run: ".json_encode($postgres['unused_indexes'])
+		);
+	}
+	//default_cost_procs
+	if(isset($postgres['default_cost_procs'][0])){
+		$recs[]=array(
+			'priority'=>'3-low',
+			'advice'=>'reconfigure custom procedures',
+			'details'=>"You have custom procedures with default cost and rows setting.  Reconfigure them with specific values to help the planner. List of user procedures do not have custom cost and rows settings: ".json_encode($postgres['default_cost_procs'])
+		);
+	}
+	//order by priority
+	$recs=sortArrayByKeys($recs,array('priority'=>SORT_ASC));
+	return $recs;
 }

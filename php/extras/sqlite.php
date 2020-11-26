@@ -5,6 +5,101 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+//---------- begin function sqliteGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=sqliteGetAllTableFields();
+*/
+function sqliteGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'sqliteGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$query=<<<ENDOFQUERY
+		SELECT 
+			m.tbl_name as table_name,
+			pti.name as field_name,
+			pti.type as field_type
+		FROM sqlite_master AS m,
+		    pragma_table_info(m.tbl_name) AS pti
+		WHERE 
+			m.type = 'table'
+		GROUP BY
+			m.tbl_name,
+			pti.name,
+			pti.type
+		ORDER BY 1,2
+ENDOFQUERY;
+	$recs=sqliteQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function sqliteGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=sqliteGetAllTableIndexes();
+*/
+function sqliteGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'sqliteGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$query=<<<ENDOFQUERY
+	SELECT 
+		m.tbl_name as table_name,
+		il.name as index_name,
+		group_concat(ii.name) as index_keys,
+		il.[unique] as is_unique
+  	FROM sqlite_master AS m,
+	    pragma_index_list(m.name) AS il,
+	    pragma_index_info(il.name) AS ii
+ 	WHERE 
+ 		m.type = 'table'
+ 	GROUP BY
+ 		m.tbl_name,
+		il.name,
+		il.[unique]
+ 	ORDER BY 1,2
+ENDOFQUERY;
+	$recs=sqliteQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>'.printValue($recs);exit;
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+function sqliteGetDBSchema(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=sqliteParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['sqlite_dbschema'])){return $CONFIG['sqlite_dbschema'];}
+	elseif(isset($CONFIG['sqlite_schema'])){return $CONFIG['sqlite_schema'];}
+	return '';
+}
 //---------- begin function sqliteGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
@@ -788,7 +883,7 @@ function sqliteGetDBCount($params=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function sqliteListDBDatatypes(){
-	//default to mysql
+	//default to 
 	return <<<ENDOFDATATYPES
 <div class="w_bold w_blue w_padtop">Text Types</div>
 <div class="w_padleft">TEXT - a text string, stored using the database encoding (UTF-8, UTF-16BE or UTF-16LE)</div>

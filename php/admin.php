@@ -593,6 +593,7 @@ if(isAjax()){
 		case 'terminal':
 		case 'checktables':
 		case 'meta':
+		case 'dbsync':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1255,6 +1256,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'checktables':
 		case 'logs':
 		case 'website_grader':
+		case 'dbsync':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':

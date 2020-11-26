@@ -12,6 +12,112 @@ ini_set('oci8.persistent_timeout',-1);
 ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
+
+//---------- begin function oracleGetAllTableFields ----------
+/**
+* @describe returns fields of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allfields=oracleGetAllTableFields();
+*/
+function oracleGetAllTableFields($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleGetAllTableFields');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetAllTableFields error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name as table_name,
+			column_name as field_name,
+			data_type as type_name
+		FROM all_tab_cols
+		WHERE
+			owner='{$schema}'
+		ORDER BY table_name,column_name
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$field=strtolower($rec['field_name']);
+		$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+//---------- begin function oracleGetAllTableIndexes ----------
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allindexes=oracleGetAllTableIndexes();
+*/
+function oracleGetAllTableIndexes($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleGetAllTableIndexes');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+	SELECT 
+		a.table_name,
+       	a.index_name,
+       	JSON_ARRAYAGG(b.column_name order by column_position RETURNING VARCHAR2(100)) as index_keys,
+       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique
+	FROM sys.all_indexes a
+		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
+	WHERE a.owner = '{$schema}'
+	GROUP BY 
+		a.table_name,
+	    a.index_name,
+	    case a.uniqueness when 'UNIQUE' then 1 else 0 end
+	ORDER BY 1,2
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>';
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
+function oracleGetDBSchema(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=oracleParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
+		return $DATABASE[$CONFIG['db']]['dbschema'];
+	}
+	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
+	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
+	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
+	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
+	elseif(isset($CONFIG['oracle_dbschema'])){return $CONFIG['oracle_dbschema'];}
+	elseif(isset($CONFIG['oracle_schema'])){return $CONFIG['oracle_schema'];}
+	return '';
+}
 //---------- begin function oracleAddDBRecords ----------
 /**
 * @describe add multiple records at the same time using json_table.
