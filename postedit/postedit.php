@@ -55,9 +55,9 @@ global $noloop;
 $noloop="{$progpath}/postedit.noloop";
 global $pid;
 $pid=getmypid();
-echo "obtaining lock: {$lockfile}".PHP_EOL;
+echo "obtaining lock: {$lockfile} ...";
 file_put_contents($lockfile,$pid);
-echo "{$lockfile} is now mine".PHP_EOL;
+echo "success".PHP_EOL;
 //create the base dir
 $folder=isset($hosts[$chost]['alias'])?$hosts[$chost]['alias']:$hosts[$chost]['name'];
 $basefolder=$folder;
@@ -66,26 +66,7 @@ $cday=date('Ymd');
 if(isset($hosts[$chost]['datestamp'])){
 	$folder .= '_'.$cday;
 }
-//check for days to keep
-if(isset($hosts[$chost]['days_to_keep'])){
-	$days_to_keep=(integer)$hosts[$chost]['days_to_keep'];
-	$now = time(); // or your date as well
-	$dirs=listFilesEx("{$progpath}/postEditFiles",array('name'=>"{$basefolder}_",'type'=>'dir'));
-	foreach($dirs as $dir){
-		if(preg_match('/\_([0-9]+)$/',$dir['name'],$m)){
-			if($m[1]!=$cday){
-				$ddate=substr($m[1],0,4).'-'.substr($m[1],4,2).'-'.substr($m[1],6-2);
-				$ddate = strtotime($ddate);
-				$diff=round(($now - $ddate) / (60 * 60 * 24),0);
-				if($diff > $days_to_keep){
-					echo "Removing {$dir['name']}..{} as it is {$diff} days old".PHP_EOL;
-					cleanDir($dir['afile']);
-					rmdir($dir['afile']);
-				}
-			}
-		}
-	}
-}
+
 //allow timer to be set in postedit.xml
 if(isset($hosts[$chost]['timer'])){
 	$timer=(integer)$hosts[$chost]['timer'];
@@ -95,6 +76,7 @@ if(isset($hosts[$chost]['timezone'])){
 	date_default_timezone_set($hosts[$chost]['timezone']);
 }
 $afolder="{$progpath}/postEditFiles/{$folder}";
+$bfolder="{$progpath}/postEditFiles/{$folder}_bak";
 $userfields=array('username');
 if(isset($hosts[$chost]['user_fields'])){
 	$userfields=preg_split('/\,/',$hosts[$chost]['user_fields']);
@@ -104,6 +86,14 @@ if(!is_dir($afolder)){
 }
 else{
 	cli_set_process_title("{$afolder} - cleaning");
+	if(file_exists($bfolder)){
+		postEditCleanDir($bfolder);
+		@rmdir($bfolder);
+	}
+	rename($afolder,$bfolder);
+	if(!is_dir($afolder)){
+		mkdir($afolder,0777,true);
+	}
 	postEditCleanDir($afolder);
 }
 //get the files
