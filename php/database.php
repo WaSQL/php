@@ -2278,7 +2278,7 @@ function dbOptimizations($db,$params=array()){
 *	[-posttable]  - HTML/text to add just after the table ends
 *	[-listview] - HTML/text to use instead of building a table row for each recordset.  Use [field] in your HTML to show value
 *	[-hidesearch] integer - 1 hide search completely
-*	[-simplesearch] str - list of search fields - shows simple search bar
+*	[-simplesearch] str - search field - shows simple search bar - only supports one field
 *	[-navonly] integer - 1=only show navigation buttons, not search
 * @return string - html table to display
 * @usage
