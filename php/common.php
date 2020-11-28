@@ -385,6 +385,7 @@ function commonFormatPhone($phone) {
 *	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
 *	[-limit] integer - number of records to show
 *	[-navonly] integer - 1=only show navigation buttons, not search
+*	[-simplesearch] str - list of search fields - shows simple search bar
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
 *	['-formname'] - formname. defaults to searchfiltersform
@@ -510,76 +511,92 @@ function commonSearchFiltersForm($params=array()){
 	//keep field and operator together (nowrap)
 	if(!isset($params['-navonly'])){
 		$rtn .= '	<div data-set="1" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$rtn .= buildFormSelect('filter_field',$vals,$params);
-		$rtn .= '			</div>'.PHP_EOL;
-		//operators
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$vals=array(
-			'eq'	=> 'Equals',
-			'ea'	=> 'Equals Any of These',
-			'ct'	=> 'Contains',
-			'ca'	=> 'Contains Any of These',
-			'nct'	=> 'Not Contains',
-			'nca'	=> 'Not Contain Any of These',
-			'neq'	=> 'Not Equals',
-			'nea'	=> 'Not Equals Any of These',
-			'gt'	=> 'Greater Than',
-			'lt'	=> 'Less Than',
-			'egt'	=> 'Equals or Greater than',
-			'elt'	=> 'Less than or Equals',
-			'ib'	=> 'Is Blank',
-			'nb'	=> 'Is Not Blank'
-		);
-		if(!empty($params['-searchopers'])){
-			if(!is_array($params['-searchopers'])){
-				$params['-searchopers']=preg_split('/\,/',$params['-searchopers']);
-			}
-			$tmp=array();
-			foreach($params['-searchopers'] as $k){
-				$tmp[$k]=$vals[$k];
-			}
-			$vals=$tmp;
-		}
-		$rtn .= buildFormSelect('filter_operator',$vals,$params);
-		$rtn .= '			</div>'.PHP_EOL;
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$params['placeholder']='value';
-		$params['autofocus']='autofocus';
-
-		$rtn .= buildFormText('filter_value',$params);
-		unset($params['autofocus']);
-		$rtn .= '			</div>'.PHP_EOL;
-		$rtn .= '		</div>'.PHP_EOL;
-		$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
-		//order
-		if(!empty($params['-showorder']) && $params['-showorder']==1){
+		if(!isset($params['-simplesearch'])){
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-			$vals=array();
-			foreach($params['-listfields'] as $fld){
-				$dname=ucwords(trim(str_replace('_',' ',$fld)));
-				$vals[$fld]='Order By '.$dname;
-				$vals["{$fld} desc"]='Order By '.$dname.' desc';
+			$rtn .= buildFormSelect('filter_field',$vals,$params);
+			$rtn .= '			</div>'.PHP_EOL;
+			//operators
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$vals=array(
+				'eq'	=> 'Equals',
+				'ea'	=> 'Equals Any of These',
+				'ct'	=> 'Contains',
+				'ca'	=> 'Contains Any of These',
+				'nct'	=> 'Not Contains',
+				'nca'	=> 'Not Contain Any of These',
+				'neq'	=> 'Not Equals',
+				'nea'	=> 'Not Equals Any of These',
+				'gt'	=> 'Greater Than',
+				'lt'	=> 'Less Than',
+				'egt'	=> 'Equals or Greater than',
+				'elt'	=> 'Less than or Equals',
+				'ib'	=> 'Is Blank',
+				'nb'	=> 'Is Not Blank'
+			);
+			if(!empty($params['-searchopers'])){
+				if(!is_array($params['-searchopers'])){
+					$params['-searchopers']=preg_split('/\,/',$params['-searchopers']);
+				}
+				$tmp=array();
+				foreach($params['-searchopers'] as $k){
+					$tmp[$k]=$vals[$k];
+				}
+				$vals=$tmp;
 			}
-			$rtn .= buildFormSelect('filter_order',$vals,$params);
-			$rtn .= '			</div>'.PHP_EOL;	
+			$rtn .= buildFormSelect('filter_operator',$vals,$params);
+			$rtn .= '			</div>'.PHP_EOL;
+
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$params['placeholder']='value';
+			$params['autofocus']='autofocus';
+
+			$rtn .= buildFormText('filter_value',$params);
+			unset($params['autofocus']);
+			$rtn .= '			</div>'.PHP_EOL;
+			$rtn .= '		</div>'.PHP_EOL;
+			$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
+			//order
+			if(!empty($params['-showorder']) && $params['-showorder']==1){
+				$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+				$vals=array();
+				foreach($params['-listfields'] as $fld){
+					$dname=ucwords(trim(str_replace('_',' ',$fld)));
+					$vals[$fld]='Order By '.$dname;
+					$vals["{$fld} desc"]='Order By '.$dname.' desc';
+				}
+				$rtn .= buildFormSelect('filter_order',$vals,$params);
+				$rtn .= '			</div>'.PHP_EOL;	
+			}
+			else{
+				$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
+			}
 		}
 		else{
-			$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
+			$rtn .='<input type="hidden" name="filter_field" value="'.$params['-simplesearch'].'" />'.PHP_EOL;
+			$rtn .='<input type="hidden" name="filter_operator" value="ct" />'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$params['placeholder']='value';
+			$params['autofocus']='autofocus';
+
+			$rtn .= buildFormText('filter_value',$params);
+			unset($params['autofocus']);
+			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//search button
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$rtn .= '				<button type="button" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
 		$rtn .= '			</div>'.PHP_EOL;
-		//add filter
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_grey"></span></button>'.PHP_EOL;
-		$rtn .= '			</div>'.PHP_EOL;
-		//bulkedit
-		if(!empty($params['-bulkedit'])){
+		if(!isset($params['-simplesearch'])){
+			//add filter
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit  w_danger w_bold"></span></button>'.PHP_EOL;
-	    	$rtn .= '			</div>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="btn" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add w_grey"></span></button>'.PHP_EOL;
+			$rtn .= '			</div>'.PHP_EOL;
+			//bulkedit
+			if(!empty($params['-bulkedit'])){
+				$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		    	$rtn .= '				<button type="button" title="Bulk Edit" class="btn" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit  w_danger w_bold"></span></button>'.PHP_EOL;
+		    	$rtn .= '			</div>'.PHP_EOL;
+			}
 		}
 		//export
 		if(!empty($params['-export'])){
