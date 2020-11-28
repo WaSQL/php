@@ -584,7 +584,7 @@ function commonSearchFiltersForm($params=array()){
 		}
 		//search button
 		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0)"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="btn" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search"></span> Search</button>'.PHP_EOL;
 		$rtn .= '			</div>'.PHP_EOL;
 		if(!isset($params['-simplesearch'])){
 			//add filter
