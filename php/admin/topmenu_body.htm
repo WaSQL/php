@@ -1,5 +1,5 @@
 <view:default>
-<nav class="nav topmenu <?=$CONFIG['admin_color'];?> condensed" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
+<nav class="nav topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
 	<ul>
 		<li><a href="#logo"><img src="/wfiles/wasql_admin.png" /></a></li>
 		<view:admin>
@@ -142,11 +142,11 @@
 		</view:errors>
 		<?=renderViewIf(isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1,'errors');?>
 		<!-- Config -->
-		<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <translate>Clear</translate></a></li>
+		<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear</translate></span></a></li>
 		<!-- Help -->
-		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled w_big"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
+		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
 			<ul>
-				<li><a href="/php/admin.php?_menu=manual"><span class="icon-help-circled"></span> <translate>Documentation</translate></a></li>
+				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-help-circled"></span> <translate>Documentation</translate></a></li>
 				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
 				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
@@ -176,7 +176,7 @@
 			</ul>
 		</li>
 		<!-- User -->
-		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <?=$USER['username'];?></a>
+		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
 			<ul>
 				<li><a href="/php/admin.php?_menu=profile"><span class="icon-list"></span> <translate>Profile</translate></a></li>
 				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-table-add"></span> postEdit</a></li>
