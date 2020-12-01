@@ -103,6 +103,52 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
+function oracleGetDBTableIndexes($tablename=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleGetDBTableIndexes'.$tablename);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$schema=oracleGetDBSchema();
+	if(!strlen($schema)){
+		debugValue('oracleGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$tablename=strtoupper($tablename);
+	$tablename=str_replace("{$schema}.",'',$tablename);
+	$query=<<<ENDOFQUERY
+	SELECT 
+		a.table_name,
+       	a.index_name,
+       	JSON_ARRAYAGG(b.column_name order by column_position RETURNING VARCHAR2(100)) as index_keys,
+       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique
+	FROM sys.all_indexes a
+		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
+	WHERE a.owner = '{$schema}' and a.table_name='{$tablename}'
+	GROUP BY 
+		a.table_name,
+	    a.index_name,
+	    case a.uniqueness when 'UNIQUE' then 1 else 0 end
+	ORDER BY 1,2
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	$xrecs=array();
+	foreach($recs as $rec){
+		$cols=json_decode($rec['index_keys'],true);
+		foreach($cols as $i=>$col){
+			$xrec=$rec;
+			$xrec['key_name']=$rec['index_name'];
+			$xrec['column_name']=$col;
+			$xrec['seq_in_index']=$i;
+			$xrecs[]=$xrec;
+		}
+	}
+	//echo $query.printValue($recs).printValue($xrecs);exit;
+	$databaseCache[$cachekey]=$xrecs;
+	return $databaseCache[$cachekey];
+}
 function oracleGetDBSchema(){
 	global $CONFIG;
 	global $DATABASE;
