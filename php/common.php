@@ -15378,6 +15378,39 @@ function processFileUploads($docroot=''){
 	//ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
     return 0;
 }
+//---------- begin function commonParseIni
+/**
+* @describe converts an ini formatted string into an array
+* @param str str - string or filename of the ini
+* @usage
+*	$settings=commonParseIni($str);
+*	$settings=commonParseIni($afile);
+*/
+function commonParseIni($str){
+	if(file_exists($str)){
+		$str=file_get_contents($str);
+	}
+	$lines=preg_split('/[\r\n]+/',$str);
+	$settings=array();
+	$key='';
+	foreach($lines as $line){
+		if(preg_match('/^\[(.+)\]$/',trim($line),$m)){
+			$key=strtolower($m[1]);
+			continue;
+		}
+		if(!strlen($key)){continue;}
+		if(!strlen(trim($line))){continue;}
+		$parts=preg_split('/\=/',trim($line),2);
+		if(count($parts)==2){
+			$subkey=strtolower(trim($parts[0]));
+			$settings[$key][$subkey]=$parts[1];
+		}
+		else{
+			$settings[$key][]=$parts[0];
+		}
+	}
+	return $settings;
+}
 function commonProcessFileActions($name,$afile){
 	global $CONFIG;
 	$adir=getFilePath($afile);
