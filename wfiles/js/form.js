@@ -17,7 +17,7 @@ function formChanged(frm){
 		let vals=new Array(1,'y','yes');
 		if(parts.length==2){
 			name=parts[0];
-			vals=new Array(parts[1]);
+			vals=parts[1].split(',');
 		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(undefined == ifel){continue;}
