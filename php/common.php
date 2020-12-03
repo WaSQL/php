@@ -2254,6 +2254,14 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
 	}
+	if(isset($params['display'])){
+		$tag .= ' data-display="'.$params['display'].'"';
+		unset($params['display']);
+	}
+	elseif(isset($params['data-display'])){
+		$tag .= ' data-display="'.$params['data-display'].'"';
+		unset($params['data-display']);
+	}
 	$tag .='>'.PHP_EOL;
 	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
