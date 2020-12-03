@@ -7,6 +7,7 @@ $progpath=dirname(__FILE__);
 $incpath=get_include_path() . PATH_SEPARATOR . "{$progpath}/phpseclib";
 set_include_path($incpath);
 include_once("{$progpath}/phpseclib/Net/SFTP.php");
+include_once("{$progpath}/phpseclib/Net/SSH2.php");
 
 //---------- begin function sftpListFiles
 /**

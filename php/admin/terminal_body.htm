@@ -2,19 +2,19 @@
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> Command Terminal</h2>
 <div class="w_flex w_flexrow w_flexnowrap" style="margin-top:15px;padding: 0 15px;">
 	<div style="flex-grow: 3" id="terminalinputarea" style="overflow:hidden;">
-		<form method="post" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return ajaxSubmitForm(this,'stdout');">
+		<form method="post" autocomplete="off" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return ajaxSubmitForm(this,'stdout');">
 			<input type="hidden" name="_menu" value="terminal" />
-			<div style="display:inline-flex;align-items: stretch;flex-direction: row;width:100%;">
+			<div style="display:inline-flex;align-items: stretch;flex-direction: row;width:100%;z-index: 9950;">
 				<div style="flex-grow:10">
-					<input autocomplete="off" type="text" autofocus="autofocus" onfocus="this.select();" name="cmd" list="cmds" class="browser-default" value="" placeholder="enter command here" required="required">
+					<input autocomplete="off" type="text" autofocus="autofocus" onfocus="this.select();" name="cmd" class="input browser-default" value="" placeholder="enter command here" required="required">
 				</div>
 				<div style="flex-grow:4;margin-left:5px;">
-					<input type="text" onfocus="this.select();" name="dir" list="dirs" class="browser-default" value="" placeholder="directory (optional)">
+					<input type="text" onfocus="this.select();" name="dir" list="dirs" class="input browser-default" value="" placeholder="directory (optional)">
 				</div>
-				<div style="flex-grow:1;margin-left:5px;"><button type="submit" class="btn browser-default" style="width:100%;">Run</button></div>
+				<div style="flex-grow:1;margin-left:5px;"><button type="submit" class="button btn browser-default" style="width:100%;">Run</button></div>
 			</div>
 		</form>
-		<div id="stdout"  style="margin:0px !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:85vh;overflow:auto;width:100%;">
+		<div id="stdout"  style="margin:5px 0 0 0 !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:85vh;overflow:auto;width:100%;z-index: 9999;">
 		</div>
 	</div>
 </div>
