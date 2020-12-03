@@ -2,16 +2,35 @@
 /* References:
 	sFTP functions that use phpseclib so that it is pure PHP and will work nearly everywhere
 	http://phpseclib.sourceforge.net/sftp/examples.html
-	
-	loadExtras('sftp');
-	$sftp = new Net_SFTP('192.158.214.215');
-	if (!$sftp->login($user, $pass)) {
-	    echo('Login Failed');
-		exit;
-	}
-	$sftp->chdir('/example');
-	$sftp->put('remotefile.csv', $local_file, NET_SFTP_LOCAL_FILE);
 
+	Example #1
+		loadExtras('sftp');
+		$sftp = new Net_SFTP('192.158.214.215');
+		if (!$sftp->login($user, $pass)) {
+		    echo('Login Failed');
+			exit;
+		}
+		$sftp->chdir('/example');
+		$sftp->put('remotefile.csv', $local_file, NET_SFTP_LOCAL_FILE);
+	Example #2
+		loadExtras('sftp');
+		$key = new Crypt_RSA();
+		$sftp = new Net_SFTP('192.158.214.215');
+		$key->loadKey(file_get_contents('/var/www/keys/rsafile'));
+		if (!$sftp->login($user, $key)) {
+		    echo('Login Failed');
+		    exit;
+		}
+		$sftp->chdir('/home/files');
+		if(!$sftp->is_dir('/home/files/archive')){
+			$sftp->mkdir('/home/files/archive');
+		}
+		$files=$sftp->rawlist();
+		foreach($files as $file){
+			// copies filename.remote to filename.local from the SFTP server
+			$sftp->get($file['filename'], "/var/www/localfiles/{$file['filename']}");
+			$sftp->rename($file['filename'], "/home/files/archive/{$file['filename']}");
+		}
 
 */
 $progpath=dirname(__FILE__);
@@ -19,6 +38,7 @@ $incpath=get_include_path() . PATH_SEPARATOR . "{$progpath}/phpseclib";
 set_include_path($incpath);
 include_once("{$progpath}/phpseclib/Net/SFTP.php");
 include_once("{$progpath}/phpseclib/Net/SSH2.php");
+include_once("{$progpath}/phpseclib/Crypt/RSA.php");
 
 //---------- begin function sftpListFiles
 /**
