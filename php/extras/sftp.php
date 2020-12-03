@@ -2,6 +2,17 @@
 /* References:
 	sFTP functions that use phpseclib so that it is pure PHP and will work nearly everywhere
 	http://phpseclib.sourceforge.net/sftp/examples.html
+	
+	loadExtras('sftp');
+	$sftp = new Net_SFTP('192.158.214.215');
+	if (!$sftp->login($user, $pass)) {
+	    echo('Login Failed');
+		exit;
+	}
+	$sftp->chdir('/example');
+	$sftp->put('remotefile.csv', $local_file, NET_SFTP_LOCAL_FILE);
+
+
 */
 $progpath=dirname(__FILE__);
 $incpath=get_include_path() . PATH_SEPARATOR . "{$progpath}/phpseclib";
