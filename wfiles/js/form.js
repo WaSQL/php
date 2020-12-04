@@ -68,6 +68,7 @@ function formChanged(frm){
 		}
 	}
 }
+
 function setInputFileName(fld){
 	//console.log(fld.files);
 	let multiple=0;
@@ -2309,10 +2310,70 @@ function submitForm(theForm,popup,debug,ajax){
 		else if(undefined != theForm[i].getAttribute('data-requiredif')){requiredif=theForm[i].getAttribute('data-requiredif');}
 		else if(undefined != theForm[i].getAttribute('requiredif')){requiredif=theForm[i].getAttribute('requiredif');}
         if(requiredif.length > 0){
-			if(formFieldHasValue(requiredif)){
-				//console.log(requiredif+' is checked');
-				required=1;
-			}
+        	//support specifying the value  data-requiredif="age:9,10,11,12"
+        	let parts=requiredif.split(':');
+        	let rval='';
+        	requiredif=parts[0];
+        	if(parts.length==1){
+        		if(undefined != theForm[requiredif]){
+        			switch(theForm[requiredif].type.toLowerCase()){
+        				case 'select-one':
+        					rval=theForm[requiredif].options[theForm[requiredif].selectedIndex].value;
+        					if(rval.length){
+        						required=1;
+        					}
+        				break;
+        				case 'select-multiple':
+        					let rvals = Array.from(theForm[requiredif].selectedOptions).map(el=>el.value);
+        					if(rvals.length){
+        						required=1;
+        					}
+        				break;
+        				default:
+        					if(theForm[requiredif].value.length){
+        						required=1;
+        					}
+        				break;
+        			}
+				}
+        	}
+        	else{
+        		cvals=parts[1].split(',');
+        		if(undefined != theForm[requiredif]){
+        			switch(theForm[requiredif].type.toLowerCase()){
+        				case 'select-one':
+        					rval=theForm[requiredif].options[theForm[requiredif].selectedIndex].value;
+        					for(let c=0;c<cvals.length;c++){
+        						if(rval==cvals[c]){
+        							required=1;
+        							break;
+        						}
+        					}
+        				break;
+        				case 'select-multiple':
+        					let rvals = Array.from(theForm[requiredif].selectedOptions).map(el=>el.value);
+        					for(let r=0;r<rvals.length;r++){
+        						rval=rvals[r];
+        						for(let c=0;c<cvals.length;c++){
+	        						if(rval==cvals[c]){
+	        							required=1;
+	        							break;
+	        						}
+	        					}
+        					}
+        				break;
+        				default:
+        					rval=theForm[requiredif].value;
+        					for(let c=0;c<cvals.length;c++){
+        						if(rval==cvals[c]){
+        							required=1;
+        							break;
+        						}
+        					}
+        				break;
+        			}
+				}
+        	}
 		}
         if(required == 1 || required == 'required'){
 			var requiredmsg=theForm[i].getAttribute('data-requiredmsg');
