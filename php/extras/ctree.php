@@ -470,7 +470,7 @@ function ctreeGetDBRecords($params){
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-	    	$paginate = "SKIP {$offset} top {$limit}";
+	    	$paginate = "TOP {$limit} SKIP {$offset}";
 	    }
 
 	    $query="SELECT {$paginate} {$params['-fields']} FROM {$params['-table']} {$wherestr}";
