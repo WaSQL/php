@@ -2313,24 +2313,39 @@ function submitForm(theForm,popup,debug,ajax){
         	//support specifying the value  data-requiredif="age:9,10,11,12"
         	let parts=requiredif.split(':');
         	let rval='';
-        	requiredif=parts[0];
+        	requiredif=theForm.querySelector('[name="'+parts[0]+'"]');
         	if(parts.length==1){
-        		if(undefined != theForm[requiredif]){
-        			switch(theForm[requiredif].type.toLowerCase()){
+        		if(undefined != requiredif){
+        			switch(requiredif.type.toLowerCase()){
         				case 'select-one':
-        					rval=theForm[requiredif].options[theForm[requiredif].selectedIndex].value;
+        					rval=requiredif.options[requiredif.selectedIndex].value;
         					if(rval.length){
         						required=1;
         					}
         				break;
         				case 'select-multiple':
-        					let rvals = Array.from(theForm[requiredif].selectedOptions).map(el=>el.value);
+        					let rvals = Array.from(requiredif.selectedOptions).map(el=>el.value);
         					if(rvals.length){
         						required=1;
         					}
         				break;
+        				case 'radio':
+        				case 'checkbox':
+        					let rels=theForm.querySelectorAll('[type="'+requiredif.type+'"][name="'+requiredif.name+'"]');
+        					for(let r=0;r<rels.length;r++){
+        						if(rels[r].checked){
+        							required=1;
+        							break;
+        						}
+        					}
+        				break;
+        				case 'textarea':
+        					if(requiredif.innerText.length){
+        						required=1;
+        					}
+        				break;
         				default:
-        					if(theForm[requiredif].value.length){
+        					if(requiredif.value.length){
         						required=1;
         					}
         				break;
@@ -2339,10 +2354,10 @@ function submitForm(theForm,popup,debug,ajax){
         	}
         	else{
         		cvals=parts[1].split(',');
-        		if(undefined != theForm[requiredif]){
-        			switch(theForm[requiredif].type.toLowerCase()){
+        		if(undefined != requiredif){
+        			switch(requiredif.type.toLowerCase()){
         				case 'select-one':
-        					rval=theForm[requiredif].options[theForm[requiredif].selectedIndex].value;
+        					rval=requiredif.options[requiredif.selectedIndex].value;
         					for(let c=0;c<cvals.length;c++){
         						if(rval==cvals[c]){
         							required=1;
@@ -2351,7 +2366,7 @@ function submitForm(theForm,popup,debug,ajax){
         					}
         				break;
         				case 'select-multiple':
-        					let rvals = Array.from(theForm[requiredif].selectedOptions).map(el=>el.value);
+        					let rvals = Array.from(requiredif.selectedOptions).map(el=>el.value);
         					for(let r=0;r<rvals.length;r++){
         						rval=rvals[r];
         						for(let c=0;c<cvals.length;c++){
@@ -2362,8 +2377,32 @@ function submitForm(theForm,popup,debug,ajax){
 	        					}
         					}
         				break;
+        				case 'radio':
+        				case 'checkbox':
+        					let rels=theForm.querySelectorAll('[type="'+requiredif.type+'"][name="'+requiredif.name+'"]');
+        					for(let r=0;r<rels.length;r++){
+        						if(rels[r].checked){
+        							rval=rels[r].value||1;
+        							for(let c=0;c<cvals.length;c++){
+		        						if(rval==cvals[c]){
+		        							required=1;
+		        							break;
+		        						}
+		        					}
+        						}
+        					}
+        				break;
+        				case 'textarea':
+        					rval=requiredif.innerText;
+        					for(let c=0;c<cvals.length;c++){
+        						if(rval==cvals[c]){
+        							required=1;
+        							break;
+        						}
+        					}
+        				break
         				default:
-        					rval=theForm[requiredif].value;
+        					rval=requiredif.value;
         					for(let c=0;c<cvals.length;c++){
         						if(rval==cvals[c]){
         							required=1;
