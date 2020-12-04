@@ -512,7 +512,22 @@ function userDecodeLDAPAuth($user,$pass){
  		$ok=userLogMessage("userDecodeLDAPAuth Failed -ldap auth failed for {$user}");
  		return null;
  	}
-   	$fields=getDBFields('_users');
+   	$finfo=getDBFieldInfo('_users');
+   	//convert some fields to JSON if the field type is json
+   	foreach($finfo as $field=>$info){
+   		if(!isset($ldap[$field])){continue;}
+   		if($info['_dbtype']=='json'){
+        	switch(strtolower($field)){
+        		case 'memberof_cn':
+        		case 'memberof_ou':
+        		case 'distinguishedname_ou':
+        		case 'objectcategory':
+        		case 'objectclass':
+        			$ldap[$field]=json_encode(preg_split('/\,/',$ldap[$field]));
+        		break;
+        	}
+        }
+    }
    	$admins=array();
     if(isset($CONFIG['authldap_admin'])){
        	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
@@ -524,12 +539,13 @@ function userDecodeLDAPAuth($user,$pass){
        	if(isset($ldap['password']) && isset($rec['password'])){
 			$ldap['password']=userEncryptPW($ldap['password']);
 		}
-       	foreach($fields as $field){
-            if(isset($ldap[$field]) && $rec[$field] != $ldap[$field]){
+       	foreach($finfo as $field=>$info){
+            if(isset($ldap[$field]) && sha1($rec[$field]) != sha1($ldap[$field])){
                 $changes[$field]=$rec[$field]=$ldap[$field];
 			}
-			elseif(isset($_REQUEST[$field]) && $rec[$field] != $_REQUEST[$field]){
+			elseif(isset($_REQUEST[$field]) && sha1($rec[$field]) != sha1($_REQUEST[$field])){
                 $changes[$field]=$rec[$field]=$_REQUEST[$field];
+
 			}
 		}
 		//set utype to 0 for admins
@@ -555,7 +571,7 @@ function userDecodeLDAPAuth($user,$pass){
 		}
 		else{$ldap['utype']=1;}
 		//add extra fields
-		foreach($fields as $field){
+		foreach($finfo as $field=>$info){
            if(isset($_REQUEST[$field]) && !isset($ldap[$field])){
                 $ldap[$field]=$_REQUEST[$field];
 			}
