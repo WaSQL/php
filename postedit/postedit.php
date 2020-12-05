@@ -90,10 +90,7 @@ else{
 		postEditCleanDir($bfolder);
 		@rmdir($bfolder);
 	}
-	rename($afolder,$bfolder);
-	if(!is_dir($afolder)){
-		mkdir($afolder,0777,true);
-	}
+	posteditCopyDir($afolder,$bfolder);
 	postEditCleanDir($afolder);
 }
 //get the files
@@ -144,6 +141,27 @@ while(1){
 	}
 }
 exit;
+function posteditCopyDir( $source, $target ) {
+    if ( is_dir( $source ) ) {
+        @mkdir( $target,0777,true );
+        $d = dir( $source );
+        while ( FALSE !== ( $entry = $d->read() ) ) {
+            if ( $entry == '.' || $entry == '..' ) {
+                continue;
+            }
+            $Entry = $source . '/' . $entry; 
+            if ( is_dir( $Entry ) ) {
+                posteditCopyDir( $Entry, $target . '/' . $entry );
+                continue;
+            }
+            copy( $Entry, $target . '/' . $entry );
+        }
+
+        $d->close();
+    }else {
+        copy( $source, $target );
+    }
+}
 function checkForChanges(){
 	global $local_shas;
 	global $afolder;
