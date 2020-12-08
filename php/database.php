@@ -11126,7 +11126,11 @@ function listDBRecords($params=array(),$customcode=''){
 	}
 	//check for -table_data-
 	foreach($params as $k=>$v){
-		if(preg_match('/^\-table_data\-(.+)$/i',$k,$m)){
+		if(preg_match('/^\-table\_data\-(.+)$/i',$k,$m)){
+			$datakey=$m[1];
+			$rtn.=' data-'.$datakey.'="'.$v.'"';
+		}
+		elseif(preg_match('/^\-tabledata\-(.+)$/i',$k,$m)){
 			$datakey=$m[1];
 			$rtn.=' data-'.$datakey.'="'.$v.'"';
 		}
