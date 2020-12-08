@@ -11128,7 +11128,7 @@ function listDBRecords($params=array(),$customcode=''){
 	foreach($params as $k=>$v){
 		if(preg_match('/^\-table_data\-(.+)$/i',$k,$m)){
 			$datakey=$m[1];
-			$rtn=' data-'.$datakey.'="'.$v.'"';
+			$rtn.=' data-'.$datakey.'="'.$v.'"';
 		}
 	}
 	$rtn .='>'.PHP_EOL;
