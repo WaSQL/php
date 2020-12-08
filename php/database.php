@@ -11122,7 +11122,7 @@ function listDBRecords($params=array(),$customcode=''){
 	}
 	//style
 	if(isset($params['-tablestyle'])){
-		$rtn=' style="'.$params['-tablestyle'].'"';
+		$rtn.=' style="'.$params['-tablestyle'].'"';
 	}
 	//check for -table_data-
 	foreach($params as $k=>$v){
