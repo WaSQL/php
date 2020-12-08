@@ -11114,15 +11114,24 @@ function listDBRecords($params=array(),$customcode=''){
 	if(isset($params['-tableclass'])){
 		$tableclass=$params['-tableclass'];
 	}
-	$tablestyle='';
-	if(isset($params['-tablestyle'])){
-		$tablestyle=' style="'.$params['-tablestyle'].'"';
-	}
-	$tableid='';
+	//table
+	$rtn .= '<table class="'.$tableclass.'"';
+	//id
 	if(isset($params['-tableid'])){
-		$tablestyle=' id="'.$params['-tableid'].'"';
+		$rtn .=' id="'.$params['-tableid'].'"';
 	}
-	$rtn .= '<table class="'.$tableclass.'"'.$tablestyle.$tableid.'>'.PHP_EOL;
+	//style
+	if(isset($params['-tablestyle'])){
+		$rtn=' style="'.$params['-tablestyle'].'"';
+	}
+	//check for -table_data-
+	foreach($params as $k=>$v){
+		if(preg_match('/^\-table_data\-(.+)$/i',$k,$m)){
+			$datakey=$m[1];
+			$rtn=' data-'.$datakey.'="'.$v.'"';
+		}
+	}
+	$rtn .='>'.PHP_EOL;
 
     //build header row
     $rtn .= "	<thead><tr>".PHP_EOL;
