@@ -2975,7 +2975,7 @@ function databaseListRecords($params=array()){
 		return $rtn;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
-		$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
+		$rtn .= '<div data-param="tableheight" style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
 	}
 	//lets make us a table from the list we have
 	$rtn.='<table ';
@@ -3082,7 +3082,7 @@ function databaseListRecords($params=array()){
 			if(!is_array($params['-list']) || !count($params['-list'])){
 				$rtn .= '</table>'.PHP_EOL;
 				if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
-					$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
+					$rtn .= '</div>'.PHP_EOL;
 				}
 				return $rtn;
 			}
@@ -3090,7 +3090,7 @@ function databaseListRecords($params=array()){
 		else{
 			$rtn .= '</table>'.PHP_EOL;
 			if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
-				$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
+				$rtn .= '</div>'.PHP_EOL;
 			}
 			return $rtn;
 		}
