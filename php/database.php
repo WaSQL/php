@@ -3081,11 +3081,17 @@ function databaseListRecords($params=array()){
 			}
 			if(!is_array($params['-list']) || !count($params['-list'])){
 				$rtn .= '</table>'.PHP_EOL;
+				if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
+					$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
+				}
 				return $rtn;
 			}
 		}
 		else{
 			$rtn .= '</table>'.PHP_EOL;
+			if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
+				$rtn .= '<div style="max-height:'.$params['-tableheight'].';overflow:auto;position:relative;">'.PHP_EOL;
+			}
 			return $rtn;
 		}
 	}
