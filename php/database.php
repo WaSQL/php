@@ -3156,6 +3156,7 @@ function databaseListRecords($params=array()){
 		}
 		//check for -tr_class, -tr_style, -tr_data-..., -tr*
 		foreach($params as $pk=>$pv){
+			if($pk=='-translate'){continue;}
 			if(preg_match('/^\-tr_(.+)$/i',$pk,$pm)){
 				$patt_name=$pm[1];
 				//check for [$row]
