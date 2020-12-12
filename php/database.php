@@ -8365,6 +8365,7 @@ function getDBFieldTag($params=array()){
 	switch(strtolower($info[$field]['inputtype'])){
 		//Checkbox - NOTE: use arrayColumns function to order vertically rather than horizontally.
 		case 'checkbox':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			//echo printValue($info[$field]);exit;
 			$options=array();
@@ -8380,6 +8381,7 @@ function getDBFieldTag($params=array()){
 			$tag=buildFormColor($info[$field]['name'],$info[$field]);
 			break;
 		case 'combo':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8434,6 +8436,7 @@ function getDBFieldTag($params=array()){
 			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
 		case 'multiselect':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8445,6 +8448,7 @@ function getDBFieldTag($params=array()){
             $tag=buildFormMultiSelect($info[$field]['fieldname'],$options,$info[$field]);
 		break;
 		case 'buttonselect':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8461,6 +8465,7 @@ function getDBFieldTag($params=array()){
 		break;
 		//Radio
 		case 'radio':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8473,6 +8478,7 @@ function getDBFieldTag($params=array()){
 			break;
 		//Select
 		case 'select':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8490,6 +8496,7 @@ function getDBFieldTag($params=array()){
             $tag=buildFormSelect($name,$options,$info[$field]);
 		break;
 		case 'selectcustom':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
@@ -8512,6 +8519,7 @@ function getDBFieldTag($params=array()){
 		break;
 		case 'toggle_f':
 		case 'toggle_r':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
 			$cnt=count($selections['tvals']);
