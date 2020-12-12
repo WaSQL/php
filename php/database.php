@@ -8484,7 +8484,9 @@ function getDBFieldTag($params=array()){
             $name=$field;
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
             $dname=ucwords(str_replace('_',' ',$name));
-            $info[$field]['message']="-- {$dname} --";
+            if(!isset($info[$field]['message'])){
+            	$info[$field]['message']="-- {$dname} --";
+            }
             $tag=buildFormSelect($name,$options,$info[$field]);
 		break;
 		case 'selectcustom':
@@ -8582,6 +8584,12 @@ function getDBFieldSelections($info=array()){
 	if(isset($info['tvals']) && strtolower(trim($info['tvals']))=='&getdbtables'){
 		$selections['tvals']=getDBTables();
 		$selections['dvals']=$selections['tvals'];
+		if(isset($info['-translate']) && $info['-translate']==1){
+			loadExtras('translate');
+			foreach($selections['dvals'] as $i=>$val){
+				$selections['dvals'][$i]=translateText($val);
+			}
+		}
 		return $selections;
     }
 	if(isset($info['dvals']) && is_array($info['dvals'])){
@@ -8611,6 +8619,12 @@ function getDBFieldSelections($info=array()){
 		if(is_array($tvals) && is_array($dvals)){
 			$selections['tvals']=$tvals;
 			$selections['dvals']=$dvals;
+			if(isset($info['-translate']) && $info['-translate']==1){
+				loadExtras('translate');
+				foreach($selections['dvals'] as $i=>$val){
+					$selections['dvals'][$i]=translateText($val);
+				}
+			}
 			return $selections;
 		}
 		if(preg_match('/^select[\ \r\n]/i',$tvals)){
@@ -8664,6 +8678,12 @@ function getDBFieldSelections($info=array()){
 			$selections['tvals']=preg_split('/[\r\n\,]+/',$tvals);
 			$selections['dvals']=preg_split('/[\r\n\,]+/',$dvals);
         }
+        if(isset($info['-translate']) && $info['-translate']==1){
+			loadExtras('translate');
+			foreach($selections['dvals'] as $i=>$val){
+				$selections['dvals'][$i]=translateText($val);
+			}
+		}
         return $selections;
     }
 	return '';
