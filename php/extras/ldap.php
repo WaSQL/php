@@ -544,6 +544,17 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
             break;
             case 'memberof':
             	$rec[$key]=ldapValue($val);
+            	$tmp=preg_split('/\,/',$rec[$key]);
+                $parts=array();
+                foreach($tmp as $part){
+					list($k,$v)=preg_split('/\=/',$part,2);
+					if(!is_array($parts[$k])){$parts[$k]=array();}
+                    if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
+				}
+				foreach($parts as $k=>$v){
+					$k=strtolower($k);
+					$rec["{$key}_{$k}"]=implode(',',$v);
+				}
             	$rec["{$key}_json"]=json_encode(ldapParseMemberOf($rec[$key]));
             break;
             case 'distinguishedname':
