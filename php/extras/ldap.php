@@ -705,28 +705,12 @@ function ldapGetMemberOfOu($ou,$dc=''){
 		$USER['memberof_array']=json_decode($USER['memberof_array'],true);
 	}
 	$ou=strtolower(trim($ou));
-	$ous=preg_split('/\./',$ou);
-	$ous_count=count($ous);
-	$dcs=array();
-	if(strlen($dc)){
-		$dc=strtolower(trim($dc));
-		$dcs=preg_split('/\./',$dcs);
-	}
-	$dcs_count=count($dcs);
 	$cns=array();
 	foreach($USER['memberof_array'] as $cn=>$info){
-		$found=0;
-		foreach($ous as $ou){
-			if(in_array($ou,$USER['memberof_array'][$cn]['ou'])){$found+=1;}
-		}
-		if($found==$ous_count){
-			if($dcs_count > 0){
-				$found=0;
-				foreach($dcs as $dc){
-					if(in_array($dc,$USER['memberof_array'][$cn]['dc'])){$found+=1;}
-				}
-				if($found==$dcs_count){
-					$cns[]=$cn;	
+		if(isset($info['ou'][0]) && in_array($ou,$info['ou'])){
+			if(strlen($dc)){
+				if(isset($info['dc'][0]) && in_array($dc,$info['dc'])){
+					$cns[]=$cn;
 				}
 			}
 			else{
