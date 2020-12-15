@@ -544,7 +544,7 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
             break;
             case 'memberof':
             	$rec[$key]=ldapValue($val);
-            	$rec["{$key}_json"]=ldapParseMemberOf($rec[$key]);
+            	$rec["{$key}_json"]=json_encode(ldapParseMemberOf($rec[$key]));
             break;
             case 'distinguishedname':
             case 'dn':
@@ -645,26 +645,31 @@ function ldapParseMemberOf($str){
 function ldapIsMemberOf($cn,$ou='',$dc=''){
 	global $USER;
 	if(!isUser()){return false;}
-	if(!isset($USER['memberof_json']) && isset($USER['memberof'])){
-		$USER['memberof_json']=ldapParseMemberOf($USER['memberof']);
+	if(!isset($USER['memberof_array']) && isset($USER['memberof'])){
+		$USER['memberof_array']=ldapParseMemberOf($USER['memberof']);
+		$USER['memberof_json']=json_encode($USER['memberof_array']);
 	}
-	if(!isset($USER['memberof_json'])){return false;}
+	if(!isset($USER['memberof_array'])){return false;}
+	if(!is_array($USER['memberof_array'])){
+		$USER['memberof_array']=json_decode($USER['memberof_array'],true);
+	}
+
 	$cn=strtolower(trim($cn));
-	if(!isset($USER['memberof_json'][$cn])){return false;}
+	if(!isset($USER['memberof_array'][$cn])){return false;}
 	if(strlen($ou)){
-		if(!isset($USER['memberof_json'][$cn]['ou'][0])){return false;}
+		if(!isset($USER['memberof_array'][$cn]['ou'][0])){return false;}
 		$ou=strtolower($ou);
 		$ous=preg_split('/\./',strtolower(trim($ou)));
 		foreach($ous as $ou){
-			if(!in_array($ou,$USER['memberof_json'][$cn]['ou'])){return false;}
+			if(!in_array($ou,$USER['memberof_array'][$cn]['ou'])){return false;}
 		}
 	}
 	if(strlen($dc)){
-		if(!isset($USER['memberof_json'][$cn]['dc'][0])){return false;}
+		if(!isset($USER['memberof_array'][$cn]['dc'][0])){return false;}
 		$dc=strtolower($dc);
 		$dcs=preg_split('/\./',strtolower(trim($dc)));
 		foreach($dcs as $dc){
-			if(!in_array($dc,$USER['memberof_json'][$cn]['dc'])){return false;}
+			if(!in_array($dc,$USER['memberof_array'][$cn]['dc'])){return false;}
 		}
 	}
 	return true;
