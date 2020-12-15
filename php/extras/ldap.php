@@ -11,6 +11,8 @@
         http://pear.php.net/package/Net_LDAP2/download
         http://stackoverflow.com/questions/8276682/wamp-2-2-install-pear
 
+
+
 */
 $progpath=dirname(__FILE__);
 //---------- begin function ldapAddUser--------------------
@@ -541,6 +543,9 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
                 $rec["{$key}_date"]=date('Y-m-d h:i a',$rec["{$key}_unix"]);
             break;
             case 'memberof':
+            	$rec[$key]=ldapValue($val);
+            	$rec["{$key}_json"]=ldapParseMemberOf($rec[$key]);
+            break;
             case 'distinguishedname':
             case 'dn':
             case 'directreports':
@@ -591,6 +596,77 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
 	$rec['password']='AD'.$rec['guid'];
 	ksort($rec);
 	return $rec;
+}
+//---------- begin function ldapParseMemberOf--------------------
+/**
+* @describe parses the memberof string
+* @param str string - memberof value
+* @usage $json=ldapParseMemberOf($memberof);
+* Example memberof:
+* CN=PAG-A392-MX-B402SC,OU=Printer Access  Groups,OU=Groups,OU=Administration,DC=corp,DC=doterra,DC=net,
+* CN=Group_IT,OU=Groups,OU=Administration,DC=corp,DC=doterra,DC=net
+*/
+function ldapParseMemberOf($str){
+	$cnstrings=preg_split('/cn\=/mis',trim($str));
+	if(isset($cnstrings[0]) && !strlen($cnstrings[0])){
+		array_shift($cnstrings);
+	}
+	//return $cnstrings;
+	$memberof=array();
+	foreach($cnstrings as $cnstring){
+		$cnstring=strtolower($cnstring);
+		$parts=preg_split('/\,/',$cnstring);
+		$cn=array_shift($parts);
+		//echo $cn.printValue($parts);exit;
+		$cnparts=array();
+		foreach($parts as $part){
+			list($k,$v)=preg_split('/\=/',$part,2);
+			$cnparts[$k][]=$v;
+		}
+		if(isset($cnparts['ou'][0])){
+			$memberof[$cn]['ou']=$cnparts['ou'];
+		}
+		if(isset($cnparts['dc'][0])){
+			$memberof[$cn]['dc']=$cnparts['dc'];
+		}	
+	}
+	return $memberof;
+}
+//---------- begin function ldapIsMemberOf--------------------
+/**
+* @describe checks the memberof for
+* @param cn string
+* @param [ou] string - separate multiple with a period (admin.application groups.groups.adminstration)
+* @param [dc] string - separate multiple with a period  (corp.mysite.net)
+* @return boolean
+* @usage if(ldapIsMemberOf('manager for systems')){...};
+*/
+function ldapIsMemberOf($cn,$ou='',$dc=''){
+	global $USER;
+	if(!isUser()){return false;}
+	if(!isset($USER['memberof_json']) && isset($USER['memberof'])){
+		$USER['memberof_json']=ldapParseMemberOf($USER['memberof']);
+	}
+	if(!isset($USER['memberof_json'])){return false;}
+	$cn=strtolower($cn);
+	if(!isset($USER['memberof_json'][$cn])){return false;}
+	if(strlen($ou)){
+		if(!isset($USER['memberof_json'][$cn]['ou'][0])){return false;}
+		$ou=strtolower($ou);
+		$ous=preg_split('/\./',$ou);
+		foreach($ous as $ou){
+			if(!in_array($ou,$USER['memberof_json'][$cn]['ou'])){return false;}
+		}
+	}
+	if(strlen($dc)){
+		if(!isset($USER['memberof_json'][$cn]['dc'][0])){return false;}
+		$dc=strtolower($dc);
+		$dcs=preg_split('/\./',$dc);
+		foreach($dcs as $dc){
+			if(!in_array($dc,$USER['memberof_json'][$cn]['dc'])){return false;}
+		}
+	}
+	return true;
 }
 //---------- begin function ldapModify--------------------
 /**
