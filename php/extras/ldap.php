@@ -617,11 +617,12 @@ function ldapParseMemberOf($str){
 		$cnstring=strtolower($cnstring);
 		$parts=preg_split('/\,/',$cnstring);
 		$cn=array_shift($parts);
+		$cn=strtolower(trim($cn));
 		//echo $cn.printValue($parts);exit;
 		$cnparts=array();
 		foreach($parts as $part){
 			list($k,$v)=preg_split('/\=/',$part,2);
-			$cnparts[$k][]=$v;
+			$cnparts[$k][]=strtolower(trim($v));
 		}
 		if(isset($cnparts['ou'][0])){
 			$memberof[$cn]['ou']=$cnparts['ou'];
@@ -648,12 +649,12 @@ function ldapIsMemberOf($cn,$ou='',$dc=''){
 		$USER['memberof_json']=ldapParseMemberOf($USER['memberof']);
 	}
 	if(!isset($USER['memberof_json'])){return false;}
-	$cn=strtolower($cn);
+	$cn=strtolower(trim($cn));
 	if(!isset($USER['memberof_json'][$cn])){return false;}
 	if(strlen($ou)){
 		if(!isset($USER['memberof_json'][$cn]['ou'][0])){return false;}
 		$ou=strtolower($ou);
-		$ous=preg_split('/\./',$ou);
+		$ous=preg_split('/\./',strtolower(trim($ou)));
 		foreach($ous as $ou){
 			if(!in_array($ou,$USER['memberof_json'][$cn]['ou'])){return false;}
 		}
@@ -661,7 +662,7 @@ function ldapIsMemberOf($cn,$ou='',$dc=''){
 	if(strlen($dc)){
 		if(!isset($USER['memberof_json'][$cn]['dc'][0])){return false;}
 		$dc=strtolower($dc);
-		$dcs=preg_split('/\./',$dc);
+		$dcs=preg_split('/\./',strtolower(trim($dc)));
 		foreach($dcs as $dc){
 			if(!in_array($dc,$USER['memberof_json'][$cn]['dc'])){return false;}
 		}
