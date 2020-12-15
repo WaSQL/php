@@ -685,6 +685,57 @@ function ldapIsMemberOf($cn,$ou='',$dc=''){
 	}
 	return true;
 }
+//---------- begin function ldapGetMemberOfOu--------------------
+/**
+* @describe returns a list of groups the current user is a member of based on ou
+* @param ou string - separate multiple with a period (admin.application groups.groups.adminstration)
+* @param [dc] string - separate multiple with a period  (corp.mysite.net)
+* @return array
+* @usage if(ldapIsMemberOf('manager for systems')){...};
+*/
+function ldapGetMemberOfOu($ou,$dc=''){
+	global $USER;
+	if(!isUser()){return array();}
+	if(!isset($USER['memberof_array']) && isset($USER['memberof'])){
+		$USER['memberof_array']=ldapParseMemberOf($USER['memberof']);
+		$USER['memberof_json']=json_encode($USER['memberof_array']);
+	}
+	if(!isset($USER['memberof_array'])){return array();}
+	if(!is_array($USER['memberof_array'])){
+		$USER['memberof_array']=json_decode($USER['memberof_array'],true);
+	}
+	$ou=strtolower(trim($ou));
+	$ous=preg_split('/\./',$ou);
+	$ous_count=count($ous);
+	$dcs=array();
+	if(strlen($dc)){
+		$dc=strtolower(trim($dc));
+		$dcs=preg_split('/\./',$dcs);
+	}
+	$dcs_count=count($dcs);
+	$cns=array();
+	foreach($USER['memberof_array'] as $cn=>$info){
+		$found=0;
+		foreach($ous as $ou){
+			if(in_array($ou,$USER['memberof_array'][$cn]['ou'])){$found+=1;}
+		}
+		if($found==$ous_count){
+			if($dcs_count > 0){
+				$found=0;
+				foreach($dcs as $dc){
+					if(in_array($dc,$USER['memberof_array'][$cn]['dc'])){$found+=1;}
+				}
+				if($found==$dcs_count){
+					$cns[]=$cn;	
+				}
+			}
+			else{
+				$cns[]=$cn;
+			}
+		}
+	}
+	return $cns;
+}
 //---------- begin function ldapModify--------------------
 /**
 * @describe modifies set Active Directory Record with changes
