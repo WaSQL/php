@@ -129,21 +129,22 @@ function postgresqlAddDBRecord($params=array()){
 		You can create inserts that return a value... so you can return the identity field
 	*/
 	$output='';
-	$output_field='_id';
-	foreach($finfo as $field=>$info){
-		if($info['identity']==1){
-			$output=" returning {$field}";
-			$output_field=$field;
-			break;
-		}
-		elseif($info['sequence']==1){
-			$output=" returning {$field}";
-			$output_field=$field;
-			break;
-		}
-		elseif($field=='_id'){
-			$output=" returning {$field}";
-			break;
+	if(isset($params['-return'])){
+		$output=" returning {$params['-return']}";
+		$output_field=$params['-return'];
+	}
+	else{
+		foreach($finfo as $field=>$info){
+			if($info['identity']==1){
+				$output=" returning {$field}";
+				$output_field=$field;
+				break;
+			}
+			elseif($info['sequence']==1){
+				$output=" returning {$field}";
+				$output_field=$field;
+				break;
+			}
 		}
 	}
 	$more='';
