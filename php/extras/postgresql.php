@@ -177,7 +177,9 @@ function postgresqlAddDBRecord($params=array()){
 		{$output}
 
 ENDOFQUERY;
-
+	if(isset($params['-debug']) && $params['-debug']=='query'){
+		return $query;
+	}
 
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){

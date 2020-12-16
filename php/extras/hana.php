@@ -762,6 +762,9 @@ function hanaAddDBRecordsOLD($table,$recs){
 		VALUES
 			({$bindstr})
 ENDOFQUERY;
+	if(isset($params['-debug']) && $params['-debug']=='query'){
+		return $query;
+	}
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
