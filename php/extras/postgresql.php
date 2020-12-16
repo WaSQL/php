@@ -918,54 +918,8 @@ ENDOFQUERY;
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
 function postgresqlGetDBFields($table,$allfields=0){
-	$table=strtolower($table);
-	global $databaseCache;
-	global $CONFIG;
-	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBFields'.$table.$allfields);
-	if(isset($databaseCache[$cachekey])){
-		return $databaseCache[$cachekey];
-	}
-	global $CONFIG;
-	global $USER;
-	//check for schema name
-	if(!stringContains($table,'.')){
-		$schema=postgresqlGetDBSchema();
-		if(strlen($schema)){
-			$table="{$schema}.{$table}";
-		}
-	}
-	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect();
-	}
-	if(!$dbh_postgresql){
-		debugValue(array(
-			'function'=>'postgresqlGetDBFields',
-			'message'=>'connect failed',
-			'error'=>pg_last_error(),
-			'query'=>$query
-		));
-    	return;
-	}
-	//check for identity fields
-	$table=strtolower($table);
-	
-	//echo printValue($idfields);exit;
-	$query="SELECT * from {$table} where 1=0";
-	//echo $query;exit;
-	$res=@pg_query($dbh_postgresql,$query);
-	$fieldnames=array();
-	$i = pg_num_fields($res);
-	//echo $i.printValue($res);exit;
-	for ($j = 0; $j < $i; $j++) {
-		$name=strtolower(pg_field_name($res, $j));
-		if(!$allfields && preg_match('/^\_/',$name)){continue;}
-	    if(!in_array($name,$fieldnames)){$fieldnames[]=$name;}
-	}
-	pg_close($dbh_postgresql);
-	ksort($fieldnames);
-	$databaseCache[$cachekey]=$fieldnames;
-	return $databaseCache[$cachekey];
+	$finfo=postgresqlGetDBFieldInfo($table);
+	return array_keys($finfo);
 }
 //---------- begin function postgresqlGetAllTableFields ----------
 /**
@@ -1076,63 +1030,61 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 		return $databaseCache[$cachekey];
 	}
 	//check for schema name
-	if(!stringContains($table,'.')){
+	if(stringContains($table,'.')){
+		list($schema,$table)=preg_split('/\./',$table,2);
+	}
+	else{
 		$schema=postgresqlGetDBSchema();
-		if(strlen($schema)){
-			$table="{$schema}.{$table}";
-		}
 	}
-	global $USER;
-	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect();
-	}
-	if(!$dbh_postgresql){
-		debugValue(array(
-			'function'=>'postgresqlGetDBFieldInfo',
-			'message'=>'connect failed',
-			'error'=>pg_last_error(),
-			'query'=>$query
-		));
-    	return;
-	}
-	//check for identity fields
-	
-	
-	//echo printValue($idfields);exit;
-	$query="SELECT * from {$table} where 1=0";
-	//echo $query;exit;
-	$res=@pg_query($dbh_postgresql,$query);
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_schema,
+			table_name,
+			column_name,
+			ordinal_position,
+			column_default,
+			is_nullable,
+			data_type,
+			character_maximum_length,
+			numeric_precision,
+			numeric_precision_radix,
+			udt_name,
+			is_identity	
+		FROM information_schema.columns
+		WHERE
+			table_schema='{$schema}'
+			and table_name='{$table}'
+		ORDER BY ordinal_position
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	//echo $query.printValue($recs);exit;
 	$fields=array();
-	$i = pg_num_fields($res);
-	for ($j = 0; $j < $i; $j++) {
-	    $fieldname = pg_field_name($res, $j);
-		$field=array(
-			'_dbtable'	=> $table,
-			'table'		=> $table,
-			'name'		=> $fieldname,
-		 	'_dbfield'	=> strtolower($fieldname),
-		 	'_dbtype'	=> pg_field_type($res, $j),
-			'length'	=> pg_field_prtlen($res, $j),
-			'num'		=> pg_field_num($res, $j),
-			'size'		=> pg_field_size($res, $j),
-			'nullable'	=> pg_field_is_null($res, $j),
-		);
-		$field['_dblength']=$field['length'];
-		$field['_dbtype']=$field['_dbtype_ex']=$field['type']=strtolower($field['_dbtype']);
-		if($field['size'] > 0){
-			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['size']})");
-		}
-		$fields[$fieldname]=$field;
-	}
-	pg_close($dbh_postgresql);
-	//check for identity fields
-	$recs=postgresqlQueryResults("select column_name from information_schema.columns where table_name='{$table}' and is_identity='YES'");
-	$idfields=array();
 	foreach($recs as $rec){
-		$fields[$rec['column_name']]['identity']=1;
+		if($rec['data_type']=='character varying'){
+			$rec['data_type']='varchar';
+		}
+		$field=array(
+			'_dbtable'	=> $rec['table_name'],
+		 	'_dbfield'	=> strtolower($rec['column_name']),
+		 	'_dbtype'	=> $rec['data_type'],
+		 	'_dblength' => $rec['character_maximum_length'],
+		 	'table'		=> $rec['table_name'],
+		 	'name'		=> $rec['column_name'],
+		 	'type'		=> $rec['data_type'],
+			'length'	=> $rec['character_maximum_length'],
+			'num'		=> $rec['numeric_precision'],
+			'size'		=> $rec['numeric_precision_radix'],
+			'nullable'	=> strtolower($rec['is_nullable'])=='yes'?1:0,
+			'identity'	=> strtolower($rec['is_identity'])=='yes'?1:0,
+		);
+		if(strlen($rec['character_maximum_length'])){
+			$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
+		}
+		else{
+			$field['_dbtype_ex']=$field['_dbtype'];
+		}
+		$fields[$field['_dbfield']]=$field;
 	}
-	ksort($fields);
 	//meta fields?
 	if($getmeta){
 	    //Get a list of the metadata for this table
