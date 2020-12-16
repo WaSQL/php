@@ -2181,7 +2181,7 @@ function postgresqlOptimizations($params=array()){
 		i.indisvalid = false AND
 		i.indexrelid = c.oid AND
 		c.relnamespace = n.oid
-	ENDOFSQL;
+ENDOFSQL;
 	$postgres['invalid_indexes']=postgresqlQueryResults($q);
 	//unused_indexes
 	$q=<<<ENDOFSQL
@@ -2191,7 +2191,7 @@ function postgresqlOptimizations($params=array()){
 	WHERE 
 		idx_scan=0 and not exists (select 1 from pg_constraint where conindid=indexrelid) 
 	ORDER BY relname, indexrelname
-	ENDOFSQL;
+ENDOFSQL;
 	$postgres['unused_indexes']=postgresqlQueryResults($q);
 	//default_cost_procs
 	$q=<<<ENDOFSQL
@@ -2200,7 +2200,7 @@ function postgresqlOptimizations($params=array()){
 	FROM pg_catalog.pg_proc p 
 		left join pg_catalog.pg_namespace n on n.oid = p.pronamespace 
 	WHERE pg_catalog.pg_function_is_visible(p.oid) and n.nspname not in ('pg_catalog','information_schema','sys') and p.prorows<>1000 and p.procost<>10 and p.proname not like 'uuid_%' and p.proname != 'pg_stat_statements_reset'
-	ENDOFSQL;
+ENDOFSQL;
 	$postgres['default_cost_procs']=postgresqlQueryResults($q);
 	//calculate other values based on above info
 	//sum_index_size
