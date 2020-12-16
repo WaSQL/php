@@ -177,8 +177,12 @@ function postgresqlAddDBRecord($params=array()){
 		{$output}
 
 ENDOFQUERY;
-	if(isset($params['-debug']) && $params['-debug']=='query'){
-		return $query;
+	if(isset($params['-debug']) && $params['-debug']==1){
+		return array(
+			'params'=>$params,
+			'fieldInfo'=>$finfo,
+			'query'=>$query
+		);
 	}
 
 	global $dbh_postgresql;
