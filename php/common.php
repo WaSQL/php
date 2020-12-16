@@ -1682,6 +1682,58 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
+//---------- begin function buildFormButtonSelectMultiple--------------------
+/**
+* @describe creates an button selection field
+* @param name string
+* @param opts array - true value/display value pairs.
+* @param params array
+*	[value] - sets default selection
+*	[name] - name override
+*	[class] - string - w_green, w_red, etc..
+* @return string
+* @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
+*/
+function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
+	if(!isset($params['value'])){
+		$params['value']=$_REQUEST[$name];
+	}
+	if(!isset($params['-button'])){
+		$params['-button']='btn-default';
+	}
+	//override name
+	if(isset($params['name'])){
+		$name=$params['name'];
+		unset($params['name']);
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+
+	$tag='<div class="w_flexgroup" data-display="inline-flex"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .='>'.PHP_EOL;
+	foreach($opts as $tval=>$dval){
+		$checked='';
+		if($tval==$params['value'] || $dval==$params['value']){
+			$checked=' checked';
+		}
+		$id="{$name}_{$tval}";
+		$class='';
+		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
+		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
+		elseif(isset($params['class'])){$class=$params['class'];}
+		$tag .= '<input type="checkbox" data-type="checkbox" class="btn '.$class.'" style="display:none"';
+		if(isset($params['onclick'])){
+			$tag .= ' onclick="'.$params['onclick'].'"';
+		}
+		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+        $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
+	}
+	$tag .= '</div>'.PHP_EOL;
+	return $tag;
+}
 //---------- begin function buildFormCalendar--------------------
 /**
 * @describe creates an HTML calendar control
