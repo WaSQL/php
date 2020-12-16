@@ -1820,9 +1820,10 @@ function postgresqlQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
+	$dbh_postgresql='';
+	//if(!is_resource($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
-	}
+	//}
 	if(!$dbh_postgresql){
 		debugValue(array(
 			'function'=>'postgresqlQueryResults',
