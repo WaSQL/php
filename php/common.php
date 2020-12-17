@@ -1701,6 +1701,21 @@ function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
 	if(!isset($params['-button'])){
 		$params['-button']='btn-default';
 	}
+	//check for json value
+	if(!is_array($params['value']) && strlen($params['value'])){
+		$json=json_decode($params['value'],true);
+		if(is_array($json)){
+			$params['value']=$json;
+		}
+		else{
+			if(stringContains($params['value'],':')){
+				$params['value']=preg_split('/\:/',$params['value']);
+			}
+			else{
+				$params['value']=array($params['value']);
+			}
+		}
+	}
 	//override name
 	if(isset($params['name'])){
 		$name=$params['name'];
@@ -1716,7 +1731,7 @@ function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
 	$tag .='>'.PHP_EOL;
 	foreach($opts as $tval=>$dval){
 		$checked='';
-		if($tval==$params['value'] || $dval==$params['value']){
+		if(in_array($tval,$params['value']) || in_array($dval,$params['value'])){
 			$checked=' checked';
 		}
 		$id="{$name}_{$tval}";

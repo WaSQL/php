@@ -8459,6 +8459,18 @@ function getDBFieldTag($params=array()){
             }
             $tag=buildFormButtonSelect($info[$field]['fieldname'],$options,$info[$field]);
 		break;
+		case 'buttonselect_m':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormButtonSelectMultiple($info[$field]['fieldname'],$options,$info[$field]);
+		break;
 		//Password
 		case 'password':
 			$tag=buildFormPassword($info[$field]['name'],$info[$field]);

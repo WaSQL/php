@@ -1357,6 +1357,7 @@ function wasqlGetInputtypes($d=0){
 	//multiselect\r\npassword\r\nradio\r\nselect\r\nslider\r\ntext\r\ntextarea\r\ntime",
 	$types=array(
 		'buttonselect'=>'Button Select',
+		'buttonselect_m'=>'Button Select Multiple',
 		'checkbox'	=> 'Checkbox',
 		'color'		=> 'Color',
 		'combo'		=> 'Combo',
