@@ -1728,7 +1728,7 @@ function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
 		}
-		$tag .= ' name="'.$name.'[]"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
         $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
