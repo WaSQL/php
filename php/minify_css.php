@@ -89,7 +89,7 @@ $loaded=array();
 $pre_csslines=array();
 foreach($files as $file){
 	if($_REQUEST['debug']==1){
-		$csslines[]= "{$file}<br>\r\n";
+		$csslines[]= "{$file}<br>".PHP_EOL;
 		continue;
 	}
 	if(preg_match('/^http/i',$file)){
@@ -115,7 +115,7 @@ foreach($files as $file){
 		if(stringEndsWith($file,'.min.css')){
 			$conditionals=0;
 		}
-		$csslines[]= "\r\n/* BEGIN {$fname} */\r\n";
+		$csslines[]= PHP_EOL."/* BEGIN {$fname} */".PHP_EOL;
 		$loaded[]=$fname;
     	minifyLines($lines);
 	}
@@ -128,60 +128,72 @@ $field=$CONFIG['minify_css']?'css_min':'css';
 $field2=$CONFIG['minify_css']?'css':'css_min';
 //_templates
 if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['template_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field));
-	$content=evalPHP($rec[$field]);
-	if(strlen(trim($content)) > 10){
-		$csslines[] = "\r\n/* BEGIN _templates {$field} */\r\n";
-		$loaded[]="_templates {$field}";
-		minifyLines($content);
-	}
-	else{
-		$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>$field2));
-		$content=evalPHP($rec[$field2]);
+	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>'_id,name,css,css_min'));
+	if(isset($rec['_id'])){
+		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
-			$csslines[] = "\r\n/* BEGIN _templates {$field2} */\r\n";
-			$loaded[]="_templates {$field2}";
+			$csslines[] = PHP_EOL."/* BEGIN _templates for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
+			$loaded[]="_templates {$field}";
 			minifyLines($content);
 		}
+		else{
+			$content=evalPHP($rec[$field2]);
+			if(strlen(trim($content)) > 10){
+				$csslines[] = PHP_EOL."/* BEGIN _templates {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
+				$loaded[]="_templates {$field2}";
+				minifyLines($content);
+			}
+		}
+	}
+	else{
+		$csslines[] = PHP_EOL."/* ERROR retrieving _templates record for id {$_SESSION['w_MINIFY']['template_id']} */".PHP_EOL;
 	}
 }
 //_pages
 if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field));
-	$content=evalPHP($rec[$field]);
-	if(strlen(trim($content)) > 10){
-		$csslines[] = "\r\n/* BEGIN _pages {$field} */\r\n";
-		$loaded[]="_pages {$field}";
-		minifyLines($content);
-	}
-	else{
-		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>$field2));
-		$content=evalPHP($rec[$field2]);
+	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>'_id,name,css,css_min'));
+	if(isset($rec['_id'])){
+		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
-			$csslines[] = "\r\n/* BEGIN _pages {$field2} */\r\n";
-			$loaded[]="_pages {$field2}";
+			$csslines[] = PHP_EOL."/* BEGIN _pages {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
+			$loaded[]="_pages {$field}";
 			minifyLines($content);
 		}
+		else{
+			$content=evalPHP($rec[$field2]);
+			if(strlen(trim($content)) > 10){
+				$csslines[] = PHP_EOL."/* BEGIN _pages {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
+				$loaded[]="_pages {$field2}";
+				minifyLines($content);
+			}
+		}
+	}
+	else{
+		$csslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$_SESSION['w_MINIFY']['page_id']} */".PHP_EOL;
 	}
 }
 //includepages
 if(is_array($_SESSION['w_MINIFY']['includepages'])){
 	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
-		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"name,{$field}"));
-		$content=evalPHP($rec[$field]);
-		if(strlen(trim($content)) > 10){
-			$csslines[] = "\r\n/* BEGIN includepages {$field} for {$rec['name']} page */\r\n";
-			$loaded[]="includepages {$field} for {$rec['name']} page";
-			minifyLines($content);
-		}
-		else{
-			$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"name,{$field2}"));
-			$content=evalPHP($rec[$field2]);
+		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"_id,name,css,css_min"));
+		if(isset($rec['_id'])){
+			$content=evalPHP($rec[$field]);
 			if(strlen(trim($content)) > 10){
-				$csslines[] = "\r\n/* BEGIN includepages {$field2} for {$rec['name']} page */\r\n";
+				$csslines[] = PHP_EOL."/* BEGIN includepages for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
 				$loaded[]="includepages {$field} for {$rec['name']} page";
 				minifyLines($content);
 			}
+			else{
+				$content=evalPHP($rec[$field2]);
+				if(strlen(trim($content)) > 10){
+					$csslines[] = PHP_EOL."/* BEGIN includepages for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
+					$loaded[]="includepages {$field} for {$rec['name']} page";
+					minifyLines($content);
+				}
+			}
+		}
+		else{
+			$csslines[] = PHP_EOL."/* ERROR retrieving includepages for id {$id} */".PHP_EOL;
 		}
 	}
 }
@@ -193,14 +205,14 @@ if(strlen($filename)){
 	$afile="{$docroot}/w_min/{$filename}";
 	$data='';
 	if(count($pre_csslines)){
-		$d="/* Begin Imports - must be at the top */\r\n";
+		$d="/* Begin Imports - must be at the top */".PHP_EOL;
 		echo $d;
 		$data.=$d;
-		$d=implode("\r\n",$pre_csslines);
+		$d=implode(PHP_EOL,$pre_csslines);
 		echo $d;
 		$data.=$d;
 	}
-	$d=implode("\r\n",$csslines);
+	$d=implode(PHP_EOL,$csslines);
 	echo $d;
 	$data.=$d;
 	ob_end_flush();
@@ -208,12 +220,12 @@ if(strlen($filename)){
 }
 else{
 	if(count($pre_csslines)){
-		$d="/* Begin Imports - must be at the top */\r\n";
+		$d="/* Begin Imports - must be at the top */".PHP_EOL;
 		echo $d;
-		$d=implode("\r\n",$pre_csslines);
+		$d=implode(PHP_EOL,$pre_csslines);
 		echo $d;
 	}
-	$d=implode("\r\n",$csslines);
+	$d=implode(PHP_EOL,$csslines);
 	echo $d;
 	ob_end_flush();
 }
@@ -254,9 +266,9 @@ function minifyGetExternal($url){
 	$rtn='';
 	if(is_array($lines)){
 		$size=filesize(realpath($file));
-		//$rtn .= "/* BEGIN {$url} ({$size} bytes) */\r\n";
+		//$rtn .= "/* BEGIN {$url} ({$size} bytes) */".PHP_EOL;
     		$rtn .=  minifyLines($lines);
-    		//$rtn .= "\r\n\r\n";
+    		//$rtn .= "\r\n".PHP_EOL;
 	}
 	return $rtn;
 }
@@ -350,7 +362,7 @@ function minifyLines($lines,$conditionals=1) {
 			if(count($parts)==2 && $parts[0] == 'not' && in_array($browser,preg_split('/\|/',$parts[1]))){continue;}
 			if(count($parts)==3 ){
 				$version=$_SERVER['REMOTE_BROWSER_VERSION'];
-				//$rtn .=  "/*CONDITIONAL: Browser:{$browser}, version: {$version}, parts0:{$parts[0]}, parts1:{$parts[1]}, parts2:{$parts[2]}*/\r\n";
+				//$rtn .=  "/*CONDITIONAL: Browser:{$browser}, version: {$version}, parts0:{$parts[0]}, parts1:{$parts[1]}, parts2:{$parts[2]}*/".PHP_EOL;
 				if(!in_array($browser,preg_split('/\|/',$parts[0]))){continue;}
 				$pass=0;
 				switch($parts[1]){
