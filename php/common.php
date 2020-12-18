@@ -3423,7 +3423,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['value']) && strlen($params['value'])){
 		$val=$params['value'];
 	}
-	if(isset($params['-value']) && strlen($params['-value'])){
+	elseif(isset($params['-value']) && strlen($params['-value'])){
 		$val=$params['-value'];
 	}
 	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
