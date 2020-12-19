@@ -14437,18 +14437,32 @@ function processActions(){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
 						}
 						//echo "Field:{$field}, opts:{$opts[$field]}, req: {$_REQUEST[$field]}, type:{$info[$field]['inputtype']}<br>";
-						if(!isset($opts[$field]) && isset($_REQUEST[$field])){
-							$opts[$field]=$_REQUEST[$field];
-						}
-						elseif(!isset($opts[$field]) && !isset($_REQUEST[$field])){
-							if(isset($info[$field]['_dbdef'])){
-								$opts[$field]=$info[$field]['_dbdef'];
+						if(!isset($opts[$field])){
+							if(isset($_REQUEST[$field])){
+								$opts[$field]=$_REQUEST[$field];
 							}
-							elseif(isset($info[$field]['defaultval'])){
-								$opts[$field]=$info[$field]['defaultval'];
+							else{
+								switch(strtolower($info[$field]['inputtype'])){
+									case 'checkbox':
+									case 'buttonselect_m':
+										if($info[$field]['_dbtype']=='json'){
+											$opts[$field]='[]';	
+										}
+										else{
+											$opts[$field]='NULL';
+										}	
+									break;
+									default:
+										if(isset($info[$field]['_dbdef'])){
+											$opts[$field]=$info[$field]['_dbdef'];
+										}
+										elseif(isset($info[$field]['defaultval'])){
+											$opts[$field]=$info[$field]['defaultval'];
+										}
+									break;
+								}
 							}
 						}
-
 						unset($_REQUEST[$field]);
 					}
 					$_REQUEST['edit_opts']=$opts;
