@@ -7,7 +7,195 @@ $progpath=dirname(__FILE__);
 	https://github.com/daniel-zahariev/php-aws-ses
 	https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:
 	http://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html
+
+
+	$afile="/path/to/myfile.jpg";
+	$ok=amazonUploadFileS3(array(
+		'file'=>$afile,
+		'folder'=>'pub'
+	));
+
 */
+function amazonUploadFileS3($params=array()){
+	global $CONFIG;
+	//require -accesskey
+	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
+		$params['-accesskey']=$CONFIG['aws_accesskey'];
+	}
+	if(!isset($params['-accesskey'])){
+		return "amazonUploadFileS3 Error: missing -accesskey";
+	}
+	//require -secretkey
+	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
+		$params['-secretkey']=$CONFIG['aws_secretkey'];
+	}
+	if(!isset($params['-secretkey'])){
+		return "amazonUploadFileS3 Error: missing -secretkey";
+	}
+	//require bucket
+	if(!isset($params['bucket']) && isset($CONFIG['aws_bucket'])){
+		$params['bucket']=$CONFIG['aws_bucket'];
+	}
+	if(!isset($params['bucket'])){
+		return "amazonUploadFileS3 Error: missing bucket param";
+	}
+	//requre region - us-west-2, us-east-1, etc
+	if(!isset($params['region']) && isset($CONFIG['aws_region'])){
+		$params['region']=$CONFIG['aws_region'];
+	}
+	if(!isset($params['region'])){
+		return "amazonUploadFileS3 Error: missing region param";
+	}
+	//acl - public, public-read, private
+	if(!isset($params['acl']) && isset($CONFIG['aws_acl'])){
+		$params['acl']=$CONFIG['aws_acl'];
+	}
+	if(!isset($params['acl'])){
+		$params['acl']='x-amz-acl:public-read';
+	}
+	//require file
+	if(!isset($params['file'])){
+		return "amazonUploadFileS3 Error: missing file param";
+	}
+	if(!file_exists($params['file'])){
+		return "amazonUploadFileS3 Error: file does not exist - {$params['file']}";
+	}
+	if(!isset($params['folder'])){
+		$params['folder']='';
+	}
+	elseif(!stringEndsWith($params['folder'],'/')){
+		$params['folder']="{$params['folder']}/";
+	}
+	// USER OPTIONS
+	// Replace these values with ones appropriate to you.
+	$accessKeyId = $CONFIG['-accesskey'];
+	$secretKey = $CONFIG['-secretkey'];
+	$bucket = $params['bucket'];
+	$region = $params['region'];
+	$acl = $params['acl'];
+	$filePath = getFilePath($params['file']);
+	$fileName = getFileName($params['file']);
+	$fileType = getFileMimeType($params['file']);
+
+	// VARIABLES
+	// These are used throughout the request.
+	$longDate = gmdate('Ymd\THis\Z');
+	$shortDate = gmdate('Ymd');
+	$credential = $accessKeyId.'/'.$shortDate.'/'.$region.'/s3/aws4_request';
+
+	// POST POLICY
+	// Amazon requires a base64-encoded POST policy written in JSON.
+	// This tells Amazon what is acceptable for this request. For
+	// simplicity, we set the expiration date to always be 24H in 
+	// the future. The two "starts-with" fields are used to restrict
+	// the content of "key" and "Content-Type", which are specified
+	// later in the POST fields. Again for simplicity, we use blank
+	// values ('') to not put any restrictions on those two fields.
+	$policy = base64_encode(json_encode([
+	    'expiration' => gmdate('Y-m-d\TH:i:s\Z', time() + 86400),
+	    'conditions' => [
+	        ['acl' => $acl],
+	        ['bucket' => $bucket],
+	        ['starts-with', '$Content-Type', ''],
+	        ['starts-with', '$key', ''],
+	        ['x-amz-algorithm' => 'AWS4-HMAC-SHA256'],
+	        ['x-amz-credential' => $credential],
+	        ['x-amz-date' => $longDate]
+	    ]
+	]));
+
+	// SIGNATURE
+	// A base64-encoded HMAC hashed signature with your secret key.
+	// This is used so Amazon can verify your request, and will be
+	// passed along in a POST field later.
+	$signingKey = hash_hmac('sha256', $shortDate, 'AWS4' . $secretKey, true);
+	$signingKey = hash_hmac('sha256', $region, $signingKey, true);
+	$signingKey = hash_hmac('sha256', 's3', $signingKey, true);
+	$signingKey = hash_hmac('sha256', 'aws4_request', $signingKey, true);
+	$signature = hash_hmac('sha256', $policy, $signingKey);
+
+	// CURL
+	// The cURL request. Passes in the full URL to your Amazon bucket.
+	// Sets RETURNTRANSFER and HEADER to true to see the full response from
+	// Amazon, including body and head. Sets POST fields for cURL.
+	// Then executes the cURL request.
+	$url='https://' . $bucket . '.s3.' . $region . '.amazonaws.com';
+	//echo $url;
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	//turn off ssl to test
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	// curl_setopt($ch, CURLOPT_POST, 0);
+	// curl_setopt($ch, CURLOPT_CUSTOMREQUEST,'PUT');
+	$postfields=array(
+		'Content-Type' =>  $fileType,
+	    'acl' => $acl,
+	    'key' => "{$params['folder']}{$fileName}",
+	    'policy' =>  $policy,
+	    'x-amz-algorithm' => 'AWS4-HMAC-SHA256',
+	    'x-amz-credential' => $credential,
+	    'x-amz-date' => $longDate,
+	    'x-amz-signature' => $signature,
+	    'file' => file_get_contents($params['file'])
+	);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+	$response = curl_exec($ch);
+	$rtn=array();
+	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($ch,CURLINFO_HEADER_OUT));
+	$rtn['curl_info']=curl_getinfo($ch);
+	if ( curl_errno($ch) ) {
+		$rtn['error_number'] = curl_errno($ch);
+		$rtn['error'] = curl_error($ch);
+		}
+	else{
+		//break it up into header and body
+		$parts=preg_split('/\r\n\r\n/',trim($return),2);
+		$rtn['header']=trim($parts[0]);
+		$rtn['body']=trim($parts[1]);
+		//check for redirect cases with two headers
+		if(preg_match('/^HTTP\//is',$rtn['body'])){
+			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
+			$rtn['header']=trim($parts[0]);
+			$rtn['body']=trim($parts[1]);
+		}
+		//parse the header into an array
+		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
+		$headers=array();
+		foreach($parts as $part){
+			if(!preg_match('/\:/',$part)){continue;}
+			list($key,$val)=preg_split('/\:/',trim($part),2);
+			$key=strtolower(trim($key));
+			$headers[$key][]=trim($val);
+        }
+        foreach($headers as $k=>$v){
+        	if(count($v)==1){$rtn['headers'][$k]=$v[0];}
+        	else{$rtn['headers'][$k]=$v;}
+		}
+    }
+    curl_close($ch);
+	$rtn['url']=$url;
+	unset($postfields['file']);
+	echo printValue($rtn).printValue($postfields);
+	// RESPONSE
+	// If Amazon returns a response code of 204, the request was
+	// successful and the file should be sitting in your Amazon S3
+	// bucket. If a code other than 204 is returned, there will be an
+	// XML-formatted error code in the body. For simplicity, we use
+	// substr to extract the error code and output it.
+	if ($rtn['curl_info']['http_code'] == 204) {
+	    return 1;
+	} 
+	else {
+	    $error = substr($response, strpos($response, '<Code>') + 6);
+	    return 'amazonUploadFileS3 Error: '.substr($error, 0, strpos($error, '</Code>'));
+	}
+}
+
+
 function amazonSendMail($params=array()){
 	if(!isset($params['-accesskey'])){return "No Access Key";}
 	if(!isset($params['-secretkey'])){return "No Secret Key";}
