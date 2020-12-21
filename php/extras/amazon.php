@@ -179,7 +179,8 @@ function amazonUploadFileS3($params=array()){
     curl_close($ch);
 	$rtn['url']=$url;
 	unset($postfields['file']);
-	echo printValue($rtn).printValue($postfields);
+	$rtn['postfields']=$postfields;
+	//echo printValue($rtn).printValue($postfields);
 	// RESPONSE
 	// If Amazon returns a response code of 204, the request was
 	// successful and the file should be sitting in your Amazon S3
@@ -191,7 +192,7 @@ function amazonUploadFileS3($params=array()){
 	} 
 	else {
 	    $error = substr($response, strpos($response, '<Code>') + 6);
-	    return 'amazonUploadFileS3 Error: '.substr($error, 0, strpos($error, '</Code>'));
+	    return 'amazonUploadFileS3 Error: '.printValue($rtn);
 	}
 }
 
