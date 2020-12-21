@@ -15613,6 +15613,9 @@ function commonProcessFileActions($name,$afile){
 			if($from==$ext){
 				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
+				if(file_exists($tfile)){
+					unlink($tfile);
+				}
 				$cmd="{$cmd} \"{$afile}\"";
 				if($to=='mp4'){
 					$cmd .= ' -vcodec h264 -acodec mp3 ';
