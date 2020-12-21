@@ -15611,9 +15611,13 @@ function commonProcessFileActions($name,$afile){
 		foreach($sets as $set){
 			list($from,$to)=preg_split('/\-/',$set,2);
 			if($from==$ext){
-				$fname=getFileName($abspath,1);
+				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
-				$cmd="{$cmd} \"{$afile}\" \"{$tfile}\"";
+				$cmd="{$cmd} \"{$afile}\"";
+				if($to=='mp4'){
+					$cmd .= ' -vcodec h264 -acodec mp3 ';
+				}
+				$cmd .=" \"{$tfile}\"";
         		$ok=cmdResults($cmd);
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
