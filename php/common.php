@@ -15506,6 +15506,20 @@ function commonProcessFileActions($name,$afile){
 	$ext=getFileExtension($afile);
 	$mimetype=getFileMimeType($afile);
 	//echo "Mime:{$mimetype},ext:{$ext} - commonProcessFileActions({$name},{$afile})<br>";
+	//process $recs=call_user_func($params['-results_eval'],$recs)
+	$process='';
+	if(isset($_REQUEST[$name.'_process']) && strlen($_REQUEST[$name.'_process'])){
+		$process=$_REQUEST[$name.'_process'];
+	}
+	elseif(isset($_REQUEST['data-process']) && strlen($_REQUEST['data-process'])){
+		$process=$_REQUEST['data-process'];
+	}
+	elseif(isset($CONFIG['file_process']) && strlen($CONFIG['file_process'])){
+		$process=$CONFIG['file_process'];
+	}
+	if(strlen($process) && function_exists($process)){
+		$_REQUEST[$name.'_process_results']=call_user_func($process,$name,$afile);
+	}
 	$resize='';
 	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
 		$resize=$_REQUEST[$name.'_resize'];
