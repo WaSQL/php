@@ -70,8 +70,8 @@ function amazonUploadFileS3($params=array()){
 	}
 	// USER OPTIONS
 	// Replace these values with ones appropriate to you.
-	$accessKeyId = $CONFIG['-accesskey'];
-	$secretKey = $CONFIG['-secretkey'];
+	$accessKeyId = $params['-accesskey'];
+	$secretKey = $params['-secretkey'];
 	$bucket = $params['bucket'];
 	$region = $params['region'];
 	$acl = $params['acl'];
