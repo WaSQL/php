@@ -15618,7 +15618,9 @@ function commonProcessFileActions($name,$afile){
 					$cmd .= ' -vcodec h264 -acodec mp3 ';
 				}
 				$cmd .=" \"{$tfile}\"";
+				$_REQUEST[$name.'_reencode_cmd']=$cmd;
         		$ok=cmdResults($cmd);
+        		$_REQUEST[$name.'_reencode_cmd_results']=$ok;
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
 					rename($tfile,$afile);
