@@ -18,6 +18,8 @@ $progpath=dirname(__FILE__);
 */
 function amazonUploadFileS3($params=array()){
 	global $CONFIG;
+	$rtn=array();
+	$rtn['input_params']=$params;
 	//require -accesskey
 	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
 		$params['-accesskey']=$CONFIG['aws_accesskey'];
@@ -144,7 +146,7 @@ function amazonUploadFileS3($params=array()){
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
 	curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 	$response = curl_exec($ch);
-	$rtn=array();
+	$rtn['response']=$response;
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($ch,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($ch);
 	if ( curl_errno($ch) ) {
@@ -178,6 +180,7 @@ function amazonUploadFileS3($params=array()){
     }
     curl_close($ch);
 	$rtn['url']=$url;
+	$rtn['postfields_file_length']=strlen($postfields['file']);
 	unset($postfields['file']);
 	$rtn['postfields']=$postfields;
 	//echo printValue($rtn).printValue($postfields);
@@ -191,7 +194,6 @@ function amazonUploadFileS3($params=array()){
 	    return 1;
 	} 
 	else {
-	    $error = substr($response, strpos($response, '<Code>') + 6);
 	    return 'amazonUploadFileS3 Error: '.printValue($rtn);
 	}
 }
