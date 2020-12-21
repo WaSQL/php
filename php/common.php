@@ -15517,8 +15517,13 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['file_process']) && strlen($CONFIG['file_process'])){
 		$process=$CONFIG['file_process'];
 	}
-	if(strlen($process) && function_exists($process)){
-		$_REQUEST[$name.'_process_results']=call_user_func($process,$name,$afile);
+	if(strlen($process)){
+		if(function_exists($process)){
+			$_REQUEST[$name.'_process_results']=call_user_func($process,$name,$afile);
+		}
+		else{
+			$_REQUEST[$name.'_process_results']="function {$process} does not exist (yet)";
+		}
 	}
 	$resize='';
 	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
