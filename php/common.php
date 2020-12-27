@@ -2048,7 +2048,7 @@ function buildFormPassword($name,$params=array()){
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL; 
 	if(isset($params['data-show_icon'])){
-		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" /><div class="w_pointer" title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></div>'.PHP_EOL;
+		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" /><span title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></span>'.PHP_EOL;
 	}	
 	$tag .= '</div>'.PHP_EOL;
 
