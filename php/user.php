@@ -1761,24 +1761,25 @@ function userLoginForm($params=array()){
 		}
 	}
 	//$form .= printValue($tagopts);
+	$tagopts['data-show_icon']=1;
 	$form .= '		'.buildFormPassword('password',$tagopts);
 	//password_post
-	$prefix='-password_post';
-	if(strlen($params["{$prefix}_text"])){
-		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
-	}
-	else{
-		$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['-form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
-		$tagopts=array();
-		foreach($attributes as $key){
-			$tkey="{$prefix}_{$key}";
-			if(isset($params[$tkey]) && strlen($params[$tkey])){
-				$tagopts[$key]=$params[$tkey];
-			}
-		}
-		$form .= setTagAttributes($tagopts);
-		$form .= "></span></div>".PHP_EOL;
-	}
+	// $prefix='-password_post';
+	// if(strlen($params["{$prefix}_text"])){
+	// 	$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+	// }
+	// else{
+	// 	$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['-form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
+	// 	$tagopts=array();
+	// 	foreach($attributes as $key){
+	// 		$tkey="{$prefix}_{$key}";
+	// 		if(isset($params[$tkey]) && strlen($params[$tkey])){
+	// 			$tagopts[$key]=$params[$tkey];
+	// 		}
+	// 	}
+	// 	$form .= setTagAttributes($tagopts);
+	// 	$form .= "></span></div>".PHP_EOL;
+	// }
 	$form .= '	</div>'.PHP_EOL;
 	//remind me and login
 	$form .= '	<div style="display:flex;flex-direction:row;justify-content:space-between;margin-top:10px;">'.PHP_EOL;

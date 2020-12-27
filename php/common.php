@@ -385,7 +385,8 @@ function commonFormatPhone($phone) {
 *	[-filters] array or string - filter sets of field-oper-value in an array or comma separated. i.e. name-ct-bob
 *	[-limit] integer - number of records to show
 *	[-navonly] integer - 1=only show navigation buttons, not search
-*	[-simplesearch] str - list of search fields - shows simple search bar
+*	[-simplesearch] str - search field - shows simple search bar
+*	[-searchview] htm - custom view to use for search.  Possible view fields:  field, oper, value, search, add, export, bulkedit, first, prev, stats, next, last
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
 *	['-formname'] - formname. defaults to searchfiltersform
@@ -2047,7 +2048,7 @@ function buildFormPassword($name,$params=array()){
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL; 
 	if(isset($params['data-show_icon'])){
-		$tag .= '	<span class="btn w_white" style="padding:" onmouseover="formShowPassword(\''.$params['id'].'\',1);" onmouseout="formShowPassword(\''.$params['id'].'\',0);"><span class="icon-eye"></span></span>'.PHP_EOL;
+		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" /><div class="w_pointer" title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></div>'.PHP_EOL;
 	}	
 	$tag .= '</div>'.PHP_EOL;
 
