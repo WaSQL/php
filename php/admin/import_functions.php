@@ -59,10 +59,11 @@ function importProcessCSVRecs($recs=array()){
 	if($importrecs_count==0){return;}
 	$importrecs_total+=$importrecs_count;
 	$table=$_REQUEST['csvtable'];
-	$fields=array_keys($importrecs[0]);
-	foreach($fields as $i=>$field){
-		if(!isset($fieldinfo[$field])){
-			unset($fields[$i]);
+	$fields=array();
+	foreach($importrecs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
 	}
 	$fieldstr=implode(',',$fields);
@@ -74,12 +75,18 @@ function importProcessCSVRecs($recs=array()){
 				unset($rec[$k]);
 				continue;
 			}
-			$v=databaseEscapeString($v);
-			$rec[$k]="'{$v}'";
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=databaseEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
 		}
 		$values[]='('.implode(',',array_values($rec)).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
+	//echo $query;exit;
 	$ok=executeSQL($query);
 	$importrecs=array();
 	$etime=round((microtime(true)-$stime),4);
