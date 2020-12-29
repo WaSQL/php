@@ -1365,7 +1365,22 @@ function getTextPixelWidthHeight(id){
 	removeId(d);
 	return wh;
 }
+function getViewportSize(w) {
+    // Use the specified window or the current window if no argument
+    w = w || window;
+    // This works for all browsers except IE8 and before
+    if (w.innerWidth != null) return { w: w.innerWidth, h: w.innerHeight };
+    // For IE (or any browser) in Standards mode
+    var d = w.document;
+    if (document.compatMode == "CSS1Compat")
+        return { w: d.documentElement.clientWidth,
+           h: d.documentElement.clientHeight };
+    // For browsers in Quirks mode
+    return { w: d.body.clientWidth, h: d.body.clientHeight };
+}
 function getViewportHeight(){
+	let vh=Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+	return vh;
 	//info: get the viewport height
 	if (typeof window.innerHeight != 'undefined'){return window.innerHeight;}
   	else if (typeof document.documentElement != 'undefined'

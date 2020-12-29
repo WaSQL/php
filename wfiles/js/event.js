@@ -996,20 +996,21 @@ function setObjectPos(obj,x,y){
 function centerObject(obj,fade){
 	//info: centers specified object or id
 	if(undefined == fade){fade=0;}
-	var sObj=getObject(obj);
+	let sObj=getObject(obj);
 	if(undefined == sObj){return false;}
-	var w=getWidth(sObj);
-	var h=getHeight(sObj);
-	window.status=obj+':'+w+','+h;
+	let w=getWidth(sObj);
+	let h=getHeight(sObj);
+	let vp=getViewportSize();
+	//window.status=obj+':'+w+','+h;
 	//var whx=getWidthHeight(sObj);
 	//window width and height
-	var ww=getViewportWidth();
-	var wh=getViewportHeight();
+	//var ww=getViewportWidth();
+	//var wh=getViewportHeight();
 	//scroll width and height
 	var sw=getScrollWidth();
 	var sh=getScrollHeight();
-	var x = Math.round((ww / 2) - (w / 2)) + sw;
-  	var y = Math.round((wh / 2) - (h / 2)) + sh;
+	var x = Math.round((vp.w / 2) - (w / 2)) + sw;
+  	var y = Math.round((vp.h / 2) - (h / 2)) + sh;
   	//window.status='centerObject: '+sObj.id+' w,h:'+w+','+h+' window:'+ww+','+wh+',scroll:'+sw+','+sh+','+x+','+y;
   	sObj.style.position='absolute';
   	sObj.style.left=x+'px';
