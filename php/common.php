@@ -3455,15 +3455,32 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['message'])){
 		$rtn .= '	<option value="">'.$params['message'].'</option>'.PHP_EOL;
     	}
-	foreach($pairs as $tval=>$dval){
-		if(!isset($dval) || !strlen($dval)){$dval=$tval;}
-		$rtn .= '	<option value="'.$tval.'"';
-		if(strlen($sval)){
-			if($sval==$tval){$rtn .= ' selected';}
-			elseif($sval==$dval){$rtn .= ' selected';}
+	if(isset($params['-groups'])){
+		foreach($pairs as $group=>$opts){
+			$rtn .= '	<optgroup label="'.$group.'">'.PHP_EOL;
+			foreach($opts as $tval=>$dval){
+				if(!isset($dval) || !strlen($dval)){$dval=$tval;}
+				$rtn .= '		<option value="'.$tval.'"';
+				if(strlen($sval)){
+					if($sval==$tval){$rtn .= ' selected';}
+					elseif($sval==$dval){$rtn .= ' selected';}
+				}
+				$rtn .= '>'.$dval.'</option>'.PHP_EOL;
+		    }
+		    $rtn .= '	</optgroup>'.PHP_EOL;
 		}
-		$rtn .= '>'.$dval.'</option>'.PHP_EOL;
-    	}
+	}
+	else{
+		foreach($pairs as $tval=>$dval){
+			if(!isset($dval) || !strlen($dval)){$dval=$tval;}
+			$rtn .= '	<option value="'.$tval.'"';
+			if(strlen($sval)){
+				if($sval==$tval){$rtn .= ' selected';}
+				elseif($sval==$dval){$rtn .= ' selected';}
+			}
+			$rtn .= '>'.$dval.'</option>'.PHP_EOL;
+	    }
+	}
     $rtn .= '</select>'.PHP_EOL;
     return $rtn;
 }
@@ -3634,8 +3651,14 @@ function buildFormSelectTimezone($name='timezone',$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	$opts=timezoneList($params);
-	return buildFormSelect($name,$opts,$params);
+	$zones=timezoneList($params);
+	//groups
+	foreach($zones as $tval=>$dval){
+		list($country,$area)=preg_split('/\//',$tval,2);
+		$groups[$country][$tval]=str_replace("{$country}/",'',$dval);
+	}
+	$params['-groups']=1;
+	return buildFormSelect($name,$groups,$params);
 }
 //---------- begin function buildFormSelectYear--------------------
 /**
@@ -8025,11 +8048,12 @@ function formatMoney($number=0,$cents = 1){
 * @return array - an array of all timezones
 * @usage $zones=timezoneList(array('-regions'=>DateTimeZone::AMERICA));
 */function timezoneList($params=array()){
-	global $timezoneList;
+	global $timezoneListCache;
 	ksort($params);
-	$key=sha1(printValue($params));
-	if(is_array($timezoneList[$key])){return $timezoneList[$key];}
+	$key=sha1(json_encode($params));
+	if(isset($timezoneListCache[$key])){return $timezoneListCache[$key];}
     $timezones = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
+    //echo printValue($timezones);exit;
     $timezone_offsets = array();
     foreach( $timezones as $timezone ){
         $tz = new DateTimeZone($timezone);
@@ -8037,7 +8061,7 @@ function formatMoney($number=0,$cents = 1){
     }
     // sort timezone by timezone name
     ksort($timezone_offsets);
-    $timezoneList[$key] = array();
+    $timezoneListCache[$key] = array();
     foreach( $timezone_offsets as $timezone => $offset ){
         $offset_prefix = $offset < 0 ? '-' : '+';
         $offset_formatted = gmdate( 'H:i', abs($offset) );
@@ -8045,9 +8069,9 @@ function formatMoney($number=0,$cents = 1){
         $t = new DateTimeZone($timezone);
         $c = new DateTime(null, $t);
         $current_time = $c->format('D g:i A');
-        $timezoneList[$key][$timezone]="{$timezone} - {$current_time}";
+        $timezoneListCache[$key][$timezone]="{$timezone} - {$current_time}";
     }
-    return $timezoneList[$key];
+    return $timezoneListCache[$key];
 }
 //---------- begin function toFixed ----------
 /**
