@@ -1007,10 +1007,10 @@ function centerObject(obj,fade){
 	//var ww=getViewportWidth();
 	//var wh=getViewportHeight();
 	//scroll width and height
-	var sw=getScrollWidth();
-	var sh=getScrollHeight();
-	var x = Math.round((vp.w / 2) - (w / 2)) + sw;
-  	var y = Math.round((vp.h / 2) - (h / 2)) + sh;
+	//var sw=getScrollWidth();
+	//var sh=getScrollHeight();
+	let x = Math.round((vp.w / 2) - (w / 2));
+  	let y = Math.round((vp.h / 2) - (h / 2));
   	//window.status='centerObject: '+sObj.id+' w,h:'+w+','+h+' window:'+ww+','+wh+',scroll:'+sw+','+sh+','+x+','+y;
   	sObj.style.position='absolute';
   	sObj.style.left=x+'px';
