@@ -3516,29 +3516,25 @@ function databaseParseFilters($params=array()){
 	}
 	foreach($params['-filters'] as $filter){
 		list($field,$oper,$val)=preg_split('/\-/',$filter,3);
-		$val=strtolower(trim($val));
+		$val=trim($val);
+		$lval=strtolower($val);
 		$val=str_replace("'","''",$val);
+		$lval=str_replace("'","''",$lval);
 		switch(strtolower($oper)){
 			case 'ct':
 				//contains
 				switch(strtolower($params['-database'])){
 					case 'oracle':
-						$wheres[]="lower({$field}) like '%{$val}%'";
-					break;
 					case 'hana':
-						$wheres[]="lower({$field}) like '%{$val}%'";
-					break;
 					case 'odbc':
-						$wheres[]="lower({$field}) like '%{$val}%'";
+					case 'mssql':
+					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
+						$wheres[]="lower({$field}) like '%{$lval}%'";
 					break;
 					case 'snowflake':
 						$wheres[]="{$field} ilike '%{$val}%'";
-					break;
-					case 'mssql':
-						$wheres[]="lower({$field}) like '%{$val}%'";
-					break;
-					case 'sqlite':
-						$wheres[]="lower({$field}) like '%{$val}%'";
 					break;
 					default:
 						//mysql is case insensitive
@@ -3550,22 +3546,16 @@ function databaseParseFilters($params=array()){
 				//not contains
 				switch(strtolower($params['-database'])){
 					case 'oracle':
-						$wheres[]="lower({$field}) not like '%{$val}%'";
-					break;
 					case 'hana':
-						$wheres[]="lower({$field}) not like '%{$val}%'";
-					break;
 					case 'odbc':
-						$wheres[]="lower({$field}) not like '%{$val}%'";
+					case 'mssql':
+					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
+						$wheres[]="lower({$field}) not like '%{$lval}%'";
 					break;
 					case 'snowflake':
 						$wheres[]="{$field} not ilike '%{$val}%'";
-					break;
-					case 'mssql':
-						$wheres[]="lower({$field}) not like '%{$val}%'";
-					break;
-					case 'sqlite':
-						$wheres[]="lower({$field}) not like '%{$val}%'";
 					break;
 					default:
 						//mysql is case insensitive
@@ -3577,35 +3567,22 @@ function databaseParseFilters($params=array()){
 				//contains any
 				$ors=array();
 				$cvals=preg_split('/\,/',$val);
+				$lcvals=preg_split('/\,/',$lval);
 				switch(strtolower($params['-database'])){
 					case 'oracle':
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
-						}
-					break;
 					case 'hana':
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
-						}
-					break;
 					case 'odbc':
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
+					case 'mssql':
+					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
+						foreach($lcvals as $lcval){
+							$ors[]="lower({$field}) like '%{$lcval}%'";
 						}
 					break;
 					case 'snowflake':
 						foreach($cvals as $cval){
 							$ors[]="{$field} ilike '%{$cval}%'";
-						}
-					break;
-					case 'mssql':
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
-						}
-					break;
-					case 'sqlite':
-						foreach($cvals as $cval){
-							$ors[]="lower({$field}) like '%{$cval}%'";
 						}
 					break;
 					default:
@@ -3621,35 +3598,22 @@ function databaseParseFilters($params=array()){
 				//not contains any
 				$ands=array();
 				$cvals=preg_split('/\,/',$val);
+				$lcvals=preg_split('/\,/',$lval);
 				switch(strtolower($params['-database'])){
 					case 'oracle':
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
-						}
-					break;
 					case 'hana':
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
-						}
-					break;
 					case 'odbc':
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
+					case 'mssql':
+					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
+						foreach($lcvals as $lcval){
+							$ands[]="lower({$field}) not like '%{$lcval}%'";
 						}
 					break;
 					case 'snowflake':
 						foreach($cvals as $cval){
 							$ands[]="{$field} not ilike '%{$cval}%'";
-						}
-					break;
-					case 'mssql':
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
-						}
-					break;
-					case 'sqlite':
-						foreach($cvals as $cval){
-							$ands[]="lower({$field}) not like '%{$cval}%'";
 						}
 					break;
 					default:
@@ -3669,6 +3633,8 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
 						if(isNum($val)){
 							$wheres[]="{$field} = {$val}";
 						}
@@ -3698,6 +3664,8 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'postgres':
+					case 'postgresql':
 						if(isNum($val)){
 							$wheres[]="{$field} != {$val}";
 						}
@@ -3723,24 +3691,27 @@ function databaseParseFilters($params=array()){
 				//equals any
 				$ors=array();
 				$cvals=preg_split('/\,/',$val);
+				$lcvals=preg_split('/\,/',$lval);
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
-						foreach($cvals as $cval){
-							if(isNum($val)){
-								$ors[]="{$field} = {$cval}";
+					case 'postgres':
+					case 'postgresql':
+						foreach($lcvals as $lcval){
+							if(isNum($lcval)){
+								$ors[]="{$field} = {$lcval}";
 							}
 							else{
-								$ors[]="lower({$field}) = '{$cval}'";
+								$ors[]="lower({$field}) = '{$lcval}'";
 							}
 						}
 					break;
 					case 'snowflake':
 						foreach($cvals as $cval){
-							if(isNum($val)){
+							if(isNum($cval)){
 								$ors[]="{$field} = {$cval}";
 							}
 							else{
@@ -3751,7 +3722,12 @@ function databaseParseFilters($params=array()){
 					default:
 						//mysql is case insensitive
 						foreach($cvals as $cval){
-							$ors[]="{$field} = '{$cval}'";
+							if(isNum($cval)){
+								$ors[]="{$field} = {$cval}";
+							}
+							else{
+								$ors[]="{$field} = '{$cval}'";
+							}
 						}
 					break;
 				}
@@ -3762,24 +3738,27 @@ function databaseParseFilters($params=array()){
 				//not equals any
 				$ands=array();
 				$cvals=preg_split('/\,/',$val);
+				$lcvals=preg_split('/\,/',$lval);
 				switch(strtolower($params['-database'])){
 					case 'oracle':
 					case 'hana':
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
-						foreach($cvals as $cval){
-							if(isNum($val)){
-								$ands[]="{$field} != '{$cval}'";
+					case 'postgres':
+					case 'postgresql':
+						foreach($lcvals as $lcval){
+							if(isNum($lcval)){
+								$ands[]="{$field} != '{$lcval}'";
 							}
 							else{
-								$ands[]="lower({$field}) != '{$cval}'";
+								$ands[]="lower({$field}) != '{$lcval}'";
 							}
 						}
 					break;
 					case 'snowflake':
 						foreach($cvals as $cval){
-							if(isNum($val)){
+							if(isNum($cval)){
 								$ands[]="{$field} != '{$cval}'";
 							}
 							else{
@@ -3790,7 +3769,12 @@ function databaseParseFilters($params=array()){
 					default:
 						//mysql is case insensitive
 						foreach($cvals as $cval){
-							$ands[]="{$field} != '{$cval}'";
+							if(isNum($cval)){
+								$ands[]="{$field} != '{$cval}'";
+							}
+							else{
+								$ands[]="{$field} != '{$cval}'";
+							}
 						}
 					break;
 				}
