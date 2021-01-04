@@ -3639,7 +3639,7 @@ function databaseParseFilters($params=array()){
 							$wheres[]="{$field} = {$val}";
 						}
 						else{
-							$wheres[]="lower({$field}) = '{$val}'";
+							$wheres[]="lower({$field}) = '{$lval}'";
 						}
 					break;
 					case 'snowflake':
@@ -3670,7 +3670,7 @@ function databaseParseFilters($params=array()){
 							$wheres[]="{$field} != {$val}";
 						}
 						else{
-							$wheres[]="lower({$field}) != '{$val}'";
+							$wheres[]="lower({$field}) != '{$lval}'";
 						}
 					break;
 					case 'snowflake':
