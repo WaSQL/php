@@ -14473,6 +14473,12 @@ function processActions(){
 										if($info[$field]['_dbtype']=='json'){
 											$opts[$field]='[]';	
 										}
+										elseif(isset($info[$field]['_dbdef']) && strlen($info[$field]['_dbdef'])){
+											$opts[$field]=$info[$field]['_dbdef'];
+										}
+										elseif(isset($info[$field]['defaultval']) && strlen($info[$field]['defaultval'])){
+											$opts[$field]=$info[$field]['defaultval'];
+										}
 										else{
 											$opts[$field]='NULL';
 										}	
