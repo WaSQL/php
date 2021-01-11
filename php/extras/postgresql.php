@@ -16,7 +16,134 @@
 		select * from json_populate_recordset(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
 
 */
-
+//---------- begin function postgresqlGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=postgresqlGetTableDDL('sample');
+* @link https://stackoverflow.com/questions/2593803/how-to-generate-the-create-table-sql-statement-for-an-existing-table-in-postgr
+*/
+function postgresqlGetTableDDL($table,$schema=''){
+	$table=strtoupper($table);
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtolower($schema);
+	$table=strtolower($table);
+	$query=<<<ENDOFQUERY
+		WITH table_rec AS (
+        SELECT
+            c.relname, n.nspname, c.oid
+        FROM
+            pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE
+            relkind = 'r'
+            AND n.nspname = '{$schema}'
+            AND c.relname LIKE '{$table}'
+        ORDER BY
+            c.relname
+    ),
+    col_rec AS (
+        SELECT
+            a.attname AS colname,
+            pg_catalog.format_type(a.atttypid, a.atttypmod) AS coltype,
+            a.attrelid AS oid,
+            ' DEFAULT ' || (
+                SELECT
+                    pg_catalog.pg_get_expr(d.adbin, d.adrelid)
+                FROM
+                    pg_catalog.pg_attrdef d
+                WHERE
+                    d.adrelid = a.attrelid
+                    AND d.adnum = a.attnum
+                    AND a.atthasdef) AS column_default_value,
+            CASE WHEN a.attnotnull = TRUE THEN
+                'NOT NULL'
+            ELSE
+                'NULL'
+            END AS column_not_null,
+            a.attnum AS attnum
+        FROM
+            pg_catalog.pg_attribute a
+        WHERE
+            a.attnum > 0
+            AND NOT a.attisdropped
+        ORDER BY
+            a.attnum
+    ),
+    con_rec AS (
+        SELECT
+            conrelid::regclass::text AS relname,
+            n.nspname,
+            conname,
+            pg_get_constraintdef(c.oid) AS condef,
+            contype,
+            conrelid AS oid
+        FROM
+            pg_constraint c
+            JOIN pg_namespace n ON n.oid = c.connamespace
+    ),
+    glue AS (
+        SELECT
+            format( E'-- %1$I.%2$I definition\\n\\n-- Drop table\\n\\n-- DROP TABLE IF EXISTS %1$I.%2$I\\n\\nCREATE TABLE %1$I.%2$I (\\n', table_rec.nspname, table_rec.relname) AS top,
+            format( E'\\n);\\n\\n\\n-- adempiere.wmv_ghgaudit foreign keys\\n\\n', table_rec.nspname, table_rec.relname) AS bottom,
+            oid
+        FROM
+            table_rec
+    ),
+    cols AS (
+        SELECT
+            string_agg(format('    %I %s%s %s', colname, coltype, column_default_value, column_not_null), E',\\n') AS lines,
+            oid
+        FROM
+            col_rec
+        GROUP BY
+            oid
+    ),
+    constrnt AS (
+        SELECT
+            string_agg(format('    CONSTRAINT %s %s', con_rec.conname, con_rec.condef), E',\\n') AS lines,
+            oid
+        FROM
+            con_rec
+        WHERE
+            contype <> 'f'
+        GROUP BY
+            oid
+    ),
+    frnkey AS (
+        SELECT
+            string_agg(format('ALTER TABLE %I.%I ADD CONSTRAINT %s %s', nspname, relname, conname, condef), E';\\n') AS lines,
+            oid
+        FROM
+            con_rec
+        WHERE
+            contype = 'f'
+        GROUP BY
+            oid
+    )
+    SELECT
+        concat(glue.top, cols.lines, E',\\n', constrnt.lines, glue.bottom, frnkey.lines, ';')
+    FROM
+        glue
+        JOIN cols ON cols.oid = glue.oid
+        LEFT JOIN constrnt ON constrnt.oid = glue.oid
+        LEFT JOIN frnkey ON frnkey.oid = glue.oid
+ENDOFQUERY;
+	//echo $query;exit;
+	$recs=postgresqlQueryResults($query);
+	if(isset($recs[0]['create_table'])){
+		return $recs[0]['create_table'];
+	}
+	return $recs;
+}
 //---------- begin function postgresqlAddDBIndex--------------------
 /**
 * @describe add an index to a table
@@ -847,7 +974,7 @@ function postgresqlExecuteSQL($query,$return_error=1){
 		if($return_error==1){return $err;}
 		return 0;
 	}
-	return 0;
+	return 1;
 }
 //---------- begin function postgresqlGetDBCount--------------------
 /**
