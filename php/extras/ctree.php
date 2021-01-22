@@ -322,6 +322,9 @@ ENDOFQUERY;
 		if($field['size'] > 0){
 			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['size']})");
 		}
+		elseif($field['length'] > 0){
+			$field['_dbtype_ex']=strtolower("{$field['_dbtype']}({$field['length']})");
+		}
 		$fields[$fieldname]=$field;
 	}
 	ksort($fields);
