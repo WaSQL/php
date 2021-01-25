@@ -141,17 +141,22 @@
 		</li>
 		</view:errors>
 		<?=renderViewIf(isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1,'errors');?>
-		<!-- Config -->
-		<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear</translate></span></a></li>
+		
 		<!-- Help -->
-		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
-			<ul>
-				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-help-circled"></span> <translate>Documentation</translate></a></li>
-				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
-				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
+		<li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
+			<ul style="left:initial;right:0px;">
 				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <translate>About</translate> WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=test"><span class="icon-mark"></span> WaSQL <translate>Tests</translate></a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
+				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=manual" class="w_small"><translate>WaSQL Reference</translate></a></li>
+				<li><a href="/php/admin.php?_menu=ref" class="w_small">CSS3 / HTML5 / PHP</a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
+				
+				
 				<li><a href="/php/admin.php?_menu=website_grader"><span class="icon-globe"></span> Website Checker</a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=logs"><span class="icon-file-txt"></span> Logs</a></li>
