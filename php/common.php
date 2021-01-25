@@ -1888,6 +1888,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 *	[data-firstday] - integer - sets the first day of the week (0: Sunday, 1: Monday, etc)
 *	[data-disableweekends] - if set, disallows selection of Saturdays or Sundays
 *	[data-showalldays] - if set, renders days of the calendar grid that fall in the next or previous months and make them selectable
+*	[data-showweeknumber]-  if set renders the week number in front of the week
 *	[data-numberofmonths] - integer - set the number of visible calendar months
 *	[data-maincalendar] - left or right - sets where the main calendar is.
 *	[data-pickwholeweek] - if set, selects a whole week instead of a day
@@ -9399,10 +9400,13 @@ function getCSVRecords($file,$params=array()){
 				$linecnt++;
 				continue;
 			}
-	        $rec=array(
-	        	'_id'	=> $linecnt,	
-				'_file'	=> $file
-			);
+	        $rec=array();
+			if(isset($params['-id'])){
+				$rec['_id']=$linecnt;
+			}
+			if(isset($params['-file'])){
+				$rec['_file']=$file;
+			}
 			foreach($params as $key=>$val){
 				if(stringBeginsWith($key,'-')){continue;}
             	$rec[$key]=$val;
