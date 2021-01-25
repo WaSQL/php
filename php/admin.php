@@ -594,6 +594,7 @@ if(isAjax()){
 		case 'checktables':
 		case 'meta':
 		case 'dbsync':
+		case 'ref':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1257,6 +1258,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'logs':
 		case 'website_grader':
 		case 'dbsync':
+		case 'ref':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1507,7 +1509,7 @@ ENDOFX;
 		break;
 		case 'manual':
 			echo adminViewPage('manual');exit;
-			break;
+		break;
 		case 'profile':
 			//My Profile
 			$uinfo=getUserInfo($USER);

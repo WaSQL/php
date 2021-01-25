@@ -1,0 +1,324 @@
+Category,Function,Description
+Arrays,array(),Creates an array
+Arrays,array_change_key_case(),Changes all keys in an array to lowercase or uppercase
+Arrays,array_chunk(),Splits an array into chunks of arrays
+Arrays,array_column(),Returns the values from a single column in the input array
+Arrays,array_combine(),"Creates an array by using the elements from one ""keys"" array and one ""values"" array"
+Arrays,array_count_values(),Counts all the values of an array
+Arrays,array_diff(),"Compare arrays, and returns the differences (compare values only)"
+Arrays,array_diff_assoc(),"Compare arrays, and returns the differences (compare keys and values)"
+Arrays,array_diff_key(),"Compare arrays, and returns the differences (compare keys only)"
+Arrays,array_diff_uassoc(),"Compare arrays, and returns the differences (compare keys and values, using a user-defined key comparison function)"
+Arrays,array_diff_ukey(),"Compare arrays, and returns the differences (compare keys only, using a user-defined key comparison function)"
+Arrays,array_fill(),Fills an array with values
+Arrays,array_fill_keys(),"Fills an array with values, specifying keys"
+Arrays,array_filter(),Filters the values of an array using a callback function
+Arrays,array_flip(),Flips/Exchanges all keys with their associated values in an array
+Arrays,array_intersect(),"Compare arrays, and returns the matches (compare values only)"
+Arrays,array_intersect_assoc(),Compare arrays and returns the matches (compare keys and values)
+Arrays,array_intersect_key(),"Compare arrays, and returns the matches (compare keys only)"
+Arrays,array_intersect_uassoc(),"Compare arrays, and returns the matches (compare keys and values, using a user-defined key comparison function)"
+Arrays,array_intersect_ukey(),"Compare arrays, and returns the matches (compare keys only, using a user-defined key comparison function)"
+Arrays,array_key_exists(),Checks if the specified key exists in the array
+Arrays,array_keys(),Returns all the keys of an array
+Arrays,array_map(),"Sends each value of an array to a user-made function, which returns new values"
+Arrays,array_merge(),Merges one or more arrays into one array
+Arrays,array_merge_recursive(),Merges one or more arrays into one array recursively
+Arrays,array_multisort(),Sorts multiple or multi-dimensional arrays
+Arrays,array_pad(),"Inserts a specified number of items, with a specified value, to an array"
+Arrays,array_pop(),Deletes the last element of an array
+Arrays,array_product(),Calculates the product of the values in an array
+Arrays,array_push(),Inserts one or more elements to the end of an array
+Arrays,array_rand(),Returns one or more random keys from an array
+Arrays,array_reduce(),"Returns an array as a string, using a user-defined function"
+Arrays,array_replace(),Replaces the values of the first array with the values from following arrays
+Arrays,array_replace_recursive(),Replaces the values of the first array with the values from following arrays recursively
+Arrays,array_reverse(),Returns an array in the reverse order
+Arrays,array_search(),Searches an array for a given value and returns the key
+Arrays,array_shift(),"Removes the first element from an array, and returns the value of the removed element"
+Arrays,array_slice(),Returns selected parts of an array
+Arrays,array_splice(),Removes and replaces specified elements of an array
+Arrays,array_sum(),Returns the sum of the values in an array
+Arrays,array_udiff(),"Compare arrays, and returns the differences (compare values only, using a user-defined key comparison function)"
+Arrays,array_udiff_assoc(),"Compare arrays, and returns the differences (compare keys and values, using a built-in function to compare the keys and a user-defined function to compare the values)"
+Arrays,array_udiff_uassoc(),"Compare arrays, and returns the differences (compare keys and values, using two user-defined key comparison functions)"
+Arrays,array_uintersect(),"Compare arrays, and returns the matches (compare values only, using a user-defined key comparison function)"
+Arrays,array_uintersect_assoc(),"Compare arrays, and returns the matches (compare keys and values, using a built-in function to compare the keys and a user-defined function to compare the values)"
+Arrays,array_uintersect_uassoc(),"Compare arrays, and returns the matches (compare keys and values, using two user-defined key comparison functions)"
+Arrays,array_unique(),Removes duplicate values from an array
+Arrays,array_unshift(),Adds one or more elements to the beginning of an array
+Arrays,array_values(),Returns all the values of an array
+Arrays,array_walk(),Applies a user function to every member of an array
+Arrays,array_walk_recursive(),Applies a user function recursively to every member of an array
+Arrays,arsort(),"Sorts an associative array in descending order, according to the value"
+Arrays,asort(),"Sorts an associative array in ascending order, according to the value"
+Arrays,compact(),Create array containing variables and their values
+Arrays,count(),Returns the number of elements in an array
+Arrays,current(),Returns the current element in an array
+Arrays,each(),Deprecated from PHP 7.2. Returns the current key and value pair from an array
+Arrays,end(),Sets the internal pointer of an array to its last element
+Arrays,extract(),Imports variables into the current symbol table from an array
+Arrays,in_array(),Checks if a specified value exists in an array
+Arrays,key(),Fetches a key from an array
+Arrays,krsort(),"Sorts an associative array in descending order, according to the key"
+Arrays,ksort(),"Sorts an associative array in ascending order, according to the key"
+Arrays,list(),Assigns variables as if they were an array
+Arrays,natcasesort(),"Sorts an array using a case insensitive ""natural order"" algorithm"
+Arrays,natsort(),"Sorts an array using a ""natural order"" algorithm"
+Arrays,next(),Advance the internal array pointer of an array
+Arrays,pos(),Alias of current()
+Arrays,prev(),Rewinds the internal array pointer
+Arrays,range(),Creates an array containing a range of elements
+Arrays,reset(),Sets the internal pointer of an array to its first element
+Arrays,rsort(),Sorts an indexed array in descending order
+Arrays,shuffle(),Shuffles an array
+Arrays,sizeof(),Alias of count()
+Arrays,sort(),Sorts an indexed array in ascending order
+Arrays,uasort(),Sorts an array by values using a user-defined comparison function
+Arrays,uksort(),Sorts an array by keys using a user-defined comparison function
+Arrays,usort(),Sorts an array using a user-defined comparison function
+Dates,checkdate(),Validates a Gregorian date
+Dates,date_add(),"Adds days, months, years, hours, minutes, and seconds to a date"
+Dates,date_create_from_format(),Returns a new DateTime object formatted according to a specified format
+Dates,date_create(),Returns a new DateTime object
+Dates,date_date_set(),Sets a new date
+Dates,date_default_timezone_get(),Returns the default timezone used by all date/time functions
+Dates,date_default_timezone_set(),Sets the default timezone used by all date/time functions
+Dates,date_diff(),Returns the difference between two dates
+Dates,date_format(),Returns a date formatted according to a specified format
+Dates,date_get_last_errors(),Returns the warnings/errors found in a date string
+Dates,date_interval_create_from_date_string(),Sets up a DateInterval from the relative parts of the string
+Dates,date_interval_format(),Formats the interval
+Dates,date_isodate_set(),Sets the ISO date
+Dates,date_modify(),Modifies the timestamp
+Dates,date_offset_get(),Returns the timezone offset
+Dates,date_parse_from_format(),"Returns an associative array with detailed info about a specified date, according to a specified format"
+Dates,date_parse(),Returns an associative array with detailed info about a specified date
+Dates,date_sub(),"Subtracts days, months, years, hours, minutes, and seconds from a date"
+Dates,date_sun_info(),"Returns an array containing info about sunset/sunrise and twilight begin/end, for a specified day and location"
+Dates,date_sunrise(),Returns the sunrise time for a specified day and location
+Dates,date_sunset(),Returns the sunset time for a specified day and location
+Dates,date_time_set(),Sets the time
+Dates,date_timestamp_get(),Returns the Unix timestamp
+Dates,date_timestamp_set(),Sets the date and time based on a Unix timestamp
+Dates,date_timezone_get(),Returns the time zone of the given DateTime object
+Dates,date_timezone_set(),Sets the time zone for the DateTime object
+Dates,date(),Formats a local date and time
+Dates,getdate(),Returns date/time information of a timestamp or the current local date/time
+Dates,gettimeofday(),Returns the current time
+Dates,gmdate(),Formats a GMT/UTC date and time
+Dates,gmmktime(),Returns the Unix timestamp for a GMT date
+Dates,gmstrftime(),Formats a GMT/UTC date and time according to locale settings
+Dates,idate(),Formats a local time/date as integer
+Dates,localtime(),Returns the local time
+Dates,microtime(),Returns the current Unix timestamp with microseconds
+Dates,mktime(),Returns the Unix timestamp for a date
+Dates,strftime(),Formats a local time and/or date according to locale settings
+Dates,strptime(),Parses a time/date generated with strftime()
+Dates,strtotime(),Parses an English textual datetime into a Unix timestamp
+Dates,time(),Returns the current time as a Unix timestamp
+Dates,timezone_abbreviations_list(),"Returns an associative array containing dst, offset, and the timezone name"
+Dates,timezone_identifiers_list(),Returns an indexed array with all timezone identifiers
+Dates,timezone_location_get(),Returns location information for a specified timezone
+Dates,timezone_name_from_ abbr(),Returns the timezone name from abbreviation
+Dates,timezone_name_get(),Returns the name of the timezone
+Dates,timezone_offset_get(),Returns the timezone offset from GMT
+Dates,timezone_open(),Creates new DateTimeZone object
+Dates,timezone_transitions_get(),Returns all transitions for the timezone
+Dates,timezone_version_get(),Returns the version of the timezonedb
+JSON,json_decode(),Decodes a JSON string
+JSON,json_encode(),Encode a value to JSON format
+JSON,json_last_error(),Returns the last error occurred
+JSON,json_last_error_msg(),Returns the error string of the last json_encode() or json_decode() call
+Math,abs(),Returns the absolute (positive) value of a number
+Math,acos(),Returns the arc cosine of a number
+Math,acosh(),Returns the inverse hyperbolic cosine of a number
+Math,asin(),Returns the arc sine of a number
+Math,asinh(),Returns the inverse hyperbolic sine of a number
+Math,atan(),Returns the arc tangent of a number in radians
+Math,atan2(),Returns the arc tangent of two variables x and y
+Math,atanh(),Returns the inverse hyperbolic tangent of a number
+Math,base_convert(),Converts a number from one number base to another
+Math,bindec(),Converts a binary number to a decimal number
+Math,ceil(),Rounds a number up to the nearest integer
+Math,cos(),Returns the cosine of a number
+Math,cosh(),Returns the hyperbolic cosine of a number
+Math,decbin(),Converts a decimal number to a binary number
+Math,dechex(),Converts a decimal number to a hexadecimal number
+Math,decoct(),Converts a decimal number to an octal number
+Math,deg2rad(),Converts a degree value to a radian value
+Math,exp(),Calculates the exponent of e
+Math,expm1(),Returns exp(x) - 1
+Math,floor(),Rounds a number down to the nearest integer
+Math,fmod(),Returns the remainder of x/y
+Math,getrandmax(),Returns the largest possible value returned by rand()
+Math,hexdec(),Converts a hexadecimal number to a decimal number
+Math,hypot(),Calculates the hypotenuse of a right-angle triangle
+Math,intdiv(),Performs integer division
+Math,is_finite(),Checks whether a value is finite or not
+Math,is_infinite(),Checks whether a value is infinite or not
+Math,is_nan(),Checks whether a value is 'not-a-number'
+Math,lcg_value(),Returns a pseudo random number in a range between 0 and 1
+Math,log(),Returns the natural logarithm of a number
+Math,log10(),Returns the base-10 logarithm of a number
+Math,log1p(),Returns log(1+number)
+Math,max(),"Returns the highest value in an array, or the highest value of several specified values"
+Math,min(),"Returns the lowest value in an array, or the lowest value of several specified values"
+Math,mt_getrandmax(),Returns the largest possible value returned by mt_rand()
+Math,mt_rand(),Generates a random integer using Mersenne Twister algorithm
+Math,mt_srand(),Seeds the Mersenne Twister random number generator
+Math,octdec(),Converts an octal number to a decimal number
+Math,pi(),Returns the value of PI
+Math,pow(),Returns x raised to the power of y
+Math,rad2deg(),Converts a radian value to a degree value
+Math,rand(),Generates a random integer
+Math,round(),Rounds a floating-point number
+Math,sin(),Returns the sine of a number
+Math,sinh(),Returns the hyperbolic sine of a number
+Math,sqrt(),Returns the square root of a number
+Math,srand(),Seeds the random number generator
+Math,tan(),Returns the tangent of a number
+Math,tanh(),Returns the hyperbolic tangent of a number
+RegEx,preg_filter(),"Returns a string or an array with pattern matches replaced, but only if matches were found"
+RegEx,preg_grep(),Returns an array consisting only of elements from the input array which matched the pattern
+RegEx,preg_last_error(),Returns an error code indicating the reason that the most recent regular expression call failed
+RegEx,preg_match(),Finds the first match of a pattern in a string
+RegEx,preg_match_all(),Finds all matches of a pattern in a string
+RegEx,preg_replace(),Returns a string where matches of a pattern (or an array of patterns) are replaced with a substring (or an array of substrings) in a given string
+RegEx,preg_replace_callback(),"Given an expression and a callback, returns a string where all matches of the expression are replaced with the substring returned by the callback"
+RegEx,preg_replace_callback_array(),"Given an array associating expressions with callbacks, returns a string where all matches of each expression are replaced with the substring returned by the callback"
+RegEx,preg_split(),Breaks a string into an array using matches of a regular expression as separators
+RegEx,preg_quote(),Escapes characters that have a special meaning in regular expressions by putting a backslash in front of them
+String,addcslashes(),Returns a string with backslashes in front of the specified characters
+String,addslashes(),Returns a string with backslashes in front of predefined characters
+String,bin2hex(),Converts a string of ASCII characters to hexadecimal values
+String,chop(),Removes whitespace or other characters from the right end of a string
+String,chr(),Returns a character from a specified ASCII value
+String,chunk_split(),Splits a string into a series of smaller parts
+String,convert_cyr_string(),Converts a string from one Cyrillic character-set to another
+String,convert_uudecode(),Decodes a uuencoded string
+String,convert_uuencode(),Encodes a string using the uuencode algorithm
+String,count_chars(),Returns information about characters used in a string
+String,crc32(),Calculates a 32-bit CRC for a string
+String,crypt(),One-way string hashing
+String,echo(),Outputs one or more strings
+String,explode(),Breaks a string into an array
+String,fprintf(),Writes a formatted string to a specified output stream
+String,get_html_translation_table(),Returns the translation table used by htmlspecialchars() and htmlentities()
+String,hebrev(),Converts Hebrew text to visual text
+String,hebrevc(),Converts Hebrew text to visual text and new lines (\n) into <br>
+String,hex2bin(),Converts a string of hexadecimal values to ASCII characters
+String,html_entity_decode(),Converts HTML entities to characters
+String,htmlentities(),Converts characters to HTML entities
+String,htmlspecialchars_decode(),Converts some predefined HTML entities to characters
+String,htmlspecialchars(),Converts some predefined characters to HTML entities
+String,implode(),Returns a string from the elements of an array
+String,join(),Alias of implode()
+String,lcfirst(),Converts the first character of a string to lowercase
+String,levenshtein(),Returns the Levenshtein distance between two strings
+String,localeconv(),Returns locale numeric and monetary formatting information
+String,ltrim(),Removes whitespace or other characters from the left side of a string
+String,md5(),Calculates the MD5 hash of a string
+String,md5_file(),Calculates the MD5 hash of a file
+String,metaphone(),Calculates the metaphone key of a string
+String,money_format(),Returns a string formatted as a currency string
+String,nl_langinfo(),Returns specific local information
+String,nl2br(),Inserts HTML line breaks in front of each newline in a string
+String,number_format(),Formats a number with grouped thousands
+String,ord(),Returns the ASCII value of the first character of a string
+String,parse_str(),Parses a query string into variables
+String,print(),Outputs one or more strings
+String,printf(),Outputs a formatted string
+String,quoted_printable_decode(),Converts a quoted-printable string to an 8-bit string
+String,quoted_printable_encode(),Converts an 8-bit string to a quoted printable string
+String,quotemeta(),Quotes meta characters
+String,rtrim(),Removes whitespace or other characters from the right side of a string
+String,setlocale(),Sets locale information
+String,sha1(),Calculates the SHA-1 hash of a string
+String,sha1_file(),Calculates the SHA-1 hash of a file
+String,similar_text(),Calculates the similarity between two strings
+String,soundex(),Calculates the soundex key of a string
+String,sprintf(),Writes a formatted string to a variable
+String,sscanf(),Parses input from a string according to a format
+String,str_getcsv(),Parses a CSV string into an array
+String,str_ireplace(),Replaces some characters in a string (case-insensitive)
+String,str_pad(),Pads a string to a new length
+String,str_repeat(),Repeats a string a specified number of times
+String,str_replace(),Replaces some characters in a string (case-sensitive)
+String,str_rot13(),Performs the ROT13 encoding on a string
+String,str_shuffle(),Randomly shuffles all characters in a string
+String,str_split(),Splits a string into an array
+String,str_word_count(),Count the number of words in a string
+String,strcasecmp(),Compares two strings (case-insensitive)
+String,strchr(),Finds the first occurrence of a string inside another string (alias of strstr())
+String,strcmp(),Compares two strings (case-sensitive)
+String,strcoll(),Compares two strings (locale based string comparison)
+String,strcspn(),Returns the number of characters found in a string before any part of some specified characters are found
+String,strip_tags(),Strips HTML and PHP tags from a string
+String,stripcslashes(),Unquotes a string quoted with addcslashes()
+String,stripslashes(),Unquotes a string quoted with addslashes()
+String,stripos(),Returns the position of the first occurrence of a string inside another string (case-insensitive)
+String,stristr(),Finds the first occurrence of a string inside another string (case-insensitive)
+String,strlen(),Returns the length of a string
+String,strnatcasecmp(),"Compares two strings using a ""natural order"" algorithm (case-insensitive)"
+String,strnatcmp(),"Compares two strings using a ""natural order"" algorithm (case-sensitive)"
+String,strncasecmp(),String comparison of the first n characters (case-insensitive)
+String,strncmp(),String comparison of the first n characters (case-sensitive)
+String,strpbrk(),Searches a string for any of a set of characters
+String,strpos(),Returns the position of the first occurrence of a string inside another string (case-sensitive)
+String,strrchr(),Finds the last occurrence of a string inside another string
+String,strrev(),Reverses a string
+String,strripos(),Finds the position of the last occurrence of a string inside another string (case-insensitive)
+String,strrpos(),Finds the position of the last occurrence of a string inside another string (case-sensitive)
+String,strspn(),Returns the number of characters found in a string that contains only characters from a specified charlist
+String,strstr(),Finds the first occurrence of a string inside another string (case-sensitive)
+String,strtok(),Splits a string into smaller strings
+String,strtolower(),Converts a string to lowercase letters
+String,strtoupper(),Converts a string to uppercase letters
+String,strtr(),Translates certain characters in a string
+String,substr(),Returns a part of a string
+String,substr_compare(),Compares two strings from a specified start position (binary safe and optionally case-sensitive)
+String,substr_count(),Counts the number of times a substring occurs in a string
+String,substr_replace(),Replaces a part of a string with another string
+String,trim(),Removes whitespace or other characters from both sides of a string
+String,ucfirst(),Converts the first character of a string to uppercase
+String,ucwords(),Converts the first character of each word in a string to uppercase
+String,vfprintf(),Writes a formatted string to a specified output stream
+String,vprintf(),Outputs a formatted string
+String,vsprintf(),Writes a formatted string to a variable
+String,wordwrap(),Wraps a string to a given number of characters
+Variables,boolval(),Returns the boolean value of a variable
+Variables,debug_zval_dump(),Dumps a string representation of an internal zend value to output
+Variables,doubleval(),Alias of floatval()
+Variables,empty(),Checks whether a variable is empty
+Variables,floatval(),Returns the float value of a variable
+Variables,get_defined_vars(),"Returns all defined variables, as an array"
+Variables,get_resource_type(),Returns the type of a resource
+Variables,gettype(),Returns the type of a variable
+Variables,intval(),Returns the integer value of a variable
+Variables,is_array(),Checks whether a variable is an array
+Variables,is_bool(),Checks whether a variable is a boolean
+Variables,is_callable(),Checks whether the contents of a variable can be called as a function
+Variables,is_countable(),Checks whether the contents of a variable is a countable value
+Variables,is_double(),Alias of is_float()
+Variables,is_float(),Checks whether a variable is of type float
+Variables,is_int(),Checks whether a variable is of type integer
+Variables,is_integer(),Alias of is_int()
+Variables,is_iterable(),Checks whether the contents of a variable is an iterable value
+Variables,is_long(),Alias of is_int()
+Variables,is_null(),Checks whether a variable is NULL
+Variables,is_numeric(),Checks whether a variable is a number or a numeric string
+Variables,is_object(),Checks whether a variable is an object
+Variables,is_real(),Alias of is_float()
+Variables,is_resource(),Checks whether a variable is a resource
+Variables,is_scalar(),Checks whether a variable is a scalar
+Variables,is_string(),Checks whether a variable is of type string
+Variables,isset(),Checks whether a variable is set (declared and not NULL)
+Variables,print_r(),Prints the information about a variable in a human-readable way
+Variables,serialize(),Converts a storable representation of a value
+Variables,settype(),Converts a variable to a specific type
+Variables,strval(),Returns the string value of a variable
+Variables,unserialize(),Converts serialized data back into actual data
+Variables,unset(),Unsets a variable
+Variables,var_dump(),Dumps information about one or more variables
+Variables,var_export(),Returns structured information (valid PHP code) about a variable
