@@ -1,0 +1,60 @@
+<view:default>
+<script type="text/javascript">
+	function refNavTab(el){
+		wacss.setActiveTab(el);
+		document.ref_form.tab.value=el.dataset.tab;
+		document.ref_form.func.value='list';
+		return ajaxSubmitForm(document.ref_form,'ref_content');
+	}
+</script>
+<h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">
+	<span class="icon-html5"></span> HTML5 
+	<span class="icon-css3"></span> CSS3
+	<span class="icon-php"></span> PHP
+	<translate>Reference</translate>
+</h2>
+<form method="post" name="ref_form" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="ref" />
+	<input type="hidden" name="tab" value="tags" />
+	<input type="hidden" name="func" value="list" />
+	<input type="hidden" name="setprocessing" value="0" />
+<ul class="nav-tabs <?=configValue('admin_color');?>">
+	<li class="active">
+		<a href="#" onclick="return refNavTab(this);" data-tab="html_tags">
+			<span class="icon-html5"></span> <translate>Tags</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="html_attributes">
+			<span class="icon-html5"></span> <translate>Attributes</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="html_events">
+			<span class="icon-html5"></span> <translate>Events</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="css_styles">
+			<span class="icon-css3"></span> <translate>Styles</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="css_selectors"><span class="icon-css3"></span> <translate>Selectors</translate></a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="css_functions"><span class="icon-css3"></span> <translate>Functions</translate></a>
+	</li>
+	<li>
+		<a href="#" onclick="return refNavTab(this);" data-tab="php_functions"><span class="icon-php"></span> <translate>Internal Functions</translate></a>
+	</li>
+</ul>
+<div id="ref_content">
+	<?=refShowList('html_tags');?>
+</div>
+</view:default>
+
+<view:list>
+	<?=refShowList($tab);?>
+</view:list>
+
