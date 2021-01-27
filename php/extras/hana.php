@@ -11,6 +11,34 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+//---------- begin function hanaGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=hanaGetTableDDL('sample');
+* @link https://stackoverflow.com/questions/26237174/show-create-table-equivalent-in-sap-hana
+*/
+function hanaGetTableDDL($table,$schema=''){
+	if(!strlen($schema)){
+		$schema=hanaGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('hanaGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT get_object_definition('schema_name','{$schema}.{$table}') as ddl from dummy
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
+	if(isset($recs[0]['ddl'])){
+		return $recs[0]['ddl'];
+	}
+	return $recs;
+}
 //---------- begin function hanaGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index

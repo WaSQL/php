@@ -29,6 +29,12 @@
 		document.sqlprompt.db.value=db;
 		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0})
 	}
+	function sqlpromptDDL(table){
+		var db=document.sqlprompt.db.value;
+		document.sqlprompt.reset();
+		document.sqlprompt.db.value=db;
+		return ajaxGet('/php/admin.php','centerpop',{_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0})
+	}
 	function sqlpromptFields(table){
 		let icon=getObject(table+'_icon');
 		let t=getText(table+'_fields');
@@ -87,7 +93,7 @@
 					<input type="hidden" name="setprocessing" value="setprocessing" />
 					<input type="hidden" name="sql_select" value="" />
 					<input type="hidden" name="cursor_pos" value="" />
-					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="height:200px;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="height:50vh;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 					<div class="row w_padtop">
 						<div class="col-sm-3">
 							<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
@@ -215,9 +221,12 @@
 
 <view:tabledetails>
 	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
-	<div style="margin-bottom:10px;"><a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Show Last Records</a></div>
-	<?=renderView('fields',$fields,'fields');?>
-	<?=renderView('indexes',$indexes,'indexes');?>
+		<div style="margin-bottom:10px;display:flex;justify-content: space-between;align-items: center;">
+			<a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Last Records</a>
+			<a href="#" class="w_link" onclick="return sqlpromptDDL('<?=$table;?>');"><span class="icon-database-empty"></span> DDL</a>
+		</div>
+		<?=renderView('fields',$fields,'fields');?>
+		<?=renderView('indexes',$indexes,'indexes');?>
 	</div>
 </view:tabledetails>
 
@@ -233,4 +242,11 @@
 <view:showlist>
 	<?=sqlpromptShowlist($recs,$listopts);?>
 </view:showlist>
+
+<view:centerpop>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content w_pre">
+	<?=$content;?>
+</div>
+</view:centerpop>
 

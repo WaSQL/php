@@ -86,6 +86,93 @@ function dbISQL($dsn,$user,$pass,$query){
 	return $recs;
 }
 //---------- db functions that allow you to pass in what database first
+function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
+	global $CONFIG;
+	global $DATABASE;
+	global $dbh_postgres;
+	global $dbh_oracle;
+	global $dbh_mssql;
+	global $dbh_hana;
+	global $dbh_odbc;
+	global $dbh_snowflake;
+	global $dbh_sqlite;
+	global $dbh_ctree;
+	$db=strtolower(trim($db));
+	if(!isset($DATABASE[$db])){
+		return "Invalid db: {$db}";
+	}
+	$CONFIG['db']=$db;
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'postgresql':
+		case 'postgres':
+			loadExtras('postgresql');
+			$dbh_postgres='';
+			$func="postgresql".ucfirst($func);
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			$dbh_oracle='';
+			$func="oracle".ucfirst($func);
+		break;
+		case 'mssql':
+			loadExtras('mssql');
+			$dbh_mssql='';
+			$func="mssql".ucfirst($func);
+		break;
+		case 'hana':
+			loadExtras('hana');
+			$dbh_hana='';
+			$func="hana".ucfirst($func);
+		break;
+		case 'odbc':
+			loadExtras('odbc');
+			$dbh_odbc='';
+			$func="odbc".ucfirst($func);
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			$dbh_snowflake='';
+			$func="snowflake".ucfirst($func);
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			$dbh_sqlite='';
+			$func="sqlite".ucfirst($func);
+		break;
+		case 'ctree':
+			loadExtras('ctree');
+			$dbh_ctree='';
+			$func="ctree".ucfirst($func);
+		break;
+		default:
+			$func=lcfirst($func);
+			if(!function_exists($func)){
+				$func="mysql".ucfirst($func);
+			}
+			return executeSQL($sql);
+		break;
+	}
+	if(!function_exists($func)){
+		debugValue("Function '{$func}' does not exist");
+		return 0;
+	}
+	elseif(!empty($args1) && !empty($args2) && !empty($args3) && !empty($args4)){
+		return call_user_func($func,$args1,$args2,$args3,$args4);
+	}
+	elseif(!empty($args1) && !empty($args2) && !empty($args3)){
+		return call_user_func($func,$args1,$args2,$args3);
+	}
+	elseif(!empty($args1) && !empty($args2)){
+		return call_user_func($func,$args1,$args2);
+	}
+	elseif(!empty($args1)){
+		return call_user_func($func,$args1);
+	}
+	else{
+		return call_user_func($func);
+	}
+}
+
 //---------- begin function dbAddIndex
 /**
 * @describe adds an index to a table
@@ -102,66 +189,7 @@ function dbISQL($dsn,$user,$pass,$query){
 * 	$ok=dbAddIndex($db,array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
 */
 function dbAddIndex($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlAddDBIndex($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleAddDBIndex($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlAddDBIndex($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaAddDBIndex($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcAddDBIndex($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeAddDBIndex($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteAddDBIndex($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return addDBIndex($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('addDBIndex',$db,$params);
 }
 //---------- begin function dbAddRecord
 /**
@@ -178,67 +206,7 @@ function dbAddIndex($db,$params=array()){
 * @usage $id=dbAddRecord($db,array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function dbAddRecord($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	global $dbh_snowflake;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlAddDBRecord($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleAddDBRecord($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlAddDBRecord($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$dbh_hana='';
-			return hanaAddDBRecord($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcAddDBRecord($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeAddDBRecord($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteAddDBRecord($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return addDBRecord($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('addDBRecord',$db,$params);
 }
 //---------- begin function dbAddRecords
 /**
@@ -251,67 +219,19 @@ function dbAddRecord($db,$params=array()){
 * @usage $cnt=dbAddRecords($db,array('-table'=>'abc','-list'=>$recs));
 */
 function dbAddRecords($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	global $dbh_snowflake;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlAddDBRecords($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleAddDBRecords($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlAddDBRecords($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$dbh_hana='';
-			return hanaAddDBRecords($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcAddDBRecords($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeAddDBRecords($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteAddDBRecords($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return addDBRecords($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('addDBRecords',$db,$params);
+}
+//---------- begin function dbAlterTable
+/**
+* @describe deletes a record with said id in said table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param params array - field=>dbtype pairs to edit in this record
+* @return boolean
+* @usage $ok=dbAlterTable($db,'test',array('name'=>'varchar(25) NULL'));
+*/
+function dbAlterTable($db,$table,$fields=array(),$maintain_order=1){
+	return dbFunctionCall('alterDBTable',$db,$table,$fields,$maintain_order);
 }
 //---------- begin function dbConnect
 /**
@@ -338,49 +258,6 @@ function dbConnect($db,$params=array()){
 	}
 	$CONFIG['db']=$db;
 	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlDBConnect($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleDBConnect($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlDBConnect($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$dbh_hana='';
-			return hanaDBConnect($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcDBConnect($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeDBConnect($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteDBConnect($params);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeDBConnect($params);
-		break;
 		case 'mysql':
 		case 'mysqli':
 			loadExtras('mysql');
@@ -390,6 +267,9 @@ function dbConnect($db,$params=array()){
 			catch(Exception $e){
 				return false;
 			}
+		break;
+		default:
+			return dbFunctionCall('dbConnect',$db,$params);
 		break;
 	}
 	return "Invalid dbtype: {$db['dbtype']}";
@@ -404,67 +284,7 @@ function dbConnect($db,$params=array()){
 * @usage $ok=dbCreateTable($db,$table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
 */
 function dbCreateTable($db,$table,$fields=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlCreateDBTable($table,$fields);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleCreateDBTable($table,$fields);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlCreateDBTable($table,$fields);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$dbh_hana='';
-			return hanaCreateDBTable($table,$fields);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcCreateDBTable($table,$fields);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeCreateDBTable($table,$fields);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteCreateDBTable($table,$fields);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return createDBTable($table,$fields);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('createDBTable',$db,$table,$fields);
 }
 //---------- begin function dbDelRecord
 /**
@@ -478,66 +298,7 @@ function dbCreateTable($db,$table,$fields=array()){
 * @usage $id=dbDelRecord($db,array('-table'=> '_tabledata','-where'=>"_id=4"));
 */
 function dbDelRecord($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlDelDBRecord($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleDelDBRecord($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlDelDBRecord($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaDelDBRecord($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcDelDBRecord($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeDelDBRecord($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteDelDBRecord($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return delDBRecord($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('delDBRecord',$db,$params);
 }
 //---------- begin function dbDelRecordById
 /**
@@ -550,139 +311,20 @@ function dbDelRecord($db,$params=array()){
 * @usage $ok=dbDelRecordById($db,'comments',7);
 */
 function dbDelRecordById($db,$table='',$id=0){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlDelDBRecordById($table,$id);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleDelDBRecordById($table,$id);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlDelDBRecordById($table,$id);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaDelDBRecordById($table,$id);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcDelDBRecordById($table,$id);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeDelDBRecordById($table,$id);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteDelDBRecordById($table,$id);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return delDBRecordById($table,$id);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('delDBRecordById',$db,$table,$id);
 }
 //---------- begin function dbDropIndex
 /**
 * @describe adds an index to a table
 * @param db string - database name as specified in the database section of config.xml
-* @param params array
-*	-table
-*	-name
+* @param indexname string
+* @param [tablename] string optional on some databases
 * @return boolean
 * @usage
-*	$ok=dbDropIndex($db,array('-table'=>$table,'-name'=>"IDX001"));
+*	$ok=dbDropIndex($db,$indexname,$tablename);
 */
-function dbDropIndex($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlDropDBIndex($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleDropDBIndex($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlDropDBIndex($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaDropDBIndex($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcDropDBIndex($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeDropDBIndex($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteDropDBIndex($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return dropDBIndex($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+function dbDropIndex($db,$indexname,$tablename=''){
+	return dbFunctionCall('dropDBIndex',$db,$indexname,$tablename);
 }
 //---------- begin function dbDropTable
 /**
@@ -694,66 +336,7 @@ function dbDropIndex($db,$params=array()){
 * @usage $ok=dbDropTable($db,'comments',1);
 */
 function dbDropTable($db,$table,$meta=1){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlDropDBTable($table,$meta);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleDropDBTable($table,$meta);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlDropDBTable($table,$meta);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaDropDBTable($table,$meta);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcDropDBTable($table,$meta);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeDropDBTable($table,$meta);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteDropDBTable($table,$meta);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return dropDBTable($table,$meta);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('dropDBTable',$db,$table,$meta);
 }
 //---------- begin function dbEditRecord
 /**
@@ -771,65 +354,7 @@ function dbDropTable($db,$table,$meta=1){
 * @usage $id=dbEditRecord($db,array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
 function dbEditRecord($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlEditDBRecord($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleEditDBRecord($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlEditDBRecord($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaEditDBRecord($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcEditDBRecord($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeEditDBRecord($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteEditDBRecord($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return editDBRecord($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('editDBRecord',$db,$params);
 }
 //---------- begin function dbEditRecordById
 /**
@@ -842,66 +367,7 @@ function dbEditRecord($db,$params=array()){
 * @usage $ok=dbEditRecordById($db,'comments',7,array('name'=>'bob'));
 */
 function dbEditRecordById($db,$table='',$id=0,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlEditDBRecordById($table,$id,$params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleEditDBRecordById($table,$id,$params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlEditDBRecordById($table,$id,$params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaEditDBRecordById($table,$id,$params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcEditDBRecordById($table,$id,$params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeEditDBRecordById($table,$id,$params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteEditDBRecordById($table,$id,$params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return editDBRecordById($table,$id,$params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('editDBRecordById',$db,$table,$id,$params);
 }
 //---------- begin function dbExecuteSQL
 /**
@@ -914,70 +380,7 @@ function dbEditRecordById($db,$table='',$id=0,$params=array()){
 *	$recs=dbExecuteSQL('pg_local',"truncate table test");
 */
 function dbExecuteSQL($db,$sql,$return_error=1){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlExecuteSQL($sql,$return_error);
-			//echo printValue($tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleExecuteSQL($sql);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlExecuteSQL($sql);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaExecuteSQL($sql);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcExecuteSQL($sql);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeExecuteSQL($sql);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteExecuteSQL($sql);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeExecuteSQL($sql);
-		break;
-		default:
-			return executeSQL($sql);
-		break;
-	}
-	return 0;
+	return dbFunctionCall('executeSQL',$db,$sql,$return_error);
 }
 //---------- begin function dbGetCount
 /**
@@ -988,71 +391,29 @@ function dbExecuteSQL($db,$sql,$return_error=1){
 *	$recs=dbGetCount('pg_local',array('-table'=>'states','country'=>'US'));
 */
 function dbGetCount($db,$params){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBCount($params);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBCount($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBCount($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBCount($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBCount($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBCount($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBCount($params);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBCount($params);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return getDBCount($params);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBCount',$db,$params);
+}
+//---------- begin function dbGetProcedureText
+/**
+* @describe returns sql to create the specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - name of table to alter
+* @return string
+* @usage $createsql=dbGetTableDDL($db,$table);
+*/
+function dbGetProcedureText($db,$name,$type,$schema=''){
+	return dbFunctionCall('getProcedureText',$db,$name,$type,$schema);
+}
+//---------- begin function dbGetTableDDL
+/**
+* @describe returns sql to create the specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - name of table to alter
+* @return string
+* @usage $createsql=dbGetTableDDL($db,$table);
+*/
+function dbGetTableDDL($db,$table){
+	return dbFunctionCall('getTableDDL',$db,$table);
 }
 //---------- begin function dbGetTableIndexes
 /**
@@ -1063,71 +424,7 @@ function dbGetCount($db,$params){
 * @usage $recs=dbGetTableIndexes($db,$table);
 */
 function dbGetTableIndexes($db,$table){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBTableIndexes($table);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBTableIndexes($table);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBTableIndexes($table);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBTableIndexes($table);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBTableIndexes($table);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBTableIndexes($table);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBTableIndexes($table);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBTableIndexes($table);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return getDBIndexes($table);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBTableIndexes',$db,$table);
 }
 //---------- begin function dbGetTablePrimaryKeys
 /**
@@ -1138,71 +435,7 @@ function dbGetTableIndexes($db,$table){
 * @usage $fields=dbGetTablePrimaryKeys($db,$table);
 */
 function dbGetTablePrimaryKeys($db,$table,$meta=1){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBTablePrimaryKeys($table);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBTablePrimaryKeys($table);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBTablePrimaryKeys($table);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBTablePrimaryKeys($table);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBTablePrimaryKeys($table);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBTablePrimaryKeys($table);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBTablePrimaryKeys($table);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBTablePrimaryKeys($table);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return getDBTablePrimaryKeys($table);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBTablePrimaryKeys',$db,$table,$meta);
 }
 //---------- begin function dbGetRecord
 /**
@@ -1231,71 +464,7 @@ function dbGetRecord($db,$params){
 * @usage $rec=dbGetRecordById($db,'comments',7);
 */
 function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBRecordById($table,$id,$relate,$fields);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return getDBRecordById($table, $id, $relate, $fields);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBRecordById',$db,$table,$id,$relate,$fields);
 }
 //---------- begin function dbNamedQuery
 /**
@@ -1307,105 +476,44 @@ function dbGetRecordById($db,$table='',$id=0,$relate=1,$fields=''){
 *	$query=dbNamedQuery($db,'functions');
 */
 function dbNamedQuery($db,$name){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlNamedQuery($name);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleNamedQuery($name);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlNamedQuery($name);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaNamedQuery($name);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcNamedQuery($name);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeNamedQuery($name);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteNamedQuery($name);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeNamedQuery($name);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return mysqlNamedQuery($name);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('namedQuery',$db,$name);
 }
-//---------- begin function delDBRecordById--------------------
+
+
+function dbGetAllProcedures($db){
+	return dbFunctionCall('getAllProcedures',$db);
+}
+//---------- begin function dbGetAllTableFields
 /**
-* @describe deletes a record with said id in said table
-* @param table string - tablename
-* @param id mixed - record ID of record or a comma separated list of ids
-* @return boolean
-* @usage $ok=delDBRecordById('comments',7,array('name'=>'bob'));
+* @describe returns fields of all tables with the table name as the index
+* @param db string - database name as specified in the database section of config.xml
+* @return array
+* @usage
+*	$tfields=dbGetAllTableFields('pg_local');
 */
-function delDBRecordById($table='',$id=0){
-	if(!strlen($table)){
-		return debugValue("delDBRecordById Error: No Table");
-	}
-	//allow id to be a number or a set of numbers
-	$ids=array();
-	if(is_array($id)){
-		foreach($id as $i){
-			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
-		}
-	}
-	else{
-		$id=preg_split('/[\,\:]+/',$id);
-		foreach($id as $i){
-			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
-		}
-	}
-	if(!count($ids)){return debugValue("delDBRecordById Error: invalid ID(s)");}
-	$idstr=implode(',',$ids);
-	$params=array();
-	$params['-table']=$table;
-	$params['-where']="_id in ({$idstr})";
-	$recopts=array('-table'=>$table,'_id'=>$id);
-	return delDBRecord($params);
+function dbGetAllTableFields($db){
+	return dbFunctionCall('getAllTableFields',$db);
 }
+//---------- begin function dbGetAllTableIndexes
+/**
+* @describe returns indexes of all tables with the table name as the index
+* @param db string - database name as specified in the database section of config.xml
+* @return array
+* @usage
+*	$tindexes=dbGetAllTableIndexes('pg_local');
+*/
+function dbGetAllTableIndexes($db,$schema=''){
+	return dbFunctionCall('getAllTableIndexes',$db,$schema);
+}
+//---------- begin function dbGetTableFields
+/**
+* @describe returns fields of specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - table (and possibly schema) name
+* @return array recordsets
+* @usage
+*	$recs=dbGetTableFields('pg_local');
+*/
 //---------- begin function dbGetRecords
 /**
 * @describe returns an records set from a database
@@ -1418,312 +526,18 @@ function delDBRecordById($table='',$id=0){
 *	$recs=dbGetRecords('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
 function dbGetRecords($db,$params){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	$recs=array();
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			$recs=postgresqlGetDBRecords($params);
-			//echo printValue($tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			$recs=oracleGetDBRecords($params);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			$recs=mssqlGetDBRecords($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$recs=hanaGetDBRecords($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			$recs=odbcGetDBRecords($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			$recs=snowflakeGetDBRecords($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			$recs=sqliteGetDBRecords($params);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			$recs=ctreeGetDBRecords($params);
-		break;
-		default:
-			loadExtras('mysql');
-			$dbh_mysql='';
-			$recs=mysqlGetDBRecords($params);
-		break;
-	}
-	//check for single ref cursor that returns a table
-	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
-		foreach($recs[0] as $k=>$v){
-			if(is_array($v)){
-				$recs=$v;
-				break;
-			}
-		}
-	}
-	return $recs;
+	return dbFunctionCall('getDBRecords',$db,$params);
 }
-//---------- begin function dbGetAllTableFields
+//---------- begin function dbGetAllProcedures
 /**
 * @describe returns fields of all tables with the table name as the index
 * @param db string - database name as specified in the database section of config.xml
 * @return array
 * @usage
-*	$tfields=dbGetAllTableFields('pg_local');
-*/
-function dbGetAllTableFields($db){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	//echo printValue($_REQUEST).printValue($DATABASE);exit;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetAllTableFields();
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetAllTableFields();
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetAllTableFields();
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetAllTableFields();
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetAllTableFields();
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetAllTableFields();
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetAllTableFields();
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetAllTableFields();
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			$dbh_mysql='';
-			return mysqlGetAllTableFields();
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
-}
-//---------- begin function dbGetAllTableIndexes
-/**
-* @describe returns indexes of all tables with the table name as the index
-* @param db string - database name as specified in the database section of config.xml
-* @return array
-* @usage
-*	$tindexes=dbGetAllTableIndexes('pg_local');
-*/
-function dbGetAllTableIndexes($db,$schema=''){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	//echo printValue($_REQUEST).printValue($DATABASE);exit;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetAllTableIndexes($schema);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetAllTableIndexes($schema);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetAllTableIndexes($schema);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetAllTableIndexes($schema);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetAllTableIndexes($schema);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetAllTableIndexes($schema);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetAllTableIndexes($schema);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetAllTableIndexes($schema);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			$dbh_mysql='';
-			return mysqlGetAllTableIndexes($schema);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
-}
-//---------- begin function dbGetTableFields
-/**
-* @describe returns fields of specified table
-* @param db string - database name as specified in the database section of config.xml
-* @param table string - table (and possibly schema) name
-* @return array recordsets
-* @usage
-*	$recs=dbGetTableFields('pg_local');
+*	$procedures=dbGetAllProcedures('pg_local');
 */
 function dbGetTableFields($db,$table){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	//echo printValue($_REQUEST).printValue($DATABASE);exit;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBFieldInfo($table);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBFieldInfo($table);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBFieldInfo($table);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBFieldInfo($table);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBFieldInfo($table);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBFieldInfo($table);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBFieldInfo($table);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBFieldInfo($table);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return mysqlGetDBFieldInfo($table);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBFieldInfo',$db,$table);
 }
 //---------- begin function dbGetTables
 /**
@@ -1734,73 +548,7 @@ function dbGetTableFields($db,$table){
 *	$recs=dbGetTables('pg_local');
 */
 function dbGetTables($db){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGetDBTables();
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGetDBTables();
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGetDBTables();
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGetDBTables();
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGetDBTables();
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGetDBTables();
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGetDBTables();
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeGetDBTables();
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			$dbh_mysql='';
-			return mysqlGetDBTables();
-			return getDBTables();
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('getDBTables',$db);
 }
 //---------- begin function dbGrep
 /**
@@ -1812,66 +560,7 @@ function dbGetTables($db){
 * @usage $results=dbGrep($db,'searchstring');
 */
 function dbGrep($db,$search,$tables=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlGrepDBTables($search,$tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleGrepDBTables($search,$tables);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlGrepDBTables($search,$tables);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaGrepDBTables($search,$tables);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcGrepDBTables($search,$tables);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeGrepDBTables($search,$tables);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteGrepDBTables($search,$tables);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return grepDBTables($search, $tables);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+	return dbFunctionCall('grepDBTables',$db,$search,$tables);
 }
 //---------- begin function dbIsTable
 /**
@@ -1882,72 +571,8 @@ function dbGrep($db,$search,$tables=array()){
 * @return boolean
 * @usage if(dbIsTable($db,'_users')){...}
 */
-function dbIsTable($db,$search,$tables=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			return postgresqlIsDBTable($table);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			return oracleIsDBTable($table);
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			return mssqlIsDBTable($table);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			return hanaIsDBTable($table);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			return odbcIsDBTable($table);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			return snowflakeIsDBTable($table);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			return sqliteIsDBTable($table);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			return ctreeIsDBTable($table);
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-			return isDBTable($table);
-		break;
-	}
-	return "Invalid dbtype: {$db['dbtype']}";
+function dbIsTable($db,$table=''){
+	return dbFunctionCall('isDBTable',$db,$table);
 }
 //---------- begin function dbListRecords
 /**
@@ -1960,78 +585,7 @@ function dbIsTable($db,$search,$tables=array()){
 *	$rec=dbListRecords('pg_local',array('-table'=>'notes','_id'=>4545));
 */
 function dbListRecords($db,$params){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			//echo "before loading postgres";exit;
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			$params['-database']='postgresql';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			$params['-database']='oracle';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			$params['-database']='mssql';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$params['-database']='hana';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			$params['-database']='odbc';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			$params['-database']='snowflake';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			$params['-database']='sqlite';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			$params['-database']='ctree';
-			$params['-db']=$CONFIG['db'];
-		break;
-		case 'mysql':
-		case 'mysqli':
-			loadExtras('mysql');
-		break;
-	}
-	return databaseListRecords($params);
+	return dbFunctionCall('listRecords',$db,$params);
 }
 //---------- begin function dbQueryResults
 /**
@@ -2044,160 +598,17 @@ function dbListRecords($db,$params){
 *	$recs=dbQueryResults('pg_local',$query);
 *	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
-function dbQueryResults($db,$query,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	$recs=array();
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			$recs=postgresqlQueryResults($query,$params);
-			//echo printValue($tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			$recs=oracleQueryResults($query,$params);
-
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			$recs=mssqlQueryResults($query,$params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$recs=hanaQueryResults($query,$params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			$recs=odbcQueryResults($query,$params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			$recs=snowflakeQueryResults($query,$params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			$recs=sqliteQueryResults($query,$params);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			$recs=ctreeQueryResults($query,$params);
-		break;
-		default:
-			$recs=getDBRecords($query,$params);
-		break;
-	}
-	//check for single ref cursor that returns a table
-	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
-		foreach($recs[0] as $k=>$v){
-			if(is_array($v)){
-				$recs=$v;
-				break;
-			}
-		}
-	}
-	return $recs;
-}
-//---------- begin function dbQueryResults
+//---------- begin function dbOptimizations
 /**
-* @describe returns an records set from a database
+* @describe returns a list of items to consider when optimizing the db
 * @param db string - database name as specified in the database section of config.xml
-* @param query string - SQL query
-
+* @param params array - params
 * @return array recordsets
 * @usage
-*	$recs=dbQueryResults('pg_local',$query);
-*	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
+*	$recs=dbOptimizations('pg_local');
 */
 function dbOptimizations($db,$params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $dbh_postgres;
-	global $dbh_oracle;
-	global $dbh_mssql;
-	global $dbh_hana;
-	global $dbh_odbc;
-	global $dbh_snowflake;
-	global $dbh_sqlite;
-	global $dbh_ctree;
-	$db=strtolower(trim($db));
-	if(!isset($DATABASE[$db])){
-		return "Invalid db: {$db}";
-	}
-	$CONFIG['db']=$db;
-	$recs=array();
-	switch(strtolower($DATABASE[$db]['dbtype'])){
-		case 'postgresql':
-		case 'postgres':
-			loadExtras('postgresql');
-			$dbh_postgres='';
-			$recs=postgresqlOptimizations($params);
-			//echo printValue($tables);
-		break;
-		case 'oracle':
-			loadExtras('oracle');
-			$dbh_oracle='';
-			$recs=oracleOptimizations($params);
-
-		break;
-		case 'mssql':
-			loadExtras('mssql');
-			$dbh_mssql='';
-			$recs=mssqlOptimizations($params);
-		break;
-		case 'hana':
-			loadExtras('hana');
-			$dbh_hana='';
-			$recs=hanaOptimizations($params);
-		break;
-		case 'odbc':
-			loadExtras('odbc');
-			$dbh_odbc='';
-			$recs=odbcOptimizations($params);
-		break;
-		case 'snowflake':
-			loadExtras('snowflake');
-			$dbh_snowflake='';
-			$recs=snowflakeOptimizations($params);
-		break;
-		case 'sqlite':
-			loadExtras('sqlite');
-			$dbh_sqlite='';
-			$recs=sqliteOptimizations($params);
-		break;
-		case 'ctree':
-			loadExtras('ctree');
-			$dbh_ctree='';
-			$recs=ctreeOptimizations($params);
-		break;
-		default:
-			loadExtras('mysql');
-			$dbh_mysql='';
-			$recs=mysqlOptimizations($params);
-		break;
-	}
+	$recs=dbFunctionCall('optimizations',$db,$params);
 	//check for single ref cursor that returns a table
 	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
 		foreach($recs[0] as $k=>$v){
@@ -2209,10 +620,19 @@ function dbOptimizations($db,$params=array()){
 	}
 	return $recs;
 }
-
-
-
-
+function dbQueryResults($db,$query,$params=array()){
+	$recs=dbFunctionCall('queryResults',$db,$query,$params);
+	//check for single ref cursor that returns a table
+	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
+		foreach($recs[0] as $k=>$v){
+			if(is_array($v)){
+				$recs=$v;
+				break;
+			}
+		}
+	}
+	return $recs;
+}
 
 
 //---------- begin function databaseListRecords
@@ -2220,6 +640,7 @@ function dbOptimizations($db,$params=array()){
 * @describe returns an html table of records
 * @param params array - requires either -list or -table or a raw query instead of params
 *	[-list] array - getDBRecords array to use
+*	[-csv] file - csv file to load 
 *	[-table] string - table name.  Use this with other field/value params to filter the results
 *	[-tableheight] string - sets max height of table (i.e 80vh)
 *	[-table{class|style|id|...}] string - sets specified attribute on table
@@ -2349,6 +770,17 @@ function databaseListRecords($params=array()){
 			return $efile;
 		}
 	}
+	elseif(isset($params['-csv'])){
+		$allfields=1;
+		$params['-list']=$recs=getCSVRecords($params['-csv']);
+		//strip tags
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				$recs[$i][$k]=encodeHtml($v);
+			}
+		}
+		//echo printValue($params['-list']);
+	}
 	//check for translate
 	$translate=0;
 	if(isset($params['-translate'])){$translate=1;}
@@ -2416,7 +848,7 @@ function databaseListRecords($params=array()){
 		}
 		unset($params['-query']);
 	}
-	if(empty($params['-table']) && empty($params['-list'])){
+	if(empty($params['-table']) && empty($params['-list']) && empty($params['-csv'])){
 		if(!empty($params[0])){
 			//they are passing in the list without any other params.
 			$params=array('-list'=>$params);
@@ -2915,13 +1347,20 @@ function databaseListRecords($params=array()){
 		$afield=$params['-anchormap'];
 		foreach($params['-list'] as $rec){
 			if(!isset($rec[$afield]) || !strlen($rec[$afield])){continue;}
-			$ch=strtoupper(substr(ltrim($rec[$afield]),0,1));
+			if(isset($params['-anchormap_full'])){
+				$ch=trim(removeHtml($rec[$afield]));	
+			}
+			else{
+				$ch=strtoupper(substr(trim(removeHtml($rec[$afield])),0,1));
+			}
+			if(!strlen($ch) || $ch=='-'){continue;}
 			if(!in_array($ch,$anchor_values)){
 				$anchor_values[]=$ch;
 			}
 		}
 		if(count($anchor_values)){
-			$rtn .= '<div style="display: flex;flex-direction: row;justify-content: space-between;padding:3px 5px;border-right:1px solid #ccc;border-top:1px solid #ccc;border-left:1px solid #ccc;">'.PHP_EOL;
+			sort($anchor_values);
+			$rtn .= '<div style="display: flex;flex-direction: row;align-items:center;justify-content: space-between;padding:3px 10px;border:1px solid #ccc;">'.PHP_EOL;
 			if(!empty($params[$afield."_displayname"])){
 				$name=$params[$afield."_displayname"];
 			}
@@ -2930,7 +1369,7 @@ function databaseListRecords($params=array()){
 			}
 			$rtn .= '<span class="w_bold">'.$name.': </span>';
 			foreach($anchor_values as $v){
-				$rtn .= '	<a class="w_link" href="#anchormap_'.$v.'">'.$v.'</a>'.PHP_EOL;
+				$rtn .= '	<a class="w_link w_gray" href="#anchormap_'.$v.'">'.$v.'</a>'.PHP_EOL;
 			}
 			$rtn .= '</div>'.PHP_EOL;
 		}
@@ -3428,7 +1867,13 @@ function databaseListRecords($params=array()){
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>';
 			if(isset($params['-anchormap']) && $fld==$params['-anchormap']){
-				$ch=strtoupper(substr(trim(removeHtml($value)),0,1)); 
+				if(isset($params['-anchormap_full'])){
+					$ch=trim(removeHtml($value));	
+				}
+				else{
+					$ch=strtoupper(substr(trim(removeHtml($value)),0,1));
+				}
+				 
 				if($ch==$anchor_values[0]){
 					$ch=array_shift($anchor_values);
 					$rtn .= '<a name="anchormap_'.$ch.'"></a>';
@@ -3853,6 +2298,39 @@ function checkDBTables($tables=array()){
 		$recs[]=$rec;
 	}
 	return $recs;
+}
+//---------- begin function delDBRecordById--------------------
+/**
+* @describe deletes a record with said id in said table
+* @param table string - tablename
+* @param id mixed - record ID of record or a comma separated list of ids
+* @return boolean
+* @usage $ok=delDBRecordById('comments',7,array('name'=>'bob'));
+*/
+function delDBRecordById($table='',$id=0){
+	if(!strlen($table)){
+		return debugValue("delDBRecordById Error: No Table");
+	}
+	//allow id to be a number or a set of numbers
+	$ids=array();
+	if(is_array($id)){
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	else{
+		$id=preg_split('/[\,\:]+/',$id);
+		foreach($id as $i){
+			if(isNum($i) && !in_array($i,$ids)){$ids[]=$i;}
+		}
+	}
+	if(!count($ids)){return debugValue("delDBRecordById Error: invalid ID(s)");}
+	$idstr=implode(',',$ids);
+	$params=array();
+	$params['-table']=$table;
+	$params['-where']="_id in ({$idstr})";
+	$recopts=array('-table'=>$table,'_id'=>$id);
+	return delDBRecord($params);
 }
 //---------- begin function checkDBTableSchema
 /**
@@ -4669,11 +3147,6 @@ function addDBHistory($action,$table,$where){
 * 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
 */
 function addDBIndex($params=array()){
-	if(isPostgreSQL()){return postgresqlAddDBIndex($params);}
-	elseif(isSqlite()){return sqliteAddDBIndex($params);}
-	elseif(isOracle()){return oracleAddDBIndex($params);}
-	elseif(isMssql()){return mssqlAddDBIndex($params);}
-
 	if(!isset($params['-table'])){return 'addDBIndex Error: No table';}
 	if(!isset($params['-fields'])){return 'addDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
@@ -4700,21 +3173,21 @@ function addDBIndex($params=array()){
 //---------- begin function dropDBIndex--------------------
 /**
 * @describe drop an index previously created
-* @param params array
-*	-table
-*	-name
+* @param indexname string
+* @param tablename string
 * @return boolean
-* @usage $ok=addDBIndex(array('-table'=>$table,'-name'=>"myindex"));
+* @usage $ok=dropDBIndex($indexname,$tablename);
 */
-function dropDBIndex($params=array()){
-	if(isPostgreSQL()){return postgresqlDropDBIndex($params);}
-	elseif(isSqlite()){return sqliteDropDBIndex($params);}
-	elseif(isOracle()){return oracleDropDBIndex($params);}
-	elseif(isMssql()){return mssqlDropDBIndex($params);}
-	if(!isset($params['-table'])){return 'dropDBIndex Error: No table';}
-	if(!isset($params['-name'])){return 'dropDBIndex Error: No name';}
+function dropDBIndex($indexname,$tablename){
+	//backward compatible...
+	if(is_array($indexname) && isset($indexname['-table'])){
+		$tablename=$indexname['-table'];
+		$indexname=$indexname['-name'];
+	}
+	if(!strlen($indexname)){return 'dropDBIndex Error: No indexname';}
+	if(!strlen($tablename)){return 'dropDBIndex Error: No tablename';}
 	//build and execute
-	$query="alter table {$params['-table']} drop index {$params['-name']}";
+	$query="alter table {$tablename} drop index {$indexname}";
 	return executeSQL($query);
 }
 //---------- begin function addEditDBForm--------------------
@@ -6049,6 +4522,7 @@ function createDBTable($table='',$fields=array(),$engine=''){
     $query=preg_replace('/\,$/','',$query);
     $query .= ")";
     if(strlen($engine) && (isMysql() || isMysqli())){$query .= " ENGINE = {$engine}";}
+    //echo $query.'<hr><hr>'.PHP_EOL;
 	$query_result=@databaseQuery($query);
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
@@ -8393,7 +6867,7 @@ function getDBFieldTag($params=array()){
 		case 'datetime':
 			$name=$info[$field]['name'];
 			//date part
-			$tagopts=array();
+			$tagopts=$info[$field];
 			//check for value
 			if(isset($params['-value'])){$tagopts['-value']=$params['-value'];}
 			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
@@ -8550,14 +7024,16 @@ function getDBFieldTag($params=array()){
 			$tag .= buildOnLoad("wacss.init();");
 			break;
 		case 'time':
-			$tagopts=array();
+			$tagopts=$info[$field];
 			//check for value
 			if(isset($params['-value'])){$tagopts['-value']=$params['-value'];}
 			elseif(isset($params[$field])){$tagopts['-value']=$params[$field];}
 			elseif(isset($info[$field]['value'])){$tagopts['-value']=$info[$field]['value'];}
 			elseif(isset($_REQUEST[$field])){$tagopts['-value']=$_REQUEST[$field];}
-			//set prefix to formname
-			if(isset($params['-formname'])){$tagopts['-prefix']=$params['-formname'];}
+			//style
+			if(isset($info[$field]['style'])){
+				$tagopts['style']=$info[$field]['style'];
+			}
 			//check for required
 			if(isset($info[$field]['_required']) && $info[$field]['_required'] ==1){
 				$tagopts['-required']=1;
@@ -9397,6 +7873,9 @@ function getDBFormRecords($params=array()){
 * @return array
 * @usage $indexes=getDBIndexes(array('note'));
 */
+function getDBTableIndexes($table){
+	return getDBIndexes($table);
+}
 function getDBIndexes($tables=array(),$dbname=''){
 	if(!is_array($tables)){$tables=array($tables);}
 	$indexes=array();

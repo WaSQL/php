@@ -5,6 +5,27 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+//---------- begin function sqliteGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=sqliteGetTableDDL('sample');
+*/
+function sqliteGetTableDDL($table,$schema=''){
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT sql
+		FROM sqlite_master
+		WHERE name='{$table}'
+ENDOFQUERY;
+	$recs=sqliteQueryResults($query);
+	if(isset($recs[0]['sql'])){
+		return $recs[0]['sql'];
+	}
+	return $recs;
+}
 //---------- begin function sqliteGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index

@@ -524,6 +524,7 @@ function debugValue($m,$name=''){
 	$m=removeHtml($m);
 	$m=preg_replace('/\>/ism','',$m);
 	$m=trim($m);
+	$_SESSION['debugValue_lastm']=$m;
 	if($_SESSION['debugValue']==1){
 		if(!isset($_SERVER['WaSQL_DebugValue_Cnt'])){$_SERVER['WaSQL_DebugValue_Cnt']=1;}
 		else{$_SERVER['WaSQL_DebugValue_Cnt']+=1;}

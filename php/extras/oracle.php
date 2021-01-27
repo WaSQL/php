@@ -12,7 +12,140 @@ ini_set('oci8.persistent_timeout',-1);
 ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
+//---------- begin function oracleGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=oracleGetTableDDL('sample');
+*/
+function oracleGetTableDDL($table,$schema=''){
+	$table=strtoupper($table);
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+		SELECT 
+			DBMS_METADATA.GET_DDL('TABLE','{$table}','{$schema}') as ddl 
+		FROM DUAL
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	//echo $query.printValue($recs);exit;
+	if(isset($recs[0]['ddl'])){
+		return $recs[0]['ddl'];
+	}
+	return $recs;
+}
+//---------- begin function oracleGetProcedureText ----------
+/**
+* @describe returns procedure text
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $txt=oracleGetProcedureText('sample');
+*/
+function oracleGetProcedureText($name='',$type='',$schema=''){
+	$table=strtoupper($table);
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+		select text
+		from all_source
+		where 
+			owner='{$schema}'
+			and name='{$name}'
+			and type='{$type}'
+		order by line
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	$lines=array();
+	foreach($recs as $rec){
+		$lines[]=trim($rec['text']);
+	}
+	return $lines;
+}
+//---------- begin function oracleGetAllProcedures ----------
+/**
+* @describe returns all procedures in said schema
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allprocedures=oracleGetAllProcedures();
+*/
+function oracleGetAllProcedures($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleGetAllProcedures');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetAllProcedures error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$schema=strtoupper($schema);
+	//get source
+	$query=<<<ENDOFQUERY
+	select name,type,sum(ora_hash(text)) as hash
+	from all_source
+	where owner='{$schema}'
+	group by owner,name,type
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	$hashes=array();
+	foreach($recs as $rec){
+		$key=$rec['name'].$rec['type'];
+		$hashes[$key]=$rec['hash'];
+	}
+	$query=<<<ENDOFQUERY
+	SELECT 
+    ap.object_name
+    ,ap.object_type
+    ,ap.overload
+    ,listagg(aa.argument_name,', ') within group (ORDER BY aa.position) args
+FROM all_procedures ap
+   LEFT OUTER JOIN all_arguments aa
+      on aa.object_name=ap.object_name
+         and nvl(aa.overload,0)=nvl(ap.overload,0)
+         and aa.owner=ap.owner
+WHERE
+	ap.owner='{$schema}'
+GROUP BY 
+	ap.object_name
+    ,ap.object_type
+    ,ap.overload
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
 
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>';
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$key=$rec['object_name'].$rec['object_type'];
+		if(isset($hashes[$key])){
+			$rec['hash']=$hashes[$key];
+		}
+		else{
+			$rec['hash']='';
+		}
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function oracleGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
@@ -36,24 +169,158 @@ function oracleGetAllTableFields($schema=''){
 	}
 	$schema=strtoupper($schema);
 	$query=<<<ENDOFQUERY
-		SELECT
-			table_name as table_name,
-			column_name as field_name,
-			data_type as type_name
-		FROM all_tab_cols
-		WHERE
-			owner='{$schema}'
-		ORDER BY table_name,column_name
+		SELECT table_name,column_name field_name,
+        DECODE (data_type,
+                'LONG',       'LONG',
+                'LONG RAW',   'LONG RAW',
+                'RAW',        'RAW',
+                'DATE',       'DATE',
+                'CHAR',       'CHAR' || '(' || data_length || ')',
+                'VARCHAR2',   'VARCHAR2' || '(' || data_length || ')',
+                'NUMBER',     'NUMBER' ||
+                DECODE (NVL(data_precision,0),0, ' ',' (' || data_precision ||
+                DECODE (NVL(data_scale, 0),0, ') ',',' || DATA_SCALE || ')'))) ||
+        DECODE (NULLABLE,'N', ' NOT NULL','') type_name
+   		FROM all_tab_cols
+  		WHERE owner='{$schema}'
+  		and table_name in (select table_name from all_tables)
+    	ORDER BY table_name,column_id,column_name
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
 	$databaseCache[$cachekey]=array();
 	foreach($recs as $rec){
 		$table=strtolower($rec['table_name']);
-		$field=strtolower($rec['field_name']);
-		$type=strtolower($rec['type_name']);
+		//$field=strtolower($rec['field_name']);
+		//$type=strtolower($rec['type_name']);
 		$databaseCache[$cachekey][$table][]=$rec;
 	}
 	return $databaseCache[$cachekey];
+}
+/*
+ALTER TABLE table_name 
+ADD (
+    column_name_1 data_type constraint,
+    column_name_2 data_type constraint,
+    ...
+);
+
+*/
+function oracleAlterDBTable($table,$fields=array(),$maintain_order=1){
+	$info=oracleGetDBFieldInfo($table);
+	if(!is_array($info) || !count($info)){
+		debugValue("oracleAlterDBTable - {$table} is missing or has no fields".printValue($table));
+		return false;
+	}
+	$rtn=array();
+	//$rtn[]=$info;
+	$addfields=array();
+	foreach($fields as $name=>$type){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
+		$addfields[]="{$name} {$type}";
+	}
+	$dropfields=array();
+	foreach($info as $name=>$finfo){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
+			$dropfields[]=$name;
+		}
+	}
+	if(count($dropfields)){
+		$fieldstr=implode(', ',$dropfields);
+		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$ok=oracleExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if(count($addfields)){
+		$fieldstr=implode(', ',$addfields);
+		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$ok=oracleExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if($maintain_order==1){
+		/* In 12c you can make use of the fact that columns which are set from invisible to visible are displayed as the last column of the table */
+		$mfields=array_keys($fields);
+		$first=array_shift($mfields);
+		//set them all to invisible
+		$ifields=array();
+		foreach($mfields as $field){
+			$ifields[]="{$field} invisible";
+		}
+		$ifieldstr=implode(', ',$ifields);
+		$query="ALTER TABLE {$table} MODIFY ({$ifieldstr})";
+		$ok=oracleExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+		//now make them visible
+		foreach($mfields as $field){
+			$query="ALTER TABLE {$table} MODIFY ({$field} visible)";
+			$ok=oracleExecuteSQL($query);
+			$rtn[]=$query;
+			$rtn[]=$ok;
+		}
+	}
+	return $rtn;
+}
+//---------- begin function oracleAddDBIndex--------------------
+/**
+* @describe add an index to a table
+* @param params array
+*	-table
+*	-fields
+*	[-fulltext]
+*	[-unique]
+*	[-name] name of the index
+* @return boolean
+* @link https://www.w3schools.com/sql/sql_ref_create_index.asp
+* @usage
+*	$ok=oracleAddDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
+* 	$ok=oracleAddDBIndex(array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
+*/
+function oracleAddDBIndex($params=array()){
+	if(!isset($params['-table'])){return 'oracleAddDBIndex Error: No table';}
+	if(!isset($params['-fields'])){return 'oracleAddDBIndex Error: No fields';}
+	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
+
+	//fulltext or unique
+	$fulltext=$params['-fulltext']?' FULLTEXT':'';
+	$unique=$params['-unique']?' UNIQUE':'';
+	//prefix
+	$prefix='';
+	if(strlen($unique)){$prefix .= 'U';}
+	if(strlen($fulltext)){$prefix .= 'F';}
+	$prefix.='IDX';
+	//name
+	$fieldstr=implode('_',$params['-fields']);
+	//index names cannot be longer than 64 chars long
+	if(strlen($fieldstr) > 60){
+    	$fieldstr=substr($fieldstr,0,60);
+	}
+	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
+	//build and execute
+	$fieldstr=strtolower(implode(", ",$params['-fields']));
+	$query="CREATE {$fulltext}{$unique} INDEX {$params['-name']} ON {$params['-table']} ({$fieldstr})";
+	$ok=oracleExecuteSQL($query);
+	return array($ok,$query);
+}
+//---------- begin function oracleDropDBIndex--------------------
+/**
+* @describe drop an index previously created
+* @param indexname string
+* @return boolean
+* @link https://www.w3schools.com/sql/sql_ref_drop_index.asp
+* @usage $ok=oracleDropDBIndex($indexname);
+*/
+function oracleDropDBIndex($indexname){
+	if(!strlen($indexname)){return 'oracleDropDBIndex Error: No indexname';}
+	//build and execute
+	$query="DROP INDEX {$indexname}";
+	$ok=oracleExecuteSQL($query);
+	return array($ok,$query);
 }
 //---------- begin function oracleGetAllTableIndexes ----------
 /**
@@ -83,14 +350,16 @@ function oracleGetAllTableIndexes($schema=''){
 		a.table_name,
        	a.index_name,
        	JSON_ARRAYAGG(b.column_name order by column_position RETURNING VARCHAR2(100)) as index_keys,
-       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique
+       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique,
+       	a.generated
 	FROM sys.all_indexes a
 		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
 	WHERE a.owner = '{$schema}'
 	GROUP BY 
 		a.table_name,
 	    a.index_name,
-	    case a.uniqueness when 'UNIQUE' then 1 else 0 end
+	    case a.uniqueness when 'UNIQUE' then 1 else 0 end,
+	    generated
 	ORDER BY 1,2
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -1587,6 +1856,7 @@ function oracleParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	if(!is_array($params)){$params=array();}
 	if(!isset($CONFIG['db']) && isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
@@ -1617,7 +1887,7 @@ function oracleParseConnectParams($params=array()){
 			$params['-dbuser']=$CONFIG['oracle_dbuser'];
 			$params['-dbuser_source']="CONFIG oracle_dbuser";
 		}
-		else{return 'oracleParseConnectParams Error: No dbuser set';}
+		else{return "oracleParseConnectParams Error: No dbuser set. DB:{$CONFIG['db']}";}
 	}
 	else{
 		$params['-dbuser_source']="passed in";
@@ -1661,15 +1931,18 @@ function oracleParseConnectParams($params=array()){
 			elseif(isset($CONFIG['protocol_oracle'])){$tcp=$CONFIG['protocol_oracle'];}
 			$port='1521';
 			if(isset($params['-port'])){$port=$params['-port'];}
+			elseif(isset($params['-dbport'])){$port=$params['-dbport'];}
 			elseif(isset($CONFIG['oracle_port'])){$port=$CONFIG['oracle_port'];}
 			elseif(isset($CONFIG['port_oracle'])){$port=$CONFIG['port_oracle'];}
 			$connect_data='';
 			//sid - identify the Oracle8 database instance by its Oracle System Identifier (SID)
 			if(isset($params['-sid'])){$connect_data.="(SID={$params['-sid']})";}
+			elseif(isset($params['-dbsid'])){$connect_data.="(SID={$params['-dbsid']})";}
 			elseif(isset($CONFIG['oracle_sid'])){$connect_data.="(SID={$CONFIG['oracle_sid']})";}
 			elseif(isset($CONFIG['sid_oracle'])){$connect_data.="(SID={$CONFIG['sid_oracle']})";}
 			//service_name - identify the Oracle9i or Oracle8 database service to access
 			if(isset($params['-service_name'])){$connect_data.="(SERVICE_NAME={$params['-service_name']})";}
+			elseif(isset($params['-dbservice_name'])){$connect_data.="(SERVICE_NAME={$params['-dbservice_name']})";}
 			elseif(isset($CONFIG['oracle_service_name'])){$connect_data.="(SERVICE_NAME={$CONFIG['oracle_service_name']})";}
 			elseif(isset($CONFIG['service_name_oracle'])){$connect_data.="(SERVICE_NAME={$CONFIG['service_name_oracle']})";}
 			//instance_name - identify the database instance to access
@@ -1771,7 +2044,10 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	// check for non-select query
 	$start=microtime(true);
-	if(preg_match('/^(create|drop|grant|truncate|update|insert|alter)/is',trim($query))){
+	if(preg_match('/^(select|exec|with|explain|returning|show|call)/is',trim($query))){
+		$params['-lobs']=1;
+	}
+	elseif(preg_match('/^(create|drop|grant|truncate|update|insert|alter)/is',trim($query))){
 		$r = oci_execute($stid,OCI_COMMIT_ON_SUCCESS);
 		$e=oci_error($stid);
 		if(function_exists('logDBQuery')){

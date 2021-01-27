@@ -32,7 +32,7 @@
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){
 				case 'mssql':
-					$sql="select * from {$table} order by 1 desc limit 5";
+					$sql="select * from {$table} order by 1 offset 0 rows fetch next 5 rows only";
 				break;
 				case 'oracle':
 					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
@@ -52,6 +52,23 @@
 				break;
 			}
 			setView('monitor_sql',1);
+			return;
+		break;
+		case 'ddl':
+			$table=addslashes($_REQUEST['table']);
+			$db=$_REQUEST['db'];
+			$title="DDL for {$table}";
+			$parts=preg_split('/\./',$table,2);
+			if(count($parts)==2){
+				$content=dbGetTableDDL($db,$parts[1],$parts[0]);
+			}
+			else{
+				$content=dbGetTableDDL($db,$table);
+			}
+			if(is_array($content)){
+				$content=printValue($content);
+			}
+			setView('centerpop',1);
 			return;
 		break;
 		case 'monitor':

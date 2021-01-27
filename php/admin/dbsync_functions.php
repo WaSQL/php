@@ -1,10 +1,226 @@
 <?php
 loadExtras('translate');
-function dbsyncCompare($source,$target,$diffs=0){
+function dbsyncSyncIndexes($sync){
+	$recs=array();
+	//source
+	$source=array();
+	foreach($sync['source']['indexes'] as $rec){
+		$key=strtolower($rec['index_name']);
+		$source[$key]=$rec;
+	}
+	//target
+	$target=array();
+	foreach($sync['target']['indexes'] as $rec){
+		$key=strtolower($rec['index_name']);
+		$target[$key]=$rec;
+	}
+	//adds
+	$adds=array();
+	foreach($source as $key=>$rec){
+		if(!isset($target[$key])){
+			$adds[$key]=$rec;
+		}
+	}
+	//drops
+	$drops=array();
+	foreach($target as $key=>$rec){
+		if(!isset($source[$key])){
+			$drops[$key]=$rec;
+		}
+	}
+	//echo "Adds".printValue($adds)."Drops".printValue($drops);exit;
+	if(count($drops)){
+		foreach($drops as $name=>$rec){
+			$_SESSION['debugValue_lastm']='';
+			list($ok,$query)=dbDropIndex($sync['target']['name'],$name,$sync['table']);
+			if(strlen($_SESSION['debugValue_lastm'])){
+				$ok="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
+			}
+			$recs[]=array(
+				'action'=>"Drop index {$name}",
+				'query'=>$query,
+				'params'=>'',
+				'result'=>printValue($ok)
+			);
+		}
+	}
+	if(count($adds)){
+		foreach($adds as $name=>$rec){
+			$params=array(
+				'-table'=>$sync['table'],
+				'-name'=>$name,
+				'-fields'=>json_decode($rec['index_keys'],true)
+			);
+			if($rec['is_unique']==1){
+				$params['-unique']=true;
+			}
+			if($rec['is_fulltext']==1){
+				$params['-fulltext']=true;
+			}
+			$_SESSION['debugValue_lastm']='';
+			list($ok,$query)=dbAddIndex($sync['target']['name'],$params);
+			if(strlen($_SESSION['debugValue_lastm'])){
+				$ok="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
+			}
+			$recs[]=array(
+				'action'=>"Add index {$name} ",
+				'params'=>nl2br(json_encode($params,JSON_PRETTY_PRINT)),
+				'query'=>$query,
+				'result'=>printValue($ok)
+			);
+		}
+	}
+	
+	return $recs;
+}
+function dbsyncSyncFields($sync){
+	//echo printValue($sync);exit;
+	$rtn=array();
+	if($sync['schema']=='new'){
+		$ddl=dbGetTableDDL($sync['source']['name'],$sync['table']);
+		$ddl=trim($ddl);
+		//echo $ddl;exit;
+		if(!stringBeginsWith($ddl,'create')){
+			return $ddl;
+		}
+		$rtn['query']="<pre><xmp>{$ddl}</xmp></pre>";
+		$_SESSION['debugValue_lastm']='';
+		$rtn['result']=dbExecuteSQL($sync['target']['name'],$ddl);
+		if(strlen($_SESSION['debugValue_lastm'])){
+			$rtn['result']="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
+		}
+		//echo printValue($rtn);exit;
+	}
+	elseif($sync['schema']=='different'){
+		$fields=array();
+		foreach($sync['source']['fields'] as $rec){
+			$fields[$rec['field_name']]=$rec['type_name'];
+		}
+		$rtn['fields']=nl2br(json_encode($fields,JSON_PRETTY_PRINT));
+		$ok=dbAlterTable($sync['target']['name'],$sync['table'],$fields);
+		$rtn['result']=printValue($ok);	
+	}
+	return $rtn;
+}
+function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
+	$procedures=array(
+		'source'=>dbGetAllProcedures($source),
+		'target'=>dbGetAllProcedures($target),
+	);
+	if(!count($procedures['source'])){
+		return "Failed to get source functions from [{$source}]";
+	}
+	elseif(!count($procedures['target'])){
+		return "Failed to get target functions from [{$target}]";
+	}
+	$recs=array();
+	foreach($procedures['source'] as $procs){
+		foreach($procs as $proc){
+			$key=$proc['object_name'].$proc['object_type'].$proc['overload'];
+			$recs[$key]=$proc;
+			//schema
+			if(!isset($procedures['target'][$key])){
+				$recs[$key]['diff']='new';
+			}
+		}	
+	}
+	foreach($procedures['target'] as $procs){
+		foreach($procs as $proc){
+			$key=$proc['object_name'].$proc['object_type'].$proc['overload'];
+			if(!isset($recs[$key])){
+				$recs[$key]=array(
+					'object_name'=>$proc['object_name'],
+					'object_type'=>$proc['object_type'],
+					'overload'=>$proc['overload'],
+					'args'=>$proc['args'],
+					'diff'=>'missing',
+				);
+			}
+			elseif(sha1($recs[$key]['args']) != sha1($proc['args'])){
+				$proc['diff']='args';
+				$recs[$key]=$proc;
+			}
+			elseif($recs[$key]['hash'] != $proc['hash']){
+				$proc['diff']='content';
+				$recs[$key]=$proc;
+			}
+			else{
+				$proc['diff']='same';
+				$recs[$key]=$proc;
+			}
+			$cols=array();
+			$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+			$recs[$key]['status']='';
+			switch(strtolower($recs[$key]['diff'])){
+				case 'new':
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-plus" style="margin-right:5px;"></span><translate>New</translate></div>';
+				break;
+				case 'missing':
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-warning" style="margin-right:5px;"></span><translate>Missing in source</translate></div>';
+				break;
+				case 'args':
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-gear" style="margin-right:5px;"></span><translate>Arguements are different</translate></div>';
+				break;
+				case 'content':
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-file-txt" style="margin-right:5px;"></span><translate>Content is different</translate></div>';
+				break;
+				case 'same':
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-mark w_success" style="margin-right:5px;"></span><translate>Same</translate></div>';
+				break;
+			}
+			
+			if(count($cols)==1){
+				$recs[$key]['status'].=$cols[0];
+			}
+			else{
+				$recs[$key]['status'].='<div style="display:flex;flex-direction:row;flex-wrap:no-wrap; align-items:flex-end;justify-content:space-between;">';
+				$recs[$key]['status'].='<div>'.array_shift($cols).'</div>';
+				$recs[$key]['status'].='<div style="margin-left:10px;">'.implode(' ',$cols).'</div>';
+				$recs[$key]['status'].='</div>';
+			}
+		}
+	}
+	
+	if($diffs==1){
+		foreach($recs as $key=>$rec){	
+			if($recs[$key]['diff']=='same'){
+				unset($recs[$key]);
+			}
+		}
+	}
+	//return $diffs.printValue($recs);
+	$xrecs=array();
+	foreach($recs as $rec){$xrecs[]=$rec;}
+	$listopts=array(
+		'-list'=>$xrecs,
+		'-listfields'=>'object_name,object_type,overload,status',
+		'-tableclass'=>'table bordered striped is-sticky',
+		'-tableheight'=>'40vh',
+		'-hidesearch'=>1
+	);
+
+	return databaseListRecords($listopts);
+}
+function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	$tableindexes=array(
 		'source'=>dbGetAllTableIndexes($source),
 		'target'=>dbGetAllTableIndexes($target),
 	);
+	//remove any indexes that are auto-generated
+	foreach($tableindexes['source'] as $name=>$indexes){
+		foreach($indexes as $i=>$index){
+			if(in_array($index['generated'],array('Y',1))){
+				unset($tableindexes['source'][$name][$i]);
+			}
+		}
+	}
+	foreach($tableindexes['target'] as $name=>$indexes){
+		foreach($indexes as $i=>$index){
+			if(in_array($index['generated'],array('Y',1))){
+				unset($tableindexes['target'][$name][$i]);
+			}
+		}
+	}
 	$tablefields=array(
 		'source'=>dbGetAllTableFields($source),
 		'target'=>dbGetAllTableFields($target),
@@ -13,7 +229,7 @@ function dbsyncCompare($source,$target,$diffs=0){
 		return "Failed to get source tables from [{$source}]";
 	}
 	elseif(!count($tablefields['target'])){
-		return "Failed to get target tables from [{$targer}]";
+		return "Failed to get target tables from [{$target}]";
 	}
 	
 	$recs=array();
@@ -43,10 +259,12 @@ function dbsyncCompare($source,$target,$diffs=0){
 	//check schema fields for each table that is not new or missing
 	foreach($recs as $table=>$rec){
 		$recs[$table]['source']=array(
+			'name'=>$source,
 			'fields'=>$tablefields['source'][$table],
 			'indexes'=>$tableindexes['source'][$table]
 		);
 		$recs[$table]['target']=array(
+			'name'=>$target,
 			'fields'=>$tablefields['target'][$table],
 			'indexes'=>$tableindexes['target'][$table]
 		);
@@ -82,11 +300,12 @@ function dbsyncCompare($source,$target,$diffs=0){
 	}
 	if($diffs==1){
 		foreach($recs as $table=>$rec){	
-			if($recs[$table]['schema']=='same' && $recs[$table]['indexes']=='same'){
+			if($recs[$table]['schema']=='same' && in_array($recs[$table]['indexes'],array('same','none'))){
 				unset($recs[$table]);
 			}
 		}
 	}
+	//echo printValue($recs);exit;
 	$_SESSION['dbsync']=$recs;
 	//now to pretty up the messages
 	foreach($recs as $table=>$rec){	
@@ -161,8 +380,7 @@ function dbsyncCompare($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> Indexes ONLY exists in Source DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
-				
+				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
 			break;
 			case 'different':
 				$sfieldcount=count($tableindexes['source'][$table]);
@@ -178,7 +396,6 @@ function dbsyncCompare($source,$target,$diffs=0){
 				$cols[]=implode('<br />',$lines);
 				//push to target
 				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
-			
 			break;
 			case 'missing':
 				$fieldcount=count($tableindexes['target'][$table]);
@@ -206,13 +423,15 @@ function dbsyncCompare($source,$target,$diffs=0){
 		'-listfields'=>'table,schema,indexes',
 		//'-pretable'=>'<hr size="1" style="margin:0px;" />',
 		'-tableclass'=>'table bordered striped is-sticky',
-		'-tableheight'=>'80vh',
+		'-tableheight'=>'40vh',
 		'-hidesearch'=>1
 	);
 
 	return databaseListRecords($listopts);
 }
 function dbsyncDiff($srecs,$trecs){
+	if(!is_array($srecs)){$srecs=array();}
+	if(!is_array($trecs)){$trecs=array();}
 	$diffs=array();
 	if(is_array($srecs)){
 		foreach($srecs as $srec){
@@ -266,6 +485,7 @@ function dbsyncDiff($srecs,$trecs){
 	//echo printValue($blank).printValue($recs);exit;
 	return dbsyncShowDifferent($recs['source'],$recs['target']);
 }
+
 function dbsyncShowDifferent($source,$target){
 	$rtn='<div style="max-height:70vh;overflow:auto;"><table>';
 	$rtn.='<thead><tr><th>Source</th><th>Target</th></tr></thead>';

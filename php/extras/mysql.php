@@ -5,6 +5,23 @@
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
 */
+//---------- begin function mysqlGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=mysqlGetTableDDL('sample');
+*/
+function mysqlGetTableDDL($table,$schema=''){
+	$table=strtoupper($table);
+	$query="SHOW CREATE TABLE {$table}";
+	$recs=mysqlQueryResults($query);
+	if(isset($recs[0]['create_table'])){
+		return $recs[0]['create_table'];
+	}
+	return $recs;
+}
 //---------- begin function mysqlGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index

@@ -5,7 +5,33 @@
 		https://github.com/snowflakedb/pdo_snowflake
 
 */
-
+//---------- begin function snowflakeGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=snowflakeGetTableDDL('sample');
+*/
+function snowflakeGetTableDDL($table,$schema=''){
+	if(!strlen($schema)){
+		$schema=snowflakeGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('snowflakeGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT GET_DDL('table','{$schema}.{$table}') as ddl
+ENDOFQUERY;
+	$recs=snowflakeQueryResults($query);
+	if(isset($recs[0]['ddl'])){
+		return $recs[0]['ddl'];
+	}
+	return $recs;
+}
 //---------- begin function snowflakeDropDBIndex--------------------
 /**
 * @describe drop an index previously created

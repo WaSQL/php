@@ -27,8 +27,8 @@
 				<input type="hidden" name="_menu" value="dbsync" />
 				<input type="hidden" name="func" value="compare" />
 				<div style="display:flex;align-items: flex-end;">
-					<div><label><translate>Source DB</translate></label><?=dbsyncFormField('source');?></div>
-					<div><label><translate>Target DB</translate></label><?=dbsyncFormField('target');?></div>
+					<div><label class="w_bigger w_bold"><translate>Source</translate></label><?=dbsyncFormField('source');?></div>
+					<div style="margin-left:5px"><label class="w_bigger w_bold"><translate>Target</translate></label><?=dbsyncFormField('target');?></div>
 					<div style="text-align: center;margin:0 5px;"><div><label><translate>Diffs</translate></label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
 					<div><label>&nbsp;</label><button type="submit" class="btn"><span class="icon-sync-diff"></span> <translate>Compare</translate></button></div>
 				</div>
@@ -44,16 +44,36 @@
 </view:default>
 
 <view:compare>
-	<?=dbsyncCompare($source,$target,$diffs);?>
+	<div class="w_bigger w_bold">Tables and Indexes</div>
+	<?=dbsyncCompareTablesAndIndexes($source,$target,$diffs);?>
+	<div class="w_bigger w_bold">Functions and Procedures</div>
+	<?=dbsyncCompareFunctionsAndProcedures($source,$target,$diffs);?>
 	<?=buildOnLoad("removeId('centerpop');");?>
 </view:compare>
 
 <view:view_diff>
 <div class="w_centerpop_title"><?=$title;?></div>
 <div class="w_centerpop_content">
-<?=$diff;?>
+	<?=$diff;?>
+	<view:sync_fields_button>
+	<div class="align-right">
+		<button type="button" id="sync_fields_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_fields" data-table="<?=$table;?>" data-confirm="Confirm sync fields?" data-source="<?=$source;?>" data-setprocessing="sync_fields_button" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+	</div>
+	</view:sync_fields_button>
+	<view:sync_indexes_button>
+	<div class="align-right">
+		<button type="button" id="sync_indexes_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_indexes" data-table="<?=$table;?>" data-confirm="Confirm sync indexes?" data-setprocessing="sync_indexes_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+	</div>
+	</view:sync_indexes_button>
 </div>
 </view:view_diff>
+
+<view:view_sync>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content">
+	<?=$sync;?>
+</div>
+</view:view_sync>
 
 <view:showlist>
 	<?=dbsyncShowlist($recs,$listopts);?>

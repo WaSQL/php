@@ -23,6 +23,33 @@ if((integer)phpversion() < 7){
 }
 global $mssql;
 $mssql=array();
+//---------- begin function mssqlGetTableDDL ----------
+/**
+* @describe returns create script for specified table. NOTE: requires sp_GETDDL that you can get from https://www.stormrage.com/SQLStuff/sp_GetDDL_Latest.txt
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=mssqlGetTableDDL('sample');
+*/
+function mssqlGetTableDDL($table,$schema=''){
+	if(!strlen($schema)){
+		$schema=mssqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('mssqlGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		exec sp_GetDDL '[{$schema}].[{$table}]' as ddl
+ENDOFQUERY;
+	$recs=mssqlQueryResults($query);
+	if(isset($recs[0]['ddl'])){
+		return $recs[0]['ddl'];
+	}
+	return $recs;
+}
 //---------- begin function mssqlGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
