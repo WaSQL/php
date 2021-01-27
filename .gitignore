@@ -3,3 +3,6 @@ config.xml
 *.result
 *.post
 archived
+f.bat
+m.bat
+w.bat
