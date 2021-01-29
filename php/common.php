@@ -169,6 +169,7 @@ function commonCronLogInit($id=0){
 		unlink($logfile);
 	}
 	return true;
+}
 //---------- begin function commonCronLog
 /**
 * @describe records an error on this cron run
