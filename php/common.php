@@ -148,6 +148,23 @@ function commonCronError($err,$email='',$params=array()){
 	}
 	return 1;
 }
+//---------- begin function commonCronLogInit
+/**
+* @describe initializes the cron log
+* @return ok boolean
+* @usage 
+*	$ok=commonCronLogInit();
+*/
+function commonCronLogInit(){
+	global $CONFIG;
+	if(!isset($_REQUEST['cron_id'])){return false;}
+	$id=(integer)$_REQUEST['cron_id'];
+	$path=getWaSQLPath('php/temp');
+	$logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
+	if(file_exists($logfile)){
+		unlink($logfile);
+	}
+	return true;
 //---------- begin function commonCronLog
 /**
 * @describe records an error on this cron run
