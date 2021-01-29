@@ -149,7 +149,7 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			if(!function_exists($func)){
 				$func="mysql".ucfirst($func);
 			}
-			return executeSQL($sql);
+			//return executeSQL($sql);
 		break;
 	}
 	if(!function_exists($func)){
