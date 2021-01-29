@@ -155,10 +155,14 @@ function commonCronError($err,$email='',$params=array()){
 * @usage 
 *	$ok=commonCronLogInit();
 */
-function commonCronLogInit(){
+function commonCronLogInit($id=0){
 	global $CONFIG;
+	if((integer)$id > 0){
+		$_REQUEST['cron_id']=(integer)$id;	
+	}
 	if(!isset($_REQUEST['cron_id'])){return false;}
 	$id=(integer)$_REQUEST['cron_id'];
+	if($id==0){return false;}
 	$path=getWaSQLPath('php/temp');
 	$logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 	if(file_exists($logfile)){
