@@ -3890,8 +3890,14 @@ function buildFormStarRating($name, $params=array()){
 	if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
 	elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
 	$rtn .=' />'.PHP_EOL;
+	//return $x.printValue($params);
 	for($x=1;$x<=$params['max'];$x++){
+		$p=$x-1;
+		$vr=round($params['value'],0);
 		if($x <= $params['value']){$class='icon-star w_pointer';}
+		elseif($vr != $params['value'] && $vr > $p){
+			$class='icon-star-half-empty w_pointer';
+		}
 		else{$class='icon-star-empty w_pointer';}
 		$class .= ' '.$params['class'];
 		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
