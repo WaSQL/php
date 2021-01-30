@@ -3878,6 +3878,7 @@ function buildFormStarRating($name, $params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
     if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
     if(!isset($params['max'])){$params['max']=5;}
+    if(!isset($params['class'])){$params['class']='w_biggest';}
     if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;"';
 	if(isset($params['displayif'])){
@@ -3892,7 +3893,7 @@ function buildFormStarRating($name, $params=array()){
 	for($x=1;$x<=$params['max'];$x++){
 		if($x <= $params['value']){$class='icon-star w_pointer';}
 		else{$class='icon-star-empty w_pointer';}
-		$class .= ' w_biggest';
+		$class .= ' '.$params['class'];
 		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
 		if(!isset($params['readonly'])){
 			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
