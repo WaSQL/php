@@ -2869,6 +2869,7 @@ function pagingExport(frm){
 }
 function pagingAddFilter(frm){
 	if(undefined != frm.bulkedit){return false;}
+	if(undefined == frm.filter_field){return false;}
 	if(frm.filter_field.value.length==0){alert('select a filter field');return false;}
 	if(frm.filter_operator.value.length==0){alert('select a filter operator');return false;}
 
