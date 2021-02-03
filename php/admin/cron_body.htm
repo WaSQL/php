@@ -9,31 +9,31 @@ function pauseSelected(func){
 		ids.push(clist[i].value);
 	}
 	let params = {_menu:'cron',func:func,title:'Pause Crons',ids:ids,setprocessing:0};
-	if(undefined != document.searchfiltersform){
-		if(undefined != document.searchfiltersform._filters){
-			params._filters=document.searchfiltersform._filters.innerText;
+	if(undefined != document.cronlistform){
+		if(undefined != document.cronlistform._filters){
+			params._filters=document.cronlistform._filters.innerText;
 		}
-		if(undefined != document.searchfiltersform.filter_order){
-			params.filter_order=document.searchfiltersform.filter_order.value;
+		if(undefined != document.cronlistform.filter_order){
+			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
 function cronFilterByGroup(name){
-	pagingClearFilters();
-	document.searchfiltersform.filter_field.value='groupname';
-	document.searchfiltersform.filter_operator.value='eq';
-	document.searchfiltersform.filter_value.value=name;
-	return pagingSubmit(document.searchfiltersform,'cron_results');
+	pagingClearFilters(document.cronlistform);
+	document.cronlistform.filter_field.value='groupname';
+	document.cronlistform.filter_operator.value='eq';
+	document.cronlistform.filter_value.value=name;
+	return pagingSubmit(document.cronlistform,'cron_results');
 }
 function cronRefreshResult(cron_id,id){
 	let params={_menu:'cron',func:'cron_result',setprocessing:'setprocessing',cron_id:cron_id,id:id};
-	if(undefined != document.searchfiltersform){
-		if(undefined != document.searchfiltersform._filters){
-			params._filters=document.searchfiltersform._filters.innerText;
+	if(undefined != document.cronlistform){
+		if(undefined != document.cronlistform._filters){
+			params._filters=document.cronlistform._filters.innerText;
 		}
-		if(undefined != document.searchfiltersform.filter_order){
-			params.filter_order=document.searchfiltersform.filter_order.value;
+		if(undefined != document.cronlistform.filter_order){
+			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
@@ -49,12 +49,12 @@ function cronResultScroll(cron_id,id,run_length){
 }
 function cronModal(func,id,title){
 	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
-	if(undefined != document.searchfiltersform){
-		if(undefined != document.searchfiltersform._filters){
-			params._filters=document.searchfiltersform._filters.innerText;
+	if(undefined != document.cronlistform){
+		if(undefined != document.cronlistform._filters){
+			params._filters=document.cronlistform._filters.innerText;
 		}
-		if(undefined != document.searchfiltersform.filter_order){
-			params.filter_order=document.searchfiltersform.filter_order.value;
+		if(undefined != document.cronlistform.filter_order){
+			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
@@ -69,7 +69,7 @@ function cronModal(func,id,title){
 <view:list>
 	<div class="w_right">
 		<a href="#" onclick="return cronModal('add',0,this.title);" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
-		<a href="#" onclick="return pagingSubmit(document.searchfiltersform,'cron_results');" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
+		<a href="#" onclick="return pagingSubmit(document.cronlistform,'cron_results');" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
 	</div>
 	<?=cronList();?>
 	<div class="align-left">

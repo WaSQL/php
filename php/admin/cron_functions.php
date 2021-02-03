@@ -98,6 +98,7 @@ function cronList(){
 	$opts=array(
 		'-table'=>'_cron',
 		'-fields'=>'_id,groupname,name,active,paused,running,run_date,run_length,run_cmd,run_memory,records_to_keep,run_error',
+		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_memory,records_to_keep',
 		'-listfields'=>'_id,groupname,name,err,active,paused,running,last_run,run_length,run_cmd,run_memory,logs,records_to_keep',
 		'-tableclass'=>'table striped bordered',
