@@ -6514,7 +6514,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 		$result .= '<div id="diff" style="width:850px;position:relative;overflow-y:scroll;font-size:9pt;">'.PHP_EOL;
     	}
 
-	$result .= '<table class="w_table w_nopad" width="100%">'.PHP_EOL;
+	$result .= '<table width="100%">'.PHP_EOL;
 	//$result .= buildTableTH(array('','Stage','Live','M','S'));
 	$anchor_started=0;
 	$anchors=array();
@@ -6529,7 +6529,8 @@ function diffText($s,$m,$title='',$more='',$height=600){
 			$result .= '	<tr>'.PHP_EOL;
         	$result .= '		<td valign="top"></td>'.PHP_EOL;
         	$content=preg_replace('/^\t/','[tab]',$diff);
-        	$content='<xmp>'.encodeHtml($content).'</xmp>';
+        	//$content=encodeHtml($content);
+        	$content='<xmp style="margin:1px 0px 1px 0px;">'.$content.'</xmp>';
         	$content=str_replace('[tab]','          ',$content);
         	$result .= '		<td><div class="w_diff">'.$content.'</div></td>'.PHP_EOL;
         	$result .= '	</tr>'.PHP_EOL;
@@ -6545,11 +6546,12 @@ function diffText($s,$m,$title='',$more='',$height=600){
 				$contentlines=array();
 				foreach($diff['d'] as $line){
 					$line=preg_replace('/^\t/','[[tab]]',$line);
-					$line='<xmp>'.encodeHtml($line).'</xmp>';
+					//$line=encodeHtml($line);
+					$line='<div><xmp style="margin:1px 0px 1px 0px;">'.$line.'</xmp></div>';
 					$line=str_replace('[[tab]]','          ',$line);
 					$contentlines[]=$line;
 				}
-				$content=implode("<br />\n",$contentlines);
+				$content=implode(PHP_EOL,$contentlines);
 	        	$result .= '		<td><div class="w_del" title="Deleted">'.$content.'</div></td>'.PHP_EOL;
 	        	$result .= '	</tr>'.PHP_EOL;
 			}
@@ -6564,11 +6566,12 @@ function diffText($s,$m,$title='',$more='',$height=600){
 				$contentlines=array();
 				foreach($diff['i'] as $line){
 					$line=preg_replace('/^\t/','[[tab]]',$line);
-					$line='<xmp>'.encodeHtml($line).'</xmp>';
+					//$line=encodeHtml($line);
+					$line='<div><xmp style="margin:1px 0px 1px 0px;">'.$line.'</xmp></div>';
 					$line=str_replace('[[tab]]','          ',$line);
 					$contentlines[]=$line;
 				}
-				$content=implode("<br />\n",$contentlines);
+				$content=implode(PHP_EOL,$contentlines);
 	        	$result .= '		<td><div class="w_ins"  title="Inserted">'.$content.'</div></td>'.PHP_EOL;
 	        	$result .= '	</tr>'.PHP_EOL;
 			}
@@ -9303,6 +9306,12 @@ function processCSVLines($file,$func_name,$params=array()){
 	$linecnt = 0;
 	$bomchecked=0;
 	setlocale(LC_ALL, 'en_US.UTF-8');
+	$chunk=array();
+	$passthru=array();
+	foreach($params as $key=>$val){
+		if(stringBeginsWith($key,'-')){continue;}
+    	$passthru[$key]=$val;
+	}
 	if($fh = fopen_utf8($file,'r')){
 		//get the fields
 		if(isset($params['-fields']) && is_array($params['-fields'])){
@@ -9349,11 +9358,19 @@ function processCSVLines($file,$func_name,$params=array()){
             	$set[$key]=$val;
 			}
 			foreach($fields as $x=>$field){
-				$val=$lineparts[$x];
 				$set['line'][$field]=$lineparts[$x];
 			}
 			//pass array to function
-			$ok=call_user_func($func_name,$set);
+			if(isset($params['-chunk']) && (integer)$params['-chunk'] > 0){
+				$chunk[]=$set['line'];
+				if(count($chunk)==(integer)$params['-chunk']){
+					$ok=call_user_func($func_name,$chunk,$passthru);
+					$chunk=array();
+				}
+			}
+			else{
+				$ok=call_user_func($func_name,$set);
+			}
 			unset($set);
 			$linecnt++;
 			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
@@ -9361,6 +9378,9 @@ function processCSVLines($file,$func_name,$params=array()){
 			}
 	    }
 	    fclose($fh);
+	    if(count($chunk)){
+			$ok=call_user_func($func_name,$chunk,$passthru);
+		}
 	}
 	return $linecnt;
 }
