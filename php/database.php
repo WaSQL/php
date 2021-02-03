@@ -1974,9 +1974,11 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						$wheres[]="lower({$field}) like '%{$lval}%'";
+					break;
 					case 'postgres':
 					case 'postgresql':
-						$wheres[]="lower({$field}) like '%{$lval}%'";
+						$wheres[]="lower(cast({$field} as text)) like '%{$lval}%'";
 					break;
 					case 'snowflake':
 						$wheres[]="{$field} ilike '%{$val}%'";
@@ -1995,9 +1997,11 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						$wheres[]="lower({$field}) not like '%{$lval}%'";
+					break;
 					case 'postgres':
 					case 'postgresql':
-						$wheres[]="lower({$field}) not like '%{$lval}%'";
+						$wheres[]="lower(cast({$field} as text)) not like '%{$lval}%'";
 					break;
 					case 'snowflake':
 						$wheres[]="{$field} not ilike '%{$val}%'";
@@ -2019,10 +2023,14 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						foreach($lcvals as $lcval){
+							$ors[]="lower({$field}) like '%{$lcval}%'";
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						foreach($lcvals as $lcval){
-							$ors[]="lower({$field}) like '%{$lcval}%'";
+							$ors[]="lower(cast({$field} as text)) like '%{$lcval}%'";
 						}
 					break;
 					case 'snowflake':
@@ -2050,10 +2058,14 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						foreach($lcvals as $lcval){
+							$ands[]="lower(cast({$field} as text)) not like '%{$lcval}%'";
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						foreach($lcvals as $lcval){
-							$ands[]="lower({$field}) not like '%{$lcval}%'";
+							$ands[]="lower(cast({$field} as text)) not like '%{$lcval}%'";
 						}
 					break;
 					case 'snowflake':
@@ -2078,13 +2090,20 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						if(isNum($val)){
+							$wheres[]="{$field} = {$val}";
+						}
+						else{
+							$wheres[]="lower(cast({$field} as text)) = '{$lval}'";
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						if(isNum($val)){
 							$wheres[]="{$field} = {$val}";
 						}
 						else{
-							$wheres[]="lower({$field}) = '{$lval}'";
+							$wheres[]="lower(cast({$field} as text)) = '{$lval}'";
 						}
 					break;
 					case 'snowflake':
@@ -2109,13 +2128,20 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						if(isNum($val)){
+							$wheres[]="{$field} != {$val}";
+						}
+						else{
+							$wheres[]="lower({$field}) != '{$lval}'";
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						if(isNum($val)){
 							$wheres[]="{$field} != {$val}";
 						}
 						else{
-							$wheres[]="lower({$field}) != '{$lval}'";
+							$wheres[]="lower(cast({$field} as text)) != '{$lval}'";
 						}
 					break;
 					case 'snowflake':
@@ -2143,6 +2169,15 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						foreach($lcvals as $lcval){
+							if(isNum($lcval)){
+								$ors[]="{$field} = {$lcval}";
+							}
+							else{
+								$ors[]="lower({$field}) = '{$lcval}'";
+							}
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						foreach($lcvals as $lcval){
@@ -2150,7 +2185,7 @@ function databaseParseFilters($params=array()){
 								$ors[]="{$field} = {$lcval}";
 							}
 							else{
-								$ors[]="lower({$field}) = '{$lcval}'";
+								$ors[]="lower(cast({$field} as text)) = '{$lcval}'";
 							}
 						}
 					break;
@@ -2190,6 +2225,15 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+						foreach($lcvals as $lcval){
+							if(isNum($lcval)){
+								$ands[]="{$field} != '{$lcval}'";
+							}
+							else{
+								$ands[]="lower({$field}) != '{$lcval}'";
+							}
+						}
+					break;
 					case 'postgres':
 					case 'postgresql':
 						foreach($lcvals as $lcval){
@@ -2197,7 +2241,7 @@ function databaseParseFilters($params=array()){
 								$ands[]="{$field} != '{$lcval}'";
 							}
 							else{
-								$ands[]="lower({$field}) != '{$lcval}'";
+								$ands[]="lower(cast({$field} as text)) != '{$lcval}'";
 							}
 						}
 					break;
