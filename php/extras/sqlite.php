@@ -5,6 +5,86 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+//---------- begin function sqliteAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=sqliteAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=sqliteAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function sqliteAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("sqliteAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("sqliteAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("sqliteAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'sqliteAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("sqliteAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("sqliteAddDBRecords Error: no recs");
+		}
+		return sqliteAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function sqliteAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("sqliteAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=sqliteGetDBFieldInfo($table,1);
+
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=sqliteEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	$ok=sqliteExecuteSQL($query);
+	return count($values);
+}
+function sqliteEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function sqliteGetTableDDL ----------
 /**
 * @describe returns create script for specified table

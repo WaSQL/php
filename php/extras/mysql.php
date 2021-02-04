@@ -5,6 +5,86 @@
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
 */
+//---------- begin function mysqlAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=mysqlAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=mysqlAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function mysqlAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("mysqlAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("mysqlAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("mysqlAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'mysqlAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("mysqlAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("mysqlAddDBRecords Error: no recs");
+		}
+		return mysqlAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function mysqlAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("mysqlAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=mysqlGetDBFieldInfo($table,1);
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=mysqlEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	//echo $query;exit;
+	$ok=mysqlExecuteSQL($query);
+	return count($values);
+}
+function mysqlEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function mysqlGetTableDDL ----------
 /**
 * @describe returns create script for specified table

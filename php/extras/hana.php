@@ -11,6 +11,88 @@
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+//---------- begin function hanaAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=hanaAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=hanaAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function hanaAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("hanaAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("hanaAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("hanaAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'hanaAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("hanaAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("hanaAddDBRecords Error: no recs");
+		}
+		return hanaAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function hanaAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=hanaGetDBFieldInfo($table,1);
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) ( ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=hanaEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$recstr=implode(',',array_values($rec));
+		$values[]="select {$recstr} from dummy";
+	}
+	$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
+	$query.=')';
+	//echo $query;exit;
+	$ok=hanaExecuteSQL($query);
+	return count($values);
+}
+function hanaEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function hanaGetTableDDL ----------
 /**
 * @describe returns create script for specified table
@@ -688,227 +770,6 @@ function hanaExecuteSQL($query,$params=array()){
 	}
 	return true;
 }
-//---------- begin function hanaAddDBRecord ----------
-/**
-* @describe adds a records from params passed in.
-*  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
-*   -table - name of the table to add to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
-* @return integer returns the autoincriment key
-* @exclude - old
-* @usage 
-*	loadExtras('hana');
-*	$id=hanaAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
-*/
-function hanaAddDBRecordsOLD($table,$recs){
-	global $USER;
-	if(!strlen($table)){return 'hanaAddDBRecords error: No table.';}
-	$fields=hanaGetDBFieldInfo($table,$params);
-	$opts=array();
-	foreach($recs as $i=>$rec){
-		if(isset($fields['cdate'])){
-			$recs[$i]['cdate']=strtoupper(date('d-M-Y  H:i:s'));
-		}
-		elseif(isset($fields['_cdate'])){
-			$recs[$i]['_cdate']=strtoupper(date('d-M-Y  H:i:s'));
-		}
-		if(isset($fields['cuser'])){
-			$recs[$i]['cuser']=$USER['username'];
-		}
-		elseif(isset($fields['_cuser'])){
-			$recs[$i]['_cuser']=$USER['username'];
-		}
-		foreach($rec as $k=>$v){
-			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
-			if(!isset($fields[$k])){continue;}
-			//fix array values
-			if(is_array($v)){$v=implode(':',$v);}
-			switch(strtolower($fields[$k]['type'])){
-				case 'date':
-					if($k=='cdate' || $k=='_cdate'){
-						$v=date('Y-m-d',strtotime($v));
-					}
-				break;
-				case 'nvarchar':
-				case 'nchar':
-					$v=hanaConvert2UTF8($v);
-				break;
-			}
-			//support for nextval
-			if(preg_match('/\.nextval$/',$v)){
-				$opts['bindings'][]=$v;
-				$opts['fields'][]=trim(strtoupper($k));
-			}
-			else{
-				$opts['values'][]=$v;
-				$opts['bindings'][]='?';
-				$opts['fields'][]=trim(strtoupper($k));
-			}
-		}
-		
-	}
-	
-	$valstr='';
-	foreach($params as $k=>$v){
-		$k=strtolower($k);
-		if(!strlen(trim($v))){continue;}
-		if(!isset($fields[$k])){continue;}
-		//fix array values
-		if(is_array($v)){$v=implode(':',$v);}
-		switch(strtolower($fields[$k]['type'])){
-        	case 'date':
-				if($k=='cdate' || $k=='_cdate'){
-					$v=date('Y-m-d',strtotime($v));
-				}
-        	break;
-			case 'nvarchar':
-			case 'nchar':
-				$v=hanaConvert2UTF8($v);
-        	break;
-		}
-		//support for nextval
-		if(preg_match('/\.nextval$/',$v)){
-			$opts['bindings'][]=$v;
-        	$opts['fields'][]=trim(strtoupper($k));
-		}
-		else{
-			$opts['values'][]=$v;
-			$opts['bindings'][]='?';
-        	$opts['fields'][]=trim(strtoupper($k));
-		}
-	}
-	$fieldstr=implode('","',$opts['fields']);
-	$bindstr=implode(',',$opts['bindings']);
-    $query=<<<ENDOFQUERY
-		INSERT INTO {$params['-table']}
-			("{$fieldstr}")
-		VALUES
-			({$bindstr})
-ENDOFQUERY;
-	if(isset($params['-debug']) && $params['-debug']=='query'){
-		return $query;
-	}
-	$dbh_hana=hanaDBConnect($params);
-	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaAddDBRecord Connect Error",$e));
-    	return "hanaAddDBRecord Connect Error".printValue($e);
-	}
-	try{
-		$hana_stmt    = odbc_prepare($dbh_hana, $query);
-		if(!is_resource($hana_stmt)){
-			$e=odbc_errormsg();
-			$err=array("hanaAddDBRecord prepare Error",$e,$query);
-			debugValue($err);
-    		return printValue($err);
-		}
-		$success = odbc_execute($hana_stmt,$opts['values']);
-		if(!$success){
-			$e=odbc_errormsg();
-			debugValue(array("hanaAddDBRecord Execute Error",$e));
-    		return "hanaAddDBRecord Execute Error".printValue($e);
-		}
-		if(isset($params['-noidentity'])){return $success;}
-		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
-		$row=odbc_fetch_array($result2,0);
-		odbc_free_result($result2);
-		$row=array_change_key_case($row);
-		if(isset($row['cval'])){return $row['cval'];}
-		return "hanaAddDBRecord Identity Error".printValue($row).printValue($opts);
-		//echo "result2:".printValue($row);
-	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		$err['query']=$query;
-		$recs=array($err);
-		debugValue(array("hanaAddDBRecord Try Error",$e));
-		return "hanaAddDBRecord Try Error".printValue($err);
-	}
-	return 0;
-}
-function hanaAddDBRecords($params=array()){
-	if(!isset($params['-table'])){
-		debugValue(array(
-    		'function'=>"hanaAddDBRecords",
-    		'error'=>'No table specified'
-    	));
-    	return false;
-    }
-    if(!isset($params['-list']) || !is_array($params['-list'])){
-		debugValue(array(
-    		'function'=>"hanaAddDBRecords",
-    		'error'=>'No records (list) specified'
-    	));
-    	return false;
-    }
-    //defaults
-    if(!isset($params['-dateformat'])){
-    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
-    }
-	$j=array("items"=>$params['-list']);
-    $json=json_encode($j);
-    $info=hanaGetDBFieldInfo($params['-table']);
-    $fields=array();
-    $jfields=array();
-    $defines=array();
-    foreach($recs[0] as $field=>$value){
-    	if(!isset($info[$field])){continue;}
-    	$fields[]=$field;
-    	switch(strtolower($info[$field]['_dbtype'])){
-    		case 'timestamp':
-    		case 'date':
-    			//date types have to be converted into a format that hana understands
-    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
-    		break;
-    		default:
-    			$jfields[]=$field;
-    		break;
-    	}
-    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
-    }
-    if(!count($fields)){return 'No matching Fields';}
-    $fieldstr=implode(',',$fields);
-    $jfieldstr=implode(',',$jfields);
-    $definestr=implode(','.PHP_EOL,$defines);
-    $query .= <<<ENDOFQ
-    INSERT INTO {$params['-table']}
-    	({$fieldstr})
-    SELECT 
-    	{$jfieldstr}
-	FROM JSON_TABLE(
-		?
-		, '\$'
-		COLUMNS (
-			nested path '\$.items[*]'
-			COLUMNS(
-				{$definestr}
-			)
-		)
-	)
-ENDOFQ;
-	$dbh_hana=hanaDBConnect($params);
-	$stmt = odbc_prepare($dbh_hana, $query);
-	if(!is_resource($hanaAddDBRecordCache[$params['-table']]['stmt'])){
-		$e=odbc_errormsg();
-		$err=array("hanaAddDBRecords prepare Error",$e,$query);
-		debugValue($err);
-		return false;
-	}
-	
-	$success = odbc_execute($stmt,array($json));
-	if(!$success){
-		$e=odbc_errormsg();
-		debugValue(array("hanaAddDBRecords Execute Error",$e,$opts));
-		return false;
-	}
-	return true;
-}
-
 //---------- begin function hanaAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.

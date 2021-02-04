@@ -12,6 +12,89 @@ ini_set('oci8.persistent_timeout',-1);
 ini_set('oci8.default_prefetch',100);
 //number of statements to cache
 ini_set('oci8.statement_cache_size',20);
+
+//---------- begin function oracleAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=oracleAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=oracleAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function oracleAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("oracleAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("oracleAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("oracleAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'oracleAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("oracleAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("oracleAddDBRecords Error: no recs");
+		}
+		return oracleAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function oracleAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("oracleAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=oracleGetDBFieldInfo($table,1);
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) WITH vals AS ( ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=oracleEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$recstr=implode(',',array_values($rec));
+		$values[]="select {$recstr} from dual";
+	}
+	$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
+	$query.=PHP_EOL.') select * from vals';
+	//echo nl2br($query);exit;
+	$ok=oracleExecuteSQL($query);
+	return count($values);
+}
+function oracleEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function oracleGetTableDDL ----------
 /**
 * @describe returns create script for specified table
@@ -433,172 +516,6 @@ function oracleGetDBSchema(){
 	elseif(isset($CONFIG['oracle_schema'])){return $CONFIG['oracle_schema'];}
 	return '';
 }
-//---------- begin function oracleAddDBRecords ----------
-/**
-* @describe add multiple records at the same time using json_table.
-*  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_oracle,dbuser_oracle, and dbpass_oracle
-*   -table - name of the table to add to
-*   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
-*	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
-*	[-host] - oracle server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
-* @return boolean
-* @usage $ok=oracleAddDBRecords(array('-table'=>'abc','-list'=>$list));
-*/
-function oracleAddDBRecords($params=array()){
-	global $USER;
-	if(!isset($params['-table'])){
-		$out=array(
-    		'function'=>"oracleAddDBRecords",
-    		'error'=>'No table specified'
-    	);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
-    }
-    if(!isset($params['-list']) || !is_array($params['-list'])){
-    	$out=array(
-    		'function'=>"oracleAddDBRecords",
-    		'error'=>'No records (list) specified'
-    	);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
-    }
-    //defaults
-    if(!isset($params['-dateformat'])){
-    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
-    }
-    $recs=$params['-list'];
-    $info=oracleGetDBFieldInfo($params['-table']);
-    //check for cdate and cuser
-    foreach($recs as $i=>$rec){
-    	if(isset($info['cdate']) && !isset($rec['cdate'])){
-			$recs[$i]['cdate']=strtoupper(date('Y-m-d  H:i:s'));
-		}
-		elseif(isset($info['_cdate']) && !isset($rec['_cdate'])){
-			$recs[$i]['_cdate']=strtoupper(date('Y-m-d  H:i:s'));
-		}
-		if(isset($info['cuser']) && !isset($rec['cuser'])){
-			$recs[$i]['cuser']=$USER['username'];
-		}
-		elseif(isset($info['_cuser']) && !isset($rec['_cuser'])){
-			$recs[$i]['_cuser']=$USER['username'];
-		}
-    }
-	$j=array("items"=>$recs);
-    $json=json_encode($j);
-    
-    $fields=array();
-    $jfields=array();
-    $defines=array();
-
-    foreach($recs[0] as $field=>$value){
-    	if(!isset($info[$field])){continue;}
-    	$fields[]=$field;
-    	switch(strtolower($info[$field]['_dbtype'])){
-    		case 'timestamp':
-    		case 'date':
-    			//date types have to be converted into a format that Oracle understands
-    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
-    		break;
-    		default:
-    			$jfields[]=$field;
-    		break;
-    	}
-    	$defines[]="{$field} varchar2(4000) PATH '\$.{$field}'";
-    }
-    if(!count($fields)){return 'No matching Fields';}
-    $fieldstr=implode(',',$fields);
-    $jfieldstr=implode(',',$jfields);
-    $definestr=implode(','.PHP_EOL,$defines);
-    $query = <<<ENDOFQ
-    INSERT INTO {$params['-table']}
-    	({$fieldstr})
-    SELECT 
-    	{$jfieldstr}
-	FROM JSON_TABLE(
-		:b_json
-		, '\$'
-		COLUMNS (
-			nested path '\$.items[*]'
-			COLUMNS(
-				{$definestr}
-			)
-		)
-	)
-ENDOFQ;
-	if(isset($params['-debug'])){
-		return $query.PHP_EOL.PHP_EOL.$json.PHP_EOL;
-	}
-	$dbh_oracle=oracleDBConnect($params);
-	$stid = oci_parse($dbh_oracle, $query);
-	if (!is_resource($stid)){
-    	$out=array(
-    		'function'=>"oracleAddDBRecords",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_parse',
-    		'error'=>oci_error($dbh_oracle),
-    		'query'=>$query
-    	);
-    	oci_close($dbh_oracle);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	
-    	return false;
-    }
-	$descriptor = oci_new_descriptor($dbh_oracle, OCI_DTYPE_LOB);
-	if(!oci_bind_by_name($stid, ':b_json', $descriptor, -1, SQLT_CLOB)){
-		$out=array(
-    		'function'=>"oracleAddDBRecords",
-    		'connection'=>$dbh_oracle,
-    		'stid'=>$stid,
-    		'action'=>'oci_bind_by_name',
-    		'error'=>oci_error($stid),
-    		'query'=>$query,
-    		'field'=>$k,
-    		'_dbtype'=>$fields[$k]['_dbtype'],
-    		'bind'=>$bind,
-    		'value'=>$values[$k]
-    	);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
-	}
-	$descriptor->writeTemporary($json);
-	$r = oci_execute($stid);
-	$e=oci_error($stid);
-	if (!$r) {
-		$out=array(
-    		'function'=>"oracleAddDBRecords",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_execute',
-    		'stid'=>$stid,
-    		'error'=>$e,
-    		'query'=>$query,
-    		'json'=>$json
-    	);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
-	}
-	return true;
-}
-
 //---------- begin function oracleAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.

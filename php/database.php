@@ -218,8 +218,8 @@ function dbAddRecord($db,$params=array()){
 * @return integer returns the number of records added
 * @usage $cnt=dbAddRecords($db,array('-table'=>'abc','-list'=>$recs));
 */
-function dbAddRecords($db,$params=array()){
-	return dbFunctionCall('addDBRecords',$db,$params);
+function dbAddRecords($db,$table='',$params=array()){
+	return dbFunctionCall('addDBRecords',$db,$table,$params);
 }
 //---------- begin function dbAlterTable
 /**

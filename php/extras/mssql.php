@@ -23,6 +23,86 @@ if((integer)phpversion() < 7){
 }
 global $mssql;
 $mssql=array();
+//---------- begin function mssqlAddDBRecords--------------------
+/**
+* @describe inserts a record with said id in said table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=mssqlAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=mssqlAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function mssqlAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("mssqlAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("mssqlAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("mssqlAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'mssqlAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("mssqlAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("mssqlAddDBRecords Error: no recs");
+		}
+		return mssqlAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function mssqlAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("mssqlAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=mssqlGetDBFieldInfo($table,1);
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=mssqlEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	//echo $query;exit;
+	$ok=mssqlExecuteSQL($query);
+	return count($values);
+}
+function mssqlEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function mssqlGetTableDDL ----------
 /**
 * @describe returns create script for specified table. NOTE: requires sp_GETDDL that you can get from https://www.stormrage.com/SQLStuff/sp_GetDDL_Latest.txt
@@ -160,9 +240,9 @@ function mssqlGetDBSchema(){
 	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
 	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
 	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
-	elseif(isset($CONFIG['mysql_dbschema'])){return $CONFIG['mysql_dbschema'];}
-	elseif(isset($CONFIG['mysql_schema'])){return $CONFIG['mysql_schema'];}
-	return '';
+	elseif(isset($CONFIG['mssql_dbschema'])){return $CONFIG['mssql_dbschema'];}
+	elseif(isset($CONFIG['mssql_schema'])){return $CONFIG['mssql_schema'];}
+	return 'dbo';
 }
 //---------- begin function mssqlGetDBRecordById--------------------
 /**
@@ -274,6 +354,7 @@ function mssqlParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	if(!is_array($params)){$params=array();}
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^mssql/i',$k)){unset($CONFIG[$k]);}
@@ -526,7 +607,7 @@ function mssqlDBConnect($params=array()){
 * @usage $ok=mssqlAddDBRecords(array('-table'=>'abc','-list'=>$list));
 * @reference https://docs.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-2017
 */
-function mssqlAddDBRecords($params=array()){
+function mssqlAddDBRecords_old($params=array()){
 	if(!isset($params['-table'])){
 		debugValue(array(
     		'function'=>"mssqlAddDBRecords",
@@ -987,6 +1068,14 @@ function mssqlGetDBTables($params=array()){
 
 function mssqlGetDBTablePrimaryKeys($table,$params=array()){
 	$params=mssqlParseConnectParams($params);
+	$schema=mssqlGetDBSchema();
+	$parts=preg_split('/\./',$table);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	$schema=strtolower($schema);
+	$table=strtolower($table);
 	$query="
 	SELECT
 		ccu.column_name
@@ -998,8 +1087,8 @@ function mssqlGetDBTablePrimaryKeys($table,$params=array()){
 		ON tc.constraint_name = ccu.constraint_name
 	WHERE
 		tc.table_catalog = '{$params['-dbname']}'
-    	and tc.table_schema = 'dbo'
-    	and tc.table_name = '{$table}'
+    	and lower(tc.table_schema) = '{$schema}'
+    	and lower(tc.table_name) = '{$table}'
     	and tc.constraint_type = 'PRIMARY KEY'
 	";
 	$tmp = mssqlQueryResults($query,$params);
@@ -1021,6 +1110,14 @@ function mssqlGetDBTablePrimaryKeys($table,$params=array()){
 */
 function mssqlGetDBFieldInfo($table,$params=array()){
 	$params=mssqlParseConnectParams($params);
+	$schema=mssqlGetDBSchema();
+	$parts=preg_split('/\./',$table);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	$schema=strtolower($schema);
+	$table=strtolower($table);
 	$query="
 		SELECT
 			COLUMN_NAME
@@ -1034,12 +1131,11 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			INFORMATION_SCHEMA.COLUMNS (nolock)
 		WHERE
 			table_catalog = '{$params['-dbname']}'
-    		and table_schema = 'dbo'
-			and table_name = '{$table}'
+    		and lower(table_schema) = '{$schema}'
+			and lower(table_name) = '{$table}'
 		ORDER BY ORDINAL_POSITION
 		";
 	$recs=mssqlQueryResults($query,$params);
-	//echo $query.printValue($recs);exit;
 	$fields=array();
 	$pkeys=mssqlGetDBTablePrimaryKeys($table,$params);
 	foreach($recs as $rec){
@@ -1086,7 +1182,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function mssqlListDBDatatypes(){
-	//default to mysql
+	//default to mssql
 	return <<<ENDOFDATATYPES
 <div class="w_bold w_blue w_padtop">Text Types</div>
 <div class="w_padleft">CHAR( n ) A fixed section from 0 to 255 characters long.</div>
