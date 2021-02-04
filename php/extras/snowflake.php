@@ -5,6 +5,86 @@
 		https://github.com/snowflakedb/pdo_snowflake
 
 */
+//---------- begin function snowflakeAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=snowflakeAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=snowflakeAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function snowflakeAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("snowflakeAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("snowflakeAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("snowflakeAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'snowflakeAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("snowflakeAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("snowflakeAddDBRecords Error: no recs");
+		}
+		return snowflakeAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function snowflakeAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("snowflakeAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=snowflakeGetDBFieldInfo($table,1);
+
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=snowflakeEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	$ok=snowflakeExecuteSQL($query);
+	return count($values);
+}
+function snowflakeEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function snowflakeGetTableDDL ----------
 /**
 * @describe returns create script for specified table

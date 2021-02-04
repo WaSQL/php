@@ -14,7 +14,86 @@ global $dbh_odbc;
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+//---------- begin function odbcAddDBRecords--------------------
+/**
+* @describe add multiple records into a table
+* @param table string - tablename
+* @param params array - 
+*	[-recs] array - array of records to insert into specified table
+*	[-csv] array - csv file of records to insert into specified table
+* @return count int
+* @usage $ok=odbcAddDBRecords('comments',array('-csv'=>$afile);
+* @usage $ok=odbcAddDBRecords('comments',array('-recs'=>$recs);
+*/
+function odbcAddDBRecords($table='',$params=array()){
+	if(!strlen($table)){
+		return debugValue("odbcAddDBRecords Error: No Table");
+	}
+	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	//require either -recs or -csv
+	if(!isset($params['-recs']) && !isset($params['-csv'])){
+		return debugValue("odbcAddDBRecords Error: either -csv or -recs is required");
+	}
+	if(isset($params['-csv'])){
+		if(!is_file($params['-csv'])){
+			return debugValue("odbcAddDBRecords Error: no such file: {$params['-csv']}");
+		}
+		$ok=processCSVLines($table,'odbcAddDBRecordsProcess',array(
+			'table'=>$table,
+			'-chunk'=>$params['-chunk']
+		));
+	}
+	elseif(isset($params['-recs'])){
+		if(!is_array($params['-recs'])){
+			return debugValue("odbcAddDBRecords Error: no recs");
+		}
+		elseif(!count($params['-recs'])){
+			return debugValue("odbcAddDBRecords Error: no recs");
+		}
+		return odbcAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+	}
+}
+function odbcAddDBRecordsProcess($recs,$params=array()){
+	if(!isset($params['table'])){
+		return debugValue("odbcAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['table'];
+	$fieldinfo=odbcGetDBFieldInfo($table,1);
 
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){continue;}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+	}
+	$fieldstr=implode(',',$fields);
+	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$values=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				$rec[$k]='NULL';
+			}
+			else{
+				$v=odbcEscapeString($v);
+				$rec[$k]="'{$v}'";
+			}
+		}
+		$values[]='('.implode(',',array_values($rec)).')';
+	}
+	$query.=implode(','.PHP_EOL,$values);
+	$ok=odbcExecuteSQL($query);
+	return count($values);
+}
+function odbcEscapeString($str){
+	$str = str_replace("'","''",$str);
+	return $str;
+}
 //---------- begin function odbcGetDBRecordById--------------------
 /**
 * @describe returns a single multi-dimensional record with said id in said table
@@ -390,91 +469,6 @@ function odbcExecuteSQL($query,$params=array()){
 	}
 	return true;
 }
-function odbcAddDBRecords($params=array()){
-	if(!isset($params['-table'])){
-		$error=array("odbcAddDBRecords Error",'No Table');
-		debugValue($error);
-		return false;
-    }
-    if(!isset($params['-list']) || !is_array($params['-list'])){
-		$error=array("odbcAddDBRecords Error",'No -list specified');
-		debugValue($error);
-		return false;
-    }
-    //defaults
-    if(!isset($params['-dateformat'])){
-    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
-    }
-	$j=array("items"=>$params['-list']);
-    $json=json_encode($j);
-    $info=odbcGetDBFieldInfo($params['-table']);
-    $fields=array();
-    $jfields=array();
-    $defines=array();
-    foreach($recs[0] as $field=>$value){
-    	if(!isset($info[$field])){continue;}
-    	$fields[]=$field;
-    	switch(strtolower($info[$field]['_dbtype'])){
-    		case 'timestamp':
-    		case 'date':
-    			//date types have to be converted into a format that odbc understands
-    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
-    		break;
-    		default:
-    			$jfields[]=$field;
-    		break;
-    	}
-    	$defines[]="{$field} varchar(255) PATH '\$.{$field}'";
-    }
-    if(!count($fields)){return 'No matching Fields';}
-    $fieldstr=implode(',',$fields);
-    $jfieldstr=implode(',',$jfields);
-    $definestr=implode(','.PHP_EOL,$defines);
-    $query .= <<<ENDOFQ
-    INSERT INTO {$params['-table']}
-    	({$fieldstr})
-    SELECT 
-    	{$jfieldstr}
-	FROM JSON_TABLE(
-		?
-		, '\$'
-		COLUMNS (
-			nested path '\$.items[*]'
-			COLUMNS(
-				{$definestr}
-			)
-		)
-	)
-ENDOFQ;
-	global $dbh_odbc;
-	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
-		$dbh_odbc='';
-		usleep(100);
-		$dbh_odbc=odbcDBConnect($params);
-	}
-	if(!is_resource($dbh_odbc)){
-    	$e=odbc_errormsg();
-    	debugValue(array("odbcAddRecords Connect Error",$e));
-    	return json_encode($e);
-	}
-	$stmt = odbc_prepare($dbh_odbc, $query);
-	if(!is_resource($odbcAddDBRecordCache[$params['-table']]['stmt'])){
-		$e=odbc_errormsg();
-		$err=array("odbcAddDBRecords prepare Error",$e,$query);
-		debugValue($err);
-		return false;
-	}
-	
-	$success = odbc_execute($stmt,array($json));
-	if(!$success){
-		$e=odbc_errormsg();
-		debugValue(array("odbcAddDBRecords Execute Error",$e,$opts));
-		return false;
-	}
-	return true;
-}
-
 //---------- begin function odbcAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.
