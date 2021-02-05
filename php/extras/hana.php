@@ -474,6 +474,7 @@ ENDOFQUERY;
 *	$params=hanaParseConnectParams($params);
 */
 function hanaParseConnectParams($params=array()){
+	if(!is_array($params)){$params=array();}
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
