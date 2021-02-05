@@ -731,21 +731,17 @@ function hanaClearConnection(){
 *	$ok=hanaExecuteSQL("truncate table abc");
 */
 function hanaExecuteSQL($query,$params=array()){
-	$dbh_hana=hanaDBConnect($params);
+	global $dbh_hana;
 	if(!is_resource($dbh_hana)){
-		//wait a couple of seconds and try again
-		sleep(2);
 		$dbh_hana=hanaDBConnect($params);
-		if(!is_resource($dbh_hana)){
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-			debugValue("hanaDBConnect error".printValue($params));
-			return false;
-		}
-		else{
-			debugValue("hanaDBConnect recovered connection ");
-		}
+	}
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaExecuteSQL Connect Error",$e));
+    	return false;
 	}
 	try{
+		//check for -timeout
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds
 			$result = odbc_prepare($dbh_hana,$query);
@@ -756,12 +752,44 @@ function hanaExecuteSQL($query,$params=array()){
 			$result=odbc_exec($dbh_hana,$query);	
 		}
 		if(!$result){
-			$err=odbc_errormsg($dbh_hana);
-			debugValue($err);
-			return false;
+			$errstr=odbc_errormsg($dbh_hana);
+			if(!strlen($errstr)){return array();}
+        	$err=array(
+        		'error'	=> $errstr,
+        		'query' => $query
+			);
+			if(stringContains($errstr,'session not connected')){
+				//lets retry
+				odbc_close($dbh_hana);
+				sleep(1);
+				$dbh_hana='';
+				$dbh_hana=hanaDBConnect($params);
+				if(isset($params['-timeout']) && isNum($params['-timeout'])){
+					//sets the query to timeout after X seconds
+					$result = odbc_prepare($dbh_hana,$query);
+					odbc_setoption($result, 2, 0, $params['-timeout']);
+					odbc_execute($result);
+				}
+				else{
+					$result=odbc_exec($dbh_hana,$query);	
+				}
+				if(!$result){
+					$errstr=odbc_errormsg($dbh_hana);
+					if(!strlen($errstr)){return array();}
+					$err=array(
+						'error'	=> $errstr,
+						'query' => $query,
+						'retry'	=> 1
+					);
+					debugValue($err);
+					return false;
+				}
+			}
+			else{
+				debugValue($err);
+				return false;
+			}
 		}
-		odbc_free_result($result);
-		return true;
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
