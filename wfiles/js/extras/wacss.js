@@ -192,8 +192,9 @@ var wacss = {
 	    }
 	    return null;
 	},
-	getParent: function(obj,name){
+	getParent: function(obj,name,classname){
 		if(undefined == obj){return null;}
+		if(undefined == classname){classname='';}
 		if(undefined != name){
 			var count = 1;
 			while(count < 1000) {
@@ -201,7 +202,15 @@ var wacss = {
 				obj = obj.parentNode;
 				if(!typeof(obj)){return null;}
 				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
-					return obj;
+					//filters
+					if(classname.length){
+						if(obj.classList.contains(classname)){
+							return obj;
+						}
+					}
+					else{
+						return obj;
+					}
 				}
 				count++;
 			}
@@ -1837,7 +1846,7 @@ var wacss = {
 	    return false;
 	},
 	setActiveTab: function(el){
-	    let p=wacss.getParent(el,'ul');
+	    let p=wacss.getParent(el,'ul','nav-tabs');
 	    if(p === null){return false;}
 	    let list=p.querySelectorAll('li');
 	    for(let i=0;i<list.length;i++){
@@ -1848,7 +1857,11 @@ var wacss = {
 	    	wacss.addClass(el,'active');	
 	    }
 	    else{
-	    	let li=wacss.getParent(el,'li');
+			let li=wacss.getParent(el,'li');
+			let lip=wacss.getParent(li,'ul');
+			if(!lip.classList.contains('nav-tabs')){
+				li=wacss.getParent(lip,'li');
+			}
 	    	wacss.addClass(li,'active');
 	    }
 	    return false;

@@ -2912,10 +2912,10 @@ function stopWatch(id){
 	var obj=getObject(id);
 	obj.onfocus=function(){
 		this.setAttribute('hasfocus',1);
-     	}
+    }
      obj.onblur=function(){
 		this.setAttribute('hasfocus',0);
-     	}
+    }
 	var f=obj.getAttribute('hasfocus');
 	if(undefined != f && f==1){return false;}
 	//Get the start time from the value of id.  HH:MM:SS
@@ -2933,9 +2933,9 @@ function stopWatch(id){
     //window.status=stime+'-'+hour+','+min+','+sec;
     if (sec == 60) {sec = 0; min++;}
   	if (min == 60){min = 0; hour++;}
-	//if (hour<=9) { hour = "0" + hour; }
-	//if (min<=9) { min = "0" + min; }
-	//if (sec<=9) { sec = "0" + sec; }
+	if (hour<=9) { hour = "0" + hour; }
+	if (min<=9) { min = "0" + min; }
+	if (sec<=9) { sec = "0" + sec; }
    	var newtext = hour + ":" + min + ":" + sec;
 	setText(id,newtext);
     //set the timer

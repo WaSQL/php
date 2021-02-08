@@ -106,9 +106,18 @@
 
 <view:nav-tabs>
 	<div class="row">
-		<div class="col-sm-12">
-			<ul class="nav-tabs collapse">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+		<div class="col-sm-1"><div class="w_padtop">No Color</div></div>
+		<div class="col-sm-11">
+			<ul class="nav-tabs">         
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -117,9 +126,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
-			<ul class="nav-tabs w_gray">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+		<div class="col-sm-1"><div class="w_padtop">w_blue</div></div>
+		<div class="col-sm-11">
+			<ul class="nav-tabs w_blue">         
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -128,9 +146,38 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_gray</div></div>
+		<div class="col-sm-11">
+			<ul class="nav-tabs w_gray">         
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
+				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
+				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);" ><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
+				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
+				<li><a href="/config/filters" onclick="return wacss.setActiveTab(this);"><span class="icon-filter w_success w_bigger"></span><translate> DNS Providers</translate></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-1"><div class="w_padtop">w_green</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_green">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -139,9 +186,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_red</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_red">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -150,9 +206,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_yellow</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_yellow">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -161,9 +226,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_orange</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_orange">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -172,9 +246,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_teal</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_teal">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -183,9 +266,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_white</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_white">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
@@ -194,9 +286,18 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-1"><div class="w_padtop">w_black</div></div>
+		<div class="col-sm-11">
 			<ul class="nav-tabs w_black">         
-				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a></li>
+				<li><a href="/config/usb" onclick="return wacss.setActiveTab(this);" class="dropdown"><span class="icon-usb w_bigger"></span><translate> USB Drives</translate></a>
+					<div>
+						<ul class="nav-list">
+							<li><a href="/config/usb/first" onclick="return wacss.setActiveTab(this);"><span class="icon-target"></span> First dropdown item</a></li>
+							<li><a href="/config/usb/second" onclick="return wacss.setActiveTab(this);"><span class="icon-tools"></span> Second Longer dropdown item</a></li>
+							<li><a href="/config/usb/third" onclick="return wacss.setActiveTab(this);"><span class="icon-tv"></span> Third item</a></li>
+						</ul>
+					</div>
+				</li>
 				<li class="active"><a href="/config/plex" onclick="return wacss.setActiveTab(this);"><span class="icon-arrow-right w_gold w_bigger"></span> PLEX Service</a></li>
 				<li><a href="/config/adblock" onclick="return wacss.setActiveTab(this);"><span class="icon-block w_red w_bigger"></span><translate> Ad Blocker</translate></a></li>
 				<li><a href="/config/dnsmasq" onclick="return wacss.setActiveTab(this);"><span class="icon-cube w_success w_bigger"></span><translate> DNS Service</translate></a></li>
