@@ -513,29 +513,7 @@ function dbsyncFormField($field){
 	switch(strtolower($field)){
 		case 'source':
 		case 'target':
-			$opts=array();
-			//group by dbtype
-			$dbtypes=array();
-			foreach($DATABASE as $dbkey=>$db){
-				$dbtypes[$db['dbtype']][]=$db;
-			}
-			ksort($dbtypes);
-			$tag='<select required="required" name="'.$field.'" class="select">'.PHP_EOL;
-			$tag.='	<option value="">-- '.ucfirst($field).' --</option>'.PHP_EOL;
-			foreach($dbtypes as $dbtype=>$dbs){
-				$tag.='	<optgroup label="'.ucfirst($dbtype).'">'.PHP_EOL;
-				foreach($dbs as $db){
-					$dval=$db['displayname'];
-					if(strlen($db['dbschema'])){
-						$dval.= " ({$db['dbschema']})";
-					}
-					$tval=$db['name'];
-					$tag.='		<option value="'.$tval.'">'.$dval.'</option>'.PHP_EOL;
-				}
-				$tag.='	</optgroup>';
-			}
-			$tag.='</select>';
-			return $tag;
+			return buildFormSelectDatabase($field);
 		break;
 	}
 }

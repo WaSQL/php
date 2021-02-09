@@ -3608,6 +3608,84 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 	$rtn .= '</div>'.PHP_EOL;
     return $rtn;
 }
+//---------- begin function buildFormSelectDatabase--------------------
+/**
+* @describe creates a select list from the DATABASE tags in config.xml
+* @param name string
+* @param opts array
+* @param params array
+* @return string
+* @usage echo buildFormCombo('mydate',$opts,$params);
+*/
+function buildFormSelectDatabase($name,$params=array()){
+	if(!isset($params['class'])){$params['class']='select browser-default';}
+	if(!isset($params['name'])){$params['name']=$field;}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['name'])){$params['name']=$name;}
+	if(!isset($params['message'])){$params['message']=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$val='';
+	if(isset($params['value']) && strlen($params['value'])){
+		$val=$params['value'];
+	}
+	elseif(isset($params['-value']) && strlen($params['-value'])){
+		$val=$params['-value'];
+	}
+	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
+		$val=$_REQUEST[$name];
+	}
+	$params['value']=$val;
+	if(isset($params['viewonly'])){
+		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
+	}
+	global $CONFIG;
+	global $DATABASE;
+	$showtabs=array();
+	if(isset($CONFIG['sql_prompt_dbs'])){
+		$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
+	}
+	$dbtypes=array();
+	foreach($DATABASE as $dbkey=>$db){
+		if(count($showtabs) && !in_array($dbkey,$showtabs)){continue;}
+		if(isset($db['group'])){$group=$db['group'];}
+		else{$group=ucfirst($db['dbtype']);}
+		$dbtypes[$group][]=$db;
+	}
+	ksort($dbtypes);
+	$tag='<select ';
+	$tag.=setTagAttributes($params);
+	$tag.='>'.PHP_EOL;
+	$tag.='	<option value="">-- '.ucfirst($params['message']).' --</option>'.PHP_EOL;
+	foreach($dbtypes as $group=>$dbs){
+		$tag.='	<optgroup label="'.$group.'">'.PHP_EOL;
+		foreach($dbs as $db){
+			$dval=$db['displayname'];
+			$addons=array();
+			if(strtolower($group) != $db['dbtype']){
+				$addons[]= $db['dbtype'];
+			}
+			if(strlen($db['dbschema'])){
+				$addons[]= $db['dbschema'];
+			}
+			if(count($addons)){
+				$dval.=' ('.implode(' - ',$addons).')';
+			}
+			$tval=$db['name'];
+			$tag.='		<option value="'.$tval.'"';
+			if(strlen($params['value'])){
+				if(strtolower($params['value'])==strtolower($tval)){
+					$tag.=' selected';
+				}
+			}
+			$tag.='>'.$dval.'</option>'.PHP_EOL;
+		}
+		$tag.='	</optgroup>';
+	}
+	$tag.='</select>';
+	return $tag;
+}
 //---------- begin function buildFormSelectMonth--------------------
 /**
 * @describe creates an Month selection field
