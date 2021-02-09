@@ -2910,14 +2910,13 @@ function slideShow(divid,idx,s){
 function stopWatch(id){
 	clearTimeout(TimoutArray[id]);
 	var obj=getObject(id);
-	obj.onfocus=function(){
-		this.setAttribute('hasfocus',1);
-    }
-     obj.onblur=function(){
-		this.setAttribute('hasfocus',0);
-    }
-	var f=obj.getAttribute('hasfocus');
-	if(undefined != f && f==1){return false;}
+	if(undefined==obj){return false;}
+	if(obj.dataset.behavior.indexOf('stopwatch')==-1){
+		return false;
+	}
+	if(isset(obj.dataset.stop) && obj.dataset.stop==1){
+		return false;
+	}
 	//Get the start time from the value of id.  HH:MM:SS
 	var stime=getText(id);
 	var hour=0;
