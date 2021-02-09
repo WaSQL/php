@@ -2914,7 +2914,7 @@ function stopWatch(id){
 	if(obj.dataset.behavior.indexOf('stopwatch')==-1){
 		return false;
 	}
-	if(isset(obj.dataset.stop) && obj.dataset.stop==1){
+	if(undefined != obj.dataset.stop && parseInt(obj.dataset.stop)==1){
 		return false;
 	}
 	//Get the start time from the value of id.  HH:MM:SS
