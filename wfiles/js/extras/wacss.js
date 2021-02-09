@@ -1860,6 +1860,7 @@ var wacss = {
 			let li=wacss.getParent(el,'li');
 			let lip=wacss.getParent(li,'ul');
 			if(!lip.classList.contains('nav-tabs')){
+				wacss.addClass(li,'active');
 				li=wacss.getParent(lip,'li');
 			}
 	    	wacss.addClass(li,'active');
