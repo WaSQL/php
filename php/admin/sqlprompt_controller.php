@@ -279,6 +279,7 @@
 				if(!isset($db['group_icon'])){
 					$db['group_icon']=$db['dbicon'];
 				}
+				$db['group']=$group;
 				$groups[$group][]=$db;
 				$tabs[]=$db;
 			}
@@ -287,6 +288,7 @@
 				$tabs[]=array(
 					'group'=>$group,
 					'group_icon'=>$dbs[0]['group_icon'],
+					'count'=>count($dbs),
 					'dbs'=>$dbs
 				);
 			}

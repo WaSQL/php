@@ -173,6 +173,7 @@
 		<a href="#<?=$tab['group'];?>" onclick="return false;" class="dropdown">
 			<span class="<?=$tab['group_icon'];?>"></span>
 			<?=$tab['group'];?>
+			<sup class="w_tiny"><?=$tab['count'];?></sup>
 		</a>
 		<div>
 			<ul class="nav-list">
@@ -194,7 +195,8 @@
 		<div id="tabdetails_<?=$db['name'];?>" style="display:none;">
 			<div class="w_bold w_big">Database Details</div>
 			<table class="table bordered striped condensed">
-				<tr><td>Name</td><td><?=$db['name'];?></td></tr>
+				<tr><td>Group</td><td><?=$db['group'];?></td></tr>
+				<tr><td class="w_bold">Name</td><td class="w_bold"><?=$db['name'];?></td></tr>
 				<tr><td>DBType</td><td><?=$db['dbtype'];?></td></tr>
 				<tr><td>DBHost</td><td><?=$db['dbhost'];?></td></tr>
 				<tr><td>DBUser</td><td><?=$db['dbuser'];?></td></tr>
