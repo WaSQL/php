@@ -150,10 +150,10 @@
 
 <view:tabs>
 <nav>
-<ul class="nav-tabs collapse <?=configValue('admin_color');?>">
+<ul class="nav-tabs <?=configValue('admin_color');?>">
 	<li class="nav-item active">
 		<input type="radio" data-type="radio" style="display:none;" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
-		<label for="db_default">
+		<span><label for="db_default">
 			<span data-tooltip="id:tabdetails_db_default" data-tooltip_position="bottom"><span class="<?=configValue('dbicon');?>"></span> <?=configValue('displayname');?></span>
 			<div id="tabdetails_db_default" style="display:none;">
 				<div class="w_bold w_big">Database Details</div>
@@ -166,32 +166,45 @@
 					<tr><td>DBSchema</td><td><?=configValue('dbschema');?></td></tr>
 				</table>
 			</div>
-		</label> 
+		</label></span>
 	</li>
 	<view:tab>
-	<li class="nav-item">
-		<input type="radio" data-type="radio" style="display:none;" id="db_<?=$tab['name'];?>" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=$tab['name'];?>" />
-		<label for="db_<?=$tab['name'];?>">
-			<span data-tooltip="id:tabdetails_<?=$tab['name'];?>" data-tooltip_position="bottom"><span class="<?=$tab['dbicon'];?>"></span> <?=$tab['displayname'];?></span>
-			<div id="tabdetails_<?=$tab['name'];?>" style="display:none;">
-				<div class="w_bold w_big">Database Details</div>
-				<table class="table bordered striped condensed">
-					<tr><td>Name</td><td><?=$tab['name'];?></td></tr>
-					<tr><td>DBType</td><td><?=$tab['dbtype'];?></td></tr>
-					<tr><td>DBHost</td><td><?=$tab['dbhost'];?></td></tr>
-					<tr><td>DBUser</td><td><?=$tab['dbuser'];?></td></tr>
-					<tr><td>DBName</td><td><?=$tab['dbname'];?></td></tr>
-					<tr><td>DBSchema</td><td><?=$tab['dbschema'];?></td></tr>
-				</table>
-			</div>
-		</label>
-		
+	<li>
+		<a href="#<?=$tab['group'];?>" onclick="return false;" class="dropdown">
+			<span class="<?=$tab['group_icon'];?>"></span>
+			<?=$tab['group'];?>
+		</a>
+		<div>
+			<ul class="nav-list">
+				<?=renderEach('tab_db',$tab['dbs'],'db');?>
+			</ul>
+		</div>
 	</li>
 	</view:tab>
 	<?=renderEach('tab',$tabs,'tab');?>
 </ul>
 </nav>
 </view:tabs>
+
+<view:tab_db>
+<li>
+	<input type="radio" data-type="radio" style="display:none;" id="db_<?=$db['name'];?>" onclick="wacss.setActiveTab(this);sqlpromptSetDB(this.value)" name="db" value="<?=$db['name'];?>" />
+	<label class="nav-item" for="db_<?=$db['name'];?>">
+		<span data-tooltip="id:tabdetails_<?=$db['name'];?>" data-tooltip_position="right"><span class="<?=$db['dbicon'];?>"></span> <?=$db['displayname'];?></span>
+		<div id="tabdetails_<?=$db['name'];?>" style="display:none;">
+			<div class="w_bold w_big">Database Details</div>
+			<table class="table bordered striped condensed">
+				<tr><td>Name</td><td><?=$db['name'];?></td></tr>
+				<tr><td>DBType</td><td><?=$db['dbtype'];?></td></tr>
+				<tr><td>DBHost</td><td><?=$db['dbhost'];?></td></tr>
+				<tr><td>DBUser</td><td><?=$db['dbuser'];?></td></tr>
+				<tr><td>DBName</td><td><?=$db['dbname'];?></td></tr>
+				<tr><td>DBSchema</td><td><?=$db['dbschema'];?></td></tr>
+			</table>
+		</div>
+	</label>
+</li>
+</view:tab_db>
 
 
 <view:results>

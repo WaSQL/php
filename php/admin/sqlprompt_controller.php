@@ -250,13 +250,13 @@
 				$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
 			}
 			$tabs=array();
+			$groups=array();
 			foreach($DATABASE as $d=>$db){
 				if($CONFIG['database']==$d){
 					$_SESSION['db']=$db;
 					continue;
 				}
 				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
-				if($CONFIG['database']==$d){continue;}
 				//access?
 				if(isset($db['access']) && strtolower($db['access']) != 'all'){
 					$access_users=preg_split('/\,/',strtolower($db['access']));
@@ -269,9 +269,28 @@
 				if(isset($db["dbpass_{$USER['username']}"])){
 					$db['dbpass']=$db["dbpass_{$USER['username']}"];
 				}
+				//group?
+				if(isset($db['group'])){
+					$group=$db['group'];
+				}
+				else{
+					$group=ucfirst($db['dbtype']);
+				}
+				if(!isset($db['group_icon'])){
+					$db['group_icon']=$db['dbicon'];
+				}
+				$groups[$group][]=$db;
 				$tabs[]=$db;
 			}
-			//echo $CONFIG['database'].printValue($tabs);exit;
+			$tabs=array();
+			foreach($groups as $group=>$dbs){
+				$tabs[]=array(
+					'group'=>$group,
+					'group_icon'=>$dbs[0]['group_icon'],
+					'dbs'=>$dbs
+				);
+			}
+			//echo printValue($tabs);exit;
 			$tables=getDBTables();
 			if(isset($CONFIG['sqlprompt_tables'])){
 				if(!is_array($CONFIG['sqlprompt_tables'])){
