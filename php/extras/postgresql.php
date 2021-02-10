@@ -72,24 +72,24 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!in_array($k,$fields)){
-				unset($rec[$k]);
-				continue;
+		$vals=array();
+		foreach($fields as $field){
+			$val='NULL';
+			if(isset($rec[$field]) && strlen($rec[$field])){
+				$val=postgresqlEscapeString($rec[$field]);
+				$val="'{$val}'";
 			}
-			if(!strlen($v)){
-				$rec[$k]='NULL';
-			}
-			else{
-				$v=postgresqlEscapeString($v);
-				$rec[$k]="'{$v}'";
-			}
+			$vals[]=$val;
 		}
-		$values[]='('.implode(',',array_values($rec)).')';
+		$values[]='('.implode(',',$vals).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
-	//echo $query;exit;
 	$ok=postgresqlExecuteSQL($query);
+	if(isset($ok['error'])){
+		debugValue($ok);
+		return 0;
+	}
+	//echo printValue($ok).PHP_EOL.PHP_EOL.$query;exit;
 	return count($values);
 }
 function postgresqlEscapeString($str){
