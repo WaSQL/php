@@ -14637,11 +14637,13 @@ function processActions(){
 
                     //edit the record
 					$_REQUEST['edit_result']=editDBRecord($opts);
+					global $databaseCache;
+					$databaseCache=array();
 					if(!isNum($_REQUEST['edit_result'])){
 						setWasqlError(debug_backtrace(),$_REQUEST['edit_result']);
 						}
 					else{
-						if($opts['-table']=='_users' && $opts['_id']==$USER['_id']){
+						if($opts['-table']=='_users' && $opts['-where']=="_id={$USER['_id']}"){
 							foreach($opts as $k=>$v){
 								if(isWasqlField($k)){continue;}
 								if(preg_match('/^\-/',$k)){continue;}
