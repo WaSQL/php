@@ -808,6 +808,13 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-port'])){$params['-port']=1521;}
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	$params=oracleParseConnectParams($params);
+	if(!isset($params['-dbsysdba'])){
+		$params['-dbsysdba']=null;
+	}
+	elseif($params['-dbsysdba']==1){
+		$params['-dbsysdba']=OCI_SYSDBA;
+		ini_set('oci8.privileged_connect','on');
+	}
 	if(!isset($params['-connect'])){
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
@@ -815,7 +822,7 @@ function oracleDBConnect($params=array()){
 		exit;
 	}
 	if(isset($params['-single'])){
-		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
+		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
 		if(!is_resource($dbh_single)){
 			$err=json_encode(oci_error());
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
@@ -828,7 +835,7 @@ function oracleDBConnect($params=array()){
 	global $dbh_oracle;
 	if(is_resource($dbh_oracle)){return $dbh_oracle;}
 	try{
-		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset']);
+		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
 		if(!is_resource($dbh_oracle)){
 			$err=oci_error();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
