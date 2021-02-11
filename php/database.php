@@ -8957,13 +8957,13 @@ function getDBRecords($params=array()){
 	}
 	//get related
 	$related=array();
-	if(isset($params['-table']) && isset($params['-relate'])){
+	if(isset($params['-relate'])){
 		$table_parts=preg_split('/\./', $params['-table']);
 		$dbname='';
 		if(count($table_parts) > 1){
 			$dbname=array_shift($table_parts);
 		}
-		if(isNum($params['-relate']) && $params['-relate']==1){
+		if(isset($params['-table']) && isNum($params['-relate']) && $params['-relate']==1){
 			$xinfo=getDBFieldMeta($params['-table'],"tvals,dvals,inputtype");
 			//check for -norelate fields to skip
 			$skipfields=array();
