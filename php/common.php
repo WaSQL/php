@@ -503,7 +503,7 @@ function commonSearchFiltersForm($params=array()){
 		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
 		foreach($params['-quickfilters'] as $name=>$str){
 			$btn='<button type="button" style="margin-right:4px;" class="'.$quickclass.'"';
-			if(stringStartsWith($str,'javascript:')){
+			if(stringBeginsWith($str,'javascript:')){
 				$str=str_replace('javascript:','',$str);
 				$btn .=' onclick="'.$str.'"';
 			}
