@@ -502,7 +502,16 @@ function commonSearchFiltersForm($params=array()){
 		$buttons=array();
 		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
 		foreach($params['-quickfilters'] as $name=>$str){
-			$buttons[]='<button type="button" style="margin-right:4px;" class="'.$quickclass.'" onclick="pagingAddFilters(getParent(this,\'form\'),\''.$str.'\',1);">'.$name.'</button>';
+			$btn='<button type="button" style="margin-right:4px;" class="'.$quickclass.'"';
+			if(stringStartsWith($str,'javascript:')){
+				$str=str_replace('javascript:','',$str);
+				$btn .=' onclick="'.$str.'"';
+			}
+			else{
+				$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$str.'\',1);"';
+			}
+			$btn.='>'.$name.'</button>';
+			$buttons[]=$btn;
 			$sets=preg_split('/\,/',$str);
 			foreach($sets as $set){
 				list($fld,$oper,$val)=preg_split('/\ +/',$set,3);	
@@ -13721,6 +13730,10 @@ function postURL($url,$params=array()) {
     }
 	$rtn['url']=$url;
 	if(isset($params['-xml']) && $params['-xml']==1 && isset($rtn['body']) && strlen($rtn['body'])){
+		if(isset($params['-soap']) && $params['-soap']==1){
+			$rtn['body'] = preg_replace('|<([/\w]+)(:)|m','<$1',$rtn['body']);
+			$rtn['body'] = preg_replace('|(\w+)(:)(\w+=\")|m','$1$3',$rtn['body']);
+		}
 		$rtn['xml_array']=xml2Array($rtn['body']);
     	}
     elseif(isset($params['-json']) && $params['-json']==1 && isset($rtn['body']) && strlen($rtn['body'])){
