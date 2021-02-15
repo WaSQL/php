@@ -145,11 +145,12 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			$func="ctree".ucfirst($func);
 		break;
 		default:
-			$func=lcfirst($func);
-			if(!function_exists($func)){
-				loadExtras('mysql');
-				$func="mysql".ucfirst($func);
+			loadExtras('mysql');
+			$mysql_func="mysql".ucfirst($func);
+			if(function_exists($mysql_func)){
+				$func=$mysql_func;
 			}
+			else{$func=lcfirst($func);}
 			//return executeSQL($sql);
 		break;
 	}
