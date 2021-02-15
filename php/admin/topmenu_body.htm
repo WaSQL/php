@@ -22,6 +22,17 @@
 				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
 				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add"></span> <translate>Add Multiple</translate></a></li>
+				<view:add_prebuilt>
+				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-table-add"></span> <translate>Add Prebuilt Tables</translate></a>
+					<ul>
+						<view:prebuilt>
+						<li><a href="/php/admin.php?_menu=rebuild&_table_=<?=$table['name'];?>" class="dropdown"><span class="icon-list"></span> <?=$table['name'];?></a></li>
+						</view:prebuilt>
+						<?=renderEach('prebuilt',$prebuilt,'table');?>
+					</ul>
+				</li>
+				</view:add_prebuilt>
+				<?=renderViewIf(count($prebuilt),'add_prebuilt',$prebuilt,'prebuilt');?>
 				<li><hr size="1" /></li>
 				<view:tables_group>
 				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-group"></span> <?=$key;?> <translate>Tables</translate></a>

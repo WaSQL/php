@@ -653,35 +653,74 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			return 1;
 		break;
-		case 'states':
-			$fields['code']=databaseDataType('char(7)')." NOT NULL";
+		case 'cities':
 			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
-			$fields['country']=databaseDataType('char(2)')." NOT NULL Default 'US'";
+			$fields['country']=databaseDataType('varchar(3)');
+			$fields['state']=databaseDataType('varchar(7)');
+			$fields['longitude']=databaseDataType('decimal(12,8)');
+			$fields['latitude']=databaseDataType('decimal(12,8)');
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,country,state",'-unique'=>true));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
+			//populate the states with states and provinces for USA and Canada
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+			}
+            return 1;
+		break;
+		case 'colors':
+			$fields['code']=databaseDataType('varchar(50)')." NOT NULL";
+			$fields['name']=databaseDataType('varchar(100)');
+			$fields['hex']=databaseDataType('varchar(7)');
+			$fields['red']=databaseDataType('int');
+			$fields['green']=databaseDataType('int');
+			$fields['blue']=databaseDataType('int');
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code",'-unique'=>true));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
+			//populate the states with states and provinces for USA and Canada
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+			}
+            return 1;
+		break;
+		case 'states':
+			$fields['code']=databaseDataType('varchar(7)')." NOT NULL";
+			$fields['name']=databaseDataType('varchar(100)')." NOT NULL";
+			$fields['country']=databaseDataType('varchar(3)')." NOT NULL Default 'US'";
+			$fields['longitude']=databaseDataType('decimal(12,8)');
+			$fields['latitude']=databaseDataType('decimal(12,8)');
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,country",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
 			//populate the states with states and provinces for USA and Canada
-			if(!schemaUpdateStates()){
-				$progpath=dirname(__FILE__);
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/all_states.csv")){
+				$ok=dbAddRecords($CONFIG['database'],'states',array('-csv'=>"{$progpath}/schema/all_states.csv"));
+			}
+			elseif(!schemaUpdateStates()){
 				$files=listFilesEx("{$progpath}/schema",array('name'=>"states_",'ext'=>"csv"));
 				foreach($files as $file){
 					$csv=getCSVFileContents($file['afile']);
 					$tmp=preg_split('/\_/',getFileName($file['name'],1));
 					$country=strtoupper(array_pop($tmp));
-					foreach($csv['items'] as $item){
-		                $item['-table']=$table;
-						if(!isset($item['country'])){$item['country']=$country;}
-						//$item['name']=utf8_encode($item['name']);
-		                $id=addDBRecord($item);
-		                if(!isNum($id)){abort(printValue($id).printValue($item));}
+					foreach($csv['items'] as $i=>$item){
+						if(!isset($item['country'])){$csv['items'][$i]['country']=$country;}
 					}
+					$ok=dbAddRecords($CONFIG['database'],'states',array('-recs'=>$csv['items']));
 				}
 	        }
             addMetaData($table);
             return 1;
-			break;
+		break;
 		case 'contact_form':
 			$fields['name']=databaseDataType('varchar(150)')." NULL";
 			$fields['email']=databaseDataType('varchar(255)')." NOT NULL";

@@ -1451,11 +1451,12 @@ ENDOFX;
 		case 'rebuild':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Rebuild WaSQL Tables</h2>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
-            	if(dropDBTable($_REQUEST['_table_'],1)){
-					$ok=createWasqlTables($_REQUEST['_table_']);
-					$_REQUEST['_menu']='list';
-					goto LIST_TABLE;
-				}
+            	if(isDBTable($_REQUEST['_table_'])){
+            		dropDBTable($_REQUEST['_table_'],1);
+            	}
+            	$ok=createWasqlTables($_REQUEST['_table_']);
+				$_REQUEST['_menu']='list';
+				goto LIST_TABLE;
 			}
 			else{
 	    		clearDBCache(array('databaseTables','isDBTable'));

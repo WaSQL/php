@@ -30,6 +30,7 @@
 		$templates=getDBRecords(array('-table'=>'_templates','-fields','_id,name','-order'=>'name','-limit'=>15));
 		//get the most active 15 users
 		$users=getDBRecords(array('-table'=>'_users','-fields','_id,type,username','-order'=>'_edate desc,_adate desc','-limit'=>15));
+		$prebuilt=topmenuGetPreBuiltTables();
 		setView('admin');
 	}
 
