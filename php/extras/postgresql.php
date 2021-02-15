@@ -40,7 +40,7 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("postgresqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'postgresqlAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

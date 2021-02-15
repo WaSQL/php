@@ -37,7 +37,7 @@ function oracleAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("oracleAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'oracleAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'oracleAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

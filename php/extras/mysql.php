@@ -29,7 +29,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("mysqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'mysqlAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));
@@ -58,32 +58,24 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$query="INSERT IGNORE INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!in_array($k,$fields)){
-				unset($rec[$k]);
-				continue;
+		$vals=array();
+		foreach($fields as $field){
+			$val='NULL';
+			if(isset($rec[$field]) && strlen($rec[$field])){
+				$val=mysqlEscapeString($rec[$field]);
+				$val="'{$val}'";
 			}
-			if(!strlen($v)){
-				$rec[$k]='NULL';
-			}
-			else{
-				$v=mysqlEscapeString($v);
-				$rec[$k]="'{$v}'";
-			}
+			$vals[]=$val;
 		}
-		$values[]='('.implode(',',array_values($rec)).')';
+		$values[]='('.implode(',',$vals).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
 	//echo $query;exit;
 	$ok=mysqlExecuteSQL($query);
 	return count($values);
-}
-function mysqlEscapeString($str){
-	$str = str_replace("'","''",$str);
-	return $str;
 }
 //---------- begin function mysqlGetTableDDL ----------
 /**
@@ -621,13 +613,14 @@ function mysqlDBConnect($params=array()){
 * @usage $ok=mysqlExecuteSQL("truncate table abc");
 */
 function mysqlExecuteSQL($query,$params=array()){
+	$query=trim($query);
+	global $USER;
 	global $dbh_mysql;
-	if(!is_resource($dbh_mysql)){
-		$dbh_mysql=mysqlDBConnect();
-	}
+	$dbh_mysql='';
+	$dbh_mysql=mysqlDBConnect();
 	if(!$dbh_mysql){
 		debugValue(array(
-			'function'=>'mysqlQueryResults',
+			'function'=>'mysqlExecuteSQL',
 			'message'=>'connect failed',
 			'error'=>mysqli_connect_error(),
 			'query'=>$query
@@ -635,16 +628,24 @@ function mysqlExecuteSQL($query,$params=array()){
     	return;
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
-	if(!$result){
+	$err=mysqli_error($dbh_mysql);
+	if(is_array($err) || strlen($err)){
 		debugValue(array(
 			'function'=>'mysqlExecuteSQL',
 			'message'=>'mysqli_query failed',
-			'error'=>mysqli_error($dbh_mysql),
+			'error'=>$err,
 			'query'=>$query
 		));
 		mysqli_close($dbh_mysql);
 		return null;
 	}
+	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
+    	//return the id inserted on insert statements
+    	$id=databaseAffectedRows($result);
+    	mysqli_close($dbh_mysql);
+    	return $id;
+	}
+	$results = mysqlEnumQueryResults($result,$params);
 	mysqli_close($dbh_mysql);
 	return true;
 }
@@ -662,7 +663,8 @@ function mysqlGetDBFieldInfo($table=''){
 	$query="show full columns from {$table}";
 	$recs=mysqlQueryResults($query);
 	$info=array();
-	foreach($recs as $key=>$rec){
+	foreach($recs as $i=>$rec){
+		$key=strtolower($rec['field']);
     	if(preg_match('/(VIRTUAL|STORED) GENERATED/i',$rec['extra'])){
 			$info[$key]['expression']=mysqlGetDBExpression($vtable,$rec['field']);
 		}
@@ -909,19 +911,20 @@ function mysqlGetDBWhere($params,$info=array()){
 }
 function mysqlEscapeString($str){
 	global $dbh_mysql;
-	if(!is_resource($dbh_mysql)){
-		$dbh_mysql=mysqlDBConnect();
+	if(is_resource($dbh_mysql)){
+		if(function_exists('mysqli_real_escape_string')){
+			$str=mysqli_real_escape_string($dbh_mysql,$str);
+		}
+		elseif(function_exists('mysqli_escape_string')){
+			$str=mysqli_escape_string($dbh_mysql,$str);
+		}
+		else{
+			$str = str_replace("'","''",$str);
+		}
 	}
-	if(!$dbh_mysql){
-		debugValue(array(
-			'function'=>'mysqlQueryResults',
-			'message'=>'connect failed',
-			'error'=>mysqli_connect_error(),
-			'query'=>$query
-		));
-    	return;
+	else{
+		$str = str_replace("'","''",$str);
 	}
-	$str = function_exists('mysqli_real_escape_string')?mysqli_real_escape_string($dbh_mysql,$str):mysqli_escape_string($dbh_mysql,$str);
 	return $str;
 }
 //---------- begin function mysqlIsDBTable ----------
@@ -1005,11 +1008,12 @@ function mysqlQueryResults($query='',$params=array()){
     	return;
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
-	if(1==2 && !$result){
+	$err=mysqli_error($dbh_mysql);
+	if(is_array($err) || strlen($err)){
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
 			'message'=>'mysqli_query failed',
-			'error'=>mysqli_error($dbh_mysql),
+			'error'=>$err,
 			'query'=>$query
 		));
 		mysqli_close($dbh_mysql);
@@ -1017,7 +1021,6 @@ function mysqlQueryResults($query='',$params=array()){
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
-
     	$id=databaseAffectedRows($result);
     	mysqli_close($dbh_mysql);
     	return $id;

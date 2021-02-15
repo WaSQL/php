@@ -29,7 +29,7 @@ function snowflakeAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("snowflakeAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'snowflakeAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'snowflakeAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

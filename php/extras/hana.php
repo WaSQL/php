@@ -35,7 +35,7 @@ function hanaAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("hanaAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'hanaAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'hanaAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

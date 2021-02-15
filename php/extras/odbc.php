@@ -38,7 +38,7 @@ function odbcAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("odbcAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'odbcAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'odbcAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

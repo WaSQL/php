@@ -47,7 +47,7 @@ function mssqlAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("mssqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'mssqlAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));

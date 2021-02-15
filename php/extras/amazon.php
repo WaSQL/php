@@ -8,14 +8,230 @@ $progpath=dirname(__FILE__);
 	https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:
 	http://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html
 
-
 	$afile="/path/to/myfile.jpg";
 	$ok=amazonUploadFileS3(array(
 		'file'=>$afile,
 		'folder'=>'pub'
 	));
-
 */
+function amazonConvertFile($tablename,$fieldname,$record_id){
+	//make sure aws_convert_files table exists
+	if(!isDBTable('aws_convert_files')){
+		$fields=array(
+			'processed'=>'tinyint(1) NOT NULL Default 0',
+			'record_id'=>'int NOT NULL',
+			'process_id'=>'int NOT NULL Default 0',
+			'status'=>'varchar(25) NULL',
+			'results'=>'varchar(3000)',
+			'tablename'=>'varchar(100) NOT NULL',
+			'fieldname'=>'varchar(50) NOT NULL'
+		);
+		$ok = createDBTable('aws_convert_files',$fields,'InnoDB');
+		$ok=addDBIndex(array('-table'=>'aws_convert_files','-fields'=>"processed"));
+	}
+	$ok=addDBRecord(array(
+		'-table'=>'aws_convert_files',
+		'tablename'=>$tablename,
+		'fieldname'=>$fieldname,
+		'record_id'=>$record_id,
+		'processed'=>0,
+		'process_id'=>0,
+		'status'=>'queued'
+	));
+	return $ok;
+}
+function amazonConvertFilesS3($params=array()){
+	global $CONFIG;
+	global $databaseCache;
+	//require -accesskey
+	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
+		$params['-accesskey']=$CONFIG['aws_accesskey'];
+	}
+	if(!isset($params['-accesskey'])){
+		return "amazonUploadFileS3 Error: missing -accesskey";
+	}
+	//require -secretkey
+	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
+		$params['-secretkey']=$CONFIG['aws_secretkey'];
+	}
+	if(!isset($params['-secretkey'])){
+		return "amazonUploadFileS3 Error: missing -secretkey";
+	}
+	//require bucket
+	if(!isset($params['bucket']) && isset($CONFIG['aws_bucket'])){
+		$params['bucket']=$CONFIG['aws_bucket'];
+	}
+	if(!isset($params['bucket'])){
+		return "amazonUploadFileS3 Error: missing bucket param";
+	}
+	//requre region - us-west-2, us-east-1, etc
+	if(!isset($params['region']) && isset($CONFIG['aws_region'])){
+		$params['region']=$CONFIG['aws_region'];
+	}
+	if(!isset($params['region'])){
+		return "amazonUploadFileS3 Error: missing region param";
+	}
+	//acl - public, public-read, private
+	if(!isset($params['acl']) && isset($CONFIG['aws_acl'])){
+		$params['acl']=$CONFIG['aws_acl'];
+	}
+	if(!isset($params['acl'])){
+		$params['acl']='x-amz-acl:public-read';
+	}
+	//require file
+	if(!isset($params['file'])){
+		return "amazonUploadFileS3 Error: missing file param";
+	}
+	if(!file_exists($params['file'])){
+		return "amazonUploadFileS3 Error: file does not exist - {$params['file']}";
+	}
+	//make sure aws_convert_files exists
+	if(!isDBTable('aws_convert_files')){
+		$fields=array(
+			'processed'=>'tinyint(1) NOT NULL Default 0',
+			'record_id'=>'int NOT NULL',
+			'process_id'=>'int NOT NULL Default 0',
+			'status'=>'varchar(25) NULL',
+			'results'=>'varchar(3000)',
+			'tablename'=>'varchar(100) NOT NULL',
+			'fieldname'=>'varchar(50) NOT NULL'
+		);
+		$ok = createDBTable('aws_convert_files',$fields,'InnoDB');
+		$ok=addDBIndex(array('-table'=>'aws_convert_files','-fields'=>"processed"));
+	}
+	$rec=getDBRecord(array(
+		'-table'=>'aws_convert_files',
+		'processed'=>0
+	));
+	if(isset($rec['_id'])){
+		//nothing to do
+		return 0;
+	}
+	$process_id=getmypid();
+	//try to claim it my assiging our process_id to it
+	$ok=editDBRecord(array(
+		'-table'=>'aws_convert_files',
+		'-where'=>"_id={$rec['_id']} and process_id=0",
+		'process_id'=>$process_id
+	));
+	//make sure we claimed it
+	$databaseCache=array();
+	$rec=getDBRecordById('aws_convert_files',$rec['_id']);
+	if(!isset($rec['_id'])){return 0;}
+	if($rec['process_id'] != $process_id){return "failed to claim record {$rec['_id']}";}
+	//if we are here we have claimed the record to process
+	$ok=editDBRecordById('aws_convert_files',$rec['_id'],array('processed'=>1));
+	//get the record from the table specified
+	$crec=getDBRecordById($rec['tablename'],$rec['record_id'],"_id,{$rec['fieldname']}");
+	if(!isset($crec['_id'])){
+		$ok=editDBRecordById('aws_convert_files',$rec['_id'],array(
+			'status'=>'failed',
+			'results'=>'No such record'
+		));
+		return $rec['_id'];
+	}
+	$field=$rec['fieldname'];
+	//has this record already been converted?
+	if(stringContains($crec[$field],'amazonaws')){
+		$ok=editDBRecordById('aws_convert_files',$rec['_id'],array(
+			'status'=>'failed',
+			'results'=>'already on amazon'
+		));
+		return $rec['_id'];
+	}
+	//has this record already been converted?
+	if(stringBeginsWith($crec[$field],'http')){
+		$ok=editDBRecordById('aws_convert_files',$rec['_id'],array(
+			'status'=>'failed',
+			'results'=>'already hosted elsewhere'
+		));
+		return $rec['_id'];
+	}
+	//get absolute path to file and confirm it exists
+	$afile=$_SERVER['DOCUMENT_ROOT'].$crec[$field];
+	if(!file_exists($afile)){
+		$ok=editDBRecordById('aws_convert_files',$rec['_id'],array(
+			'status'=>'failed',
+			'results'=>"No such file: {$afile}"
+		));
+		return $rec['_id'];
+	}
+	$ext=getFileExtension($afile);
+	$fname=getFileName($afile);
+	$uid=$crec['_cuser'];
+	$editrec=array();
+	switch(strtolower($ext)){
+		case 'heic':
+			//iphone image file format - apt install libheif1 libheif-examples
+			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.png";
+			$cmd="heif-convert \"{$afile}\"  \"{$nfile}\"";
+			if(file_exists($nfile)){unlink($nfile);}
+			$results=cmdResults($cmd);
+			$editrec['results']=json_encode($results);
+		break;
+		case 'mov':
+		case 'avi':
+			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.mp4";
+			$cmd="/usr/bin/ffmpeg -y -hide_banner -i \"{$afile}\" -vcodec copy -acodec copy  \"{$nfile}\"";
+			if(file_exists($nfile)){unlink($nfile);}
+			$results=cmdResults($cmd);
+			$editrec['results']=json_encode($results);
+		break;
+		default:
+			//just upload the rest to AWS
+			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.{$ext}";
+			$ok=copyFile($afile,$nfile);
+			$results=array('cmd'=>'copyFile','from'=>$afile,'to'=>$nfile,'result'=>$ok);
+			$editrec['results']=json_encode($results);
+		break;
+	}
+	if(file_exists($nfile) && filesize($nfile)> 0){
+		//upload to amazon
+		$opts=array(
+			'file'=>$nfile
+		);
+		if(isset($CONFIG['aws_folder'])){
+			$folder=$CONFIG['aws_folder'];
+			//replace any field values in folder
+			foreach($crec as $k=>$v){
+				$folder=str_replace("%{$k}%",$v,$folder);
+			}
+			$opts['folder']=$folder;
+		}
+		//upload to Amazon S3
+		$ok=amazonUploadFileS3($opts);
+		if($ok==1){
+			//success
+			$fname=getFileName($opts['file']);
+			$url="https://{$CONFIG['aws_bucket']}.s3-{$CONFIG['aws_region']}.amazonaws.com/";
+			if(isset($opts['folder'])){
+				$url .= "{$opts['folder']}/";
+			}
+			$url.=$fname;
+			//replace the field with the new url
+			$ok=editDBRecordById($rec['tablename'],$crec['_id'],array(
+				$rec['fieldname']=>$url
+			));
+			//remove the local files
+			unlink($opts['file']);
+			if(file_exists($afile)){unlink($afile);}
+			//set status
+			$editrec['status']='success';
+		}
+		else{
+			//failed to upload
+			$editrec['status']='failure';
+		}
+	}
+	else{
+		//failed to create file
+		$editrec['status']='failure';
+	}
+	if(count($editrec)){
+		$ok=editDBRecordById('aws_convert_files',$rec['_id'],$editrec);
+	}
+	return $rec['_id'];
+}
 function amazonUploadFileS3($params=array()){
 	global $CONFIG;
 	$rtn=array();

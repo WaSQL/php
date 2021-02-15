@@ -29,7 +29,7 @@ function sqliteAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("sqliteAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($table,'sqliteAddDBRecordsProcess',array(
+		$ok=processCSVLines($params['-csv'],'sqliteAddDBRecordsProcess',array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
 		));
