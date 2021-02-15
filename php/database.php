@@ -147,6 +147,7 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 		default:
 			$func=lcfirst($func);
 			if(!function_exists($func)){
+				loadExtras('mysql');
 				$func="mysql".ucfirst($func);
 			}
 			//return executeSQL($sql);
@@ -3231,8 +3232,9 @@ function dropDBIndex($indexname,$tablename){
 	if(!strlen($indexname)){return 'dropDBIndex Error: No indexname';}
 	if(!strlen($tablename)){return 'dropDBIndex Error: No tablename';}
 	//build and execute
-	$query="alter table {$tablename} drop index {$indexname}";
-	return executeSQL($query);
+	$query="drop index {$indexname} on {$tablename}";
+	$ok=executeSQL($query);
+	//echo $query.printValue($ok);exit;
 }
 //---------- begin function addEditDBForm--------------------
 /**
@@ -5661,7 +5663,7 @@ function dropDBColumn($table,$columns){
 * @return 1
 * @usage $ok=dropDBTable('comments',1);
 */
-	function dropDBTable($table='',$meta=1){
+function dropDBTable($table='',$meta=1){
 	if(isPostgreSQL()){return postgresqlDropDBTable($table,$meta);}
 	elseif(isSqlite()){return sqliteDropDBTable($table,$meta);}
 	elseif(isOracle()){return oracleDropDBTable($table,$meta);}
@@ -5673,10 +5675,11 @@ function dropDBColumn($table,$columns){
 	if(is_array($recs)){
 		foreach($recs as $rec){
 	    	$key=$rec['key_name'];
+	    	if(strtolower($key)=='primary'){continue;}
+	    	//echo "Index:{$table},{$key}<br>";
 	    	$ok=dropDBIndex($table,$key);
 		}
 	}
-	if(isMssql()){$table="[{$table}]";}
 	$result=executeSQL("drop table {$table}");
 	if(isset($result['error'])){
 		return $result['error'];
@@ -10710,60 +10713,9 @@ function databaseIndexes($table){
 	elseif(isOracle()){return oracleGetDBTableIndexes($table);}
 	elseif(isMssql()){return mssqlGetDBTableIndexes($table);}
 	//Get the ID generated in the last query - supports multiple database types
-	if(isMysqli() || isMysql()){
-		return getDBRecords(array('-query'=>"show index from {$table}"));
-    }
-    elseif(isOracle()){
-    	$query="
-		SELECT
- 			table_name as name,
- 			column_name as key_name,
-	 		index_owner as owner,
-			table_name as table
-			FROM dba_ind_columns
-			table_name='{$table}'
-			ORDER BY column_position
-		";
-		return getDBRecords(array('-query'=>$query));
-	}
-    elseif(isPostgreSQL()){
-    	$query="
-		SELECT n.nspname as schema,
- 		c.relname as name,
-		CASE c.relkind
-			WHEN 'r' THEN 'table'
-			WHEN 'v' THEN 'view'
-			WHEN 'i' THEN 'index'
-			WHEN 'S' THEN 'sequence'
-			WHEN 's' THEN 'special'
-			END as type,
-	 	u.usename as owner,
-		c2.relname as table
-		FROM pg_catalog.pg_class c
-	    	JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid
-	    	JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid
-	    	LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner
-	    	LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-		WHERE c.relkind IN ('i','')
-	     	AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
-	     	AND pg_catalog.pg_table_is_visible(c.oid)
-	     	and c2.relname='{$table}'
-		ORDER BY 1,2
-		";
-	return getDBRecords(array('-query'=>$query));
-	}
-	elseif(isSqlite()){return array();}
-	elseif(isMssql()){
-		$query='SELECT sys.tables.object_id, sys.tables.name as table_name, sys.columns.name as column_name, sys.indexes.name as index_name,
-sys.indexes.is_unique, sys.indexes.is_primary_key
-FROM sys.tables, sys.indexes, sys.index_columns, sys.columns
-WHERE (sys.tables.object_id = sys.indexes.object_id AND sys.tables.object_id = sys.index_columns.object_id AND sys.tables.object_id = sys.columns.object_id
-AND sys.indexes.index_id = sys.index_columns.index_id AND sys.index_columns.column_id = sys.columns.column_id)
-AND sys.tables.name = '."'{$table}'";
-		return getDBRecords(array('-query'=>$query));
-    	}
-    return null;
-	}
+	return getDBRecords(array('-query'=>"show index from {$table}"));
+
+}
 //---------- begin function databaseInsertId ----------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
