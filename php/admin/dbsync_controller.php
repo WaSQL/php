@@ -63,15 +63,18 @@
 			return;
 		break;
 		case 'view_procedure':
+			$name=$_REQUEST['name'];
+			$type=$_REQUEST['type'];
 			$source=$_REQUEST['source'];
 			$target=$_REQUEST['target'];
-			$title="{$_REQUEST['type']} - {$_REQUEST['name']}";
-			$s=dbGetProcedureText($source,$_REQUEST['name'],$_REQUEST['type']);
-			$t=dbGetProcedureText($target,$_REQUEST['name'],$_REQUEST['type']);
+			$title="{$_REQUEST['type']} - {$name}";
+			$status=$_REQUEST['status'];
+			$s=dbGetProcedureText($source,$name,$type);
+			$t=dbGetProcedureText($target,$name,$type);
 			$diff=diffText($s,$t);
 			setView('view_diff',1);
-			if(in_array($_SESSION['dbsync'][$table]['indexes'],array('different','new','missing'))){
-				setView('sync_indexes_button');
+			if($status != 'same'){
+				setView('sync_procedure_button');
 			}
 			return;
 		break;
@@ -106,7 +109,28 @@
 			setView('view_sync',1);
 			return;
 		break;
+		case 'sync_procedure':
+			$name=$_REQUEST['name'];
+			$type=$_REQUEST['type'];
+			$source=$_REQUEST['source'];
+			$target=$_REQUEST['target'];
+			$title="Sync {$type} - {$name}";
+			//get the DDL from source
+			$ddl=dbGetDDL($source,$type,$name);
+			$_SESSION['debugValue_lastm']='';
+			//compile the DDL on target
+			$ok=dbExecuteSQL($target,$ddl);
+			if(strlen($_SESSION['debugValue_lastm'])){
+				$error=nl2br($_SESSION['debugValue_lastm']);
+				$sync="DONE with Errors <br> $error";
 
+			}
+			else{
+				$sync="DONE";
+			}
+			setView('view_sync',1);
+			return;
+		break;
 
 		case 'fields':
 			$table=addslashes($_REQUEST['table']);

@@ -61,16 +61,21 @@
 	</div>
 	</view:sync_fields_button>
 	<view:sync_indexes_button>
-	<div class="align-right">
+	<div class="align-right w_top">
 		<button type="button" id="sync_indexes_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_indexes" data-table="<?=$table;?>" data-confirm="Confirm sync indexes?" data-setprocessing="sync_indexes_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
 	</div>
 	</view:sync_indexes_button>
+	<view:sync_procedure_button>
+	<div class="align-left" style="margin-top:10px">
+		<button type="button" id="sync_procedure_button" class="btn button" onclick="dbsyncFunc(this);" data-div="centerpop" data-status="<?=$status;?>" data-func="sync_procedure" data-name="<?=$name;?>" data-type="<?=$type;?>" data-confirm="Confirm sync <?=$type;?>?" data-setprocessing="sync_procedure_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+	</div>
+	</view:sync_procedure_button>
 </div>
 </view:view_diff>
 
 <view:view_sync>
 <div class="w_centerpop_title"><?=$title;?></div>
-<div class="w_centerpop_content">
+<div class="w_centerpop_content" style="max-height:60vh;overflow:auto;">
 	<?=$sync;?>
 </div>
 </view:view_sync>

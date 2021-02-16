@@ -98,24 +98,26 @@ function oracleEscapeString($str){
 //---------- begin function oracleGetTableDDL ----------
 /**
 * @describe returns create script for specified table
-* @param table string - tablename
+* @param type string - object type
+* @param name string - object name
 * @param [schema] string - schema. defaults to dbschema specified in config
 * @return string
 * @usage $createsql=oracleGetTableDDL('sample');
 */
-function oracleGetTableDDL($table,$schema=''){
-	$table=strtoupper($table);
+function oracleGetDDL($type,$name,$schema=''){
+	$type=strtoupper($type);
+	$name=strtoupper($name);
 	if(!strlen($schema)){
 		$schema=oracleGetDBSchema();
 	}
 	if(!strlen($schema)){
-		debugValue('oracleGetTableDDL error: schema is not defined in config.xml');
+		debugValue('oracleGetDDL error: schema is not defined in config.xml');
 		return null;
 	}
 	$schema=strtoupper($schema);
 	$query=<<<ENDOFQUERY
 		SELECT 
-			DBMS_METADATA.GET_DDL('TABLE','{$table}','{$schema}') as ddl 
+			DBMS_METADATA.GET_DDL('{$type}','{$name}','{$schema}') as ddl 
 		FROM DUAL
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -124,6 +126,50 @@ ENDOFQUERY;
 		return $recs[0]['ddl'];
 	}
 	return $recs;
+}
+//---------- begin function oracleGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param name string - table name
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=oracleGetTableDDL('sample');
+*/
+function oracleGetTableDDL($name,$schema=''){
+	return oracleGetDDL('TABLE',$name,$schema);
+}
+//---------- begin function oracleGetPackageDDL ----------
+/**
+* @describe returns create script for specified package
+* @param name string - package name
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=oracleGetPackageDDL('pk_sample');
+*/
+function oracleGetPackageDDL($name,$schema=''){
+	return oracleGetDDL('PACKAGE',$name,$schema);
+}
+//---------- begin function oracleGetFunctionDDL ----------
+/**
+* @describe returns create script for specified function
+* @param name string - function name
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=oracleGetFunctionDDL('fn_sample');
+*/
+function oracleGetFunctionDDL($name,$schema=''){
+	return oracleGetDDL('FUNCTION',$name,$schema);
+}
+//---------- begin function oracleGetTriggerDDL ----------
+/**
+* @describe returns create script for specified trigger
+* @param name string - trigger name
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=oracleGetTriggerDDL('sample_trg');
+*/
+function oracleGetTriggerDDL($name,$schema=''){
+	return oracleGetDDL('TRIGGER',$name,$schema);
 }
 //---------- begin function oracleGetProcedureText ----------
 /**

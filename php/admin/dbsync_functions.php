@@ -149,7 +149,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 				$recs[$key]=$proc;
 			}
 			$cols=array();
-			$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+			$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			$recs[$key]['status']='';
 			switch(strtolower($recs[$key]['diff'])){
 				case 'new':

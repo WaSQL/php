@@ -406,6 +406,18 @@ function dbGetCount($db,$params){
 function dbGetProcedureText($db,$name,$type,$schema=''){
 	return dbFunctionCall('getProcedureText',$db,$name,$type,$schema);
 }
+//---------- begin function dbGetDDL
+/**
+* @describe returns DDL to specified object type and name
+* @param db string - database name as specified in the database section of config.xml
+* @param type string - object type
+* @param name string - object name
+* @return string
+* @usage $createsql=dbGetDDL($db,$table);
+*/
+function dbGetDDL($db,$type,$name){
+	return dbFunctionCall('getDDL',$db,$type,$name);
+}
 //---------- begin function dbGetTableDDL
 /**
 * @describe returns sql to create the specified table
