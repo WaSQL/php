@@ -667,7 +667,7 @@ function createWasqlTable($table=''){
 			//populate the states with states and provinces for USA and Canada
 			$progpath=dirname(__FILE__);
 			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv"));
 			}
             return 1;
 		break;
