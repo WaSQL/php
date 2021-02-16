@@ -595,6 +595,7 @@ if(isAjax()){
 		case 'meta':
 		case 'dbsync':
 		case 'ref':
+		case 'zipcodes':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1259,6 +1260,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'website_grader':
 		case 'dbsync':
 		case 'ref':
+		case 'zipcodes':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1449,7 +1451,6 @@ ENDOFX;
             echo buildTableEnd();
 		break;
 		case 'rebuild':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Rebuild WaSQL Tables</h2>'.PHP_EOL;
 			if(isset($_REQUEST['_table_'])){
             	if(isDBTable($_REQUEST['_table_'])){
             		dropDBTable($_REQUEST['_table_'],1);

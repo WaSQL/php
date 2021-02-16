@@ -50,11 +50,10 @@ function zipcodesCreateTable(){
 
 //---------- begin function zipcodesImportCountry ----------
 /**
-* @describe creates and pushes a zip file to the browser
-* @param files array - array of files to include in the zip file
-* @param zipname string - name of the zipfile - defaults to zipfile.zip
+* @describe imports specified countries into the zipcodes table
+* @param countries string - comma separated list of countries
 * @param truncate boolean - truncate the table first - defaults to false
-* @return file - pushes zipfile to browser and exits
+* @return mixed - true on success and an error message on failure
 * @usage
 *	<?php
 *	loadExtras('zipcodes');
@@ -62,8 +61,10 @@ function zipcodesCreateTable(){
 *	?>
 */
 function zipcodesImportCountry($country_codes,$truncate=false){
-	global $dbh;
 	global $USER;
+	global $CONFIG;
+	global $zipcodesRecs;
+	$zipcodesRecs=array();
 	ini_set('max_execution_time', 5000);
 	set_time_limit(5500);
 	//truncate?
@@ -78,68 +79,26 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 	//make sure a temp folder exists to extract the zip files into
 	if(!is_dir("{$progpath}/temp")){buildDir("{$progpath}/temp");}
 	if(!is_dir("{$progpath}/temp")){
-		$rtn['errors'][]="Unable to create {$progpath}/temp";
-		return $rtn;
+		return "Unable to create {$progpath}/temp";
 	}
-	$sql = "INSERT INTO zipcodes (
-			_cuser,_cdate,community_code,community_name, country_code, county_code, county_name,
-			latitude, longitude,
-			name, postal_code, state_code, state_name, updated
-			) VALUES ( ?,?,?,?,?,?,?,?,?,?,?,?,?,? )";
-	$cdate=date('Y-m-d');
-	global $zipcodeLine;
-	global $zipcodePreparedStmt;
-	$zipcodePreparedStmt = $dbh->prepare($sql);
-	$cuser=isset($USER['_id'])?$USER['_id']:0;
-	$zipcodeLine=array(
-		'_cuser'		=> $cuser,
-		'_cdate'		=> $cdate,
-		'community_code'=> '',
-		'community_name'=> '',
-		'country_code'	=> 'US',
-		'county_code'	=> '029',
-		'county_name'	=> 'Abcdefg Hijklm',
-		'latitude'		=> 41.037498474121,
-		'longitude'		=> -111.678901672363,
-		'name'			=> 'Sdbflmz Himsopqr',
-		'postal_code'	=> '30334',
-		'state_code'	=> 'AA',
-		'state_name'	=> 'Abcdefg',
-		'updated'		=> $cdate
-	);
-	$zipcodePreparedStmt->bind_param('issssssddsssss',
-		$zipcodeLine['_cuser'],
-		$zipcodeLine['_cdate'],
-		$zipcodeLine['community_code'],
-		$zipcodeLine['community_name'],
-		$zipcodeLine['country_code'],
-		$zipcodeLine['county_code'],
-		$zipcodeLine['county_name'],
-		$zipcodeLine['latitude'],
-		$zipcodeLine['longitude'],
-		$zipcodeLine['name'],
-		$zipcodeLine['postal_code'],
-		$zipcodeLine['state_code'],
-		$zipcodeLine['state_name'],
-		$zipcodeLine['updated']
-	);
-	//lock the zipcodes table for efficiency
-	//loop through each country
 	foreach($country_codes as $country){
 		$country=strtoupper($country);
-		$rtn[$country]['start']=getRunTime();
-		if(!$truncate){$ok=executeSQL("delete from zipcodes where country_code='{$country}'");}
 		$remote_file="http://download.geonames.org/export/zip/{$country}.zip";
 		$local_file="{$progpath}/temp/zipcodes_{$country}.zip";
 		if(copy($remote_file,$local_file)){
+			if(!$truncate){
+				//clean out the zipcodes for this country
+				$ok=executeSQL("delete from zipcodes where country_code='{$country}'");
+			}
+			$zipcodesRecs=array();
 			$files=zipExtract($local_file);
 			foreach($files as $file){
 				$fname=getFileName($file,1);
 				if($fname==$country){
 					$rtn[$country]['file']=$file;
 					$rtn[$country]['lines_total']=processCSVFileLines($file,'zipcodesProcessLine',array(
-						'separator'=>"\t",
-						'fields'	=> array(
+						'-separator'=>"\t",
+						'-fields'	=> array(
 							'country_code','postal_code','name',
 							'state_name','state_code',
 							'county_name','county_code',
@@ -150,24 +109,17 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 						'_cdate'	=> date('Y-m-d H:i:s'),
 						'_cuser'	=> $cuser
 					));
-					//remove any records in the table for this country that did not get updated
-					//$ok=executeSQL("delete from zipcodes where country_code='{$country}' and updated != '{$cdate}'");
 				}
 			}
 			//cleanup
 			cleanDir("{$progpath}/temp/zipcodes_{$country}");
 			rmdir("{$progpath}/temp/zipcodes_{$country}");
-			$rtn[$country]['stop']=getRunTime();
-			$elapsed=$rtn[$country]['stop']-$rtn[$country]['start'];
-			$rtn[$country]['lines_per_second']=round($rtn[$country]['lines_total']/$elapsed,1);
-			$rtn[$country]['runtime']=verboseTime($elapsed);
-			$rtn[$country]['memory']=getMemoryUsage();
-		}
-		else{
-        	$rtn['errors'][]="file copy failed: {$remote_file} to {$local_file}";
+			$addopts=array('-recs'=>$zipcodesRecs);
+			$ok=dbAddRecords($CONFIG['database'],'zipcodes',$addopts);
+			//echo "dbAddRecords".printValue($ok).printValue($addopts);exit;
 		}
 	}
-	return $rtn;
+	return $country_codes;
 }
 //---------- begin function zipcodesGetClosestRecords ----------
 /**
@@ -208,17 +160,9 @@ ENDOFQUERY;
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function zipcodesProcessLine($rec){
-	global $zipcodeLine;
-	global $zipcodePreparedStmt;
-	foreach($zipcodeLine as $key=>$val){
-		if(isset($rec['line'][$key])){
-    		$zipcodeLine[$key]=$rec['line'][$key];
-		}
-		elseif(isset($rec[$key])){
-        	$zipcodeLine[$key]=$rec[$key];
-		}
-	}
-	$zipcodePreparedStmt->execute();
+	global $zipcodesRecs;
+	//echo printValue($rec);exit;
+	$zipcodesRecs[]=$rec['line'];
 	return;
 }
 ?>

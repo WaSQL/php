@@ -41,7 +41,13 @@ function mysqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("mysqlAddDBRecords Error: no recs");
 		}
-		return mysqlAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+		$chunks=array_chunk($params['-recs'],$params['-chunk']);
+		$cnt=0;
+		foreach($chunks as $chunk){
+			$chunk_cnt=mysqlAddDBRecordsProcess($chunk,array('table'=>$table));
+			if(isNum($chunk_cnt)){$cnt+=$chunk_cnt;}
+		}
+		return $cnt;
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){

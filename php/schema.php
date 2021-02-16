@@ -721,37 +721,18 @@ function createWasqlTable($table=''){
             addMetaData($table);
             return 1;
 		break;
-		case 'contact_form':
-			$fields['name']=databaseDataType('varchar(150)')." NULL";
-			$fields['email']=databaseDataType('varchar(255)')." NOT NULL";
-			$fields['subject']=databaseDataType('varchar(150)')." NOT NULL";
-			$fields['message']="text NULL";
-			$ok = createDBTable($table,$fields,'InnoDB');
-			if($ok != 1){break;}
-			addMetaData($table);
-			break;
-		case 'countries':
-			$fields['areainsqkm']=databaseDataType('real(12,1)')." NOT NULL Default 0";
-			$fields['capital']=databaseDataType('varchar(255)')." NULL";
-			$fields['continent']=databaseDataType('char(5)')." NULL";
-			$fields['continentname']=databaseDataType('varchar(255)')." NULL";
-			$fields['countrycode']=databaseDataType('char(5)')." NOT NULL";
-			$fields['countryname']=databaseDataType('varchar(255)')." NULL";
-			$fields['currencycode']=databaseDataType('varchar(150)')." NULL";
-			//$fields['east']=databaseDataType('bigint')." NULL";
-			$fields['fipscode']=databaseDataType('char(5)')." NOT NULL";
-			$fields['geonameid']=databaseDataType('integer')." NOT NULL Default 0";
-			$fields['isoalpha3']=databaseDataType('char(3)')." NOT NULL";
-			$fields['isonumeric']=databaseDataType('integer')." NOT NULL";
-			$fields['languages']=databaseDataType('varchar(255)')." NULL";
-			$fields['population']=databaseDataType('integer')." NOT NULL Default 0";
-			$fields['population_rank']=databaseDataType('integer')." NOT NULL Default 0";
-			//$fields['north']=databaseDataType('bigint')." NULL";
-			//$fields['south']=databaseDataType('bigint')." NULL";
-			//$fields['west']=databaseDataType('bigint')." NULL";
+		case 'countries':	
 			$fields['code']=databaseDataType('char(2)')." NOT NULL";
 			$fields['code3']=databaseDataType('char(3)')." NULL";
 			$fields['name']=databaseDataType('varchar(200)')." NOT NULL";
+			$fields['capital']=databaseDataType('varchar(255)')." NULL";
+			$fields['currency']=databaseDataType('varchar(25)')." NULL";
+			$fields['currency_symbol']=databaseDataType('varchar(25)')." NULL";
+			$fields['phone_code']=databaseDataType('varchar(5)')." NULL";
+			$fields['region']=databaseDataType('varchar(255)')." NULL";
+			$fields['subregion']=databaseDataType('varchar(255)')." NULL";
+			$fields['longitude']=databaseDataType('decimal(12,8)');
+			$fields['latitude']=databaseDataType('decimal(12,8)');
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -761,9 +742,9 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table if there is a countries.csv
 			$progpath=dirname(__FILE__);
-			if(!schemaUpdateCountries() && is_file("{$progpath}/schema/countries.csv")){
-				$ok=schemaImportCSV($table,'countries.csv');
-            }
+			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+			}
             addMetaData($table);
             return 1;
 			break;
@@ -2173,14 +2154,11 @@ function getWasqlTables(){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','countries','states','_errors',
+		'_fielddata','_tabledata','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_models','_sessions','_html_entities','_posteditlog'
 		);
-	if(isset($CONFIG['starttype']) && $CONFIG['starttype']=='sample'){
-		$tables[]='contact_form';
-	}
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
 	return $tables;

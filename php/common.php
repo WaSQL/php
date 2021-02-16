@@ -9563,6 +9563,9 @@ function getCSVRecords($file,$params=array()){
 	    }
 	    fclose($fh);
 	}
+	else{
+		return "getCSVRecords error: failed to open {$file}";
+	}
 	return $recs;
 }
 //---------- begin function getCSVSchema---------------------------------------

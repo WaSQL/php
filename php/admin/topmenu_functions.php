@@ -8,7 +8,12 @@ function topmenuGetPreBuiltTables(){
 	);
 	foreach($recs as $i=>$rec){
 		if(isDBTable($rec['name'])){
-			unset($recs[$i]);
+			$recs[$i]['class']='icon-checkbox';
+			$recs[$i]['onclick']="if(!confirm('A {$rec['name']} table already exists. Rebuild this table?')){return false;}else{return true;}";
+		}
+		else{
+			$recs[$i]['class']='icon-checkbox-empty';
+			$recs[$i]['onclick']="if(!confirm('Create this table - {$rec['name']}?')){return false;}else{return true;}";
 		}
 	}
 	return $recs;

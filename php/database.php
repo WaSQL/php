@@ -781,7 +781,7 @@ function databaseListRecords($params=array()){
 				$recs[$i][$k]=encodeHtml($v);
 			}
 		}
-		//echo printValue($params['-list']);
+		//echo printValue($params);exit;
 	}
 	//check for translate
 	$translate=0;

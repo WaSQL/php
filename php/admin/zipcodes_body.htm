@@ -1,0 +1,20 @@
+<view:default>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-map-marker"></span> Import Zipcodes</h2>
+<form method="post" action="/php/admin.php" onsubmit="setProcessing('zipcodes_process');">
+	<input type="hidden" name="_menu" value="zipcodes" />
+	<button type="submit" class="button btn">Import</button>
+	<div style="margin-top:5px;display:flex;justify-content: flex-start;">
+		<div id="zipcodes_list">
+			<?=renderView('zipcodes_list');?>
+		</div>
+		<div id="zipcodes_process" style="padding-left:15px;">
+			<?=json_encode($results);?>
+		</div>
+	</div>
+</form>
+</view:default>
+
+<view:zipcodes_list>
+<?=zipcodesListCountries();?>
+</view:zipcodes_list>
+

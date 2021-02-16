@@ -26,9 +26,10 @@
 				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-table-add"></span> <translate>Add Prebuilt Tables</translate></a>
 					<ul>
 						<view:prebuilt>
-						<li><a href="/php/admin.php?_menu=rebuild&_table_=<?=$table['name'];?>" class="dropdown"><span class="icon-list"></span> <?=$table['name'];?></a></li>
+						<li><a href="/php/admin.php?_menu=rebuild&_table_=<?=$table['name'];?>" onclick="<?=$table['onclick'];?>"><span class="<?=$table['class'];?>"></span> <?=$table['name'];?></a></li>
 						</view:prebuilt>
 						<?=renderEach('prebuilt',$prebuilt,'table');?>
+						<li><a href="/php/admin.php?_menu=zipcodes"><span class="icon-map-marker"></span> <translate>Zipcodes</translate></a></li>
 					</ul>
 				</li>
 				</view:add_prebuilt>
