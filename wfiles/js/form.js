@@ -75,6 +75,7 @@ function setInputFileName(fld){
 	if(fld.multiple){multiple=1;}
 	let label=document.querySelector('label[for='+fld.id+']');
 	let labeltxt=document.querySelector('label[for='+fld.id+'] span.input_file_text');
+	let pform=getParentForm(fld);
 	if(undefined == labeltxt.dataset.text){
 		labeltxt.dataset.text=getText(labeltxt);
 	}
@@ -93,8 +94,16 @@ function setInputFileName(fld){
 		reader.cfile=fld.files[f];
 		reader.filename=fld.files[f].name;
 		reader.f=f;
+		reader.pform=pform;
 		reader.fmax=fld.files.length-1;
 		reader.onload = function (e) {
+			//create a content hidden textarea without a name
+			let h=document.createElement('textarea');
+			h.style.display='none';
+			h.id=this.fld.id+'_base64_content';
+			h.innerHTML=e.target.result;
+			this.pform.appendChild(h);
+			//show thumbnail
 			let ext=this.filename.split('.').pop().toLowerCase();
 			if(this.result.indexOf('data:image') == 0){
 				let img=document.createElement('img');
@@ -3513,27 +3522,28 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 //--------------------------
 //--Submit form using ajax
 function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
-	//check for file fields
+	//check for file fields and append content to ajax request
 	let fields=theform.querySelectorAll('input[type="file"]');
 	for(let i=0;i<fields.length;i++){
 		if(undefined == fields[i].id){continue;}
-		let img=theform.querySelector('label[for="'+fields[i].id+'"] img');
-		if(undefined != img){
-			let name=fields[i].value.split('\\').pop().split('/').pop();
-			if(undefined != theform[fields[i].name]){
-				fields[i].parentNode.removeChild(fields[i]);
-			}
-			let h=document.createElement('input');
-			h.type='hidden';
-			h.name=fields[i].name;
-			h.value=name;
-			theform.appendChild(h);
-			h=document.createElement('textarea');
-			h.style.display='none';
-			h.name=fields[i].name+'_base64';
-			h.value=name+';'+name+';'+img.src;
-			theform.appendChild(h);
+		let cid=fields[i].id+'_base64_content';
+		let cobj=theform.querySelector('#'+cid);
+		if(undefined==cobj){continue;}
+		if(cobj.innerHTML.length==0){continue;}
+		let name=fields[i].value.split('\\').pop().split('/').pop();
+		if(undefined != theform[fields[i].name]){
+			fields[i].parentNode.removeChild(fields[i]);
 		}
+		let h=document.createElement('input');
+		h.type='hidden';
+		h.name=fields[i].name;
+		h.value=name;
+		theform.appendChild(h);
+		h=document.createElement('textarea');
+		h.style.display='none';
+		h.name=fields[i].name+'_base64';
+		h.value=name+';'+name+';'+cobj.innerHTML;
+		theform.appendChild(h);
 	}
 	//verify that they passed in the form object
 	if(undefined == theform){
