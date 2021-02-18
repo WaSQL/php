@@ -33,14 +33,18 @@ function oracleAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("oracleAddDBRecords Error: either -csv or -recs is required");
 	}
+	$popts=array(
+		'table'=>$table,
+		'-chunk'=>$params['-chunk']
+	);
+	if(isset($params['-map'])){
+		$popts['-map']=$params['-map'];
+	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("oracleAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'oracleAddDBRecordsProcess',array(
-			'table'=>$table,
-			'-chunk'=>$params['-chunk']
-		));
+		$ok=processCSVLines($params['-csv'],'oracleAddDBRecordsProcess',$popts);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -49,7 +53,7 @@ function oracleAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("oracleAddDBRecords Error: no recs");
 		}
-		return oracleAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+		return oracleAddDBRecordsProcess($params['-recs'],$popts);
 	}
 }
 function oracleAddDBRecordsProcess($recs,$params=array()){
@@ -58,6 +62,19 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	}
 	$table=$params['table'];
 	$fieldinfo=oracleGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
+	//fields
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -95,14 +112,14 @@ function oracleEscapeString($str){
 	$str = str_replace("'","''",$str);
 	return $str;
 }
-//---------- begin function oracleGetTableDDL ----------
+//---------- begin function oracleGetDDL ----------
 /**
 * @describe returns create script for specified table
 * @param type string - object type
 * @param name string - object name
 * @param [schema] string - schema. defaults to dbschema specified in config
 * @return string
-* @usage $createsql=oracleGetTableDDL('sample');
+* @usage $createsql=oracleGetDDL('table','sample');
 */
 function oracleGetDDL($type,$name,$schema=''){
 	$type=strtoupper($type);
@@ -271,7 +288,7 @@ ENDOFQUERY;
 		else{
 			$rec['hash']='';
 		}
-		$databaseCache[$cachekey][$table][]=$rec;
+		$databaseCache[$cachekey][$key][]=$rec;
 	}
 	return $databaseCache[$cachekey];
 }

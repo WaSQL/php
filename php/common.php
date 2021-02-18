@@ -9396,7 +9396,6 @@ function processCSVLines($file,$func_name,$params=array()){
 	$chunk=array();
 	$passthru=array();
 	foreach($params as $key=>$val){
-		if(stringBeginsWith($key,'-')){continue;}
     	$passthru[$key]=$val;
 	}
 	if($fh = fopen_utf8($file,'r')){
@@ -9456,7 +9455,7 @@ function processCSVLines($file,$func_name,$params=array()){
 				}
 			}
 			else{
-				$ok=call_user_func($func_name,$set);
+				$ok=call_user_func($func_name,$set,$passthru);
 			}
 			unset($set);
 			$linecnt++;
@@ -14268,6 +14267,7 @@ function processInlineImage($img,$fld='inline'){
 function processInlineFiles(){
 	foreach($_REQUEST as $key=>$val){
     	if(isset($_REQUEST["{$key}_base64"])){
+    		//$_REQUEST["{$key}_base64_debug"]['processInlineFiles']=1;
         	$path=isset($_REQUEST["{$key}_path"])?$_REQUEST["{$key}_path"]:"/files/{$key}";
         	$apath="{$_SERVER['DOCUMENT_ROOT']}/{$path}";
 			if(!is_dir($apath)){buildDir($apath);}
@@ -14278,9 +14278,12 @@ function processInlineFiles(){
 			$base64_files=$_REQUEST["{$key}_base64"];
 			if(!is_array($base64_files)){$base64_files=array($base64_files);}
 			$efiles=array();
+			//$_REQUEST["{$key}_base64_debug"]=array();
 			foreach($base64_files as $base64_file){
 				if(!strlen(trim($base64_file))){continue;}
 				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
+				//$_REQUEST["{$key}_base64_debug"]['filename']=$filename;
+				//$_REQUEST["{$key}_base64_debug"]['name']=$name;
 				$decoded=base64_decode($encodedString);
 				$ext=getFileExtension($name);
 				if(isset($_REQUEST["{$key}_autonumber"])){
@@ -14292,7 +14295,7 @@ function processInlineFiles(){
 				$apath=str_replace('//','/',$apath);
 				$path=str_replace('//','/',$path);
 				$afile="{$apath}/{$name}";
-
+				//$_REQUEST["{$key}_base64_debug"]['afile']=$afile;
 				//remove the file if it exists already
 				if(file_exists($afile)){unlink($afile);}
 				//save the file
@@ -14305,7 +14308,6 @@ function processInlineFiles(){
 					debugValue("processInlineFiles error: unable to find or create file: {$afile}");
 				}
 			}
-
 			if(count($efiles)==1){$efiles=$efiles[0];}
 			$_REQUEST[$key]=$efiles;
 			unset($_REQUEST["{$key}_base64"]);

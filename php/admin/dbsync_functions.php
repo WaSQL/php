@@ -170,6 +170,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 			}
 			
 			if(count($cols)==1){
+				//echo $key.printValue($recs[$key]);exit;
 				$recs[$key]['status'].=$cols[0];
 			}
 			else{

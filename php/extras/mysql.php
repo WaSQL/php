@@ -12,6 +12,7 @@
 * @param params array - 
 *	[-recs] array - array of records to insert into specified table
 *	[-csv] array - csv file of records to insert into specified table
+*	[-map] array - old/new field map  'old_field'=>'new_field'
 * @return count int
 * @usage $ok=mysqlAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=mysqlAddDBRecords('comments',array('-recs'=>$recs);
@@ -25,14 +26,18 @@ function mysqlAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("mysqlAddDBRecords Error: either -csv or -recs is required");
 	}
+	$popts=array(
+		'table'=>$table,
+		'-chunk'=>$params['-chunk']
+	);
+	if(isset($params['-map'])){
+		$popts['-map']=$params['-map'];
+	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("mysqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',array(
-			'table'=>$table,
-			'-chunk'=>$params['-chunk']
-		));
+		$ok=processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',$popts);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -44,7 +49,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 		$chunks=array_chunk($params['-recs'],$params['-chunk']);
 		$cnt=0;
 		foreach($chunks as $chunk){
-			$chunk_cnt=mysqlAddDBRecordsProcess($chunk,array('table'=>$table));
+			$chunk_cnt=mysqlAddDBRecordsProcess($chunk,$popts);
 			if(isNum($chunk_cnt)){$cnt+=$chunk_cnt;}
 		}
 		return $cnt;
@@ -56,6 +61,19 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	$table=$params['table'];
 	$fieldinfo=mysqlGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
+	//fields
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -83,22 +101,76 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	$ok=mysqlExecuteSQL($query);
 	return count($values);
 }
+//---------- begin function mysqlGetDDL ----------
+/**
+* @describe returns create script for specified table
+* @param type string - object type
+* @param name string - object name
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=mysqlGetDDL('table','sample');
+*/
+function mysqlGetDDL($type,$name){
+	$type=strtoupper($type);
+	$name=strtoupper($name);
+	$query="SHOW CREATE {$type} {$name}";
+	$field='create_'.strtolower($name);
+	$recs=mysqlQueryResults($query);
+	//echo $query.printValue($recs);exit;
+	if(isset($recs[0][$field])){
+		return $recs[0][$field];
+	}
+	return $recs;
+}
 //---------- begin function mysqlGetTableDDL ----------
 /**
 * @describe returns create script for specified table
-* @param table string - tablename
-* @param [schema] string - schema. defaults to dbschema specified in config
+* @param name string - tablename
 * @return string
 * @usage $createsql=mysqlGetTableDDL('sample');
 */
-function mysqlGetTableDDL($table,$schema=''){
-	$table=strtoupper($table);
-	$query="SHOW CREATE TABLE {$table}";
-	$recs=mysqlQueryResults($query);
-	if(isset($recs[0]['create_table'])){
-		return $recs[0]['create_table'];
-	}
-	return $recs;
+function mysqlGetTableDDL($name){
+	return mysqlGetDDL('table',$name);
+}
+//---------- begin function mysqlGetFunctionDDL ----------
+/**
+* @describe returns create script for specified function
+* @param name string - function name
+* @return string
+* @usage $createsql=mysqlGetFunctionDDL('sample');
+*/
+function mysqlGetFunctionDDL($name){
+	return mysqlGetDDL('function',$name);
+}
+//---------- begin function mysqlGetProcedureDDL ----------
+/**
+* @describe returns create script for specified procedure
+* @param name string - procedure name
+* @return string
+* @usage $createsql=mysqlGetProcedureDDL('sample');
+*/
+function mysqlGetProcedureDDL($name){
+	return mysqlGetDDL('procedure',$name);
+}
+//---------- begin function mysqlGetPackageDDL ----------
+/**
+* @describe returns create script for specified package
+* @param name string - package name
+* @return string
+* @usage $createsql=mysqlGetPackageDDL('sample');
+*/
+function mysqlGetPackageDDL($name){
+	return mysqlGetDDL('package',$name);
+}
+//---------- begin function mysqlGetTriggerDDL ----------
+/**
+* @describe returns create script for specified trigger
+* @param name string - trigger name
+* @return string
+* @usage $createsql=mysqlGetTriggerDDL('sample');
+*/
+function mysqlGetTriggerDDL($name){
+	return mysqlGetDDL('trigger',$name);
 }
 //---------- begin function mysqlGetAllTableFields ----------
 /**
@@ -194,6 +266,54 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
+//---------- begin function mysqlGetAllProcedures ----------
+/**
+* @describe returns all procedures in said schema
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allprocedures=mysqlGetAllProcedures();
+*/
+function mysqlGetAllProcedures($dbname=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mysqlGetAllProcedures');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($dbname)){
+		$dbname=mysqlGetDBName();
+	}
+	if(!strlen($dbname)){
+		debugValue('mysqlGetAllProcedures error: dbname is not defined in config.xml');
+		return null;
+	}
+	$query=<<<ENDOFQUERY
+SELECT 
+    r.routine_name as object_name
+    ,r.routine_type as object_type
+    ,MD5(r.routine_definition) as hash
+    ,group_concat( distinct p.parameter_name ORDER BY p.parameter_name SEPARATOR ', ')  args
+
+FROM information_schema.routines r
+   LEFT OUTER JOIN information_schema.parameters p
+      on p.specific_name=r.specific_name and p.parameter_mode='IN'
+WHERE r.routine_schema='{$dbname}'
+GROUP BY
+	r.routine_name,
+	r.routine_type,
+	MD5(r.routine_definition)
+ENDOFQUERY;
+	$recs=mysqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $i=>$rec){
+		$key=$rec['object_name'].$rec['object_type'];
+		$rec['overload']='';
+		$databaseCache[$cachekey][$key][]=$rec;
+	}
+	//echo $query.printValue($recs);exit;
+	return $databaseCache[$cachekey];
+}
+
 function mysqlGetDBSchema(){
 	global $CONFIG;
 	global $DATABASE;
@@ -207,6 +327,18 @@ function mysqlGetDBSchema(){
 	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
 	elseif(isset($CONFIG['mysql_dbschema'])){return $CONFIG['mysql_dbschema'];}
 	elseif(isset($CONFIG['mysql_schema'])){return $CONFIG['mysql_schema'];}
+	return '';
+}
+function mysqlGetDBName(){
+	global $CONFIG;
+	global $DATABASE;
+	$params=mysqlParseConnectParams();
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbname'])){
+		return $DATABASE[$CONFIG['db']]['dbname'];
+	}
+	elseif(isset($CONFIG['dbname'])){return $CONFIG['dbname'];}
+	elseif(isset($CONFIG['-dbname'])){return $CONFIG['-dbname'];}
+	elseif(isset($CONFIG['mysql_dbname'])){return $CONFIG['mysql_dbname'];}
 	return '';
 }
 //---------- begin function mysqlGetDBRecordById--------------------
