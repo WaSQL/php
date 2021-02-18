@@ -9,6 +9,34 @@ date_default_timezone_set('America/Denver');
 //includes
 include_once("{$progpath}/common.php");
 global $CONFIG;
+if(isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
+	switch(strtolower($CONFIG['allow_origin'])){
+		case '*':
+		case 'all':
+			$CONFIG['allow_origin']='*';
+		break;
+	}
+	@header("Access-Control-Allow-Origin: {$CONFIG['allow_origin']}");
+}
+if(isset($CONFIG['allow_methods']) && strlen($CONFIG['allow_methods'])){
+	@header("Access-Control-Allow-Methods: {$CONFIG['allow_methods']}");
+}
+if(isset($CONFIG['allow_headers']) && strlen($CONFIG['allow_headers'])){
+	@header("Access-Control-Allow-Headers: {$CONFIG['allow_headers']}");
+}
+if(isset($CONFIG['allow_credentials'])){
+	@header('Access-Control-Allow-Credentials:true');
+}
+if(!isset($CONFIG['allow_frames']) || !$CONFIG['allow_frames']){
+	@header('X-Frame-Options: SAMEORIGIN');
+}
+else{
+	//Allowing all domains is the default. Don't set the X-Frame-Options header at all if you want that.
+	//@header('X-Frame-Options: ALLOWALL');
+}
+if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
+	@header('X-XSS-Protection: 1; mode=block');
+}
 include_once("{$progpath}/config.php");
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
