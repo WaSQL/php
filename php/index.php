@@ -82,7 +82,7 @@ if(isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
 	switch(strtolower($CONFIG['allow_origin'])){
 		case '*':
 		case 'all':
-			$CONFIG['allow_origin']=$_SERVER['HTTP_REFERER'];
+			$CONFIG['allow_origin']='*';
 		break;
 	}
 	@header("Access-Control-Allow-Origin: {$CONFIG['allow_origin']}");
