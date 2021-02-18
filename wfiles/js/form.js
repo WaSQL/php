@@ -101,7 +101,7 @@ function setInputFileName(fld){
 			let h=document.createElement('textarea');
 			h.style.display='none';
 			h.id=this.fld.id+'_base64_content';
-			h.innerHTML=e.target.result;
+			h.innerHTML=this.filename+';'+this.filename+';'+e.target.result;
 			this.pform.appendChild(h);
 			//show thumbnail
 			let ext=this.filename.split('.').pop().toLowerCase();
@@ -3530,19 +3530,18 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		let cobj=theform.querySelector('#'+cid);
 		if(undefined==cobj){continue;}
 		if(cobj.innerHTML.length==0){continue;}
-		let name=fields[i].value.split('\\').pop().split('/').pop();
+		//give it a name so it submits
+		cobj.name=fields[i].name+'_base64';
+		//remove the file field
 		if(undefined != theform[fields[i].name]){
 			fields[i].parentNode.removeChild(fields[i]);
 		}
+		//create a simple input element to name this field
+		let name=fields[i].value.split('\\').pop().split('/').pop();
 		let h=document.createElement('input');
 		h.type='hidden';
 		h.name=fields[i].name;
 		h.value=name;
-		theform.appendChild(h);
-		h=document.createElement('textarea');
-		h.style.display='none';
-		h.name=fields[i].name+'_base64';
-		h.value=name+';'+name+';'+cobj.innerHTML;
 		theform.appendChild(h);
 	}
 	//verify that they passed in the form object
