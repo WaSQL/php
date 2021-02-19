@@ -1655,6 +1655,18 @@ var wacss = {
 	    	console.log('wacss.listen failed. Browser does not support event listeners');
 	    }
 	},
+	loadScript: function(file,notify) {
+	    let script = document.createElement('script');
+	    if(undefined != notify && notify==1){
+	    	script.onload = function () {
+		    //do stuff with the script
+		    wacss.toast(this.src+' loaded successfully');
+			};
+	    }
+		script.src = file;
+		document.head.appendChild(script);
+		return true;
+	},
 	modalClose: function(){
 		if(undefined != document.getElementById('wacss_modal_overlay')){
 			return wacss.removeObj(document.getElementById('wacss_modal_overlay'));
