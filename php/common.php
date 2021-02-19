@@ -3623,6 +3623,8 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 * @param name string
 * @param opts array
 * @param params array
+*	[-group] string - only show this database group
+*	[-dbs] mixed - only show this database list - comma separated or an array
 * @return string
 * @usage echo buildFormCombo('mydate',$opts,$params);
 */
@@ -3652,9 +3654,25 @@ function buildFormSelectDatabase($name,$params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	$showtabs=array();
-	if(isset($CONFIG['sql_prompt_dbs'])){
+	if(isset($params['-group'])){
+		foreach($DATABASE as $dbkey=>$db){
+			if(isset($db['group']) && $db['group']==$params['-group']){
+				$showtabs[]=$db['name'];
+			}
+		}
+	}
+	elseif(isset($params['-dbs'])){
+		if(is_array($params['-dbs'])){
+			$showtabs=$params['-dbs'];
+		}
+		else{
+			$showtabs=preg_split('/\,/',$params['-dbs']);
+		}
+	}
+	elseif(isset($CONFIG['sql_prompt_dbs'])){
 		$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
 	}
+
 	$dbtypes=array();
 	foreach($DATABASE as $dbkey=>$db){
 		if(count($showtabs) && !in_array($dbkey,$showtabs)){continue;}
