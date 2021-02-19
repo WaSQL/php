@@ -11989,6 +11989,9 @@ function loadExtras($extras){
 			elseif(preg_match('/^(canada_post|fedex|ups|usps|npf|integracore)$/i',$extra)){
             	$extra="shipping_methods/{$extra}";
 			}
+			elseif(preg_match('/^(ctree|hana|mssql|mysql|odbc|oracle|pdo|snowflake|snowflake_odbc|sqlite)$/i',$extra)){
+            	$extra="databases/{$extra}";
+			}
 			//build full path to extra file
 			$phpfile="{$progpath}/extras/{$extra}.php";
 			if(!is_file($phpfile)){

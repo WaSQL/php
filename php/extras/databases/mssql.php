@@ -43,14 +43,18 @@ function mssqlAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("mssqlAddDBRecords Error: either -csv or -recs is required");
 	}
+	$popts=array(
+		'table'=>$table,
+		'-chunk'=>$params['-chunk']
+	);
+	if(isset($params['-map'])){
+		$popts['-map']=$params['-map'];
+	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("mssqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',array(
-			'table'=>$table,
-			'-chunk'=>$params['-chunk']
-		));
+		$ok=processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',$popts);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -59,7 +63,7 @@ function mssqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("mssqlAddDBRecords Error: no recs");
 		}
-		return mssqlAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+		return mssqlAddDBRecordsProcess($params['-recs'],$popts);
 	}
 }
 function mssqlAddDBRecordsProcess($recs,$params=array()){
@@ -68,6 +72,18 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	$table=$params['table'];
 	$fieldinfo=mssqlGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){

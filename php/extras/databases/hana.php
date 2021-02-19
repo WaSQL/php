@@ -31,14 +31,18 @@ function hanaAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("hanaAddDBRecords Error: either -csv or -recs is required");
 	}
+	$popts=array(
+		'table'=>$table,
+		'-chunk'=>$params['-chunk']
+	);
+	if(isset($params['-map'])){
+		$popts['-map']=$params['-map'];
+	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("hanaAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'hanaAddDBRecordsProcess',array(
-			'table'=>$table,
-			'-chunk'=>$params['-chunk']
-		));
+		$ok=processCSVLines($params['-csv'],'hanaAddDBRecordsProcess',$popts);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -47,7 +51,7 @@ function hanaAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("hanaAddDBRecords Error: no recs");
 		}
-		return hanaAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+		return hanaAddDBRecordsProcess($params['-recs'],$popts);
 	}
 }
 function hanaAddDBRecordsProcess($recs,$params=array()){
@@ -56,6 +60,18 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	$table=$params['table'];
 	$fieldinfo=hanaGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
