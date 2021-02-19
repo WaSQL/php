@@ -1,5 +1,5 @@
 <view:default>
-<?=buildOnLoad("wacss.loadScript('/php/admin/dbsync_js.js',1);");?>
+<?=buildOnLoad("wacss.loadScript('/php/admin/dbsync_js.js');");?>
 <div class="container-fluid">
 	<div class="row" style="margin-bottom:10px;">
 		<div class="col-sm-12">
@@ -51,6 +51,7 @@
 		<button type="button" id="sync_procedure_button" class="btn button" onclick="dbsyncFunc(this);" data-div="centerpop" data-status="<?=$status;?>" data-func="sync_procedure" data-name="<?=$name;?>" data-type="<?=$type;?>" data-confirm="Confirm sync <?=$type;?>?" data-setprocessing="sync_procedure_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
 	</div>
 	</view:sync_procedure_button>
+	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
 </view:view_diff>
 

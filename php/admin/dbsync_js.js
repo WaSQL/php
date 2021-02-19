@@ -1,6 +1,8 @@
 function dbsyncFunc(el){
-	if(undefined != el.dataset.confirm && !confirm(el.dataset.confirm)){return false;
-}		let params=el.dataset;
+	if(undefined != el.dataset.confirm && !confirm(el.dataset.confirm)){
+		return false;
+	}		
+	let params=el.dataset;
 	params['_menu']='dbsync';
 	if(undefined==params.div){
 		if(undefined != el.id){
