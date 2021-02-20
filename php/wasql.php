@@ -723,31 +723,56 @@ function minifyFilename($ext=''){
 *      - bbarten 2013-10-24 added documentation
 */
 function minifyCssFile($v=''){
+	global $PAGE;
+	global $TEMPLATE;
+	global $CONFIG;
+	if(!isset($TEMPLATE['_id']) && !isset($PAGE['_id'])){
+		return false;
+	}
 	$docroot=$_SERVER['DOCUMENT_ROOT'];
 	if(!is_dir("{$docroot}/w_min")){
 		buildDir("{$docroot}/w_min");
 	}
-	$mfn=minifyFilename();
 	$v=strtolower($v);
 	if(strlen($v)){
-		if(!isset($_SESSION['w_MINIFY']['extras_css']) || !is_array($_SESSION['w_MINIFY']['extras_css'])){
-	    	$_SESSION['w_MINIFY']['extras_css']=array();
-		}
 		$files=preg_split('/\,/',$v);
 		foreach($files as $file){
 			$file=trim($file);
-			if(!in_array($file,$_SESSION['w_MINIFY']['extras_css'])){
-				$_SESSION['w_MINIFY']['extras_css'][]=$file;
-			}
+			$_SESSION['w_MINIFY']['extras_css'][]=$file;
 		}
 		$v=implode('_',$files);
-		$cssfile = "minify_{$v}_{$mfn}.css";
 	}
-	else{
-		$cssfile = "minify_x_{$mfn}.css";
+	$extras=array();
+	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
+		$extras[$extra]=1;
 	}
-	$_SESSION['w_MINIFY']['css_filename']=$cssfile;
-	return "/w_min/{$cssfile}";
+	$_SESSION['w_MINIFY']['extras_css']=array_keys($extras);
+	$css=array(
+		'host'=>$_SERVER['HTTP_HOST'],
+		'extras'=>$_SESSION['w_MINIFY']['extras_css'],
+		'tid'=>$TEMPLATE['_id'],
+		'pid'=>$PAGE['_id'],
+		'min'=>(integer)$CONFIG['minify_css']
+	);
+	if(isset($_SESSION['w_MINIFY']['cssfiles'][0])){
+		$css['cssfiles']=$_SESSION['w_MINIFY']['cssfiles'];
+	}
+	if(isset($CONFIG['database'])){
+		$css['database']=$CONFIG['database'];
+		$prefix=sha1($CONFIG['database']);
+	}
+	elseif(isset($CONFIG['dbname'])){
+		$css['dbname']=$CONFIG['dbname'];
+		$prefix=sha1($CONFIG['dbname']);
+	}
+	ksort($css);
+	$csstr=json_encode($css);
+	$hash=sha1($csstr);
+	//echo $hash.printValue($css);exit;
+	$afile="{$docroot}/w_min/{$hash}_css.json";
+	setFileContents($afile,$csstr);
+	$_SESSION['w_MINIFY']['css_filename']="minify_{$prefix}_{$hash}.css";
+	return "/w_min/minify_{$prefix}_{$hash}.css";
 }
 //---------- begin function minifyJsFile ----
 /**
@@ -763,11 +788,16 @@ function minifyCssFile($v=''){
 *	bbarten 2013-10-24 added documentation
 */
 function minifyJsFile($v=''){
+	global $PAGE;
+	global $TEMPLATE;
+	global $CONFIG;
+	if(!isset($TEMPLATE['_id']) && !isset($PAGE['_id'])){
+		return false;
+	}
 	$docroot=$_SERVER['DOCUMENT_ROOT'];
 	if(!is_dir("{$docroot}/w_min")){
 		buildDir("{$docroot}/w_min");
 	}
-	$mfn=minifyFilename();
 	$v=strtolower($v);
 	if(strlen($v)){
 		$files=preg_split('/\,/',$v);
@@ -782,13 +812,58 @@ function minifyJsFile($v=''){
 			$_SESSION['w_MINIFY']['extras_js'][]=$file;
 		}
 		$v=implode('_',$files);
-		$jsfile = "minify_{$v}_{$mfn}.js";
 	}
-	else{
-		$jsfile = "minify_x_{$mfn}.js";
+	$extras=array();
+	foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
+		$extras[$extra]=1;
 	}
-	$_SESSION['w_MINIFY']['js_filename']=$jsfile;
-	return "/w_min/{$jsfile}";
+	$_SESSION['w_MINIFY']['extras_js']=array_keys($extras);
+	$js=array(
+		'host'=>$_SERVER['HTTP_HOST'],
+		'extras'=>$_SESSION['w_MINIFY']['extras_js'],
+		'tid'=>$TEMPLATE['_id'],
+		'pid'=>$PAGE['_id'],
+		'min'=>(integer)$CONFIG['minify_js']
+	);
+	if(isset($_SESSION['w_MINIFY']['jsfiles'][0])){
+		$js['jsfiles']=$_SESSION['w_MINIFY']['jsfiles'];
+	}
+	if(isset($_SESSION['w_MINIFY']['includepages'][0])){
+		$js['includepages']=$_SESSION['w_MINIFY']['includepages'];
+	}
+	if(isset($CONFIG['database'])){
+		$js['database']=$CONFIG['database'];
+		$prefix=sha1($CONFIG['database']);
+	}
+	elseif(isset($CONFIG['dbname'])){
+		$js['dbname']=$CONFIG['dbname'];
+		$prefix=sha1($CONFIG['dbname']);
+	}
+	ksort($js);
+	$jstr=json_encode($js);
+	$hash=sha1($jstr);
+	$afile="{$docroot}/w_min/{$hash}_js.json";
+	setFileContents($afile,$jstr);
+	$_SESSION['w_MINIFY']['js_filename']="minify_{$prefix}_{$hash}.js";
+	return "/w_min/minify_{$prefix}_{$hash}.js";
+}
+function minifyCleanMin(){
+	global $CONFIG;
+	if(isset($CONFIG['database'])){
+		$js['database']=$CONFIG['database'];
+		$prefix=sha1($CONFIG['database']);
+	}
+	elseif(isset($CONFIG['dbname'])){
+		$js['dbname']=$CONFIG['dbname'];
+		$prefix=sha1($CONFIG['dbname']);
+	}
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	$path="{$docroot}/w_min";
+	$files=listFilesEx($path,array('name'=>$prefix));
+	foreach($files as $file){
+		unlink($file['afile']);
+	}
+	return;
 }
 //---------- begin function wasqlSetMinify
 /**

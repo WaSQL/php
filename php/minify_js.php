@@ -43,34 +43,41 @@ if(isset($CONFIG['timezone'])){
 }
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
-include_once("{$progpath}/sessions.php");
-$session_id=session_id();
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
-foreach($_REQUEST as $key=>$val){
-	$minify_string=$key;
-	break;
-}
-if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
-	$_SESSION['w_MINIFY']['extras_js']=array();
-}
-//check for framework:  bootstrap, materialize, foundation are supported
-//echo $minify_string.printValue($_SERVER);exit;
-global $filename;
-$filename=$_SESSION['w_MINIFY']['js_filename'];
-if($_REQUEST['debug']==1){
-	header('Content-type: text/plain; charset=UTF-8');
-	foreach($_SESSION['w_MINIFY'] as $key=>$val){
-		if(!is_array($val) && strlen($val) > 300){continue;}
-		$debug[$key]=$val;
-	}
-	echo '$_SESSION[w_MINIFY] Values:'.printValue($debug);
+if(!isset($_REQUEST['_minify_'])){
+	header('Content-type: application/javascript; charset=UTF-8');
+	echo '/*missing _minify_ request*/';
 	exit;
 }
-else{
-	header('Content-type: text/javascript; charset=UTF-8');
+global $filename;
+$docroot=$_SERVER['DOCUMENT_ROOT'];
+list($prefix,$hash)=preg_split('/\_/',$_REQUEST['_minify_'],2);
+$afile="{$docroot}/w_min/{$hash}_js.json";
+$filename="minify_{$_REQUEST['_minify_']}.js";
+if(!file_exists($afile)){
+	header('Content-type: application/javascript; charset=UTF-8');
+	echo '/*missing _minify_ json file*/';
+	exit;
 }
+$jstr=getFileContents($afile);
+$minify=json_decode($jstr,true);
+if(!is_array($minify)){
+	header('Content-type: application/javascript; charset=UTF-8');
+	echo '/*invalid _minify_ request*/';
+	exit;
+}
+if($_REQUEST['debug']==1){
+	header('Content-type: text/plain; charset=UTF-8');
+	echo printValue($minify);
+	exit;
+}
+if(!isset($minify['extras'])){$minify['extras']=array();}
+if(!isset($minify['jsfiles'])){$minify['jsfiles']=array();}
+if(!isset($minify['includepages'])){$minify['includepages']=array();}
+//set proper javascript content-type header
+header('Content-type: application/javascript; charset=UTF-8');
 //enable caching of responses for IE8 and others even on https
 header("Pragma: public");
 //make sure caching is turned on
@@ -92,21 +99,17 @@ $jspath=realpath("{$progpath}/../wfiles/js");
 //initialize the global files array
 global $files;
 $files=array();
+//load basic js files
 minifyFiles($jspath,array('common','event','form','colorpicker'));
 minifyFiles(realpath("{$jspath}/extras"),array('pikaday'));
-//echo printValue($parts).printValue($_REQUEST).printValue($_SESSION['w_MINIFY']);exit;
 //Get any extras
-if(isset($_SESSION['w_MINIFY']['extras_js']) && is_array($_SESSION['w_MINIFY']['extras_js'])){
-	foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
-		minifyFiles(realpath("{$jspath}/extras"),$extra);
-	}
+foreach($minify['extras'] as $extra){
+	minifyFiles(realpath("{$jspath}/extras"),$extra);
 }
-if(isset($_SESSION['w_MINIFY']['jsfiles']) && is_array($_SESSION['w_MINIFY']['jsfiles'])){
-	foreach($_SESSION['w_MINIFY']['jsfiles'] as $file){
-    	if(!in_array($file,$files)){$files[]=$file;}
-	}
+//get any jsfiles
+foreach($minify['jsfiles'] as $file){
+   	if(!in_array($file,$files)){$files[]=$file;}
 }
-//echo printValue($_SESSION['w_MINIFY']).printValue($files);exit;
 //include files and set the lastmodifiedtime of any file
 global $jslines;
 global $pre_jslines;
@@ -114,10 +117,6 @@ $jslines=array();
 $loaded=array();
 $pre_jslines=array();
 foreach($files as $file){
-	if($_REQUEST['debug']==1){
-		$jslines[]= "{$file}<br>".PHP_EOL;
-		continue;
-	}
 	if(preg_match('/^http/i',$file)){
      	//remote file
      	$evalstr="return minifyGetExternal('{$file}');";
@@ -150,11 +149,11 @@ foreach($files as $file){
 	}
 }
 //load the template, includepages, and page
-$field=$CONFIG['minify_js']?'js_min':'js';
-$field2=$CONFIG['minify_js']?'js':'js_min';
+$field=$minify['min']==1?'js_min':'js';
+$field2=$minify['min']==1?'js':'js_min';
 //_templates
-if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['template_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>'_id,name,js,js_min'));
+if(isNum($minify['tid']) && $minify['tid'] > 0){
+	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$minify['tid'],'-fields'=>'_id,name,js,js_min'));
 	if(isset($rec['_id'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
@@ -172,13 +171,13 @@ if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['templat
 		}
 	}
 	else{
-		$jslines[] = PHP_EOL."/* ERROR retrieving _templates record for id {$_SESSION['w_MINIFY']['template_id']} */".PHP_EOL;
+		$jslines[] = PHP_EOL."/* ERROR retrieving _templates record for id {$minify['tid']} */".PHP_EOL;
 	}
 	
 }
 //_pages
-if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>'_id,name,js,js_min'));
+if(isNum($minify['pid']) && $minify['pid'] > 0){
+	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$minify['pid'],'-fields'=>'_id,name,js,js_min'));
 	if(isset($rec['_id'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
@@ -196,12 +195,12 @@ if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] >
 		}
 	}
 	else{
-		$jslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$_SESSION['w_MINIFY']['page_id']} */".PHP_EOL;
+		$jslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$minify['pid']} */".PHP_EOL;
 	}
 }
 //includepages
-if(is_array($_SESSION['w_MINIFY']['includepages'])){
-	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
+if(is_array($minify['includepages'])){
+	foreach($minify['includepages'] as $id){
 		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"_id,name,js,js_min"));
 		if(isset($rec['_id'])){
 			$content=evalPHP($rec[$field]);

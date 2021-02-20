@@ -1,0 +1,41 @@
+<view:default>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-postedit"></span> PostEdit</h2>
+<p>
+	PostEdit is a php application that WaSQL uses to create pages and templates into a PostEdit folder on your local hard drive. This allows you to use any editor you wish to update your pages and templates. When the PostEdit Manager detects a file changed it checks for syntax and commits your changes to your WaSQL database.
+</p>
+<p>
+	If you have WaSQL on your local computer then the postedit program is already installed. If not, you will need to download it via git.
+</p>
+<p>
+	PostEdit requires a configuration file called postedit.xml. This file contains authentication information for each domain/website you want to connect to. Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:
+</p>
+<div style="display:flex;justify-content: flex-start;align-items: flex-start;">
+<xmp id="hosttag" class="w_smaller w_gray" style="margin-top:0px;padding-top:0px;"><host
+	name="localhost"
+	alias="localhost"
+	apikey="Y1UxTVZqRk9RMkk9OmEzTllVSHBPU1QwPTphM05ZVUhwT1NUMD0="
+	username="admin"
+	groupby="name"
+	insecure="1"
+/></xmp>
+<span style="margin-left:15px;" class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(trim(getText('hosttag')));"></span>
+<div>
+
+</div>
+</div>
+<p>
+	Possible host attributes and their explanations are as follows (red attributes are required):
+	<ul>
+		<li>name - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>
+		<li>username - the username to authenticate as. This must be a valid username for this domain.</li>
+		<li>apikey - the apikey for the authenticating user. This is found in the user profile menu after logging in. Changing your username or password will change your apikey.</li>
+		<li>alias - This gives a more friendly alias to the hostname. For instance, dev.wasql.com may have an alias of wasql.</li>
+		<li>insecure - If your website is not HTTPS then set this attribute to 1.</li>
+		<li>tables - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>
+	</ul>
+</p>
+
+</view:default>
+
+
+

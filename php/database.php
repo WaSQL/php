@@ -6114,37 +6114,12 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     	$w_min='';
     	switch(strtolower($params['-table'])){
     		case '_pages':
-    		$w_min='P';
-    		break;
     		case '_templates':
-    			$w_min='T';
+    			//clean w_min files for this database
+    			if(function_exists('minifyCleanMin')){
+    				$ok=minifyCleanMin();
+    			}
     		break;
-    	}
-    	if(strlen($w_min)){
-    		$docroot=$_SERVER['DOCUMENT_ROOT'];
-    		if(is_dir("{$docroot}/w_min")){
-    			//echo "W_MIN FOUND".PHP_EOL;
-    			$xfiles=listFiles("{$docroot}/w_min");
-	    		$xrecs=getDBRecords(array(
-					'-table'=>$params['-table'],
-					'-where'=>$params['-where'],
-					'-fields'=>'_id',
-					'-index'=>'_id'
-				));
-				if(is_array($xrecs)){
-					//echo printValue($xrecs).PHP_EOL;
-					foreach($xrecs as $id=>$xrec){
-						foreach($xfiles as $xfile){
-							if(preg_match('/('.$w_min.$id.'?)[PI\.]/',$xfile)){
-								unlink("{$docroot}/w_min/{$xfile}");
-							}
-							elseif(preg_match('/(I'.$id.'?)[PI\.]/',$xfile)){
-								unlink("{$docroot}/w_min/{$xfile}");
-							}
-						}
-					}
-				}
-			}
     	}
     	//addDBHistory('edit',$params['-table'],$params['-where']);
     	//get table info
@@ -8675,6 +8650,7 @@ function getDBRecord($params=array(),$id=0,$flds=''){
 	}
     else{$params['-limit']=1;}
 	$list=getDBRecords($params);
+	//echo printValue($params).printValue($list);exit;
 	if(!is_array($list)){return $list;}
 	if(!count($list)){return '';}
 	if(!isset($list[0])){return '';}
@@ -8833,9 +8809,9 @@ function getDBRecords($params=array()){
 		}
 	}
 	// Perform Query
-	//echo "{$query}<hr>".PHP_EOL;
+	//echo "{$query}<hr>".PHP_EOL;exit;
 	$query_result=@databaseQuery($query);
-	//echo "{$query}<hr>".PHP_EOL;
+	//echo "{$query}<hr>".printValue($query_result).PHP_EOL;exit;
   	if(!$query_result){
 		$e=getDBError();
 		//check to see if we can fix the error
@@ -8850,8 +8826,9 @@ function getDBRecords($params=array()){
 				}
 			}
 		return setWasqlError(debug_backtrace(),$e,$query);
-  		}
+  	}
 	$rows   = databaseNumRows($query_result);
+	//echo "{$rows} - {$query}<hr>".PHP_EOL;exit; 
 	if(!$rows){
 		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
 			if(!databaseSelectDb($CONFIG['dbname'])){return setWasqlError(debug_backtrace(),getDBError(),$query);}
@@ -8874,6 +8851,7 @@ function getDBRecords($params=array()){
 	}
 	$rx=0;
 	while ($row = databaseFetchAssoc($query_result)) {
+		//echo printValue($row);
 		if($randompick==1){
 			if(count($list) >= count($random)){
 				break;
@@ -8949,7 +8927,7 @@ function getDBRecords($params=array()){
 		//if(isset($list[$x]) && is_array($list[$x])){ksort($list[$x]);}
 		$x++;
 		$rx+=1;
-		}
+	}
 	//Free the resources associated with the result set
 	databaseFreeResult($query_result);
 	if(isset($params['-process'])){return $x;}
@@ -9121,7 +9099,8 @@ function getDBRecords($params=array()){
 				}
 			}
 		}
-
+		//echo "HERE - {$query}<hr>".printValue($list).PHP_EOL;exit;
+		//echo "{$query}<br />".PHP_EOL;
 		return $list;
 		}
 	return '';

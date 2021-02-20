@@ -12056,10 +12056,10 @@ function loadExtras($extras){
 */
 function loadExtrasCss($extras){
 	if(!is_array($extras)){$extras=array($extras);}
-	if(!isset($_SESSION['w_MINIFY']['extras_css']) || !is_array($_SESSION['w_MINIFY']['extras_css'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_css'][0])){
     	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
-	if(!isset($_SESSION['w_MINIFY']['extras_js']) || !is_array($_SESSION['w_MINIFY']['extras_js'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_js'][0])){
     	$_SESSION['w_MINIFY']['extras_js']=array();
 	}
 	foreach($extras as $extra){
@@ -12097,10 +12097,10 @@ function loadExtrasCss($extras){
 function loadExtrasJs($extras){
 	global $CONFIG;
 	if(!is_array($extras)){$extras=array($extras);}
-	if(!isset($_SESSION['w_MINIFY']['extras_js']) || !is_array($_SESSION['w_MINIFY']['extras_js'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_js'][0])){
     	$_SESSION['w_MINIFY']['extras_js']=array();
 	}
-	if(!isset($_SESSION['w_MINIFY']['extras_css']) || !is_array($_SESSION['w_MINIFY']['extras_css'])){
+	if(!isset($_SESSION['w_MINIFY']['extras_css'][0])){
     	$_SESSION['w_MINIFY']['extras_css']=array();
 	}
 	foreach($extras as $extra){

@@ -18,11 +18,19 @@ include_once("$progpath/common.php");
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
 //check for minify redirect
 if(preg_match('/^w_min\/minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
-	header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
+	$wpath=getWasqlPath('php');
+	$file="{$wpath}/minify_css.php";
+	$_REQUEST['_minify_']=$m[1];
+	$ok=include_once($file);
+	//header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
 	exit;
 }
 if(preg_match('/^w_min\/minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
-	header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
+	$wpath=getWasqlPath('php');
+	$file="{$wpath}/minify_js.php";
+	$_REQUEST['_minify_']=$m[1];
+	$ok=include_once($file);
+	//header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
 	exit;
 }
 //check for special user login path

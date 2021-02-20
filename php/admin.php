@@ -30,9 +30,13 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
 include_once("{$progpath}/schema.php");
-
-loadExtras('translate');
-loadExtrasJs('chart');
+global $TEMPLATE;
+global $PAGE;
+$TEMPLATE=array('_id'=>0);
+$PAGE=array('_id'=>0);
+loadExtras('translate','system');
+loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit'));
+loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
 //check for url_eval
@@ -461,6 +465,7 @@ foreach($_REQUEST as $key=>$val){
         	$ok=processInlineImage($val,$key);
 	}
 }
+
 //show phpinfo if that is the only request param
 if(count($_REQUEST)==1){
 	$k=implode('',array_keys($_REQUEST));
@@ -524,6 +529,7 @@ $_SERVER['WaSQL_AdminUserID']=$USER['_id'];
 if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
 if(!isDBTable('_models')){$ok=createWasqlTable('_models');}
 if(!isDBTable('_minify')){$ok=createWasqlTable('_minify');}
+
 //uncomment below to see hidden debug statements in output
 //$_SERVER['_admin_']=1;
 $_SERVER['_start_']=microtime(true);
@@ -550,7 +556,6 @@ foreach($_REQUEST as $key=>$val){
 //check for Config Settings
 global $ConfigSettings;
 $ConfigSettings=getDBAdminSettings();
-
 //Handle ajax requests
 if(isAjax()){
 	if(!isUser()){
@@ -596,6 +601,7 @@ if(isAjax()){
 		case 'dbsync':
 		case 'ref':
 		case 'zipcodes':
+		case 'postedit':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -1084,8 +1090,6 @@ if(isAjax()){
 			break;
 	}
 }
-//set a minify session variable
-wasqlSetMinify(1);
 //check for user
 if(!isUser()){
 	$params=array(
@@ -1245,6 +1249,7 @@ $params=array(
 	);
 echo buildHtmlBegin($params);
 echo adminViewPage('topmenu');
+
 echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
 //process _menu request
 if(isset($_REQUEST['_menu'])){
@@ -1261,6 +1266,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'dbsync':
 		case 'ref':
 		case 'zipcodes':
+		case 'postedit':
 			echo adminViewPage($_REQUEST['_menu']);exit;
 		break;
 		case 'cron':
@@ -2299,52 +2305,6 @@ LIST_TABLE:
 				'-list'			=>$list,
 
 			));
-			//echo printValue($list);
-			break;
-		case 'postedit':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-postedit"></span> PostEdit Manager</h2>'.PHP_EOL;
-			echo '<div style="width:800px;">'.PHP_EOL;
-			echo '<p><b>PostEdit Manager</b> is a php application that WaSQL uses to create pages and templates into a <b>PostEdit</b> folder on your local hard drive.'.PHP_EOL;
-			echo 'This allows you to use any editor you wish to update your pages and templates.'.PHP_EOL;
-			echo 'When the <b>PostEdit Manager</b> detects a file changed it checks for syntax and commits your changes to your WaSQL database.'.PHP_EOL;
-			echo '</p>'.PHP_EOL;
-			echo '<p>'.PHP_EOL;
-			echo '	If you have WaSQL on your local computer then the postedit program is already installed.  If not, you will need to download it via git. '.PHP_EOL;
-			echo '</p>'.PHP_EOL;
-			echo '<p>'.PHP_EOL;
-			echo '</p><p>'.PHP_EOL;
-			echo '<b>PostEdit Manager</b> requires a configuration file called <b>postedit.xml</b>.'.PHP_EOL;
-			echo 'This file contains authentication information for each domain/website you want to connect to.'.PHP_EOL;
-			echo 'Add the following entry to postedit.xml found in the postedit directory to authenticate to this domain as the current user:'.PHP_EOL;
-			echo '<pre><xmp>'.PHP_EOL;
-			$alias=preg_replace('/\.(com|net|org)$/i','',$_SERVER['UNIQUE_HOST']);
-			echo '<host'.PHP_EOL;
-			echo '	name="'.$_SERVER['HTTP_HOST'].'"'.PHP_EOL;
-			echo '	alias="'.$alias.'"'.PHP_EOL;
-			echo '	apikey="'.$USER['apikey'].'"'.PHP_EOL;
-			echo '	username="'.$USER['username'].'"'.PHP_EOL;
-			echo '	groupby="name"'.PHP_EOL;
-			if(!isSecure()){
-				echo '	insecure="1"'.PHP_EOL;
-			}
-			echo '/>'.PHP_EOL;
-			echo '</xmp></pre>'.PHP_EOL;
-			echo 'Possible host attributes and their explanations are as follows (red attributes are required):'.PHP_EOL;
-			echo '<ul>'.PHP_EOL;
-			echo '	<li><b class="w_red">name</b> - this is the hostname you want to connect to. It should correlate to the host name in yourr config.xml file</li>'.PHP_EOL;
-			echo '	<li><b class="w_red">username</b> - the username to authenticate as. This must be a valid username for this domain.</li>'.PHP_EOL;
-			echo '	<li><b class="w_red">apikey</b> - the apikey for the authenticating user. This is found in the user profile menu after logging in.'.PHP_EOL;
-			echo '		<ul>'.PHP_EOL;
-			echo '			<li> Changing your username or password will change your apikey.'.PHP_EOL;
-			echo '		</ul>'.PHP_EOL;
-			echo '	</li>'.PHP_EOL;
-			echo '	<li><b>alias</b> - This gives a more friendly alias to the hostname. For instance, dev.wasql.com may have an alias of wasql.</li>'.PHP_EOL;
-			echo '	<li><b>insecure</b> - If your website is not HTTPS then set this attribute to 1.</li>'.PHP_EOL;
-			echo '	<li><b>tables</b> - tables to download locally so you can modify them. This defaults to "_pages,_templates".</li>'.PHP_EOL;
-			echo '</ul>'.PHP_EOL;
-			echo '</p><p>'.PHP_EOL;
-			echo '</p><br /><br /><br /><br />'.PHP_EOL;
-			echo '</div>'.PHP_EOL;
 		break;
 		case 'properties':
 			if(!isset($_REQUEST['_table_']) || !strlen($_REQUEST['_table_'])){echo "No Table";break;}
@@ -2519,11 +2479,6 @@ LIST_TABLE:
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
 				$type=$field['_dbtype_ex'];
-				// if($field['_dbnull']=='NO'){$type .= ' NOT NULL';}
-				// else{$type .= ' NULL';}
-				// if(isset($field['_dbkey']) && $field['_dbkey']=='PRI'){$type .= ' Primary Key';}
-				// elseif(isset($field['_dbkey']) && $field['_dbkey']=='UNI'){$type .= ' UNIQUE';}
-				// if(isset($field['_dbdefault']) && strlen($field['_dbdefault'])){$type .= ' Default '.$field['_dbdefault'];}
 				if(isset($field['_dbextra']) && strlen($field['_dbextra'])){
 					if(stringContains($field['_dbextra'],' generated')){
 						echo "{$field['_dbfield']} {$type} {$field['_dbextra']}\r\n";
@@ -2595,30 +2550,7 @@ LIST_TABLE:
 			echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form. Place fields as you would see them with spaces between fieldnames and carriage returns between rows.</div></td>'.PHP_EOL;
 			if(isset($tinfo['formfields']) && is_array($tinfo['formfields'])){$_REQUEST['formfields']=array2String($tinfo['formfields']);}
 			echo '		<td>'.buildFormTextarea('formfields',array('height'=>170)).'</td>'.PHP_EOL;
-			//echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields">'.$val.'</textarea></td>'.PHP_EOL;
 			echo '	</tr>'.PHP_EOL;
-			// //Non Admin Settings
-			// echo '	<tr valign="top">'.PHP_EOL;
-			// echo '		<th colspan="2" class="w_align_left"><span class="icon-user w_big w_grey"></span> Non-Administrator Settings</th>'.PHP_EOL;
-			// echo '	</tr>'.PHP_EOL;
-   //          echo '	<tr valign="top">'.PHP_EOL;
-			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-list"></span> List Fields - fields to display when listing records</div></td>'.PHP_EOL;
-			// if(isset($tinfo['listfields_mod']) && is_array($tinfo['listfields_mod'])){$_REQUEST['listfields_mod']=array2String($tinfo['listfields_mod']);}
-			// echo '		<td>'.buildFormField('_tabledata','listfields_mod').'</td>'.PHP_EOL;
-			// //echo '		<td><textarea style="width:550px;height:50px;" onfocus="autoGrow(this)" onblur="this.style.height=\'50px\';" onKeypress="autoGrow(this)" name="listfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			// echo '	</tr>'.PHP_EOL;
-			// echo '	<tr valign="top">'.PHP_EOL;
-			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-sort-name-up"></span> Sort Fields -  default sorting order</div></td>'.PHP_EOL;
-			// if(isset($tinfo['sortfields_mod']) && is_array($tinfo['sortfields_mod'])){$_REQUEST['sortfields_mod']=array2String($tinfo['sortfields_mod']);}
-			// echo '		<td>'.buildFormField('_tabledata','sortfields_mod').'</td>'.PHP_EOL;
-			// //echo '		<td><textarea style="width:550px;height:30px;" onfocus="autoGrow(this)" onblur="this.style.height=\'30px\';" onKeypress="autoGrow(this)" name="sortfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			// echo '	</tr>'.PHP_EOL;
-			// echo '	<tr valign="top">'.PHP_EOL;
-			// echo '		<td class="w_dblue"><div style="width:150px"><span class="icon-newspaper"></span> Form Fields - order of fields to display when showing a form when not logged in as administrator</div></td>'.PHP_EOL;
-			// if(isset($tinfo['formfields_mod']) && is_array($tinfo['formfields_mod'])){$_REQUEST['formfields_mod']=array2String($tinfo['formfields_mod']);}
-			// echo '		<td>'.buildFormField('_tabledata','formfields_mod').'</td>'.PHP_EOL;
-			// //echo '		<td><textarea style="width:550px;height:100px;" onfocus="autoGrow(this)" onblur="this.style.height=\'100px\';" onKeypress="autoGrow(this)" name="formfields_mod">'.$val.'</textarea></td>'.PHP_EOL;
-			// echo '	</tr>'.PHP_EOL;
 			echo '</table>'.PHP_EOL;
 			echo buildFormSubmit("Save Changes","do",'',$CONFIG['admin_color']);
 			echo buildFormEnd();

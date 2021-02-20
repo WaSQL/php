@@ -1,5 +1,5 @@
 <?php
-//minify the css files in wfiles/css
+//minify the css files in wfiles/css. updated July 2019
 /* first, lets determine the current page, template, domain, and user */
 error_reporting(E_ALL & ~E_NOTICE);
 $progpath=dirname(__FILE__);
@@ -43,34 +43,41 @@ if(isset($CONFIG['timezone'])){
 }
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
-include_once("{$progpath}/sessions.php");
-$session_id=session_id();
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
-foreach($_REQUEST as $key=>$val){
-	$minify_string=$key;
-	break;
-}
-if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
-	$_SESSION['w_MINIFY']['extras_css']=array();
-}
-//check for framework:  bootstrap, materialize, foundation are supported
-//echo $minify_string.printValue($_SERVER);exit;
-global $filename;
-$filename=$_SESSION['w_MINIFY']['css_filename'];
-if($_REQUEST['debug']==1){
-	header('Content-type: text/plain; charset=UTF-8');
-	foreach($_SESSION['w_MINIFY'] as $key=>$val){
-		if(!is_array($val) && strlen($val) > 300){continue;}
-		$debug[$key]=$val;
-	}
-	echo '$_SESSION[w_MINIFY] Values:'.printValue($debug);
+if(!isset($_REQUEST['_minify_'])){
+	header('Content-type: text/css; charset=UTF-8');
+	echo '/*missing _minify_ request*/';
 	exit;
 }
-else{
+global $filename;
+$docroot=$_SERVER['DOCUMENT_ROOT'];
+list($prefix,$hash)=preg_split('/\_/',$_REQUEST['_minify_'],2);
+$afile="{$docroot}/w_min/{$hash}_css.json";
+$filename="minify_{$_REQUEST['_minify_']}.css";
+if(!file_exists($afile)){
 	header('Content-type: text/css; charset=UTF-8');
+	echo '/*missing _minify_ json file*/';
+	exit;
 }
+$csstr=getFileContents($afile);
+$minify=json_decode($csstr,true);
+if(!is_array($minify)){
+	header('Content-type: text/css; charset=UTF-8');
+	echo '/*invalid _minify_ request*/';
+	exit;
+}
+if($_REQUEST['debug']==1){
+	header('Content-type: text/plain; charset=UTF-8');
+	echo printValue($minify);
+	exit;
+}
+if(!isset($minify['extras'])){$minify['extras']=array();}
+if(!isset($minify['cssfiles'])){$minify['cssfiles']=array();}
+if(!isset($minify['includepages'])){$minify['includepages']=array();}
+//set proper javascript content-type header
+header('Content-type: text/css; charset=UTF-8');
 //enable caching of responses for IE8 and others even on https
 header("Pragma: public");
 //make sure caching is turned on
@@ -92,23 +99,18 @@ $csspath=realpath("{$progpath}/../wfiles/css");
 //initialize the global files array
 global $files;
 $files=array();
-//add wasql CSS file
-minifyFiles($csspath,'wasql');
-minifyFiles($csspath,'wasql_icons');
-minifyFiles(realpath("{$csspath}/extras"),'pikaday');
-//echo printValue($parts).printValue($_REQUEST).printValue($_SESSION['w_MINIFY']);exit;
+//load basic css files
+minifyFiles($csspath,array('wasql'));
+minifyFiles($csspath,array('wasql_icons'));
+minifyFiles(realpath("{$csspath}/extras"),array('pikaday'));
 //Get any extras
-if(isset($_SESSION['w_MINIFY']['extras_css']) && is_array($_SESSION['w_MINIFY']['extras_css'])){
-	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
-		minifyFiles(realpath("{$csspath}/extras"),$extra);
-	}
+foreach($minify['extras'] as $extra){
+	minifyFiles(realpath("{$csspath}/extras"),$extra);
 }
-if(isset($_SESSION['w_MINIFY']['cssfiles']) && is_array($_SESSION['w_MINIFY']['cssfiles'])){
-	foreach($_SESSION['w_MINIFY']['cssfiles'] as $file){
-    	if(!in_array($file,$files)){$files[]=$file;}
-	}
+//get any cssfiles
+foreach($minify['cssfiles'] as $file){
+   	if(!in_array($file,$files)){$files[]=$file;}
 }
-//echo printValue($files);exit;
 //include files and set the lastmodifiedtime of any file
 global $csslines;
 global $pre_csslines;
@@ -116,10 +118,6 @@ $csslines=array();
 $loaded=array();
 $pre_csslines=array();
 foreach($files as $file){
-	if($_REQUEST['debug']==1){
-		$csslines[]= "{$file}<br>".PHP_EOL;
-		continue;
-	}
 	if(preg_match('/^http/i',$file)){
      	//remote file
      	$evalstr="return minifyGetExternal('{$file}');";
@@ -145,83 +143,84 @@ foreach($files as $file){
 		}
 		$csslines[]= PHP_EOL."/* BEGIN {$fname} */".PHP_EOL;
 		$loaded[]=$fname;
-    	minifyLines($lines);
+    	minifyLines($lines,$conditionals);
 	}
 	else{
 		echo "/* Minify_css Error: NO FILE LINES:{$file} */".PHP_EOL.PHP_EOL;
 	}
 }
 //load the template, includepages, and page
-$field=$CONFIG['minify_css']?'css_min':'css';
-$field2=$CONFIG['minify_css']?'css':'css_min';
+$field=$minify['min']==1?'css_min':'css';
+$field2=$minify['min']==1?'css':'css_min';
 //_templates
-if(isNum($_SESSION['w_MINIFY']['template_id']) && $_SESSION['w_MINIFY']['template_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$_SESSION['w_MINIFY']['template_id'],'-fields'=>'_id,name,css,css_min'));
+if(isNum($minify['tid']) && $minify['tid'] > 0){
+	$rec=getDBRecord(array('-table'=>'_templates','_id'=>$minify['tid'],'-fields'=>'_id,name,css,css_min'));
 	if(isset($rec['_id'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
 			$csslines[] = PHP_EOL."/* BEGIN _templates for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
-			$loaded[]="_templates {$field}";
+			$loaded[]="_templates {$rec['_id']}->{$rec['name']}->{$field}";
 			minifyLines($content);
 		}
 		else{
 			$content=evalPHP($rec[$field2]);
 			if(strlen(trim($content)) > 10){
-				$csslines[] = PHP_EOL."/* BEGIN _templates {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
-				$loaded[]="_templates {$field2}";
+				$csslines[] = PHP_EOL."/* BEGIN _templates for {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
+				$loaded[]="_templates {$rec['_id']}->{$rec['name']}->{$field2}";
 				minifyLines($content);
 			}
 		}
 	}
 	else{
-		$csslines[] = PHP_EOL."/* ERROR retrieving _templates record for id {$_SESSION['w_MINIFY']['template_id']} */".PHP_EOL;
+		$csslines[] = PHP_EOL."/* ERROR retrieving _templates record for id {$minify['tid']} */".PHP_EOL;
 	}
+	
 }
 //_pages
-if(isNum($_SESSION['w_MINIFY']['page_id']) && $_SESSION['w_MINIFY']['page_id'] > 0){
-	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$_SESSION['w_MINIFY']['page_id'],'-fields'=>'_id,name,css,css_min'));
+if(isNum($minify['pid']) && $minify['pid'] > 0){
+	$rec=getDBRecord(array('-table'=>'_pages','_id'=>$minify['pid'],'-fields'=>'_id,name,css,css_min'));
 	if(isset($rec['_id'])){
 		$content=evalPHP($rec[$field]);
 		if(strlen(trim($content)) > 10){
-			$csslines[] = PHP_EOL."/* BEGIN _pages {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
-			$loaded[]="_pages {$field}";
+			$csslines[] = PHP_EOL."/* BEGIN _pages for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
+			$loaded[]="_pages {$rec['_id']}->{$rec['name']}->{$field}";
 			minifyLines($content);
 		}
 		else{
 			$content=evalPHP($rec[$field2]);
 			if(strlen(trim($content)) > 10){
-				$csslines[] = PHP_EOL."/* BEGIN _pages {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
-				$loaded[]="_pages {$field2}";
+				$csslines[] = PHP_EOL."/* BEGIN _pages for {$rec['_id']}->{$rec['name']}->{$field2} */".PHP_EOL;
+				$loaded[]="_pages {$rec['_id']}->{$rec['name']}->{$field2}";
 				minifyLines($content);
 			}
 		}
 	}
 	else{
-		$csslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$_SESSION['w_MINIFY']['page_id']} */".PHP_EOL;
+		$csslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$minify['pid']} */".PHP_EOL;
 	}
 }
 //includepages
-if(is_array($_SESSION['w_MINIFY']['includepages'])){
-	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
+if(is_array($minify['includepages'])){
+	foreach($minify['includepages'] as $id){
 		$rec=getDBRecord(array('-table'=>'_pages','_id'=>$id,'-fields'=>"_id,name,css,css_min"));
 		if(isset($rec['_id'])){
 			$content=evalPHP($rec[$field]);
 			if(strlen(trim($content)) > 10){
 				$csslines[] = PHP_EOL."/* BEGIN includepages for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
-				$loaded[]="includepages {$field} for {$rec['name']} page";
+				$loaded[]="includepages for {$rec['_id']}->{$rec['name']}->{$field}";
 				minifyLines($content);
 			}
 			else{
 				$content=evalPHP($rec[$field2]);
 				if(strlen(trim($content)) > 10){
 					$csslines[] = PHP_EOL."/* BEGIN includepages for {$rec['_id']}->{$rec['name']}->{$field} */".PHP_EOL;
-					$loaded[]="includepages {$field} for {$rec['name']} page";
+					$loaded[]="includepages {$rec['_id']}->{$rec['name']}->{$field2}";
 					minifyLines($content);
 				}
 			}
 		}
 		else{
-			$csslines[] = PHP_EOL."/* ERROR retrieving includepages for id {$id} */".PHP_EOL;
+			$csslines[] = PHP_EOL."/* ERROR retrieving _pages record for id {$id} */".PHP_EOL;
 		}
 	}
 }
@@ -257,6 +256,7 @@ else{
 	echo $d;
 	ob_end_flush();
 }
+
 exit;
 /* ------------ Functions needed ---------------- */
 function minifyFiles($path,$names){
@@ -266,11 +266,6 @@ function minifyFiles($path,$names){
 	//echo $path.implode(',',$names).PHP_EOL;return;
 	foreach($names as $name){
 		//automatically create minified versions if they do not exist - localhost only
-		if($_SERVER['UNIQUE_HOST']=='localhost' && !stringEndsWith($name,'.min') && !is_file("{$path}/{$name}.min.css") && is_file("{$path}/{$name}.css")){
-			$code=getFileContents("{$path}/{$name}.css");
-			$mcode=minifyCode($code,'css');
-			setFileContents("{$path}/{$name}.min.css",$mcode);
-		}
 		if(preg_match('/^http/i',$name)){
 	     	//remote file - expire every week
 	     	$evalstr="return minifyGetExternal('{$name}');";
@@ -281,11 +276,23 @@ function minifyFiles($path,$names){
 			$file=realpath("{$path}/{$name}.min.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
+		elseif($CONFIG['minify_css'] && is_file("{$path}/{$name}/{$name}.min.css")){
+			$file=realpath("{$path}/{$name}/{$name}.min.css");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		elseif($CONFIG['minify_css'] && is_file("{$path}/{$name}/{$name}.min.css")){
+			$file=realpath("{$path}/{$name}/{$name}.min.css");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
 		elseif(is_file("{$path}/{$name}.css")){
 	    	$file=realpath("{$path}/{$name}.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		else{echo "/* Minify_css Error: NO SUCH NAME:{$name} */".PHP_EOL.PHP_EOL;}
+		elseif(is_file("{$path}/{$name}/{$name}.css")){
+	    	$file=realpath("{$path}/{$name}/{$name}.css");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		else{echo "/* Minify_css Error: NO SUCH NAME:{$name}, Path:{$path} */".PHP_EOL.PHP_EOL;}
 	}
 }
 
@@ -295,8 +302,8 @@ function minifyGetExternal($url){
 	if(is_array($lines)){
 		$size=filesize(realpath($file));
 		//$rtn .= "/* BEGIN {$url} ({$size} bytes) */".PHP_EOL;
-    		$rtn .=  minifyLines($lines);
-    		//$rtn .= "\r\n".PHP_EOL;
+    	$rtn .=  minifyLines($lines);
+    	//$rtn .= "\r\n\r\n";
 	}
 	return $rtn;
 }
@@ -323,106 +330,18 @@ function compress($buffer) {
 	return $buffer;
 }
 //--------------------
-function minifyLines($lines,$conditionals=1) {
+function minifyLines($lines) {
 	global $csslines;
-	global $pre_csslines;
 	if(!is_array($lines)){
 		$lines=preg_split('/[\r\n]+/',$lines);
 	}
-	$vars=array();
+	$rtn='';
 	foreach($lines as $line){
 		$tline=trim($line);
      	if(!strlen($tline)){continue;}
      	//ignore comments
      	if(strpos($tline,"//") === 0){continue;}
-     	if(strpos($tline,"/*") === 0 && strpos(strrev($tline),"/*") === 0){continue;}
-     	/*look for variable definations */
-     	preg_match_all('/\@([a-zA-Z0-9\-\_]+?)\:([^\{\}]*?)\;/ism',$tline,$vm);
-     	for($v=0;$v<count($vm[1]);$v++){
-			$vars['@'.$vm[1][$v]]=$vm[2][$v];
-			$line=str_replace($vm[0][$v],'',$line);
-		}
-		//replace any vars
-		foreach($vars as $vkey=>$vval){
-			$line=str_replace($vkey,$vval,$line);
-		}
-     	//skip conditionals for minified files
-     	if(!$conditionals){
-			//remove conditionals
-			preg_match_all('/\;\[([a-zA-Z0-9\s\|]+?)\]/ism',$line,$vm);
-			foreach($vm[1] as $conditional){
-				$conditional="[{$conditional}]";
-				$line=str_replace($conditional,'',$line);
-			}
-			$csslines[]=rtrim($line);
-			continue;
-		}
-
-     	/* look for conditonals - must appear at the beginning of the CSS line
-		  supported browser names: firefox|msie|chrome|safari|opera
-		  supported operators: lt, gt, lte, gte, eq, not
-		  not msie: [not msie]
-		  to only show for msie: [msie]
-		  to only show for msie 6 [msie eq 6]
-		  to only show for msie greater than 6 [msie gt 6]
-		  to ony show for msie less than or equal to 6 [msie lte 6]
-		  BUT ALLOW FOR [data-toggle="buttons"]
-		*/
-		if(preg_match('/^\[(.+?)\]/',$tline,$cssmatch)){
-			$browser=strtolower($_SERVER['REMOTE_BROWSER']);
-			$parts=preg_split('/\ +/',strtolower($cssmatch[1]),3);
-			if(count($parts)==1){
-				//allow for css selectors
-				$valid_browsers=array('msie','chrome','firefox','safari','opera');
-				$part_browsers=preg_split('/\|/',$parts[0]);
-				if(!in_array($part_browsers[0],$valid_browsers)){
-                	$csslines[]=rtrim($line);
-					continue;
-				}
-				//ALLOW FOR [data-toggle="buttons"]
-				if(stringContains($cssmatch[1],'"')){
-					$csslines[]=rtrim($line);
-					continue;
-				}
-				if(!in_array($browser,preg_split('/\|/',$parts[0]))){continue;}
-			}
-			//[not msie]
-			if(count($parts)==2 && $parts[0] == 'not' && in_array($browser,preg_split('/\|/',$parts[1]))){continue;}
-			if(count($parts)==3 ){
-				$version=$_SERVER['REMOTE_BROWSER_VERSION'];
-				//$rtn .=  "/*CONDITIONAL: Browser:{$browser}, version: {$version}, parts0:{$parts[0]}, parts1:{$parts[1]}, parts2:{$parts[2]}*/".PHP_EOL;
-				if(!in_array($browser,preg_split('/\|/',$parts[0]))){continue;}
-				$pass=0;
-				switch($parts[1]){
-                	case 'eq':
-                		//[msie eq 6]
-						if(round($version) == round($parts[2],2)){$pass=1;}
-						break;
-					case 'lt':
-						//[msie lt 6]
-						if(round($version) < round($parts[2],2)){$pass=1;}
-						break;
-					case 'gt':
-						//[msie gt 6]
-						if(round($version) > round($parts[2],2)){$pass=1;}
-						break;
-					case 'lte':
-						//[msie lte 8]
-						if(round($version) <= round($parts[2],2)){$pass=1;}
-						break;
-					case 'gte':
-						//[msie gte 6]
-						if(round($version) >= round($parts[2],2)){$pass=1;}
-						break;
-				}
-				if($pass==0){continue;}
-			}
-			//remove the conditional statement
-			$line=str_replace($cssmatch[0],'',$line);
-		}
-		//add the line but trim the right side
-		if(strpos($tline,'@import') === 0){$pre_csslines[]=rtrim($line);}
-		else{$csslines[]=rtrim($line);}
+     	//if(strpos($tline,"/*") === 0 && strpos(strrev($tline),"/*") === 0){continue;}
+		$csslines[]=rtrim($line);
 	}
-	return 1;
 }

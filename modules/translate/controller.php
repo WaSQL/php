@@ -20,6 +20,9 @@
 	loadExtras('translate');
 	loadExtrasCss('wacss');
 	loadExtrasJs('wacss');
+	if(!isDBTable('countries')){
+		$ok=createWasqlTables('countries');
+	}
 	if(!isset($_SESSION['REMOTE_LANG']) || !strlen($_SESSION['REMOTE_LANG'])){
 		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
 	}

@@ -586,15 +586,12 @@ button.wacssedit:hover{
 .nav > ul li {position: relative;}
 .nav > ul a, .nav > ul button {
   padding: 4px 7px;
-  line-height: 1;
   display: block;
   text-decoration: none;
   white-space: nowrap;
-  font-size:1rem;
 }
 .nav > ul > li > ul a, .nav > ul > li > ul button {
   padding: 4px 7px;
-  font-size:1rem;
 }
 .nav.condensed > ul > li a, .nav.condensed > ul > li button {
   padding: 2px 5px;
