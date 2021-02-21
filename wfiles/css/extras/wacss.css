@@ -2021,14 +2021,6 @@ table.is-sticky tr:first-child th, table.sticky tr:first-child th{
   z-index:505;
   border-top:0px !important;
 }
-@media only screen and (max-width: 769px) {
-	table.is-sticky tr:first-child th, table.sticky tr:first-child th{
-  		background-color: #FFF;
-  		background-image: none;
-  		position:relative;
-  		z-index:505;
-	}
-}
 
 table.table.condensed td, table.table.condensed th,
 table.table.table-condensed td, table.table.table-condensed th {
