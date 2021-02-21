@@ -3274,6 +3274,7 @@ function dropDBIndex($indexname,$tablename){
 *	[-honeypot] string - name of the honeypot.  Use this to eliminate spam posts
 *	[-save] string - name of the submit button - defaults to Save
 *	[-hide] string - comma separated list of submit buttons to hide. i.e reset, delete, clone
+*	[-custombutton] string - html for custom button to show in button list at bottom of form
 *	[-focus] string - field name to set focus to
 *	[-readonly] boolean - show values but not form
 *	[-rec_eval] - function name to send the record to for additional processing
@@ -4028,6 +4029,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	    	$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
 	    	}
+	    //add custom button
+	    if(isset($params['-custombutton'])){
+			$rtn .= '		<td>'.$params['-custombutton'].'</td>'.PHP_EOL;
+		}
 	    $rtn .= '	</tr>'.PHP_EOL;
 	    $rtn .= '</table>'.PHP_EOL;
 	}
