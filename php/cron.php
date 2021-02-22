@@ -59,6 +59,7 @@ $pid_check=1;
 $apache_log=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
+	//should switch to ALLCONFIG
 	foreach($ConfigXml as $name=>$host){
 		//allhost, then, sameas, then hostname
 		$CONFIG=$allhost;
