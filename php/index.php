@@ -52,6 +52,13 @@ elseif($url_parts[0]=='t'){
 global $CONFIG;
 $stime=microtime(true);
 include_once("$progpath/config.php");
+//check for timezone
+if(isset($CONFIG['timezone'])){
+	@date_default_timezone_set($CONFIG['timezone']);
+}
+else{
+	@date_default_timezone_set('America/Denver');
+}
 $loadtimes['config']=number_format((microtime(true)-$stime),3);
 $stime=microtime(true);
 include_once("$progpath/wasql.php");

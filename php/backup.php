@@ -33,12 +33,29 @@ if(file_exists($backupfile)){
 }
 include_once("{$progpath}/common.php");
 include_once("{$progpath}/config.php");
-$cdate=date('Ymd_his');
+//set the default time zone
+date_default_timezone_set('America/Denver');
 foreach($ALLCONFIG as $site=>$host){
 	$sendopts=array();
 	$filenames=array();
 	if(!isset($host['backup'])){continue;}
 	if(!in_array($host['backup'],array(1,'true'))){continue;}
+	//check for timezone
+	if(isset($host['timezone'])){
+		@date_default_timezone_set($host['timezone']);
+	}
+	//check for backup_email_days
+	$cday=date('d');
+	if(isset($host['backup_email_days'])){
+		$found=0;
+		$days=preg_split('/\,/',$host['backup_email_days']);
+		foreach($days as $day){
+			if((integer)$day==(integer)$cday){$found=1;break;}
+		}
+		if($found==0){continue;}
+	}
+	$CONFIG=$host;
+	$cdate=date('Ymd_his');
 	$ok=backupMessage("*** Begin backup for {$site} ***");
 	if(!isset($host['backup_dir'])){
 		$host['backup_dir']=getWasqlPath('sh/backup');

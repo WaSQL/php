@@ -4029,9 +4029,15 @@ function addEditDBForm($params=array(),$customcode=''){
 	    	$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
 	    	}
-	    //add custom button
+	    //add custom button(s)
 	    if(isset($params['-custombutton'])){
-			$rtn .= '		<td>'.$params['-custombutton'].'</td>'.PHP_EOL;
+	    	if(!is_array($params['-custombutton'])){
+	    		$params['-custombutton']=array($params['-custombutton']);
+	    	}
+	    	foreach($params['-custombutton'] as $button){
+	    		$rtn .= '		<td>'.$button.'</td>'.PHP_EOL;	
+	    	}
+			
 		}
 	    $rtn .= '	</tr>'.PHP_EOL;
 	    $rtn .= '</table>'.PHP_EOL;
