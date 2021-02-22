@@ -61,7 +61,7 @@ body{
   font-size:1rem;
   margin-bottom:.33em;
 }
-.menu.is-info a{
+.menu a{
   line-height: 1;
 }
 /* menu.is-primary */
@@ -219,6 +219,14 @@ body{
   .w_smaller,.wacss-smaller{font-size:7pt;}
   .w_smallest,.wacss-smallest{font-size:6pt;}
   .badge,.wacss-badge{font-size:7pt;}
+  .menu .menu-label{
+    line-height: .75;
+    font-size:0.75rem;
+    margin-bottom:.33em;
+  }
+  .menu a{
+    line-height: .75;
+  }
 }
 /* tablet overrides */
 @media (min-width: 769px) and (max-width: 1023px) {
