@@ -48,6 +48,160 @@ body{
 .subtitle,.wacss-subtitle{font-size: 1.25rem !important;}
 .subtitle img, img.subtitle,.wacss-subtitle img,img.wacss-subtitle{height: 28px;}
 
+/* Bulma menu overrides and addons*/
+.menu{
+  padding:.5rem 1.5rem;
+  border-bottom-right-radius: 5px
+}
+.menu .menu-label{
+  line-height: 1;
+  font-size:1rem;
+  margin-bottom:.33em;
+}
+.menu.is-info a{
+  line-height: 1;
+}
+/* menu.is-primary */
+.menu.is-primary {
+    background-color: #00d1b2;
+    color: #fff;
+}
+.menu.is-primary .menu-label,
+.menu.is-primary a{
+  color:#FFF;
+}
+.menu.is-primary .menu-list a:hover,
+.menu.is-primary .menu-list a:focus,
+.menu.is-primary .menu-list a.is-active{
+  background-color: #00b89c;
+}
+/* menu.is-link */
+.menu.is-link {
+    background-color: #3273dc;
+    color: #fff;
+}
+.menu.is-link .menu-label,
+.menu.is-link a{
+  color:#FFF;
+}
+.menu.is-link .menu-list a:hover,
+.menu.is-link .menu-list a:focus,
+.menu.is-link .menu-list a.is-active{
+  background-color: #2366d1;
+}
+/* menu.is-info */
+.menu.is-info {
+    background-color: #3298dc;
+    color: #fff;
+}
+.menu.is-info .menu-label,
+.menu.is-info a{
+  color:#FFF;
+}
+.menu.is-info .menu-list a:hover,
+.menu.is-info .menu-list a:focus,
+.menu.is-info .menu-list a.is-active{
+  background-color: #238cd1;
+}
+/* menu.is-success */
+.menu.is-success {
+    background-color: #48c774;
+    color: #fff;
+}
+.menu.is-success .menu-label,
+.menu.is-success a{
+  color:#FFF;
+}
+.menu.is-success .menu-list a:hover,
+.menu.is-success .menu-list a:focus,
+.menu.is-success .menu-list a.is-active{
+  background-color: #3abb67;
+}
+/* menu.is-warning */
+.menu.is-warning {
+    background-color: #ffdd57;
+    color: rgba(0, 0, 0, 0.7);
+}
+.menu.is-warning .menu-label,
+.menu.is-warning a{
+  color:rgba(0, 0, 0, 0.7);
+}
+.menu.is-warning .menu-list a:hover,
+.menu.is-warning .menu-list a:focus,
+.menu.is-warning .menu-list a.is-active{
+  background-color: #ffd83d;
+}
+/* menu.is-danger */
+.menu.is-danger {
+    background-color: #f14668;
+    color: #fff;
+}
+.menu.is-danger .menu-label,
+.menu.is-danger a{
+  color:#fff;
+}
+.menu.is-danger .menu-list a:hover,
+.menu.is-danger .menu-list a:focus,
+.menu.is-danger .menu-list a.is-active{
+  background-color: #ef2e55;
+}
+/* menu.is-black */
+.menu.is-black {
+    background-color: #0a0a0a;
+    color: #fff;
+}
+.menu.is-black .menu-label,
+.menu.is-black a{
+  color:#fff;
+}
+.menu.is-black .menu-list a:hover,
+.menu.is-black .menu-list a:focus,
+.menu.is-black .menu-list a.is-active{
+  background-color: black;
+}
+/* menu.is-dark */
+.menu.is-dark {
+    background-color: #363636;
+    color: #fff;
+}
+.menu.is-dark .menu-label,
+.menu.is-dark a{
+  color:#fff;
+}
+.menu.is-dark .menu-list a:hover,
+.menu.is-dark .menu-list a:focus,
+.menu.is-dark .menu-list a.is-active{
+  background-color: #292929;
+}
+/* menu.is-light */
+.menu.is-light {
+    background-color: whitesmoke;
+    color: rgba(0, 0, 0, 0.7);
+}
+.menu.is-light .menu-label,
+.menu.is-light a{
+  color:rgba(0, 0, 0, 0.7);
+}
+.menu.is-light .menu-list a:hover,
+.menu.is-light .menu-list a:focus,
+.menu.is-light .menu-list a.is-active{
+  background-color: #e8e8e8;
+}
+/* menu.is-white */
+.menu.is-white {
+    background-color: white;
+    color: #0a0a0a;
+}
+.menu.is-white .menu-label,
+.menu.is-white a{
+  color:#0a0a0a;
+}
+.menu.is-white .menu-list a:hover,
+.menu.is-white .menu-list a:focus,
+.menu.is-white .menu-list a.is-active{
+  background-color: #f2f2f2;
+}
+
 /* mobile overrides */
 @media (max-width: 768px) {
   .columns.reverse-column-order-mobile {
