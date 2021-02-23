@@ -518,6 +518,55 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
+//---------- begin function oracleGetAllTableConstraints ----------
+/**
+* @describe returns constraints (foreign keys) of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allconstraints=oracleGetAllTableConstraints();
+*/
+function oracleGetAllTableConstraints($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleGetAllTableConstraints');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=oracleGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('oracleGetAllTableConstraints error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+	SELECT 
+		a.table_name, 
+		a.column_name, 
+		a.constraint_name,   
+       	c_pk.table_name as r_table_name, 
+       	c_pk.constraint_name as r_pk
+	FROM all_cons_columns a
+  	JOIN all_constraints c ON a.owner = c.owner
+		AND a.constraint_name = c.constraint_name
+  	JOIN all_constraints c_pk ON c.r_owner = c_pk.owner
+		AND c.r_constraint_name = c_pk.constraint_name
+	WHERE c.constraint_type = 'R'
+		and a.owner='{$schema}'
+	ORDER BY 1,2,3
+ENDOFQUERY;
+	$recs=oracleQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>';
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
 function oracleGetDBTableIndexes($tablename=''){
 	global $databaseCache;
 	global $CONFIG;

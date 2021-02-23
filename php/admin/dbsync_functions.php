@@ -232,6 +232,17 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	elseif(!count($tablefields['target'])){
 		return "Failed to get target tables from [{$target}]";
 	}
+	//constraints
+	$tableconstraints=array(
+		'source'=>dbGetAllTableConstraints($source),
+		'target'=>dbGetAllTableConstraints($target),
+	);
+	if(!count($tableconstraints['source'])){
+		return "Failed to get source table constraints from [{$source}]";
+	}
+	elseif(!count($tableconstraints['target'])){
+		return "Failed to get target table constraints from [{$target}]";
+	}
 	
 	$recs=array();
 	foreach($tablefields['source'] as $table=>$fields){
@@ -239,6 +250,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 			'table'=>$table,
 			'schema'=>'',
 			'indexes'=>'',
+			'constraints'=>''
 		);
 		//schema
 		if(!isset($tablefields['target'][$table])){
@@ -254,6 +266,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				'table'=>$table,
 				'schema'=>'missing',
 				'indexes'=>'',
+				'constraints'=>''
 			);
 		}
 	}
@@ -262,12 +275,14 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		$recs[$table]['source']=array(
 			'name'=>$source,
 			'fields'=>$tablefields['source'][$table],
-			'indexes'=>$tableindexes['source'][$table]
+			'indexes'=>$tableindexes['source'][$table],
+			'constraints'=>$tableconstraints['source'][$table]
 		);
 		$recs[$table]['target']=array(
 			'name'=>$target,
 			'fields'=>$tablefields['target'][$table],
-			'indexes'=>$tableindexes['target'][$table]
+			'indexes'=>$tableindexes['target'][$table],
+			'constraints'=>$tableconstraints['target'][$table]
 		);
 		if(strlen($rec['schema'])){continue;}
 		//check for field differences
@@ -298,10 +313,34 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		else{
 			$recs[$table]['indexes']='none';
 		}
+		//check constraints
+		if(isset($tableconstraints['source'][$table])){
+			if(!isset($tableconstraints['target'][$table])){
+				$recs[$table]['constraints']='new';
+			}
+			elseif(sha1(json_encode($tableconstraints['target'][$table])) != sha1(json_encode($tableconstraints['source'][$table]))){
+				$recs[$table]['constraints']='different';
+			}
+			else{
+				$recs[$table]['constraints']='same';
+			}
+		}
+		elseif(isset($tableconstraints['target'][$table])){
+			$recs[$table]['constraints']='missing';
+		}
+		else{
+			$recs[$table]['constraints']='none';
+		}
 	}
 	if($diffs==1){
 		foreach($recs as $table=>$rec){	
-			if($recs[$table]['schema']=='same' && in_array($recs[$table]['indexes'],array('same','none'))){
+			$diff=0;
+			if($recs[$table]['schema']!='same'){$diff+=1;} 
+			if(!in_array($recs[$table]['indexes'],array('same','none'))){$diff+=1;}
+			if(in_array($recs[$table]['constraints'],array('same','none'))){
+				$diff+=1;
+			}
+			if($diff==0){
 				unset($recs[$table]);
 			}
 		}
@@ -416,12 +455,65 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 			$recs[$table]['indexes'].='<div style="margin-left:10px;">'.implode(' ',$cols).'</div>';
 			$recs[$table]['indexes'].='</div>';
 		}
+		//constraints
+		$lines=array();
+		$cols=array();
+		switch(strtolower($recs[$table]['constraints'])){
+			case 'same':
+				$fieldcount=count($tableconstraints['source'][$table]);
+				$lines[]='<span class="icon-mark w_success"></span> constraints exists in Both';
+				$lines[]='<span class="icon-mark w_success"></span> Same '.$fieldcount.' constraints in Both';
+				$cols[]=implode('<br />',$lines);
+				//view
+				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				
+			break;
+			case 'new':
+				$fieldcount=count($tableconstraints['source'][$table]);
+				$lines[]='<span class="icon-block w_danger"></span> constraints ONLY exists in Source DB ('.$fieldcount.' fields)';
+				$cols[]=implode('<br />',$lines);
+				//push to target
+				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
+			break;
+			case 'different':
+				$sfieldcount=count($tableconstraints['source'][$table]);
+				$tfieldcount=count($tableconstraints['target'][$table]);
+				$lines[]='<span class="icon-mark w_success"></span> constraints exists in Both';
+				if($sfieldcount != $tfieldcount){
+					$msg=" Source has {$sfieldcount} constraints, Target has {$tfieldcount} constraints";
+				}
+				else{
+					$msg=" Same number of constraints({$sfieldcount}) in both but they are different";
+				}
+				$lines[]='<span class="icon-block w_danger"></span> '.$msg;
+				$cols[]=implode('<br />',$lines);
+				//push to target
+				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+			break;
+			case 'missing':
+				$fieldcount=count($tableconstraints['target'][$table]);
+				$lines[]='<span class="icon-warning w_danger"></span> constraints ONLY exists in Target DB ('.$fieldcount.' fields)';
+				$cols[]=implode('<br />',$lines);
+				//pull from target
+				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+			break;
+		}
+		$recs[$table]['constraints']='';
+		if(count($cols)==1){
+			$recs[$table]['constraints']=$cols[0];
+		}
+		else{
+			$recs[$table]['constraints']='<div style="display:flex;flex-direction:row;flex-wrap:no-wrap; align-items:flex-end;justify-content:space-between;">';
+			$recs[$table]['constraints'].='<div>'.array_shift($cols).'</div>';
+			$recs[$table]['constraints'].='<div style="margin-left:10px;">'.implode(' ',$cols).'</div>';
+			$recs[$table]['constraints'].='</div>';
+		}
 	}
 	$xrecs=array();
 	foreach($recs as $rec){$xrecs[]=$rec;}
 	$listopts=array(
 		'-list'=>$xrecs,
-		'-listfields'=>'table,schema,indexes',
+		'-listfields'=>'table,schema,indexes,constraints',
 		//'-pretable'=>'<hr size="1" style="margin:0px;" />',
 		'-tableclass'=>'table bordered striped is-sticky',
 		'-tableheight'=>'40vh',

@@ -519,6 +519,17 @@ function dbGetAllTableFields($db){
 function dbGetAllTableIndexes($db,$schema=''){
 	return dbFunctionCall('getAllTableIndexes',$db,$schema);
 }
+//---------- begin function dbGetAllTableConstraints
+/**
+* @describe returns constraints of all tables with the table name as the index
+* @param db string - database name as specified in the database section of config.xml
+* @return array
+* @usage
+*	$tindexes=dbGetAllTableConstraints('pg_local');
+*/
+function dbGetAllTableConstraints($db,$schema=''){
+	return dbFunctionCall('getAllTableConstraints',$db,$schema);
+}
 //---------- begin function dbGetTableFields
 /**
 * @describe returns fields of specified table

@@ -62,6 +62,15 @@
 			$diff=dbsyncDiff($_SESSION['dbsync'][$table]['source']['indexes'],$_SESSION['dbsync'][$table]['target']['indexes']);
 			return;
 		break;
+		case 'view_constraints':
+			$table=$_REQUEST['table'];
+			$source=$_REQUEST['source'];
+			$target=$_REQUEST['target'];
+			$title="Constraints for {$table}";
+			setView('view_diff',1);
+			$diff=dbsyncDiff($_SESSION['dbsync'][$table]['source']['constraints'],$_SESSION['dbsync'][$table]['target']['constraints']);
+			return;
+		break;
 		case 'view_procedure':
 			$name=$_REQUEST['name'];
 			$type=$_REQUEST['type'];
