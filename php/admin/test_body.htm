@@ -682,7 +682,11 @@
 		<th>Output</th>
 	</tr>
 	<tr>
-		<th><h3>PHP</h3></th>
+		<th>
+			<h3>PHP</h3>
+			v<?=phpversion();?>
+
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?php
@@ -699,7 +703,13 @@
 		</td>
 	</tr>
 	<tr>
-		<th><h3>Python</h3></th>
+		<th>
+			<h3>Python</h3>
+v<?python
+import platform
+print(platform.python_version())
+?>
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?python
@@ -716,7 +726,12 @@
 		</td>
 	</tr>
 	<tr>
-		<th><h3>NodeJs</h3></th>
+		<th>
+			<h3>NodeJs</h3>
+			<?node
+				console.log(process.version)
+			?>
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?node
@@ -733,7 +748,12 @@
 		</td>
 	</tr>
 	<tr>
-		<th><h3>Perl</h3></th>
+		<th>
+			<h3>Perl</h3>
+			<?perl
+				print "v".$];
+			?>
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?perl
@@ -750,7 +770,12 @@
 		</td>
 	</tr>
 	<tr>
-		<th><h3>Lua</h3></th>
+		<th>
+			<h3>Lua</h3>
+			v<?lua
+				print(_VERSION)
+			?>
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?lua
@@ -767,7 +792,12 @@
 		</td>
 	</tr>
 	<tr>
-		<th><h3>Ruby</h3></th>
+		<th>
+			<h3>Ruby</h3>
+			v<?ruby
+				puts RUBY_VERSION
+			?>
+		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?ruby

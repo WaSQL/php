@@ -712,10 +712,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
 *	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function. It MUST return the array back
 *	[-results_eval_params] - additonal params to send the the results_eval function as a second param
-*	[-host] - server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
+*	[-order] - string - comma separated list of fields to order the results by. Ignored if you are using -csv or -list
 *	[-searchclass]  - sets the search form section class
 *	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs
 *	[-quickfilters_class] - set quickfilter button class
