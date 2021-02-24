@@ -7312,6 +7312,7 @@ function commonAddPrecode($lang,$evalcode){
 	global $PAGE;
 	global $TEMPLATE;
 	global $PASSTHRU;
+	global $DATABASE;
 	$precode=array();
 	//$USER
 	$tmp=commonGetPrecodeForVar($lang,$USER,'USER');
@@ -7327,6 +7328,9 @@ function commonAddPrecode($lang,$evalcode){
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$PASSTHRU
 	$tmp=commonGetPrecodeForVar($lang,$PASSTHRU,'PASSTHRU');
+	if(count($tmp)){$precode=array_merge($precode,$tmp);}
+	//$DATABASE
+	$tmp=commonGetPrecodeForVar($lang,$DATABASE,'DATABASE');
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$_REQUEST
 	$tmp=commonGetPrecodeForVar($lang,$_REQUEST,'REQUEST');
