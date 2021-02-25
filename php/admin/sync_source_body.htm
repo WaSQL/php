@@ -1,0 +1,88 @@
+<view:default>
+<?=buildOnLoad("wacss.loadScript('/php/admin/sync_source_js.js');");?>
+<div class="container-fluid">
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-sync"></span> <translate>Sync Source</translate></h2>
+	<div id="sync_source_addedit">
+		<?=sync_sourceAddEdit(0);?>
+	</div>
+	<hr />
+	<div id="sync_source_content">
+		<?=sync_sourceList();?>
+	</div>
+</div>
+</view:default>
+
+<view:sync_source_addedit>
+<?=sync_sourceAddEdit($id);?>
+<?=buildOnLoad("removeId('centerpop');");?>
+</view:sync_source_addedit>
+
+<view:sync_source_content>
+<?=sync_sourceList();?>
+<?=buildOnLoad("removeId('centerpop');sync_sourceAddEdit(0);");?>
+</view:sync_source_content>
+
+<view:addedit_fields>
+<div style="display:flex;justify-content: flex-start;align-items: center;flex-wrap: wrap;">
+	<div><label>Table Name</label>[table_name]</div>
+	<div style="margin-left:5px;"><label>Table ID</label><div id="table_id">[table_id]</div></div>
+	<div style="margin-left:5px;"><label>Source Domain</label>[source_domain]</div>
+	<div style="margin-left:5px;"><label>Source ID</label>[source_id]</div>
+</div>
+</view:addedit_fields>
+
+<view:authorize>
+<div class="w_centerpop_title">Authorization on Source Domain</div>
+<div class="w_centerpop_content" style="padding-top:10px;max-width:400px;">
+<form method="post" autocomplete="off" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+	<input type="hidden" name="_menu" value="sync_source" />
+	<input type="hidden" name="func" value="<?=$_REQUEST['func'];?>" />
+	<input type="hidden" name="id" value="<?=$_REQUEST['id'];?>" />
+	<div class="w_big">Provide ADMIN authorization on the Source Domain in order to pull changes. </div>
+	<div style="margin-top:15px;">Username</div>
+	<div><input type="text" name="user" autocomplete="sync_source_auth_user" value="" class="input" required="required" /></div>
+	<div style="margin-top:5px;">Password</div>
+	<div><input type="password" name="pass" autocomplete="sync_source_auth_pass" value="" class="input" required="required" /></div>
+	<div style="margin-top:10px;"><button type="submit" class="btn">Submit</button></div>
+	<view:failed>
+	<div style="margin-top:10px;" class="w_red">Authorization failed</div>
+	</view:failed>
+</form>
+</div>
+</view:authorize>
+
+
+<view:sync_no_diffs>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content" style="padding-top:10px;">
+	Your copy is up to date. No differences found.
+</div>
+</view:sync_no_diffs>
+
+<view:sync_diffs>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content" style="padding-top:10px;">
+	<ul class="nav nav-tabs">
+		<view:field_tab>
+			<li class="<?=sync_sourceSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','diff_details',{_menu:'sync_source','func':'diff_details',field:'<?=$key;?>',showprocessing:false});"><?=$key;?></a></li>
+		</view:field_tab>
+		<?=renderEach('field_tab',$diffs,'diff');?>
+	</ul>
+	<div id="diff_details">
+		<?=$diffs[$setactive];?>
+	</div>
+	<div style="display:none">
+		<view:diff_details>
+		<div id="diff_details_<?=$key;?>">
+			<?=$diff;?>
+		</div>
+		</view:diff_details>
+		<?=renderEach('diff_details',$diffs,'diff');?>
+	</div>
+	<div style="border-top:1px solid #CCC;padding-top:10px;"><button type="button" onclick="sync_sourceSync(<?=$rec['_id'];?>);" class="btn btn-large btn-warning"><span class="icon-sync"></span> Synchronize</a></div>
+</div>
+</view:sync_diffs>
+
+<view:switch_field>
+	<?=buildOnLoad("setText('diff_details',getText('diff_details_{$field}'));");?>
+</view:switch_field>
