@@ -7343,6 +7343,17 @@ function commonAddPrecode($lang,$evalcode){
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//add precode to evalcode
 	if(count($precode)){
+		//add requires
+		switch($lang['name']){
+			case 'ruby':
+				array_unshift($precode,"require 'json'");
+			break;
+			case 'lua':
+				//https://github.com/rxi/json.lua
+				array_unshift($precode,"json = require \"json\";");
+			break;
+		}
+		$precode[]="";
 		//comment header
 		array_unshift($precode,"{$lang['comment']} BEGIN WaSQL Variable Definitions");
 		//comment footer
@@ -7394,7 +7405,9 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 			$precode[]="const {$varname} = ".json_encode($arr).";";
 		break;
 		case 'lua':
-			$precode[]="local {$varname} = json.decode('".json_encode($arr,JSON_UNESCAPED_SLASHES)."');";
+			$json=json_encode($arr,JSON_UNESCAPED_SLASHES);
+			$json=str_replace('\\"','',$json);
+			$precode[]="local {$varname} = json.decode('".$json."');";
 		break;
 		case 'vbscript':
 			$precode[]="Dim {$varname} : Set {$varname} = CreateObject(\"Scripting.Dictionary\")";
@@ -7409,20 +7422,6 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 				$precode[]="	{$varname}[{$k}]=\"{$v}\"";
 			}
 		break;
-	}
-	//add requires
-	if(count($precode)){
-		//add requires
-		switch($lang['name']){
-			case 'ruby':
-				array_unshift($precode,"require 'json'");
-			break;
-			case 'lua':
-				//https://github.com/rxi/json.lua
-				array_unshift($precode,"json = require \"json\";");
-			break;
-		}
-		$precode[]="";
 	}
 	return $precode;
 }
