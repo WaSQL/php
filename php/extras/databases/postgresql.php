@@ -93,12 +93,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			  id=EXCLUDED.id, username=EXCLUDED.username,
 			  password=EXCLUDED.password, level=EXCLUDED.level,email=EXCLUDED.email
 		*/
-		$query.=" ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
+		$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
 		$flds=array();
 		foreach($params['-upsert'] as $fld){
 			$flds[]="{$fld}=EXCLUDED.{$fld}";
 		}
-		$query.=implode(', ',$flds);
+		$query.=PHP_EOL.implode(', ',$flds);
 	}
 	$ok=postgresqlExecuteSQL($query);
 	if(isset($ok['error'])){
@@ -389,6 +389,22 @@ function postgresqlAddDBRecord($params=array()){
 			$pfieldstr=implode(',',$pflds);
 			$more="ON CONFLICT ({$pfieldstr}) DO NOTHING";
 		}
+	}
+	elseif(isset($params['-upsert']) && isset($params['-upserton'])){
+		if(!is_array($params['-upsert'])){
+			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+		}
+		/*
+			ON CONFLICT (id) DO UPDATE SET 
+			  id=EXCLUDED.id, username=EXCLUDED.username,
+			  password=EXCLUDED.password, level=EXCLUDED.level,email=EXCLUDED.email
+		*/
+		$more=" ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
+		$flds=array();
+		foreach($params['-upsert'] as $fld){
+			$flds[]="{$fld}=EXCLUDED.{$fld}";
+		}
+		$more.=PHP_EOL.implode(', ',$flds);
 	}
     $query=<<<ENDOFQUERY
 		INSERT INTO {$params['-table']}
