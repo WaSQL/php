@@ -3264,6 +3264,9 @@ function tableOptions($table='',$params=array()){
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
 				}
+				elseif($option == 'sync_source'){
+					$href="/php/admin.php?_menu={$option}&table_name={$table}";
+				}
 				$rtn .= '						<li><a title="'.$title.'" class="w_link" href="'.$href.'"';
 				
 				if($option == 'truncate'){
@@ -3324,6 +3327,9 @@ function tableOptions($table='',$params=array()){
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
 				}
+				elseif($option == 'sync_source'){
+					$href="/php/admin.php?_menu={$option}&table_name={$table}";
+				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class.=' active';}
 				$rtn .= '	<td><button type="button" style="line-height:1.2;padding:5px; margin-right:3px;" data-tooltip_position="bottom" data-tooltip="'.$title.'" class="'.$class.'"';
 				if($option == 'truncate'){
@@ -3368,6 +3374,9 @@ function tableOptions($table='',$params=array()){
 					else{
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
+				}
+				elseif($option == 'sync_source'){
+					$href="/php/admin.php?_menu={$option}&table_name={$table}";
 				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class='current';}
 				$rtn .= '	<a title="'.$title.'" class="w_link '.$class.'" href="'.$href.'"';

@@ -29,6 +29,9 @@ function sync_sourceAddEdit($id=0){
 		$opts['-hide']='clone,reset';
 	}
 	$rtn=addEditDBForm($opts);
+	if(isset($_REQUEST['_table_'])){
+		$_REQUEST['table_name']=$_REQUEST['_table_'];
+	}
 	if($id==0 && isset($_REQUEST['table_name'])){
 		$rtn.=buildOnLoad("ajaxGet('/php/admin.php','table_id',{setprocessing:0,'_menu':'sync_source',func:'redraw_table_id',value:'{$_REQUEST['table_name']}'});");
 	}
