@@ -43,7 +43,8 @@ function sync_sourceList(){
 		'-tableheight'=>'70vh',
 		'-listfields'=>'action,table_name,table_id,source_domain,source_id,last_sync',
 		'action_class'=>'align-right',
-		'-results_eval'=>'sync_sourceListExtra'
+		'-results_eval'=>'sync_sourceListExtra',
+		'-navonly'=>1
 	);
 	return databaseListRecords($opts);
 }
