@@ -82,7 +82,17 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	$query="INSERT IGNORE INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	if(isset($params['-upsert']) && isset($params['-upserton'])){
+		if(!is_array($params['-upsert'])){
+			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+		}
+	}
+	$ignore='';
+	if(strtolower($params['-upsert'][0])=='ignore'){
+		$ignore='IGNORE';
+		unset($params['-upsert']);
+	}
+	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){
 		$vals=array();
@@ -97,6 +107,29 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$values[]='('.implode(',',$vals).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
+	if(isset($params['-upsert'][0])){
+		//VALUES() to refer to the new row is deprecated with version 8
+		$version=mysqlQueryResults("SHOW VARIABLES LIKE 'version'");
+		$version=(integer)$version[0]['value'];
+		if($version >=8){
+			//mysql version 8 and newer
+			$query.=PHP_EOL."AS new"."ON DUPLICATE KEY UPDATE".PHP_EOL;
+			$flds=array();
+			foreach($params['-upsert'] as $fld){
+				$flds[]="{$fld}=new.{$fld}";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+		}
+		else{
+			//before mysql version 8
+			$query.=PHP_EOL."ON DUPLICATE KEY UPDATE".PHP_EOL;
+			$flds=array();
+			foreach($params['-upsert'] as $fld){
+				$flds[]="{$fld}=VALUES({$fld})";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+		}
+	}
 	//echo $query;exit;
 	$ok=mysqlExecuteSQL($query);
 	return count($values);

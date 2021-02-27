@@ -93,6 +93,27 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 		$values[]='('.implode(',',array_values($rec)).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
+	if(isset($params['-upsert']) && isset($params['-upserton'])){
+		if(!is_array($params['-upsert'])){
+			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+		}
+		/*
+			ON CONFLICT (id) DO UPDATE SET 
+			  id=EXCLUDED.id, username=EXCLUDED.username,
+			  password=EXCLUDED.password, level=EXCLUDED.level,email=EXCLUDED.email
+		*/
+		if(strtolower($params['-upsert'][0])=='ignore'){
+			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO NOTHING";
+		}
+		else{
+			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
+			$flds=array();
+			foreach($params['-upsert'] as $fld){
+				$flds[]="{$fld}=excluded.{$fld}";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+		}
+	}
 	$ok=sqliteExecuteSQL($query);
 	return count($values);
 }
