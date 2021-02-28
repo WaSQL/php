@@ -5751,7 +5751,13 @@ function dumpDB($table=''){
 			}
 			
 		}
-		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
+		//if version 8 or greater
+		$version=mysqlQueryResults("SHOW VARIABLES LIKE 'version'");
+		$version=(integer)$version[0]['value'];
+		if($version >=8){
+			$dump['command'] .= " --set-gtid-purged=OFF --column-statistics=0";
+		}
+		$dump['command'] .= "  --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
 			$dump['command'] .= " {$table}";
 			$dump['file'] = $CONFIG['dbname'].'.'.$table.'_' . date("Y-m-d_H-i-s")  . '.sql';
