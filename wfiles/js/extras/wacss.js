@@ -1923,36 +1923,31 @@ var wacss = {
 		};
 		document.body.appendChild(v);
 	},
-	speak: function(msg,params){
+	speak: function(txt,params){
 		if(undefined == params){params={};}
+		params.txt=txt;
 		if ('speechSynthesis' in window) {	
-			window.speechSynthesis.params=params;	
-			window.speechSynthesis.onvoiceschanged = function(){
+			/* check to see if voices are loaded already */
+			let voices = window.speechSynthesis.getVoices();
+			if(undefined != params.debug){
+				console.log(voices);
+			}
+			if(voices.length > 0){
 				let msg = new SpeechSynthesisUtterance();
-				let params=window.speechSynthesis.params;
-				let voices = window.speechSynthesis.getVoices();
 				/* set any custom options */
 				if(undefined != params.name){
 					for(let i=0;i<voices.length;i++){
-						if(voices[i].name==params.name){
+						if(voices[i].name.toLowerCase().indexOf(params.name.toLowerCase()) != -1){
 							msg.voice=voices[i];
 							break;
 						}
 					}
 				}
-				else if(undefined != params.lang){
-					for(let i=0;i<voices.length;i++){
-						if(voices[i].lang==params.lang){
-							msg.voice=voices[i];
-							break;
-						}
-					}
+				if(undefined != params.lang){
+					msg.lang=params.lang;
 				}
 				if(undefined != params.volume){
 					msg.volume=params.volume;
-				}
-				else if(undefined != params.whisper){
-					msg.volume=0.2;
 				}
 				if(undefined != params.rate){
 					msg.rate=params.rate;
@@ -1960,8 +1955,21 @@ var wacss = {
 				if(undefined != params.pitch){
 					msg.pitch=params.pitch;
 				}
+				msg.text=params.txt;
+				if(undefined != params.debug){
+					console.log(msg);
+				}
 				window.speechSynthesis.speak(msg);
-			};
+				return false;
+			}
+			else{
+				/* no voices loaded. Setup a promise and then call wacss.speak */
+				window.speechSynthesis.params=params;
+				window.speechSynthesis.onvoiceschanged = function(){
+					let params=window.speechSynthesis.params;
+					wacss.speak(params.txt,params);
+				};
+			}
 		}
 		else{
 			console.log('wacss.speak error: speechSynthesis is not supported in your browser or OS');
