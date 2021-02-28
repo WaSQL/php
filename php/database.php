@@ -5752,12 +5752,12 @@ function dumpDB($table=''){
 			
 		}
 		//if version 8 or greater
-		$version=mysqlQueryResults("SHOW VARIABLES LIKE 'version'");
-		$version=(integer)$version[0]['value'];
+		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		$version=(integer)$version['value'];
 		if($version >=8){
 			$dump['command'] .= " --set-gtid-purged=OFF --column-statistics=0";
 		}
-		$dump['command'] .= "  --max_allowed_packet=128M {$CONFIG['dbname']}";
+		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
 			$dump['command'] .= " {$table}";
 			$dump['file'] = $CONFIG['dbname'].'.'.$table.'_' . date("Y-m-d_H-i-s")  . '.sql';
@@ -5778,6 +5778,12 @@ function dumpDB($table=''){
 			else{
 				$dump['command'] .= " -p\"{$CONFIG['dbpass']}\"";
 			}
+		}
+		//if version 8 or greater
+		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		$version=(integer)$version['value'];
+		if($version >=8){
+			$dump['command'] .= " --set-gtid-purged=OFF --column-statistics=0";
 		}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
 		if(strlen($table)){
@@ -5808,7 +5814,7 @@ function dumpDB($table=''){
     	$dump['command'] .= " | gzip -9";
     	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 	}
-	$dump['command'] .= "  > \"{$dump['afile']}\" 2>&1";
+	$dump['command'] .= "  > \"{$dump['afile']}\"";
 	//echo printValue($dump).printValue($CONFIG);exit;
 	$dump['result']=cmdResults($dump['command']);
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
