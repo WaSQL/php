@@ -1924,6 +1924,7 @@ var wacss = {
 		document.body.appendChild(v);
 	},
 	speak: function(msg,params){
+		if(undefined == params){params={};}
 		if ('speechSynthesis' in window) {	
 			window.speechSynthesis.params=params;	
 			window.speechSynthesis.onvoiceschanged = function(){
