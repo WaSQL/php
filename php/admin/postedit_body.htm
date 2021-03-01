@@ -11,12 +11,11 @@
 </p>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;">
 <xmp id="hosttag" class="w_smaller w_gray" style="margin-top:0px;padding-top:0px;"><host
-	name="localhost"
-	alias="localhost"
-	apikey="Y1UxTVZqRk9RMkk9OmEzTllVSHBPU1QwPTphM05ZVUhwT1NUMD0="
-	username="admin"
+	name="<?=$_SERVER['HTTP_HOST'];?>"
+	alias="<?=strlen($_SERVER['SUBDOMAIN'])?$_SERVER['SUBDOMAIN']:$_SERVER['HTTP_HOST'];?>"
+	apikey="<?=userValue('apikey');?>"
+	username="<?=userValue('username');?>"
 	groupby="name"
-	insecure="1"
 /></xmp>
 <span style="margin-left:15px;" class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(trim(getText('hosttag')));"></span>
 <div>
