@@ -40,10 +40,15 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("postgresqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',array(
+		$addopts=array(
 			'table'=>$table,
 			'-chunk'=>$params['-chunk']
-		));
+		);
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			$addopts['-upsert']=$params['-upsert'];
+			$addopts['-upserton']=$params['-upserton'];
+		}
+		$ok=processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',$addopts);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -52,7 +57,12 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("postgresqlAddDBRecords Error: no recs");
 		}
-		return postgresqlAddDBRecordsProcess($params['-recs'],array('table'=>$table));
+		$addopts=array('table'=>$table);
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			$addopts['-upsert']=$params['-upsert'];
+			$addopts['-upserton']=$params['-upserton'];
+		}
+		return postgresqlAddDBRecordsProcess($params['-recs'],$addopts);
 	}
 }
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
