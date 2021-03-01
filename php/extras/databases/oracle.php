@@ -1693,7 +1693,6 @@ function oracleGetDBTables($params=array()){
 			all_tables 
 		WHERE 
 			owner ='{$owner}' 
-			and tablespace_name not in ('SYS','SYSAUX','SYSTEM') 
 			and status='VALID'
 		ORDER BY 
 			owner,table_name
