@@ -36,7 +36,14 @@
 		case 'sync':
 			$id=(integer)$_REQUEST['id'];
 			$rec=getDBRecordById('sync_source',$id);
-			$ok=editDBRecordById($rec['table_name'],$rec['table_id'],$_SESSION['sync_source_rec'][$id]);
+			$url="https://{$rec['source_domain']}/php/admin.php";
+			$srec=sync_sourcePost($url,$_SESSION['sync_source_postopts']);
+			foreach($srec as $k=>$v){
+				if(strlen(trim($v))){
+					$srec[$k]=base64_decode($v);
+				}
+			}
+			$ok=editDBRecordById($rec['table_name'],$rec['table_id'],$srec);
 			$ok=editDBRecordById('sync_source',$id,array(
 				'last_sync'=>date('Y-m-d')
 			));
@@ -105,10 +112,9 @@
 					}
 				}
 				if(count($diff_fields)){
-					$_SESSION['sync_source_rec'][$rec['_id']]=array();
+					$_SESSION['sync_source_postopts']=$postopts;
 					$diffs=array();
 					foreach($diff_fields as $field){
-						$_SESSION['sync_source_rec'][$rec['_id']][$field]=$srec[$field];
 						$arr_source=preg_split('/[\r\n]+/', trim($lrec[$field]));
 						$arr_target=preg_split('/[\r\n]+/', trim($srec[$field]));
 						$diff = diffText($arr_source,$arr_target, $field,'',300);
