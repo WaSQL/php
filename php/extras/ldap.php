@@ -363,6 +363,9 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	if($str=='*'){
 		$checkfields=array();
 	}
+	elseif(preg_match('/^\(/',$str)){
+		$filter=$str;
+	}
 	elseif(!is_array($checkfields) && strlen($checkfields) && stringBeginsWith($checkfields,'(')){
 		$filter=$checkfields;
 	}
