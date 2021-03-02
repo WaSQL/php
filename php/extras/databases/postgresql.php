@@ -32,6 +32,7 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		return debugValue("postgresqlAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("postgresqlAddDBRecords Error: either -csv or -recs is required");
@@ -40,15 +41,7 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		if(!is_file($params['-csv'])){
 			return debugValue("postgresqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$addopts=array(
-			'table'=>$table,
-			'-chunk'=>$params['-chunk']
-		);
-		if(isset($params['-upsert']) && isset($params['-upserton'])){
-			$addopts['-upsert']=$params['-upsert'];
-			$addopts['-upserton']=$params['-upserton'];
-		}
-		$ok=processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',$addopts);
+		return processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -57,20 +50,28 @@ function postgresqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("postgresqlAddDBRecords Error: no recs");
 		}
-		$addopts=array('table'=>$table);
-		if(isset($params['-upsert']) && isset($params['-upserton'])){
-			$addopts['-upsert']=$params['-upsert'];
-			$addopts['-upserton']=$params['-upserton'];
-		}
-		return postgresqlAddDBRecordsProcess($params['-recs'],$addopts);
+		return postgresqlAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
+	if(!isset($params['-table'])){
 		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=postgresqlGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
+	//fields
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -120,7 +121,6 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		debugValue($ok);
 		return 0;
 	}
-	//echo printValue($ok).PHP_EOL.PHP_EOL.$query;exit;
 	return count($values);
 }
 function postgresqlEscapeString($str){

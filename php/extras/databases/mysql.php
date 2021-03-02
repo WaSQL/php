@@ -22,22 +22,16 @@ function mysqlAddDBRecords($table='',$params=array()){
 		return debugValue("mysqlAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("mysqlAddDBRecords Error: either -csv or -recs is required");
-	}
-	$popts=array(
-		'table'=>$table,
-		'-chunk'=>$params['-chunk']
-	);
-	if(isset($params['-map'])){
-		$popts['-map']=$params['-map'];
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("mysqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',$popts);
+		return processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -46,13 +40,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("mysqlAddDBRecords Error: no recs");
 		}
-		$chunks=array_chunk($params['-recs'],$params['-chunk']);
-		$cnt=0;
-		foreach($chunks as $chunk){
-			$chunk_cnt=mysqlAddDBRecordsProcess($chunk,$popts);
-			if(isNum($chunk_cnt)){$cnt+=$chunk_cnt;}
-		}
-		return $cnt;
+		return mysqlAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){

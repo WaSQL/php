@@ -21,22 +21,16 @@ function sqliteAddDBRecords($table='',$params=array()){
 		return debugValue("sqliteAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("sqliteAddDBRecords Error: either -csv or -recs is required");
-	}
-	$popts=array(
-		'table'=>$table,
-		'-chunk'=>$params['-chunk']
-	);
-	if(isset($params['-map'])){
-		$popts['-map']=$params['-map'];
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("sqliteAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'sqliteAddDBRecordsProcess',$popts);
+		return processCSVLines($params['-csv'],'sqliteAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -45,7 +39,7 @@ function sqliteAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("sqliteAddDBRecords Error: no recs");
 		}
-		return sqliteAddDBRecordsProcess($params['-recs'],$popts);
+		return sqliteAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function sqliteAddDBRecordsProcess($recs,$params=array()){
@@ -99,8 +93,8 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 		}
 		/*
 			ON CONFLICT (id) DO UPDATE SET 
-			  id=EXCLUDED.id, username=EXCLUDED.username,
-			  password=EXCLUDED.password, level=EXCLUDED.level,email=EXCLUDED.email
+			  id=excluded.id, username=excluded.username,
+			  password=excluded.password, level=excluded.level,email=excluded.email
 		*/
 		if(strtolower($params['-upsert'][0])=='ignore'){
 			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO NOTHING";

@@ -27,22 +27,16 @@ function hanaAddDBRecords($table='',$params=array()){
 		return debugValue("hanaAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("hanaAddDBRecords Error: either -csv or -recs is required");
-	}
-	$popts=array(
-		'table'=>$table,
-		'-chunk'=>$params['-chunk']
-	);
-	if(isset($params['-map'])){
-		$popts['-map']=$params['-map'];
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("hanaAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'hanaAddDBRecordsProcess',$popts);
+		return processCSVLines($params['-csv'],'hanaAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -51,14 +45,14 @@ function hanaAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("hanaAddDBRecords Error: no recs");
 		}
-		return hanaAddDBRecordsProcess($params['-recs'],$popts);
+		return hanaAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function hanaAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
+	if(!isset($params['-table'])){
 		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=hanaGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -72,6 +66,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//fields
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -80,7 +75,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	$query="INSERT INTO {$table} ({$fieldstr}) ( ".PHP_EOL;
+	//values
 	$values=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -99,8 +94,55 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		$recstr=implode(',',array_values($rec));
 		$values[]="select {$recstr} from dummy";
 	}
-	$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
-	$query.=')';
+	if(isset($params['-upsert']) && isset($params['-upserton'])){
+		if(!is_array($params['-upsert'])){
+			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+		}
+		if(!is_array($params['-upserton'])){
+			$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+		}
+		/*
+			MERGE INTO TABLE1 T1 
+			USING (SELECT DISTINCT ID,VALUE 
+			         FROM TABLE2 T2
+			      ) T2
+			ON (    T1.ID = T2.ID
+			    AND T1.DATE = '23.09.2020')
+			WHEN MATCHED
+			 THEN 
+			    UPDATE SET T1.VALUE = T2.VALUE 
+			WHEN NOT MATCHED
+			THEN 
+			    INSERT(ID,DATE,VALUE) 
+			      VALUES(T2.ID,'23.09.2020',T2.VALUE);
+		*/
+		$query="MERGE INTO {$table} T1 USING ( ".PHP_EOL;
+		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
+		$query.=') T2 ON ( ';
+		$onflds=array();
+		foreach($params['-upsert'] as $fld){
+			$onflds[]="T1.{$fld}=T2.{$fld}";
+		}
+		$query .= implode(' AND ',$onflds).PHP_EOL;
+		$query .= ') WHEN MATCHED THEN UPDATE SET ';
+		$flds=array();
+		foreach($params['-upsert'] as $fld){
+			$flds[]="T1.{$fld}=T2.{$fld}";
+		}
+		$query.=PHP_EOL.implode(', ',$flds);
+		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
+		$flds=array();
+		foreach($params['-upsert'] as $fld){
+			$flds[]="T2.{$fld}";
+		}
+		$query.=PHP_EOL.implode(', ',$flds);
+		$query .= ')';
+	}
+	else{
+		$query="INSERT INTO {$table} ({$fieldstr}) ( ".PHP_EOL;
+		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
+		$query.=')';
+	}
 	//echo $query;exit;
 	$ok=hanaExecuteSQL($query);
 	return count($values);

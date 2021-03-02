@@ -39,22 +39,16 @@ function mssqlAddDBRecords($table='',$params=array()){
 		return debugValue("mssqlAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("mssqlAddDBRecords Error: either -csv or -recs is required");
-	}
-	$popts=array(
-		'table'=>$table,
-		'-chunk'=>$params['-chunk']
-	);
-	if(isset($params['-map'])){
-		$popts['-map']=$params['-map'];
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("mssqlAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',$popts);
+		return processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -63,14 +57,14 @@ function mssqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("mssqlAddDBRecords Error: no recs");
 		}
-		return mssqlAddDBRecordsProcess($params['-recs'],$popts);
+		return mssqlAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function mssqlAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
+	if(!isset($params['-table'])){
 		return debugValue("mssqlAddDBRecordsProcess Error: no table"); 
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=mssqlGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -84,6 +78,7 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//fields
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -92,7 +87,7 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	//values
 	$values=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -110,7 +105,50 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		$values[]='('.implode(',',array_values($rec)).')';
 	}
-	$query.=implode(','.PHP_EOL,$values);
+	if(isset($params['-upsert']) && isset($params['-upserton'])){
+		if(!is_array($params['-upsert'])){
+			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+		}
+		if(!is_array($params['-upserton'])){
+			$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+		}
+		/*
+			MERGE INTO Sales.SalesReason AS Target  
+			USING (VALUES ('Recommendation','Other'), ('Review', 'Marketing'),
+			              ('Internet', 'Promotion'))  
+			       AS Source (NewName, NewReasonType)  
+			ON Target.Name = Source.NewName  
+			WHEN MATCHED THEN  
+			UPDATE SET ReasonType = Source.NewReasonType  
+			WHEN NOT MATCHED BY TARGET THEN  
+			INSERT (Name, ReasonType) VALUES (NewName, NewReasonType)
+		*/
+		$query="MERGE INTO {$table} T1 USING ( VALUES ".PHP_EOL;
+		$query.=implode(','.PHP_EOL,$values);
+		$query.=') T2 ON ( ';
+		$onflds=array();
+		foreach($params['-upsert'] as $fld){
+			$onflds[]="T1.{$fld}=T2.{$fld}";
+		}
+		$query .= implode(' AND ',$onflds).PHP_EOL;
+		$query .= ') WHEN MATCHED THEN UPDATE SET ';
+		$flds=array();
+		foreach($params['-upsert'] as $fld){
+			$flds[]="T1.{$fld}=T2.{$fld}";
+		}
+		$query.=PHP_EOL.implode(', ',$flds);
+		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
+		$flds=array();
+		foreach($params['-upsert'] as $fld){
+			$flds[]="T2.{$fld}";
+		}
+		$query.=PHP_EOL.implode(', ',$flds);
+		$query .= ')';
+	}
+	else{
+		$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+		$query.=implode(','.PHP_EOL,$values);
+	}
 	//echo $query;exit;
 	$ok=mssqlExecuteSQL($query);
 	return count($values);

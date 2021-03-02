@@ -30,22 +30,16 @@ function odbcAddDBRecords($table='',$params=array()){
 		return debugValue("odbcAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("odbcAddDBRecords Error: either -csv or -recs is required");
-	}
-	$popts=array(
-		'table'=>$table,
-		'-chunk'=>$params['-chunk']
-	);
-	if(isset($params['-map'])){
-		$popts['-map']=$params['-map'];
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("odbcAddDBRecords Error: no such file: {$params['-csv']}");
 		}
-		$ok=processCSVLines($params['-csv'],'odbcAddDBRecordsProcess',$popts);
+		return processCSVLines($params['-csv'],'odbcAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -54,14 +48,14 @@ function odbcAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("odbcAddDBRecords Error: no recs");
 		}
-		return odbcAddDBRecordsProcess($params['-recs'],$popts);
+		return odbcAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function odbcAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
+	if(!isset($params['-table'])){
 		return debugValue("odbcAddDBRecordsProcess Error: no table"); 
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=odbcGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
