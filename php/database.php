@@ -3263,7 +3263,7 @@ function dropDBIndex($indexname,$tablename){
 *	returns html form used to enter data into specified table
 * @param params array
 *	-table string - the name of the table
-*	[_id] integer - turns the form into an edit form, editing the record with this ID
+*	[_id] integer - turns the form into an edit form, editing the record with this ID. Can also use -id
 *	[-where] string - turns the form into an edit form, editing the record that matches the where clause
 *	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row. You can also call getView({viewname}) to use a view to define the fields.
 * 	[-editfields] string - use to override comma separated list of fields to edit on the form
@@ -3311,6 +3311,9 @@ function addEditDBForm($params=array(),$customcode=''){
 	if(!isset($params['-table'])){return 'addEditDBForm Error: No table';}
 	if(!isDBTable($params['-table'])){return "addEditDBForm Error: No table named '{$params['-table']}'";}
 	unset($rec);
+	if(isset($params['-id']) && isNum($params['-id']) && !isset($params['_id'])){
+		$params['_id']=$params['-id'];
+	}
 	if(isset($params['_id']) && isNum($params['_id'])){
 		$rec=getDBRecord(array('-table'=>$params['-table'],'_id'=>$params['_id']));
     }
