@@ -124,11 +124,11 @@ function sqliteEscapeString($str){
 * @usage $createsql=sqliteGetTableDDL('sample');
 */
 function sqliteGetTableDDL($table,$schema=''){
-	$table=strtoupper($table);
+	$table=strtolower($table);
 	$query=<<<ENDOFQUERY
 		SELECT sql
 		FROM sqlite_master
-		WHERE name='{$table}'
+		WHERE lower(name)='{$table}'
 ENDOFQUERY;
 	$recs=sqliteQueryResults($query);
 	if(isset($recs[0]['sql'])){
