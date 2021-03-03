@@ -166,23 +166,32 @@ function mssqlEscapeString($str){
 * @usage $createsql=mssqlGetTableDDL('sample');
 */
 function mssqlGetTableDDL($table,$schema=''){
-	if(!strlen($schema)){
-		$schema=mssqlGetDBSchema();
+	$fieldinfo=mssqlGetDBFieldInfo($table);
+	foreach($fieldinfo as $field=>$info){
+		$schema=$info['schema'];
+		break;
 	}
-	if(!strlen($schema)){
-		debugValue('mssqlGetTableDDL error: schema is not defined in config.xml');
-		return null;
+	$fields=array();
+	foreach($fieldinfo as $field=>$info){
+		$fld=" {$info['_dbfield']} {$info['_dbtype_ex']}";
+		if(in_array($info['primary_key'],array('true','yes',1))){
+			$fld.=' PRIMARY KEY';
+		}
+		if($info['identity']==1){
+			$fld.=' IDENTITY(1,1)';
+		}
+		if(in_array($info['nullable'],array('NO','no',0))){
+			$fld.=' NOT NULL';
+		}
+		else{
+			$fld.=' NULL';
+		}
+		$fields[]=$fld;
 	}
-	$schema=strtoupper($schema);
-	$table=strtoupper($table);
-	$query=<<<ENDOFQUERY
-		exec sp_GetDDL '[{$schema}].[{$table}]' as ddl
-ENDOFQUERY;
-	$recs=mssqlQueryResults($query);
-	if(isset($recs[0]['ddl'])){
-		return $recs[0]['ddl'];
-	}
-	return $recs;
+	$ddl="CREATE TABLE {$schema}.{$table} (".PHP_EOL;
+	$ddl.=implode(','.PHP_EOL,$fields);
+	$ddl.=PHP_EOL.')'.PHP_EOL;
+	return $ddl;
 }
 //---------- begin function mssqlGetAllTableFields ----------
 /**
@@ -1174,7 +1183,8 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 	$table=strtolower($table);
 	$query="
 		SELECT
-			COLUMN_NAME
+			table_schema
+			,column_name
 			,numeric_precision
 			,COLUMN_DEFAULT
 			,IS_NULLABLE
@@ -1185,7 +1195,6 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 			INFORMATION_SCHEMA.COLUMNS (nolock)
 		WHERE
 			table_catalog = '{$params['-dbname']}'
-    		and lower(table_schema) = '{$schema}'
 			and lower(table_name) = '{$table}'
 		ORDER BY ORDINAL_POSITION
 		";
@@ -1195,6 +1204,7 @@ function mssqlGetDBFieldInfo($table,$params=array()){
 	foreach($recs as $rec){
 		$name=strtolower($rec['column_name']);
 		$field=array(
+			'schema'=>$rec['table_schema'],
 			'table'	=> $table,
 			'_dbtable'	=> $table,
 			'name'	=> $name,
