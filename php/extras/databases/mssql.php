@@ -173,7 +173,7 @@ function mssqlGetTableDDL($table,$schema=''){
 	}
 	$fields=array();
 	foreach($fieldinfo as $field=>$info){
-		$fld=" {$info['_dbfield']} {$info['_dbtype_ex']}";
+		$fld=" [{$info['_dbfield']}] [{$info['_dbtype_ex']}]";
 		if(in_array($info['primary_key'],array('true','yes',1))){
 			$fld.=' PRIMARY KEY';
 		}
@@ -188,7 +188,7 @@ function mssqlGetTableDDL($table,$schema=''){
 		}
 		$fields[]=$fld;
 	}
-	$ddl="CREATE TABLE {$schema}.{$table} (".PHP_EOL;
+	$ddl="CREATE TABLE [{$schema}].[{$table}] (".PHP_EOL;
 	$ddl.=implode(','.PHP_EOL,$fields);
 	$ddl.=PHP_EOL.')'.PHP_EOL;
 	return $ddl;
