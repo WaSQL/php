@@ -138,6 +138,12 @@ function mysqlGetDDL($type,$name){
 	$field='create_'.strtolower($name);
 	$recs=mysqlQueryResults($query);
 	//echo $query.printValue($recs);exit;
+	if(isset($recs[0]['create table'])){
+		return $recs[0]['create table'];
+	}
+	if(isset($recs[0]['create_table'])){
+		return $recs[0]['create_table'];
+	}
 	if(isset($recs[0][$field])){
 		return $recs[0][$field];
 	}
