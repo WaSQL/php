@@ -714,6 +714,9 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-results_eval_params] - additonal params to send the the results_eval function as a second param
 *	[-order] - string - comma separated list of fields to order the results by. Ignored if you are using -csv or -list
 *	[-searchclass]  - sets the search form section class
+*	[-search_select_class]  - sets the class for the select fields in the search form
+*	[-search_input_class]  - sets the class for the input fields in the search form
+*	[-search_button_class]  - sets the class for the button fields in the search form
 *	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs
 *	[-quickfilters_class] - set quickfilter button class
 *	[-presearch]  - HTML/text content to add just before the search form
