@@ -54,11 +54,15 @@ function postgresqlAddDBRecords($table='',$params=array()){
 	}
 }
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
+	global $CONFIG;
 	if(!isset($params['-table'])){
 		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
 	}
 	$table=$params['-table'];
-	$fieldinfo=postgresqlGetDBFieldInfo($table,1);
+	$fieldinfo=postgresqlGetDBFieldInfo($table);
+	if(!is_array($fieldinfo) || !count($fieldinfo)){
+		return debugValue("postgresqlAddDBRecordsProcess Error: no fields for {$table} in {$CONFIG['db']}"); 
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -662,6 +666,7 @@ function postgresqlDBConnect(){
 	global $dbh_postgresql;
 	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	try{
+		//echo $params['-connect'].'<br>'.PHP_EOL;
 		$dbh_postgresql = pg_pconnect($params['-connect']);
 		if(!is_resource($dbh_postgresql)){
 			$err=@pg_last_error();
@@ -1075,14 +1080,10 @@ ENDOFQUERY;
 * @return boolean returns true on success
 * @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
-function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
+function postgresqlGetDBFieldInfo($table){
 	$table=strtolower($table);
 	global $databaseCache;
 	global $CONFIG;
-	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBFieldInfo'.$table.$getmeta.$field);
-	if(isset($databaseCache[$cachekey])){
-		return $databaseCache[$cachekey];
-	}
 	//check for schema name
 	if(stringContains($table,'.')){
 		list($schema,$table)=preg_split('/\./',$table,2);
@@ -1111,7 +1112,6 @@ function postgresqlGetDBFieldInfo($table,$getmeta=0,$field='',$force=0){
 		ORDER BY ordinal_position
 ENDOFQUERY;
 	$recs=postgresqlQueryResults($query);
-	//echo $query.printValue($recs);exit;
 	$fields=array();
 	foreach($recs as $rec){
 		if($rec['data_type']=='character varying'){
@@ -1139,28 +1139,8 @@ ENDOFQUERY;
 		}
 		$fields[$field['_dbfield']]=$field;
 	}
-	//meta fields?
-	if($getmeta){
-	    //Get a list of the metadata for this table
-	    $query="select * from _fielddata where tablename='{$table}'";
-	    if(strlen($field)){$query .= " and fieldname='{$field}";}
-	    //echo printValue($metaopts);exit;
-	    $meta_recs=postgresqlQueryResults($query);
-	    //echo $query.printValue($meta_recs);exit;
-	    if(is_array($meta_recs)){
-			foreach($meta_recs as $meta_rec){
-				$name=$meta_rec['fieldname'];
-				if(!isset($fields[$name]['_dbtype'])){continue;}
-				foreach($meta_rec as $key=>$val){
-					if(preg_match('/^\_/',$key)){continue;}
-					$fields[$name][$key]=$val;
-				}
-        	}
-    	}
-	}
-	
-	$databaseCache[$cachekey]=$fields;
-	return $databaseCache[$cachekey];
+	//echo $table.printValue($fields).'<hr>'.PHP_EOL;
+	return $fields;
 }
 function postgresqlGetDBIndexes($tablename=''){
 	return postgresqlGetDBTableIndexes($tablename);
@@ -1308,7 +1288,7 @@ function postgresqlGetDBRecords($params){
 			$params['-fields']=implode(',',$params['-fields']);
 		}
 		if(empty($params['-fields'])){$params['-fields']='*';}
-		$fields=postgresqlGetDBFieldInfo($params['-table'],$params);
+		$fields=postgresqlGetDBFieldInfo($params['-table']);
 		//echo printValue($fields);
 		$ands=array();
 		foreach($params as $k=>$v){
