@@ -117,7 +117,7 @@
 					foreach($diff_fields as $field){
 						$arr_source=preg_split('/[\r\n]+/', trim($lrec[$field]));
 						$arr_target=preg_split('/[\r\n]+/', trim($srec[$field]));
-						$diff = diffText($arr_source,$arr_target, $field,'',300);
+						$diff = diffText($arr_target, $arr_source, $field,'',300);
 						if(!strlen($diff)){continue;}
 						if(preg_match('/No differences found/i',$diff)){continue;}
 						$diffs[$field]=$diff;

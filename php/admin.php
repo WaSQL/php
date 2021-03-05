@@ -3218,7 +3218,7 @@ function tableOptions($table='',$params=array()){
 	*/
 	global $wtables;
 	if(!isset($params['-format'])){$params['-format']='li';}
-	if(!isset($params['-options'])){$params['-options']='drop,rebuild,rebuild_meta,sync_source,truncate,backup,grep,model,indexes,properties,list,add';}
+	if(!isset($params['-options'])){$params['-options']='drop,rebuild,rebuild_meta,truncate,backup,grep,model,indexes,properties,list,add';}
 	if(!is_array($params['-options'])){$params['-options']=preg_split('/[\,\:]+/',$params['-options']);}
 	global $PAGE;
 	//Bootstrap Colors: default, primary, success, info, warning, danger, black, grey
@@ -3240,9 +3240,6 @@ function tableOptions($table='',$params=array()){
 	if(in_array($table,$wtables)){
     	$tableoptions['rebuild_meta']=array('Rebuild Meta','icon-refresh w_warning w_big');
 	}
-	if($table=='_pages'){
-		$tableoptions['sync_source']=array('Sync Page with Source','icon-sync w_big w_blue');
-	}
 	//check for _models for this table
 	$model=getDBTableModel($table);
 	//if($table=='states'){echo "HERE".printValue($tableoptions);exit;}
@@ -3263,9 +3260,6 @@ function tableOptions($table='',$params=array()){
 					else{
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
-				}
-				elseif($option == 'sync_source'){
-					$href="/php/admin.php?_menu={$option}&table_name={$table}";
 				}
 				$rtn .= '						<li><a title="'.$title.'" class="w_link" href="'.$href.'"';
 				
@@ -3327,9 +3321,6 @@ function tableOptions($table='',$params=array()){
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
 				}
-				elseif($option == 'sync_source'){
-					$href="/php/admin.php?_menu={$option}&table_name={$table}";
-				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class.=' active';}
 				$rtn .= '	<td><button type="button" style="line-height:1.2;padding:5px; margin-right:3px;" data-tooltip_position="bottom" data-tooltip="'.$title.'" class="'.$class.'"';
 				if($option == 'truncate'){
@@ -3374,9 +3365,6 @@ function tableOptions($table='',$params=array()){
 					else{
 						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
 					}
-				}
-				elseif($option == 'sync_source'){
-					$href="/php/admin.php?_menu={$option}&table_name={$table}";
 				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class='current';}
 				$rtn .= '	<a title="'.$title.'" class="w_link '.$class.'" href="'.$href.'"';
