@@ -28,6 +28,7 @@
 	<div style="margin-left:5px;"><label>Table ID</label><div id="table_id">[table_id]</div></div>
 	<div style="margin-left:5px;"><label>Source Domain</label>[source_domain]</div>
 	<div style="margin-left:5px;"><label>Source ID</label>[source_id]</div>
+	<div style="margin-left:5px;"><label>Sync Fields</label>[sync_fields]</div>
 </div>
 </view:addedit_fields>
 
@@ -53,14 +54,14 @@
 
 
 <view:sync_no_diffs>
-<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_title"><span class="icon-sync"></span> <?=$title;?></div>
 <div class="w_centerpop_content" style="padding-top:10px;">
 	Your copy is up to date. No differences found.
 </div>
 </view:sync_no_diffs>
 
 <view:sync_diffs>
-<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_title"><span class="icon-sync"></span> <?=$title;?></div>
 <div class="w_centerpop_content" style="padding-top:10px;">
 	<ul class="nav nav-tabs">
 		<view:field_tab>

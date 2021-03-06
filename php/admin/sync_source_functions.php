@@ -28,6 +28,9 @@ function sync_sourceAddEdit($id=0){
 		$opts['-custombutton']='<button type="button" onclick="sync_sourceAddEdit(0);" class="button btn btn-danger"><span class="icon-block"></span> Cancel Edit</button>';
 		$opts['-hide']='clone,reset';
 	}
+	else{
+		$opts['sync_fields']='body,controller,functions,js,css';
+	}
 	$rtn=addEditDBForm($opts);
 	if(isset($_REQUEST['_table_'])){
 		$_REQUEST['table_name']=$_REQUEST['_table_'];
@@ -44,7 +47,7 @@ function sync_sourceList(){
 		'_menu'=>'sync_source',
 		'-tableclass'=>'table striped bordered narrow sticky',
 		'-tableheight'=>'70vh',
-		'-listfields'=>'action,table_name,table_id,source_domain,source_id,last_sync',
+		'-listfields'=>'action,table_name,table_id,sync_fields,source_domain,source_id,last_sync',
 		'action_class'=>'align-right',
 		'-results_eval'=>'sync_sourceListExtra',
 		'-navonly'=>1
