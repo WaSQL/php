@@ -6029,6 +6029,8 @@ function getCalendar($monthyear='',$params=array()){
         		if($params['-view']=='week' && $calendar['current']['wnum'] != $edate['wnum']){continue;}
         		elseif($params['-view']=='day' && $calendar['current']['mday'] != $edate['mday']){continue;}
         		$rec['_id']=isset($rec['_id'])?$rec['_id']:getGuid();
+        		$rec['month']=$edate['month'];
+				$rec['year']=$edate['year'];
         		$params['-events']['mday'][$edate['mday']][]=$rec;
 			}
 			else if(isset($rec['mday'])){
@@ -6083,6 +6085,8 @@ function getCalendar($monthyear='',$params=array()){
 				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
 					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
 				}
+				$rec['month']=$edate['month'];
+				$rec['year']=$edate['year'];
 				$params['-events']['mday'][$edate['mday']][]=$rec;
             }
 		}
