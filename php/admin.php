@@ -44,7 +44,6 @@ if(isset($CONFIG['admin_eval'])){
 	$out=includePage($CONFIG['admin_eval'],array());	
 }
 global $USER;
-
 include_once("{$progpath}/user.php");
 
 global $wtables;
@@ -67,7 +66,7 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 	switch(strtolower($json['func'])){
 		case 'auth':
 			if(!isUser()){
-				$json['password']=preg_replace('/./','*',$json['password']);
+				//$json['password']=preg_replace('/./','*',$json['password']);
 				echo json_encode(array('error'=>"Login Failed",'user'=>$USER,'request'=>$json));
 				foreach($_SESSION as $k=>$v){
 					if(preg_match('/^(sync\_|git\_)/i',$k)){
