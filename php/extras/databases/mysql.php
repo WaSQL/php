@@ -123,9 +123,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
-	//echo $query;exit;
 	$ok=mysqlExecuteSQL($query);
-	if(!isNum($ok)){return $ok;}
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
+	}
 	return count($values);
 }
 //---------- begin function mysqlGetDDL ----------
@@ -808,7 +809,7 @@ function mysqlExecuteSQL($query,$params=array()){
 			'query'=>$query
 		));
 		mysqli_close($dbh_mysql);
-		return null;
+		return false;
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
