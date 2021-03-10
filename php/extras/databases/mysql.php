@@ -72,7 +72,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	if(isset($params['-upsert']) && isset($params['-upserton'])){
+	if(isset($params['-upsert'])){
 		if(!is_array($params['-upsert'])){
 			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
 		}
@@ -106,16 +106,17 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$version=(integer)$version[0]['value'];
 		if($version >=8){
 			//mysql version 8 and newer
-			$query.=PHP_EOL."AS new"."ON DUPLICATE KEY UPDATE".PHP_EOL;
+			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			foreach($params['-upsert'] as $fld){
 				$flds[]="{$fld}=new.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			//echo printValue($params);exit;
 		}
 		else{
 			//before mysql version 8
-			$query.=PHP_EOL."ON DUPLICATE KEY UPDATE".PHP_EOL;
+			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			foreach($params['-upsert'] as $fld){
 				$flds[]="{$fld}=VALUES({$fld})";
