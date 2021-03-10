@@ -44,10 +44,12 @@ function mysqlAddDBRecords($table='',$params=array()){
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
-		return debugValue("mysqlAddDBRecordsProcess Error: no table"); 
+	if(!isset($params['-table'])){
+		$err="mysqlAddDBRecordsProcess Error: no table";
+		debugValue($err); 
+		return $err;
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=mysqlGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -74,6 +76,9 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		if(!is_array($params['-upsert'])){
 			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
 		}
+	}
+	if(isset($params['-ignore']) && !isset($params['-upsert'])){
+		$params['-upsert']='ignore';
 	}
 	$ignore='';
 	if(strtolower($params['-upsert'][0])=='ignore'){
@@ -120,6 +125,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo $query;exit;
 	$ok=mysqlExecuteSQL($query);
+	if(!isNum($ok)){return $ok;}
 	return count($values);
 }
 //---------- begin function mysqlGetDDL ----------
