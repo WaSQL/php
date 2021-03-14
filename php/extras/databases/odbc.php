@@ -97,6 +97,9 @@ function odbcAddDBRecordsProcess($recs,$params=array()){
 	}
 	$query.=implode(','.PHP_EOL,$values);
 	$ok=odbcExecuteSQL($query);
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
+	}
 	return count($values);
 }
 function odbcEscapeString($str){

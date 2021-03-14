@@ -43,10 +43,10 @@ function sqliteAddDBRecords($table='',$params=array()){
 	}
 }
 function sqliteAddDBRecordsProcess($recs,$params=array()){
-	if(!isset($params['table'])){
+	if(!isset($params['-table'])){
 		return debugValue("sqliteAddDBRecordsProcess Error: no table"); 
 	}
-	$table=$params['table'];
+	$table=$params['-table'];
 	$fieldinfo=sqliteGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){

@@ -122,7 +122,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
 		$query.=') T2 ON ( ';
 		$onflds=array();
-		foreach($params['-upsert'] as $fld){
+		foreach($params['-upserton'] as $fld){
 			$onflds[]="T1.{$fld}=T2.{$fld}";
 		}
 		$query .= implode(' AND ',$onflds).PHP_EOL;
@@ -147,6 +147,9 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo nl2br($query);exit;
 	$ok=oracleExecuteSQL($query);
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
+	}
 	return count($values);
 }
 function oracleEscapeString($str){

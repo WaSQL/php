@@ -55,6 +55,42 @@ foreach($wtables as $wtable){
 if(isset($_REQUEST['_pushfile'])){
 	$ok=pushFile(decodeBase64($_REQUEST['_pushfile']));
 }
+//check for sync_source calls
+if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='sync_source' && isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
+	//decode
+	$json=json_decode(base64_decode($_REQUEST['_auth']),true);
+	//comfirm $json is valid
+	if(!isset($json['domain']) || !isset($json['table']) || !isset($json['key']) || !isset($json['code']) || !isset($json['fields'])){
+		echo json_encode(array('error'=>'invalid request'));
+		exit;
+	}
+	//comfirm domain is valid
+	if(strtolower($json['domain']) != strtolower($_SERVER['HTTP_HOST'])){
+		echo json_encode(array('error'=>'domain auth failed'));
+		exit;
+	}
+	$remote_addr=$_SERVER['REMOTE_ADDR'];
+	//get rec
+	$where=<<<ENDOFWHERE
+	sync_codes->>'$."{$json['key']}"'='{$json['code']}'
+ENDOFWHERE;
+	$rec=getDBRecord(array(
+		'-table'=>$json['table'],
+		'-fields'=>$json['fields'],
+		'-where'=>$where
+	));
+	if(!isset($rec['_id'])){
+		echo json_encode(array('error'=>'rec auth failed'));
+		exit;
+	}
+	foreach($rec as $k=>$v){
+		if(strlen(trim($v))){
+			$rec[$k]=base64_encode($v);
+		}
+	}
+	echo base64_encode(json_encode($rec));
+	exit;
+}
 //check for synchronize calls
 if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' || strtolower($_REQUEST['_menu'])=='datasync') && isset($_REQUEST['load'])){
 	$json=json_decode(base64_decode($_REQUEST['load']),true);

@@ -127,7 +127,7 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 		$query.=implode(','.PHP_EOL,$values);
 		$query.=') T2 ON ( ';
 		$onflds=array();
-		foreach($params['-upsert'] as $fld){
+		foreach($params['-upserton'] as $fld){
 			$onflds[]="T1.{$fld}=T2.{$fld}";
 		}
 		$query .= implode(' AND ',$onflds).PHP_EOL;
@@ -151,6 +151,9 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo $query;exit;
 	$ok=mssqlExecuteSQL($query);
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
+	}
 	return count($values);
 }
 function mssqlEscapeString($str){

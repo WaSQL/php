@@ -125,6 +125,9 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		debugValue($ok);
 		return 0;
 	}
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
+	}
 	return count($values);
 }
 function postgresqlEscapeString($str){
@@ -2039,6 +2042,29 @@ function postgresqlListDBDatatypes(){
 <div class="w_padleft">TIME HH:MM:SS.</div>
 ENDOFDATATYPES;
 }
+//---------- begin function postgresqlCancelQuery ----------
+/**
+* @describe cancels specified query pid(s)
+* @param pids mixed - pid(s) to process - comma separated or an array of pids
+* @return boolean
+*/
+function postgresqlCancelQuery($pids){
+	if(is_array($pids)){
+		$pids=preg_split('/[\,\:]+/',$pids);
+	}
+	$recs=array();
+	foreach($pids as $pid){
+		$pid=trim($pid);
+		if(!isNum($pid)){continue;}
+		$recs[]=array('pid'=>$pid);
+	}
+	$json=json_encode($recs);
+	$query=<<<ENDOFQUERY
+	with x as (select * from json_array_elements('{$json}'))
+	select pg_cancel_backend(x.pid) from x
+ENDOFQUERY;
+	return postgresqlExecuteSQL($query);
+}
 //---------- begin function postgresqlNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name
@@ -2053,16 +2079,29 @@ function postgresqlNamedQuery($name){
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT
-  S.pid,
-  age(clock_timestamp(), query_start),
-  usename,
-  query,
-  L.mode,
-  L.locktype,
-  L.granted
-FROM pg_stat_activity S
-inner join pg_locks L on S.pid = L.pid 
-order by L.granted, L.pid DESC
+	s.pid,
+	s.client_addr,
+	s.application_name,
+	s.state,
+	s.usename,
+	s.query,
+	l.mode,
+	l.locktype,
+	l.granted
+FROM pg_stat_activity s
+inner join pg_locks l on s.pid = l.pid
+where query not like '%l.granted%'
+and query not like 'autovacuum%'
+GROUP BY
+	s.pid,
+	s.client_addr,
+	s.application_name,
+	s.state,
+	s.usename,
+	s.query,
+	l.mode,
+	l.locktype,
+	l.granted
 ENDOFQUERY;
 		break;
 		case 'sessions':

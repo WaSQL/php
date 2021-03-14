@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <export dbname="stage" timestamp="1429371582">
 <xmlschema name="chatlog">
-	<field name="_cdate" type="datetime NOT NULL Default 'CURRENT_TIMESTAMP'" />
-	<field name="_cuser" type="int(11) NOT NULL" />
-	<field name="_edate" type="datetime NULL" />
+	<field name="_cdate" type="datetime Default CURRENT_TIMESTAMP" />
+	<field name="_cuser" type="int(11) NOT NULL DEFAULT 0" />
+	<field name="_edate" type="datetime NULL ON UPDATE CURRENT_TIMESTAMP" />
 	<field name="_euser" type="int(11) NULL" />
 	<field name="_id" type="int(11) NOT NULL Primary Key auto_increment" />
 	<field name="msg" type="varchar(1500) NULL" />
