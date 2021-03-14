@@ -14327,7 +14327,8 @@ function processInlineFiles(){
         	$apath="{$_SERVER['DOCUMENT_ROOT']}/{$path}";
 			if(!is_dir($apath)){buildDir($apath);}
 			if(!is_dir($apath)){
-				debugValue("processInlineFiles error: unable to find or create path for {$key} files: {$apath}");
+				$_REQUEST["{$key}_error"]="processInlineFiles error: unable to find or create path for {$key} files: {$apath}";
+				debugValue($_REQUEST["{$key}_error"]);
 				continue;
 			}
 			$base64_files=$_REQUEST["{$key}_base64"];
@@ -14350,6 +14351,7 @@ function processInlineFiles(){
 				$apath=str_replace('//','/',$apath);
 				$path=str_replace('//','/',$path);
 				$afile="{$apath}/{$name}";
+				$_REQUEST["{$key}_abspath"]=$afile;
 				//$_REQUEST["{$key}_base64_debug"]['afile']=$afile;
 				//remove the file if it exists already
 				if(file_exists($afile)){unlink($afile);}
@@ -14360,7 +14362,8 @@ function processInlineFiles(){
 			        $ok=commonProcessFileActions($key,$afile);
 				}
 				else{
-					debugValue("processInlineFiles error: unable to find or create file: {$afile}");
+					$_REQUEST["{$key}_error"]="processInlineFiles error: unable to find or create file: {$afile}";
+					debugValue($_REQUEST["{$key}_error"]);
 				}
 			}
 			if(count($efiles)==1){$efiles=$efiles[0];}
