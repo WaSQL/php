@@ -64,7 +64,7 @@ while($etime < 55){
 		cronMessage("updating WaSQL..");
 		unlink("{$wpath}/php/temp/wasql.update");
 		$out=cmdResults('git pull');
-		$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}</pre>";
+		$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 		cronMessage($message);
 		$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
 	}
