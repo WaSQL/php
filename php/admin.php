@@ -1594,18 +1594,25 @@ ENDOFX;
 			echo adminViewPage('settings');exit;
 		break;
 		case 'update_wasql':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL</h2>'.PHP_EOL;
-			if(isWindows()){
-				$cmd="git pull";
-				$out=cmdResults($cmd);
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL - </h2>'.PHP_EOL;
+			$tempdir=getWasqlPath('php/temp');
+			if(file_exists("{$tempdir}/wasql.update.log")){
+				unlink("{$tempdir}/wasql.update.log");
 			}
-			else{
-				$out=cmdResults("sudo git pull");
-				if(!isset($out['stdout'])){
-					$out=cmdResults("git pull");
+			setFileContents("{$tempdir}/wasql.update",time());
+			//wait for the update.log file
+			$startwait=microtime(true);
+			while(microtime(true)-$startwait < 30){
+				if(file_exists("{$tempdir}/wasql.update.log")){
+					//echo "Results of {$tempdir}/wasql.update.log<br>".PHP_EOL;
+					$results=getFileContents("{$tempdir}/wasql.update.log");
+					echo $results;
+					exit;
 				}
+				sleep(1);
 			}
-			echo nl2br($out['stdout']);
+			echo "Update Failed - cron.php does not seem to be running";
+			exit;
 		break;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version

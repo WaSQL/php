@@ -59,6 +59,15 @@ $pid_check=1;
 $apache_log=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
+	//check for wasql.update file
+	if(file_exists("{$wpath}/php/temp/wasql.update")){
+		cronMessage("updating WaSQL..");
+		unlink("{$wpath}/php/temp/wasql.update");
+		$out=cmdResults('git pull');
+		$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}</pre>";
+		cronMessage($message);
+		$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
+	}
 	//should switch to ALLCONFIG
 	foreach($ConfigXml as $name=>$host){
 		//allhost, then, sameas, then hostname
