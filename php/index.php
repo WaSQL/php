@@ -14,6 +14,8 @@ $progpath=dirname(__FILE__);
 date_default_timezone_set('America/Denver');
 //includes
 $stime=microtime(true);
+global $wasql_debugValueContent;
+$wasql_debugValueContent='';
 include_once("$progpath/common.php");
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
 //check for minify redirect
@@ -50,6 +52,7 @@ elseif($url_parts[0]=='t'){
 	$_REQUEST['_view']=implode('/',$url_parts);
 }
 global $CONFIG;
+
 $stime=microtime(true);
 include_once("$progpath/config.php");
 //check for timezone
@@ -74,6 +77,7 @@ if(!isDBTable('_users')){
 	$body=getFileContents("{$progpath}/admin/setup_body.htm");
 	$controller=getFileContents("{$progpath}/admin/setup_controller.php");
 	echo evalPHP(array($controller,$body));
+	echo $wasql_debugValueContent;
 	exit;
 }
 //check for tiny urls - /y/B49Z  - checks the _tiny table
@@ -1086,6 +1090,7 @@ if(!is_array($PAGE)){
     			$htm = evalPHP($htm);
     			echo trim($htm);
     			unset($htm);
+    			echo $wasql_debugValueContent;
     			exit;
 		}
 		else{
@@ -1198,7 +1203,9 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	$htm=evalPHP(array($controller,$htm));
 	//check for translate tags
 	$htm=processTranslateTags($htm);
-	echo $htm;exit;
+	echo $htm;
+	echo $wasql_debugValueContent;
+	exit;
     //if the page name or permalink ends in .html then write the static file.
     if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){
 		$afile="{$_SERVER['DOCUMENT_ROOT']}/{$PAGE['name']}";
@@ -1325,6 +1332,7 @@ else{
     	$htm = evalPHP($htm);
     	echo trim($htm);
     	unset($htm);
+    	echo $wasql_debugValueContent;
 	}
 	else{
 		abort("No PAGE<br>\n" . printValue($_REQUEST));
@@ -1382,6 +1390,7 @@ function indexUserAccess(){
     	$htm = evalPHP($htm);
     	echo trim($htm);
     	unset($htm);
+    	echo $wasql_debugValueContent;
     	exit;
 	}
 	else{

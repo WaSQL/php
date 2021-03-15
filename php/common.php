@@ -14499,8 +14499,7 @@ function processActions(){
 		    	return 0;
 			}
 			$ok=processInlineFiles();
-
-			//echo "EDIT" . printValue($_REQUEST);exit;
+			//echo "EDIT" . printValue($_FILES).printValue($_REQUEST);exit;
 			$_REQUEST['process_action']='edit';
 			if(!isset($_REQUEST['_fields']) && isset($_REQUEST['_formfields'])){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
@@ -15515,14 +15514,50 @@ function processFileUploads($docroot=''){
 	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
 	if(is_array($_FILES) && count($_FILES) > 0){
 	 	foreach($_FILES as $name=>$file){
+	 		if(!strlen($file['name'])){
+	 			continue;
+	 		}
+	 		if($file['error'] != 0 && !strlen($file['tmp_name'])){
+	 			switch((integer)$file['error']){
+	 				case 1:
+	 					$message="The uploaded file exceeds the upload_max_filesize directive in php.ini";
+	 				break;
+	 				case 2:
+	 					$message="The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+	 				break;
+	 				case 3:
+	 					$message="The uploaded file was only partially uploaded.";
+	 				break;
+	 				case 4:
+	 					$message="No file was uploaded.";
+	 				break;
+	 				case 6:
+	 					$message="Missing a temporary folder.";
+	 				break;
+	 				case 7:
+	 					$message="Failed to write file to disk.";
+	 				break;
+	 				case 8:
+	 					$message="A PHP extension stopped the file upload.";
+	 				break;
+	 				default:
+	 					$message="unknown error";
+	 				break;
+
+	 			}
+	 			$error=array(
+	 				'error'=>'processFileUploads',
+	 				'filename'=>$name,
+	 				'message'=>$message
+	 			);
+	 			debugValue($error);
+				$_REQUEST[$name.'_error']=$error;
+				continue;
+			}
 	 		if(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
 	 			unset($_FILES[$name]);
 	 			continue;
 	 		}
-			elseif($file['error'] != 0 && !strlen($file['tmp_name'])){
-				$_REQUEST[$name.'_error']="File Upload Error (1) - " . json_encode($file);
-				continue;
-			}
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
             	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
             	if(isset($_SERVER['HTTP_X_CHUNK_NUMBER'])){

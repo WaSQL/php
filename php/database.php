@@ -8687,7 +8687,7 @@ function getDBRecord($params=array(),$id=0,$flds=''){
 	}
     else{$params['-limit']=1;}
 	$list=getDBRecords($params);
-	//echo printValue($params).printValue($list);exit;
+	//echo printValue($params).printValue($list);
 	if(!is_array($list)){return $list;}
 	if(!count($list)){return '';}
 	if(!isset($list[0])){return '';}
@@ -8808,24 +8808,12 @@ function getDBRecords($params=array()){
 	if(isset($params['-process']) && !function_exists($params['-process'])){
 		return "Error: Function is not loaded to process with: {$params['-process']}";
 	}
-	//change database if requested
-	if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
-		if(!databaseSelectDb($params['-dbname'])){
-			setWasqlError(debug_backtrace(),getDBError());
-			return getDBError();
-		}
-	}
+	
 	if(isset($params['-query'])){$query=$params['-query'];}
 	elseif(isset($params['-table'])){
 		$query=getDBQuery($params);
 	}
 	else{
-		if(isset($params['-dbname']) && strlen($CONFIG['dbname'])){
-			if(!databaseSelectDb($CONFIG['dbname'])){
-				setWasqlError(debug_backtrace(),getDBError());
-				return getDBError();
-				}
-			}
 		setWasqlError(debug_backtrace(),"No table: ".json_encode($params));
 		return "No table. ".json_encode($params);
 	}

@@ -10,7 +10,8 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $progpath=dirname(__FILE__);
 //set the default time zone
 date_default_timezone_set('America/Denver');
-
+global $wasql_debugValueContent;
+$wasql_debugValueContent='';
 //includes
 //echo "Before COMMON";exit;
 include_once("{$progpath}/common.php");
@@ -30,6 +31,7 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
 include_once("{$progpath}/schema.php");
+$_SESSION['debugValue_lastm']='';
 global $TEMPLATE;
 global $PAGE;
 $TEMPLATE=array('_id'=>0);
@@ -516,6 +518,7 @@ if(count($_REQUEST)==1){
 		echo '		</div>'.PHP_EOL;
 		echo '	</div>'.PHP_EOL;
 		echo '</div>'.PHP_EOL;
+		echo $wasql_debugValueContent;
 	    echo buildHtmlEnd();
 		exit;
 	}
@@ -534,6 +537,7 @@ if(count($_REQUEST)==1){
 				echo buildTableTD(array($key,printValue($val)),array('valign'=>'top'));
 		        }
 		    echo buildTableEnd();
+		    echo $wasql_debugValueContent;
 		    echo buildHtmlEnd();
 			exit;
 		break;
@@ -638,10 +642,14 @@ if(isAjax()){
 		case 'zipcodes':
 		case 'postedit':
 		case 'sync_source':
-			echo adminViewPage($_REQUEST['_menu']);exit;
+			echo adminViewPage($_REQUEST['_menu']);
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'cron':
-			echo adminViewPage('cron');exit;
+			echo adminViewPage('cron');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'clearmin':
 			wasqlClearMinCache();
@@ -650,7 +658,9 @@ if(isAjax()){
 			exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');exit;
+			echo adminViewPage('export');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
     	case 'updatecheck':
     		echo wasqlUpdateCheck();
@@ -658,6 +668,7 @@ if(isAjax()){
     		break;
     	case 'explore':
     		echo fileExplorer();
+    		echo $wasql_debugValueContent;
     		exit;
     		break;
     	case 'add':
@@ -716,26 +727,38 @@ if(isAjax()){
 			exit;
     		break;
     	case 'decode':
-			echo adminViewPage('decode');exit;
+			echo adminViewPage('decode');
+			echo $wasql_debugValueContent;
+			exit;
     	break;
     	case 'ab':
-			echo adminViewPage('apachebench');exit;
+			echo adminViewPage('apachebench');
+			echo $wasql_debugValueContent;
+			exit;
     	break;
     	case 'sysmon':
     		adminSetPageName();
-    		echo includeModule('sysmon');exit;
+    		echo includeModule('sysmon');
+    		echo $wasql_debugValueContent;
+    		exit;
 			//echo adminViewPage('translate');exit;
     	break;
     	case 'translate':
     		adminSetPageName();
-    		echo includeModule('translate');exit;
+    		echo includeModule('translate');
+    		echo $wasql_debugValueContent;
+    		exit;
 			//echo adminViewPage('translate');exit;
     	break;
     	case 'manual':
-			echo adminViewPage('manual');exit;
+			echo adminViewPage('manual');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
     	case 'sqlprompt':
-			echo adminViewPage('sqlprompt');exit;
+			echo adminViewPage('sqlprompt');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'phpprompt':
 			echo '<div class="container-fluid">'.PHP_EOL;
@@ -1142,6 +1165,7 @@ if(!isUser()){
 	if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
 	echo userLoginForm($formopts);
 	echo '</div>'.PHP_EOL;
+	echo $wasql_debugValueContent;
 	echo buildHtmlEnd();
 	exit;
 	}
@@ -1168,6 +1192,7 @@ elseif($USER['utype'] != 0){
 
 if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isset($_REQUEST['func']) && $_REQUEST['func']=='export'){
 	echo adminViewPage('export');
+	echo $wasql_debugValueContent;
 	exit;
 }
 //Create new table?
@@ -1304,13 +1329,19 @@ if(isset($_REQUEST['_menu'])){
 		case 'zipcodes':
 		case 'postedit':
 		case 'sync_source':
-			echo adminViewPage($_REQUEST['_menu']);exit;
+			echo adminViewPage($_REQUEST['_menu']);
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'cron':
-			echo adminViewPage('cron');exit;
+			echo adminViewPage('cron');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');exit;
+			echo adminViewPage('export');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'editor':
 			echo '<table class="table table-responsive table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
@@ -1534,26 +1565,38 @@ ENDOFX;
 			goto LIST_TABLE;
 		break;
 		case 'decode':
-			echo adminViewPage('decode');exit;
+			echo adminViewPage('decode');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'meta':
-			echo adminViewPage('meta');exit;
+			echo adminViewPage('meta');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'ab':
-			echo adminViewPage('apachebench');exit;
+			echo adminViewPage('apachebench');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'sysmon':
 			adminSetPageName();
-			echo includeModule('sysmon');exit;
+			echo includeModule('sysmon');
+			echo $wasql_debugValueContent;
+			exit;
 			//echo adminViewPage('translate');exit;
 		break;
 		case 'translate':
 			adminSetPageName();
-			echo includeModule('translate');exit;
+			echo includeModule('translate');
+			echo $wasql_debugValueContent;
+			exit;
 			//echo adminViewPage('translate');exit;
 		break;
 		case 'manual':
-			echo adminViewPage('manual');exit;
+			echo adminViewPage('manual');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'profile':
 			//My Profile
@@ -1591,7 +1634,9 @@ ENDOFX;
             echo buildTableEnd();
 		break;
 		case 'settings':
-			echo adminViewPage('settings');exit;
+			echo adminViewPage('settings');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'update_wasql':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL - </h2>'.PHP_EOL;
@@ -2170,7 +2215,9 @@ LIST_TABLE:
             	}
 			break;
 		case 'synchronize':
-			echo adminViewPage('synchronize');exit;
+			echo adminViewPage('synchronize');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'schema':
 			if(isset($_REQUEST['_table_'])){
@@ -2602,7 +2649,9 @@ LIST_TABLE:
 			echo '</table>'.PHP_EOL;
 			break;
 		case 'sqlprompt':
-			echo adminViewPage('sqlprompt');exit;
+			echo adminViewPage('sqlprompt');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'phpprompt':
 			echo '<div class="container-fluid">'.PHP_EOL;
@@ -2936,13 +2985,19 @@ LIST_TABLE:
 			}
 		break;
 		case 'import':
-			echo adminViewPage('import');exit;
+			echo adminViewPage('import');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');exit;
+			echo adminViewPage('export');
+			echo $wasql_debugValueContent;
+			exit;
 		break;
 		case 'datasync':
-			echo adminViewPage($_REQUEST['_menu']);exit;
+			echo adminViewPage($_REQUEST['_menu']);
+			echo $wasql_debugValueContent;
+			exit;
 		case 'searchreplace':
 			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'.PHP_EOL;
 			break;

@@ -495,6 +495,7 @@ function listIconsets($params=array()){
 * @usage return debugValue($arr);
 */
 function debugValue($m,$name=''){
+	global $wasql_debugValueContent;
 	global $USER;
 	if(!function_exists('isDBStage')){$_SESSION['debugValue']=1;}
 	if($_SERVER['HTTP_HOST']=='localhost'){$_SESSION['debugValue']=1;}
@@ -504,6 +505,9 @@ function debugValue($m,$name=''){
 	//only on stage or when specified by debug=1
 	if($_SESSION['debugValue'] != 1){return;}
 	if(is_array($m)){
+		if(isset($m['error']) && !strlen($m['error'])){
+			return;
+		}
 		if(isset($m[0]['message'])){
 			$newm='';
 			foreach($m as $err){
@@ -529,11 +533,11 @@ function debugValue($m,$name=''){
 		if(!isset($_SERVER['WaSQL_DebugValue_Cnt'])){$_SERVER['WaSQL_DebugValue_Cnt']=1;}
 		else{$_SERVER['WaSQL_DebugValue_Cnt']+=1;}
 		$id="wasqlDebug".$_SERVER['WaSQL_DebugValue_Cnt'];
-		echo '<div id="'.$id.'" style="display:none;">'."\n";
-		echo $m;
-		echo "\r\n--------------------\r\n";
-		echo "\n</div>\n";
-		echo buildOnLoad("if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('{$id}').innerHTML);}");
+		$wasql_debugValueContent.= '<div id="'.$id.'" style="display:none;">'.PHP_EOL;
+		$wasql_debugValueContent.= $m.PHP_EOL;
+		$wasql_debugValueContent.= "--------------------".PHP_EOL;
+		$wasql_debugValueContent.= "</div>".PHP_EOL;
+		$wasql_debugValueContent.= buildOnLoad("if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('{$id}').innerHTML);}");
 	}
 	return false;
 }
