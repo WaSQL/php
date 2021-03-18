@@ -1208,7 +1208,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	if(is_array($CONFIG['includes'])){
 		foreach($CONFIG['includes'] as $lang=>$afiles){
 			foreach($afiles as $afile){
-				unlink($afile);
+				//unlink($afile);
 			}
 		}
 	}

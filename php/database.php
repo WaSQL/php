@@ -7440,6 +7440,7 @@ function includeDBOnce($params=array()){
 				case 'perl':$lang='pl';break;
 				case 'ruby':$lang='rb';break;
 				case 'vbscript':$lang='vbs';break;
+				case 'nodejs':$lang='js';break;
 				default:
 					$lang=strtolower($g[1]);
 				break;

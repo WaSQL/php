@@ -7284,7 +7284,7 @@ function evalPHP($strings){
 						$val=$out['stdout'];
 					}	
 					else{
-						$val="ERROR: {$lang['exe']} embeded script failed".printValue($out);
+						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_PRETTY_PRINT).'</pre>';
 					}
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
@@ -7395,21 +7395,27 @@ function commonAddPrecode($lang,$evalcode){
 			$precode[]="{$lang['comment']} BEGIN CUSTOM INCLUDES";
 			switch($lang['ext']){
 				case 'py':
-					// $precode[]="import sys";
-					// $folders=array();
-					// foreach($CONFIG['includes'][$lang['ext']] as $afile){
-					// 	$folder=getFilePath($afile);
-					// 	if(!in_array($folder,$folders)){
-					// 		$folders[]=$folder;
-					// 	}
-					// }
-					// foreach($folders as $folder){
-					// 	$folder=str_replace("\\","/",$folder);
-					// 	$precode[]="sys.path.insert(1, '{$folder}')";
-					// }
 					foreach($CONFIG['includes'][$lang['ext']] as $afile){
 						$name=getFileName($afile,1);
 						$precode[]="from {$name} import *";
+					}
+				break;
+				case 'pl':
+					foreach($CONFIG['includes'][$lang['ext']] as $afile){
+						$afile=str_replace("\\","/",$afile);
+						$precode[]="require \"{$afile}\";";
+					}
+				break;
+				case 'lua':
+					foreach($CONFIG['includes'][$lang['ext']] as $afile){
+						$name=getFileName($afile);
+						$precode[]="dofile(\"./temp/{$name}\");";
+					}
+				break;
+				case 'js':
+					foreach($CONFIG['includes'][$lang['ext']] as $afile){
+						$name=getFileName($afile);
+						$precode[]="var {$PAGE['name']} = require(\"./temp/{$name}\");";
 					}
 				break;
 			}
