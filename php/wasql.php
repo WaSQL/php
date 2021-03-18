@@ -508,7 +508,7 @@ function debugValue($m,$name=''){
 		if(isset($m['error']) && !strlen($m['error'])){
 			return;
 		}
-		if(isset($m[0]['message'])){
+		elseif(isset($m[0]['message'])){
 			$newm='';
 			foreach($m as $err){
 				if(preg_match('/eval\(\)\'d code/is',$err['file'])){

@@ -7126,6 +7126,7 @@ function evalPHP_ob($string, $flags) {
 * @usage $rtn=evalPHP($str);
 */
 function evalPHP($strings){
+	global $CONFIG;
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -7389,6 +7390,31 @@ function commonAddPrecode($lang,$evalcode){
 		array_unshift($precode,"{$lang['comment']} BEGIN WaSQL Variable Definitions");
 		//comment footer
 		$precode[]="{$lang['comment']} END WaSQL Variable Definitions".PHP_EOL;
+		//look for CONFIG['includes']
+		if(isset($CONFIG['includes'][$lang['ext']][0])){
+			$precode[]="{$lang['comment']} BEGIN CUSTOM INCLUDES";
+			switch($lang['ext']){
+				case 'py':
+					// $precode[]="import sys";
+					// $folders=array();
+					// foreach($CONFIG['includes'][$lang['ext']] as $afile){
+					// 	$folder=getFilePath($afile);
+					// 	if(!in_array($folder,$folders)){
+					// 		$folders[]=$folder;
+					// 	}
+					// }
+					// foreach($folders as $folder){
+					// 	$folder=str_replace("\\","/",$folder);
+					// 	$precode[]="sys.path.insert(1, '{$folder}')";
+					// }
+					foreach($CONFIG['includes'][$lang['ext']] as $afile){
+						$name=getFileName($afile,1);
+						$precode[]="from {$name} import *";
+					}
+				break;
+			}
+			$precode[]="{$lang['comment']} END CUSTOM INCLUDES";
+		}
 		//add precode to evalcode
 		$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
 	}
@@ -8858,7 +8884,7 @@ function getImageSrc($name='',$size=16){
 	return '';
 	}
 
-//---------- begin function evalPHP_ob
+//---------- begin function getRemoteEnv
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -12711,7 +12737,7 @@ function getAgentOS($agent=''){
 		}
 	return 'Unknown';
 	}
-//---------- begin function evalPHP_ob
+//---------- begin function parseEnv
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -12957,7 +12983,7 @@ function getWeekNumber($date){
 	$diff=$stop-$start;
 	return 0;
 }
-//---------- begin function evalPHP_ob
+//---------- begin function getWfilesPath
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */

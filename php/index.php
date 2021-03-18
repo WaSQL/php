@@ -1205,6 +1205,13 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	$htm=processTranslateTags($htm);
 	echo $htm;
 	echo $wasql_debugValueContent;
+	if(is_array($CONFIG['includes'])){
+		foreach($CONFIG['includes'] as $lang=>$afiles){
+			foreach($afiles as $afile){
+				unlink($afile);
+			}
+		}
+	}
 	exit;
     //if the page name or permalink ends in .html then write the static file.
     if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){

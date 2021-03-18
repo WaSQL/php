@@ -7405,6 +7405,7 @@ function includeDBOnce($params=array()){
 	global $CONFIG;
 	global $TEMPLATE;
 	global $PAGE;
+	$tmppath=getWasqlTempPath();
 	// need table, field, where
 	if(!isset($params['-table'])){return 'includeDBOnce Error: No table' . printValue($params);}
 	if(!isset($params['-field'])){return 'includeDBOnce Error: No field' . printValue($params);}
@@ -7426,63 +7427,78 @@ function includeDBOnce($params=array()){
 		return 'includeDBOnce Error: No record. ' .$rec. printValue($params);
 	}
 	$content=trim($rec[$field]);
-	$content=preg_replace('/^\<\?php/is','',$content);
-	$content=preg_replace('/^\<\?/is','',$content);
-	$content=preg_replace('/\?\>$/s','',$content);
-	$content="<?php\r\n{$content}";
-
-	$where=preg_replace('/[^a-z0-9]+/i','_',$params['-where']);
-	$where=preg_replace('/\_+$/','',$where);
-	/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
-	$phpfilename=$CONFIG['dbname'] .'_' . $params['-table'] .'_' . $params['-field'] . '_' . $where . '.php';
-	$phpfilename=getFileName($phpfilename);
-	$phpfilename=preg_replace('/\_+/','_',$phpfilename);
-	$progpath=dirname(__FILE__);
-	buildDir("{$progpath}/temp");
-	$phpfile="{$progpath}/temp/{$phpfilename}";
-	//If the DB record has changed since the file has changed, then force a reload
-	$content_md5=md5($content);
-	if(file_exists($phpfile) && md5_file($phpfile) != $content_md5){
-		unlink($phpfile);
-		if(is_file($phpfile)){
-        	return "includeDBOnce Error: permission errors in {$progpath}/temp - unable to unlink {$phpfile}";
+	/* load contents based on tag 
+		<?php ... ?>
+		<?py ... ?>
+	*/
+	preg_match_all('/\<\?(.+?)\?\>/sm',$content,$evalmatches,PREG_PATTERN_ORDER);
+	foreach($evalmatches[1] as $evalcode){
+		if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+			$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
+			switch(strtolower($g[1])){
+				case 'python':$lang='py';break;
+				case 'perl':$lang='pl';break;
+				case 'ruby':$lang='rb';break;
+				case 'vbscript':$lang='vbs';break;
+				default:
+					$lang=strtolower($g[1]);
+				break;
+			}
+			$tmpfile=$lang.'_'.sha1($evalcode).".{$lang}";
+			$afile="{$tmppath}/{$tmpfile}";
+			$content_md5=md5($evalcode);
+			if(!file_exists($afile) || md5_file($afile) != $content_md5){
+				$fp = fopen($afile, "w");
+				fwrite($fp, $evalcode);
+				fclose($fp);
+			}
+			if(!isset($CONFIG['includes'][$lang][0])){
+				$CONFIG['includes'][$lang]=array();
+			}
+			//set CONFIG['includes'] so they can be loaded when code is ran.
+			$CONFIG['includes'][$lang][]=$afile;
 		}
-	}
-	//write the php file if needed
-	if(!file_exists($phpfile)){
-		//echo "Writing {$phpfile}<br>".PHP_EOL;
-		$fp = fopen($phpfile, "w");
-		fwrite($fp, $content);
-		fclose($fp);
+		else{
+			$content=preg_replace('/^\<\?php/is','',$content);
+			$content=preg_replace('/^\<\?/is','',$content);
+			$content=preg_replace('/\?\>$/s','',$content);
+			$content="<?php\r\n{$content}";	
+			$where=preg_replace('/[^a-z0-9]+/i','_',$params['-where']);
+			$where=preg_replace('/\_+$/','',$where);
+			/* Since URL file-access is disabled on some servers for security reasons, bring the rss feed locally first*/
+			$phpfilename=$CONFIG['dbname'] .'_' . $params['-table'] .'_' . $params['-field'] . '_' . $where . '.php';
+			$phpfilename=getFileName($phpfilename);
+			$phpfilename=preg_replace('/\_+/','_',$phpfilename);
+			$phpfile="{$tmppath}/{$phpfilename}";
+			//If the DB record has changed since the file has changed, then force a reload
+			$content_md5=md5($content);
+			if(!file_exists($phpfile) || md5_file($phpfile) != $content_md5){
+				$fp = fopen($phpfile, "w");
+				fwrite($fp, $content);
+				fclose($fp);
+			}
+			//include this php file
+			if(file_exists($phpfile)){
+				//echo $phpfile;exit;
+				@trigger_error("");
+				$evalstring='showErrors();'.PHP_EOL;
+				$evalstring .= 'try{'.PHP_EOL;
+				$evalstring .= '	include_once(\''.$phpfile.'\');'.PHP_EOL;
+				$evalstring .= '	}'.PHP_EOL;
+				$evalstring .= 'catch(Exception $e){'.PHP_EOL;
+				$evalstring .= '	}'.PHP_EOL;
+				@eval($evalstring);
+				$e=error_get_last();
+				if($e['message']!=='' && !preg_match('/Undefined/i',$e['message'])){
+		    		// An error occurred
+		    		//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
+		    		debugValue($e);
+				}	
+			}
 		}
-	//include this php file
-	if(file_exists($phpfile)){
-		//echo $phpfile;exit;
-		@trigger_error("");
-		//$evalstring='error_reporting(E_ERROR | E_PARSE);'.PHP_EOL;
-		$evalstring='showErrors();'.PHP_EOL;
-		$evalstring .= 'try{'.PHP_EOL;
-		$evalstring .= '	include_once(\''.$phpfile.'\');'.PHP_EOL;
-		$evalstring .= '	}'.PHP_EOL;
-		$evalstring .= 'catch(Exception $e){'.PHP_EOL;
-		$evalstring .= '	}'.PHP_EOL;
-		//return $evalstring;
-
-		@eval($evalstring);
-		$e=error_get_last();
-		if($e['message']!=='' && !preg_match('/Undefined/i',$e['message'])){
-    			// An error occurred
-    			//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
-    			debugValue($e);
-    			return 0;
-		}
-		return 1;
-    	}
-    else{
-    	return "includeDBOnce Error: permission errors in {$progpath}/temp - unable to write {$phpfile}";
 	}
 	return 0;
-	}
+}
 //---------- begin function mapDBDvalsToTvals--------------------
 /**
 * @describe returns a key/value array map so if you know a tval you can derive the dval
