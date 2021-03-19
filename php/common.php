@@ -7126,7 +7126,6 @@ function evalPHP_ob($string, $flags) {
 * @usage $rtn=evalPHP($str);
 */
 function evalPHP($strings){
-	global $CONFIG;
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -7284,7 +7283,7 @@ function evalPHP($strings){
 						$val=$out['stdout'];
 					}	
 					else{
-						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_PRETTY_PRINT).'</pre>';
+						$val="ERROR: {$lang['exe']} embeded script failed".printValue($out);
 					}
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
@@ -7390,37 +7389,6 @@ function commonAddPrecode($lang,$evalcode){
 		array_unshift($precode,"{$lang['comment']} BEGIN WaSQL Variable Definitions");
 		//comment footer
 		$precode[]="{$lang['comment']} END WaSQL Variable Definitions".PHP_EOL;
-		//look for CONFIG['includes']
-		if(isset($CONFIG['includes'][$lang['ext']][0])){
-			$precode[]="{$lang['comment']} BEGIN CUSTOM INCLUDES";
-			switch($lang['ext']){
-				case 'py':
-					foreach($CONFIG['includes'][$lang['ext']] as $afile){
-						$name=getFileName($afile,1);
-						$precode[]="from {$name} import *";
-					}
-				break;
-				case 'pl':
-					foreach($CONFIG['includes'][$lang['ext']] as $afile){
-						$afile=str_replace("\\","/",$afile);
-						$precode[]="require \"{$afile}\";";
-					}
-				break;
-				case 'lua':
-					foreach($CONFIG['includes'][$lang['ext']] as $afile){
-						$name=getFileName($afile);
-						$precode[]="dofile(\"./temp/{$name}\");";
-					}
-				break;
-				case 'js':
-					foreach($CONFIG['includes'][$lang['ext']] as $afile){
-						$name=getFileName($afile);
-						$precode[]="var {$PAGE['name']} = require(\"./temp/{$name}\");";
-					}
-				break;
-			}
-			$precode[]="{$lang['comment']} END CUSTOM INCLUDES";
-		}
 		//add precode to evalcode
 		$evalcode=implode(PHP_EOL,$precode).PHP_EOL.PHP_EOL.$evalcode;
 	}
@@ -8890,7 +8858,7 @@ function getImageSrc($name='',$size=16){
 	return '';
 	}
 
-//---------- begin function getRemoteEnv
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -12743,7 +12711,7 @@ function getAgentOS($agent=''){
 		}
 	return 'Unknown';
 	}
-//---------- begin function parseEnv
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -12989,7 +12957,7 @@ function getWeekNumber($date){
 	$diff=$stop-$start;
 	return 0;
 }
-//---------- begin function getWfilesPath
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
