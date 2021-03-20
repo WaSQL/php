@@ -7256,7 +7256,7 @@ function evalPHP($strings){
 				}
 				else{
 					$tmppath=getWasqlTempPath();
-					$tmpfile=sha1($evalcode).".{$lang['ext']}";
+					$tmpfile="{$CONFIG['name']}_".md5($evalcode).".{$lang['ext']}";
 					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
 					}
@@ -7406,6 +7406,12 @@ function commonAddPrecode($lang,$evalcode){
 						$precode[]="require \"{$afile}\";";
 					}
 				break;
+				case 'rb':
+					foreach($CONFIG['includes'][$lang['ext']] as $afile){
+						$name=getFileName($afile,1);
+						$precode[]="require_relative '{$name}';";
+					}
+				break;
 				case 'lua':
 					foreach($CONFIG['includes'][$lang['ext']] as $afile){
 						$name=getFileName($afile);
@@ -7432,9 +7438,10 @@ function commonAddPrecode($lang,$evalcode){
 */
 function commonGetPrecodeForVar($lang,$arr,$varname){
 	$precode=array();
+	$skips=array('HTTP_COOKIE','REMOTE_PORT','REQUEST_TIME','REQUEST_TIME_FLOAT','TIME_START','WASQLGUID','_adate','_adate_utime','_edate','_edate_utime','_tauth','_sessionid');
 	foreach($arr as $k=>$v){
 		//remove arrays and values with a slash
-		if(is_array($v) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
+		if(is_array($v) || in_array($k,$skips) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
 			unset($arr[$k]);
 			continue;
 		}
