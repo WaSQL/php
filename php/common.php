@@ -16307,7 +16307,8 @@ function removeComments($str=''){
 * @usage $str=removeComments($str);
 */
 function removePHPComments($str=''){
-	$str = preg_replace('!/\*.*?\*/!s', '', $str);
+	$str = preg_replace('!/\*.*?\*/!sm', '', $str);
+	$str = preg_replace('/\n\s*\n/', "\n", $str);
 	return $str;
 }	
 //---------- begin function removeHtmlTags ----------
