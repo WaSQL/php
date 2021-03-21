@@ -7435,7 +7435,6 @@ function includeDBOnce($params=array()){
 	}
 	$names[]=$rec['_id'];
 	$content=trim($rec[$field]);
-	//remove comments
 	/* load contents based on tag  - php, python, etc */
 	$ok=commonIncludeFunctionCode($content,implode('',$names));
 	return 0;

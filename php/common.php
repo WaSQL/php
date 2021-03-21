@@ -11056,6 +11056,8 @@ function includePHPOnce($php_content,$name=''){
 }
 function commonIncludeFunctionCode($content,$name=''){
 	global $CONFIG;
+	//remove PHP comments
+	$content=removePHPComments($content);
 	preg_match_all('/\<\?(.+?)\?\>/sm',$content,$evalmatches,PREG_PATTERN_ORDER);
 	if(!count($evalmatches[1])){return '';}
 	$tmppath=getWasqlTempPath();
@@ -11089,6 +11091,7 @@ function commonIncludeFunctionCode($content,$name=''){
 		}
 		elseif(preg_match('/^php[\ \r\n]+(.+)/ism',$evalcode,$g)){
 			$evalcode=trim(preg_replace('/^php/i','',$evalcode));
+			if(!strlen($evalcode)){continue;}
 			$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
@@ -16298,7 +16301,41 @@ function removeCdata($xhtml=''){
 function removeComments($str=''){
 	$str = preg_replace('/\<\!--.+?--\>/','',$str);
 	return $str;
-	}	
+}
+//---------- begin function removePHPComments ----------
+/**
+* @describe removes PHP comments
+* @param str string
+* @return string
+* @usage $str=removePHPComments($str);
+*/
+function removePHPComments($str=''){
+	$lines=preg_split('/[\r\n]+/',$str);
+	$comments=array();
+	foreach($lines as $i=>$line){
+		$tline=trim($line);
+		if(stringBeginsWith($tline,"//")){
+			unset($lines[$i]);
+		}
+		elseif(stringBeginsWith($tline,"/*") && stringEndsWith($tline,"*/")){
+			unset($lines[$i]);
+		}
+		elseif(stringBeginsWith($tline,"/*")){
+			$comments[]=$i;
+		}
+		elseif(count($comments)){
+			$comments[]=$i;
+		}
+		if(count($comments) && stringEndsWith($tline,"*/")){
+			$comments[]=$i;
+			foreach($comments as $x){
+				unset($lines[$x]);
+			}
+			$comments=array();
+		}
+	}
+	return implode(PHP_EOL,$lines);
+}	
 //---------- begin function removeHtmlTags ----------
 /**
 * @describe removes html tags from a string
