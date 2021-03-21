@@ -16309,7 +16309,7 @@ function removeComments($str=''){
 function removePHPComments($str=''){
 	$str = preg_replace('!/\*.*?\*/!s', '', $str);
 	return $str;
-	}	
+}	
 //---------- begin function removeHtmlTags ----------
 /**
 * @describe removes html tags from a string
