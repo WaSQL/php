@@ -16298,18 +16298,7 @@ function removeCdata($xhtml=''){
 function removeComments($str=''){
 	$str = preg_replace('/\<\!--.+?--\>/','',$str);
 	return $str;
-	}
-//---------- begin function removePHPComments ----------
-/**
-* @describe removes PHP comments from a string/multiline string
-* @param str string
-* @return string
-* @usage $str=removeComments($str);
-*/
-function removePHPComments($str=''){
-	$str = preg_replace('/\/\*.+?\*\//ism', '', $str);
-	return $str;
-}	
+	}	
 //---------- begin function removeHtmlTags ----------
 /**
 * @describe removes html tags from a string
