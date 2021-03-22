@@ -7164,7 +7164,7 @@ function evalPHP($strings){
 							'name'=>'python',
 							'comment'=>'#',
 							'ext'=>'py',
-							'exe'=>'python -B',
+							'exe'=>'python',
 							'shebang'=>'#!/usr/bin/env python'
 						);
 					break;
@@ -7256,7 +7256,7 @@ function evalPHP($strings){
 				}
 				else{
 					$tmppath=getWasqlTempPath();
-					$tmpfile="{$CONFIG['name']}_".md5($evalcode).".{$lang['ext']}";
+					$tmpfile=sha1($evalcode).".{$lang['ext']}";
 					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
 					}
@@ -7390,7 +7390,7 @@ function commonAddPrecode($lang,$evalcode){
 		array_unshift($precode,"{$lang['comment']} BEGIN WaSQL Variable Definitions");
 		//comment footer
 		$precode[]="{$lang['comment']} END WaSQL Variable Definitions".PHP_EOL;
-		//look for CONFIG['includes']
+		//add precode to evalcode
 		if(isset($CONFIG['includes'][$lang['ext']][0])){
 			$precode[]="{$lang['comment']} BEGIN CUSTOM INCLUDES";
 			switch($lang['ext']){
@@ -7404,12 +7404,6 @@ function commonAddPrecode($lang,$evalcode){
 					foreach($CONFIG['includes'][$lang['ext']] as $afile){
 						$afile=str_replace("\\","/",$afile);
 						$precode[]="require \"{$afile}\";";
-					}
-				break;
-				case 'rb':
-					foreach($CONFIG['includes'][$lang['ext']] as $afile){
-						$name=getFileName($afile,1);
-						$precode[]="require_relative '{$name}';";
 					}
 				break;
 				case 'lua':
@@ -7438,10 +7432,9 @@ function commonAddPrecode($lang,$evalcode){
 */
 function commonGetPrecodeForVar($lang,$arr,$varname){
 	$precode=array();
-	$skips=array('HTTP_COOKIE','REMOTE_PORT','REQUEST_TIME','REQUEST_TIME_FLOAT','TIME_START','WASQLGUID','_adate','_adate_utime','_edate','_edate_utime','_tauth','_sessionid');
 	foreach($arr as $k=>$v){
 		//remove arrays and values with a slash
-		if(is_array($v) || in_array($k,$skips) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
+		if(is_array($v) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
 			unset($arr[$k]);
 			continue;
 		}
@@ -8897,7 +8890,7 @@ function getImageSrc($name='',$size=16){
 	return '';
 	}
 
-//---------- begin function getRemoteEnv
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -11009,7 +11002,7 @@ function includePage($val='',$params=array()){
 	}
 	//load  functions
     if(isset($rec['functions']) && strlen(trim($rec['functions']))){
-    	$fname="p{$rec['_id']}";
+    	$fname="_pages_functions_id_{$rec['_id']}";
 		$ok=includePHPOnce(trim($rec['functions']),$fname);
 		if(!isNum($ok)){return "includePage '{$rec['name']}' Error Loading functions:". $ok;}
     }
@@ -11052,83 +11045,53 @@ function includePage($val='',$params=array()){
 * @usage includePHPOnce($phpcode);
 */
 function includePHPOnce($php_content,$name=''){
-	return commonIncludeFunctionCode($php_content,$name);
-}
-function commonIncludeFunctionCode($content,$name=''){
 	global $CONFIG;
-	//remove PHP comments
-	$content=removePHPComments($content);
-	preg_match_all('/\<\?(.+?)\?\>/sm',$content,$evalmatches,PREG_PATTERN_ORDER);
-	if(!count($evalmatches[1])){return '';}
-	$tmppath=getWasqlTempPath();
-	foreach($evalmatches[1] as $evalcode){
-		if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
-			$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
-			switch(strtolower($g[1])){
-				case 'python':$lang='py';break;
-				case 'perl':$lang='pl';break;
-				case 'ruby':$lang='rb';break;
-				case 'vbscript':$lang='vbs';break;
-				case 'nodejs':$lang='js';break;
-				default:
-					$lang=strtolower($g[1]);
-				break;
-			}
-			$tmpfile="{$CONFIG['name']}_{$name}_".$lang.'_'.sha1($evalcode).".{$lang}";
-			$afile="{$tmppath}/{$tmpfile}";
-			$afile=str_replace("\\","/",$afile);
-			$content_md5=md5($evalcode);
-			if(!file_exists($afile) || md5_file($afile) != $content_md5){
-				$fp = fopen($afile, "w");
-				fwrite($fp, $evalcode);
-				fclose($fp);
-			}
-			if(!isset($CONFIG['includes'][$lang][0])){
-				$CONFIG['includes'][$lang]=array();
-			}
-			//set CONFIG['includes'] so they can be loaded when code is ran.
-			$CONFIG['includes'][$lang][]=$afile;
-		}
-		elseif(preg_match('/^php[\ \r\n]+(.+)/ism',$evalcode,$g)){
-			$evalcode=trim(preg_replace('/^php/i','',$evalcode));
-			if(!strlen($evalcode)){continue;}
-			$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
-			$afile="{$tmppath}/{$tmpfile}";
-			$afile=str_replace("\\","/",$afile);
-			$evalcode='<?'.'php'.PHP_EOL.$evalcode;	
-			$content_md5=md5($evalcode);
-			if(!file_exists($afile) || md5_file($afile) != $content_md5){
-				$fp = fopen($afile, "w");
-				fwrite($fp, $evalcode);
-				fclose($fp);
-			}
-			if(file_exists($afile)){
-				@trigger_error("");
-				$evalstring='showErrors();'.PHP_EOL;
-				$evalstring .= 'try{'.PHP_EOL;
-				$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
-				$evalstring .= '	}'.PHP_EOL;
-				$evalstring .= 'catch(Exception $e){'.PHP_EOL;
-				$evalstring .= '	debugValue($e);'.PHP_EOL;
-				$evalstring .= '	}'.PHP_EOL;
-				//echo $evalstring;exit;
-				@eval($evalstring);
-				$e=error_get_last();
-				if($e['message']!=='' && !preg_match('/Undefined/i',$e['message'])){
-		    		// An error occurred
-		    		//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
-		    		debugValue($e);
-				}
-				//remove file in temp dir?
-				//$CONFIG['includes']['php'][]=$afile;
-			}
-		}
-		else{
-			debugValue("Unknown langage: ".$evalcode);
-		}
+	//make sure php_content starts with <?php
+	if(!stringBeginsWith($php_content,'<?')){
+    	debugValue("includePHPOnce Error: content '{$name}' is not php");
+    	return;
 	}
-	return 1;
-}
+	if(!stringBeginsWith($php_content,'<?php')){
+		$php_content=preg_replace('/^\<\?/','<?php',$php_content);
+	}
+	if(!strlen($name)){$name=sha1($php_content);}
+	$phpfilename=$CONFIG['dbname'] .'_' . $name . '.php';
+	$phpfilename=preg_replace('/\_+/','_',$phpfilename);
+	if(isset($CONFIG['includeDBOnce'][$phpfilename])){return 1;}
+	$CONFIG['includeDBOnce'][$phpfilename]=time();
+	$progpath=dirname(__FILE__);
+	buildDir("{$progpath}/temp");
+	$phpfile="{$progpath}/temp/{$phpfilename}";
+	//If the DB record has changed since the file has changed, then force a reload
+	$content_md5=md5($php_content);
+	if(file_exists($phpfile) && md5_file($phpfile) != $content_md5){unlink($phpfile);}
+	//write the php file if needed
+	if(!file_exists($phpfile)){
+		$fp = fopen($phpfile, "w");
+		fwrite($fp, $php_content);
+		fclose($fp);
+		}
+	//include this php file
+	if(file_exists($phpfile)){
+		@trigger_error("");
+		//$evalstring='error_reporting(E_ERROR | E_PARSE);'.PHP_EOL;
+		$evalstring='showErrors();'.PHP_EOL;
+		$evalstring .= 'try{'.PHP_EOL;
+		$evalstring .= '	require_once(\''.$phpfile.'\');'.PHP_EOL;
+		$evalstring .= '	}'.PHP_EOL;
+		$evalstring .= 'catch(Exception $e){'.PHP_EOL;
+		$evalstring .= '	}'.PHP_EOL;
+		@eval($evalstring);
+		$e=error_get_last();
+		if($e['message']!=='' && !stringContains($e['message'],'A session is active')){
+    		// An error occurred
+    		return evalErrorWrapper($e,"includePHPOnce Error".printValue($params));
+    		//return 0;
+			}
+		return 1;
+    	}
+	return 0;
+	}
 //---------- begin function isAdmin ----------
 /**
 * @describe returns true is current user is an administrator
@@ -12780,7 +12743,7 @@ function getAgentOS($agent=''){
 		}
 	return 'Unknown';
 	}
-//---------- begin function parseEnv
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -13026,7 +12989,7 @@ function getWeekNumber($date){
 	$diff=$stop-$start;
 	return 0;
 }
-//---------- begin function getWfilesPath
+//---------- begin function evalPHP_ob
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -16301,41 +16264,7 @@ function removeCdata($xhtml=''){
 function removeComments($str=''){
 	$str = preg_replace('/\<\!--.+?--\>/','',$str);
 	return $str;
-}
-//---------- begin function removePHPComments ----------
-/**
-* @describe removes PHP comments
-* @param str string
-* @return string
-* @usage $str=removePHPComments($str);
-*/
-function removePHPComments($str=''){
-	$lines=preg_split('/[\r\n]+/',$str);
-	$comments=array();
-	foreach($lines as $i=>$line){
-		$tline=trim($line);
-		if(stringBeginsWith($tline,"//")){
-			unset($lines[$i]);
-		}
-		elseif(stringBeginsWith($tline,"/*") && stringEndsWith($tline,"*/")){
-			unset($lines[$i]);
-		}
-		elseif(stringBeginsWith($tline,"/*")){
-			$comments[]=$i;
-		}
-		elseif(count($comments)){
-			$comments[]=$i;
-		}
-		if(count($comments) && stringEndsWith($tline,"*/")){
-			$comments[]=$i;
-			foreach($comments as $x){
-				unset($lines[$x]);
-			}
-			$comments=array();
-		}
 	}
-	return implode(PHP_EOL,$lines);
-}	
 //---------- begin function removeHtmlTags ----------
 /**
 * @describe removes html tags from a string
