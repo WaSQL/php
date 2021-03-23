@@ -11056,6 +11056,7 @@ function includePHPOnce($php_content,$name=''){
 }
 function commonIncludeFunctionCode($content,$name=''){
 	global $CONFIG;
+	$tmppath=getWasqlTempPath();
 	//remove PHP comments
 	$content=removePHPComments($content);
 	preg_match_all('/\<\?(.+?)\?\>/sm',$content,$evalmatches,PREG_PATTERN_ORDER);
@@ -11071,7 +11072,6 @@ function commonIncludeFunctionCode($content,$name=''){
 			fclose($fp);
 		}
 		if(file_exists($afile)){
-			echo "include_once({$afile})<br>".PHP_EOL;
 			@trigger_error("");
 			$evalstring='showErrors();'.PHP_EOL;
 			$evalstring .= 'try{'.PHP_EOL;
@@ -11089,9 +11089,12 @@ function commonIncludeFunctionCode($content,$name=''){
 	    		debugValue($e);
 			}
 		}
+		else{
+			debugValue(array("commonIncludeFunctionCode ERROR: {$afile} does not exist"));
+		}
 		return '';
 	}
-	$tmppath=getWasqlTempPath();
+	
 	foreach($evalmatches[1] as $evalcode){
 		if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 			$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
@@ -11152,6 +11155,9 @@ function commonIncludeFunctionCode($content,$name=''){
 				}
 				//remove file in temp dir?
 				//$CONFIG['includes']['php'][]=$afile;
+			}
+			else{
+				debugValue(array("commonIncludeFunctionCode ERROR: {$afile} does not exist"));
 			}
 		}
 		else{
