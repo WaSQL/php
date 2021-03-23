@@ -43,6 +43,16 @@ function importProcessCSV($params){
 function importProcessCSVLine($line){
 	global $importrecs;
 	global $results;
+	
+	//make sure this is not a blank row
+	$vcnt=0;
+	foreach($line['line'] as $k=>$v){
+		if(strlen($v)){
+			$vcnt+=1;
+			break;
+		}
+	}
+	if($vcnt==0){return;}
 	$importrecs[]=$line['line'];
 	if(count($importrecs) >= 1000){
 		$ok=importProcessCSVRecs();
@@ -61,6 +71,12 @@ function importProcessCSVRecs($recs=array()){
 	$table=$_REQUEST['csvtable'];
 	$fields=array();
 	foreach($importrecs as $i=>$rec){
+		if(isset($fieldinfo['_cdate']) && !isset($rec['_cdate'])){
+			$importrecs[$i]['_cdate']=$rec['_cdate']=date('Y-m-d H:i:s');
+		}
+		if(isset($fieldinfo['_cuser']) && !isset($rec['_cuser'])){
+			$importrecs[$i]['_cuser']=$rec['_cuser']=0;
+		}
 		foreach($rec as $k=>$v){
 			if(!isset($fieldinfo[$k])){continue;}
 			if(!in_array($k,$fields)){$fields[]=$k;}
@@ -79,6 +95,17 @@ function importProcessCSVRecs($recs=array()){
 				$rec[$k]='NULL';
 			}
 			else{
+				switch($fieldinfo[$k]['_dbtype']){
+					case 'datetime':
+						$v=date('Y-m-d H:i:s',strtotime($v));
+					break;
+					case 'date':
+						$v=date('Y-m-d',strtotime($v));
+					break;
+					case 'time':
+						$v=date('H:i:s',strtotime($v));
+					break;
+				}
 				$v=databaseEscapeString($v);
 				$rec[$k]="'{$v}'";
 			}
