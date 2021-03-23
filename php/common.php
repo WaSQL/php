@@ -11065,6 +11065,7 @@ function commonIncludeFunctionCode($content,$name=''){
 		$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
 		$afile="{$tmppath}/{$tmpfile}";
 		$afile=str_replace("\\","/",$afile);
+		//echo $afile.PHP_EOL;
 		$content_md5=md5($evalcode);
 		if(!file_exists($afile) || md5_file($afile) != $content_md5){
 			$fp = fopen($afile, "w");
@@ -11075,7 +11076,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			@trigger_error("");
 			$evalstring='showErrors();'.PHP_EOL;
 			$evalstring .= 'try{'.PHP_EOL;
-			$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
+			$evalstring .= '	require_once(\''.$afile.'\');'.PHP_EOL;
 			$evalstring .= '	}'.PHP_EOL;
 			$evalstring .= 'catch(Exception $e){'.PHP_EOL;
 			$evalstring .= '	debugValue($e);'.PHP_EOL;
@@ -11085,7 +11086,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			//echo $evalstring.printValue($e).'<hr>';
 			if($e['message']!=='' && !preg_match('/Undefined/i',$e['message'])){
 	    		// An error occurred
-	    		//return evalErrorWrapper($e,"includeDBOnce Error".printValue($params));
+	    		$e['file']=$afile;
 	    		debugValue($e);
 			}
 		}
@@ -11111,6 +11112,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			$tmpfile="{$CONFIG['name']}_{$name}_".$lang.'_'.sha1($evalcode).".{$lang}";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
+			//echo $afile.PHP_EOL;
 			$content_md5=md5($evalcode);
 			if(!file_exists($afile) || md5_file($afile) != $content_md5){
 				$fp = fopen($afile, "w");
@@ -11129,6 +11131,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
+			//echo $afile.PHP_EOL;
 			$evalcode='<?'.'php'.PHP_EOL.$evalcode;	
 			$content_md5=md5($evalcode);
 			if(!file_exists($afile) || md5_file($afile) != $content_md5){
@@ -11140,7 +11143,7 @@ function commonIncludeFunctionCode($content,$name=''){
 				@trigger_error("");
 				$evalstring='showErrors();'.PHP_EOL;
 				$evalstring .= 'try{'.PHP_EOL;
-				$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
+				$evalstring .= '	require_once(\''.$afile.'\');'.PHP_EOL;
 				$evalstring .= '	}'.PHP_EOL;
 				$evalstring .= 'catch(Exception $e){'.PHP_EOL;
 				$evalstring .= '	debugValue($e);'.PHP_EOL;
