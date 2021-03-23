@@ -11066,10 +11066,10 @@ function commonIncludeFunctionCode($content,$name=''){
 		$afile="{$tmppath}/{$tmpfile}";
 		$afile=str_replace("\\","/",$afile);
 		//echo $afile.PHP_EOL;
-		$content_md5=md5($evalcode);
+		$content_md5=md5($content);
 		if(!file_exists($afile) || md5_file($afile) != $content_md5){
 			$fp = fopen($afile, "w");
-			fwrite($fp, $evalcode);
+			fwrite($fp, $content);
 			fclose($fp);
 		}
 		if(file_exists($afile)){
