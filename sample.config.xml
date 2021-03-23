@@ -88,15 +88,7 @@
         dbhost="localhost"
         dbname="wacss_sample"
         dbtype="mysqli"
-        dbuser="wasql_dbpass"
-        dbpass="wasql_dbpass"
-    />
-    <database
-        name="my_local2"
-        dbhost="localhost"
-        dbname="wacss_sample2"
-        dbtype="mysqli"
-        dbuser="wasql_dbpass"
+        dbuser="wasql_dbuser"
         dbpass="wasql_dbpass"
     />
 	<!-- allhost sets global settings unless overridden by the host entry -->
@@ -113,7 +105,6 @@
 	<host
 		name="localhost"
         database="my_local"
-        sql_prompt_dbs="my_local,my_local2"
 	/>
 </hosts>
 
