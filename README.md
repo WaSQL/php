@@ -60,13 +60,13 @@ Feel free to request changes via github.  You can also help by donating to the c
 LoadModule rewrite_module modules/mod_rewrite.so
 ```
 - search for "<Directory "C:/AppServ/www">" and make sure AllowOverride is set to "All"
-- copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension
+- copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension. Note: notepad will not work. Use Notepad++ or sublime.
 - rename C:\AppServ\www\index.php file to C:\AppServ\www\index_ori.php
 
 - Open up C:\AppServ\php7\php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres
 
 - restart Apache. (Click on the windows key and search for "Apache Restart")
-- open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (changing the user and pass to match the config.xml file)
+- open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (this is going to create a username and password that Wasql will use)
 ```
 	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED with mysql_native_password BY 'wasql_dbpass';
 	- mysql>GRANT ALL PRIVILEGES ON *.* TO 'wasql_dbuser'@'%' WITH GRANT OPTION;
