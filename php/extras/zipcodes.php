@@ -114,7 +114,7 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 			//cleanup
 			cleanDir("{$progpath}/temp/zipcodes_{$country}");
 			rmdir("{$progpath}/temp/zipcodes_{$country}");
-			$addopts=array('-recs'=>$zipcodesRecs);
+			$addopts=array('-recs'=>$zipcodesRecs,'-ignore'=>1);
 			$ok=dbAddRecords($CONFIG['database'],'zipcodes',$addopts);
 			//echo "dbAddRecords".printValue($ok).printValue($addopts);exit;
 		}

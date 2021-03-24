@@ -3905,7 +3905,7 @@ function setCenterPopText(cpid,cptext,params){
 }
 //--------------------------
 function callWaSQL(id,name,params){
-	var url='/cgi-bin/wasql.pl';
+	var url='/php/admin.php';
 	ajaxGet(url,name,'&_view='+id+'&'+params);
 	}
 //--------------------------

@@ -16,7 +16,7 @@
 						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
 						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
 						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
-						<?=$_SESSION['sync_target_url'];?>
+						<a class="w_link" target="_blank" style="display: inline-block;" href="<?=$_SESSION['sync_target_url'];?>"><?=$_SESSION['sync_target_url'];?></a>
 					</td>
 				</tr>
 			</table>
@@ -83,10 +83,10 @@
 		<input type="hidden" name="table" value="<?=$table;?>" />
 		<div class="w_padtop text-right">
 			<button type="submit" class="btn btn-success" id="confirm">YES</button>
-			<button type="button" class="btn btn-danger">NO</button>
+			<button type="button" class="btn btn-danger" onclick="removeId('centerpop');">NO</button>
 		</div>
 	</form>
-	<?=buildOnLoad("document.getElementById('conform').focus();");?>
+	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
 </view:datasync_verify>
 

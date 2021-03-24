@@ -1012,7 +1012,7 @@ function centerObject(obj,fade){
 	let x = Math.round((vp.w / 2) - (w / 2));
   	let y = Math.round((vp.h / 2) - (h / 2));
   	//window.status='centerObject: '+sObj.id+' w,h:'+w+','+h+' window:'+ww+','+wh+',scroll:'+sw+','+sh+','+x+','+y;
-  	sObj.style.position='absolute';
+  	sObj.style.position='fixed';
   	sObj.style.left=x+'px';
   	if(undefined == y){y=10;}
 	if(y < 10){y=10;}

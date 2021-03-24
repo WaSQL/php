@@ -683,10 +683,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-			//populate the states with states and provinces for USA and Canada
+			//populate
 			$progpath=dirname(__FILE__);
 			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1,'-debug'=>1));
+				//echo "{$progpath}/schema/all_{$table}.csv".printValue($ok);exit;
 			}
             return 1;
 		break;

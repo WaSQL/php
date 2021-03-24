@@ -40,7 +40,12 @@ function mysqlAddDBRecords($table='',$params=array()){
 		elseif(!count($params['-recs'])){
 			return debugValue("mysqlAddDBRecords Error: no recs");
 		}
-		return mysqlAddDBRecordsProcess($params['-recs'],$params);
+		$chunks=array_chunk($params['-recs'], $params['-chunk']);
+		$rtn=array();
+		foreach($chunks as $chunk){
+			$rtn[]=mysqlAddDBRecordsProcess($params['-recs'],$params);
+		}
+		return $rtn;
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
@@ -78,7 +83,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	if(isset($params['-ignore']) && !isset($params['-upsert'])){
-		$params['-upsert']='ignore';
+		$params['-upsert']=array('ignore');
 	}
 	$ignore='';
 	if(strtolower($params['-upsert'][0])=='ignore'){
@@ -124,7 +129,9 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
+	//echo printValue($params).$query;exit;
 	$ok=mysqlExecuteSQL($query);
+	//echo printValue($ok).$query;exit;
 	if(isset($params['-debug'])){
 		return printValue($ok).$query;
 	}
