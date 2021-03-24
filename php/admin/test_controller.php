@@ -11,6 +11,12 @@
 			case 'chartjs':
 				
 			break;
+			case 'language_includes':
+				$lang=commonGetLangInfo($_REQUEST['lang']);
+				//echo printValue($_REQUEST);exit;
+				setView('language_includes',1);
+				return;
+			break;
 		}
 		return;
 	}

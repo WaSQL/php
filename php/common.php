@@ -7156,94 +7156,7 @@ function evalPHP($strings){
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
 			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
-				switch(strtolower($g[1])){
-					case 'python':
-					case 'py':
-						//python
-						$lang=array(
-							'name'=>'python',
-							'comment'=>'#',
-							'ext'=>'py',
-							'exe'=>'python -B',
-							'shebang'=>'#!/usr/bin/env python'
-						);
-					break;
-					case 'perl':
-					case 'pl':
-						//perl
-						$lang=array(
-							'name'=>'perl',
-							'comment'=>'#',
-							'ext'=>'pl',
-							'exe'=>'perl',
-							'shebang'=>'#!/usr/bin/env perl'
-						);
-					break;
-					case 'ruby':
-					case 'rb':
-						//ruby
-						$lang=array(
-							'name'=>'ruby',
-							'comment'=>'#',
-							'ext'=>'rb',
-							'exe'=>'ruby',
-							'shebang'=>'#!/usr/bin/env ruby'
-						);
-						
-					break;
-					case 'node':
-					case 'nodejs':
-						//node
-						$lang=array(
-							'name'=>'nodejs',
-							'comment'=>'//',
-							'ext'=>'js',
-							'exe'=>'node',
-							'shebang'=>'#!/usr/bin/env node'
-						);
-					break;
-					case 'lua':
-						//lua
-						$lang=array(
-							'name'=>'lua',
-							'comment'=>'--',
-							'ext'=>'lua',
-							'exe'=>'lua',
-							'shebang'=>'#!/usr/bin/env lua'
-						);
-					break;
-					case 'bash':
-						//bash shell
-						$lang=array(
-							'name'=>'bash',
-							'comment'=>'#',
-							'ext'=>'sh',
-							'exe'=>'bash',
-							'shebang'=>'#!/usr/bin/env bash'
-						);
-					break;
-					case 'sh':
-						//bourne shell
-						$lang=array(
-							'name'=>'shell',
-							'comment'=>'#',
-							'ext'=>'sh',
-							'exe'=>'sh',
-							'shebang'=>'#!/usr/bin/env sh'
-						);
-					break;
-					case 'vbscript':
-					case 'vbs':
-						//vbscript shell
-						$lang=array(
-							'name'=>'vbscript',
-							'comment'=>"'",
-							'ext'=>'vbs',
-							'exe'=>'cscript //Nologo',
-							'shebang'=>''
-						);
-					break;
-				}
+				$lang=commonGetLangInfo($g[1]);
 				
 				$evalcode=commonAddPrecode($lang,$evalcode);
 				//run the script:
@@ -7334,6 +7247,106 @@ function evalPHP($strings){
 	showErrors();
 	return implode('',$strings);
 }
+
+//---------- begin function commonGetPrecode
+/**
+* @exclude  - this function is depreciated thus excluded from the manual
+*/
+function commonGetLangInfo($lang){
+	switch(strtolower($lang)){
+		case 'python':
+		case 'py':
+			//python
+			$lang=array(
+				'name'=>'python',
+				'comment'=>'#',
+				'ext'=>'py',
+				'exe'=>'python -B',
+				'shebang'=>'#!/usr/bin/env python'
+			);
+		break;
+		case 'perl':
+		case 'pl':
+			//perl
+			$lang=array(
+				'name'=>'perl',
+				'comment'=>'#',
+				'ext'=>'pl',
+				'exe'=>'perl',
+				'shebang'=>'#!/usr/bin/env perl'
+			);
+		break;
+		case 'ruby':
+		case 'rb':
+			//ruby
+			$lang=array(
+				'name'=>'ruby',
+				'comment'=>'#',
+				'ext'=>'rb',
+				'exe'=>'ruby',
+				'shebang'=>'#!/usr/bin/env ruby'
+			);
+			
+		break;
+		case 'node':
+		case 'nodejs':
+			//node
+			$lang=array(
+				'name'=>'nodejs',
+				'comment'=>'//',
+				'ext'=>'js',
+				'exe'=>'node',
+				'shebang'=>'#!/usr/bin/env node'
+			);
+		break;
+		case 'lua':
+			//lua
+			$lang=array(
+				'name'=>'lua',
+				'comment'=>'--',
+				'ext'=>'lua',
+				'exe'=>'lua',
+				'shebang'=>'#!/usr/bin/env lua'
+			);
+		break;
+		case 'bash':
+			//bash shell
+			$lang=array(
+				'name'=>'bash',
+				'comment'=>'#',
+				'ext'=>'sh',
+				'exe'=>'bash',
+				'shebang'=>'#!/usr/bin/env bash'
+			);
+		break;
+		case 'sh':
+			//bourne shell
+			$lang=array(
+				'name'=>'shell',
+				'comment'=>'#',
+				'ext'=>'sh',
+				'exe'=>'sh',
+				'shebang'=>'#!/usr/bin/env sh'
+			);
+		break;
+		case 'vbscript':
+		case 'vbs':
+			//vbscript shell
+			$lang=array(
+				'name'=>'vbscript',
+				'comment'=>"'",
+				'ext'=>'vbs',
+				'exe'=>'cscript //Nologo',
+				'shebang'=>''
+			);
+		break;
+		default:
+			$lang=array();
+		break;
+	}
+	return $lang;
+}
+
 //---------- begin function commonGetPrecode
 /**
 * @exclude  - this function is depreciated thus excluded from the manual
@@ -7362,8 +7375,11 @@ function commonAddPrecode($lang,$evalcode){
 	$tmp=commonGetPrecodeForVar($lang,$PASSTHRU,'PASSTHRU');
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$DATABASE
-	$tmp=commonGetPrecodeForVar($lang,$DATABASE,'DATABASE');
-	if(count($tmp)){$precode=array_merge($precode,$tmp);}
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+		$tmp=commonGetPrecodeForVar($lang,$db,'DATABASE');
+		if(count($tmp)){$precode=array_merge($precode,$tmp);}	
+	}
 	//$_REQUEST
 	$tmp=commonGetPrecodeForVar($lang,$_REQUEST,'REQUEST');
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
@@ -7452,8 +7468,9 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 			continue;
 		}
 	}
+	//echo "commonGetPrecodeForVar for {$lang}".printValue($arr);exit;
 	if(!count($arr)){return array();}
-	switch($lang['name']){
+	switch(strtolower($lang['name'])){
 		case 'python':
 			$precode[]="{$varname} = ".json_encode($arr);
 		break;

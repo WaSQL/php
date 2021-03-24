@@ -685,7 +685,6 @@
 		<th>
 			<h3>PHP</h3>
 			v<?=phpversion();?>
-
 		</th>
 		<td>
 			<div class="w_pre">
@@ -709,6 +708,7 @@ v<?python
 import platform
 print(platform.python_version())
 ?>
+			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -731,6 +731,7 @@ print(platform.python_version())
 			<?node
 				console.log(process.version)
 			?>
+			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -753,6 +754,7 @@ print(platform.python_version())
 			<?perl
 				print "v".$];
 			?>
+			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -775,6 +777,7 @@ print(platform.python_version())
 <?lua
 	print(_VERSION);
 ?>
+		<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -797,6 +800,7 @@ print(platform.python_version())
 			v<?ruby
 				puts RUBY_VERSION
 			?>
+			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -816,5 +820,12 @@ print(platform.python_version())
 </table>
 
 </view:languages>
+
+<view:language_includes>
+<div class="w_centerpop_title"><?=$lang['name'];?> Includes</div>
+<div class="w_centerpop_content" style="max-width:80vw;overflow:auto;max-height:80vh;">
+	<pre><?=commonAddPrecode($lang,'');?></pre>
+</div>
+</view:language_includes>
 
 
