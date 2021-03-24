@@ -196,7 +196,6 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 		'-list'=>$xrecs,
 		'-listfields'=>'object_name,object_type,overload,status',
 		'-tableclass'=>'table bordered striped is-sticky',
-		'-tableheight'=>'40vh',
 		'-hidesearch'=>1
 	);
 
@@ -337,7 +336,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 			$diff=0;
 			if($recs[$table]['schema']!='same'){$diff+=1;} 
 			if(!in_array($recs[$table]['indexes'],array('same','none'))){$diff+=1;}
-			if(in_array($recs[$table]['constraints'],array('same','none'))){
+			if(!in_array($recs[$table]['constraints'],array('same','none'))){
 				$diff+=1;
 			}
 			if($diff==0){
@@ -516,7 +515,6 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		'-listfields'=>'table,schema,indexes,constraints',
 		//'-pretable'=>'<hr size="1" style="margin:0px;" />',
 		'-tableclass'=>'table bordered striped is-sticky',
-		'-tableheight'=>'40vh',
 		'-hidesearch'=>1
 	);
 

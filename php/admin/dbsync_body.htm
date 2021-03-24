@@ -4,14 +4,15 @@
 	<div class="row" style="margin-bottom:10px;">
 		<div class="col-sm-12">
 			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-database"></span> <translate>DB Sync Tool</translate></h2>
-			<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'dbsync_content');">
+			<form method="post" name="dbsync_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'dbsync_content');">
 				<input type="hidden" name="_menu" value="dbsync" />
 				<input type="hidden" name="func" value="compare" />
+				<input type="hidden" name="tab" value="tables_indexes" />
 				<div style="display:flex;align-items: flex-end;">
 					<div><label class="w_bigger w_bold"><translate>Source</translate></label><?=dbsyncFormField('source');?></div>
 					<div style="margin-left:5px"><label class="w_bigger w_bold"><translate>Target</translate></label><?=dbsyncFormField('target');?></div>
 					<div style="text-align: center;margin:0 5px;"><div><label><translate>Diffs</translate></label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
-					<div><label>&nbsp;</label><button type="submit" class="btn"><span class="icon-sync-diff"></span> <translate>Compare</translate></button></div>
+					<div><label>&nbsp;</label><button type="submit" class="btn" onclick="document.dbsync_form.tab.value='tables-indexes"><span class="icon-sync-diff"></span> <translate>Compare</translate></button></div>
 				</div>
 			</form>
 		</div>
@@ -25,12 +26,23 @@
 </view:default>
 
 <view:compare>
-	<div class="w_bigger w_bold">Tables and Indexes</div>
+<ul class="nav-tabs">
+	<li class="active"><a href="#" data-tab="compare_tables_indexes" onclick="return dbsyncCompare(this);"><translate>Tables and Indexes</translate></a></li>
+	<li><a href="#" data-tab="compare_functions_procedures" onclick="return dbsyncCompare(this);"><translate>Functions and Procedures</translate></a></li>
+</ul>
+<div id="compare_results">
 	<?=dbsyncCompareTablesAndIndexes($source,$target,$diffs);?>
-	<div class="w_bigger w_bold">Functions and Procedures</div>
-	<?=dbsyncCompareFunctionsAndProcedures($source,$target,$diffs);?>
+</div>
 	<?=buildOnLoad("removeId('centerpop');");?>
 </view:compare>
+
+<view:compare_tables_indexes>
+<?=dbsyncCompareTablesAndIndexes($source,$target,$diffs);?>
+</view:compare_tables_indexes>
+
+<view:compare_functions_procedures>
+<?=dbsyncCompareFunctionsAndProcedures($source,$target,$diffs);?>
+</view:compare_functions_procedures>
 
 <view:view_diff>
 <div class="w_centerpop_title"><?=$title;?></div>

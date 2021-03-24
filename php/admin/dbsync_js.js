@@ -18,3 +18,9 @@ function dbsyncFunc(el){
 	//console.log(params);
 	return ajaxGet('/php/admin.php',params.div,params)
 }
+function dbsyncCompare(el){
+	wacss.setActiveTab(el);
+	let tab=el.dataset.tab;
+	document.dbsync_form.tab.value=tab;
+	return ajaxSubmitForm(document.dbsync_form,'compare_results');
+}

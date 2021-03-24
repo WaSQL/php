@@ -33,7 +33,11 @@
 			$source=$_REQUEST['source'];
 			$target=$_REQUEST['target'];
 			$diffs=isNum($_REQUEST['diffs'])?$_REQUEST['diffs']:0;
-			setView('compare',1);
+			switch(strtolower($_REQUEST['tab'])){
+				case 'tables_indexes':setView('compare',1);break;
+				default:setView($_REQUEST['tab'],1);break;	
+			}
+			
 			return;
 		break;
 		case 'view_fields':
