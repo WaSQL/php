@@ -1018,9 +1018,9 @@ ENDOFQUERY;
 	$databaseCache[$cachekey]=array();
 	foreach($recs as $rec){
 		$table=strtolower($rec['table_name']);
-		$field=strtolower($rec['field_name']);
-		$type=strtolower($rec['type_name']);
-		$databaseCache[$cachekey][$table][]="{$field} {$type}";
+		//$field=strtolower($rec['field_name']);
+		//$type=strtolower($rec['type_name']);
+		$databaseCache[$cachekey][$table][]=$rec;
 	}
 	return $databaseCache[$cachekey];
 }
