@@ -157,11 +157,14 @@ function postgresqlGetTableDDL($table,$schema=''){
 	$fieldinfo=postgresqlGetDBFieldInfo($table);
 
 	$pkeys=postgresqlGetDBTablePrimaryKeys($table);
-	//return printValue($pkeys);
+	//return printValue($fieldinfo).printValue($pkeys);
 	$fields=array();
 	foreach($fieldinfo as $field=>$info){
 		$fld=" {$info['_dbfield']} {$info['_dbtype_ex']}";
 		if(in_array($info['primary_key'],array('true','yes',1))){
+			$fld.=' PRIMARY KEY';
+		}
+		elseif(in_array($field,$pkeys)){
 			$fld.=' PRIMARY KEY';
 		}
 		if($info['identity']==1){
@@ -172,6 +175,19 @@ function postgresqlGetTableDDL($table,$schema=''){
 		}
 		else{
 			$fld.=' NULL';
+		}
+		if(strlen($info['default'])){
+			if(stringBeginsWith($info['default'],'nextval(')){
+				if($info['_dbtype']=='bigint'){
+					$fld=str_replace(' bigint',' bigserial',$fld);
+				}
+				elseif($info['_dbtype']=='int'){
+					$fld=str_replace(' int',' serial',$fld);
+				}
+			}
+			else{
+				$fld.=" DEFAULT {$info['default']}";
+			}
 		}
 		$fields[]=$fld;
 	}
@@ -1024,6 +1040,59 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
+/*
+ALTER TABLE table_name 
+ADD (
+    column_name_1 data_type constraint,
+    column_name_2 data_type constraint,
+    ...
+);
+
+*/
+function postgresqlAlterDBTable($table,$fields=array()){
+	$info=postgresqlGetDBFieldInfo($table);
+	if(!is_array($info) || !count($info)){
+		debugValue("postgresqlAlterDBTable - {$table} is missing or has no fields".printValue($table));
+		return false;
+	}
+	$schema=postgresqlGetDBSchema();
+	if(!strlen($schema)){
+		debugValue('postgresqlAlterDBTable error: schema is not defined in config.xml');
+		return null;
+	}
+	$rtn=array();
+	//$rtn[]=$info;
+	$addfields=array();
+	foreach($fields as $name=>$type){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
+		$addfields[]="ADD COLUMN {$name} {$type}";
+	}
+	$dropfields=array();
+	foreach($info as $name=>$finfo){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
+			$dropfields[]="DROP COLUMN {$name}";
+		}
+	}
+	if(count($dropfields)){
+		$fieldstr=implode(', ',$dropfields);
+		$query="ALTER TABLE {$schema}.{$table} {$fieldstr}";
+		$ok=postgresqlExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if(count($addfields)){
+		$fieldstr=implode(', ',$addfields);
+		$query="ALTER TABLE {$schema}.{$table} {$fieldstr}";
+		$ok=postgresqlExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	return $rtn;
+}
 //---------- begin function postgresqlGetAllTableIndexes ----------
 /**
 * @describe returns indexes of all tables with the table name as the index
@@ -1114,6 +1183,7 @@ function postgresqlGetDBFieldInfo($table){
 			and table_name='{$table}'
 		ORDER BY ordinal_position
 ENDOFQUERY;
+	//echo $query;exit;
 	$recs=postgresqlQueryResults($query);
 	$fields=array();
 	foreach($recs as $rec){
@@ -1134,11 +1204,16 @@ ENDOFQUERY;
 			'nullable'	=> strtolower($rec['is_nullable'])=='yes'?1:0,
 			'identity'	=> strtolower($rec['is_identity'])=='yes'?1:0,
 		);
+		//_dbtype_ex
 		if(strlen($rec['character_maximum_length'])){
 			$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
 		}
 		else{
 			$field['_dbtype_ex']=$field['_dbtype'];
+		}
+		//default
+		if(strlen($rec['column_default'])){
+			$field['_dbdef']=$field['default']=$rec['column_default'];
 		}
 		$fields[$field['_dbfield']]=$field;
 	}

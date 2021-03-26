@@ -51,6 +51,7 @@
 	<view:sync_fields_button>
 	<div class="align-right">
 		<button type="button" id="sync_fields_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_fields" data-table="<?=$table;?>" data-confirm="Confirm sync fields?" data-source="<?=$source;?>" data-setprocessing="sync_fields_button" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+		<button type="button" id="ddl_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop2" data-status="different" data-func="ddl" data-table="<?=$table;?>" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-database"></span> DDL</button>
 	</div>
 	</view:sync_fields_button>
 	<view:sync_indexes_button>
@@ -73,6 +74,13 @@
 	<?=$sync;?>
 </div>
 </view:view_sync>
+
+<view:ddl>
+<div class="w_centerpop_title"><?=$title;?></div>
+<div class="w_centerpop_content" style="padding-top:20px;max-height:60vh;overflow:auto;">
+	<pre><?=$ddl;?></pre>
+</div>
+</view:ddl>
 
 <view:showlist>
 	<?=dbsyncShowlist($recs,$listopts);?>

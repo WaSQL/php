@@ -107,6 +107,16 @@
 			setView('view_sync',1);
 			return;
 		break;
+		case 'ddl':
+			$table=$_REQUEST['table'];
+			$source=$_REQUEST['source'];
+			$target=$_REQUEST['target'];
+			$title="DDL for {$table}";
+			$ddl=dbGetTableDDL($_SESSION['dbsync'][$table]['source']['name'],$table);
+			$ddl=trim($ddl);
+			setView('ddl',1);
+			return;
+		break;
 		case 'sync_indexes':
 			$table=$_REQUEST['table'];
 			$source=$_REQUEST['source'];

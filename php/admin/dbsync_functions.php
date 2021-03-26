@@ -74,7 +74,6 @@ function dbsyncSyncIndexes($sync){
 	return $recs;
 }
 function dbsyncSyncFields($sync){
-	//echo printValue($sync);exit;
 	$rtn=array();
 	if($sync['schema']=='new'){
 		$ddl=dbGetTableDDL($sync['source']['name'],$sync['table']);
