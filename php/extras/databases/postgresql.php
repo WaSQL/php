@@ -1093,6 +1093,61 @@ function postgresqlAlterDBTable($table,$fields=array()){
 	}
 	return $rtn;
 }
+//---------- begin function postgresqlGetAllProcedures ----------
+/**
+* @describe returns all procedures in said schema
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allprocedures=postgresqlGetAllProcedures();
+*/
+function postgresqlGetAllProcedures($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetAllProcedures');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetAllProcedures error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$schema=strtoupper($schema);
+	//get source
+	$query=<<<ENDOFQUERY
+	SELECT 
+		p.proname as object_name,
+		case 
+			when p.prokind = 'p' then 'PROCEDURE'
+			when p.prokind = 'f' then 'FUNCTION'
+			when p.prokind = 'a' then 'AGGREGATE FUNCTION'
+			when p.prokind = 'w' then 'WINDOW FUNCTION'
+			else 'UNKNOWN'
+		end as object_type,
+		md5(case 
+			when l.lanname = 'internal' then p.prosrc
+			else pg_get_functiondef(p.oid)
+			end
+			) as hash,
+		pg_get_function_arguments(p.oid) as args
+	FROM pg_proc p
+		LEFT JOIN pg_namespace n on p.pronamespace = n.oid
+		LEFT JOIN pg_language l on p.prolang = l.oid
+		LEFT JOIN pg_type t on t.oid = p.prorettype 
+	WHERE upper(n.nspname)='{$schema}'
+	ORDER BY 1
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$key=$rec['object_name'].$rec['object_type'];
+		$databaseCache[$cachekey][$key][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function postgresqlGetAllTableIndexes ----------
 /**
 * @describe returns indexes of all tables with the table name as the index
