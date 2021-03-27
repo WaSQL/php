@@ -1927,6 +1927,8 @@ var wacss = {
 		if(undefined == params){params={};}
 		params.txt=txt;
 		if ('speechSynthesis' in window) {	
+			/* cancel any speach already playing */
+			window.speechSynthesis.cancel();
 			/* check to see if voices are loaded already */
 			let voices = window.speechSynthesis.getVoices();
 			if(undefined != params.debug){
