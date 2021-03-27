@@ -1148,6 +1148,104 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
+//---------- begin function postgresqlGetProcedureText ----------
+/**
+* @describe returns all procedures in said schema
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allprocedures=postgresqlGetProcedureText();
+*/
+function postgresqlGetProcedureText($name='',$type='',$schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetAllProcedures');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetProcedureText error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$name=strtoupper($name);
+	$type=strtolower(substr($type,0,1));
+	$schema=strtoupper($schema);
+	//get source
+	$query=<<<ENDOFQUERY
+	SELECT 
+		p.proname as object_name,
+		case 
+			when l.lanname = 'internal' then p.prosrc
+			else pg_get_functiondef(p.oid)
+		end as text
+	FROM pg_proc p
+		LEFT JOIN pg_namespace n on p.pronamespace = n.oid
+		LEFT JOIN pg_language l on p.prolang = l.oid
+		LEFT JOIN pg_type t on t.oid = p.prorettype 
+	WHERE 
+		upper(n.nspname)='{$schema}'
+		and upper(p.proname)='{$name}'
+		and p.prokind='{$type}'
+	ORDER BY 1
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	$databaseCache[$cachekey]=preg_split('/[\r\n]+/',$recs[0]['text']);
+	return $databaseCache[$cachekey];
+}
+//---------- begin function postgresqlGetAllTableConstraints ----------
+/**
+* @describe returns constraints (foreign keys) of all tables with the table name as the index
+* @param [$schema] string - schema. defaults to dbschema specified in config
+* @return array
+* @usage $allconstraints=postgresqlGetAllTableConstraints();
+*/
+function postgresqlGetAllTableConstraints($schema=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetAllTableConstraints');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(!strlen($schema)){
+		$schema=postgresqlGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('postgresqlGetAllTableConstraints error: schema is not defined in config.xml');
+		return null;
+	}
+	//key_name,column_name,seq_in_index,non_unique
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+	SELECT
+		tc.table_name, 
+		kcu.column_name, 
+		tc.constraint_name,
+		ccu.table_name AS foreign_table_name,
+		ccu.column_name AS foreign_column_name 
+	FROM 
+		information_schema.table_constraints AS tc 
+		JOIN information_schema.key_column_usage AS kcu
+			ON tc.constraint_name = kcu.constraint_name
+			AND tc.table_schema = kcu.table_schema
+		JOIN information_schema.constraint_column_usage AS ccu
+			ON ccu.constraint_name = tc.constraint_name
+			AND ccu.table_schema = tc.table_schema
+	WHERE tc.table_schema = '{$schema}'
+	ORDER BY 1,2,3
+ENDOFQUERY;
+	$recs=postgresqlQueryResults($query);
+	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>';
+	$databaseCache[$cachekey]=array();
+	foreach($recs as $rec){
+		$table=strtolower($rec['table_name']);
+		$table=str_replace("{$schema}.",'',$table);
+		$databaseCache[$cachekey][$table][]=$rec;
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function postgresqlGetAllTableIndexes ----------
 /**
 * @describe returns indexes of all tables with the table name as the index
