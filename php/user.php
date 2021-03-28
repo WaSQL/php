@@ -55,11 +55,11 @@ else{
 }
 //look for logoff
 if(isset($_REQUEST['_logout']) && $_REQUEST['_logout']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
-	$_REQUEST=array();
+	//$_REQUEST=array();
 	userLogout();
 }
 elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUEST['_login']) || $_REQUEST['_login'] != 1)){
-	$_REQUEST=array();
+	//$_REQUEST=array();
 	userLogout();
 }
 $USER=array();
