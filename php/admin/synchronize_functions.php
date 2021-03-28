@@ -250,11 +250,15 @@ function synchronizeGetChanges($tables){
 			foreach($info as $field=>$f){
 				//skip virtual fields
 				if(stringContains($f['_dbtype_ex'],'generated')){continue;}
+				if(stringBeginsWith($field,'_')){continue;}
+				//ignore the precision
+				$scheck=preg_replace('/\(.+?\)/','',$f['_dbtype_ex']);
+				$tcheck=preg_replace('/\(.+?\)/','',$target_recs['_schema_'][$table][$field]);
 				if(!isset($target_recs['_schema_'][$table][$field])){
 					//field in this table is new
 					$changes[]="New Field: {$field} {$f['_dbtype_ex']}";
 				}
-				elseif($target_recs['_schema_'][$table][$field] != $f['_dbtype_ex']){
+				elseif($tcheck != $scheck){
 					//field in this table has changed
 					$changes[]="Changed Field: {$field} {$f['_dbtype_ex']}";
 				}
