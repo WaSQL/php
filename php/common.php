@@ -11181,7 +11181,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			}
 		}
 		elseif(!preg_match('/^(php|python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)$/i',trim($evalcode))){
-			debugValue("Unknown language: ".$evalcode);
+			debugValue("Unknown language in commonIncludeFunctionCode: ".$evalcode);
 		}
 	}
 	return 1;
