@@ -11180,8 +11180,8 @@ function commonIncludeFunctionCode($content,$name=''){
 				debugValue(array("commonIncludeFunctionCode ERROR: {$afile} does not exist"));
 			}
 		}
-		else{
-			debugValue("Unknown langage: ".$evalcode);
+		elseif(strlen(trim($evalcode))){
+			debugValue("Unknown language: ".$evalcode);
 		}
 	}
 	return 1;
