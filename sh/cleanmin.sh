@@ -21,6 +21,10 @@ for sdir in $basefiles ; do
 	if [ -d "$basepath/$sdir/w_min" ] 
 	then
 	    echo " -- cleaning $basepath/$sdir/w_min"
-    	rm -f "$basepath/$sdir/w_min/*.*" 
+    	rm -f "$basepath/$sdir/w_min/*.*"
+    elif [ -d "$sdir/w_min" ] 
+	then
+	    echo " -- cleaning $sdir/w_min"
+    	rm -f "$sdir/w_min/*.*" 
 	fi
 done
