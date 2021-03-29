@@ -121,8 +121,9 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$ok=postgresqlExecuteSQL($query);
+	//echo printValue($ok).$query;exit;
 	if(isset($ok['error'])){
-		debugValue($ok);
+		return printValue($ok);
 		return 0;
 	}
 	if(isset($params['-debug'])){
