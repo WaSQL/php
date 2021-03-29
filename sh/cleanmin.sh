@@ -17,9 +17,10 @@ then
 fi
 basefiles="$basepath/*"
 for sdir in $basefiles ; do
+	echo "checking for $basepath/$sdir/w_min"
 	if [ -d "$basepath/$sdir/w_min" ] 
 	then
-	    echo "cleaning $basepath/$sdir/w_min"
+	    echo " -- cleaning $basepath/$sdir/w_min"
     	rm -f "$basepath/$sdir/w_min/*.*" 
 	fi
 done
