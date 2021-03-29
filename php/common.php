@@ -202,6 +202,14 @@ function commonCronLog($msg,$echomsg=1){
 	$msg=rtrim($msg);
 	if(!file_exists($logfile)){
 		$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
+		if($echomsg==1){
+			echo "timestamp,elapsed,diff,message";
+			//line break if a browser
+			if(isset($_SERVER['REMOTE_BROWSER'])){
+				echo '<br />';
+			}
+			echo PHP_EOL;
+		}
 	}
 	$ok=appendFileContents($logfile,"{$ctime_formated},{$elapsed},{$diff},{$msg}".PHP_EOL);
 	if($echomsg==1){
