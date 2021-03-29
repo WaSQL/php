@@ -191,7 +191,9 @@ function commonCronLog($msg,$echomsg=1){
 	$ctime=microtime(true);
 	$diff=$ctime-$commonCronLogCache['last'];
 	$diff=round($diff,3);
-	$ctime_formated=round($ctime,3);
+	$elapsed=$ctime-$commonCronLogCache['start'];
+	$elapsed=round($elapsed,2);
+	$ctime_formated=date('H:i:s');
 	if(!isset($_REQUEST['cron_id'])){return 0;}
 	$id=(integer)$_REQUEST['cron_id'];
 	$path=getWaSQLPath('php/temp');
@@ -199,11 +201,11 @@ function commonCronLog($msg,$echomsg=1){
 	if(!is_string($msg)){$msg=json_encode($msg);}
 	$msg=rtrim($msg);
 	if(!file_exists($logfile)){
-		$ok=appendFileContents($logfile,"timestamp,diff,message".PHP_EOL);
+		$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
 	}
-	$ok=appendFileContents($logfile,"{$ctime_formated},{$diff},{$msg}".PHP_EOL);
+	$ok=appendFileContents($logfile,"{$ctime_formated},{$elapsed},{$diff},{$msg}".PHP_EOL);
 	if($echomsg==1){
-		echo $msg;
+		echo "{$ctime_formated},{$elapsed},{$diff},{$msg}";
 		//line break if a browser
 		if(isset($_SERVER['REMOTE_BROWSER'])){
 			echo '<br />';
