@@ -84,6 +84,7 @@
 			$status=$_REQUEST['status'];
 			$s=dbGetProcedureText($source,$name,$type);
 			$t=dbGetProcedureText($target,$name,$type);
+			//$diff=printValue($s).printValue($t);setView('view_diff',1);return;
 			$diff=diffText($s,$t);
 			setView('view_diff',1);
 			if($status != 'same'){
@@ -138,10 +139,16 @@
 			$source=$_REQUEST['source'];
 			$target=$_REQUEST['target'];
 			$title="Sync {$type} - {$name}";
+			$ddl=dbGetProcedureText($source,$name,$type);
+			if(is_array($ddl)){
+				$ddl=implode(PHP_EOL,$ddl);
+			}
+			//echo nl2br($ddl);exit;
 			//get the DDL from source
-			$ddl=dbGetDDL($source,$type,$name);
+			//$ddl=dbGetDDL($source,$type,$name);
 			$_SESSION['debugValue_lastm']='';
 			//compile the DDL on target
+			//$ok=dbExecuteSQL($source,$ddl);
 			$ok=dbExecuteSQL($target,$ddl);
 			if(strlen($_SESSION['debugValue_lastm'])){
 				$error=nl2br($_SESSION['debugValue_lastm']);

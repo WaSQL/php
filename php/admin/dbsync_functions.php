@@ -147,37 +147,38 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 				$proc['diff']='same';
 				$recs[$key]=$proc;
 			}
-			$cols=array();
-			$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
-			$recs[$key]['status']='';
-			switch(strtolower($recs[$key]['diff'])){
-				case 'new':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-plus" style="margin-right:5px;"></span><translate>New</translate></div>';
-				break;
-				case 'missing':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-warning" style="margin-right:5px;"></span><translate>Missing in source</translate></div>';
-				break;
-				case 'args':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-gear" style="margin-right:5px;"></span><translate>Arguments are different</translate></div>';
-				break;
-				case 'content':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-file-txt" style="margin-right:5px;"></span><translate>Content is different</translate></div>';
-				break;
-				case 'same':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-mark w_success" style="margin-right:5px;"></span><translate>Same</translate></div>';
-				break;
-			}
-			
-			if(count($cols)==1){
-				//echo "Key:{$key}  ".printValue($recs[$key]);exit;
-				$recs[$key]['status'].=$cols[0];
-			}
-			else{
-				$recs[$key]['status'].='<div style="display:flex;flex-direction:row;flex-wrap:no-wrap; align-items:flex-end;justify-content:space-between;">';
-				$recs[$key]['status'].='<div>'.array_shift($cols).'</div>';
-				$recs[$key]['status'].='<div style="margin-left:10px;">'.implode(' ',$cols).'</div>';
-				$recs[$key]['status'].='</div>';
-			}
+		}
+	}
+	foreach($recs as $key=>$rec){
+		$cols=array();
+		$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+		switch(strtolower($recs[$key]['diff'])){
+			case 'new':
+				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-plus" style="margin-right:5px;"></span><translate>New</translate></div>';
+			break;
+			case 'missing':
+				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-warning" style="margin-right:5px;"></span><translate>Missing in source</translate></div>';
+			break;
+			case 'args':
+				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-gear" style="margin-right:5px;"></span><translate>Arguments are different</translate></div>';
+			break;
+			case 'content':
+				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-file-txt" style="margin-right:5px;"></span><translate>Content is different</translate></div>';
+			break;
+			case 'same':
+				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-mark w_success" style="margin-right:5px;"></span><translate>Same</translate></div>';
+			break;
+		}
+		
+		if(count($cols)==1){
+			//echo "Key:{$key}  ".printValue($recs[$key]);exit;
+			$recs[$key]['status'].=$cols[0];
+		}
+		else{
+			$recs[$key]['status'].='<div style="display:flex;flex-direction:row;flex-wrap:no-wrap; align-items:flex-end;justify-content:space-between;">';
+			$recs[$key]['status'].='<div>'.array_shift($cols).'</div>';
+			$recs[$key]['status'].='<div style="margin-left:10px;">'.implode(' ',$cols).'</div>';
+			$recs[$key]['status'].='</div>';
 		}
 	}
 	
