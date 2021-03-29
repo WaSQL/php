@@ -235,12 +235,6 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		'source'=>dbGetAllTableConstraints($source),
 		'target'=>dbGetAllTableConstraints($target),
 	);
-	if(!count($tableconstraints['source'])){
-		return "Failed to get source table constraints from [{$source}]";
-	}
-	elseif(!count($tableconstraints['target'])){
-		return "Failed to get target table constraints from [{$target}]";
-	}
 	
 	$recs=array();
 	foreach($tablefields['source'] as $table=>$fields){
