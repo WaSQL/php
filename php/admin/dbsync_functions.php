@@ -158,7 +158,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-warning" style="margin-right:5px;"></span><translate>Missing in source</translate></div>';
 				break;
 				case 'args':
-					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-gear" style="margin-right:5px;"></span><translate>Arguements are different</translate></div>';
+					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-gear" style="margin-right:5px;"></span><translate>Arguments are different</translate></div>';
 				break;
 				case 'content':
 					$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-file-txt" style="margin-right:5px;"></span><translate>Content is different</translate></div>';
