@@ -35,20 +35,20 @@ function postgresqlAddDBRecords($table='',$params=array()){
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
-		return debugValue("postgresqlAddDBRecords Error: either -csv or -recs is required");
+		return "postgresqlAddDBRecords Error: either -csv or -recs is required";
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			return debugValue("postgresqlAddDBRecords Error: no such file: {$params['-csv']}");
+			return "postgresqlAddDBRecords Error: no such file: {$params['-csv']}";
 		}
 		return processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			return debugValue("postgresqlAddDBRecords Error: no recs");
+			return "postgresqlAddDBRecords Error: no recs";
 		}
 		elseif(!count($params['-recs'])){
-			return debugValue("postgresqlAddDBRecords Error: no recs");
+			return "postgresqlAddDBRecords Error: no recs";
 		}
 		return postgresqlAddDBRecordsProcess($params['-recs'],$params);
 	}
@@ -56,12 +56,12 @@ function postgresqlAddDBRecords($table='',$params=array()){
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	global $CONFIG;
 	if(!isset($params['-table'])){
-		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
+		return "postgresqlAddDBRecordsProcess Error: no table"; 
 	}
 	$table=$params['-table'];
 	$fieldinfo=postgresqlGetDBFieldInfo($table);
 	if(!is_array($fieldinfo) || !count($fieldinfo)){
-		return debugValue("postgresqlAddDBRecordsProcess Error: no fields for {$table} in {$CONFIG['db']}"); 
+		return "postgresqlAddDBRecordsProcess Error: no fields for {$table} in {$CONFIG['db']}"; 
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
