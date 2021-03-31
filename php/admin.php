@@ -1,5 +1,5 @@
 <?php
-//Set upload size
+//--Set upload size
 //Set Post Max Size
 ini_set('POST_MAX_SIZE', '34M');
 ini_set('UPLOAD_MAX_FILESIZE', '30M');
