@@ -137,24 +137,32 @@ ENDOFQUERY;
 */
 function msaccessDBConnect(){
 	$params=msaccessParseConnectParams();
-	//echo "msaccessDBConnect".printValue($params);exit;
-	if(!isset($params['-connect'])){
-		echo "msaccessDBConnect error: no connect params".printValue($params);
-		exit;
-	}
-	global $dbh_msaccess;
-	if(is_object($dbh_msaccess)){return $dbh_msaccess;}
-	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$dbh_msaccess = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass']);
-		$dbh_msaccess->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		return $dbh_msaccess;
-	}
-	catch (Exception $e) {
-		$error=array("msaccessDBConnect Exception",$e,$params);
-	    debugValue($error);
-	    return json_encode($error);
-	}
+	$dir=getFilePath($params['-dbname']);
+	/*
+		DriverID=790;
+		FIL=Excel 12.0;DriverID=1046;
+		ImportMixedTypes=Text; ReadOnly=false;
+		HDR=YES - indicates that the first row contains column names, not data
+		MaxScanRows  - rows to test before deciding the data type of the column  1 - 16
+		Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16HDR=YES"
+
+		$connection.GetSchema('TABLES')
+		$connection.GetSchema('DATATYPES')
+		$connection.GetSchema('DataSourceInformation')
+		$connection.GetSchema('Restrictions')
+		$connection.GetSchema('ReservedWords')
+		$connection.GetSchema('Columns')
+		$connection.GetSchema('Indexes')
+		$connection.GetSchema('Views') 
+
+	*/
+	$parts=array(
+		'Driver={Microsoft Access Driver (*.mdb, *.accdb)}',
+		"Dbq={$params['-dbname']}",
+	);
+	$params['-connect']=implode(';',$parts);
+	$dbh_msaccess = odbc_connect($params['-connect'], $params['-dbuser'],$params['-dbpass']);
+	return $dbh_msaccess;
 }
 //---------- begin function msaccessExecuteSQL ----------
 /**
@@ -256,8 +264,7 @@ function msaccessGetDBFields($table,$allfields=0){
 	$dbh_msaccess='';
 	$fields=array();
 	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$dbh_msaccess = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq={$params['-dbname']};", $params['-dbuser'],$params['-dbpass']);
+		$dbh_msaccess=msaccessDBConnect();
 		$cols = odbc_exec($dbh_msaccess, $query);
     	$ncols = odbc_num_fields($cols);
 		for($n=1; $n<=$ncols; $n++) {
@@ -292,8 +299,7 @@ function msaccessGetDBFieldInfo($table){
 	$dbh_msaccess='';
 	$fields=array();
 	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$dbh_msaccess = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq={$params['-dbname']};", $params['-dbuser'],$params['-dbpass']);
+		$dbh_msaccess=msaccessDBConnect();
 		$result = odbc_exec($dbh_msaccess, $query);
 		$recs=array();
 		for($i=1;$i<=odbc_num_fields($result);$i++){
@@ -330,6 +336,7 @@ function msaccessGetDBIndexes($table=''){
 	return msaccessGetDBTableIndexes($table);
 }
 function msaccessGetDBTableIndexes($table=''){
+	return array();
 	$table=strtolower($table);
 	$params=msaccessParseConnectParams();
 	//echo "msaccessDBConnect".printValue($params);exit;
@@ -337,10 +344,8 @@ function msaccessGetDBTableIndexes($table=''){
 	$dbh_msaccess='';
 	$fields=array();
 	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$dbh_msaccess = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq={$params['-dbname']};", $params['-dbuser'],$params['-dbpass']);
+		$dbh_msaccess=msaccessDBConnect();
 		$statistics = odbc_statistics($dbh_msaccess, '', '', $table, SQL_INDEX_ALL, SQL_QUICK);
-		echo printValue($statistics);exit;
 		while (($row = odbc_fetch_array($statistics))) {
 		    echo printValue($row);exit;
 		}
@@ -525,8 +530,7 @@ function msaccessGetDBTables($params=array()){
 	$dbh_msaccess='';
 	$tables=array();
 	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$dbh_msaccess = odbc_connect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq={$params['-dbname']};", $params['-dbuser'],$params['-dbpass']);
+		$dbh_msaccess=msaccessDBConnect();
 		$result = odbc_tables($dbh_msaccess);
 		$tblRow = 1;
 		while (odbc_fetch_row($result)){
@@ -788,25 +792,24 @@ function msaccessQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_msaccess;
-	if(!is_object($dbh_msaccess)){
-		$dbh_msaccess=msaccessDBConnect();
-	}
-	if(!$dbh_msaccess){
-		$error=array("msaccessQueryResults Connect Error",$query);
-	    debugValue($error);
-	    return json_encode($error);
-	}
+	$dbh_msaccess=msaccessDBConnect();
 	try{
-		$data = $dbh_msaccess->query($query);
-		$recs = msaccessEnumQueryResults($data,$params,$query);
-		$dbh_msaccess=null;
-		return $recs;
+		$result=odbc_exec($dbh_msaccess,$query);
+		if(!$result){
+			$e=odbc_errormsg($dbh_msaccess);
+			$error=array("odbcQueryResults Error",$e,$query);
+			debugValue($error);
+			return json_encode($error);
+		}
+		$results=msaccessEnumQueryResults($result,$params);
+		return $results;
 	}
 	catch (Exception $e) {
 		$error=array("msaccessQueryResults Connect Error",$e,$query);
 	    debugValue($error);
 	    return json_encode($error);
 	}
+	return array();
 }
 //---------- begin function msaccessEnumQueryResults ----------
 /**
@@ -816,11 +819,8 @@ function msaccessQueryResults($query='',$params=array()){
 * @return array
 *	returns records
 */
-function msaccessEnumQueryResults($data,$params=array(),$query=''){
-	if(!is_object($data)){return null;}
-	$header=0;
-	unset($fh);
-	//write to file or return a recordset?
+function msaccessEnumQueryResults($result,$params=array(),$query=''){
+	$i=0;
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
 		if(isset($params['-append'])){
@@ -832,10 +832,9 @@ function msaccessEnumQueryResults($data,$params=array(),$query=''){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			$data=null;
-			$error=array("msaccessEnumQueryResults File Open Error",$params,$query);
-		    debugValue($error);
-		    return json_encode($error);
+			pg_free_result($result);
+			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
+			exit;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
@@ -843,30 +842,13 @@ function msaccessEnumQueryResults($data,$params=array(),$query=''){
 		
 	}
 	else{$recs=array();}
-	$rowcount=0;
-	for($i=0; $row = $data->fetch(PDO::FETCH_ASSOC); $i++){
+	while(odbc_fetch_row($result)){
 		$rec=array();
-		foreach($row as $key=>$val){
-			$key=strtolower($key);
-			$rec[$key]=trim($val);
-			$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);
-			$rec[$key]=str_replace(chr(8),'',$rec[$key]);
-			$rec[$key]=trim($val);
-			if(preg_match('/\_(id|rank|number)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
-				//these are integers
-				$rec[$key]=$m[1];
-			}
-			elseif(preg_match('/^(status)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
-				//these are integers
-				$rec[$key]=$m[1];
-			}
-			elseif(preg_match('/\_phone$/i',$key)){
-				//remove anything but numbers, dashes, periods, and plus
-				$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
-			}
-    	}
-    	$rowcount+=1;
-    	if(isset($fh) && is_resource($fh)){
+	    for($z=1;$z<=odbc_num_fields($result);$z++){
+			$field=strtolower(odbc_field_name($result,$z));
+	        $rec[$field]=odbc_result($result,$z);
+	    }
+	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -878,7 +860,8 @@ function msaccessEnumQueryResults($data,$params=array(),$query=''){
 			}
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
 			fwrite($fh,$csv."\r\n");
-			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $rowcount % 5000 == 0){
+			$i+=1;
+			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $i % 5000 == 0){
 				appendFileContents($params['-logfile'],$i.PHP_EOL);
 			}
 			if(isset($params['-process'])){
@@ -888,20 +871,23 @@ function msaccessEnumQueryResults($data,$params=array(),$query=''){
 		}
 		elseif(isset($params['-process'])){
 			$ok=call_user_func($params['-process'],$rec);
-			$x++;
+			$i++;
 			continue;
 		}
 		else{
 			$recs[]=$rec;
 		}
 	}
-	$data=null;
+	odbc_free_result($result);
 	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
-			appendFileContents($params['-logfile'],"Line count:{$rowcount}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
+		return $i;
+	}
+	elseif(isset($params['-process'])){
 		return $i;
 	}
 	return $recs;
