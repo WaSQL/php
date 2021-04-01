@@ -40,6 +40,9 @@
 				case 'ctree':
 					$sql="select top 5 * from admin.{$table} order by 1 desc";
 				break;
+				case 'msexcel':
+					$sql="select top 5 * from {$table}";
+				break;
 				case 'postgresql':
 				case 'postgres':
 					if(strlen($db['dbschema'])){

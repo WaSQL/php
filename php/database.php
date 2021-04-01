@@ -97,6 +97,8 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $dbh_snowflake;
 	global $dbh_sqlite;
 	global $dbh_ctree;
+	global $dbh_msaccess;
+	global $dbh_msexcel;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -143,6 +145,16 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('ctree');
 			$dbh_ctree='';
 			$func="ctree".ucfirst($func);
+		break;
+		case 'msaccess':
+			loadExtras('msaccess');
+			$dbh_msaccess='';
+			$func="msaccess".ucfirst($func);
+		break;
+		case 'msexcel':
+			loadExtras('msexcel');
+			$dbh_msexcel='';
+			$func="msexcel".ucfirst($func);
 		break;
 		default:
 			loadExtras('mysql');
@@ -254,6 +266,7 @@ function dbConnect($db,$params=array()){
 	global $dbh_snowflake;
 	global $dbh_sqlite;
 	global $dbh_ctree;
+	global $dbh_msaccess;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -11071,6 +11084,42 @@ function isCtree(){
 	}
 	else{$isCtreeCache=false;}
 	return $isCtreeCache;
+}
+//---------- begin function isMsaccess ----------
+/**
+* @describe returns true if database driver is MS Access
+* @return boolean
+* @usage if(isMsaccess()){...}
+*/
+function isMsaccess(){
+	global $isMsaccessCache;
+	if(isset($isMsaccessCache)){return $isMsaccessCache;}
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='msaccess'){
+		loadExtras('msaccess');
+		$isMsaccessCache=true;
+	}
+	else{$isMsaccessCache=false;}
+	return $isMsaccessCache;
+}
+//---------- begin function isMsaccess ----------
+/**
+* @describe returns true if database driver is MS Access
+* @return boolean
+* @usage if(isMsaccess()){...}
+*/
+function isMsexcel(){
+	global $isMsexcelCache;
+	if(isset($isMsexcelCache)){return $isMsexcelCache;}
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='msexcel'){
+		loadExtras('msexcel');
+		$isMsexcelCache=true;
+	}
+	else{$isMsexcelCache=false;}
+	return $isMsexcelCache;
 }
 //---------- begin function isMssql ----------
 /**
