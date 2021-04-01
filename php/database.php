@@ -99,6 +99,7 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $dbh_ctree;
 	global $dbh_msaccess;
 	global $dbh_msexcel;
+	global $dbh_mscsv;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -155,6 +156,11 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('msexcel');
 			$dbh_msexcel='';
 			$func="msexcel".ucfirst($func);
+		break;
+		case 'mscsv':
+			loadExtras('mscsv');
+			$dbh_mscsv='';
+			$func="mscsv".ucfirst($func);
 		break;
 		default:
 			loadExtras('mysql');
@@ -11120,6 +11126,24 @@ function isMsexcel(){
 	}
 	else{$isMsexcelCache=false;}
 	return $isMsexcelCache;
+}
+//---------- begin function isMscsv ----------
+/**
+* @describe returns true if database driver is MS CSV
+* @return boolean
+* @usage if(isMscsv()){...}
+*/
+function isMscsv(){
+	global $isMscsvCache;
+	if(isset($isMscsvCache)){return $isMscsvCache;}
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='mscsv'){
+		loadExtras('mscsv');
+		$isMscsvCache=true;
+	}
+	else{$isMscsvCache=false;}
+	return $isMscsvCache;
 }
 //---------- begin function isMssql ----------
 /**

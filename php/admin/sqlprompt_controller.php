@@ -41,6 +41,8 @@
 					$sql="select top 5 * from admin.{$table} order by 1 desc";
 				break;
 				case 'msexcel':
+				case 'mscsv':
+				case 'msaccess':
 					$sql="select top 5 * from {$table}";
 				break;
 				case 'postgresql':
