@@ -898,6 +898,9 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		}
 		return $i;
 	}
+	elseif(isset($params['-process'])){
+		return $i;
+	}
 	return $recs;
 }
 
