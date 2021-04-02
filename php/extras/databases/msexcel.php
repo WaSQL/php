@@ -15,7 +15,9 @@
 		https://stackoverflow.com/questions/5029531/using-microsoft-excel-via-an-odbc-driver-with-php/5029625
 		https://m.php.cn/manual/view/1903.html
 		https://www.youtube.com/watch?v=l-7P-9VVjw
-0*/
+*/
+
+
 //---------- begin function msexcelGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
@@ -36,28 +38,24 @@ syscolumns fields
 	tbl	nvarchar
 	width	integer
 */
-function msexcelGetAllTableFields($schema=''){
+function msexcelGetAllTableFields(){
 	global $databaseCache;
 	global $CONFIG;
 	$cachekey=sha1(json_encode($CONFIG).'msexcelGetAllTableFields');
 	if(isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-	$query=<<<ENDOFQUERY
-		SELECT
-			sc.tbl as table_name, 
-			sc.col as field_name,
-			sc.coltype as type_name
-		FROM admin.syscolumns sc, admin.systables st
-		WHERE sc.tbl = st.tbl AND st.tbltype != 'S'
-ENDOFQUERY;
-	$recs=msexcelQueryResults($query);
 	$databaseCache[$cachekey]=array();
-	foreach($recs as $rec){
-		$table=strtolower($rec['table_name']);
-		//$field=strtolower($rec['field_name']);
-		//$type=strtolower($rec['type_name']);
-		$databaseCache[$cachekey][$table][]=$rec;
+	$tables=msexcelGetDBTables();
+	foreach($tables as $table){
+		$finfo=msexcelGetDBFieldInfo($table);
+		foreach($finfo as $field=>$info){
+			$databaseCache[$cachekey][$table][]=array(
+				'table_name'=>$table,
+				'field_name'=>$field,
+				'type_name'=>$info['_dbtype_ex']
+			);
+		}	
 	}
 	ksort($databaseCache[$cachekey]);
 	return $databaseCache[$cachekey];
@@ -68,78 +66,14 @@ ENDOFQUERY;
 * @param [$schema] string - schema. defaults to dbschema specified in config
 * @return array
 * @usage $allindexes=msexcelGetAllTableIndexes();
-colname
-id
-idxcompress
-idxmethod
-idxname
-idxorder
-idxowner
-idxsegid
-idxseq
-idxtype
-rssid
-tbl
-tblowner
 */
 function msexcelGetAllTableIndexes($schema=''){
-	global $databaseCache;
-	global $CONFIG;
-	$cachekey=sha1(json_encode($CONFIG).'msexcelGetAllTableIndexes');
-	if(isset($databaseCache[$cachekey])){
-		return $databaseCache[$cachekey];
-	}
-	//key_name,column_name,seq_in_index,non_unique
-	$query=<<<ENDOFQUERY
-	SELECT
-		tbl as table_name,
-		idxname as key_name,
-		colname as column_name,
-		idxtype as index_type,
-		idxseq as seq_in_index,
-		tblowner as table_owner
-		FROM admin.sysindexes
-		WHERE tblowner='admin'
-ENDOFQUERY;
-	$recs=msexcelQueryResults($query);
-	//group by table and key
-	$indexes=array();
-	foreach($recs as $rec){
-		$key=$rec['table_name'].$rec['key_name'];
-		$indexes[$key][]=$rec;
-	}
-	ksort($indexes);
-	//echo printValue($indexes);exit;
-	//json_agg
-	$recs=array();
-	foreach($indexes as $key=>$krecs){
-		$index_keys=array();
-		$krecs=sortArrayByKeys($krecs, array('seq_in_index'=>SORT_ASC));
-		foreach($krecs as $krec){$index_keys[]=$krec['column_name'];}
-		$is_unique=$krecs[0]['index_type']=='U'?1:0;
-		$rec=array(
-			'table_name'=>$krecs[0]['table_name'],
-			'key_name'=>$krecs[0]['key_name'],
-			'index_keys'=>json_encode($index_keys),
-			'is_unique'=>$is_unique
-		);
-		$recs[]=$rec;
-	}
-	$databaseCache[$cachekey]=array();
-	foreach($recs as $rec){
-		$table=strtolower($rec['table_name']);
-		$databaseCache[$cachekey][$table][]=$rec;
-	}
-	return $databaseCache[$cachekey];
+	return array();
 }
 //---------- begin function msexcelDBConnect ----------
 /**
 * @describe returns connection resource
 * @param $params array - These can also be set in the CONFIG file with dbname_msexcel,dbuser_msexcel, and dbpass_msexcel
-*	[-host] - msexcel server to connect to
-* 	[-dbname] - name of database.
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return connection resource and sets the global $dbh_msexcel variable.
 * @usage $dbh_msexcel=msexcelDBConnect($params);
 */
@@ -173,6 +107,8 @@ function msexcelDBConnect(){
 		"DefaultDir={$dir}",
 		'ImportMixedTypes=Text',
 		'ReadOnly=false',
+		'IMEX=1',
+		'MaxScanRows=16',
 		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
@@ -189,35 +125,20 @@ function msexcelDBConnect(){
 */
 function msexcelExecuteSQL($query,$return_error=1){
 	global $dbh_msexcel;
-	$dbh_msexcel=msexcelDBConnect();
-	if(!is_object($dbh_msexcel)){
-		$err=array(
-			'function'=>'msexcelExecuteSQL',
-			'message'=>'connect failed',
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
-    	return 0;
-	}
+	$dbh_msexcel='';
 	try{
-		$stmt = $dbh_msexcel->prepare($query);
-		$stmt->execute();
-		$stmt->closeCursor(); // this is not even required
-		$stmt = null; // doing this is mandatory for connection to get closed
-		$dbh_msexcel = null;
+		$dbh_msexcel = msexcelDBConnect();
+		$cols = odbc_exec($dbh_msexcel, $query);
+		$dbh_msexcel='';
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=array(
-			'function'=>'msexcelExecuteSQL',
-			'message'=>'try catch failed',
-			'error'=>$e->errorInfo,
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
-		return 0;
+		$error=array("msexcelExecuteSQL Exception",$e,$params);
+	    debugValue($error);
+	    $dbh_msexcel='';
+	    return json_encode($error);
 	}
+	$dbh_msexcel='';
 	return 0;
 }
 //---------- begin function msexcelGetDBCount--------------------
@@ -225,21 +146,11 @@ function msexcelExecuteSQL($query,$return_error=1){
 * @describe returns a record count based on params
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
-*	[-host] -  server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array
 * @usage $cnt=msexcelGetDBCount(array('-table'=>'states'));
 */
 function msexcelGetDBCount($params=array()){
 	if(!isset($params['-table'])){return null;}
-	if(!stringContains($params['-table'],'.')){
-		$schema=msexcelGetDBSchema();
-		if(strlen($schema)){
-			$params['-table']="{$schema}.{$params['-table']}";
-		}
-	}
 	//echo printValue($params);exit;
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
@@ -264,9 +175,6 @@ function msexcelGetDBCount($params=array()){
 /**
 * @describe returns an array of field info. fieldname is the key, Each field returns name, type, length, num, default
 * @param $params array - These can also be set in the CONFIG file with dbname_msexcel,dbuser_msexcel, and dbpass_msexcel
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage $fieldinfo=msexcelGetDBFieldInfo('test');
 */
@@ -355,9 +263,6 @@ function msexcelGetDBTableIndexes($table=''){
 * @describe retrieves a single record from DB based on params
 * @param $params array
 * 	-table 	  - table to query
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array recordset
 * @usage $rec=msexcelGetDBRecord(array('-table'=>'tesl));
 */
@@ -376,10 +281,6 @@ function msexcelGetDBRecord($params=array()){
 *	[-fields] mixed - fields to return
 *	[-where] string - string to add to where clause
 *	[-filter] string - string to add to where clause
-*	[-host] - server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array - set of records
 * @usage
 *	<?=msexcelGetDBRecords(array('-table'=>'notes'));?>
@@ -413,13 +314,6 @@ function msexcelGetDBRecords($params){
 				'params'=>$params
 			));
 	    	return null;
-		}
-		//check for schema name
-		if(!stringContains($params['-table'],'.')){
-			$schema=msexcelGetDBSchema();
-			if(strlen($schema)){
-				$params['-table']="{$schema}.{$params['-table']}";
-			}
 		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
@@ -565,7 +459,6 @@ function msexcelGetSheetNamesFromXlsx($file){
             }
             break;
         }
-
     }
     zip_close ( $zip );
     return $worksheetNames;
@@ -578,29 +471,9 @@ function msexcelGetSheetNamesFromXlsx($file){
 * @usage $fields=msexcelGetDBTablePrimaryKeys($table);
 */
 function msexcelGetDBTablePrimaryKeys($table){
-	$query=<<<ENDOFQUERY
-		SELECT
-			colname
-		FROM admin.sysindexes
-		WHERE
-			tbl='{$table}'
-			and idxtype='U'
-ENDOFQUERY;
-	return msexcelQueryResults($query);
-	
+	return array();
 }
 function msexcelGetDBSchema(){
-	global $CONFIG;
-	$params=msexcelParseConnectParams();
-	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
-		return $DATABASE[$CONFIG['db']]['dbschema'];
-	}
-	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
-	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
-	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
-	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
-	elseif(isset($CONFIG['msexcel_dbschema'])){return $CONFIG['msexcel_dbschema'];}
-	elseif(isset($CONFIG['msexcel_schema'])){return $CONFIG['msexcel_schema'];}
 	return '';
 }
 
@@ -630,10 +503,6 @@ function msexcelListRecords($params=array()){
 /**
 * @describe parses the params array and checks in the CONFIG if missing
 * @param [$params] array - These can also be set in the CONFIG file with dbname_msexcel,dbuser_msexcel, and dbpass_msexcel
-*	[-host] - msexcel server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return $params array
 * @usage $params=msexcelParseConnectParams($params);
 */
@@ -817,7 +686,7 @@ function msexcelQueryResults($query='',$params=array()){
 		$result=odbc_exec($dbh_msexcel,$query);
 		if(!$result){
 			$e=odbc_errormsg($dbh_msexcel);
-			$error=array("odbcQueryResults Error",$e,$query);
+			$error=array("msexcelQueryResults Error",$e,$query);
 			debugValue($error);
 			return json_encode($error);
 		}
@@ -853,7 +722,7 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			pg_free_result($result);
-			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
+			return 'msexcelEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){
@@ -922,41 +791,5 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 * @return query string
 */
 function msexcelNamedQuery($name){
-	switch(strtolower($name)){
-		case 'running_queries':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'sessions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'table_locks':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'functions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'procedures':
-			return <<<ENDOFQUERY
-SELECT 
-	creator,
-	has_resultset,
-	has_return_val,
-	owner,
-	proc_id,
-	proc_name,
-	proc_type,
-	rssid
-FROM admin.sysprocedures
-
-ENDOFQUERY;
-		break;
-	}
+	return '';
 }

@@ -1,13 +1,13 @@
 <?php
 /*
-	mscsv.php - a collection of Microsoft Access Database functions for use by WaSQL.
+	mscsv.php - a collection of Microsoft Text functions for use by WaSQL.
 	
 	<database
         group="MS CSV"
-        dbicon="icon-application-excel"
-        name="mscsv_delegate"
-        displayname="MS Excel Delegate"
-        dbname="d:/temp/delegate.csv"
+        dbicon="icon-file-txt"
+        name="mscsv_temp"
+        displayname="MS CSV Temp"
+        dbname="d:/temp"
         dbtype="mscsv"
     />
 
@@ -17,6 +17,7 @@
 	NOTE: Delete and Update are not supported - only select and inserts
 	
 	References:
+		https://www.microsoft.com/en-us/download/details.aspx?id=54920
 		https://www.connectionstrings.com/microsoft-text-odbc-driver/
 		https://docs.querona.io/quickstart/how-to/text-microsoft-odbc.html
 0*/
@@ -47,21 +48,17 @@ function mscsvGetAllTableFields($schema=''){
 	if(isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-	$query=<<<ENDOFQUERY
-		SELECT
-			sc.tbl as table_name, 
-			sc.col as field_name,
-			sc.coltype as type_name
-		FROM admin.syscolumns sc, admin.systables st
-		WHERE sc.tbl = st.tbl AND st.tbltype != 'S'
-ENDOFQUERY;
-	$recs=mscsvQueryResults($query);
 	$databaseCache[$cachekey]=array();
-	foreach($recs as $rec){
-		$table=strtolower($rec['table_name']);
-		//$field=strtolower($rec['field_name']);
-		//$type=strtolower($rec['type_name']);
-		$databaseCache[$cachekey][$table][]=$rec;
+	$tables=mscsvGetDBTables();
+	foreach($tables as $table){
+		$finfo=mscsvGetDBFieldInfo($table);
+		foreach($finfo as $field=>$info){
+			$databaseCache[$cachekey][$table][]=array(
+				'table_name'=>$table,
+				'field_name'=>$field,
+				'type_name'=>$info['_dbtype_ex']
+			);
+		}	
 	}
 	ksort($databaseCache[$cachekey]);
 	return $databaseCache[$cachekey];
@@ -72,78 +69,14 @@ ENDOFQUERY;
 * @param [$schema] string - schema. defaults to dbschema specified in config
 * @return array
 * @usage $allindexes=mscsvGetAllTableIndexes();
-colname
-id
-idxcompress
-idxmethod
-idxname
-idxorder
-idxowner
-idxsegid
-idxseq
-idxtype
-rssid
-tbl
-tblowner
 */
 function mscsvGetAllTableIndexes($schema=''){
-	global $databaseCache;
-	global $CONFIG;
-	$cachekey=sha1(json_encode($CONFIG).'mscsvGetAllTableIndexes');
-	if(isset($databaseCache[$cachekey])){
-		return $databaseCache[$cachekey];
-	}
-	//key_name,column_name,seq_in_index,non_unique
-	$query=<<<ENDOFQUERY
-	SELECT
-		tbl as table_name,
-		idxname as key_name,
-		colname as column_name,
-		idxtype as index_type,
-		idxseq as seq_in_index,
-		tblowner as table_owner
-		FROM admin.sysindexes
-		WHERE tblowner='admin'
-ENDOFQUERY;
-	$recs=mscsvQueryResults($query);
-	//group by table and key
-	$indexes=array();
-	foreach($recs as $rec){
-		$key=$rec['table_name'].$rec['key_name'];
-		$indexes[$key][]=$rec;
-	}
-	ksort($indexes);
-	//echo printValue($indexes);exit;
-	//json_agg
-	$recs=array();
-	foreach($indexes as $key=>$krecs){
-		$index_keys=array();
-		$krecs=sortArrayByKeys($krecs, array('seq_in_index'=>SORT_ASC));
-		foreach($krecs as $krec){$index_keys[]=$krec['column_name'];}
-		$is_unique=$krecs[0]['index_type']=='U'?1:0;
-		$rec=array(
-			'table_name'=>$krecs[0]['table_name'],
-			'key_name'=>$krecs[0]['key_name'],
-			'index_keys'=>json_encode($index_keys),
-			'is_unique'=>$is_unique
-		);
-		$recs[]=$rec;
-	}
-	$databaseCache[$cachekey]=array();
-	foreach($recs as $rec){
-		$table=strtolower($rec['table_name']);
-		$databaseCache[$cachekey][$table][]=$rec;
-	}
-	return $databaseCache[$cachekey];
+	return array();
 }
 //---------- begin function mscsvDBConnect ----------
 /**
 * @describe returns connection resource
 * @param $params array - These can also be set in the CONFIG file with dbname_mscsv,dbuser_mscsv, and dbpass_mscsv
-*	[-host] - mscsv server to connect to
-* 	[-dbname] - name of database.
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return connection resource and sets the global $dbh_mscsv variable.
 * @usage $dbh_mscsv=mscsvDBConnect($params);
 */
@@ -169,6 +102,8 @@ function mscsvDBConnect(){
 		'Extensions=asc,csv,tab,txt',
 		'ImportMixedTypes=Text',
 		'ReadOnly=false',
+		'IMEX=1',
+		'MaxScanRows=16',
 		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
@@ -184,36 +119,21 @@ function mscsvDBConnect(){
 * @usage $ok=mscsvExecuteSQL("truncate table abc");
 */
 function mscsvExecuteSQL($query,$return_error=1){
-	global $dbh_mscsv;
-	$dbh_mscsv=mscsvDBConnect();
-	if(!is_object($dbh_mscsv)){
-		$err=array(
-			'function'=>'mscsvExecuteSQL',
-			'message'=>'connect failed',
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
-    	return 0;
-	}
+	global $dbh_msexcel;
+	$dbh_msexcel='';
 	try{
-		$stmt = $dbh_mscsv->prepare($query);
-		$stmt->execute();
-		$stmt->closeCursor(); // this is not even required
-		$stmt = null; // doing this is mandatory for connection to get closed
-		$dbh_mscsv = null;
+		$dbh_msexcel = mscsvDBConnect();
+		$cols = odbc_exec($dbh_msexcel, $query);
+		$dbh_msexcel='';
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=array(
-			'function'=>'mscsvExecuteSQL',
-			'message'=>'try catch failed',
-			'error'=>$e->errorInfo,
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
-		return 0;
+		$error=array("mscsvExecuteSQL Exception",$e,$params);
+	    debugValue($error);
+	    $dbh_msexcel='';
+	    return json_encode($error);
 	}
+	$dbh_msexcel='';
 	return 0;
 }
 //---------- begin function mscsvGetDBCount--------------------
@@ -221,21 +141,11 @@ function mscsvExecuteSQL($query,$return_error=1){
 * @describe returns a record count based on params
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
-*	[-host] -  server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array
 * @usage $cnt=mscsvGetDBCount(array('-table'=>'states'));
 */
 function mscsvGetDBCount($params=array()){
 	if(!isset($params['-table'])){return null;}
-	if(!stringContains($params['-table'],'.')){
-		$schema=mscsvGetDBSchema();
-		if(strlen($schema)){
-			$params['-table']="{$schema}.{$params['-table']}";
-		}
-	}
 	//echo printValue($params);exit;
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
@@ -260,9 +170,6 @@ function mscsvGetDBCount($params=array()){
 /**
 * @describe returns an array of field info. fieldname is the key, Each field returns name, type, length, num, default
 * @param $params array - These can also be set in the CONFIG file with dbname_mscsv,dbuser_mscsv, and dbpass_mscsv
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage $fieldinfo=mscsvGetDBFieldInfo('test');
 */
@@ -351,9 +258,6 @@ function mscsvGetDBTableIndexes($table=''){
 * @describe retrieves a single record from DB based on params
 * @param $params array
 * 	-table 	  - table to query
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array recordset
 * @usage $rec=mscsvGetDBRecord(array('-table'=>'tesl));
 */
@@ -372,10 +276,6 @@ function mscsvGetDBRecord($params=array()){
 *	[-fields] mixed - fields to return
 *	[-where] string - string to add to where clause
 *	[-filter] string - string to add to where clause
-*	[-host] - server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array - set of records
 * @usage
 *	<?=mscsvGetDBRecords(array('-table'=>'notes'));?>
@@ -518,30 +418,6 @@ function mscsvGetDBTables($params=array()){
 	sort($tables);
 	return $tables;
 }
-function mscsvGetSheetNamesFromXlsx($file){
-	$worksheetNames = array ();
-    $zip = zip_open ( $file );
-    while ( $entry = zip_read ( $zip ) ) {
-        $entry_name = zip_entry_name ( $entry );
-        if ($entry_name == 'xl/workbook.xml') {
-            if (zip_entry_open ( $zip, $entry, "r" )) {
-                $buf = zip_entry_read ( $entry, zip_entry_filesize ( $entry ) );
-                $workbook = simplexml_load_string ( $buf );
-                foreach ( $workbook->sheets as $sheets ) {
-                    foreach( $sheets as $sheet) {
-                        $attributes=(array)$sheet->attributes();
-                        $worksheetNames[]='['.$attributes['@attributes']['name'].'$]';
-                    }
-                }
-                zip_entry_close ( $entry );
-            }
-            break;
-        }
-
-    }
-    zip_close ( $zip );
-    return $worksheetNames;
-}
 //---------- begin function mscsvGetDBTablePrimaryKeys ----------
 /**
 * @describe returns an array of primary key fields for the specified table
@@ -550,29 +426,9 @@ function mscsvGetSheetNamesFromXlsx($file){
 * @usage $fields=mscsvGetDBTablePrimaryKeys($table);
 */
 function mscsvGetDBTablePrimaryKeys($table){
-	$query=<<<ENDOFQUERY
-		SELECT
-			colname
-		FROM admin.sysindexes
-		WHERE
-			tbl='{$table}'
-			and idxtype='U'
-ENDOFQUERY;
-	return mscsvQueryResults($query);
-	
+	return array();
 }
 function mscsvGetDBSchema(){
-	global $CONFIG;
-	$params=mscsvParseConnectParams();
-	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
-		return $DATABASE[$CONFIG['db']]['dbschema'];
-	}
-	if(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
-	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
-	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
-	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
-	elseif(isset($CONFIG['mscsv_dbschema'])){return $CONFIG['mscsv_dbschema'];}
-	elseif(isset($CONFIG['mscsv_schema'])){return $CONFIG['mscsv_schema'];}
 	return '';
 }
 
@@ -602,10 +458,6 @@ function mscsvListRecords($params=array()){
 /**
 * @describe parses the params array and checks in the CONFIG if missing
 * @param [$params] array - These can also be set in the CONFIG file with dbname_mscsv,dbuser_mscsv, and dbpass_mscsv
-*	[-host] - mscsv server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return $params array
 * @usage $params=mscsvParseConnectParams($params);
 */
@@ -763,7 +615,7 @@ function mscsvParseConnectParams($params=array()){
 		else{
 			//ODBC;DSN=REPL01;HOST=repl01.dot.infotraxsys.com;UID=dot_dels;DATABASE=liveSQL;SERVICE=6597;CHARSET NAME=;MAXROWS=;OPTIONS=;;PRSRVCUR=OFF;;FILEDSN=;SAVEFILE=;FETCH_SIZE=;QUERY_TIMEOUT=;SCROLLCUR=OF
 			$dir=getFilePath($CONFIG['mscsv_dbname']);
-			$params['-connect']="odbc:Driver={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DriverId=790;Dbq={$CONFIG['mscsv_dbname']};DefaultDir={$dir};";
+			$params['-connect']="odbc:Driver={Microsoft Access Text Driver (*.txt, *.csv)};DriverId=790;Dbq={$CONFIG['mscsv_dbname']};DefaultDir={$dir};";
 		}
 	}
 	else{
@@ -789,7 +641,7 @@ function mscsvQueryResults($query='',$params=array()){
 		$result=odbc_exec($dbh_mscsv,$query);
 		if(!$result){
 			$e=odbc_errormsg($dbh_mscsv);
-			$error=array("odbcQueryResults Error",$e,$query);
+			$error=array("mscsvQueryResults Error",$e,$query);
 			debugValue($error);
 			return json_encode($error);
 		}
@@ -825,7 +677,7 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			pg_free_result($result);
-			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
+			return 'mscsvEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){
@@ -894,41 +746,5 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 * @return query string
 */
 function mscsvNamedQuery($name){
-	switch(strtolower($name)){
-		case 'running_queries':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'sessions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'table_locks':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'functions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'procedures':
-			return <<<ENDOFQUERY
-SELECT 
-	creator,
-	has_resultset,
-	has_return_val,
-	owner,
-	proc_id,
-	proc_name,
-	proc_type,
-	rssid
-FROM admin.sysprocedures
-
-ENDOFQUERY;
-		break;
-	}
+	return '';
 }
