@@ -1,7 +1,7 @@
 <?php
 /*
 	mscsv.php - a collection of Microsoft Access Database functions for use by WaSQL.
-
+	
 	<database
         group="MS CSV"
         dbicon="icon-application-excel"
@@ -10,6 +10,11 @@
         dbname="d:/temp/delegate.csv"
         dbtype="mscsv"
     />
+
+    select top 5 * from all_colors.csv where code like '%alice%'
+	insert into all_colors.csv (code,name,hex,red,green,blue) values('alice_test','test','#111222',1,2,3)
+
+	NOTE: Delete and Update are not supported - only select and inserts
 	
 	References:
 		https://www.connectionstrings.com/microsoft-text-odbc-driver/
@@ -147,7 +152,7 @@ function mscsvDBConnect(){
 	$params=mscsvParseConnectParams();
 	$dir=getFilePath($params['-dbname']);
 	/*
-		
+
 
 	*/
 	if(PHP_INT_SIZE===8){
@@ -161,7 +166,10 @@ function mscsvDBConnect(){
 		"Dbq={$params['-dbname']}",
 		'FIL=text',
 		'DriverId=27',
-		'Extensions=asc,csv,tab,txt'
+		'Extensions=asc,csv,tab,txt',
+		'ImportMixedTypes=Text',
+		'ReadOnly=false',
+		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
 	$dbh_mscsv = odbc_connect($params['-connect'], '','');

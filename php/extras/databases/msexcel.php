@@ -173,7 +173,7 @@ function msexcelDBConnect(){
 		"DefaultDir={$dir}",
 		'ImportMixedTypes=Text',
 		'ReadOnly=false',
-		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16HDR=YES"',
+		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=16;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
 	$dbh_msexcel = odbc_connect($params['-connect'], '','');
