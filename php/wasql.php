@@ -581,11 +581,17 @@ function gracefulShutdown(){
 		}
 	}
 	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|session_decode|Session is not active|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
+	//syntax errors have to be handled special
+	if(preg_match('/syntax error/is',$error['message'])){
+    	echo "<b>PHP Syntax Error:</b><br>".PHP_EOL;
+    	unset($error['type']);
+    	echo printValue($error);
+    	return;
+    }
 	$debug=debug_backtrace();
 	foreach($error as $key=>$val){
 		$debug[0][$key]=$val;
     }
-    //echo "here".printValue($debug);exit;
     debugValue($debug,$error['message']);
     return false;
 }
