@@ -163,7 +163,9 @@
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <translate>About</translate> WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=test"><span class="icon-mark"></span> WaSQL <translate>Tests</translate></a></li>
 				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<translate>Update WaSQL? Are you sure?</translate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
+				<li><hr size="1" /></li>
 				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
+				<li><a href="/php/admin.php?_menu=logs"><span class="icon-file-txt"></span> View Logs</a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=manual" class="w_small"><translate>WaSQL Reference</translate></a></li>
 				<li><a href="/php/admin.php?_menu=ref" class="w_small">CSS3 / HTML5 / PHP</a></li>
@@ -173,7 +175,6 @@
 				<li><a href="/php/admin.php?_menu=sync_source"><span class="icon-sync"></span> <translate>Sync Sources</translate></a></li>
 				<li><a href="/php/admin.php?_menu=website_grader"><span class="icon-globe"></span> Website Checker</a></li>
 				<li><hr size="1" /></li>
-				<li><a href="/php/admin.php?_menu=logs"><span class="icon-file-txt"></span> Logs</a></li>
 				<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> Repo</a></li>
 				<li><a href="/php/admin.php?_menu=phpinfo"><span class="icon-php"></span> <translate>Info</translate></a></li>
 				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php"></span> <translate>Prompt</translate></a></li>

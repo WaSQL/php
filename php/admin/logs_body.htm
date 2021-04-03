@@ -24,7 +24,7 @@
 	<view:log>
 	<div class="align-top align-left" style="flex-basis: 150px;flex-grow:1;margin-right:5px;overflow:auto;">
 		<div class="w_big" style="margin-bottom: 0px;"><?=ucwords($log['name']);?> Log</div>
-		<div class="w_gray w_smaller"><?=$log['file'];?></div>
+		<div class="w_gray w_smaller"><?=$log['file'];?>  (updated  <?=$log['age_verbose'];?> ago)</div>
 		<div style="border:1px solid #ccc;padding:3px;background:#e5e5e5;font-family: arial;font-size:0.9rem; border-radius: 3px;height: 70vh;overflow: auto;">
 			<div><?=$log['tail'];?></div>
 		</div>

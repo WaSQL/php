@@ -57,6 +57,7 @@ $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
 $pid_check=1;
 $apache_log=1;
+$ok=cronLogTails();
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	//check for wasql.update file
@@ -67,22 +68,6 @@ while($etime < 55){
 		$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 		cronMessage($message);
 		$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
-	}
-	elseif(file_exists("{$wpath}/php/temp/wasql.tail")){
-		$tfile=getFileContents("{$wpath}/php/temp/wasql.tail");
-		cronMessage("tailing {$tfile}");
-		unlink("{$wpath}/php/temp/wasql.tail");
-		unlink("{$wpath}/php/temp/wasql.tail.log");
-		$cmd="tail -n 30 \"{$tfile}\"";
-		$out=cmdResults($cmd);
-		$tail='';
-		if(strlen($out['stdout'])){
-			$tail.=$out['stdout'];
-		}
-		if(strlen($out['stderr'])){
-			$tail.=PHP_EOL.$out['stderr'];
-		}
-		$ok=setFileContents("{$wpath}/php/temp/wasql.tail.log",$tail);
 	}
 	//should switch to ALLCONFIG
 	foreach($ConfigXml as $name=>$host){
@@ -506,8 +491,7 @@ ENDOFWHERE;
 				unset($cron_result);
 				break;
 			}
-		}
-		
+		}	
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
 	}
@@ -535,6 +519,39 @@ function cronCleanRecords($cron=array()){
 	));
 	return $ok;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function cronLogTails(){
+	global $CONFIG;
+	$logs=array();
+	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
+	$tempdir=getWasqlPath('php/temp');
+	foreach($CONFIG as $k=>$v){
+		$lk=strtolower($k);
+		if(strtolower($k)=='logs_rowcount'){continue;}
+		if(strtolower($k)=='logs_refresh'){continue;}
+		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
+			if(!file_exists($v)){
+				continue;
+			}
+			$fname=getFileName($v);
+			$results='';
+			$cmd="tail -n {$rowcount} \"{$v}\"";
+			$ok=cronMessage($cmd);
+			$out=cmdResults($cmd);
+			//$results=$cmd.PHP_EOL;
+			if(strlen($out['stdout'])){
+				$results.=$out['stdout'];
+			}
+			if(strlen($out['stderr'])){
+				$results.=PHP_EOL.$out['stderr'];
+			}
+			setFileContents("{$tempdir}/{$fname}",$results);
+		}
+	}
+}
+
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */

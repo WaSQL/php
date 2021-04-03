@@ -14,31 +14,13 @@ function logsGetLogs($includes=array(),$excludes=array()){
 				echo "Logs File error for {$k}  - no such file or no access: {$v}<br>";
 				continue;
 			}
-			$results='';
-			if(isWindows()){
-				$cmd="tail -n 30 \"{$v}\"";
-				$out=cmdResults($cmd);
-				//$results=$cmd.PHP_EOL;
-				if(strlen($out['stdout'])){
-					$results.=$out['stdout'];
-				}
-				if(strlen($out['stderr'])){
-					$results.=PHP_EOL.$out['stderr'];
-				}
+			$fname=getFileName($v);
+			$aname="{$tempdir}/{$fname}";
+			if(!file_exists($aname)){
+				echo "Logs File error for {$k} - cron must not be running: {$aname}<br>";
+				continue;
 			}
-			else{
-				setFileContents("{$tempdir}/wasql.tail",$v);
-				//wait for the update.log file
-				$startwait=microtime(true);
-				while(microtime(true)-$startwait < 30){
-					if(file_exists("{$tempdir}/wasql.tail.log")){
-						$results=getFileContents("{$tempdir}/wasql.tail.log");
-						unlink("{$tempdir}/wasql.tail.log");
-						break;
-					}
-					sleep(1);
-				}
-			}
+			$results=getFileContents($aname);
 			$lines=preg_split('/[\r\n]+/',$results);
 			$lines=array_reverse($lines);
 			foreach($lines as $i=>$line){
@@ -84,10 +66,13 @@ function logsGetLogs($includes=array(),$excludes=array()){
 			//echo $v.printValue($out);exit;
 			$logs[$lk]=array(
 				'name'=>$m[1],
-				'file'=>$v,
+				'file'=>$aname,
+				'mtime'=>filemtime($aname),
 				'key'=>$lk,
 				'tail'=>implode(PHP_EOL,$lines)
 			);
+			$logs[$lk]['age']=time()-$logs[$lk]['mtime'];
+			$logs[$lk]['age_verbose']=verboseTime($logs[$lk]['age']);
 		}
 	}
 	return $logs;
