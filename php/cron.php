@@ -68,6 +68,22 @@ while($etime < 55){
 		cronMessage($message);
 		$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
 	}
+	elseif(file_exists("{$wpath}/php/temp/wasql.tail")){
+		$tfile=getFileContents("{$wpath}/php/temp/wasql.tail");
+		cronMessage("tailing {$tfile}");
+		unlink("{$wpath}/php/temp/wasql.tail");
+		unlink("{$wpath}/php/temp/wasql.tail.log");
+		$cmd="tail -n 30 \"{$tfile}\"";
+		$out=cmdResults($cmd);
+		$tail='';
+		if(strlen($out['stdout'])){
+			$tail.=$out['stdout'];
+		}
+		if(strlen($out['stderr'])){
+			$tail.=PHP_EOL.$out['stderr'];
+		}
+		$ok=setFileContents("{$wpath}/php/temp/wasql.tail.log",$tail);
+	}
 	//should switch to ALLCONFIG
 	foreach($ConfigXml as $name=>$host){
 		//allhost, then, sameas, then hostname
