@@ -1,0 +1,52 @@
+<view:default>
+<script type="text/javascript">
+	function systemNavTab(el){
+		wacss.setActiveTab(el);
+		document.system_form.tab.value=el.dataset.tab;
+		return ajaxSubmitForm(document.system_form,'system_content');
+	}
+</script>
+<h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">
+	<span class="icon-server"></span><translate>System</translate>
+</h2>
+<form method="post" name="system_form" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="system" />
+	<input type="hidden" name="tab" value="info" />
+	<input type="hidden" name="setprocessing" value="0" />
+</form>
+<ul class="nav-tabs <?=configValue('admin_color');?>">
+	<li class="active">
+		<a href="#" onclick="return systemNavTab(this);" data-tab="drives">
+			<translate>Drives</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="memory">
+			<translate>Memory</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="os">
+			<translate>Operating System</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="network">
+			<translate>Network</translate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="processes">
+			<translate>Processes</translate>
+		</a>
+	</li>
+</ul>
+<div id="system_content">
+	<?=systemShowList($recs,$listopts);?>
+</div>
+</view:default>
+
+<view:list>
+	<?=systemShowList($recs,$listopts);?>
+</view:list>
+
