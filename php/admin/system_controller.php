@@ -44,6 +44,15 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%size%);"
 			),
+			'used_options'=>array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%used%);"
+			),
+			'available_options'=>array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%available%);"
+			),
+			'use%_class'=>'align-left w_nowrap'
 		);
 		setView('list',1);
 		return;
@@ -73,10 +82,12 @@ switch(strtolower($_REQUEST['tab'])){
 		return;
 	break;
 	case 'network':
-		$info=getServerInfo();
-		$recs=$info['network_cards'];
+		$recs=systemGetNetworkAdapters();
 		$listopts=array(
 			'tab'=>'network',
+			'speed_options'=>array(
+				'class'=>'align-right'
+			)
 		);
 		setView('list',1);
 		return;
@@ -116,6 +127,15 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%size%);"
 			),
+			'used_options'=>array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%used%);"
+			),
+			'available_options'=>array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%available%);"
+			),
+			'use%_class'=>'align-left w_nowrap'
 		);
 		setView('default');
 	break;

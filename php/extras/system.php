@@ -109,13 +109,80 @@ function systemGetDriveSpace(){
 			foreach($fields as $i=>$field){
 				$rec[$field]=$parts[$i];
 			}
-			$recs[]=$rec;
+			$recs[]=array(
+				'filesystem'=>$rec['description'],
+				'size'=>$rec['size'],
+				'used'=>'',
+				'available'=>$rec['freespace'],
+				'use%'=>'',
+				'mounted'=>$rec['caption']
+			);
 		}
-		return $recs;
 	}
 	else{
-		return systemMountsList();
+		$recs=systemMountsList();
 	}
+	//figure out use% with a bar graph
+	foreach($recs as $i=>$rec){
+		$recs[$i]['used']=$rec['size']-$rec['available'];
+		$pcnt=round(($recs[$i]['used']/$rec['size'])*100,0);
+		$pcntstr='<div class="w_right">'.$pcnt.'%</div>';
+		//add bar
+		$bgcolor='#17a2b8';
+		if($pcnt > 75){
+			$bgcolor='#dc3545';
+		}
+		elseif($pcnt > 60){
+			$bgcolor='#ffc107';
+		}
+		$recs[$i]['use%']='<div style="border:1px solid #ccd2d9;height:15px;width:150px;display:inline-block;">';
+		$recs[$i]['use%'].='<div style="disply:inline-block;height:15px;width:'.$pcnt.'%;background-color:'.$bgcolor.';"></div>';
+		$recs[$i]['use%'].='</div>'.$pcntstr;
+	}
+	return $recs;
+}
+function systemGetNetworkAdapters(){
+	$space=array();
+	if(isWindows()){
+		$cmd='wmic nic get AdapterType, Name, Installed, MACAddress, Speed /format:csv';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$recs=array();
+		foreach($lines as $line){
+			$parts=csvParseLine($line);
+			$rec=array();
+			foreach($fields as $i=>$field){
+				$rec[$field]=$parts[$i];
+			}
+			if(!strlen($rec['adaptertype'])){continue;}
+			$recs[]=array(
+				'name'=>$rec['name'],
+				'type'=>$rec['adaptertype'],
+				'mac_address'=>$rec['macaddress'],
+				'speed'=>$rec['speed']
+			);
+		}
+	}
+	else{
+		$lines=getServerInfoFileData('/proc/net/dev')
+		echo printValue($lines);exit;
+	}
+	return $recs;
+}
+function systemConvertToBytes($from){
+    $units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
+    $number = substr($from, 0, -2);
+    $suffix = strtoupper(substr($from,-2));
+    //B or no suffix
+    if(is_numeric(substr($suffix, 0, 1))) {
+        return preg_replace('/[^\d]/', '', $from);
+    }
+    $exponent = array_flip($units)[$suffix] ?? null;
+    if($exponent === null) {
+        return 0;
+    }
+    return $number * (1024 ** $exponent);
 }
 
 function systemGetProcessList(){
@@ -593,24 +660,10 @@ ENDOFCMD;
 	$recs=array_change_key_case($recs,CASE_LOWER);
 	foreach($recs as $i=>$rec){
 		$recs[$i]=array_change_key_case($recs[$i],CASE_LOWER);
-		//echo printValue($rec);exit;
-		$recs[$i]['1b-blocks']=verboseSize($recs[$i]['1b-blocks']);
-		$recs[$i]['used']=verboseSize($recs[$i]['used']);
-		$recs[$i]['available']=verboseSize($recs[$i]['available']);
-		$pcnt=(integer)$recs[$i]['use%'];
-		$bgcolor='#17a2b8';
-		if($pcnt > 75){
-			$bgcolor='#dc3545';
-		}
-		elseif($pcnt > 60){
-			$bgcolor='#ffc107';
-		}
-		$pcntstr='<div class="w_right">'.$recs[$i]['use%'].'</div>';
-		//add bar
-		$recs[$i]['use%']='<div style="border:1px solid #ccd2d9;height:15px;width:150px;display:inline-block;">';
-		$recs[$i]['use%'].='<div style="disply:inline-block;height:15px;width:'.$pcnt.'%;background-color:'.$bgcolor.';"></div>';
-		$recs[$i]['use%'].='</div>'.$pcntstr;	
+		$recs[$i]['size']=$rec['1b-blocks'];
+		unset($recs[$i]['1b-blocks']);	
 	}
+	return $recs;
 	$opts=array(
 		'-list'=>$recs,
 		'-tableclass'=>'table table-responsive responsive bordered striped is-bordered is-striped is-fullwidth',
