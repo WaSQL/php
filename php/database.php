@@ -1484,6 +1484,12 @@ function databaseListRecords($params=array()){
 	$rtn .= '>'.PHP_EOL;
 	$rtn .= '		<tr>'.PHP_EOL;
 	foreach($params['-listfields'] as $field){
+		//check for field options
+		if(isset($params[$field."_options"]) && is_array($params[$field."_options"])){
+			foreach($params[$field."_options"] as $k=>$v){
+				$params[$field."_{$k}"]=$v;
+			}
+		}
 		if(!empty($params[$field."_displayname"])){
 			$name=$params[$field."_displayname"];
 		}
