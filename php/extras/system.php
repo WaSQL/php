@@ -22,6 +22,48 @@ function systemGetMemory(){
 		$systemGetMemoryCache['pcnt_used']=round(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100,2);
 		//$systemGetMemoryCache['pcnt_used']=number_format($systemGetMemoryCache['pcnt_used'],2);
 	}
+	else{
+		$meminfo = @getServerInfoFileData('/proc/meminfo');
+		if(!empty($meminfo)){
+			if (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
+				$systemGetMemoryCache['total'] = $matches[1] / 1024;
+				$systemGetMemoryCache['used'] = $matches[2] / 1024;
+				$systemGetMemoryCache['free'] = $matches[3] / 1024;
+				$systemGetMemoryCache['free_pcnt'] = round(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100,0);
+				/*$context['memory_usage']['shared'] = $matches[4] / 1024;
+				$context['memory_usage']['buffers'] = $matches[5] / 1024;
+				$context['memory_usage']['cached'] = $matches[6] / 1024;*/
+				}
+			else{
+				$mem = implode('', $meminfo);
+				if (preg_match('~memtotal:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
+					$systemGetMemoryCache['total'] = unix_memsize($match[1]);
+				}
+				if (preg_match('~memfree:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
+					$systemGetMemoryCache['free'] = unix_memsize($match[1]);
+					$systemGetMemoryCache['free_pcnt'] = round(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100,0);
+				}
+				if (isset($systemGetMemoryCache['total'], $systemGetMemoryCache['free'])){
+					$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
+				}
+				if (preg_match('~swaptotal:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
+					$systemGetMemoryCache['swap_total'] = unix_memsize($match[1]);
+				}
+				if (preg_match('~swapfree:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
+					$systemGetMemoryCache['swap_free'] = unix_memsize($match[1]);
+				}
+				if (isset($context['memory_usage']['swap_total'], $systemGetMemoryCache['swap_free'])){
+					$systemGetMemoryCache['swap_used'] = $systemGetMemoryCache['swap_total'] - $systemGetMemoryCache['swap_free'];
+				}
+			}
+			if (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[2], $matches) != 0){
+				$systemGetMemoryCache['swap_total'] = $matches[1] / 1024;
+				$systemGetMemoryCache['swap_used'] = $matches[2] / 1024;
+				$systemGetMemoryCache['swap_free'] = $matches[3] / 1024;
+			}
+			$meminfo = false;
+		}
+	}
 	return $systemGetMemoryCache;
 }
 function systemGetLoadAverage(){
