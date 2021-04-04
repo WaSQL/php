@@ -25,7 +25,20 @@ function systemGetMemory(){
 	else{
 		$meminfo = @getServerInfoFileData('/proc/meminfo');
 		if(!empty($meminfo)){
-			if (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
+			if(is_array($meminfo)){
+				$info=array();
+				foreach($meminfo as $minfo){
+					$parts=preg_split('/\:/',trim($minfo),2);
+					$k=trim(strtolower($parts[0]));
+					$v=trim(strtolower($parts[1]));
+					$info[$k]=$v;
+				}
+				$systemGetMemoryCache['total']=systemUnixMemsize($info['memtotal']);
+				$systemGetMemoryCache['free']=systemUnixMemsize($info['memfree']);
+				$systemGetMemoryCache['free_pcnt'] = round(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100,0);
+				$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
+			}
+			elseif (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
 				$systemGetMemoryCache['total'] = $matches[1] / 1024;
 				$systemGetMemoryCache['used'] = $matches[2] / 1024;
 				$systemGetMemoryCache['free'] = $matches[3] / 1024;
@@ -37,20 +50,20 @@ function systemGetMemory(){
 			else{
 				$mem = implode('', $meminfo);
 				if (preg_match('~memtotal:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
-					$systemGetMemoryCache['total'] = unix_memsize($match[1]);
+					$systemGetMemoryCache['total'] = systemUnixMemsize($match[1]);
 				}
 				if (preg_match('~memfree:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
-					$systemGetMemoryCache['free'] = unix_memsize($match[1]);
+					$systemGetMemoryCache['free'] = systemUnixMemsize($match[1]);
 					$systemGetMemoryCache['free_pcnt'] = round(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100,0);
 				}
 				if (isset($systemGetMemoryCache['total'], $systemGetMemoryCache['free'])){
 					$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
 				}
 				if (preg_match('~swaptotal:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
-					$systemGetMemoryCache['swap_total'] = unix_memsize($match[1]);
+					$systemGetMemoryCache['swap_total'] = systemUnixMemsize($match[1]);
 				}
 				if (preg_match('~swapfree:\s*(\d+ [kmgb])~i', $mem, $match) != 0){
-					$systemGetMemoryCache['swap_free'] = unix_memsize($match[1]);
+					$systemGetMemoryCache['swap_free'] = systemUnixMemsize($match[1]);
 				}
 				if (isset($context['memory_usage']['swap_total'], $systemGetMemoryCache['swap_free'])){
 					$systemGetMemoryCache['swap_used'] = $systemGetMemoryCache['swap_total'] - $systemGetMemoryCache['swap_free'];
@@ -65,6 +78,13 @@ function systemGetMemory(){
 		}
 	}
 	return $systemGetMemoryCache;
+}
+function systemUnixMemsize($str){
+	$str = strtr($str, array(',' => ''));
+	if (strtolower(substr($str, -1)) == 'g'){return $str * 1024 * 1024;}
+	elseif (strtolower(substr($str, -1)) == 'm'){return $str * 1024;}
+	elseif (strtolower(substr($str, -1)) == 'k'){return (int) $str;}
+	else{return $str / 1024;}
 }
 function systemGetLoadAverage(){
 	if(isWindows()){
