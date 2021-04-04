@@ -20,6 +20,9 @@ switch(strtolower($_REQUEST['tab'])){
 		ksort($info);
 		$recs=array();
 		foreach($info as $k=>$v){
+			if(is_array($v)){
+				$v=implode(', ',$v);
+			}
 			$recs[]=array(
 				'name'=>ucwords(str_replace('_',' ',$k)),
 				'value'=>$v

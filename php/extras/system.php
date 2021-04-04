@@ -51,6 +51,9 @@ function systemGetDriveSpace(){
 		}
 		return $recs;
 	}
+	else{
+		return systemMountsList();
+	}
 }
 
 function systemGetProcessList(){
