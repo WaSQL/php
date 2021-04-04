@@ -36,7 +36,7 @@ global $TEMPLATE;
 global $PAGE;
 $TEMPLATE=array('_id'=>0);
 $PAGE=array('_id'=>0);
-loadExtras('translate','system');
+loadExtras('translate');
 loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit'));
 loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
@@ -642,6 +642,7 @@ if(isAjax()){
 		case 'zipcodes':
 		case 'postedit':
 		case 'sync_source':
+		case 'system':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1329,6 +1330,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'zipcodes':
 		case 'postedit':
 		case 'sync_source':
+		case 'system':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1467,12 +1469,13 @@ ENDOFX;
 			}
 			echo '</div>'.PHP_EOL;
 		break;
-		case 'system':
+		case 'system_old':
+			$ok=loadExtras('system');
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'.PHP_EOL;
 			$info=getServerInfo();
 			//first show all the items that are not arrays
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="table table-responsive table-bordered table-striped condensed">'.PHP_EOL;
 			echo buildTableTH(array('Name','Description'));
 			foreach($info as $key=>$val){
 				if(!strlen($key)){continue;}
@@ -1487,7 +1490,7 @@ ENDOFX;
 				if(!is_array($val)){continue;}
 				$name=str_replace('_',' ',$key);
 				$name=ucwords($name);
-				echo '	<tr><td>'.$name.'</td><td class="nowrap">'.PHP_EOL;
+				echo '	<tr><td>'.$name.'</td><td>'.PHP_EOL;
 				//if(count($val) > 5 && is_array($val[0])){echo '		<div style="height:150px;overflow:auto;padding-right:20px;">'.PHP_EOL;}
 				$fields=array();
 				foreach($val as $x=>$subval){
@@ -1496,7 +1499,7 @@ ENDOFX;
 						}
 					else{$fields[$x]=1;}
 					}
-				echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+				echo '<table class="table table-responsive table-bordered table-striped condensed">'.PHP_EOL;
 				echo buildTableTH(array_keys($fields));
 				foreach($val as $x=>$subval){
 					$svals=array();

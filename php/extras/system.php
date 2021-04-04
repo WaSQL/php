@@ -160,7 +160,7 @@ function getServerInfo(){
 	//info: returns a array structure of load averages, cpu info, memory usage, os, and running processes
 	if (strpos(strtolower(PHP_OS), 'win') === 0){return getServerInfoWindows();}
 	else{return getServerInfoLinux();}
-	}
+}
 //---------- begin function getServerInfoLinux
 function getServerInfoLinux($show_process=0){
 	$context=array();
@@ -484,70 +484,6 @@ function getServerInfoWindows(){
 	//running processes
 	$context['running_processes'] = array();
 	//"Image Name","PID","Session Name","Session#","Mem Usage"
-	$processes = @`tasklist /fo csv /v /nh`;
-	if (!empty($processes)){
-		$processes = explode("\n", $processes);
-		$total_mem = 0;
-		$total_cpu = 0;
-		$context['num_zombie_processes'] = 0;
-		$context['num_sleeping_processes'] = 0;
-		$context['num_running_processes'] = 0;
-		foreach ($processes as $proc){
-			if (empty($proc)){continue;}
-			$proc = explode('","', substr($proc, 1, -1));
-			$proc[7] = explode(':', $proc[7]);
-			$proc[7] = ($proc[7][0] * 3600) + ($proc[7][1] * 60) + $proc[7][2];
-			if (substr($proc[4], -1) == 'K'){$proc[4] = (int) $proc[4];}
-			elseif (substr($proc[4], -1) == 'M'){$proc[4] = $proc[4] * 1024;}
-			elseif (substr($proc[4], -1) == 'G'){$proc[4] = $proc[4] * 1024 * 1024;}
-			else{$proc[4] = $proc[4] / 1024;}
-			$context['running_processes'][$proc[1]] = array(
-				'id' => $proc[1],
-				'cpu_time' => $proc[7],
-				'mem_usage' => $proc[4],
-				'title' => $proc[0],
-				);
-			if (strpos($proc[5], 'Not') !== false){$context['num_zombie_processes']++;}
-			else{$context['num_running_processes']++;}
-			$total_mem += $proc[4];
-			$total_cpu += $proc[7];
-			}
-		foreach ($context['running_processes'] as $proc){
-			$context['running_processes'][$proc['id']]['cpu'] = ($proc['cpu_time'] * 100) / $total_cpu;
-			$context['running_processes'][$proc['id']]['mem'] = ($proc['mem_usage'] * 100) / $total_mem;
-			}
-		$context['top_memory_usage'] = array('(other)' => array('name' => '(other)', 'percent' => 0, 'number' => 0));
-		$context['top_cpu_usage'] = array('(other)' => array('name' => '(other)', 'percent' => 0, 'number' => 0));
-		foreach ($context['running_processes'] as $proc){
-			$id = basename($proc['title']);
-			if (!isset($context['top_memory_usage'][$id])){
-				$context['top_memory_usage'][$id] = array('name' => $id, 'percent' => $proc['mem'], 'number' => 1);
-				}
-			else{
-				$context['top_memory_usage'][$id]['percent'] += $proc['mem'];
-				$context['top_memory_usage'][$id]['number']++;
-				}
-			if (!isset($context['top_cpu_usage'][$id])){
-				$context['top_cpu_usage'][$id] = array('name' => $id, 'percent' => $proc['cpu'], 'number' => 1);
-				}
-			else{
-				$context['top_cpu_usage'][$id]['percent'] += $proc['cpu'];
-				$context['top_cpu_usage'][$id]['number']++;
-				}
-			}
-		foreach ($context['top_memory_usage'] as $proc){
-			if ($proc['percent'] >= 1 || $proc['name'] == '(other)'){continue;}
-			unset($context['top_memory_usage'][$proc['name']]);
-			$context['top_memory_usage']['(other)']['percent'] += $proc['percent'];
-			$context['top_memory_usage']['(other)']['number']++;
-			}
-		foreach ($context['top_cpu_usage'] as $proc){
-			if ($proc['percent'] >= 0.6 || $proc['name'] == '(other)'){continue;}
-			unset($context['top_cpu_usage'][$proc['name']]);
-			$context['top_cpu_usage']['(other)']['percent'] += $proc['percent'];
-			$context['top_cpu_usage']['(other)']['number']++;
-			}
-		}
 	return $context;
 	}
 //---------- begin function systemMountsList
@@ -665,19 +601,19 @@ function getSystemInfoWindows(){
 	$lastkey='';
 	$info=array();
 	$ncard=array();
-	foreach($lines as &$line){
-		$parts=preg_split('/\:/',trim($line));
-		foreach($parts as &$part){$part=trim($part);}
+	foreach($lines as $l=>$line){
+		$parts=preg_split('/\:/',trim($line),2);
+		foreach($parts as $p=>$part){$parts[$p]=trim($part);}
 		$oparts=$parts;
 		$parts[0]=preg_replace('/\(s\)/i','',trim($parts[0]));
 		if(preg_match('/(date|directory|time zone|file location)$/i',$parts[0])){
 			$key=array_shift($parts);
 			$val=implode(':',$parts);
-			}
+		}
 		else{
 			$val=array_pop($parts);
 			$key=implode('_',$parts);
-                	}
+        }
 		$key=preg_replace('/\((s|es)\)/i','',trim($key));
 		$key=preg_replace('/[^a-z0-9]+/i','_',trim($key));
 		$key=preg_replace('/^\_/i','',trim($key));
@@ -685,7 +621,7 @@ function getSystemInfoWindows(){
 		if(preg_match('/Hotfix/i',$key)){
 			$lastkey='Hotfix';
 			continue;
-			}
+		}
 		$line .= " [[{$key}]][[{$lastkey}]]";
 		if(preg_match('/^[0-9]+$/',$key) && preg_match('/Hotfix/i',$lastkey)){continue;}
 		$key=strtolower($key);

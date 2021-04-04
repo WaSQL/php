@@ -1,11 +1,25 @@
 <view:default>
 <nav class="nav topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
 	<ul>
-		<li><a href="#logo"><img src="/wfiles/wasql_admin.png" /></a></li>
+		<!-- WaSQL -->
+		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
+			<ul  style="padding-bottom:5px;">
+				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
+				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <translate>About</translate> WaSQL</a></li>
+				<li><a href="/php/admin.php?_menu=test"><span class="icon-mark"></span> WaSQL <translate>Tests</translate></a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<translate>Update WaSQL? Are you sure?</translate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
+				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
+				<li><a href="/php/admin.php?_menu=manual" class="w_small"><translate>WaSQL Reference</translate></a></li>
+				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
+				<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> <translate>Translate Manager</translate></a></li>
+				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> <translate>Manage Temp Files</translate></a></li>
+			</ul>
+
+		</li>
 		<view:admin>
 		<!-- Database -->
 		<li><a href="#database" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down"><translate>Database</translate></span></a>
-			<ul>
+			<ul  style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt"></span> <translate>SQL Prompt</translate></a></li>
 				<li><a href="/php/admin.php?_menu=grep"><span class="icon-search"></span> <translate>Search</translate></a></li>
 				<li><a href="/php/admin.php?_menu=backups"><span class="icon-save"></span> <translate>Backup/Restore</translate></a></li>
@@ -20,7 +34,7 @@
 		</li>
 		<!-- Tables -->
 		<li><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down"><translate>Tables</translate></span></a>
-			<ul>
+			<ul  style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
 				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add"></span> <translate>Add Multiple</translate></a></li>
@@ -54,7 +68,7 @@
 		</li>
 		<!-- Pages -->
 		<li><a href="#pages" class="dropdown" onclick="return false;"><span class="icon-file-doc"></span> <span class="hidden-sm-down"><translate>Pages</translate></span></a>
-			<ul>
+			<ul  style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=meta"><span class="icon-website"></span> <translate>Metatags</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_pages"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
@@ -68,7 +82,7 @@
 		</li>
 		<!-- Templates -->
 		<li><a href="#templates" class="dropdown" onclick="return false;"><span class="icon-file-docs"></span> <span class="hidden-sm-down"><translate>Templates</translate></span></a>
-			<ul>
+			<ul  style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_templates"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_templates"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_templates"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
@@ -81,7 +95,7 @@
 		</li>
 		<!-- Users -->
 		<li><a href="#users" class="dropdown" onclick="return false;"><span class="icon-users"></span> <span class="hidden-sm-down"><translate>Users</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_users"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
@@ -95,7 +109,7 @@
 		<view:crons>
 		<!-- Crons -->
 		<li><a href="#crons" class="dropdown" onclick="return false;"><span class="icon-cron"></span> <span class="hidden-sm-down"><translate>Crons</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=cron"><span class="icon-cron"></span> <translate>Cron Manager</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_cron"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 			</ul>
@@ -105,7 +119,7 @@
 		<view:queries>
 		<!-- Queries -->
 		<li><a href="#queries" class="dropdown" onclick="return false;"><span class="icon-sql"></span> <span class="hidden-sm-down"><translate>Queries</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_queries"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_queries"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_queries"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
@@ -117,7 +131,7 @@
 		<view:access>
 		<!-- Access -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-slideshow"></span> <span class="hidden-sm-down"><translate>Access</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_access_summary"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_access_summary"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_access_summary"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
@@ -129,7 +143,7 @@
 		<view:synchronize>
 		<!-- Synchronize -->
 		<li><a href="#sync" class="dropdown" onclick="return false;"><span class="icon-sync"></span> <span class="hidden-sm-down"><translate>Synchronize</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync"></span> <translate>Pending Changes</translate></a></li>
 				<li><a href="/php/admin.php?_menu=list&_table_=_synchronize"><span class="icon-history"></span> <translate>Sync History</translate></a></li>
 				<li><a href="/php/admin.php?_menu=datasync"><span class="icon-database"></span> <translate>Synchronize Database Tables</translate></a></li>
@@ -146,7 +160,7 @@
 		<view:errors>
 		<!-- Errors -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-block"></span> <span class="hidden-sm-down"><translate>Errors</translate></span></a>
-			<ul>
+			<ul style="padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_errors"><span class="icon-list"></span> <translate>List</translate></a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_errors"><span class="icon-table-add"></span> <translate>Properties</translate></a></li>
 				<li><a href="/php/admin.php?_menu=add&_table_=_errors"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
@@ -156,23 +170,11 @@
 		</view:errors>
 		<?=renderViewIf(isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1,'errors');?>
 		
-		<!-- Help -->
-		<li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-info-circled"></span> <span class="hidden-sm-down"><translate>Help</translate></span></a>
-			<ul style="left:initial;right:0px;">
-				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
-				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <translate>About</translate> WaSQL</a></li>
-				<li><a href="/php/admin.php?_menu=test"><span class="icon-mark"></span> WaSQL <translate>Tests</translate></a></li>
-				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<translate>Update WaSQL? Are you sure?</translate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
-				<li><hr size="1" /></li>
-				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
+		<!-- Tools -->
+		<li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-gears"></span> <span class="hidden-sm-down"><translate>Tools</translate></span></a>
+			<ul style="left:initial;right:0px;padding-bottom:5px;">
 				<li><a href="/php/admin.php?_menu=logs"><span class="icon-file-txt"></span> View Logs</a></li>
-				<li><hr size="1" /></li>
-				<li><a href="/php/admin.php?_menu=manual" class="w_small"><translate>WaSQL Reference</translate></a></li>
 				<li><a href="/php/admin.php?_menu=ref" class="w_small">CSS3 / HTML5 / PHP</a></li>
-				<li><hr size="1" /></li>
-				<li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> <translate>Rebuild Tables</translate></a></li>
-				
-				<li><a href="/php/admin.php?_menu=sync_source"><span class="icon-sync"></span> <translate>Sync Sources</translate></a></li>
 				<li><a href="/php/admin.php?_menu=website_grader"><span class="icon-globe"></span> Website Checker</a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> Repo</a></li>
@@ -180,11 +182,11 @@
 				<li><a href="/php/admin.php?_menu=phpprompt"><span class="icon-php"></span> <translate>Prompt</translate></a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=sysmon"><span class="icon-server"></span> <translate>System Monitor</translate></a></li>
-				<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> <translate>Translate Manager</translate></a></li>
-				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <translate>Decode Tools</translate></a></li>
+				
+				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <translate>JSON/Base64 Decoder</translate></a></li>
 				<li><a href="/php/admin.php?_menu=ab"><span class="icon-feather"></span> Apache Bench</a></li>
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> <translate>Terminal</translate></a></li>
-				<li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> <translate>Manage Temp Files</translate></a></li>
+				
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> <translate>File Manager</translate></a></li>
 				<li><a href="/php/admin.php?_menu=stats"><span class="icon-chart-line"></span> <translate>Usage Stats</translate></a></li>
 				<li><a href="/php/admin.php?_menu=email"><span class="icon-list"></span> <translate>Send Email</translate></a></li>
@@ -196,10 +198,10 @@
 		</li>
 		<!-- User -->
 		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
-			<ul>
-				<li><a href="/php/admin.php?_menu=profile"><span class="icon-list"></span> <translate>Profile</translate></a></li>
+			<ul style="padding-bottom:5px;">
+				<li><a href="/php/admin.php?_menu=profile"><span class="icon-user-portal"></span> <translate>Profile</translate></a></li>
 				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-table-add"></span> postEdit</a></li>
-				<li><a href="/php/admin.php?_logout=1"><span class="icon-plus"></span> <translate>Log Off</translate></a></li>
+				<li><a href="/php/admin.php?_logout=1"><span class="icon-logout"></span> <translate>Log Off</translate></a></li>
 			</ul>
 		</li>
 		</view:admin>
