@@ -579,6 +579,8 @@ function gracefulShutdown(){
 				break;
 			}
 		}
+		echo printValue($error);
+		exit;
 	}
 	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|session_decode|Session is not active|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
 	//syntax errors have to be handled special
@@ -586,6 +588,12 @@ function gracefulShutdown(){
     	echo "<b>PHP Syntax Error:</b><br>".PHP_EOL;
     	unset($error['type']);
     	echo printValue($error);
+    	return;
+    }
+    elseif(preg_match('/uncaught error/is',$error['message'])){
+    	echo "<b>PHP Uncaught Error:</b><br>".PHP_EOL;
+    	unset($error['type']);
+    	echo printValue($error);exit;
     	return;
     }
 	$debug=debug_backtrace();
