@@ -467,6 +467,9 @@ function commonSearchFiltersForm($params=array()){
 	}
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
 	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
+	if(isset($params['-simplesearch']) || isset($params['-navonly'])){
+		$rtn .= '	<input type="hidden" name="filter_order" value="'.$params['-order'].'" />'.PHP_EOL;
+	}
 	$filters=is_array($params['-filters'])?implode("\r\n",$params['-filters']):$params['-filters'];
 	$rtn .= '	<textarea name="_filters">'.$filters.'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
@@ -500,6 +503,7 @@ function commonSearchFiltersForm($params=array()){
 	}
 	//other fields
 	foreach($params as $k=>$v){
+		if(is_array($v)){continue;}
 		if(preg_match('/^\-/',$k)){continue;}
 		if(preg_match('/\_(onclick|eval|href|class|style|dateage|verbosetime|displayname)$/i',$k)){continue;}
 		if(preg_match('/^(class|style)$/i',$k)){continue;}
