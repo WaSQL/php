@@ -57,7 +57,7 @@ $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
 $pid_check=1;
 $apache_log=1;
-$ok=cronLogTails();
+$tail=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	//check for wasql.update file
@@ -82,6 +82,8 @@ while($etime < 55){
 		foreach($host as $k=>$v){
 	    	$CONFIG[$k]=$v;
 		}
+		if(!isset($CONFIG['cron'])){$CONFIG['cron']=0;}
+		if($CONFIG['cron']==1 && $tail==1){$ok=cronLogTails();}
 		$runnow=0;
 		$runnow_afile="{$progpath}/temp/{$CONFIG['name']}_runnow.txt";
 		//echo $runnow_afile.PHP_EOL;
@@ -494,6 +496,7 @@ ENDOFWHERE;
 		}	
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
+		$tail=0;
 	}
 }
 exit;
