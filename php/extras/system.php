@@ -144,7 +144,7 @@ function systemGetDriveSpace(){
 function systemGetNetworkAdapters(){
 	$space=array();
 	if(isWindows()){
-		$cmd='wmic nic get AdapterType, Name, Installed, MACAddress, Speed /format:csv';
+		$cmd='wmic NICCONFIG GET IPEnabled, IPAddress, MacAddress, Description, DHCPServer, IPSubnet /format:csv';
 		$out=cmdResults($cmd);
 		$lines=preg_split('/[\r\n]+/',$out['stdout']);
 		$fields=csvParseLine(strtolower(array_shift($lines)));
@@ -155,18 +155,105 @@ function systemGetNetworkAdapters(){
 			foreach($fields as $i=>$field){
 				$rec[$field]=$parts[$i];
 			}
-			if(!strlen($rec['adaptertype'])){continue;}
+			//if(!strlen($rec['adaptertype'])){continue;}
 			$recs[]=array(
-				'name'=>$rec['name'],
-				'type'=>$rec['adaptertype'],
+				'name'=>$rec['description'],
+				'enabled'=>strtolower($rec['ipenabled'])=='true'?1:0,
 				'mac_address'=>$rec['macaddress'],
-				'speed'=>$rec['speed']
+				'ip_address'=>$rec['ipaddress'],
+				'ip_subnet'=>$rec['ipsubnet'],
+				'dhcp_server'=>$rec['dhcpserver']
 			);
 		}
 	}
 	else{
-		$lines=getServerInfoFileData('/proc/net/dev')
-		echo printValue($lines);exit;
+		$lines=getServerInfoFileData('/proc/net/dev');
+		array_shift($lines);array_shift($lines);
+		foreach($lines as $i=>$line){
+			$lines[$i]=trim($line);
+		}
+		$fields=array('name','recieve_bytes','recieve_packets','recieve_errs','recieve_drop','recieve_fifo','recieve_frame','recieve_compressed','recieve_multicast','transmit_bytes','transmit_packets','transmit_errs','transmit_drop','transmit_fifo','transmit_colls','transmit_carrier','transmit_compressed');
+		foreach($lines as $i=>$line){
+			$parts=preg_split('/[\t\s]+/',$line);
+			$rec=array();
+			foreach($parts as $p=>$v){
+				$rec[$fields[$p]]=$v;
+			}
+			$recs[]=$rec;
+		}
+	}
+	return $recs;
+}
+function systemGetOSInfo(){
+	$space=array();
+	if(isWindows()){
+		//get cpu name
+		$out=cmdResults('wmic cpu get Name');
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$cpu=$lines[1];
+		//model
+		$cmd='wmic computersystem get model,manufacturer /format:csv';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$model=array();
+		foreach($lines as $line){
+			$parts=csvParseLine($line);
+			foreach($fields as $i=>$field){
+				$model[$field]=$parts[$i];
+			}
+			break;
+		}
+		$cmd='wmic os get Caption,FreePhysicalMemory,FreeSpaceInPagingFiles,FreeVirtualMemory,InstallDate, LocalDateTime,OSArchitecture,RegisteredUser,TotalVirtualMemorySize,TotalVisibleMemorySize,Version /format:csv';
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$recs=array();
+		foreach($lines as $line){
+			$parts=csvParseLine($line);
+			$rec=array();
+			foreach($fields as $i=>$field){
+				$rec[$field]=$parts[$i];
+			}
+			//yyyymmddHHMMSS
+			$it=substr($rec['installdate'],0,12);
+			$lt=substr($rec['localdatetime'],0,12);
+			$xrec=array(
+				'processor'=>$cpu,
+				'os_name'=>$rec['caption'],
+				'os_version'=>$rec['version'],
+				'os_architecture'=>$rec['osarchitecture'],
+				'os_install_date'=>date('Y-m-d H:i a',strtotime($it)),
+				'manufacturer'=>"{$model['manufacturer']} Model {$model['model']}",
+				'physical_memory'=>verboseSize($rec['totalvisiblememorysize']*1000),
+				'virtual_memory'=>verboseSize($rec['totalvirtualmemorysize']*1000),
+				'current_date'=>date('Y-m-d H:i a',strtotime($lt)),
+				'computer_name'=>$rec['node'],
+				'registered_user'=>$rec['registereduser']
+			);
+			foreach($xrec as $k=>$v){
+				$recs[]=array(
+					'name'=>ucwords(str_replace('_',' ',$k)),
+					'value'=>$v
+				);
+			}
+		}
+	}
+	else{
+		$lines=getServerInfoFileData('/proc/net/dev');
+		array_shift($lines);array_shift($lines);
+		foreach($lines as $i=>$line){
+			$lines[$i]=trim($line);
+		}
+		$fields=array('name','recieve_bytes','recieve_packets','recieve_errs','recieve_drop','recieve_fifo','recieve_frame','recieve_compressed','recieve_multicast','transmit_bytes','transmit_packets','transmit_errs','transmit_drop','transmit_fifo','transmit_colls','transmit_carrier','transmit_compressed');
+		foreach($lines as $i=>$line){
+			$parts=preg_split('/[\t\s]+/',$line);
+			$rec=array();
+			foreach($parts as $p=>$v){
+				$rec[$fields[$p]]=$v;
+			}
+			$recs[]=$rec;
+		}
 	}
 	return $recs;
 }

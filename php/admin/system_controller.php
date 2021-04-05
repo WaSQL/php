@@ -8,26 +8,7 @@ switch(strtolower($_REQUEST['tab'])){
 		return;
 	break;
 	case 'os':
-		$info=getServerInfo();
-		unset($info['network_cards']);
-		unset($info['memory_usage']);
-		unset($info['cpu_info']);
-		unset($info['operating_system']);
-		unset($info['running_processes']);
-		if(is_array($info['processors'])){
-			$info['processors']=implode('<br>',$info['processors']);
-		}
-		ksort($info);
-		$recs=array();
-		foreach($info as $k=>$v){
-			if(is_array($v)){
-				$v=implode(', ',$v);
-			}
-			$recs[]=array(
-				'name'=>ucwords(str_replace('_',' ',$k)),
-				'value'=>$v
-			);
-		}
+		$recs=systemGetOSInfo();
 		$listopts=array('tab'=>'os',);
 		setView('list',1);
 		return;
@@ -87,7 +68,8 @@ switch(strtolower($_REQUEST['tab'])){
 			'tab'=>'network',
 			'speed_options'=>array(
 				'class'=>'align-right'
-			)
+			),
+			'enabled_checkmark'=>1,
 		);
 		setView('list',1);
 		return;
