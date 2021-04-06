@@ -240,20 +240,73 @@ function systemGetOSInfo(){
 		}
 	}
 	else{
-		$lines=getServerInfoFileData('/proc/net/dev');
-		array_shift($lines);array_shift($lines);
+		$recs=array();
+		//cpuinfo
+		$lines=getServerInfoFileData('/proc/cpuinfo');
+		$cpuinfo=array();
 		foreach($lines as $i=>$line){
 			$lines[$i]=trim($line);
+			list($k,$v)=preg_split('/\:/',$line,2);
+			$k=strtolower(trim($k));
+			$cpuinfo[$k]=trim($v);
 		}
-		$fields=array('name','recieve_bytes','recieve_packets','recieve_errs','recieve_drop','recieve_fifo','recieve_frame','recieve_compressed','recieve_multicast','transmit_bytes','transmit_packets','transmit_errs','transmit_drop','transmit_fifo','transmit_colls','transmit_carrier','transmit_compressed');
+		//echo printValue($cpuinfo);exit;
+		$recs[]=array(
+			'name'=>'Processor',
+			'value'=>$cpuinfo['model name']
+		);
+		
+		//osrelease
+		$tmp=cmdResults("cat /etc/os-release");
+		$lines=preg_split('/[\r\n]+/',$tmp['stdout']);
+		$osrelease=array();
 		foreach($lines as $i=>$line){
-			$parts=preg_split('/[\t\s]+/',$line);
-			$rec=array();
-			foreach($parts as $p=>$v){
-				$rec[$fields[$p]]=$v;
-			}
-			$recs[]=$rec;
+			$lines[$i]=trim($line);
+			list($k,$v)=preg_split('/[\:\=]/',$line,2);
+			$k=strtolower(trim($k));
+			$v=preg_replace('/^\"/','',$v);
+			$v=preg_replace('/\"$/','',$v);
+			$osrelease[$k]=trim($v);
 		}
+		$recs[]=array(
+			'name'=>'OS Name',
+			'value'=>$osrelease['name']
+		);
+		$recs[]=array(
+			'name'=>'OS Version',
+			'value'=>$osrelease['version']
+		);
+		//Architecture
+		$tmp=cmdResults("uname -i");
+		$recs[]=array(
+			'name'=>'OS Architecture',
+			'value'=>trim($tmp['stdout'])
+		);
+		//meminfo
+		$lines=getServerInfoFileData('/proc/meminfo');
+		$meminfo=array();
+		foreach($lines as $i=>$line){
+			$lines[$i]=trim($line);
+			list($k,$v)=preg_split('/\:/',$line,2);
+			$k=strtolower(trim($k));
+			$meminfo[$k]=trim($v);
+		}
+		$recs[]=array(
+			'name'=>'Physical Memory',
+			'value'=>verboseSize(systemConvertToBytes($meminfo['memtotal']))
+		);
+		//hostname
+		$tmp=cmdResults("hostname");
+		$recs[]=array(
+			'name'=>'Computer Name',
+			'value'=>trim($tmp['stdout'])
+		);
+		//Current Date
+		$tmp=cmdResults("date");
+		$recs[]=array(
+			'name'=>'Current Date',
+			'value'=>trim($tmp['stdout'])
+		);
 	}
 	return $recs;
 }
@@ -747,7 +800,7 @@ ENDOFCMD;
 	$recs=array_change_key_case($recs,CASE_LOWER);
 	foreach($recs as $i=>$rec){
 		$recs[$i]=array_change_key_case($recs[$i],CASE_LOWER);
-		$recs[$i]['size']=$rec['1b-blocks'];
+		$recs[$i]['size']=$recs[$i]['1b-blocks'];
 		unset($recs[$i]['1b-blocks']);	
 	}
 	return $recs;
