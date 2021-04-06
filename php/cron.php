@@ -12,6 +12,7 @@
 ini_set('max_execution_time', 72000);
 set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
+$posturl_timeout=36000; //allow crons that call posturl to run for up to 10 hours
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
 global $logfile;
@@ -375,10 +376,15 @@ ENDOFWHERE;
 				if(strtolower($crontype)=='page'){
 	            	//cron is a page.
 	            	$cmd=preg_replace('/^\/+/','',$cmd);
-	            	$url="http://{$CONFIG['name']}/{$cmd}";
+	            	$url="https://{$CONFIG['name']}/{$cmd}";
 	                $cron_result .= "CronURL: {$url}".PHP_EOL;
 	                $CRONTHRU['cron_result']=$cron_result;
-	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+	            	$postopts=array(
+	            		'-method'=>'GET',
+	            		'-follow'=>1,
+	            		'-ssl'=>1,
+	            		'-timeout'=>$posturl_timeout
+	            	);
 	            	foreach($CRONTHRU as $k=>$v){
 	            		$postopts[$k]=$v;
 	            	}
@@ -396,44 +402,49 @@ ENDOFWHERE;
 					}
 					//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
 	            	$post=postURL($url,$postopts);
-	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	$cron_result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
-	            	$cron_result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- CURL Info -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	            	$cron_result .= '------------------ Headers Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['headers']).PHP_EOL;
 	            	
 				}
 				elseif(strtolower($crontype)=='php command'){
 	            	//cron is a php command
-	                $cron_result .= '------------------ Output Received ---------------------------------------------'.PHP_EOL;
+	                $cron_result .= '----- Output Received -----'.PHP_EOL;
 	            	$out=evalPHP($cmd).PHP_EOL;
 	            	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
 	            	else{$cron_result.=$out.PHP_EOL;}
 				}
 				elseif(strtolower($crontype)=='url'){
 	            	//cron is a URL.
-	            	$postopts=array('-method'=>'GET','-follow'=>1,'-ssl'=>1);
+	            	$postopts=array(
+	            		'-method'=>'GET',
+	            		'-follow'=>1,
+	            		'-ssl'=>1,
+	            		'-timeout'=>$posturl_timeout
+	            	);
 	            	foreach($CRONTHRU as $k=>$v){
 	            		$postopts[$k]=$v;
 	            	}
 	            	$post=postURL($cmd,$postopts);
-	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	$cron_result .= '------------------ Headers Sent ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 					$cron_result .= printValue($post['headers_out']).PHP_EOL;
-					$cron_result .= '------------------ CURL Info ---------------------------------------------'.PHP_EOL;
+					$cron_result .= '----- CURL Info -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	            	$cron_result .= '------------------ Headers Received---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['headers']).PHP_EOL;
 	            	
 				}
 				else{
 	            	//cron is an OS Command
 	            	$out=cmdResults($cmd);
-	            	$cron_result .= '------------------ Content Received ---------------------------------------------'.PHP_EOL;
+	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= printValue($out).PHP_EOL;
 				}
 
@@ -500,6 +511,10 @@ ENDOFWHERE;
 	}
 }
 exit;
+/* cron functions */
+/** --- function cronCleanRecords
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function cronCleanRecords($cron=array()){
 	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}
@@ -522,7 +537,7 @@ function cronCleanRecords($cron=array()){
 	));
 	return $ok;
 }
-/**
+/** --- function cronLogTails
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronLogTails(){
@@ -539,23 +554,35 @@ function cronLogTails(){
 				continue;
 			}
 			$fname=getFileName($v);
-			$results='';
-			$cmd="tail -n {$rowcount} \"{$v}\"";
-			$ok=cronMessage($cmd);
-			$out=cmdResults($cmd);
-			//$results=$cmd.PHP_EOL;
-			if(strlen($out['stdout'])){
-				$results.=$out['stdout'];
+			$afile="{$tempdir}/{$fname}";
+			//skip if file has been updated within the last 10 seconds
+			$skip=0;
+			if(file_exists($afile)){
+				$mtime=filemtime($afile);
+				$etime=time()-$mtime;
+				if((integer)$etime < 10){
+					$skip=1;
+				}
 			}
-			if(strlen($out['stderr'])){
-				$results.=PHP_EOL.$out['stderr'];
+			if($skip==0){
+				$results='';
+				$cmd="tail -n {$rowcount} \"{$v}\"";
+				$ok=cronMessage($cmd);
+				$out=cmdResults($cmd);
+				//$results=$cmd.PHP_EOL;
+				if(strlen($out['stdout'])){
+					$results.=$out['stdout'];
+				}
+				if(strlen($out['stderr'])){
+					$results.=PHP_EOL.$out['stderr'];
+				}
+				setFileContents($afile,$results);
 			}
-			setFileContents("{$tempdir}/{$fname}",$results);
 		}
 	}
 }
 
-/**
+/**  --- function cronCheckSchema
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronCheckSchema(){
@@ -617,7 +644,7 @@ function cronCheckSchema(){
 	}
 	return true;
 }
-/**
+/** --- function cronMessage
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronMessage($msg){
@@ -637,8 +664,7 @@ function cronMessage($msg){
     }
 	return;
 }
-//---------- begin function cronUpdate
-/**
+/** --- function cronUpdate
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronUpdate($id,$params){
@@ -648,8 +674,7 @@ function cronUpdate($id,$params){
 	//echo "cronUpdate".printValue($ok).printValue($params);
 	return $ok;
 }
-//---------- begin function cronUpdate
-/**
+/** --- function cronDBConnect
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronDBConnect(){
