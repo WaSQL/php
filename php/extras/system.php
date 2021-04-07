@@ -167,17 +167,35 @@ function systemGetNetworkAdapters(){
 		}
 	}
 	else{
-		$lines=getServerInfoFileData('/proc/net/dev');
-		array_shift($lines);array_shift($lines);
-		foreach($lines as $i=>$line){
-			$lines[$i]=trim($line);
-		}
-		$fields=array('name','recieve_bytes','recieve_packets','recieve_errs','recieve_drop','recieve_fifo','recieve_frame','recieve_compressed','recieve_multicast','transmit_bytes','transmit_packets','transmit_errs','transmit_drop','transmit_fifo','transmit_colls','transmit_carrier','transmit_compressed');
-		foreach($lines as $i=>$line){
-			$parts=preg_split('/[\t\s]+/',$line);
-			$rec=array();
-			foreach($parts as $p=>$v){
-				$rec[$fields[$p]]=$v;
+		$cmd='ip -j addr show';
+		$out=cmdResults($cmd);
+		$nics=json_decode($out['stdout'],true);
+		//echo printValue($nics);exit;
+		$recs=array();
+		foreach($nics as $nic){
+			if($nic['link_type']=='loopback'){continue;}
+			$rec=array(
+				'name'=>$nic['ifname'],
+				'type'=>$nic['link_type'],
+				'mac_address'=>$nic['address'],
+			);
+			//ip addresses
+			$addrs=array();
+			foreach($nic['addr_info'] as $addr){
+				if($addr['family']=='inet6'){
+					$family='(v6) ';
+				}
+				else{
+					$family='(v4) ';
+				}
+				$addrs['ip_address'][]="{$family} {$addr['local']}";
+				if(isset($addr['broadcast'])){
+					$addrs['ip_broadcast'][]="{$family} {$addr['broadcast']}";
+				}
+				
+			}
+			foreach($addrs as $k=>$v){
+				$rec[$k]=implode('<br />'.PHP_EOL,$v);
 			}
 			$recs[]=$rec;
 		}
