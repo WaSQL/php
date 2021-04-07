@@ -169,12 +169,14 @@ function systemGetNetworkAdapters(){
 	else{
 		$cmd='ip -j addr show';
 		$out=cmdResults($cmd);
-		if(stringContains($out['stdout'],'is unknown')){
+		$nics=json_decode($out['stdout'],true);
+		if(!is_array($nics)){
 			$cmd='ip addr show';
 			$out=cmdResults($cmd);
-			echo nl2br($out['stdout']);exit;
+			echo nl2br($out['stdout']);
+			exit;
 		}
-		$nics=json_decode($out['stdout'],true);
+		
 		//echo printValue($nics);exit;
 		$recs=array();
 		foreach($nics as $nic){
