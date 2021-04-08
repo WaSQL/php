@@ -959,8 +959,8 @@ function wasqlSetMinify($backend=0){
 	//if backend return - nothing else needs to be loaded
 	if($backend==1){
 		loadExtrasCss(array('wacss','dropdown'));
-		loadExtrasCss(array('alertify','nicedit','admin','accordian','dropdown','socialbuttons','treeview'));
-		loadExtrasJs(array('alertify','html5','nicedit'));
+		loadExtrasCss(array('alertify','quill','admin','accordian','dropdown','socialbuttons','treeview'));
+		loadExtrasJs(array('alertify','html5','quill'));
 		loadExtras('system');
 		if($_SERVER['REMOTE_BROWSER']=='msie'){loadExtrasJs('html5_ie');}
 		return;
@@ -974,7 +974,7 @@ function wasqlSetMinify($backend=0){
 	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="editor"')){$wsiwyg=true;}
 	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="tinymce"')){$wsiwyg=true;}
 	elseif(stringContains($PAGE['body'].$TEMPLATE['body'],'_behavior="wysiwyg"')){$wsiwyg=true;}
-	if($wsiwyg){loadExtrasCss('nicedit');}
+	if($wsiwyg){loadExtrasCss('quill');}
 	//template
 	if(isset($TEMPLATE['name'])){$_SESSION['w_MINIFY']['template_name']=$TEMPLATE['name'];}
 	//page

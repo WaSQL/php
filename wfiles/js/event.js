@@ -1173,6 +1173,85 @@ function initDisplayif(){
 		}
 	}
 }
+function initQuill(){
+	let quills=document.querySelectorAll('textarea[data-behavior="quill"],textarea[data-behavior="richtext"],textarea[data-behavior="nicedit"]');
+	//console.log(quills.length);
+	for(i=0;i<quills.length;i++){
+		if(undefined != quills[i].processed){continue;}
+		quills[i].processed=1;
+		let qdiv=document.createElement('div');
+		quills[i].insertAdjacentElement('afterEnd',qdiv);
+		quills[i].style.display='none';
+		let toolbarOptions=new Array();
+		//allow the user to define what toolbar options are there
+		if(undefined == quills[i].dataset.toolbar){
+			toolbarOptions= [
+	            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+	            ['blockquote', 'code-block'],
+	            [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+	            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+	            [{ 'align': [] }],
+	            [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+	            [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+	            [{ 'direction': 'rtl' }],                         // text direction
+	            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+	            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+	            [ 'link', 'image', 'video' ],          // add's image support
+	            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+	            [{ 'font': [] }],
+	            ['clean']                                         // remove formatting button
+	        ];
+		}
+		else{
+			let bars=quills[i].dataset.toolbar.split(/[ ,]+/);
+			for(let b=0;b<bars.length;b++){
+				switch(bars[b].toLowerCase()){
+					case 'h1':toolbarOptions.push({ 'header': 1 });break;
+					case 'h2':toolbarOptions.push({ 'header': 2 });break;
+					case 'background':toolbarOptions.push({ 'background': [] });break;
+					case 'color':toolbarOptions.push({ 'color': [] });break;
+					case 'font':toolbarOptions.push({ 'font': [] });break;
+					case 'header':toolbarOptions.push({ 'header': [1, 2, 3, 4, 5, 6, false] });break;
+					case 'size':toolbarOptions.push({ 'size': ['small', false, 'large', 'huge'] });break;
+					case 'direction':toolbarOptions.push({ 'direction': 'rtl' });break;
+					case 'ol':toolbarOptions.push({ 'list': 'ordered'});break;
+					case 'ul':toolbarOptions.push({ 'list': 'bullet'});break;
+					case 'align':toolbarOptions.push({ 'align': [] });break;
+					case 'sub':toolbarOptions.push({ 'script': 'sub'});break;
+					case 'sup':toolbarOptions.push({ 'script': 'super'});break;
+					case 'outdent':toolbarOptions.push({ 'indent': '-1'});break;
+					case 'indent':toolbarOptions.push({ 'indent': '+1'});break;
+					case 'bold':
+					case 'italic':
+					case 'underline':
+					case 'strike':
+					case 'blockquote':
+					case 'code-block':
+					case 'link':
+					case 'image':
+					case 'video':
+					case 'clean':
+						toolbarOptions.push(bars[b].toLowerCase());
+					break;
+				}
+			}
+		}
+	    let quill = new Quill(qdiv, {
+	        modules: {
+	            toolbar: toolbarOptions
+	        },
+	        theme: 'snow'
+	    });
+	    if(quills[i].innerText.length){
+		    const delta = quill.clipboard.convert(quills[i].innerText);
+			quill.setContents(delta, 'silent');
+		}
+	    quill.textarea=quills[i];
+	    quill.on('text-change', function(delta, source) {
+	    	quill.textarea.innerHTML='<div class="ql-editor ql-snow">'+quill.root.innerHTML+'</div>';
+		});
+	}
+}
 /* initPin - function to assign hover to dom objects that have data-behavior="pin" so they hide onMouseOut */
 function initBehaviors(ajaxdiv){
 	//info: initializes special data-behavior atrributes
@@ -1183,6 +1262,7 @@ function initBehaviors(ajaxdiv){
 	//	<div data-behavior="@sum(one:two:three)"></div>
 	//	<div data-behavior="@raid(raidid)"></div><input type="text" name="raidid" value="123">
 	//replace title attributes with ours
+	try{initQuill();}catch(e){}
 	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
 	try{dragSortEnable('[data-behavior="dragsort"]');}catch(e){}
@@ -1556,19 +1636,6 @@ function initBehaviors(ajaxdiv){
 			//console.log(navEls[n]);
 
 		}
-		if(in_array("richtext",behaviors) || in_array("wysiwyg",behaviors) || in_array("nicedit",behaviors) || in_array("tinymce",behaviors)){
-			//EDITOR: WSIWYG or NICEDIT or TINYMCE
-			var id=navEls[n].getAttribute('id');
-			var h=getHeight(navEls[n]);
-			//set max height so that you can still see the panel
-			var m=500;
-			if(undefined != h && h < m){m=h;}
-			if(undefined != nicEditors[id]){
-				nicEditors[id].removeInstance(id);
-			}
-			nicEditors[id] = new nicEditor({fullPanel : true, maxHeight:m}).panelInstance(id,{hasPanel : true, maxHeight:m});
-		}
-		
 		if(in_array("tab_enable",behaviors)){
 			/* Enable tabs - */
 			navEls[n].onkeydown = function(e){

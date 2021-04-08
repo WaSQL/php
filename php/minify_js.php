@@ -43,6 +43,7 @@ if(isset($CONFIG['timezone'])){
 }
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
+include_once("{$progpath}/sessions.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
@@ -62,12 +63,28 @@ if(!file_exists($afile)){
 	exit;
 }
 $jstr=getFileContents($afile);
+$extras=array();
+if(isset($_SESSION['w_MINIFY']['extras_js'][0])){
+	foreach($_SESSION['w_MINIFY']['extras_js'] as $extra){
+		if(!in_array($extra,$extras)){
+			$extras[]=$extra;
+		}
+	}
+}
 $minify=json_decode($jstr,true);
 if(!is_array($minify)){
 	header('Content-type: application/javascript; charset=UTF-8');
 	echo '/*invalid _minify_ request*/';
 	exit;
 }
+if(isset($minify['extras'][0])){
+	foreach($minify['extras'] as $extra){
+		if(!in_array($extra,$extras)){
+			$extras[]=$extra;
+		}
+	}
+}
+$minify['extras']=$extras;
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
 	echo printValue($minify);

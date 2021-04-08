@@ -2649,16 +2649,13 @@ function buildFormTextarea($name,$params=array()){
 			case 'editor':
 			case 'tinymce':
 			case 'nicedit':
-				$white_wrap=1;
-				$params['data-behavior']="nicedit";
-				loadExtrasCss(array('nicedit'));
-				loadExtrasJs(array('nicedit'));
-				$params['wrap']="off";
-			break;
+			case 'richtext':
 			case 'wysiwyg':
-				loadExtrasCss(array('wacss'));
-				loadExtrasJs(array('wacss'));
-				$params['wrap']="soft";
+			case 'quill':
+				$white_wrap=1;
+				$params['data-behavior']="quill";
+				loadExtrasJs(array('quill'));
+				$params['wrap']="off";
 			break;
 			default:
 				loadExtrasJs(array('codemirror'));
@@ -12309,6 +12306,7 @@ function loadExtrasJs($extras){
         	case 'tcal':
         	case 'alertify':
         	case 'slidy':
+        	case 'quill':
         		//load the css required for these just in case they don't
         		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
         			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
@@ -12351,7 +12349,7 @@ function loadJsFile($files){
 				$file='http://code.jquery.com/ui/1.10.3/jquery-ui.min.js';
 			break;
         	case 'codemirror':loadExtrasJs('codemirror');break;
-			case 'nicedit':loadExtrasJs('nicedit');break;
+			case 'nicedit':loadExtrasJs('quill');break;
 		}
 		if(!in_array($file,$_SESSION['w_MINIFY']['jsfiles'])){
     		$_SESSION['w_MINIFY']['jsfiles'][]=$file;
@@ -14323,6 +14321,7 @@ function printValueHidden($v='',$title=''){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function processWysiwygPost($table,$id,$fields=array()){
+	return; //was not working
 	//converts inline images into images on the server in a dir called /mce/{table}
 	$rec=getDBRecord(array('-table'=>$table,'_id'=>$id,'-fields'=>implode(',',$fields)));
 	if(!is_array($rec)){return 0;}
@@ -14749,6 +14748,7 @@ function processActions(){
 							elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 							elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
 							elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
+							elseif($info[$field]['behavior']=='quill'){$tinymce[]=$field;}
 						}
 						//file type
 						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
@@ -15039,6 +15039,7 @@ function processActions(){
 					elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
 					elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
+					elseif($info[$field]['behavior']=='quill'){$tinymce[]=$field;}
 					//decode it if needs be
 					if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
 					elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}

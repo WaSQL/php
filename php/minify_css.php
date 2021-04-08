@@ -43,6 +43,7 @@ if(isset($CONFIG['timezone'])){
 }
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
+include_once("{$progpath}/sessions.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
@@ -62,12 +63,24 @@ if(!file_exists($afile)){
 	exit;
 }
 $csstr=getFileContents($afile);
-$minify=json_decode($csstr,true);
-if(!is_array($minify)){
-	header('Content-type: text/css; charset=UTF-8');
-	echo '/*invalid _minify_ request*/';
-	exit;
+$extras=array();
+if(isset($_SESSION['w_MINIFY']['extras_css'][0])){
+	foreach($_SESSION['w_MINIFY']['extras_css'] as $extra){
+		if(!in_array($extra,$extras)){
+			$extras[]=$extra;
+		}
+	}
 }
+$minify=json_decode($csstr,true);
+if(isset($minify['extras'][0])){
+	foreach($minify['extras'] as $extra){
+		if(!in_array($extra,$extras)){
+			$extras[]=$extra;
+		}
+	}
+}
+$minify['extras']=$extras;
+//echo printValue($minify);exit;
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
 	echo printValue($minify);
@@ -103,6 +116,7 @@ $files=array();
 minifyFiles($csspath,array('wasql'));
 minifyFiles($csspath,array('wasql_icons'));
 minifyFiles(realpath("{$csspath}/extras"),array('pikaday'));
+minifyFiles(realpath("{$csspath}/extras"),array('quill'));
 //Get any extras
 foreach($minify['extras'] as $extra){
 	minifyFiles(realpath("{$csspath}/extras"),$extra);
