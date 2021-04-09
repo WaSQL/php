@@ -1185,22 +1185,22 @@ function initQuill(){
 		let toolbarOptions=new Array();
 		//allow the user to define what toolbar options are there
 		if(undefined == quills[i].dataset.toolbar){
-			toolbarOptions= [
-	            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-	            ['blockquote', 'code-block'],
-	            [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-	            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-	            [{ 'align': [] }],
-	            [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-	            [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-	            [{ 'direction': 'rtl' }],                         // text direction
-	            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-	            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-	            [ 'link', 'image', 'video' ],          // add's image support
-	            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-	            [{ 'font': [] }],
-	            ['clean']                                         // remove formatting button
-	        ];
+			toolbarOptions.push(
+	            'bold', 'italic', 'underline', 'strike',        // toggled buttons
+	            'blockquote', 'code-block',
+	            { 'header': 1 }, { 'header': 2 },               // custom button values
+	            { 'list': 'ordered'}, { 'list': 'bullet' },
+	            { 'align': [] },
+	            { 'script': 'sub'}, { 'script': 'super' },      // superscript/subscript
+	            { 'indent': '-1'}, { 'indent': '+1' },          // outdent/indent
+	            { 'direction': 'rtl' },                         // text direction
+	            { 'size': ['small', false, 'large', 'huge'] },  // custom dropdown
+	            { 'header': [1, 2, 3, 4, 5, 6, false] },
+	             'image', 'attach' ,          					// add's image support
+	            { 'color': [] }, { 'background': [] },          // dropdown with defaults from theme
+	            { 'font': [] },
+	            'clean'                                       // remove formatting button
+	        );
 		}
 		else{
 			let bars=quills[i].dataset.toolbar.split(/[ ,]+/);
@@ -1231,25 +1231,113 @@ function initQuill(){
 					case 'image':
 					case 'video':
 					case 'clean':
+					case 'attach':
 						toolbarOptions.push(bars[b].toLowerCase());
 					break;
 				}
 			}
 		}
-	    let quill = new Quill(qdiv, {
+	    let myquill = new Quill(qdiv, {
 	        modules: {
 	            toolbar: toolbarOptions
 	        },
 	        theme: 'snow'
 	    });
+	    //toolbar
+	    let toolbar = myquill.getModule('toolbar');
+	    //attach
+		
+		//toolbar.addHandler('omega', this.fileHandler.bind(this));
+	    //add titles
+	    let attach=document.querySelector('button.ql-attach');
+	    if(undefined != attach){
+	    	attach.setAttribute('title','Attachment');
+	    	let fileInput = document.createElement('input');
+            fileInput.setAttribute('type', 'file');
+            fileInput.classList.add('ql-attach');
+            fileInput.addEventListener('change', function () {
+            	if (fileInput.files != null && fileInput.files[0] != null) {
+                	let reader = new FileReader();
+                	reader.filename=fileInput.files[0].name;
+                	reader.onload = function (e) {
+                  		let range = myquill.getSelection(true);
+                  		let img = Quill.import('formats/image');
+						img.className = 'ql-attachment';
+						Quill.register(img, true);
+						let fname=this.filename;
+        				myquill.insertEmbed(range.index||0, 'image',this.result,'user');
+        				//change back
+        				img.className = 'ql-image';
+						Quill.register(img, true);
+                  		fileInput.value = "";
+                  		decorateQuillAttachments(fname);
+                	};
+                	reader.readAsDataURL(fileInput.files[0]);
+              	}
+            });
+            toolbar.container.appendChild(fileInput);
+            attach.file=fileInput;
+	    	attach.onclick=function(){
+	    		this.file.click();
+	  		};
+	    }
+	    for(let i=0;i<toolbar.controls.length;i++){
+	    	let name=toolbar.controls[i][0]
+	    	let ctrl=toolbar.controls[i][1];
+	    	switch(name.toLowerCase()){
+	    		case 'header':
+	    			ctrl.setAttribute('title','H'+ctrl.value);
+	    		break;
+	    		case 'indent':
+	    			if(ctrl.value=='+1'){
+	    				ctrl.setAttribute('title','Indent');
+	    			}
+	    			else{
+	    				ctrl.setAttribute('title','Outdent');
+	    			}
+	    		break;
+	    		case 'direction':
+	    			ctrl.setAttribute('title','Direction: '+ctrl.value);
+	    		break;
+	    		default:
+	    			ctrl.setAttribute('title',ctrl.value||name);
+	    		break;
+	    	}	
+	    }
+	    //update the data
 	    if(quills[i].innerText.length){
-		    const delta = quill.clipboard.convert(quills[i].innerText);
-			quill.setContents(delta, 'silent');
+		    const delta = myquill.clipboard.convert(quills[i].innerText);
+			myquill.setContents(delta, 'silent');
 		}
-	    quill.textarea=quills[i];
-	    quill.on('text-change', function(delta, source) {
-	    	quill.textarea.innerHTML='<div class="ql-editor ql-snow">'+quill.root.innerHTML+'</div>';
+	    myquill.textarea=quills[i];
+	    myquill.on('text-change', function(delta, source) {
+	    	myquill.textarea.innerHTML='<div class="ql-editor ql-snow">'+myquill.root.innerHTML+'</div>';
 		});
+	}
+	decorateQuillAttachments();
+}
+function decorateQuillAttachments(fname){
+	//make ql-attachment links clickable
+	let els=document.querySelectorAll('.ql-editor img[alt],.ql-editor img.ql-attachment');
+	for(e=0;e<els.length;e++){
+		let cfname=els[e].alt||fname||'attachment';
+		if(els[e].processed==1){continue;}
+		els[e].processed=1;
+		if(els[e].src.indexOf('data:image') != -1){continue;}
+		els[e].alt=cfname;
+		els[e].style.textDecoration='underline';
+		els[e].style.color='#487da6';
+		els[e].style.cursor='pointer';
+		els[e].className='ql-attachment';
+		els[e].onclick=function(){
+			let link=document.createElement('a');
+			link.href=this.src;
+			link.target='_blank';
+			link.download=this.alt;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
 	}
 }
 /* initPin - function to assign hover to dom objects that have data-behavior="pin" so they hide onMouseOut */

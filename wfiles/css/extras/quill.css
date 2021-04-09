@@ -422,9 +422,38 @@
   outline: none;
 }
 .ql-snow.ql-toolbar input.ql-image[type=file],
-.ql-snow .ql-toolbar input.ql-image[type=file] {
+.ql-snow .ql-toolbar input.ql-image[type=file],
+.ql-snow.ql-toolbar input.ql-attach[type=file],
+.ql-snow .ql-toolbar input.ql-attach[type=file] {
   display: none;
 }
+
+.ql-toolbar button.ql-attach,
+.ql-editor img.ql-attachment{
+  font-family: 'wasql_icons' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.ql-toolbar button.ql-attach:before {
+  content: "\e911";
+}
+
+.ql-editor img.ql-attachment:before{
+  content: "\e911";
+}
+
+.ql-editor img.ql-attachment{
+  cursor:pointer;
+}
+
 .ql-snow.ql-toolbar button:hover,
 .ql-snow .ql-toolbar button:hover,
 .ql-snow.ql-toolbar button:focus,
