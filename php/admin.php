@@ -2342,10 +2342,7 @@ LIST_TABLE:
 					}
                 }
                 elseif(isset($_REQUEST['_index_drop']) && strlen($_REQUEST['_index_drop'])){
-					$ok=dropDBIndex(array(
-						'-table'	=> $_REQUEST['_table_'],
-						'-name' 	=> $_REQUEST['_index_drop'],
-					));
+					$ok=dropDBIndex($_REQUEST['_index_drop'],$_REQUEST['_table_']);
 					if(stringContains($ok,'error')){
                     	echo '<div class="w_tip w_pad w_border">'.$ok.'</div>'.PHP_EOL;
 					}
@@ -2395,9 +2392,8 @@ LIST_TABLE:
 			echo databaseListRecords(array(
 				'_menu'			=>$_REQUEST['_menu'],
 				'_table_'		=>$_REQUEST['_table_'],
-				'-tableclass'	=>"table table-striped table-bordered",
+				'-tableclass'	=>"table table-striped table-bordered responsive",
 				'-list'			=>$list,
-
 			));
 		break;
 		case 'properties':
@@ -2562,13 +2558,11 @@ LIST_TABLE:
 			echo '<table class="table table-responsive table-bordered">'.PHP_EOL;
             echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'.PHP_EOL;
             echo '	<tr valign="top"><td>'.PHP_EOL;
-            $height=300;
+            $height='300px';
             if(count($list) > 15){
-            	$height=round((count($list)*12),0);
-            	if($height > 700){$height=700;}
-            	if($height < 300){$height=300;}
+            	$height='60vh';
 			}
-			echo '		<textarea name="_schema" wrap="off" spellcheck="false" style="font-size:9pt;width:400px;height:'.$height.'px;">'.PHP_EOL;
+			echo '		<textarea name="_schema" wrap="off" spellcheck="false" style="padding:10px;font-size:9pt;width:400px;height:'.$height.'">'.PHP_EOL;
 			//echo printValue($list);
 			foreach($list as $field){
 				if(preg_match('/^\_/',$field['_dbfield'])){continue;}
@@ -2583,7 +2577,7 @@ LIST_TABLE:
 				echo "{$field['_dbfield']} {$type}\r\n";
             }
 			echo '		</textarea><br clear="both" />'.PHP_EOL;
-			echo '<div align="right">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'.PHP_EOL;
+			echo '<div align="right" style="margin-top:10px;">'.buildFormSubmit('Save Schema Changes','','','icon-save').'</div>'.PHP_EOL;
 			echo buildFormEnd();
 			echo '	</td></tr>'.PHP_EOL;
 			echo '</table>'.PHP_EOL;

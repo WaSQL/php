@@ -3259,6 +3259,15 @@ function addDBIndex($params=array()){
     	$fieldstr=substr($fieldstr,0,60);
 	}
 	if(!isset($params['-name'])){$params['-name']="{$prefix}_{$params['-table']}_{$fieldstr}";}
+	//index names can be up to 64 chars long.
+	if(strlen($params['-name']) > 64){
+		$md5=md5($fieldstr);
+		$params['-name']="{$prefix}_{$params['-table']}_{$md5}";
+		//if still to long then chop it off
+		if(strlen($params['-name']) > 64){
+			$params['-name']=substr($params['-name'],0,64);
+		}
+	}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
 	$query="alter table {$params['-table']} add{$fulltext}{$unique} index {$params['-name']} ({$fieldstr})";
@@ -11296,6 +11305,7 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 			}
 		}
 		if(!count($wheres)){continue;}
+		$fields_checked=implode(', ',$fields);
 		if(!in_array('_id',$fields)){array_unshift($fields,'_id');}
 		$where=implode(' or ',$wheres);
 		$fields=implode(',',$fields);
@@ -11311,7 +11321,8 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 							'tablename'=>$table,
 							'_id'		=> $rec['_id'],
 							'fieldname' => $key,
-							'search_count'=> substr_count(strtolower($val),$search)
+							'search_count'=> substr_count(strtolower($val),$search),
+							'fields_checked'=>$fields_checked
 						);
 					}
 				}
