@@ -151,6 +151,10 @@ function ctreeDBConnect(){
     		PDO::ATTR_ORACLE_NULLS 	=> PDO::NULL_EMPTY_STRING
 		);
 		$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+		if(!is_object($dbh_ctree)){
+			sleep(2);
+			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+		}
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
