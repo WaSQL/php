@@ -1,6 +1,23 @@
 <?php
 $starttime=microtime(true);
 $loadtimes=array();
+//verify a few functions
+if(!function_exists('simplexml_load_file')){
+	echo "You will first need to install php-xml for WaSQL to work.";
+	exit;
+}
+if(!function_exists('mb_internal_encoding')){
+	echo "You will first need to install php-mbstring for WaSQL to work.";
+	exit;
+}
+if(!function_exists('zip_open')){
+	echo "You will first need to install php-zip for WaSQL to work.";
+	exit;
+}
+if(!function_exists('curl_init')){
+	echo "You will first need to install php-curl for WaSQL to work.";
+	exit;
+}
 //Set upload size
 //Set Post Max Size
 ini_set('POST_MAX_SIZE', '128M');
