@@ -250,13 +250,13 @@ ENDOFWHERE;
 	            		$run=0;
 	            	}
 				}
-				//reset running if it has been over an hour
+				//reset running if it has been over post timeout
 				if($rec['running']==1){
 					if(strlen($rec['run_date'])){
 						$ctime=time();
 		            	$lastruntime=strtotime($rec['run_date']);
 		            	$diff=$ctime-$lastruntime;
-		            	if($diff > 7200){
+		            	if($diff > $posturl_timeout){
 	                    	$ok=editDBRecordById('_cron',$rec['_id'],array('running'=>0));
 						}
 					}
