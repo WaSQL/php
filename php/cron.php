@@ -376,13 +376,17 @@ ENDOFWHERE;
 				if(strtolower($crontype)=='page'){
 	            	//cron is a page.
 	            	$cmd=preg_replace('/^\/+/','',$cmd);
-	            	$url="https://{$CONFIG['name']}/{$cmd}";
+	            	$prefix='https';
+	            	if(isset($CONFIG['insecure']) && $CONFIG['insecure']==1){
+	            		$prefix='http';
+	            	}
+	            	$url="{$prefix}://{$CONFIG['name']}/{$cmd}";
 	                $cron_result .= "CronURL: {$url}".PHP_EOL;
 	                $CRONTHRU['cron_result']=$cron_result;
 	            	$postopts=array(
 	            		'-method'=>'GET',
 	            		'-follow'=>1,
-	            		'-ssl'=>1,
+	            		'-nossl'=>1,
 	            		'-timeout'=>$posturl_timeout
 	            	);
 	            	foreach($CRONTHRU as $k=>$v){
@@ -401,20 +405,27 @@ ENDOFWHERE;
 						}
 					}
 					//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
+					cronMessage("calling {$url}");
 	            	$post=postURL($url,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
+	            	if(isset($post['headers_out'][0])){
+		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
+		            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
+		            }
 	            	$cron_result .= '----- CURL Info -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers']).PHP_EOL;
+	            	if(isset($post['headers'][0])){
+		            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
+		            	$cron_result .= printValue($post['headers']).PHP_EOL;
+		            }
 	            	
 				}
 				elseif(strtolower($crontype)=='php command'){
 	            	//cron is a php command
+	            	cronMessage("running eval code");
 	                $cron_result .= '----- Output Received -----'.PHP_EOL;
+
 	            	$out=evalPHP($cmd).PHP_EOL;
 	            	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
 	            	else{$cron_result.=$out.PHP_EOL;}
@@ -424,25 +435,31 @@ ENDOFWHERE;
 	            	$postopts=array(
 	            		'-method'=>'GET',
 	            		'-follow'=>1,
-	            		'-ssl'=>1,
+	            		'-nossl'=>1,
 	            		'-timeout'=>$posturl_timeout
 	            	);
 	            	foreach($CRONTHRU as $k=>$v){
 	            		$postopts[$k]=$v;
 	            	}
+	            	cronMessage("calling $cmd");
 	            	$post=postURL($cmd,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-					$cron_result .= printValue($post['headers_out']).PHP_EOL;
+	            	if(isset($post['headers_out'][0])){
+		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
+						$cron_result .= printValue($post['headers_out']).PHP_EOL;
+					}
 					$cron_result .= '----- CURL Info -----'.PHP_EOL;
 	            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers']).PHP_EOL;
+	            	if(isset($post['headers'][0])){
+		            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
+		            	$cron_result .= printValue($post['headers']).PHP_EOL;
+		            }
 	            	
 				}
 				else{
 	            	//cron is an OS Command
+	            	cronMessage("running $cmd");
 	            	$out=cmdResults($cmd);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= printValue($out).PHP_EOL;
