@@ -901,6 +901,7 @@ function sqliteGetDBTables($params=array()){
 	WHERE 
 	    type ='table' AND 
 	    name NOT LIKE 'sqlite_%'
+	ORDER BY name
 ENDOFQUERY;
 	$recs=sqliteQueryResults($query);
 	//echo $query.printValue($recs);exit;
