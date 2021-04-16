@@ -684,7 +684,7 @@ function postgresqlDBConnect(){
 	}
 	//echo printValue($params);exit;
 	global $dbh_postgresql;
-	if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
+	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	try{
 		//echo $params['-connect'].'<br>'.PHP_EOL;
 		$dbh_postgresql = pg_pconnect($params['-connect']);
