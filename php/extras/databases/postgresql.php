@@ -682,7 +682,7 @@ function postgresqlDBConnect(){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
 		exit;
 	}
-	echo printValue($params);exit;
+	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	try{
