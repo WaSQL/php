@@ -682,7 +682,7 @@ function postgresqlDBConnect(){
 		echo "postgresqlDBConnect error: no connect params".printValue($params);
 		exit;
 	}
-	//echo printValue($params);exit;
+	echo printValue($params);exit;
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	try{
@@ -2069,6 +2069,10 @@ function postgresqlParseConnectParams($params=array()){
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
 			$params['-connect'].=" connect_timeout=5";
+		}
+		//add sslmode=disable
+		if(!stringContains($params['-connect'],'sslmode')){
+			$params['-connect'].=" sslmode=disable";
 		}
 	}
 	else{
