@@ -1345,14 +1345,30 @@ function jsDocs(id){
         }
 function getHeight(id){
 	//info: getHeight - height of object. defaults to window object
-	if(undefined == id){return document.body.clientHeight;}
-	var idObj=getObject(id);
+	let idObj=getObject(id);
+	if(undefined == idObj){return document.body.clientHeight;}
+	if(undefined != idObj.style.height){
+		return idObj.style.height;
+	}
+	
 	if(undefined == idObj){return null;}
 	if(undefined != idObj.offsetHeight && parseInt(idObj.offsetHeight) > 0){return idObj.offsetHeight;}
 	if(undefined != idObj.style.height && parseInt(idObj.style.height) > 0){return idObj.style.height;}
 	if(undefined != idObj.innerHeight){return idObj.innerHeight;}
 	return idObj.offsetHeight;
+}
+function commonGetHeight(id){
+	//info: getHeight - height of object. defaults to window object
+	let idObj=getObject(id);
+	if(undefined == idObj){return document.body.clientHeight;}
+	if(undefined != idObj.style.height){
+		return idObj.style.height;
 	}
+	if(undefined != idObj.offsetHeight && parseInt(idObj.offsetHeight) > 0){return parseInt(idObj.offsetHeight);}
+	if(undefined != idObj.style.height && parseInt(idObj.style.height) > 0){return parseInt(idObj.style.height);}
+	if(undefined != idObj.innerHeight){return idObj.innerHeight || 0;}
+	return idObj.offsetHeight || 0;
+}
 function getTextPixelWidthHeight(id){
 	if(undefined == id){return 0;}
 	var idObj=getObject(id);
@@ -1583,7 +1599,20 @@ function getWidth(id){
 	if(undefined != idObj.style.width && parseInt(idObj.style.width) > 0){return idObj.style.width;}
 	if(undefined != idObj.innerWidth){return idObj.innerWidth;}
 	return idObj.offsetWidth;
+}
+function commonGetWidth(id){
+	//info: returns the width of the specified object or id
+	let idObj=getObject(id);
+	if(undefined == idObj){return document.body.clientWidth;}
+	if(undefined != idObj.style.width){
+		return idObj.style.width;
 	}
+	if(undefined == idObj){return '?';}
+	if(undefined != idObj.offsetWidth && parseInt(idObj.offsetWidth) > 0){return idObj.offsetWidth;}
+	if(undefined != idObj.style.width && parseInt(idObj.style.width) > 0){return idObj.style.width;}
+	if(undefined != idObj.innerWidth){return idObj.innerWidth;}
+	return idObj.offsetWidth;
+}
 function getWidthHeight(id){
 	//info: returns array of the width and height of the specified object or id
 	if(undefined == id){return [document.body.clientWidth,document.body.clientHeight];}

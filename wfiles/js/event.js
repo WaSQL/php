@@ -560,17 +560,15 @@ function showTooltip(obj,txt,params){
 	tipdiv.innerHTML=txt;
 	let pos=findPos(obj);
 	let x=y=h=w=th=0;
-	h=getHeight(obj);
+	h=commonGetHeight(obj) || 12;
+	w=commonGetWidth(obj) || 12;
 	if(params.position=='bottom'){
-    	h=getHeight(obj);
-    	w=getWidth(obj);
     	y=pos.y+h+6;
     	x=pos.x;
 	}
 	else{
 		//default to tip on right of image
         tipdiv.setAttribute("class",'left');
-    	w=getWidth(obj);
     	y=pos.y;
     	x=pos.x+w+6;
 	}
