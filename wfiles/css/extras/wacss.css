@@ -47,7 +47,53 @@ body{
 .title img, img.title,.wacss-title img,img.wacss-title{height: 52px;}
 .subtitle,.wacss-subtitle{font-size: 1.25rem !important;}
 .subtitle img, img.subtitle,.wacss-subtitle img,img.wacss-subtitle{height: 28px;}
-
+/* Bulma navbar addons */
+@media screen and (max-width:1023px) {
+    .navbar-brand .navbar-dropdown.is-boxed {
+        border-radius: 6px;
+        border-top: none;
+        box-shadow: 0 8px 8px rgba(10,10,10,.1),0 0 0 1px rgba(10,10,10,.1);
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        top: calc(100% + (-4px));
+        transform: translateY(-5px);
+        transition-duration: 86ms;
+        transition-property: opacity,transform;
+    }
+    .navbar-brand .navbar-dropdown {
+        background-color: #fff;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+        border-top: 2px solid #dbdbdb;
+        box-shadow: 0 8px 8px rgba(10,10,10,.1);
+        display: none;
+        font-size: .875rem;
+        left: 0;
+        min-width: 100%;
+        position: absolute;
+        top: 100%;
+        z-index: 20;
+    }
+    .navbar.is-spaced .navbar-brand  .navbar-item.is-active .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-active .navbar-dropdown.is-boxed, 
+    .navbar.is-spaced .navbar-brand .navbar-item.is-hoverable:focus .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:focus .navbar-dropdown.is-boxed, 
+    .navbar.is-spaced .navbar-brand .navbar-item.is-hoverable:focus-within .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:focus-within .navbar-dropdown.is-boxed, 
+    .navbar.is-spaced .navbar-brand .navbar-item.is-hoverable:hover .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:hover .navbar-dropdown.is-boxed {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    .navbar-brand .navbar-item.is-active .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:focus .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:focus-within .navbar-dropdown, 
+    .navbar-brand .navbar-item.is-hoverable:hover .navbar-dropdown {
+        display: block;
+    }
+}
 /* Bulma menu overrides and addons*/
 .menu{
   padding:.5rem 1.5rem;
