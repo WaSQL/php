@@ -795,16 +795,31 @@ function ctreeQueryResults($query='',$params=array()){
 	    return json_encode($error);
 	}
 	try{
-		$data = $dbh_ctree->query($query);
-		$recs = ctreeEnumQueryResults($data,$params,$query);
-		$dbh_ctree=null;
-		return $recs;
+		$data = $dbh_ctree->query($query);	
 	}
 	catch (Exception $e) {
-		$error=array("ctreeQueryResults Connect Error",$e,$query);
-	    debugValue($error);
-	    return json_encode($error);
+		$errstr=json_encode($e);
+		//check for 17798 CT - file is blocked, retry later
+		if(stringContains($errstr,'retry later')){
+			sleep(10);
+			try{
+				$data = $dbh_ctree->query($query);
+			}
+			catch (Exception $e) {
+				$error=array("ctreeQueryResults Query Failed after 2nd attempt",$e,$query);
+			    debugValue($error);
+			    return json_encode($error);
+			}
+		}
+		else{
+			$error=array("ctreeQueryResults Query Error",$e,$query);
+		    debugValue($error);
+		    return json_encode($error);
+		}
 	}
+	$recs = ctreeEnumQueryResults($data,$params,$query);
+	$dbh_ctree=null;
+	return $recs;
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
