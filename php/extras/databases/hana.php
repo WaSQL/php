@@ -649,6 +649,7 @@ function hanaDBConnect($params=array()){
 		echo "hanaDBConnect error: no dbname or connect param".printValue($params);
 		exit;
 	}
+	//echo printValue($params);exit;
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
 			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
@@ -672,7 +673,7 @@ function hanaDBConnect($params=array()){
 			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
+			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
 		}
 		if(!is_resource($dbh_hana)){
 			//wait a few seconds and try again
@@ -1544,23 +1545,27 @@ function hanaQueryResults($query,$params=array()){
 	if(!is_resource($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
+	$dbh_hana_result='';
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
     	debugValue(array("hanaQueryResults Connect Error",$e));
     	return json_encode($e);
 	}
+	if(!isset($params['-longreadlen'])){
+		$params['-longreadlen']=131027;
+	}
 	try{
 		//check for -timeout
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds
-			$result = odbc_prepare($dbh_hana,$query);
-			odbc_setoption($result, 2, 0, $params['-timeout']);
-			odbc_execute($result);
+			$dbh_hana_result = odbc_prepare($dbh_hana,$query);
+			odbc_setoption($dbh_hana_result, 2, 0, $params['-timeout']);
+			odbc_execute($dbh_hana_result);
 		}
 		else{
-			$result=odbc_exec($dbh_hana,$query);	
+			$dbh_hana_result=odbc_exec($dbh_hana,$query);	
 		}
-		if(!$result){
+		if(!$dbh_hana_result){
 			$errstr=odbc_errormsg($dbh_hana);
 			if(!strlen($errstr)){return array();}
         	$err=array(
@@ -1575,14 +1580,14 @@ function hanaQueryResults($query,$params=array()){
 				$dbh_hana=hanaDBConnect($params);
 				if(isset($params['-timeout']) && isNum($params['-timeout'])){
 					//sets the query to timeout after X seconds
-					$result = odbc_prepare($dbh_hana,$query);
-					odbc_setoption($result, 2, 0, $params['-timeout']);
-					odbc_execute($result);
+					$dbh_hana_result = odbc_prepare($dbh_hana,$query);
+					odbc_setoption($dbh_hana_result, 2, 0, $params['-timeout']);
+					odbc_execute($dbh_hana_result);
 				}
 				else{
-					$result=odbc_exec($dbh_hana,$query);	
+					$dbh_hana_result=odbc_exec($dbh_hana,$query);	
 				}
-				if(!$result){
+				if(!$dbh_hana_result){
 					$errstr=odbc_errormsg($dbh_hana);
 					if(!strlen($errstr)){return array();}
 					$err=array(
@@ -1602,14 +1607,14 @@ function hanaQueryResults($query,$params=array()){
 		$err=$e->errorInfo;
 		return json_encode($err);
 	}
-	$rowcount=odbc_num_rows($result);
+	$rowcount=odbc_num_rows($dbh_hana_result);
 	if($rowcount==0 && isset($params['-forceheader'])){
 		$fields=array();
-		for($i=1;$i<=odbc_num_fields($result);$i++){
-			$field=strtolower(odbc_field_name($result,$i));
+		for($i=1;$i<=odbc_num_fields($dbh_hana_result);$i++){
+			$field=strtolower(odbc_field_name($dbh_hana_result,$i));
 			$fields[]=$field;
 		}
-		odbc_free_result($result);
+		odbc_free_result($dbh_hana_result);
 		$rec=array();
 		foreach($fields as $field){
 			$rec[$field]='';
@@ -1618,7 +1623,7 @@ function hanaQueryResults($query,$params=array()){
 		return $recs;
 	}
 	if(isset($params['-count'])){
-		odbc_free_result($result);
+		odbc_free_result($dbh_hana_result);
     	return $rowcount;
 	}
 	$header=0;
@@ -1635,7 +1640,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 		
     	if(!isset($fh) || !is_resource($fh)){
-			odbc_free_result($result);
+			odbc_free_result($dbh_hana_result);
 			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
@@ -1646,18 +1651,13 @@ function hanaQueryResults($query,$params=array()){
 	}
 	else{$recs=array();}
 	if(isset($params['-binmode'])){
-		odbc_binmode($result, $params['-binmode']);
+		odbc_binmode($dbh_hana_result, $params['-binmode']);
 	}
 	if(isset($params['-longreadlen'])){
-		odbc_longreadlen($result,$params['-longreadlen']);
+		odbc_longreadlen($dbh_hana_result,$params['-longreadlen']);
 	}
 	$i=0;
-	while(odbc_fetch_row($result)){
-		$rec=array();
-	    for($z=1;$z<=odbc_num_fields($result);$z++){
-			$field=strtolower(odbc_field_name($result,$z));
-	        $rec[$field]=odbc_result($result,$z);
-	    }
+	while($rec=odbc_fetch_array($dbh_hana_result)){
 	    if(isset($params['-results_eval'])){
 			$rec=call_user_func($params['-results_eval'],$rec);
 		}
@@ -1691,7 +1691,7 @@ function hanaQueryResults($query,$params=array()){
 			$recs[]=$rec;
 		}
 	}
-	odbc_free_result($result);
+	odbc_free_result($dbh_hana_result);
 	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
