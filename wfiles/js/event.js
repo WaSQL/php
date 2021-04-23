@@ -560,8 +560,8 @@ function showTooltip(obj,txt,params){
 	tipdiv.innerHTML=txt;
 	let pos=findPos(obj);
 	let x=y=h=w=th=0;
-	h=commonGetHeight(obj) || 12;
-	w=commonGetWidth(obj) || 12;
+	h=obj.offsetHeight || obj.innerHeight || commonGetHeight(obj) || 24;
+	w=obj.offsetWidth || obj.innerWidth || commonGetWidth(obj) || 24;
 	if(params.position=='bottom'){
     	y=pos.y+h+6;
     	x=pos.x;
