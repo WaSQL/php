@@ -560,18 +560,28 @@ function showTooltip(obj,txt,params){
 	tipdiv.innerHTML=txt;
 	let pos=findPos(obj);
 	let x=y=h=w=th=0;
-	h=obj.offsetHeight || obj.innerHeight || commonGetHeight(obj) || 24;
-	w=obj.offsetWidth || obj.innerWidth || commonGetWidth(obj) || 24;
+	h=obj.offsetHeight || obj.innerHeight || getHeight(obj) || 24;
+	w=obj.offsetWidth || obj.innerWidth || getWidth(obj) || 24;
+	th=tipdiv.offsetHeight || tipdiv.innerHeight || getHeight(tipdiv) || 24;
+	tw=tipdiv.offsetWidth || tipdiv.innerWidth || getWidth(tipdiv) || 24;
+	let viewport=getViewPort();
+	//console.log('w='+w+', h='+h+', th='+th+', tw='+tw);
 	if(params.position=='bottom'){
-    	y=pos.y+h+6;
-    	x=pos.x;
+    	y=parseInt(pos.y)+h+6;
+    	x=parseInt(pos.x);
 	}
 	else{
 		//default to tip on right of image
         tipdiv.setAttribute("class",'left');
-    	y=pos.y;
-    	x=pos.x+w+6;
+    	y=parseInt(pos.y);
+    	x=parseInt(pos.x)+w+6;
+    	//console.log('Initial: x='+x+', y='+y);
+    	if(x+tw > parseInt(viewport.w)){
+    		//x=parseInt(viewport.w)-tw-w-6;
+    	}
 	}
+	//console.log('Final: x='+x+', y='+y);
+	//console.log(viewport);
 	tipdiv.style.top=y+"px";
     tipdiv.style.left=x+"px";
  	
@@ -996,8 +1006,8 @@ function centerObject(obj,fade){
 	if(undefined == fade){fade=0;}
 	let sObj=getObject(obj);
 	if(undefined == sObj){return false;}
-	let w=getWidth(sObj);
-	let h=getHeight(sObj);
+	let w=sObj.offsetWidth || sObj.innerWidth || getWidth(sObj) || 100;
+	let h=sObj.offsetHeight || sObj.innerHeight || getHeight(sObj) || 100;
 	let vp=getViewportSize();
 	//window.status=obj+':'+w+','+h;
 	//var whx=getWidthHeight(sObj);
@@ -1051,8 +1061,8 @@ function showOnScreen(obj){
 	sObj.style.visibility='hidden';
 	sObj.style.display='block';
 	//get object's width and height
-	var w=getWidth(sObj);
-	var h=getHeight(sObj);
+	var w=sObj.offsetWidth || sObj.innerWidth|| getWidth(sObj) || 100;
+	var h=sObj.offsetHeight || sObj.innerHeight || getHeight(sObj) || 100;
 	//get screen width and height
 	var screen=getViewPort();
 	var sw=getWidth();
@@ -1080,7 +1090,7 @@ function showOnScreen(obj){
    	}
 /*getViewPort - Space within the browser window is known as the 'viewport' */
 function getViewPort(){
-	var viewport={};
+	let viewport={};
 	if (typeof window.innerWidth != 'undefined')
 	 {
 	      viewport.w = window.innerWidth;
@@ -1099,13 +1109,12 @@ function getViewPort(){
 
 	 // older versions of IE
 
-	 else
-	 {
+	 else{
 	       viewport.w = document.getElementsByTagName('body')[0].clientWidth;
 	       viewport.h = document.getElementsByTagName('body')[0].clientHeight;
 	 }
   return viewport;
-  }
+}
 // Menu function to assign hover to li and hide w_select select tags on hover
 sfHover = function() {
 	//assign hover to li and hide w_select select tags on hover
