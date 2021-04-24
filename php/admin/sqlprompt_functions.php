@@ -17,6 +17,8 @@ function sqlpromptShowlist($recs,$listopts=array()){
 }
 function sqlpromptCaptureFirstRows($rec,$max=30){
 	global $recs;
+	global $sqlpromptCaptureFirstRows_count;
+	$sqlpromptCaptureFirstRows_count+=1;
 	if(count($recs) < $max){
 		$recs[]=$rec;
 	}

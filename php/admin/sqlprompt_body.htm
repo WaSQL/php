@@ -63,56 +63,55 @@
 	}
 	document.onkeydown = sqlpromptCheckKey;
 </script>
-<div class="container-fluid">
-	<div class="row" style="margin-bottom:0px;">
-		<div class="col-sm-12">
-			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> <translate>SQL Prompt</translate></h2>
+<div>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
+		<span class="icon-prompt"></span> 
+		<translate>SQL Prompt</translate>
+	</h2>
+</div>
+<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
+	<div data-content="tables and fields">
+		<div class="w_bold w_big"><translate>Tables & Fields</translate></div>
+		<div id="table_fields">
+			<?=renderView('tables_fields',$tables,'tables');?>
 		</div>
+		<view:monitor_tools>
+		<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><translate>Admin Tools</translate></div>
+		<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
+			<?=renderView('monitor',$tables,'tables');?>
+		</div>
+		</view:monitor_tools>
+		<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools',$tables,'tables');?>
 	</div>
-	<div class="row">
-		<div class="col-sm-3">
-			<div class="w_bold w_big"><translate>Tables & Fields</translate></div>
-			<div id="table_fields">
-				<?=renderView('tables_fields',$tables,'tables');?>
-			</div>
-			<view:monitor_tools>
-			<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><translate>Admin Tools</translate></div>
-			<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
-				<?=renderView('monitor',$tables,'tables');?>
-			</div>
-			</view:monitor_tools>
-			<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools',$tables,'tables');?>
-		</div>
-		<div class="col-sm-9">
-			<?=renderView('tabs',$tabs,'tabs');?>
-			<div>
-				<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
-					<input type="hidden" name="_menu" value="sqlprompt">
-					<input type="hidden" name="db" value="<?=configValue('database');?>" />
-					<input type="hidden" name="func" value="sql" />
-					<input type="hidden" name="setprocessing" value="setprocessing" />
-					<input type="hidden" name="sql_select" value="" />
-					<input type="hidden" name="cursor_pos" value="" />
-					<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="padding:10px;height:30vh;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
-					<div class="row w_padtop">
-						<div class="col-sm-3">
-							<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
-						</div>
-						<div class="col-sm-4 text-right w_grey w_small">
-							<translate>Note: You can drag and drop .sql files onto the textarea</translate>
-						</div>
-						<div class="col-sm-2 align-right w_gray w_small" id="results_count"></div>
-						<div class="col-sm-3 align-right">
-							<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
-						</div>
+	<div data-content="sqlform" style="margin-left:5px;flex:1;">
+		<?=renderView('tabs',$tabs,'tabs');?>
+		<div >
+			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
+				<input type="hidden" name="_menu" value="sqlprompt">
+				<input type="hidden" name="db" value="<?=configValue('database');?>" />
+				<input type="hidden" name="func" value="sql" />
+				<input type="hidden" name="setprocessing" value="setprocessing" />
+				<input type="hidden" name="sql_select" value="" />
+				<input type="hidden" name="cursor_pos" value="" />
+				<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="padding:10px;height:30vh;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
+					<div>
+						<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
 					</div>
-				</form>
-			</div>
-			<div id="sqlprompt_results" style="position:relative;">
-				<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
-			</div>
-			<div style="display:none"><div id="nulldiv"></div></div>
+					<div class="align-right w_grey w_small">
+						<translate>Note: You can drag and drop .sql files onto the textarea</translate>
+					</div>
+					<div class="align-right w_gray w_small" id="results_count"></div>
+					<div class="align-right">
+						<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
+					</div>
+				</div>
+			</form>
 		</div>
+		<div id="sqlprompt_results" style="position:relative;">
+			<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
+		</div>
+		<div style="display:none"><div id="nulldiv"></div></div>
 	</div>
 </div>
 </view:default>
@@ -211,17 +210,15 @@
 
 <view:results>
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
-	<div class="row w_padtop">
-		<div class="col-sm-12" style="overflow:auto;">
-			<view:success>
-				<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results. Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
-			<?=sqlpromptListResults($recs);?>		
-			</view:success>
-			<view:failure>
-			<?=buildOnLoad("setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
-			<?=nl2br($error);?>
-			</view:failure>
-		</div>
+	<div class="w_padtop" style="overflow:auto;">
+		<view:success>
+			<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results. Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
+		<?=sqlpromptListResults($recs);?>		
+		</view:success>
+		<view:failure>
+		<?=buildOnLoad("setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
+		<?=nl2br($error);?>
+		</view:failure>
 	</div>
 </view:results>
 

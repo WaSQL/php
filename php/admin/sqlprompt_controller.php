@@ -4,6 +4,8 @@
 	global $_SESSION;
 	global $USER;
 	global $recs;
+	global $sqlpromptCaptureFirstRows_count;
+	$sqlpromptCaptureFirstRows_count=0;
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
@@ -136,15 +138,20 @@
 				}
 			}
 			$tpath=getWasqlPath('php/temp');
-			$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
+			$shastr=sha1($_SESSION['sql_last']);
+			$filename="sqlprompt_{$shastr}.csv";
 			$afile="{$tpath}/{$filename}";
+			$logname="sqlprompt_{$shastr}.log";
+			$lfile="{$tpath}/{$logname}";
 			if(file_exists($afile)){
 				unlink($afile);
 			}
 			$params=array(
-				'-binmode'=>ODBC_BINMODE_CONVERT,
-				'-longreadlen'=>65535,
+				//'-binmode'=>ODBC_BINMODE_PASSTHRU,
+				'-longreadlen'=>131027,
 				'-filename'=>$afile,
+				'-logfile'=>$lfile,
+				//'-cursor'=>SQL_CUR_USE_ODBC,
 				'-query'=>$_SESSION['sql_last'],
 				'-process'=>'sqlpromptCaptureFirstRows'
 			);
@@ -223,9 +230,10 @@
 				unlink($afile);
 			}
 			$params=array(
-				'-binmode'=>ODBC_BINMODE_CONVERT,
-				'-longreadlen'=>65535,
+				//'-binmode'=>ODBC_BINMODE_CONVERT,
+				'-longreadlen'=>131027,
 				'-filename'=>$afile,
+				//'-cursor'=>SQL_CUR_USE_ODBC,
 				'-query'=>$_SESSION['sql_last'],
 			);
 			$recs=array();
