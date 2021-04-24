@@ -3,7 +3,7 @@ loadExtras('translate');
 function sqlpromptShowlist($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,
-		'-tableclass'=>'table bordered striped',
+		'-tableclass'=>'table bordered striped responsive',
 		'-hidesearch'=>1,
 		'-sorting'=>1
 	);
@@ -32,7 +32,7 @@ function sqlpromptListResults($recs){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped bordered condensed'
+		'-tableclass'=>'table striped bordered condensed responsive'
 	);
 	$sumfields=array();
 	foreach($recs[0] as $k=>$v){
@@ -54,7 +54,7 @@ function sqlpromptListFields($recs){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped condensed',
+		'-tableclass'=>'table striped condensed responsive',
 		'-listfields'=>'_dbfield,_dbtype_ex',
 		'-thclass'=>'w_smaller',
 		'-tdclass'=>'w_smaller',
@@ -71,7 +71,7 @@ function sqlpromptListIndexes($recs){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped condensed',
+		'-tableclass'=>'table striped condensed responsive',
 		'-listfields'=>'key_name,column_name,is_primary,is_unique,seq_in_index',
 		'-thclass'=>'w_smaller',
 		'-tdclass'=>'w_smaller',

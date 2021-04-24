@@ -85,7 +85,7 @@
 	</div>
 	<div data-content="sqlform" style="margin-left:5px;flex:1;">
 		<?=renderView('tabs',$tabs,'tabs');?>
-		<div >
+		<div>
 			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="db" value="<?=configValue('database');?>" />
@@ -102,14 +102,14 @@
 						<translate>Note: You can drag and drop .sql files onto the textarea</translate>
 					</div>
 					<div  style="flex:1;" class="align-right w_gray w_small" id="results_count"></div>
-					<div class="align-right">
+					<div class="align-right" style="margin-left:3px;">
 						<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
 					</div>
 				</div>
 			</form>
 		</div>
-		<div id="sqlprompt_results" style="position:relative;">
-			<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
+		<div id="sqlprompt_results" style="display:grid;">
+			<div id="setprocessing"></div>
 		</div>
 		<div style="display:none"><div id="nulldiv"></div></div>
 	</div>
@@ -212,7 +212,7 @@
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
 	<div class="w_padtop" style="overflow:auto;">
 		<view:success>
-			<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results. Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
+			<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results<br> Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
 		<?=sqlpromptListResults($recs);?>		
 		</view:success>
 		<view:failure>
