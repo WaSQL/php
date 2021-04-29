@@ -155,11 +155,37 @@
 				'-query'=>$_SESSION['sql_last'],
 				'-process'=>'sqlpromptCaptureFirstRows'
 			);
+
 			$recs_show=30;
 			$recs=array();
 			$begin=microtime(true);
 			$recs_count=dbGetRecords($db['name'],$params);
 			$qtime=microtime(true)-$begin;
+			/* log queries? */
+			if(isset($CONFIG['log_queries'])){
+				$log=0;
+				if($CONFIG['log_queries']==1){$log=1;}
+				$unames=preg_split('/\,/',$CONFIG['log_queries']);
+				foreach($unames as $uname){
+					$uname=strtolower(trim($uname));
+					if($USER['username']==$uname){$log=1;}
+				}
+				if($log==1){
+					$id=addDBRecord(array(
+						'-table'=>'_queries',
+						'page_id'=>0,
+						'query'=>$params['-query'],
+						'function_name'=>'sql_prompt',
+						'run_length'=>$qtime,
+						'row_count'=>$recs_count,
+						'user_id'=>$USER['_id'],
+						'tablename'=>'n/a',
+						'fields'=>implode(',',array_keys($recs[0])),
+						'field_count'=>count(array_keys($recs[0]))
+					));
+					//echo "Logged".printValue($id);exit;
+				}
+			}
 			if($qtime < 1){
 				$qtime_verbose=number_format($qtime,3).' seconds';
 			}
