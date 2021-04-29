@@ -226,17 +226,37 @@ var SignaturePad = function (t) {
                 let editid = this.a._canvas.id.replace("_canvas", "_edit");
                 let editimg=document.querySelector('#'+editid);
                 if(undefined != editimg){
-                    let tedit = this.a._canvas.id.replace("_canvas", "");
-                    document.querySelector('#'+tedit).innerText=editimg.src;
                     let img = new Image;
                     img.ctx=this.ctx;
+                    img.a=this.a;
                     img.onload = function(){
                         this.ctx.drawImage(this,0,0);
+                        this.a.saveSignature();
                     };
                     img.src = editimg.src;
-                    this.a.saveSignature();
                 }
-            })
+            });
+            /* check for sign button */
+            var s = a._canvas.id.replace("_canvas", "_sign"),
+                r = getObject(s);
+            r.ctx=this._ctx;
+            r.a=a;
+            void 0 != r && r.addEventListener("click", function () {
+                this.a.clear();
+                let sigid = this.a._canvas.id.replace("_canvas", "_user");
+                let sigimg=document.querySelector('#'+sigid);
+                if(undefined != sigimg){
+                    let img = new Image;
+                    img.ctx=this.ctx;
+                    img.a=this.a;
+                    img.onload = function(){
+                        this.ctx.drawImage(this,0,0);
+                        this.a.saveSignature();
+                    };
+                    img.src = sigimg.src;
+                    
+                }
+            });
         }
 		//load signature into textarea if in edit mode
         var q = a._canvas.id.replace("_canvas", "_edit"), qObj = getObject(q);
@@ -244,10 +264,9 @@ var SignaturePad = function (t) {
             let editid = a._canvas.id.replace("_canvas", "_edit");
             let editimg=document.querySelector('#'+editid);
             if(undefined != editimg){
-                let tedit = a._canvas.id.replace("_canvas", "");
-                document.querySelector('#'+tedit).innerText=editimg.src;
                 let img = new Image;
                 img.ctx=this._ctx;
+                img.a=this.a;
                 img.onload = function(){
                     this.ctx.drawImage(this,0,0);
                 };

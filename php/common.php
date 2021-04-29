@@ -3864,12 +3864,14 @@ function buildFormSelectYear($name,$params=array()){
 */
 function buildFormSignature($name,$params=array()){
 	//return $name.printValue($params);
+	global $USER;
 	$rtn='';
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
 	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
+	if(!isset($params['sign'])){$params['sign']='<span class="icon-signature"></span>';}
 	if(!isset($params['width'])){$params['width']=600;}
 	if(!isset($params['height'])){$params['height']=75;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -3887,6 +3889,7 @@ function buildFormSignature($name,$params=array()){
 	}
 	$rtn .='>'.PHP_EOL;
 	//return $name.printValue($params);
+	$rtn .= '		'.$params['displayname'].PHP_EOL;
 	//show clear button on right
 	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
 	//type to sign
@@ -3906,18 +3909,22 @@ function buildFormSignature($name,$params=array()){
 		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'width:170px;'));
 		$rtn .= '			<input type="text" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
 	}
+	if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
+		$rtn .= '			<button title="sign" type="button" class="btn" id="'.$name.'_sign">'.$params['sign'].'</button>'.PHP_EOL;
+		$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$name.'_user" /></div>'.PHP_EOL;
+	}
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
 		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$name.'_reset" title="reset"><span class="icon-reset"></span></button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
+		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="current signature" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
 		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
 	}
 
+
 	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '		'.$params['displayname'].PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '    <canvas';
 	if(isset($params['style'])){
