@@ -3863,16 +3863,19 @@ function buildFormSelectYear($name,$params=array()){
 *	HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
 */
 function buildFormSignature($name,$params=array()){
+	//return $name.printValue($params);
 	$rtn='';
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
-	if(!isset($params['clear'])){$params['clear']='<span class="icon-pen"></span> Clear';}
-	if(!isset($params['width'])){$params['width']=300;}
+	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
+	if(!isset($params['width'])){$params['width']=600;}
 	if(!isset($params['height'])){$params['height']=75;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['value']) && strlen($params['value'])){$params['-value']=$params['value'];}
+	if(isset($params['value']) && strlen($params['value'])){
+		$params['-value']=$params['value'];
+	}
 	$canvas_id=$name.'_canvas';
 	$clear_id=$name.'_clear';
 	$base64image='';
@@ -3883,14 +3886,29 @@ function buildFormSignature($name,$params=array()){
 		unset($params['displayif']);
 	}
 	$rtn .='>'.PHP_EOL;
+	//return $name.printValue($params);
 	//show clear button on right
-	$rtn .= '		<div class="w_right">'.PHP_EOL;
+	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
+	//type to sign
+	if(!isset($params['data-input']) || $params['data-input'] != 0){
+		$opts=array(
+			'andragogy'=>'Andragogy',
+			'high_summit'=>'High Summit',
+			'julialauren'=>'Julia Lauren',
+			'yasminerothem'=>'Yasmine Rothem'
+		);
+		//load the fonts
+		foreach($opts as $font=>$fontname){
+			$rtn .='<div style="float:left;font-size:1px;font-family:'.$font.';">.</div>';
+		}
+		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'width:170px;'));
+		$rtn .= '			<input type="text" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
+	}
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
 		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$name.'_reset">Reset</button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" /></div>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="/wfiles/clear.gif" width="1" height="1" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
+		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$name.'_reset" title="reset"><span class="icon-reset"></span></button>'.PHP_EOL;
+		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
 		$rtn .= '			<button type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;

@@ -115,6 +115,7 @@ $files=array();
 //load basic css files
 minifyFiles($csspath,array('wasql'));
 minifyFiles($csspath,array('wasql_icons'));
+minifyFiles($csspath,array('signature'));
 minifyFiles(realpath("{$csspath}/extras"),array('pikaday'));
 minifyFiles(realpath("{$csspath}/extras"),array('quill'));
 //Get any extras

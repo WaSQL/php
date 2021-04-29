@@ -175,24 +175,84 @@ var SignaturePad = function (t) {
             void 0 != r && r.addEventListener("click", function () {
                 return signaturePad.clear(), !1;
             });
+            /* check for input field */
+            var p = a._canvas.id.replace("_canvas", "_input"),
+                r = getObject(p);
+            r.ctx=this._ctx;
+            r.a=a;
+            void 0 != r && r.addEventListener("input", function () {
+                let fontid = this.a._canvas.id.replace("_canvas", "_font");
+                let fontobj=document.querySelector('#'+fontid);
+                let fontname=fontobj.options[fontobj.selectedIndex].value;
+                this.a.clear();
+                let w=this.a._canvas.width;
+                let h=this.a._canvas.height;
+                let px=parseInt(h/2)+5;
+                this.ctx.font = px+'px '+fontname;
+                this.ctx.textAlign = 'start';
+                this.ctx.clearRect(0, 0, w, h);
+                let x=15;
+                let y=parseInt(h/2)+10;
+                let m=w-10;
+                this.ctx.fillText(this.value, x, y, m);
+                this.a.saveSignature();
+            });
+            /* check for font field */
+            var f = a._canvas.id.replace("_canvas", "_font"),
+                r = getObject(f);
+            r.ctx=this._ctx;
+            r.a=a;
+            void 0 != r && r.addEventListener("change", function () {
+                let inputid = this.a._canvas.id.replace("_canvas", "_input");
+                let inputobj=document.querySelector('#'+inputid);
+                let event = new Event('input', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                inputobj.dispatchEvent(event);
+            });
+            /* check for dataurl value */
             var s = a._canvas.id.replace("_canvas", "_dataurl"),
                 r = getObject(s);
             void 0 != r && r.value.length > 0 && a.fromDataURL(r.value);
+            /* check for reset button */
             var d = a._canvas.id.replace("_canvas", "_reset"),
                 r = getObject(d);
+            r.ctx=this._ctx;
+            r.a=a;
             void 0 != r && r.addEventListener("click", function () {
-                a.clear();
-                var t = a._canvas.id.replace("_canvas", "_dataurl"),
-                    e = getObject(t);
-                return void 0 != e && e.value.length > 0 && a.fromDataURL(e.value), !1
+                this.a.clear();
+                let editid = this.a._canvas.id.replace("_canvas", "_edit");
+                let editimg=document.querySelector('#'+editid);
+                if(undefined != editimg){
+                    let tedit = this.a._canvas.id.replace("_canvas", "");
+                    document.querySelector('#'+tedit).innerText=editimg.src;
+                    let img = new Image;
+                    img.ctx=this.ctx;
+                    img.onload = function(){
+                        this.ctx.drawImage(this,0,0);
+                    };
+                    img.src = editimg.src;
+                    this.a.saveSignature();
+                }
             })
         }
 		//load signature into textarea if in edit mode
         var q = a._canvas.id.replace("_canvas", "_edit"), qObj = getObject(q);
         if(undefined != qObj){
-			var edit = a.toDataURL("image/png");
-			var tedit = a._canvas.id.replace("_canvas", "");
-			setText(tedit, edit);
+            let editid = a._canvas.id.replace("_canvas", "_edit");
+            let editimg=document.querySelector('#'+editid);
+            if(undefined != editimg){
+                let tedit = a._canvas.id.replace("_canvas", "");
+                document.querySelector('#'+tedit).innerText=editimg.src;
+                let img = new Image;
+                img.ctx=this._ctx;
+                img.onload = function(){
+                    this.ctx.drawImage(this,0,0);
+                };
+                img.src = editimg.src;
+            }
         }
         e.addEventListener("touchstart", function (t) {
             a._reset();

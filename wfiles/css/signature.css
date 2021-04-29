@@ -1,0 +1,35 @@
+@font-face {
+    font-family: 'andragogy';
+    src: url('/wfiles/fonts/signature-andragogy.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-andragogy.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'high_summit';
+    src: url('/wfiles/fonts/signature-high_summit.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-high_summit.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'julialauren';
+    src: url('/wfiles/fonts/signature-julialauren.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-julialauren.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'the_suavity';
+    src: url('/wfiles/fonts/signature-the_suavity.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-the_suavity.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'yasminerothem';
+    src: url('/wfiles/fonts/signature-yasminerothem.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-yasminerothem.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
