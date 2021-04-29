@@ -3911,7 +3911,7 @@ function buildFormSignature($name,$params=array()){
 		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="signature" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
-		$rtn .= '			<button type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
+		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
 	}
 
 	$rtn .= '		</div>'.PHP_EOL;
