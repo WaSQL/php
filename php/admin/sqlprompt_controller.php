@@ -179,7 +179,7 @@
 						'run_length'=>$qtime,
 						'row_count'=>$recs_count,
 						'user_id'=>$USER['_id'],
-						'tablename'=>"DB: {$db['name']}",
+						'tablename'=>"DB:{$db['name']}",
 						'fields'=>implode(',',array_keys($recs[0])),
 						'field_count'=>count(array_keys($recs[0]))
 					));
