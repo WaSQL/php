@@ -857,7 +857,20 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	}
 	else{$recs=array();}
 	$rowcount=0;
-	for($i=0; $row = $data->fetch(PDO::FETCH_ASSOC); $i++){
+	$i=0;
+	while(1){
+		try{
+			$row = $data->fetch(PDO::FETCH_ASSOC);
+		}
+		catch (Exception $e) {
+			$err=array('ctreeEnumQueryResults fetch ERROR',$e);
+			debugValue($err);
+			break;
+		}
+		if(!is_array($row) || !count($row)){
+			break;
+		}
+		$i++;
 		$rec=array();
 		foreach($row as $key=>$val){
 			$key=strtolower($key);
