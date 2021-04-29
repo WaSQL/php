@@ -176,10 +176,13 @@ var SignaturePad = function (t) {
                 return signaturePad.clear(), !1;
             });
             /* check for input field */
+            let ctx=this._ctx;
             var p = a._canvas.id.replace("_canvas", "_input"),
                 r = getObject(p);
-            r.ctx=this._ctx;
-            r.a=a;
+            if(undefined != r){
+                r.ctx=ctx;
+                r.a=a;
+            }
             void 0 != r && r.addEventListener("input", function () {
                 let fontid = this.a._canvas.id.replace("_canvas", "_font");
                 let fontobj=document.querySelector('#'+fontid);
@@ -200,8 +203,10 @@ var SignaturePad = function (t) {
             /* check for font field */
             var f = a._canvas.id.replace("_canvas", "_font"),
                 r = getObject(f);
-            r.ctx=this._ctx;
-            r.a=a;
+            if(undefined != r){
+                r.ctx=ctx;
+                r.a=a;
+            }
             void 0 != r && r.addEventListener("change", function () {
                 let inputid = this.a._canvas.id.replace("_canvas", "_input");
                 let inputobj=document.querySelector('#'+inputid);
@@ -219,8 +224,10 @@ var SignaturePad = function (t) {
             /* check for reset button */
             var d = a._canvas.id.replace("_canvas", "_reset"),
                 r = getObject(d);
-            r.ctx=this._ctx;
-            r.a=a;
+            if(undefined != r){
+                r.ctx=ctx;
+                r.a=a;
+            }
             void 0 != r && r.addEventListener("click", function () {
                 this.a.clear();
                 let editid = this.a._canvas.id.replace("_canvas", "_edit");
@@ -239,8 +246,10 @@ var SignaturePad = function (t) {
             /* check for sign button */
             var s = a._canvas.id.replace("_canvas", "_sign"),
                 r = getObject(s);
-            r.ctx=this._ctx;
-            r.a=a;
+            if(undefined != r){
+                r.ctx=ctx;
+                r.a=a;
+            }
             void 0 != r && r.addEventListener("click", function () {
                 this.a.clear();
                 let sigid = this.a._canvas.id.replace("_canvas", "_user");
