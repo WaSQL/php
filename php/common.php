@@ -3895,6 +3895,8 @@ function buildFormSignature($name,$params=array()){
 			'andragogy'=>'Andragogy',
 			'high_summit'=>'High Summit',
 			'julialauren'=>'Julia Lauren',
+			'katrineholland'=>'Katrine Holland',
+			'sandrabelhock'=>'Sandra Belhock',
 			'yasminerothem'=>'Yasmine Rothem'
 		);
 		//load the fonts

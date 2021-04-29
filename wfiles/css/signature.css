@@ -20,9 +20,16 @@
     font-style: normal;
 }
 @font-face {
-    font-family: 'the_suavity';
-    src: url('/wfiles/fonts/signature-the_suavity.woff2') format('woff2'),
-         url('/wfiles/fonts/signature-the_suavity.woff') format('woff');
+    font-family: 'katrineholland';
+    src: url('/wfiles/fonts/signature-katrineholland.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-katrineholland.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'sandrabelhock';
+    src: url('/wfiles/fonts/signature-sandrabelhock.woff2') format('woff2'),
+         url('/wfiles/fonts/signature-sandrabelhock.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
