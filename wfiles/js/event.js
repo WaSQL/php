@@ -2118,30 +2118,29 @@ function initBehaviors(ajaxdiv){
 	        if (res && res.length > 0){
 				var func=res[1].toLowerCase();
 				var str=res[2].toLowerCase();
-
 				switch (func){
 					case 'sum':
 						let result=0;
 						let sids=str.split(/[,:\s]+/);
-						let d=navEls[n].dataset.decimal||0;
+						let dec=navEls[n].dataset.decimal||0;
 						for (let s=0; s<sids.length; s++) {
-							result += Math.round(getText(sids[s]),d);
+							result += Math.round(getText(sids[s]),dec);
 	                    }
-	                    result=Math.round(result,d);
+	                    result=Math.round(result,dec);
 	                    setText(navEls[n],result);
 					break;
 					case 'avg':
-						let t=0;
-						let c=0;
+						let tot=0;
+						let cnt=0;
 						let sids=str.split(/[,:\s]+/);
 						for (let s=0; s<sids.length; s++) {
-							t += Math.round(getText(sids[s]));
-							c += 1;
+							tot += Math.round(getText(sids[s]));
+							cnt += 1;
 	                    }
-	                    let d=navEls[n].dataset.decimal||0;
-	                    let result=Math.round((t/c),d);
+	                    let dec=navEls[n].dataset.decimal||0;
+	                    let result=Math.round((t/c),dec);
 	                    setText(navEls[n],result);
-					break
+					break;
 					case 'math':
 						doMath(id);
 					break;
@@ -2163,7 +2162,7 @@ function initBehaviors(ajaxdiv){
 								setText(raidid,getText(this));
 							});
       					}
-						break
+						break;
 					}
 	        	}
 			}
