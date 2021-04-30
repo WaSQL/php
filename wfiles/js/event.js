@@ -2121,16 +2121,30 @@ function initBehaviors(ajaxdiv){
 
 				switch (func){
 					case 'sum':
-						var result=0;
-						var sids=str.split(/[,:\s]+/);
-						for (var s=0; s<sids.length; s++) {
-							result += Math.round(getText(sids[s]));
-	                    	}
+						let result=0;
+						let sids=str.split(/[,:\s]+/);
+						let d=navEls[n].dataset.decimal||0;
+						for (let s=0; s<sids.length; s++) {
+							result += Math.round(getText(sids[s]),d);
+	                    }
+	                    result=Math.round(result,d);
 	                    setText(navEls[n],result);
-						break
+					break;
+					case 'avg':
+						let t=0;
+						let c=0;
+						let sids=str.split(/[,:\s]+/);
+						for (let s=0; s<sids.length; s++) {
+							t += Math.round(getText(sids[s]));
+							c += 1;
+	                    }
+	                    let d=navEls[n].dataset.decimal||0;
+	                    let result=Math.round((t/c),d);
+	                    setText(navEls[n],result);
+					break
 					case 'math':
 						doMath(id);
-						break
+					break;
 					case 'raid':
 						var cObj=getObject(str);
 						if(typeof(cObj)=='object'){
