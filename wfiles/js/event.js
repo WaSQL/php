@@ -2120,9 +2120,9 @@ function initBehaviors(ajaxdiv){
 				var str=res[2].toLowerCase();
 				switch (func){
 					case 'sum':
-						let result=0;
-						let sids=str.split(/[,:\s]+/);
-						let dec=navEls[n].dataset.decimal||0;
+						var result=0;
+						var sids=str.split(/[,:\s]+/);
+						var dec=navEls[n].dataset.decimal||0;
 						for (let s=0; s<sids.length; s++) {
 							result += Math.round(getText(sids[s]),dec);
 	                    }
@@ -2130,15 +2130,15 @@ function initBehaviors(ajaxdiv){
 	                    setText(navEls[n],result);
 					break;
 					case 'avg':
-						let tot=0;
-						let cnt=0;
-						let sids=str.split(/[,:\s]+/);
+						var tot=0;
+						var cnt=0;
+						var sids=str.split(/[,:\s]+/);
 						for (let s=0; s<sids.length; s++) {
 							tot += Math.round(getText(sids[s]));
 							cnt += 1;
 	                    }
-	                    let dec=navEls[n].dataset.decimal||0;
-	                    let result=Math.round((t/c),dec);
+	                    var dec=navEls[n].dataset.decimal||0;
+	                    var result=Math.round((t/c),dec);
 	                    setText(navEls[n],result);
 					break;
 					case 'math':
