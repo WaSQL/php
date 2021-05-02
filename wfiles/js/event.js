@@ -1474,7 +1474,7 @@ function initBehaviors(ajaxdiv){
 	//alert(navEls.length+' objects have behaviors');
 	for (n=0; n<navEls.length; n++){
 		var str=navEls[n].getAttribute('data-behavior').toLowerCase();
-		var behaviors=str.split(/[\ \;\,\:]+/);
+		var behaviors=str.split(/[\ \;]+/);
 		if(in_array("ajax",behaviors)){
 			/* AJAX - Updates div with ajax call every refresh seconds. data-behavior="ajax" url="" id="mytest" timer="20" */
   			var attr=getAllAttributes(navEls[n]);
@@ -2106,6 +2106,7 @@ function initBehaviors(ajaxdiv){
 		}
 		/*	Check for @math(..)  @sum(..)
 			@sum(one:two:three)
+			@avg(one:two:three)
 			@math(one+two+three)
 			str.replace(/microsoft/, "W3Schools")
 		*/
@@ -2124,6 +2125,14 @@ function initBehaviors(ajaxdiv){
 						var sids=str.split(/[,:\s]+/);
 						var dec=navEls[n].dataset.decimal||0;
 						for (let s=0; s<sids.length; s++) {
+							let sidobj=document.querySelector('#'+sids[s]);
+							if(undefined == sidobj){continue;}
+							if(undefined == sidobj.handler_set){
+								sidobj.handler_set=1;
+								addEventHandler(sidobj,'keyup',function(){
+									initBehaviors();
+								});
+							}
 							result += Math.round(getText(sids[s]),dec);
 	                    }
 	                    result=Math.round(result,dec);
@@ -2134,11 +2143,60 @@ function initBehaviors(ajaxdiv){
 						var cnt=0;
 						var sids=str.split(/[,:\s]+/);
 						for (let s=0; s<sids.length; s++) {
+							let sidobj=document.querySelector('#'+sids[s]);
+							if(undefined == sidobj){continue;}
+							if(undefined == sidobj.handler_set){
+								sidobj.handler_set=1;
+								addEventHandler(sidobj,'keyup',function(){
+									initBehaviors();
+								});
+							}
 							tot += Math.round(getText(sids[s]));
 							cnt += 1;
 	                    }
 	                    var dec=navEls[n].dataset.decimal||0;
-	                    var result=Math.round((t/c),dec);
+	                    var result=Math.round((tot/cnt),dec);
+	                    //console.log('tot:'+tot+', cnt:'+cnt+', dec:'+dec+', result:'+result);
+	                    setText(navEls[n],result);
+					break;
+					case 'max':
+						var max=0;
+						var sids=str.split(/[,:\s]+/);
+						for (let s=0; s<sids.length; s++) {
+							let sidobj=document.querySelector('#'+sids[s]);
+							if(undefined == sidobj){continue;}
+							if(undefined == sidobj.handler_set){
+								sidobj.handler_set=1;
+								addEventHandler(sidobj,'keyup',function(){
+									initBehaviors();
+								});
+							}
+							let sval=getText(sids[s]);
+							let svalp=parseFloat(sval);
+							if(svalp > max){max=sval;}
+	                    }
+	                    var dec=navEls[n].dataset.decimal||0;
+	                    var result=Math.round(max,dec);
+	                    setText(navEls[n],result);
+					break;
+					case 'min':
+						var min=9999999999999;
+						var sids=str.split(/[,:\s]+/);
+						for (let s=0; s<sids.length; s++) {
+							let sidobj=document.querySelector('#'+sids[s]);
+							if(undefined == sidobj){continue;}
+							if(undefined == sidobj.handler_set){
+								sidobj.handler_set=1;
+								addEventHandler(sidobj,'keyup',function(){
+									initBehaviors();
+								});
+							}
+							let sval=getText(sids[s]);
+							let svalp=parseFloat(sval);
+							if(svalp < min){min=sval;}
+	                    }
+	                    var dec=navEls[n].dataset.decimal||0;
+	                    var result=Math.round(min,dec);
 	                    setText(navEls[n],result);
 					break;
 					case 'math':

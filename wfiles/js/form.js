@@ -21,7 +21,6 @@ function formChanged(frm){
 		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(undefined == ifel){continue;}
-		//console.log(els[i].dataset.displayif+' = '+ifel.length);
 		if(ifel.length > 0){
 			let display=0;
 			for(let f=0;f<ifel.length;f++){
@@ -50,9 +49,9 @@ function formChanged(frm){
             			}
 					break;
 				}
+				break;
 			}
-			//console.log(display);
-			//console.log(els[i]);
+			//console.log('data-displayif.Display:'+display+', Name:'+name+', vals:'+vals);
 			if(display==1){
 				if(undefined != els[i].dataset.display){
 					els[i].style.display=els[i].dataset.display;	
