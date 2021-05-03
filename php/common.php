@@ -170,6 +170,10 @@ function commonCronLogInit($id=0){
 	}
 	return true;
 }
+function commonCronLogDelete(){
+	$ok=commonCronLog('__cronlog_delete__');
+	return true;
+}
 //---------- begin function commonCronLog
 /**
 * @describe records an error on this cron run

@@ -409,6 +409,9 @@ ENDOFWHERE;
 	            	$post=postURL($url,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
+	            	if(stringContains($post['body'],'__cronlog_delete__')){
+	            		$_REQUEST['cronlog_delete']=1;
+	            	}
 	            	if(isset($post['headers_out'][0])){
 		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 		            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
@@ -445,6 +448,9 @@ ENDOFWHERE;
 	            	$post=postURL($cmd,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
+	            	if(stringContains($post['body'],'__cronlog_delete__')){
+	            		$_REQUEST['cronlog_delete']=1;
+	            	}
 	            	if(isset($post['headers_out'][0])){
 		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 						$cron_result .= printValue($post['headers_out']).PHP_EOL;
