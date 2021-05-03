@@ -100,9 +100,9 @@ function ldapAuth($params=array()){
 	$ldapInfo=array('dirty'=>0);
 	$ldapInfo['connection'] = ldap_connect($params['-host']);
 	if(!$ldapInfo['connection']){
-		$err='LDAP Auth Error: unable to connect to host:'.$params['-host'];
-		debugValue($err);
-		return $err;
+		$ldapInfo['auth_error']='LDAP Auth Error: unable to connect to host:'.$params['-host'];
+		debugValue($ldapInfo['auth_error']);
+		return $ldapInfo['auth_error'];
 	}
 	// We need this for doing an LDAP search.
 	ldap_set_option($ldapInfo['connection'], LDAP_OPT_REFERRALS, 0);
@@ -123,9 +123,9 @@ function ldapAuth($params=array()){
         $msg=ldap_err2str( $enum );
 		ldap_unbind($ldapInfo['connection']); // Clean up after ourselves.
 		$params['-password']=preg_replace('/./','*',$params['-password']);
-		$err="LDAP Bind Error: auth failed. Err:{$enum}, Msg:{$msg} .. ".printValue($params);
-		debugValue($err);
-		return $err;
+		$ldapInfo['auth_error']="LDAP Bind Error: auth failed. Err:{$enum}, Msg:{$msg} .. ".printValue($params);
+		debugValue($ldapInfo['auth_error']);
+		return $ldapInfo['auth_error'];
 	}
 	foreach($params as $k=>$v){
     	$ldapInfo[$k]=$v;
@@ -147,20 +147,20 @@ function ldapAuth($params=array()){
 	    	$rec=ldapParseEntry($entries[0],$params['-checkmemberof']);
 	    	//echo printValue($rec);ldapClose();exit;
 	    	if(is_array($rec)){return $rec;}
-	    	$err='LDAP Auth Error 2: unable to parse LDAP entry'.printValue($rec).printValue($entries[0]);
-			debugValue($err);
-			return $err;
+	    	$ldapInfo['auth_error']='LDAP Auth Error 2: unable to parse LDAP entry'.printValue($rec).printValue($entries[0]);
+			debugValue($ldapInfo['auth_error']);
+			return $ldapInfo['auth_error'];
 		}
 		ldapClose();
 		//ldap_unbind($ldap_connection); // Clean up after ourselves.
-    	$err='LDAP Auth Error: unable to get a unique LDAP user object'.printValue($entries);
-		debugValue($err);
-		return $err;
+    	$ldapInfo['auth_error']='LDAP Auth Error: unable to get a unique LDAP user object'.printValue($entries);
+		debugValue($ldapInfo['auth_error']);
+		return $ldapInfo['auth_error'];
 	}
 	ldapClose();
-    $err='LDAP Auth Error: unable to search'.printValue($result);
-    debugValue($err);
-	return $err;
+    $ldapInfo['auth_error']='LDAP Auth Error: unable to search'.printValue($result);
+    debugValue($ldapInfo['auth_error']);
+	return $ldapInfo['auth_error'];
 }
 //---------- begin function ldapConvert2UserRecord--------------------
 /**
