@@ -503,7 +503,7 @@ ENDOFWHERE;
 					'run_date'	=> $run_date
 				);
 				$lrec=getDBRecord($opts);
-				if(isset($_REQUEST['cronlog_delete']) && $_REQUEST['cronlog_delete']==1){
+				if(isset($_REQUEST['cronlog_delete'])){
 					//cronlog_delete was set in the script
 					if(isset($lrec['_id'])){
 						$ok=delDBRecordById('_cronlog',$lrec['_id']);
@@ -518,7 +518,7 @@ ENDOFWHERE;
 					$opts['run_result']=$cron_result;
 					$ok=editDBRecord($opts);
 				}
-				else{
+				elseif(!isset($_REQUEST['cronlog_delete'])){
 					$opts['run_length']=$run_length;
 					$opts['run_result']=$cron_result;
 					$ok=addDBRecord($opts);
