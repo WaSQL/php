@@ -351,6 +351,8 @@ function ldapGetUsersAll(){
 function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array(),$debug=0){
 	global $ldapInfo;
 	if($debug){
+		debugValue('ldapSearch');
+		debugValue($ldapInfo);
 		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields));
 	}
 	//set the pageSize dynamically
@@ -425,6 +427,10 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
         }
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
+        if($debug){
+        	$cnt=count($entries);
+        	debugValue(" - found {$cnt} entries");
+        }
         foreach ($entries as $e) {
 			//lowercase the keys
 			$e=array_change_key_case($e,CASE_LOWER);
