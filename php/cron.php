@@ -59,6 +59,7 @@ $etime=(integer)$etime;
 $pid_check=1;
 $apache_log=1;
 $tail=1;
+$wherestr_all=cronBuildWhere();
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	//check for wasql.update file
@@ -125,12 +126,7 @@ while($etime < 55){
 		));
 		//echo "Checking {$CONFIG['name']}\n";
 		//see if there is file called {dbname}_runnow.txt.  If so extract
-		$wherestr=<<<ENDOFWHERE
-		active=1 and paused != 1 and running != 1 and run_cmd is not null
-		and (date(now()) >= date(begin_date) or begin_date is null or length(begin_date)=0)
-		and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
-	    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
-ENDOFWHERE;
+		$wherestr=$wherestr_all;
 		if(file_exists($runnow_afile)){
 			$runid=getfileContents($runnow_afile);
 			unlink($runnow_afile);
@@ -153,7 +149,23 @@ ENDOFWHERE;
 			continue;
 		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
+		if(!in_array('frequency_max',$cronfields)){
+			$query="ALTER TABLE _cron ADD frequency_max varchar(25) NULL";
+			$ok=executeSQL($query);
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_cron',
+				'fieldname'		=> 'frequency_max',
+				'inputtype'		=> 'select',
+				'displayname'	=> "Frequency Max",
+				'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
+				'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
+			));
+		}
 		$recs=getDBRecords($recopts);
+		if(!is_array($recs) && strlen($recs)){
+			cronMessage("ERROR: {$recs}".PHP_EOL);
+			exit;
+		}
 		$rcnt=is_array($recs)?count($recs):0;
 		//echo $runnow.printValue($recs).PHP_EOL;
 		if($rcnt==0){
@@ -544,6 +556,93 @@ exit;
 /** --- function cronCleanRecords
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
+function cronBuildWhere(){
+	return <<<ENDOFWHERE
+active=1 
+and paused != 1 
+and running != 1 
+and run_cmd is not null
+and length(run_cmd) > 0
+and (
+	ifnull(begin_date,'')=''
+	or length(begin_date)=0
+	or date(now()) >= date(begin_date)
+	)
+and (
+	ifnull(end_date,'')=''
+	or length(end_date)=0
+	or date(end_date) <= date(now())
+	)
+and (
+	ifnull(run_date,'')=''
+	or length(run_date)=0
+	or run_date < date_sub(now(), interval 1 minute) 
+	)
+and 
+	(
+	ifnull(frequency_max,'')='' 
+	or (frequency_max='hourly' and date(run_date) != hour(now()))
+	or (frequency_max='daily' and date(run_date) != date(now()))
+	or (frequency_max='weekly' and week(run_date) != week(now()))
+	or (frequency_max='monthly' and month(run_date) != month(now()))
+	or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
+	)
+and
+	(
+	run_format->'\$.minute[0]'=-1
+	or run_format->'\$.minute[0]'=MINUTE(NOW())
+	or run_format->'\$.minute[1]'=MINUTE(NOW())
+	or run_format->'\$.minute[2]'=MINUTE(NOW())
+	or run_format->'\$.minute[3]'=MINUTE(NOW())
+	or run_format->'\$.minute[4]'=MINUTE(NOW())
+	or run_format->'\$.minute[5]'=MINUTE(NOW())
+	)
+and
+	(
+	run_format->'\$.hour[0]'=-1
+	or run_format->'\$.hour[0]'=HOUR(NOW())
+	or run_format->'\$.hour[1]'=HOUR(NOW())
+	or run_format->'\$.hour[2]'=HOUR(NOW())
+	or run_format->'\$.hour[3]'=HOUR(NOW())
+	or run_format->'\$.hour[4]'=HOUR(NOW())
+	or run_format->'\$.hour[5]'=HOUR(NOW())
+	)
+and
+	(
+	run_format->'\$.day[0]'=-1
+	or run_format->'\$.day[0]'=day(curdate())
+	or run_format->'\$.day[1]'=day(curdate())
+	or run_format->'\$.day[2]'=day(curdate())
+	or run_format->'\$.day[3]'=day(curdate())
+	or run_format->'\$.day[4]'=day(curdate())
+	or run_format->'\$.day[5]'=day(curdate())
+	or run_format->'\$.day[6]'=day(curdate())
+	)
+and
+	(
+	run_format->'\$.month[0]'=-1
+	or run_format->'\$.month[0]'=MONTH(curdate())
+	or run_format->'\$.month[1]'=MONTH(curdate())
+	or run_format->'\$.month[2]'=MONTH(curdate())
+	or run_format->'\$.month[3]'=MONTH(curdate())
+	or run_format->'\$.month[4]'=MONTH(curdate())
+	or run_format->'\$.month[5]'=MONTH(curdate())
+	or run_format->'\$.month[6]'=MONTH(curdate())
+	)
+and
+	(
+	ifnull(run_format->'\$.dayname[0]','')=''
+	or run_format->'\$.dayname[0]'=-1
+	or run_format->'\$.dayname[0]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[1]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[2]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[3]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[4]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[5]'=WEEKDAY(curdate())
+	or run_format->'\$.dayname[6]'=WEEKDAY(curdate())
+	)
+ENDOFWHERE;
+}
 function cronCleanRecords($cron=array()){
 	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}

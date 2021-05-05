@@ -3331,7 +3331,7 @@ function buildFormFrequency($name,$params=array()){
 	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
 	$required=isset($params['required']) && $params['required']==1?' required="required"':'';
 	//determine what sections to show
-	$sections=array('minute','hour','day','month');
+	$sections=array('minute','hour','day','dayname','month');
 	if(isset($params['tvals']) && strlen($params['tvals'])){
 		$sections=preg_split('/[\r\n\,]+/',trim($params['tvals']));
 	}
@@ -3352,13 +3352,14 @@ function buildFormFrequency($name,$params=array()){
 		unset($params['displayif']);
 	}
 	//return printValue($params);
+	$sectionstr=implode("','",$sections);
 	$rtn=<<<ENDOFRTN
 	<div id="{$params['id']}_container" data-display="block" {$displayif}>
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
-		<div id="{$params['id']}_wizard" class="w_frequency_wizard" style="display:none;min-height:100px;">
+		<div id="{$params['id']}_wizard" data-sections="{$sectionstr}" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
 ENDOFRTN;
-	$sectionstr=implode("','",$sections);
+	
 	$rtn .= '				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('."'{$params['id']}',{reset:['{$sectionstr}']});\"></span>".PHP_EOL;
 	if(stringContains($sectionstr,'minute')){
 		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});\">Every Minute</a>".PHP_EOL;
@@ -3417,6 +3418,16 @@ ENDOFRTN;
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
 			}
+		}
+		$rtn .= '		    </div>'.PHP_EOL;
+	}
+	if(stringContains($sectionstr,'dayname')){
+		//daynames
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Daynames</span><span class="icon-erase w_pointer" title="clear daynames" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'dayname\']});"></span></div>'.PHP_EOL;
+		$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
+		$daynames=array(0=>'Mon',1=>'Tue',2=>'Wed',3=>'Thu',4=>'Fri',5=>'Sat',6=>'Sun');
+		foreach($daynames as $tval=>$dval){
+			$rtn .= '		      	<label><input type="checkbox" data-inputtype="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_dayname" value="'.$tval.'" /> '.$dval.'</label>'.PHP_EOL;
 		}
 		$rtn .= '		    </div>'.PHP_EOL;
 	}

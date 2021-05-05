@@ -1931,8 +1931,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'select',
 				'required'		=> 0,
 				'displayname'	=> "Frequency",
-				'tvals'			=> "5\r\n10\r\n15\r\n30\r\n60\r\n1440\r\n720\r\n10080\r\n43829",
-				'dvals'			=> "Every 5 minutes\r\nEvery 10 Minutes\r\nEvery 15 Minutes\r\nEvery 30 Minutes\r\nEvery Hour\r\nOnce Every  Day\r\nTwice Every Day\r\nOnce a Week\r\nOnce a Month"
+				'tvals'			=> "1\r\n5\r\n10\r\n15\r\n30\r\n60\r\n1440\r\n720\r\n10080\r\n43829",
+				'dvals'			=> "Every Minute\r\nEvery 5 minutes\r\nEvery 10 Minutes\r\nEvery 15 Minutes\r\nEvery 30 Minutes\r\nEvery Hour\r\nOnce Every  Day\r\nTwice Every Day\r\nOnce a Week\r\nOnce a Month"
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
