@@ -157,6 +157,7 @@ while($etime < 55){
 				'fieldname'		=> 'frequency_max',
 				'inputtype'		=> 'select',
 				'displayname'	=> "Frequency Max",
+				'-upsert'		=> 'tvals,dvals,inputtype,displayname',
 				'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
 				'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
 			));

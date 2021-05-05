@@ -252,6 +252,8 @@ function cronCheckSchema(){
 			'fieldname'		=> 'records_to_keep',
 			'inputtype'		=> 'text',
 			'width'			=> 100,
+			'-upsert'		=> 'inputtype,width,mask,required,defaultval',
+			'defaultval'	=> 100,
 			'mask'			=> 'integer',
 			'required'		=> 1
 		));

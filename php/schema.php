@@ -152,12 +152,9 @@ function createWasqlTable($table=''){
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
-				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_as running run_date run_length\r\nrun_result",
-				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
+				'formfields'	=> "name active begin_date end_date\r\nfrequency run_format frequency_max\r\nrun_cmd\r\nrun_as running run_date run_length\r\nrun_result",
+				'listfields'	=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nfrequency_max\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
 				'sortfields'	=> "active desc, running desc, begin_date desc",
-				'formfields_mod'=> "name begin_date end_date\r\nfrequency run_format run_values\r\nrun_cmd\r\nrun_date run_length\r\nrun_result",
-				'listfields_mod'=> "name\r\ncron_pid\r\nactive\r\nrunning\r\nfrequency\r\nrun_format\r\nrun_values\r\nrun_cmd\r\nrun_date\r\nrun_length\r\nbegin_date\r\nend_date",
-				'sortfields_mod'=> "active desc, running desc, begin_date desc",
 				'synchronize'	=> 1
 				);
 			$id=addDBRecord($addopts);
@@ -1910,6 +1907,16 @@ function addMetaData($table=''){
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
+				'fieldname'		=> 'records_to_keep',
+				'inputtype'		=> 'text',
+				'width'			=> 100,
+				'-upsert'		=> 'inputtype,width,mask,required,defaultval',
+				'defaultval'	=> 100,
+				'mask'			=> 'integer',
+				'required'		=> 1
+			));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_cron',
 				'fieldname'		=> 'cron_pid',
 				'synchronize'	=> 0,
 				'inputtype'		=> 'text',
@@ -1979,10 +1986,19 @@ function addMetaData($table=''){
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
 				'fieldname'		=> 'run_format',
-				'inputtype'		=> 'text',
-				'width'			=> 125,
+				'inputtype'		=> 'frequency',
+				'width'			=> 800,
+				'height'		=> 40,
 				'required'		=> 0
 				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_cron',
+				'fieldname'		=> 'frequency_max',
+				'inputtype'		=> 'select',
+				'displayname'	=> "Frequency Max",
+				'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
+				'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
+			));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
 				'fieldname'		=> 'run_cmd',

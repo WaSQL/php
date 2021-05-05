@@ -3357,23 +3357,23 @@ function buildFormFrequency($name,$params=array()){
 	<div id="{$params['id']}_container" data-display="block" {$displayif}>
 		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" data-sections="{$sectionstr}" class="w_frequency_wizard" style="display:none;min-height:100px;">
-			<div class="w_frequency_row" data-type="section" style="border-top:0px;">
+			<div style="display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;" data-type="section" style="border-top:0px;">
 ENDOFRTN;
 	
 	$rtn .= '				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('."'{$params['id']}',{reset:['{$sectionstr}']});\"></span>".PHP_EOL;
 	if(stringContains($sectionstr,'minute')){
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});\">Every Minute</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1]});\">Every Minute</a>".PHP_EOL;
 	}
 	if(stringContains($sectionstr,'hour')){
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1]});\">Hourly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1]});\">Hourly</a>".PHP_EOL;
 	}
 	if(stringContains($sectionstr,'day') && stringContains($sectionstr,'month')){
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1]});\">Daily</a>".PHP_EOL;
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]});\">Weekly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15]});\">Bi-Monthly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1]});\">Monthly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1]});\">Quarterly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1]});\">Yearly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1]});\">Daily</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]});\">Weekly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15]});\">Bi-Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1]});\">Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1]});\">Quarterly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1]});\">Yearly</a>".PHP_EOL;
 	}
 	$rtn .= '			</div>'.PHP_EOL;
 	if(stringContains($sectionstr,'minute')){
