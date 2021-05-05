@@ -12,7 +12,7 @@
 ini_set('max_execution_time', 72000);
 set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
-$posturl_timeout=36000; //allow crons that call posturl to run for up to 10 hours
+$posturl_timeout=72000; //allow crons that call posturl to run for up to 24 hours
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
 global $logfile;
