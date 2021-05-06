@@ -215,6 +215,19 @@ function cronListExtra($recs){
 function cronCheckSchema(){
 	$cronfields=getDBFieldInfo('_cron');
 	//add paused and groupname fields?
+	if(!isset($cronfields['frequency_max'])){
+		$query="ALTER TABLE _cron ADD frequency_max varchar(25) NULL";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'frequency_max',
+			'inputtype'		=> 'select',
+			'displayname'	=> "Frequency Max",
+			'-upsert'		=> 'tvals,dvals,inputtype,displayname',
+			'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
+			'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
+		));
+	}
 	if(!isset($cronfields['paused'])){
 		//paused
 		$query="ALTER TABLE _cron ADD paused ".databaseDataType('integer(1)')." NOT NULL Default 0;";

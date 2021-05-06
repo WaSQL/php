@@ -4584,6 +4584,48 @@ ENDOFSQL;
 	}
 	return '';
 }
+function databaseAddMultipleTables($schemas=''){
+	$lines=preg_split('/[\r\n]+/',trim($schemas));
+	if(!count($lines)){
+		return array(
+			'status'=>'ERROR',
+			'info'=>'No schema to process'
+		);
+	}
+	$schemas=array();
+	$ctable='';
+	foreach($lines as $line){
+		if(!preg_match('/^[\t\s]/',$line)){
+        	$ctable=trim($line);
+        	continue;
+		}
+		if(!strlen($ctable)){continue;}
+		if(!strlen(trim($line))){continue;}
+		$schemas[$ctable] .= trim($line) . "\r\n";
+	}
+	if(!count($schemas)){
+		return array(
+			'status'=>'ERROR',
+			'info'=>'No tables found to process'
+		);
+	}
+	$results=array();
+	foreach($schemas as $table=>$fieldstr){
+		$result=array('table'=>$table);
+		unset($databaseCache['isDBTable'][$table]);
+    	$ok=createDBTableFromText($table,$fieldstr);
+		if(!isNum($ok)){
+			$result['status']='FAILED';
+			$result['info']=$ok;
+		}
+		else{
+			$result['status']='SUCCESS';
+			$result['info']=nl2br($fieldstr);
+		}
+		$results[]=$result;
+	}
+	return $results;
+}
 //---------- begin function createDBTable--------------------
 /**
 * @describe creates table with specified fields

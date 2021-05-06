@@ -1089,50 +1089,13 @@ if(isAjax()){
 
     		break;
     	case 'addmultiple':
-    		//echo printValue($_REQUEST);
-    		$lines=preg_split('/[\r\n]+/',trim($_REQUEST['_schema']));
-    		if(!count($lines)){
-
-				echo 'No schema tables or fields found to process';
-				exit;
-			}
-			$schemas=array();
-			$ctable='';
-			foreach($lines as $line){
-				if(!preg_match('/^[\t\s]/',$line)){
-                	$ctable=trim($line);
-                	//echo "ctable:{$ctable}<br>\n";
-                	continue;
-				}
-				if(!strlen($ctable)){continue;}
-				if(!strlen(trim($line))){continue;}
-				$schemas[$ctable] .= trim($line) . "\r\n";
-			}
-			if(!count($schemas)){
-            	echo 'No tables found to process';
-            	echo printValue($lines);
-            	exit;
-			}
-			echo '<div style="width:500px;height:300px;padding-right:25px;overflow:auto;">'.PHP_EOL;
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
-			echo buildTableTH(array('Tablename','Status','More Info'));
-			foreach($schemas as $table=>$fieldstr){
-				echo '	<tr valign="top">'.PHP_EOL;
-				//dropDBTable($table,1);
-				unset($databaseCache['isDBTable'][$table]);
-            	echo "		<td>{$table}</td>";
-            	$ok=createDBTableFromText($table,$fieldstr);
-				if(!isNum($ok)){
-					echo '<td class="w_red w_bold">FAILED</td><td>'.$ok.'</td>'.PHP_EOL;
-				}
-				else{
-                	echo '<td>SUCCESS</td><td>'.nl2br($fieldstr).'</td>'.PHP_EOL;
-				}
-				echo '</tr>'.PHP_EOL;
-			}
-			echo buildTableEnd();
+    		$recs=databaseAddMultipleTables($_REQUEST['_schema']);
+    		echo databaseListRecords(array(
+    			'-list'=>'recs',
+    			'-tableclass'=>'table striped bordered'
+    		));
     		exit;
-    		break;
+    	break;
     	case 'session_errors':
     		$sessionID=session_id();
 			echo adminShowSessionLog($sessionID);
