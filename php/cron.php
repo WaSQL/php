@@ -566,23 +566,21 @@ and run_cmd is not null
 and length(run_cmd) > 0
 and (
 	ifnull(begin_date,'')=''
-	or length(begin_date)=0
 	or date(now()) >= date(begin_date)
 	)
 and (
 	ifnull(end_date,'')=''
-	or length(end_date)=0
 	or date(end_date) <= date(now())
 	)
 and (
 	ifnull(run_date,'')=''
-	or length(run_date)=0
 	or run_date < date_sub(now(), interval 1 minute) 
 	)
 and 
 	(
 	ifnull(frequency_max,'')='' 
-	or (frequency_max='hourly' and date(run_date) != hour(now()))
+	or ifnull(run_date,'')=''
+	or (frequency_max='hourly' and hour(run_date) != hour(now()))
 	or (frequency_max='daily' and date(run_date) != date(now()))
 	or (frequency_max='weekly' and week(run_date) != week(now()))
 	or (frequency_max='monthly' and month(run_date) != month(now()))
