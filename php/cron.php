@@ -589,84 +589,166 @@ and
 and
 	(
 	run_format->'\$.minute[0]'=-1
-	or run_format->'\$.minute[0]'=MINUTE(NOW())
-	or run_format->'\$.minute[1]'=MINUTE(NOW())
-	or run_format->'\$.minute[2]'=MINUTE(NOW())
-	or run_format->'\$.minute[3]'=MINUTE(NOW())
-	or run_format->'\$.minute[4]'=MINUTE(NOW())
-	or run_format->'\$.minute[5]'=MINUTE(NOW())
-	or run_format->'\$.minute[6]'=MINUTE(NOW())
-	or run_format->'\$.minute[7]'=MINUTE(NOW())
-	or run_format->'\$.minute[8]'=MINUTE(NOW())
-	or run_format->'\$.minute[9]'=MINUTE(NOW())
-	or run_format->'\$.minute[10]'=MINUTE(NOW())
-	or run_format->'\$.minute[11]'=MINUTE(NOW())
-	or run_format->'\$.minute[12]'=MINUTE(NOW())
-	or run_format->'\$.minute[13]'=MINUTE(NOW())
-	or run_format->'\$.minute[14]'=MINUTE(NOW())
+	or MINUTE(now()) in (
+		run_format->'\$.minute[1]',
+		run_format->'\$.minute[2]',
+		run_format->'\$.minute[3]',
+		run_format->'\$.minute[4]',
+		run_format->'\$.minute[5]',
+		run_format->'\$.minute[6]',
+		run_format->'\$.minute[7]',
+		run_format->'\$.minute[8]',
+		run_format->'\$.minute[9]',
+		run_format->'\$.minute[10]',
+		run_format->'\$.minute[11]',
+		run_format->'\$.minute[12]',
+		run_format->'\$.minute[13]',
+		run_format->'\$.minute[14]',
+		run_format->'\$.minute[15]',
+		run_format->'\$.minute[16]',
+		run_format->'\$.minute[17]',
+		run_format->'\$.minute[18]',
+		run_format->'\$.minute[19]',
+		run_format->'\$.minute[20]',
+		run_format->'\$.minute[21]',
+		run_format->'\$.minute[22]',
+		run_format->'\$.minute[23]',
+		run_format->'\$.minute[24]',
+		run_format->'\$.minute[25]',
+		run_format->'\$.minute[26]',
+		run_format->'\$.minute[27]',
+		run_format->'\$.minute[28]',
+		run_format->'\$.minute[29]',
+		run_format->'\$.minute[30]',
+		run_format->'\$.minute[31]',
+		run_format->'\$.minute[32]',
+		run_format->'\$.minute[33]',
+		run_format->'\$.minute[34]',
+		run_format->'\$.minute[35]',
+		run_format->'\$.minute[36]',
+		run_format->'\$.minute[37]',
+		run_format->'\$.minute[38]',
+		run_format->'\$.minute[39]',
+		run_format->'\$.minute[40]',
+		run_format->'\$.minute[41]',
+		run_format->'\$.minute[42]',
+		run_format->'\$.minute[43]',
+		run_format->'\$.minute[44]',
+		run_format->'\$.minute[45]',
+		run_format->'\$.minute[46]',
+		run_format->'\$.minute[47]',
+		run_format->'\$.minute[48]',
+		run_format->'\$.minute[49]',
+		run_format->'\$.minute[50]',
+		run_format->'\$.minute[51]',
+		run_format->'\$.minute[52]',
+		run_format->'\$.minute[53]',
+		run_format->'\$.minute[54]',
+		run_format->'\$.minute[55]',
+		run_format->'\$.minute[56]',
+		run_format->'\$.minute[57]',
+		run_format->'\$.minute[58]',
+		run_format->'\$.minute[59]'
+		)
 	)
 and
 	(
 	run_format->'\$.hour[0]'=-1
-	or run_format->'\$.hour[0]'=HOUR(NOW())
-	or run_format->'\$.hour[1]'=HOUR(NOW())
-	or run_format->'\$.hour[2]'=HOUR(NOW())
-	or run_format->'\$.hour[3]'=HOUR(NOW())
-	or run_format->'\$.hour[4]'=HOUR(NOW())
-	or run_format->'\$.hour[5]'=HOUR(NOW())
-	or run_format->'\$.hour[6]'=HOUR(NOW())
-	or run_format->'\$.hour[7]'=HOUR(NOW())
-	or run_format->'\$.hour[8]'=HOUR(NOW())
-	or run_format->'\$.hour[9]'=HOUR(NOW())
-	or run_format->'\$.hour[10]'=HOUR(NOW())
-	or run_format->'\$.hour[11]'=HOUR(NOW())
+	or HOUR(NOW()) in (
+		run_format->'\$.hour[0]',
+		run_format->'\$.hour[1]',
+		run_format->'\$.hour[2]',
+		run_format->'\$.hour[3]',
+		run_format->'\$.hour[4]',
+		run_format->'\$.hour[5]',
+		run_format->'\$.hour[6]',
+		run_format->'\$.hour[7]',
+		run_format->'\$.hour[8]',
+		run_format->'\$.hour[9]',
+		run_format->'\$.hour[10]',
+		run_format->'\$.hour[11]',
+		run_format->'\$.hour[12]',
+		run_format->'\$.hour[13]',
+		run_format->'\$.hour[14]',
+		run_format->'\$.hour[15]',
+		run_format->'\$.hour[16]',
+		run_format->'\$.hour[17]',
+		run_format->'\$.hour[18]',
+		run_format->'\$.hour[19]',
+		run_format->'\$.hour[20]',
+		run_format->'\$.hour[21]',
+		run_format->'\$.hour[22]',
+		run_format->'\$.hour[23]'
+		)
 	)
 and
 	(
 	run_format->'\$.day[0]'=-1
-	or run_format->'\$.day[0]'=day(curdate())
-	or run_format->'\$.day[1]'=day(curdate())
-	or run_format->'\$.day[2]'=day(curdate())
-	or run_format->'\$.day[3]'=day(curdate())
-	or run_format->'\$.day[4]'=day(curdate())
-	or run_format->'\$.day[5]'=day(curdate())
-	or run_format->'\$.day[6]'=day(curdate())
-	or run_format->'\$.day[7]'=day(curdate())
-	or run_format->'\$.day[8]'=day(curdate())
-	or run_format->'\$.day[9]'=day(curdate())
-	or run_format->'\$.day[10]'=day(curdate())
-	or run_format->'\$.day[11]'=day(curdate())
-	or run_format->'\$.day[12]'=day(curdate())
-	or run_format->'\$.day[13]'=day(curdate())
-	or run_format->'\$.day[14]'=day(curdate())
+	or DAY(curdate()) in (
+		run_format->'\$.day[0]',
+		run_format->'\$.day[1]',
+		run_format->'\$.day[2]',
+		run_format->'\$.day[3]',
+		run_format->'\$.day[4]',
+		run_format->'\$.day[5]',
+		run_format->'\$.day[6]',
+		run_format->'\$.day[7]',
+		run_format->'\$.day[8]',
+		run_format->'\$.day[9]',
+		run_format->'\$.day[10]',
+		run_format->'\$.day[11]',
+		run_format->'\$.day[12]',
+		run_format->'\$.day[13]',
+		run_format->'\$.day[14]',
+		run_format->'\$.day[15]',
+		run_format->'\$.day[16]',
+		run_format->'\$.day[17]',
+		run_format->'\$.day[18]',
+		run_format->'\$.day[19]',
+		run_format->'\$.day[20]',
+		run_format->'\$.day[21]',
+		run_format->'\$.day[22]',
+		run_format->'\$.day[23]',
+		run_format->'\$.day[24]',
+		run_format->'\$.day[25]',
+		run_format->'\$.day[26]',
+		run_format->'\$.day[27]',
+		run_format->'\$.day[28]',
+		run_format->'\$.day[29]',
+		run_format->'\$.day[30]'
+		)
 	)
 and
 	(
 	run_format->'\$.month[0]'=-1
-	or run_format->'\$.month[0]'=MONTH(curdate())
-	or run_format->'\$.month[1]'=MONTH(curdate())
-	or run_format->'\$.month[2]'=MONTH(curdate())
-	or run_format->'\$.month[3]'=MONTH(curdate())
-	or run_format->'\$.month[4]'=MONTH(curdate())
-	or run_format->'\$.month[5]'=MONTH(curdate())
-	or run_format->'\$.month[6]'=MONTH(curdate())
-	or run_format->'\$.month[7]'=MONTH(curdate())
-	or run_format->'\$.month[8]'=MONTH(curdate())
-	or run_format->'\$.month[9]'=MONTH(curdate())
-	or run_format->'\$.month[10]'=MONTH(curdate())
-	or run_format->'\$.month[11]'=MONTH(curdate())
+	or MONTH(curdate()) in (
+		run_format->'\$.month[0]',
+		run_format->'\$.month[1]',
+		run_format->'\$.month[2]',
+		run_format->'\$.month[3]',
+		run_format->'\$.month[4]',
+		run_format->'\$.month[5]',
+		run_format->'\$.month[6]',
+		run_format->'\$.month[7]',
+		run_format->'\$.month[8]',
+		run_format->'\$.month[9]',
+		run_format->'\$.month[10]',
+		run_format->'\$.month[11]'
+		)
 	)
 and
 	(
 	ifnull(run_format->'\$.dayname[0]','')=''
 	or run_format->'\$.dayname[0]'=-1
-	or run_format->'\$.dayname[0]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[1]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[2]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[3]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[4]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[5]'=WEEKDAY(curdate())
-	or run_format->'\$.dayname[6]'=WEEKDAY(curdate())
+	or WEEKDAY(curdate()) in (
+		run_format->'\$.dayname[0]',
+		run_format->'\$.dayname[1]',
+		run_format->'\$.dayname[2]',
+		run_format->'\$.dayname[3]',
+		run_format->'\$.dayname[4]',
+		run_format->'\$.dayname[5]',
+		run_format->'\$.dayname[6]''
+		)
 	)
 ENDOFWHERE;
 }
