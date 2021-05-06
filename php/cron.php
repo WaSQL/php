@@ -595,6 +595,15 @@ and
 	or run_format->'\$.minute[3]'=MINUTE(NOW())
 	or run_format->'\$.minute[4]'=MINUTE(NOW())
 	or run_format->'\$.minute[5]'=MINUTE(NOW())
+	or run_format->'\$.minute[6]'=MINUTE(NOW())
+	or run_format->'\$.minute[7]'=MINUTE(NOW())
+	or run_format->'\$.minute[8]'=MINUTE(NOW())
+	or run_format->'\$.minute[9]'=MINUTE(NOW())
+	or run_format->'\$.minute[10]'=MINUTE(NOW())
+	or run_format->'\$.minute[11]'=MINUTE(NOW())
+	or run_format->'\$.minute[12]'=MINUTE(NOW())
+	or run_format->'\$.minute[13]'=MINUTE(NOW())
+	or run_format->'\$.minute[14]'=MINUTE(NOW())
 	)
 and
 	(
@@ -605,6 +614,12 @@ and
 	or run_format->'\$.hour[3]'=HOUR(NOW())
 	or run_format->'\$.hour[4]'=HOUR(NOW())
 	or run_format->'\$.hour[5]'=HOUR(NOW())
+	or run_format->'\$.hour[6]'=HOUR(NOW())
+	or run_format->'\$.hour[7]'=HOUR(NOW())
+	or run_format->'\$.hour[8]'=HOUR(NOW())
+	or run_format->'\$.hour[9]'=HOUR(NOW())
+	or run_format->'\$.hour[10]'=HOUR(NOW())
+	or run_format->'\$.hour[11]'=HOUR(NOW())
 	)
 and
 	(
@@ -616,6 +631,14 @@ and
 	or run_format->'\$.day[4]'=day(curdate())
 	or run_format->'\$.day[5]'=day(curdate())
 	or run_format->'\$.day[6]'=day(curdate())
+	or run_format->'\$.day[7]'=day(curdate())
+	or run_format->'\$.day[8]'=day(curdate())
+	or run_format->'\$.day[9]'=day(curdate())
+	or run_format->'\$.day[10]'=day(curdate())
+	or run_format->'\$.day[11]'=day(curdate())
+	or run_format->'\$.day[12]'=day(curdate())
+	or run_format->'\$.day[13]'=day(curdate())
+	or run_format->'\$.day[14]'=day(curdate())
 	)
 and
 	(
@@ -627,6 +650,11 @@ and
 	or run_format->'\$.month[4]'=MONTH(curdate())
 	or run_format->'\$.month[5]'=MONTH(curdate())
 	or run_format->'\$.month[6]'=MONTH(curdate())
+	or run_format->'\$.month[7]'=MONTH(curdate())
+	or run_format->'\$.month[8]'=MONTH(curdate())
+	or run_format->'\$.month[9]'=MONTH(curdate())
+	or run_format->'\$.month[10]'=MONTH(curdate())
+	or run_format->'\$.month[11]'=MONTH(curdate())
 	)
 and
 	(
