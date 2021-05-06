@@ -747,7 +747,7 @@ and
 		run_format->'\$.dayname[3]',
 		run_format->'\$.dayname[4]',
 		run_format->'\$.dayname[5]',
-		run_format->'\$.dayname[6]''
+		run_format->'\$.dayname[6]'
 		)
 	)
 ENDOFWHERE;
