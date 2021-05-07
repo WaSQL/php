@@ -1242,7 +1242,6 @@ ul.nav-tabs.collapse > li > a{
 ul.nav-tabs li > a.dropdown:after{
   content:' \23F7';
   display:inline;
-  vertical-align: middle;
   padding: .375rem 0 0 0;
   font-size: 0.9rem;
   height: 1em;

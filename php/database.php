@@ -1704,7 +1704,7 @@ function databaseListRecords($params=array()){
 				$value=$params[$fld."_map"][$value];
             }
 			//check for {field}_onclick and {field}_href
-			if(!empty($params[$fld."_onclick"])){
+			if(!empty($params[$fld."_onclick"]) && !isset($params[$fld."_checkmark"])){
 				$href=$params[$fld."_onclick"];
 				$href=str_replace('%fieldname%',$fld,$href);
 				//substitute and %{field}% with its value in this record
@@ -1829,13 +1829,54 @@ function databaseListRecords($params=array()){
                 unset($hvalue);
 			}
 			elseif(isset($params[$fld."_checkmark"]) && $params[$fld."_checkmark"]==1){
-				if($value==0){$value='';}
+				if($value==0){
+					$mark='';
+					if(isset($params[$fld."_checkmark_icon_0"])){
+						$mark=$params[$fld."_checkmark_icon_0"];
+					}
+					elseif(isset($params[$fld."_icon_0"])){
+						$mark=$params[$fld."_icon_0"];
+					}
+					if(!empty($params[$fld."_onclick"])){
+						$href=$params[$fld."_onclick"];
+						$href=str_replace('%fieldname%',$fld,$href);
+						//substitute and %{field}% with its value in this record
+						foreach($rec as $recfld=>$recval){
+							if(is_array($recfld) || is_array($recval)){continue;}
+							$replace='%'.$recfld.'%';
+		                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
+		                }
+		                $value='<div class="text-center"><a href="#" onclick="'.$href.'"><span class="'.$mark.'"></span></a></div>';
+					}
+					else{
+						$value='<span class="'.$mark.'"></span>';
+					}
+				}
 				elseif($value==1){
 					$mark='icon-mark';
 					if(isset($params[$fld."_checkmark_icon"])){
 						$mark=$params[$fld."_checkmark_icon"];
 					}
-					$value='<div class="text-center"><span class="'.$mark.'"></span></div>';
+					elseif(isset($params[$fld."_checkmark_icon_1"])){
+						$mark=$params[$fld."_checkmark_icon_1"];
+					}
+					elseif(isset($params[$fld."_icon_1"])){
+						$mark=$params[$fld."_icon_1"];
+					}
+					if(!empty($params[$fld."_onclick"])){
+						$href=$params[$fld."_onclick"];
+						$href=str_replace('%fieldname%',$fld,$href);
+						//substitute and %{field}% with its value in this record
+						foreach($rec as $recfld=>$recval){
+							if(is_array($recfld) || is_array($recval)){continue;}
+							$replace='%'.$recfld.'%';
+		                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
+		                }
+		                $value='<div class="text-center"><a href="#" onclick="'.$href.'"><span class="'.$mark.'"></span></a></div>';
+					}
+					else{
+						$value='<div class="text-center"><span class="'.$mark.'"></span></div>';
+					}
 				}
             }
             elseif(!empty($params[$fld."_badge"])){
