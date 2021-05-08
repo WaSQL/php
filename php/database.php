@@ -3582,7 +3582,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	$forcedatts=array(
 		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
 		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
-		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help','autofocus',
+		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help','autofocus','autocomplete',
 		'group_id','group_class','group_style','checkclass','checkclasschecked',
 		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap','text','path','autonumber'
 		);

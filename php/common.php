@@ -2580,7 +2580,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 * @usage echo buildFormText('name',$params);
 */
 function buildFormText($name,$params=array()){
-
+	//return $name.printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['inputtype'])){$params['-type']=$params['inputtype'];}
 	if(!isset($params['-type'])){$params['-type']='text';}

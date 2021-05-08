@@ -287,6 +287,11 @@ function wcommerceProductsAddedit($id=0){
 		'name_options'=>array(
 			'inputtype'=>'text',
 		),
+		'category_options'=>array(
+			'inputtype'=>'text',
+			'tvals'=>"select distinct(category) from wcommerce_products order by category",
+			'autocomplete'=>'off'
+		),
 		'price_options'=>array(
 			'inputtype'=>'number',
 			'step'=>'any',
