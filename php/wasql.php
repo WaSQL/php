@@ -1515,7 +1515,7 @@ function wasqlGetMasks($d=0){
 /**
 * @describe returns a list of states . Used in _fielddata
 * @param sort_by_display  boolean
-*	if true returns the display values, other wise returns the true values (2 char country code)
+*	0 = true values, 1 = display values, 2 = opts array with tvals as keys.  Defaults to 0
 * @param country string
 *	country code. defaults to US
 * @return
@@ -1539,10 +1539,20 @@ function wasqlGetStates($d=0,$country='US'){
 	if(is_array($recs)){
 		$vals=array();
 		foreach($recs as $rec){
-			if($d==0){$vals[]=$rec['code'];}
-			else{$vals[]=$rec['name'];}
+			$vals[$rec['code']]=$rec['name'];
 		}
-		return implode("\r\n",$vals);
+		switch((integer)$d){
+			case 0:
+			default:
+				return implode("\r\n",array_keys($vals));
+			break;
+			case 1:
+				return implode("\r\n",array_values($vals));
+			break;
+			case 2:
+				return $vals;
+			break;
+		}
 	}
 	return '';
 }

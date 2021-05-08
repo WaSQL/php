@@ -426,7 +426,7 @@ function commonFormatPhone($phone) {
 *	[-offset] integer - number to start with - defaults to 0
 *	[-total] integer - number of total records - required to show pagination buttons
 *	['-formname'] - formname. defaults to searchfiltersform
-*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs
+*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs. Can also be an array with the following values: icon,name,filter,data-,onclick,class - or any other attribute you want to be included in the button
 *	[-quickfilters_class] - set quickfilter button class
 *	[-search_select_class]  - sets the class for the select fields in the search form
 *	[-search_input_class]  - sets the class for the input fields in the search form
@@ -525,21 +525,45 @@ function commonSearchFiltersForm($params=array()){
 		$buttons=array();
 		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
 		foreach($params['-quickfilters'] as $name=>$str){
-			$btn='<button type="button" style="margin-right:4px;" class="'.$quickclass.'"';
-			if(stringBeginsWith($str,'javascript:')){
+			if(is_array($str) && isset($str['class'])){
+				$class=$str['class'];
+				unset($str['class']);
+			}
+			else{$class=$quickclass;}
+			$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+			if(is_array($str) && isset($str['onclick'])){
+				$btn .=' onclick="'.$str['onclick'].'"';
+				unset($str['onclick']);
+			}
+			elseif(stringBeginsWith($str,'javascript:')){
 				$str=str_replace('javascript:','',$str);
 				$btn .=' onclick="'.$str.'"';
 			}
 			else{
-				$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$str.'\',1);"';
+				if(is_array($str) && isset($str['filter'])){
+					$filter=$str['filter'];
+					unset($str['filter']);
+				}
+				else{$filter=$str;}
+				$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$filter.'\',1);"';
 			}
-			$btn.='>'.$name.'</button>';
-			$buttons[]=$btn;
-			$sets=preg_split('/\,/',$str);
-			foreach($sets as $set){
-				list($fld,$oper,$val)=preg_split('/\ +/',$set,3);	
+			if(is_array($str) && isset($str['name'])){
+					$cname=$str['name'];
+					unset($str['name']);
+				}
+			else{$cname=$name;}
+			if(is_array($str) && isset($str['icon'])){
+				$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;
+				unset($str['icon']);
 			}
-			
+			//add any other attributes
+			if(is_array($str) && count($str)){
+				foreach($str as $strk=>$strv){
+					$btn.=" {$strk}=\"{$strv}\"";
+				}
+			}
+			$btn.='>'.$cname.'</button>';
+			$buttons[]=$btn;		
 		}
 		$rtn .= '<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">'.implode(' ',$buttons).'</div>';
 	}

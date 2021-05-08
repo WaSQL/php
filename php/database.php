@@ -736,7 +736,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	[-search_select_class]  - sets the class for the select fields in the search form
 *	[-search_input_class]  - sets the class for the input fields in the search form
 *	[-search_button_class]  - sets the class for the button fields in the search form
-*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs
+*	[-quickfilters] - creates quickfilter button name=>string pairs where string is field oper val, semicolon separate pairs. Can also be an array with the following values: icon,name,filter,data-,onclick,class - or any other attribute you want to be included in the button
 *	[-quickfilters_class] - set quickfilter button class
 *	[-presearch]  - HTML/text content to add just before the search form
 *	[-pretable]  - HTML/text content to add just before the table begins
@@ -4654,7 +4654,12 @@ function databaseAddMultipleTables($schemas=''){
 	foreach($schemas as $table=>$fieldstr){
 		$result=array('table'=>$table);
 		unset($databaseCache['isDBTable'][$table]);
-    	$ok=createDBTableFromText($table,$fieldstr);
+		if(isDBTable($table)){
+			$ok=updateDBSchema($table,$fieldstr);
+		}
+		else{
+			$ok=createDBTableFromText($table,$fieldstr);
+		}
 		if(!isNum($ok)){
 			$result['status']='FAILED';
 			$result['info']=$ok;

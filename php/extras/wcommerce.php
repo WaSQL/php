@@ -30,45 +30,213 @@ function wcommerceOrdersList(){
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_orders',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
+		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_orders_content');",
 		'-tableclass'=>"table striped bordered responsive",
 		'-edit'=>1,
 		'-sorting'=>1,
-		'-listfields'=>'_id,user_id,date_ordered,date_shipped,tracking_number,items_count,order_total,shipto_city,shipto_state,shipto_country',
+		'-listfields'=>'_id,user_id,date_ordered,date_shipped,tracking_number,date_delivered,items_count,order_total,shipto_city,shipto_state,shipto_country',
 		'-order'=>'date_shipped desc'
 	);
+	$opts['-quickfilters_class']='btn w_blue';
+	$opts['-quickfilters']=array(
+		'Add'=>array(
+			'icon'=>'icon-plus',
+			'onclick'=>'wcommerceNav(this);',
+			'data-href'=>"/t/1/{$PAGE['name']}/manage_orders/addedit/0",
+			'data-div'=>"centerpop",
+			'class'=>"btn w_white"
+			),
+		'Open'=>array(
+			'icon'=>'icon-mark',
+			'filter'=>'date_shipped ib',
+			'class'=>"btn w_blue"
+			),
+		'Shipped'=>array(
+			'icon'=>'icon-package',
+			'filter'=>'date_shipped nb',
+			'class'=>"btn w_green"
+			),
+		'In Transit'=>array(
+			'icon'=>'icon-spin8',
+			'filter'=>'date_shipped nb;date_delivered ib',
+			'class'=>"btn w_yellow"
+			),
+		'Delivered'=>array(
+			'icon'=>'icon-spin8',
+			'filter'=>'date_shipped nb;date_delivered nb',
+			'class'=>"btn w_gray"
+			),
+	);
+	$opts['-pretable']=<<<ENDOFPRETABLE
+<div style="display:flex;justify-content:space-between;align-items:center">
+	<div class="w_small w_gray">Click on Id to edit entire record. Click on <span class="icon-edit"></span> to edit a single field.</div>
+</div>
+ENDOFPRETABLE;
 	return databaseListRecords($opts);
+}
+function wcommerceBuildField($field,$val1='',$val2=''){
+	$params=array();
+	if(strlen($val1)){$params['value']=$params['-value']=$val1;}
+	switch(strtolower($field)){
+		case 'shipto_state':
+			$opts=wasqlGetStates(2,$val2);
+			$params['message']=' ----- ';
+			return buildFormSelect($field,$opts,$params);
+		break;
+	}
+}
+function wcommerceOrdersAddedit($id=0){
+	global $PAGE;
+	$opts=array(
+		'-table'=>'wcommerce_orders',
+		'-enctype'=>'multipart/form-data',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'wcommerce_orders_content')",
+		'-fields'=>getView('manage_orders_addedit_fields'),
+		'-style_all'=>'width:100%',
+		'name_options'=>array(
+			'inputtype'=>'text',
+		),
+		'shipto_country_options'=>array(
+			'inputtype'=>'select',
+			'onchange'=>"wcommerceNav(this);",
+			'data-href'=>"/t/1/{$PAGE['name']}/manage_redraw",
+			'data-field'=>'shipto_state',
+			'data-div'=>'shipto_state_content',
+			'tvals'=>wasqlGetCountries(),
+			'dvals'=>wasqlGetCountries(1)
+		),
+		'shipto_state_options'=>array(
+			'inputtype'=>'select',
+			'tvals'=>wasqlGetStates(),
+			'dvals'=>wasqlGetStates(1)
+		),
+		'shipto_address_options'=>array(
+			'inputtype'=>'textarea',
+			'height'=>'50'
+		),
+		'related_products_options'=>array(
+			'inputtype'=>'textarea',
+			'height'=>'150'
+		)
+	);
+	if($id > 0){
+		$opts['_id']=$id;
+	}
+	else{
+		$opts['shipto_country']='US';
+	}
+	return addEditDBForm($opts);
+}
+
+function wcommerceGetSettings(){
+	$params['-table']='wcommerce_settings';
+	$params['active']=1;
+	$recs=getDBRecords($params);
+	$settings=array();
+	foreach($recs as $rec){
+		$key=strtolower($rec['name']);
+		$value=$rec['value'];
+		$settings[$key]=$value;
+	}
+	return $settings;
+}
+function wcommerceProducts($params=array()){
+	$params['-table']='wcommerce_products';
+	$params['active']=1;
+	$recs=getDBRecords($params);
+	//group by size,color,material
+	$products=array();
+	foreach($recs as $rec){
+		$key=strtolower(trim($rec['name']));
+		$products[$key][]=$rec;
+	}
+	$recs=array();
+	foreach($products as $key=>$precs){
+		$mods=array();
+		foreach($precs as $prec){
+			if(strlen($prec['size'])){
+				$mods['sizes'][$prec['size']]['name']=$prec['size'];
+				$mods['sizes'][$prec['size']]['quantity']+=$prec['quantity'];
+			}
+			if(strlen($prec['color'])){
+				$mods['colors'][$prec['color']]['name']=$prec['color'];
+				$mods['colors'][$prec['color']]['quantity']+=$prec['quantity'];
+			}
+			if(strlen($prec['material'])){
+				$mods['materials'][$prec['material']]['name']=$prec['material'];
+				$mods['materials'][$prec['material']]['quantity']+=$prec['quantity'];
+			}
+		}
+		$rec=$precs[0];
+		foreach($mods as $k=>$mod){
+			$mrecs=array();
+			foreach($mod as $x=>$v){$mrecs[]=$v;}
+			$rec[$k]=$mrecs;
+		}
+		$recs[]=$rec;
+	}
+	return $recs;
 }
 function wcommerceProductsList(){
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_products',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_products/list",
+		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_products_content');",
 		'-tableclass'=>"table striped bordered responsive",
-		'-listfields'=>'_id,active,name,quantity,price,sale_price,sku,size,color,material,weight,photo_1,photo_2',
+		'setprocessing'=>0,
+		'-listfields'=>'_id,active,featured,onsale,name,quantity,price,sale_price,sku,size,color,material,weight,photo_1,photo_2',
 		'photo_1_image'=>1,
 		'photo_2_image'=>1,
-		'-edit'=>1,
+		'-editfields'=>'name,quantity,price,sale_price,sku,size,color,material,weight',
 		'-sorting'=>1,
+		'-export'=>1,
 		'-order'=>'active desc,name',
 		'quantity_class'=>'align-right',
 		'price_class'=>'align-right',
+		'name_class'=>'w_nowrap',
 		'sale_price_class'=>'align-right',
 		'weight_options'=>array(
 			'class'=>'align-right',
 			'displayname'=>'Weight (oz)'
 		),
 		'active_options'=>array(
-			'onclick'=>"return wcommerceManageSetActive(this);",
+			'onclick'=>"return wcommerceManageSetValue(this);",
 			'data-id'=>"%_id%",
 			'data-table'=>"wcommerce_products",
+			'data-field'=>'active',
 			'data-value'=>"%active%",
+			'data-one'=>'icon-mark w_success',
+			'data-zero'=>'icon-mark w_lgray',
 			'checkmark'=>1,
 			'checkmark_icon'=>'icon-mark w_success',
-			'icon_0'=>'icon-block w_danger'
+			'icon_0'=>'icon-mark w_lgray'
 		),
-		'name_options'=>array(
-			'onclick'=>"return wcommerceNav(getParent(this,'td'));",
-			'data-href'=>"/t/1/{$PAGE['name']}/manage_products/addedit/%_id%",
-			'data-div'=>'centerpop'
+		'onsale_options'=>array(
+			'onclick'=>"return wcommerceManageSetValue(this);",
+			'data-id'=>"%_id%",
+			'data-table'=>"wcommerce_products",
+			'data-field'=>'onsale',
+			'data-value'=>"%onsale%",
+			'data-one'=>'icon-tag w_success',
+			'data-zero'=>'icon-tag w_lgray',
+			'checkmark'=>1,
+			'checkmark_icon'=>'icon-tag w_success',
+			'icon_0'=>'icon-tag w_lgray'
+		),
+		'featured_options'=>array(
+			'onclick'=>"return wcommerceManageSetValue(this);",
+			'data-id'=>"%_id%",
+			'data-table'=>"wcommerce_products",
+			'data-field'=>'featured',
+			'data-value'=>"%featured%",
+			'data-one'=>'icon-optimize w_warning',
+			'data-zero'=>'icon-optimize w_lgray',
+			'checkmark'=>1,
+			'checkmark_icon'=>'icon-optimize w_warning',
+			'icon_0'=>'icon-optimize w_lgray'
 		),
 		'_id_options'=>array(
 			'onclick'=>"return wcommerceNav(getParent(this,'td'));",
@@ -76,9 +244,33 @@ function wcommerceProductsList(){
 			'data-div'=>'centerpop'
 		),
 	);
+	$opts['-quickfilters']=array(
+		'Add'=>array(
+			'icon'=>'icon-plus',
+			'onclick'=>'wcommerceNav(this);',
+			'data-href'=>"/t/1/{$PAGE['name']}/manage_products/addedit/0",
+			'data-div'=>"centerpop",
+			'class'=>"btn w_white"
+			),
+		'Featured'=>array(
+			'icon'=>'icon-optimize',
+			'filter'=>'featured eq 1',
+			'class'=>"btn w_yellow"
+			),
+		'On Sale'=>array(
+			'icon'=>'icon-tag',
+			'filter'=>'onsale eq 1',
+			'class'=>"btn w_green"
+			),
+		'Inactive'=>array(
+			'icon'=>'icon-mark',
+			'filter'=>'active eq 0',
+			'class'=>"btn w_gray"
+			)
+	);
 	$opts['-pretable']=<<<ENDOFPRETABLE
-<div style="display:flex;justify-content:flex-end;align-items:center">
-	<button type="button" class="button is-small btn btn-small is-success w_success" onclick="wcommerceNav(this);" data-href="/t/1/{$PAGE['name']}/manage_products/addedit/0" data-div="centerpop"><span class="icon-plus"></span> <translate>Add</translate></button>
+<div style="display:flex;justify-content:space-between;align-items:center">
+	<div class="w_small w_gray">Click on Id to edit entire record. Click on <span class="icon-edit"></span> to edit a single field.</div>
 </div>
 ENDOFPRETABLE;
 	return databaseListRecords($opts);
@@ -180,27 +372,29 @@ function wcommerceInit($force=0){
 	$rec=getDBRecord(array('-table'=>'_pages','-where'=>"name='wcommerce' or permalink='wcommerce'",'-fields'=>'_id,name,permalink'));
 	if($force==1 || !isset($rec['_id'])){
 		//create a wcommerce page
-		$ok=addDBRecord(array(
+		$opts=array(
 			'-table'=>'_pages',
 			'name'=>'wcommerce',
+			'title'=>'wcommerce',
 			'permalink'=>'wcommerce',
 			'body'=>wcommercePageBody(),
 			'js'=>wcommercePageJs(),
 			'controller'=>wcommercePageController(),
 			'description'=>'wcommerce management page',
-			'_template'=>2,
-			'-upsert'=>'body,controller,description,js'
-		));
+			'_template'=>2
+		);
+		$ok=addDBRecord($opts);
 	}
 	//check for schema
 	if($force==1 || !isDBTable('wcommerce_products')){
 		$ok=databaseAddMultipleTables(wcommerceSchema());
 	}
+	return 1;
 }
 function wcommercePageBody(){
 	return <<<ENDOFBODY
 <view:manage_portal>
-<div class="w_bold w_biggest w_success">
+<div class="w_bold w_biggest w_success" id="wcommerce" data-page="<?=pageValue('name');?>">
 	<span class="icon-handshake w_success"></span> wCOMMERCE
 </div>
 <ul class="nav-tabs w_black">
@@ -208,6 +402,7 @@ function wcommercePageBody(){
 	<li class="active"><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/manage_orders"><span class="icon-package"></span> <translate>Orders</translate></a></li>
 	<!-- Products -->
 	<li><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/manage_products"><span class="icon-tag"></span> <translate>Products</translate></a></li>
+	<li><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/manage_products_preview"><span class="icon-eye"></span> <translate>Products Preview</translate></a></li>
 	<!-- Settings -->
 	<li><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/manage_settings"><span class="icon-gear"></span> <translate>Settings</translate></a></li>
 	<!-- Buyers -->
@@ -216,10 +411,10 @@ function wcommercePageBody(){
 	<li><a href="#" onclick="return false" class="dropdown"><span class="icon-user"></span> <?=\$USER['username'];?></a>
 		<div>
 			<ul class="nav-list">
-				<!-- Profile -->
-				<li><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/user_profile"><span class="icon-user"></span> <translate>Profile</translate></a></li>
 				<!-- Logoff -->
 				<li class="right"><a href="/<?=pageValue('name');?>?_logoff=1"><span class="icon-logout"></span> <translate>Logoff</translate></a></li>
+				<!-- Update -->
+				<li style="margin-top:10px;border-top:1px solid #ccc;padding-top:10px;"><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/manage_init" data-confirm="This will update the wcommerce module. Are you sure?"><span class="icon-refresh w_danger"></span> <translate>Update</translate></a></li>
 			</ul>
 		</div>
 	</li>
@@ -230,20 +425,76 @@ function wcommercePageBody(){
 <div style="display:none"><div id="wcommerce_nulldiv"></div></div>
 </view:manage_portal>
 
+<view:manage_redraw><?=wcommerceBuildField(\$field,'',\$value);?></view:manage_redraw>
+
+<view:manage_init>
+	<div class="w_bold w_big">wCommerce has been Updated</div>
+	<div class="w_small w_gray">Restart postedit and clear your cache</div>
+</view:manage_init>
+
 <view:manage_orders>
-<div class="w_bold w_bigger">
-	<span class="icon-package w_success"></span> <translate>Orders</translate>
-</div>
-<div id="wcommerce_orders_content">
+<div id="wcommerce_orders_content" style="margin-top:10px;">
 	<?=wcommerceOrdersList();?>
 </div>
 </view:manage_orders>
 
-<view:manage_products>
-<div class="w_bold w_bigger">
-	<span class="icon-tag w_success"></span> <translate>Products</translate>
+<view:manage_orders_list>
+	<?=wcommerceOrdersList();?>
+	<?=buildOnLoad("removeId('centerpop');");?>
+</view:manage_orders_list>
+
+<view:manage_orders_addedit>
+<div class="w_centerpop_title">Orders AddEdit</div>
+<div class="w_centerpop_content" style="width:70vw;">
+	<?=wcommerceOrdersAddedit(\$id);?>
+	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
-<div id="wcommerce_products_content">
+</view:manage_orders_addedit>
+
+<view:manage_orders_addedit_fields>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>User_ID</translate></label>[user_id]</div>
+	<div style="margin:5px;"><label><translate>Date Ordered</translate></label>[date_ordered]</div>
+	<div style="margin:5px;"><label><translate>Coupon</translate></label>[coupon]</div>
+	<div style="margin:5px;"><label><translate>Discount</translate></label>[discount]</div>
+</div>
+<div style="font-size:1.2rem;background:#eee;padding:0 10px;margin:5px 0;font-weight: bold;color:#999;"><span class="icon-user2"></span> SHIP TO</div>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Firstname</translate></label>[shipto_firstname]</div>
+	<div style="margin:5px;"><label><translate>Lastname</translate></label>[shipto_lastname]</div>
+	<div style="margin:5px;"><label><translate>Email</translate></label>[shipto_email]</div>
+	<div style="margin:5px;"><label><translate>Phone</translate></label>[shipto_phone]</div>
+</div>
+<div style="display:flex;padding:1px;">
+	<div style="flex:1;margin:5px;"><label><translate>Address</translate></label>[shipto_address]</div>
+</div>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Country</translate></label>[shipto_country]</div>
+	<div style="margin:5px;"><label><translate>State</translate></label><div id="shipto_state_content">[shipto_state]</div></div>
+	<div style="margin:5px;"><label><translate>City</translate></label>[shipto_city]</div>
+	<div style="margin:5px;"><label><translate>Postal Code</translate></label>[shipto_zip]</div>
+	
+</div>
+<div style="font-size:1.2rem;background:#eee;padding:0 10px;margin:5px 0;font-weight: bold;color:#999;"><span class="icon-package"></span> SHIPPING</div>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Code</translate></label>[shipmethod_code]</div>
+	<div style="margin:5px;"><label><translate>Price</translate></label>[shipmethod_price]</div>
+	<div style="margin:5px;"><label><translate>Tracking Number</translate></label>[tracking_number]</div>
+	<div style="margin:5px;"><label><translate>Date Shipped</translate></label>[date_shipped]</div>
+	<div style="margin:5px;"><label><translate>Date Delivered</translate></label>[date_delivered]</div>
+</div>
+<div style="font-size:1.2rem;background:#eee;padding:0 10px;margin:5px 0;font-weight: bold;color:#999;"><span class="icon-cc"></span> PAYMENT</div>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Method</translate></label>[payment_name]</div>
+	<div style="margin:5px;"><label><translate>Code</translate></label>[payment_code]</div>
+	<div style="margin:5px;"><label><translate>Description</translate></label>[payment_description]</div>
+	<div style="margin:5px;"><label><translate>Status</translate></label>[payment_status]</div>
+	<div style="margin:5px;"><label><translate>Response</translate></label>[payment_response]</div>
+</div>
+</view:manage_orders_addedit_fields>
+
+<view:manage_products>
+<div id="wcommerce_products_content" style="margin-top:10px;">
 	<?=wcommerceProductsList();?>
 </div>
 </view:manage_products>
@@ -296,23 +547,31 @@ function wcommercePageBody(){
 	<div style="margin:5px;flex-grow:1;"><label><translate>Details</translate></label>[details]</div>
 	<div style="margin:5px;flex-grow:1;"><label><translate>Related Products</translate></label>[related_products]</div>
 </div>
-
 </view:manage_products_addedit_fields>
 
-<view:manage_buyers>
-<div class="w_bold w_bigger">
-	<span class="icon-users w_success"></span> <translate>Buyers</translate>
+<view:manage_products_preview>
+<div style="display:flex;justify-content: center;flex-wrap: wrap;align-items: center;padding:1px;">
+	<view:product>
+	<div style="margin:15px;display:flex;flex-direction: column;">
+		<img src="<?=\$product['photo_1'];?>"  style="width:200px;height:200px;border-radius: 10px;" />
+		<div style="margin:15px;display:flex;justify-content: space-between;">
+			<div class="align-center forest"><?=\$product['name'];?></div>
+			<div class="align-center mint w_bold">\$ <?=\$product['price'];?></div>
+		</div>
+	</div>
+	</view:product>
+	<?=renderEach('product',\$products,'product');?>
 </div>
-<div id="wcommerce_buyers_content">
+</view:manage_products_preview>
+
+<view:manage_buyers>
+<div id="wcommerce_buyers_content" style="margin-top:10px;">
 	<?=wcommerceBuyersList();?>
 </div>
 </view:manage_buyers>
 
 <view:manage_settings>
-<div class="w_bold w_bigger">
-	<span class="icon-gear w_success"></span> <translate>Settings</translate>
-</div>
-<div id="wcommerce_settings_content">
+<div id="wcommerce_settings_content" style="margin-top:10px;">
 	<?=wcommerceSettingsList();?>
 </div>
 </view:manage_settings>
@@ -324,27 +583,6 @@ function wcommercePageBody(){
 	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
 </view:manage_settings_addedit>
-
-<view:customer_portal>
-<div class="w_bold w_biggest w_success">
-	<translate>Customer Portal</translate>
-</div>
-<ul class="nav-tabs">
-	<!-- Orders -->
-	<li class="active"><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/customer_orders"><span class="icon-package"></span> <translate>Orders</translate></a></li>
-	<!-- User menu -->
-	<li style="margin-left: auto;"><a href="#" onclick="return false" class="dropdown"><span class="icon-user"></span> <?=\$USER['username'];?></a>
-		<div>
-			<ul class="nav-list">
-				<!-- Profile -->
-				<li><a href="#" onclick="return wcommerceNavTab(this);" data-href="/t/1/<?=pageValue('name');?>/user_profile"><span class="icon-user"></span> <translate>Profile</translate></a></li>
-				<!-- Logoff -->
-				<li class="right"><a href="/<?=pageValue('name');?>?_logoff=1"><span class="icon-logout"></span> <translate>Logoff</translate></a></li>
-			</ul>
-		</div>
-	</li>
-</ul>
-</view:customer_portal>
 
 <view:login>
 <?=userLoginForm(array('-action'=>'/'.pageValue('name')));?>
@@ -358,26 +596,38 @@ function wcommerceNavTab(el){
 	return wcommerceNav(el);
 }
 function wcommerceNav(el){
+	if(undefined != el.dataset.confirm && !confirm(el.dataset.confirm)){
+		return false;
+	}
 	let p=el.dataset;
 	p.setprocessing=0;
+	if(undefined != el.value){
+		p.value=el.value;
+	}
 	let div=el.dataset.div||'wcommerce_content';
 	let href=el.dataset.href;
 	return ajaxGet(href,div,p);
 }
-function wcommerceManageSetActive(el){
+function wcommerceManageSetValue(el){
 	let p=getParent(el,'td');
 	let v=parseInt(p.dataset.value);
 	let s=el.querySelector('span');
 	if(v==1){
 		p.dataset.value=0;
-		s.className='icon-block w_danger';
+		s.className=p.dataset.zero;
 	}
 	else{
 		p.dataset.value=1;
-		s.className='icon-mark w_success';
+		s.className=p.dataset.one;
 	}
-	let url='/t/1/wcommerce/manage_setactive/'+p.dataset.table+'/'+p.dataset.id+'/'+p.dataset.value;
+	let page=wcommercePageName();
+	let url='/t/1/'+page+'/manage_setvalue/'+p.dataset.table+'/'+p.dataset.field+'/'+p.dataset.id+'/'+p.dataset.value;
 	return ajaxGet(url,'wcommerce_nulldiv',{setprocessing:0});
+}
+function wcommercePageName(){
+	let el=document.querySelector('#wcommerce[data-page]');
+	if(undefined==el){return 'wcommerce';}
+	return el.dataset.page;
 }
 ENDOFJS;
 }
@@ -385,29 +635,49 @@ function wcommercePageController(){
 	return <<<ENDOFCONTROLLER
 <?php
 //require user
-if(!isUser()){
+if(!isAdmin()){
 	setView('login',1);
 	return;
 }
 global \$USER;
 global \$PASSTHRU;
+global \$PAGE;
 loadExtras('wcommerce');
 switch(strtolower(\$PASSTHRU[0])){
 	case 'user_profile':
 		setView(\$PASSTHRU[0],1);
 	break;
-	case 'manage_setactive':
+	case 'manage_setvalue':
 		\$table=\$PASSTHRU[1];
-		\$id=(integer)\$PASSTHRU[2];
-		\$v=(integer)\$PASSTHRU[3];
-		\$ok=editDBRecordById(\$table,\$id,array('active'=>\$v));
-		echo "Table:{\$table}, id:{\$id}, Value: {\$v}, Result: ".printValue(\$ok);exit;
+		\$field=\$PASSTHRU[2];
+		\$id=(integer)\$PASSTHRU[3];
+		\$value=(integer)\$PASSTHRU[4];
+		\$ok=editDBRecordById(\$table,\$id,array(\$field=>\$value));
+		echo "Table:{\$table}, Field:{\$field}, Id:{\$id}, Value: {\$value}, Result: ".printValue(\$ok);exit;
 	break;
-	case 'manage_develop':
+	case 'manage_redraw':
+		\$field=\$_REQUEST['field'];
+		\$value=\$_REQUEST['value'];
+		setView(\$PASSTHRU[0],1);
+		return;
+	break;
+	case 'manage_init':
 		\$ok=wcommerceInit(1);
-		setView('manage_portal');
+		setView(\$PASSTHRU[0],1);
+		return;
 	break;
 	case 'manage_orders':
+		switch(strtolower(\$PASSTHRU[1])){
+			case 'list':
+				setView('manage_orders_list',1);
+				return;
+			break;
+			case 'addedit':
+				\$id=\$PASSTHRU[2];
+				setView('manage_orders_addedit',1);
+				return;
+			break;
+		}
 		setView(\$PASSTHRU[0],1);
 	break;
 	case 'manage_products':
@@ -424,6 +694,10 @@ switch(strtolower(\$PASSTHRU[0])){
 		}
 		setView(\$PASSTHRU[0],1);
 	break;
+	case 'manage_products_preview':
+		\$products=wcommerceProducts();
+		setView(\$PASSTHRU[0],1);
+	break;
 	case 'manage_settings':
 		switch(strtolower(\$PASSTHRU[1])){
 			case 'addedit':
@@ -437,19 +711,8 @@ switch(strtolower(\$PASSTHRU[0])){
 	case 'manage_buyers':
 		setView(\$PASSTHRU[0],1);
 	break;
-	case 'customer_orders':
-		setView(\$PASSTHRU[0],1);
-	break;
-	case 'customer_profile':
-		setView(\$PASSTHRU[0],1);
-	break;
 	default:
-		if(isAdmin()){
-			setView('manage_portal');
-		}
-		else{
-			setView('customer_portal');
-		}
+		setView('manage_portal');
 	break;
 }
 ?>
