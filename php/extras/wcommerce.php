@@ -187,7 +187,7 @@ function wcommerceProductsList(){
 		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_products_content');",
 		'-tableclass'=>"table striped bordered responsive",
 		'setprocessing'=>0,
-		'-listfields'=>'_id,active,featured,onsale,name,quantity,price,sale_price,sku,size,color,material,weight,photo_1,photo_2',
+		'-listfields'=>'_id,active,featured,onsale,name,category,quantity,price,sale_price,sku,size,color,material,weight,photo_1,photo_2',
 		'photo_1_image'=>1,
 		'photo_2_image'=>1,
 		'-editfields'=>'name,quantity,price,sale_price,sku,size,color,material,weight',
@@ -369,6 +369,7 @@ function wcommerceSettingsAddedit($id=0){
 }
 function wcommerceInit($force=0){
 	//check for wcommerce page
+	$rtn='';
 	$rec=getDBRecord(array('-table'=>'_pages','-where'=>"name='wcommerce' or permalink='wcommerce'",'-fields'=>'_id,name,permalink'));
 	if($force==1 || !isset($rec['_id'])){
 		//create a wcommerce page
@@ -381,15 +382,23 @@ function wcommerceInit($force=0){
 			'js'=>wcommercePageJs(),
 			'controller'=>wcommercePageController(),
 			'description'=>'wcommerce management page',
+			'-upsert'=>'body,controller,js',
 			'_template'=>2
 		);
 		$ok=addDBRecord($opts);
+		if(isNum($ok)){
+			$rtn.="updated wcommerce page. <br />".PHP_EOL;
+		}
+		else{
+			$rtn .= "ERROR updating wcommerce page:".printValue($ok);
+		}
 	}
 	//check for schema
 	if($force==1 || !isDBTable('wcommerce_products')){
 		$ok=databaseAddMultipleTables(wcommerceSchema());
+		$rtn.="updated wcommerce schema. <br />".PHP_EOL;
 	}
-	return 1;
+	return $rtn;
 }
 function wcommercePageBody(){
 	return <<<ENDOFBODY
@@ -430,6 +439,7 @@ function wcommercePageBody(){
 <view:manage_init>
 	<div class="w_bold w_big">wCommerce has been Updated</div>
 	<div class="w_small w_gray">Restart postedit and clear your cache</div>
+	<div><?=\$rtn;?></div>
 </view:manage_init>
 
 <view:manage_orders>
@@ -516,6 +526,7 @@ function wcommercePageBody(){
 <div style="display:flex;padding:1px;">
 	<div style="margin:5px;"><label><translate>Active</translate></label>[active]</div>
 	<div style="margin:5px;flex-grow:1;"><label><translate>Name</translate></label>[name]</div>
+	<div style="margin:5px;"><label><translate>Category</translate></label>[category]</div>
 </div>
 <div style="display:flex;padding:1px;">
 	<div style="margin:5px;"><label><translate>SKU</translate></label>[sku]</div>
@@ -662,7 +673,7 @@ switch(strtolower(\$PASSTHRU[0])){
 		return;
 	break;
 	case 'manage_init':
-		\$ok=wcommerceInit(1);
+		\$rtn=wcommerceInit(1);
 		setView(\$PASSTHRU[0],1);
 		return;
 	break;
