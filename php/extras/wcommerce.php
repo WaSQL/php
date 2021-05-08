@@ -302,6 +302,21 @@ function wcommerceProductsAddedit($id=0){
 			'step'=>'any',
 			'min'=>0
 		),
+		'size_options'=>array(
+			'inputtype'=>'text',
+			'tvals'=>"select distinct(size) from wcommerce_products order by size",
+			'autocomplete'=>'off'
+		),
+		'color_options'=>array(
+			'inputtype'=>'text',
+			'tvals'=>"select distinct(color) from wcommerce_products order by color",
+			'autocomplete'=>'off'
+		),
+		'material_options'=>array(
+			'inputtype'=>'text',
+			'tvals'=>"select distinct(material) from wcommerce_products order by material",
+			'autocomplete'=>'off'
+		),
 		'details_options'=>array(
 			'inputtype'=>'textarea',
 			'height'=>'150'
