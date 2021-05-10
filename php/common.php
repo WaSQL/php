@@ -1784,7 +1784,14 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			}
 		}
 		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
-        $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
+        $tag .= '<label for="'.$id.'"';
+        //look for any style or class to label
+		foreach($params as $pk=>$pv){
+			if(in_array($pk,array('style','class'))){
+				$tag.=" {$pk}=\"{$pv}\"";
+			}
+		}
+        $tag .= '>'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
