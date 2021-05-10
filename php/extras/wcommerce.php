@@ -75,14 +75,77 @@ function wcommerceOrdersList(){
 ENDOFPRETABLE;
 	return databaseListRecords($opts);
 }
-function wcommerceBuildField($field,$val1='',$val2=''){
+function wcommerceBuildField($field,$rec=array(),$val2=''){
 	$params=array();
-	if(strlen($val1)){$params['value']=$params['-value']=$val1;}
+	if(isset($rec[$field])){$params['value']=$params['-value']=$rec[$field];}
 	switch(strtolower($field)){
 		case 'shipto_state':
 			$opts=wasqlGetStates(2,$val2);
 			$params['message']=' ----- ';
 			return buildFormSelect($field,$opts,$params);
+		break;
+		case 'size':
+			$params['onclick']="wcommerceChangeProductAttribute(this);";
+			$params['data-product_guid']=$rec['guid'];
+			$params['data-product_name']=$rec['name'];
+			$params['data-product_attr']=1;
+			$opts=array();
+			if(is_array($rec['sizes'])){
+				if(count($rec['sizes'])==1){
+					return $rec['sizes'][0]['name'];
+				}
+				foreach($rec['sizes'] as $size){
+					$opts[$size['name']]="{$size['name']}";
+				}
+				return buildFormButtonSelect('size',$opts,$params);
+			}
+			return $rec['size'];
+		break;
+		case 'color':
+			$params['onclick']="wcommerceChangeProductAttribute(this);";
+			$params['data-product_guid']=$rec['guid'];
+			$params['data-product_name']=$rec['name'];
+			$params['data-product_attr']=1;
+			$opts=array();
+			if(is_array($rec['colors'])){
+				if(count($rec['colors'])==1){
+					return $rec['colors'][0]['name'];
+				}
+				foreach($rec['colors'] as $color){
+					$opts[$color['name']]="{$color['name']}";
+				}
+				return buildFormButtonSelect('color',$opts,$params);
+			}
+			return $rec['color'];
+		break;
+		case 'material':
+			$params['onclick']="wcommerceChangeProductAttribute(this);";
+			$params['data-product_guid']=$rec['guid'];
+			$params['data-product_name']=$rec['name'];
+			$params['data-product_attr']=1;
+			$opts=array();
+			if(is_array($rec['materials'])){
+				if(count($rec['materials'])==1){
+					return $rec['materials'][0]['name'];
+				}
+				foreach($rec['materials'] as $material){
+					$opts[$material['name']]="{$material['name']}";
+				}
+				return buildFormButtonSelect('material',$opts,$params);
+			}
+			return $rec['material'];
+		break;
+			if(is_array($val2)){
+				if(count($val2)==1){
+					return $val2[0]['name'];
+				}
+				$opts=array();
+				foreach($val2 as $val){
+					$opts[$val['name']]="{$val['name']}";
+				}
+				return buildFormButtonSelect('material',$opts,$params);
+			}
+			return $val1;
 		break;
 	}
 }
@@ -170,6 +233,7 @@ function wcommerceProducts($params=array()){
 			}
 		}
 		$rec=$precs[0];
+		$rec['guid']=md5($rec['name']);
 		foreach($mods as $k=>$mod){
 			$mrecs=array();
 			foreach($mod as $x=>$v){$mrecs[]=$v;}
@@ -190,7 +254,7 @@ function wcommerceProductsList(){
 		'-listfields'=>'_id,active,featured,onsale,name,category,quantity,price,sale_price,sku,size,color,material,weight,photo_1,photo_2',
 		'photo_1_image'=>1,
 		'photo_2_image'=>1,
-		'-editfields'=>'name,quantity,price,sale_price,sku,size,color,material,weight',
+		'-editfields'=>'name,quantity,category,price,sale_price,sku,size,color,material,weight',
 		'-sorting'=>1,
 		'-export'=>1,
 		'-order'=>'active desc,name',
@@ -322,8 +386,10 @@ function wcommerceProductsAddedit($id=0){
 			'height'=>'150'
 		),
 		'related_products_options'=>array(
-			'inputtype'=>'textarea',
-			'height'=>'150'
+			'inputtype'=>'checkbox',
+			'tvals'=>"select _id from wcommerce_products order by name",
+			'dvals'=>"select _id,'. ',name from wcommerce_products order by name",
+			'width'=>'3'
 		)
 	);
 	//set 10 photo field options
@@ -336,6 +402,12 @@ function wcommerceProductsAddedit($id=0){
 	}
 	if($id > 0){
 		$opts['_id']=$id;
+		$opts['related_products_options']=array(
+			'inputtype'=>'checkbox',
+			'tvals'=>"select _id from wcommerce_products where _id <> {$id} order by name",
+			'dvals'=>"select _id,'. ',name from wcommerce_products where _id <> {$id} order by name",
+			'width'=>'3'
+		);
 	}
 	else{
 		$opts['active']=1;
@@ -423,6 +495,21 @@ function wcommerceInit($force=0){
 function wcommercePageBody(){
 	return <<<ENDOFBODY
 <view:manage_portal>
+<style type="text/css">
+
+.product{
+	position:relative;
+}
+.product .popup{
+	max-height:0px;
+	overflow:hidden;
+	transition:* 0.5s ease-out;
+}
+.product:hover .popup{
+	max-height:600px;
+	transition: * 0.5s ease-in;;
+}
+</style>
 <div class="w_bold w_biggest w_success" id="wcommerce" data-page="<?=pageValue('name');?>">
 	<span class="icon-handshake w_success"></span> wCOMMERCE
 </div>
@@ -455,7 +542,6 @@ function wcommercePageBody(){
 </view:manage_portal>
 
 <view:manage_redraw><?=wcommerceBuildField(\$field,'',\$value);?></view:manage_redraw>
-
 <view:manage_init>
 	<div class="w_bold w_big">wCommerce has been Updated</div>
 	<div class="w_small w_gray">Restart postedit and clear your cache</div>
@@ -546,7 +632,6 @@ function wcommercePageBody(){
 <div style="display:flex;padding:1px;">
 	<div style="margin:5px;"><label><translate>Active</translate></label>[active]</div>
 	<div style="margin:5px;flex-grow:1;"><label><translate>Name</translate></label>[name]</div>
-	<div style="margin:5px;"><label><translate>Category</translate></label>[category]</div>
 </div>
 <div style="display:flex;padding:1px;">
 	<div style="margin:5px;"><label><translate>SKU</translate></label>[sku]</div>
@@ -581,13 +666,26 @@ function wcommercePageBody(){
 </view:manage_products_addedit_fields>
 
 <view:manage_products_preview>
-<div style="display:flex;justify-content: center;flex-wrap: wrap;align-items: center;padding:1px;">
+<div style="display:flex;justify-content: center;flex-wrap: wrap;align-items: flex-start;padding:1px;">
 	<view:product>
-	<div style="margin:15px;display:flex;flex-direction: column;">
-		<img src="<?=\$product['photo_1'];?>"  style="width:200px;height:200px;border-radius: 10px;" />
-		<div style="margin:15px;display:flex;justify-content: space-between;">
-			<div class="align-center forest"><?=\$product['name'];?></div>
-			<div class="align-center mint w_bold">\$ <?=\$product['price'];?></div>
+	<div class="w_shadow" id="product_<?=\$product['guid'];?>" style="margin:15px;border-radius: 8px;display:flex;justify-content: flex-start;align-items: flex-end;">
+		<div class="product" style="margin:15px;display:flex;flex-direction: column;">
+			<img src="<?=\$product['photo_1'];?>"  style="width:250px;height:auto;border-radius: 10px;" />
+			<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('size',\$product);?></div>
+				<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('color',\$product);?></div>
+				<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('material',\$product);?></div>
+		</div>
+		<div class="product" style="margin:15px;display:flex;flex-direction: column;justify-content: space-between;align-self: stretch;">
+			<div>
+				<div class="align-right w_gray"><?=\$product['category'];?></div>
+				<div class="align-left w_biggest"><?=\$product['name'];?></div>
+				<div class="align-right w_bigger w_bold w_green">\$ <?=\$product['price'];?></div>
+				<div class="align-left w_smaller" style="max-height:250px;max-width:200px;overflow: auto;"><?=nl2br(\$product['details']);?></div>
+			</div>
+			<div style="display:flex;justify-content: flex-start;">
+				<input type="number" step="1" min="0" value="1" style="width:50px;" />
+				<button class="btn btn-green" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" data-product_name="<?=\$product['name'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
+			</div>
 		</div>
 	</div>
 	</view:product>
@@ -622,6 +720,27 @@ ENDOFBODY;
 }
 function wcommercePageJs(){
 	return <<<ENDOFJS
+function wcommerceChangeProductAttribute(el){
+	let page=wcommercePageName();
+	let div='product_'+el.dataset.product_guid;
+	let url='/t/1/'+page+'/manage_change_product_attribute';
+	let attrs=document.querySelectorAll('#product_'+el.dataset.product_guid+' input[data-product_attr]');
+	let params={setprocessing:0,field:el.name,value:el.value,name:el.dataset.product_name};
+	for(let i=0;i<attrs.length;i++){
+		if(!attrs[i].checked){continue;}
+		params[attrs[i].name]=attrs[i].value;
+	}
+	return ajaxGet(url,div,params);
+}
+function wcommerceAdd2Cart(el){
+	let pdiv=getParent(el,'div');
+	let qty=pdiv.querySelector('input').value;
+	let page=wcommercePageName();
+	let div='wcommerce_nulldiv';
+	let url='/t/1/'+page+'/add2cart';
+	let params={setprocessing:0,id:el.dataset.product_id,qty:qty,name:el.dataset.product_name};
+	return ajaxGet(url,div,params);
+}
 function wcommerceNavTab(el){
 	wacss.setActiveTab(el);
 	return wcommerceNav(el);
@@ -677,6 +796,12 @@ loadExtras('wcommerce');
 switch(strtolower(\$PASSTHRU[0])){
 	case 'user_profile':
 		setView(\$PASSTHRU[0],1);
+	break;
+	case 'add2cart':
+		echo printValue(\$_REQUEST);exit;
+	break;
+	case 'manage_change_product_attribute':
+		echo printValue(\$_REQUEST);exit;
 	break;
 	case 'manage_setvalue':
 		\$table=\$PASSTHRU[1];
@@ -840,7 +965,7 @@ wcommerce_coupons
 	product_ids json
 wcommerce_settings
 	name varchar(100) NOT NULL UNIQUE
-	value json
+	value text
 ENDOFSCHEMA;
 }
 ?>

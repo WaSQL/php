@@ -1777,6 +1777,12 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
 		}
+		//look for any data- params
+		foreach($params as $pk=>$pv){
+			if(stringBeginsWith($pk,'data-')){
+				$tag.=" {$pk}=\"{$pv}\"";
+			}
+		}
 		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
         $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
