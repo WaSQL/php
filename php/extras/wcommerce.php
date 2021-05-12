@@ -215,7 +215,7 @@ function wcommerceProducts($params=array()){
 	$settings=wcommerceGetSettings();
 	$params['-table']='wcommerce_products';
 	$params['active']=1;
-	$params['-order']='name,sort_order';
+	$params['-order']='sort_group,name';
 	$recs=getDBRecords($params);
 	//group by size,color,material
 	$products=array();
@@ -248,7 +248,11 @@ function wcommerceProducts($params=array()){
 				break;
 			}
 		}
+		if(isset($params['-index']) && isset($precs[$params['-index']])){$index=$params['-index'];}
 		$rec=$precs[$index];
+		//what colors, sizes, and materials does this one product have
+
+
 		$rec['guid']=md5($rec['name']);
 		$photos=array();
 		for($p=1;$p<11;$p++){
@@ -283,6 +287,23 @@ function wcommerceProducts($params=array()){
 	//echo printValue($recs);exit;
 	return $recs;
 }
+function wcommerceGetProductAttributes($name){
+	$q=<<<ENDOFQ
+	select 
+		JSON_ARRAYAGG(color) as colors,
+		JSON_ARRAYAGG(size) as sizes,
+		JSON_ARRAYAGG(material) as materials
+	from wcommerce_products
+	where name='{$name}'
+	group by name
+ENDOFQ;
+	$rec=getDBRecord($q);
+	$atts=array();
+	foreach($rec['colors'] as $color){
+		if(strlen($color)){$atts['colors'][]=$color;}
+	}
+	return $atts;
+}
 function wcommerceProductsList(){
 	global $PAGE;
 	$opts=array(
@@ -290,20 +311,19 @@ function wcommerceProductsList(){
 		'-action'=>"/t/1/{$PAGE['name']}/manage_products/list",
 		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_products_content');",
 		'-tableclass'=>"table striped bordered responsive",
-		'-order'=>'active desc,name,sort_order',
+		'-order'=>'active desc,sort_group,name',
 		'setprocessing'=>0,
 		'-results_eval'=>'wcommerceProductsListExtra',
-		'-listfields'=>'_id,active,featured,onsale,selected,name,category,sort_order,quantity,price,sale_price,sku,size,color,material,photo_1,photo_2',
+		'-listfields'=>'_id,active,featured,onsale,selected,name,category,sort_group,quantity,price,sale_price,sku,size,sort_size,color,sort_color,material,sort_material,photo_1,photo_2',
 		'photo_1_image'=>1,
 		'photo_2_image'=>1,
-		'-editfields'=>'name,quantity,category,sort_order,price,sale_price,sku,size,color,material',
+		'-editfields'=>'name,quantity,category,sort_group,price,sale_price,sku,size,sort_size,color,sort_color,material,sort_material',
 		'-sorting'=>1,
 		'-export'=>1,
 		'quantity_class'=>'align-right',
 		'price_class'=>'align-right',
 		'name_class'=>'w_nowrap',
 		'sale_price_class'=>'align-right',
-		'sort_order_displayname'=>'Sort',
 		'weight_options'=>array(
 			'class'=>'align-right',
 			'displayname'=>'Weight (oz)'
@@ -1039,7 +1059,10 @@ wcommerce_products
 	color varchar(25)
 	material varchar(25)
 	quantity int NOT NULL Default 1
-	sort_order INT NOT NULL Default 0
+	sort_size INT NOT NULL Default 0
+	sort_color INT NOT NULL Default 0
+	sort_material INT NOT NULL Default 0
+	sort_group varchar(25)
 	price float(12,2)
 	sale_price float(12,2)
 	active tinyint(1) NOT NULL Default 0
