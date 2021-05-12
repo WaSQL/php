@@ -1959,9 +1959,22 @@ input[type="checkbox"].btn + label[for], input[type="radio"].btn + label[for]{
   margin-right:3px;
 }
 input[type="checkbox"][style="display:none"].btn + label[for], input[type="radio"][style="display:none"].btn + label[for]{
-   border-top-left-radius:4px;
-   border-bottom-left-radius:4px;
-   border-left:1px solid #CCC;
+  border-top-left-radius:4px;
+  border-bottom-left-radius:4px;
+  border-left:1px solid #CCC;
+}
+/* size variations */
+input[type="checkbox"].btn.small + label[for], input[type="radio"].btn.small + label[for],
+input[type="checkbox"].btn.w_small + label[for], input[type="radio"].btn.w_small + label[for],
+input[type="checkbox"].btn.is-small + label[for], input[type="radio"].btn.is-small + label[for]{
+  padding: .25rem .50rem;
+  font-size:0.8rem;
+}
+input[type="checkbox"].btn.large + label[for], input[type="radio"].btn.large + label[for],
+input[type="checkbox"].btn.w_large + label[for], input[type="radio"].btn.w_large + label[for],
+input[type="checkbox"].btn.is-large + label[for], input[type="radio"].btn.is-large + label[for]{
+  padding: .375rem .75rem;
+  font-size:1.5rem;
 }
 /* color variations */
 input[type="checkbox"].btn::after, input[type="radio"].btn::after {border-color:rgba(90, 98, 104, 0.3);}

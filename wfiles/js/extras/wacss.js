@@ -1901,9 +1901,12 @@ var wacss = {
 		i.src=el.getAttribute('src');
 		i.style.maxWidth='100%';
 		i.style.maxHeight='770px';
+		i.d=d;
+		i.onload=function(){
+			centerObject(this.d);
+		}
 		d.appendChild(i)
 		document.body.appendChild(d);
-		centerObject(d);
 		z=z-2;
 		// Build modal-overlay.
 		let v=document.createElement('div');
@@ -1922,6 +1925,7 @@ var wacss = {
 			removeDiv(this.id);
 		};
 		document.body.appendChild(v);
+
 	},
 	speak: function(txt,params){
 		if(undefined == params){params={};}
