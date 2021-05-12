@@ -1658,6 +1658,8 @@ function hanaQueryResults($query,$params=array()){
 	}
 	$i=0;
 	while($rec=odbc_fetch_array($dbh_hana_result)){
+		//lowercase the field names
+		$rec=array_change_key_case($rec);
 	    if(isset($params['-results_eval'])){
 			$rec=call_user_func($params['-results_eval'],$rec);
 		}
