@@ -225,21 +225,6 @@ function wcommerceProducts($params=array()){
 	}
 	$recs=array();
 	foreach($products as $key=>$precs){
-		$mods=array();
-		foreach($precs as $prec){
-			if(strlen($prec['size'])){
-				$mods['sizes'][$prec['size']]['name']=$prec['size'];
-				$mods['sizes'][$prec['size']]['quantity']+=$prec['quantity'];
-			}
-			if(strlen($prec['color'])){
-				$mods['colors'][$prec['color']]['name']=$prec['color'];
-				$mods['colors'][$prec['color']]['quantity']+=$prec['quantity'];
-			}
-			if(strlen($prec['material'])){
-				$mods['materials'][$prec['material']]['name']=$prec['material'];
-				$mods['materials'][$prec['material']]['quantity']+=$prec['quantity'];
-			}
-		}
 		//pick the one with default=1 if it exists
 		$index=0;
 		foreach($precs as $p=>$prec){
@@ -251,58 +236,87 @@ function wcommerceProducts($params=array()){
 		if(isset($params['-index']) && isset($precs[$params['-index']])){$index=$params['-index'];}
 		$rec=$precs[$index];
 		//what colors, sizes, and materials does this one product have
-
-
+		$atts=wcommerceGetProductAttributes($rec['name']);
+		foreach($atts as $k=>$v){
+			$rec[$k]=$v;
+		}
 		$rec['guid']=md5($rec['name']);
-		$photos=array();
-		for($p=1;$p<11;$p++){
-			if(!strlen($rec["photo_{$p}"])){continue;}
-			$prec=array(
-				'src'=>$rec["photo_{$p}"],
-				'guid'=>$rec['guid'],
-				'border'=>'1px solid #fff'
-			);
-			if($p==1){
-				$prec['border']='1px solid #ddd';
-			}
-			$photos[]=$prec;
+		$rec['photos']=wcommerceProductImages($rec);
+		if(count($rec['photos']) > 1){
 		}
-		if(count($photos) > 1){
-			$rec['photos']=$photos;
-		}
-		elseif(count($photos)==1){
-			$rec['photo']=$photos[0]['src'];
+		elseif(count($rec['photos'])==1){
+			$rec['photo']=$rec['photos'][0]['src'];
 		}
 		else{
 			$rec['photo']='/wfiles/clear.gif';
-		}
-		
-		foreach($mods as $k=>$mod){
-			$mrecs=array();
-			foreach($mod as $x=>$v){$mrecs[]=$v;}
-			$rec[$k]=$mrecs;
 		}
 		$recs[]=$rec;
 	}
 	//echo printValue($recs);exit;
 	return $recs;
 }
+function wcommerceProductImages($rec){
+	$photos=array();
+	for($p=1;$p<11;$p++){
+		if(!strlen($rec["photo_{$p}"])){continue;}
+		$prec=array(
+			'src'=>$rec["photo_{$p}"],
+			'guid'=>$rec['guid'],
+			'border'=>'1px solid #fff'
+		);
+		if($p==1){
+			$prec['border']='1px solid #ddd';
+		}
+		$photos[]=$prec;
+	}
+	return $photos;
+}
 function wcommerceGetProductAttributes($name){
+	global $wcommerceGetProductAttributesCache;
+	if(isset($wcommerceGetProductAttributesCache[$name])){
+		return $wcommerceGetProductAttributesCache[$name];
+	}
 	$q=<<<ENDOFQ
 	select 
-		JSON_ARRAYAGG(color) as colors,
-		JSON_ARRAYAGG(size) as sizes,
-		JSON_ARRAYAGG(material) as materials
+		name,
+		group_concat(distinct color ORDER BY sort_color SEPARATOR ';') as colors,
+		group_concat(distinct size ORDER BY sort_size SEPARATOR ';') as sizes,
+		group_concat(distinct material ORDER BY sort_material SEPARATOR ';') as materials
 	from wcommerce_products
-	where name='{$name}'
 	group by name
 ENDOFQ;
-	$rec=getDBRecord($q);
-	$atts=array();
-	foreach($rec['colors'] as $color){
-		if(strlen($color)){$atts['colors'][]=$color;}
+	$recs=getDBRecords($q);
+	//echo printValue($recs);exit;
+	$wcommerceGetProductAttributesCache=array();
+	foreach($recs as $rec){
+		$cname=$rec['name'];
+		if(strlen($rec['colors'])){
+			$vals=preg_split('/\;/',$rec['colors']);
+			foreach($vals as $val){
+				$wcommerceGetProductAttributesCache[$cname]['colors'][]=array(
+					'name'=>$val
+				);
+			}
+		}
+		if(strlen($rec['sizes'])){
+			$vals=preg_split('/\;/',$rec['sizes']);
+			foreach($vals as $val){
+				$wcommerceGetProductAttributesCache[$cname]['sizes'][]=array(
+					'name'=>$val
+				);
+			}
+		}
+		if(strlen($rec['materials'])){
+			$vals=preg_split('/\;/',$rec['materials']);
+			foreach($vals as $val){
+				$wcommerceGetProductAttributesCache[$cname]['materials'][]=array(
+					'name'=>$val
+				);
+			}
+		}
 	}
-	return $atts;
+	//echo printValue($wcommerceGetProductAttributesCache);exit;
+	return $wcommerceGetProductAttributesCache[$name];
 }
 function wcommerceProductsList(){
 	global $PAGE;
@@ -764,6 +778,11 @@ function wcommercePageBody(){
 
 <view:product_one>
 <div class="w_shadow" id="product_<?=\$product['guid'];?>" style="margin:15px;padding:10px 15px;border-radius: 8px;display:flex;justify-content: flex-start;align-items: flex-end;flex-direction: column;">
+	<?=renderView('product_body',\$product,'product');?>
+</div>
+</view:product_one>
+
+<view:product_body>
 	<div class="align-center mint"><?=\$product['category'];?></div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 		<view:photos>
@@ -797,8 +816,7 @@ function wcommercePageBody(){
 		<div class="w_bigger w_bold mint">\$ <?=\$product['price'];?></div>
 		<button class="button is-info" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" data-product_name="<?=\$product['name'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
 	</div>
-</div>
-</view:product_one>
+</view:product_body>
 
 <view:product_two>
 	<div class="w_shadow" id="product_<?=\$product['guid'];?>" style="margin:15px;border-radius: 8px;display:flex;justify-content: flex-start;align-items: flex-end;">
@@ -964,7 +982,40 @@ switch(strtolower(\$PASSTHRU[0])){
 		echo printValue(\$_REQUEST);exit;
 	break;
 	case 'manage_change_product_attribute':
-		echo printValue(\$_REQUEST);exit;
+		\$filters=array(
+			'-table'=>'wcommerce_products',
+			'name'=>\$_REQUEST['name'],
+			'active'=>1
+		);
+		if(isset(\$_REQUEST['size']) && strlen(\$_REQUEST['size'])){
+			\$filters['size']=\$_REQUEST['size'];
+		}
+		if(isset(\$_REQUEST['color']) && strlen(\$_REQUEST['color'])){
+			//\$filters['color']=\$_REQUEST['color'];
+		}
+		if(isset(\$_REQUEST['material']) && strlen(\$_REQUEST['material'])){
+			//\$filters['material']=\$_REQUEST['material'];
+		}
+		\$product=getDBRecord(\$filters);
+		if(isset(\$product['name'])){
+			\$atts=wcommerceGetProductAttributes(\$product['name']);
+			foreach(\$atts as \$k=>\$v){
+				\$product[\$k]=\$v;
+			}
+			\$product['guid']=md5(\$product['name']);
+			\$product['photos']=wcommerceProductImages(\$product);
+			if(count(\$product['photos']) > 1){
+			}
+			elseif(count(\$product['photos'])==1){
+				\$product['photo']=\$product['photos'][0]['src'];
+			}
+			else{
+				\$product['photo']='/wfiles/clear.gif';
+			}
+		}
+		//echo printValue(\$filters).printValue(\$product);exit;
+		setView('product_body',1);
+		return;
 	break;
 	case 'manage_setvalue':
 		\$table=\$PASSTHRU[1];
