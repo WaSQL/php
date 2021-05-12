@@ -90,6 +90,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
+			$params['name']="size_{$rec['_id']}";
 			$opts=array();
 			if(is_array($rec['sizes'])){
 				if(count($rec['sizes'])==1){
@@ -108,6 +109,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
+			$params['name']="color_{$rec['_id']}";
 			$opts=array();
 			if(is_array($rec['colors'])){
 				if(count($rec['colors'])==1){
@@ -126,6 +128,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
+			$params['name']="material_{$rec['_id']}";
 			$opts=array();
 			if(is_array($rec['materials'])){
 				if(count($rec['materials'])==1){
