@@ -841,7 +841,7 @@ function wcommercePageBody(){
 	
 	<div style="display:flex;justify-content: space-between;width:100%;align-items: center;">
 		<div class="w_bigger w_bold mint">\$ <?=\$product['price'];?></div>
-		<button class="button is-info" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" data-product_name="<?=\$product['name'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
+		<button class="button is-info" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
 	</div>
 </view:product_body>
 
@@ -995,14 +995,13 @@ switch(strtolower(\$PASSTHRU[0])){
 		\$opts=array(
 			'-table'=>'wcommerce_orders_items',
 			'product_id'=>\$product['_id'],
-			'guid'=>\$guid,
-			'name'=>\$name
+			'guid'=>\$guid
 		);
 		\$rec=getDBRecord(\$opts);
 		if(isset(\$rec['_id'])){
 			\$qty=\$rec['quantity']+1;
 			\$ok=editDBRecordById('wcommerce_orders_items',\$rec['_id'],array('quantity'=>\$qty));
-			\$message="{\$name} - quantity updated to {\$qty}";
+			\$message="{\$product['_id']} - {\$product['name']}: {\$qty} in cart";
 		}
 		else{
 			\$opts['quantity']=(integer)\$_REQUEST['qty'];
@@ -1019,10 +1018,12 @@ switch(strtolower(\$PASSTHRU[0])){
 			}
 			\$id=addDBRecord(\$opts);
 			if(isNum(\$id)){
-				\$message="{\$name} - added to cart";
+				\$message="{\$product['_id']} - {\$product['name']} added to cart";
 			}
 			else{
 				\$message=\$id;
+				debugValue(\$message);
+				debugValue(\$opts);
 			}
 		}
 		setView('add2cart',1);
