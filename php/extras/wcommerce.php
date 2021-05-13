@@ -236,8 +236,14 @@ function wcommerceGetSettings(){
 function wcommerceProducts($params=array()){
 	$settings=wcommerceGetSettings();
 	$params['-table']='wcommerce_products';
-	$params['active']=1;
-	$params['-order']='sort_group,name';
+	//default active to 1
+	if(!isset($params['active'])){
+		$params['active']=1;
+	}
+	//default order
+	if(!isset($params['-order'])){
+		$params['-order']='sort_group,name';
+	}
 	$recs=getDBRecords($params);
 	//group by size,color,material
 	$products=array();
@@ -350,12 +356,13 @@ function wcommerceProductsList(){
 		'-order'=>'active desc,sort_group,name',
 		'setprocessing'=>0,
 		'-results_eval'=>'wcommerceProductsListExtra',
-		'-listfields'=>'_id,active,featured,onsale,selected,name,category,sort_group,quantity,price,sale_price,sku,size,sort_size,color,sort_color,material,sort_material,photo_1,photo_2',
+		'-listfields'=>'_id,active,featured,onsale,selected,name,category,sort_group,quantity,price,sale_price,points,sale_points,sku,size,sort_size,color,sort_color,material,sort_material,photo_1,photo_2',
 		'photo_1_image'=>1,
 		'photo_2_image'=>1,
-		'-editfields'=>'name,quantity,category,sort_group,price,sale_price,sku,size,sort_size,color,sort_color,material,sort_material',
+		'-editfields'=>'name,quantity,category,sort_group,price,sale_price,points,sale_points,sku,size,sort_size,color,sort_color,material,sort_material',
 		'-sorting'=>1,
 		'-export'=>1,
+		'-bulkedit'=>1,
 		'quantity_class'=>'align-right',
 		'price_class'=>'align-right',
 		'name_class'=>'w_nowrap',
@@ -1169,6 +1176,8 @@ wcommerce_products
 	sort_group varchar(25)
 	price float(12,2)
 	sale_price float(12,2)
+	points int
+	sale_points int
 	active tinyint(1) NOT NULL Default 0
 	onsale tinyint(1) NOT NULL Default 0
 	selected tinyint(1) NOT NULL Default 0
