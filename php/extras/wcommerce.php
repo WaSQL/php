@@ -14,6 +14,17 @@ if(!is_dir($wcommerce_files_path)){
 	echo "wcommerce ERROR: unable to create {$wcommerce_files_path}.  Manually create it.";
 	exit;
 }
+function wcommerceCartGuid(){
+	if(isset($_COOKIE['wCommerceGUID'])){
+		return $_COOKIE['wCommerceGUID'];
+	}
+	//expire in a year
+	$guid=session_id().'_'.time();
+	$expire=time()+(3600*24*365);
+	$ok=commonSetCookie("wCommerceGUID", $guid, $expire);
+	$_SERVER['wCommerceGUID']=$guid;
+	return $guid;
+}
 function wcommerceBuyersList(){
 	global $PAGE;
 	$opts=array(
@@ -78,6 +89,7 @@ ENDOFPRETABLE;
 function wcommerceBuildField($field,$rec=array(),$val2=''){
 	$params=array();
 	if(isset($rec[$field])){$params['value']=$params['-value']=$rec[$field];}
+	elseif(isset($_REQUEST[$field])){$params['value']=$params['-value']=$_REQUEST[$field];}
 	switch(strtolower($field)){
 		case 'shipto_state':
 			$opts=wasqlGetStates(2,$val2);
@@ -85,12 +97,15 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			return buildFormSelect($field,$opts,$params);
 		break;
 		case 'size':
+			
 			$params['onclick']="wcommerceChangeProductAttribute(this);";
 			$params['data-product_guid']=$rec['guid'];
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
-			$params['name']="size_{$rec['_id']}";
+			$name="size_{$rec['_id']}";
+			$params['name']=$name;
+			if(isset($_REQUEST[$name])){$params['value']=$params['-value']=$_REQUEST[$name];}
 			$opts=array();
 			if(is_array($rec['sizes'])){
 				if(count($rec['sizes'])==1){
@@ -109,7 +124,9 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
-			$params['name']="color_{$rec['_id']}";
+			$name="color_{$rec['_id']}";
+			$params['name']=$name;
+			if(isset($_REQUEST[$name])){$params['value']=$params['-value']=$_REQUEST[$name];}
 			$opts=array();
 			if(is_array($rec['colors'])){
 				if(count($rec['colors'])==1){
@@ -128,7 +145,9 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['data-product_name']=$rec['name'];
 			$params['data-product_attr']=1;
 			$params['class']='small';
-			$params['name']="material_{$rec['_id']}";
+			$name="material_{$rec['_id']}";
+			$params['name']=$name;
+			if(isset($_REQUEST[$name])){$params['value']=$params['-value']=$_REQUEST[$name];}
 			$opts=array();
 			if(is_array($rec['materials'])){
 				if(count($rec['materials'])==1){
@@ -775,18 +794,21 @@ function wcommercePageBody(){
 
 <view:manage_products_preview>
 <div style="display:flex;justify-content: center;flex-wrap: wrap;align-items: flex-start;padding:1px;">
-	<?=renderEach('product_one',\$products,'product');?>
+	<?=renderEach('product',\$products,'product');?>
 </div>
 </view:manage_products_preview>
 
-<view:product_one>
+<view:product>
 <div class="w_shadow" id="product_<?=\$product['guid'];?>" style="margin:15px;padding:10px 15px;border-radius: 8px;display:flex;justify-content: flex-start;align-items: flex-end;flex-direction: column;">
 	<?=renderView('product_body',\$product,'product');?>
 </div>
-</view:product_one>
+</view:product>
 
 <view:product_body>
-	<div class="align-center mint"><?=\$product['category'];?></div>
+	<div style="display:flex;justify-content: flex-end;align-items: center;width:100%;">
+		<div style="flex:1;" class="align-center mint"><?=\$product['category'];?></div>
+		<div class="w_lgray">p<?=\$product['_id'];?></div>
+	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 		<view:photos>
 		<div style="display:flex;flex-direction: column;justify-content: flex-start;margin-right:5px;">
@@ -798,20 +820,22 @@ function wcommercePageBody(){
 		</view:photos>
 		<?=renderViewIf(isset(\$product['photos']),'photos',\$product,'product');?>
 
-		<div style="flex:1;" class="align-center"><img id="photo_<?=\$product['guid'];?>" src="<?=\$product['photo_1'];?>" onclick="wacss.showImage(this);"  style="cursor:pointer;width:250px;height:auto;" /></div>
+		<div style="flex:1;" class="align-center">
+			<figure style="width:250px;height:250px;"><img id="photo_<?=\$product['guid'];?>" src="<?=\$product['photo_1'];?>" onclick="wacss.showImage(this);"  style="cursor:pointer;width:100%;height:auto;" /></figure>
+		</div>
 	</div>
 	<view:sizes>
 	<div class="align-left" style="margin:5px;width:100%;"><?=wcommerceBuildField('size',\$product);?></div>
 	</view:sizes>
-	<?=renderViewIf(isset(\$product['sizes']),'sizes',\$product,'product');?>
+	<?=renderViewIf(isset(\$product['sizes'][0]),'sizes',\$product,'product');?>
 	<view:colors>
 		<div class="align-left" style="margin:5px;width:100%;"><?=wcommerceBuildField('color',\$product);?></div>
 	</view:colors>
-	<?=renderViewIf(isset(\$product['colors']),'colors',\$product,'product');?>
+	<?=renderViewIf(isset(\$product['colors'][0]),'colors',\$product,'product');?>
 	<view:materials>
 	<div class="align-left" style="margin:5px;width:100%;"><?=wcommerceBuildField('material',\$product);?></div>
 	</view:materials>
-	<?=renderViewIf(isset(\$product['materials']),'materials',\$product,'product');?>
+	<?=renderViewIf(isset(\$product['materials'][0]),'materials',\$product,'product');?>
 	
 	<div class="w_biggest align-center"><?=\$product['name'];?></div>
 	
@@ -821,29 +845,10 @@ function wcommercePageBody(){
 	</div>
 </view:product_body>
 
-<view:product_two>
-	<div class="w_shadow" id="product_<?=\$product['guid'];?>" style="margin:15px;border-radius: 8px;display:flex;justify-content: flex-start;align-items: flex-end;">
-		<div class="product" style="margin:15px;display:flex;flex-direction: column;">
-			<img src="<?=\$product['photo_1'];?>"  style="width:250px;height:auto;border-radius: 10px;" />
-			<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('size',\$product);?></div>
-				<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('color',\$product);?></div>
-				<div class="align-left" style="margin:5px;"><?=wcommerceBuildField('material',\$product);?></div>
-		</div>
-		<div class="product" style="margin:15px;display:flex;flex-direction: column;justify-content: space-between;align-self: stretch;">
-			<div>
-				<div class="align-right w_gray"><?=\$product['category'];?></div>
-				<div class="align-left w_biggest"><?=\$product['name'];?></div>
-				<div class="align-right w_bigger w_bold w_green">\$ <?=\$product['price'];?></div>
-				<div class="align-left w_smaller" style="max-height:250px;max-width:200px;overflow: auto;"><?=nl2br(\$product['details']);?></div>
-			</div>
-			<div style="display:flex;justify-content: flex-start;">
-				<input type="number" step="1" min="0" value="1" style="width:50px;" />
-				<button class="btn btn-green" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" data-product_name="<?=\$product['name'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
-			</div>
-		</div>
-	</div>
-</view:product_two>
-
+<view:add2cart>
+<div id="add2cart_message"><?=\$message;?></div>
+<?=buildOnLoad("wacss.toast(getText('add2cart_message'));");?>
+</view:add2cart>
 
 <view:manage_buyers>
 <div id="wcommerce_buyers_content" style="margin-top:10px;">
@@ -899,12 +904,12 @@ function wcommerceSetPhoto(el){
 	}
 	setobj.src=el.src;
 	el.style.border='1px solid #ddd';
-	return
+	return;
 
 }
 function wcommerceAdd2Cart(el){
 	let pdiv=getParent(el,'div');
-	let qty=pdiv.querySelector('input').value;
+	let qty=1;
 	let page=wcommercePageName();
 	let div='wcommerce_nulldiv';
 	let url='/t/1/'+page+'/add2cart';
@@ -982,7 +987,46 @@ switch(strtolower(\$PASSTHRU[0])){
 		setView(\$PASSTHRU[0],1);
 	break;
 	case 'add2cart':
-		echo printValue(\$_REQUEST);exit;
+		\$id=(integer)\$_REQUEST['id'];
+		\$name=\$_REQUEST['name'];
+		\$product=getDBRecordById('wcommerce_products',\$id);
+		\$fields=getDBFields('wcommerce_orders_items');
+		\$guid=wcommerceCartGuid();
+		\$opts=array(
+			'-table'=>'wcommerce_orders_items',
+			'product_id'=>\$product['_id'],
+			'guid'=>\$guid,
+			'name'=>\$name
+		);
+		\$rec=getDBRecord(\$opts);
+		if(isset(\$rec['_id'])){
+			\$qty=\$rec['quantity']+1;
+			\$ok=editDBRecordById('wcommerce_orders_items',\$rec['_id'],array('quantity'=>\$qty));
+			\$message="{\$name} - quantity updated to {\$qty}";
+		}
+		else{
+			\$opts['quantity']=(integer)\$_REQUEST['qty'];
+			foreach(\$fields as \$field){
+				if(isWaSQLField(\$field)){continue;}
+				if(!isset(\$opts[\$field])){
+					if(isset(\$_REQUEST[\$field])){
+						\$opts[\$field]=\$_REQUEST[\$field];
+					}
+					elseif(isset(\$product[\$field])){
+						\$opts[\$field]=\$product[\$field];
+					}
+				}
+			}
+			\$id=addDBRecord(\$opts);
+			if(isNum(\$id)){
+				\$message="{\$name} - added to cart";
+			}
+			else{
+				\$message=\$id;
+			}
+		}
+		setView('add2cart',1);
+		return;
 	break;
 	case 'manage_change_product_attribute':
 		\$filters=array(
@@ -990,6 +1034,11 @@ switch(strtolower(\$PASSTHRU[0])){
 			'name'=>\$_REQUEST['name'],
 			'active'=>1
 		);
+		foreach(\$_REQUEST as \$k=>\$v){
+			if(preg_match('/^(size|color|material)\_([0-9]+)\$/',\$k,\$m)){
+				\$_REQUEST[\$m[1]]=\$v;
+			}
+		}
 		if(isset(\$_REQUEST['size']) && strlen(\$_REQUEST['size'])){
 			\$filters['size']=\$_REQUEST['size'];
 		}
@@ -1177,16 +1226,16 @@ wcommerce_orders_items
 	guid varchar(150) NOT NULL
 	name varchar(150) NOT NULL
 	sku varchar(25)
+	category varchar(50)
 	size varchar(25)
 	color varchar(25)
 	material varchar(25)
 	quantity int NOT NULL Default 1
 	price float(12,2)
-	sale_price float(12,2)
-	active tinyint(1) NOT NULL Default 0
-	related_products JSON
-	details text
-	photo_1 varchar(255)
+	onsale tinyint(1) NOT NULL Default 0
+	featured tinyint(1) NOT NULL Default 0
+	weight int
+	photo varchar(255)
 wcommerce_coupons
 	coupon varchar(25) NOT NULL UNIQUE
 	description varchar(255)
