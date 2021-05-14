@@ -1882,7 +1882,7 @@ var wacss = {
 	showImage: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		z=z||1020;
+		z=z||10020;
 		let d=document.createElement('div');
 		d.id="modal1";
 		//d.className='modal open';
