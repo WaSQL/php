@@ -111,10 +111,12 @@ var wacss = {
 	},
 	geoLocation: function(fld,opts){
 		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
-		fld=wacss.getObject(fld);
-		if(undefined==fld){
-			console.log("wacss.getGeoLocation error: "+fld+' is undefined');
-			return false;
+		fldObj=wacss.getObject(fld);
+		if(undefined==fldObj){
+			if(!wacss.function_exists(fld)){
+				console.log("wacss.getGeoLocation error: "+fld+' is undefined');
+				return false;
+			}
 		}
   		if(navigator.geolocation) {
     		let options = {
@@ -140,7 +142,8 @@ var wacss = {
     					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude);
     				}
     				else{
-    					navigator.geoSetFld.value='['+position.coords.latitude+','+position.coords.longitude+']';	
+    					fldObj=getObject(navigator.geoSetFld);
+    					fldObj.value='['+position.coords.latitude+','+position.coords.longitude+']';	
     				}
     				
     				return false; 
