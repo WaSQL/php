@@ -1,68 +1,5 @@
 <view:default>
-<script type="text/javascript">
-	function sqlpromptCheckKey(e){
-		e = e || window.event;
-		//console.log(e.keyCode);
-        if (e.keyCode == 119) {
-			return sqlpromptSubmit(document.sqlprompt);
-        }
-	}
-	function sqlpromptSetDB(db){
-		document.sqlprompt.db.value=db;
-		return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
-	}
-	function sqlpromptMonitor(type){
-		var db=document.sqlprompt.db.value;
-		document.sqlprompt.reset();
-		document.sqlprompt.db.value=db;
-		let div='nulldiv';
-		let params={_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0};
-		if(type.toLowerCase()=='optimizations'){
-			div='sqlprompt_results';
-			params.setprocessing=div;
-		}
-		return ajaxGet('/php/admin.php',div,params)
-	}
-	function sqlpromptLastRecords(table){
-		var db=document.sqlprompt.db.value;
-		document.sqlprompt.reset();
-		document.sqlprompt.db.value=db;
-		return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0})
-	}
-	function sqlpromptDDL(table){
-		var db=document.sqlprompt.db.value;
-		document.sqlprompt.reset();
-		document.sqlprompt.db.value=db;
-		return ajaxGet('/php/admin.php','centerpop',{_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0})
-	}
-	function sqlpromptFields(table){
-		let icon=getObject(table+'_icon');
-		let t=getText(table+'_fields');
-		if(t.length){
-			icon.className='icon-square-plus';
-			setText(table+'_fields','');
-			return;
-		}
-		var db=document.sqlprompt.db.value;
-		icon.className='icon-square-minus';
-		return ajaxGet('/php/admin.php',table+'_fields',{_menu:'sqlprompt',func:'fields',table:table,db:db})
-	}
-	function sqlpromptSubmit(frm){
-		frm.sql_select.value=getSelText(frm.sql_full);
-		var pos=getCursorPos(frm.sql_full);
-		if(undefined != pos.start){
-			frm.cursor_pos.value=pos.start;
-		}
-		return ajaxSubmitForm(frm,'sqlprompt_results');
-	}
-	function sqlpromptExport(){
-		document.sqlprompt.func.value='export';
-		document.sqlprompt.submit();
-		document.sqlprompt.func.value='sql';
-		return false;
-	}
-	document.onkeydown = sqlpromptCheckKey;
-</script>
+<?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');");?>
 <div>
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
 		<span class="icon-prompt"></span> 
@@ -90,7 +27,7 @@
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="db" value="<?=configValue('database');?>" />
 				<input type="hidden" name="func" value="sql" />
-				<input type="hidden" name="setprocessing" value="setprocessing" />
+				<input type="hidden" name="setprocessing" value="results_count" />
 				<input type="hidden" name="sql_select" value="" />
 				<input type="hidden" name="cursor_pos" value="" />
 				<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="padding:10px;height:30vh;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
@@ -98,7 +35,7 @@
 					<div>
 						<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
 					</div>
-					<div class="align-right w_grey w_small">
+					<div class="w_grey w_small">
 						<translate>Note: You can drag and drop .sql files onto the textarea</translate>
 					</div>
 					<div  style="flex:1;" class="align-right w_gray w_small" id="results_count"></div>
