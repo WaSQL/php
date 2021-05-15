@@ -29,25 +29,145 @@ function wcommerceBuyersList(){
 	global $PAGE;
 	$opts=array(
 		'-table'=>'_users',
-		'-tableclass'=>"table striped bordered responsive",
+		'-tableclass'=>"table striped bordered sticky",
 		'-filter'=>"_id in (select user_id from wcommerce_orders)",
 		'-sorting'=>1,
 		'-listfields'=>'_id,firstname,lastname,city,state,zip,country,order_count,last_order,note',
 		'-edit'=>'note'
 	);
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceBuyersList']) && function_exists($settings['wcommerceBuyersList'])){
+		$opts=call_user_func($settings['wcommerceBuyersList'],$opts);
+	}
 	return databaseListRecords($opts);
+}
+function wcommerceGetOrder($id){
+	$order=getDBRecordById('wcommerce_orders',$id);
+	$order['items']=getDBRecords(array('-table'=>'wcommerce_orders_items','order_id'=>$order['_id']));
+	return $order;
+}
+function wcommerceViewOrderItems($order_id){
+	$order=getDBRecordById('wcommerce_orders',$order_id);
+	$opts=array(
+		'-table'=>'wcommerce_orders_items',
+		'order_id'=>$order_id,
+		'-relate'=>array('shipped_by'=>'_users'),
+		'-tableclass'=>'table striped bordered',
+		'-tablestyle'=>'background-color:inherit;',
+		'-listfields'=>'label,date_shipped,shipped_by,date_delivered,category,name,photo,size,color,quantity,price,subtotal',
+		'subtotal_class'=>'align-right',
+		'quantity_class'=>'align-right',
+		'date_shipped_displayname'=>'Shipped',
+		'date_delivered_displayname'=>'Delivered',
+		'price_class'=>'align-right',
+		'size_class'=>'align-center',
+		'-hidesearch'=>1,
+		'-sumfields'=>'subtotal',
+		'-results_eval'=>'wcommerceViewOrderItemsExtra'
+	);
+	if(!strlen($order['date_shipped'])){
+		$opts['-posttable']=<<<ENDOFPOST
+		<div class="align-right" style="margin-top:10px;">
+		<button class="btn w_blue" type="button" data-id="{$order_id}" onclick="wcommerceOrdersShip(this);">Ship This Order</button>
+		</div>
+ENDOFPOST;
+	}
+	elseif(!strlen($order['date_delivered'])){
+		$opts['-posttable']=<<<ENDOFPOST
+		<div class="align-right" style="margin-top:10px;">
+		<button class="btn w_yellow" type="button" data-id="{$order_id}" onclick="wcommerceOrdersDeliver(this);">Deliver This Order</button>
+		</div>
+ENDOFPOST;
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceViewOrderItems']) && function_exists($settings['wcommerceViewOrderItems'])){
+		$opts=call_user_func($settings['wcommerceViewOrderItems'],$opts);
+	}
+	//return printValue($opts).printValue($order);
+	return databaseListRecords($opts);
+}
+function wcommerceViewOrderItemsExtra($recs){
+	global $USER;
+	$settings=wcommerceGetSettings();
+	foreach($recs as $i=>$rec){
+		$recs[$i]['subtotal']=number_format($rec['price']*$rec['quantity'],2);
+		$recs[$i]['photo']='<img src="'.$rec['photo'].'" style="height:32px;width:auto;" onclick="wacss.showImage(this);" />';
+		if(isset($rec['shipped_by_ex']['firstname'])){
+			$recs[$i]['shipped_by']="{$rec['shipped_by_ex']['firstname']} {$rec['shipped_by_ex']['lastname']}";
+		}
+		if(strlen($rec['date_ordered'])){
+			$recs[$i]['date_ordered']='<div title="'.$rec['date_ordered'].'"><span class="icon-calendar w_blue"></span> '.date('D M jS',strtotime($rec['date_ordered'])).'</div>';
+		}
+		if(strlen($rec['date_shipped'])){
+			$recs[$i]['date_shipped']='<div title="'.$rec['date_shipped'].'"><span class="icon-package w_green"></span> '.date('D M jS',strtotime($rec['date_shipped'])).'</div>';
+		}
+		else{
+			$recs[$i]['date_shipped']='<button class="btn w_blue" style="padding:.175rem .25rem;" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersShipItem(this);">Ship</button>';
+		}
+		if(strlen($rec['date_delivered'])){
+			$recs[$i]['date_delivered']='<div title="'.$rec['date_delivered'].'"><span class="icon-calendar-check w_gray"></span> '.date('D M jS',strtotime($rec['date_delivered'])).'</div>';
+		}
+		elseif(strlen($rec['date_shipped'])){
+			$recs[$i]['date_delivered']='<button style="padding:.175rem .25rem;" class="btn w_yellow" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersDeliverItem(this);">Deliver</button>';
+		}
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	//echo printValue($settings);exit;
+	if(!empty($settings['wcommerceViewOrderItemsExtra']) && function_exists($settings['wcommerceViewOrderItemsExtra'])){
+		$recs=call_user_func($settings['wcommerceViewOrderItemsExtra'],$recs);
+	}
+	return $recs;
 }
 function wcommerceOrdersList(){
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_orders',
+		'-relate'=>array('shipped_by'=>'_users'),
 		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
 		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_orders_content');",
-		'-tableclass'=>"table striped bordered responsive",
-		'-edit'=>1,
+		'-tableclass'=>"table striped bordered sticky",
+		'-tableheight'=>'55vh',
+		'-export'=>'1',
 		'-sorting'=>1,
-		'-listfields'=>'_id,user_id,date_ordered,date_shipped,tracking_number,date_delivered,items_count,order_total,shipto_city,shipto_state,shipto_country',
-		'-order'=>'date_shipped desc'
+		'-listfields'=>'_id,date_ordered,date_shipped,date_delivered,shipped_by,tracking_number,shipto_firstname,shipto_lastname,shipto_email,items_count,order_total',
+		'order_total_class'=>'align-right',
+		'items_count_class'=>'align-right',
+		'-order'=>'date_delivered,date_shipped,date_ordered desc',
+		'-results_eval'=>'wcommerceOrdersListExtra',
+		'_id_options'=>array(
+			'displayname'=>'OrderID',
+			'class'=>'w_nowrap'
+		),
+		'shipto_firstname_options'=>array(
+			'displayname'=>'Firstname'
+		),
+		'shipto_lastname_options'=>array(
+			'displayname'=>'Lastname'
+		),
+		'shipto_email_options'=>array(
+			'displayname'=>'Email'
+		),
+		'date_ordered_options'=>array(
+			'class'=>'w_nowrap',
+			'displayname'=>'Ordered'
+		),
+		'date_shipped_options'=>array(
+			'class'=>'w_nowrap',
+			'displayname'=>'Shipped'
+		),
+		'date_delivered_options'=>array(
+			'class'=>'w_nowrap',
+			'displayname'=>'Delivered'
+		),
+		'tracking_number_options'=>array(
+			'class'=>'w_nowrap',
+			'displayname'=>'Track'
+		),
+		'items_count_displayname'=>'Items',
+		'order_total_displayname'=>'Total',
 	);
 	$opts['-quickfilters_class']='btn w_blue';
 	$opts['-quickfilters']=array(
@@ -79,12 +199,185 @@ function wcommerceOrdersList(){
 			'class'=>"btn w_gray"
 			),
 	);
-	$opts['-pretable']=<<<ENDOFPRETABLE
-<div style="display:flex;justify-content:space-between;align-items:center">
-	<div class="w_small w_gray">Click on Id to edit entire record. Click on <span class="icon-edit"></span> to edit a single field.</div>
-</div>
-ENDOFPRETABLE;
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersList']) && function_exists($settings['wcommerceOrdersList'])){
+		$opts=call_user_func($settings['wcommerceOrdersList'],$opts);
+	}
+	//return printValue($opts);
 	return databaseListRecords($opts);
+}
+function wcommerceOrdersListExtra($recs){
+	//echo printValue($recs);exit;
+	foreach($recs as $i=>$rec){
+		$recs[$i]['_id']='<div style="display:flex;justify-content:space-between;align-items:center;"><div>'.$rec['_id'].'</div><button type="button" style="padding:.175rem .25rem;" class="btn w_blue" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersView(this);">View</button></div>';
+		if(isset($rec['shipped_by_ex']['firstname'])){
+			$recs[$i]['shipped_by']="{$rec['shipped_by_ex']['firstname']} {$rec['shipped_by_ex']['lastname']}";
+		}
+		if(strlen($rec['date_ordered'])){
+			$recs[$i]['date_ordered']='<div title="'.$rec['date_ordered'].'"><span class="icon-calendar w_blue"></span> '.date('D M jS',strtotime($rec['date_ordered'])).'</div>';
+		}
+		if(strlen($rec['date_shipped'])){
+			$recs[$i]['date_shipped']='<div title="'.$rec['date_shipped'].'"><span class="icon-package w_green"></span> '.date('D M jS',strtotime($rec['date_shipped'])).'</div>';
+		}
+		else{
+			$recs[$i]['date_shipped']='<button class="btn w_blue" style="padding:.175rem .25rem;" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersShip(this);">Ship</button>';
+		}
+		if(strlen($rec['date_delivered'])){
+			$recs[$i]['date_delivered']='<div title="'.$rec['date_delivered'].'"><span class="icon-calendar-check w_gray"></span> '.date('D M jS',strtotime($rec['date_delivered'])).'</div>';
+		}
+		else{
+			$recs[$i]['date_delivered']='<button style="padding:.175rem .25rem;" class="btn w_yellow" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersDeliver(this);">Deliver</button>';
+		}
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersListExtra']) && function_exists($settings['wcommerceOrdersListExtra'])){
+		$recs=call_user_func($settings['wcommerceOrdersListExtra'],$recs);
+	}
+	return $recs;
+}
+function wcommerceOrdersAddedit($id=0){
+	global $PAGE;
+	$opts=array(
+		'-table'=>'wcommerce_orders',
+		'-enctype'=>'multipart/form-data',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'wcommerce_orders_content')",
+		'-fields'=>getView('manage_orders_addedit_fields'),
+		'-style_all'=>'width:100%',
+		'name_options'=>array(
+			'inputtype'=>'text',
+		),
+		'shipto_country_options'=>array(
+			'inputtype'=>'select',
+			'onchange'=>"wcommerceNav(this);",
+			'data-href'=>"/t/1/{$PAGE['name']}/manage_redraw",
+			'data-field'=>'shipto_state',
+			'data-div'=>'shipto_state_content',
+			'tvals'=>wasqlGetCountries(),
+			'dvals'=>wasqlGetCountries(1)
+		),
+		'shipto_state_options'=>array(
+			'inputtype'=>'select',
+			'tvals'=>wasqlGetStates(),
+			'dvals'=>wasqlGetStates(1)
+		),
+		'shipto_address_options'=>array(
+			'inputtype'=>'textarea',
+			'height'=>'50'
+		),
+		'related_products_options'=>array(
+			'inputtype'=>'textarea',
+			'height'=>'150'
+		)
+	);
+	if($id > 0){
+		$opts['_id']=$id;
+	}
+	else{
+		$opts['shipto_country']='US';
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersAddedit']) && function_exists($settings['wcommerceOrdersAddedit'])){
+		$opts=call_user_func($settings['wcommerceOrdersAddedit'],$opts);
+	}
+	return addEditDBForm($opts);
+}
+function wcommerceOrdersShipped($id){
+	global $PAGE;
+	global $USER;
+	$opts=array(
+		'-table'=>'wcommerce_orders',
+		'-formname'=>'ordersshippedform',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'wcommerce_orders_content')",
+		'-fields'=>getView('manage_orders_shipped_fields'),
+		'-editfields'=>'shipped_by,tracking_number,date_shipped',
+		'-style_all'=>'width:100%',
+		'_id'=>$id,
+		'date_shipped'=>date('Y-m-d H:i:s'),
+		'-hide'=>'delete,clone,reset',
+		'-save_class'=>'btn w_green',
+		'shipped_by'=>$USER['_id']
+	);
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersShipped']) && function_exists($settings['wcommerceOrdersShipped'])){
+		$opts=call_user_func($settings['wcommerceOrdersShipped'],$opts);
+	}
+	return addEditDBForm($opts);
+}
+function wcommerceOrdersDelivered($id){
+	global $PAGE;
+	global $USER;
+	$opts=array(
+		'-table'=>'wcommerce_orders',
+		'-formname'=>'ordersdeliveredform',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'wcommerce_orders_content')",
+		'-fields'=>getView('manage_orders_delivered_fields'),
+		'-style_all'=>'width:100%',
+		'_id'=>$id,
+		'date_delivered'=>date('Y-m-d H:i:s'),
+		'-hide'=>'delete,clone,reset',
+		'-save_class'=>'btn w_warning'
+	);
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersDelivered']) && function_exists($settings['wcommerceOrdersDelivered'])){
+		$opts=call_user_func($settings['wcommerceOrdersDelivered'],$opts);
+	}
+	return addEditDBForm($opts);
+}
+function wcommerceOrdersItemShipped($id){
+	global $PAGE;
+	global $USER;
+	$item=getDBRecordById('wcommerce_orders_items',$id);
+	$opts=array(
+		'-table'=>'wcommerce_orders_items',
+		'-formname'=>'ordersitemsshippedform',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/view/{$item['order_id']}",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'centerpop')",
+		'-fields'=>getView('manage_orders_items_shipped_fields'),
+		'-editfields'=>'shipped_by,tracking_number,date_shipped',
+		'-style_all'=>'width:100%',
+		'_id'=>$id,
+		'date_shipped'=>date('Y-m-d H:i:s'),
+		'-hide'=>'delete,clone,reset',
+		'-save_class'=>'btn w_green',
+		'shipped_by'=>$USER['_id']
+	);
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersItemShipped']) && function_exists($settings['wcommerceOrdersItemShipped'])){
+		$opts=call_user_func($settings['wcommerceOrdersItemShipped'],$opts);
+	}
+	return addEditDBForm($opts);
+}
+function wcommerceOrdersItemDelivered($id){
+	global $PAGE;
+	global $USER;
+	$item=getDBRecordById('wcommerce_orders_items',$id);
+	$opts=array(
+		'-table'=>'wcommerce_orders_items',
+		'-formname'=>'ordersitemsdeliveredform',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/view/{$item['order_id']}",
+		'-onsubmit'=>"return ajaxSubmitForm(this,'centerpop')",
+		'-fields'=>getView('manage_orders_items_delivered_fields'),
+		'-style_all'=>'width:100%',
+		'_id'=>$id,
+		'date_delivered'=>date('Y-m-d H:i:s'),
+		'-hide'=>'delete,clone,reset',
+		'-save_class'=>'btn w_warning'
+	);
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceOrdersItemDelivered']) && function_exists($settings['wcommerceOrdersItemDelivered'])){
+		$opts=call_user_func($settings['wcommerceOrdersItemDelivered'],$opts);
+	}
+	return addEditDBForm($opts);
 }
 function wcommerceBuildField($field,$rec=array(),$val2=''){
 	$params=array();
@@ -96,8 +389,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['message']=' ----- ';
 			return buildFormSelect($field,$opts,$params);
 		break;
-		case 'size':
-			
+		case 'size':			
 			$params['onclick']="wcommerceChangeProductAttribute(this);";
 			$params['data-product_guid']=$rec['guid'];
 			$params['data-product_name']=$rec['name'];
@@ -174,49 +466,6 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 		break;
 	}
 }
-function wcommerceOrdersAddedit($id=0){
-	global $PAGE;
-	$opts=array(
-		'-table'=>'wcommerce_orders',
-		'-enctype'=>'multipart/form-data',
-		'-action'=>"/t/1/{$PAGE['name']}/manage_orders/list",
-		'-onsubmit'=>"return ajaxSubmitForm(this,'wcommerce_orders_content')",
-		'-fields'=>getView('manage_orders_addedit_fields'),
-		'-style_all'=>'width:100%',
-		'name_options'=>array(
-			'inputtype'=>'text',
-		),
-		'shipto_country_options'=>array(
-			'inputtype'=>'select',
-			'onchange'=>"wcommerceNav(this);",
-			'data-href'=>"/t/1/{$PAGE['name']}/manage_redraw",
-			'data-field'=>'shipto_state',
-			'data-div'=>'shipto_state_content',
-			'tvals'=>wasqlGetCountries(),
-			'dvals'=>wasqlGetCountries(1)
-		),
-		'shipto_state_options'=>array(
-			'inputtype'=>'select',
-			'tvals'=>wasqlGetStates(),
-			'dvals'=>wasqlGetStates(1)
-		),
-		'shipto_address_options'=>array(
-			'inputtype'=>'textarea',
-			'height'=>'50'
-		),
-		'related_products_options'=>array(
-			'inputtype'=>'textarea',
-			'height'=>'150'
-		)
-	);
-	if($id > 0){
-		$opts['_id']=$id;
-	}
-	else{
-		$opts['shipto_country']='US';
-	}
-	return addEditDBForm($opts);
-}
 function wcommerceGetSettings(){
 	global $wcommerceGetSettingsCache;
 	if(is_array($wcommerceGetSettingsCache)){
@@ -227,8 +476,8 @@ function wcommerceGetSettings(){
 	$recs=getDBRecords($params);
 	$wcommerceGetSettingsCache=array();
 	foreach($recs as $rec){
-		$key=strtolower(trim($rec['name']));
-		$value=$rec['value'];
+		$key=trim($rec['name']);
+		$value=trim($rec['value']);
 		$wcommerceGetSettingsCache[$key]=$value;
 	}
 	return $wcommerceGetSettingsCache;
@@ -280,7 +529,10 @@ function wcommerceProducts($params=array()){
 		}
 		$recs[]=$rec;
 	}
-	//echo printValue($recs);exit;
+	//check for override
+	if(!empty($settings['wcommerceProducts']) && function_exists($settings['wcommerceProducts'])){
+		$recs=call_user_func($settings['wcommerceProducts'],$recs);
+	}
 	return $recs;
 }
 function wcommerceProductImages($rec){
@@ -296,6 +548,10 @@ function wcommerceProductImages($rec){
 			$prec['border']='1px solid #ddd';
 		}
 		$photos[]=$prec;
+	}
+	//check for override
+	if(!empty($settings['wcommerceProductImages']) && function_exists($settings['wcommerceProductImages'])){
+		$photos=call_user_func($settings['wcommerceProductImages'],$photos,$rec);
 	}
 	return $photos;
 }
@@ -352,7 +608,8 @@ function wcommerceProductsList(){
 		'-table'=>'wcommerce_products',
 		'-action'=>"/t/1/{$PAGE['name']}/manage_products/list",
 		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_products_content');",
-		'-tableclass'=>"table striped bordered responsive",
+		'-tableclass'=>"table striped bordered sticky",
+		'-tableheight'=>'55vh',
 		'-order'=>'active desc,sort_group,name',
 		'setprocessing'=>0,
 		'-results_eval'=>'wcommerceProductsListExtra',
@@ -464,12 +721,22 @@ function wcommerceProductsList(){
 	<div class="w_small w_gray">Click on Id to edit entire record. Click on <span class="icon-edit"></span> to edit a single field.</div>
 </div>
 ENDOFPRETABLE;
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceProductsList']) && function_exists($settings['wcommerceProductsList'])){
+		$opts=call_user_func($settings['wcommerceProductsList'],$opts);
+	}
 	return databaseListRecords($opts);
 }
 function wcommerceProductsListExtra($recs){
 	foreach($recs as $i=>$rec){
 		$recs[$i]['guid']=md5($rec['name']);
 		$recs[$i]['group']=strtolower(preg_replace('/[^a-z0-9]+/i','',$rec['name']));
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceProductsListExtra']) && function_exists($settings['wcommerceProductsList'])){
+		$recs=call_user_func($settings['wcommerceProductsListExtra'],$recs);
 	}
 	return $recs;
 }
@@ -546,28 +813,62 @@ function wcommerceProductsAddedit($id=0){
 	else{
 		$opts['active']=1;
 	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceProductsAddedit']) && function_exists($settings['wcommerceProductsAddedit'])){
+		$opts=call_user_func($settings['wcommerceProductsAddedit'],$opts);
+	}
 	return addEditDBForm($opts);
 }
 function wcommerceSettingsList(){
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_settings',
-		'-tableclass'=>"table striped bordered responsive",
-		'-edit'=>1,
+		'-tableclass'=>"table striped bordered sticky",
+		'-tableheight'=>'55vh',
+		'-action'=>"/t/1/{$PAGE['name']}/manage_settings/list",
+		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_settings_content');",
+		'-searchfields'=>'name,value',
+		'-searchopers'=>'ct,eq',
+		'-editfields'=>'value',
+		'-export'=>1,
 		'-sorting'=>1,
 		'-order'=>'name',
-		'-navonly'=>1,
+		//'-navonly'=>1,
 		'name_options'=>array(
 			'onclick'=>"return wcommerceNav(getParent(this,'td'));",
 			'data-href'=>"/t/1/{$PAGE['name']}/manage_settings/addedit/%_id%",
 			'data-div'=>'centerpop'
 		)
 	);
+	$opts['-quickfilters_class']='btn w_blue';
+	$opts['-quickfilters']=array(
+		'Orders'=>array(
+			'icon'=>'icon-package',
+			'filter'=>'name ct wcommerceOrders',
+			'class'=>"btn"
+			),
+		'Products'=>array(
+			'icon'=>'icon-tag',
+			'filter'=>'name ct wcommerceProducts',
+			'class'=>"btn"
+			),
+		'Buyers'=>array(
+			'icon'=>'icon-users',
+			'filter'=>'name ct wcommerceBuyers',
+			'class'=>"btn"
+			),
+	);
 	$opts['-pretable']=<<<ENDOFPRETABLE
 <div style="display:flex;justify-content:flex-end;align-items:center">
 	<button type="button" class="button is-small btn btn-small is-success w_success" onclick="wcommerceNav(this);" data-href="/t/1/{$PAGE['name']}/manage_settings/addedit/0" data-div="centerpop"><span class="icon-plus"></span> <translate>Add</translate></button>
 </div>
 ENDOFPRETABLE;
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceSettingsList']) && function_exists($settings['wcommerceSettingsList'])){
+		$opts=call_user_func($settings['wcommerceSettingsList'],$opts);
+	}
 	return databaseListRecords($opts);
 }
 function wcommerceSettingsAddedit($id=0){
@@ -590,6 +891,11 @@ function wcommerceSettingsAddedit($id=0){
 	);
 	if($id > 0){
 		$opts['_id']=$id;
+	}
+	//check for override
+	$settings=wcommerceGetSettings();
+	if(!empty($settings['wcommerceSettingsAddedit']) && function_exists($settings['wcommerceSettingsAddedit'])){
+		$opts=call_user_func($settings['wcommerceSettingsAddedit'],$opts);
 	}
 	return addEditDBForm($opts);
 }
@@ -623,6 +929,29 @@ function wcommerceInit($force=0){
 	if($force==1 || !isDBTable('wcommerce_products')){
 		$ok=databaseAddMultipleTables(wcommerceSchema());
 		$rtn.="updated wcommerce schema. <br />".PHP_EOL;
+	}
+	//settings
+	$settings=wcommerceGetSettings();
+	if($force==1 || !count($settings)){
+		$progpath=dirname(__FILE__);
+		$afile="{$progpath}/wcommerce.php";
+		$lines=file($afile);
+		$recs=array();
+		foreach($lines as $line){
+			$line=trim($line);
+			if(preg_match('/^function\ (wcommerce)(.+?)\(/is',$line,$m)){
+				$fname=$m[1].$m[2];
+				//echo "[{$fname}]<br>".PHP_EOL;
+				$opts=array(
+					'-table'=>'wcommerce_settings',
+					'name'=>$fname,
+					'-upsert'=>'ignore'
+				);
+				$id=addDBRecord($opts);
+				//echo $id.printValue($opts).PHP_EOL;
+			}
+		}
+		$rtn.="updated wcommerce settings. <br />".PHP_EOL;
 	}
 	return $rtn;
 }
@@ -742,6 +1071,124 @@ function wcommercePageBody(){
 	<div style="margin:5px;"><label><translate>Response</translate></label>[payment_response]</div>
 </div>
 </view:manage_orders_addedit_fields>
+
+<view:manage_orders_view>
+<div class="w_centerpop_title">View Order #<?=\$id;?> </div>
+<div class="w_centerpop_content">
+	<table class="table condensed bordered">
+		<tr><th>OrderID</th><th>Firstname</th><th>Lastname</th>
+			<th><span class="icon-calendar w_blue"></span> Ordered</th>
+			<th><span class="icon-package w_green"></span> Shipped</th>
+			<th><span class="icon-calendar-check w_gray"></span> Delivered</th></tr>
+		<tr>
+			<td><?=\$order['_id'];?></td>
+			<td><?=\$order['shipto_firstname'];?></td>
+			<td><?=\$order['shipto_lastname'];?></td>
+			<td><?=strlen(\$order['date_ordered'])?date('D M jS',strtotime(\$order['date_ordered'])):'n/a';?></td>
+			<td><?=strlen(\$order['date_shipped'])?date('D M jS',strtotime(\$order['date_shipped'])):'n/a';?></td>
+			<td><?=strlen(\$order['date_delivered'])?date('D M jS',strtotime(\$order['date_delivered'])):'n/a';?></td>
+		</tr>
+	</table>
+	<?=wcommerceViewOrderItems(\$id);?>
+	<?=buildOnLoad("document.ordersshippedform.tracking_number.focus();centerObject('centerpop');");?>
+</div>
+</view:manage_orders_view>
+
+<view:manage_orders_shipped>
+<div class="w_centerpop_title">Ship Order #<?=\$id;?></div>
+<div class="w_centerpop_content">
+	<table class="table condensed bordered">
+		<tr><th>OrderID</th><th>Firstname</th><th>Lastname</th><td>Shipped By</td></tr>
+		<tr>
+			<td><?=\$order['_id'];?></td>
+			<td><?=\$order['shipto_firstname'];?></td>
+			<td><?=\$order['shipto_lastname'];?></td>
+			<td class="w_gray"><?="{\$USER['firstname']} {\$USER['lastname']}";?></td>
+		</tr>
+	</table>
+	<?=wcommerceOrdersShipped(\$id);?>
+	<?=buildOnLoad("document.ordersshippedform.tracking_number.focus();centerObject('centerpop');");?>
+</div>
+</view:manage_orders_shipped>
+
+<view:manage_orders_shipped_fields>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Tracking Number</translate></label>[tracking_number]</div>
+	<div style="margin:5px;"><label><translate>Date Shipped</translate></label>[date_shipped]</div>
+</div>
+</view:manage_orders_shipped_fields>
+
+<view:manage_orders_delivered>
+<div class="w_centerpop_title">Deliver Order <?=\$id;?> <?=\$order['shipto_firstname'];?></div>
+<div class="w_centerpop_content">
+	<table class="table condensed bordered">
+		<tr><th>OrderID</th><th>Firstname</th><th>Lastname</th><td>Ship Date</td></tr>
+		<tr>
+			<td><?=\$order['_id'];?></td>
+			<td><?=\$order['shipto_firstname'];?></td>
+			<td><?=\$order['shipto_lastname'];?></td>
+			<td class="w_gray"><?=\$order['date_shipped'];?></td>
+		</tr>
+	</table>
+	<?=wcommerceOrdersDelivered(\$id);?>
+	<?=buildOnLoad("centerObject('centerpop');");?>
+</div>
+</view:manage_orders_delivered>
+
+<view:manage_orders_delivered_fields>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Date delivered</translate></label>[date_delivered]</div>
+</div>
+</view:manage_orders_delivered_fields>
+
+<view:manage_orders_items_shipped>
+<div class="w_centerpop_title">Ship Order Item #<?=\$id;?></div>
+<div class="w_centerpop_content">
+	<table class="table condensed bordered">
+		<tr><th>OrderID</th><th>Firstname</th><th>Lastname</th><td>Shipped By</td></tr>
+		<tr>
+			<td><?=\$order['_id'];?></td>
+			<td><?=\$order['shipto_firstname'];?></td>
+			<td><?=\$order['shipto_lastname'];?></td>
+			<td class="w_gray"><?="{\$USER['firstname']} {\$USER['lastname']}";?></td>
+		</tr>
+	</table>
+	<?=wcommerceOrdersItemShipped(\$id);?>
+	<?=buildOnLoad("document.ordersshippedform.tracking_number.focus();centerObject('centerpop');");?>
+</div>
+</view:manage_orders_items_shipped>
+
+<view:manage_orders_items_shipped_fields>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Tracking Number</translate></label>[tracking_number]</div>
+	<div style="margin:5px;"><label><translate>Date Shipped</translate></label>[date_shipped]</div>
+</div>
+</view:manage_orders_items_shipped_fields>
+
+<view:manage_orders_items_delivered>
+<div class="w_centerpop_title">Deliver Order <?=\$id;?> <?=\$order['shipto_firstname'];?></div>
+<div class="w_centerpop_content">
+	<table class="table condensed bordered">
+		<tr><th>OrderID</th><th>Firstname</th><th>Lastname</th><td>Ship Date</td></tr>
+		<tr>
+			<td><?=\$order['_id'];?></td>
+			<td><?=\$order['shipto_firstname'];?></td>
+			<td><?=\$order['shipto_lastname'];?></td>
+			<td class="w_gray"><?=\$order['date_shipped'];?></td>
+		</tr>
+	</table>
+	<?=wcommerceOrdersItemDelivered(\$id);?>
+	<?=buildOnLoad("centerObject('centerpop');");?>
+</div>
+</view:manage_orders_items_delivered>
+
+<view:manage_orders_items_delivered_fields>
+<div style="display:flex;padding:1px;">
+	<div style="margin:5px;"><label><translate>Date delivered</translate></label>[date_delivered]</div>
+</div>
+</view:manage_orders_items_delivered_fields>
+
+
 
 <view:manage_products>
 <div id="wcommerce_products_content" style="margin-top:10px;">
@@ -923,6 +1370,41 @@ function wcommerceAdd2Cart(el){
 	let params={setprocessing:0,id:el.dataset.product_id,qty:qty,name:el.dataset.product_name};
 	return ajaxGet(url,div,params);
 }
+function wcommerceOrdersView(el){
+	let page=wcommercePageName();
+	let div='centerpop';
+	let url='/t/1/'+page+'/manage_orders/view/'+el.dataset.id;
+	let params={setprocessing:0};
+	return ajaxGet(url,div,params);
+}
+function wcommerceOrdersShip(el){
+	let page=wcommercePageName();
+	let div='centerpop2';
+	let url='/t/1/'+page+'/manage_orders/ship/'+el.dataset.id;
+	let params={setprocessing:0};
+	return ajaxGet(url,div,params);
+}
+function wcommerceOrdersDeliver(el){
+	let page=wcommercePageName();
+	let div='centerpop2';
+	let url='/t/1/'+page+'/manage_orders/deliver/'+el.dataset.id;
+	let params={setprocessing:0};
+	return ajaxGet(url,div,params);
+}
+function wcommerceOrdersShipItem(el){
+	let page=wcommercePageName();
+	let div='centerpop2';
+	let url='/t/1/'+page+'/manage_orders/ship_item/'+el.dataset.id;
+	let params={setprocessing:0};
+	return ajaxGet(url,div,params);
+}
+function wcommerceOrdersDeliverItem(el){
+	let page=wcommercePageName();
+	let div='centerpop2';
+	let url='/t/1/'+page+'/manage_orders/deliver_item/'+el.dataset.id;
+	let params={setprocessing:0};
+	return ajaxGet(url,div,params);
+}
 function wcommerceNavTab(el){
 	wacss.setActiveTab(el);
 	return wcommerceNav(el);
@@ -997,6 +1479,7 @@ switch(strtolower(\$PASSTHRU[0])){
 		\$id=(integer)\$_REQUEST['id'];
 		\$name=\$_REQUEST['name'];
 		\$product=getDBRecordById('wcommerce_products',\$id);
+		\$_REQUEST['name']=\$product['name'];
 		\$fields=getDBFields('wcommerce_orders_items');
 		\$guid=wcommerceCartGuid();
 		\$opts=array(
@@ -1012,10 +1495,16 @@ switch(strtolower(\$PASSTHRU[0])){
 		}
 		else{
 			\$opts['quantity']=(integer)\$_REQUEST['qty'];
+			//get photo
+			\$product['photos']=wcommerceProductImages(\$product);
+			if(count(\$product['photos'])){
+				\$opts['photo']=\$product['photos'][0]['src'];
+			}
+			
 			foreach(\$fields as \$field){
 				if(isWaSQLField(\$field)){continue;}
 				if(!isset(\$opts[\$field])){
-					if(isset(\$_REQUEST[\$field])){
+					if(isset(\$_REQUEST[\$field]) && strlen(\$_REQUEST[\$field])){
 						\$opts[\$field]=\$_REQUEST[\$field];
 					}
 					elseif(isset(\$product[\$field])){
@@ -1024,13 +1513,14 @@ switch(strtolower(\$PASSTHRU[0])){
 				}
 			}
 			\$id=addDBRecord(\$opts);
+			debugValue(\$_REQUEST);
+			debugValue(\$opts);
 			if(isNum(\$id)){
 				\$message="{\$product['_id']} - {\$product['name']} added to cart";
 			}
 			else{
 				\$message=\$id;
 				debugValue(\$message);
-				debugValue(\$opts);
 			}
 		}
 		setView('add2cart',1);
@@ -1114,8 +1604,38 @@ switch(strtolower(\$PASSTHRU[0])){
 				return;
 			break;
 			case 'addedit':
-				\$id=\$PASSTHRU[2];
+				\$id=(integer)\$PASSTHRU[2];
 				setView('manage_orders_addedit',1);
+				return;
+			break;
+			case 'view':
+				\$id=(integer)\$PASSTHRU[2];
+				\$order=wcommerceGetOrder(\$id);
+				setView('manage_orders_view',1);
+				return;
+			break;
+			case 'ship':
+				\$id=(integer)\$PASSTHRU[2];
+				\$order=getDBRecordById('wcommerce_orders',\$id);
+				setView('manage_orders_shipped',1);
+				return;
+			break;
+			case 'deliver':
+				\$id=(integer)\$PASSTHRU[2];
+				\$order=getDBRecordById('wcommerce_orders',\$id);
+				setView('manage_orders_delivered',1);
+				return;
+			break;
+			case 'ship_item':
+				\$id=(integer)\$PASSTHRU[2];
+				\$item=getDBRecordById('wcommerce_orders_items',\$id);
+				setView('manage_orders_items_shipped',1);
+				return;
+			break;
+			case 'deliver_item':
+				\$id=(integer)\$PASSTHRU[2];
+				\$order=getDBRecordById('wcommerce_orders_items',\$id);
+				setView('manage_orders_items_delivered',1);
 				return;
 			break;
 		}
@@ -1136,7 +1656,7 @@ switch(strtolower(\$PASSTHRU[0])){
 		setView(\$PASSTHRU[0],1);
 	break;
 	case 'manage_products_preview':
-		\$products=wcommerceProducts();
+		\$products=wcommerceProducts(array('-random'=>10));
 		setView(\$PASSTHRU[0],1);
 	break;
 	case 'manage_settings':
@@ -1216,11 +1736,13 @@ wcommerce_orders
 	date_ordered datetime
 	date_shipped datetime
 	date_delivered datetime
+	shipped_by int
 	shipmethod_code varchar(25)
 	shipmethod_price float(12,2)
 	coupon varchar(25)
 	items_count int
 	items_total int
+	note varchar(255)
 	discount float(12,2)
 	tax float(12,2)
 	order_total float(12,2)
@@ -1246,6 +1768,10 @@ wcommerce_orders_items
 	featured tinyint(1) NOT NULL Default 0
 	weight int
 	photo varchar(255)
+	date_shipped datetime
+	date_delivered datetime
+	shipped_by int
+	note varchar(255)
 wcommerce_coupons
 	coupon varchar(25) NOT NULL UNIQUE
 	description varchar(255)
