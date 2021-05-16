@@ -1475,7 +1475,8 @@ function wasqlGetInputtypes($d=0){
 		'signature'	=> 'Signature',
 		'timezone'	=> 'Timezone',
 		'starrating'=> 'Star Rating',
-		'wysiwyg' 	=> 'WYSIWYG Editor'
+		'wysiwyg' 	=> 'WYSIWYG Editor',
+		'geolocationmap'	=> 'GEO Location Map'
 	);
 	asort($types);
 	if($d){$vals=array_values($types);}

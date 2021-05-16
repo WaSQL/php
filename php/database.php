@@ -7077,8 +7077,11 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'file':
 			$tag=buildFormFile($info[$field]['name'],$info[$field]);
-			break;
+		break;
 		case 'formula':
+		break;
+		case 'geolocationmap':
+			$tag=buildFormGeoLocationMap($info[$field]['name'],$info[$field]);
 		break;
 		case 'timezone':
 			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Time Zone --';}

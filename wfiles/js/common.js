@@ -1838,17 +1838,35 @@ function resizeIframe(id){
 function setText(obj,txt){
 	//info: sets the text of specified object or id to txt
 	//usage: setText('div2','test');
+	//console.log('setText');
 	var cObj=getObject(obj);
     if(undefined == cObj){
 		if(obj==0){return null;}
 		console.log('setText: no object found for '+obj);
 		return null;
 	}
+	//console.log(cObj.tagName);
     var previous_value=getText(cObj);
     var setflag=0;
+
     //if the object has a value attribute, set it
     if(undefined != cObj.getAttribute('value')){
+    	//console.log(' - set value');
+    	//console.log(cObj);
 		cObj.value=txt;setflag=1;
+	}
+	else if(undefined != cObj.tagName){
+		switch(cObj.tagName.toUpperCase()){
+			case 'INPUT':
+				cObj.value=txt;setflag=1;
+			break;
+			case 'TEXTAREA':
+				cObj.innerText=txt;setflag=1;
+			break;
+		}
+    	//console.log(' - set input value');
+    	//console.log(cObj);
+		
 	}
 	//otherwise try a few others
 	if(setflag==0){

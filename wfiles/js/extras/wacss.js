@@ -139,12 +139,21 @@ var wacss = {
     		navigator.geoOptions=options;
     		navigator.geolocation.getCurrentPosition(
     			function(position){
+    				console.log(navigator.geoSetFld);
+    				console.log(wacss.function_exists(navigator.geoSetFld));
     				if (wacss.function_exists(navigator.geoSetFld)){
     					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude,navigator.geoOptions);
     				}
     				else{
-    					fldObj=getObject(navigator.geoSetFld);
-    					fldObj.value='['+position.coords.latitude+','+position.coords.longitude+']';	
+    					//check for showmap option
+    					if(undefined!=navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
+    							navigator.geoOptions.input=navigator.geoSetFld;
+    							wacss.geoLocationMap(position.coords.latitude,position.coords.longitude,navigator.geoOptions);
+    					}
+    					else{
+    						fldObj=getObject(navigator.geoSetFld);
+    						fldObj.value='['+position.coords.latitude+','+position.coords.longitude+']';	
+    					}
     				}
     				
     				return false; 
@@ -156,24 +165,33 @@ var wacss = {
     						navigator.geoOptions.message=err.message;
     				if(undefined != navigator.geoSetFldFailed){
     					if (wacss.function_exists(navigator.geoSetFldFailed)){
-
 	    					window[navigator.geoSetFldFailed](navigator.geoOptions);
 	    				}
 	    				else{
-	    					let errfld=document.querySelector(navigator.geoSetFldFailed);
-	    					if(undefined != errfld){
-	    						wacss.setText(err.message);
+	    					if(undefined==navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
+	    						alert(err.message);
 	    					}
 	    					else{
-	    						console.log('wacss.getGeoLocation error. Invalid onerror value');
-	    						console.log(navigator.geoSetFldFailed);
-	    						console.log(err.message);
-	    					}
+		    					let errfld=document.querySelector(navigator.geoSetFldFailed);
+		    					if(undefined != errfld){
+		    						setText(wacss.getObject(errfld),err.message);
+		    					}
+		    					else{
+		    						console.log('wacss.getGeoLocation error. Invalid onerror value');
+		    						console.log(navigator.geoSetFldFailed);
+		    						console.log(err.message);
+		    					}
+		    				}
 	    				}
     				}
     				else{
-    					console.log('wacss.getGeoLocation error. No onerror set.');
-    					console.log(navigator.geoOptions);
+    					if(undefined==navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
+    						alert(err.message);
+    					}
+    					else{
+    						console.log('wacss.getGeoLocation error. No onerror set.');
+    						console.log(navigator.geoOptions);
+    					}
     				}
     				return false;
     			},
@@ -182,10 +200,96 @@ var wacss = {
   		} 
 		return false;
 	},
+	geoLocationMap: function(lat,long,params){
+		//console.log('geoLocationMap');
+		//console.log(params);
+		if(undefined == params){params={};}
+		if(undefined == params.displayname){params.displayname='Click on map to select';}
+		params.lat=lat;
+		params.long=long;
+		if(undefined != document.getElementById('geolocationmap_content')){
+			params.div='geolocationmap_content';
+			wacss.geoLocationMapContent(params);
+			centerObject('geolocationmap');
+			return 1;
+		}
+		let popup=document.createElement('div');
+		popup.id='geolocationmap_popup';
+		popup.style='z-index:99999999;background:#FFF;width:80vw;height:80vh;position:absolute;display:flex;flex-direction:column;justify-content:flex-start;border-radius:5px;box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);';
+		let popup_title=document.createElement('div');
+		popup_title.style="display:flex;justify-content:center;align-items:center;width:100%;";
+		popup_title.id='geolocationmap_title';
+		let popup_title_img=document.createElement('img');
+		popup_title_img.src='/wfiles/svg/google-maps.svg';
+		popup_title_img.style='height:32px;width:auto;';
+		popup_title.appendChild(popup_title_img);
+		let popup_title_text=document.createElement('div');
+		popup_title_text.style='padding-top:5px;flex:1;height:100%;line-height:1.2rem;color:#FFF;background:#b5b5b5;font-size:1.2rem;text-align:center;';
+		popup_title_text.innerHTML=params.displayname;
+		popup_title.appendChild(popup_title_text);
+		let popup_title_close=document.createElement('span');
+		popup_title_close.className='icon-close w_red';
+		popup_title_close.style='background:#b5b5b5;padding-right:10px;height:100%;padding-top:5px;cursor:pointer;';
+		popup_title_close.onclick=function(){
+			removeId('geolocationmap_popup');
+		}
+		popup_title.appendChild(popup_title_close);
+		popup.appendChild(popup_title);
+		let popup_content=document.createElement('div');
+		popup_content.id='geolocationmap_content';
+		popup_content.style='flex:1;';
+		popup.appendChild(popup_content);
+		params.div=popup_content;
+		wacss.geoLocationMapContent(params);
+		document.body.appendChild(popup);
+		centerObject(popup);
+	},
+	geoLocationMapContent:function(params){
+		//console.log('geoLocationMapContent');
+		//console.log(params);
+		if(undefined == params){params={};}
+		params.zoom=params.zoom||13;
+		//return;
+		let myLatlng={ lat: params.lat, lng: params.long };
+		let map = new google.maps.Map(params.div, {
+			center: myLatlng,
+			mapTypeId: 'roadmap',
+			zoom: params.zoom,
+		});
+	 	// Create the initial InfoWindow.
+		let infoWindow = new google.maps.InfoWindow({
+		  content: params.displayname,
+		  position: myLatlng,
+		});
+		infoWindow.open(map);
+		infoWindow.setContent('Current Location');
+		map.params=params;
+		// Configure the click listener.
+		map.addListener("click", (mapsMouseEvent) => {
+			//console.log(map.params.input);
+			let latlon=mapsMouseEvent.latLng.toJSON();
+			let latlonval='['+latlon.lat+','+latlon.lng+']';
+		  	// Close the current InfoWindow.
+		  	infoWindow.close();
+		  	// Create a new InfoWindow.
+		  	infoWindow = new google.maps.InfoWindow({
+		    	position: mapsMouseEvent.latLng,
+		  	});
+		  	let htm=JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
+		  	htm=htm+'<div class="align-right" style="margin-top:10px;"><span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="setText(wacss.getObject(this.dataset.input),this.dataset.latlon);removeId(\'geolocationmap_popup\');"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
+		  	infoWindow.setContent(htm);
+		  	infoWindow.open(map);
+		});
+	},
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in
 		if(typeof(obj)=='object'){return obj;}
 	    else if(typeof(obj)=='string'){
+	    	//try querySelector
+	    	let qso=document.querySelector('#'+obj);
+	    	if(typeof(qso)=='object'){return qso;}
+	    	qso=document.querySelector(obj);
+	    	if(typeof(qso)=='object'){return qso;}
 	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
 			else if(undefined != document.getElementsByName(obj)){
@@ -193,9 +297,6 @@ var wacss = {
 				if(els.length ==1){return els[0];}
 	        	}
 			else if(undefined != document.all[obj]){return document.all[obj];}
-	    	//try querySelector
-	    	let qso=document.querySelector(obj);
-	    	if(typeof(qso)=='object'){return qso;}
 	    }
 	    return null;
 	},

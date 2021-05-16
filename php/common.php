@@ -2161,6 +2161,39 @@ function buildFormPassword($name,$params=array()){
 
 	return $tag;
 }
+//---------- begin FUNCTION buildFormGeoLocationMap-------------------
+/**
+* @describe creates an Map form element where user can select latitude,longitude from a map
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormGeoLocationMap('work_location',$params);
+*/
+function buildFormGeoLocationMap($name,$params=array()){
+	global $CONFIG;
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	$params['width']=isNum($params['width'])?$params['width']:300;
+	if(!isset($params['class'])){$params['class']='input';}
+	if(!isset($params['-apikey']) && isset($CONFIG['google_apikey'])){
+		$params['-apikey']=$CONFIG['google_apikey'];
+	}
+	if(isset($params['displayname'])){$dname=$params['displayname'];}
+	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
+	//make sure wacss and google map api are loaded
+	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
+	//return printValue($_SESSION);
+	$tag=<<<ENDOFTAG
+<div style="display:inline-flex;align-items: center;width:{$params['width']}px;">
+	<input type="text" class="{$params['class']}" style="font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;" id="{$params['id']}" name="{$params['name']}" placeholder="{$dname}" />
+	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});">&nbsp;</button>
+</div>
+ENDOFTAG;
+	return $tag;
+}
 //---------- begin FUNCTION buildFormMultiSelect-------------------
 /**
 * @describe creates an HTML multi-select control

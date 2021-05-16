@@ -121,6 +121,10 @@ minifyFiles($jspath,array('common','event','form','colorpicker'));
 minifyFiles(realpath("{$jspath}/extras"),array('pikaday'));
 //Get any extras
 foreach($minify['extras'] as $extra){
+	if(preg_match('/^http/i',$extra)){
+		$minify['jsfiles'][]=$extra;
+		continue;
+	}
 	minifyFiles(realpath("{$jspath}/extras"),$extra);
 }
 //get any jsfiles
@@ -279,7 +283,6 @@ function minifyFiles($path,$names){
 	global $files;
 	global $CONFIG;
 	if(!is_array($names)){$names=array($names);}
-	//echo $path.implode(',',$names).PHP_EOL;return;
 	foreach($names as $name){
 		//automatically create minified versions if they do not exist - localhost only
 		if(preg_match('/^http/i',$name)){
@@ -316,10 +319,11 @@ function minifyGetExternal($url){
 	$lines=file($url);
 	$rtn='';
 	if(is_array($lines)){
-		$size=filesize(realpath($file));
-		//$rtn .= "/* BEGIN {$url} ({$size} bytes) */".PHP_EOL;
+		$ok=array_unshift($lines, "/* BEGIN {$url} */");
+		$ok=array_push($lines, "/* END {$url} */");
+		//$rtn .= "/* BEGIN {$url} */".PHP_EOL;
     	$rtn .=  minifyLines($lines);
-    	//$rtn .= "\r\n\r\n";
+    	$rtn .= "\r\n\r\n";
 	}
 	return $rtn;
 }
