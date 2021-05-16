@@ -136,10 +136,11 @@ var wacss = {
     			}
     		}
     		navigator.geoSetFld=fld;
+    		navigator.geoOptions=options;
     		navigator.geolocation.getCurrentPosition(
     			function(position){
     				if (wacss.function_exists(navigator.geoSetFld)){
-    					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude);
+    					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude,navigator.geoOptions);
     				}
     				else{
     					fldObj=getObject(navigator.geoSetFld);
@@ -151,9 +152,12 @@ var wacss = {
     			function(err){
     				//err returns err.code and err.message
     				//err.code: 1=permission denied, 2=position unavailable, 3=timeout
+    				navigator.geoOptions.code=err.code;
+    						navigator.geoOptions.message=err.message;
     				if(undefined != navigator.geoSetFldFailed){
     					if (wacss.function_exists(navigator.geoSetFldFailed)){
-	    					window[navigator.geoSetFldFailed]({code:err.code,message:err.message});
+
+	    					window[navigator.geoSetFldFailed](navigator.geoOptions);
 	    				}
 	    				else{
 	    					let errfld=document.querySelector(navigator.geoSetFldFailed);
@@ -169,7 +173,7 @@ var wacss = {
     				}
     				else{
     					console.log('wacss.getGeoLocation error. No onerror set.');
-    					console.log(err.message);
+    					console.log(navigator.geoOptions);
     				}
     				return false;
     			},
