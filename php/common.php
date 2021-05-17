@@ -2193,7 +2193,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$params['value']=$_REQUEST[$name];
 	}
 	$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});";
-	if(isset($params['viewonly']) || isset($params['readonly'])){
+	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
 		$onclick="return false;";
 	}
 	$atts = setTagAttributes($params);
