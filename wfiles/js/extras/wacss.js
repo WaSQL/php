@@ -139,8 +139,8 @@ var wacss = {
     		navigator.geoOptions=options;
     		navigator.geolocation.getCurrentPosition(
     			function(position){
-    				console.log(navigator.geoSetFld);
-    				console.log(wacss.function_exists(navigator.geoSetFld));
+    				//console.log(navigator.geoSetFld);
+    				//console.log(wacss.function_exists(navigator.geoSetFld));
     				if (wacss.function_exists(navigator.geoSetFld)){
     					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude,navigator.geoOptions);
     				}
@@ -256,30 +256,34 @@ var wacss = {
 			mapTypeId: 'roadmap',
 			zoom: params.zoom,
 		});
-	 	// Create the initial InfoWindow.
+		// Create the initial InfoWindow.
 		let infoWindow = new google.maps.InfoWindow({
 		  content: params.displayname,
 		  position: myLatlng,
 		});
 		infoWindow.open(map);
-		infoWindow.setContent('Current Location');
-		map.params=params;
-		// Configure the click listener.
-		map.addListener("click", (mapsMouseEvent) => {
-			//console.log(map.params.input);
-			let latlon=mapsMouseEvent.latLng.toJSON();
-			let latlonval='['+latlon.lat+','+latlon.lng+']';
-		  	// Close the current InfoWindow.
-		  	infoWindow.close();
-		  	// Create a new InfoWindow.
-		  	infoWindow = new google.maps.InfoWindow({
-		    	position: mapsMouseEvent.latLng,
-		  	});
-		  	let htm=JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
-		  	htm=htm+'<div class="align-right" style="margin-top:10px;"><span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="setText(wacss.getObject(this.dataset.input),this.dataset.latlon);removeId(\'geolocationmap_popup\');"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
-		  	infoWindow.setContent(htm);
-		  	infoWindow.open(map);
-		});
+		let mylatlonval='['+myLatlng.lat+','+myLatlng.lng+']';
+		let htm='';
+		htm='<div class="align-center w_smallest w_gray">'+mylatlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> Location</div>';
+		infoWindow.setContent(htm);
+		if(undefined == params.readonly){			
+			map.params=params;
+			// Configure the click listener.
+			map.addListener("click", (mapsMouseEvent) => {
+				//console.log(map.params.input);
+				let latlon=mapsMouseEvent.latLng.toJSON();
+				let latlonval='['+latlon.lat+','+latlon.lng+']';
+			  	// Close the current InfoWindow.
+			  	infoWindow.close();
+			  	// Create a new InfoWindow.
+			  	infoWindow = new google.maps.InfoWindow({
+			    	position: mapsMouseEvent.latLng,
+			  	});
+			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="setText(wacss.getObject(this.dataset.input),this.dataset.latlon);removeId(\'geolocationmap_popup\');"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
+			  	infoWindow.setContent(chtm);
+			  	infoWindow.open(map);
+			});
+		}
 	},
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in

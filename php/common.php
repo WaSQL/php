@@ -2194,7 +2194,16 @@ function buildFormGeoLocationMap($name,$params=array()){
 	}
 	$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});";
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
-		$onclick="return false;";
+		if(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
+			$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',readonly:1});";
+		}
+		else{
+			$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}',readonly:1});";
+			//$onclick="alert('{$params['value']}');";
+		}
+	}
+	elseif(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
+		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
