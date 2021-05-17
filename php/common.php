@@ -2183,12 +2183,18 @@ function buildFormGeoLocationMap($name,$params=array()){
 	}
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
+	if(!isset($params['value']) && isset($params['-value'])){
+		$params['value']=$params['-value'];
+	}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){
+		$params['value']=$_REQUEST[$name];
+	}
 	//make sure wacss and google map api are loaded
 	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
 	//return printValue($_SESSION);
 	$tag=<<<ENDOFTAG
 <div style="display:inline-flex;align-items: center;width:{$params['width']}px;">
-	<input type="text" class="{$params['class']}" style="font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;" id="{$params['id']}" name="{$params['name']}" placeholder="{$dname}" />
+	<input type="text" class="{$params['class']}" style="font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;" value="{$params['value']}" id="{$params['id']}" name="{$params['name']}" placeholder="{$dname}" />
 	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});">&nbsp;</button>
 </div>
 ENDOFTAG;
