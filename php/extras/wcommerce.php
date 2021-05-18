@@ -15,6 +15,12 @@ if(!is_dir($wcommerce_files_path)){
 	exit;
 }
 function wcommerceCartGuid(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	if(isset($_COOKIE['wCommerceGUID'])){
 		return $_COOKIE['wCommerceGUID'];
 	}
@@ -26,6 +32,12 @@ function wcommerceCartGuid(){
 	return $guid;
 }
 function wcommerceBuyersList(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'_users',
@@ -35,19 +47,26 @@ function wcommerceBuyersList(){
 		'-listfields'=>'_id,firstname,lastname,city,state,zip,country,order_count,last_order,note',
 		'-edit'=>'note'
 	);
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceBuyersList']) && function_exists($settings['wcommerceBuyersList'])){
-		$opts=call_user_func($settings['wcommerceBuyersList'],$opts);
-	}
 	return databaseListRecords($opts);
 }
 function wcommerceGetOrder($id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	$order=getDBRecordById('wcommerce_orders',$id);
 	$order['items']=getDBRecords(array('-table'=>'wcommerce_orders_items','order_id'=>$order['_id']));
 	return $order;
 }
 function wcommerceViewOrderItems($order_id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$order_id);
+	}
 	$order=getDBRecordById('wcommerce_orders',$order_id);
 	$opts=array(
 		'-table'=>'wcommerce_orders_items',
@@ -80,15 +99,15 @@ ENDOFPOST;
 		</div>
 ENDOFPOST;
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceViewOrderItems']) && function_exists($settings['wcommerceViewOrderItems'])){
-		$opts=call_user_func($settings['wcommerceViewOrderItems'],$opts);
-	}
-	//return printValue($opts).printValue($order);
 	return databaseListRecords($opts);
 }
 function wcommerceViewOrderItemsExtra($recs){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$recs);
+	}
 	global $USER;
 	$settings=wcommerceGetSettings();
 	foreach($recs as $i=>$rec){
@@ -113,15 +132,15 @@ function wcommerceViewOrderItemsExtra($recs){
 			$recs[$i]['date_delivered']='<button style="padding:.175rem .25rem;" class="btn w_yellow" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersDeliverItem(this);">Deliver</button>';
 		}
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	//echo printValue($settings);exit;
-	if(!empty($settings['wcommerceViewOrderItemsExtra']) && function_exists($settings['wcommerceViewOrderItemsExtra'])){
-		$recs=call_user_func($settings['wcommerceViewOrderItemsExtra'],$recs);
-	}
 	return $recs;
 }
 function wcommerceOrdersList(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_orders',
@@ -199,16 +218,15 @@ function wcommerceOrdersList(){
 			'class'=>"btn w_gray"
 			),
 	);
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersList']) && function_exists($settings['wcommerceOrdersList'])){
-		$opts=call_user_func($settings['wcommerceOrdersList'],$opts);
-	}
-	//return printValue($opts);
 	return databaseListRecords($opts);
 }
 function wcommerceOrdersListExtra($recs){
-	//echo printValue($recs);exit;
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$recs);
+	}
 	foreach($recs as $i=>$rec){
 		$recs[$i]['_id']='<div style="display:flex;justify-content:space-between;align-items:center;"><div>'.$rec['_id'].'</div><button type="button" style="padding:.175rem .25rem;" class="btn w_blue" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersView(this);">View</button></div>';
 		if(isset($rec['shipped_by_ex']['firstname'])){
@@ -230,14 +248,15 @@ function wcommerceOrdersListExtra($recs){
 			$recs[$i]['date_delivered']='<button style="padding:.175rem .25rem;" class="btn w_yellow" type="button" data-id="'.$rec['_id'].'" onclick="wcommerceOrdersDeliver(this);">Deliver</button>';
 		}
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersListExtra']) && function_exists($settings['wcommerceOrdersListExtra'])){
-		$recs=call_user_func($settings['wcommerceOrdersListExtra'],$recs);
-	}
 	return $recs;
 }
 function wcommerceOrdersAddedit($id=0){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_orders',
@@ -278,14 +297,15 @@ function wcommerceOrdersAddedit($id=0){
 	else{
 		$opts['shipto_country']='US';
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersAddedit']) && function_exists($settings['wcommerceOrdersAddedit'])){
-		$opts=call_user_func($settings['wcommerceOrdersAddedit'],$opts);
-	}
 	return addEditDBForm($opts);
 }
 function wcommerceOrdersShipped($id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	global $USER;
 	$opts=array(
@@ -302,14 +322,15 @@ function wcommerceOrdersShipped($id){
 		'-save_class'=>'btn w_green',
 		'shipped_by'=>$USER['_id']
 	);
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersShipped']) && function_exists($settings['wcommerceOrdersShipped'])){
-		$opts=call_user_func($settings['wcommerceOrdersShipped'],$opts);
-	}
 	return addEditDBForm($opts);
 }
 function wcommerceOrdersDelivered($id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	global $USER;
 	$opts=array(
@@ -324,14 +345,15 @@ function wcommerceOrdersDelivered($id){
 		'-hide'=>'delete,clone,reset',
 		'-save_class'=>'btn w_warning'
 	);
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersDelivered']) && function_exists($settings['wcommerceOrdersDelivered'])){
-		$opts=call_user_func($settings['wcommerceOrdersDelivered'],$opts);
-	}
 	return addEditDBForm($opts);
 }
 function wcommerceOrdersItemShipped($id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	global $USER;
 	$item=getDBRecordById('wcommerce_orders_items',$id);
@@ -349,14 +371,15 @@ function wcommerceOrdersItemShipped($id){
 		'-save_class'=>'btn w_green',
 		'shipped_by'=>$USER['_id']
 	);
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceOrdersItemShipped']) && function_exists($settings['wcommerceOrdersItemShipped'])){
-		$opts=call_user_func($settings['wcommerceOrdersItemShipped'],$opts);
-	}
 	return addEditDBForm($opts);
 }
 function wcommerceOrdersItemDelivered($id){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	global $USER;
 	$item=getDBRecordById('wcommerce_orders_items',$id);
@@ -380,6 +403,12 @@ function wcommerceOrdersItemDelivered($id){
 	return addEditDBForm($opts);
 }
 function wcommerceBuildField($field,$rec=array(),$val2=''){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$field,$rec,$val2);
+	}
 	$params=array();
 	if(isset($rec[$field])){$params['value']=$params['-value']=$rec[$field];}
 	elseif(isset($_REQUEST[$field])){$params['value']=$params['-value']=$_REQUEST[$field];}
@@ -483,7 +512,12 @@ function wcommerceGetSettings(){
 	return $wcommerceGetSettingsCache;
 }
 function wcommerceProducts($params=array()){
+	//check for override
 	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$params);
+	}
 	$params['-table']='wcommerce_products';
 	//default active to 1
 	if(!isset($params['active'])){
@@ -529,13 +563,15 @@ function wcommerceProducts($params=array()){
 		}
 		$recs[]=$rec;
 	}
-	//check for override
-	if(!empty($settings['wcommerceProducts']) && function_exists($settings['wcommerceProducts'])){
-		$recs=call_user_func($settings['wcommerceProducts'],$recs);
-	}
 	return $recs;
 }
 function wcommerceProductImages($rec){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$rec);
+	}
 	$photos=array();
 	for($p=1;$p<11;$p++){
 		if(!strlen($rec["photo_{$p}"])){continue;}
@@ -549,13 +585,15 @@ function wcommerceProductImages($rec){
 		}
 		$photos[]=$prec;
 	}
-	//check for override
-	if(!empty($settings['wcommerceProductImages']) && function_exists($settings['wcommerceProductImages'])){
-		$photos=call_user_func($settings['wcommerceProductImages'],$photos,$rec);
-	}
 	return $photos;
 }
 function wcommerceGetProductAttributes($name){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$name);
+	}
 	global $wcommerceGetProductAttributesCache;
 	if(isset($wcommerceGetProductAttributesCache[$name])){
 		return $wcommerceGetProductAttributesCache[$name];
@@ -603,6 +641,12 @@ ENDOFQ;
 	return $wcommerceGetProductAttributesCache[$name];
 }
 function wcommerceProductsList(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_products',
@@ -721,26 +765,28 @@ function wcommerceProductsList(){
 	<div class="w_small w_gray">Click on Id to edit entire record. Click on <span class="icon-edit"></span> to edit a single field.</div>
 </div>
 ENDOFPRETABLE;
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceProductsList']) && function_exists($settings['wcommerceProductsList'])){
-		$opts=call_user_func($settings['wcommerceProductsList'],$opts);
-	}
 	return databaseListRecords($opts);
 }
 function wcommerceProductsListExtra($recs){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$recs);
+	}
 	foreach($recs as $i=>$rec){
 		$recs[$i]['guid']=md5($rec['name']);
 		$recs[$i]['group']=strtolower(preg_replace('/[^a-z0-9]+/i','',$rec['name']));
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceProductsListExtra']) && function_exists($settings['wcommerceProductsList'])){
-		$recs=call_user_func($settings['wcommerceProductsListExtra'],$recs);
-	}
 	return $recs;
 }
 function wcommerceProductsAddedit($id=0){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_products',
@@ -813,14 +859,15 @@ function wcommerceProductsAddedit($id=0){
 	else{
 		$opts['active']=1;
 	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceProductsAddedit']) && function_exists($settings['wcommerceProductsAddedit'])){
-		$opts=call_user_func($settings['wcommerceProductsAddedit'],$opts);
-	}
 	return addEditDBForm($opts);
 }
 function wcommerceSettingsList(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_settings',
@@ -864,14 +911,15 @@ function wcommerceSettingsList(){
 	<button type="button" class="button is-small btn btn-small is-success w_success" onclick="wcommerceNav(this);" data-href="/t/1/{$PAGE['name']}/manage_settings/addedit/0" data-div="centerpop"><span class="icon-plus"></span> <translate>Add</translate></button>
 </div>
 ENDOFPRETABLE;
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceSettingsList']) && function_exists($settings['wcommerceSettingsList'])){
-		$opts=call_user_func($settings['wcommerceSettingsList'],$opts);
-	}
 	return databaseListRecords($opts);
 }
 function wcommerceSettingsAddedit($id=0){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id);
+	}
 	global $PAGE;
 	$opts=array(
 		'-table'=>'wcommerce_settings',
@@ -891,11 +939,6 @@ function wcommerceSettingsAddedit($id=0){
 	);
 	if($id > 0){
 		$opts['_id']=$id;
-	}
-	//check for override
-	$settings=wcommerceGetSettings();
-	if(!empty($settings['wcommerceSettingsAddedit']) && function_exists($settings['wcommerceSettingsAddedit'])){
-		$opts=call_user_func($settings['wcommerceSettingsAddedit'],$opts);
 	}
 	return addEditDBForm($opts);
 }
@@ -956,6 +999,12 @@ function wcommerceInit($force=0){
 	return $rtn;
 }
 function wcommercePageBody(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	return <<<ENDOFBODY
 <view:manage_portal>
 <style type="text/css">
@@ -1330,6 +1379,12 @@ function wcommercePageBody(){
 ENDOFBODY;
 }
 function wcommercePageJs(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	return <<<ENDOFJS
 function wcommerceChangeProductAttribute(el){
 	let page=wcommercePageName();
@@ -1460,6 +1515,12 @@ function wcommercePageName(){
 ENDOFJS;
 }
 function wcommercePageController(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	return <<<ENDOFCONTROLLER
 <?php
 //require user
@@ -1681,6 +1742,12 @@ ENDOFCONTROLLER;
 }
 
 function wcommerceSchema(){
+	//check for override
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name]);
+	}
 	return <<<ENDOFSCHEMA
 wcommerce_products
 	name varchar(150) NOT NULL
@@ -1772,6 +1839,7 @@ wcommerce_orders_items
 	date_delivered datetime
 	shipped_by int
 	note varchar(255)
+	shipmethod_code varchar(25)
 wcommerce_coupons
 	coupon varchar(25) NOT NULL UNIQUE
 	description varchar(255)
