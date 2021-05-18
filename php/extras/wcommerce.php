@@ -876,7 +876,7 @@ function wcommerceSettingsList(){
 		'-action'=>"/t/1/{$PAGE['name']}/manage_settings/list",
 		'-onsubmit'=>"return pagingSubmit(this,'wcommerce_settings_content');",
 		'-searchfields'=>'name,value',
-		'-searchopers'=>'ct,eq',
+		'-searchopers'=>'ct,eq,ib,nb',
 		'-editfields'=>'value',
 		'-export'=>1,
 		'-sorting'=>1,
@@ -890,6 +890,11 @@ function wcommerceSettingsList(){
 	);
 	$opts['-quickfilters_class']='btn w_blue';
 	$opts['-quickfilters']=array(
+		'Not Blank'=>array(
+			'icon'=>'icon-package',
+			'filter'=>'value nb',
+			'class'=>"btn"
+			),
 		'Orders'=>array(
 			'icon'=>'icon-package',
 			'filter'=>'name ct wcommerceOrders',
