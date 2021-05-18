@@ -1845,6 +1845,7 @@ wcommerce_orders_items
 	shipped_by int
 	note varchar(255)
 	shipmethod_code varchar(25)
+	label varchar(50)
 wcommerce_coupons
 	coupon varchar(25) NOT NULL UNIQUE
 	description varchar(255)
