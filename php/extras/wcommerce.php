@@ -60,7 +60,7 @@ function wcommerceGetOrder($id){
 	$order['items']=getDBRecords(array('-table'=>'wcommerce_orders_items','order_id'=>$order['_id']));
 	return $order;
 }
-function wcommerceViewOrderItems($order_id){
+function wcommerceOrdersItemsList($order_id){
 	//check for override
 	$settings=wcommerceGetSettings();
 	$function_name=__FUNCTION__;
@@ -83,7 +83,7 @@ function wcommerceViewOrderItems($order_id){
 		'size_class'=>'align-center',
 		'-hidesearch'=>1,
 		'-sumfields'=>'subtotal',
-		'-results_eval'=>'wcommerceViewOrderItemsExtra'
+		'-results_eval'=>'wcommerceOrdersItemsListExtra'
 	);
 	if(!strlen($order['date_shipped'])){
 		$opts['-posttable']=<<<ENDOFPOST
@@ -101,7 +101,7 @@ ENDOFPOST;
 	}
 	return databaseListRecords($opts);
 }
-function wcommerceViewOrderItemsExtra($recs){
+function wcommerceOrdersItemsListExtra($recs){
 	//check for override
 	$settings=wcommerceGetSettings();
 	$function_name=__FUNCTION__;
@@ -1143,7 +1143,7 @@ function wcommercePageBody(){
 			<td><?=strlen(\$order['date_delivered'])?date('D M jS',strtotime(\$order['date_delivered'])):'n/a';?></td>
 		</tr>
 	</table>
-	<?=wcommerceViewOrderItems(\$id);?>
+	<?=wcommerceOrdersItemsList(\$id);?>
 	<?=buildOnLoad("document.ordersshippedform.tracking_number.focus();centerObject('centerpop');");?>
 </div>
 </view:manage_orders_view>
