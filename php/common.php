@@ -2209,7 +2209,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
 	//make sure wacss and google map api are loaded
-	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}&libraries=places",'wacss'));
+	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
 	//return printValue($_SESSION);
 	$tag=<<<ENDOFTAG
 <div style="display:inline-flex;align-items: center;width:{$params['width']}px;">
