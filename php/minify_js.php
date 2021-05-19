@@ -137,7 +137,12 @@ global $pre_jslines;
 $jslines=array();
 $loaded=array();
 $pre_jslines=array();
+$maps_loaded=0;
 foreach($files as $file){
+	if(preg_match('/maps.googleapis.com\/maps\/api/i',$file)){
+		if($maps_loaded==1){continue;}
+		$maps_loaded=1;
+	}
 	if(preg_match('/^http/i',$file)){
      	//remote file
      	$evalstr="return minifyGetExternal('{$file}');";

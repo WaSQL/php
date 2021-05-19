@@ -2178,6 +2178,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['width']=isNum($params['width'])?$params['width']:300;
 	if(!isset($params['class']) || !strlen($params['class'])){$params['class']='input';}
+	if(!isset($params['autocomplete'])){$params['autocomplete']='off';}
 	if(!isset($params['-apikey']) && isset($CONFIG['google_apikey'])){
 		$params['-apikey']=$CONFIG['google_apikey'];
 	}

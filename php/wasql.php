@@ -960,8 +960,12 @@ function wasqlSetMinify($backend=0){
 	if($backend==1){
 		loadExtrasCss(array('wacss','dropdown'));
 		loadExtrasCss(array('alertify','quill','admin','accordian','dropdown','socialbuttons','treeview'));
-		loadExtrasJs(array('alertify','html5','quill'));
+		loadExtrasJs(array('alertify','html5','quill','wacss'));
+		if(isset($CONFIG['google_apikey'])){
+			loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$CONFIG['google_apikey']}&libraries=places"));
+		}
 		loadExtras('system');
+
 		if($_SERVER['REMOTE_BROWSER']=='msie'){loadExtrasJs('html5_ie');}
 		return;
 		}

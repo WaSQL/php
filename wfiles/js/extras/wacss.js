@@ -266,7 +266,7 @@ var wacss = {
 			document.body.appendChild(el);
 		}
 		const input = document.getElementById("geolocationmap_search");
-		console.log(input);
+		//console.log(input);
 		// Create the search box and link it to the UI element.
         const searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
