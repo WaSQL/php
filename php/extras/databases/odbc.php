@@ -1138,6 +1138,7 @@ function odbcQueryHeader($query,$params=array()){
 *	$recs=odbcQueryResults('select top 50 * from abcschema.abc');
 */
 function odbcQueryResults($query,$params=array()){
+	global $odbcStopProcess;
 	$starttime=microtime(true);
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
@@ -1233,6 +1234,10 @@ function odbcQueryResults($query,$params=array()){
 	}
 	$i=0;
 	while(odbc_fetch_row($result)){
+		//check for odbcStopProcess request
+		if(isset($odbcStopProcess) && $odbcStopProcess==1){
+			break;
+		}
 		$rec=array();
 	    for($z=1;$z<=odbc_num_fields($result);$z++){
 			$field=strtolower(odbc_field_name($result,$z));

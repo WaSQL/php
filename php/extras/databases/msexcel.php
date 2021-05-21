@@ -709,6 +709,7 @@ function msexcelQueryResults($query='',$params=array()){
 *	returns records
 */
 function msexcelEnumQueryResults($result,$params=array(),$query=''){
+	global $msexcelStopProcess;
 	$i=0;
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
@@ -732,6 +733,10 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 	}
 	else{$recs=array();}
 	while(odbc_fetch_row($result)){
+		//check for msexcelStopProcess request
+		if(isset($msexcelStopProcess) && $msexcelStopProcess==1){
+			break;
+		}
 		$rec=array();
 	    for($z=1;$z<=odbc_num_fields($result);$z++){
 			$field=strtolower(odbc_field_name($result,$z));

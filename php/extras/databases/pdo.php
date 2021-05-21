@@ -1057,6 +1057,7 @@ function pdoQueryHeader($query,$params=array()){
 *	$recs=pdoQueryResults('select top 50 * from abcschema.abc');
 */
 function pdoQueryResults($query,$params=array()){
+	global $pdoStopProcess;
 	global $dbh_pdo;
 	$starttime=microtime(true);
 	if(!is_resource($dbh_pdo)){
@@ -1153,6 +1154,10 @@ function pdoQueryResults($query,$params=array()){
 	}
 	$i=0;
 	while(pdo_fetch_row($result)){
+		//check for pdoStopProcess request
+		if(isset($pdoStopProcess) && $pdoStopProcess==1){
+			break;
+		}
 		$rec=array();
 	    for($z=1;$z<=pdo_num_fields($result);$z++){
 			$field=strtolower(pdo_field_name($result,$z));

@@ -830,6 +830,7 @@ function ctreeQueryResults($query='',$params=array()){
 *	returns records
 */
 function ctreeEnumQueryResults($data,$params=array(),$query=''){
+	global $ctreeStopProcess;
 	if(!is_object($data)){return null;}
 	$header=0;
 	unset($fh);
@@ -873,6 +874,10 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		$i++;
 		$rec=array();
 		foreach($row as $key=>$val){
+			//check for ctreeStopProcess request
+			if(isset($ctreeStopProcess) && $ctreeStopProcess==1){
+				break;
+			}
 			$key=strtolower($key);
 			$rec[$key]=trim($val);
 			$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);

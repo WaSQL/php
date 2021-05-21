@@ -1093,6 +1093,7 @@ function sqliteQueryResults($query,$params=array()){
 *	returns records
 */
 function sqliteEnumQueryResults($data,$params=array()){
+	global $sqliteStopProcess;
 	if(!is_object($data)){return null;}
 	$header=0;
 	unset($fh);
@@ -1120,6 +1121,10 @@ function sqliteEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	while ($xrec = $data->fetchArray(SQLITE3_ASSOC)) {
+		//check for sqliteStopProcess request
+		if(isset($sqliteStopProcess) && $sqliteStopProcess==1){
+			break;
+		}
 		$rec=array();
 		foreach($xrec as $k=>$v){
 			$k=strtolower($k);

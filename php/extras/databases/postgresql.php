@@ -2169,6 +2169,7 @@ function postgresqlQueryResults($query='',$params=array()){
 *	returns records
 */
 function postgresqlEnumQueryResults($data,$params=array()){
+	global $postgresqlStopProcess;
 	if(!is_resource($data)){return null;}
 	$header=0;
 	unset($fh);
@@ -2196,6 +2197,10 @@ function postgresqlEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	while ($row = @pg_fetch_assoc($data)){
+		//check for postgresqlStopProcess request
+		if(isset($postgresqlStopProcess) && $postgresqlStopProcess==1){
+			break;
+		}
 		$rec=array();
 		foreach($row as $key=>$val){
 			$key=strtolower($key);

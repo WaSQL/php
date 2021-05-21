@@ -1352,6 +1352,7 @@ function mssqlQueryResults($query='',$params=array()){
 *	returns records
 */
 function mssqlEnumQueryResults($data,$params=array()){
+	global $mssqlStopProcess;
 	$header=0;
 	unset($fh);
 	if(isset($params['-filename'])){
@@ -1380,6 +1381,10 @@ function mssqlEnumQueryResults($data,$params=array()){
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		while( $row = sqlsrv_fetch_array( $data, SQLSRV_FETCH_ASSOC) ) {
+			//check for mssqlStopProcess request
+			if(isset($mssqlStopProcess) && $mssqlStopProcess==1){
+				break;
+			}
 			$rec=array();
 			foreach($row as $key=>$val){
 				$key=strtolower($key);
@@ -1436,6 +1441,10 @@ function mssqlEnumQueryResults($data,$params=array()){
 	//PHP is lower than 7 use mssql_fetch to retrieve
 	do {
 		while ($row = @mssql_fetch_assoc($data)){
+			//check for mssqlStopProcess request
+			if(isset($mssqlStopProcess) && $mssqlStopProcess==1){
+				break;
+			}
 			$rec=array();
 			foreach($row as $key=>$val){
 				$key=strtolower($key);

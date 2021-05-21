@@ -1809,6 +1809,7 @@ ENDOFQUERY;
 * @usage $recs=oracleEnumQueryResults($resource);
 */
 function oracleEnumQueryResults($res,$params=array()){
+	global $oracleStopProcess;
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
@@ -1837,6 +1838,10 @@ function oracleEnumQueryResults($res,$params=array()){
 	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
 	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
 	while ($row = oci_fetch_array($res, $fetchopts)) {
+		//check for postgresqlStopProcess request
+		if(isset($oracleStopProcess) && $oracleStopProcess==1){
+			break;
+		}
 		$rec=array();
 		foreach ($row as $field=>$val){
 			$field=strtolower($field);

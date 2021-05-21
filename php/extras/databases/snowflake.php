@@ -1064,6 +1064,7 @@ function snowflakeGetDBCount($params=array()){
 *	$recs=snowflakeQueryResults('select top 50 * from abcschema.abc');
 */
 function snowflakeQueryResults($query,$params=array()){
+	global $snowflakeStopProcess;
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect();
 	try{
@@ -1090,6 +1091,10 @@ function snowflakeQueryResults($query,$params=array()){
 	}
 	else{$recs=array();}
 	for($i=0; $rec = $stmt->fetch(PDO::FETCH_ASSOC); $i++){
+		//check for snowflakeStopProcess request
+		if(isset($snowflakeStopProcess) && $snowflakeStopProcess==1){
+			break;
+		}
 		foreach($rec as $k=>$v){
 			$rec[$k]=trim($v);
 		}

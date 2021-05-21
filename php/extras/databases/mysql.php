@@ -1218,6 +1218,7 @@ function mysqlQueryResults($query='',$params=array()){
 *	returns records
 */
 function mysqlEnumQueryResults($data,$params=array()){
+	global $mysqlStopProcess;
 	if(!$data){return null;}
 	$header=0;
 	unset($fh);
@@ -1245,6 +1246,10 @@ function mysqlEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	while ($row = @mysqli_fetch_assoc($data)){
+		//check for mysqlStopProcess request
+		if(isset($mysqlStopProcess) && $mysqlStopProcess==1){
+			break;
+		}
 		$rec=array();
 		foreach($row as $key=>$val){
 			$key=strtolower($key);

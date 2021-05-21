@@ -1540,6 +1540,7 @@ function hanaQueryHeader($query,$params=array()){
 *	$recs=hanaQueryResults('select top 50 * from abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
+	global $hanaStopProcess;
 	global $dbh_hana;
 	$starttime=microtime(true);
 	if(!is_resource($dbh_hana)){
@@ -1658,6 +1659,10 @@ function hanaQueryResults($query,$params=array()){
 	}
 	$i=0;
 	while($rec=odbc_fetch_array($dbh_hana_result)){
+		//check for hanaStopProcess request
+		if(isset($hanaStopProcess) && $hanaStopProcess==1){
+			break;
+		}
 		//lowercase the field names
 		$rec=array_change_key_case($rec);
 	    if(isset($params['-results_eval'])){

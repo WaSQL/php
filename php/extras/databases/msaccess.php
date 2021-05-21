@@ -820,6 +820,7 @@ function msaccessQueryResults($query='',$params=array()){
 *	returns records
 */
 function msaccessEnumQueryResults($result,$params=array(),$query=''){
+	global $msaccessStopProcess;
 	$i=0;
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
@@ -843,6 +844,10 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 	}
 	else{$recs=array();}
 	while(odbc_fetch_row($result)){
+		//check for msaccessStopProcess request
+		if(isset($msaccessStopProcess) && $msaccessStopProcess==1){
+			break;
+		}
 		$rec=array();
 	    for($z=1;$z<=odbc_num_fields($result);$z++){
 			$field=strtolower(odbc_field_name($result,$z));
