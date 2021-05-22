@@ -14,8 +14,7 @@ $progpath=dirname(__FILE__);
 		'folder'=>'pub'
 	));
 */
-function amazonConvertFile($tablename,$fieldname,$record_id){
-	//make sure aws_convert_files table exists
+function amazonConvertCheckTable(){
 	if(!isDBTable('aws_convert_files')){
 		$fields=array(
 			'processed'=>'tinyint(1) NOT NULL Default 0',
@@ -28,7 +27,13 @@ function amazonConvertFile($tablename,$fieldname,$record_id){
 		);
 		$ok = createDBTable('aws_convert_files',$fields,'InnoDB');
 		$ok=addDBIndex(array('-table'=>'aws_convert_files','-fields'=>"processed"));
+		$ok=addDBIndex(array('-table'=>'aws_convert_files','-unique'=>1,'-fields'=>"tablename,fieldname,record_id"));
 	}
+}
+function amazonConvertFile($tablename,$fieldname,$record_id){
+	//make sure aws_convert_files table exists
+	$ok=amazonConvertCheckTable();
+	//add the record
 	$ok=addDBRecord(array(
 		'-table'=>'aws_convert_files',
 		'tablename'=>$tablename,
@@ -36,7 +41,8 @@ function amazonConvertFile($tablename,$fieldname,$record_id){
 		'record_id'=>$record_id,
 		'processed'=>0,
 		'process_id'=>0,
-		'status'=>'queued'
+		'status'=>'queued',
+		'-upsert'=>'processed,process_id,status'
 	));
 	return $ok;
 }
@@ -48,28 +54,28 @@ function amazonConvertFilesS3($params=array()){
 		$params['-accesskey']=$CONFIG['aws_accesskey'];
 	}
 	if(!isset($params['-accesskey'])){
-		return "amazonUploadFileS3 Error: missing -accesskey";
+		return "amazonConvertFilesS3 Error: missing -accesskey";
 	}
 	//require -secretkey
 	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
 		$params['-secretkey']=$CONFIG['aws_secretkey'];
 	}
 	if(!isset($params['-secretkey'])){
-		return "amazonUploadFileS3 Error: missing -secretkey";
+		return "amazonConvertFilesS3 Error: missing -secretkey";
 	}
 	//require bucket
 	if(!isset($params['bucket']) && isset($CONFIG['aws_bucket'])){
 		$params['bucket']=$CONFIG['aws_bucket'];
 	}
 	if(!isset($params['bucket'])){
-		return "amazonUploadFileS3 Error: missing bucket param";
+		return "amazonConvertFilesS3 Error: missing bucket param";
 	}
 	//requre region - us-west-2, us-east-1, etc
 	if(!isset($params['region']) && isset($CONFIG['aws_region'])){
 		$params['region']=$CONFIG['aws_region'];
 	}
 	if(!isset($params['region'])){
-		return "amazonUploadFileS3 Error: missing region param";
+		return "amazonConvertFilesS3 Error: missing region param";
 	}
 	//acl - public, public-read, private
 	if(!isset($params['acl']) && isset($CONFIG['aws_acl'])){
@@ -78,34 +84,15 @@ function amazonConvertFilesS3($params=array()){
 	if(!isset($params['acl'])){
 		$params['acl']='x-amz-acl:public-read';
 	}
-	//require file
-	if(!isset($params['file'])){
-		return "amazonUploadFileS3 Error: missing file param";
-	}
-	if(!file_exists($params['file'])){
-		return "amazonUploadFileS3 Error: file does not exist - {$params['file']}";
-	}
-	//make sure aws_convert_files exists
-	if(!isDBTable('aws_convert_files')){
-		$fields=array(
-			'processed'=>'tinyint(1) NOT NULL Default 0',
-			'record_id'=>'int NOT NULL',
-			'process_id'=>'int NOT NULL Default 0',
-			'status'=>'varchar(25) NULL',
-			'results'=>'varchar(3000)',
-			'tablename'=>'varchar(100) NOT NULL',
-			'fieldname'=>'varchar(50) NOT NULL'
-		);
-		$ok = createDBTable('aws_convert_files',$fields,'InnoDB');
-		$ok=addDBIndex(array('-table'=>'aws_convert_files','-fields'=>"processed"));
-	}
+	//make sure aws_convert_files table exists
+	$ok=amazonConvertCheckTable();
+	//get a record that has not been processed
 	$rec=getDBRecord(array(
 		'-table'=>'aws_convert_files',
 		'processed'=>0
 	));
-	if(isset($rec['_id'])){
-		//nothing to do
-		return 0;
+	if(!isset($rec['_id'])){
+		return "amazonConvertFilesS3: nothing to do";
 	}
 	$process_id=getmypid();
 	//try to claim it my assiging our process_id to it
@@ -163,6 +150,7 @@ function amazonConvertFilesS3($params=array()){
 	switch(strtolower($ext)){
 		case 'heic':
 			//iphone image file format - apt install libheif1 libheif-examples
+			$nfile=preg_replace('/\.'.$ext.'$/i','',$nfile);
 			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.png";
 			$cmd="heif-convert \"{$afile}\"  \"{$nfile}\"";
 			if(file_exists($nfile)){unlink($nfile);}
@@ -171,7 +159,8 @@ function amazonConvertFilesS3($params=array()){
 		break;
 		case 'mov':
 		case 'avi':
-			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.mp4";
+			$nfile=preg_replace('/\.'.$ext.'$/i','',$afile);
+			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$nfile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.mp4";
 			$cmd="/usr/bin/ffmpeg -y -hide_banner -i \"{$afile}\" -vcodec copy -acodec copy  \"{$nfile}\"";
 			if(file_exists($nfile)){unlink($nfile);}
 			$results=cmdResults($cmd);
@@ -179,13 +168,25 @@ function amazonConvertFilesS3($params=array()){
 		break;
 		default:
 			//just upload the rest to AWS
-			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.{$ext}";
+			$nfile=preg_replace('/\.'.$ext.'$/i','',$afile);
+			$nfile=preg_replace('/[^a-z0-9\.\:\/\_\-]+/i','',$nfile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.{$ext}";
 			$ok=copyFile($afile,$nfile);
+			if(!file_exists($nfile)){
+				$ok=copy($afile,$nfile);
+			}
+			if(!file_exists($nfile)){
+				$cmd="copy {$afile} {$nfile}";
+				$ok=cmdResults($cmd);
+			}
+			if(!file_exists($nfile)){
+				$cmd="cp {$afile} {$nfile}";
+				$ok=cmdResults($cmd);
+			}
 			$results=array('cmd'=>'copyFile','from'=>$afile,'to'=>$nfile,'result'=>$ok);
-			$editrec['results']=json_encode($results);
+			$editrec['results']=json_encode($results,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 		break;
 	}
-	if(file_exists($nfile) && filesize($nfile)> 0){
+	if(file_exists($nfile) && filesize($nfile) > 0){
 		//upload to amazon
 		$opts=array(
 			'file'=>$nfile
@@ -199,8 +200,8 @@ function amazonConvertFilesS3($params=array()){
 			$opts['folder']=$folder;
 		}
 		//upload to Amazon S3
-		$ok=amazonUploadFileS3($opts);
-		if($ok==1){
+		$upload=amazonUploadFileS3($opts);
+		if(isNum($upload)){
 			//success
 			$fname=getFileName($opts['file']);
 			$url="https://{$CONFIG['aws_bucket']}.s3-{$CONFIG['aws_region']}.amazonaws.com/";
@@ -220,7 +221,7 @@ function amazonConvertFilesS3($params=array()){
 		}
 		else{
 			//failed to upload
-			$editrec['status']='failure';
+			$editrec['status']='failure: '.$upload.printValue($opts);
 		}
 	}
 	else{
@@ -413,19 +414,57 @@ function amazonUploadFileS3($params=array()){
 	    return 'amazonUploadFileS3 Error: '.printValue($rtn);
 	}
 }
-
-
+//---------- begin function amazonSendMail---------------------------------------
+/**
+* @describe sends an email using Amazon SES and returns null on success or the error string
+* @param params array
+*	-accesskey - amazon accesskey
+*	-secretkey - amazon secretkey
+*	to - the email address to send the email to.  For multiple recepients, separate emails by commas or semi-colons
+*	from - the email address to send the email from
+*	[cc] - optional email address to carbon copy the email to. For multiple recepients, separate emails by commas or semi-colons
+*	[bcc] - optional email address to blind carbon copy the email to. For multiple recepients, separate emails by commas or semi-colons
+*	[reply-to] - the email address to set as the reply-to address
+*	subject - the subject of the email
+*	message - the body of the email
+*	[attach] - an array of files (full path required) to attach to the message
+* @return str value
+*	returns the error message or null on success
+* @usage
+*	$errmsg=amazonSendMail(array(
+*		'to'		=> 'john@doe.com',
+*		'from'		=> 'jane@doe.com',
+*		'subject'	=> 'When will you be home?',
+*		'message'	=> 'Here is the document you requested',
+*		'attach'	=> array('/var/www/doument.doc')
+*	));
+*/
 function amazonSendMail($params=array()){
-	if(!isset($params['-accesskey'])){return "No Access Key";}
-	if(!isset($params['-secretkey'])){return "No Secret Key";}
-	if(!isset($params['to'])){return "No To";}
-	if(!isset($params['from'])){return "No From";}
-	if(!isset($params['subject'])){return "No Subject";}
-	if(!isset($params['message'])){return "No Message";}
+	//require -accesskey
+	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
+		$params['-accesskey']=$CONFIG['aws_accesskey'];
+	}
+	if(!isset($params['-accesskey'])){
+		return "amazonSendMail Error: missing -accesskey";
+	}
+	//require -secretkey
+	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
+		$params['-secretkey']=$CONFIG['aws_secretkey'];
+	}
+	if(!isset($params['-secretkey'])){
+		return "amazonSendMail Error: missing -secretkey";
+	}
+	//require to, from, subject, message
+	if(!isset($params['to'])){return "amazonSendMail Error: missing To";}
+	if(!isset($params['from'])){return "amazonSendMail Error: missing From";}
+	if(!isset($params['subject'])){return "amazonSendMail Error: missing Subject";}
+	if(!isset($params['message'])){return "amazonSendMail Error: missing Message";}
+	//load amazon SES SDK
 	$progpath=dirname(__FILE__);
 	require_once("$progpath/amazon/SimpleEmailService.php");
 	require_once("$progpath/amazon/SimpleEmailServiceMessage.php");
 	require_once("$progpath/amazon/SimpleEmailServiceRequest.php");
+	//send
 	$ses = new SimpleEmailService($params['-accesskey'], $params['-secretkey']);
 	$ses->verifyPeer(0);
 	$m = new SimpleEmailServiceMessage();

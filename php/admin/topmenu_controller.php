@@ -1,8 +1,8 @@
 <?php
 	global $CONFIG;
 	global $SETTINGS;
-	if(!isset($CONFIG['admin_menu_color'])){
-		$CONFIG['admin_menu_color']='gray';
+	if(!isset($CONFIG['admin_color'])){
+		$CONFIG['admin_color']='gray';
 	}
 	setView('default');
 	if(isAdmin()){

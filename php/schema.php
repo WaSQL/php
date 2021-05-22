@@ -50,13 +50,18 @@ function createWasqlTable($table=''){
 			$fields['remote_os']=databaseDataType('varchar(50)')." NULL";
 			$fields['remote_device']=databaseDataType('varchar(50)')." NULL";
 			$fields['session_id']=databaseDataType('varchar(50)')." NULL";
-			$fields['guid']=databaseDataType('char(40)')." NULL";
+			$fields['guid']=databaseDataType('varchar(40)')." NULL";
 			$fields['xml']="text NULL";
 			$fields['status']=databaseDataType('smallint')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			$ok=schemaAddFileData($table);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_access_summary':
@@ -78,6 +83,11 @@ function createWasqlTable($table=''){
 			if($ok != 1){break;}
 			$ok=schemaAddFileData($table);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_reports':
@@ -113,21 +123,92 @@ function createWasqlTable($table=''){
 			$id=addDBRecord($addopts);
 			$ok=schemaAddFileData($table);	
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_changelog':
 			$fields['tablename']=databaseDataType('varchar(255)')." NOT NULL";
-			$fields['method']=databaseDataType('char(10)')." NOT NULL Default 'web'";
+			$fields['method']=databaseDataType('varchar(10)')." NOT NULL Default 'web'";
 			$fields['fieldname']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['record_id']=databaseDataType('integer')." NOT NULL";
 			$fields['changeval']=databaseDataType('mediumtext')." NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){ return printValue($ok);break;}
-
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"record_id,tablename,fieldname"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
+		case '_config':
+			$fields['name']=databaseDataType('varchar(50)')." NOT NULL UNIQUE";
+			$fields['current_value']=databaseDataType('varchar(500)')." NULL";
+			$fields['default_value']=databaseDataType('varchar(500)')." NULL";
+			$fields['description']=databaseDataType('varchar(1000)')." NULL";
+			$fields['possible_values']=databaseDataType('varchar(1000)')." NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){ return printValue($ok);break;}
+			addMetaData($table);
+			//Add tabledata
+			$ok=addDBRecord(array(
+				'-table'=>"_tabledata",
+				'tablename'		=> $table,
+				'formfields'	=> "name current_value default_value\r\ndescription\r\npossible_values",
+				'listfields'	=> "name\r\ncurrent_value\r\ndefault_value\r\ndescription\r\npossible_values",
+				'sortfields'	=> "name",
+				'synchronize'	=> 1,
+				'-upsert'		=>'ignore'
+			));
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$csv=getCSVFileContents("{$progpath}/schema/{$table}.csv");
+				$recs=$csv['items'];
+				$cfg=$CONFIG;
+				$set=settingsValues(0);
+				//set current config.xml values
+				foreach($recs as $i=>$rec){
+					$name=strtolower(trim($rec['name']));
+					if(isset($cfg[$name])){
+						$recs[$i]['current_value']=$cfg[$name];
+						unset($cfg[$name]);
+					}
+					elseif(isset($set[$name])){
+						$recs[$i]['current_value']=$set[$name];	
+						unset($set[$name]);
+					}
+				}
+				//add any other config or settings to recs
+				foreach($cfg as $k=>$v){
+					if(preg_match('/^\_/',$k)){continue;}
+					if(preg_match('/^(name|insecure|database|dbhost|dbname|dbicon|dbuser|displayname|group|dbpass|dbschema|dbtype)$/i',$k)){continue;}
+					$recs[]=array(
+						'name'=>$k,
+						'current_value'=>$v,
+						'default_value'=>'',
+						'description'=>'Custom setting in config.xml'
+					);
+				}
+				foreach($set as $k=>$v){
+					$recs[]=array(
+						'name'=>$k,
+						'current_value'=>$v,
+						'default_value'=>'',
+						'description'=>'Custom setting in _settings table'
+					);
+				}
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-recs'=>$recs,'-ignore'=>1));
+				//echo $ok.printValue($recs);exit;
+			}
+			return 1;
+		break;
 		case '_cron':
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['begin_date']=databaseDataType('date')." NULL";
@@ -159,6 +240,11 @@ function createWasqlTable($table=''){
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_cronlog':
@@ -183,6 +269,11 @@ function createWasqlTable($table=''){
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_fielddata':
@@ -211,6 +302,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename,fieldname",'-unique'=>true));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_files':
@@ -228,6 +324,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"file"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_html_entities':
@@ -237,8 +338,12 @@ function createWasqlTable($table=''){
 			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
-			//import csv
-			$ok=schemaImportCSV($table,'html_entities.csv');
+			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_posteditlog':
@@ -248,12 +353,23 @@ function createWasqlTable($table=''){
 
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_tiny':
 			$fields['url']="varchar(2100) NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
+			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_markers':
@@ -269,6 +385,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"status,page_id"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_forms':
@@ -282,20 +403,30 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_formname"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_history':
-			$fields['action']=databaseDataType('char(5)')." NULL";
+			$fields['action']=databaseDataType('varchar(5)')." NULL";
 			$fields['page_id']=databaseDataType('integer')." NULL";
 			$fields['tablename']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['record_id']=databaseDataType('integer')." NOT NULL";
 			$fields['xmldata']="text NULL";
-			$fields['md5']=databaseDataType('char(32)')." NOT NULL";
+			$fields['md5']=databaseDataType('varchar(32)')." NOT NULL";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"tablename"));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_minify':
@@ -304,9 +435,14 @@ function createWasqlTable($table=''){
 			$fields['version']=databaseDataType('integer')." NOT NULL Default 1";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
-			//indexs
+			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-			//$query="alter table {$table} add index {$index_name} ({$index_tables})";
+			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_models':
@@ -319,7 +455,11 @@ function createWasqlTable($table=''){
 			//indexs
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			addMetaData($table);
-			//$query="alter table {$table} add index {$index_name} ({$index_tables})";
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_pages':
@@ -329,7 +469,7 @@ function createWasqlTable($table=''){
 				user_content text NULL - for user driven content without code
 			*/
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']=databaseDataType('char(45)')." NULL";
+			$fields['_aip']=databaseDataType('varchar(45)')." NULL";
 			$fields['_auser']=databaseDataType('integer')." NULL";
 			$fields['_counter']=databaseDataType('integer')." NULL";
 			$fields['_amem']=databaseDataType('bigint')." NULL";
@@ -337,13 +477,13 @@ function createWasqlTable($table=''){
 			$fields['_template']=databaseDataType('integer')." NOT NULL Default 1";
 			$fields['_cache']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['body']=databaseDataType('mediumtext')." NULL";
-			$fields['controller']="text NULL";
-			$fields['css']="text NULL";
-			$fields['css_min']="text NULL";
+			$fields['controller']=databaseDataType('mediumtext')." NULL";
+			$fields['css']=databaseDataType('mediumtext')." NULL";
+			$fields['css_min']=databaseDataType('mediumtext')." NULL";
 			$fields['description']=databaseDataType('varchar(255)')." NULL";
 			$fields['functions']=databaseDataType('mediumtext')." NULL";
-			$fields['js']="text NULL";
-			$fields['js_min']="text NULL";
+			$fields['js']=databaseDataType('mediumtext')." NULL";
+			$fields['js_min']=databaseDataType('mediumtext')." NULL";
 			$fields['menu']=databaseDataType('tinyint')." NULL";
 			$fields['meta_description']=databaseDataType('varchar(255)')." NULL";
 			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
@@ -365,6 +505,11 @@ function createWasqlTable($table=''){
 			//insert default files for this table from the schema directory
 			schemaAddFileData($table);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_queries':
@@ -393,6 +538,11 @@ function createWasqlTable($table=''){
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_wpass':
@@ -415,10 +565,15 @@ function createWasqlTable($table=''){
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_sessions':
-			$fields['session_id']=databaseDataType('char(40)')." NOT NULL UNIQUE";
+			$fields['session_id']=databaseDataType('varchar(40)')." NOT NULL UNIQUE";
 			$fields['session_data']=databaseDataType('mediumtext')." NULL";
 			$fields['touchtime']=databaseDataType('int')." NOT NULL Default 0";
 			$fields['json']=databaseDataType('tinyint(1)')." NOT NULL Default 0";
@@ -434,6 +589,11 @@ function createWasqlTable($table=''){
 				);
 			$id=addDBRecord($addopts);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_tabledata':
@@ -534,11 +694,16 @@ function createWasqlTable($table=''){
 				'sortfields_mod'=> 'lastname, firstname, username'
 				));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_templates':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
-			$fields['_aip']=databaseDataType('char(45)')." NULL";
+			$fields['_aip']=databaseDataType('varchar(45)')." NULL";
 			$fields['_auser']=databaseDataType('integer')." NULL";
 			$fields['body']=databaseDataType('mediumtext')." NULL";
 			$fields['functions']=databaseDataType('mediumtext')." NULL";
@@ -556,6 +721,11 @@ function createWasqlTable($table=''){
 			//insert default files for this table from the schema directory
 			schemaAddFileData($table);
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_settings':
@@ -583,6 +753,11 @@ function createWasqlTable($table=''){
 				'user_id'		=> 0,
 				));
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_synchronize':
@@ -595,21 +770,26 @@ function createWasqlTable($table=''){
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 			break;
 		case '_users':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_apage']=databaseDataType('integer')." NULL";
-			$fields['_aip']=databaseDataType('char(45)')." NULL";
+			$fields['_aip']=databaseDataType('varchar(45)')." NULL";
 			$fields['_env']="text NULL";
 			$fields['_sid']=databaseDataType('varchar(150)')." NULL";
 			$fields['active']=databaseDataType('tinyint')." NOT NULL Default 1";
 			$fields['address1']=databaseDataType('varchar(255)')." NULL";
 			$fields['address2']=databaseDataType('varchar(255)')." NULL";
 			$fields['city']=databaseDataType('varchar(50)')." NULL";
-			$fields['country']=databaseDataType('char(2)')." NOT NULL Default 'US'";
+			$fields['country']=databaseDataType('varchar(2)')." NOT NULL Default 'US'";
 			$fields['email']=databaseDataType('varchar(255)')." NULL";
-			//$fields['guid']=databaseDataType('char(40)')." NULL";
+			//$fields['guid']=databaseDataType('varchar(40)')." NULL";
 			$fields['department']=databaseDataType('varchar(60)')." NULL";
 			$fields['hint']=databaseDataType('varchar(255)')." NULL";
 			$fields['firstname']=databaseDataType('varchar(100)')." NULL";
@@ -618,7 +798,7 @@ function createWasqlTable($table=''){
 			$fields['note']=databaseDataType('varchar(255)')." NULL";
 			$fields['password']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['phone']=databaseDataType('varchar(25)')." NULL";
-			$fields['state']=databaseDataType('char(5)')." NULL";
+			$fields['state']=databaseDataType('varchar(5)')." NULL";
 			$fields['username']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['utype']=databaseDataType('smallint')." NOT NULL Default 1";
 			$fields['zip']=databaseDataType('varchar(10)')." NULL";
@@ -646,8 +826,12 @@ function createWasqlTable($table=''){
             $addopts['-table']=$table;
             $addopts['utype']=0;
 			$id=addDBRecord($addopts);
-			//echo printValue($id).printValue($addopts);exit;
 			addMetaData($table);
+			//populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
 			return 1;
 		break;
 		case 'cities':
@@ -661,10 +845,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,country,state",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-			//populate the states with states and provinces for USA and Canada
+			addMetaData($table);
+			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv"));
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;
 		break;
@@ -680,11 +865,11 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-			//populate
+			addMetaData($table);
+			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1,'-debug'=>1));
-				//echo "{$progpath}/schema/all_{$table}.csv".printValue($ok);exit;
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;
 		break;
@@ -699,29 +884,17 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name,country",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
-			//populate the states with states and provinces for USA and Canada
-			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/all_states.csv")){
-				$ok=dbAddRecords($CONFIG['database'],'states',array('-csv'=>"{$progpath}/schema/all_states.csv"));
-			}
-			elseif(!schemaUpdateStates()){
-				$files=listFilesEx("{$progpath}/schema",array('name'=>"states_",'ext'=>"csv"));
-				foreach($files as $file){
-					$csv=getCSVFileContents($file['afile']);
-					$tmp=preg_split('/\_/',getFileName($file['name'],1));
-					$country=strtoupper(array_pop($tmp));
-					foreach($csv['items'] as $i=>$item){
-						if(!isset($item['country'])){$csv['items'][$i]['country']=$country;}
-					}
-					$ok=dbAddRecords($CONFIG['database'],'states',array('-recs'=>$csv['items']));
-				}
-	        }
             addMetaData($table);
+            //populate the table 
+			$progpath=dirname(__FILE__);
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+			}
             return 1;
 		break;
 		case 'countries':	
-			$fields['code']=databaseDataType('char(2)')." NOT NULL";
-			$fields['code3']=databaseDataType('char(3)')." NULL";
+			$fields['code']=databaseDataType('varchar(2)')." NOT NULL";
+			$fields['code3']=databaseDataType('varchar(3)')." NULL";
 			$fields['name']=databaseDataType('varchar(200)')." NOT NULL";
 			$fields['capital']=databaseDataType('varchar(255)')." NULL";
 			$fields['currency']=databaseDataType('varchar(25)')." NULL";
@@ -738,12 +911,11 @@ function createWasqlTable($table=''){
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"geonameid"));
 			addMetaData($table);
-			//populate the table if there is a countries.csv
+			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/all_{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/all_{$table}.csv",'-ignore'=>1));
+			if(file_exists("{$progpath}/schema/{$table}.csv")){
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
-            addMetaData($table);
             return 1;
 			break;
 		default:
@@ -1658,6 +1830,46 @@ function addMetaData($table=''){
 				'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>'
 				));
 			break;
+		//_config
+		case '_config':
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_config',
+				'fieldname'		=> 'name',
+				'inputtype'		=> 'text',
+				'width'			=> '200',
+				'inputmax'		=> 50,
+				'required'		=> 1
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_config',
+				'fieldname'		=> 'current_value',
+				'inputtype'		=> 'text',
+				'width'			=> '200',
+				'inputmax'		=> 500
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_config',
+				'fieldname'		=> 'default_value',
+				'inputtype'		=> 'text',
+				'width'			=> '200',
+				'inputmax'		=> 500
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_config',
+				'fieldname'		=> 'description',
+				'inputtype'		=> 'textarea',
+				'width'			=> '600',
+				'height'		=> '100'
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_config',
+				'fieldname'		=> 'possible_values',
+				'displayname'	=> 'Possible Values (0=Off,1=On)',
+				'inputtype'		=> 'text',
+				'width'			=> '600',
+				'inputmax'		=> 1000
+				));
+			break;
 		//_forms
 		case '_forms':
 			$id=addDBRecord(array('-table'=>"_fielddata",
@@ -2174,7 +2386,7 @@ function getWasqlTables(){
 		'_fielddata','_tabledata','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_models','_sessions','_html_entities','_posteditlog'
+		'_reports','_models','_sessions','_html_entities','_posteditlog','_config'
 		);
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}

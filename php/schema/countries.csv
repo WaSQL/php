@@ -1,4 +1,4 @@
-id,name,iso3,iso2,phone_code,capital,currency,currency_symbol,native,region,subregion,translations,latitude,longitude,emoji,emojiU
+id,name,code3,code,phone_code,capital,currency,currency_symbol,native,region,subregion,translations,latitude,longitude,emoji,emojiU
 1,Afghanistan,AFG,AF,93,Kabul,AFN,؋,افغانستان,Asia,"Southern Asia","[{zoneName:'Asia\/Kabul',gmtOffset:16200,gmtOffsetName:'UTC+04:30',abbreviation:'AFT',tzName:'Afghanistan Time'}]",33.00000000,65.00000000,🇦🇫,"U+1F1E6 U+1F1EB"
 2,"Aland Islands",ALA,AX,+358-18,Mariehamn,EUR,€,Åland,Europe,"Northern Europe","[{zoneName:'Europe\/Mariehamn',gmtOffset:7200,gmtOffsetName:'UTC+02:00',abbreviation:'EET',tzName:'Eastern European Time'}]",60.11666700,19.90000000,🇦🇽,"U+1F1E6 U+1F1FD"
 3,Albania,ALB,AL,355,Tirana,ALL,Lek,Shqipëria,Europe,"Southern Europe","[{zoneName:'Europe\/Tirane',gmtOffset:3600,gmtOffsetName:'UTC+01:00',abbreviation:'CET',tzName:'Central European Time'}]",41.00000000,20.00000000,🇦🇱,"U+1F1E6 U+1F1F1"

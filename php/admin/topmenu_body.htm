@@ -4,7 +4,7 @@
 		<!-- WaSQL -->
 		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:5px;">
-				<li><a href="/php/admin.php?_menu=settings"><span class="icon-gear"></span> <span class="hidden-sm-down"><translate>Config</translate></span></a></li>
+				<li><a href="/php/admin.php?_menu=list&_table_=_config"><span class="icon-gear"></span> <translate>Config</translate></a></li>
 				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<translate>Update WaSQL? Are you sure?</translate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
 				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
 				<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> <translate>Translate Manager</translate></a></li>
@@ -117,7 +117,7 @@
 			</ul>
 		</li>
 		</view:crons>
-		<?=renderViewIf(isset($SETTINGS['wasql_crons']) && $SETTINGS['wasql_crons']==1,'crons');?>
+		<?=renderViewIf(isset($CONFIG['wasql_crons']) && $CONFIG['wasql_crons']==1,'crons');?>
 		<view:queries>
 		<!-- Queries -->
 		<li><a href="#queries" class="dropdown" onclick="return false;"><span class="icon-sql"></span> <span class="hidden-sm-down"><translate>Queries</translate></span></a>
@@ -129,7 +129,7 @@
 			</ul>
 		</li>
 		</view:queries>
-		<?=renderViewIf(isset($SETTINGS['wasql_queries']) && $SETTINGS['wasql_queries']==1,'queries');?>
+		<?=renderViewIf(isset($CONFIG['wasql_queries']) && $CONFIG['wasql_queries']==1,'queries');?>
 		<view:access>
 		<!-- Access -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-slideshow"></span> <span class="hidden-sm-down"><translate>Access</translate></span></a>
@@ -141,7 +141,7 @@
 			</ul>
 		</li>
 		</view:access>
-		<?=renderViewIf(isset($SETTINGS['wasql_access']) && $SETTINGS['wasql_access']==1,'access');?>
+		<?=renderViewIf(isset($CONFIG['wasql_access']) && $CONFIG['wasql_access']==1,'access');?>
 		<view:synchronize>
 		<!-- Synchronize -->
 		<li><a href="#sync" class="dropdown" onclick="return false;"><span class="icon-sync"></span> <span class="hidden-sm-down"><translate>Synchronize</translate></span></a>
@@ -153,12 +153,12 @@
 			</ul>
 		</li>
 		</view:synchronize>
-		<?=renderViewIf(isset($SETTINGS['wasql_synchronize']) && $SETTINGS['wasql_synchronize']==1,'synchronize');?>
+		<?=renderViewIf(isset($CONFIG['wasql_synchronize']) && $CONFIG['wasql_synchronize']==1,'synchronize');?>
 		<view:git>
 		<!-- Git Repo -->
 		<li><a href="/php/admin.php?_menu=git"><span class="icon-git"></span> <span class="hidden-sm-down"><translate>Repo</translate></span></a></li>
 		</view:git>
-		<?=renderViewIf(isset($SETTINGS['wasql_git']) && $SETTINGS['wasql_git']==1,'git');?>
+		<?=renderViewIf(isset($CONFIG['wasql_git']) && $CONFIG['wasql_git']==1,'git');?>
 		<view:errors>
 		<!-- Errors -->
 		<li><a href="#access" class="dropdown" onclick="return false;"><span class="icon-block"></span> <span class="hidden-sm-down"><translate>Errors</translate></span></a>
@@ -170,7 +170,7 @@
 			</ul>
 		</li>
 		</view:errors>
-		<?=renderViewIf(isset($SETTINGS['wasql_errors']) && $SETTINGS['wasql_errors']==1,'errors');?>
+		<?=renderViewIf(isset($CONFIG['wasql_errors']) && $CONFIG['wasql_errors']==1,'errors');?>
 		
 		<!-- Tools -->
 		<li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-tools"></span> <span class="hidden-sm-down"><translate>Tools</translate></span></a>

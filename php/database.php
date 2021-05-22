@@ -42,6 +42,15 @@ if(!$sel){
 	$msg .= '</div>'.PHP_EOL;
 	abort($msg);
 }
+/* Load settings in _config table */
+$recs=getDBRecords(array('-table'=>'_config','-fields'=>'name,current_value'));
+if(isset($recs[0])){
+	foreach($recs as $rec){
+		if(!strlen(trim($rec['current_value']))){continue;}
+		$key=strtolower(trim($rec['name']));
+		$CONFIG[$key]=trim($rec['current_value']);
+	}
+}
 /* Load_pages as specified in the conf settings */
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
@@ -2944,8 +2953,8 @@ function checkDBTableSchema($wtable){
 			$query="ALTER TABLE {$wtable} ADD synchronize ".databaseDataType('tinyint')." NOT NULL Default 0";
 			$ok=executeSQL($query);
 			global $SETTINGS;
-			$stables=array('_cron','_reports','_pages','_templates','_tabledata','fielddata');
-			$oldstables=preg_split('/[\r\n]+/',trim($SETTINGS['wasql_synchronize_tables']));
+			$stables=array('_cron','_reports','_pages','_templates','_tabledata','_fielddata');
+			$oldstables=preg_split('/[\r\n]+/',trim($CONFIG['wasql_synchronize_tables']));
 			if(is_array($oldstables)){
 				foreach($oldstables as $stable){
 	            	if(!in_array($stable,$stables)){$stables[]=$stable;}
@@ -3092,17 +3101,18 @@ function clearDBCache($names){
 function addDBAccess(){
 	global $PAGE;
 	global $SETTINGS;
-	if(!isset($SETTINGS['wasql_access']) || $SETTINGS['wasql_access']!=1){return;}
+	global $CONFIG;
+	if(!isset($CONFIG['wasql_access']) || $CONFIG['wasql_access']!=1){return;}
 	//ignore bot requests
-	if((!isset($SETTINGS['wasql_access_bot']) || $SETTINGS['wasql_access_bot']!=1) && strlen($_SERVER['REMOTE_OS']) && stringBeginsWith($_SERVER['REMOTE_OS'],"BOT:")){return;}
+	if((!isset($CONFIG['wasql_access_bot']) || $CONFIG['wasql_access_bot']!=1) && strlen($_SERVER['REMOTE_OS']) && stringBeginsWith($_SERVER['REMOTE_OS'],"BOT:")){return;}
 	$access_days=32;
 	$access_log=confValue('access_log');
 	$access_dbname=confValue('access_dbname');
 	$table='_access';
 	$sumtable='_access_summary';
-	if(isset($SETTINGS['wasql_access_dbname']) && strlen($SETTINGS['wasql_access_dbname'])){
-		$table="{$SETTINGS['wasql_access_dbname']}.{$table}";
-		$sumtable="{$SETTINGS['wasql_access_dbname']}.{$sumtable}";
+	if(isset($CONFIG['wasql_access_dbname']) && strlen($CONFIG['wasql_access_dbname'])){
+		$table="{$CONFIG['wasql_access_dbname']}.{$table}";
+		$sumtable="{$CONFIG['wasql_access_dbname']}.{$sumtable}";
     	}
 	$fields=getDBFields($table);
 	$opts=array();
@@ -7486,15 +7496,16 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	global $SETTINGS;
 	global $USER;
 	global $PAGE;
+	global $CONFIG;
 	if(isset($_SERVER['WaSQL_AdminUserID']) && isNum($_SERVER['WaSQL_AdminUserID'])){return;}
-	if(!isset($SETTINGS['wasql_queries']) || $SETTINGS['wasql_queries']!=1){return;}
+	if(!isset($CONFIG['wasql_queries']) || $CONFIG['wasql_queries']!=1){return;}
 	if(preg_match('/\_(queries|fielddata)/i',$query)){return;}
 	if(preg_match('/^desc /i',$query)){return;}
 	//only run if user?
-	if(isset($SETTINGS['wasql_queries_user']) && isNum($SETTINGS['wasql_queries_user']) && (!isset($USER['_id']) || $SETTINGS['wasql_queries_user'] != $USER['_id'])){return;}
+	if(isset($CONFIG['wasql_queries_user']) && isNum($CONFIG['wasql_queries_user']) && (!isset($USER['_id']) || $CONFIG['wasql_queries_user'] != $USER['_id'])){return;}
 	$stop=microtime(true);
 	$run_length=round(($stop-$start),3);
-	if(isNum($SETTINGS['wasql_queries_time']) && $run_length < $SETTINGS['wasql_queries_time']){return;}
+	if(isNum($CONFIG['wasql_queries_time']) && $run_length < $CONFIG['wasql_queries_time']){return;}
 	$addopts=array('-table'=>"_queries",
 		'function_name'		=> $function,
 		'function'		=> $function,
@@ -7509,8 +7520,8 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	if(isNum($USER['_id'])){$addopts['user_id']=$USER['_id'];}
 	if(isNum($PAGE['_id'])){$addopts['page_id']=$PAGE['_id'];}
 	$ok=addDBRecord($addopts);
-	//remove records older than $SETTINGS['wasql_queries_age'] days. Default to 10 days
-	$days=setValue(array($SETTINGS['wasql_queries_days'],10));
+	//remove records older than $CONFIG['wasql_queries_age'] days. Default to 10 days
+	$days=setValue(array($CONFIG['wasql_queries_days'],10));
 	if(!isset($_SERVER['logDBQuery'])){
 		$ok=cleanupDBRecords('_queries',$days);
 		$_SERVER['logDBQuery']=1;

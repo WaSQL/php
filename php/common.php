@@ -3810,10 +3810,12 @@ function buildFormSelectDatabase($name,$params=array()){
 			$showtabs=preg_split('/\,/',$params['-dbs']);
 		}
 	}
+	elseif(isset($CONFIG['databases'])){
+		$showtabs=preg_split('/\,/',$CONFIG['databases']);
+	}
 	elseif(isset($CONFIG['sql_prompt_dbs'])){
 		$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
 	}
-
 	$dbtypes=array();
 	foreach($DATABASE as $dbkey=>$db){
 		if(count($showtabs) && !in_array($dbkey,$showtabs)){continue;}
@@ -3854,6 +3856,26 @@ function buildFormSelectDatabase($name,$params=array()){
 	$tag.='</select>';
 	return $tag;
 }
+//---------- begin function buildFormSelectHost--------------------
+/**
+* @describe creates an select list of available hosts
+* @return string
+* @usage echo buildFormSelectHost('mydate',$params);
+*/
+function buildFormSelectHost($name,$params=array()){
+	global $ALLCONFIG;
+	global $CONFIG;
+	if(!isset($params['message'])){$params['message']=' -- select --';}
+	if(!isset($params['value'])){
+		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:$CONFIG['host'];
+	}
+	$opts=array();
+	foreach($ALLCONFIG as $host=>$conf){
+		$opts[$host]="{$host} ({$conf['dbname']})";
+	}
+	ksort($opts);
+	return buildFormSelect($name,$opts,$params);
+}
 //---------- begin function buildFormSelectMonth--------------------
 /**
 * @describe creates an Month selection field
@@ -3873,6 +3895,26 @@ function buildFormSelectMonth($name,$params=array()){
 		7=>'Jul',8=>'Aug',9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
 	);
 	return buildFormSelect($name,$opts,$params);
+}
+//---------- begin function buildFormSelectOnOff--------------------
+/**
+* @describe creates an Button Select field for On/OFF
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectOnOff($name);
+*/
+function buildFormSelectOnOff($name,$params=array()){
+	$opts=array(
+		'0'=>'Off',
+		'1'=>'On'
+	);
+	if(!isset($params['0_class'])){$params['0_class']='w_red';}
+	if(!isset($params['1_class'])){$params['1_class']='w_green';}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){
+		$params['value']=$_REQUEST[$name];
+	}
+	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormSelectState--------------------
 /**
@@ -4881,16 +4923,16 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 * @describe copies file from source to destination using stream_copy_to_stream for speed and efficiency
 * @param source string - source file
 * @param dest string - destination file
-* @return integer - returns number of bytes copied
+* @return integer - returns number of bytes copied or error string
 * @usage $b=copyFile($srcFile,$destFile);
 */
 function copyFile($src, $dest){
 	//stream_copy_to_stream is more efficient and faster than a copy command
-	//Returns the total count of bytes copied.
+	//Returns the total count of bytes copied  or error.
     $fsrc = fopen($src,'r');
-    if(!is_resource($fsrc)){return 0;}
-    $fdest = fopen($dest,'w+');
-    if(!is_resource($fdest)){return 0;}
+    if(!is_resource($fsrc)){return 'src fopen failed: '.$src;}
+    $fdest = fopen($dest,'c+');
+    if(!is_resource($fdest)){return 'dest fopen failed: '.$dest;}
     $bytes = stream_copy_to_stream($fsrc,$fdest);
     fclose($fsrc);
     fclose($fdest);
@@ -15642,10 +15684,10 @@ function processActions(){
 				echo '<div class="w_centerpop_title">Edit '.$_REQUEST['field'].'</div>'.PHP_EOL;
 				echo '<div class="w_centerpop_content">'.PHP_EOL;
 				$opts['style']='width:100%';
-				echo '<form method="post" name="editfieldform" enctype="multipart/form-data" class="flexbutton" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
 			}
 			else{
-				echo '<form method="post" name="editfieldform" enctype="multipart/form-data" class="flexbutton" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
 				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
 			}
 			
@@ -15654,7 +15696,53 @@ function processActions(){
 			echo '	<input type="hidden" name="_id" value="'.$_REQUEST['id'].'" />'.PHP_EOL;
 			echo '	<input type="hidden" name="_action" value="EDIT" />'.PHP_EOL;
 			echo '	<input type="hidden" name="_editfield" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
-			echo buildFormField($_REQUEST['table'],$_REQUEST['field'],$opts);
+			switch(strtolower($_REQUEST['table'])){
+				case '_config':
+					switch(strtolower($_REQUEST['field'])){
+						case 'current_value':
+							if(strlen($rec['possible_values'])){
+								if(stringBeginsWith($rec['possible_values'],'&')){
+									$efield=$_REQUEST['field'];
+									$_REQUEST[$efield]=$rec[$efield];
+									$evalstr='<?='.preg_replace('/^\&/','',$rec['possible_values']).'?>';
+									echo evalPHP($evalstr);
+								}
+								else{
+									$cvals=preg_split('/\,/',$rec['possible_values']);
+									$copts=array();
+									foreach($cvals as $cval){
+										$parts=preg_split('/\=/',$cval,2);
+										if(count($parts)==2){
+											$t=trim($parts[0]);
+											$d=trim($parts[1]);
+											$copts[$t]=$d;
+										}
+										else{
+											$t=trim($parts[0]);
+											$copts[$t]=$t;
+										}
+									}
+									$cparams=array(
+										'message'=>' --- ',
+										'value'=>$rec[$_REQUEST['field']]
+									);
+									echo buildFormSelect($_REQUEST['field'],$copts,$cparams);
+								}
+							}
+							else{
+								echo buildFormField($_REQUEST['table'],$_REQUEST['field'],$opts);
+							}
+						break;
+						default:
+							echo buildFormField($_REQUEST['table'],$_REQUEST['field'],$opts);
+						break;
+					}
+				break;
+				default:
+					echo buildFormField($_REQUEST['table'],$_REQUEST['field'],$opts);
+				break;
+			}
+			
 			echo '	<button type="submit" title="save" style="padding:3px;"><span class="icon-save w_bigger"></span></button>'.PHP_EOL;
 			echo '</form>'.PHP_EOL;
 			echo buildOnLoad("document.editfieldform.{$_REQUEST['field']}.select();");

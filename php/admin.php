@@ -2068,6 +2068,7 @@ LIST_TABLE:
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
 				switch(strtolower($_REQUEST['_table_'])){
+					case '_config':echo '<span class="icon-gear w_gray w_big"></span>';break;
 					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
 					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
 					case '_users':echo '<span class="icon-users w_info w_big"></span>';break;
@@ -2092,6 +2093,31 @@ LIST_TABLE:
 				echo '</div>'.PHP_EOL;
 				//special options for some tables
 				switch(strtolower($_REQUEST['_table_'])){
+					case '_config':
+						$recopts['-editfields']='current_value';						
+						$recopts['-searchfields']='name,description';
+						$recopts['-listfields']='_id,name,current_value,default_value,description';
+						$recopts['-searchopers']='ct,eq,ca,ea,ib,nb';
+						$recopts['-quickfilters']=array(
+							'Not Blank'=>array(
+								'filter'=>'current_value nb',
+								'class'=>"btn w_white"
+								),
+							'Show WaSQL'=>array(
+								'filter'=>'name ct wasql',
+								'class'=>"btn w_white"
+								),
+							'Show Custom'=>array(
+								'filter'=>'description ct custom',
+								'class'=>"btn ".$CONFIG['admin_color']
+								),
+							'Add Custom'=>array(
+								'icon'=>'icon-plus',
+								'onclick'=>"return ajaxGet('/php/admin.php','modal',{_menu:'add',_table_:'_config',title:'Add Custom',description:'Custom Setting'});",
+								'class'=>"btn ".$CONFIG['admin_color']
+								)
+						);
+					break;
                 	case '_cron':
                 		//format the run_date
 						$recopts['run_date_dateage']=1;
@@ -2164,7 +2190,7 @@ LIST_TABLE:
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&explain=1\');"><span class="icon-optimize w_gold w_big" alt="Show Indexes" data-tooltip="Explain Query"></span></a>','function','getDBRecords'),
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&view=1\');"><img src="/wfiles/iconsets/16/sql.png" data-tooltip="View This Query" class="w_middle" alt="view query" /></a>')
 						);
-						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$SETTINGS['wasql_queries_days'].', Time:'.$SETTINGS['wasql_queries_time'].' seconds</div>'.PHP_EOL;
+						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$CONFIG['wasql_queries_days'].', Time:'.$CONFIG['wasql_queries_time'].' seconds</div>'.PHP_EOL;
                 	break;
 				}
 				if(isset($_REQUEST['add_result']['error'])){
@@ -3463,11 +3489,12 @@ function tableOptions($table='',$params=array()){
 function syncGetChanges($stables=array()){
 	//exclude:true
 	global $SETTINGS;
+	global $CONFIG;
 	$info=array(
-		'db_stage'	=> $SETTINGS['wasql_synchronize_master'],
-		'db_live'	=> $SETTINGS['wasql_synchronize_slave'],
+		'db_stage'	=> $CONFIG['wasql_synchronize_master'],
+		'db_live'	=> $CONFIG['wasql_synchronize_slave'],
 		'db_tables'	=> $stables,
-		'active'	=> setValue(array($SETTINGS['wasql_synchronize'],0))
+		'active'	=> setValue(array($CONFIG['wasql_synchronize'],0))
 	);
 	if($info['active']!=1){return $info;}
 	//get live and stage users
@@ -4062,11 +4089,12 @@ function adminGetSynchronizeFields($table){
  */
 function adminSynchronizeRecord($table,$id,$stage=1){
 	global $SETTINGS;
-	if(!isset($SETTINGS['wasql_synchronize']) || $SETTINGS['wasql_synchronize']==0){
+	global $CONFIG;
+	if(!isset($CONFIG['wasql_synchronize']) || $CONFIG['wasql_synchronize']==0){
 		return 0;
 	}
-	$db_stage=$SETTINGS['wasql_synchronize_master'];
-	$db_live=$SETTINGS['wasql_synchronize_slave'];
+	$db_stage=$CONFIG['wasql_synchronize_master'];
+	$db_live=$CONFIG['wasql_synchronize_slave'];
 	if(!strlen($db_stage) || !strlen($db_live)){
     	return 0;
 	}
