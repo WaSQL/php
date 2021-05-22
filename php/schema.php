@@ -168,8 +168,8 @@ function createWasqlTable($table=''){
 			));
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
-				$csv=getCSVFileContents("{$progpath}/schema/{$table}.csv");
+			if(file_exists("{$progpath}/schema/config.csv")){
+				$csv=getCSVFileContents("{$progpath}/schema/config.csv");
 				$recs=$csv['items'];
 				$cfg=$CONFIG;
 				$set=settingsValues(0);
