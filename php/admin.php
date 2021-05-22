@@ -2111,7 +2111,7 @@ LIST_TABLE:
 								'filter'=>'description ct custom',
 								'class'=>"btn ".$CONFIG['admin_color']
 								),
-							'Add Custom'=>array(
+							'Add'=>array(
 								'icon'=>'icon-plus',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{_menu:'add',_table_:'_config',title:'Add Custom',description:'Custom Setting'});",
 								'class'=>"btn ".$CONFIG['admin_color']
