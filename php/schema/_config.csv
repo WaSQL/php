@@ -58,7 +58,7 @@ paging,25,25,"default paging limit",
 passthru,1,1,"set to 1 to allow pages to capture / page parts","&buildFormSelectOnOff('current_value');"
 phpmailer,1,0,"Set PHPmailer on for sendMail","&buildFormSelectOnOff('current_value');"
 post_max_size,64M,64M,"defaults to 64M",
-reencode,"mp3-mp3,wav-mp3,mov-mp4",,"allows you to auto re-encode files as they are uploaded. e.g.  wav-mp3,midi-mp3,mp3-mp3",
+reencode,,,"allows you to auto re-encode files as they are uploaded. e.g.  wav-mp3,midi-mp3,mp3-mp3",
 reencode_command,"ffmpeg -i","ffmpeg -i","Command to use if reencode has a value",
 convert,,,"allows you to convert images on upload.   bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg,jpg-jpg",
 convert_command,,,"Command to use if convert is set",
@@ -75,7 +75,7 @@ template_tracking,0,0,"Enable updating the _apage in the _templates table - spee
 timezone,,,"Default timezone",
 upload_max_filesize,64M,64M,"defaults to 60M",
 user_tracking,1,1,"Enable updating the _aip, _auser, _adate in the _users table - speed","&buildFormSelectOnOff('current_value');"
-userlog,1,0,"set to 1 to log auth requests to your database. Logs to user.log in the logs directory","&buildFormSelectOnOff('current_value');"
+userlog,0,0,"set to 1 to log auth requests to your database. Logs to user.log in the logs directory","&buildFormSelectOnOff('current_value');"
 valid_hosts,,,"list of valid hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.",
 valid_uhosts,,,"list of valid unique hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.",
 wasql_access,0,0,"Enable WaSQL Analytics","&buildFormSelectOnOff('current_value');"
