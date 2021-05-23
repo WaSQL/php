@@ -134,6 +134,21 @@ foreach($ConfigXml as $name=>$host){
 		}
 	}
 }
+if(!isset($CONFIG['dbname'])){
+	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
+}
+if(!isset($CONFIG['database'])){
+	$d=md5($CONFIG['dbname'].$CONFIG['dbhost'].$CONFIG['dbtype'].$CONFIG['dbuser'].$CONFIG['dbpass']);
+	$DATABASE[$d]=array(
+		'name'=>$d,
+		'dbname'=>$CONFIG['dbname'],
+		'dbhost'=>$CONFIG['dbhost'],
+		'dbtype'=>$CONFIG['dbtype'],
+		'dbuser'=>$CONFIG['dbuser'],
+		'dbpass'=>$CONFIG['dbpass'],
+	);
+	$CONFIG['database']=$d;
+}
 //set the icon and displayname
 foreach($DATABASE as $d=>$db){
 	if(!isset($db['displayname'])){
@@ -141,6 +156,21 @@ foreach($DATABASE as $d=>$db){
 	}
 	if(isset($db['dbicon'])){continue;}
 	switch(strtolower($db['dbtype'])){
+		case 'ctree':
+			$DATABASE[$d]['dbicon']='icon-database-faircom';
+		break;
+		case 'msaccess':
+			$DATABASE[$d]['dbicon']='icon-database-msaccess';
+		break;
+		case 'mscsv':
+			$DATABASE[$d]['dbicon']='icon-file-txt';
+		break;
+		case 'msexcel':
+			$DATABASE[$d]['dbicon']='icon-application-excel';
+		break;
+		case 'mssql':
+			$DATABASE[$d]['dbicon']='icon-database-mssql';
+		break;
 		case 'postgresql':
 		case 'postgres':
 			$DATABASE[$d]['dbicon']='icon-database-postgresql';
@@ -148,9 +178,6 @@ foreach($DATABASE as $d=>$db){
 		break;
 		case 'oracle':
 			$DATABASE[$d]['dbicon']='icon-database-oracle';
-		break;
-		case 'mssql':
-			$DATABASE[$d]['dbicon']='icon-database-mssql';
 		break;
 		case 'hana':
 			$DATABASE[$d]['dbicon']='icon-database-hana';
@@ -166,20 +193,18 @@ foreach($DATABASE as $d=>$db){
 }
 //echo printValue($DATABASE).printValue($CONFIG).printValue($xml);exit;
 //ksort($CONFIG);echo "chost:{$chost}<br>sameas:{$sameas}<br>".printValue($CONFIG).printValue($ConfigXml);exit;
-if(!isset($CONFIG['dbname'])){
-	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
-}
+
 //echo $checkhost.printValue($CONFIG).printValue($ConfigXml[$checkhost]);exit;
 $_SERVER['WaSQL_DBNAME']=$CONFIG['dbname'];
-/* Load additional modules as specified in the conf settings */
-if(isset($CONFIG['load_modules']) && strlen($CONFIG['load_modules'])){
-	$modules=explode(',',$CONFIG['load_modules']);
-	loadExtras($modules);
-}
-elseif(isset($CONFIG['load_extras']) && strlen($CONFIG['load_extras'])){
-	$extras=explode(',',$CONFIG['load_extras']);
-	loadExtras($extras);
-}
+// /* Load additional modules as specified in the conf settings */
+// if(isset($CONFIG['load_modules']) && strlen($CONFIG['load_modules'])){
+// 	$modules=explode(',',$CONFIG['load_modules']);
+// 	loadExtras($modules);
+// }
+// elseif(isset($CONFIG['load_extras']) && strlen($CONFIG['load_extras'])){
+// 	$extras=explode(',',$CONFIG['load_extras']);
+// 	loadExtras($extras);
+// }
 //up the memory limit to resolve the "allowed memory" error
 if(isset($CONFIG['memory_limit']) && strlen($CONFIG['memory_limit'])){ini_set("memory_limit",$CONFIG['memory_limit']);}
 //changes based on config
@@ -209,6 +234,21 @@ if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']]['dbicon'])
 //default dbicon
 if(!isset($CONFIG['dbicon'])){
 	switch(strtolower($CONFIG['dbtype'])){
+		case 'ctree':
+			$CONFIG['dbicon']='icon-database-faircom';
+		break;
+		case 'msaccess':
+			$CONFIG['dbicon']='icon-database-msaccess';
+		break;
+		case 'mscsv':
+			$CONFIG['dbicon']='icon-file-txt';
+		break;
+		case 'msexcel':
+			$CONFIG['dbicon']='icon-application-excel';
+		break;
+		case 'mssql':
+			$CONFIG['dbicon']='icon-database-mssql';
+		break;
 		case 'postgresql':
 		case 'postgres':
 			$CONFIG['dbicon']='icon-database-postgresql';
