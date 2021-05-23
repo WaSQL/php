@@ -170,6 +170,7 @@ function createWasqlTable($table=''){
 			$progpath=dirname(__FILE__);
 			if(file_exists("{$progpath}/schema/config.csv")){
 				$csv=getCSVFileContents("{$progpath}/schema/config.csv");
+				debugValue("Loading {$progpath}/schema/config.csv");
 				$recs=$csv['items'];
 				$cfg=$CONFIG;
 				$set=settingsValues(0);
@@ -205,7 +206,11 @@ function createWasqlTable($table=''){
 					);
 				}
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-recs'=>$recs,'-ignore'=>1));
+				debugValue($ok);
 				//echo $ok.printValue($recs);exit;
+			}
+			else{
+				debugValue("Missing {$progpath}/schema/config.csv");
 			}
 			return 1;
 		break;

@@ -1349,7 +1349,7 @@ function wcommercePageBody(){
 	
 	<div style="display:flex;justify-content: space-between;width:100%;align-items: center;">
 		<div class="w_bigger w_bold mint">\$ <?=\$product['price'];?></div>
-		<button class="button is-info" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
+		<button class="button is-info" type="button" onclick="wcommerceAdd2Cart(this);" data-product_id="<?=\$product['_id'];?>" data-points="0" data-price="<?=\$product['price'];?>" style="margin-top:5px;display:flex;align-self: center;justify-content: center;"><span>ADD TO CART </span><span class="icon-heart" style="margin-left:5px;"></span></button>
 	</div>
 </view:product_body>
 
@@ -1428,6 +1428,9 @@ function wcommerceAdd2Cart(el){
 	let div='wcommerce_nulldiv';
 	let url='/t/1/'+page+'/add2cart';
 	let params={setprocessing:0,id:el.dataset.product_id,qty:qty,name:el.dataset.product_name};
+	let price=parseFloat(el.dataset.price);
+	let points=parseInt(el.dataset.points);
+	if(undefined != points && points > 0){params.usepoints=1;}
 	return ajaxGet(url,div,params);
 }
 function wcommerceOrdersView(el){
@@ -1836,6 +1839,7 @@ wcommerce_orders_items
 	material varchar(25)
 	quantity int NOT NULL Default 1
 	price float(12,2)
+	points int
 	onsale tinyint(1) NOT NULL Default 0
 	featured tinyint(1) NOT NULL Default 0
 	weight int
