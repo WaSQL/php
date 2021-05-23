@@ -141,6 +141,7 @@ if(!isset($CONFIG['database'])){
 	$d=md5($CONFIG['dbname'].$CONFIG['dbhost'].$CONFIG['dbtype'].$CONFIG['dbuser'].$CONFIG['dbpass']);
 	$DATABASE[$d]=array(
 		'name'=>$d,
+		'displayname'=>ucfirst($CONFIG['dbtype']).' '.strtoupper($CONFIG['dbname']),
 		'dbname'=>$CONFIG['dbname'],
 		'dbhost'=>$CONFIG['dbhost'],
 		'dbtype'=>$CONFIG['dbtype'],
