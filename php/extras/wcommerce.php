@@ -151,9 +151,9 @@ function wcommerceOrdersList(){
 		'-tableheight'=>'55vh',
 		'-export'=>'1',
 		'-sorting'=>1,
-		'-listfields'=>'_id,date_ordered,date_shipped,date_delivered,shipped_by,tracking_number,shipto_firstname,shipto_lastname,shipto_email,items_count,order_total',
-		'order_total_class'=>'align-right',
-		'items_count_class'=>'align-right',
+		'-listfields'=>'_id,date_ordered,date_shipped,date_delivered,shipped_by,tracking_number,shipto_firstname,shipto_lastname,shipto_email,points_total,price_total',
+		'points_total_class'=>'align-right',
+		'price_total_class'=>'align-right',
 		'-order'=>'date_delivered,date_shipped,date_ordered desc',
 		'-results_eval'=>'wcommerceOrdersListExtra',
 		'_id_options'=>array(
@@ -185,8 +185,6 @@ function wcommerceOrdersList(){
 			'class'=>'w_nowrap',
 			'displayname'=>'Track'
 		),
-		'items_count_displayname'=>'Items',
-		'order_total_displayname'=>'Total',
 	);
 	$opts['-quickfilters_class']='btn w_blue';
 	$opts['-quickfilters']=array(
@@ -1815,8 +1813,9 @@ wcommerce_orders
 	shipmethod_code varchar(25)
 	shipmethod_price float(12,2)
 	coupon varchar(25)
-	items_count int
-	items_total int
+	quantity_total int NOT NULL Default 1
+	price_total float(12,2)
+	points_total int
 	note varchar(255)
 	discount float(12,2)
 	tax float(12,2)
