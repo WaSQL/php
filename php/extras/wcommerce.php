@@ -14,6 +14,73 @@ if(!is_dir($wcommerce_files_path)){
 	echo "wcommerce ERROR: unable to create {$wcommerce_files_path}.  Manually create it.";
 	exit;
 }
+function wcommerceAdd2Cart($id,$params=array()){
+	$settings=wcommerceGetSettings();
+	$function_name=__FUNCTION__;
+	if(!empty($settings[$function_name]) && function_exists($settings[$function_name])){
+		return call_user_func($settings[$function_name],$id,$params);
+	}
+	$product=getDBRecordById('wcommerce_products',$id);
+	if(!isset($product['_id'])){
+		return array('status'=>'failed','error'=>'no product with that id');
+	}
+	$rtn=$product;
+	$fields=getDBFields('wcommerce_orders_items');
+	$guid=wcommerceCartGuid();
+	$opts=array(
+		'-table'=>'wcommerce_orders_items',
+		'product_id'=>$product['_id'],
+		'guid'=>$guid
+	);
+	$rec=getDBRecord($opts);
+	if(isset($settings['wcommerceAdd2Cart_GroupItems']) && $settings['wcommerceAdd2Cart_GroupItems']==0){
+		unset($rec);
+	}
+	if(isset($rec['_id'])){
+		$qty=$rec['quantity']+1;
+		$rtn['quantity']=$qty;
+		$ok=editDBRecordById('wcommerce_orders_items',$rec['_id'],array('quantity'=>$qty));
+		$rtn['status']='success';
+		$rtn['cart_id']=$rec['_id'];
+	}
+	else{
+		$rtn['quantity']=$opts['quantity']=(integer)$_REQUEST['qty'];
+		//get photo
+		$rtn['photos']=$product['photos']=wcommerceProductImages($product);
+		if(count($product['photos'])){
+			$opts['photo']=$product['photos'][0]['src'];
+		}
+		foreach($fields as $field){
+			if(isWaSQLField($field)){continue;}
+			if(isset($params['usepoints']) && $params['usepoints']==1 && $field=='price'){
+				$rtn['points_order']=1;
+				continue;
+			}
+			if((!isset($params['usepoints']) || $params['usepoints']==0) && $field=='points'){
+				$rtn['price_order']=1;
+				continue;
+			}
+			if(!isset($opts[$field])){
+				if(isset($_REQUEST[$field]) && strlen($_REQUEST[$field])){
+					$opts[$field]=$_REQUEST[$field];
+				}
+				elseif(isset($product[$field])){
+					$opts[$field]=$product[$field];
+				}
+			}
+		}
+		$id=addDBRecord($opts);
+		if(isNum($id)){
+			$rtn['status']='success';
+			$rtn['cart_id']=$id;
+		}
+		else{
+			$rtn['status']='failed';
+			$rtn['error']=$id;
+		}
+	}
+	return $rtn;
+}
 function wcommerceCartGuid(){
 	//check for override
 	$settings=wcommerceGetSettings();
@@ -983,8 +1050,18 @@ function wcommerceInit($force=0){
 		$afile="{$progpath}/wcommerce.php";
 		$lines=file($afile);
 		$recs=array();
+		$jsfunc=0;
 		foreach($lines as $line){
 			$line=trim($line);
+			if(preg_match('/return \<\<\<ENDOFJS$/',$line)){
+				$jsfunc=1;
+				continue;
+			}
+			elseif(preg_match('/^ENDOFJS\;$/',$line)){
+				$jsfunc=0;
+				continue;
+			}
+			if($jsfunc==1){continue;}
 			if(preg_match('/^function\ (wcommerce)(.+?)\(/is',$line,$m)){
 				$fname=$m[1].$m[2];
 				//echo "[{$fname}]<br>".PHP_EOL;
@@ -996,6 +1073,16 @@ function wcommerceInit($force=0){
 				$id=addDBRecord($opts);
 				//echo $id.printValue($opts).PHP_EOL;
 			}
+		}
+		//add other settings
+		$fnames=array('wcommerceAdd2Cart_GroupItems');
+		foreach($fnames as $fname){
+			$opts=array(
+				'-table'=>'wcommerce_settings',
+				'name'=>$fname,
+				'-upsert'=>'ignore'
+			);
+			$id=addDBRecord($opts);
 		}
 		$rtn.="updated wcommerce settings. <br />".PHP_EOL;
 	}
@@ -1544,51 +1631,12 @@ switch(strtolower(\$PASSTHRU[0])){
 	break;
 	case 'add2cart':
 		\$id=(integer)\$_REQUEST['id'];
-		\$name=\$_REQUEST['name'];
-		\$product=getDBRecordById('wcommerce_products',\$id);
-		\$_REQUEST['name']=\$product['name'];
-		\$fields=getDBFields('wcommerce_orders_items');
-		\$guid=wcommerceCartGuid();
-		\$opts=array(
-			'-table'=>'wcommerce_orders_items',
-			'product_id'=>\$product['_id'],
-			'guid'=>\$guid
-		);
-		\$rec=getDBRecord(\$opts);
-		if(isset(\$rec['_id'])){
-			\$qty=\$rec['quantity']+1;
-			\$ok=editDBRecordById('wcommerce_orders_items',\$rec['_id'],array('quantity'=>\$qty));
-			\$message="{\$product['_id']} - {\$product['name']}: {\$qty} in cart";
+		\$rtn=wcommerceAdd2Cart(\$id,\$_REQUEST);
+		if(isset(\$rtn['error'])){
+			\$message="ERROR: {\$rtn['error']}";
 		}
 		else{
-			\$opts['quantity']=(integer)\$_REQUEST['qty'];
-			//get photo
-			\$product['photos']=wcommerceProductImages(\$product);
-			if(count(\$product['photos'])){
-				\$opts['photo']=\$product['photos'][0]['src'];
-			}
-			
-			foreach(\$fields as \$field){
-				if(isWaSQLField(\$field)){continue;}
-				if(!isset(\$opts[\$field])){
-					if(isset(\$_REQUEST[\$field]) && strlen(\$_REQUEST[\$field])){
-						\$opts[\$field]=\$_REQUEST[\$field];
-					}
-					elseif(isset(\$product[\$field])){
-						\$opts[\$field]=\$product[\$field];
-					}
-				}
-			}
-			\$id=addDBRecord(\$opts);
-			debugValue(\$_REQUEST);
-			debugValue(\$opts);
-			if(isNum(\$id)){
-				\$message="{\$product['_id']} - {\$product['name']} added to cart";
-			}
-			else{
-				\$message=\$id;
-				debugValue(\$message);
-			}
+			\$message="{\$rtn['_id']} - {\$rtn['name']}: {\$rtn['quantity']} in cart";
 		}
 		setView('add2cart',1);
 		return;
