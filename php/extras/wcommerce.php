@@ -44,7 +44,7 @@ function wcommerceAdd2Cart($id,$params=array()){
 		$rtn['cart_id']=$rec['_id'];
 	}
 	else{
-		$rtn['quantity']=$opts['quantity']=(integer)$_REQUEST['qty'];
+		$rtn['quantity']=$opts['quantity']=(integer)$params['qty'];
 		//get photo
 		$rtn['photos']=$product['photos']=wcommerceProductImages($product);
 		if(count($product['photos'])){
@@ -61,8 +61,8 @@ function wcommerceAdd2Cart($id,$params=array()){
 				continue;
 			}
 			if(!isset($opts[$field])){
-				if(isset($_REQUEST[$field]) && strlen($_REQUEST[$field])){
-					$opts[$field]=$_REQUEST[$field];
+				if(isset($params[$field]) && strlen($params[$field]) && $params[$field]!='undefined'){
+					$opts[$field]=$params[$field];
 				}
 				elseif(isset($product[$field])){
 					$opts[$field]=$product[$field];
