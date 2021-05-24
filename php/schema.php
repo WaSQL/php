@@ -206,11 +206,11 @@ function createWasqlTable($table=''){
 					);
 				}
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-recs'=>$recs,'-ignore'=>1));
-				debugValue($ok);
+				//debugValue($ok);
 				//echo $ok.printValue($recs);exit;
 			}
 			else{
-				debugValue("Missing {$progpath}/schema/config.csv");
+				//debugValue("Missing {$progpath}/schema/config.csv");
 			}
 			return 1;
 		break;
