@@ -35,6 +35,7 @@ if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
+cronMessage("Logfile: {$logfile}");
 global $ConfigXml;
 global $allhost;
 global $dbh;

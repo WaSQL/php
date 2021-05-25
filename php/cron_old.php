@@ -1,12 +1,12 @@
 <?php
 /*
 	Instructions:
-		run cron.php from a command-line every minute as follows
+		run cron_old.php from a command-line every minute as follows
 		you can run multiple to handle heavy loads - it will handle the queue
 		On linux, add to the crontab
 		* * * * * /var/www/wasql_live/php/cron.sh >/var/www/wasql_live/php/cron.log 2>&1
 		On Windows, add it as a scheduled task
-	Note: cron.php cannot be run from a URL, it is a command line app only.
+	Note: cron_old.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the cron does not time out
 ini_set('max_execution_time', 72000);
@@ -32,9 +32,10 @@ date_default_timezone_set('America/Denver');
 include_once("{$progpath}/common.php");
 //only allow this to be run from CLI
 if(!isCLI()){
-	cronMessage("Cron.php is a command line app only.");
+	cronMessage("{$scriptname} is a command line app only.");
 	exit;
 }
+cronMessage("Logfile: {$logfile}");
 global $ConfigXml;
 global $allhost;
 global $dbh;
@@ -53,6 +54,11 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
 include_once("{$progpath}/extras/system.php");
+$dbversion=getDBVersion();
+cronMessage("Mysql Version: {$dbversion}");
+if($dbversion >= 5.7){
+	cronMessage("NOTICE - running mysql version {$dbversion}. For best resuts run cron.php for this version of mysql");
+}
 global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
