@@ -96,7 +96,7 @@ userlog_file,,,"Custom setting in config.xml",
 valid_hosts,,,"list of valid hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.",
 valid_uhosts,,,"list of valid unique hosts to allow - comma, space, or semi-colon separated. All others will be rejected with a 403 Unauthorized host error.",
 wasql_access,,0,"Enable WaSQL Analytics",&buildFormSelectOnOff('current_value');
-wasql_crons,,,"WaSQL crons allow you to schedule and manage externals processes - when and how often they run. It also records the results of such processes.",
+wasql_crons,,,"WaSQL crons allow you to schedule and manage externals processes - when and how often they run. It also records the results of such processes.",&buildFormSelectOnOff('current_value');
 wasql_errors,,0,"Enable capturing all WaSQL errors",&buildFormSelectOnOff('current_value');
 wasql_git,,0,"Enable WaSQL Git Interface",&buildFormSelectOnOff('current_value');
 wasql_git_path,,,"Git repository path",

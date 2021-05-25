@@ -505,7 +505,7 @@ function debugValue($m,$name=''){
 	//only on stage or when specified by debug=1
 	if($_SESSION['debugValue'] != 1){return;}
 	if(is_array($m)){
-		if(isset($m['error']) && !strlen($m['error'])){
+		if(isset($m['error']) && !is_array($m['error']) && !strlen($m['error'])){
 			return;
 		}
 		elseif(isset($m[0]['message'])){
