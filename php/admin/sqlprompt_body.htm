@@ -155,6 +155,7 @@
 		<view:failure>
 		<?=buildOnLoad("setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
 		<?=nl2br($error);?>
+		<pre><?=$_SESSION['debugValue_lastm'];?></pre>
 		</view:failure>
 	</div>
 </view:results>

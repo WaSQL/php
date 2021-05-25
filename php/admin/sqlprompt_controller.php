@@ -107,6 +107,7 @@
 		break;
 		case 'sql':
 			$view='block_results';
+			$_SESSION['debugValue_lastm']='';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
