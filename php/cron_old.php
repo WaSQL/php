@@ -12,7 +12,7 @@
 ini_set('max_execution_time', 72000);
 set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
-$posturl_timeout=72000; //allow crons that call posturl to run for up to 24 hours
+$posturl_timeout=36000; //allow crons that call posturl to run for up to 10 hours
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
 global $logfile;
@@ -53,21 +53,12 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
 include_once("{$progpath}/extras/system.php");
-
-//this cron requires mysql version 5.7 or newer
-$dbversion=getDBVersion();
-if($dbversion > 5.7){
-	cronMessage("ERROR: cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
-	exit;
-}
-
 global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
 $pid_check=1;
 $apache_log=1;
 $tail=1;
-$wherestr_all=cronBuildWhere();
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	//check for wasql.update file
@@ -134,7 +125,12 @@ while($etime < 55){
 		));
 		//echo "Checking {$CONFIG['name']}\n";
 		//see if there is file called {dbname}_runnow.txt.  If so extract
-		$wherestr=$wherestr_all;
+		$wherestr=<<<ENDOFWHERE
+		active=1 and paused != 1 and running != 1 and run_cmd is not null
+		and (date(now()) >= date(begin_date) or begin_date is null or length(begin_date)=0)
+		and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
+	    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
+ENDOFWHERE;
 		if(file_exists($runnow_afile)){
 			$runid=getfileContents($runnow_afile);
 			unlink($runnow_afile);
@@ -157,24 +153,7 @@ while($etime < 55){
 			continue;
 		}
 		if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
-		if(!in_array('frequency_max',$cronfields)){
-			$query="ALTER TABLE _cron ADD frequency_max varchar(25) NULL";
-			$ok=executeSQL($query);
-			$id=addDBRecord(array('-table'=>"_fielddata",
-				'tablename'		=> '_cron',
-				'fieldname'		=> 'frequency_max',
-				'inputtype'		=> 'select',
-				'displayname'	=> "Frequency Max",
-				'-upsert'		=> 'tvals,dvals,inputtype,displayname',
-				'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
-				'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
-			));
-		}
 		$recs=getDBRecords($recopts);
-		if(!is_array($recs) && strlen($recs)){
-			cronMessage("ERROR: {$recs}".PHP_EOL);
-			exit;
-		}
 		$rcnt=is_array($recs)?count($recs):0;
 		//echo $runnow.printValue($recs).PHP_EOL;
 		if($rcnt==0){
@@ -430,9 +409,6 @@ while($etime < 55){
 	            	$post=postURL($url,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	if(stringContains($post['body'],'__cronlog_delete__')){
-	            		$_REQUEST['cronlog_delete']=1;
-	            	}
 	            	if(isset($post['headers_out'][0])){
 		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 		            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
@@ -469,9 +445,6 @@ while($etime < 55){
 	            	$post=postURL($cmd,$postopts);
 	            	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	            	$cron_result .= $post['body'].PHP_EOL;
-	            	if(stringContains($post['body'],'__cronlog_delete__')){
-	            		$_REQUEST['cronlog_delete']=1;
-	            	}
 	            	if(isset($post['headers_out'][0])){
 		            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
 						$cron_result .= printValue($post['headers_out']).PHP_EOL;
@@ -530,7 +503,7 @@ while($etime < 55){
 					'run_date'	=> $run_date
 				);
 				$lrec=getDBRecord($opts);
-				if(isset($_REQUEST['cronlog_delete'])){
+				if(isset($_REQUEST['cronlog_delete']) && $_REQUEST['cronlog_delete']==1){
 					//cronlog_delete was set in the script
 					if(isset($lrec['_id'])){
 						$ok=delDBRecordById('_cronlog',$lrec['_id']);
@@ -545,7 +518,7 @@ while($etime < 55){
 					$opts['run_result']=$cron_result;
 					$ok=editDBRecord($opts);
 				}
-				elseif(!isset($_REQUEST['cronlog_delete'])){
+				else{
 					$opts['run_length']=$run_length;
 					$opts['run_result']=$cron_result;
 					$ok=addDBRecord($opts);
@@ -565,201 +538,6 @@ exit;
 /** --- function cronCleanRecords
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function cronBuildWhere(){
-	return <<<ENDOFWHERE
-active=1 
-and paused != 1 
-and running != 1 
-and run_cmd is not null
-and length(run_cmd) > 0
-and (
-	ifnull(begin_date,'')=''
-	or date(now()) >= date(begin_date)
-	)
-and (
-	ifnull(end_date,'')=''
-	or date(end_date) <= date(now())
-	)
-and (
-	ifnull(run_date,'')=''
-	or run_date < date_sub(now(), interval 1 minute) 
-	)
-and 
-	(
-	ifnull(frequency_max,'')='' 
-	or ifnull(run_date,'')=''
-	or (frequency_max='hourly' and hour(run_date) != hour(now()))
-	or (frequency_max='daily' and date(run_date) != date(now()))
-	or (frequency_max='weekly' and week(run_date) != week(now()))
-	or (frequency_max='monthly' and month(run_date) != month(now()))
-	or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
-	)
-and
-	(
-	run_format->'\$.minute[0]'=-1
-	or MINUTE(now()) in (
-		run_format->'\$.minute[1]',
-		run_format->'\$.minute[2]',
-		run_format->'\$.minute[3]',
-		run_format->'\$.minute[4]',
-		run_format->'\$.minute[5]',
-		run_format->'\$.minute[6]',
-		run_format->'\$.minute[7]',
-		run_format->'\$.minute[8]',
-		run_format->'\$.minute[9]',
-		run_format->'\$.minute[10]',
-		run_format->'\$.minute[11]',
-		run_format->'\$.minute[12]',
-		run_format->'\$.minute[13]',
-		run_format->'\$.minute[14]',
-		run_format->'\$.minute[15]',
-		run_format->'\$.minute[16]',
-		run_format->'\$.minute[17]',
-		run_format->'\$.minute[18]',
-		run_format->'\$.minute[19]',
-		run_format->'\$.minute[20]',
-		run_format->'\$.minute[21]',
-		run_format->'\$.minute[22]',
-		run_format->'\$.minute[23]',
-		run_format->'\$.minute[24]',
-		run_format->'\$.minute[25]',
-		run_format->'\$.minute[26]',
-		run_format->'\$.minute[27]',
-		run_format->'\$.minute[28]',
-		run_format->'\$.minute[29]',
-		run_format->'\$.minute[30]',
-		run_format->'\$.minute[31]',
-		run_format->'\$.minute[32]',
-		run_format->'\$.minute[33]',
-		run_format->'\$.minute[34]',
-		run_format->'\$.minute[35]',
-		run_format->'\$.minute[36]',
-		run_format->'\$.minute[37]',
-		run_format->'\$.minute[38]',
-		run_format->'\$.minute[39]',
-		run_format->'\$.minute[40]',
-		run_format->'\$.minute[41]',
-		run_format->'\$.minute[42]',
-		run_format->'\$.minute[43]',
-		run_format->'\$.minute[44]',
-		run_format->'\$.minute[45]',
-		run_format->'\$.minute[46]',
-		run_format->'\$.minute[47]',
-		run_format->'\$.minute[48]',
-		run_format->'\$.minute[49]',
-		run_format->'\$.minute[50]',
-		run_format->'\$.minute[51]',
-		run_format->'\$.minute[52]',
-		run_format->'\$.minute[53]',
-		run_format->'\$.minute[54]',
-		run_format->'\$.minute[55]',
-		run_format->'\$.minute[56]',
-		run_format->'\$.minute[57]',
-		run_format->'\$.minute[58]',
-		run_format->'\$.minute[59]'
-		)
-	)
-and
-	(
-	run_format->'\$.hour[0]'=-1
-	or HOUR(NOW()) in (
-		run_format->'\$.hour[0]',
-		run_format->'\$.hour[1]',
-		run_format->'\$.hour[2]',
-		run_format->'\$.hour[3]',
-		run_format->'\$.hour[4]',
-		run_format->'\$.hour[5]',
-		run_format->'\$.hour[6]',
-		run_format->'\$.hour[7]',
-		run_format->'\$.hour[8]',
-		run_format->'\$.hour[9]',
-		run_format->'\$.hour[10]',
-		run_format->'\$.hour[11]',
-		run_format->'\$.hour[12]',
-		run_format->'\$.hour[13]',
-		run_format->'\$.hour[14]',
-		run_format->'\$.hour[15]',
-		run_format->'\$.hour[16]',
-		run_format->'\$.hour[17]',
-		run_format->'\$.hour[18]',
-		run_format->'\$.hour[19]',
-		run_format->'\$.hour[20]',
-		run_format->'\$.hour[21]',
-		run_format->'\$.hour[22]',
-		run_format->'\$.hour[23]'
-		)
-	)
-and
-	(
-	run_format->'\$.day[0]'=-1
-	or DAY(curdate()) in (
-		run_format->'\$.day[0]',
-		run_format->'\$.day[1]',
-		run_format->'\$.day[2]',
-		run_format->'\$.day[3]',
-		run_format->'\$.day[4]',
-		run_format->'\$.day[5]',
-		run_format->'\$.day[6]',
-		run_format->'\$.day[7]',
-		run_format->'\$.day[8]',
-		run_format->'\$.day[9]',
-		run_format->'\$.day[10]',
-		run_format->'\$.day[11]',
-		run_format->'\$.day[12]',
-		run_format->'\$.day[13]',
-		run_format->'\$.day[14]',
-		run_format->'\$.day[15]',
-		run_format->'\$.day[16]',
-		run_format->'\$.day[17]',
-		run_format->'\$.day[18]',
-		run_format->'\$.day[19]',
-		run_format->'\$.day[20]',
-		run_format->'\$.day[21]',
-		run_format->'\$.day[22]',
-		run_format->'\$.day[23]',
-		run_format->'\$.day[24]',
-		run_format->'\$.day[25]',
-		run_format->'\$.day[26]',
-		run_format->'\$.day[27]',
-		run_format->'\$.day[28]',
-		run_format->'\$.day[29]',
-		run_format->'\$.day[30]'
-		)
-	)
-and
-	(
-	run_format->'\$.month[0]'=-1
-	or MONTH(curdate()) in (
-		run_format->'\$.month[0]',
-		run_format->'\$.month[1]',
-		run_format->'\$.month[2]',
-		run_format->'\$.month[3]',
-		run_format->'\$.month[4]',
-		run_format->'\$.month[5]',
-		run_format->'\$.month[6]',
-		run_format->'\$.month[7]',
-		run_format->'\$.month[8]',
-		run_format->'\$.month[9]',
-		run_format->'\$.month[10]',
-		run_format->'\$.month[11]'
-		)
-	)
-and
-	(
-	ifnull(run_format->'\$.dayname[0]','')=''
-	or run_format->'\$.dayname[0]'=-1
-	or WEEKDAY(curdate()) in (
-		run_format->'\$.dayname[0]',
-		run_format->'\$.dayname[1]',
-		run_format->'\$.dayname[2]',
-		run_format->'\$.dayname[3]',
-		run_format->'\$.dayname[4]',
-		run_format->'\$.dayname[5]',
-		run_format->'\$.dayname[6]'
-		)
-	)
-ENDOFWHERE;
-}
 function cronCleanRecords($cron=array()){
 	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}
