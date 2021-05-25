@@ -57,7 +57,7 @@ include_once("{$progpath}/extras/system.php");
 //this cron requires mysql version 5.7 or newer
 $dbversion=getDBVersion();
 if($dbversion > 5.7){
-	cronMessage("ERROR: cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
+	cronMessage("ERROR - running mysql version {$dbversion}. Cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
 	exit;
 }
 
