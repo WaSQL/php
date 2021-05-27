@@ -1803,14 +1803,14 @@ function redrawField(fieldname,srcObj){
 }
 //--------------------------
 function changeModelType(srcObj){
-	var theForm=getElementForm(srcObj);
-	var content='';
+	let theForm=getElementForm(srcObj);
+	let content='';
 	if(undefined != theForm["_id"]){
     	//edit mode - do nothing if it is not blank
     	content=getText(theForm["functions"]);
     	if(content.length > 0){return;}
 	}
-	var tablename=theForm["name"].value;
+	let tablename=theForm["name"].value;
 	content='';
 	if(srcObj.value==0){
     	//stub out class
@@ -1821,6 +1821,14 @@ function changeModelType(srcObj){
     	//Documentation
 		content +='/* Available functions: Each function should return the array that was passed in.'+"\r\n";
 		content +=''+"\r\n";
+		switch(tablename.toLowerCase()){
+			case '_users':
+				content +='	//User Login/Logout triggers'+"\r\n";
+				content +='	function '+tablename+'Login($user_rec=array()){}'+"\r\n";
+				content +='	function '+tablename+'Logout($user_rec=array()){}'+"\r\n";
+				content +=''+"\r\n";
+			break;
+		}
 		content +='	//addDBRecord triggers'+"\r\n";
 		content +='	function '+tablename+'AddBefore($params=array()){}'+"\r\n";
 		content +='	function '+tablename+'AddSuccess($params=array()){}'+"\r\n";
