@@ -268,24 +268,24 @@ function formSetFrequency(fid,v){
 	if(undefined != v){
 		if(typeof(v)=='number'){
 			switch(v){
-				case 1:v={minute:[-1],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 5:v={minute:[0,5,10,15,20,25,30,35,40,45,50,55],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 10:v={minute:[0,10,20,30,40,50],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 15:v={minute:[0,15,30,45],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 20:v={minute:[0,20,40],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 30:v={minute:[0,30],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 60:v={minute:[0],hour:[-1],month:[-1],day:[-1],daynames:[-1]};break;
-				case 1440:v={minute:[0],hour:[0],month:[-1],day:[-1],daynames:[-1]};break;
-				case 720:v={minute:[0],hour:[0,12],month:[-1],day:[-1],daynames:[-1]};break;
-				case 10080:v={minute:[0],hour:[0],month:[-1],day:[1,8,15,22],daynames:[-1]};break;
-				case 43829:v={minute:[0],hour:[0],month:[-1],day:[1],daynames:[-1]};break;
+				case 1:v={minute:[-1],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 5:v={minute:[0,5,10,15,20,25,30,35,40,45,50,55],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 10:v={minute:[0,10,20,30,40,50],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 15:v={minute:[0,15,30,45],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 20:v={minute:[0,20,40],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 30:v={minute:[0,30],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 60:v={minute:[0],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+				case 1440:v={minute:[0],hour:[0],month:[-1],day:[-1],dayname:[-1]};break;
+				case 720:v={minute:[0],hour:[0,12],month:[-1],day:[-1],dayname:[-1]};break;
+				case 10080:v={minute:[0],hour:[0],month:[-1],day:[1,8,15,22],dayname:[-1]};break;
+				case 43829:v={minute:[0],hour:[0],month:[-1],day:[1],dayname:[-1]};break;
 			}
 			//console.log('number');
 			//console.log(v);
 		}
 		if(typeof(v)=='string'){
 			if(v.length > 0){v=JSON.parse(v);}
-			else{v={minute:[],hour:[],month:[],day:[],daynames:[]};}
+			else{v={minute:[],hour:[],month:[],day:[],dayname:[]};}
 		}
 		if(v.reset){
 			for(let y=0;y<v.reset.length;y++){
@@ -377,6 +377,7 @@ function formSetFrequency(fid,v){
 			else{days[x].checked=false;}
 		}
 		/*daynames*/
+		console.log(v);
 		for(let x=0;x<daynames.length;x++){
 			let hval=parseInt(daynames[x].value);
 			if(undefined != v.dayname && undefined != v.dayname[0] && v.dayname[0]==-1){
