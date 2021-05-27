@@ -1317,7 +1317,11 @@ function postgresqlGetDBFieldInfo($table){
 	else{
 		$schema=postgresqlGetDBSchema();
 	}
-	$query=<<<ENDOFQUERY
+	/*
+
+	https://postgrespro.com/list/thread-id/1493099
+	*/
+	$query_old=<<<ENDOFQUERY
 		SELECT
 			table_schema,
 			table_name,
@@ -1337,6 +1341,33 @@ function postgresqlGetDBFieldInfo($table){
 			and table_name='{$table}'
 		ORDER BY ordinal_position
 ENDOFQUERY;
+	$query=<<<ENDOFQUERYNEW
+	SELECT
+		s.nspname as table_schema, 
+		c.relname as table_name,
+		a.attname as column_name,
+		a.attnum as ordinal_position,
+		pg_get_expr(d.adbin, d.adrelid) AS column_default,
+		a.attnotnull as is_nullable,
+		pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
+		a.attlen as character_maximum_length,
+		a.attnum as numeric_precision,
+		'' as numeric_precision_radix,
+		'' as udt_name,
+		CASE WHEN p.contype = 'p' THEN true ELSE false END AS primarykey,
+    	CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey,
+		a.attidentity as is_identity
+	FROM pg_attribute a
+		LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum)
+		JOIN pg_class c on a.attrelid = c.oid
+		LEFT JOIN pg_constraint p ON p.conrelid = c.oid AND a.attnum = ANY (p.conkey)
+		JOIN pg_namespace s on c.relnamespace = s.oid
+	WHERE a.attnum > 0 
+		AND NOT a.attisdropped			--<< no dropped (dead) columns
+		AND c.relname = '{$table}' 	--<< table name 
+		AND s.nspname = '{$schema}' 	--<< schema name 
+	ORDER BY a.attnum
+ENDOFQUERYNEW;
 	//echo $query;exit;
 	$recs=postgresqlQueryResults($query);
 	$fields=array();
@@ -1359,7 +1390,7 @@ ENDOFQUERY;
 			'identity'	=> strtolower($rec['is_identity'])=='yes'?1:0,
 		);
 		//_dbtype_ex
-		if(strlen($rec['character_maximum_length'])){
+		if(strlen($rec['character_maximum_length']) && $rec['character_maximum_length'] != '-1'){
 			$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
 		}
 		else{
