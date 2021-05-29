@@ -2068,7 +2068,13 @@ LIST_TABLE:
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
 				switch(strtolower($_REQUEST['_table_'])){
-					case '_config':echo '<span class="icon-gear w_gray w_big"></span>';break;
+					case '_config':
+						echo '<span class="icon-gear w_gray w_big"></span>';
+						$recopts['-listview']=adminConfigView();
+						$recopts['-results_eval']='adminConfigListExtra';
+						$recopts['-pretable']='<div style="display:flex;justify-content:flex-start;align-items:flex-start;flex-wrap:wrap;">';
+						$recopts['-posttable']='</div>';
+					break;
 					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
 					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
 					case '_users':echo '<span class="icon-users w_info w_big"></span>';break;
@@ -3047,6 +3053,91 @@ ENDOFDEFAULT;
 /**
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
+function adminConfigView(){
+	return <<<ENDOFCONFIGVIEW
+<div style="display:flex;flex-direction:column;justify_content:space-between;border:1px solid #ccc;margin:0 10px 10px 0;border-radius:5px;width:300px;height:150px;overflow:auto;">
+	<div style="display:flex;justify-content:space-between;background:#CCC; padding:5px 7px;">
+		<div class="w_bold w_big">[dname]</div>
+		<div>[edit]</div>
+	</div>
+	<div class="w_padleft" style="display:flex;flex-direction:column;justify_content:space-between;flex:1;height:100%;">
+		<div>
+			<div class="w_small w_gray">[description]</div>
+			<div class="w_gray">Default: [default_value]</div>
+			<div class="w_bold w_blue">Current: [current_value]</div>
+		</div>
+		<div style="flex:1;display:flex;justify-content:flex-end;" id="edit_current_value_[_id]">
+			<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform_[_id]" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,'edit_current_value_[_id]');">
+				<input type="hidden" name="setprocessing" value="0">
+				<input type="hidden" name="_table" value="_config">
+				<input type="hidden" name="_fields" value="current_value">
+				<input type="hidden" name="_id" value="[_id]">
+				<input type="hidden" name="_action" value="EDIT">
+				<input type="hidden" name="_editfield" value="current_value">
+				<div style="display:flex;justify-content:flex-end;align-items:flex-end;margin:0 7px 7px 0;">
+					<div>[cvedit]</div>
+					<button type="submit" class="btn"><span class="icon-save"></span></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+ENDOFCONFIGVIEW;
+}
+function adminConfigListExtra($recs){
+	foreach($recs as $i=>$rec){
+		$recs[$i]['dname']=ucwords(str_replace('_',' ',$rec['name']));
+		if(!strlen($rec['default_value'])){
+			$recs[$i]['default_value']='no default';
+		}
+		$recs[$i]['edit']='<a class="w_link" href="/php/admin.php?_table_=_config&_menu=edit&_id='.$rec['_id'].'"><span class="icon-edit w_small w_gray"></span></a>';
+		if(strlen($rec['possible_values'])){
+			if(stringBeginsWith($rec['possible_values'],'&')){
+				$efield='current_value';
+				$_REQUEST[$efield]=$rec[$efield];
+				$evalstr='<?='.preg_replace('/^\&/','',$rec['possible_values']).'?>';
+				$recs[$i]['cvedit']=evalPHP($evalstr);
+			}
+			elseif($rec['possible_values']=='0=Off,1=On'){
+				$cparams=array(
+					'value'=>$rec['current_value'],
+					'id'=>'current_value_'.$rec['_id']
+				);
+				$recs[$i]['cvedit']=buildFormSelectOnOff('current_value',$cparams);
+			}
+			else{
+				$cvals=preg_split('/\,/',$rec['possible_values']);
+				$copts=array();
+				foreach($cvals as $cval){
+					$parts=preg_split('/\=/',$cval,2);
+					if(count($parts)==2){
+						$t=trim($parts[0]);
+						$d=trim($parts[1]);
+						$copts[$t]=$d;
+					}
+					else{
+						$t=trim($parts[0]);
+						$copts[$t]=$t;
+					}
+				}
+				$cparams=array(
+					'message'=>' --- ',
+					'value'=>$rec['current_value']
+				);
+				$recs[$i]['cvedit']=buildFormSelect('current_value',$copts,$cparams);
+			}
+		}
+		else{
+			$cparams=array(
+				'value'=>$rec['current_value'],
+				'style'=>'width:100%',
+				'class'=>'input'
+			);
+			$recs[$i]['cvedit']=buildFormText('current_value',$cparams);
+		}
+	}
+	return $recs;
+}
 function adminDefaultTemplateValues(){
 	$_REQUEST['body'] = <<<ENDOFDEFAULT
 <!DOCTYPE HTML>

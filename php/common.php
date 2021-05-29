@@ -1756,7 +1756,9 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		unset($params['name']);
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-
+	if(!isset($params['value'])){$params['id']=$name;}
+	$id=$params['id'];
+	unset($params['id']);
 	$tag='<div class="w_flexgroup" data-display="inline-flex"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
@@ -1768,7 +1770,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		if($tval==$params['value'] || $dval==$params['value']){
 			$checked=' checked';
 		}
-		$id="{$name}_{$tval}";
+		$cid="{$id}_{$tval}";
 		$class='';
 		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
 		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
@@ -1783,8 +1785,8 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 				$tag.=" {$pk}=\"{$pv}\"";
 			}
 		}
-		$tag .= ' name="'.$name.'"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
-        $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
+		$tag .= ' name="'.$name.'"  id="'.$cid.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+        $tag .= '<label for="'.$cid.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
