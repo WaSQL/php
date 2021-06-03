@@ -3064,7 +3064,7 @@ function adminConfigView(){
 		<div>
 			<div class="w_small w_gray">[description]</div>
 			<div class="w_gray">Default: [default_value]</div>
-			<div class="w_bold w_blue">Current: [current_value]</div>
+			<div class="w_bold w_blue" style="text-overflow: ellipsis;overflow:hidden;">Current: [current_value]</div>
 		</div>
 		<div style="flex:1;display:flex;justify-content:flex-end;" id="edit_current_value_[_id]">
 			<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform_[_id]" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,'edit_current_value_[_id]');">
@@ -3131,7 +3131,7 @@ function adminConfigListExtra($recs){
 			$cparams=array(
 				'value'=>$rec['current_value'],
 				'style'=>'width:100%',
-				'class'=>'input'
+				'class'=>'input w_small'
 			);
 			$recs[$i]['cvedit']=buildFormText('current_value',$cparams);
 		}
