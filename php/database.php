@@ -1641,6 +1641,8 @@ function databaseListRecords($params=array()){
 		}
 	}
 	foreach($params['-list'] as $row=>$rec){
+		$recid=removeHtml($rec['_id']);
+		$recid=(integer)$recid;
 		$rtn .= '		<tr data-row="'.$row.'"';
 		if(!empty($params['-onclick'])){
 			$href=$params['-onclick'];
@@ -1946,7 +1948,7 @@ function databaseListRecords($params=array()){
 					}
 				}
 			}
-			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && (isset($rec['_id']) || isset($params['-editid']))){
+			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields']) && ($recid > 0 || isset($params['-editid']))){
 				if(isset($params['-editid'])){
 					$editv=$params['-editid'];
 					$editv=str_replace('%fieldname%',$fld,$editv);
@@ -1960,7 +1962,7 @@ function databaseListRecords($params=array()){
 				}
 				else{
 					
-					$atts['id']="editfield_{$fld}_{$rec['_id']}";
+					$atts['id']="editfield_{$fld}_{$recid}";
 				}
 				
 			}
@@ -1993,7 +1995,7 @@ function databaseListRecords($params=array()){
 	                $rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="'.$editv.'"></sup>';
 				}
 				else{
-					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$rec['_id'].'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
+					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$recid.'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
 				}
 				
 			}
@@ -3355,6 +3357,7 @@ function dropDBIndex($indexname,$tablename){
 *	[-where] string - turns the form into an edit form, editing the record that matches the where clause
 *	[-fields] string - specifies the fields to use in the form.  A comma denotes a new row, a colon denotes on the same row. You can also call getView({viewname}) to use a view to define the fields.
 * 	[-editfields] string - use to override comma separated list of fields to edit on the form
+* 	[-collection_field] string - single json field to store response in
 *	[-method] string - POST or GET - defaults to POST
 *	[-class] string - class attribute for form tag - defaults to w_form
 *	[-name] string - name attribute for form tag - defaults to addedit
@@ -3422,6 +3425,16 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 		if($params['-table']=='_pages'){$preview=$rec['name'];}
 		foreach($rec as $key=>$val){$_REQUEST[$key]=$val;}
+		if(isset($params['-collection_field'])){
+			$cfield=strtolower($params['-collection_field']);
+			//return $cfield.printValue($rec);
+			if(isset($rec[$cfield])){
+				$json=json_decode($rec[$cfield],true);
+				foreach($json as $k=>$v){
+					$_REQUEST[$k]=$v;
+				}
+			}
+		}
 		$editmode=1;
     }
 	global $USER;
@@ -4056,7 +4069,11 @@ function addEditDBForm($params=array(),$customcode=''){
 	    		$rtn .= '	<textarea name="'.$key.'">'.$val.'</textarea>'.PHP_EOL;
 	    		continue;
 	    	}
-			if(isset($used[$key])){
+	    	elseif($key=='-collection_field'){
+	    		$rtn .= '<input type="hidden" name="_collection_field" value="'.$val.'">'.PHP_EOL;
+	    		continue;
+	    	}
+			elseif(isset($used[$key])){
 				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}

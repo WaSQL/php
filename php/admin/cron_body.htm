@@ -67,10 +67,6 @@ function cronModal(func,id,title){
 </view:default>
 
 <view:list>
-	<div class="w_right">
-		<a href="#" onclick="return cronModal('add',0,this.title);" title="<translate>Add New Cron</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-plus"></span> <translate>Add New</translate></a>
-		<a href="#" onclick="return pagingSubmit(document.cronlistform,'cron_results');" title="<translate>Refresh</translate>" class="btn <?=configValue('admin_color');?>"><span class="icon-refresh"></span></a>
-	</div>
 	<?=cronList();?>
 	<div class="align-left">
 		<button type="button" class="button btn <?=configValue('admin_color');?>" onclick="pauseSelected('pause')"><span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span> Pause Selected</button>
@@ -175,7 +171,7 @@ function cronModal(func,id,title){
 				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
 				<td class="w_small"><?=$cron['run_format'];?></td>
-				<td>
+				<td class="w_nowrap">
 					<a href="#" class="w_link w_block" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
 

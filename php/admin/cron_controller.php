@@ -8,11 +8,8 @@ if(!isset($CONFIG['admin_form_url'])){
 }
 switch(strtolower($_REQUEST['func'])){
 	case 'run':
-		$temppath=getWasqlPath('php/temp');
-		$afile="{$temppath}/{$CONFIG['name']}_runnow.txt";
 		$id=(integer)$_REQUEST['id'];
-		$ok=setFileContents($afile,$id);
-		usleep(250);
+		$ok=editDBRecordById('_cron',$id,array('run_now'=>1));
 		$cron=cronDetails($id);
 		setView('details',1);
 		return;
@@ -92,7 +89,7 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	default:
 		//echo "default";exit;
-		$ok=cronCheckSchema();
+		$ok=commonCronCheckSchema();
 		setView('default');
 	break;
 }

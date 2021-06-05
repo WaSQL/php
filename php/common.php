@@ -36,6 +36,109 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
+/**  --- function commonCronCheckSchema
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function commonCronCheckSchema(){
+	$cronfields=getDBFieldInfo('_cron');
+	//run_now
+	if(!isset($cronfields['run_now'])){
+		$query="ALTER TABLE _cron ADD run_now ".databaseDataType('integer(1)')." NOT NULL Default 0";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_now',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'tvals'			=> '1',
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+	}
+	//run_as
+	if(!isset($cronfields['run_as'])){
+		$query="ALTER TABLE _cron ADD run_as int NOT NULL Default 0";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_as',
+			'inputtype'		=> 'select',
+			'required'		=> 0,
+			'displayname'	=> "Run As",
+			'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
+			'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
+		));
+	}
+	//paused
+	if(!isset($cronfields['paused'])){
+		$query="ALTER TABLE _cron ADD paused ".databaseDataType('integer(1)')." NOT NULL Default 0";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'paused',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'tvals'			=> '1',
+			'editlist'		=> 1,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+	}
+	//groupname
+	if(!isset($cronfields['groupname'])){
+		$query="ALTER TABLE _cron ADD groupname ".databaseDataType('varchar(150)')." NULL;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'groupname',
+			'inputtype'		=> 'text',
+			'width'			=> 150,
+			'required'		=> 0
+		));
+		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
+	}
+	//records_to_keep
+	if(!isset($cronfields['records_to_keep'])){
+		$query="ALTER TABLE _cron ADD records_to_keep ".databaseDataType('integer')." NOT NULL Default 1000;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'records_to_keep',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
+		));
+	}
+	//run_memory
+	if(!isset($cronfields['run_memory'])){
+		$query="ALTER TABLE _cron ADD run_memory ".databaseDataType('integer')." NULL";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'run_memory',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 1
+		));
+	}
+	//frequency_max
+	if(!in_array('frequency_max',$cronfields)){
+		$query="ALTER TABLE _cron ADD frequency_max varchar(25) NULL";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'frequency_max',
+			'inputtype'		=> 'select',
+			'displayname'	=> "Frequency Max",
+			'-upsert'		=> 'tvals,dvals,inputtype,displayname',
+			'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
+			'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
+		));
+	}
+	return true;
+}
 function commonCronCleanup(){
 	loadExtras('system');
 	global $CONFIG;
@@ -551,9 +654,16 @@ function commonSearchFiltersForm($params=array()){
 					$cname=$str['name'];
 					unset($str['name']);
 				}
+			elseif(isNum($name)){$cname='';}
 			else{$cname=$name;}
 			if(is_array($str) && isset($str['icon'])){
-				$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;
+				if(strlen($cname)){
+					$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;	
+				}
+				else{
+					$cname='<span class="'.$str['icon'].'"></span> ';
+				}
+				
 				unset($str['icon']);
 			}
 			//add any other attributes
@@ -4020,10 +4130,28 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
 	if(!isset($params['sign'])){$params['sign']='<span class="icon-signature"></span>';}
 	if(!isset($params['width'])){$params['width']=600;}
-	if(!isset($params['height'])){$params['height']=75;}
+	if(!isset($params['height'])){$params['height']=90;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['value']) && strlen($params['value'])){
 		$params['-value']=$params['value'];
+	}
+	if(isset($params['readonly']) && $params['readonly']==1){
+		if(isset($params['-value']) && strlen($params['-value'])){
+			$src=$params['-value'];
+		}
+		else{
+			$src='/wfiles/clear.gif';
+		}
+		$rtn='';
+		$rtn .= '<div class="w_signature"><img src="'.$src.'" alt="current signature"';
+		if(isset($params['style']) && strlen($params['style'])){
+			$rtn .= ' style="'.$params['style'].'"';
+		}
+		else{
+			$rtn .= ' style="width:'.$params['width'].'px;height:'.$params['height'].'px;"';
+		}
+		$rtn .= ' /></div>';
+		return $rtn;
 	}
 	$canvas_id=$name.'_canvas';
 	$clear_id=$name.'_clear';
@@ -4036,9 +4164,9 @@ function buildFormSignature($name,$params=array()){
 	}
 	$rtn .='>'.PHP_EOL;
 	//return $name.printValue($params);
-	$rtn .= '		'.$params['displayname'].PHP_EOL;
+	//$rtn .= '		'.$params['displayname'].PHP_EOL;
 	//show clear button on right
-	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
+	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;width:'.$params['width'].'px;">'.PHP_EOL;
 	//type to sign
 	if(!isset($params['data-input']) || $params['data-input'] != 0){
 		$opts=array(
@@ -14829,6 +14957,17 @@ function processActions(){
 					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
 					$opts=array('-table'=>$_REQUEST['_table'],'-where'=>'_id='.$_REQUEST['_id']);
+					if(isset($_REQUEST['_collection_field'])){
+						$cfield=strtolower($_REQUEST['_collection_field']);
+						if(isset($info[$cfield])){
+							$jreq=array();
+							foreach($_REQUEST as $k=>$v){
+								if(isWasqlField($k)){continue;}
+								$jreq[$k]=$v;
+							}
+							$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE);
+						}
+					}
 					//check for xmldata field unless noxmldata is passed also
 					if(!isset($_REQUEST['noxmldata'])){
 						if(isset($info['xmldata'])){
@@ -15203,82 +15342,95 @@ function processActions(){
 			//add a database record
 		    if(!$spam && strlen($_REQUEST['_table'])){
 				//$fields=getDBFields($_REQUEST['_table']);
-				$info=getDBFieldInfo($_REQUEST['_table'],1);
-				$fields=array_keys($info);
 				$opts=array('-table'=>$_REQUEST['_table']);
-				$tinymce=array();
-				foreach($fields as $field){
-					if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
-					if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
-					elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
-					elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
-					elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
-					elseif($info[$field]['behavior']=='quill'){$tinymce[]=$field;}
-					//decode it if needs be
-					if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
-					elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
-					//css_min minifycode
-					if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
-						$opts['css_min']=minifyCode($_REQUEST[$field],'css');
-					}
-					elseif($field=='js' && !isset($_REQUEST['js_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['js_min'])){
-                        $opts['js_min']=minifyCode($_REQUEST[$field],'js');
-					}
-					//json
-					if($info[$field]['_dbtype']=='json'){
-						//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
-						global $_jsonval_;
-						$jval=array();
+				$info=getDBFieldInfo($_REQUEST['_table'],1);
+				if(isset($_REQUEST['_collection_field'])){
+					$cfield=strtolower($_REQUEST['_collection_field']);
+					if(isset($info[$cfield])){
+						$jreq=array();
 						foreach($_REQUEST as $k=>$v){
-							if(!stringBeginsWith($k,"{$field}>")){continue;}
-							$keys=preg_split('/\>/',$k);
-							array_shift($keys);
-							$keystr=implode("']['",$keys);
-							$_jsonval_=$v;
-							$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
-							eval($str);
+							if(isWasqlField($k)){continue;}
+							$jreq[$k]=$v;
 						}
-						unset($_jsonval_);
-						if(is_array($jval) && count($jval)){
-							$_REQUEST[$field]=json_encode($jval);
-						}
+						$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE);
 					}
-					//markdown?
-					if($info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
-						if(!strlen(trim($_REQUEST[$field]))){
-                            	$opts["{$field}_mdml"]='NULL';
+				}
+				else{
+					$fields=array_keys($info);
+					$tinymce=array();
+					foreach($fields as $field){
+						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
+						if($info[$field]['behavior']=='tinymce'){$tinymce[]=$field;}
+						elseif($info[$field]['behavior']=='nicedit'){$tinymce[]=$field;}
+						elseif($info[$field]['behavior']=='wysiwyg'){$tinymce[]=$field;}
+						elseif($info[$field]['behavior']=='richtext'){$tinymce[]=$field;}
+						elseif($info[$field]['behavior']=='quill'){$tinymce[]=$field;}
+						//decode it if needs be
+						if(isset($_REQUEST['_base64']) && $_REQUEST['_base64']){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+						elseif(isset($_REQUEST["{$field}_base64"]) && $_REQUEST["{$field}_base64"]==1){$_REQUEST[$field]=decodeBase64($_REQUEST[$field]);}
+						//css_min minifycode
+						if($field=='css' && !isset($_REQUEST['css_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['css_min'])){
+							$opts['css_min']=minifyCode($_REQUEST[$field],'css');
 						}
+						elseif($field=='js' && !isset($_REQUEST['js_min']) && in_array($_REQUEST['_table'],array('_pages','_templates')) && isset($info['js_min'])){
+	                        $opts['js_min']=minifyCode($_REQUEST[$field],'js');
+						}
+						//json
+						if($info[$field]['_dbtype']=='json'){
+							//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
+							global $_jsonval_;
+							$jval=array();
+							foreach($_REQUEST as $k=>$v){
+								if(!stringBeginsWith($k,"{$field}>")){continue;}
+								$keys=preg_split('/\>/',$k);
+								array_shift($keys);
+								$keystr=implode("']['",$keys);
+								$_jsonval_=$v;
+								$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+								eval($str);
+							}
+							unset($_jsonval_);
+							if(is_array($jval) && count($jval)){
+								$_REQUEST[$field]=json_encode($jval);
+							}
+						}
+						//markdown?
+						if($info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
+							if(!strlen(trim($_REQUEST[$field]))){
+	                            	$opts["{$field}_mdml"]='NULL';
+							}
+							else{
+								loadExtras('markdown');
+								$mdmlopts=array();
+								if($CONFIG['markdown']==1){$mdmlopts['-strip_tags']=true;}
+								$opts["{$field}_mdml"]=markdownFromHtml($_REQUEST[$field],$mdmlopts);
+							}
+						}
+						if($info[$field]['inputtype']=='file'){
+							//add width, height, size, and type if fields exist
+							if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
+							if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
+							if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
+							if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
+							if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
+							}
 						else{
-							loadExtras('markdown');
-							$mdmlopts=array();
-							if($CONFIG['markdown']==1){$mdmlopts['-strip_tags']=true;}
-							$opts["{$field}_mdml"]=markdownFromHtml($_REQUEST[$field],$mdmlopts);
+							if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));}
+							if(isset($info[$field.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
+							}
+						$ucfield=strtoupper($field);
+						if(isset($_REQUEST[$field])){
+							if($opts['-table']=="_users" && $field=='password'){$opts[$field]=userEncryptPW($_REQUEST[$field]);}
+							elseif(is_array($_REQUEST[$field])){$opts[$field]=implode(':',$_REQUEST[$field]);}
+							elseif(strlen($_REQUEST[$field])){$opts[$field]=$_REQUEST[$field];}
 						}
+						elseif($field=='xmldata'){$opts['xmldata']= request2XML($_REQUEST);}
+						elseif($field=='_xmldata'){$opts['_xmldata']= request2XML($_REQUEST);}
+						elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST);}
+						elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
+						elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
-					if($info[$field]['inputtype']=='file'){
-						//add width, height, size, and type if fields exist
-						if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
-						if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
-						if(isset($info[$field.'_size']) && isset($_REQUEST[$field.'_size'])){$opts[$field.'_size']=$_REQUEST[$field.'_size'];}
-						if(isset($info[$field.'_width']) && isset($_REQUEST[$field.'_width'])){$opts[$field.'_width']=$_REQUEST[$field.'_width'];}
-						if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
-						}
-					else{
-						if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));}
-						if(isset($info[$field.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
-						}
-					$ucfield=strtoupper($field);
-					if(isset($_REQUEST[$field])){
-						if($opts['-table']=="_users" && $field=='password'){$opts[$field]=userEncryptPW($_REQUEST[$field]);}
-						elseif(is_array($_REQUEST[$field])){$opts[$field]=implode(':',$_REQUEST[$field]);}
-						elseif(strlen($_REQUEST[$field])){$opts[$field]=$_REQUEST[$field];}
-						}
-					elseif($field=='xmldata'){$opts['xmldata']= request2XML($_REQUEST);}
-					elseif($field=='_xmldata'){$opts['_xmldata']= request2XML($_REQUEST);}
-					elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST);}
-					elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
-					elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
-					}
+				}
 				$id=addDBRecord($opts);
 				$_REQUEST['add_result']=$id;
 				if(isNum($id)){
