@@ -5,7 +5,16 @@
 		you can run multiple to handle heavy loads - it will handle the queue
 		On linux, add to the crontab
 		* * * * * /var/www/wasql_live/php/cron.sh >/var/www/wasql_live/php/cron.log 2>&1
-		On Windows, add it as a scheduled task
+		On Windows, add it as a scheduled task - Command Prompt as administrator:
+			https://www.windowscentral.com/how-create-task-using-task-scheduler-command-prompt
+			Create:
+				SCHTASKS /CREATE /SC MINUTE /MO 1 /TN "WaSQL\WaSQL_Cron_1" /TR "php.exe d:\wasql\php\cron.php" /RU administrator
+			List:
+				SCHTASKS /QUERY
+			Delete:
+				SCHTASKS /DELETE /TN "WaSQL\WaSQL_Cron_1"
+
+
 	Note: cron.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the cron does not time out
@@ -568,11 +577,13 @@ run_now = 1 or
 		(
 		ifnull(frequency_max,'')='' 
 		or ifnull(run_date,'')=''
+		or (frequency_max='minute' and minute(run_date) != minute(now()))
 		or (frequency_max='hourly' and hour(run_date) != hour(now()))
 		or (frequency_max='daily' and date(run_date) != date(now()))
 		or (frequency_max='weekly' and week(run_date) != week(now()))
 		or (frequency_max='monthly' and month(run_date) != month(now()))
 		or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
+		or (frequency_max='yearly' and year(run_date) != year(now()))
 		)
 	and
 		(

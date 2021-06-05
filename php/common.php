@@ -51,7 +51,8 @@ function commonCronCheckSchema(){
 			'inputtype'		=> 'checkbox',
 			'synchronize'	=> 0,
 			'tvals'			=> '1',
-			'required'		=> 0
+			'required'		=> 0,
+			'-upsert'		=> 'inputtype,synchronize,tvals,required'
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
 	}
@@ -66,7 +67,8 @@ function commonCronCheckSchema(){
 			'required'		=> 0,
 			'displayname'	=> "Run As",
 			'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
-			'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
+			'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id",
+			'-upsert'		=> 'inputtype,width,required,displayname,tvals,dvals'
 		));
 	}
 	//paused
@@ -80,7 +82,8 @@ function commonCronCheckSchema(){
 			'synchronize'	=> 0,
 			'tvals'			=> '1',
 			'editlist'		=> 1,
-			'required'		=> 0
+			'required'		=> 0,
+			'-upsert'		=> 'inputtype,synchronize,tvals,editlist,required'
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
 	}
@@ -93,7 +96,8 @@ function commonCronCheckSchema(){
 			'fieldname'		=> 'groupname',
 			'inputtype'		=> 'text',
 			'width'			=> 150,
-			'required'		=> 0
+			'required'		=> 0,
+			'-upsert'		=> 'inputtype,width,required'
 		));
 		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"groupname"));
 	}
@@ -107,7 +111,8 @@ function commonCronCheckSchema(){
 			'inputtype'		=> 'text',
 			'width'			=> 100,
 			'mask'			=> 'integer',
-			'required'		=> 1
+			'required'		=> 1,
+			'-upsert'		=> 'inputtype,width,mask,required'
 		));
 	}
 	//run_memory
@@ -120,7 +125,8 @@ function commonCronCheckSchema(){
 			'inputtype'		=> 'text',
 			'width'			=> 100,
 			'mask'			=> 'integer',
-			'required'		=> 1
+			'required'		=> 1,
+			'-upsert'		=> 'inputtype,width,mask,required',
 		));
 	}
 	//frequency_max
@@ -132,9 +138,9 @@ function commonCronCheckSchema(){
 			'fieldname'		=> 'frequency_max',
 			'inputtype'		=> 'select',
 			'displayname'	=> "Frequency Max",
+			'tvals'			=> "minute\r\nhourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly\r\nyearly",
+			'dvals'			=> "Once per Minute\r\nOnce Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter\r\nOnce Per Year",
 			'-upsert'		=> 'tvals,dvals,inputtype,displayname',
-			'tvals'			=> "hourly\r\ndaily\r\nweekly\r\nmonthly\r\nquarterly",
-			'dvals'			=> "Once Per Hour\r\nOnce Per Day\r\nOnce Per Week\r\nOnce Per Month\r\nOnce Per Quarter"
 		));
 	}
 	return true;

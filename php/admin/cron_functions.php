@@ -100,7 +100,7 @@ function cronList(){
 		'-table'=>'_cron',
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now',
-		'-listfields'=>'id,groupname,name,active,paused,running,run_now,last_run,run_length,run_format',
+		'-listfields'=>'_id,groupname,name,active,paused,running,run_now,last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -114,6 +114,7 @@ function cronList(){
 		'run_length_class'=>'align-right',
 		'run_length_verbosetime'=>1,
 		'groupname_displayname'=>'Group',
+		'run_format_displayname'=>'Frequency',
 		'name_class'=>'w_nowrap w_link',
 		'active_options'=>array(
 			'class'=>'align-center',
