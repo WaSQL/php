@@ -104,7 +104,7 @@ function cronList(){
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
-		'-editfields'=>'run_now',
+		'-editfields'=>'run_now,frequency_max',
 		'-export'=>1,
 		'-sorting'=>1,
 		'setprocessing'=>0,

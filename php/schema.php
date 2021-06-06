@@ -1384,7 +1384,8 @@ function addMetaData($table=''){
 				'tvals'			=> 1,
 				'required'		=> 0,
 				'synchronize'	=> 0,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,tvals,required,synchronize,postedit',
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1394,7 +1395,8 @@ function addMetaData($table=''){
 				'inputmax'		=> '50',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required,synchronize,postedit',
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1405,7 +1407,8 @@ function addMetaData($table=''){
 				'height'		=> '40',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit',
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1416,7 +1419,8 @@ function addMetaData($table=''){
 				'height'		=> '40',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1427,7 +1431,8 @@ function addMetaData($table=''){
 				'height'		=> '30',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1438,7 +1443,8 @@ function addMetaData($table=''){
 				'height'		=> '100',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1449,7 +1455,8 @@ function addMetaData($table=''){
 				'height'		=> '40',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1460,7 +1467,8 @@ function addMetaData($table=''){
 				'height'		=> '30',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_tabledata',
@@ -1471,7 +1479,8 @@ function addMetaData($table=''){
 				'height'		=> '100',
 				'required'		=> 0,
 				'synchronize'	=> 1,
-				'postedit'		=> 0
+				'postedit'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,synchronize,required,postedit'
 				));
 		//_templates
 		case '_templates':
@@ -1483,6 +1492,7 @@ function addMetaData($table=''){
 				'width'			=> '700',
 				'height'		=> '300',
 				'required'		=> 1,
+				'-upsert'		=> 'inputtype,behavior,width,height,required',
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_templates',
@@ -1492,7 +1502,8 @@ function addMetaData($table=''){
 				'behavior'		=> 'phpeditor',
 				'width'			=> '700',
 				'height'		=> '200',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_templates',
@@ -1502,7 +1513,8 @@ function addMetaData($table=''){
 				'behavior'		=> 'csseditor',
 				'width'			=> '700',
 				'height'		=> '120',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_templates',
@@ -1512,20 +1524,23 @@ function addMetaData($table=''){
 				'behavior'		=> 'jseditor',
 				'width'			=> '700',
 				'height'		=> '120',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,behavior,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_templates',
 				'fieldname'		=> 'name',
 				'inputtype'		=> 'text',
 				'width'			=> '700',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_templates',
 				'fieldname'		=> 'description',
 				'inputtype'		=> 'text',
 				'width'			=> '700',
+				'-upsert'		=> 'inputtype,width'
 				));
 			break;
 		//_markers
@@ -1540,6 +1555,7 @@ function addMetaData($table=''){
 				'tvals'			=> "1\r\n2\r\n3",
 				'dvals'			=> "High\r\nMed\r\nLow",
 				'defaultval'	=> 2,
+				'-upsert'		=> 'inputtype,displayname,dvals,tvals,defaultval'
 			));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_markers',
@@ -1550,6 +1566,7 @@ function addMetaData($table=''){
 				'tvals'			=> "1\r\n2\r\n3",
 				'dvals'			=> "New\r\nFixed\r\nNope",
 				'defaultval'	=> 1,
+				'-upsert'		=> 'inputtype,displayname,dvals,tvals,defaultval'
 			));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_markers',
@@ -1559,7 +1576,8 @@ function addMetaData($table=''){
 				'width'			=> 300,
 				'height'		=> 60,
 				'inputmax'		=> 500,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,width,height,inputmax,required'
 			));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_markers',
@@ -1569,7 +1587,8 @@ function addMetaData($table=''){
 				'width'			=> 300,
 				'height'		=> 60,
 				'inputmax'		=> 1000,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,width,height,inputmax,required'
 			));
 		break;
 		//_wpass
@@ -1583,7 +1602,8 @@ function addMetaData($table=''){
 				'height'		=> 200,
 				'inputmax'		=> 80,
 				'tvals'			=> '<?='.'wpassGetCategories();'.'?>',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,inputmax,tvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1591,7 +1611,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '200',
 				'inputmax'		=> 100,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1600,7 +1621,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '225',
 				'inputmax'		=> 60,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1609,7 +1631,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '150',
 				'inputmax'		=> 40,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1618,7 +1641,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '400',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1627,7 +1651,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 400,
 				'height'		=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_wpass',
@@ -1637,7 +1662,8 @@ function addMetaData($table=''){
 				'width'			=> 3,
 				'tvals'			=> 'select _id from _users where _id !=<?=userValue(\'_id\');?> and active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
 				'dvals'			=> 'select firstname,lastname from _users where _id !=<?=userValue(\'_id\');?> and active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,width,dvals,tvals,required'
 				));
 		break;
 		//_users
@@ -1649,7 +1675,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '150',
 				'inputmax'		=> 255,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1657,7 +1684,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'password',
 				'width'			=> '100',
 				'inputmax'		=> 25,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1665,7 +1693,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '200',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1673,7 +1702,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '180',
 				'inputmax'		=> 60,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1684,6 +1714,7 @@ function addMetaData($table=''){
 				'tvals'			=> "0\r\n1",
 				'dvals'			=> "Administrator\r\nNormal",
 				'defaultval'	=> 1,
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,defaultval'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1691,7 +1722,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'checkbox',
 				'tvals'			=> "1",
 				'defaultval'	=> 1,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,tvals,defaultval'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1699,7 +1731,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '400',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1707,7 +1740,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '400',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1715,7 +1749,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '180',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1723,7 +1758,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '180',
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1731,7 +1767,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '60',
 				'inputmax'		=> 10,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1739,7 +1776,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '100',
 				'inputmax'		=> 25,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1748,7 +1786,8 @@ function addMetaData($table=''){
 				'width'			=> '220',
 				'inputmax'		=> 255,
 				'mask'			=> 'email',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,mask,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1756,6 +1795,7 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '170',
 				'inputmax'		=> 255,
+				'-upsert'		=> 'inputtype,width,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1765,7 +1805,8 @@ function addMetaData($table=''){
 				'width'			=> 150,
 				'displayname'	=> "State",
 				'tvals'			=> '<?='.'wasqlGetStates();'.'?>',
-				'dvals'			=> '<?='.'wasqlGetStates(1);'.'?>'
+				'dvals'			=> '<?='.'wasqlGetStates(1);'.'?>',
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,required,width'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1776,7 +1817,8 @@ function addMetaData($table=''){
 				'onchange'		=> "redrawField('state',this);",
 				'displayname'	=> "Country",
 				'tvals'			=> '<?='.'wasqlGetCountries();'.'?>',
-				'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>'
+				'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>',
+				'-upsert'		=> 'inputtype,displayname,defaultval,onchange,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1784,7 +1826,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 400,
 				'height'		=> 75,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1792,7 +1835,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'file',
 				'width'			=> 400,
 				'defaultval'	=> '/files/users',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,defaultval,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_users',
@@ -1801,7 +1845,8 @@ function addMetaData($table=''){
 				'width'			=> 400,
 				'height'		=> 50,
 				'inputmax'		=> 255,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,inputmax,required'
 				));
 			break;
 		//countries
@@ -1812,6 +1857,7 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> 300,
 				'inputmax'		=> 150,
+				'-upsert'		=> 'inputtype,width,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> 'contact_form',
@@ -1820,7 +1866,8 @@ function addMetaData($table=''){
 				'width'			=> 300,
 				'inputmax'		=> 255,
 				'mask'			=> 'email',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,mask,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> 'contact_form',
@@ -1828,14 +1875,16 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> 300,
 				'inputmax'		=> 150,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> 'contact_form',
 				'fieldname'		=> 'message',
 				'inputtype'		=> 'textarea',
 				'width'			=> 300,
-				'height'		=> 150
+				'height'		=> 150,
+				'-upsert'		=> 'inputtype,width,height'
 				));
 			break;
 		//countries
@@ -1847,7 +1896,8 @@ function addMetaData($table=''){
 				'width'			=> 60,
 				'inputmax'		=> 2,
 				'defaultval'	=> 'US',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,defaultval,required'
 				));
 			break;
 		//states
@@ -1858,7 +1908,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> 60,
 				'inputmax'		=> 5,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> 'states',
@@ -1868,7 +1919,8 @@ function addMetaData($table=''){
 				'defaultval'	=> 'US',
 				'displayname'	=> "Country",
 				'tvals'			=> '<?='.'wasqlGetCountries();'.'?>',
-				'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>'
+				'dvals'			=> '<?='.'wasqlGetCountries(1);'.'?>',
+				'-upsert'		=> 'inputtype,displayname,defaultval,tvals,dvals,required'
 				));
 			break;
 		//_config
@@ -1879,28 +1931,32 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '200',
 				'inputmax'		=> 50,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_config',
 				'fieldname'		=> 'current_value',
 				'inputtype'		=> 'text',
 				'width'			=> '200',
-				'inputmax'		=> 500
+				'inputmax'		=> 500,
+				'-upsert'		=> 'inputtype,width,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_config',
 				'fieldname'		=> 'default_value',
 				'inputtype'		=> 'text',
 				'width'			=> '200',
-				'inputmax'		=> 500
+				'inputmax'		=> 500,
+				'-upsert'		=> 'inputtype,width,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_config',
 				'fieldname'		=> 'description',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'height'		=> '100'
+				'height'		=> '100',
+				'-upsert'		=> 'inputtype,width,height'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_config',
@@ -1908,7 +1964,8 @@ function addMetaData($table=''){
 				'displayname'	=> 'Possible Values (0=Off,1=On)',
 				'inputtype'		=> 'text',
 				'width'			=> '600',
-				'inputmax'		=> 1000
+				'inputmax'		=> 1000,
+				'-upsert'		=> 'inputtype,width,inputmax,displayname'
 				));
 			break;
 		//_forms
@@ -1920,7 +1977,8 @@ function addMetaData($table=''){
 				'width'			=> '220',
 				'inputmax'		=> 255,
 				'mask'			=> 'email',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,inputmax,mask,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_forms',
@@ -1928,7 +1986,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '220',
 				'inputmax'		=> 255,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_forms',
@@ -1936,7 +1995,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 400,
 				'height'		=> 300,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			break;
 		//_forms
@@ -1947,7 +2007,8 @@ function addMetaData($table=''){
 				'fieldname'		=> 'description',
 				'inputtype'		=> 'text',
 				'width'			=> '400',
-				'inputmax'		=> 255
+				'inputmax'		=> 255,
+				'-upsert'		=> 'inputtype,width,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'-upsert'		=> 'inputtype,tvals,dvals,inputmax',
@@ -1956,7 +2017,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'select',
 				'tvals'			=> '<?='.'wasqlGetDatabases();'.'?>',
 				'dvals'			=> '<?='.'wasqlGetDatabases(1);'.'?>',
-				'inputmax'		=> 255
+				'inputmax'		=> 255,
+				'-upsert'		=> 'inputtype,tvals,dvals,inputmax'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'-upsert'		=> 'displayname,inputtype,width,tvals,dvals,required',
@@ -1967,7 +2029,8 @@ function addMetaData($table=''){
 				'width'			=> 5,
 				'tvals'			=> 'select _id from _users where active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
 				'dvals'			=> 'select firstname,lastname from _users where active=1 and concat(firstname,lastname) != \'\' order by firstname,lastname,_id',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,required,width'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'-upsert'		=> 'displayname,inputtype,width,tvals,required',
@@ -1977,7 +2040,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'checkbox',
 				'width'			=> 5,
 				'tvals'			=> 'select distinct(department) from _users where active=1 and department is not null order by department',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,tvals,required,width'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
@@ -1985,7 +2049,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
 				'height'		=> '150',
-				'behavior'		=> 'sqleditor'
+				'behavior'		=> 'sqleditor',
+				'-upsert'		=> 'inputtype,width,height,behavior'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
@@ -1993,7 +2058,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '325',
 				'inputmax'		=> 100,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
@@ -2002,7 +2068,8 @@ function addMetaData($table=''){
 				'editlist'		=> 1,
 				'defaultval'	=> 1,
 				'tvals'			=> 1,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,editlist,defaultval,tvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
@@ -2011,7 +2078,8 @@ function addMetaData($table=''){
 				'tvals'			=> 'select distinct(menu) from _reports order by menu',
 				'width'			=> 200,
 				'height'		=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,tvals,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_reports',
@@ -2020,7 +2088,8 @@ function addMetaData($table=''){
 				'width'			=> '600',
 				'height'		=> '150',
 				'displayname'	=> 'Options - one per line.  key=value, or name:key=value.  -- lines are ignored',
-				'defaultval'	=> "autorun=false\r\ntotal_columns=none\r\n--Color:type=number\r\n--Color:default=2\r\n--Color:values=1:Green,2:Red,3:Blue"
+				'defaultval'	=> "autorun=false\r\ntotal_columns=none\r\n--Color:type=number\r\n--Color:default=2\r\n--Color:values=1:Green,2:Red,3:Blue",
+				'-upsert'		=> 'inputtype,displayname,defaultval,width,height'
 				));
 			break;
 		//_forms
@@ -2029,7 +2098,8 @@ function addMetaData($table=''){
 				'tablename'		=> '_synchronize',
 				'formfields'	=> "tablename\r\ntarget\r\nids\r\nnotes\r\nresults",
 				'listfields'	=> "_cdate\r\n_cuser\r\ntarget\r\ntablename\r\nids",
-				'sortfields'	=> '_cdate desc'
+				'sortfields'	=> '_cdate desc',
+				'-upsert'		=> 'formfields,listfields,sortfields'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
@@ -2037,7 +2107,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '300',
 				'inputmax'		=> 100,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
@@ -2045,7 +2116,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'width'			=> '300',
 				'inputmax'		=> 100,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,inputmax,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
@@ -2053,7 +2125,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> '500',
 				'height'		=> '40',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
@@ -2061,7 +2134,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> '500',
 				'height'		=> '100',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_synchronize',
@@ -2069,7 +2143,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> '500',
 				'height'		=> '100',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			break;
 		//_history
@@ -2079,29 +2154,32 @@ function addMetaData($table=''){
 				'fieldname'		=> 'record_id',
 				'inputtype'		=> 'text',
 				'width'			=> 40,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_history',
 				'fieldname'		=> 'action',
 				'inputtype'		=> 'text',
 				'width'			=> 60,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_history',
 				'fieldname'		=> 'md5',
 				'inputtype'		=> 'text',
 				'width'			=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_history',
 				'fieldname'		=> 'page_id',
-				'inputtype'		=> 'textarea',
 				'inputtype'		=> 'text',
 				'width'			=> 40,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_history',
@@ -2109,7 +2187,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 500,
 				'height'		=> 400,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			break;
 		//_history
@@ -2121,6 +2200,7 @@ function addMetaData($table=''){
 				'width'			=> 400,
 				'height'		=> 100,
 				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			break;
 		case '_cron':
@@ -2131,7 +2211,8 @@ function addMetaData($table=''){
 				'synchronize'	=> 0,
 				'tvals'			=> '1',
 				'editlist'		=> 1,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,tvals,editlist,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
@@ -2139,7 +2220,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'checkbox',
 				'tvals'			=> 1,
 				'editlist'		=> 1,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,tvals,editlist,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
@@ -2147,7 +2229,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'checkbox',
 				'synchronize'	=> 0,
 				'tvals'			=> '1',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,tvals,required'
 			));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
@@ -2156,7 +2239,8 @@ function addMetaData($table=''){
 				'required'		=> 0,
 				'displayname'	=> "Run As",
 				'tvals'			=> "SELECT _id FROM _users WHERE active=1 order by firstname,lastname,_id",
-				'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id"
+				'dvals'			=> "SELECT firstname,lastname FROM _users WHERE active=1 ORDER BY firstname,lastname,_id",
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2164,17 +2248,18 @@ function addMetaData($table=''){
 				'synchronize'	=> 0,
 				'inputtype'		=> 'text',
 				'width'			=> 100,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
 				'fieldname'		=> 'records_to_keep',
 				'inputtype'		=> 'text',
 				'width'			=> 100,
-				'-upsert'		=> 'inputtype,width,mask,required,defaultval',
 				'defaultval'	=> 100,
 				'mask'			=> 'integer',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,mask,required,defaultval',
 			));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2182,7 +2267,8 @@ function addMetaData($table=''){
 				'synchronize'	=> 0,
 				'inputtype'		=> 'text',
 				'width'			=> 60,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required,synchronize'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
@@ -2191,7 +2277,8 @@ function addMetaData($table=''){
 				'defaultval'	=> 1,
 				'inputtype'		=> 'checkbox',
 				'tvals'			=> 1,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required,synchronize,defaultval'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
@@ -2200,7 +2287,8 @@ function addMetaData($table=''){
 				'required'		=> 0,
 				'displayname'	=> "Frequency",
 				'tvals'			=> "1\r\n5\r\n10\r\n15\r\n30\r\n60\r\n1440\r\n720\r\n10080\r\n43829",
-				'dvals'			=> "Every Minute\r\nEvery 5 minutes\r\nEvery 10 Minutes\r\nEvery 15 Minutes\r\nEvery 30 Minutes\r\nEvery Hour\r\nOnce Every  Day\r\nTwice Every Day\r\nOnce a Week\r\nOnce a Month"
+				'dvals'			=> "Every Minute\r\nEvery 5 minutes\r\nEvery 10 Minutes\r\nEvery 15 Minutes\r\nEvery 30 Minutes\r\nEvery Hour\r\nOnce Every  Day\r\nTwice Every Day\r\nOnce a Week\r\nOnce a Month",
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2208,7 +2296,8 @@ function addMetaData($table=''){
 				'synchronize'	=> 0,
 				'inputtype'		=> 'text',
 				'width'			=> 250,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required,synchronize'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2217,7 +2306,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 500,
 				'height'		=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,width,height,required'
 				));
 
 			$id=addDBRecord(array('-table'=>"_fielddata",
@@ -2225,7 +2315,8 @@ function addMetaData($table=''){
 				'fieldname'		=> 'run_values',
 				'inputtype'		=> 'text',
 				'width'			=> 240,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2233,7 +2324,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'text',
 				'maxlength'		=> 255,
 				'width'			=> 350,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,maxlength,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2242,7 +2334,8 @@ function addMetaData($table=''){
 				'mask'			=> 'integer',
 				'inputtype'		=> 'text',
 				'width'			=> 130,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,displayname,mask,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2250,7 +2343,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'frequency',
 				'width'			=> 800,
 				'height'		=> 40,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_cron',
@@ -2266,7 +2360,8 @@ function addMetaData($table=''){
 				'fieldname'		=> 'run_cmd',
 				'inputtype'		=> 'text',
 				'width'			=> 500,
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			break;
 		case '_files':
@@ -2274,6 +2369,7 @@ function addMetaData($table=''){
 				'tablename'		=> '_files',
 				'formfields'	=> "file\r\ntablename tablename_id\r\ncategory\r\ndescription",
 				'listfields'	=> "_cdate\r\n_edate\r\nfile\r\nfile_size\r\nfile_type\r\ntablename\r\ntablename_id",
+				'-upsert'		=> 'formfields,listfields'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_files',
@@ -2281,13 +2377,15 @@ function addMetaData($table=''){
 				'inputtype'		=> 'file',
 				'width'			=> 400,
 				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_files',
 				'fieldname'		=> 'category',
 				'inputtype'		=> 'text',
 				'width'			=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_files',
@@ -2295,7 +2393,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 400,
 				'height'		=> 70,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_files',
@@ -2304,7 +2403,8 @@ function addMetaData($table=''){
 				'width'			=> 150,
 				'tvals'			=> '&getDBTables',
 				'dvals'			=> '&getDBTables',
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_files',
@@ -2312,7 +2412,8 @@ function addMetaData($table=''){
 				'mask'			=> 'integer',
 				'inputtype'		=> 'text',
 				'width'			=> 30,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,mask,required'
 				));
 			break;
 		case '_models':
@@ -2323,7 +2424,8 @@ function addMetaData($table=''){
 				'width'			=> 150,
 				'tvals'			=> '&getDBTables',
 				'dvals'			=> '&getDBTables',
-				'required'		=> 1
+				'required'		=> 1,
+				'-upsert'		=> 'inputtype,width,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_models',
@@ -2334,7 +2436,8 @@ function addMetaData($table=''){
 				'dvals'			=> "Class\r\nFunctions",
 				'onchange'		=> "changeModelType(this)",
 				'required'		=> 1,
-				'defaultval'	=> 1
+				'defaultval'	=> 1,
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,onchange,defaultval,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_models',
@@ -2342,21 +2445,23 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
 				'height'		=> '275',
-				//'behavior'		=> 'phpeditor'
+				'-upsert'		=> 'inputtype,width,height'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_models',
 				'fieldname'		=> 'active',
 				'inputtype'		=> 'checkbox',
 				'defaultval'	=> 1,
-				'tvals'			=> 1
+				'tvals'			=> 1,
+				'-upsert'		=> 'inputtype,tvals,defaultval'
 				));
 			$id=addDBRecord(array('-table'=>'_tabledata',
 				'tablename'		=> '_models',
 				'formfields'	=> "name mtype active\r\nfunctions",
 				'listfields'	=> 'name mtype active',
 				'sortfields'	=> 'name',
-				'synchronize'	=> 1
+				'synchronize'	=> 1,
+				'-upsert'		=> 'formfields,listfields,sortfields,synchronize'
 				));
 			break;
 		case '_sessions':
@@ -2365,7 +2470,8 @@ function addMetaData($table=''){
 				'fieldname'		=> 'session_data',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
-				'height'		=> '275'
+				'height'		=> '275',
+				'-upsert'		=> 'inputtype,width,height'
 				));
 		break;
 		case '_queries':
@@ -2374,36 +2480,42 @@ function addMetaData($table=''){
 				'fieldname'		=> 'run_length',
 				'inputtype'		=> 'text',
 				'width'			=> '60',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
 				'fieldname'		=> 'function',
 				'inputtype'		=> 'text',
 				'width'			=> '100',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
 				'fieldname'		=> 'page_id',
 				'inputtype'		=> 'text',
 				'width'			=> '60',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
 				'fieldname'		=> 'fields',
 				'inputtype'		=> 'text',
 				'width'			=> '500',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
 				'fieldname'		=> 'row_count',
 				'inputtype'		=> 'text',
 				'width'			=> '60',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
 				'fieldname'		=> 'field_count',
 				'inputtype'		=> 'text',
 				'width'			=> '60',
+				'-upsert'		=> 'inputtype,width'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_queries',
@@ -2412,7 +2524,8 @@ function addMetaData($table=''){
 				'required'		=> 0,
 				'displayname'	=> "User",
 				'tvals'			=> "select _id from _users order by firstname,lastname,_id",
-				'dvals'			=> "select firstname,lastname from _users order by firstname,lastname,_id"
+				'dvals'			=> "select firstname,lastname from _users order by firstname,lastname,_id",
+				'-upsert'		=> 'inputtype,displayname,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_queries',
@@ -2420,7 +2533,8 @@ function addMetaData($table=''){
 				'inputtype'		=> 'textarea',
 				'width'			=> 500,
 				'height'		=> 200,
-				'required'		=> 0
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,width,height,required'
 				));
 			break;
 		}
