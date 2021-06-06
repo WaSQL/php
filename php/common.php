@@ -11445,11 +11445,12 @@ function commonIncludeFunctionCode($content,$name=''){
 					$lang=strtolower($g[1]);
 				break;
 			}
-			$tmpfile="{$CONFIG['name']}_{$name}_".$lang.'_'.sha1($evalcode).".{$lang}";
+			$content_md5=md5($evalcode);
+			$tmpfile="{$CONFIG['name']}_{$lang}_{$content_md5}.{$lang}";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
 			//echo $afile.PHP_EOL;
-			$content_md5=md5($evalcode);
+			
 			if(!file_exists($afile) || md5_file($afile) != $content_md5){
 				$fp = fopen($afile, "w");
 				fwrite($fp, $evalcode);
@@ -11464,11 +11465,14 @@ function commonIncludeFunctionCode($content,$name=''){
 		elseif(preg_match('/^php[\ \r\n]+(.+)/ism',$evalcode,$g)){
 			$evalcode=trim(preg_replace('/^php/i','',$evalcode));
 			if(!strlen($evalcode)){continue;}
-			$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
+			$evalcode='<?'.'php'.PHP_EOL.$evalcode;	
+			$content_md5=md5($evalcode);
+
+			$tmpfile="{$CONFIG['name']}_php_{$content_md5}.php";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
 			//echo $afile.PHP_EOL;
-			$evalcode='<?'.'php'.PHP_EOL.$evalcode;	
+				
 			$content_md5=md5($evalcode);
 			if(!file_exists($afile) || md5_file($afile) != $content_md5){
 				$fp = fopen($afile, "w");
