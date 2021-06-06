@@ -1,4 +1,5 @@
 <?php
+//test
 function cronAddEdit($id=0){
 	$url=configValue('admin_form_url');
 	if(!stringContains($url,'admin.php')){
@@ -207,7 +208,7 @@ function cronListExtra($recs){
 		}
 		else{
 			$recs[$i]['last_run']='';
-			$recs[$i]['run_length']='';
+			//$recs[$i]['run_length']='';
 		}
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';

@@ -44,7 +44,7 @@ if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
-cronMessage("Logfile: {$logfile}");
+//cronMessage("Logfile: {$logfile}");
 global $ConfigXml;
 global $allhost;
 global $dbh;
@@ -66,7 +66,7 @@ include_once("{$progpath}/extras/system.php");
 
 //this cron requires mysql version 5.7 or newer
 $dbversion=getDBVersion();
-cronMessage("Mysql Version: {$dbversion}");
+//cronMessage("Mysql Version: {$dbversion}");
 if($dbversion < 5.7){
 	cronMessage("ERROR - running mysql version {$dbversion}. Cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
 	exit;
@@ -103,7 +103,17 @@ foreach($ConfigXml as $name=>$host){
     	$CONFIG[$k]=$v;
 	}
 	if(!isset($CONFIG['cron'])){$CONFIG['cron']=0;}
-	if($CONFIG['cron']==1 && $tail==1){$ok=cronLogTails();}
+	$cron_tail_log="{$wpath}/php/temp/cron_tail.log";
+	if($CONFIG['cron']==1 && $tail==1){
+		if(!file_exists($cron_tail_log)){
+			$ok=setFileContents($cron_tail_log,time());
+			$ok=cronLogTails();
+		}
+		elseif(filemtime($cron_tail_log)-time() > 60){
+			$ok=setFileContents($cron_tail_log,time());
+			$ok=cronLogTails();
+		}
+	}
 	//ksort($CONFIG);
 	//echo printValue($CONFIG);
 	//connect to this database.
@@ -115,6 +125,7 @@ foreach($ConfigXml as $name=>$host){
     	unset($ConfigXml[$name]);
     	continue;
 	}
+	$ok=executeSQL("update _cron set frequency_max='minute' where frequency_max is null or frequency_max =''");
 	//check for apache_access_log
 	if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 		$apache_log=0;
@@ -127,7 +138,7 @@ foreach($ConfigXml as $name=>$host){
 	if($CONFIG['cron']==0){
 		continue;
 	}
-	cronMessage("checking.  {$CONFIG['cron']}");
+	//cronMessage("checking.  {$CONFIG['cron']}");
 	$ok=commonCronCheckSchema();
 	//update crons that say they are running but the pids are no longer active
 	$ok=commonCronCleanup();
@@ -186,70 +197,9 @@ foreach($ConfigXml as $name=>$host){
 		foreach($recs as $ri=>$rec){
 			if(isset($ConfigXml[$name]['processed'][$rec['_id']])){continue;}
 			$ConfigXml[$name]['processed'][$rec['_id']]=1;
-			$run=0;
-			$runnow=0;
-			//should this cron be run now?  check frequency...
-			$ctime=time();
-			if(strlen($rec['run_date'])){
-				$runtime=strtotime($rec['run_date']);
-			}
-			else{$runtime=0;}
-			if($rec['run_now']==1){$runnow=1;}
-			//is run_format a json string?  If so, parse and check
-			if(strlen($rec['run_format']) && preg_match('/\{/', trim($rec['run_format']))){
-				$json=json_decode($rec['run_format'],true);
-				if(is_array($json)){
-					//check month
-					if(isset($json['month'][0])){
-						$cmon=date('n');
-						if($json['month'][0]==-1 || in_array($cmon,$json['month'])){
-							//echo $rec['name']." month passed";exit;
-							//month passed. check day
-							if(isset($json['day'][0])){
-								$cday=date('j');
-								if($json['day'][0]==-1 || in_array($cday,$json['day'])){
-									//day passed. check hour
-									//echo $rec['name']." day passed";exit;
-									if(isset($json['hour'][0])){
-										$chour=date('G');
-										//echo $rec['name'].$chour.printValue($json['hour']);exit;
-										if($json['hour'][0]==-1 || in_array($chour,$json['hour'])){
-											//hour passed. check minute
-											//echo $rec['name']." hour passed";exit;
-											if(isset($json['minute'][0])){
-												$cmin=(integer)date('i');
-												if($json['minute'][0]==-1 || in_array($cmin,$json['minute'])){
-													//minute passed
-													$run=1;
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			elseif($rec['frequency'] > 0){
-				$seconds=$rec['frequency']*60;
-				$diff=$ctime-$runtime;
-				if($diff > $seconds){
-                	$run=1;
-				}
-			}
-			elseif(strlen($rec['run_format']) && strlen($rec['run_values'])){
-				$cvalue=date($rec['run_format']);
-				$values=preg_split('/\,/',$rec['run_values']);
-				foreach($values as $value){
-					//cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
-                	if($cvalue==$value){$run=1;break;}
-				}
-
-			}
-
+		
 			//skip if it has been run in the last minute
-			if($runnow==0 && strlen($rec['run_date'])){
+			if(strlen($rec['run_date'])){
 				$ctime=time();
             	$lastruntime=strtotime($rec['run_date']);
             	$diff=$ctime-$lastruntime;
@@ -269,11 +219,6 @@ foreach($ConfigXml as $name=>$host){
 					}
 				}
 			}
-			if($runnow==1){$run=1;}
-			if($run==0){
-				cronMessage("cron name:{$rec['name']} run_format value:{$value}, current value:{$cvalue}, run: {$run}");
-				continue;
-			}
 			//get record again to insure another process is not running it.
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
@@ -286,11 +231,9 @@ foreach($ConfigXml as $name=>$host){
 			//skip if paused
 			if($rec['paused']==1){continue;}
 			//update record to show we are now running
-			$start=$CRONTHRU['start']=time();
+			$start=$CRONTHRU['start']=microtime(true);
 			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
-			//echo $ok.printValue($rec);
-			//cronMessage("handshaking {$rec['name']}");
 			$editopts=array(
 				'-table'	=> '_cron',
 				'-where'	=> "running=0 and _id={$rec['_id']}",
@@ -298,7 +241,7 @@ foreach($ConfigXml as $name=>$host){
 				'running'	=> 1,
 				'run_now'	=> 0,
 				'run_date'	=> $run_date,
-				'run_error'	=> ''
+				'run_error'	=> '',
 			);
 			$ok=editDBRecord($editopts);
 			//echo $ok.printValue($editopts);
@@ -480,7 +423,7 @@ foreach($ConfigXml as $name=>$host){
             	$cron_result .= printValue($out).PHP_EOL;
 			}
 
-			$stop=time();
+			$stop=microtime(true);
 			$run_length=$stop-$start;
             $cron_result .= PHP_EOL;
             $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
@@ -568,10 +511,6 @@ run_now = 1 or
 	and (
 		ifnull(end_date,'')=''
 		or date(end_date) <= date(now())
-		)
-	and (
-		ifnull(run_date,'')=''
-		or run_date < date_sub(now(), interval 1 minute) 
 		)
 	and 
 		(
