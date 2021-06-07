@@ -4299,7 +4299,8 @@ function addDBRecord($params=array()){
 		$params['_cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
     }
     if(isset($info['_cdate']) && (!isset($params['_cdate']) || !strlen(trim($params['_cdate'])))){
-		$params['_cdate']=date("Y-m-d H:i:s");
+		//$params['_cdate']=date("Y-m-d H:i:s");
+		$params['_cdate']='NOW()';
     }
     /* Add values for fields that match $_SERVER keys */
     foreach($info as $field=>$rec){
@@ -4347,18 +4348,30 @@ function addDBRecord($params=array()){
 		}
 		elseif(($info[$key]['_dbtype'] =='date')){
 			if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
-			$val=date("Y-m-d",strtotime($val));
-			array_push($vals,"'$val'");
-			if(isset($upserts[$key])){$upserts[$key]="'$val'";}
+			if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+            	array_push($vals,$val);
+				if(isset($upserts[$key])){$upserts[$key]=$val;}
+            }
+			else{
+				$val=date("Y-m-d",strtotime($val));
+				array_push($vals,"'{$val}'");
+				if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+			}
 		}
 		elseif(isset($info[$key]['inputtype']) && $info[$key]['inputtype'] =='date'){
 			//date field :  03-09-2009, 2009-01-26
 			if(preg_match('/^([0-9]{1,2}?)[\/\-]([0-9]{1,2}?)[\/\-]([0-9]{4,4})$/',$_REQUEST[$key],$datematch)){
 				$val=$datematch[3].'-'.$datematch[1].'-'.$datematch[2];
             }
-            $val=date("Y-m-d",strtotime($val));
-			array_push($vals,"'$val'");
-			if(isset($upserts[$key])){$upserts[$key]="'$val'";}
+            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+            	array_push($vals,$val);
+				if(isset($upserts[$key])){$upserts[$key]=$val;}
+            }
+			else{
+	            $val=date("Y-m-d",strtotime($val));
+				array_push($vals,"'{$val}'");
+				if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+			}
         }
 		elseif($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
 			if(is_array($val)){$val=(integer)$val[0];}
@@ -4380,9 +4393,16 @@ function addDBRecord($params=array()){
 				$newval .=" {$val[1]}:{$val[2]}:00";
 				$val=$newval;
             }
-            $val=date("Y-m-d H:i:s",strtotime($val));
-            array_push($vals,"'$val'");
-            if(isset($upserts[$key])){$upserts[$key]="'$val'";}
+            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+            	//val is a function  - now(),curdate(), etc
+            	array_push($vals,$val);
+				if(isset($upserts[$key])){$upserts[$key]=$val;}
+            }
+			else{
+	            $val=date("Y-m-d H:i:s",strtotime($val));
+	            array_push($vals,"'{$val}'");
+	            if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+	        }
 		}
 		elseif($info[$key]['_dbtype'] =='time'){
 			if(is_array($val)){
@@ -4390,15 +4410,21 @@ function addDBRecord($params=array()){
 				elseif($val[2]=='am' && $val[0] ==12){$val[0]='00';}
 				$val="{$val[0]}:{$val[1]}:00";
             }
-            $val=date("H:i:s",strtotime($val));
-            array_push($vals,"'$val'");
-            if(isset($upserts[$key])){$upserts[$key]="'$val'";}
+            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+            	array_push($vals,$val);
+				if(isset($upserts[$key])){$upserts[$key]=$val;}
+            }
+			else{
+	            $val=date("H:i:s",strtotime($val));
+	            array_push($vals,"'{$val}'");
+	            if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+	        }
 		}
 		else{
 			if($val != 'NULL'){
 				$val=databaseEscapeString($val);
-				array_push($vals,"'$val'");
-				if(isset($upserts[$key])){$upserts[$key]="'$val'";}
+				array_push($vals,"'{$val}'");
+				if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
 			}
 			else{
             	array_push($vals,$val);
@@ -4408,12 +4434,12 @@ function addDBRecord($params=array()){
         if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){
 			$val=sha1($val);
 			array_push($fields,$key.'_sha1');
-			array_push($vals,"'$val'");
+			array_push($vals,"'{$val}'");
 		}
 		if(isset($info[$key.'_size']) && !isset($params[$key.'_size'])){
 			$val=strlen($val);
 			array_push($fields,$key.'_size');
-			array_push($vals,"'$val'");
+			array_push($vals,"'{$val}'");
 		}
     }
     //return if no updates were found
@@ -6097,11 +6123,12 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-noupdate'])){
 		if(isset($info['_euser'])){
 			$params['_euser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
-	    	}
+	    }
 	    if(isset($info['_edate'])){
-			$params['_edate']=date("Y-m-d H:i:s");
-	    	}
-		}
+			//$params['_edate']=date("Y-m-d H:i:s");
+			$params['_edate']='NOW()';
+	    }
+	}
 	/* Filter the query based on params */
 	$updates=array();
 	//if($params['-table']=='jsontest'){echo printValue($info);exit;}
@@ -6193,10 +6220,15 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			array_push($updates,"{$key}={$pm[1]}");
 			}
 		else{
+			$noticks=0;
 			if(isset($info[$key.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
 			if(($info[$key]['_dbtype']=='date')){
 				if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
 				if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+				elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+	            	$val=$val;
+	            	$noticks=1;
+	            }
 				else{$val=date("Y-m-d",strtotime($val));}
 			}
 			elseif($info[$key]['_dbtype'] =='time'){
@@ -6206,6 +6238,10 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 					$val="{$val[0]}:{$val[1]}:00";
 	            }
 	            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+	            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+	            	$val=$val;
+	            	$noticks=1;
+	            }
 				else{$val=date("H:i:s",strtotime($val));}
 			}
 			elseif($info[$key]['_dbtype'] =='datetime'){
@@ -6228,6 +6264,10 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	            else{$newval=$val;}
 	            $val=$newval;
 	            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+	            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+	            	$val=$val;
+	            	$noticks=1;
+	            }
 				else{$val=date("Y-m-d H:i:s",strtotime($val));}
 			}
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
@@ -6242,9 +6282,9 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 					else{
 						$val='NULL';
 					}
-					}
-				array_push($updates,"{$key}=$val");
 				}
+				array_push($updates,"{$key}=$val");
+			}
 			else{
 				//echo "[{$key}]".printValue($val)."\n".PHP_EOL;
 				if(is_array($val)){$val=implode(':',$val);}
@@ -6253,14 +6293,20 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 					if(isset($info[$key]['default']) && strlen($info[$key]['default'])){
 						$val=$info[$key]['default'];
 					}
-					else{$val='NULL';}
+					else{
+						$val='NULL';
+					}
 				}
 				if($val=='NULLDATE' || $val=='NULL'){
-					//echo printValue($info[$key]);
 					array_push($updates,"{$key}=NULL");
 				}
-				else{array_push($updates,"{$key}='$val'");}
-	        	}
+				elseif($noticks==1){
+					array_push($updates,"{$key}={$val}");
+				}
+				else{
+					array_push($updates,"{$key}='{$val}'");
+				}
+	        }
 	        //add sha and size if needed
 	        if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){
 				$sha=sha1($val);
@@ -6288,6 +6334,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     if(isMssql()){$table="[{$table}]";}
 	$query="update {$table} set $fieldstr where " . $params['-where'];
 	if(isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
+	//echo $query.PHP_EOL;
 	// execute sql - return the number of rows affected
 	if(isset($params['-echo'])){echo $query;}
 	$start=microtime(true);

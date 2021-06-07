@@ -232,7 +232,6 @@ foreach($ConfigXml as $name=>$host){
 			if($rec['paused']==1){continue;}
 			//update record to show we are now running
 			$start=$CRONTHRU['start']=microtime(true);
-			$run_date=date('Y-m-d H:i:s');
 			$cron_pid=getmypid();
 			$editopts=array(
 				'-table'	=> '_cron',
@@ -240,11 +239,11 @@ foreach($ConfigXml as $name=>$host){
 				'cron_pid'	=> $cron_pid,
 				'running'	=> 1,
 				'run_now'	=> 0,
-				'run_date'	=> $run_date,
+				'run_date'	=> 'NOW()',
 				'run_error'	=> '',
 			);
 			$ok=editDBRecord($editopts);
-			//echo $ok.printValue($editopts);
+			//echo $ok.printValue($editopts);exit;
 			//make sure only one cron runs this entry
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
@@ -264,7 +263,7 @@ foreach($ConfigXml as $name=>$host){
 			));
 			$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
 			$CRONTHRU['cron_pid']=$cron_pid;
-			$CRONTHRU['cron_run_date']=$run_date;
+			$CRONTHRU['cron_run_date']=$rec['run_date'];
 			$CRONTHRU['cron_name']=$rec['name'];
 			$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
 			$path=getWaSQLPath('php/temp');
@@ -458,7 +457,7 @@ foreach($ConfigXml as $name=>$host){
 				'cron_pid'	=> $cron_pid,
 				'name'		=> $rec['name'],
 				'run_cmd'	=> $rec['run_cmd'],
-				'run_date'	=> $run_date
+				'run_date'	=> 'NOW()'
 			);
 			$lrec=getDBRecord($opts);
 			if(isset($_REQUEST['cronlog_delete'])){
