@@ -102,6 +102,7 @@ function cronList(){
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now',
 		'-listfields'=>'_id,groupname,name,active,paused,running,run_now,last_run,run_length,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,paused,running,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -114,6 +115,10 @@ function cronList(){
 		'run_date_dateage'=>1,
 		'run_length_class'=>'align-right',
 		'run_length_verbosetime'=>1,
+		'last_run_options'=>array(
+			'class'=>'align-right',
+			'verbosetime'=>1
+		),
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
 		'name_class'=>'w_nowrap w_link',
@@ -132,7 +137,6 @@ function cronList(){
 			'checkmark'=>1,
 			'checkmark_icon'=>'icon-spin4 w_spin w_primary'
 		),
-		'last_run_class'=>'align-right',
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(
 			array(
@@ -200,16 +204,10 @@ function cronListExtra($recs){
 	if(!stringContains($url,'admin.php')){
 		$url='/t/1'.$url;
 	}
+	//echo printValue($recs);exit;
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id'];
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
-		if(strlen($rec['run_date'])){
-			$recs[$i]['last_run']=verboseTime(time()-strtotime($rec['run_date']),0,0).' ago';
-		}
-		else{
-			$recs[$i]['last_run']='';
-			//$recs[$i]['run_length']='';
-		}
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];

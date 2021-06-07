@@ -226,7 +226,7 @@ function createWasqlTable($table=''){
 			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NULL";
 			$fields['run_format']=databaseDataType('varchar(255)')." NULL";
-			$fields['run_length']=databaseDataType('integer')." NULL";
+			$fields['run_length']=databaseDataType('float(10,2)')." NULL";
 			$fields['run_result']="text NULL";
 			$fields['run_values']=databaseDataType('varchar(255)')." NULL";
 			$fields['running']=databaseDataType('tinyint')." NOT NULL Default 0";
@@ -260,7 +260,7 @@ function createWasqlTable($table=''){
 			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NOT NULL";
 			$fields['run_result']=databaseDataType('mediumtext')." NULL";
-			$fields['run_length']=databaseDataType('integer')." NOT NULL Default 0";
+			$fields['run_length']=databaseDataType('float(10,2)')." NOT NULL Default 0";
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
@@ -519,7 +519,7 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_queries':
-			$fields['run_length']=databaseDataType('real(8,3)')." NOT NULL Default 0.000";
+			$fields['run_length']=databaseDataType('float(8,3)')." NOT NULL Default 0.000";
 			$fields['query']="text NULL";
 			$fields['page_id']=databaseDataType('integer')." NULL";
 			$fields['row_count']=databaseDataType('integer')." NULL";
