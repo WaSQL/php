@@ -82,11 +82,11 @@ $wherestr_all=cronBuildWhere();
 if(!count($ConfigXml)){exit;}
 //check for wasql.update file
 if(file_exists("{$wpath}/php/temp/wasql.update")){
-	cronMessage("updating WaSQL..");
+	cronMessage("STARTED *** WaSQL update ***");
 	unlink("{$wpath}/php/temp/wasql.update");
 	$out=cmdResults('git pull');
+	cronMessage("FINISHED *** WaSQL update ***");
 	$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
-	cronMessage($message);
 	$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
 }
 //should switch to ALLCONFIG
@@ -130,10 +130,12 @@ foreach($ConfigXml as $name=>$host){
 	if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 		$apache_log=0;
 		loadExtras('apache');
-		cronMessage("running apacheParseLogFile...".$CONFIG['apache_access_log']);
+		cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log']);
 		$msg=apacheParseLogFile();
-		if(strlen($msg)){cronMessage($msg);}
-		cronMessage("apacheParseLogFile completed");
+		if(strlen($msg)){
+			cronMessage(" -- [apacheParseLogFile] -- {$msg}");
+		}
+		cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log']);
 	}
 	if($CONFIG['cron']==0){
 		continue;
@@ -153,7 +155,7 @@ foreach($ConfigXml as $name=>$host){
 	$wherestr=$wherestr_all;
 	$recopts=array(
 		'-table'	=> '_cron',
-		'-fields'	=> '_id,name,run_cmd,running,run_date,frequency,run_now,run_format,run_values',
+		'-fields'	=> '_id,name,run_cmd,running,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,frequency,run_now,run_format,run_values',
 		'-where'	=> $wherestr,
 		'-nocache'	=> 1,
 		'-order'	=> 'run_date'
@@ -162,20 +164,20 @@ foreach($ConfigXml as $name=>$host){
 	$cronfields=getDBFields('_cron');
 	if(!is_array($cronfields)){
 		unset($ConfigXml[$name]);
-		cronMessage("cronfields in _cron is empty.".PHP_EOL);
+		cronMessage("ERROR -- cronfields in _cron is empty.".PHP_EOL);
 		continue;
 	}
 	if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
 	$recs=getDBRecords($recopts);
 	//echo printValue($recs);exit;
 	if(!is_array($recs) && strlen($recs)){
-		cronMessage("ERROR: {$recs}".PHP_EOL);
+		cronMessage("ERROR -- {$recs}".PHP_EOL);
 		exit;
 	}
 	$rcnt=is_array($recs)?count($recs):0;
 	if($rcnt==0){
 		unset($ConfigXml[$name]);
-		cronMessage("{$rcnt} crons ready".PHP_EOL);
+		//cronMessage("{$rcnt} crons ready".PHP_EOL);
         //cronMessage("No crons found.");
         continue;
 	}
@@ -187,7 +189,7 @@ foreach($ConfigXml as $name=>$host){
 	if(count($recs)==0){
 		unset($ConfigXml[$name]);
 		$pcnt=$rcnt=count($recs);
-		cronMessage("{$pcnt} processed. No other crons ready".PHP_EOL);
+		//cronMessage("{$pcnt} processed. No other crons ready".PHP_EOL);
         //cronMessage("No crons found.");
         continue;
 	}
@@ -204,17 +206,14 @@ foreach($ConfigXml as $name=>$host){
             	$lastruntime=strtotime($rec['run_date']);
             	$diff=$ctime-$lastruntime;
             	if($diff < 60){
-            		cronMessage("skipping - ran in the last minute:{$rec['name']}");
+            		//cronMessage("skipping - ran in the last minute:{$rec['name']}");
             		$run=0;
             	}
 			}
 			//reset running if it has been over post timeout
 			if($rec['running']==1){
-				if(strlen($rec['run_date'])){
-					$ctime=time();
-	            	$lastruntime=strtotime($rec['run_date']);
-	            	$diff=$ctime-$lastruntime;
-	            	if($diff > $posturl_timeout){
+				if(strlen($rec['last_run']) && isNum($rec['last_run'])){
+	            	if($rec['last_run'] > $posturl_timeout){
                     	$ok=editDBRecordById('_cron',$rec['_id'],array('running'=>0));
 					}
 				}
@@ -253,7 +252,7 @@ foreach($ConfigXml as $name=>$host){
 			));
 			//echo $ok.printValue($rec);
 			if($rec['cron_pid'] != $cron_pid){
-				cronMessage("handshaking {$rec['name']} failed. {$rec['cron_pid']} != {$cron_pid}");
+				cronMessage("ERROR -- handshaking {$rec['name']} failed. {$rec['cron_pid']} != {$cron_pid}");
 				continue;
 			}
 			$rec=getDBRecord(array(
@@ -318,7 +317,7 @@ foreach($ConfigXml as $name=>$host){
             	//cron is a command
             	$crontype='OS Command';
 			}
-			cronMessage("running {$crontype} **** {$rec['run_cmd']} ***");
+			cronMessage("STARTED *** {$rec['name']} *** -- Crontype: {$crontype}");
         	
         	$cron_result='';
 			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
@@ -356,7 +355,7 @@ foreach($ConfigXml as $name=>$host){
 					}
 				}
 				//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
-				cronMessage(" -- calling {$url}");
+				cronMessage(" -- [{$rec['name']}] -- calling {$url}");
             	$post=postURL($url,$postopts);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= $post['body'].PHP_EOL;
@@ -377,7 +376,7 @@ foreach($ConfigXml as $name=>$host){
 			}
 			elseif(strtolower($crontype)=='php command'){
             	//cron is a php command
-            	cronMessage(" -- running eval code");
+            	cronMessage(" -- [{$rec['name']}] --running eval code");
                 $cron_result .= '----- Output Received -----'.PHP_EOL;
 
             	$out=evalPHP($cmd).PHP_EOL;
@@ -395,7 +394,7 @@ foreach($ConfigXml as $name=>$host){
             	foreach($CRONTHRU as $k=>$v){
             		$postopts[$k]=$v;
             	}
-            	cronMessage(" -- calling $cmd");
+            	cronMessage(" -- [{$rec['name']}] --calling $cmd");
             	$post=postURL($cmd,$postopts);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= $post['body'].PHP_EOL;
@@ -416,14 +415,14 @@ foreach($ConfigXml as $name=>$host){
 			}
 			else{
             	//cron is an OS Command
-            	cronMessage(" -- running $cmd");
+            	cronMessage(" -- [{$rec['name']}] --running $cmd");
             	$out=cmdResults($cmd);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= printValue($out).PHP_EOL;
 			}
 
 			$stop=microtime(true);
-			$run_length=$stop-$start;
+			$run_length=number_format(($stop-$start),3);
             $cron_result .= PHP_EOL;
             $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
             //limit $cron_result to 65535 chars
@@ -441,9 +440,7 @@ foreach($ConfigXml as $name=>$host){
 			);
 			$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
 			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
-			$runtime=$run_length > 0?verboseTime($run_length):0;
-
-			cronMessage(" -- finished {$rec['name']}. Run Length:{$runtime}");
+			cronMessage("FINISHED  *** {$rec['name']} *** -- Run Length: {$run_length} seconds".PHP_EOL);
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
