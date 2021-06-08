@@ -317,7 +317,7 @@ foreach($ConfigXml as $name=>$host){
             	//cron is a command
             	$crontype='OS Command';
 			}
-        	cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}".PHP_EOL);
+        	cronMessage(PHP_EOL."STARTED  *** {$rec['name']} *** - Crontype: {$crontype}".PHP_EOL);
         	$cron_result='';
 			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
 			$cron_result .= "CronType: {$crontype} ".PHP_EOL;
@@ -439,7 +439,7 @@ foreach($ConfigXml as $name=>$host){
 			);
 			$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
 			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
-			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds".PHP_EOL);
+			cronMessage(PHP_EOL."FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds".PHP_EOL);
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
