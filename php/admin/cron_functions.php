@@ -143,7 +143,7 @@ function cronList(){
 				'icon'=>'icon-file-txt w_gray',
 				'title'=>'view log',
 				'class'=>'btn w_white',
-				'onclick'=>"return cronModal('log',0,'Cron Log');",
+				'onclick'=>"return cronModal('log',0,'Cron Log -- All crons');",
 			),
 			array(
 				'icon'=>'icon-mark w_green',

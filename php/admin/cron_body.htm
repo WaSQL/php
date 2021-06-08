@@ -59,6 +59,10 @@ function cronModal(func,id,title){
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
 }
+function cronLogRefresh(){
+	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
+	return ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
+}
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
 <div id="cron_results" class="w_padtop">
@@ -230,5 +234,19 @@ function cronModal(func,id,title){
 </view:cron_result>
 
 <view:log>
-	<div class="w_pre"><?=$log;?></div>
+	<div id="cronlog_data">
+		<?=renderView('log_refresh',$log,'log');?>
+	</div>
 </view:log>
+
+<view:log_refresh>
+	<div style="display: flex;justify-content: space-between;margin-bottom:5px;height:20px;">
+		<div id="cronlog_refreshing"></div>
+		<div>
+			<span id="cronlog_timer" data-behavior="countdown" class="w_small w_gray">11</span>
+			<span class="icon-refresh w_pointer" onclick="cronLogRefresh();"></span>
+		</div>
+	</div>
+	<div class="w_nowrap"><?=nl2br($log);?></div>
+	<?=buildOnLoad("setTimeout(cronLogRefresh,10000);");?>
+</view:log_refresh>

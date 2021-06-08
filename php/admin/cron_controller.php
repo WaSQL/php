@@ -7,10 +7,17 @@ if(!isset($CONFIG['admin_form_url'])){
 	$CONFIG['admin_form_url']='/php/admin.php';
 }
 switch(strtolower($_REQUEST['func'])){
+	case 'log_refresh':
+		$logpath=getWaSQLPath('logs');
+		$logfile="{$logpath}/cron.log";
+		$log=tailFile($logfile,20);
+		setView('log_refresh',1);
+		return;
+	break;
 	case 'log':
 		$logpath=getWaSQLPath('logs');
 		$logfile="{$logpath}/cron.log";
-		$log=tailFile($logfile);
+		$log=tailFile($logfile,20);
 		setView('log',1);
 		return;
 	break;
