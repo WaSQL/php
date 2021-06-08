@@ -82,10 +82,10 @@ $wherestr_all=cronBuildWhere();
 if(!count($ConfigXml)){exit;}
 //check for wasql.update file
 if(file_exists("{$wpath}/php/temp/wasql.update")){
-	cronMessage("STARTED *** WaSQL update ***");
+	cronMessage("STARTED *** WaSQL update ***",1);
 	unlink("{$wpath}/php/temp/wasql.update");
 	$out=cmdResults('git pull');
-	cronMessage("FINISHED *** WaSQL update ***");
+	cronMessage("FINISHED *** WaSQL update ***",1);
 	$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 	$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
 }
@@ -130,12 +130,12 @@ foreach($ConfigXml as $name=>$host){
 	if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 		$apache_log=0;
 		loadExtras('apache');
-		cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log']);
+		cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		$msg=apacheParseLogFile();
 		if(strlen($msg)){
 			cronMessage(" -- [apacheParseLogFile] -- {$msg}");
 		}
-		cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log']);
+		cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 	}
 	if($CONFIG['cron']==0){
 		continue;
@@ -317,7 +317,7 @@ foreach($ConfigXml as $name=>$host){
             	//cron is a command
             	$crontype='OS Command';
 			}
-        	cronMessage(PHP_EOL."STARTED  *** {$rec['name']} *** - Crontype: {$crontype}".PHP_EOL);
+        	cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}",1);
         	$cron_result='';
 			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
 			$cron_result .= "CronType: {$crontype} ".PHP_EOL;
@@ -439,7 +439,7 @@ foreach($ConfigXml as $name=>$host){
 			);
 			$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
 			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
-			cronMessage(PHP_EOL."FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds".PHP_EOL);
+			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
@@ -756,7 +756,7 @@ function cronLogTails(){
 /** --- function cronMessage
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function cronMessage($msg){
+function cronMessage($msg,$separate=0){
 	global $CONFIG;
 	global $mypid;
 	global $logfile;
@@ -764,7 +764,12 @@ function cronMessage($msg){
 	$ctime=time();
 	$cdate=date('Y-m-d h:i:s',$ctime);
 	$msg="{$cdate},{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
-	echo $msg;
+	if($separate==1){
+		echo PHP_EOL.$msg.PHP_EOL;
+	}
+	else{
+		echo $msg;
+	}
 	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
     }
