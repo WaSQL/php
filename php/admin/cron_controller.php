@@ -7,6 +7,13 @@ if(!isset($CONFIG['admin_form_url'])){
 	$CONFIG['admin_form_url']='/php/admin.php';
 }
 switch(strtolower($_REQUEST['func'])){
+	case 'log':
+		$logpath=getWaSQLPath('logs');
+		$logfile="{$logpath}/cron.log";
+		$log=tailFile($logfile);
+		setView('log',1);
+		return;
+	break;
 	case 'run':
 		$id=(integer)$_REQUEST['id'];
 		$ok=editDBRecordById('_cron',$id,array('run_now'=>1));

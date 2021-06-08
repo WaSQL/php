@@ -228,3 +228,7 @@ function cronModal(func,id,title){
 <view:not_running><?=buildOnLoad("setText('is_running','');setText('run_date_0','Not Running');");?></view:not_running>
 <?=renderViewIf($log['run_result']=='No longer running','not_running');?>
 </view:cron_result>
+
+<view:log>
+	<div class="w_pre"><?=$log;?></div>
+</view:log>

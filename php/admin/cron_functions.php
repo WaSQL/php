@@ -140,6 +140,12 @@ function cronList(){
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(
 			array(
+				'icon'=>'icon-file-txt w_gray',
+				'title'=>'view log',
+				'class'=>'btn w_white',
+				'onclick'=>"return cronModal('log',0,'Cron Log');",
+			),
+			array(
 				'icon'=>'icon-mark w_green',
 				'title'=>'active',
 				'filter'=>'active eq 1',

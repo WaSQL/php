@@ -1897,6 +1897,7 @@ wcommerce_orders_items
 	note varchar(255)
 	shipmethod_code varchar(25)
 	label varchar(50)
+	custom varchar(2000)
 wcommerce_coupons
 	coupon varchar(25) NOT NULL UNIQUE
 	description varchar(255)
