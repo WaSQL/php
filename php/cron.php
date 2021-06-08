@@ -143,7 +143,19 @@ foreach($ConfigXml as $name=>$host){
 	//cronMessage("checking.  {$CONFIG['cron']}");
 	$ok=commonCronCheckSchema();
 	//update crons that say they are running but the pids are no longer active
-	$ok=commonCronCleanup();
+	//$ok=commonCronCleanup();
+	//show crons currently running
+	$runrecs=getDBRecords(array(
+		'-table'=>'_cron',
+		'-fields'=>'name,run_cmd',
+		'-index'=>'name',
+		'running'=>1
+	));
+	if(is_array($runrecs) && count($runrecs)){
+		$cnt=count($runrecs);
+		$names=implode(', ',array_keys($runrecs));
+		cronMessage("RUNNING:  Count: {$cnt}, Names: {$names}");
+	}
 	//get page names to determine if cron is a page
 	$pages=getDBRecords(array(
 		'-table'	=> '_pages',
