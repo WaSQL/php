@@ -63,6 +63,11 @@ function cronLogRefresh(){
 	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
 	return ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
 }
+var cronLogRefresh_timer;
+function cronLogRefreshTimer(){
+	window.clearTimeout(cronLogRefresh_timer);
+	cronLogRefresh_timer=setTimeout(cronLogRefresh,10000);
+}
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
 <div id="cron_results" class="w_padtop">
@@ -247,6 +252,6 @@ function cronLogRefresh(){
 			<span class="icon-refresh w_pointer" onclick="cronLogRefresh();"></span>
 		</div>
 	</div>
-	<div class="w_nowrap"><?=nl2br($log);?></div>
-	<?=buildOnLoad("setTimeout(cronLogRefresh,10000);");?>
+	<div class="w_nowrap" style="background:#272f36;color:#fcfcfc;padding:10px 5px 15px 5px;font-size:0.93rem;"><?=nl2br($log);?></div>
+	<?=buildOnLoad("cronLogRefreshTimer();");?>
 </view:log_refresh>

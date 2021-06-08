@@ -10,14 +10,14 @@ switch(strtolower($_REQUEST['func'])){
 	case 'log_refresh':
 		$logpath=getWaSQLPath('logs');
 		$logfile="{$logpath}/cron.log";
-		$log=tailFile($logfile,20);
+		$log=tailFile($logfile,30);
 		setView('log_refresh',1);
 		return;
 	break;
 	case 'log':
 		$logpath=getWaSQLPath('logs');
 		$logfile="{$logpath}/cron.log";
-		$log=tailFile($logfile,20);
+		$log=tailFile($logfile,30);
 		setView('log',1);
 		return;
 	break;
