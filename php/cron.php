@@ -271,7 +271,7 @@ foreach($ConfigXml as $name=>$host){
 			if(file_exists($commonCronLogFile)){
 				unlink($commonCronLogFile);
 			}
-			cronMessage("cleaning {$rec['name']}");
+			//cronMessage("cleaning {$rec['name']}");
 			$ok=cronCleanRecords($rec);
 			$cmd=$rec['run_cmd'];
 			$lcmd=strtolower(trim($cmd));
@@ -318,7 +318,7 @@ foreach($ConfigXml as $name=>$host){
             	//cron is a command
             	$crontype='OS Command';
 			}
-			cronMessage("running {$crontype} {$rec['run_cmd']}");
+			cronMessage("running {$crontype} **** {$rec['run_cmd']} ***");
         	
         	$cron_result='';
 			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
@@ -356,7 +356,7 @@ foreach($ConfigXml as $name=>$host){
 					}
 				}
 				//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
-				cronMessage("calling {$url}");
+				cronMessage(" -- calling {$url}");
             	$post=postURL($url,$postopts);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= $post['body'].PHP_EOL;
@@ -377,7 +377,7 @@ foreach($ConfigXml as $name=>$host){
 			}
 			elseif(strtolower($crontype)=='php command'){
             	//cron is a php command
-            	cronMessage("running eval code");
+            	cronMessage(" -- running eval code");
                 $cron_result .= '----- Output Received -----'.PHP_EOL;
 
             	$out=evalPHP($cmd).PHP_EOL;
@@ -395,7 +395,7 @@ foreach($ConfigXml as $name=>$host){
             	foreach($CRONTHRU as $k=>$v){
             		$postopts[$k]=$v;
             	}
-            	cronMessage("calling $cmd");
+            	cronMessage(" -- calling $cmd");
             	$post=postURL($cmd,$postopts);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= $post['body'].PHP_EOL;
@@ -416,7 +416,7 @@ foreach($ConfigXml as $name=>$host){
 			}
 			else{
             	//cron is an OS Command
-            	cronMessage("running $cmd");
+            	cronMessage(" -- running $cmd");
             	$out=cmdResults($cmd);
             	$cron_result .= '----- Content Received -----'.PHP_EOL;
             	$cron_result .= printValue($out).PHP_EOL;
@@ -443,7 +443,7 @@ foreach($ConfigXml as $name=>$host){
 			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
 			$runtime=$run_length > 0?verboseTime($run_length):0;
 
-			cronMessage("finished {$rec['name']}. Run Length:{$runtime}");
+			cronMessage(" -- finished {$rec['name']}. Run Length:{$runtime}");
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
