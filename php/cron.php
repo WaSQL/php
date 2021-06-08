@@ -765,11 +765,9 @@ function cronMessage($msg,$separate=0){
 	$cdate=date('Y-m-d h:i:s',$ctime);
 	$msg="{$cdate},{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
 	if($separate==1){
-		echo PHP_EOL.$msg.PHP_EOL;
+		$msg = PHP_EOL.$msg.PHP_EOL;
 	}
-	else{
-		echo $msg;
-	}
+	echo $msg;
 	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
     }
