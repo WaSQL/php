@@ -317,8 +317,7 @@ foreach($ConfigXml as $name=>$host){
             	//cron is a command
             	$crontype='OS Command';
 			}
-			cronMessage("RUNNING  *** {$rec['name']} *** - Crontype: {$crontype}");
-        	
+        	cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}".PHP_EOL);
         	$cron_result='';
 			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
 			$cron_result .= "CronType: {$crontype} ".PHP_EOL;
