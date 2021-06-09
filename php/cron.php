@@ -24,17 +24,10 @@ error_reporting(E_ALL & ~E_NOTICE);
 $posturl_timeout=72000; //allow crons that call posturl to run for up to 24 hours
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
-global $logfile;
+
 $scriptname=basename(__FILE__, '.php');
 $wpath=dirname( dirname(__FILE__) );
-if(PHP_OS == 'WINNT' || PHP_OS == 'WIN32' || PHP_OS == 'Windows'){
-	$logfile="{$wpath}\\logs\\{$scriptname}.log";
-	$logfile=str_replace("/","\\",$logfile);
-}
-else{
-   	$logfile="{$wpath}/logs/{$scriptname}.log";
-}
-//echo $logfile;exit;
+
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
@@ -44,7 +37,6 @@ if(!isCLI()){
 	cronMessage("Cron.php is a command line app only.");
 	exit;
 }
-//cronMessage("Logfile: {$logfile}");
 global $ConfigXml;
 global $allhost;
 global $dbh;
@@ -769,24 +761,7 @@ function cronLogTails(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronMessage($msg,$separate=0){
-	global $CONFIG;
-	global $mypid;
-	global $logfile;
-	if(!strlen($mypid)){$mypid=getmypid();}
-	$ctime=time();
-	$cdate=date('Y-m-d h:i:s',$ctime);
-	$msg="{$cdate},{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
-	if($separate==1){
-		$msg = PHP_EOL.$msg.PHP_EOL;
-	}
-	echo $msg;
-	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
-        setFileContents($logfile,$msg);
-    }
-    else{
-        appendFileContents($logfile,$msg);
-    }
-	return;
+	return commonLogMessage('cron',$msg,$separate,1);
 }
 /** --- function cronUpdate
 * @exclude  - this function is for internal use only and thus excluded from the manual

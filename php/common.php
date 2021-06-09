@@ -36,6 +36,33 @@ function commonBuildTerminal($opts=array()){
 	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
 	return evalPHP(array($controller,$body));
 }
+/**  --- function commonLogMessage
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function commonLogMessage($name,$msg,$separate=0,$echo=0){
+	global $CONFIG;
+	$caller=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+	$caller=$caller[1];
+	$caller['file']=getFileName($caller['file']);
+	$logpath=getWasqlPath('logs');
+	$logfile="{$logpath}/{$name}.log";
+	$mypid=getmypid();
+	$cdate=date('Y-m-d h:i:s');
+	$msg="{$cdate},{$mypid},{$CONFIG['name']},{$caller['file']}#{$caller['line']}->{$caller['function']},{$msg}".PHP_EOL;
+	if($separate==1){
+		$msg = PHP_EOL.$msg.PHP_EOL;
+	}
+	if($echo==1){
+    	echo $msg;
+    }
+	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+        setFileContents($logfile,$msg);
+    }
+    else{
+        appendFileContents($logfile,$msg);
+    }
+	return 1;
+}
 /**  --- function commonCronCheckSchema
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -13335,6 +13362,11 @@ function getAgentLang($agent=''){
 * @usage $path=getWasqlPath('php');
 */
 function getWasqlPath($subdir=''){
+	global $getWasqlPathCache;
+	$key=$subdir.'x';
+	if(isset($getWasqlPathCache[$key])){
+		return $getWasqlPathCache[$key];
+	}
 	$path=dirname( dirname(__FILE__) );
 	if(isWindows()){
 		$rtnpath="{$path}\\{$subdir}";
@@ -13343,7 +13375,7 @@ function getWasqlPath($subdir=''){
 	else{
     	$rtnpath="{$path}/{$subdir}";
 	}
-
+	$getWasqlPathCache[$key]=$rtnpath;
 	return $rtnpath;
 }
 //---------- begin function getWasqlTempPath--------------------

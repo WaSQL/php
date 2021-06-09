@@ -169,8 +169,10 @@ function translateCheckSchema(){
 		);
 	$ok = createDBTable($table,$fields,'InnoDB');
 	if($ok != 1){
-		echo "translateCheckSchema Error: ".printValue($ok);exit;
+		$ok=commonLogMessage('translate',"ERROR - createDBTable".printValue($ok));
+		return;
 	}
+	$ok=commonLogMessage('translate',"created {$table}");
 	//indexes
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"identifier,locale",'-unique'=>1));
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"locale"));
@@ -305,6 +307,7 @@ function translateText($text,$locale=''){
 	}
 	//echo $source_locale.printValue($taddopts);exit;
 	$tid=addDBRecord($taddopts);
+	$ok=commonLogMessage('translate',"addDBRecord - {$tid} - {$locale} - {$translation}");
 
 	if($target_lang != $source_lang){
 		$taddopts['locale']=$source_locale;
@@ -322,7 +325,7 @@ function translateText($text,$locale=''){
 function translateGoogle($text,$source_lang,$target_lang){
 	global $CONFIG;
 	if(!isset($CONFIG['translate_key'])){
-		debugValue('Missing Google Translate Key in config');
+		commonLogMessage('translate','ERROR -  translateGoogle. Missing Google Translate Key in config');
 		return $text;
 	}
 	$json=<<<ENDOFJSON
@@ -332,17 +335,28 @@ function translateGoogle($text,$source_lang,$target_lang){
   'source': '{$source_lang}'
 }
 ENDOFJSON;
-	$post=postJSON($url,$json);
-	echo printValue($post);exit;
-
-    $url = "https://www.googleapis.com/language/translate/v2?key={$CONFIG['translate_key']}&q=".rawurlencode($text)."&source={$source_lang}&target={$target_lang}";
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($handle);
-    //echo printValue($response);
-    $responseDecoded = json_decode($response, true);
-    curl_close($handle);
-	return $responseDecoded['data']['translations'][0]['translatedText'];
+	//$ok=commonLogMessage('translate',"translateGoogle - {$url} - {$locale} {$translation}");
+	//return;
+	//$post=postJSON($url,$json);
+	//echo printValue($post);exit;
+	commonLogMessage('translate',"translateGoogle - calling. {$source_lang} - {$target_lang} - {$text}");
+	$url = "https://www.googleapis.com/language/translate/v2?key={$CONFIG['translate_key']}&q=".rawurlencode($text)."&source={$source_lang}&target={$target_lang}";
+	$handle = curl_init($url);
+	curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($handle);
+	//echo printValue($response);
+	$responseDecoded = json_decode($response, true);
+	curl_close($handle);
+	if(isset($responseDecoded['data']['translations'][0]['translatedText'])){
+		commonLogMessage('translate',"translateGoogle - returned {$responseDecoded['data']['translations'][0]['translatedText']}");
+		return $responseDecoded['data']['translations'][0]['translatedText'];
+	}
+	elseif(isset($responseDecoded['data']['translations']['translatedText'])){
+		commonLogMessage('translate',"translateGoogle - returned {$responseDecoded['data']['translations']['translatedText']}");
+		return $responseDecoded['data']['translations']['translatedText'];
+	}
+	commonLogMessage('translate',"translateGoogle - failed");
+	return $text;
 }
 //---------- begin function translateYandex
 /**
@@ -351,7 +365,7 @@ ENDOFJSON;
 function translateYandex($text,$source_lang,$target_lang){
 	global $CONFIG;
 	if(!isset($CONFIG['translate_key'])){
-		debugValue('Missing Yandex Translate Key in config');
+		commonLogMessage('translate','ERROR - translateYandex. Missing translate_key in config');
 		return $text;
 	}
 	$url='https://translate.yandex.net/api/v1.5/tr.json/translate';
@@ -366,14 +380,18 @@ function translateYandex($text,$source_lang,$target_lang){
 		'-nossl'	=> 1,
 		'-follow'	=> 1
 	);
+	commonLogMessage('translate',"translateYandex - calling. {$source_lang} - {$target_lang} - {$text}");
 	$post=postURL($url,$opts);
 	//echo $post['body'];exit;
 	if(isset($post['json_array']['text'][0])){
+		commonLogMessage('translate',"translateYandex - returned {$post['json_array']['text'][0]}");
 		return decodeURL($post['json_array']['text'][0]);
 	}
 	elseif(isset($post['json_array']['text'])){
+		commonLogMessage('translate',"translateYandex - returned {$post['json_array']['text']}");
 		return decodeURL($post['json_array']['text']);
 	}
+	commonLogMessage('translate',"translateYandex - failed");
 	return $text;
 }
 //---------- begin function translateParseLocale
