@@ -1230,8 +1230,20 @@ if(isset($_REQUEST['_menu'])){
 			break;
 		}
 	}
-//cache the page for 5 seconds
-$expire=gmdate('D, d M Y H:i:s', time()+10);
+//cache the page for 5 minutes
+$expire=gmdate('D, d M Y H:i:s', time()+300);
+
+if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='logs'){
+	switch(strtolower($_REQUEST['func'])){
+		case 'tail':
+		case 'tail_refresh':
+			echo adminViewPage($_REQUEST['_menu']);
+			echo $wasql_debugValueContent;
+			exit;
+		break;
+	}
+}
+
 adminSetHeaders();
 $js=<<<ENDOFJSSCRIPT
 <script type="text/javascript">
@@ -2077,9 +2089,61 @@ LIST_TABLE:
 					break;
 					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
 					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
-					case '_users':echo '<span class="icon-users w_info w_big"></span>';break;
+					case '_users':
+						echo '<span class="icon-users w_info w_big"></span>';
+						$recopts['-quickfilters']=array(
+							array(
+								'icon'=>'icon-file-txt w_gray',
+								'title'=>'view log',
+								'class'=>'btn w_white',
+								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'user',title:'User Log'});",
+							),
+							array(
+								'icon'=>'icon-mark w_green',
+								'title'=>'active',
+								'filter'=>'active eq 1',
+								'class'=>'btn w_white'
+							),
+							array(
+								'icon'=>'icon-user-admin w_red',
+								'title'=>'admins',
+								'filter'=>'utype eq 0',
+								'class'=>'btn w_white'
+							),
+							array(
+								'icon'=>'icon-mark w_gray',
+								'title'=>'NOT active',
+								'filter'=>'active eq 0',
+								'class'=>'btn w_white'
+							),
+						);
+					break;
+
 					case '_reports':echo '<span class="icon-chart-pie w_big"></span>';break;
 					case '_templates':echo '<span class="icon-file-docs w_big"></span>';break;
+					case '_translations':
+						echo '<span class="icon-users w_info w_big"></span>';
+						$recopts['-quickfilters']=array(
+							array(
+								'icon'=>'icon-file-txt w_gray',
+								'title'=>'view log',
+								'class'=>'btn w_white',
+								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'translate',title:'Translation Log'});",
+							),
+							array(
+								'icon'=>'icon-mark w_green',
+								'title'=>'confirmed',
+								'filter'=>'confirmed eq 1',
+								'class'=>'btn w_white'
+							),
+							array(
+								'icon'=>'icon-mark w_danger',
+								'title'=>'failed',
+								'filter'=>'failed eq 1',
+								'class'=>'btn w_white'
+							),
+						);
+					break;
 					case '_pages':echo '<span class="icon-file-doc w_big"></span>';break;
 					case '_queries':echo '<span class="icon-database-empty w_danger w_big"></span>';break;
 					default:

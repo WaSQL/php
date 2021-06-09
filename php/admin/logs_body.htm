@@ -35,5 +35,22 @@
 </view:default>
 
 
+<view:tail>
+	<div id="tail_div">
+		<?=renderView('tail_refresh',$tail,'tail');?>
+	</div>
+</view:tail>
+
+<view:tail_refresh>
+	<div style="display: flex;justify-content: space-between;margin-bottom:5px;height:20px;">
+		<div id="tail_refreshing"></div>
+		<div>
+			<span id="cronlog_timer" data-behavior="countdown" data-end="ajaxGet('/php/admin.php','tail_div',{setprocessing:'tail_refreshing',_menu:'logs',func:'tail_refresh',name:'<?=$tail['name'];?>'});" class="w_small w_gray">11</span>
+			<span class="icon-refresh w_pointer" data-setprocessing="tail_refreshing" data-_menu="logs" data-func="tail_refresh" data-name="<?=$tail['name'];?>" onclick="ajaxGet('/php/admin.php','tail_div',this.dataset);"></span>
+		</div>
+	</div>
+	<div class="w_nowrap" style="background:#272f36;color:#fcfcfc;padding:10px 5px 15px 5px;font-size:0.93rem;"><?=nl2br($tail['data']);?></div>
+</view:tail_refresh>
+
 
 

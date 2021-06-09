@@ -1,6 +1,10 @@
 <?php
 	global $CONFIG;
 	global $SETTINGS;
+	if($_REQUEST['_menu']=='logs' && ($_REQUEST['func']=='tail' || $_REQUEST['func']=='tail_refresh')){
+		setView('blank',1);
+		return;
+	}
 	if(!isset($CONFIG['admin_color'])){
 		$CONFIG['admin_color']='gray';
 	}

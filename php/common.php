@@ -130,7 +130,7 @@ function commonCronCheckSchema(){
 		));
 	}
 	//frequency_max
-	if(!in_array('frequency_max',$cronfields)){
+	if(!isset($cronfields['frequency_max'])){
 		$query="ALTER TABLE _cron ADD frequency_max varchar(25) NULL";
 		$ok=executeSQL($query);
 		$id=addDBRecord(array('-table'=>"_fielddata",

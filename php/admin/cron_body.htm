@@ -237,21 +237,3 @@ function cronLogRefreshTimer(){
 <view:not_running><?=buildOnLoad("setText('is_running','');setText('run_date_0','Not Running');");?></view:not_running>
 <?=renderViewIf($log['run_result']=='No longer running','not_running');?>
 </view:cron_result>
-
-<view:log>
-	<div id="cronlog_data">
-		<?=renderView('log_refresh',$log,'log');?>
-	</div>
-</view:log>
-
-<view:log_refresh>
-	<div style="display: flex;justify-content: space-between;margin-bottom:5px;height:20px;">
-		<div id="cronlog_refreshing"></div>
-		<div>
-			<span id="cronlog_timer" data-behavior="countdown" class="w_small w_gray">11</span>
-			<span class="icon-refresh w_pointer" onclick="cronLogRefresh();"></span>
-		</div>
-	</div>
-	<div class="w_nowrap" style="background:#272f36;color:#fcfcfc;padding:10px 5px 15px 5px;font-size:0.93rem;"><?=nl2br($log);?></div>
-	<?=buildOnLoad("cronLogRefreshTimer();");?>
-</view:log_refresh>

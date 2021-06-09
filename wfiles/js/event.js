@@ -3259,22 +3259,27 @@ function countDown(id){
     }
     let stop=0;
     if(cb.length > 0){
-    	let cbfunc=cb+"('"+id+"','"+number+"')";
-    	let jsfunc=new Function(cbfunc);
-    	jsfunc();
+    		let cbfunc=cb+"('"+id+"','"+number+"')";
+    		let jsfunc=new Function(cbfunc);
+    		jsfunc();
 	}
 	else if(number == 0){
 		if(undefined != obj.dataset.end){
 			let func=obj.dataset.end;
-		    if(function_exists(func)){
-	    		window[func](obj);
-	    	}
+			console.log(func);
+		    	if(function_exists(func)){
+	    			window[func](obj);
+	    		}
+	    		else{
+	    			let fn=new Function(func)();
+	    			console.log(fn);
+	    		}
 		}
 		else if(undefined != obj.dataset.onzero){
 			let func=obj.dataset.onzero;
-		    if(function_exists(func)){
-	    		window[func](obj);
-	    	}
+		    	if(function_exists(func)){
+	    			window[func](obj);
+	    		}	
 		}
 		stop=1;
 	}
