@@ -679,29 +679,38 @@ function postgresqlDBConnect(){
 	$params=postgresqlParseConnectParams();
 	//echo "postgresqlDBConnect".printValue($params);exit;
 	if(!isset($params['-connect'])){
-		echo "postgresqlDBConnect error: no connect params".printValue($params);
+		echo "postgresqlDBConnect error: No connect params".printValue($params);
 		exit;
 	}
 	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
+	function postgresExceptionErrorHandler($errno, $errstr, $errfile, $errline ) {
+	    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+	}
+	set_error_handler('postgresExceptionErrorHandler');
 	try{
-		//echo $params['-connect'].'<br>'.PHP_EOL;
 		$dbh_postgresql = pg_connect($params['-connect']);
-		if(!is_resource($dbh_postgresql)){
-			$err=@pg_last_error();
-			echo "postgresqlDBConnect error:{$err}".printValue($params);
-			exit;
-
-		}
-		//$umeta=pg_meta_data($dbh_postgresql,'_users');
-		//echo "Connected".printValue($umeta);exit;
-		return $dbh_postgresql;
 	}
 	catch (Exception $e) {
-		echo "postgresqlDBConnect exception" . printValue($e);
+		$err=$e->getMessage();
+		restore_error_handler();
+		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+		echo "postgresqlDBConnect exception: {$err}" . printValue($params);
 		exit;
 	}
+	restore_error_handler();
+	if(!is_resource($dbh_postgresql)){
+		$err=@pg_last_error();
+		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+		echo "postgresqlDBConnect error:{$err}".printValue($params);
+		exit;
+
+	}
+	//$umeta=pg_meta_data($dbh_postgresql,'_users');
+	//echo "Connected".printValue($umeta);exit;
+	return $dbh_postgresql;
+	
 }
 //---------- begin function postgresqlDelDBRecord ----------
 /**
