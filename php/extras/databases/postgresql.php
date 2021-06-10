@@ -664,6 +664,13 @@ function postgresqlDropDBTable($table='',$meta=1){
 	$ok=postgresqlDelDBRecord(array('-table'=>"_fielddata",'-where'=>"tablename = '{$table}'"));
     return 1;
 }
+//---------- begin function postgresExceptionErrorHandler ----------
+/**
+* @describe returns connection resource
+*/
+function postgresExceptionErrorHandler($errno, $errstr, $errfile, $errline ) {
+	    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+	}
 //---------- begin function postgresqlDBConnect ----------
 /**
 * @describe returns connection resource
@@ -685,9 +692,6 @@ function postgresqlDBConnect(){
 	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
-	function postgresExceptionErrorHandler($errno, $errstr, $errfile, $errline ) {
-	    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-	}
 	set_error_handler('postgresExceptionErrorHandler');
 	try{
 		$dbh_postgresql = pg_connect($params['-connect']);
