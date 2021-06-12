@@ -490,9 +490,12 @@ function userDecodeLDAPAuth($user,$pass){
  		return null;
  	}
    	$finfo=getDBFieldInfo('_users');
+   	$addopts=array();
    	//convert some fields to JSON if the field type is json
+   	$upserts=array('utype');
    	foreach($finfo as $field=>$info){
    		if(!isset($ldap[$field])){continue;}
+   		if($field != 'username' && !stringBeginsWith($field,'_')){$upserts[]=$field;}
    		if($info['_dbtype']=='json'){
         	switch(strtolower($field)){
         		case 'memberof_cn':
@@ -500,72 +503,46 @@ function userDecodeLDAPAuth($user,$pass){
         		case 'distinguishedname_ou':
         		case 'objectcategory':
         		case 'objectclass':
-        			$ldap[$field]=json_encode(preg_split('/\,/',$ldap[$field]));
+        			$addopts[$field]=json_encode(preg_split('/\,/',$ldap[$field]));
+        		break;
+        		default:
+        			$addopts[$field]=$ldap[$field];
+        		break;
+        	}
+        }
+        else{
+        	switch($field){
+        		case 'password':
+        			$addopts[$field]=userEncryptPW($ldap['password']);
+        		break;
+        		default:
+        			$addopts[$field]=$ldap[$field];
         		break;
         	}
         }
     }
-   	$admins=array();
+    $addopts['utype']=1;
     if(isset($CONFIG['authldap_admin'])){
        	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
+       	if(in_array($ldap['username'],$admins)){
+       		$addopts['utype']=0;
+       	}
 	}
   	//add or update this user record
-  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
-  	if(isset($rec['_id'])){
-       	$changes=array();
-       	if(isset($ldap['password']) && isset($rec['password'])){
-			$ldap['password']=userEncryptPW($ldap['password']);
-		}
-       	foreach($finfo as $field=>$info){
-            if(isset($ldap[$field]) && sha1($rec[$field]) != sha1($ldap[$field])){
-                $changes[$field]=$rec[$field]=$ldap[$field];
-			}
-			elseif(isset($_REQUEST[$field]) && sha1($rec[$field]) != sha1($_REQUEST[$field])){
-                $changes[$field]=$rec[$field]=$_REQUEST[$field];
+  	$addopts['-upsert']=implode(',',$upserts);
+  	$addopts['-table']='_users';
+  	$ok=addDBRecord($addopts);
 
-			}
-		}
-		//set utype to 0 for admins
-		if(in_array($rec['username'],$admins) || in_array($rec['email'],$admins)){
-			if($rec['utype'] != 0){
-				$changes['utype']=$rec['utype']=0;
-			}
-		}
-		elseif($rec['utype'] == 0){
-			$changes['utype']=$rec['utype']=1;
-		}
-		if(count($changes)){
-            $ok=editDBRecordById('_users',$rec['_id'],$changes);
-            if(is_array($ok)){$ok=json_encode($ok);}
-            $ok=commonLogMessage('user',"userDecodeLDAPAuth editDBRecordById {$ok}");
-		}
-		return $rec;
-	}
-	else{
-       	$ldap['-table']='_users';
-       	if(in_array($ldap['username'],$admins) || in_array($ldap['email'],$admins)){
-			$ldap['utype']= 0;
-		}
-		else{$ldap['utype']=1;}
-		//add extra fields
-		foreach($finfo as $field=>$info){
-           if(isset($_REQUEST[$field]) && !isset($ldap[$field])){
-                $ldap[$field]=$_REQUEST[$field];
-			}
-		}
-       	$id=addDBRecord($ldap);
-       	if(isNum($id)){
-       		$rec=getDBRecordById('_users',$id,1);
-       		$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord {$id}");
-       		return $rec;
-		}
-		else{
-			if(is_array($id)){$id=json_encode($id);}
-			$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord {$id}");
-		}
-	}
-	$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed - unknown reason - user {$user}");
-	return null;
+  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
+  	echo $ok.printValue($addopts).printValue($rec);exit;
+  	if(isset($rec['_id'])){
+  		$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
+  		return $rec;
+  	}
+  	else{
+  		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$rec['username']}");
+  		return null;
+  	}
 }
 //---------- begin function userDecodeUsernameAuth ----
 /**
