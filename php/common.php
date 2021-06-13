@@ -1913,7 +1913,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		if($tval==$params['value'] || $dval==$params['value']){
 			$checked=' checked';
 		}
-		$cid="{$id}_{$tval}";
+		$cid=strtolower(str_replace(' ','_',"{$id}_{$tval}"));
 		$class='';
 		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
 		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
