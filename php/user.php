@@ -534,7 +534,6 @@ function userDecodeLDAPAuth($user,$pass){
   	$ok=addDBRecord($addopts);
 
   	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
-  	echo $ok.printValue($addopts).printValue($rec);exit;
   	if(isset($rec['_id'])){
   		$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
   		return $rec;
