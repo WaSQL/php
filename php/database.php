@@ -4466,21 +4466,44 @@ function addDBRecord($params=array()){
     $ignore='';
     if(isset($params['-ignore']) && $params['-ignore']){$ignore=' ignore';}
     $query = 'INSERT'.$ignore.' INTO ' . $table .PHP_EOL. '(' . $fieldstr . ')'.PHP_EOL.'VALUES (' . $valstr .')'.PHP_EOL;
+   //  if(count($upserts)){
+   //  	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
+   //  	$updates=array();
+   //  	foreach($upserts as $k=>$v){
+   //  		if(!strlen($v)){
+   //  			if(isset($info[$k]['default']) && strlen($info[$k]['default'])){
+			// 		$val=$info[$k]['default'];
+			// 	}
+			// 	else{$val='NULL';}
+			// }
+   //  		$updates[]="	{$k} = {$v}";
+   //  	}
+   //  	$query .= implode(','.PHP_EOL,$updates);
+   //  }
     if(count($upserts)){
-    	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
-    	$updates=array();
-    	foreach($upserts as $k=>$v){
-    		$v=trim($v);
-    		if(!strlen($v)){
-    			if(isset($info[$k]['default']) && strlen($info[$k]['default'])){
-					$v=$info[$k]['default'];
-				}
-				else{$v='NULL';}
+		//VALUES() to refer to the new row is deprecated with version 8
+		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		$version=(integer)$version['value'];
+		if($version >=8){
+			//mysql version 8 and newer
+			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
+			$flds=array();
+			foreach($upserts as $k=>$v){
+				$flds[]="{$k}=new.{$k}";
 			}
-    		$updates[]="	{$k} = {$v}";
-    	}
-    	$query .= implode(','.PHP_EOL,$updates);
-    }
+			$query.=PHP_EOL.implode(', ',$flds);
+			//echo $query;exit;
+		}
+		else{
+			//before mysql version 8
+			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
+			$flds=array();
+			foreach($upserts as $k=>$v){
+				$flds[]="{$k}=VALUES({$k})";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+		}
+	}
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
 	$query_result=@databaseQuery($query);
