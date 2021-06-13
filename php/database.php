@@ -4320,7 +4320,12 @@ function addDBRecord($params=array()){
     		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
     	}
     	if(isset($info['_edate'])){
-    		$upserts['_edate']="'{$params['_cdate']}'";
+    		if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$params['_cdate'])){
+            	$upserts['_edate']=$params['_cdate'];
+            }
+			else{
+    			$upserts['_edate']="'{$params['_cdate']}'";
+    		}
     	}
     	if(isset($info['_euser'])){
     		$upserts['_euser']="'{$params['_cuser']}'";
@@ -4465,11 +4470,12 @@ function addDBRecord($params=array()){
     	$query .= 'ON DUPLICATE KEY UPDATE'.PHP_EOL;
     	$updates=array();
     	foreach($upserts as $k=>$v){
+    		$v=trim($v);
     		if(!strlen($v)){
     			if(isset($info[$k]['default']) && strlen($info[$k]['default'])){
-					$val=$info[$k]['default'];
+					$v=$info[$k]['default'];
 				}
-				else{$val='NULL';}
+				else{$v='NULL';}
 			}
     		$updates[]="	{$k} = {$v}";
     	}
