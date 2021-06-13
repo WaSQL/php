@@ -491,6 +491,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['class']='small';
 			$name="size_{$rec['_id']}";
 			$params['name']=$name;
+			$params['id']=$name;
 			if(isset($_REQUEST[$name])){$params['value']=$params['-value']=$_REQUEST[$name];}
 			$opts=array();
 			if(is_array($rec['sizes'])){
@@ -512,6 +513,7 @@ function wcommerceBuildField($field,$rec=array(),$val2=''){
 			$params['class']='small';
 			$name="color_{$rec['_id']}";
 			$params['name']=$name;
+			$params['id']=$name;
 			if(isset($_REQUEST[$name])){$params['value']=$params['-value']=$_REQUEST[$name];}
 			$opts=array();
 			if(is_array($rec['colors'])){
