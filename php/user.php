@@ -129,6 +129,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 		//use ldap?
 		if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
 			//ldap auth
+			$ok=commonLogMessage('user',"LDAP Auth Request from {$_REQUEST['username']}");
 			$rec=userDecodeLDAPAuth($_REQUEST['username'],$_REQUEST['password']);
 			//confirm record is valid and active
 			if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
@@ -517,9 +518,10 @@ function userDecodeLDAPAuth($user,$pass){
 	loadExtras('ldap');
  	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
  	if(!strlen($host)){
- 		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -no host. user {$user}");
+ 		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -no host. user {$user}");
  		return null;
  	}
+ 	$ok=commonLogMessage('user',"userDecodeLDAPAuth calling host - {$host}");
  	$authopts=array(
 		'-host'		=> $host,
 		'-username'	=> $_REQUEST['username'],
@@ -534,7 +536,7 @@ function userDecodeLDAPAuth($user,$pass){
  	$ldap=ldapAuth($authopts);
  	//confirm valid ldap record
  	if(!isset($ldap['username'])){
- 		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -ldap auth failed for {$user}");
+ 		$ok=commonLogMessage('user',"userDecodeLDAPAuth ldapAuth Failed.".printValue($ldap));
  		return null;
  	}
    	$finfo=getDBFieldInfo('_users');
