@@ -70,7 +70,10 @@ if(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['userna
 		$ok=userSetCookie($rec);
 		$ok=commonLogMessage('user',"Apikey Auth passed for user {$rec['username']}");
 	}
-	else{$_REQUEST['login_failed']=1;}
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+	}
 }
 elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 	//auth code
@@ -81,7 +84,10 @@ elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 		$ok=userSetCookie($rec);
 		$ok=commonLogMessage('user',"Auth passed for user {$rec['username']}");
 	}
-	else{$_REQUEST['login_failed']=1;}	
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"Auth failed for user {$_REQUEST['username']}");
+	}	
 }
 elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
 	//temporary auth code
@@ -92,7 +98,10 @@ elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
 		$ok=userSetCookie($rec);
 		$ok=commonLogMessage('user',"Temp Auth passed for user {$rec['username']}");
 	}
-	else{$_REQUEST['login_failed']=1;}	
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"Temp Auth failed for user {$_REQUEST['username']}");
+	}	
 }
 elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
 	//temporary auth code
@@ -103,7 +112,16 @@ elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
 		$ok=userSetCookie($rec);
 		$ok=commonLogMessage('user',"Session Auth passed for user {$rec['username']}");
 	}
-	else{$_REQUEST['login_failed']=1;}	
+	else{
+		$_REQUEST['login_failed']=1;
+		if(isset($rec['username'])){
+			$ok=commonLogMessage('user',"Session Auth failed for user {$rec['username']}");
+		}
+		else{
+			$ok=commonLogMessage('user',"Session Auth failed");
+		}
+		
+	}	
 }
 elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['password']) && strlen($_REQUEST['password'])){
 	//login form
@@ -117,8 +135,14 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				$USER=$rec;
 				$ok=userSetCookie($rec);
 				$ok=commonLogMessage('user',"LDAP Auth passed for user {$rec['username']}");
+				if($rec['utype']==0){
+					$ok=commonLogMessage('user'," -- {$rec['username']} is an admin");
+				}
 			}
-			else{$_REQUEST['login_failed']=1;}	
+			else{
+				$_REQUEST['login_failed']=1;
+				$ok=commonLogMessage('user',"LDAP Auth failed for user {$_REQUEST['username']}");
+			}	
 		}
 		else{
 			//username/password auth
@@ -129,7 +153,15 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 				$ok=userSetCookie($rec);
 				$ok=commonLogMessage('user',"Username Auth passed for user {$rec['username']}");
 			}
-			else{$_REQUEST['login_failed']=1;}
+			else{
+				$_REQUEST['login_failed']=1;
+				if(isset($rec['username'])){
+					$ok=commonLogMessage('user',"Username Auth failed for user {$rec['username']}");
+				}
+				else{
+					$ok=commonLogMessage('user',"Username Auth failed");
+				}
+			}
 		}
 	}
 	elseif(isset($_REQUEST['email']) && strlen($_REQUEST['email'])){
@@ -141,7 +173,15 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			$ok=userSetCookie($rec);
 			$ok=commonLogMessage('user',"Email Auth passed for user {$rec['username']}");
 		}
-		else{$_REQUEST['login_failed']=1;}
+		else{
+			$_REQUEST['login_failed']=1;
+			if(isset($rec['username'])){
+				$ok=commonLogMessage('user',"Email Auth failed for user {$rec['username']}");
+			}
+			else{
+				$ok=commonLogMessage('user',"Email Auth failed");
+			}
+		}
 	}
 	elseif(isset($_REQUEST['phone']) && strlen($_REQUEST['phone'])){
 		//phone/password auth
@@ -152,7 +192,15 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			$ok=userSetCookie($rec);
 			$ok=commonLogMessage('user',"Phone Auth passed for user {$rec['username']}");
 		}
-		else{$_REQUEST['login_failed']=1;}
+		else{
+			$_REQUEST['login_failed']=1;
+			if(isset($rec['username'])){
+				$ok=commonLogMessage('user',"Phone Auth failed for user {$rec['username']}");
+			}
+			else{
+				$ok=commonLogMessage('user',"Phone Auth failed");
+			}
+		}
 	}
 }
 elseif(isset($_COOKIE['WASQLGUID'])){
@@ -215,7 +263,7 @@ function userDecodeApikey($apikey,$rec=array()){
 		}
 	}
 	if(!isset($rec['_id']) || !isNum($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeApikey Failed - No rec.");
+		//$ok=commonLogMessage('user',"userDecodeApikey Failed - No rec.");
 		return null;
 	}
 	$cryptkey=userGetUserCryptKey($rec['_id']);
@@ -238,7 +286,7 @@ function userDecodeApikeyAuth($apikey,$user){
 	//echo $user.printValue($info);exit;
 	//make sure username and $info['username'] match
 	if(!isset($info['username']) || $user != $info['username']){
-		$ok=commonLogMessage('user',"userDecodeApikeyAuth Failed - {$user}.");
+		//$ok=commonLogMessage('user',"userDecodeApikeyAuth Failed - {$user}.");
 		return null;
 	}
 	return $rec;
@@ -258,7 +306,7 @@ function userGetAuthCode($rec=array()){
 		}
 	}
 	if(!isset($rec['_id']) || !isNum($rec['_id'])){
-		$ok=commonLogMessage('user',"userGetAuthCode Failed - no rec.");
+		//$ok=commonLogMessage('user',"userGetAuthCode Failed - no rec.");
 		return null;
 	}
 	$rec['apikey']=userGetApikey($rec);
@@ -275,13 +323,13 @@ function userDecodeAuthCode($authcode){
 	$str=decodeBase64($authcode);
 	list($id,$auth)=preg_split('/\./',$str,2);
 	if(!isNum($id)){
-		$ok=commonLogMessage('user',"userDecodeAuthCode Failed - id is not a num.");
+		//$ok=commonLogMessage('user',"userDecodeAuthCode Failed - id is not a num.");
 		return null;
 	}
 	//get user record with that id
 	$rec=getDBRecordById('_users',$id,1);
 	if(!isset($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeAuthCode Failed - no rec.");
+		//$ok=commonLogMessage('user',"userDecodeAuthCode Failed - no rec.");
 		return null;
 	}
 	//decode username:apikey
@@ -289,14 +337,14 @@ function userDecodeAuthCode($authcode){
 	$str=decrypt($auth,$cryptkey);
 	list($user,$apikey)=preg_split('/\:/',$str,2);
 	if($rec['username'] != $user){
-		$ok=commonLogMessage('user',"userDecodeAuthCode Failed - user {$user}.");
+		//$ok=commonLogMessage('user',"userDecodeAuthCode Failed - user {$user}.");
 		return null;
 	}
 	//decode apikey
 	$info=userDecodeApikey($apikey,$rec);
 	//make sure username and $info['username'] match
 	if(!isset($info['username']) || $user != $info['username']){
-		$ok=commonLogMessage('user',"userDecodeAuthCode Failed - user2 {$user}.");
+		//$ok=commonLogMessage('user',"userDecodeAuthCode Failed - user2 {$user}.");
 		return null;
 	}
 	return $rec;
@@ -332,13 +380,13 @@ function userDecodeTempAuthCode($authcode){
 	$str=decodeBase64($authcode);
 	list($id,$auth)=preg_split('/\./',$str,2);
 	if(!isNum($id)){
-		$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - id is not a number.");
+		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - id is not a number.");
 		return null;
 	}
 	//get user record with that id
 	$rec=getDBRecordById('_users',$id,1);
 	if(!isset($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - no rec.");
+		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - no rec.");
 		return null;
 	}
 	//decode auth to username:ctime:apikey
@@ -346,14 +394,14 @@ function userDecodeTempAuthCode($authcode){
 	$str=decrypt($auth,$cryptkey);
 	list($user,$ctime,$apikey)=preg_split('/\:/',$str,3);
 	if($rec['username'] != $user){
-		$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - user {$user}.");
+		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - user {$user}.");
 		return null;
 	}
 	//decode apikey
 	$info=userDecodeApikey($apikey,$rec);
 	//make sure username and $info['username'] match
 	if(!isset($info['username']) || $user != $info['username']){
-		$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - user2 {$user}.");
+		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - user2 {$user}.");
 		return null;
 	}
 	//make sure the atime is within the allowed time frame - 30 minutes
@@ -361,7 +409,7 @@ function userDecodeTempAuthCode($authcode){
 	$seconds=$minutes*60;
 	$elapsed=time()-$ctime;
 	if($elapsed > $seconds){
-		$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - time elapsed.");
+		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - time elapsed.");
 		return null;
 	}
 	return $rec;
@@ -426,13 +474,13 @@ function userDecodeSessionAuthCode($authcode){
 	$str=decodeBase64($authcode);
 	list($id,$auth)=preg_split('/\./',$str,2);
 	if(!isNum($id)){
-		$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - id is not a number.");
+		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - id is not a number.");
 		return null;
 	}
 	//get user record with that id
 	$rec=getDBRecordById('_users',$id,1);
 	if(!isset($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - no rec.");
+		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - no rec.");
 		return null;
 	}
 	//decode auth to username:ctime:apikey
@@ -440,14 +488,14 @@ function userDecodeSessionAuthCode($authcode){
 	$str=decrypt($auth,$cryptkey);
 	list($rid,$ctime,$apikey)=preg_split('/\:/',$str,3);
 	if($rec['_id'] != $rid){
-		$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - id {$rid}.");
+		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - id {$rid}.");
 		return null;
 	}
 	//decode apikey
 	$info=userDecodeApikey($apikey,$rec);
 	//make sure username and $info['username'] match
 	if(!isset($info['username']) || $rec['username'] != $info['username']){
-		$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - user {$info['username']}.");
+		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - user {$info['username']}.");
 		return null;
 	}
 	//make sure the atime is within the allowed time frame - 10 minutes
@@ -455,7 +503,7 @@ function userDecodeSessionAuthCode($authcode){
 	$seconds=$minutes*60;
 	$elapsed=time()-$ctime;
 	if($elapsed > $seconds){
-		$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - time elapsed.");
+		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - time elapsed.");
 		return null;
 	}
 	return $rec;
@@ -469,7 +517,7 @@ function userDecodeLDAPAuth($user,$pass){
 	loadExtras('ldap');
  	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
  	if(!strlen($host)){
- 		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -no host. user {$user}");
+ 		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -no host. user {$user}");
  		return null;
  	}
  	$authopts=array(
@@ -486,7 +534,7 @@ function userDecodeLDAPAuth($user,$pass){
  	$ldap=ldapAuth($authopts);
  	//confirm valid ldap record
  	if(!isset($ldap['username'])){
- 		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -ldap auth failed for {$user}");
+ 		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -ldap auth failed for {$user}");
  		return null;
  	}
    	$finfo=getDBFieldInfo('_users');
@@ -535,11 +583,11 @@ function userDecodeLDAPAuth($user,$pass){
 
   	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
   	if(isset($rec['_id'])){
-  		$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
+  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
   		return $rec;
   	}
   	else{
-  		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$rec['username']}");
+  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$rec['username']}");
   		return null;
   	}
 }
@@ -550,19 +598,19 @@ function userDecodeLDAPAuth($user,$pass){
 function userDecodeUsernameAuth($user,$pass){
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($user)));
 	if(!isset($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - no rec for user {$user}");
+		//$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - no rec for user {$user}");
 		return null;
 	}
 	if(userIsEncryptedPW($rec['password'])){
 		$pw=userEncryptPW(addslashes($pass));
 		if($pw != $rec['password']){
-			$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - password failed for user {$user}");
+			//$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - password failed for user {$user}");
 			return null;
 		}
 	}
 	else{
 		if($pass != $rec['password']){
-			$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - password2 failed for user {$user}");
+			//$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - password2 failed for user {$user}");
 			return null;
 		}
 	}	
@@ -575,19 +623,19 @@ function userDecodeUsernameAuth($user,$pass){
 function userDecodeEmailAuth($email,$pass){
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'email'=>addslashes($email)));
 	if(!isset($rec['_id'])){
-		$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - no rec for email {$email}");
+		//$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - no rec for email {$email}");
 		return null;
 	}
 	if(userIsEncryptedPW($rec['password'])){
 		$pw=userEncryptPW(addslashes($pass));
 		if($pw != $rec['password']){
-			$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - password failed for email {$email}");
+			//$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - password failed for email {$email}");
 			return null;
 		}
 	}
 	else{
 		if($pass != $rec['password']){
-			$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - password failed for email {$email}");
+			//$ok=commonLogMessage('user',"userDecodeEmailAuth Failed - password failed for email {$email}");
 			return null;
 		}
 	}	
@@ -601,21 +649,21 @@ function userDecodePhoneAuth($phone,$pass){
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'phone'=>addslashes($phone)));
 	if(!isset($rec['_id'])){
 		$_REQUEST['_login_error']="Invalid Account";
-		$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - no rec for phone {$phone}");
+		//$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - no rec for phone {$phone}");
 		return null;
 	}
 	if(userIsEncryptedPW($rec['password'])){
 		$pw=userEncryptPW(addslashes($pass));
 		if($pw != $rec['password']){
 			$_REQUEST['_login_error']="Phone Auth Check 1 Failed";
-			$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - password failed for phone {$phone}");
+			//$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - password failed for phone {$phone}");
 			return null;
 		}
 	}
 	else{
 		if($pass != $rec['password']){
 			$_REQUEST['_login_error']="Phone Auth Check 2 Failed".printValue($rec);
-			$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - password failed for phone {$phone}");
+			//$ok=commonLogMessage('user',"userDecodePhoneAuth Failed - password failed for phone {$phone}");
 			return null;
 		}
 	}	
