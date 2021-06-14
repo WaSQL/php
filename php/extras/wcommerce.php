@@ -36,6 +36,9 @@ function wcommerceAdd2Cart($id,$params=array()){
 	if(isset($settings['wcommerceAdd2Cart_GroupItems']) && $settings['wcommerceAdd2Cart_GroupItems']==0){
 		unset($rec);
 	}
+	//remove from inventory
+	$qty=$product['quantity']-1;
+	$ok=editDBRecordById('wcommerce_products',$product['_id'],array('quantity'=>$qty));
 	if(isset($rec['_id'])){
 		$qty=$rec['quantity']+1;
 		$rtn['quantity']=$qty;
@@ -590,6 +593,8 @@ function wcommerceProducts($params=array()){
 	if(!isset($params['active'])){
 		$params['active']=1;
 	}
+	//do not show items that have a zero quantity
+	$params['-filter']="quantity > 0";
 	//default order
 	if(!isset($params['-order'])){
 		$params['-order']='sort_group,name';
@@ -672,6 +677,7 @@ function wcommerceGetProductAttributes($name){
 		group_concat(distinct size ORDER BY sort_size SEPARATOR ';') as sizes,
 		group_concat(distinct material ORDER BY sort_material SEPARATOR ';') as materials
 	from wcommerce_products
+	WHERE active=1 and quantity > 0
 	group by name
 ENDOFQ;
 	$recs=getDBRecords($q);
