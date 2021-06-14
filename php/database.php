@@ -4314,23 +4314,7 @@ function addDBRecord($params=array()){
 	/* Filter the query based on params */
 	$fields=array();
 	$vals=array();
-	$upserts=array(); //field to update on duplicate key
-	if(isset($params['-upsert'])){
-    	if(!is_array($params['-upsert'])){
-    		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
-    	}
-    	if(isset($info['_edate'])){
-    		$upserts['_edate']=1;
-    	}
-    	if(isset($info['_euser'])){
-    		$upserts['_euser']=1;
-    	}
-    	foreach($params['-upsert'] as $key){
-    		$key=strtolower(trim($key));
-    		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
-    		$upserts[$key]='';
-    	}
-    }
+	
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
@@ -4454,6 +4438,24 @@ function addDBRecord($params=array()){
 		}
 		return "addDBRecord Error: No Fields" . printValue($params) . printValue($info);
 	}
+	$upserts=array(); //field to update on duplicate key
+	if(isset($params['-upsert'])){
+    	if(!is_array($params['-upsert'])){
+    		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+    	}
+    	if(isset($info['_edate'])){
+    		$upserts['_edate']=1;
+    	}
+    	if(isset($info['_euser'])){
+    		$upserts['_euser']=1;
+    	}
+    	foreach($params['-upsert'] as $key){
+    		$key=strtolower(trim($key));
+    		if(!in_array($key,$fields)){continue;}
+    		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
+    		$upserts[$key]='';
+    	}
+    }
     $fieldstr=implode(",",$fields);
     $valstr=implode(",",$vals);
     $table=$params['-table'];
