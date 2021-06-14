@@ -583,7 +583,7 @@ function userDecodeLDAPAuth($user,$pass){
   	$addopts['-upsert']=implode(',',$upserts);
   	$addopts['-table']='_users';
   	$ok=addDBRecord($addopts);
-  	$ok=commonLogMessage('user',"userDecodeLDAPAuth addopts.".printValue($addopts));
+  	$ok=commonLogMessage('user',"userDecodeLDAPAuth addopts.".printValue($addopts).printValue($ok));
   	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
   	if(isset($rec['_id'])){
   		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
