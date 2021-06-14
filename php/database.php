@@ -4320,15 +4320,10 @@ function addDBRecord($params=array()){
     		$params['-upsert']=preg_split('/\,/',$params['-upsert']);
     	}
     	if(isset($info['_edate'])){
-    		if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$params['_cdate'])){
-            	$upserts['_edate']=$params['_cdate'];
-            }
-			else{
-    			$upserts['_edate']="'{$params['_cdate']}'";
-    		}
+    		$upserts['_edate']=1;
     	}
     	if(isset($info['_euser'])){
-    		$upserts['_euser']="'{$params['_cuser']}'";
+    		$upserts['_euser']=1;
     	}
     	foreach($params['-upsert'] as $key){
     		$key=strtolower(trim($key));
@@ -4484,12 +4479,19 @@ function addDBRecord($params=array()){
 		//VALUES() to refer to the new row is deprecated with version 8
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		$version=(integer)$version['value'];
+		$euser=(integer)$USER['_id'];
+		$edate=date('Y-m-d');
 		if($version >=8){
 			//mysql version 8 and newer
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
+			
 			foreach($upserts as $k=>$v){
-				$flds[]="{$k}=new.{$k}";
+				switch(strtolower($k)){
+					case '_edate':$flds[]="{$k}='{$edate}'";break;
+					case '_euser':$flds[]="{$k}={$euser}";break;
+					default:$flds[]="{$k}=new.{$k}";break;
+				}
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
 			//echo $query;exit;
@@ -4499,7 +4501,11 @@ function addDBRecord($params=array()){
 			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			foreach($upserts as $k=>$v){
-				$flds[]="{$k}=VALUES({$k})";
+				switch(strtolower($k)){
+					case '_edate':$flds[]="{$k}='{$edate}'";break;
+					case '_euser':$flds[]="{$k}={$euser}";break;
+					default:$flds[]="{$k}=VALUES({$k})";break;
+				}
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
