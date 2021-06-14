@@ -539,7 +539,6 @@ function userDecodeLDAPAuth($user,$pass){
  		$ok=commonLogMessage('user',"userDecodeLDAPAuth ldapAuth Failed.".printValue($ldap));
  		return null;
  	}
- 	$ok=commonLogMessage('user',"userDecodeLDAPAuth ldapAuth Result.".printValue($ldap));
    	$finfo=getDBFieldInfo('_users');
    	$addopts=array();
    	//convert some fields to JSON if the field type is json
@@ -583,7 +582,10 @@ function userDecodeLDAPAuth($user,$pass){
   	$addopts['-upsert']=implode(',',$upserts);
   	$addopts['-table']='_users';
   	$ok=addDBRecord($addopts);
-  	$ok=commonLogMessage('user',"userDecodeLDAPAuth addopts.".printValue($addopts).printValue($ok));
+  	if(!isNum($ok)){
+  		$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord Failed.".printValue($ok));	
+  	}
+  	
   	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
   	if(isset($rec['_id'])){
   		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
