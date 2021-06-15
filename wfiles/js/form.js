@@ -846,6 +846,10 @@ function initPikadayCalendar(field,params){
 	if(undefined != attrs['data-theme']){
 		opts.theme=attrs['data-theme'];
 	}
+	//format
+	if(undefined != attrs['data-format']){
+		opts.format=attrs['data-format'];
+	}
 	//yearRange
 	if(undefined != attrs['data-yearrange']){
 		let r=attrs['data-yearrange'].split(/\,/);
