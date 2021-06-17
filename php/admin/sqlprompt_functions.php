@@ -1,5 +1,48 @@
 <?php
 loadExtras('translate');
+function sqlpromptGetTables($dbname=''){
+	global $CONFIG;
+	if(strlen($dbname)){
+		$tables=getDBTables($dbname);
+	}
+	else{
+		$tables=getDBTables();
+	}	
+	if(isset($CONFIG['sqlprompt_tables'])){
+		if(!is_array($CONFIG['sqlprompt_tables'])){
+			$CONFIG['sqlprompt_tables']=preg_split('/\,/',$CONFIG['sqlprompt_tables']);
+		}
+		foreach($tables as $i=>$table){
+			if(!in_array($table,$CONFIG['sqlprompt_tables'])){
+				unset($tables[$i]);
+			}
+		}
+	}
+	if(isset($CONFIG['sqlprompt_tables_filter'])){
+		if(!is_array($CONFIG['sqlprompt_tables_filter'])){
+			$CONFIG['sqlprompt_tables_filter']=preg_split('/\,/',$CONFIG['sqlprompt_tables_filter']);
+		}
+		//echo printValue($CONFIG['sqlprompt_tables_filter']);
+		foreach($tables as $i=>$table){
+			$found=0;
+			foreach($CONFIG['sqlprompt_tables_filter'] as $filter){
+				if(stringContains($table,$filter)){$found+=1;}
+			}
+			if($found==0){
+				unset($tables[$i]);
+			}
+		}
+	}
+	//$CONFIG['sqlprompt_tables_hide_wasql']=1;
+	if(isset($CONFIG['sqlprompt_tables_hide_wasql'])){
+		foreach($tables as $i=>$table){
+			if(stringBeginsWith($table,'_')){
+				unset($tables[$i]);
+			}
+		}
+	}
+	return $tables;
+}
 function sqlpromptShowlist($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,

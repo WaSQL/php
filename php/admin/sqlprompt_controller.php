@@ -97,11 +97,7 @@
 		break;
 		case 'setdb':
 			//echo printValue($db);exit;
-			$tables=dbGetTables($db['name']);
-			if(!is_array($tables)){
-				echo $tables;exit;
-			}
-			//echo $db['name'].printValue($tables);exit;
+			$tables=sqlpromptGetTables($db['name']);
 			setView('tables_fields',1);
 			return;
 		break;
@@ -333,32 +329,7 @@
 				);
 			}
 			//echo printValue($tabs);exit;
-			$tables=getDBTables();
-			if(isset($CONFIG['sqlprompt_tables'])){
-				if(!is_array($CONFIG['sqlprompt_tables'])){
-					$CONFIG['sqlprompt_tables']=preg_split('/\,/',$CONFIG['sqlprompt_tables']);
-				}
-				foreach($tables as $i=>$table){
-					if(!in_array($table,$CONFIG['sqlprompt_tables'])){
-						unset($tables[$i]);
-					}
-				}
-			}
-			if(isset($CONFIG['sqlprompt_tables_filter'])){
-				if(!is_array($CONFIG['sqlprompt_tables_filter'])){
-					$CONFIG['sqlprompt_tables_filter']=preg_split('/\,/',$CONFIG['sqlprompt_tables_filter']);
-				}
-				//echo printValue($CONFIG['sqlprompt_tables_filter']);
-				foreach($tables as $i=>$table){
-					$found=0;
-					foreach($CONFIG['sqlprompt_tables_filter'] as $filter){
-						if(stringContains($table,$filter)){$found+=1;}
-					}
-					if($found==0){
-						unset($tables[$i]);
-					}
-				}
-			}
+			$tables=sqlpromptGetTables();
 			setView('default',1);
 		break;
 	}
