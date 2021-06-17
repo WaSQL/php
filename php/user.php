@@ -524,8 +524,8 @@ function userDecodeLDAPAuth($user,$pass){
  	$ok=commonLogMessage('user',"userDecodeLDAPAuth calling host - {$host}");
  	$authopts=array(
 		'-host'		=> $host,
-		'-username'	=> $_REQUEST['username'],
-		'-password'	=> $_REQUEST['password']
+		'-username'	=> $user,
+		'-password'	=> $pass
 	);
 	if(isset($CONFIG['authldap_domain'])){
     	$authopts['-domain']=$CONFIG['authldap_domain'];
@@ -592,7 +592,7 @@ function userDecodeLDAPAuth($user,$pass){
   		return $rec;
   	}
   	else{
-  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$rec['username']}");
+  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$user}");
   		return null;
   	}
 }
