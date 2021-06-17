@@ -5254,7 +5254,23 @@ function convertString ( $source, $target_encoding ){
     // replace the token string "[question_mark]" with the symbol "?"
     $target = str_replace( "[question_mark]", "?", $target );
     return $target;
-    }
+}
+//---------- begin function convertTimezone--------------------------------------
+/**
+* @describe converts a datetime string from one timezone to another timezone
+* @param datetime string - the date/datetime/time to convert
+* @param from_timezone string - the current timezone 
+* @param to_timezone string - the desired timezone
+* @param [format] string - format to return the new date/datetime/time string in. Defaults to Y-m-d H:i:s
+* @return string
+* @usage $cdate=convertTimezone('2021-05-10 13:15:00','UTC','America/Denver','Y-m-d H:i:s');
+* @refernence https://dragosholban.com/2018/04/11/how-to-convert-date-and-time-from-one-time-zone-to-another-in-php/
+*/
+function convertTimezone($ds,$from_timezone,$to_timezone,$format='Y-m-d H:i:s'){
+	$date = new DateTime($ds, new DateTimeZone($from_timezone));
+	$date->setTimezone(new DateTimeZone($to_timezone));
+	return $date->format($format);
+}
 //---------- begin function csvImplode--------------------------------------
 /**
 * @describe creates a csv string from an array
