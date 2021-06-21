@@ -3,7 +3,7 @@ loadExtras('translate');
 function sqlpromptGetTables($dbname=''){
 	global $CONFIG;
 	if(strlen($dbname)){
-		$tables=getDBTables($dbname);
+		$tables=dbGetTables($dbname);
 	}
 	else{
 		$tables=getDBTables();
@@ -33,7 +33,7 @@ function sqlpromptGetTables($dbname=''){
 			}
 		}
 	}
-	//$CONFIG['sqlprompt_tables_hide_wasql']=1;
+	$CONFIG['sqlprompt_tables_hide_wasql']=1;
 	if(isset($CONFIG['sqlprompt_tables_hide_wasql'])){
 		foreach($tables as $i=>$table){
 			if(stringBeginsWith($table,'_')){

@@ -98,6 +98,7 @@
 		case 'setdb':
 			//echo printValue($db);exit;
 			$tables=sqlpromptGetTables($db['name']);
+			//echo "setdb".printValue($tables);exit;
 			setView('tables_fields',1);
 			return;
 		break;
