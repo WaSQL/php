@@ -29,26 +29,36 @@
 */
 function postgresqlAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
-		return debugValue("postgresqlAddDBRecords Error: No Table");
+		$err="postgresqlAddDBRecords Error: No Table";
+		debugValue($err);
+		return $err;
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
-		return "postgresqlAddDBRecords Error: either -csv or -recs is required";
+		$err="postgresqlAddDBRecords Error: either -csv or -recs is required";
+		debugValue($err);
+		return $err;
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			return "postgresqlAddDBRecords Error: no such file: {$params['-csv']}";
+			$err="postgresqlAddDBRecords Error: no such file: {$params['-csv']}";
+			debugValue($err);
+		return $err;
 		}
 		return processCSVLines($params['-csv'],'postgresqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			return "postgresqlAddDBRecords Error: no recs";
+			$err="postgresqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
 		elseif(!count($params['-recs'])){
-			return "postgresqlAddDBRecords Error: no recs";
+			$err="postgresqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
 		return postgresqlAddDBRecordsProcess($params['-recs'],$params);
 	}
@@ -56,12 +66,16 @@ function postgresqlAddDBRecords($table='',$params=array()){
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	global $CONFIG;
 	if(!isset($params['-table'])){
-		return "postgresqlAddDBRecordsProcess Error: no table"; 
+		$err="postgresqlAddDBRecordsProcess Error: no table"; 
+		debugValue($err);
+		return $err;
 	}
 	$table=$params['-table'];
 	$fieldinfo=postgresqlGetDBFieldInfo($table);
 	if(!is_array($fieldinfo) || !count($fieldinfo)){
-		return "postgresqlAddDBRecordsProcess Error: no fields for {$table} in {$CONFIG['db']}"; 
+		$err="postgresqlAddDBRecordsProcess Error: no fields for {$table} in {$CONFIG['db']}"; 
+		debugValue($err);
+		return $err;
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -123,11 +137,14 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	$ok=postgresqlExecuteSQL($query);
 	//echo printValue($ok).$query;exit;
 	if(isset($ok['error'])){
+		$ok['query']=$query;
+		debugValue($ok);
 		return printValue($ok);
-		return 0;
 	}
 	if(isset($params['-debug'])){
-		return printValue($ok).$query;
+		$ok['query']=$query;
+		debugValue($ok);
+		return printValue($ok);
 	}
 	return count($values);
 }
