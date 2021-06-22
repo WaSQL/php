@@ -4479,11 +4479,12 @@ function addDBRecord($params=array()){
    //  }
     if(count($upserts)){
 		//VALUES() to refer to the new row is deprecated with version 8
-		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
-		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
+		
 		$euser=(integer)$USER['_id'];
 		$edate=date('Y-m-d');
-		//mysql version 8.0.20+ uses a different way to update
+		//VALUES() to refer to the new row is deprecated with version 8.0.20+
+		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
 		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
