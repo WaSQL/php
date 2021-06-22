@@ -120,10 +120,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	$query.=implode(','.PHP_EOL,$values);
 	if(isset($params['-upsert'][0])){
-		//VALUES() to refer to the new row is deprecated with version 8
-		$version=mysqlQueryResults("SHOW VARIABLES LIKE 'version'");
-		$version=(integer)$version[0]['value'];
-		if($version >=8){
+		//VALUES() to refer to the new row is deprecated with version 8.0.20+
+		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
+		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
 			//mysql version 8 and newer
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
