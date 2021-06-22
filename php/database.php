@@ -399,6 +399,18 @@ function dbEditRecord($db,$params=array()){
 function dbEditRecordById($db,$table='',$id=0,$params=array()){
 	return dbFunctionCall('editDBRecordById',$db,$table,$id,$params);
 }
+//---------- begin function dbEnumQueryResults
+/**
+* @describe edits a record with said id in said table
+* @param db string - database name as specified in the database section of config.xml
+* @param result object - Query result from execute command
+* @param params array - field=>value pairs to edit in this record
+* @return recs array
+* @usage $recs=dbEnumQueryResults($db,$data);
+*/
+function dbEnumQueryResults($db,$result,$params=array()){
+	return dbFunctionCall('enumQueryResults',$db,$result,$params);
+}
 //---------- begin function dbExecuteSQL
 /**
 * @describe returns an records set from a database
