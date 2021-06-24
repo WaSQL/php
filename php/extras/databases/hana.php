@@ -1665,9 +1665,6 @@ function hanaQueryResults($query,$params=array()){
 		}
 		//lowercase the field names
 		$rec=array_change_key_case($rec);
-	    if(isset($params['-results_eval'])){
-			$rec=call_user_func($params['-results_eval'],$rec);
-		}
 	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
