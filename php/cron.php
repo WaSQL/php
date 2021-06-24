@@ -22,6 +22,7 @@ ini_set('max_execution_time', 72000);
 set_time_limit(72000);
 error_reporting(E_ALL & ~E_NOTICE);
 $posturl_timeout=72000; //allow crons that call posturl to run for up to 24 hours
+global $starttime;
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
 
@@ -44,6 +45,8 @@ global $sel;
 global $CONFIG;
 global $cron_id;
 global $CRONTHRU;
+global $cronlog_id;
+$cronlog_id=0;
 $CRONTHRU=array();
 $starttime=microtime(true);
 $_SERVER['HTTP_HOST']='localhost';
@@ -259,6 +262,8 @@ foreach($ConfigXml as $name=>$host){
 				cronMessage("ERROR -- handshaking {$rec['name']} failed. {$rec['cron_pid']} != {$cron_pid}");
 				continue;
 			}
+			$CRONTHRU=array();
+			$cronlog_id=commonCronLogInit($rec['_id']);
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
 				'_id'		=> $rec['_id'],
@@ -266,6 +271,8 @@ foreach($ConfigXml as $name=>$host){
 			));
 			$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
 			$CRONTHRU['cron_pid']=$cron_pid;
+			$CRONTHRU['cron_id']=$rec['_id'];
+			$CRONTHRU['cronlog_id']=$cronlog_id;
 			$CRONTHRU['cron_run_date']=$rec['run_date'];
 			$CRONTHRU['cron_name']=$rec['name'];
 			$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
@@ -444,41 +451,14 @@ foreach($ConfigXml as $name=>$host){
 			$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
 			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
 			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
+			if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
+				$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
+			}
 			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
 			if(file_exists($commonCronLogFile)){
 				unlink($commonCronLogFile);
-			}
-			//add to the _cronlog table
-			$opts=array(
-				'-table'	=> '_cronlog',
-				'cron_id'	=> $rec['_id'],
-				'cron_pid'	=> $cron_pid,
-				'name'		=> $rec['name'],
-				'run_cmd'	=> $rec['run_cmd'],
-				'run_date'	=> 'NOW()'
-			);
-			$lrec=getDBRecord($opts);
-			if(isset($_REQUEST['cronlog_delete'])){
-				//cronlog_delete was set in the script
-				if(isset($lrec['_id'])){
-					$ok=delDBRecordById('_cronlog',$lrec['_id']);
-				}
-			}
-			elseif(isset($lrec['_id'])){
-				$opts=array(
-					'-table'=>'_cronlog'
-				);
-				$opts['-where']="_id={$lrec['_id']}";
-				$opts['run_length']=$run_length;
-				$opts['run_result']=$cron_result;
-				$ok=editDBRecord($opts);
-			}
-			elseif(!isset($_REQUEST['cronlog_delete'])){
-				$opts['run_length']=$run_length;
-				$opts['run_result']=$cron_result;
-				$ok=addDBRecord($opts);
 			}
 			//clean up result before looping
 			unset($cron_result);
@@ -761,6 +741,10 @@ function cronLogTails(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronMessage($msg,$separate=0){
+	global $cronlog_id;
+	if($cronlog_id != 0){
+		$ok=commonCronLog($msg);
+	}
 	return commonLogMessage('cron',$msg,$separate,1);
 }
 /** --- function cronUpdate

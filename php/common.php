@@ -41,6 +41,7 @@ function commonBuildTerminal($opts=array()){
 */
 function commonLogMessage($name,$msg,$separate=0,$echo=0){
 	global $CONFIG;
+	global $CRONTHRU;
 	$caller=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 	$caller=$caller[1];
 	$caller['file']=getFileName($caller['file']);
@@ -78,10 +79,25 @@ function commonCronCheckSchema(){
 			'inputtype'		=> 'checkbox',
 			'synchronize'	=> 0,
 			'tvals'			=> '1',
+			'defaultval'	=> 0,
 			'required'		=> 0,
-			'-upsert'		=> 'inputtype,synchronize,tvals,required'
+			'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
 		));
-		$ok=addDBIndex(array('-table'=>'_cron','-fields'=>"paused"));
+	}
+	//stop_now
+	if(!isset($cronfields['stop_now'])){
+		$query="ALTER TABLE _cron ADD stop_now ".databaseDataType('integer(1)')." NOT NULL Default 0";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'stop_now',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'defaultval'	=> 0,
+			'tvals'			=> '1',
+			'required'		=> 0,
+			'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
+		));
 	}
 	//run_as
 	if(!isset($cronfields['run_as'])){
@@ -139,6 +155,20 @@ function commonCronCheckSchema(){
 			'width'			=> 100,
 			'mask'			=> 'integer',
 			'required'		=> 1,
+			'-upsert'		=> 'inputtype,width,mask,required'
+		));
+	}
+	//cronlog_id
+	if(!isset($cronfields['cronlog_id'])){
+		$query="ALTER TABLE _cron ADD cronlog_id ".databaseDataType('integer')." NOT NULL Default 0;";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>"_fielddata",
+			'tablename'		=> '_cron',
+			'fieldname'		=> 'cronlog_id',
+			'inputtype'		=> 'text',
+			'width'			=> 100,
+			'mask'			=> 'integer',
+			'required'		=> 0,
 			'-upsert'		=> 'inputtype,width,mask,required'
 		));
 	}
@@ -293,21 +323,70 @@ function commonCronError($err,$email='',$params=array()){
 */
 function commonCronLogInit($id=0){
 	global $CONFIG;
-	if((integer)$id > 0){
-		$_REQUEST['cron_id']=(integer)$id;	
+	global $CRONTHRU;
+	global $cronlog_id;
+	global $commonCronLogCache;
+	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
+	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){return $_REQUEST['cronlog_id'];}
+	$id=(integer)$id;
+	if($id == 0){return;}
+	$CRONTHRU['cron_id']=$_REQUEST['cron_id']=$id;	
+	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-nocache'=>1));
+	if(!isset($rec['_id'])){
+		$err="commonCronLogInit error: No cron with that id";
+		debugValue($err);
+		return $err;
 	}
-	if(!isset($_REQUEST['cron_id'])){return false;}
-	$id=(integer)$_REQUEST['cron_id'];
-	if($id==0){return false;}
-	$path=getWaSQLPath('php/temp');
-	$logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	if(file_exists($logfile)){
-		unlink($logfile);
+	if(!isset($rec['cronlog_id'])){
+		$ok=executeSQL("alter table _cron add cronlog_id int NOT NULL Default 0");
 	}
-	return true;
+	/* New Log method - initialize run_result */
+	$cronlog_id=addDBRecord(array(
+		'-table'=>'_cronlog',
+		'name'=>$rec['name'],
+		'cron_id'=>$rec['_id'],
+		'cron_pid'=>$rec['cron_pid'],
+		'run_cmd'=>$rec['run_cmd'],
+		'run_date'=>'now()',
+		'run_result'=>'timestamp,elapsed,diff,message'.PHP_EOL
+	));
+	if(!isNum($cronlog_id)){
+		$err="commonCronLogInit error: addDBRecord error: {$cronlog_id}";
+		debugValue($err);
+		return $err;
+	}
+	$_REQUEST['cronlog_id']=$CRONTHRU['cronlog_id']=$cronlog_id;
+	$ok=editDBRecordById('_cron',$rec['_id'],array('cronlog_id'=>$id));
+	$commonCronLogCache['start']=microtime(true);
+	return $cronlog_id;
+	// if(!isset($_REQUEST['cron_id'])){return false;}
+	// $id=(integer)$_REQUEST['cron_id'];
+	// if($id==0){return false;}
+	// $path=getWaSQLPath('php/temp');
+	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
+	// if(file_exists($logfile)){
+	// 	unlink($logfile);
+	// }
+	// return true;
 }
 function commonCronLogDelete(){
-	$ok=commonCronLog('__cronlog_delete__');
+	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
+		$err="commonCronLogDelete error: REQUEST['cron_id'] not set";
+		debugValue($err);
+		return $err;
+	}
+	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
+	if(!isset($rec['_id'])){
+		$err="commonCronLogDelete error: No cron found";
+		debugValue($err);
+		return $err;
+	}
+	if(!isset($rec['cronlog_id']) || !isNum($rec['cronlog_id'])){
+		$err="commonCronLogDelete error: cronlog_id is empty";
+		debugValue($err);
+		return $err;
+	}
+	$ok=delDBRecordById('_cronlog',$rec['cronlog_id']);
 	return true;
 }
 //---------- begin function commonCronLog
@@ -322,6 +401,36 @@ function commonCronLogDelete(){
 function commonCronLog($msg,$echomsg=1){
 	global $CONFIG;
 	global $commonCronLogCache;
+	global $CRONTHRU;
+	$cron_id=0;
+	if(isset($CRONTHRU['cron_id']) && isNum($CRONTHRU['cron_id'])){$cron_id=$CRONTHRU['cron_id'];}
+	elseif(isset($_REQUEST['cron_id']) && isNum($_REQUEST['cron_id'])){$cron_id=$_REQUEST['cron_id'];}
+	$cron_id=(integer)$cron_id;
+	if($cron_id==0){
+		$err="commonCronLog error: cron_id not set";
+		debugValue($err);
+		return $err;
+	}
+	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$cron_id,'-nocache'=>1));
+	if(!isset($rec['_id'])){
+		$err="commonCronLog error: No cron found";
+		debugValue($err);
+		return $err;
+	}
+	$id='';
+	$cronlog_id=0;
+	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){$cronlog_id=$CRONTHRU['cronlog_id'];}
+	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){$cronlog_id=$_REQUEST['cronlog_id'];}
+	elseif(isset($rec['cronlog_id']) && isNum($rec['cronlog_id'])){$cronlog_id=$rec['cronlog_id'];}
+	$cronlog_id=(integer)$cronlog_id;
+	if($cronlog_id==0){
+		$cronlog_id=commonCronLogInit($cron_id);
+	}
+	
+	$lrec=getDBRecord(array('-table'=>'_cronlog','_id'=>$cronlog_id,'-nocache'=>1));
+	if(!isset($lrec['_id'])){
+		return;
+	}
 	if(!isset($commonCronLogCache['start'])){
 		$commonCronLogCache['start']=microtime(true);
 	}
@@ -334,34 +443,98 @@ function commonCronLog($msg,$echomsg=1){
 	$elapsed=$ctime-$commonCronLogCache['start'];
 	$elapsed=round($elapsed,2);
 	$ctime_formated=date('H:i:s');
-	if(!isset($_REQUEST['cron_id'])){return 0;}
-	$id=(integer)$_REQUEST['cron_id'];
-	$path=getWaSQLPath('php/temp');
-	$logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	if(!is_string($msg)){$msg=json_encode($msg);}
-	$msg=rtrim($msg);
-	if(!file_exists($logfile)){
-		$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
-		if($echomsg==1){
-			echo "timestamp,elapsed,diff,message";
-			//line break if a browser
-			if(isset($_SERVER['REMOTE_BROWSER'])){
-				echo '<br />';
-			}
-			echo PHP_EOL;
-		}
-	}
-	$ok=appendFileContents($logfile,"{$ctime_formated},{$elapsed},{$diff},{$msg}".PHP_EOL);
+	$line="{$ctime_formated},{$elapsed},{$diff},{$msg}";
+	//append
+	$run_result=$lrec['run_result'].rtrim($line).PHP_EOL;
+	$editopts=array('run_result'=>$run_result);
+	$ok=editDBRecordById('_cronlog',$lrec['_id'],$editopts);
 	if($echomsg==1){
-		echo "{$ctime_formated},{$elapsed},{$diff},{$msg}";
+		echo $line;
 		//line break if a browser
 		if(isset($_SERVER['REMOTE_BROWSER'])){
 			echo '<br />';
 		}
 		echo PHP_EOL;
 	}
-	$commonCronLogCache['last']=$ctime;
-	return 1;
+	$ok=commonCronCheckStopNow();
+	return true;
+	// global $CONFIG;
+	// global $commonCronLogCache;
+	// if(!isset($commonCronLogCache['start'])){
+	// 	$commonCronLogCache['start']=microtime(true);
+	// }
+	// if(!isset($commonCronLogCache['last'])){
+	// 	$commonCronLogCache['last']=$commonCronLogCache['start'];
+	// }
+	// $ctime=microtime(true);
+	// $diff=$ctime-$commonCronLogCache['last'];
+	// $diff=round($diff,3);
+	// $elapsed=$ctime-$commonCronLogCache['start'];
+	// $elapsed=round($elapsed,2);
+	// $ctime_formated=date('H:i:s');
+	// if(!isset($_REQUEST['cron_id'])){return 0;}
+	// $id=(integer)$_REQUEST['cron_id'];
+	// $path=getWaSQLPath('php/temp');
+	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
+	// if(!is_string($msg)){$msg=json_encode($msg);}
+	// $msg=rtrim($msg);
+	// if(!file_exists($logfile)){
+	// 	$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
+	// 	if($echomsg==1){
+	// 		echo "timestamp,elapsed,diff,message";
+	// 		//line break if a browser
+	// 		if(isset($_SERVER['REMOTE_BROWSER'])){
+	// 			echo '<br />';
+	// 		}
+	// 		echo PHP_EOL;
+	// 	}
+	// }
+	// $ok=appendFileContents($logfile,"{$ctime_formated},{$elapsed},{$diff},{$msg}".PHP_EOL);
+	// if($echomsg==1){
+	// 	echo "{$ctime_formated},{$elapsed},{$diff},{$msg}";
+	// 	//line break if a browser
+	// 	if(isset($_SERVER['REMOTE_BROWSER'])){
+	// 		echo '<br />';
+	// 	}
+	// 	echo PHP_EOL;
+	// }
+	// $commonCronLogCache['last']=$ctime;
+	// return 1;
+}
+//---------- begin function commonCronCheckStopNow
+/**
+* @describe checks for stop_now=1 and exits processs
+* @return n/a
+* @usage 
+*	$ok=commonCronStopCheck();
+*/
+function commonCronCheckStopNow(){
+	global $CONFIG;
+	global $CRONTHRU;
+	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
+		return;
+	}
+	$rec=getDBRecord(array(
+		'-table'=>'_cron',
+		'_id'=>$_REQUEST['cron_id'],
+		'-nocache'=>1,
+		'-fields'=>'_id,name,stop_now'
+	));
+	if(!isset($rec['_id'])){
+		return;
+	}
+	if($rec['stop_now']==1){
+		$editopts=array();
+		$editopts['run_result'].="processed stop_now action".PHP_EOL;
+		$editopts['stop_now']=0;
+		$editopts['running']=0;
+		$editopts['cron_pid']=0;
+		$run_memory=memory_get_usage();
+		$editopts['run_memory']=$run_memory;
+		$editopts['run_length']=microtime(true)-$CRONTHRU['start'];
+		$ok=editDBRecordById('_cron',$rec['_id'],$editopts);
+		exit;
+	}
 }
 //---------- begin function commonCronPause
 /**
@@ -374,17 +547,20 @@ function commonCronLog($msg,$echomsg=1){
 *	if(!$success){$ok=commonCronPause('bob@mysite.com');}
 */
 function commonCronPause($email='',$params=array()){
-	$id='';
-	if(isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
-	if(!isNum($id)){return false;}
-	$editopts=array(
-		'-table'	=> '_cron',
-		'-where'	=> "_id={$id}",
-		'paused'	=> 1,
-	);
-	$ok=editDBRecord($editopts);
+	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
+		$err="commonCronPause error: REQUEST['cron_id'] not set";
+		debugValue($err);
+		return $err;
+	}
+	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
+	if(!isset($rec['_id'])){
+		$err="commonCronPause error: No cron found";
+		debugValue($err);
+		return $err;
+	}
+	$ok=editDBRecordById('_cron',$rec['_id'],array('paused'=>1));
+	
 	if(isEmail($email)){
-		$cron=getDBRecordById('_cron',$id);
 		if(isset($params['subject'])){
 			$subject=$params['subject'];
 		}
@@ -406,7 +582,7 @@ function commonCronPause($email='',$params=array()){
 			$message.='<h4>Run Result</h4>'.PHP_EOL;
 			$message.='<div style="border:1px solid #ccc;border-radius:5px;background-color:#f0f0f0;padding:5px;display:block;font-family:monospace;unicode-bidi:embed;white-space:pre-wrap;">%run_result%</div>'.PHP_EOL;
 		}
-		foreach($cron as $k=>$v){
+		foreach($rec as $k=>$v){
 			$subject=str_replace("%{$k}%",$v,$subject);
 			$message=str_replace("%{$k}%",$v,$message);
 		}
@@ -491,15 +667,18 @@ function commonCronPauseGroup($group,$email='',$params=array()){
 *	$ok=commonCronUnpause();
 */
 function commonCronUnpause(){
-	$id='';
-	if(isset($_REQUEST['cron_id'])){$id=$_REQUEST['cron_id'];}
-	if(!isNum($id)){return false;}
-	$editopts=array(
-		'-table'	=> '_cron',
-		'-where'	=> "_id={$id}",
-		'paused'	=> 0,
-	);
-	$ok=editDBRecord($editopts);
+	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
+		$err="commonCronUnpause error: REQUEST['cron_id'] not set";
+		debugValue($err);
+		return $err;
+	}
+	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
+	if(!isset($rec['_id'])){
+		$err="commonCronUnpause error: No cron found";
+		debugValue($err);
+		return $err;
+	}
+	$ok=editDBRecordById('_cron',$rec['_id'],array('paused'=>0));
 	return $ok;
 }
 //---------- begin function commonCronUnpauseGroup
@@ -2356,10 +2535,16 @@ function buildFormGeoLocationMap($name,$params=array()){
 	//make sure wacss and google map api are loaded
 	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
 	//return printValue($_SESSION);
-	$tag=<<<ENDOFTAG
-<div style="display:inline-flex;align-items: center;width:{$params['width']}px;">
+	$tag='<div';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	$tag .=<<<ENDOFTAG
+	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
 	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
 	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" onclick="{$onclick}">&nbsp;</button>
+</div>
 </div>
 ENDOFTAG;
 	return $tag;

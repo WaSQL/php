@@ -53,6 +53,8 @@ switch(strtolower($_REQUEST['func'])){
 		//echo "details";exit;
 		$id=(integer)$_REQUEST['id'];
 		$cron=cronDetails($id);
+		$cronlog=getDBRecord(array('-table'=>'_cronlog','cron_id'=>$id,'-order'=>'_id desc'));
+		$cronlog_id=(integer)$cronlog['_id'];
 		$ok=commonCronCleanup();
 		setView('details',1);
 		return;

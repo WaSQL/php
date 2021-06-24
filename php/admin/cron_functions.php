@@ -100,13 +100,13 @@ function cronList(){
 	$opts=array(
 		'-table'=>'_cron',
 		'-formname'=>'cronlistform',
-		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now',
-		'-listfields'=>'_id,groupname,name,active,paused,running,run_now,last_run,run_length,run_format,frequency_max',
-		'-fields'=>'_id,groupname,name,active,paused,running,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
+		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now,stop_now',
+		'-listfields'=>'_id,groupname,name,active,paused,running,stop_now,run_now,last_run,run_length,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
-		'-editfields'=>'run_now,frequency_max',
+		'-editfields'=>'stop_now,run_now,frequency_max',
 		'-export'=>1,
 		'-sorting'=>1,
 		'setprocessing'=>0,
@@ -217,7 +217,7 @@ function cronListExtra($recs){
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" title="Cron Details - '.$name.'">'.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" title="Cron Details - '.$name.'"><span class="icon-info-circled"></span> '.$name.'</a>';
 	}
 	return $recs;
 }

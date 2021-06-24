@@ -214,7 +214,9 @@ function cronLogRefreshTimer(){
 		</div>
 	</div>
 	<div class="col s8"><div id="cron_result" style="width:560px;">
-		<?=renderView('cron_result',$cron,'log');?>
+		<textarea id="cron_result_textarea" style="border:1px solid #f1f1f1;border-right:0px;border-bottom:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
+<?=$cronlog['run_result'];?>
+</textarea>
 	</div></div>
 </div>
 </view:details>

@@ -222,6 +222,7 @@ function createWasqlTable($table=''){
 			$fields['name']=databaseDataType('varchar(150)')." NULL";
 			$fields['cron_pid']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['run_now']=databaseDataType('tinyint')." NOT NULL Default 0";
+			$fields['stop_now']=databaseDataType('tinyint')." NOT NULL Default 0";
 			$fields['run_as']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NULL";
@@ -2228,9 +2229,20 @@ function addMetaData($table=''){
 				'fieldname'		=> 'run_now',
 				'inputtype'		=> 'checkbox',
 				'synchronize'	=> 0,
+				'defaultval'	=> 0,
 				'tvals'			=> '1',
 				'required'		=> 0,
-				'-upsert'		=> 'inputtype,synchronize,tvals,required'
+				'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
+			));
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> '_cron',
+				'fieldname'		=> 'stop_now',
+				'inputtype'		=> 'checkbox',
+				'synchronize'	=> 0,
+				'defaultval'	=> 0,
+				'tvals'			=> '1',
+				'required'		=> 0,
+				'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
 			));
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_cron',
