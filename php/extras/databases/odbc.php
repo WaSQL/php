@@ -1243,9 +1243,6 @@ function odbcQueryResults($query,$params=array()){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
-	    if(isset($params['-results_eval'])){
-			$rec=call_user_func($params['-results_eval'],$rec);
-		}
 	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));

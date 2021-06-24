@@ -1163,9 +1163,6 @@ function pdoQueryResults($query,$params=array()){
 			$field=strtolower(pdo_field_name($result,$z));
 	        $rec[$field]=pdo_result($result,$z);
 	    }
-	    if(isset($params['-results_eval'])){
-			$rec=call_user_func($params['-results_eval'],$rec);
-		}
 	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));

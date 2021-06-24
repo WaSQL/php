@@ -1098,9 +1098,6 @@ function snowflakeQueryResults($query,$params=array()){
 		foreach($rec as $k=>$v){
 			$rec[$k]=trim($v);
 		}
-		if(isset($params['-results_eval'])){
-			$rec=call_user_func($params['-results_eval'],$rec);;
-		}
 		if(isset($params['-filename']) && !isset($fh)){
 	    	$fh = fopen($params['-filename'],"a");
 	    	if(!$fh){
