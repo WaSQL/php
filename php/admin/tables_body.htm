@@ -1,0 +1,101 @@
+<view:default>
+<?=buildOnLoad("wacss.loadScript('/php/admin/tables_js.js');");?>
+<div style="display:flex;justify-content: space-between;padding-top:15px;">
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-tables"></span> <translate>Tables</translate></h2>
+	<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">
+		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add new" data-func="add_single"><span class="icon-table-add w_bigger w_green"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add multiple" data-func="add_multiple"><span class="icon-table-add w_bigger w_red"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add prebuilt table(s)" data-func="add_prebuilt"><span class="icon-table-add w_bigger w_blue"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="refresh" data-func="tables_list"><span class="icon-list w_gray"></span> </button>
+	</div>
+</div>
+<div class="container-fluid">
+	<div class="row" style="margin-bottom:10px;">
+		<div class="col-sm-12" id="tables_content">
+				<?=renderView('tables_list');?>
+			</form>
+		</div>
+	</div>
+</div>
+
+</view:default>
+
+<view:tables_list>
+	<?=tablesList();?>
+</view:tables_list>
+
+<view:message><?=$message;?></view:message>
+
+<view:message_centerpop>
+	<div class="w_centerpop_title"><?=$title;?></div>
+	<div class="w_centerpop_content"><?=$message;?></div>
+</view:message_centerpop>
+
+<view:change_charset>
+	<form method="post" name="change_charset_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+	<input type="hidden" name="_menu" value="tables" />
+	<input type="hidden" name="func" value="change_charset" />
+	<div style="display:flex;margin-bottom:10px;">
+		<div><?=tablesBuildCharsets();?></div>
+		<div style="margin-left:3px;"><button class="btn" type="submit"><span class="icon-checkbox"></span> Convert Selected</button></div>
+	</div>
+</view:change_charset>
+
+
+<view:add_single>
+<h3>Add New Table</h3>
+<form method="post" name="add_single_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'add_result');">
+	<input type="hidden" name="_menu" value="tables" />
+	<input type="hidden" name="func" value="add_single_process" />
+	<div style="display:flex;flex-wrap:wrap;">
+		<div style="flex:1;" class="w_padtop" class="w_nowrap">
+			<div class="w_nowrap">Table Name:</div>
+			<div><?=buildFormText('tablename',array('placeholder'=>'table name','required'=>1));?></div>
+			<div class="w_nowrap w_padtop">Table Fields: (i.e.  firstname varchar(255) NOT NULL)</div>
+			<div><?=buildFormTextarea('tablefields',array('style'=>'height:60vh;','placeholder'=>'fieldname fieldtype','required'=>1));?></div>
+			<div class="align-right w_padtop"><button class="btn" type="submit">Create</button></div>
+		</div>
+		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">
+			<?=listDBDataTypes();?>
+		</div>
+	</div>
+</form>
+<?=buildOnLoad("document.add_single_form.tablename.focus();");?>
+</view:add_single>
+
+<view:add_multiple>
+<h3>Add Multiple Tables</h3>
+<form method="post" name="add_multiple_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'add_result');">
+	<input type="hidden" name="_menu" value="tables" />
+	<input type="hidden" name="func" value="add_multiple_process" />
+	<div style="display:flex;flex-wrap:wrap;">
+		<div style="flex:1;" class="w_padtop" class="w_nowrap">
+			<div class="w_nowrap">Table Definitions:</div>
+			<div><?=buildFormTextarea('tablefields',array('style'=>'height:60vh;','placeholder'=>"tablename\n\tfieldname fieldtype\n\tfieldname fieldtype\ntablename\n\tfieldname fieldtype\n\tfieldname fieldtype",'required'=>1));?></div>
+			<div class="align-right w_padtop"><button class="btn" type="submit">Create Multiple</button></div>
+		</div>
+		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">
+			<?=listDBDataTypes();?>
+		</div>
+	</div>
+</form>
+</view:add_multiple>
+
+<view:add_prebuilt>
+	<h3>Add Prebuilt Table(s)</h3>
+	<div style="display:flex;flex-wrap:wrap;">
+		<div style="flex:1;" class="w_padtop" class="w_nowrap">
+			<ul class="nav-list buttons w_blue">
+			<view:rec>
+			<li><a href="#" data-div="add_result" data-func="add_prebuilt_process" data-tablename="<?=$rec['name'];?>" onclick="return tablesNav(this);" data-confirm="<?=$rec['data-confirm'];?>"><span class="<?=$rec['class'];?>"></span> <?=$rec['name'];?></a></li>
+			</view:rec>
+			<?=renderEach('rec',$recs,'rec');?>
+			<li><a href="/php/admin.php?_menu=zipcodes"><span class="icon-map-marker"></span> <translate>Zipcodes</translate></a></li>
+		</ul>
+		</div>
+		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">
+			
+		</div>
+	</div>
+	
+</view:add_prebuilt>
