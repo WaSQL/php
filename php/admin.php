@@ -643,6 +643,7 @@ if(isAjax()){
 		case 'postedit':
 		case 'sync_source':
 		case 'system':
+		case 'tables':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1208,12 +1209,12 @@ if(isset($_REQUEST['_menu'])){
 					}
 				}
 			}
-			break;
+		break;
 		case 'drop':
 			if(isset($_REQUEST['_table_'])){
 			 	$dropResult = dropDBTable($_REQUEST['_table_'],1);
-				}
-			break;
+			}
+		break;
 		case 'postedit_xml':
 			$xml='';
 			$xml .= xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
@@ -1227,9 +1228,9 @@ if(isset($_REQUEST['_menu'])){
 			$xml .= '	/>'.PHP_EOL;
 			$xml .= '</hosts>'.PHP_EOL;
 			pushData($xml,"xml","postedit.xml");
-			break;
-		}
+		break;
 	}
+}
 //cache the page for 5 minutes
 $expire=gmdate('D, d M Y H:i:s', time()+300);
 
@@ -1306,6 +1307,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'postedit':
 		case 'sync_source':
 		case 'system':
+		case 'tables':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1818,7 +1820,7 @@ ENDOFX;
 					}
 				elseif($ck !=1){$cmessage .= "FAILED: {$ck}<br>\n";}
 				else{$cmessage .= 'SUCCESS<br>'.PHP_EOL;}
-		        }
+		    }
 			$charsets=getDBCharsets();
 			$current_charset=getDBCharset();
 			//echo '<div class="w_lblue w_bold">Current Character Set: '.$current_charset.'</div>'.PHP_EOL;
@@ -1833,20 +1835,33 @@ ENDOFX;
 			echo $cmessage;
 			echo databaseListRecords(array(
 				'-query'				=>	"show table status",
-				'-hidesearch'				=> 1,
-				'-translate'	=> 1,
+				'-hidesearch'			=> 1,
+				'-listfields'			=> 'name,rows,avg_row_length,data_length,index_length,auto_increment,collation,engine',
 				'-tableclass'			=> "table table-responsive table-bordered table-striped",
 				'name_href'				=> "/php/admin.php?_menu=list&_table_=%name%",
-				'data_length_eval'		=>	"return verboseSize(%data_length%);",
-				'data_length_align'		=> 'right',
-				'index_length_eval'		=>	"return verboseSize(%index_length%);",
-				'avg_row_length_eval'	=>	"return verboseSize(%avg_row_length%);",
-				'avg_row_length_align'	=> 'right',
-				'index_length_align'	=> 'right',
-				'-fields'				=> 'name,engine,version,row_format,rows,avg_row_length,data_length,index_length,auto_increment,create_time,collation'
+				'rows_options'	=>array(
+					'eval'				=>	"return number_format(%rows%,0);",
+					'class'				=> 'align-right',
+					'displayname'		=> 'Row Count'
+				),
+				'data_length_options'	=>array(
+					'eval'				=>	"return verboseSize(%data_length%);",
+					'class'				=> 'align-right'
+				),
+				'avg_row_length_options'=>array(
+					'eval'				=>	"return verboseSize(%avg_row_length%);",
+					'class'				=> 'align-right',
+					'displayname'		=> 'Row Length'
+				),
+				'index_length_options'=>array(
+					'eval'				=>	"return verboseSize(%index_length%);",
+					'class'				=> 'align-right'
+				),
+				'auto_increment_class'	=> 'align-right',
+				'-sumfields'			=> 'data_length,index_length'
 
 			));
-			break;
+		break;
 		case 'add':
 			if(isset($_REQUEST['_table_'])){
 				if($_REQUEST['_table_']=='_new_' || isset($_REQUEST['_schema'])){

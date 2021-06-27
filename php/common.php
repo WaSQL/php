@@ -870,7 +870,12 @@ function commonSearchFiltersForm($params=array()){
 			else{$cname=$name;}
 			if(is_array($str) && isset($str['icon'])){
 				if(strlen($cname)){
-					$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;	
+					if(stringContains($cname,'<')){
+						$cname='<span class="'.$str['icon'].'"></span> '.$cname;
+					}
+					else{
+						$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;
+					}	
 				}
 				else{
 					$cname='<span class="'.$str['icon'].'"></span> ';

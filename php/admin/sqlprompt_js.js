@@ -27,6 +27,12 @@ function sqlpromptLastRecords(table){
 	document.sqlprompt.db.value=db;
 	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0})
 }
+function sqlpromptCountRecords(table){
+	var db=document.sqlprompt.db.value;
+	document.sqlprompt.reset();
+	document.sqlprompt.db.value=db;
+	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'count_records',db:db,table:table,setprocessing:0})
+}
 function sqlpromptDDL(table){
 	var db=document.sqlprompt.db.value;
 	document.sqlprompt.reset();

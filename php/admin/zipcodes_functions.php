@@ -2,7 +2,7 @@
 function zipcodesListCountries(){
 	if(!isDBTable('countries')){
 		$progpath=getWasqlPath('php/schema');
-		$crecs=getCSVRecords("{$progpath}/all_countries.csv");
+		$crecs=getCSVRecords("{$progpath}/countries.csv");
 	}
 	else{
 		$crecs=getDBRecords(array('-table'=>'countries','-fields'=>'name,code'));
@@ -17,6 +17,9 @@ function zipcodesListCountries(){
 		$zrecs=getDBRecords(array('-query'=>$query,'-index'=>'country_code'));
 	}
 	$post=postURL('http://download.geonames.org/export/zip/',array('-method'=>'GET'));
+	if(isset($post['error'])){
+		return $post['error'];
+	}
 	$ok=preg_match_all('/href\=\"([a-z]{2,2})\.zip\"/ism',$post['body'],$m);
 	$recs=array();
 	foreach($m[1] as $code){

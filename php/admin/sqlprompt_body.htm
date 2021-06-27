@@ -172,7 +172,8 @@
 <view:tabledetails>
 	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
 		<div style="margin-bottom:10px;display:flex;justify-content: space-between;align-items: center;">
-			<a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Last Records</a>
+			<a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Last</a>
+			<a href="#" class="w_link" onclick="return sqlpromptCountRecords('<?=$table;?>');"><span class="icon-circle-empty"></span> Count</a>
 			<a href="#" class="w_link" onclick="return sqlpromptDDL('<?=$table;?>');"><span class="icon-database-empty"></span> DDL</a>
 		</div>
 		<?=renderView('fields',$fields,'fields');?>

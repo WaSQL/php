@@ -29,7 +29,6 @@
 				<li><a href="/php/admin.php?_menu=optimize"><span class="icon-optimize"></span> <translate>Optimize</translate></a></li>
 				<li><a href="/php/admin.php?_menu=import"><span class="icon-import"></span> <translate>Import</translate></a></li>
 				<li><a href="/php/admin.php?_menu=export"><span class="icon-export"></span> <translate>Export</translate></a></li>
-				<li><a href="/php/admin.php?_menu=summary"><span class="icon-properties"></span> <translate>Properties</translate></a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=dbsync"><span class="icon-database"></span> <translate>DB Sync Tool</translate></a></li>
 			</ul>
@@ -37,22 +36,7 @@
 		<!-- Tables -->
 		<li><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down"><translate>Tables</translate></span></a>
 			<ul  style="padding-bottom:5px;">
-				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> <translate>List</translate></a></li>
-				<li><a href="/php/admin.php?_menu=add&_table_=_new_"><span class="icon-plus"></span> <translate>Add New</translate></a></li>
-				<li><a href="/php/admin.php?_menu=addmultiple"><span class="icon-table-add"></span> <translate>Add Multiple</translate></a></li>
-				<view:add_prebuilt>
-				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-table-add"></span> <translate>Add Prebuilt Tables</translate></a>
-					<ul>
-						<view:prebuilt>
-						<li><a href="/php/admin.php?_menu=rebuild&_table_=<?=$table['name'];?>" onclick="<?=$table['onclick'];?>"><span class="<?=$table['class'];?>"></span> <?=$table['name'];?></a></li>
-						</view:prebuilt>
-						<?=renderEach('prebuilt',$prebuilt,'table');?>
-						<li><a href="/php/admin.php?_menu=zipcodes"><span class="icon-map-marker"></span> <translate>Zipcodes</translate></a></li>
-					</ul>
-				</li>
-				</view:add_prebuilt>
-				<?=renderViewIf(count($prebuilt),'add_prebuilt',$prebuilt,'prebuilt');?>
-				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> <translate>List / Manage</translate></a></li>
 				<view:tables_group>
 				<li><a href="#<?=$key;?>" class="dropdown" onclick="return false;"><span class="icon-group"></span> <?=$key;?> <translate>Tables</translate></a>
 					<ul>

@@ -61,6 +61,26 @@
 			setView('monitor_sql',1);
 			return;
 		break;
+		case 'count_records':
+			$table=addslashes($_REQUEST['table']);
+			switch(strtolower($db['dbtype'])){
+				case 'ctree':
+					$sql="select count(*) cnt from admin.{$table} order by 1 desc";
+				break;
+				case 'mysql':
+				case 'mysqli':
+					$sql="select count(*) cnt from {$table}";
+				break;
+				default:
+					if(strlen($db['dbschema'])){
+						$table="{$db['dbschema']}.{$table}";
+					}
+					$sql="select count(*) cnt from {$table}";
+				break;
+			}
+			setView('monitor_sql',1);
+			return;
+		break;
 		case 'ddl':
 			$table=addslashes($_REQUEST['table']);
 			$db=$_REQUEST['db'];

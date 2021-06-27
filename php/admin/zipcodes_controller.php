@@ -3,7 +3,7 @@
 	global $SETTINGS;
 	loadExtras('zipcodes');
 	if(!isset($CONFIG['admin_menu_color'])){
-		$CONFIG['admin_menu_color']='gray';
+		$CONFIG['admin_menu_color']='w_gray';
 	}
 	setView('default');
 	if(isset($_REQUEST['country_codes'])){

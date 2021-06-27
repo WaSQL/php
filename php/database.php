@@ -2035,10 +2035,18 @@ function databaseListRecords($params=array()){
 			$rtn .= setTagAttributes($atts);
 			$rtn .='>';
 			if(isset($sums[$fld])){
-				//figure out how many decimal places are in this number
-				$d=strlen(substr(strrchr($sums[$fld], "."), 1));
-				//format it to add commas
-				$rtn .= number_format($sums[$fld],$d);
+				if(!empty($params[$fld."_eval"])){
+					$evalstr=$params[$fld."_eval"];
+					$evalstr=str_replace('%fieldname%',$fld,$evalstr);
+					$evalstr=str_replace("%{$fld}%",$sums[$fld],$evalstr);
+	                $rtn .=evalPHP('<?' . $evalstr .'?>');
+				}
+				else{
+					//figure out how many decimal places are in this number
+					$d=strlen(substr(strrchr($sums[$fld], "."), 1));
+					//format it to add commas
+					$rtn .= number_format($sums[$fld],$d);
+				}
 			}
 			$rtn .='</th>'.PHP_EOL;
 		}
@@ -5940,7 +5948,7 @@ function dropDBTable($table='',$meta=1){
 	    	$key=$rec['key_name'];
 	    	if(strtolower($key)=='primary'){continue;}
 	    	//echo "Index:{$table},{$key}<br>";
-	    	$ok=dropDBIndex($table,$key);
+	    	$ok=dropDBIndex($key,$table);
 		}
 	}
 	$result=executeSQL("drop table {$table}");
