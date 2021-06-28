@@ -49,7 +49,7 @@ function formChanged(frm){
             			}
 					break;
 				}
-				break;
+				if(display==1){break;}
 			}
 			//console.log('data-displayif.Display:'+display+', Name:'+name+', vals:'+vals);
 			if(display==1){

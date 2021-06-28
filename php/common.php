@@ -2500,6 +2500,7 @@ function buildFormPassword($name,$params=array()){
 */
 function buildFormGeoLocationMap($name,$params=array()){
 	global $CONFIG;
+	//return printValue($params);
 	$name=preg_replace('/[\[\]]+$/','',$name);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
@@ -2544,6 +2545,10 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
+	}
+	elseif(isset($params['data-displayif'])){
+		$tag .= ' data-displayif="'.$params['data-displayif'].'"';
+		unset($params['data-displayif']);
 	}
 	$tag .=<<<ENDOFTAG
 	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>

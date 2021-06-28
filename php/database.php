@@ -3899,6 +3899,20 @@ function addEditDBForm($params=array(),$customcode=''){
 					//$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
 					$opts['readonly']=1;
 				}
+				//displayif?
+				$displayif='';
+				if(isset($opts['data-displayif'])){
+					$displayif = ' data-displayif="'.$opts['data-displayif'].'"';
+				}
+				elseif(isset($info['fieldinfo'][$field]['displayif'])){
+					$displayif = ' data-displayif="'.$info['fieldinfo'][$field]['displayif'].'"';
+				}
+				elseif(isset($info['fieldinfo'][$field]['data-displayif'])){
+					$displayif = ' data-displayif="'.$info['fieldinfo'][$field]['displayif'].'"';
+				}
+				elseif(isset($params[$field.'_data-displayif'])){
+					$displayif = ' data-displayif="'.$params[$field.'_data-displayif'].'"';
+				}
 				if(isset($params[$field.'_group_id'])){
 					$group_id = $params[$field.'_group_id'];
 					$used[$field.'_group_id']=1;
@@ -3917,14 +3931,14 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$field.'_group_custom']=1;
 						}
 					if($info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+						$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
 					$rtn .= '		</div>'.PHP_EOL;
 					}
 				else{
 					if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype']!='signature'){
-						$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+						$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
                 	}
@@ -3992,6 +4006,11 @@ function addEditDBForm($params=array(),$customcode=''){
 					if(in_array($okey,$forcedatts)){$opts[$okey]=$oval;}
 				}
 			}
+			//displayif?
+			$displayif='';
+			if(isset($opts['data-displayif'])){
+				$displayif = ' data-displayif="'.$opts['data-displayif'].'"';
+			}
 			if(isset($params[$field.'_checkall'])){
 				$opts['-checkall']=1;
 				$used[$field.'_checkall']=1;
@@ -4028,8 +4047,8 @@ function addEditDBForm($params=array(),$customcode=''){
 			$field_content=$opts['id'].'_content';
 			if(isset($params['-readonly']) || isset($params[$field.'_viewonly'])){
 				$value=isset($opts['value'])?$opts['value']:$_REQUEST[$field];
-                $rtn .= '			<label class="control-label w_viewonly" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
-				$rtn .= '			<div class="w_viewonly" id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
+                $rtn .= '			<label class="control-label w_viewonly"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+				$rtn .= '			<div class="w_viewonly"'.$displayif.' id="'.$field_content.'">'.nl2br($value).'</div>'.PHP_EOL;
 			}
             elseif(isset($params[$field.'_group_id'])){
 				$used[$field.'_group_id']=1;
@@ -4049,7 +4068,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$used[$field.'_group_custom']=1;
 					}
 				if($info['fieldinfo'][$field]['inputtype']!='signature'){
-					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+					$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
 				$rtn .= '		</div>'.PHP_EOL;
@@ -4059,7 +4078,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$rtn .= '<div class="w_right w_pointer" title="Format JSON" style="margin-right:5px;"><span class="icon-json-pretty w_primary" data-id="'.$opts['id'].'" onclick="formJsonPretty(this.dataset.id);"></span></div>';
 				}
 				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
-					$rtn .= '			<label class="control-label" id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
+					$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
 			}
