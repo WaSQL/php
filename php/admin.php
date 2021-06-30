@@ -3164,7 +3164,9 @@ function adminConfigView(){
 ENDOFCONFIGVIEW;
 }
 function adminConfigListExtra($recs){
+	$elid=0;
 	foreach($recs as $i=>$rec){
+		$elid+=1;
 		$recs[$i]['dname']=ucwords(str_replace('_',' ',$rec['name']));
 		if(!strlen($rec['default_value'])){
 			$recs[$i]['default_value']='no default';
@@ -3180,7 +3182,7 @@ function adminConfigListExtra($recs){
 			elseif($rec['possible_values']=='0=Off,1=On'){
 				$cparams=array(
 					'value'=>$rec['current_value'],
-					'id'=>'current_value_'.$rec['_id']
+					'id'=>'current_value_'.$elid
 				);
 				$recs[$i]['cvedit']=buildFormSelectOnOff('current_value',$cparams);
 			}
