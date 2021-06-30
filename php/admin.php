@@ -3182,7 +3182,6 @@ function adminConfigListExtra($recs){
 			elseif($rec['possible_values']=='0=Off,1=On'){
 				$cparams=array(
 					'value'=>$rec['current_value'],
-					'id'=>'cv_'.$elid
 				);
 				$recs[$i]['cvedit']=buildFormSelectOnOff('current_value',$cparams);
 			}
@@ -3203,8 +3202,7 @@ function adminConfigListExtra($recs){
 				}
 				$cparams=array(
 					'message'=>' --- ',
-					'value'=>$rec['current_value'],
-					'id'=>'cv_'.$elid
+					'value'=>$rec['current_value']
 				);
 				$recs[$i]['cvedit']=buildFormSelect('current_value',$copts,$cparams);
 			}
@@ -3213,8 +3211,7 @@ function adminConfigListExtra($recs){
 			$cparams=array(
 				'value'=>$rec['current_value'],
 				'style'=>'width:100%',
-				'class'=>'input w_small',
-				'id'=>'cv_'.$elid
+				'class'=>'input w_small'
 			);
 			$recs[$i]['cvedit']=buildFormText('current_value',$cparams);
 		}
