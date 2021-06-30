@@ -2084,7 +2084,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value'])){$params['id']=$name;}
-	$id=$params['id'];
+	$elid=$params['id'];
 	unset($params['id']);
 	$tag='<div class="w_flexgroup" data-display="inline-flex"';
 	if(isset($params['displayif'])){
@@ -2097,7 +2097,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 		if($tval==$params['value'] || $dval==$params['value']){
 			$checked=' checked';
 		}
-		$cid=strtolower(str_replace(' ','_',"{$id}_{$tval}"));
+		$cid=strtolower(str_replace(' ','_',"{$elid}_{$tval}"));
 		$class='';
 		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
 		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
