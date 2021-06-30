@@ -2086,6 +2086,9 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	if(!isset($params['value'])){$params['id']=$name;}
 	$elid=$params['id'];
 	unset($params['id']);
+	if(!strlen($elid)){
+		$elid=str_replace(' ','_',$name.'_'.md5(microtime(true)));
+	}
 	$params['data-elid']=$elid;
 	$tag='<div class="w_flexgroup" data-display="inline-flex"';
 	if(isset($params['displayif'])){
